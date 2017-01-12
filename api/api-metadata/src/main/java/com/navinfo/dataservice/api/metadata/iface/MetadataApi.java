@@ -199,4 +199,17 @@ public interface MetadataApi {
 	 */
 	public Map<String, String> scPointBrandFoodtypeKindBrandMap() throws Exception;
 
+	/**
+	 * SELECT poikind,foodtype FROM SC_POINT_FOODTYPE WHERE MEMO='饮品'
+	 * @return  Map<String, String> SC_POINT_FOODTYP的饮品的对应表：key：foodtype value:kind
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointFoodtypeDrinkMap() throws Exception;
+	/**
+	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
+	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * @throws Exception
+	 */
+	public List<String> scPointFoodtype110302FoodTypes() throws Exception;
+
 }

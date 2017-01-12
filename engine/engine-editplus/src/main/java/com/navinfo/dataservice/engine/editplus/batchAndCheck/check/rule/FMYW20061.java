@@ -46,14 +46,38 @@ public class FMYW20061 extends BasicCheckRule {
 						+address.getType()+"|"+address.getSubnum()+"|"+address.getSurfix()+"|"+address.getEstab()+"|"+address.getBuilding()+"|"
 						+address.getUnit()+"|"+address.getFloor()+"|"+address.getRoom()+"|"+address.getAddons();
 
-				String[] allStrSplit= allStr.split("|");
+				String[] allStrSplit= allStr.split("\\|");
 				for (String strSplit:allStrSplit){
-					//“(”与“)”应成对出现；
 					int i = strSplit.length()-strSplit.replace("（", "").length();
 					int j = strSplit.length()-strSplit.replace("）", "").length();
 					if(i!=j){
 						String log="“(”与“)”应成对出现";
 						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+						return;
+					}
+					if(i>1){
+						String str="";
+						String strTemp="";
+						for(int jj = 0; jj < strSplit.length(); jj++){
+							str=String.valueOf(strSplit.charAt(jj));
+							if(str.equals("（")||str.equals("）")){
+								strTemp=strTemp+str;
+							}
+						}
+						if(strTemp.indexOf("（（")>0||strTemp.indexOf("））")>0){
+							String log="不允许括号嵌套；";
+							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+						}
+					}
+					for(int ii = 0; ii < strSplit.length(); ii++){
+						if(String.valueOf(strSplit.charAt(ii)).equals("（")){
+							if(ii < strSplit.length()-1){
+								if(String.valueOf(strSplit.charAt(ii+1)).equals("）")){
+									String log="括号“（”和“）”中间必须有内容；";
+									setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+								}
+							}
+						}
 					}
 				}
 			}

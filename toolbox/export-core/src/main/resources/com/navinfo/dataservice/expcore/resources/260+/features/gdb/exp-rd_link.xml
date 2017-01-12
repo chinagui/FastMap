@@ -159,7 +159,7 @@
             <!--RD_LINK_ADDRESS -->
             <sql><![CDATA[SELECT P.* FROM RD_LINK_ADDRESS P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
             <!--RD_NAME -->
-            <sql><![CDATA[SELECT P.* FROM RD_NAME P,TEMP_RD_LINK_NAMEID T WHERE P.NAME_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_NAME P WHERE 1=1; ]]></sql>
             <!--RD_NAME_PHOTO -->
 
             <!-- RD_NAME_PHOTO取消导出，需求来自于老王 2012/8/27 -->

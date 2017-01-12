@@ -371,7 +371,8 @@ public class SubtaskOperation {
 					+ "           AND S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
 					+ "           AND B.BLOCK_ID = M.BLOCK_ID"
 					+ "           AND SS.STATUS != 0"
-					+ "           AND SS.TYPE = 3)))";	
+					+ "           AND SS.TYPE = 3)))";
+			log.info("关闭SQL："+updateSql);
 			run.update(conn,updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

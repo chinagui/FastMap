@@ -3,11 +3,18 @@
  */
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
+import java.sql.Connection;
+
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
+import com.navinfo.dataservice.engine.edit.search.SearchProcess;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RdLaneTest 
@@ -23,6 +30,24 @@ public class RdLaneTest extends InitApplication{
 		initContext();
 	}
 	
+	@Test
+	public void testLoadRdLaneByCondition()
+	{
+		String parameter = "{\"linkPid\":\"210001313\",\"laneDir\":2}";
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			JSONObject jsonReq2 = JSONObject.fromObject(parameter);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			System.out.println(p.searchDataByCondition(ObjType.RDLANE, jsonReq2));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	@Test
 	public void testUpdatRdLaneByLinkKind()
 	{

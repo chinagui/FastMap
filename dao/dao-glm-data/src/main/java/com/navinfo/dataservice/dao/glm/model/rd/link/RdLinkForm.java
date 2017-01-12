@@ -88,13 +88,10 @@ public class RdLinkForm implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("status");
 		}
-
 		return json;
-//		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 	}
 
 	@Override

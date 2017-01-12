@@ -5,9 +5,15 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -48,19 +54,33 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj : checkCommand.getGlmList()) {
+			
 			// 分歧RdBranch
-			if (obj instanceof RdBranch) {
-				RdBranch rdBranch = (RdBranch) obj;
-				boolean result = checkRdBranch(rdBranch);
-				if (!result) {
-					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
-					return;
-				}
-			} else if (obj instanceof RdBranchDetail) {
+			if (obj instanceof RdBranchDetail) {
 				RdBranchDetail rdBranchDetail = (RdBranchDetail) obj;
 				boolean result = checkRdBranchDetail(rdBranchDetail);
 				if (!result) {
-					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			} else if (obj instanceof RdBranchRealimage
+					|| obj instanceof RdBranchSchematic
+					|| obj instanceof RdSeriesbranch
+					|| obj instanceof RdSignasreal 
+					|| obj instanceof RdSignboard) {
+
+				if (obj.status() == ObjStatus.INSERT) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			} else if (obj instanceof RdBranch) {
+				RdBranch rdBranch = (RdBranch) obj;
+				boolean result = checkRdBranch(rdBranch);
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
 			}

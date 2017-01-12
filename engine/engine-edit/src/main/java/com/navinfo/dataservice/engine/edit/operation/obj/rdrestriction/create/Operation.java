@@ -143,7 +143,7 @@ public class Operation implements IOperation {
 			check.checkSameInAndOutLink(inLinkPid, infoMap);
 
 			// 计算交限详细信息
-			for (int i = 0; i < calOutLinkObjs.size(); i++) {
+			for (int i = 0; i < outLinkObjs.size(); i++) {
 				details.addAll(createDetail(restrict, infoMap));
 			}
 		}

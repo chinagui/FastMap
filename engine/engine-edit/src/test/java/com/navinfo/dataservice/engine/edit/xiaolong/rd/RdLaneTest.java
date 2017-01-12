@@ -77,7 +77,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByRdTollgate()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"data\":{\"passageNum\":1,\"rowId\":\"AC3EC5679C5244FE8FD957FF994A9FEE\",\"pid\":208000021,\"objStatus\":\"UPDATE\",\"etcFigureCode\":\"T0110000\",\"passages\":[{\"pid\":0,\"seqNum\":1,\"tollForm\":1,\"cardType\":0,\"vehicle\":0,\"rowId\":\"\",\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"objId\":202000013}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

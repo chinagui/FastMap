@@ -380,6 +380,8 @@ public class Operation implements IOperation {
         // link.setLaneClass(2);
         link.setWalkstairFlag(0);
         link.setSidewalkFlag(0);
+        link.getWalkstairs().clear();
+        link.getWalkstairs().clear();
 
         link.setLaneLeft(0);
         link.setLaneRight(0);

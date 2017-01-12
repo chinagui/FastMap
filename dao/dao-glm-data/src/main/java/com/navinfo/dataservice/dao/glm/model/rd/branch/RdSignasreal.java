@@ -31,6 +31,8 @@ public class RdSignasreal implements IObj {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	
+	protected  ObjStatus status;
 
 	@Override
 	public void setRowId(String rowId) {
@@ -114,12 +116,12 @@ public class RdSignasreal implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status=os;
 	}
 
 	@Override

@@ -1173,6 +1173,25 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+		@Test
+	public void run_0112_3() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":2,\"inLinkPid\":206000525,\"nodePid\":320000356,\"outLinkPid\":203002059}}";		
 		
 		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+		@Test
+	public void run_0112_4() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":8,\"inLinkPid\":220003253,\"nodePid\":306002383,\"outLinkPid\":309003076}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
 }

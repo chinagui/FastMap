@@ -51,8 +51,8 @@ public class GLM02218 extends baseRule {
 			//名称类型编辑
 			if(changedFields.containsKey("nameType")){
 				int nameType = (int) changedFields.get("nameType");
-				if(nameType != 0 && nameType != 1 && nameType == 2 && nameType == 3 && nameType == 5
-						&& nameType != 6 && nameType != 8 && nameType == 14 && nameType == 15){
+				if(nameType != 0 && nameType != 1 && nameType != 2 && nameType != 3 && nameType != 5
+						&& nameType != 6 && nameType != 8 && nameType != 14 && nameType != 15){
 					boolean check = this.check(rdLinkName.getLinkPid());
 					
 					if(check){

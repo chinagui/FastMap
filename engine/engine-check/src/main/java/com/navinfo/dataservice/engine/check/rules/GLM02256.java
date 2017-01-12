@@ -118,14 +118,14 @@ public class GLM02256 extends baseRule {
 		// TODO Auto-generated method stub
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("SELECT 0 AS GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append("SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '错误道路名+国道LINK路线属性与主从code错误 ' AS LOG");
 		sb.append(" FROM RD_LINK L, RD_LINK_NAME RLN,RD_NAME RN");
 		sb.append(" WHERE L.LINK_PID ="+pid+" AND L.KIND = 3 AND L.LINK_PID = RLN.LINK_PID");
 		sb.append(" AND (RLN.CODE <> 1 OR RLN.ROUTE_ATT <> 0) AND RLN.NAME_GROUPID=RN.NAME_GROUPID");
 		sb.append(" AND RN.LANG_CODE IN ('CHI','CHT') AND L.U_RECORD <>2 AND RLN.U_RECORD <>2 AND RN.U_RECORD <>2");
 		sb.append(" UNION");
-		sb.append(" SELECT 0 AS GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '错误道路名+普通LINK路线属性与主从code错误 ' AS LOG");
 		sb.append(" FROM RD_LINK L, RD_LINK_NAME RLN,RD_NAME RN WHERE L.LINK_PID ="+pid+" AND L.KIND > 3");
 		sb.append(" AND L.LINK_PID = RLN.LINK_PID AND (RLN.CODE <> 0 OR RLN.ROUTE_ATT <> 0)");

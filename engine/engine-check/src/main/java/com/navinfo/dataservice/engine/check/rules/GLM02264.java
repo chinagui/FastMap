@@ -74,7 +74,7 @@ public class GLM02264 extends baseRule {
 		sb.append("WITH T AS(SELECT RLN.LINK_PID,DECODE(RLN.NAME_TYPE,4,'桥',7,'出口编号',8,'编号名称',14,'点门牌') TYPE");
 		sb.append(" FROM RD_LINK_NAME RLN WHERE RLN.LINK_PID ="+pid);
 		sb.append(" AND RLN.U_RECORD <> 2)");
-		sb.append(" SELECT 0 AS GEOMETRY, '[RD_LINK,' || T.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || T.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '\"' || LISTAGG (TYPE, '、') WITHIN GROUP (ORDER BY LINK_PID) || '\"名称类型错误' LOG");
 		sb.append(" FROM T GROUP BY T.LINK_PID");
 		String sql = sb.toString();

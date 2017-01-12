@@ -180,7 +180,7 @@ public class SysMsgHandler implements MsgHandler {
 				msg.setMsgId(rs.getLong("MSG_ID"));
 				msg.setMsgType(rs.getLong("MSG_TYPE"));
 				msg.setMsgContent(rs.getString("MSG_CONTENT"));
-				msg.setCreateTime(rs.getTimestamp("CREATE_TIME"));
+				msg.setCreateTime(DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
 				msg.setTargetUserId(rs.getLong("TARGET_USER_ID"));
 				msg.setMsgTitle(rs.getString("MSG_TITLE"));
 				msg.setPushUserId(rs.getLong("PUSH_USER_ID"));

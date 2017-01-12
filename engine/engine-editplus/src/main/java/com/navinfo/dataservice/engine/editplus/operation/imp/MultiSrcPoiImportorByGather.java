@@ -54,7 +54,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
-	protected List<PoiRelation> samePoiRel = new ArrayList<PoiRelation>();
+	//protected List<PoiRelation> samePoiRel = new ArrayList<PoiRelation>();
 	
 	public Map<Long, String> getSourceTypes() {
 		return sourceTypes;
@@ -485,18 +485,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				sr.setSameFid(sameFid);
 				sr.setPid(ixPoi.getPid());
 				sr.setPoiRelationType(PoiRelationType.SAME_POI);
-				samePoiRel.add(sr);
-//				if(jo.containsKey("sameFid")){
-//					createSamePoi(jo,ixPoi.getPid());
-//				}
-				/*String samepoi = null;
-				if(!JSONUtils.isNull(jo.get("sameFid"))){
-					samepoi = jo.getString("sameFid");
-				}
-				PoiRelation samePoiPr = new PoiRelation();
-				samePoiPr.setSameFid(samepoi);
-				samePoiPr.setPid(poi.objPid());
-				samePoiPr.setPoiRelationType(PoiRelationType.SAME_POI);*/
+				//samePoiRel.add(sr);
+				parentPid.add(sr);
 				
 				// 加油站
 				if (!JSONUtils.isNull(jo.get("gasStation")) && jo.getJSONObject("gasStation").size() > 0) {
@@ -619,14 +609,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			}
 		}
 		return false;
-	}
-
-	private void createSamePoi(JSONObject jo, long pid) {
-		JSONObject sameObj = jo.getJSONObject("sameFid");
-		if(sameObj != null && StringUtils.isNotEmpty(jo.getString("sameFid"))){//存在同一关系
-			
-		}
-		
 	}
 
 	/**
@@ -818,14 +800,16 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				
 				// 同一关系
 				//处理同一关系
-				/*String samepoi = null;
-				if(!JSONUtils.isNull(jo.get("sameFid"))){
-					samepoi = jo.getString("sameFid");
+				String sameFid = null;
+				if(!JSONUtils.isNull(jo.get("sameFid")) && StringUtils.isNotEmpty(jo.getString("sameFid"))){
+					sameFid = jo.getString("sameFid");
 				}
-				PoiRelation samePoiPr = new PoiRelation();
-				samePoiPr.setSameFid(samepoi);
-				samePoiPr.setPid(poi.objPid());
-				samePoiPr.setPoiRelationType(PoiRelationType.SAME_POI);*/
+				PoiRelation sr = new PoiRelation();
+				sr.setSameFid(sameFid);
+				sr.setPid(ixPoi.getPid());
+				sr.setPoiRelationType(PoiRelationType.SAME_POI);
+				//samePoiRel.add(sr);
+				parentPid.add(sr);
 				
 				//改加油站
 				//if(!JSONUtils.isNull(jo.get("gasStation")) && jo.getJSONObject("gasStation").size() > 0){
@@ -1672,9 +1656,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			}
 		}
 
-		
-		
-		
 		// 差分，区分删除的数据
 		private JSONArray getOldDel(JSONArray oldArray, List<String> newRowIdList) throws Exception {
 			try {
@@ -1919,6 +1900,13 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					pr.setPid(poi.objPid());
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
+					
+					//处理同一关系
+					PoiRelation sr = new PoiRelation();
+					sr.setPid(poi.objPid());
+					sr.setPoiRelationType(PoiRelationType.SAME_POI);
+					//samePoiRel.add(sr);
+					parentPid.add(sr);
 				}
 				return true;
 			}else{

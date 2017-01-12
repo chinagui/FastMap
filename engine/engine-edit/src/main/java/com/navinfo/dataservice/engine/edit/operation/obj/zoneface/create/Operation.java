@@ -150,14 +150,16 @@ public class Operation implements IOperation {
                     mapNode.put(geometry.getCoordinates()[0], zoneLink.getsNodePid());
                 }
                 if (!mapNode.containsKey(geometry.getCoordinates()[geometry.getCoordinates().length - 1])) {
-                    mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], zoneLink.geteNodePid());
+                    mapNode.put(geometry.getCoordinates()[geometry.getCoordinates().length - 1], zoneLink.geteNodePid
+                            ());
                 }
             }
         }
         while (it.hasNext()) {
             String meshIdStr = it.next();
             // 获取每个图幅中闭合线的数组
-            Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()), meshIdStr);
+            Set<LineString[]> set = CompGeometryUtil.cut(JtsGeometryFactory.createPolygon(geom.getCoordinates()),
+                    meshIdStr);
             Iterator<LineString[]> itLine = set.iterator();
             while (itLine.hasNext()) {
                 LineString[] lineStrings = itLine.next();
@@ -172,6 +174,20 @@ public class Operation implements IOperation {
                         } else {
                             zoneLink = this.createLinkOfFace(lineString, mapNode);
                             mapLink.put(lineString, zoneLink);
+                        }
+                        Coordinate sCoor = zoneLink.getGeometry().getCoordinates()[0];
+                        Coordinate eCoor = zoneLink.getGeometry().getCoordinates()[zoneLink.getGeometry()
+                                .getCoordinates().length - 1];
+                        for (IObj obj : objList) {
+                            ZoneLink link = (ZoneLink) obj;
+                            Coordinate[] coors = link.getGeometry().getCoordinates();
+                            if (sCoor.equals(coors[0]) && eCoor.equals(coors[coors.length - 1])) {
+                                zoneLink.setGeometry(zoneLink.getGeometry().reverse());
+                                int nodePid = zoneLink.getsNodePid();
+                                zoneLink.setsNodePid(zoneLink.geteNodePid());
+                                zoneLink.seteNodePid(nodePid);
+                                break;
+                            }
                         }
                         links.add(zoneLink);
                     } else {
@@ -319,8 +335,9 @@ public class Operation implements IOperation {
             }
             index++;
             map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
-            list.add(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry());
-
+            Geometry tmpGeo = currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry();
+//            if (currLink.getGeometry().getCoordinates()[0].equals(tmpGeo.getCoordinates()[0]))
+                list.add(tmpGeo);
         }
         // 线几何组成面的几何
         if (this.updateFlag) {

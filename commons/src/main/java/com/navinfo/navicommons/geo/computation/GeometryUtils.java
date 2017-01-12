@@ -842,7 +842,7 @@ public class GeometryUtils {
 
 			double c = coord.y - k * coord.x;
 
-			result.x = coord.x + (dist / distance / 100000)
+			result.x = coord.x + (dist / distance / 110000)
 					* (next.x - coord.x);
 
 			result.y = k * result.x + c;
@@ -852,9 +852,9 @@ public class GeometryUtils {
 			result.x = coord.x;
 
 			if (coord.y < next.y) {
-				result.y = coord.y + dist / 100000;
+				result.y = coord.y + dist / 110000;
 			} else {
-				result.y = coord.y - dist / 100000;
+				result.y = coord.y - dist / 110000;
 			}
 		}
 
@@ -913,11 +913,19 @@ public class GeometryUtils {
 
 		Geometry g3 = r.read(test3);
 		Geometry g4 = r.read(test4);
-		System.out.println(getLinkLength(g4));
+
 		Coordinate c = getPointOnLineStringDistance((LineString) g4,
 				82.89500000000001);
 		System.out.println(c.x);
 		System.out.println(c.y);
-		// 116.39053, 39.99844
+		Geometry geo= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907,39.9985});
+		System.out.println(getLinkLength(geo));
+		
+		Geometry geo1= getLineFromPoint(new double[]{116.3907,39.9983}, new double[]{116.3907, 39.99845460272727});
+		System.out.println(getLinkLength(geo1));
+		//116.3907, 39.9983
+		//116.3907, 39.9985
+		//17.00630000000001
+		//116.3907, 39.998470063
 	}
 }

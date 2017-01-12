@@ -47,7 +47,7 @@ public class Operation implements IOperation {
 
 		List<IRow> details = new ArrayList<IRow>();
 
-		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
 
 		// 创建RdVoiceguideDetail
 		for (int outLinkPid : this.command.getOutLinkPids()) {
@@ -61,7 +61,7 @@ public class Operation implements IOperation {
 			detail.setVoiceguidePid(voiceguide.getPid());
 
 			detail.setRelationshipType(calLinkOperateUtils.getRelationShipType(
-					conn, command.getNodePid(), outLinkPid));
+					command.getNodePid(), outLinkPid));
 
 			List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
 					command.getInLinkPid(), command.getNodePid(), outLinkPid);

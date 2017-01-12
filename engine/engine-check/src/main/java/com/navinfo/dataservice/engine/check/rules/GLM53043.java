@@ -1,15 +1,10 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
  * @ClassName: GLM53043
@@ -54,14 +49,14 @@ public class GLM53043 extends baseRule{
 	private void checkRdLinkRtic(RdLinkRtic rdLinkRtic) throws Exception {
 		if(rdLinkRtic.status().equals(ObjStatus.INSERT)){
 			if(rdLinkRtic.getRank()==0){
-				String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+				String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}else if(rdLinkRtic.status().equals(ObjStatus.UPDATE)){
 			if(rdLinkRtic.changedFields().containsKey("rank")){
 				int rank = Integer.parseInt(rdLinkRtic.changedFields().get("rank").toString());
 				if(rank==0){
-					String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+					String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 					this.setCheckResult("", target, 0);
 				}
 			}

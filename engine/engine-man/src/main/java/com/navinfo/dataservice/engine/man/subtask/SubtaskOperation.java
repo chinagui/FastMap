@@ -522,6 +522,7 @@ public class SubtaskOperation {
 			//外业参考任务圈
 			if (bean!=null&&bean.getReferId()!=null && bean.getReferId()!=0 
 					&& StringUtils.isNotEmpty(bean.getReferId().toString())){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
 				column+=" REFER_ID ";
 				values+=" ? ";
 				value.add(bean.getReferId());

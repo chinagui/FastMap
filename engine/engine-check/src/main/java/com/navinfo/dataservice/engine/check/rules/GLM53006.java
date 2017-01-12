@@ -14,8 +14,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @ClassName: GLM53006
  * @author songdongyan
  * @date 2017年1月9日
- * @Description: GLM53006.java
- * link为双方向时，如果上下行都制作了RTIC信息，则RTIC上下行等级应一致
+ * @Description: link为双方向时，如果上下行都制作了RTIC信息，则RTIC上下行等级应一致
  * 车厂RTIC上下行标识编辑
  */
 public class GLM53006 extends baseRule{
@@ -78,7 +77,7 @@ public class GLM53006 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql2);
 
 			if(resultList.size()>0){
-				String target = "[RD_LINK_RTIC," + rdLinkRtic.getLinkPid() + "]";
+				String target = "[RD_LINK," + rdLinkRtic.getLinkPid() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

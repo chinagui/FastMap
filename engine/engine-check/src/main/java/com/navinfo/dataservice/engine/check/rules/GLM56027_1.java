@@ -85,7 +85,7 @@ public class GLM56027_1 extends baseRule {
 		sb.append(" AND RLS.U_RECORD <>2");
 		sb.append(" AND RLS.SPEED_TYPE = 3 AND RLS.SPEED_DEPENDENT = 0");
 		String sql = sb.toString();
-		log.info("后检查GLM56027--sql:" + sql);
+		log.info("后检查GLM56027_1--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
@@ -102,7 +102,7 @@ public class GLM56027_1 extends baseRule {
 	 * @param rdNodeForm
 	 * @throws Exception 
 	 */
-	private boolean check(int pid) throws Exception {
+	/*private boolean check(int pid) throws Exception {
 		// TODO Auto-generated method stub
 		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
@@ -112,7 +112,7 @@ public class GLM56027_1 extends baseRule {
 		sb.append(" AND RLS.U_RECORD <>2");
 		sb.append(" AND RLS.SPEED_TYPE <> 3 AND RLS.SPEED_DEPENDENT <> 0");
 		String sql = sb.toString();
-		log.info("后检查GLM56026--sql:" + sql);
+		log.info("后检查GLM56027_1--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
@@ -122,5 +122,5 @@ public class GLM56027_1 extends baseRule {
 			flag = true;
 		}
 		return flag;
-	}
+	}*/
 }

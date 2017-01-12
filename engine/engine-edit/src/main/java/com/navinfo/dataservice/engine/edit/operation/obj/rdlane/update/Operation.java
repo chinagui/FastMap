@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
+import com.alibaba.druid.sql.visitor.functions.Char;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -18,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -26,6 +23,9 @@ import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.LineSegment;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author zhaokk 修改车道信息
@@ -38,7 +38,10 @@ public class Operation implements IOperation {
 
 	public Operation(Command command) {
 		this.command = command;
-
+	}
+	
+	public Operation(Connection conn) {
+		this.conn = conn;
 	}
 	
 	public Operation(Command command, Connection conn) {
@@ -48,9 +51,7 @@ public class Operation implements IOperation {
 		this.conn = conn;		
 	}
 
-
 	public Operation() {
-
 	}
 
 	@Override
@@ -74,7 +75,6 @@ public class Operation implements IOperation {
 	public void updateRdLane(Result result, JSONObject content, RdLane rdLane)
 			throws Exception {
 
-		
 			boolean isChanged = rdLane.fillChangeFields(
 					content);
 
@@ -85,7 +85,6 @@ public class Operation implements IOperation {
 			if (content.containsKey("conditions")) {
 				this.updateCondition(result, rdLane,
 						content.getJSONArray("conditions"));
-			
 		}
 	}
 
@@ -126,40 +125,10 @@ public class Operation implements IOperation {
 
 	}
 	
-	public Map<ObjStatus, List<RdLane>> autoHandleByRdBranch(RdBranch branch,
+	public Map<ObjStatus, List<RdLane>> autoHandleByRdBranch(RdBranch branch,String patternCode,
 			Result result) throws Exception {
 
 		Map<ObjStatus, List<RdLane>> rdLaneInfo = new HashMap<ObjStatus, List<RdLane>>();
-
-		RdBranchDetail detail = null;
-
-		String patternCode = null;
-
-		for (IRow row : branch.getDetails()) {
-
-			RdBranchDetail tmp = (RdBranchDetail) row;
-
-			if (tmp.getBranchType() != 0) {
-				continue;
-			}
-
-			patternCode = tmp.getPatternCode();
-
-			if (patternCode.equals("80261009")
-					|| patternCode.equals("80271009")
-					|| patternCode.equals("80361009")
-					|| patternCode.length() != 8) {
-
-				continue;
-			}
-
-			detail = tmp;
-		}
-
-		if (detail == null) {
-
-			return rdLaneInfo;
-		}
 
 		rdLaneInfo = handleRdLane(branch, patternCode, result);
 
@@ -174,8 +143,13 @@ public class Operation implements IOperation {
 
 		List<RdBranch> rdBranchs = rdBranchSelector.loadRdBranchByLinkNode(
 				targetBranch.getInLinkPid(), targetBranch.getNodePid(), true);
+		
+		if(patternCode.length()<8)
+		{
+			return rdLaneInfo;
+		}
 
-		String position78 = patternCode.substring(6, 7);
+		String position78 = patternCode.substring(6, 8);
 
 		List<Integer> linkPids = new ArrayList<Integer>();
 
@@ -199,7 +173,7 @@ public class Operation implements IOperation {
 		RdLink inLink = (RdLink) RdLinkSelector.loadById(
 				targetBranch.getInLinkPid(), true, true);
 		
-		int inCount = Integer.parseInt(patternCode.substring(4, 4));
+		int inCount = Integer.parseInt(patternCode.substring(4,5));
 
 		updateLane(inLink, targetBranch.getNodePid(), inCount, result);
 

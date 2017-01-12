@@ -39,7 +39,7 @@ public class Operation implements IOperation {
 
 		RdDirectroute directroute = new RdDirectroute();
 
-		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils();
+		CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
 
 		directroute.setPid(PidUtil.getInstance().applyRdDirectroutePid());
 
@@ -50,7 +50,7 @@ public class Operation implements IOperation {
 		directroute.setOutLinkPid(command.getOutLinkPid());
 
 		directroute.setRelationshipType(calLinkOperateUtils
-				.getRelationShipType(conn, command.getNodePid(),
+				.getRelationShipType(command.getNodePid(),
 						command.getOutLinkPid()));
 
 		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,

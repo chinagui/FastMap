@@ -801,13 +801,25 @@ public class IxPoiObj extends AbstractIxObj {
 		return null;
 	}
 	
-	/*
-	 * 官方原始中文名称
+	/**
+	 * 官方原始中文名称CHI
 	 */
 	public IxPoiName getOfficeOriginCHIName(){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.getNameClass()==1&&br.getNameType()==2&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
+	/**
+	 * 官方原始中文名称CHI/CHT
+	 */
+	public IxPoiName getOfficeOriginCHName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==1&&br.getNameType()==2&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
 				return br;}
 			}
 		return null;

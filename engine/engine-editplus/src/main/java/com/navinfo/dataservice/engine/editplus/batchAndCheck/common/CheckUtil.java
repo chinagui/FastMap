@@ -308,5 +308,69 @@ public class CheckUtil {
 		}
 		return mergeAddr;
 	}
+    /**
+     * 将地址拆分的18个字段拼音合成一个
+     * @param addr
+     * @return
+     * @throws Exception
+     */
+    public static String getMergerAddrPhonetic(IxPoiAddress addr) throws Exception {
+		String mergeAddrPhonetic = "";
+		if (addr.getProvince() != null) {
+			mergeAddrPhonetic += addr.getProvPhonetic();
+		}
+		if (addr.getCity() != null) {
+			mergeAddrPhonetic += addr.getCityPhonetic();
+		}
+		if (addr.getCounty() != null) {
+			mergeAddrPhonetic += addr.getCountyPhonetic();
+		}
+		if (addr.getTown() != null) {
+			mergeAddrPhonetic += addr.getTownPhonetic();
+		}
+		if (addr.getPlace() != null) {
+			mergeAddrPhonetic += addr.getPlacePhonetic();
+		}
+		if (addr.getStreet() != null) {
+			mergeAddrPhonetic += addr.getStreetPhonetic();
+		}
+		if (addr.getLandmark() != null) {
+			mergeAddrPhonetic += addr.getLandmarkPhonetic();
+		}
+		if (addr.getPrefix() != null) {
+			mergeAddrPhonetic += addr.getPrefixPhonetic();
+		}
+		if (addr.getHousenum() != null) {
+			mergeAddrPhonetic += addr.getHousenumPhonetic();
+		}
+		if (addr.getType() != null) {
+			mergeAddrPhonetic += addr.getTypePhonetic();
+		}
+		if (addr.getSubnum() != null) {
+			mergeAddrPhonetic += addr.getSubnumPhonetic();
+		}
+		if (addr.getSurfix() != null) {
+			mergeAddrPhonetic += addr.getSurfixPhonetic();
+		}
+		if (addr.getEstab() != null) {
+			mergeAddrPhonetic += addr.getEstabPhonetic();
+		}
+		if (addr.getBuilding() != null) {
+			mergeAddrPhonetic += addr.getBuildingPhonetic();
+		}
+		if (addr.getUnit() != null) {
+			mergeAddrPhonetic += addr.getUnitPhonetic();
+		}
+		if (addr.getFloor() != null) {
+			mergeAddrPhonetic += addr.getFloorPhonetic();
+		}
+		if (addr.getRoom() != null) {
+			mergeAddrPhonetic += addr.getRoomPhonetic();
+		}
+		if (addr.getAddons() != null) {
+			mergeAddrPhonetic += addr.getAddonsPhonetic();
+		}
+		return mergeAddrPhonetic;
+	}
     
 }

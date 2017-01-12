@@ -20,6 +20,7 @@ import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
@@ -79,10 +80,13 @@ public class OpTopo implements IOperation {
 	 */
 	private void createBreakNode(Result result) throws Exception {
 		// 组装打断点的参数
-		JSONObject geoPoint = new JSONObject();
-		geoPoint.put("type", "Point");
-		geoPoint.put("coordinates", new double[] { command.getPoint().getX(),
-				command.getPoint().getY() });
+		String meshes[] = MeshUtils.point2Meshes(command.getPoint().getX(), command.getPoint().getY());
+		
+		if(meshes.length == 4)
+		{
+			throw new Exception("不允许穿过角点创建RDLINK");
+		}
+		
 		// 如果打断点pid为0.需要重新创建点
 		if (command.getBreakNodePid() == 0) {
 			RdNode node = NodeOperateUtils.createRdNode(command.getPoint()

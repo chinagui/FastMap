@@ -5,9 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
 public class Check {
@@ -132,10 +132,10 @@ public class Check {
 
 	}
 
-	public void checkSameInAndOutLink(int inLinkPid, List<Integer> outLinkPids) throws Exception {
-		if(CollectionUtils.isNotEmpty(outLinkPids))
+	public void checkSameInAndOutLink(int inLinkPid, Map<Integer, String> infoMap) throws Exception {
+		if(infoMap.size()>0)
 		{
-			if (outLinkPids.contains(inLinkPid)) {
+			if (infoMap.containsKey(inLinkPid)) {
 				throwException("进入线和退出线不能相同");
 			}
 		}

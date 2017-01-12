@@ -15,7 +15,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgateName;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgatePassage;
-import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.tollgate.RdTollgateSelector;
 
 import net.sf.json.JSONArray;
@@ -54,9 +53,6 @@ public class Operation implements IOperation {
         boolean isChange = tollgate.fillChangeFields(content);
         if (isChange) {
             result.insertObject(tollgate, ObjStatus.UPDATE, tollgate.pid());
-            if (content.containsKey("passageNum")) {
-                this.caleRdlaneForRdTollgate(result, content.getInt("passageNum"));
-            }
         }
         result.setPrimaryPid(tollgate.pid());
 
@@ -170,24 +166,6 @@ public class Operation implements IOperation {
             result.insertObject(rdTollgate, ObjStatus.UPDATE, rdTollgate.pid());
         }
         return null;
-    }
-
-    /**
-     * 修改收费站维护车道信息
-     *
-     * @param result
-     * @param passageNum
-     * @throws Exception
-     */
-    private void caleRdlaneForRdTollgate(Result result, int passageNum) throws Exception {
-        if (passageNum > 0) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com
-                    .navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setTollgate(this.command.getTollgate());
-            operation.setPassageNum(passageNum);
-            operation.refRdLaneForTollgate(result);
-        }
     }
 
     /**

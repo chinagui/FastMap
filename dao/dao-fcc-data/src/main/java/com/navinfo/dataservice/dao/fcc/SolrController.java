@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.fcc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,7 @@ import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class SolrController {
 
@@ -307,6 +309,59 @@ public class SolrController {
 	/**
 	 * @Description:查询满足条件的tips
 	 * @param wkt
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-01-09 上午09:17:22
+	 */
+	public List<JSONObject> queryHasNotSubmitPreTipsByWktAndUser(String wkt,int user)
+			throws SolrServerException, IOException {
+		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+
+		StringBuilder builder = new StringBuilder("handler:"+user+" AND t_pStatus:0 AND s_sourceType:8001 ");
+
+		builder.append("AND wkt:\"intersects(");
+
+		builder.append(wkt);
+
+		builder.append(")\" ");
+
+		SolrQuery query = new SolrQuery();
+
+		query.set("q", builder.toString());
+
+		query.set("start", 0);
+
+		query.set("rows", fetchNum);
+
+		QueryResponse response = client.query(query);
+
+		SolrDocumentList sdList = response.getResults();
+
+		long totalNum = sdList.getNumFound();
+
+		if (totalNum <= fetchNum) {
+			for (int i = 0; i < totalNum; i++) {
+				SolrDocument doc = sdList.get(i);
+
+				JSONObject snapshot = JSONObject.fromObject(doc);
+
+				snapshots.add(snapshot);
+			}
+		} else {
+			// 暂先不处理
+		}
+
+		return snapshots;
+	}
+
+	
+	
+	
+	/**
+	 * @Description:查询满足条件的tips
+	 * @param wkt
 	 * @param stage
 	 * @param t_dStatus
 	 * @return
@@ -365,7 +420,7 @@ public class SolrController {
 	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
-
+		
 		String param = "wkt:\"intersects(" + wkt + ")\"";
 
 		String fq = "";
@@ -381,6 +436,9 @@ public class SolrController {
 				}
 			}
 		}
+		
+		//取掉fc预处理没有提交的tips
+		fq+=" AND -(t_pStatus:0 AND s_sourceType:8001)";
 
 		SolrQuery query = new SolrQuery();
 
@@ -392,7 +450,7 @@ public class SolrController {
 
 		query.set("rows", fetchNum);
 
-		query.addField("s_sourceType");
+		//query.addField("s_sourceType");
 
 		QueryResponse response = client.query(query);
 

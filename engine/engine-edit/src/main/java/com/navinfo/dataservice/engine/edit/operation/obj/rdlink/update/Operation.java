@@ -225,13 +225,11 @@ public class Operation implements IOperation {
                     result.insertObject(form, ObjStatus.INSERT, updateLink.pid());
                     insertCount++;
                     if (formJson.containsKey("formOfWay")) {
-
                         if (formJson.getInt("formOfWay") == 50) {
                             this.setForm(form);
                             this.setFormCrossFlag(1);
                         }
                     }
-
                 }
                 if (insertCount == 0 && deleteCount == updateLink.getForms().size()) {
                     // rd_link_form被清空时，自动添加一条
@@ -259,28 +257,10 @@ public class Operation implements IOperation {
                     RdLinkLimit limit = updateLink.limitMap.get(limitJson.getString("rowId"));
                     if (ObjStatus.DELETE.toString().equals(limitJson.getString("objStatus"))) {
                         result.insertObject(limit, ObjStatus.DELETE, updateLink.pid());
-                        this.refRdLaneForRdlinkLimit(result, limit, 2);
                     } else if (ObjStatus.UPDATE.toString().equals(limitJson.getString("objStatus"))) {
                         boolean isChanged = limit.fillChangeFields(limitJson);
                         if (isChanged) {
                             result.insertObject(limit, ObjStatus.UPDATE, updateLink.pid());
-                            if (limitJson.containsKey("type") && limit.getType() == 2) {
-                                limit.setLimitDir(1);
-                                this.refRdLaneForRdlinkLimit(result, limit, 2);
-                                continue;
-                            }
-                            RdLinkLimit linkLimit = new RdLinkLimit();
-                            linkLimit.copy(limit);
-                            if (limitJson.containsKey("vehicle")) {
-                                linkLimit.setVehicle(limitJson.getLong("vehicle"));
-                            }
-                            if (limitJson.containsKey("timeDmain")) {
-                                linkLimit.setTimeDomain(limitJson.getString("timeDmain"));
-                            }
-                            if (limitJson.containsKey("limitDir")) {
-                                linkLimit.setLimitDir(limitJson.getInt("limitDir"));
-                            }
-                            this.refRdLaneForRdlinkLimit(result, linkLimit, 1);
                         }
                     }
                 } else {
@@ -585,177 +565,10 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     private void updataRelationObj(Result result) throws Exception {
-        this.refRdLaneForRdlinkKind(result);
         this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
         // this.updateRdLane(result);
         // 信号灯维护
         this.updateRdTraffic(result);
-
-    }
-
-    /**
-     * 修改属性维护详细车道信息 但当一个link发生多信息变更时，按如下要素优先级顺序进行判断，当且仅当该变更要素为该对象的最高优先级要素且发生变更时，
-     * 才需要按该要素启动自动维护。 Level1：link种别变更 Level2：交叉口内link属性变更>link车道数变更。
-     * 说明：Level1影响详细车道有无有的判断
-     * ，当其不发生变更时，不影响level2的判断，当其发生变化时，如果变为无，则不用判断level2，如果变更为有
-     * ，则最终车道数依据level2进行内容进行判断。
-     * Level2为影响详细车道记录变更的要素优先级，level1不变更时，不考虑level1要素的影响。
-     * 其中，link车辆类型变更与link属性变更，
-     * 不会影响详细车道记录，仅会影响到详细车道中的车辆类型限制信息，故两者优先级如下：link车辆类型变更>link属性变更
-     * 当同一link的车道记录与车辆类型均需要变更维护时，先维护车道记录，再维护车道上的车辆类型限制信息。
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void updateRdLane(Result result) throws Exception {
-        // link 种类修改维护详细车道
-        this.refRdLaneForRdlinkKind(result);
-        if (this.getKindFlag() == 2) {
-            return;
-        }
-        // link 方向修改维护详细车道
-        this.refRdLaneForRdlinkDirect(result);
-        //
-        this.refRdLaneForRdLinkCross(result);
-        // 车道数变更维护车道信息
-        this.refRdLaneForRdLinkLaneNum(result);
-
-    }
-
-    /***
-     * 方向修改维护详细车道信息
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkDirect(Result result) throws Exception {
-        if (this.command.getUpdateContent().containsKey("direct")) {
-            int direct = this.command.getUpdateContent().getInt("direct");
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLinkDirect(direct);
-            operation.setLink(this.updateLink);
-            operation.caleRdlinesForRdlinkDirect(result);
-        }
-    }
-
-    /***
-     * 种类变更维护车道信息 zhaokk
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkKind(Result result) throws Exception {
-        if (this.command.getUpdateContent().containsKey("kind")) {
-            int kind = this.command.getUpdateContent().getInt("kind");
-            if (this.updateLink.getKind() != kind) {
-                com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                        conn);
-                operation.setLink(this.updateLink);
-                // 新增详细车道
-                if (this.updateLink.getKind() <= KIND && kind > KIND) {
-                    this.setKindFlag(1);
-                    operation.setKindFlag(1);
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-                // 删除详细车道
-                if (this.updateLink.getKind() > KIND && kind <= KIND) {
-                    this.setKindFlag(2);
-                    operation.setKindFlag(2);
-                    operation.caleRdLinesForRdLinkKind(result);
-                }
-            }
-        }
-    }
-
-    /***
-     * link车道数变更
-     * 
-     * @throws Exception
-     */
-
-    private void refRdLaneForRdLinkLaneNum(Result result) throws Exception {
-        JSONObject content = this.command.getUpdateContent();
-        int laneNum = 0;
-        int laneLeft = 0;
-        int laneRight = 0;
-        if (content.containsKey("laneNum") || content.containsKey("laneLeft") || content.containsKey("laneRight")) {
-            if (content.containsKey("laneNum")) {
-                laneNum = content.getInt("laneNum");
-            }
-            if (content.containsKey("laneLeft")) {
-                laneLeft = content.getInt("laneLeft");
-            }
-            if (content.containsKey("laneRight")) {
-                laneRight = content.getInt("laneNum");
-            }
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLink(this.updateLink);
-            operation.setLaneNum(laneNum);
-            operation.setLaneLeft(laneLeft);
-            operation.setLaneRight(laneRight);
-            operation.caleRdLinesForLaneNum(result);
-        }
-    }
-
-    /***
-     * 交叉口内link属性变更
-     * 
-     * @throws Exception
-     */
-    private void refRdLaneForRdLinkCross(Result result) throws Exception {
-        if (this.getForm() != null) {
-            if (this.getForm().getFormOfWay() == 50) {
-                com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                        conn);
-                operation.setFormCrossFlag(this.getFormCrossFlag());
-                operation.setLink(this.updateLink);
-                operation.caleRdLinesForRdLinkCross(result);
-
-            }
-        }
-    }
-
-    /***
-     * link形态表属性变更维护车道信息
-     * 
-     * @param result
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkForm(Result result, RdLinkForm form, int flag) throws Exception {
-        if (form.getFormOfWay() == 22 || form.getFormOfWay() == 20) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setForm(form);
-            // operation.setFormCrossFlag();
-            operation.setLink(this.updateLink);
-            operation.refRdLaneForRdlinkForm(result);
-        }
-
-    }
-
-    /****
-     * link车辆类型限制变更 1、 当link上添加或删除车辆类型限制时，或进行车辆类型或时间段变更时，需要进行详细车道维护 2、
-     * 当link上添加车辆类型及时间段时，则该link上对应方向上所有车道均添加该车辆类型限制及时间
-     * 3、当link上删除车辆类型及时间时，则该link上对应方向上所有车道均删除该车辆类型限制及时间
-     * 4、当link车辆类型或时间段变更时，则该link上对应该方向上所有车道更新为link上车辆类型及时间 说明：
-     * ①在进行车道车辆类型更新时，如果Rd_lane_Condtion中不存在记录的，需要先增加对应车道的记录，再添加车辆类型及时间
-     * ②在进行车道类型删除更新时，如果删除车辆类型或时间段后，RD_LANE_CONDTION中该车道的方向时间段及车辆类型均为空，
-     * 则该RD_LANE_CONDTION记录需要删除。
-     * 
-     * @throws Exception
-     */
-    private void refRdLaneForRdlinkLimit(Result result, RdLinkLimit limit, int flag) throws Exception {
-        if (limit.getType() == 2
-                && (limit.getLimitDir() == 1 || limit.getLimitDir() == 2 || limit.getLimitDir() == 3)) {
-            com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
-                    conn);
-            operation.setLimit(limit);
-            // operation.setFlag(flag);
-            operation.setLink(this.updateLink);
-            operation.refRdLaneForRdlinkLimit(result);
-        }
 
     }
 

@@ -38,6 +38,7 @@ check (SPLIT_FLAG in (0,1,2)) disable ,
    PROCESS_FLAG          NUMBER(1) default 0,
   constraint PK_RD_NAME primary key (NAME_ID)
 );
+CREATE INDEX IX_RD_NM_1  ON  RD_NAME(NAME_GROUPID);
 
 /* GDB+ POI EDIT PART */
 CREATE TABLE POI_EDIT_STATUS(

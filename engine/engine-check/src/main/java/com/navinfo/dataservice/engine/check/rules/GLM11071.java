@@ -8,24 +8,20 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-import com.navinfo.dataservice.engine.check.helper.GeoHelper;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
-/*
- * BRANCH_CHECK_SAME_LANGCODE	同一组分歧名称中，不能存在两条语言代码相同的名称
+
+/**
+ * @ClassName GLM11071
+ * @author luyao
+ * @date 2017年1月12日
+ * @Description TODO
+ * 进入线相同的线线方面分歧名称不允许重复（普通道路方面名称的不查）；
+ * 分歧名称信息编辑 服务端后检查:
  */
-
-
-public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
+public class GLM11071 extends baseRule {
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -85,8 +81,8 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 	 */
 	private void check(String branchPid) throws Exception {
 		
-		String strFormat = "SELECT DISTINCT RB.BRANCH_PID FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN1,RD_BRANCH_NAME RBN2 WHERE RB.BRANCH_PID = {0} AND RB.BRANCH_PID = RBD.BRANCH_PID AND RBD.DETAIL_ID = RBN1.DETAIL_ID AND RBD.DETAIL_ID = RBN2.DETAIL_ID AND RBN1.NAME_GROUPID=RBN2.NAME_GROUPID AND RBN1.NAME_ID<>RBN2.NAME_ID AND RBN1.LANG_CODE=RBN2.LANG_CODE AND RB.U_RECORD != 2 AND RBD.U_RECORD != 2 AND RBN1.U_RECORD != 2 AND RBN2.U_RECORD != 2";
-		
+		String strFormat = "SELECT DISTINCT B.BRANCH_PID FROM RD_BRANCH B, RD_BRANCH_DETAIL D, RD_BRANCH_NAME N, RD_BRANCH B1, RD_BRANCH_DETAIL D1, RD_BRANCH_NAME N1, RD_LINK L1, RD_LINK L2, RD_LINK L3 WHERE B.BRANCH_PID = {0} AND B.BRANCH_PID = D.BRANCH_PID AND D.DETAIL_ID = N.DETAIL_ID AND B.RELATIONSHIP_TYPE = 2 AND D.BRANCH_TYPE = 1 AND B1.BRANCH_PID = D1.BRANCH_PID AND D1.DETAIL_ID = N1.DETAIL_ID AND B1.RELATIONSHIP_TYPE = 2 AND D1.BRANCH_TYPE = 1 AND B.IN_LINK_PID = B1.IN_LINK_PID AND B.BRANCH_PID <> B1.BRANCH_PID AND N.NAME = N1.NAME AND L1.LINK_PID = B.IN_LINK_PID AND L2.LINK_PID = B.OUT_LINK_PID AND L3.LINK_PID = B1.OUT_LINK_PID AND L1.KIND IN (1, 2) AND L2.KIND IN (1, 2) AND L3.KIND IN (1, 2) AND B.U_RECORD <> 2 AND D.U_RECORD <> 2 AND N.U_RECORD <> 2 AND B1.U_RECORD <> 2 AND D1.U_RECORD <> 2 AND N1.U_RECORD <> 2 AND L1.U_RECORD <> 2 AND L2.U_RECORD <> 2 AND L3.U_RECORD <> 2 ";
+
 		String sql = MessageFormat.format(strFormat, branchPid);
 
 		DatabaseOperator getObj = new DatabaseOperator();
@@ -97,7 +93,7 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 
 		if (!resultList.isEmpty()) {
 			String target = "[RD_BRANCH," + branchPid + "]";
-			
+
 			this.setCheckResult("", target, 0);
 		}
 	}

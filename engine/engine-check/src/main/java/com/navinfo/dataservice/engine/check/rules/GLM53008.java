@@ -16,7 +16,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @author songdongyan
  * @date 2017年1月9日
  * @Description: RTIC等级为高速的link必须是高速种别
- * 车厂RTIC等级编辑
+ * 车厂RTIC等级编辑,后来这个触发时机删掉了
  * 道路种别编辑
  */
 public class GLM53008 extends baseRule{
@@ -36,13 +36,13 @@ public class GLM53008 extends baseRule{
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
-			//新增/修改RdLinkRtic
-			if(obj instanceof RdLinkRtic ){
-				RdLinkRtic rdLinkRtic=(RdLinkRtic) obj;
-				checkRdLinkRtic(rdLinkRtic);
-			}
+//			//新增/修改RdLinkRtic
+//			if(obj instanceof RdLinkRtic ){
+//				RdLinkRtic rdLinkRtic=(RdLinkRtic) obj;
+//				checkRdLinkRtic(rdLinkRtic);
+//			}
 			//道路方向编辑
-			else if(obj instanceof RdLink ){
+			if(obj instanceof RdLink ){
 				RdLink rdLink=(RdLink) obj;
 				checkRdLink(rdLink);
 			}

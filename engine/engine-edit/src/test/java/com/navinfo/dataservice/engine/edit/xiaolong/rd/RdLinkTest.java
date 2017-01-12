@@ -16,9 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.utils.TableNameFactory;
@@ -95,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.19535446166992,40.54250421360651],[116.19640588760376,40.54186011563341],[116.19714617729187,40.54196610686484],[116.19754314422607,40.541436149030645]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44296526908875,40.211736104708834],[116.44078731536865,40.2108594240999]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

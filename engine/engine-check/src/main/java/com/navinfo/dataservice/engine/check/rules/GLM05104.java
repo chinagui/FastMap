@@ -8,24 +8,21 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
-import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-import com.navinfo.dataservice.engine.check.helper.GeoHelper;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
-/*
- * BRANCH_CHECK_SAME_LANGCODE	同一组分歧名称中，不能存在两条语言代码相同的名称
+/**
+ * @ClassName GLM05031
+ * @author luyao
+ * @date 2017年1月12日
+ * @Description TODO
+ * 检查原则：
+1.汉字数字“〇”名称中包含阿拉伯 数字“0”，如二0三北路应为二〇三北路
+2.阿拉伯 数字“0”名称中包含汉字数字“〇”，如G1〇9应为G109
+ *  分歧名称信息编辑 服务端后检查
  */
-
-
-public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
+public class GLM05104 extends baseRule {
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -84,21 +81,29 @@ public class BRANCH_CHECK_SAME_LANGCODE extends baseRule {
 	 * @throws Exception
 	 */
 	private void check(String branchPid) throws Exception {
-		
-		String strFormat = "SELECT DISTINCT RB.BRANCH_PID FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN1,RD_BRANCH_NAME RBN2 WHERE RB.BRANCH_PID = {0} AND RB.BRANCH_PID = RBD.BRANCH_PID AND RBD.DETAIL_ID = RBN1.DETAIL_ID AND RBD.DETAIL_ID = RBN2.DETAIL_ID AND RBN1.NAME_GROUPID=RBN2.NAME_GROUPID AND RBN1.NAME_ID<>RBN2.NAME_ID AND RBN1.LANG_CODE=RBN2.LANG_CODE AND RB.U_RECORD != 2 AND RBD.U_RECORD != 2 AND RBN1.U_RECORD != 2 AND RBN2.U_RECORD != 2";
-		
-		String sql = MessageFormat.format(strFormat, branchPid);
 
+		String strFormat = "SELECT 'log1' log FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN WHERE RB.BRANCH_PID = RDBRANCH_PID AND RB.BRANCH_PID = RBD.BRANCH_PID AND RBD.DETAIL_ID = RBN.DETAIL_ID AND ((REGEXP_LIKE(RBN.NAME, '[〇一二三四五六七八九]+０') OR REGEXP_LIKE(RBN.NAME, '０[〇一二三四五六七八九]+'))) AND RB.U_RECORD <> 2 AND RBD.U_RECORD <> 2 AND RBN.U_RECORD <> 2 UNION SELECT 'log2' log FROM RD_BRANCH RB, RD_BRANCH_DETAIL RBD, RD_BRANCH_NAME RBN WHERE RB.BRANCH_PID =  RDBRANCH_PID  AND RB.BRANCH_PID = RBD.BRANCH_PID AND RBD.DETAIL_ID = RBN.DETAIL_ID AND ((REGEXP_LIKE(RBN.NAME, '[０１２３４５６７８９]+〇') OR REGEXP_LIKE(RBN.NAME, '〇[０１２３４５６７８９]+'))) AND RB.U_RECORD <> 2 AND RBD.U_RECORD <> 2 AND RBN.U_RECORD <> 2";
+
+		String sql  =strFormat.replaceAll("RDBRANCH_PID", branchPid);
+		
 		DatabaseOperator getObj = new DatabaseOperator();
 
 		List<Object> resultList = new ArrayList<Object>();
 
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if (!resultList.isEmpty()) {
+		for (Object obj : resultList) {
 			String target = "[RD_BRANCH," + branchPid + "]";
-			
-			this.setCheckResult("", target, 0);
+
+			String log = String.valueOf(obj);
+
+			if (log.equals("log1")) {
+				this.setCheckResult("", target, 0,
+						"分歧名称存在汉字数字“〇”名称中包含阿拉伯 数字“0”");
+			} else if (log.equals("log2")) {
+				this.setCheckResult("", target, 0,
+						"分歧名称中存在阿拉伯 数字“0”名称中包含汉字数字“〇”");
+			}
 		}
 	}
 }

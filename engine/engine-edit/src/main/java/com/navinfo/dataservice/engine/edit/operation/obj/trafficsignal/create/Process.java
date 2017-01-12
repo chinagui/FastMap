@@ -27,7 +27,7 @@ public class Process extends AbstractProcess<Command> {
 		check.checkHasCross(crossNode);
 
 		RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
-
+		
 		RdCross cross = (RdCross) crossSelector.loadById(crossNode.parentPKValue(), true);
 
 		check.checkHasTrafficSignal(cross,nodePid);

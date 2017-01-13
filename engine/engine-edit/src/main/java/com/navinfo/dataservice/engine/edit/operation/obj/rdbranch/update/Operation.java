@@ -78,7 +78,7 @@ public class Operation implements IOperation {
 					}
 					else
 					{
-						result.setPrimaryPid(branch.pid());
+						result.setPrimaryPid(command.getPid());
 					}
 				}
 			}

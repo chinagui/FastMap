@@ -60,6 +60,44 @@ public class GLM26017 extends baseRule {
 			} else if (obj instanceof RdVoiceguide) {// 语音引导
 				RdVoiceguide guideObj = (RdVoiceguide) obj;
 				checkRdVoiceguide(guideObj);
+			}else if (obj instanceof RdVoiceguideDetail) {// 修改语音引导
+				RdVoiceguideDetail rdVoiceguideDetail = (RdVoiceguideDetail) obj;
+				checkRdVoiceguideDetail(rdVoiceguideDetail);
+			}
+		}
+	}
+
+	/**
+	 * @author Han Shaoming
+	 * @param rdVoiceguideDetail
+	 * @throws Exception 
+	 */
+	private void checkRdVoiceguideDetail(RdVoiceguideDetail rdVoiceguideDetail) throws Exception {
+		// TODO Auto-generated method stub
+		if(rdVoiceguideDetail.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdVoiceguideDetail.changedFields();
+			if(!changedFields.isEmpty()){
+				//修改语音引导
+				if(changedFields.containsKey("outLinkPid")){
+					int outLinkPid = Integer.parseInt(rdVoiceguideDetail.changedFields().get("outLinkPid").toString());
+					StringBuilder sb = new StringBuilder();
+					 
+					sb.append("SELECT DISTINCT RV.PID FROM RD_VOICEGUIDE RV,RD_LINK RL");
+					sb.append(" WHERE RL.LINK_PID = "+outLinkPid +" AND RV.PID = "+rdVoiceguideDetail.getVoiceguidePid());
+					sb.append(" AND (RV.NODE_PID = RL.S_NODE_PID OR RV.NODE_PID = RL.E_NODE_PID)");
+					sb.append(" AND RV.U_RECORD <>2 AND RL.U_RECORD <>2 AND NOT EXISTS");
+					sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RV.NODE_PID AND CN.U_RECORD <> 2)");
+					String sql = sb.toString();
+					log.info("修改语音引导前检查GLM26017--sql:" + sql);
+
+					DatabaseOperator getObj = new DatabaseOperator();
+					List<Object> resultList = new ArrayList<Object>();
+					resultList = getObj.exeSelect(this.getConn(), sql);
+					if (!resultList.isEmpty()) {
+						String target = "[RD_VOICEGUIDE," + rdVoiceguideDetail.getVoiceguidePid() + "]";
+						this.setCheckResult("", target, 0,"如果语音引导进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
+					}
+				}
 			}
 		}
 	}
@@ -113,11 +151,11 @@ public class GLM26017 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void checkRdVoiceguide(RdVoiceguide guideObj) throws Exception {
-		//Map<String, Object> changedFields = guideObj.changedFields();
+		Map<String, Object> changedFields = guideObj.changedFields();
 		// 新增执行该检查
-		/*if (changedFields != null && !changedFields.isEmpty()) {
+		if (changedFields != null && !changedFields.isEmpty()) {
 			return;
-		}*/
+		}
 		List<Integer> outLinkPidList = new ArrayList<Integer>();
 		for (IRow detail : guideObj.getDetails()) {
 			outLinkPidList.add(((RdVoiceguideDetail) detail)

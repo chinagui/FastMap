@@ -408,7 +408,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
 		} finally {
-			DbUtils.commitAndCloseQuietly(connMeta);
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
 		}
     }
     /**
@@ -431,7 +432,8 @@ public class CheckUtil {
     	} catch (Exception e) {
     		throw e;
 		} finally {
-			DbUtils.commitAndCloseQuietly(connRegion);
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
 		}
     }
     

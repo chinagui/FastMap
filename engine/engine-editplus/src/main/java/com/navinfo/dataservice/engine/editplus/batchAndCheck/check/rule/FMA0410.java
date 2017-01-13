@@ -24,7 +24,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  *	② 名称以“【数字】+分店|店|连锁店（連鎖店）”结尾；
  *	③ 名称以“ＮＯ．【数字（可有汉字或全角符号）】+店|分店|号店（號店）|门店（門店）|店”结尾；
  *	    举例：ＮＯ．３３１店
- *	④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”
+ *	④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”、“ＮＯ：”
  *	提示：POI分店名称统一
  *
  */
@@ -38,7 +38,7 @@ public class FMA0410 extends BasicCheckRule {
 		boolean isChanged = false;
 		IxPoiName standardName = null;
 		for (IxPoiName name:names) {
-			if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE) || poi.hisOldValueContains(IxPoi.KIND_CODE)) {
+			if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE)) {
 				isChanged = true;
 			}
 			if (name.getNameClass()==1 && name.getNameType()==1 && name.getLangCode().equals("CHI") || name.getLangCode().equals("CHT")) {
@@ -78,7 +78,7 @@ public class FMA0410 extends BasicCheckRule {
 			}
 			
 			// ④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”
-			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ)+．+.*");
+			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ|ＮＯ:)+．+.*");
 			Matcher m6 = p6.matcher(standardName.getName());
 
 			if (m6.matches()) {

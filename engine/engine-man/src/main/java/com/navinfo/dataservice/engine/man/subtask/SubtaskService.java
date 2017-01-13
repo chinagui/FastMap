@@ -655,7 +655,10 @@ public class SubtaskService {
 					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2web,1手持端消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务关闭";
 						msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
 					}else if(subtask.getStage()== 1){
@@ -683,7 +686,7 @@ public class SubtaskService {
 							message.setMsgParam(msgParam.toString());
 							message.setPushUser(userInfo.getUserRealName());
 							
-							MessageService.getInstance().push(message, 0);
+							MessageService.getInstance().push(message, pushtype);
 							//发邮件
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
@@ -872,7 +875,10 @@ public class SubtaskService {
 					 * 新增采集/日编/月编子任务：XXX(子任务名称)，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2给web发消息，1给手持端发消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务发布";
 						msgContent = "新增采集子任务:" + subtask.getName() + ",请关注";
 					}else if(subtask.getStage()== 1){
@@ -901,7 +907,7 @@ public class SubtaskService {
 					message.setMsgParam(msgParam.toString());
 					message.setPushUser(pushUserName);
 					
-					MessageService.getInstance().push(message, 1);
+					MessageService.getInstance().push(message, pushtype);
 					success++;
 				} catch (Exception e) {
 					// TODO: handle exception
@@ -1196,7 +1202,10 @@ public class SubtaskService {
 					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2web,1手持端消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务关闭";
 						msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
 					}else if(subtask.getStage()== 1){
@@ -1224,7 +1233,7 @@ public class SubtaskService {
 							message.setMsgParam(msgParam.toString());
 							message.setPushUser(userInfo.getUserRealName());
 							
-							MessageService.getInstance().push(message, 0);
+							MessageService.getInstance().push(message, pushtype);
 							//发邮件
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";

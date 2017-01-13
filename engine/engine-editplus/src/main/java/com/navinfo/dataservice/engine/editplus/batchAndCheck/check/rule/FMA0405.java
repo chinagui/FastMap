@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
@@ -13,6 +17,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNameckUtil;
 /**
  *检查条件：
@@ -22,18 +27,25 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNamec
  *检查原则：
  *如果种别代码为190100、190101、190102、190103、190104、190105、190106、190107、190108、190109、190110、190111、190112、190500、
  *190501、190502、1190301、190200、190201、190202、190203、190204、230103、230111、230114、230105、230126、230127、150101、
- *230208、230128，官方标准化简体(CHI)中文名称与官方原始简体(CHI)中文不一致的POI全部报出。
+ *（chain值为：6003、6045、6002、6001、6000、6028、6025、602C、6047、6020、6027、600A）、230208、230128、230210（有父子关系并且父分类是230103或230126的记录），官方标准化简体(CHI)中文名称与官方原始简体(CHI)中文不一致的POI全部报出。
  *提示：有简化的POI名称统一：“xxxx” （PRE_KEY）应简化为“xxxx” （RESULT_KEY）
  *备注：如果原始名称在SC_POINT_NAMECK中TYPE=“1”的“PRE_KEY”中能查到，则对应的简化名称在“RESULT_KEY”中；
  *如果原始名称在在SC_POINT_NAMECK中TYPE=“1”的“PRE_KEY”中查不到，则直接报有化简的POI名称统一;
  * @author gaopengrong
  */
 public class FMA0405 extends BasicCheckRule {
+	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
 	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		parentMap=IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
+		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, null, false);
+		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 
 	@Override
@@ -43,6 +55,21 @@ public class FMA0405 extends BasicCheckRule {
 			if (!isCheck(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String newKindCode=poi.getKindCode();
+			String newCStr=poi.getChain();
+			
+			String[] chainArr = new String[]{"6003","6045","6002","6001","6000","6028","6025","602C","6047","6020","6027","600A"};
+			List<String> chainList  = Arrays.asList(chainArr);
+			
+			//获取父
+			boolean poiParentFlag = false;
+			if(newKindCode.equals("230210")&&(parentMap.containsKey(poi.getPid()))){
+				Long parentPid=parentMap.get(poi.getPid());
+				Map<Long, BasicObj> poiMap = myReferDataMap.get(ObjectName.IX_POI);
+				IxPoiObj parentObj = (IxPoiObj) poiMap.get(parentPid);
+				IxPoi parentPoi=(IxPoi) parentObj.getMainrow();
+				if(parentPoi.getKindCode().equals("230103")||parentPoi.getKindCode().equals("230126")){poiParentFlag = true;}
+			}
+			
 			if(newKindCode.equals("190100") ||newKindCode.equals("190100")
 					||newKindCode.equals("190101")||newKindCode.equals("190102")||newKindCode.equals("190103")
 					||newKindCode.equals("190104")||newKindCode.equals("190105")||newKindCode.equals("190106")
@@ -53,7 +80,15 @@ public class FMA0405 extends BasicCheckRule {
 					||newKindCode.equals("190203")||newKindCode.equals("190204")||newKindCode.equals("230103")
 					||newKindCode.equals("230111")||newKindCode.equals("230114")||newKindCode.equals("230105")
 					||newKindCode.equals("230126")||newKindCode.equals("230127")||newKindCode.equals("230208")
-					||newKindCode.equals("230128")||newKindCode.equals("190501")){
+					||newKindCode.equals("230128")||newKindCode.equals("190501")||newKindCode.equals("230210")){
+				
+				if(newKindCode.equals("150101")){
+					if(!chainList.contains(newCStr)){return;}
+				}
+				if(newKindCode.equals("230210")){
+					if(!poiParentFlag){return;}
+				}
+				
 				//取官方原始英中文
 				IxPoiName originName=poiObj.getOfficeOriginCHIName();
 				String originNameStr=originName.getName();

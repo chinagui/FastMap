@@ -8,6 +8,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -75,12 +76,25 @@ public class GLM14007 extends baseRule {
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//道路属性编辑,触发检查
-		Map<String, Object> changedFields = rdLinkForm.changedFields();
-		int formOfWay = 1;
-		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			formOfWay = (int) changedFields.get("formOfWay");
+		boolean checkFlag = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkForm.changedFields();
+			if(!changedFields.isEmpty()){
+				//道路属性编辑
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 50){
+					checkFlag = true;
+					}
+				}
+			}
+		}else if (rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay == 50){
+				checkFlag = true;
+			}
 		}
-		if(formOfWay == 50){
+		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
 			
 			sb.append("SELECT DR.PID FROM RD_DIRECTROUTE DR");

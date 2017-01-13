@@ -111,28 +111,27 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdVoiceguideDetail(RdVoiceguideDetail rdVoiceguideDetail) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdVoiceguideDetail.changedFields();
-		int relationshipType = 1;
 		if(changedFields != null && changedFields.containsKey("relationshipType")){
-			relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
-		}
-		if(relationshipType == 1){
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT V.PID FROM RD_VOICEGUIDE V, RD_VOICEGUIDE_DETAIL VD");
-			sb.append(" WHERE V.PID = VD.VOICEGUIDE_PID AND V.U_RECORD <> 2");
-			sb.append(" AND VD.U_RECORD <> 2 AND V.PID = "+rdVoiceguideDetail.getVoiceguidePid()+" AND NOT EXISTS");
-			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = V.NODE_PID AND CN.U_RECORD <> 2)");
-			
-			String sql = sb.toString();
-			log.info("RdVoiceguide检查GLM26017_1--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				String target = "[RD_VOICEGUIDE," + resultList.get(0).toString() + "]";
-				this.setCheckResult("", target, 0,"关系类型为“路口”的语音引导关系信息，应制作到登记了路口的点上");
+			int relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+			if(relationshipType == 1){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT V.PID FROM RD_VOICEGUIDE V, RD_VOICEGUIDE_DETAIL VD");
+				sb.append(" WHERE V.PID = VD.VOICEGUIDE_PID AND V.U_RECORD <> 2");
+				sb.append(" AND VD.U_RECORD <> 2 AND V.PID = "+rdVoiceguideDetail.getVoiceguidePid()+" AND NOT EXISTS");
+				sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = V.NODE_PID AND CN.U_RECORD <> 2)");
+				
+				String sql = sb.toString();
+				log.info("RdVoiceguide检查GLM26017_1--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_VOICEGUIDE," + resultList.get(0).toString() + "]";
+					this.setCheckResult("", target, 0,"关系类型为“路口”的语音引导关系信息，应制作到登记了路口的点上");
+				}
 			}
 		}
 	}
@@ -145,28 +144,27 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdDirectroute.changedFields();
-		int relationshipType = 1;
 		if(changedFields != null && changedFields.containsKey("relationshipType")){
-			relationshipType = (int) changedFields.get("relationshipType");
-		}
-		if(relationshipType == 1){
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT D.PID FROM RD_DIRECTROUTE D");
-			sb.append(" WHERE D.U_RECORD <> 2");
-			sb.append(" AND D.PID="+rdDirectroute.getPid()+" AND NOT EXISTS");
-			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = D.NODE_PID AND CN.U_RECORD <> 2)");
-			
-			String sql = sb.toString();
-			log.info("RdDirectroute检查GLM26017_1--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				String target = "[RD_DIRECTROUTE," + rdDirectroute.getPid() + "]";
-				this.setCheckResult("", target, 0,"关系类型为“路口”的顺行关系信息，应制作到登记了路口的点上");
+			int relationshipType = (int) changedFields.get("relationshipType");
+			if(relationshipType == 1){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT D.PID FROM RD_DIRECTROUTE D");
+				sb.append(" WHERE D.U_RECORD <> 2");
+				sb.append(" AND D.PID="+rdDirectroute.getPid()+" AND NOT EXISTS");
+				sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = D.NODE_PID AND CN.U_RECORD <> 2)");
+				
+				String sql = sb.toString();
+				log.info("RdDirectroute检查GLM26017_1--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_DIRECTROUTE," + rdDirectroute.getPid() + "]";
+					this.setCheckResult("", target, 0,"关系类型为“路口”的顺行关系信息，应制作到登记了路口的点上");
+				}
 			}
 		}
 	}
@@ -179,30 +177,29 @@ public class GLM26017_1 extends baseRule {
 	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLaneTopology.changedFields();
-		int relationshipType = 1;
 		if(changedFields != null && changedFields.containsKey("relationshipType")){
-			relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
-		}
-		if(relationshipType == 1){
-			//修改车信,触发检查
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT C.PID FROM RD_LANE_CONNEXITY C, RD_LANE_TOPOLOGY T");
-			sb.append(" WHERE C.PID = T.CONNEXITY_PID AND C.U_RECORD <>2");
-			sb.append(" AND T.U_RECORD <>2 AND T.TOPOLOGY_ID="+rdLaneTopology.getPid());
-			sb.append(" AND NOT EXISTS");
-			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = C.NODE_PID AND CN.U_RECORD <> 2)");
-			
-			String sql = sb.toString();
-			log.info("RdLaneConnexity后检查GLM26017_1--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				String target = "[RD_LANE_CONNEXITY," + resultList.get(0).toString() + "]";
-				this.setCheckResult("", target, 0,"关系类型为“路口”的车信关系信息，应制作到登记了路口的点上");
+			int relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
+			if(relationshipType == 1){
+				//修改车信,触发检查
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT C.PID FROM RD_LANE_CONNEXITY C, RD_LANE_TOPOLOGY T");
+				sb.append(" WHERE C.PID = T.CONNEXITY_PID AND C.U_RECORD <>2");
+				sb.append(" AND T.U_RECORD <>2 AND T.TOPOLOGY_ID="+rdLaneTopology.getPid());
+				sb.append(" AND NOT EXISTS");
+				sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = C.NODE_PID AND CN.U_RECORD <> 2)");
+				
+				String sql = sb.toString();
+				log.info("RdLaneConnexity后检查GLM26017_1--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_LANE_CONNEXITY," + resultList.get(0).toString() + "]";
+					this.setCheckResult("", target, 0,"关系类型为“路口”的车信关系信息，应制作到登记了路口的点上");
+				}
 			}
 		}
 	}

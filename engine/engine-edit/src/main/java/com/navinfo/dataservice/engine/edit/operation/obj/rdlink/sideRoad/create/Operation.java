@@ -832,6 +832,8 @@ public class Operation implements IOperation {
 
 			limit.setLinkPid(link.getPid());
 
+			limit.setProcessFlag(2);
+			
 			link.getLimits().add(limit);
 
 			// 路径采纳：维护默认值：“作业中”
@@ -1010,10 +1012,10 @@ public class Operation implements IOperation {
 
 		sameNames = nameMap.get(linkPids.get(0));
 
-		if (linkPids.size() == 1) {
+		/*if (linkPids.size() == 1) {
 
 			return sameNames;
-		}
+		}*/
 
 		for (int i = 1; i < linkPids.size(); i++) {
 

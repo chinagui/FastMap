@@ -325,58 +325,58 @@ public class CheckUtil {
      */
     public static String getMergerAddrPhonetic(IxPoiAddress addr) throws Exception {
 		String mergeAddrPhonetic = "";
-		if (addr.getProvince() != null) {
+		if (addr.getProvPhonetic() != null) {
 			mergeAddrPhonetic += addr.getProvPhonetic();
 		}
-		if (addr.getCity() != null) {
+		if (addr.getCityPhonetic() != null) {
 			mergeAddrPhonetic += addr.getCityPhonetic();
 		}
-		if (addr.getCounty() != null) {
+		if (addr.getCountyPhonetic() != null) {
 			mergeAddrPhonetic += addr.getCountyPhonetic();
 		}
-		if (addr.getTown() != null) {
+		if (addr.getTownPhonetic() != null) {
 			mergeAddrPhonetic += addr.getTownPhonetic();
 		}
-		if (addr.getPlace() != null) {
+		if (addr.getPlacePhonetic() != null) {
 			mergeAddrPhonetic += addr.getPlacePhonetic();
 		}
-		if (addr.getStreet() != null) {
+		if (addr.getStreetPhonetic() != null) {
 			mergeAddrPhonetic += addr.getStreetPhonetic();
 		}
-		if (addr.getLandmark() != null) {
+		if (addr.getLandmarkPhonetic() != null) {
 			mergeAddrPhonetic += addr.getLandmarkPhonetic();
 		}
-		if (addr.getPrefix() != null) {
+		if (addr.getPrefixPhonetic() != null) {
 			mergeAddrPhonetic += addr.getPrefixPhonetic();
 		}
-		if (addr.getHousenum() != null) {
+		if (addr.getHousenumPhonetic() != null) {
 			mergeAddrPhonetic += addr.getHousenumPhonetic();
 		}
-		if (addr.getType() != null) {
+		if (addr.getTypePhonetic() != null) {
 			mergeAddrPhonetic += addr.getTypePhonetic();
 		}
-		if (addr.getSubnum() != null) {
+		if (addr.getSubnumPhonetic() != null) {
 			mergeAddrPhonetic += addr.getSubnumPhonetic();
 		}
-		if (addr.getSurfix() != null) {
+		if (addr.getSurfixPhonetic() != null) {
 			mergeAddrPhonetic += addr.getSurfixPhonetic();
 		}
-		if (addr.getEstab() != null) {
+		if (addr.getEstabPhonetic() != null) {
 			mergeAddrPhonetic += addr.getEstabPhonetic();
 		}
-		if (addr.getBuilding() != null) {
+		if (addr.getBuildingPhonetic() != null) {
 			mergeAddrPhonetic += addr.getBuildingPhonetic();
 		}
-		if (addr.getUnit() != null) {
+		if (addr.getUnitPhonetic() != null) {
 			mergeAddrPhonetic += addr.getUnitPhonetic();
 		}
-		if (addr.getFloor() != null) {
+		if (addr.getFloorPhonetic() != null) {
 			mergeAddrPhonetic += addr.getFloorPhonetic();
 		}
-		if (addr.getRoom() != null) {
+		if (addr.getRoomPhonetic() != null) {
 			mergeAddrPhonetic += addr.getRoomPhonetic();
 		}
-		if (addr.getAddons() != null) {
+		if (addr.getAddonsPhonetic() != null) {
 			mergeAddrPhonetic += addr.getAddonsPhonetic();
 		}
 		return mergeAddrPhonetic;

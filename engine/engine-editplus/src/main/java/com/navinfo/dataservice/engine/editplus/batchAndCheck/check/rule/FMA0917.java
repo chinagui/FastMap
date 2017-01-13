@@ -46,7 +46,7 @@ public class FMA0917 extends BasicCheckRule {
 			for (int i=0;i<mergeAddrPhonetic.length();i++) {
 				char character = mergeAddrPhonetic.charAt(i);
 				if (!charList.contains(character)) {
-					errorStr += character;
+					errorStr = character+",";
 				}
 			}
 		}

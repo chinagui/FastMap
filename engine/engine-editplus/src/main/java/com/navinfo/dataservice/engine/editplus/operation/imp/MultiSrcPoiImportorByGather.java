@@ -232,7 +232,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-				ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+				ixPoi.setGeometry(geometry);
 				if (jo.getJSONObject("guide").size() > 0) {
 					ixPoi.setXGuide(jo.getJSONObject("guide").getDouble("longitude"));
 					ixPoi.setYGuide(jo.getJSONObject("guide").getDouble("latitude"));

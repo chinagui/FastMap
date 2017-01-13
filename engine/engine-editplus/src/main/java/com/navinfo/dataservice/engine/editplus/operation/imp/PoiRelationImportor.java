@@ -156,6 +156,8 @@ public class PoiRelationImportor extends AbstractOperation{
 	private void handleSamepoiRelation(Connection conn, Map<Long, Long> pidSamePoiPid,List<Long> emptyFidPids) throws ServiceException {
 		//遍历childPidParentPid,维护关系
 				try{
+					//已经维护完了同一关系的 pid 
+					List<Long> finishPid = new ArrayList<Long>();
 					for(Map.Entry<Long,Long> entry:pidSamePoiPid.entrySet()){
 						long thisPid = entry.getKey();
 						long thisSamePid = entry.getValue();
@@ -194,19 +196,27 @@ public class PoiRelationImportor extends AbstractOperation{
 										log.info("解除上传的same poi 的同一关系 :thisSamePid :" + thisSamePid );
 										thisSamePidObj.deleteObj();//如果上传的poi 存在原始 同组poi ,解除上传的poi 的同一关系
 									}
-									log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
-									IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
-									 long groupId = obj.objPid();
-									 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
-									 	ixSamepoiPart.setGroupId(groupId);
-									 	ixSamepoiPart.setPoiPid(thisPid);
-									 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
-									 	ixSamepoiPartOther.setGroupId(groupId);
-									 	ixSamepoiPartOther.setPoiPid(pidSamePoiPid.get(thisSamePid));
-									//**将当前 poi的新增的 ix_samepoi 存入 result
-									 if(!result.isObjExist(obj)){
-											result.putObj(obj);
+									if(finishPid.contains(thisPid)){
+										log.info("已经维护了同一关系，不在维护，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+									}else{
+										log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+										IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
+										 long groupId = obj.objPid();
+										 System.out.println("obj :"+obj+", groupId:"+ groupId);
+										 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
+										 	ixSamepoiPart.setGroupId(groupId);
+										 	ixSamepoiPart.setPoiPid(thisPid);
+										 	finishPid.add(thisPid);//将当前pid 存入 已维护pid 集合
+										 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
+										 	ixSamepoiPartOther.setGroupId(groupId);
+										 	ixSamepoiPartOther.setPoiPid(thisSamePid);
+										 	finishPid.add(thisSamePid);//将同组的 otherpid  存入 已维护pid 集合
+										//**将当前 poi的新增的 ix_samepoi 存入 result
+										 if(!result.isObjExist(obj)){
+												result.putObj(obj);
+										}
 									}
+									
 								}
 								
 							}else{//不存在 原始同一关系 ,需要新增
@@ -214,19 +224,27 @@ public class PoiRelationImportor extends AbstractOperation{
 									log.info("解除上传的same poi 的同一关系 :thisSamePid :" + thisSamePid );
 									thisSamePidObj.deleteObj();//如果上传的poi 存在原始 同组poi ,解除上传的poi 的同一关系
 								}
-								log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
-								IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
-								 long groupId = obj.objPid();
-								 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
-								 	ixSamepoiPart.setGroupId(groupId);
-								 	ixSamepoiPart.setPoiPid(thisPid);
-								 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
-								 	ixSamepoiPartOther.setGroupId(groupId);
-								 	ixSamepoiPartOther.setPoiPid(pidSamePoiPid.get(thisSamePid));
-								//**将当前 poi的新增的 ix_samepoi 存入 result
-								 if(!result.isObjExist(obj)){
-										result.putObj(obj);
+								if(finishPid.contains(thisPid)){
+									log.info("已经维护了同一关系，不在维护，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+								}else{
+									log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+									IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
+									 long groupId = obj.objPid();
+									 System.out.println("obj :"+obj+", groupId:"+ groupId);
+									 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
+									 	ixSamepoiPart.setGroupId(groupId);
+									 	ixSamepoiPart.setPoiPid(thisPid);
+									 	finishPid.add(thisPid);//将当前pid 存入 已维护pid 集合
+									 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
+									 	ixSamepoiPartOther.setGroupId(groupId);
+									 	ixSamepoiPartOther.setPoiPid(thisSamePid);
+									 	finishPid.add(thisSamePid);//将同组的 otherpid  存入 已维护pid 集合
+									//**将当前 poi的新增的 ix_samepoi 存入 result
+									 if(!result.isObjExist(obj)){
+											result.putObj(obj);
+									}
 								}
+								
 							}
 							
 						}else{//上传数据 不存在 samefid 
@@ -249,7 +267,7 @@ public class PoiRelationImportor extends AbstractOperation{
 		try{
 			List<Long> otherPids = new ArrayList<Long>();
 			if(!sameFidPid.keySet().isEmpty()){
-				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames,false, "POI_NUM", sameFidPid.keySet(), true, true);
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames,true, "POI_NUM", sameFidPid.keySet(), true, true);
 				for(BasicObj obj:objs.values()){
 					pidSamePoiPid.put(sameFidPid.get((String) obj.getMainrow().getAttrByColName("POI_NUM")), obj.getMainrow().getObjPid());
 					otherPids.add(obj.getMainrow().getObjPid());

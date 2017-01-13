@@ -62,7 +62,7 @@ public class FMYW20026 extends BasicCheckRule {
 					Map<String, String> keyResult5=ScPointNameckUtil.matchType(strSplit, typeD5);
 					for(String preKey:keyResult5.keySet()){
 						if (!allStrPhonetic.contains(keyResult5.get(preKey))){
-							String log="ROADNAME+ADDRNAME包含多音字“"+preKey+"”,且拼音与配置表中拼音不相同";
+							String log="18个字段包含多音字“"+preKey+"”,且拼音与配置表中拼音不相同";
 							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 						}
 					}
@@ -70,7 +70,7 @@ public class FMYW20026 extends BasicCheckRule {
 					//检查SC_POINT_NAMECK表中TYPE=7且HM_FLAG<>’HM’只要名称中包含关键字的报出
 					Map<String, String> keyResult7=ScPointNameckUtil.matchType(strSplit, typeD7);
 					if (keyResult7.size()!=0){
-						String log="ROADNAME+ADDRNAME中包含关键字“"+(keyResult7.keySet()).toString()+"”";
+						String log="18个字段中包含关键字“"+(keyResult7.keySet()).toString()+"”";
 						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 					}
 				}

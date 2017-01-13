@@ -1152,4 +1152,56 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+		
+		@Test
+	public void run_0112_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":15.1,\"sideType\":1,\"sNodePid\":204002584,\"data\":{\"linkPids\":[203003244]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+	@Test
+	public void run_0112_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":306000058,\"data\":{\"details\":[{\"names\":[{\"name\":\"1\",\"phonetic\":\"Yi\",\"voiceFile\":\"Yi\",\"rowId\":\"04BA9E1BF53D4CFF936743E3247BEA9E\",\"pid\":304000035,\"objStatus\":\"UPDATE\"}],\"rowId\":\"F932431D960D4157A74ED7BA4485AA37\",\"pid\":220000035,\"objStatus\":\"UPDATE\"}],\"rowId\":\"0C3242D1EC254F41B964CDE4579615BC\",\"pid\":306000058,\"objStatus\":\"UPDATE\"}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+		@Test
+	public void run_0112_3() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":2,\"inLinkPid\":206000525,\"nodePid\":320000356,\"outLinkPid\":203002059}}";		
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+		@Test
+	public void run_0112_4() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":8,\"inLinkPid\":220003253,\"nodePid\":306002383,\"outLinkPid\":309003076}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+		@Test
+	public void run_0112_5() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"data\":{\"branchType\":9,\"inLinkPid\":309003211,\"nodePid\":203002376,\"outLinkPid\":207003213}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}		
+		
 }

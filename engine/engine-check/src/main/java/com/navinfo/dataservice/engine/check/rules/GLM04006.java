@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGateCondition;
@@ -78,28 +79,33 @@ public class GLM04006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGateCondition(RdGateCondition rdGateCondition, OperType operType) throws Exception {
-			StringBuilder sb = new StringBuilder();
+		if(rdGateCondition.changedFields.containsKey("validObj")){
+			int validObj = Integer.parseInt(rdGateCondition.changedFields.get("validObj").toString());
+			if(validObj==0){
+				StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1");
-			sb.append(" FROM RD_LINK R, RD_GATE G,RD_GATE_CONDITION C");
-			sb.append(" WHERE R.KIND = 10");
-			sb.append(" AND G.PID = C.PID");
-			sb.append(" AND C.VALID_OBJ = 0");
-			sb.append(" AND (R.LINK_PID = G.IN_LINK_PID OR R.LINK_PID = G.OUT_LINK_PID)");
-			sb.append(" AND R.U_RECORD != 2");
-			sb.append(" AND G.U_RECORD != 2");
-			sb.append(" AND C.U_RECORD != 2");
-			sb.append(" AND G.PID = " + rdGateCondition.getPid());
+				sb.append("SELECT 1");
+				sb.append(" FROM RD_LINK R, RD_GATE G,RD_GATE_CONDITION C");
+				sb.append(" WHERE R.KIND = 10");
+				sb.append(" AND G.PID = C.PID");
+				sb.append(" AND C.VALID_OBJ = 0");
+				sb.append(" AND (R.LINK_PID = G.IN_LINK_PID OR R.LINK_PID = G.OUT_LINK_PID)");
+				sb.append(" AND R.U_RECORD != 2");
+				sb.append(" AND G.U_RECORD != 2");
+				sb.append(" AND C.U_RECORD != 2");
+				sb.append(" AND G.PID = " + rdGateCondition.getPid());
 
-			String sql = sb.toString();
+				String sql = sb.toString();
 
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-			if (resultList.size()>0) {
-				this.setCheckResult("","[RD_GATE," + rdGateCondition.getPid() + "]", 0);
+				if (resultList.size()>0) {
+					this.setCheckResult("","[RD_GATE," + rdGateCondition.getPid() + "]", 0);
+				}
 			}
+		}
 		
 	}
 
@@ -110,29 +116,34 @@ public class GLM04006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		
-		StringBuilder sb = new StringBuilder();
+		if(rdLink.changedFields().containsKey("kind")){
+			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString());
+			if(kind == 10){
+				StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']', R.MESH_ID");
-		sb.append(" FROM RD_LINK R, RD_GATE G, RD_GATE_CONDITION C");
-		sb.append(" WHERE G.PID = C.PID");
-		sb.append(" AND R.U_RECORD != 2");
-		sb.append(" AND G.U_RECORD != 2");
-		sb.append(" AND C.U_RECORD != 2");
-		sb.append(" AND R.KIND = 10");
-		sb.append(" AND C.VALID_OBJ <> 1");
-		sb.append(" AND (G.IN_LINK_PID = R.LINK_PID OR G.OUT_LINK_PID = R.LINK_PID)");
-		sb.append(" AND R.LINK_PID = " + rdLink.getPid()) ;
+				sb.append("SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']', R.MESH_ID");
+				sb.append(" FROM RD_LINK R, RD_GATE G, RD_GATE_CONDITION C");
+				sb.append(" WHERE G.PID = C.PID");
+				sb.append(" AND R.U_RECORD != 2");
+				sb.append(" AND G.U_RECORD != 2");
+				sb.append(" AND C.U_RECORD != 2");
+				sb.append(" AND R.KIND = 10");
+				sb.append(" AND C.VALID_OBJ <> 1");
+				sb.append(" AND (G.IN_LINK_PID = R.LINK_PID OR G.OUT_LINK_PID = R.LINK_PID)");
+				sb.append(" AND R.LINK_PID = " + rdLink.getPid()) ;
 
-		String sql = sb.toString();
+				String sql = sb.toString();
 
-		DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if (!resultList.isEmpty()) {
-			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2));
+				if (!resultList.isEmpty()) {
+					this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2));
+				}
+			}
 		}
+		
 	}
 
 	/**
@@ -142,6 +153,9 @@ public class GLM04006 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdGate(RdGate rdGate, OperType operType) throws Exception {
+		if(!rdGate.status().equals(ObjStatus.INSERT)){
+			return;
+		}
 		StringBuilder sb = new StringBuilder();
 		//是否触发检查：如果通行对象包含车辆，则触发检查项
 		boolean flg = false;
@@ -158,7 +172,7 @@ public class GLM04006 extends baseRule{
 			sb.append("SELECT 1 FROM RD_LINK R");
 			sb.append(" WHERE R.U_RECORD != 2 ");
 			sb.append(" AND R.KIND = 10 ");
-			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+			sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
 
 			String sql = sb.toString();
 

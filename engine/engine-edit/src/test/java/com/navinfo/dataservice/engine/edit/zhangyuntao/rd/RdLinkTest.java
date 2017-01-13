@@ -32,8 +32,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":307002679," +
-                "\"data\":{\"functionClass\":1,\"pid\":307002679,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":302003223," +
+                "\"data\":{\"limits\":[{\"linkPid\":302003223,\"rowId\":\"\",\"type\":3,\"limitDir\":0," +
+                "\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":0," +
+                "\"objStatus\":\"INSERT\"}],\"pid\":302003223}}";
         TestUtil.run(parameter);
     }
 

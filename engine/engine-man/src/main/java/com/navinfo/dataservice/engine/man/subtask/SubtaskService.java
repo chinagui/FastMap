@@ -613,23 +613,29 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
+			List<Integer> closedSubtaskList = subtaskIdList;
 			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
-			List<Integer> closedSubtaskList = new ArrayList<Integer>();
+			//判断是否有未完成任务,新需求没有了
+//			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
+//			List<Integer> closedSubtaskList = new ArrayList<Integer>();
+//			
+//			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//			
+//			for(int i=0;i<subtaskIdList.size();i++){
+//				SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskIdList.get(i));
+//				if(subtaskStatic.getPercent()<100){
+//					unClosedSubtaskList.add(subtaskIdList.get(i));
+//				}else{
+//					closedSubtaskList.add(subtaskIdList.get(i));
+//				}
+//			}
+//			// 根据subtaskId列表关闭subtask
+//			if (!closedSubtaskList.isEmpty()) {
+//				SubtaskOperation.closeBySubtaskList(conn, closedSubtaskList);
+//			}
 			
-			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-			
-			for(int i=0;i<subtaskIdList.size();i++){
-				SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskIdList.get(i));
-				if(subtaskStatic.getPercent()<100){
-					unClosedSubtaskList.add(subtaskIdList.get(i));
-				}else{
-					closedSubtaskList.add(subtaskIdList.get(i));
-				}
-			}
-			// 根据subtaskId列表关闭subtask
-			if (!closedSubtaskList.isEmpty()) {
-				SubtaskOperation.closeBySubtaskList(conn, closedSubtaskList);
-			}
+			//关闭subtask
+			SubtaskOperation.closeBySubtaskList(conn, subtaskIdList);
 			//发送消息
 			try {
 				//查询子任务
@@ -1162,12 +1168,13 @@ public class SubtaskService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			
-			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-			SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskId);
-			if(subtaskStatic.getPercent()<100){
-				return "subtaskId:" + subtaskId + "关闭失败。原因：存在未完成任务";
-			}
+			//新需求不需要判断完成度
+//			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//			SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskId);
+//			log.info("关闭SQL："+subtaskStatic.getPercent());
+//			if(subtaskStatic.getPercent()<100){
+//				return "subtaskId:" + subtaskId + "关闭失败。原因：存在未完成任务";
+//			}
 			
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 			closedSubtaskList.add(subtaskId);

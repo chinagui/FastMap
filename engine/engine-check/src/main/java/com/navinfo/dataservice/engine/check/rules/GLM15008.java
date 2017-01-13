@@ -50,27 +50,27 @@ public class GLM15008 extends baseRule {
 		if(!changedFields.isEmpty()){
 			//点限速限速条件
 			if(changedFields.containsKey("speedDependent")){
-				boolean check = this.check(rdSpeedlimit.getPid());
-				
-				if(check){
-					String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
-					this.setCheckResult("", target, 0);
-				}
-				/*int speedDependent = (int) changedFields.get("speedDependent");
+				int speedDependent = (int) changedFields.get("speedDependent");
 				if(speedDependent != 6 && speedDependent != 10){
-				}*/
+					boolean check = this.check(rdSpeedlimit.getPid());
+					
+					if(check){
+						String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
 			}
 			//点限速限速类型
 			if(changedFields.containsKey("speedType")){
-				boolean check = this.check(rdSpeedlimit.getPid());
-				
-				if(check){
-					String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
-					this.setCheckResult("", target, 0);
-				}
-				/*int speedType = (int) changedFields.get("speedType");
+				int speedType = (int) changedFields.get("speedType");
 				if(speedType != 3){
-				}*/
+					boolean check = this.check(rdSpeedlimit.getPid());
+					
+					if(check){
+						String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
 			}
 		}
 	}

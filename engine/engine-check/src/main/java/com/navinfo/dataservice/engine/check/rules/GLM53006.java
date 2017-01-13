@@ -16,6 +16,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 2017年1月9日
  * @Description: link为双方向时，如果上下行都制作了RTIC信息，则RTIC上下行等级应一致
  * 车厂RTIC上下行标识编辑
+ * 车厂RTIC等级编辑
  */
 public class GLM53006 extends baseRule{
 
@@ -39,7 +40,6 @@ public class GLM53006 extends baseRule{
 				RdLinkRtic rdLinkRtic=(RdLinkRtic) obj;
 				checkRdLinkRtic(rdLinkRtic);
 			}
-			
 		}
 		
 	}
@@ -55,6 +55,9 @@ public class GLM53006 extends baseRule{
 			checkFlag = true;
 		}else if(rdLinkRtic.status().equals(ObjStatus.UPDATE)){
 			if(rdLinkRtic.changedFields().containsKey("updownFlag")){
+				checkFlag = true;
+			}
+			else if(rdLinkRtic.changedFields().containsKey("rank")){
 				checkFlag = true;
 			}
 		}

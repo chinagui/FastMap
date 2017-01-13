@@ -31,6 +31,7 @@ import net.sf.json.JSONObject;
 public class FMGLM60377 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
+		System.out.println();
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();

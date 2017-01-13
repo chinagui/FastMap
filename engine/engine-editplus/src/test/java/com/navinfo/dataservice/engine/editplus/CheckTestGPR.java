@@ -45,7 +45,7 @@ public class CheckTestGPR {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(19);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,335, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false,2179861, false);
 		//IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 		IxPoiAddress chiAddress = poiObj.getCHAddress();
@@ -62,7 +62,18 @@ public class CheckTestGPR {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
+		ruleIdList.add("FM-A04-04");
+		ruleIdList.add("FM-A04-05");
+		ruleIdList.add("FM-A04-10");
+		ruleIdList.add("FM-A07-12");
 		ruleIdList.add("FM-YW-20-026");
+		ruleIdList.add("FM-YW-20-078");
+		ruleIdList.add("FM-A09-17");
+		ruleIdList.add("FM-CHR73002");
+		ruleIdList.add("FM-YW-20-008");
+		ruleIdList.add("FM-GLM60302");
+		ruleIdList.add("FM-YW-20-038");
+		ruleIdList.add("FM-YW-20-080");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

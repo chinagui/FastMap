@@ -38,7 +38,7 @@ public class FMA0410 extends BasicCheckRule {
 		boolean isChanged = false;
 		IxPoiName standardName = null;
 		for (IxPoiName name:names) {
-			if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE) || poi.hisOldValueContains(IxPoi.KIND_CODE)) {
+			if (name.getHisOpType().equals(OperationType.INSERT) || name.getHisOpType().equals(OperationType.UPDATE)) {
 				isChanged = true;
 			}
 			if (name.getNameClass()==1 && name.getNameType()==1 && name.getLangCode().equals("CHI") || name.getLangCode().equals("CHT")) {

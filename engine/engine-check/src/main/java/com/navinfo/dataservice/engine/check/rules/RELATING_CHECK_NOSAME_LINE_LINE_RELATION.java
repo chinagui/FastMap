@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,13 +65,61 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
-			} else if (obj instanceof RdBranchRealimage
-					|| obj instanceof RdBranchSchematic
-					|| obj instanceof RdSeriesbranch
-					|| obj instanceof RdSignasreal 
-					|| obj instanceof RdSignboard) {
+			} else if (obj instanceof RdBranchRealimage) {
+				RdBranchRealimage rdBranch = (RdBranchRealimage) obj;
 
-				if (obj.status() == ObjStatus.INSERT) {
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_BRANCH_REALIMAGE",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdBranchSchematic) {
+				RdBranchSchematic rdBranch = (RdBranchSchematic) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_BRANCH_SCHEMATIC",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSeriesbranch) {
+				RdSeriesbranch rdBranch = (RdSeriesbranch) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SERIESBRANCH",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSignasreal) {
+				RdSignasreal rdBranch = (RdSignasreal) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SIGNASREAL",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSignboard) {
+				RdSignboard rdBranch = (RdSignboard) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SIGNBOARD",
+						obj.status());
+				if (!result) {
 					this.setCheckResult("", "", 0,
 							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
@@ -421,6 +470,29 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkRdBranch(String branchPId, String tableName,
+			ObjStatus status) throws Exception {
+
+		if (status != ObjStatus.INSERT) {
+			return true;
+		}
+
+		String strFormat = "SELECT RB.BRANCH_PID FROM RD_BRANCH RB, {0} T WHERE RB.BRANCH_PID = {1} AND T.BRANCH_PID = RB.BRANCH_PID AND RB.U_RECORD <> 2 AND T.U_RECORD <> 2";
+
+		String sql = MessageFormat.format(strFormat, tableName, branchPId);
+
+		DatabaseOperator getObj = new DatabaseOperator();
+
+		List<Object> resultList = new ArrayList<Object>();
+
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if (resultList.size() > 0) {

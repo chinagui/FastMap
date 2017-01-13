@@ -6,16 +6,11 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
-import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -23,7 +18,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 车信	html	RDLANE001	后台	
  * 如果车信进入线和退出线（退出线为环岛或者为特殊交通的除外）挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改
  * @author zhangxiaoyi
- *
+ *新增车信	服务端前检查
+ *修改车信	服务端前检查
  */
 public class RdLane001 extends baseRule {
 
@@ -35,7 +31,7 @@ public class RdLane001 extends baseRule {
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj : checkCommand.getGlmList()){
 			//create的时候只有主表对象，其中包含的内容涵盖子表内容，可直接用
-			if (obj instanceof RdLaneConnexity){//交限
+			if (obj instanceof RdLaneConnexity){//新增车信
 				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
 				Map<String, Object> changedFields=laneObj.changedFields();
 				//新增执行该检查
@@ -68,8 +64,55 @@ public class RdLane001 extends baseRule {
 					this.setCheckResult("", "", 0);
 					return;
 				}
-			}}
+			}
+			//修改车信
+			else if (obj instanceof RdLaneTopology){
+				RdLaneTopology rdLaneTopology = (RdLaneTopology) obj;
+				checkRdLaneTopology(rdLaneTopology);
+			}
+		}
 	}
+	
+	/**
+	 * @author Han Shaoming
+	 * @param rdLaneTopology
+	 * @throws Exception 
+	 */
+	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology) throws Exception {
+		// TODO Auto-generated method stub
+		int outLinkPid = 0; 
+		if(rdLaneTopology.status().equals(ObjStatus.INSERT)){
+			outLinkPid = rdLaneTopology.getOutLinkPid();
+		}
+		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
+			if(rdLaneTopology.changedFields().containsKey("outLinkPid")){
+				outLinkPid = Integer.parseInt(rdLaneTopology.changedFields().get("outLinkPid").toString());
+			}
+		}
+		
+		if(outLinkPid!=0){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT DISTINCT RLC.PID FROM RD_LANE_CONNEXITY RLC,RD_LANE_TOPOLOGY RLT,RD_LINK RL,RD_LINK_FORM RLF");
+			sb.append(" WHERE RL.LINK_PID = "+outLinkPid +" AND RLC.PID = "+rdLaneTopology.getConnexityPid());
+			sb.append(" AND RLC.PID = RLT.CONNEXITY_PID AND RL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RL.SPECIAL_TRAFFIC <>1 AND RLF.FORM_OF_WAY <>33");
+			sb.append(" AND (RLC.NODE_PID = RL.S_NODE_PID OR RLC.NODE_PID = RL.E_NODE_PID)");
+			sb.append(" AND RLC.U_RECORD <>2 AND RLT.U_RECORD <>2 AND RL.U_RECORD <>2 AND RLF.U_RECORD <>2");
+			sb.append(" AND NOT EXISTS(SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RLC.NODE_PID AND CN.U_RECORD <> 2)");
+			String sql = sb.toString();
+			log.info("修改车信前检查RDLANE001--sql:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			if (!resultList.isEmpty()) {
+				String target = "[RD_LANE_CONNEXITY," + rdLaneTopology.getConnexityPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
+	}
+
 	/**
 	 * 判断点是否制作了路口
 	 * @param nodePid
@@ -84,6 +127,7 @@ public class RdLane001 extends baseRule {
 		return false;
 	}
 
+	
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub

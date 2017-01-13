@@ -77,7 +77,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByRdTollgate()
 	{
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTOLLGATE\",\"dbId\":17,\"objId\":202000013}";
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"RDTOLLGATE\",\"dbId\":19,\"objId\":308000011}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -142,7 +142,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateByLinkForm()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":205003159,\"data\":{\"forms\":[{\"linkPid\":205003159,\"rowId\":\"\",\"formOfWay\":22,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":205003159}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":306003206,\"data\":{\"forms\":[{\"rowId\":\"AC08AAB99D6C4DA4B815FD947EB6A560\",\"objStatus\":\"UPDATE\",\"formOfWay\":22}],\"pid\":306003206}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -361,7 +361,7 @@ public class Operation implements IOperation {
 		result.insertObject(lane, ObjStatus.INSERT, lane.getPid());
 
 	}
-	
+
 	/***
 	 * 创建车道信息
 	 * 
@@ -379,7 +379,7 @@ public class Operation implements IOperation {
 		rdLane.setSeqNum(seqNum);
 		rdLane.setLaneDir(laneDir);
 		rdLane.setLaneNum(laneNum);
-		//车道来源赋值为程序
+		// 车道来源赋值为程序
 		rdLane.setSrcFlag(2);
 		result.insertObject(rdLane, ObjStatus.INSERT, rdLane.getPid());
 	}
@@ -500,7 +500,7 @@ public class Operation implements IOperation {
 
 				Map<Integer, List<Integer>> laneInfoList = operation.getRdlaneSelector().getLaneInfoByLinkPid(linkPid,
 						OpRefRelationObj.LINK_TOLLGATE_21, null);
-				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList,null);
+				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList, null);
 			}
 		}
 
@@ -542,7 +542,7 @@ public class Operation implements IOperation {
 
 				Map<Integer, List<Integer>> laneInfoList = operation.getRdlaneSelector()
 						.getLaneInfoByLinkPid(this.getLink().getPid(), OpRefRelationObj.LINK_TOLLGATE_21, null);
-				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList,null);
+				operation.updateByLevel(OpRefRelationObj.LINK_TOLLGATE_21, laneInfoList, null);
 			}
 
 		}
@@ -660,28 +660,24 @@ public class Operation implements IOperation {
 	 * 
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkLimit(Result result, List<RdLane> lanes,int flag) throws Exception {
+	public void refRdLaneForRdlinkLimit(Result result, List<RdLane> lanes, int flag) throws Exception {
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
-			//需要修改
-			if(flag == 2)
-			{
+			// 需要修改
+			if (flag == 2) {
 				for (IRow row : rows) {
 					RdLaneCondition condition = (RdLaneCondition) row;
-					if(!condition.getDirectionTime().equals(this.getLimit().getTimeDomain()))
-					{
+					if (!condition.getDirectionTime().equals(this.getLimit().getTimeDomain())) {
 						row.changedFields().put("vehicleTime", this.getLimit().getTimeDomain());
 					}
-					if(condition.getVehicle() != this.getLimit().getVehicle())
-					{
-						row.changedFields().put("vehicle",this.getLimit().getVehicle());
+					if (condition.getVehicle() != this.getLimit().getVehicle()) {
+						row.changedFields().put("vehicle", this.getLimit().getVehicle());
 					}
 					result.insertObject(row, ObjStatus.UPDATE, lane.getPid());
 				}
 			}
-			//需要删除
-			else if(flag == 3)
-			{
+			// 需要删除
+			else if (flag == 3) {
 				for (IRow row : rows) {
 					result.insertObject(row, ObjStatus.DELETE, lane.getPid());
 				}
@@ -712,8 +708,8 @@ public class Operation implements IOperation {
 	 * @param form
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkForm(Result result,int formOfWay) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 1, true);
+	public void refRdLaneForRdlinkForm(Result result, int formOfWay) throws Exception {
+		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
 			if (rows.size() > 0) {
@@ -731,29 +727,25 @@ public class Operation implements IOperation {
 							}
 						}
 						result.insertObject(condition, ObjStatus.UPDATE, lane.getPid());
-					}
-					else if (this.getFormCrossFlag() == 3) {
+					} else if (this.getFormCrossFlag() == 3) {
 						result.insertObject(condition, ObjStatus.DELETE, lane.getPid());
 					}
-					else if(this.getFormCrossFlag() ==1)
-					{
-						RdLaneCondition newLaneCondition = new RdLaneCondition();
-						
-						newLaneCondition.setLanePid(lane.getPid());
-						
-						if(formOfWay == 20)
-						{
-							newLaneCondition.setVehicle(2147483786L);
-						}
-						else if(formOfWay == 22)
-						{
-							newLaneCondition.setVehicle(2147484160L);
-						}
-						result.insertObject(newLaneCondition, ObjStatus.INSERT, lane.getPid());
-					}
 				}
+
+			} else{
+				RdLaneCondition newLaneCondition = new RdLaneCondition();
+
+				newLaneCondition.setLanePid(lane.getPid());
+
+				if (formOfWay == 20) {
+					newLaneCondition.setVehicle(2147483786L);
+				} else if (formOfWay == 22) {
+					newLaneCondition.setVehicle(2147484160L);
+				}
+				result.insertObject(newLaneCondition, ObjStatus.INSERT, lane.getPid());
 			}
 		}
+
 	}
 
 	/***
@@ -770,7 +762,9 @@ public class Operation implements IOperation {
 		List<String> laneInfos = this.getLanInfos();
 		int nodePid = this.getConnexity().getNodePid();
 
-		List<RdLane> lanes = this.caleRdLanesForDir(linkPid, nodePid, laneDir, 0);
+		int direct = calRdLaneDir(linkPid, nodePid, laneDir, 0);
+
+		List<RdLane> lanes = new RdLaneSelector(this.conn).loadByLink(linkPid, direct, true);
 
 		if (lanes.size() >= laneInfos.size()) {
 			for (int i = laneInfos.size(); i < lanes.size(); i++) {
@@ -863,10 +857,13 @@ public class Operation implements IOperation {
 		int outLinkPid = this.getTollgate().getOutLinkPid();
 		int nodePid = this.getTollgate().getNodePid();
 		int laneDir = 1;
-		List<RdLane> inLanes = this.caleRdLanesForDir(inLinkPid, nodePid, laneDir, 0);
-		List<RdLane> outLanes = this.caleRdLanesForDir(outLinkPid, nodePid, laneDir, 1);
-		this.calefRdLaneForTollgate(result, inLanes, inLinkPid, laneDir);
-		this.calefRdLaneForTollgate(result, outLanes, outLinkPid, laneDir);
+		int inDirect = calRdLaneDir(inLinkPid, nodePid, laneDir, 0);
+		List<RdLane> inLanes = new RdLaneSelector(this.conn).loadByLink(inLinkPid, inDirect, true);
+		int outDirect = calRdLaneDir(outLinkPid, nodePid, laneDir, 1);
+		List<RdLane> outLanes = new RdLaneSelector(this.conn).loadByLink(outLinkPid, outDirect, true);
+
+		this.calefRdLaneForTollgate(result, inLanes, inLinkPid, inDirect);
+		this.calefRdLaneForTollgate(result, outLanes, outLinkPid, outDirect);
 
 	}
 
@@ -903,24 +900,26 @@ public class Operation implements IOperation {
 		}
 	}
 
-	private List<RdLane> caleRdLanesForDir(int linkPid, int nodePid, int laneDir, int flag) throws Exception {
+	private int calRdLaneDir(int linkPid, int nodePid, int laneDir, int flag) throws Exception {
+		int direct = 1;
+
 		RdLink link = (RdLink) new RdLinkSelector(this.conn).loadById(linkPid, true, false);
 		if (link.getDirect() == 1) {
 			if (nodePid == link.geteNodePid()) {
 				if (flag == 1) {
-					laneDir = 3;
+					direct = 3;
 				} else {
-					laneDir = 2;
+					direct = 2;
 				}
 			} else {
 				if (flag == 1) {
-					laneDir = 2;
+					direct = 2;
 				} else {
-					laneDir = 3;
+					direct = 3;
 				}
 			}
 		}
-		return new RdLaneSelector(this.conn).loadByLink(linkPid, laneDir, true);
+		return direct;
 	}
 
 	/***

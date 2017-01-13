@@ -211,6 +211,14 @@ public class ReflectionAttrUtils {
 			return "RD_BRANCH_DETAIL";
 		case RDSIGNBOARD:
 			return "RD_SIGNBOARD";
+		case RDSERIESBRANCH:
+			return "RD_SERIESBRANCH";
+		case RDBRANCHREALIMAGE:
+			return "RD_BRANCH_REALIMAGE";
+		case RDBRANCHSCHEMATIC:
+			return "RD_BRANCH_SCHEMATIC";
+		case RDSIGNASREAL:
+			return "RD_SIGNASREAL";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}

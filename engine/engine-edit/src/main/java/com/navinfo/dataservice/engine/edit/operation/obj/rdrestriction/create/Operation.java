@@ -83,8 +83,9 @@ public class Operation implements IOperation {
 
 		if (calOutLinkObjs.size() > 0) {
 			CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-			
-			List<Integer> outLinkPids = calLinkOperateUtils.getInNodeLinkPids(this.command.getNodePid(),this.command.getInLinkPid(),this.command.getOutLinkPidList());
+
+			List<Integer> outLinkPids = calLinkOperateUtils.getInNodeLinkPids(this.command.getNodePid(),
+					this.command.getInLinkPid(), this.command.getOutLinkPidList());
 
 			if (CollectionUtils.isEmpty(outLinkPids)) {
 				throw new Exception("进入点挂接的link没有合适的退出线");
@@ -102,7 +103,8 @@ public class Operation implements IOperation {
 					outLinkPids.removeAll(infoMap.keySet());
 
 					// 选取正北或者正南方向夹角最小的退出线
-					int outLinkPid = CalLinkOperateUtils.getMinAngleOutLinkPidOnArrowDir(outLinkPids, CalLinkOperateUtils.calIntInfo(arrow),outLinkSegmentMap,inLinkSegment);
+					int outLinkPid = CalLinkOperateUtils.getMinAngleOutLinkPidOnArrowDir(outLinkPids,
+							CalLinkOperateUtils.calIntInfo(arrow), outLinkSegmentMap, inLinkSegment);
 
 					if (outLinkPid == 0) {
 						throw new Exception("交限限制信息为:" + arrow + "未自动计算出退出线，创建交限失败，请手动指定退出线");
@@ -143,9 +145,7 @@ public class Operation implements IOperation {
 			check.checkSameInAndOutLink(inLinkPid, infoMap);
 
 			// 计算交限详细信息
-			for (int i = 0; i < outLinkObjs.size(); i++) {
-				details.addAll(createDetail(restrict, infoMap));
-			}
+			details.addAll(createDetail(restrict, infoMap));
 		}
 
 		restrict.setDetails(details);

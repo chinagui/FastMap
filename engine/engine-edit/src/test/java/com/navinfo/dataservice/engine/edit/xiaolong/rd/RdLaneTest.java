@@ -142,7 +142,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdateByLinkForm()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":306003206,\"data\":{\"forms\":[{\"rowId\":\"AC08AAB99D6C4DA4B815FD947EB6A560\",\"objStatus\":\"UPDATE\",\"formOfWay\":22}],\"pid\":306003206}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":200003252,\"data\":{\"forms\":[{\"rowId\":\"CE0543AF440A4974A15B9879429F49A4\",\"objStatus\":\"UPDATE\",\"formOfWay\":0}],\"pid\":200003252}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

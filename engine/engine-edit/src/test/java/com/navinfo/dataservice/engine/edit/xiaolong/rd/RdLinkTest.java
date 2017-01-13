@@ -163,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSE\",\"dbId\":17,\"data\":{\"inLinkPid\":206002831,\"outLinkPid\":200002787,\"nodePid\":301002167}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":259,\"type\":\"RDLINK\",\"objId\":400001194,\"data\":{\"forms\":[{\"linkPid\":400001194,\"formOfWay\":20,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"},{\"linkPid\":400001194,\"rowId\":\"2AED548354544F6C804F2D67C3DDB351\",\"objStatus\":\"DELETE\"}],\"pid\":400001194,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

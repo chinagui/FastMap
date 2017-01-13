@@ -239,7 +239,7 @@ public class OpRefRelationObj {
 				RdTollgate rdTollgate = (RdTollgate) row;
 				if (row.changedFields().containsKey("passageNum")) {
 					handleRowList(LINK_TOLLGATE_21, rdTollgate.getInLinkPid(), row, updateLevelMap);
-					handleRowList(LINK_TOLLGATE_21, rdTollgate.getOutLinkPid(), row, updateLevelMap);
+					//handleRowList(LINK_TOLLGATE_21, rdTollgate.getOutLinkPid(), row, updateLevelMap);
 				}
 				break;
 			// 修改车信
@@ -809,17 +809,18 @@ public class OpRefRelationObj {
 				}
 			}
 		} else {
-			formOfWay = linkForm.getFormOfWay();
 			// 删除form
 			if (linkForm != null && linkForm.status() == ObjStatus.DELETE) {
+				formOfWay = linkForm.getFormOfWay();
 				operation.setFormCrossFlag(3);
 			} else if (linkForm.status() == ObjStatus.INSERT) {
 				formOfWay = linkForm.getFormOfWay();
-
 				// 1代表新增
 				operation.setFormCrossFlag(1);
 			} else {
 				// 2代表修改
+				formOfWay = (int) linkForm.changedFields().get("formOfWay");
+				//todo
 				operation.setFormCrossFlag(2);
 			}
 		}

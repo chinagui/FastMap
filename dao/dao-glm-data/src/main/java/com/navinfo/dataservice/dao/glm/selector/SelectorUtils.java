@@ -130,6 +130,7 @@ public class SelectorUtils {
 
 		try {
 			pstmt = conn.prepareStatement(sql);
+			
 			int total = 0;
 			int startRow = (pageNum - 1) * pageSize + 1;
 			int endRow = pageNum * pageSize;

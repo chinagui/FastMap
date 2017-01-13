@@ -661,6 +661,10 @@ public class OpRefRelationObj {
 				if (sourceFormOfWay == 50 && formOfWay != 50) {
 					formCrossFlag = 2;
 				}
+				else
+				{
+					formCrossFlag = 1;
+				}
 			}
 		} else if (form.status() == ObjStatus.DELETE) {
 			formCrossFlag = 2;

@@ -103,7 +103,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByCrossLink()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":305000525,\"data\":{\"forms\":[{\"rowId\":\"C0EC16F073E342A3BBE9F705D363358F\",\"objStatus\":\"UPDATE\",\"formOfWay\":10}],\"pid\":305000525}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":306003112,\"data\":{\"forms\":[{\"linkPid\":306003112,\"rowId\":\"\",\"formOfWay\":20,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"},{\"rowId\":\"480116B8BAF04601B1EE8547EE24B47E\",\"objStatus\":\"UPDATE\",\"formOfWay\":50}],\"pid\":306003112}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

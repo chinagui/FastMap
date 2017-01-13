@@ -81,7 +81,8 @@ public class EndJobHandler implements MsgHandler {
 			JSONObject msgParam = new JSONObject();
 			msgParam.put("relateObject", "JOB");
 			msgParam.put("relateObjectId", jobId);
-			SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, msgParam.toString(), null);
+			//SysMsgPublisher.publishMsg(jobTypeName+"任务(ID:"+jobId+")"+runStatus+","+diffTime.toString(), resultMsg, 0, new long[]{userId}, 1, msgParam.toString(), null);
+			SysMsgPublisher.publishMsg(jobTypeName, resultMsg, 0, new long[]{userId}, 1, msgParam.toString(), null);
 		}catch(Exception e){
 			log.warn("接收到end_job消息,但处理过程中出错，消息已消费。message："+message);
 			log.error(e.getMessage(),e);

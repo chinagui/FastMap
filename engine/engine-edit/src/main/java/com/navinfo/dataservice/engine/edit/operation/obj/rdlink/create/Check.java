@@ -135,11 +135,6 @@ public class Check {
 				
 				String pointWkt = "Point ("+x+" "+y+")";
 				
-				//GLM56004
-				if (!rdLink.getGeometry().isSimple()){
-					check.insertCheckLog("GLM56004", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
-				}
-				
 				//GLM01014
 				if (rdLink.getsNodePid() == rdLink.geteNodePid()){
 					check.insertCheckLog("GLM01014", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");

@@ -748,7 +748,7 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		sql.append("         GROUP BY CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS) TT,");
 		sql.append("       (SELECT DISTINCT CF.SECOND_WORK_ITEM");
 		sql.append("          FROM POI_COLUMN_WORKITEM_CONF CF");
-		sql.append("         WHERE CF.FIRST_WORK_ITEM = '" + firstWorkItem + "'");
+		sql.append("         WHERE CF.SECOND_WORK_ITEM <> 'nonImportantEngAddress' AND CF.FIRST_WORK_ITEM = '" + firstWorkItem + "'");
 		sql.append("           AND CF.CHECK_FLAG IN (1, 3)) AA");
 		sql.append(" WHERE TT.SECOND_WORK_ITEM(+) = AA.SECOND_WORK_ITEM");
 

@@ -580,6 +580,7 @@ public class OpRefRelationObj {
 				
 				RdLinkForm form = null;
 				
+				//获取修改或者新增的level3要素，这个要素还没入库，需要从内存中获取
 				if(limitMap != null)
 				{
 					List<IRow> limitRowsList = limitMap.get(LINK_LANE_VEHICLE_31);

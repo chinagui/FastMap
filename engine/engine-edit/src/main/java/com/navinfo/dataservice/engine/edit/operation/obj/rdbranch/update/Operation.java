@@ -72,7 +72,14 @@ public class Operation implements IOperation {
 
 				if (isChanged) {
 					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
-					result.setPrimaryPid(command.getObjId());
+					if(command.getObjId() != 0)
+					{
+						result.setPrimaryPid(command.getObjId());
+					}
+					else
+					{
+						result.setPrimaryPid(branch.pid());
+					}
 				}
 			}
 		}

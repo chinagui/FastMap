@@ -1,10 +1,19 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.common;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.dbutils.DbUtils;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 
 public class CheckUtil {
@@ -372,5 +381,35 @@ public class CheckUtil {
 		}
 		return mergeAddrPhonetic;
 	}
+    /**
+     * 查询街巷名与道路名是否匹配
+     * @param input String.
+     * @return boolean
+     * @throws Exception 
+     */
+    public static boolean matchStreet(String street,int regionId,Connection connRegion) throws Exception {
+    	Connection connMeta = null;
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try{
+    		AdAdminSearch adAdminSearch = new AdAdminSearch(connRegion);
+			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+			int adminId=adAdmin.getAdminId();
+			String admin=String.valueOf(adminId).substring(0, 2);
+			
+			connMeta = DBConnector.getInstance().getMetaConnection();
+	    	String spName = "SELECT COUNT(1) ct FROM rd_name r WHERE r.admin_id<>214 AND r.lang_code='CHI' AND r.admin_id like '"+admin+"%' AND r.name='"+street+"'";
+	    	pstmt = connMeta.prepareCall(spName);
+	    	rs = pstmt.executeQuery();
+			while (rs.next()) {
+				if(rs.getInt("ct")==0){return true;}					
+			}
+			return false;
+    	} catch (Exception e) {
+    		throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(connMeta);
+		}
+    }
     
 }

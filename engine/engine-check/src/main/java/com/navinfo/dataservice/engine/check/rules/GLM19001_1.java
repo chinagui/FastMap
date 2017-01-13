@@ -63,7 +63,7 @@ public class GLM19001_1 extends baseRule{
 			sb2.append(" AND T.U_RECORD <> 2");
 			sb2.append(" AND C.IN_LINK_PID = " + rdLink.getPid());
 			sb2.append(" UNION");
-			sb2.append("SELECT 1 FROM RD_LANE_TOPOLOGY T");
+			sb2.append(" SELECT 1 FROM RD_LANE_TOPOLOGY T");
 			sb2.append(" WHERE T.RELATIONSHIP_TYPE = 1");
 			sb2.append(" AND T.U_RECORD <> 2");
 			sb2.append(" AND T.OUT_LINK_PID = " + rdLink.getPid());

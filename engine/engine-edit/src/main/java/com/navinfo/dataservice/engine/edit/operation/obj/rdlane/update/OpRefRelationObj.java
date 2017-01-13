@@ -661,7 +661,7 @@ public class OpRefRelationObj {
 				if (sourceFormOfWay == 50 && formOfWay != 50) {
 					formCrossFlag = 2;
 				}
-				else
+				else if(sourceFormOfWay != 50 && formOfWay == 50)
 				{
 					formCrossFlag = 1;
 				}

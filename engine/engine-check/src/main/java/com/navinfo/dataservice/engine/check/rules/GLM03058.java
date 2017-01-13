@@ -54,27 +54,26 @@ public class GLM03058 extends baseRule {
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLink.changedFields();
-		int kind = 7;
-		if(changedFields.containsKey("kind")){
-			kind = (int) changedFields.get("kind");
-		}
-		if(kind == 10){
-			StringBuilder sb = new StringBuilder();
-			   
-			sb.append("SELECT DISTINCT R.LINK_PID FROM RD_NODE_FORM F, RD_LINK R");
-			sb.append(" WHERE R.LINK_PID = "+rdLink.getPid()+" AND F.FORM_OF_WAY = 15");
-			sb.append(" AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
-			sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
-			String sql = sb.toString();
-			log.info("RdLink后检查GLM03058--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-
-			if(!resultList.isEmpty()){
-				String target = "[RD_LINK," + rdLink.getPid() + "]";
-				this.setCheckResult("", target, 0);
+		if(changedFields != null && changedFields.containsKey("kind")){
+			int kind = (int) changedFields.get("kind");
+			if(kind == 10){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT DISTINCT R.LINK_PID FROM RD_NODE_FORM F, RD_LINK R");
+				sb.append(" WHERE R.LINK_PID = "+rdLink.getPid()+" AND F.FORM_OF_WAY = 15");
+				sb.append(" AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
+				sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
+				String sql = sb.toString();
+				log.info("RdLink后检查GLM03058--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_LINK," + rdLink.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
 			}
 		}
 	}
@@ -87,27 +86,26 @@ public class GLM03058 extends baseRule {
 	private void checkRdNodeForm(RdNodeForm rdNodeForm) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		int formOfWay = 1;
-		if(changedFields.containsKey("formOfWay")){
-			formOfWay = (int) changedFields.get("formOfWay");
-		}
-		if(formOfWay == 15){
-			StringBuilder sb = new StringBuilder();
-			   
-			sb.append("SELECT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK R");
-			sb.append(" WHERE F.NODE_PID = "+rdNodeForm.getNodePid()+" AND F.U_RECORD <> 2");
-			sb.append(" AND R.U_RECORD <> 2 AND R.KIND = 10");
-			sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
-			String sql = sb.toString();
-			log.info("RdNode后检查GLM03058--sql:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-
-			if(!resultList.isEmpty()){
-				String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
-				this.setCheckResult("", target, 0);
+		if(changedFields != null && changedFields.containsKey("formOfWay")){
+			int formOfWay = (int) changedFields.get("formOfWay");
+			if(formOfWay == 15){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK R");
+				sb.append(" WHERE F.NODE_PID = "+rdNodeForm.getNodePid()+" AND F.U_RECORD <> 2");
+				sb.append(" AND R.U_RECORD <> 2 AND R.KIND = 10");
+				sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
+				String sql = sb.toString();
+				log.info("RdNode后检查GLM03058--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
+					this.setCheckResult("", target, 0);
+				}
 			}
 		}
 	}

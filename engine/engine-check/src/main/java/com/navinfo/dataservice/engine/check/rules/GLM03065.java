@@ -84,16 +84,15 @@ public class GLM03065 extends baseRule {
 	private void checkRdNodeForm(RdNodeForm rdNodeForm) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		int formOfWay = 1;
 		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			formOfWay = (int) changedFields.get("formOfWay");
-		}
-		if(formOfWay == 13){
-			boolean check = this.check(rdNodeForm.getNodePid());
-
-			if(check){
-				String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
-				this.setCheckResult("", target, 0);
+			int formOfWay = (int) changedFields.get("formOfWay");
+			if(formOfWay == 13){
+				boolean check = this.check(rdNodeForm.getNodePid());
+				
+				if(check){
+					String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
+					this.setCheckResult("", target, 0);
+				}
 			}
 		}
 	}

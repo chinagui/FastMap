@@ -411,5 +411,28 @@ public class CheckUtil {
 			DbUtils.commitAndCloseQuietly(connMeta);
 		}
     }
+    /**
+     * FMGLM60377
+     * @param input String.
+     * @return boolean
+     * @throws Exception 
+     */
+    public static boolean matchAdminName(String data,int regionId,Connection connRegion) throws Exception {
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try{
+	    	String spName = "SELECT adn.name FROM ad_admin_name adn WHERE adn.region_id="+regionId+" AND adn.lang_code IN ('CHI','CHT') AND adn.name_class=1";
+	    	pstmt = connRegion.prepareCall(spName);
+	    	rs = pstmt.executeQuery();
+			while (rs.next()) {
+				if(rs.getString("name").equals(data)){return true;}					
+			}
+			return false;
+    	} catch (Exception e) {
+    		throw e;
+		} finally {
+			DbUtils.commitAndCloseQuietly(connRegion);
+		}
+    }
     
 }

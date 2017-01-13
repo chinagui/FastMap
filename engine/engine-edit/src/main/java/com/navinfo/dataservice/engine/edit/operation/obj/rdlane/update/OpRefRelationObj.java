@@ -797,7 +797,7 @@ public class OpRefRelationObj {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-		int formOfWay = 0;
+		int formOfWay = -1;
 		// link车辆类型限制没有维护详细车道限制，走形态维护
 		if (linkForm == null) {
 			List<IRow> forms = abstractSelector.loadRowsByClassParentId(RdLinkForm.class, pid, true, null, null);
@@ -822,12 +822,19 @@ public class OpRefRelationObj {
 			} else {
 				// 2代表修改
 				formOfWay = (int) linkForm.changedFields().get("formOfWay");
-				// todo
-				operation.setFormCrossFlag(2);
+				int sourceFormOfWay = linkForm.getFormOfWay();
+				// 修改link形态，新增其他形态（公交车道或者步行街）
+				if (sourceFormOfWay == 20 || sourceFormOfWay == 22) {
+					if (formOfWay != 20 && formOfWay != 22) {
+						operation.setFormCrossFlag(3);
+					}
+				} else if (formOfWay == 20 || formOfWay == 22) {
+					operation.setFormCrossFlag(2);
+				}
 			}
 		}
 
-		if (formOfWay != 0) {
+		if (formOfWay != -1) {
 			abstractSelector.setCls(RdLink.class);
 
 			RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);

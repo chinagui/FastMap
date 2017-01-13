@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /**
  * @ClassName: FMYW20110
@@ -37,14 +38,7 @@ public class FMYW20110 extends BasicCheckRule {
 			String engAddr = "";
 			for (IxPoiAddress address: addresses){
 				if (address.isCH()){
-					String roadName = address.getRoadname();
-					if (StringUtils.isNotEmpty(roadName)){
-						chiAddr += roadName;
-					}
-					String addName = address.getAddrname();
-					if (StringUtils.isNotEmpty(addName)){
-						chiAddr += addName;
-					}
+					chiAddr = CheckUtil.getMergerAddr(address);
 				}
 				if (address.isEng()){
 					engAddr = address.getFullname();

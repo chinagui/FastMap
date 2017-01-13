@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
@@ -708,8 +709,11 @@ public class Operation implements IOperation {
 	 * @param form
 	 * @throws Exception
 	 */
-	public void refRdLaneForRdlinkForm(Result result, int formOfWay) throws Exception {
-		List<RdLane> lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
+	public void refRdLaneForRdlinkForm(Result result, int formOfWay,List<RdLane> lanes) throws Exception {
+		if(CollectionUtils.isEmpty(lanes))
+		{
+			lanes = new RdLaneSelector(conn).loadByLink(this.getLink().getPid(), 0, true);
+		}
 		for (RdLane lane : lanes) {
 			List<IRow> rows = lane.getConditions();
 			if (rows.size() > 0) {
@@ -742,7 +746,14 @@ public class Operation implements IOperation {
 				} else if (formOfWay == 22) {
 					newLaneCondition.setVehicle(2147484160L);
 				}
-				result.insertObject(newLaneCondition, ObjStatus.INSERT, lane.getPid());
+				if(lane.status() == ObjStatus.INSERT)
+				{
+					lane.getConditions().add(newLaneCondition);
+				}
+				else
+				{
+					result.insertObject(newLaneCondition, ObjStatus.INSERT, lane.getPid());
+				}
 			}
 		}
 

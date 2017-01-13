@@ -308,9 +308,9 @@ public class Operation implements IOperation {
 			// int restricInfo = this.calRestricInfo(angle);
 
 			if (info.contains("[")) {
-				detail.setFlag(1);
-			} else {
 				detail.setFlag(2);
+			} else {
+				detail.setFlag(1);
 			}
 
 			detail.setMesh(restrict.mesh());

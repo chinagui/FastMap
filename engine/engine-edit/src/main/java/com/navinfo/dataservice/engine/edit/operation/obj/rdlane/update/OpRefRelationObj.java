@@ -523,11 +523,11 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) levelEntry.getValue().get(0);
 					updateByRdLinkVehicle(linkPid, limit, null);
-					updateByRdLinkForm(linkPid, null);
+					updateByRdLinkForm(linkPid, null,null);
 				} else if (level == LINK_FORM_32) {
 					// 公交车形态和步行街形态不会共存，只会存在一个
 					RdLinkForm form = (RdLinkForm) levelEntry.getValue().get(0);
-					updateByRdLinkForm(linkPid, form);
+					updateByRdLinkForm(linkPid, form,null);
 				}
 				break;
 			}
@@ -551,7 +551,7 @@ public class OpRefRelationObj {
 				} else if (level == LINK_FORM_32) {
 					// 公交车形态和步行街形态不会共存，只会存在一个
 					RdLinkForm form = (RdLinkForm) levelEntry.getValue().get(0);
-					updateByRdLinkForm(linkPid, form);
+					updateByRdLinkForm(linkPid, form,null);
 					break;
 				}
 				break;
@@ -568,7 +568,7 @@ public class OpRefRelationObj {
 				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), null, null);
 
 				if (flag) {
-					updateByRdLinkForm(rdLane.getLinkPid(), null);
+					updateByRdLinkForm(rdLane.getLinkPid(), null,rdLane);
 				}
 			}
 		}
@@ -791,7 +791,7 @@ public class OpRefRelationObj {
 		operation.caleRdlinesForRdlinkDirect(result);
 	}
 
-	private void updateByRdLinkForm(int pid, RdLinkForm linkForm) throws Exception {
+	private void updateByRdLinkForm(int pid, RdLinkForm linkForm, RdLane rdLane) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
@@ -831,8 +831,15 @@ public class OpRefRelationObj {
 			RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);
 
 			operation.setLink(link);
+			
+			List<RdLane> lanes = new ArrayList<>();
+			
+			if(rdLane != null)
+			{
+				lanes.add(rdLane);
+			}
 
-			operation.refRdLaneForRdlinkForm(result, formOfWay);
+			operation.refRdLaneForRdlinkForm(result, formOfWay,lanes);
 		}
 	}
 

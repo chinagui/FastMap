@@ -55,7 +55,7 @@ public class GLM06008 extends baseRule {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("SELECT DISTINCT RS.PID FROM RD_SE RS");
-		sb.append(" WHERE RS.NODE_PID = 209002372"+rdDirectroute.getNodePid());
+		sb.append(" WHERE RS.NODE_PID = "+rdDirectroute.getNodePid());
 		sb.append(" AND ((RS.IN_LINK_PID = "+rdDirectroute.getInLinkPid()+" AND RS.OUT_LINK_PID = "+rdDirectroute.getOutLinkPid()+")");
 		sb.append(" OR (RS.IN_LINK_PID = "+rdDirectroute.getOutLinkPid()+" AND RS.OUT_LINK_PID = "+rdDirectroute.getInLinkPid()+"))");
 		sb.append(" AND RS.U_RECORD <>2");

@@ -118,6 +118,16 @@
 			<objRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
     </object>
+    <object name="IX_SAMEPOI" type="RELATION" mainTable="IX_SAMEPOI"
+        class="com.navinfo.dataservice.dao.plus.obj.IxSamePoiObj">
+        <table name="IX_SAMEPOI" pk="GROUP_ID" 
+			class="com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoi">
+		</table>
+		<table name="IX_SAMEPOI_PART" pk=""
+			class="com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart">
+			<objRef col="GROUP_ID" refTable="IX_SAMEPOI" refCol="GROUP_ID" isRefMain="true"/>
+		</table>
+    </object>
 	
 	<ignoreColumns>U_RECORD,U_FIELDS,U_DATE</ignoreColumns>
 </mapping>

@@ -7,14 +7,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxSamePoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjFactory;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
@@ -59,6 +59,15 @@ public class PoiRelationImportor extends AbstractOperation{
 		//<parentPid,childPid>，用于根据父对象Pid加载对象之后更新childPidParentPid
 		Map<Long,Long> parentPidChildPid = new HashMap<Long,Long>();
 		
+		//*********************
+		//<pid,otherPid>，用以处理对象同一关系关联。samePid为空=解除父子关系
+		Map<Long,Long> pidSamePoiPid = new HashMap<Long,Long>();
+		//<sameFid,pid>，用于根据samefid加载对象之后更新pidSamePoiPid
+		Map<String,Long> sameFidPid = new HashMap<String,Long>();
+		
+		//用于存储fid 为空的 poi ,这样的poi 有可能没有同一关系;有可能解除同一关系
+		List<Long> emptyFidPids = new ArrayList<Long>();
+		
 		for(PoiRelation poiRelation:poiRelationImporterCommand.getPoiRels()){
 			//处理父子关系导入
 			if(poiRelation.getPoiRelationType().equals(PoiRelationType.FATHER_AND_SON)){
@@ -88,15 +97,262 @@ public class PoiRelationImportor extends AbstractOperation{
 					}			
 				}
 			}
-		}
+			//处理同一关系导入
+			else if(poiRelation.getPoiRelationType().equals(PoiRelationType.SAME_POI)){
+				long pid = poiRelation.getPid();
+				long otherPid = poiRelation.getSamePid();
+				
+				pidSamePoiPid.put(pid, otherPid);//全量的 poi
+				//需要加载的samepoi存在pid,优先用pid加载;pid不存在用fid加载;pid/fid均为空则不加载
+				
+				String sameFid = poiRelation.getSameFid();
+				if(sameFid != null && !sameFid.equals(""))
+				{//当samefid存在时 存入 sameFidPid
+					sameFidPid.put(sameFid,pid);
+					/*for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
+						BasicRow samepoiObj = entry.getValue().getMainrow();
+						if(samepoiObj.getAttrByColName("POI_NUM").equals(sameFid)){
+							//判断samefid 对应的 ix_poi对象是否存在
+							pidSamePoiPid.put(pid, samepoiObj.getObjPid());
+							
+							break;
+						}
+					}*/
+				}else{//当sameFid为空时
+					emptyFidPids.add(pid);
+				}
+				}
+				
+			}
+	
 		
 		//维护父子关系
 		log.info("开始维护父子关系");
 		importFatherAndSon(childPidParentPid,parentPidChildPid,parentFidChildPid);
 		log.info("结束维护父子关系");
 		//维护统一关系
-		
+		log.info("开始维护同一关系");
+		importSamePoi(pidSamePoiPid,sameFidPid,emptyFidPids);
+		log.info("结束维护同一关系");
 	}
+
+	private void importSamePoi(Map<Long, Long> pidSamePoiPid,
+			Map<String, Long> sameFidPid,List<Long> emptyFidPids) throws ServiceException {
+		//维护同一关系对象必须加载IX_SAMEPOI，IX_SAMEPOI_PART两张子表
+		Set<String> tabNames = new HashSet<String>();
+		//tabNames.add("IX_SAMEPOI");
+		tabNames.add("IX_SAMEPOI_PART");
+
+		//根据fid加载父对象
+		log.info("根据fid加载ix_samepoi父对象");
+		loadSameObjByFids(conn,sameFidPid,tabNames,pidSamePoiPid,emptyFidPids);
+		//加载子对象原始父对象
+		log.info("加载子对象原始父对象");
+		//处理父子关系
+		log.info("遍历pidSamePoiPid,维护关系");
+		handleSamepoiRelation(conn,pidSamePoiPid,emptyFidPids);
+	}
+
+	private void handleSamepoiRelation(Connection conn, Map<Long, Long> pidSamePoiPid,List<Long> emptyFidPids) throws ServiceException {
+		//遍历childPidParentPid,维护关系
+				try{
+					//已经维护完了同一关系的 pid 
+					List<Long> finishPid = new ArrayList<Long>();
+					for(Map.Entry<Long,Long> entry:pidSamePoiPid.entrySet()){
+						long thisPid = entry.getKey();
+						long thisSamePid = entry.getValue();
+						
+						long thisGroupId = 0;
+						long thisSameGroupId = 0;
+						//获取 当前pid及 samepoipid对应的groupid 
+						Set<Long> pidSet = new HashSet<Long>();
+						pidSet.add(thisPid);
+						pidSet.add(thisSamePid);
+						List<Map<String,Long>> pidGroupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, pidSet);
+						for(Map<String,Long> map : pidGroupIds){
+							if(map.get("poi_pid") == thisPid){
+								thisGroupId = map.get("group_id");
+							}
+							else if(map.get("poi_pid") == thisSamePid){
+								thisSameGroupId = map.get("group_id");
+							}
+						}
+						BasicObj thisPidObj = null;
+						BasicObj thisSamePidObj = null;
+						if(thisGroupId != 0){
+							thisPidObj = result.getObjsMapByType(ObjectName.IX_SAMEPOI).get(thisGroupId);
+						}
+						if(thisSameGroupId != 0){
+							thisSamePidObj = result.getObjsMapByType(ObjectName.IX_SAMEPOI).get(thisSameGroupId);
+						}	
+							
+						
+						if(thisSamePid != 0){//上传数据存在 samefid 
+							if(thisGroupId != 0 && thisPidObj != null ){//当poi 存在 原始 同一关系
+								if(thisGroupId != thisSameGroupId){//原始的同组poi 不是 上传的samepoi
+									log.info("解除 当前poi 的同一关系 :thisPid :" + thisPid );
+									thisPidObj.deleteObj();//解除 当前poi 的同一关系
+									if(thisSameGroupId != 0 && thisSamePidObj != null ){
+										log.info("解除上传的same poi 的同一关系 :thisSamePid :" + thisSamePid );
+										thisSamePidObj.deleteObj();//如果上传的poi 存在原始 同组poi ,解除上传的poi 的同一关系
+									}
+									if(finishPid.contains(thisPid)){
+										log.info("已经维护了同一关系，不在维护，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+									}else{
+										log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+										IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
+										 long groupId = obj.objPid();
+										 System.out.println("obj :"+obj+", groupId:"+ groupId);
+										 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
+										 	ixSamepoiPart.setGroupId(groupId);
+										 	ixSamepoiPart.setPoiPid(thisPid);
+										 	finishPid.add(thisPid);//将当前pid 存入 已维护pid 集合
+										 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
+										 	ixSamepoiPartOther.setGroupId(groupId);
+										 	ixSamepoiPartOther.setPoiPid(thisSamePid);
+										 	finishPid.add(thisSamePid);//将同组的 otherpid  存入 已维护pid 集合
+										//**将当前 poi的新增的 ix_samepoi 存入 result
+										 if(!result.isObjExist(obj)){
+												result.putObj(obj);
+										}
+									}
+									
+								}
+								
+							}else{//不存在 原始同一关系 ,需要新增
+								if(thisSameGroupId != 0 && thisSamePidObj != null ){
+									log.info("解除上传的same poi 的同一关系 :thisSamePid :" + thisSamePid );
+									thisSamePidObj.deleteObj();//如果上传的poi 存在原始 同组poi ,解除上传的poi 的同一关系
+								}
+								if(finishPid.contains(thisPid)){
+									log.info("已经维护了同一关系，不在维护，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+								}else{
+									log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
+									IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
+									 long groupId = obj.objPid();
+									 System.out.println("obj :"+obj+", groupId:"+ groupId);
+									 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
+									 	ixSamepoiPart.setGroupId(groupId);
+									 	ixSamepoiPart.setPoiPid(thisPid);
+									 	finishPid.add(thisPid);//将当前pid 存入 已维护pid 集合
+									 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
+									 	ixSamepoiPartOther.setGroupId(groupId);
+									 	ixSamepoiPartOther.setPoiPid(thisSamePid);
+									 	finishPid.add(thisSamePid);//将同组的 otherpid  存入 已维护pid 集合
+									//**将当前 poi的新增的 ix_samepoi 存入 result
+									 if(!result.isObjExist(obj)){
+											result.putObj(obj);
+									}
+								}
+								
+							}
+							
+						}else{//上传数据 不存在 samefid 
+							if(thisGroupId != 0 && thisPidObj != null ){//当poi 存在 原始 同一关系 ,需解除 原始同一关系
+								log.info("解除 当前poi 的同一关系 :thisPid :" + thisPid );
+								thisPidObj.deleteObj();//解除 当前poi 的同一关系
+							}
+						}
+					}	
+				}catch(Exception e){
+					DbUtils.rollbackAndCloseQuietly(conn);
+					log.error(e.getMessage(), e);
+					throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+				}
+	}
+
+	private void loadSameObjByFids(Connection conn, Map<String, Long> sameFidPid, Set<String> tabNames,
+			Map<Long, Long> pidSamePoiPid,List<Long> emptyFidPids) throws ServiceException {
+		//根据Pid加载samepoi对象
+		try{
+			List<Long> otherPids = new ArrayList<Long>();
+			if(!sameFidPid.keySet().isEmpty()){
+				Map<Long,BasicObj> objs = ObjBatchSelector.selectBySpecColumn(conn, ObjectName.IX_POI, tabNames,true, "POI_NUM", sameFidPid.keySet(), true, true);
+				for(BasicObj obj:objs.values()){
+					pidSamePoiPid.put(sameFidPid.get((String) obj.getMainrow().getAttrByColName("POI_NUM")), obj.getMainrow().getObjPid());
+					otherPids.add(obj.getMainrow().getObjPid());
+				}
+				//判断哪些父对象没有被加载到
+				if(objs.size()<sameFidPid.keySet().size()){
+					for(String samepoiFid:sameFidPid.keySet()){
+						for(BasicObj obj:objs.values()){
+							if(obj.getMainrow().getAttrByColName("POI_NUM").equals(samepoiFid)){
+								continue;
+							};
+						}
+						//没有加载到父对象，则不维护该父子关系
+						errLog.put(sameFidPid.get(samepoiFid).toString(), "无法根据samepoiFid:"+samepoiFid +" 找到同组poi对象");
+						pidSamePoiPid.remove(sameFidPid.get(samepoiFid));
+					}
+				}
+				//加载 ix_samepoi 
+				//去 数据库 ix_samepoi_part表查询当前poi 已经再数据库存在的group_id
+				List<Map<String,Long>> thisList =IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, pidSamePoiPid.keySet());
+				List<Long> thisGroupIdList = new ArrayList<Long>();
+				List<Long> thisPidList = new ArrayList<Long>();//存在原始 samepoi 的 pid
+				List<Long> thisPidListToNew = new ArrayList<Long>();//需要新建 Ixsamepoi obj 的 pid的集合
+				if(thisList != null && thisList.size() > 0){
+					for(Map<String,Long> map : thisList){
+						thisGroupIdList.add(map.get("group_id"));
+						thisPidList.add(map.get("poi_pid"));
+					}
+					
+					if(thisGroupIdList != null && thisGroupIdList.size() > 0){
+						//如果thispoi 存在原始 同一关系  ,直接查询加入到 result
+						Map<Long,BasicObj> samePoiObjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, tabNames,false,thisGroupIdList, true, true); 
+						//**将当前 poi的原始的 ix_samepoi 存入 result
+						for(BasicObj samePoiObj : samePoiObjs.values()){
+							if(!result.isObjExist(samePoiObj)){
+								result.putObj(samePoiObj);
+							}
+						}
+					}
+				}
+				//处理 同组的 other poi 
+				List<Long> otherGroups = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, otherPids);
+				if(otherGroups != null && otherGroups.size() > 0){
+					//如果thispoi 存在原始 同一关系  ,直接查询加入到 result
+					Map<Long,BasicObj>	otherSamePoiObjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, tabNames,false,thisGroupIdList, true, true); 
+					//**将当前 other poi的原始的 ix_samepoi 存入 result
+					for(BasicObj otherSamePoiObj : otherSamePoiObjs.values()){
+						if(!result.isObjExist(otherSamePoiObj)){
+							result.putObj(otherSamePoiObj);
+						}
+					}
+				}
+				
+				for(Long thispid : pidSamePoiPid.keySet()){
+					//排除存在原始 samepoi 的 pid  及 samefid 为空的pid ,不需要新建 Ix_samepoi obj
+					if(!thisPidList.contains(thispid) && !emptyFidPids.contains(thispid)){
+						thisPidListToNew.add(thispid);
+					}
+				}
+				/*if(thisPidListToNew != null && thisPidListToNew.size() >0 ){
+					//如果thispoi 不存在原始同一关系,则先创建再加入到 result 
+					for(Long thispid : thisPidListToNew){
+						IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
+						 long groupId = obj.objPid();
+						 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
+						 ixSamepoiPart.setGroupId(groupId);
+						 ixSamepoiPart.setPoiPid(thispid);
+						 IxSamepoiPart ixSamepoiPartOther = obj.createIxSamepoiPart();
+						 ixSamepoiPartOther.setGroupId(groupId);
+						 ixSamepoiPartOther.setPoiPid(pidSamePoiPid.get(thispid));
+						//**将当前 poi的新增的 ix_samepoi 存入 result
+						 if(!result.isObjExist(obj)){
+								result.putObj(obj);
+						}
+					}
+				}*/
+				
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
 
 	/**
 	 * @param childPidParentPid <childPid,parentPid>用以维护父子关系
@@ -334,10 +590,10 @@ public class PoiRelationImportor extends AbstractOperation{
 		
 	}
 
-
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
 		return "PoiRelationImportor";
 	}
+	
 }

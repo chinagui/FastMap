@@ -6,8 +6,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -354,8 +356,8 @@ public class RdLinkExporter {
 
 		json.put("styleFactors", styleFactors);
 
-		int style = computeStyle(paveStatus, isViaduct, formsArray,
-				styleFactors);
+		int style = computeStyle(formsArray,
+				styleFactors,multiDigitized);
 
 		json.put("display_style", kind + "," + style);
 
@@ -381,110 +383,95 @@ public class RdLinkExporter {
 		return json;
 	}
 
-	private static int computeStyle(int paveStatus, int isViaduct,
-			JSONArray forms, JSONArray styleFactors) {
-
-		if (paveStatus == 1) {
-			return 0;
+	private static int computeStyle(JSONArray forms, 
+			JSONArray styleFactors, int multiDigitized) {
+		int style = -1;
+		int count = 0;
+		
+		if (multiDigitized == 1) {
+			style = 32;
+			count+=1;
 		}
 
-		Set<Integer> formSet = new HashSet<Integer>();
+		List<Integer> formList = new ArrayList<>();
 
 		for (int i = 0; i < forms.size(); i++) {
 			JSONObject json = forms.getJSONObject(i);
 
-			formSet.add(json.getInt("form"));
+			formList.add(json.getInt("form"));
 		}
 
-		if (isViaduct == 1) {
-			if (formSet.contains(24)) {
-				return 1;
-			} else if (formSet.contains(30)) {
-				return 2;
-			}
-			return 3;
+		if (formList.contains(50)) {
+			style = 33;
+			count+=1;
 		}
 
-		if (formSet.contains(15)) {
-			return 4;
+		if (formList.contains(15)) {
+			style = 4;
+			count+=1;
 		}
 
-		if (formSet.contains(16)) {
-			return 5;
+		if (formList.contains(36) 
+				&& !(formList.contains(12) || formList.contains(13) || formList.contains(53) || formList.contains(54))) {
+			style = 14;
+			count+=1;
 		}
 
-		if (formSet.contains(17)) {
-			return 6;
+		if (formList.contains(22)) {
+			style = 14;
+			count+=1;
 		}
 
-		if (formSet.contains(22)) {
-			return 7;
+		if (formList.contains(24)) {
+			
+			style = 14;
+			count+=1;
 		}
 
-		if (formSet.contains(24)) {
-			if (formSet.contains(30)) {
-				return 8;
-			} else {
-				return 9;
-			}
+		if (formList.contains(30)) {
+			style = 14;
+			count+=1;
 		}
 
-		if (formSet.contains(30)) {
-			return 10;
-		}
-
-		if (formSet.contains(31)) {
-			return 11;
-		}
-
-		if (formSet.contains(34)) {
+		if (formList.contains(34)) {
 			return 12;
 		}
 
-		if (formSet.contains(36)) {
-			if (formSet.contains(52)) {
-				return 13;
-			} else {
-				if(!formSet.contains(12) && !formSet.contains(13) 
-						&& !formSet.contains(53) && !formSet.contains(54) ){
-					return 14;
-				}
-				
-			}
-		}
-
-		if (formSet.contains(52)) {
-			return 15;
-		}
-
-		if (formSet.contains(53)) {
-			return 16;
-		}
-
-		if (formSet.contains(60)) {
-			return 17;
-		}
-
-		Set<Integer> styleSet = new HashSet<Integer>();
-
+		List<Integer> styleList = new ArrayList<>();
 		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
 
-			styleSet.add(json.getInt("factor"));
+			styleList.add(json.getInt("factor"));
 		}
 
-		if (styleSet.contains(0)) {
-			return 18;
+		if (styleList.contains(98)) {
+			style = 29;
+			count+=1;
+		}
+		
+		if (formList.contains(52)) {
+			style = 15;
+			count+=1;
+		}
+		
+		if (styleList.contains(2)) {
+			style = 31;
+			count+=1;
 		}
 
-		if (styleSet.contains(6)) {
-			return 19;
+		if (styleList.contains(10)) {
+			style = 37;
+			count+=1;
 		}
 
-		if (styleSet.contains(99)) {
-			return 20;
+		if (count >= 2 ) {
+			style = 36;
 		}
-
-		return -1;
+		
+		if (count == 0) {
+			style = 255;
+		}
+		
+		return style;
 	}
 }

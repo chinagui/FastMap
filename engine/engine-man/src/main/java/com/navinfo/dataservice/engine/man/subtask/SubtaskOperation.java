@@ -371,7 +371,8 @@ public class SubtaskOperation {
 					+ "           AND S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
 					+ "           AND B.BLOCK_ID = M.BLOCK_ID"
 					+ "           AND SS.STATUS != 0"
-					+ "           AND SS.TYPE = 3)))";	
+					+ "           AND SS.TYPE = 3)))";
+			log.info("关闭SQL："+updateSql);
 			run.update(conn,updateSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1744,7 +1745,10 @@ public class SubtaskOperation {
 			 * 采集/日编/月编子任务变更：XXX(子任务名称)信息发生变更，请关注*/
 			String msgTitle = "";
 			String msgContent = "";
+			//2web,1手持端消息
+			int pushtype=2;
 			if((int)subtask.getStage()== 0){
+				pushtype=1;
 				msgTitle = "采集子任务编辑";
 				msgContent = "采集子任务变更:" + subtask.getName() + "内容发生变更,请关注";
 			}else if((int)subtask.getStage()== 1){
@@ -1773,7 +1777,7 @@ public class SubtaskOperation {
 			message.setMsgParam(msgParam.toString());
 			message.setPushUser(pushUserName);
 			
-			MessageService.getInstance().push(message, 1);
+			MessageService.getInstance().push(message, pushtype);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("推送消息失败，原因为:"+e.getMessage(),e);

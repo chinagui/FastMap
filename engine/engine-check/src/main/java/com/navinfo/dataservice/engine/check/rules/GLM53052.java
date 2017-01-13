@@ -16,7 +16,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @author songdongyan
  * @date 2017年1月10日
  * @Description: 单向道路不能做下行走向
- * 互联网RTIC图面编辑
+ * 互联网RTIC图面编辑，后来这个出发时间删掉了-=-
+ * 道路方向编辑
  */
 public class GLM53052 extends baseRule{
 
@@ -35,13 +36,13 @@ public class GLM53052 extends baseRule{
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
-			//新增/修改RdLinkRtic
-			if(obj instanceof RdLinkIntRtic ){
-				RdLinkIntRtic rdLinkRtic=(RdLinkIntRtic) obj;
-				checkRdLinkIntRtic(rdLinkRtic);
-			}
+//			//新增/修改RdLinkRtic
+//			if(obj instanceof RdLinkIntRtic ){
+//				RdLinkIntRtic rdLinkRtic=(RdLinkIntRtic) obj;
+//				checkRdLinkIntRtic(rdLinkRtic);
+//			}
 			//道路方向编辑
-			else if(obj instanceof RdLink ){
+			if(obj instanceof RdLink ){
 				RdLink rdLink=(RdLink) obj;
 				checkRdLink(rdLink);
 			}

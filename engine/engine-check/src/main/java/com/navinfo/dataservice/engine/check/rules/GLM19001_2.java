@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -185,7 +186,61 @@ public class GLM19001_2 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj : checkCommand.getGlmList()){
+			//道路属性编辑
+			if(obj instanceof RdLink ){
+				RdLink rdLink=(RdLink) obj;
+				checkRdLink(rdLink);
+			}
+		}
+	}
+
+	/**
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		boolean checkFlag = false;
+		if(rdLink.changedFields().containsKey("kind")){
+			int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString());
+			if((kind==9)){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb2 = new StringBuilder();
+
+			sb2.append("SELECT 1 FROM RD_LANE_CONNEXITY C, RD_LANE_TOPOLOGY T");
+			sb2.append(" WHERE C.PID = T.CONNEXITY_PID");
+			sb2.append(" AND T.RELATIONSHIP_TYPE = 2");
+			sb2.append(" AND C.U_RECORD <> 2");
+			sb2.append(" AND T.U_RECORD <> 2");
+			sb2.append(" AND C.IN_LINK_PID = " + rdLink.getPid());
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_LANE_TOPOLOGY T");
+			sb2.append(" WHERE T.RELATIONSHIP_TYPE = 2");
+			sb2.append(" AND T.U_RECORD <> 2");
+			sb2.append(" AND T.OUT_LINK_PID = " + rdLink.getPid());
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_LANE_VIA V, RD_LANE_TOPOLOGY T");
+			sb2.append(" WHERE T.RELATIONSHIP_TYPE = 2");
+			sb2.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+			sb2.append(" AND V.U_RECORD <> 2");
+			sb2.append(" AND T.U_RECORD <> 2");
+			sb2.append(" AND T.OUT_LINK_PID = " + rdLink.getPid());
+			
+			String sql2 = sb2.toString();
+			log.info("RdLink后检查GLM19001_2:" + sql2);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql2);
+
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLink.getPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
 		
 	}
 

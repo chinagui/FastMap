@@ -35,7 +35,7 @@ public class GLM60376 extends BasicCheckRule {
 			//①当KIND_CODE为冷饮店（110302）时，FOOD_TYPE的值应在“FOOD_TYPE值域表（SC_POINT_FOODTYPE）”
 			// 中POIKIND为110302对应的FOODTYPE中存在，否则报出；
 			if(kind.equals("110302")){
-				List<String> foods = metadataApi.scPointFoodtype110302FoodTypes();
+				Map<String, Map<String, String>> foods = metadataApi.scPointFoodtypeFoodTypes();
 				List<IxPoiRestaurant> restList = poiObj.getIxPoiRestaurants();
 				if(restList==null||restList.isEmpty()){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "冷饮分类对应风味类型制作错误");
@@ -47,7 +47,7 @@ public class GLM60376 extends BasicCheckRule {
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "冷饮分类对应风味类型制作错误");
 						return;
 					}
-					if(!foods.contains(foodtype)){
+					if(!foods.get("110302").keySet().contains(foodtype)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"冷饮分类对应风味类型制作错误");
 						return;}
 				}

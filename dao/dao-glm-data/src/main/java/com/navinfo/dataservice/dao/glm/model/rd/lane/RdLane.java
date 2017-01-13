@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * 车道表
@@ -54,6 +54,8 @@ public class RdLane implements IObj {
 	private int srcFlag = 1;// 车道来源
 
 	private List<IRow> conditions = new ArrayList<IRow>();
+	
+	protected ObjStatus laneStatus;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	public Map<String, RdLaneCondition> conditionMap = new HashMap<>();
@@ -242,13 +244,12 @@ public class RdLane implements IObj {
 
 	@Override
 	public ObjStatus status() {
-
-		return null;
+		return laneStatus;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		this.laneStatus = os;
 	}
 
 	@Override
@@ -259,9 +260,14 @@ public class RdLane implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-
+		
 		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
-
+		
+		if(objLevel == ObjLevel.HISTORY)
+		{
+			json.remove("laneStatus");
+		}
+		
 		return json;
 	}
 

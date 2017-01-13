@@ -59,13 +59,13 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointFoodtype.getInstance().scPointFoodtypeDrinkMap();
 	}
 	/**
-	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
-	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * SELECT POIKIND, FOODTYPE, TYPE FROM SC_POINT_FOODTYPE
+	 * @return Map<String, Map<String, String>> key:POIKIND value:Map<String, String> (key:FOODTYPE,value:TYPE)
 	 * @throws Exception
 	 */
 	@Override
-	public List<String> scPointFoodtype110302FoodTypes() throws Exception{
-		return ScPointFoodtype.getInstance().scPointFoodtype110302FoodTypes();
+	public Map<String, Map<String, String>> scPointFoodtypeFoodTypes() throws Exception{
+		return ScPointFoodtype.getInstance().scPointFoodtypeFoodTypes();
 	}
 	/**
 	 * select poikind,chain,foodType from SC_POINT_BRAND_FOODTYPE

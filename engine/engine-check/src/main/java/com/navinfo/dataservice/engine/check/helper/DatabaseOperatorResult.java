@@ -27,7 +27,7 @@ public class DatabaseOperatorResult extends DatabaseOperator {
 	
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
 		List<Object> resultList=new ArrayList<Object>();
-		if (resultSet.next()){
+		while (resultSet.next()){
 			String pointWkt ="";
 			try{
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");

@@ -16,7 +16,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 public class ScPointFoodtype {
 	
 	private List<String> kinds= new ArrayList<String>();
-	private List<String> foodType110302s= new ArrayList<String>();
+	private Map<String, Map<String, String>> foodTypes= new HashMap<String, Map<String,String>>();
 	private Map<String, String> drinkMap=new HashMap<String, String>();
 
 	private static class SingletonHolder {
@@ -64,16 +64,16 @@ public class ScPointFoodtype {
 	}
 	
 	/**
-	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
-	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * SELECT POIKIND, FOODTYPE, TYPE FROM SC_POINT_FOODTYPE
+	 * @return Map<String, Map<String, String>> key:POIKIND value:Map<String, String> (key:FOODTYPE,value:TYPE)
 	 * @throws Exception
 	 */
-	public List<String> scPointFoodtype110302FoodTypes() throws Exception{
-		if (foodType110302s==null||foodType110302s.isEmpty()) {
+	public Map<String, Map<String, String>> scPointFoodtypeFoodTypes() throws Exception{
+		if (foodTypes==null||foodTypes.isEmpty()) {
 				synchronized (this) {
-					if (foodType110302s==null||foodType110302s.isEmpty()) {
+					if (foodTypes==null||foodTypes.isEmpty()) {
 						try {
-							String sql = "SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'";								
+							String sql = "SELECT POIKIND, FOODTYPE, TYPE FROM SC_POINT_FOODTYPE";								
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;
 							Connection conn = null;
@@ -82,7 +82,12 @@ public class ScPointFoodtype {
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
 								while (rs.next()) {
-									foodType110302s.add(rs.getString("foodtype"));			
+									String kind=rs.getString("POIKIND");
+									String food=rs.getString("foodtype");
+									if(!foodTypes.containsKey(kind)){
+										foodTypes.put(kind,new HashMap<String, String>());
+									}
+									foodTypes.get(kind).put(food, rs.getString("TYPE"));	
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);
@@ -97,7 +102,7 @@ public class ScPointFoodtype {
 					}
 				}
 			}
-			return foodType110302s;
+			return foodTypes;
 	}
 	
 	/**

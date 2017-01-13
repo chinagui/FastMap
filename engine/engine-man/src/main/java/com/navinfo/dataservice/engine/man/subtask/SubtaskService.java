@@ -613,23 +613,29 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
+			List<Integer> closedSubtaskList = subtaskIdList;
 			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
-			List<Integer> closedSubtaskList = new ArrayList<Integer>();
+			//判断是否有未完成任务,新需求没有了
+//			List<Integer> unClosedSubtaskList = new ArrayList<Integer>();
+//			List<Integer> closedSubtaskList = new ArrayList<Integer>();
+//			
+//			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//			
+//			for(int i=0;i<subtaskIdList.size();i++){
+//				SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskIdList.get(i));
+//				if(subtaskStatic.getPercent()<100){
+//					unClosedSubtaskList.add(subtaskIdList.get(i));
+//				}else{
+//					closedSubtaskList.add(subtaskIdList.get(i));
+//				}
+//			}
+//			// 根据subtaskId列表关闭subtask
+//			if (!closedSubtaskList.isEmpty()) {
+//				SubtaskOperation.closeBySubtaskList(conn, closedSubtaskList);
+//			}
 			
-			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-			
-			for(int i=0;i<subtaskIdList.size();i++){
-				SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskIdList.get(i));
-				if(subtaskStatic.getPercent()<100){
-					unClosedSubtaskList.add(subtaskIdList.get(i));
-				}else{
-					closedSubtaskList.add(subtaskIdList.get(i));
-				}
-			}
-			// 根据subtaskId列表关闭subtask
-			if (!closedSubtaskList.isEmpty()) {
-				SubtaskOperation.closeBySubtaskList(conn, closedSubtaskList);
-			}
+			//关闭subtask
+			SubtaskOperation.closeBySubtaskList(conn, subtaskIdList);
 			//发送消息
 			try {
 				//查询子任务
@@ -649,7 +655,10 @@ public class SubtaskService {
 					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2web,1手持端消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务关闭";
 						msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
 					}else if(subtask.getStage()== 1){
@@ -677,7 +686,7 @@ public class SubtaskService {
 							message.setMsgParam(msgParam.toString());
 							message.setPushUser(userInfo.getUserRealName());
 							
-							MessageService.getInstance().push(message, 0);
+							MessageService.getInstance().push(message, pushtype);
 							//发邮件
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
@@ -866,7 +875,10 @@ public class SubtaskService {
 					 * 新增采集/日编/月编子任务：XXX(子任务名称)，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2给web发消息，1给手持端发消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务发布";
 						msgContent = "新增采集子任务:" + subtask.getName() + ",请关注";
 					}else if(subtask.getStage()== 1){
@@ -895,7 +907,7 @@ public class SubtaskService {
 					message.setMsgParam(msgParam.toString());
 					message.setPushUser(pushUserName);
 					
-					MessageService.getInstance().push(message, 1);
+					MessageService.getInstance().push(message, pushtype);
 					success++;
 				} catch (Exception e) {
 					// TODO: handle exception
@@ -1156,12 +1168,13 @@ public class SubtaskService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			
-			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-			SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskId);
-			if(subtaskStatic.getPercent()<100){
-				return "subtaskId:" + subtaskId + "关闭失败。原因：存在未完成任务";
-			}
+			//新需求不需要判断完成度
+//			StaticsApi staticsApi = (StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//			SubtaskStatInfo subtaskStatic = staticsApi.getStatBySubtask(subtaskId);
+//			log.info("关闭SQL："+subtaskStatic.getPercent());
+//			if(subtaskStatic.getPercent()<100){
+//				return "subtaskId:" + subtaskId + "关闭失败。原因：存在未完成任务";
+//			}
 			
 			List<Integer> closedSubtaskList = new ArrayList<Integer>();
 			closedSubtaskList.add(subtaskId);
@@ -1189,7 +1202,10 @@ public class SubtaskService {
 					 * 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
 					String msgTitle = "";
 					String msgContent = "";
+					//2web,1手持端消息
+					int pushtype=2;
 					if(subtask.getStage()== 0){
+						pushtype=1;
 						msgTitle = "采集子任务关闭";
 						msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
 					}else if(subtask.getStage()== 1){
@@ -1217,7 +1233,7 @@ public class SubtaskService {
 							message.setMsgParam(msgParam.toString());
 							message.setPushUser(userInfo.getUserRealName());
 							
-							MessageService.getInstance().push(message, 0);
+							MessageService.getInstance().push(message, pushtype);
 							//发邮件
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";

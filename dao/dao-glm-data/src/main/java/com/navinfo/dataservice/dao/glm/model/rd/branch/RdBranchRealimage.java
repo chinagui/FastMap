@@ -28,6 +28,8 @@ public class RdBranchRealimage implements IRow {
 	private String rowId;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	
+	protected  ObjStatus status;
 
 	public String getRowId() {
 		return rowId;
@@ -103,12 +105,12 @@ public class RdBranchRealimage implements IRow {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status=os;
 	}
 
 	@Override

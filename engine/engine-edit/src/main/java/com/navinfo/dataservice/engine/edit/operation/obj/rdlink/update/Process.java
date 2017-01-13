@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -131,6 +132,8 @@ public class Process extends AbstractProcess<Command> {
 			if(irow instanceof RdLinkRtic){
 				glmList.add(irow);
 			}else if(irow instanceof RdLinkIntRtic){
+				glmList.add(irow);
+			}else if(irow instanceof RdLinkForm){
 				glmList.add(irow);
 			}
 		}

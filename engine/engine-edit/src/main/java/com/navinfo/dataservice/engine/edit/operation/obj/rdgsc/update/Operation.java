@@ -364,7 +364,7 @@ public class Operation implements IOperation {
 		}
 
 		// 打断link后还是自相交立交
-		if (newGscLink.size() == 1) {
+		if (linkGeoMap.size() == 1) {
 			for (int i = 0; i < rr.getLinks().size(); i++) {
 				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(i);
 
@@ -374,7 +374,15 @@ public class Operation implements IOperation {
 			}
 		} else {
 			// 打断后生成多线（双线）立交
+			// 先删除立交组成线，再新增新生成的线，主要是连续打断后不确定是否和原始组成link条数一致，所以这里线删除后新增
+			for (int j = 0; j < rr.getLinks().size(); j++) {
+				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(j);
+
+				result.insertObject(rdGscLink, ObjStatus.DELETE, rdGscLink.getPid());
+			}
+			
 			int i = 0;
+			
 			for (Map.Entry<Integer, Geometry> entry : linkGeoMap.entrySet()) {
 				Geometry geometry = entry.getValue();
 				
@@ -397,7 +405,7 @@ public class Operation implements IOperation {
 
 				gscLink.setShpSeqNum(shpSeqNumList.get(0));
 
-				result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
+				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
 				
 				i++;
 			}

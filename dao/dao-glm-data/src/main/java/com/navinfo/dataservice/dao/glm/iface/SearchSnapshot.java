@@ -45,7 +45,7 @@ public class SearchSnapshot implements ISerializable {
 		{
 			JSONObject obj = new JSONObject();
 			
-			obj.put("i", String.valueOf(this.getI()));
+			obj.put("i", this.getI());
 			
 			obj.put("t", this.getT());
 			

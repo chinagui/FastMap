@@ -211,6 +211,14 @@ public class ReflectionAttrUtils {
 			return "RD_BRANCH_DETAIL";
 		case RDSIGNBOARD:
 			return "RD_SIGNBOARD";
+		case RDSERIESBRANCH:
+			return "RD_SERIESBRANCH";
+		case RDBRANCHREALIMAGE:
+			return "RD_BRANCH_REALIMAGE";
+		case RDBRANCHSCHEMATIC:
+			return "RD_BRANCH_SCHEMATIC";
+		case RDSIGNASREAL:
+			return "RD_SIGNASREAL";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}
@@ -250,6 +258,21 @@ public class ReflectionAttrUtils {
 		}
 	}
 
+	public static String getBranchPrimaryKey(ObjType objType,String columnName)
+	{
+		switch (objType) {
+		case RDBRANCHDETAIL:
+		case RDBRANCHREALIMAGE:
+		case RDSERIESBRANCH:
+		case RDSIGNBOARD:
+		case RDSIGNASREAL:
+		case RDBRANCHSCHEMATIC:
+			return "BRANCH_PID";
+		default:
+			return columnName;
+		}
+	}
+	
 	/**
 	 * 字段转换成对象属性 例如：user_name to userName
 	 * 

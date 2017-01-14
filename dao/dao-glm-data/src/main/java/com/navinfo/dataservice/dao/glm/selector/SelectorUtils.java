@@ -14,7 +14,6 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -113,7 +112,7 @@ public class SelectorUtils {
 
 			String whereCondition = editQuerySql.substring(whereIndex);
 
-			whereSql.append(" " + whereCondition + " AND P." + columnName + "= " + pid + " AND P.U_RECORD !=2 ");
+			whereSql.append(" " + whereCondition + " AND P." + ReflectionAttrUtils.getBranchPrimaryKey(objType,columnName) + "= " + pid + " AND P.U_RECORD !=2 ");
 
 			StringBuilder outerLeftJoinSql = new StringBuilder();
 
@@ -130,6 +129,7 @@ public class SelectorUtils {
 
 		try {
 			pstmt = conn.prepareStatement(sql);
+			
 			int total = 0;
 			int startRow = (pageNum - 1) * pageSize + 1;
 			int endRow = pageNum * pageSize;

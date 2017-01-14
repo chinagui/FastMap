@@ -10,7 +10,7 @@ public class PoiRelation {
 	protected long pid;
 	protected long fatherPid;
 	protected String fatherFid;
-	protected long samePid;
+	protected long samePid = 0L;
 	protected String sameFid;
 	protected PoiRelationType poiRelationType;
 	

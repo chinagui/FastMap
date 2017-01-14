@@ -88,9 +88,13 @@ public class SpeedLimitUtils {
                     } else if (jsonObj.getString("objStatus").equals(OperType.DELETE.toString())) {
                         String rowId = jsonObj.getString("rowId");
                         Iterator<IRow> iterator = rows.iterator();
-                        while (iterator.hasNext())
-                            if (iterator.next().rowId().equals(rowId))
+                        while (iterator.hasNext()) {
+                            IRow tmp = iterator.next();
+                            if (null == tmp.rowId())
+                                continue;
+                            if (tmp.rowId().equals(rowId))
                                 iterator.remove();
+                        }
                     } else {
                         rows.add(form);
                     }
@@ -151,14 +155,17 @@ public class SpeedLimitUtils {
                     if (formChange) {
                         // ABCD变 E不变
                         if (!urbanChange) {
-                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || changeA1OrA2ToA3(oldKindValue, newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
+                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || changeA1OrA2ToA3(oldKindValue,
+                                    newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         }
                     } else {
                         // ABC变 DE不变
                         if (!urbanChange) {
-                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || (changeA3ToA1OrA2(oldKindValue, newKindValue) && directPairToSingle(oldDirect, newDirect)) || changeA1OrA2ToA3(oldKindValue, newKindValue)) {
+                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || (changeA3ToA1OrA2(oldKindValue,
+                                    newKindValue) && directPairToSingle(oldDirect, newDirect)) || changeA1OrA2ToA3
+                                    (oldKindValue, newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         }
@@ -167,14 +174,16 @@ public class SpeedLimitUtils {
                     if (formChange) {
                         // ABD变 CE不变
                         if (!urbanChange) {
-                            if ((changeInnerA1OrA1A2(oldKindValue, newKindValue)) || changeA1OrA2ToA3(oldKindValue, newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
+                            if ((changeInnerA1OrA1A2(oldKindValue, newKindValue)) || changeA1OrA2ToA3(oldKindValue,
+                                    newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         }
                     } else {
                         // AB变 CDE不变
                         if (!urbanChange) {
-                            if (changeInnerA1A2OrA1A2A3(oldKindValue, newKindValue) || changeHSToA1(oldKindValue, newKindValue)) {
+                            if (changeInnerA1A2OrA1A2A3(oldKindValue, newKindValue) || changeHSToA1(oldKindValue,
+                                    newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         }
@@ -187,7 +196,9 @@ public class SpeedLimitUtils {
                     if (!formChange && !urbanChange) {
                         int oldDirect = rdLink.getDirect();
                         int newDirect = link.getDirect();
-                        if ((changeInnerA1A2OrA1A2A3(oldKindValue, newKindValue) && (directPairToSingle(oldDirect, newDirect) || directSingleToPair(oldDirect, newDirect))) || changeA1ToHS(oldKindValue, newKindValue)) {
+                        if ((changeInnerA1A2OrA1A2A3(oldKindValue, newKindValue) && (directPairToSingle(oldDirect,
+                                newDirect) || directSingleToPair(oldDirect, newDirect))) || changeA1ToHS
+                                (oldKindValue, newKindValue)) {
                             speedLimit = calcSpeedLimit(link, newForm);
                         }
                     }
@@ -195,14 +206,16 @@ public class SpeedLimitUtils {
                     if (formChange) {
                         // AD变 BCE不变
                         if (!urbanChange) {
-                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || changeA1OrA2ToA3(oldKindValue, newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
+                            if (changeInnerA1A2OrA1A2(oldKindValue, newKindValue) || changeA1OrA2ToA3(oldKindValue,
+                                    newKindValue) || changeA3ToA1OrA2(oldKindValue, newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         }
                     } else {
                         // A变 BCDE不变
                         if (!urbanChange) {
-                            if (changeInA1A2A3(oldKindValue, newKindValue) || changeInA2(oldKindValue, newKindValue) || changeHSToA1(oldKindValue, newKindValue)) {
+                            if (changeInA1A2A3(oldKindValue, newKindValue) || changeInA2(oldKindValue, newKindValue)
+                                    || changeHSToA1(oldKindValue, newKindValue)) {
                                 speedLimit = calcSpeedLimit(link, newForm);
                             }
                         } else {

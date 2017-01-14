@@ -60,23 +60,29 @@ public class TipsSelectorTest {
 		
 		
 	JSONArray grid = JSONArray
-				.fromObject("[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133]");
+				.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
+	
+	//parameter=%7B"grids":%5B60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131%5D,"stage":%5B1,2%5D,"mdFlag":"d","type":"1101","dbId":17%7D
 	
 /*	parameter:{"grids":[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133],
 		"stage":[1,2],"mdFlag":"d","type":"2101","dbId":409}  */
 /*		JSONArray grid = JSONArray
 			.fromObject("[59567232,59567233]");*/
+	
+	
+	//%7B"grids":%5B60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131%5D,"stage":%5B1,2%5D%7D
 
 	
 		System.out.println(grid.toString());
 		JSONArray stage = new JSONArray();
 		stage.add(1);
 		stage.add(2);
+		stage.add(5);
 		
 		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
 		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 2101;
-		int dbId = 409;
+		int type = 1101;
+		int dbId = 17;
 		
 		
 		try {
@@ -122,8 +128,16 @@ public class TipsSelectorTest {
 		//{"gap":40,"mdFlag":"d","z":20,"x":863556,"y":396914}
 		try {
 			//{"gap":40,"mdFlag":"d","z":17,"x":107945,"y":49616}
-
-			System.out.println(solrSelector.searchDataByTileWithGap(107945, 49616, 20,
+			
+			//{"gap":40,"mdFlag":"d","z":19,"x":431773,"y":198460}
+			
+			//{"gap":40,"mdFlag":"d","z":20,"x":863553,"y":396917}
+			
+			//{"gap":40,"mdFlag":"d","z":17,"x":107944,"y":49616}
+			
+			//{"gap":40,"mdFlag":"d","z":17,"x":107944,"y":49615}
+			//{"gap":40,"mdFlag":"d","z":17,"x":107940,"y":49619}
+			System.out.println(solrSelector.searchDataByTileWithGap(107940, 49619, 17,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -168,7 +182,7 @@ public class TipsSelectorTest {
 			
 			
 			
-			String geo1="{\"coordinates\":[[116.48576,40.00849],[116.48582,40.00857],[116.48591,40.00866],[116.486,40.00876],[116.48613,40.00888],[116.48625,40.00902],[116.48633,40.00911],[116.48641,40.00918],[116.48645,40.00922]],\"type\":\"LineString\"}";
+			/*String geo1="{\"coordinates\":[[116.48576,40.00849],[116.48582,40.00857],[116.48591,40.00866],[116.486,40.00876],[116.48613,40.00888],[116.48625,40.00902],[116.48633,40.00911],[116.48641,40.00918],[116.48645,40.00922]],\"type\":\"LineString\"}";
 			String geo2="{\"coordinates\":[[116.48604,40.00812],[116.48617,40.00823],[116.48629,40.00837],[116.48643,40.00853],[116.48656,40.0087],[116.48669,40.00884],[116.48676,40.00893],[116.48681,40.00899],[116.48675,40.00902],[116.48655,40.00902],[116.48635,40.00901]],\"type\":\"LineString\"}";
 			String geo3="{\"coordinates\":[[116.48577,40.00902],[116.48581,40.00897],[116.48594,40.00889],[116.48606,40.00879],[116.48619,40.00867],[116.4863,40.00855],[116.48637,40.00848],[116.48644,40.00841],[116.48649,40.00837],[116.48655,40.00834],[116.48652,40.00842],[116.48643,40.00856]],\"type\":\"LineString\"}";
 			String geo4="{\"coordinates\":[[116.48617,40.00905],[116.48623,40.00901],[116.48635,40.00889],[116.48646,40.00874],[116.48654,40.00858],[116.48659,40.00842],[116.48659,40.00835]],\"type\":\"LineString\"}";
@@ -179,7 +193,11 @@ public class TipsSelectorTest {
 			System.out.println(Geojson.geojson2Wkt(geo2)+",");
 			System.out.println(Geojson.geojson2Wkt(geo3)+",");
 			System.out.println(Geojson.geojson2Wkt(geo4)+",");
-			System.out.println(Geojson.geojson2Wkt(geo5));
+			System.out.println(Geojson.geojson2Wkt(geo5));*/
+			
+			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
+			
+			System.out.println(o.getString("fc").equals("null"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -187,11 +205,18 @@ public class TipsSelectorTest {
 	}
 	
 	//根据网格获取tips统计
-	//	@Test
+		@Test
 		public void testGetStats() {
+		/*	JSONArray grid = JSONArray
+					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
+			
 			JSONArray grid = JSONArray
-					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+					.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
 			JSONArray stage = new JSONArray();
+			stage.add(1);
+			stage.add(2);
+			stage.add(3);
+			stage.add(5);
 			try {
 				System.out.println(solrSelector.getStats(grid, stage));
 			} catch (Exception e) {

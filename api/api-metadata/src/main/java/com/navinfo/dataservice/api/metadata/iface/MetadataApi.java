@@ -14,6 +14,24 @@ import net.sf.json.JSONObject;
  *
  */
 public interface MetadataApi {
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
+	 * @return 
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception;
+	/**
+	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
+	 * @return Map<String, List<String>> key:chain value:poikind列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointBrandFoodtypeChainKindMap() throws Exception;
+	/**
+	 * SELECT CHAIN_CODE FROM SC_POINT_CHAIN_CODE WHERE TYPE = 1
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> scPointChainCodeList() throws Exception;
 
 	public int queryAdminIdByLocation(double longitude, double latitude)
 			throws Exception;
@@ -211,5 +229,12 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, Map<String, String>> scPointFoodtypeFoodTypes() throws Exception;
+
+	/**
+	 * select PRE_KEY,CHAIN from SC_POINT_CHAIN_BRAND_KEY where hm_flag='D'
+	 * @return Map<String, String> key:PRE_KEY value:CHAIN
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointChainBrandKeyDMap() throws Exception;
 
 }

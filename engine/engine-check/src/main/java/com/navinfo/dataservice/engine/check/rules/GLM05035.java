@@ -2,12 +2,11 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -31,28 +30,32 @@ public class GLM05035 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 
-		Set<String> pids = new HashSet<String>();
-
 		for (IRow row : checkCommand.getGlmList()) {
 
 			if (row instanceof RdBranchName) {
+				
+				if (row.status() == ObjStatus.DELETE) {
+					continue;
+				}
 
 				RdBranchName name = (RdBranchName) row;
 
-				if (!name.changedFields().containsKey("srcFlag")) {
-					continue;
-				}
-				String RdBranchPid = getRdBranchPid(name.getDetailId());
+				int srcFlag = name.getSrcFlag();
 
-				if (RdBranchPid != null) {
-					pids.add(RdBranchPid);
+				if (name.changedFields().containsKey("srcFlag")) {
+
+					srcFlag = (int) name.changedFields().get("srcFlag");
+				}
+				
+				if (srcFlag != 0) {
+
+					String branchPid = getRdBranchPid(name.getDetailId());
+
+					String target = "[RD_BRANCH," + branchPid + "]";
+
+					this.setCheckResult("", target, 0);
 				}
 			}
-		}
-
-		for (String branchPid : pids) {
-
-			check(branchPid);
 		}
 	}
 	
@@ -76,27 +79,4 @@ public class GLM05035 extends baseRule {
 		return null;
 	}
 	
-	/**
-	 * @author luyao
-	 * @param
-	 * @throws Exception
-	 */
-	private void check(String branchPid) throws Exception {
-		
-		String strFormat = "SELECT DISTINCT RBD.BRANCH_PID FROM RD_BRANCH_NAME RBN, RD_BRANCH_DETAIL RBD WHERE RBN.DETAIL_ID = RBD.DETAIL_ID AND RBN.SRC_FLAG <> 0 AND RBD.BRANCH_PID = {0} AND RBN.U_RECORD <> 2 AND RBD.U_RECORD <> 2";
-		
-		String sql = MessageFormat.format(strFormat, branchPid);
-
-		DatabaseOperator getObj = new DatabaseOperator();
-
-		List<Object> resultList = new ArrayList<Object>();
-
-		resultList = getObj.exeSelect(this.getConn(), sql);
-
-		if (!resultList.isEmpty()) {
-			String target = "[RD_BRANCH," + branchPid + "]";
-			
-			this.setCheckResult("", target, 0);
-		}
-	}
 }

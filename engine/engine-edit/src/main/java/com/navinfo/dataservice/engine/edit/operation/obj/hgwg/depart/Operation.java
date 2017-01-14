@@ -53,9 +53,11 @@ public class Operation {
                 if (GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
                 // 计算rdHgwgLimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdHgwgLimit.getGeometry
+                        (), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
-                    rdHgwgLimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
+                    rdHgwgLimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (coor.x, coor.y)));
                     result.insertObject(rdHgwgLimit, ObjStatus.UPDATE, rdHgwgLimit.pid());
                 }
             }
@@ -71,7 +73,8 @@ public class Operation {
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection
+                        (GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
                 if (GeoTranslator.transform(rdHgwgLimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
@@ -88,7 +91,8 @@ public class Operation {
                     }
                 }
                 if (null != minCoor) {
-                    rdHgwgLimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(minCoor.x, minCoor.y)));
+                    rdHgwgLimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (minCoor.x, minCoor.y)));
                     rdHgwgLimit.changedFields().put("linkPid", minLinkPid);
                     result.insertObject(rdHgwgLimit, ObjStatus.UPDATE, rdHgwgLimit.pid());
                 }
@@ -108,7 +112,8 @@ public class Operation {
      * @return
      * @throws Exception
      */
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
+            rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
         // 查找上下线分离对影响到的限高限重
         List<Integer> linkPids = new ArrayList<>();
         linkPids.addAll(leftLinks.keySet());
@@ -116,33 +121,37 @@ public class Operation {
         List<RdHgwgLimit> hgwgLimits = rdHgwgLimitSelector.loadByLinkPids(linkPids, true);
         // 限高限重数量为零则不需要维护
         if (hgwgLimits.size() != 0) {
-            // 构建RdLinkPid-限高限重的对应集合
-            Map<Integer, List<RdHgwgLimit>> rdHgwgLimitMap = new HashMap<Integer, List<RdHgwgLimit>>();
-            for (RdHgwgLimit hgwgLimit : hgwgLimits) {
-                List<RdHgwgLimit> list = rdHgwgLimitMap.get(hgwgLimit.getLinkPid());
-                if (null != list) {
-                    list.add(hgwgLimit);
-                } else {
-                    list = new ArrayList<>();
-                    list.add(hgwgLimit);
-                    rdHgwgLimitMap.put(hgwgLimit.getLinkPid(), list);
-                }
-            }
-            for (RdLink link : links) {
-                RdLink leftLink = leftLinks.get(link.pid());
-                RdLink rightLink = rightLinks.get(link.pid());
-                if (rdHgwgLimitMap.containsKey(link.getPid())) {
-                    List<RdHgwgLimit> rdHgwgLimitList = rdHgwgLimitMap.get(link.getPid());
-                    for (RdHgwgLimit hgwgLimit : rdHgwgLimitList) {
-                        int direct = hgwgLimit.getDirect();
-                        if (2 == direct)
-                            // 限高限重为顺方向则关联link为右线
-                            updateRdHgwgLimit(rightLink, hgwgLimit, result);
-                        else if (0 == direct || 3 == direct)
-                            // 限高限重为逆方向则关联link为左线
-                            updateRdHgwgLimit(leftLink, hgwgLimit, result);
-                    }
-                }
+//            // 构建RdLinkPid-限高限重的对应集合
+//            Map<Integer, List<RdHgwgLimit>> rdHgwgLimitMap = new HashMap<Integer, List<RdHgwgLimit>>();
+//            for (RdHgwgLimit hgwgLimit : hgwgLimits) {
+//                List<RdHgwgLimit> list = rdHgwgLimitMap.get(hgwgLimit.getLinkPid());
+//                if (null != list) {
+//                    list.add(hgwgLimit);
+//                } else {
+//                    list = new ArrayList<>();
+//                    list.add(hgwgLimit);
+//                    rdHgwgLimitMap.put(hgwgLimit.getLinkPid(), list);
+//                }
+//            }
+//            for (RdLink link : links) {
+//                RdLink leftLink = leftLinks.get(link.pid());
+//                RdLink rightLink = rightLinks.get(link.pid());
+//                if (rdHgwgLimitMap.containsKey(link.getPid())) {
+//                    List<RdHgwgLimit> rdHgwgLimitList = rdHgwgLimitMap.get(link.getPid());
+//                    for (RdHgwgLimit hgwgLimit : rdHgwgLimitList) {
+//                        int direct = hgwgLimit.getDirect();
+//                        if (2 == direct)
+//                            // 限高限重为顺方向则关联link为右线
+//                            updateRdHgwgLimit(rightLink, hgwgLimit, result);
+//                        else if (0 == direct || 3 == direct)
+//                            // 限高限重为逆方向则关联link为左线
+//                            updateRdHgwgLimit(leftLink, hgwgLimit, result);
+//                    }
+//                }
+//            }
+            for (RdHgwgLimit hgwg : hgwgLimits) {
+                hgwg.changedFields.put("linkPid", 0);
+                result.insertObject(hgwg, ObjStatus.UPDATE, hgwg.pid());
             }
         }
         // 维护非目标Link的信息
@@ -155,7 +164,8 @@ public class Operation {
 
             Geometry newGeo = null;
             if (sourceLink.changedFields().containsKey("geometry")) {
-                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")),
+                        100000, 5);
             }
             if (null == newGeo || newGeo.isEmpty())
                 continue;
@@ -173,7 +183,8 @@ public class Operation {
     // 更新限高限重信息
     private void updateRdHgwgLimit(RdLink link, RdHgwgLimit hgwgLimit, Result result) throws Exception {
         // 计算原限高限重坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(hgwgLimit.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(hgwgLimit.getGeometry(),
+                0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});

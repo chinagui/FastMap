@@ -339,8 +339,6 @@ public class Operation implements IOperation {
 	private void handleSelfGscOnBreak(RdGsc rr, Result result, IObj oldLink, List<? extends IObj> newLinks) throws Exception {
 
 		Geometry gscGeo = rr.getGeometry();
-
-		List<IObj> newGscLink = new ArrayList<>();
 		
 		Map<Integer,Geometry> linkGeoMap = new HashMap<>();
 
@@ -368,7 +366,7 @@ public class Operation implements IOperation {
 			for (int i = 0; i < rr.getLinks().size(); i++) {
 				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(i);
 
-				rdGscLink.changedFields().put("linkPid", newGscLink.get(0).pid());
+				rdGscLink.changedFields().put("linkPid", linkGeoMap.keySet().iterator().next());
 
 				result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
 			}

@@ -236,18 +236,27 @@ public class GLM08004_2 extends baseRule{
 		if(checkFlg){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 FROM RD_RESTRICTION B");
+			sb.append("SELECT 1 FROM RD_RESTRICTION B,RD_LINK_FORM F");
 			sb.append(" WHERE B.IN_LINK_PID = " + rdLinkForm.getLinkPid());
 			sb.append(" AND B.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = B.IN_LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 20");
 			sb.append(" UNION");
-			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D,RD_LINK_FORM F");
 			sb.append(" WHERE D.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
 			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = D.OUT_LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 20");
 			sb.append(" UNION");
-			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D, RD_RESTRICTION_VIA RV");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D, RD_RESTRICTION_VIA RV,RD_LINK_FORM F");
 			sb.append(" WHERE D.RELATIONSHIP_TYPE = 2");
 			sb.append(" AND D.U_RECORD <> 2");
 			sb.append(" AND RV.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = RV.LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 20");
 			sb.append(" AND RV.LINK_PID = " + rdLinkForm.getLinkPid());
 			sb.append(" AND D.DETAIL_ID = RV.DETAIL_ID");
 			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM LF");

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -101,7 +102,7 @@ public class GLM03058 extends baseRule {
 				StringBuilder sb = new StringBuilder();
 				   
 				sb.append("SELECT DISTINCT R.LINK_PID FROM RD_NODE_FORM F, RD_LINK R");
-				sb.append(" WHERE R.LINK_PID = "+rdLink.getPid());
+				sb.append(" WHERE R.LINK_PID = "+rdLink.getPid()+" AND R.KIND = 10");
 				sb.append(" AND F.FORM_OF_WAY = 15 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
 				sb.append(" AND F.NODE_PID = "+nodePid);
 				String sql = sb.toString();
@@ -126,27 +127,40 @@ public class GLM03058 extends baseRule {
 	 */
 	private void checkRdNodeForm(RdNodeForm rdNodeForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			int formOfWay = (int) changedFields.get("formOfWay");
-			if(formOfWay == 15){
-				StringBuilder sb = new StringBuilder();
-				
-				sb.append("SELECT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK R");
-				sb.append(" WHERE F.NODE_PID = "+rdNodeForm.getNodePid()+" AND F.U_RECORD <> 2");
-				sb.append(" AND R.U_RECORD <> 2 AND R.KIND = 10");
-				sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
-				String sql = sb.toString();
-				log.info("RdNode后检查GLM03058--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
-					this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdNodeForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdNodeForm.changedFields();
+			if(!changedFields.isEmpty()){
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 15){
+					checkFlag = true;
+					}
 				}
+			}
+		}else if (rdNodeForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdNodeForm.getFormOfWay();
+			if(formOfWay == 15){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK R");
+			sb.append(" WHERE F.NODE_PID = "+rdNodeForm.getNodePid()+" AND F.U_RECORD <> 2");
+			sb.append(" AND R.U_RECORD <> 2 AND R.KIND = 10");
+			sb.append(" AND (R.S_NODE_PID = F.NODE_PID OR R.E_NODE_PID = F.NODE_PID)");
+			String sql = sb.toString();
+			log.info("RdNode后检查GLM03058--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

@@ -111,28 +111,41 @@ public class GLM03055 extends baseRule {
 	 */
 	private void checkRdNodeForm(RdNodeForm rdNodeForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			int formOfWay = (int) changedFields.get("formOfWay");
-			if(formOfWay == 15){
-				StringBuilder sb = new StringBuilder();
-				  
-				sb.append("SELECT DISTINCT RL.LINK_PID FROM RD_LINK RL,RD_LINK_FORM RLF,RD_NODE_FORM RNF");
-				sb.append(" WHERE RNF.NODE_PID ="+rdNodeForm.getNodePid());
-				sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 20");
-				sb.append(" AND (RNF.NODE_PID = RL.S_NODE_PID OR RNF.NODE_PID = RL.E_NODE_PID)");
-				sb.append(" AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RNF.U_RECORD <> 2");
-				String sql = sb.toString();
-				log.info("RdNode后检查GLM03055--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
-					this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdNodeForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdNodeForm.changedFields();
+			if(!changedFields.isEmpty()){
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 15){
+					checkFlag = true;
+					}
 				}
+			}
+		}else if (rdNodeForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdNodeForm.getFormOfWay();
+			if(formOfWay == 15){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb = new StringBuilder();
+			  
+			sb.append("SELECT DISTINCT RL.LINK_PID FROM RD_LINK RL,RD_LINK_FORM RLF,RD_NODE_FORM RNF");
+			sb.append(" WHERE RNF.NODE_PID ="+rdNodeForm.getNodePid());
+			sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 20");
+			sb.append(" AND (RNF.NODE_PID = RL.S_NODE_PID OR RNF.NODE_PID = RL.E_NODE_PID)");
+			sb.append(" AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RNF.U_RECORD <> 2");
+			String sql = sb.toString();
+			log.info("RdNode后检查GLM03055--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

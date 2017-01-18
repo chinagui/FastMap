@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -54,28 +55,41 @@ public class GLM03056 extends baseRule {
 	 */
 	private void checkRdNodeForm(RdNodeForm rdNodeForm) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		if(changedFields != null && changedFields.containsKey("formOfWay")){
-			int formOfWay = (int) changedFields.get("formOfWay");
-			if(formOfWay == 15){
-				StringBuilder sb = new StringBuilder();
-			    
-				sb.append("SELECT N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R");
-				sb.append(" WHERE N.NODE_PID = F.NODE_PID AND N.NODE_PID = "+rdNodeForm.getNodePid());
-				sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
-				sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
-				sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) <> 2");
-				String sql = sb.toString();
-				log.info("后检查GLM03056--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
-					this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdNodeForm.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdNodeForm.changedFields();
+			if(!changedFields.isEmpty()){
+				if(changedFields.containsKey("formOfWay")){
+					int formOfWay = (int) changedFields.get("formOfWay");
+					if(formOfWay == 15){
+						checkFlag = true;
+					}
 				}
+			}
+		}else if (rdNodeForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdNodeForm.getFormOfWay();
+			if(formOfWay == 15){
+				checkFlag = true;
+			}
+		}
+		if(checkFlag){
+			StringBuilder sb = new StringBuilder();
+		    
+			sb.append("SELECT N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R");
+			sb.append(" WHERE N.NODE_PID = F.NODE_PID AND N.NODE_PID = "+rdNodeForm.getNodePid());
+			sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
+			sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
+			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) <> 2");
+			String sql = sb.toString();
+			log.info("后检查GLM03056--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_NODE," + rdNodeForm.getNodePid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

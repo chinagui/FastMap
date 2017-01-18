@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
@@ -410,6 +409,89 @@ public class CheckUtil {
 		} finally {
 			DbUtils.commitAndCloseQuietly(connMeta);
 		}
+    }
+    
+    /**
+     * 查询poi是否存在检查错误
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static boolean getPoiCheckResult(Long pid,Connection conn) throws Exception {
+    	String sql = "SELECT 1 FROM ck_result_object WHERE table_name='IX_POI' AND pid=:1";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		if (rs.next()) {
+    			return true;
+    		}
+    		return false;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过pid查询parent表中的groupId
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static List<Long> getParentGroupIds(Long pid,Connection conn) throws Exception {
+    	String sql = "select t.group_id from ix_poi_parent t where t.parent_poi_pid=:1 and t.u_record != 2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> groupIds = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			groupIds.add(rs.getLong("group_id"));
+    		}
+    		return groupIds;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过pid查询children表中的groupId
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static List<Long> getChildGroupIds(Long pid,Connection conn) throws Exception {
+    	String sql = "select t.group_id from ix_poi_children t where t.child_poi_pid=:1 and t.u_record != 2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> groupIds = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			groupIds.add(rs.getLong("group_id"));
+    		}
+    		return groupIds;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
     }
     
 }

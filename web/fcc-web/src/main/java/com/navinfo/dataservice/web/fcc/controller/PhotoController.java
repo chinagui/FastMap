@@ -153,7 +153,7 @@ public class PhotoController extends BaseController {
 	 * @throws ServletException
 	 * @throws IOException
 	 */
-	@RequestMapping(value = "/poi/deep/setPhoto")
+	@RequestMapping(value = "/photo/deep/setPhoto")
 	public ModelAndView setDeepPhoto(HttpServletRequest request) throws ServletException, IOException {
 		
 		String parameter = request.getParameter("parameter");

@@ -207,7 +207,6 @@ public class RdLinkOperateUtils {
     public static List<RdLink> addRdLink(RdNode sNode, RdNode eNode, RdLink link, RdLink sourceLink, Result result)
             throws Exception {
         List<RdLink> links = new ArrayList<RdLink>();
-        System.out.println(link.getGeometry().toString()+"--------------------");
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(link.getGeometry());
         // 不跨图幅
         if (meshes.size() == 1) {

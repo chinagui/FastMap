@@ -283,14 +283,34 @@ public class SysMsgController extends BaseController {
 	 * @param request
 	 * @return
 	 */
+	@SuppressWarnings("rawtypes")
 	@RequestMapping(value = "/sysmsg/listHistory")
 	public ModelAndView getAllMsgHistory(HttpServletRequest request){
 		try{
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("pageNum")){
+				throw new IllegalArgumentException("parameter参数中pageNum不能为空。");
+			}
+			if(!paraJson.containsKey("pageSize")){
+				throw new IllegalArgumentException("parameter参数中pageSize不能为空。");
+			}
+			int pageNum = paraJson.getInt("pageNum");
+			int pageSize = paraJson.getInt("pageSize");
 			String condition ="{\"isHistory\":2}";
-			List<Map<String, Object>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
-			return new ModelAndView("jsonView", success(msgs));
+			Page data = SysMsgService.getInstance().getAllMsgHistory(userId,condition,pageNum,pageSize);
+			Map<String, Object> returnMap=new HashMap<String, Object>();
+			returnMap.put("result", (List)data.getResult());
+			returnMap.put("totalCount", data.getTotalCount());
+			return new ModelAndView("jsonView", success(returnMap));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

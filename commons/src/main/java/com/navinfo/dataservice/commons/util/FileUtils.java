@@ -230,6 +230,39 @@ public class FileUtils {
 		encoder.encode(tagImage);
 
 	}
+	
+	/**
+	 * 创建全貌照片
+	 * 
+	 * @param srcImageFile
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] makeFullViewImage(byte[] bytes) throws Exception {
+
+		JPEGImageEncoder encoder = null;
+		BufferedImage tagImage = null;
+		Image srcImage = null;
+		
+		int dstWidth = 400;// 全貌图宽度
+		int dstHeight = 300;// 全貌图高度
+		
+		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
+		srcImage = ImageIO.read(bis);
+		// 生成全貌图
+		tagImage = new BufferedImage(dstWidth, dstHeight,
+				BufferedImage.TYPE_INT_RGB);
+		tagImage.getGraphics().drawImage(srcImage, 0, 0, dstWidth, dstHeight,
+				null);
+		// fileOutputStream = new FileOutputStream(dstImageFileName);
+
+		ByteOutputStream bos = new ByteOutputStream();
+
+		encoder = JPEGCodec.createJPEGEncoder(bos);
+		encoder.encode(tagImage);
+
+		return bos.getBytes();
+	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println(new Date());

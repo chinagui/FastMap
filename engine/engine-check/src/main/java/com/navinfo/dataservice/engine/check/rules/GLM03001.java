@@ -9,7 +9,6 @@ import java.util.Set;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -49,11 +48,14 @@ public class GLM03001 extends baseRule {
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
 		Set<Integer> nodePids = new HashSet<Integer>();
-		nodePids.add(rdLink.getsNodePid());
-		nodePids.add(rdLink.geteNodePid());
-		//分离节点
 		Map<String, Object> changedFields = rdLink.changedFields();
-		if(!changedFields.isEmpty()){
+		//新增LINK
+		if(changedFields.isEmpty()){
+			nodePids.add(rdLink.getsNodePid());
+			nodePids.add(rdLink.geteNodePid());
+		}
+		//分离节点,平滑修形
+		else if(!changedFields.isEmpty()){
 			Integer sNodePid = null;
 			Integer eNodePid = null;
 			if(changedFields.containsKey("sNodePid")){

@@ -19,8 +19,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 2016年12月29日 下午4:55:08
  * @Description TODO
  * 道路Node的接续link数必须小于等于7
- * 移动端点 服务端后检查:
- * 新增LINK,分离节点 服务端后检查:
+ * 新增LINK,分离节点 ,平滑修形服务端后检查:
  */
 public class GLM03001 extends baseRule {
 
@@ -34,34 +33,14 @@ public class GLM03001 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//移动端点
-			if (row instanceof RdNode){
-				RdNode rdNode = (RdNode) row;
-				this.checkRdNode(rdNode);
-			}
-			//新增LINK,分离节点
-			else if (row instanceof RdLink){
+			//新增LINK,分离节点,平滑修形
+			if (row instanceof RdLink){
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
 			}
 		}
 	}
 	
-	/**
-	 * @author Han Shaoming
-	 * @param rdNode
-	 * @throws Exception 
-	 */
-	private void checkRdNode(RdNode rdNode) throws Exception {
-		// TODO Auto-generated method stub
-		boolean check = this.check(rdNode.getPid());
-
-		if(check){
-			String target = "[RD_NODE," + rdNode.getPid() + "]";
-			this.setCheckResult("", target, 0);
-		}
-	}
-
 	/**
 	 * @author Han Shaoming
 	 * @param rdLink

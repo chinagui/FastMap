@@ -235,7 +235,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = params.getInt("flag");//1是任务查，0是全库查
+			int flag = 0;//params.getInt("flag");//1是任务查，0是全库查
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
 			
 			
@@ -468,7 +468,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("memo", resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
 //			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-//			rdNameObj.put("city", resultSet.getString("CITY"));
+			rdNameObj.put("city", resultSet.getString("CITY"));
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

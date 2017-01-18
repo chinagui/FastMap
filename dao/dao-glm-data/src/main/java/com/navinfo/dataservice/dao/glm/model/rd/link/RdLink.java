@@ -105,8 +105,12 @@ public class RdLink implements IObj {
     public double getFeeStd() {
         return feeStd;
     }
+    
+    public String getRowId() {
+		return rowId;
+	}
 
-    public void setFeeStd(double feeStd) {
+	public void setFeeStd(double feeStd) {
         this.feeStd = feeStd;
     }
 

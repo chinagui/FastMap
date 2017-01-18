@@ -26,7 +26,7 @@ public class UploadTest {
 		UploadOperation operation = new UploadOperation(11L);
 		try {
 			Date startTime = new Date();
-			JSONObject ret = operation.importPoi("F://testpoi.txt");
+			JSONObject ret = operation.importPoi("F://testpoiold.txt");
 			System.out.println(ret);
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));

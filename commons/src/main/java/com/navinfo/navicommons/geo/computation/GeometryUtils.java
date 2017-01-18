@@ -387,10 +387,10 @@ public class GeometryUtils {
 	public static Integer getStartOrEndType(Coordinate[] coors,
 			Geometry standGeo) throws JSONException {
 		int flag = 0;
-		if (coors[0].equals(standGeo.getCoordinate())) {
+		if (coors[0].distance(standGeo.getCoordinate())<1) {
 
 			flag = 1;
-		} else if (coors[coors.length - 1].equals(standGeo.getCoordinate())) {
+		} else if (coors[coors.length - 1].distance(standGeo.getCoordinate())<1) {
 
 			flag = 2;
 		} else {

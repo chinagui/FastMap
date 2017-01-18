@@ -58,16 +58,26 @@ public class RdGscSelector extends AbstractSelector {
 			pstmt.setString(2, tableName);
 
 			resultSet = pstmt.executeQuery();
+			
+			List<Integer> rdGscPidList = new ArrayList<>();
 
 			while (resultSet.next()) {
+				
+				int rdGscPid = resultSet.getInt("pid");
+				
+				if(!rdGscPidList.contains(rdGscPid))
+				{
+					RdGsc rdGsc = new RdGsc();
 
-				RdGsc rdGsc = new RdGsc();
+					ReflectionAttrUtils.executeResultSet(rdGsc, resultSet);
+					
+					setChild(rdGsc, isLock);
 
-				ReflectionAttrUtils.executeResultSet(rdGsc, resultSet);
-
-				setChild(rdGsc, isLock);
-
-				rdGscList.add(rdGsc);
+					rdGscList.add(rdGsc);
+					
+					rdGscPidList.add(rdGscPid);
+				}
+				
 			}
 
 		} catch (Exception e) {

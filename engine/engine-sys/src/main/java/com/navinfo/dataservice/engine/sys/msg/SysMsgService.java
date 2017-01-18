@@ -498,10 +498,10 @@ public class SysMsgService {
 	 * @author Han Shaoming
 	 * @param userId
 	 * @param condition
-	 * @return Map<String, List<Map<String, Object>>>: Map<"20161128", List<Map<"msgId", 123>>>按照日期分组返回
+	 * @return List<Map<String, Object>>:List<Map<"msgId", 123>>
 	 * @throws ServiceException 
 	 */
-	public Map<String, List<Map<String, Object>>> getAllMsg(Long userId, String condition) throws ServiceException {
+	public List<Map<String, Object>> getAllMsg(Long userId, String condition) throws ServiceException {
 		Connection conn = null;
 		QueryRunner queryRunner = null;
 		try{
@@ -540,7 +540,7 @@ public class SysMsgService {
 			//日志
 			log.info("全部消息查询列表的sql:"+sql.toString());
 			
-			Map<String, List<Map<String, Object>>> msgs = queryRunner.query(conn, querySql, new MsgWithHandler(), params);
+			List<Map<String, Object>> msgs = queryRunner.query(conn, querySql, new MsgWithHandler(), params);
 			return msgs;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -706,20 +706,11 @@ public class SysMsgService {
 	 * @date 2016年11月15日 下午3:35:23
 	 * @Description TODO
 	 */
-	class MsgWithHandler implements ResultSetHandler<Map<String,List<Map<String,Object>>>>{
+	class MsgWithHandler implements ResultSetHandler<List<Map<String,Object>>>{
 		
-		public Map<String,List<Map<String,Object>>> handle(ResultSet rs) throws SQLException {
-			Map<String,List<Map<String,Object>>> msgMap=new HashMap<String, List<Map<String,Object>>>();
+		public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
 			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
-			String dateBefore="";
 			while(rs.next()){
-				String dateTmp=DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_YMD);
-				if(dateBefore.isEmpty()){dateBefore=dateTmp;}
-				if(!dateBefore.equals(dateTmp)){
-					msgMap.put(dateBefore, msgs);
-					msgs = new ArrayList<Map<String,Object>>();	
-					dateBefore=dateTmp;
-				}
 				Map<String,Object> msg = new HashMap<String, Object>();
 				msg.put("msgId",rs.getLong("MSG_ID"));
 				int msgType=rs.getInt("MSG_TYPE");
@@ -735,11 +726,7 @@ public class SysMsgService {
 				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
 				msgs.add(msg);
 			}
-			if(!msgs.isEmpty()){
-				msgMap.put(dateBefore, msgs);
-				msgs = new ArrayList<Map<String,Object>>();	
-			}
-			return msgMap;
+			return msgs;
 		}
 		
 	}

@@ -1,5 +1,30 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.lcface.create;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
+import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
+import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
+import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
+import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import net.sf.json.JSONObject;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,26 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.alibaba.druid.util.StringUtils;
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.IOperation;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.lc.*;
-import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
-import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.LineString;
-
-import net.sf.json.JSONObject;
+import static com.navinfo.navicommons.geo.computation.CompGeometryUtil.geoToMeshesWithoutBreak;
 
 public class Operation implements IOperation {
 
@@ -112,7 +118,8 @@ public class Operation implements IOperation {
      * @param flag   创建面表示 0 根据几何，1 根据既有线
      * @throws Exception
      */
-    private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag, LcFace face) throws Exception {
+    private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag, LcFace face)
+            throws Exception {
         Iterator<String> it = meshes.iterator();
         Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
         Map<Geometry, LcLink> mapLink = new HashMap<Geometry, LcLink>();
@@ -199,7 +206,7 @@ public class Operation implements IOperation {
         Coordinate sPoint = geom.getCoordinates()[0];
         // 获取几何形状跨越图幅号
         Set<String> meshes = new HashSet<String>();
-        meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geom);
+        meshes = geoToMeshesWithoutBreak(geom);
         // 如果不跨图幅
         if (meshes.size() == 1) {
             // 生成起始node
@@ -379,9 +386,9 @@ public class Operation implements IOperation {
         face.setGeometry(g);
         // 缩放计算面积和周长
         g = GeoTranslator.transform(g, 0.00001, 5);
-        String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
-        if (!StringUtils.isEmpty(meshId)) {
-            face.setMeshId(Integer.parseInt(meshId));
+        Set<String> meshIds = CompGeometryUtil.geoToMeshesWithoutBreak(g);
+        if (meshIds.size() == 1) {
+            face.setMeshId(Integer.parseInt(meshIds.iterator().next()));
         }
         face.setArea(GeometryUtils.getCalculateArea(g));
         face.setPerimeter(GeometryUtils.getLinkLength(g));

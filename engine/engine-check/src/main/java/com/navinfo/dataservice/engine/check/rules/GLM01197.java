@@ -27,7 +27,6 @@ public class GLM01197 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-        // TODO_CHECK 检查未考虑修改后值问题
         List<Integer> linkPidList = new ArrayList<Integer>();
         for (IRow obj : checkCommand.getGlmList()) {
             //只有主表rdlink的修改才引起该检查项
@@ -39,13 +38,16 @@ public class GLM01197 extends baseRule {
                 }
 
                 Map<String, Object> changedFields = rdLink.changedFields();
-                if (changedFields != null && !changedFields.containsKey("specialTraffic")
+                if (!changedFields.containsKey("specialTraffic")
                         && !changedFields.containsKey("functionClass")) {
                     continue;
                 }
 
+                int specialTraffic = rdLink.getSpecialTraffic();
+                if (changedFields.containsKey("specialTraffic"))
+                    specialTraffic = (int) rdLink.changedFields().get("specialTraffic");
                 //非特殊交通类型link不查此规则
-                if (rdLink.getSpecialTraffic() == 0) {
+                if (specialTraffic == 0) {
                     linkPidList.add(rdLink.getPid());
                     continue;
                 }
@@ -62,6 +64,8 @@ public class GLM01197 extends baseRule {
         linkPidList.addAll(specTrafficChain.getRdLinkPidSet());
 
         int fc = rdLink.getFunctionClass();
+        if (rdLink.changedFields().containsKey("functionClass"))
+            fc = (int) rdLink.changedFields().get("functionClass");
         Iterator<RdLink> specIterator = specTrafficChain.iterator();
         String target = "";
         boolean isError = false;

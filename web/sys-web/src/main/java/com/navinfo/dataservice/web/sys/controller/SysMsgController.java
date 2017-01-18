@@ -289,7 +289,7 @@ public class SysMsgController extends BaseController {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
 			String condition ="{\"isHistory\":2}";
-			Map<String, List<Map<String, Object>>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			List<Map<String, Object>> msgs = SysMsgService.getInstance().getAllMsg(userId,condition);
 			return new ModelAndView("jsonView", success(msgs));
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
@@ -311,10 +311,10 @@ public class SysMsgController extends BaseController {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
 			String condition ="{\"isHistory\":1,\"msgType\":1}";
-			Map<String, List<Map<String, Object>>> sysMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			List<Map<String, Object>> sysMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
 			condition ="{\"isHistory\":1,\"msgType\":2}";
-			Map<String, List<Map<String, Object>>> manageMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
-			Map<String,Map<String, List<Map<String, Object>>>> msgs=new HashMap<String, Map<String,List<Map<String,Object>>>>();
+			List<Map<String, Object>> manageMsgs = SysMsgService.getInstance().getAllMsg(userId,condition);
+			Map<String,List<Map<String, Object>>> msgs=new HashMap<String, List<Map<String,Object>>>();
 			msgs.put("sys", sysMsgs);
 			msgs.put("manage", manageMsgs);
 			return new ModelAndView("jsonView", success(msgs));

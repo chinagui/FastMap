@@ -35,7 +35,7 @@ public class RdNameSelectorTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":43,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
+		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -52,9 +52,9 @@ public class RdNameSelectorTest {
 			
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-//			JSONObject data = selector.searchForWeb(jsonReq,tips);
+			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
-//			System.out.println(data);
+			System.out.println(data);
 
 		} catch (Exception e) {
 			e.printStackTrace();

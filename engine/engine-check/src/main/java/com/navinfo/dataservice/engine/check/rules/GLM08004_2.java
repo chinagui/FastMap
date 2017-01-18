@@ -10,6 +10,8 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
@@ -23,6 +25,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description: 步行街不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线（也查线线经过线，但不查线线经过线为交叉口内link的情况）
  * 新增交限/卡车交限：RdRestriction
  * 修改交限/卡车交限：RdRestrictionDetail(新增，修改outLinkPid),RdRestrictionVia(新增，修改LinkPid)
+ * 道路属性编辑后检查：RdLinkForm,新增或者修改，新增：form=20,修改：form变成20(步行街)或者form由50变成非50(交叉口内道路)
  */
 public class GLM08004_2 extends baseRule{
 
@@ -198,8 +201,71 @@ public class GLM08004_2 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdLinkForm ){
+				RdLinkForm rdLinkForm=(RdLinkForm) obj;
+				checkRdLinkForm(rdLinkForm);
+			}
+		}
 		
+	}
+
+	/**
+	 * @param rdLinkForm
+	 * @throws Exception 
+	 */
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		boolean checkFlg = false;
+		if(rdLinkForm.status().equals(ObjStatus.INSERT)){
+			if(rdLinkForm.getFormOfWay()==20){
+				checkFlg = true;
+			}
+		}
+		else if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				if(rdLinkForm.getFormOfWay()==50){
+					checkFlg = true;
+				}
+				int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
+				if(formOfWay == 20){
+					checkFlg = true;
+				}
+			}
+		}
+		
+		if(checkFlg){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_RESTRICTION B");
+			sb.append(" WHERE B.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND B.U_RECORD <> 2");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D");
+			sb.append(" WHERE D.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D, RD_RESTRICTION_VIA RV");
+			sb.append(" WHERE D.RELATIONSHIP_TYPE = 2");
+			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" AND RV.U_RECORD <> 2");
+			sb.append(" AND RV.LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND D.DETAIL_ID = RV.DETAIL_ID");
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM LF");
+			sb.append(" WHERE RV.LINK_PID = LF.LINK_PID");
+			sb.append(" AND LF.U_RECORD <> 2");
+			sb.append(" AND LF.FORM_OF_WAY = 50)");
+			
+			String sql = sb.toString();
+			log.info("RdLinkForm后检查GLM08004_2:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() + "]", 0);
+			}
+		}
 	}
 
 }

@@ -345,16 +345,23 @@ public class OpRefRelationObj {
 			// 删除高速分歧，分歧上包含影响详细车道的模式图
 			case RDBRANCH:
 				RdBranch branch = (RdBranch) row;
-				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
-				String patternCode = detail.getPatternCode();
-				// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
-				if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
-						|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
-					return;
-				}
+				RdBranchDetail detail = null;
+				if(CollectionUtils.isNotEmpty(branch.getDetails()))
+				{
+					detail = (RdBranchDetail) branch.getDetails().get(0);
+					if(detail.getBranchType() == 0)
+					{
+						String patternCode = detail.getPatternCode();
+						// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
+						if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
+								|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
+							return;
+						}
 
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+					}
+				}
 				break;
 			// link上删除车辆类型限制信息
 			case RDLINKLIMIT:

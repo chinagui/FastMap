@@ -258,6 +258,21 @@ public class ReflectionAttrUtils {
 		}
 	}
 
+	public static String getBranchPrimaryKey(ObjType objType,String columnName)
+	{
+		switch (objType) {
+		case RDBRANCHDETAIL:
+		case RDBRANCHREALIMAGE:
+		case RDSERIESBRANCH:
+		case RDSIGNBOARD:
+		case RDSIGNASREAL:
+		case RDBRANCHSCHEMATIC:
+			return "BRANCH_PID";
+		default:
+			return columnName;
+		}
+	}
+	
 	/**
 	 * 字段转换成对象属性 例如：user_name to userName
 	 * 

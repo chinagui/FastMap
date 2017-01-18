@@ -38,6 +38,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
@@ -486,6 +487,8 @@ public class VariablesFactory {
             rdLinkSet.add(String.valueOf(((RdRestrictionDetail) data).getPid()));
         } else if (data instanceof RdRestrictionVia) {
             rdLinkSet.add(String.valueOf(((RdRestrictionVia) data).getDetailId()));
+        }else if (data instanceof RdRestrictionCondition) {
+            rdLinkSet.add(String.valueOf(((RdRestrictionCondition) data).getDetailId()));
         }
         return rdLinkSet;
     }

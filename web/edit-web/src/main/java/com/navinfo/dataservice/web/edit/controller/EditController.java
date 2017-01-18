@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
@@ -206,7 +207,28 @@ public class EditController extends BaseController {
 
 				if (row != null) {
 					JSONObject obj = row.Serialize(ObjLevel.FULL);
+					if (!obj.containsKey("geometry")) {
+						int pageNum = 1;
+						int pageSize = 1;
+						JSONObject data = new JSONObject();
+						String primaryKey = "branch_pid";
+						if(row instanceof IObj){
+							IObj iObj = (IObj)row;
+							primaryKey = iObj.primaryKey().toLowerCase();
+						}
+						data.put(primaryKey, row.parentPKValue());
+						SelectorUtils selectorUtils = new SelectorUtils(conn);
+						JSONObject jsonObject = selectorUtils
+								.loadByElementCondition(data,
+										row.objType(), pageSize,
+										pageNum, false);
+						obj.put("geometry", jsonObject.getJSONArray("rows")
+								.getJSONObject(0).getString("geometry"));
+					}
+					
 					obj.put("geoLiveType", objType);
+					
+					
 					return new ModelAndView("jsonView", success(obj));
 
 				} else {
@@ -222,6 +244,19 @@ public class EditController extends BaseController {
 
 				if (obj != null) {
 					JSONObject json = obj.Serialize(ObjLevel.FULL);
+					if (!json.containsKey("geometry")) {
+						int pageNum = 1;
+						int pageSize = 1;
+						JSONObject data = new JSONObject();
+						data.put(obj.primaryKey().toLowerCase(), pid);
+						SelectorUtils selectorUtils = new SelectorUtils(conn);
+						JSONObject jsonObject = selectorUtils
+								.loadByElementCondition(data,
+										ObjType.valueOf(objType), pageSize,
+										pageNum, false);
+						json.put("geometry", jsonObject.getJSONArray("rows")
+								.getJSONObject(0).getString("geometry"));
+					}
 					json.put("geoLiveType", objType);
 					return new ModelAndView("jsonView", success(json));
 
@@ -291,7 +326,7 @@ public class EditController extends BaseController {
 				JSONArray array = new JSONArray();
 
 				if (objList != null) {
-                    
+
 					for (IObj obj : objList) {
 						JSONObject json = obj.Serialize(ObjLevel.FULL);
 						json.put("geoLiveType", objType);

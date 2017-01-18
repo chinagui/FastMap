@@ -60,7 +60,7 @@ public class BasicRuleCommand {
 	public Map<Long,BasicObj> loadReferObjs(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
 		Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
 		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
-		if(!objType.isEmpty()&&referSubrow!=null&&!referSubrow.isEmpty()){
+		if(!objType.isEmpty()){
 			Map<Long,BasicObj> allDataTmp=allDatas.get(objType);
 			Map<Long, BasicObj> referDatasMap=referDatas.get(objType);
 			Set<Long> unLoadPid=new HashSet<Long>();
@@ -77,7 +77,9 @@ public class BasicRuleCommand {
 					unLoadPid.add(pid);
 				}
 			}
-			Map<Long,BasicObj> unLoadMap=ObjBatchSelector.selectByPids(getConn(), objType, referSubrow, false,unLoadPid, isLock, true);
+			boolean isMainOnly=false;
+			if(referSubrow==null||referSubrow.isEmpty()){isMainOnly=true;}
+			Map<Long,BasicObj> unLoadMap=ObjBatchSelector.selectByPids(getConn(), objType, referSubrow, isMainOnly,unLoadPid, isLock, true);
 			if(referDatasMap==null){referDatasMap=new HashMap<Long,BasicObj>();}
 			referDatasMap.putAll(unLoadMap);
 			referDatas.put(objType, referDatasMap);			

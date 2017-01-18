@@ -62,7 +62,7 @@ public class CheckTestGPR {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A09-17");
+		ruleIdList.add("FM-GLM60377");
 //		ruleIdList.add("FM-A04-05");
 //		ruleIdList.add("FM-A04-10");
 //		ruleIdList.add("FM-A07-12");

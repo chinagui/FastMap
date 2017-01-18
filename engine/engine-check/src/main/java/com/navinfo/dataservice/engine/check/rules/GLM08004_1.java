@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
@@ -197,7 +198,78 @@ public class GLM08004_1 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdLinkForm ){
+				RdLinkForm rdLinkForm=(RdLinkForm) obj;
+				checkRdLinkForm(rdLinkForm);
+			}
+		}
+	}
+	/**
+	 * @param rdLinkForm
+	 * @throws Exception 
+	 */
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		boolean checkFlg = false;
+		if(rdLinkForm.status().equals(ObjStatus.INSERT)){
+			if(rdLinkForm.getFormOfWay()==22){
+				checkFlg = true;
+			}
+		}
+		else if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				if(rdLinkForm.getFormOfWay()==50){
+					checkFlg = true;
+				}
+				int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
+				if(formOfWay == 22){
+					checkFlg = true;
+				}
+			}
+		}
+		
+		if(checkFlg){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT 1 FROM RD_RESTRICTION B,RD_LINK_FORM F");
+			sb.append(" WHERE B.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND B.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = B.IN_LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 22");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D,RD_LINK_FORM F");
+			sb.append(" WHERE D.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = D.OUT_LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 22");
+			sb.append(" UNION");
+			sb.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL D, RD_RESTRICTION_VIA RV,RD_LINK_FORM F");
+			sb.append(" WHERE D.RELATIONSHIP_TYPE = 2");
+			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" AND RV.U_RECORD <> 2");
+			sb.append(" AND F.U_RECORD <> 2");
+			sb.append(" AND F.LINK_PID = RV.LINK_PID");
+			sb.append(" AND F.FORM_OF_WAY = 22");
+			sb.append(" AND RV.LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND D.DETAIL_ID = RV.DETAIL_ID");
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM LF");
+			sb.append(" WHERE RV.LINK_PID = LF.LINK_PID");
+			sb.append(" AND LF.U_RECORD <> 2");
+			sb.append(" AND LF.FORM_OF_WAY = 50)");
+			
+			String sql = sb.toString();
+			log.info("RdLinkForm后检查GLM08004_1:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				this.setCheckResult("", "[RD_LINK," + rdLinkForm.getLinkPid() + "]", 0);
+			}
+		}
 		
 	}
 

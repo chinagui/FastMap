@@ -56,11 +56,11 @@ public class GLM06008 extends baseRule {
 		
 		sb.append("SELECT DISTINCT RS.PID FROM RD_SE RS");
 		sb.append(" WHERE RS.NODE_PID = "+rdDirectroute.getNodePid());
-		sb.append(" AND RS.IN_LINK_PID = "+rdDirectroute.getInLinkPid());
-		sb.append(" AND RS.OUT_LINK_PID = "+rdDirectroute.getOutLinkPid());
-		sb.append("  AND RS.U_RECORD <>2");
+		sb.append(" AND ((RS.IN_LINK_PID = "+rdDirectroute.getInLinkPid()+" AND RS.OUT_LINK_PID = "+rdDirectroute.getOutLinkPid()+")");
+		sb.append(" OR (RS.IN_LINK_PID = "+rdDirectroute.getOutLinkPid()+" AND RS.OUT_LINK_PID = "+rdDirectroute.getInLinkPid()+"))");
+		sb.append(" AND RS.U_RECORD <>2");
 		String sql = sb.toString();
-		log.info("新增顺行后检查GLM06008--sql:" + sql);
+		log.info("新增顺行前检查GLM06008--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
@@ -83,8 +83,8 @@ public class GLM06008 extends baseRule {
 		
 		sb.append("SELECT DE.PID FROM RD_DIRECTROUTE DE");
 		sb.append(" WHERE DE.NODE_PID = "+rdSe.getNodePid());
-		sb.append(" AND DE.IN_LINK_PID = "+rdSe.getInLinkPid());
-		sb.append(" AND DE.OUT_LINK_PID = "+rdSe.getOutLinkPid());
+		sb.append(" AND ((DE.IN_LINK_PID = "+rdSe.getInLinkPid()+" AND DE.OUT_LINK_PID = "+rdSe.getOutLinkPid()+")");
+		sb.append(" OR(DE.IN_LINK_PID = "+rdSe.getOutLinkPid()+" AND DE.OUT_LINK_PID = "+rdSe.getInLinkPid()+"))");
 		sb.append(" AND DE.U_RECORD <>2");
 		String sql = sb.toString();
 		log.info("新增分岔口提示后检查GLM06008--sql:" + sql);

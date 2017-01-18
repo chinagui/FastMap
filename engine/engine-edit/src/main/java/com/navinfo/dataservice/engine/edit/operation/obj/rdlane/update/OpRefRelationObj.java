@@ -569,11 +569,38 @@ public class OpRefRelationObj {
 			if (objType == ObjType.RDLANE) {
 				// 新增的详细车道维护限制信息
 				RdLane rdLane = (RdLane) row;
+				
+				int linkPid = rdLane.getLinkPid();
+				
+				Map<Integer,List<IRow>> limitMap = updateLimitMap.get(linkPid);
+				
+				sortMapByKey(limitMap);
+				
+				RdLinkLimit limit = null;
+				
+				RdLinkForm form = null;
+				
+				//获取修改或者新增的level3要素，这个要素还没入库，需要从内存中获取
+				if(limitMap != null)
+				{
+					List<IRow> limitRowsList = limitMap.get(LINK_LANE_VEHICLE_31);
+					
+					if(CollectionUtils.isNotEmpty(limitRowsList))
+					{
+						limit = (RdLinkLimit) limitRowsList.get(0);
+					}
+					else
+					{
+						List<IRow> formRowsList = limitMap.get(LINK_FORM_32);
+						
+						form = (RdLinkForm) formRowsList.get(0);
+					}
+				}
 
-				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), null, null);
+				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), limit, null);
 
 				if (flag) {
-					updateByRdLinkForm(rdLane.getLinkPid(), null, rdLane);
+					updateByRdLinkForm(rdLane.getLinkPid(), form, rdLane);
 				}
 			}
 		}
@@ -660,9 +687,7 @@ public class OpRefRelationObj {
 				int formOfWay = (int) form.changedFields().get("formOfWay");
 				if (sourceFormOfWay == 50 && formOfWay != 50) {
 					formCrossFlag = 2;
-				}
-				else if(sourceFormOfWay != 50 && formOfWay == 50)
-				{
+				} else if (sourceFormOfWay != 50 && formOfWay == 50) {
 					formCrossFlag = 1;
 				}
 			}

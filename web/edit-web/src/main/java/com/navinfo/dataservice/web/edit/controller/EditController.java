@@ -208,9 +208,9 @@ public class EditController extends BaseController {
 				if (row != null) {
 					JSONObject obj = row.Serialize(ObjLevel.FULL);
 					if (!obj.containsKey("geometry")) {
-						int pageNum = 0;
+						int pageNum = 1;
 						int pageSize = 1;
-						JSONObject data = jsonReq.getJSONObject("data");
+						JSONObject data = new JSONObject();
 						String primaryKey = "branch_pid";
 						if(row instanceof IObj){
 							IObj iObj = (IObj)row;
@@ -245,9 +245,9 @@ public class EditController extends BaseController {
 				if (obj != null) {
 					JSONObject json = obj.Serialize(ObjLevel.FULL);
 					if (!json.containsKey("geometry")) {
-						int pageNum = 0;
+						int pageNum = 1;
 						int pageSize = 1;
-						JSONObject data = jsonReq.getJSONObject("data");
+						JSONObject data = new JSONObject();
 						data.put(obj.primaryKey().toLowerCase(), pid);
 						SelectorUtils selectorUtils = new SelectorUtils(conn);
 						JSONObject jsonObject = selectorUtils

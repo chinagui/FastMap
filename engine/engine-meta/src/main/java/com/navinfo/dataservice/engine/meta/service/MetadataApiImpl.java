@@ -32,8 +32,11 @@ import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
+import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
+import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
+import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -49,6 +52,42 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception{
+		return ScPointKindNew.getInstance().scPointKindNewChainKind8Map();
+	}
+	/**
+	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
+	 * @return Map<String, List<String>> key:chain value:poikind列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointBrandFoodtypeChainKindMap() throws Exception{
+		return ScPointBrandFoodtype.getInstance().scPointBrandFoodtypeChainKindMap();
+	}
+	/**
+	 * SELECT CHAIN_CODE FROM SC_POINT_CHAIN_CODE WHERE TYPE = 1
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointChainCodeList() throws Exception{
+		return ScPointChainCode.getInstance().scPointChainCodeList();
+	}
+	/**
+	 * select PRE_KEY,CHAIN from SC_POINT_CHAIN_BRAND_KEY where hm_flag='D'
+	 * @return Map<String, String> key:PRE_KEY value:CHAIN
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointChainBrandKeyDMap() throws Exception{
+		return ScPointChainBrandKey.getInstance().scPointChainBrandKeyDMap();
+	}
 	/**
 	 * SELECT poikind,foodtype FROM SC_POINT_FOODTYPE WHERE MEMO='饮品'
 	 * @return  Map<String, String> SC_POINT_FOODTYP的饮品的对应表：key：foodtype value:kind

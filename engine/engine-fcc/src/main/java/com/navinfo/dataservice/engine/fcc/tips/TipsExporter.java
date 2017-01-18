@@ -28,6 +28,7 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioGetter;
+import com.navinfo.dataservice.engine.fcc.photo.ExpPhotoInfo;
 import com.navinfo.dataservice.engine.fcc.photo.PhotoGetter;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
@@ -369,9 +370,8 @@ public class TipsExporter {
 	private void exportPhotoAudioAndGetAttachmentInfo(
 			Result[] results, Map<String, Photo> photoMap, Map<String, Audio> audioMap) throws Exception {
 		
-	/*	Set<String> audioIdSet = new HashSet<String>(); //照片id集合
-		Set<String> photoIdSet = new HashSet<String>();//语音id集合
-*/		
+		Map<String,ExpPhotoInfo> expPhotoInfoMap=new HashMap<String,ExpPhotoInfo>(); //key为照片的rowkey ,value 为tips的类型的相关信息
+		
 		List<Get> photoGets = new ArrayList<Get>();
 		List<Get> audioGets = new ArrayList<Get>(); 
 		
@@ -380,6 +380,21 @@ public class TipsExporter {
 			if (result.isEmpty()) {
 				continue;
 			}
+			JSONObject track= JSONObject.fromObject(new String(result
+					.getValue("data".getBytes(), "track".getBytes())));
+			
+			JSONArray tracks = track.getJSONArray("t_trackInfo");
+			
+			JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
+
+			int lastStage = lastTrack.getInt("stage");
+			
+			JSONObject source = JSONObject.fromObject(new String(result
+					.getValue("data".getBytes(), "source".getBytes())));
+			
+			String  s_sourceType=source.getString("s_sourceType");
+			
+			
 			//从feedback读取照片或语音
 			if (result.containsColumn("data".getBytes(), "feedback".getBytes())) {
 				JSONObject feedback = JSONObject.fromObject(new String(result
@@ -390,7 +405,7 @@ public class TipsExporter {
 				for (int i = 0; i < farray.size(); i++) {
 					JSONObject jo = farray.getJSONObject(i);
 					int type = jo.getInt("type");
-					//获取照片id
+					
 					if (type == 1) {
 					String id = jo.getString("content");
 					
@@ -401,7 +416,18 @@ public class TipsExporter {
 					get.addColumn("data".getBytes(), "origin".getBytes());
 
 					photoGets.add(get);
-					//photoIdSet.add(id);
+					
+					//记录一下tips相关信息，用于下载限制
+					ExpPhotoInfo info=new ExpPhotoInfo();
+					
+					info.setId(id);
+					info.setTipsStage(lastStage);
+					info.setTipsType(s_sourceType);
+					
+					expPhotoInfoMap.put(id, info);
+					
+					
+					
 					}
 					//获取语音id
 					if (type == 2) {
@@ -421,7 +447,8 @@ public class TipsExporter {
 			
 		}
 		
-		exportPhotos(photoGets,photoMap);
+		//写读hbase，下载photo照片，写photoMap用户后续附件导出
+		exportPhotos(photoGets,expPhotoInfoMap,photoMap);
 		
 		exportAudio(audioGets,audioMap);
 			
@@ -476,9 +503,8 @@ public class TipsExporter {
 
 			audioMap.put(rowkey, audio);
 			
-			//FileUtils.makeSmallImage(data, fileName);
 			
-			exportAudioFile(data,fileName);
+			exportByteToFile(data,fileName);
 
 		}
 
@@ -493,7 +519,7 @@ public class TipsExporter {
 	 * @throws Exception 
 	 * @time:2016-12-14 下午2:07:22
 	 */
-	private void exportAudioFile(byte[] data, String fileName) throws Exception {
+	private void exportByteToFile(byte[] data, String fileName) throws Exception {
 	        OutputStream fstream =null;
 	        try
 	        {
@@ -522,12 +548,11 @@ public class TipsExporter {
 	 * @return
 	 * @throws Exception
 	 * @author: y
+	 * @param expPhotoInfoMap 
 	 * @time:2016-12-13 下午8:33:26
 	 */
-	private Map<String, Photo> exportPhotos(List<Get> gets,Map<String, Photo> photoMap)
+	private Map<String, Photo> exportPhotos(List<Get> gets,Map<String, ExpPhotoInfo> expPhotoInfoMap, Map<String, Photo> photoMap)
 			throws Exception {
-
-		/*Map<String, JSONObject> photoMap = new HashMap<String, JSONObject>();*/
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
@@ -553,8 +578,6 @@ public class TipsExporter {
 			JSONObject attribute = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "attribute".getBytes())));
 
-/*			JSONObject extContent = new JSONObject();
-			*/
 			Photo photo=new Photo();
 			
 			photo.setRowkey(rowkey);
@@ -571,31 +594,51 @@ public class TipsExporter {
 			
 			photo.setA_fileName(attribute.getString("a_fileName"));
 			
-/*
-			extContent.put("latitude", attribute.getDouble("a_latitude"));
-
-			extContent.put("longitude", attribute.getDouble("a_longitude"));
-
-			extContent.put("direction", attribute.getInt("a_direction"));
-
-			extContent.put("shootDate", attribute.getString("a_shootDate"));
-
-			extContent.put("deviceNum", attribute.getString("a_deviceNum"));*/
 
 			String fileName = this.folderName
 					+ attribute.getString("a_fileName");
 
-			/*photoMap.put(rowkey, extContent);*/
-
 			photoMap.put(rowkey, photo);
 			
-			FileUtils.makeSmallImage(data, fileName);
+			
+			ExpPhotoInfo info=expPhotoInfoMap.get(rowkey);
+			
+			String tipsSourceType=info.getTipsType();
+			//stage==4的tips是GDB增量的tips，需要要现在照片文件
+			if(info.getTipsStage()!=4){
+				
+				downloadPhoto(data, fileName,tipsSourceType);
+			}
 
 		}
 
 		return photoMap;
 
 	}
+
+	/**
+	 * @Description:按照tips类型下载照片文件，不同tips类型下载的照片文件不同，分：下载原图、下载缩略图  两种
+	 * @param data
+	 * @param fileName
+	 * @param tipsSourceType
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-1-14 上午10:38:07
+	 */
+	private void downloadPhoto(byte[] data, String fileName,
+			String tipsSourceType) throws Exception {
+		
+		Integer originalPhoto=TipsExportUtils.downloadOriginalPhotoTips.get(tipsSourceType); //1为下载原图
+		
+		if(originalPhoto!=null&&originalPhoto.intValue()==1){
+			exportByteToFile(data, fileName);
+		}else{
+			FileUtils.makeSmallImage(data, fileName);
+		}
+		
+	}
+	
+
 
 	/**
 	 * 根据网格和时间导出tips
@@ -657,7 +700,7 @@ public class TipsExporter {
 	}
 
 	public static void main(String[] args) throws Exception {
-		JSONArray condition = new JSONArray();
+	/*	JSONArray condition = new JSONArray();
 
 		String s ="60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310";
 		
@@ -676,6 +719,8 @@ public class TipsExporter {
 		System.out.println(exporter.export(condition,
 				"F:/07 DataService/test", "1.txt", images));
 		System.out.println(images);
-		System.out.println("done");
+		System.out.println("done");*/
+		Integer a=TipsExportUtils.downloadOriginalPhotoTips.get("122");
+	    System.out.println(a);
 	}
 }

@@ -57,7 +57,9 @@ public class PretreatmentTipsController extends BaseController {
 			JSONObject tipsGeometry = jsonReq.getJSONObject("geometry");
 			
 			
-			int userId = getUserIdFromRequest(request);
+			//int userId = getUserIdFromRequest(request);
+			
+			int userId=jsonReq.getInt("user");
 
 			String sourceType = jsonReq.getString("sourceType");
 			
@@ -122,7 +124,9 @@ public class PretreatmentTipsController extends BaseController {
 			
 			//String memo=jsonReq.getString("memo"); //改备注
 			
-			int user = getUserIdFromRequest(request);
+			//int user = getUserIdFromRequest(request);
+			
+			int user=jsonReq.getInt("user");
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -175,7 +179,9 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo = jsonReq.getJSONObject("pointGeo"); //修改改坐标(点几何)
 			
-			int user = getUserIdFromRequest(request);
+			//int user = getUserIdFromRequest(request);
+			
+			int user = jsonReq.getInt("user");
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -227,7 +233,9 @@ public class PretreatmentTipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
-			int user = getUserIdFromRequest(request);
+			//int user = getUserIdFromRequest(request);
+			
+			int user = jsonReq.getInt("user");
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
@@ -276,7 +284,9 @@ public class PretreatmentTipsController extends BaseController {
 
 			String rowkey = jsonReq.getString("rowkey");
 			
-			int user = getUserIdFromRequest(request);
+			//int user = getUserIdFromRequest(request);
+			
+			int user = jsonReq.getInt("user");
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -304,12 +314,12 @@ public class PretreatmentTipsController extends BaseController {
 	 * @author: liya
 	 * @time:2017-1-9 下午3:33:49
 	 */
-	private   int getUserIdFromRequest(HttpServletRequest request) {
+/*	private   int getUserIdFromRequest(HttpServletRequest request) {
 		AccessToken  token=(AccessToken)request.getAttribute("token");
 		
 		int userId=(int)token.getUserId() ;
 		return userId;
-	}
+	}*/
 	
 	
 

@@ -181,6 +181,23 @@ public class CheckUtil {
         String returnString = new String(c);
         return returnString;
     }
+    /**
+     * 半角转全角
+     * @param input String.
+     * @return 全角字符串
+     */
+    public static String strB2Q(String input) {
+    	char c[] = input.toCharArray();
+        for (int i = 0; i < c.length; i++) {
+        	if (c[i] == ' ') {
+        		c[i] = '\u3000';
+        	} else if (c[i] < '\177') {
+        		c[i] = (char) (c[i] + 65248);
+        	}
+        }
+        String returnString = new String(c);
+        return returnString;
+    }
     
     /**
      * 1） 回车符检查：包含回车符的记录；
@@ -223,9 +240,22 @@ public class CheckUtil {
      * @return String 若括号符合规则，则返回null；否则返回字符串
      */
     public static String isRightKuohao(String word){
+        return isRightKuohao(word,"(",")");
+    }
+    
+    /**
+     * 若存在括号，则
+     *   1、括号“（”和“）”要成对出现；
+     *   2、括号“（”和“）”中间必须有内容；
+     *   3、不允许括号嵌套
+     *   调用isRight获取错误信息。若括号符合要求，则返回None
+     * @param word
+     * @return String 若括号符合规则，则返回null；否则返回字符串
+     */
+    public static String isRightKuohao(String word,String left,String right){
     	String wordB=strQ2B(word);
-    	String wordLeft = wordB.replace("(", "");
-    	String wordRight = wordB.replace(")", "");
+    	String wordLeft = wordB.replace(left, "");
+    	String wordRight = wordB.replace(right, "");
     	//左右括号数量不一致
     	if(!(wordLeft.length()==wordRight.length())){
     		return "括号需要成对出现";
@@ -237,8 +267,8 @@ public class CheckUtil {
         int rindex=-1;
         int tmpRIndex=-1;
         while(true){
-        	lindex = wordB.indexOf("(",lindex+1);
-            rindex = wordB.indexOf(")",rindex+1);
+        	lindex = wordB.indexOf(left,lindex+1);
+            rindex = wordB.indexOf(right,rindex+1);
             if(lindex==-1 || rindex==-1){
             	if(!(lindex==-1 && rindex==-1)){return "括号需要成对出现";}
             	break;

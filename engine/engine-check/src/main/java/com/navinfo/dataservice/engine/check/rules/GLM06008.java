@@ -60,7 +60,7 @@ public class GLM06008 extends baseRule {
 		sb.append(" OR (RS.IN_LINK_PID = "+rdDirectroute.getOutLinkPid()+" AND RS.OUT_LINK_PID = "+rdDirectroute.getInLinkPid()+"))");
 		sb.append(" AND RS.U_RECORD <>2");
 		String sql = sb.toString();
-		log.info("新增顺行后检查GLM06008--sql:" + sql);
+		log.info("新增顺行前检查GLM06008--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

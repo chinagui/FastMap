@@ -1485,7 +1485,7 @@ public class Operation implements IOperation {
 
             ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
 
-            ixPoi.changedFields().put("side", side);
+//            ixPoi.changedFields().put("side", side);
         }
     }
 

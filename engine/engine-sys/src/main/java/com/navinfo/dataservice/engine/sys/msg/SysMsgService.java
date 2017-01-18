@@ -552,6 +552,64 @@ public class SysMsgService {
 	}
 	
 	/**
+	 * 分页查询5天以上的消息列表
+	 * @author Han Shaoming
+	 * @param userId
+	 * @param condition
+	 * @return List<Map<String, Object>>:List<Map<"msgId", 123>>
+	 * @throws ServiceException 
+	 */
+	public Page getAllMsgHistory(Long userId, String condition,int pageNum, int pageSize) throws ServiceException {
+		Connection conn = null;
+		QueryRunner queryRunner = null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			queryRunner = new QueryRunner();
+			//日志
+			log.info("全部消息查询列表的筛选条件"+condition);
+			
+			JSONObject jo = JSONObject.fromObject(condition);
+			StringBuilder sql = new StringBuilder();
+			sql.append("SELECT M.* FROM(SELECT T.*,R.USER_ID,R.READ_TYPE,NVL(R.MSG_STATUS,0) MSG_STATUS "
+					+ "FROM SYS_MESSAGE T,SYS_MESSAGE_READ_LOG R WHERE T.MSG_ID = R.MSG_ID(+)) M "
+					+ "WHERE M.MSG_STATUS IN (0,1) ");
+			//添加筛选条件
+			if(jo.get("msgType") != null){
+				if((Integer)jo.get("msgType") == 1){
+					//筛选系统消息+job消息
+					sql.append(" AND M.MSG_TYPE IN (0,1) ");
+				}else if((Integer)jo.get("msgType") == 2){
+					//筛选管理消息
+					sql.append(" AND M.MSG_TYPE=2 ");
+				}
+			}
+			if(jo.get("isHistory") != null){
+				if((Integer)jo.get("isHistory") == 1){
+					//筛选非历史消息
+					sql.append(" AND M.CREATE_TIME >= (SYSDATE-5) ");
+				}else if((Integer)jo.get("isHistory") == 2){
+					//筛选历史消息
+					sql.append(" AND M.CREATE_TIME < (SYSDATE-5) ");
+				}
+			}
+			sql.append(" AND M.TARGET_USER_ID IN (0,"+userId+") ");
+			String querySql = sql.append(" ORDER BY CREATE_TIME DESC").toString();
+			Object[] params = {};
+			//日志
+			log.info("全部消息查询列表的sql:"+sql.toString());
+			
+			Page msgs = queryRunner.query(pageNum, pageSize,conn, querySql, new MsgWithPageHandlerAll(pageNum, pageSize), params);
+			return msgs;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
 	 * 删除消息查询列表
 	 * @author Han Shaoming
 	 * @param userId
@@ -685,6 +743,49 @@ public class SysMsgService {
 				long relateObjectId = (Integer) jsn.get("relateObjectId");
 				msg.put("relateObject",relateObject);
 				msg.put("relateObjectId",relateObjectId);
+				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
+				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
+				msgs.add(msg);
+				if(total==0){
+					total=rs.getInt("TOTAL_RECORD_NUM_");
+				}
+			}
+			page.setResult(msgs);
+			page.setTotalCount(total);
+			return page;
+		}
+		
+	}
+	
+	/**
+	 * 
+	 * @ClassName MsgWithPageHandler
+	 * @author Han Shaoming
+	 * @date 2016年11月9日 上午10:35:38
+	 * @Description TODO
+	 */
+	class MsgWithPageHandlerAll implements ResultSetHandler<Page>{
+		private int pageNum;
+		private int pageSize;
+		MsgWithPageHandlerAll(int pageNum,int pageSize){
+			this.pageNum=pageNum;
+			this.pageSize=pageSize;
+		}
+		public Page handle(ResultSet rs) throws SQLException {
+			Page page = new Page(pageNum);
+			page.setPageSize(pageSize);
+			int total = 0;
+			List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+			while(rs.next()){
+				Map<String,Object> msg = new HashMap<String, Object>();
+				msg.put("msgId",rs.getLong("MSG_ID"));
+				msg.put("msgType",rs.getInt("MSG_TYPE"));
+				msg.put("msgContent",rs.getString("MSG_CONTENT"));
+				msg.put("createTime",DateUtils.dateToString(rs.getTimestamp("CREATE_TIME"),DateUtils.DATE_COMPACTED_FORMAT));
+				msg.put("targetUserId",rs.getLong("TARGET_USER_ID"));
+				msg.put("msgTitle",rs.getString("MSG_TITLE"));
+				msg.put("pushUserId",rs.getLong("PUSH_USER_ID"));
+				msg.put("msgParam",rs.getString("MSG_PARAM"));
 				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
 				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
 				msgs.add(msg);

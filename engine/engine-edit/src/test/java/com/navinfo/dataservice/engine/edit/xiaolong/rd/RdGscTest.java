@@ -27,7 +27,7 @@ public class RdGscTest extends InitApplication{
 	
 	@Test
 	public void testCreate() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":210003234,\"data\":{\"longitude\":116.81543961167336,\"latitude\":40.342010897894625},\"type\":\"RDNODE\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":205003288,\"data\":{\"longitude\":116.21110211,\"latitude\":40.53566891},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

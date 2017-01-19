@@ -44,12 +44,12 @@ public class GLM32060 extends baseRule{
 			// 新增/删除详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			//道路方向编辑:RdLink
 			else if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
+				checkRdLink(rdLink);
 			}	
 		}
 		
@@ -60,38 +60,40 @@ public class GLM32060 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		
-		sb.append("SELECT '双方向link仅制作了顺方向车道，需要增加逆方向车道' FROM RD_LINK RL, RD_LANE LAN");
-		sb.append(" WHERE RL.LINK_PID = LAN.LINK_PID");
-		sb.append(" AND RL.DIRECT = 1");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND LAN.U_RECORD <> 2");
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LANE LAN1");
-		sb.append(" WHERE RL.LINK_PID = LAN1.LINK_PID AND LAN1.LANE_DIR = 3)");
-		sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '双方向link仅制作了逆方向车道，需要增加顺方向车道' FROM RD_LINK RL, RD_LANE LAN");
-		sb.append(" WHERE RL.LINK_PID = LAN.LINK_PID");
-		sb.append(" AND RL.DIRECT = 1");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND LAN.U_RECORD <> 2");
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LANE LAN1");
-		sb.append(" WHERE RL.LINK_PID = LAN1.LINK_PID AND LAN1.LANE_DIR = 2)");
-		sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		//道路方向编辑
+		if(rdLink.changedFields().containsKey("direct")){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT '双方向link仅制作了顺方向车道，需要增加逆方向车道' FROM RD_LINK RL, RD_LANE LAN");
+			sb.append(" WHERE RL.LINK_PID = LAN.LINK_PID");
+			sb.append(" AND RL.DIRECT = 1");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" AND LAN.U_RECORD <> 2");
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LANE LAN1");
+			sb.append(" WHERE RL.LINK_PID = LAN1.LINK_PID AND LAN1.LANE_DIR = 3)");
+			sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
+			sb.append(" UNION");
+			sb.append(" SELECT '双方向link仅制作了逆方向车道，需要增加顺方向车道' FROM RD_LINK RL, RD_LANE LAN");
+			sb.append(" WHERE RL.LINK_PID = LAN.LINK_PID");
+			sb.append(" AND RL.DIRECT = 1");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" AND LAN.U_RECORD <> 2");
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LANE LAN1");
+			sb.append(" WHERE RL.LINK_PID = LAN1.LINK_PID AND LAN1.LANE_DIR = 2)");
+			sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
 
-		String sql = sb.toString();
-		log.info("RdLink后检查GLM32060:" + sql);
+			String sql = sb.toString();
+			log.info("RdLink后检查GLM32060:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(!resultList.isEmpty()){
-			this.setCheckResult("", "[RD_LINK," + rdLink.getPid() + "]", 0,resultList.get(0).toString());
+			if(!resultList.isEmpty()){
+				this.setCheckResult("", "[RD_LINK," + rdLink.getPid() + "]", 0,resultList.get(0).toString());
+			}	
 		}	
-		
 	}
 
 	/**
@@ -99,7 +101,7 @@ public class GLM32060 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("SELECT '双方向link仅制作了顺方向车道，需要增加逆方向车道' FROM RD_LINK RL, RD_LANE LAN");

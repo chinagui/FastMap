@@ -6,6 +6,7 @@ import java.util.Map;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -45,12 +46,37 @@ public class GLM03085 extends baseRule {
 					double rdNodeY = rdNode.getGeometry().getCoordinate().y;
 					//判断点是不是在图廓线上
 					if (MeshUtils.isPointAtMeshBorderWith100000(rdNodeX, rdNodeY)){
-						Map<String, Object> changedFields = rdNodeForm.changedFields();
+						boolean checkFlag = false;
+						if(rdNodeForm.status().equals(ObjStatus.UPDATE)){
+							Map<String, Object> changedFields = rdNodeForm.changedFields();
+							if(!changedFields.isEmpty()){
+								if(changedFields.containsKey("formOfWay")){
+									int formOfWay = (int) changedFields.get("formOfWay");
+									if(formOfWay != 2){
+										checkFlag = true;
+									}
+								}
+							}
+						}else if (rdNodeForm.status().equals(ObjStatus.INSERT)){
+							int formOfWay = rdNodeForm.getFormOfWay();
+							if(formOfWay != 2){
+								checkFlag = true;
+							}
+						}else if (rdNodeForm.status().equals(ObjStatus.DELETE)){
+							int formOfWay = rdNodeForm.getFormOfWay();
+							if(formOfWay == 2){
+								checkFlag = true;
+							}
+						}
+						if(checkFlag){
+							this.setCheckResult("", "[RD_NODE,"+nodePid+"]", 0);
+						}
+						/*Map<String, Object> changedFields = rdNodeForm.changedFields();
 						int formOfWay = (int) changedFields.get("formOfWay");
 						//点的形态不是图廓点
 						if (formOfWay != 2){
 							this.setCheckResult("", "[RD_NODE,"+nodePid+"]", 0);
-						}
+						}*/
 					}
 				}
 			}

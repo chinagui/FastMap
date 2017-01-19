@@ -93,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"BREAK\",\"objId\":209003215,\"type\":\"RDLINK\",\"data\":{\"longitude\":116.81710107942794,\"latitude\":40.343019953535496},\"dbId\":17}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":209003265,\"data\":{\"longitude\":116.21100917458534,\"latitude\":40.53466047250868},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

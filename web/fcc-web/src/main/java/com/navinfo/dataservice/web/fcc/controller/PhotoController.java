@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
+import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
+import com.navinfo.dataservice.engine.dropbox.dao.DBController;
+import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
 public class PhotoController extends BaseController {
@@ -138,5 +145,54 @@ public class PhotoController extends BaseController {
 //					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 
+	}
+	/**
+	 * 深度信息全貌照片设置
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/photo/deep/setPhoto")
+	public ModelAndView setDeepPhoto(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		logger.debug("深度信息设置全貌照片");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			JSONObject result = new JSONObject();
+			int flag = jsonReq.getInt("flag");
+			String oldFccPid = jsonReq.getString("oldFccPid");
+			String newFccPid = jsonReq.getString("newFccPid");
+			
+			PhotoGetter getter = new PhotoGetter();
+			
+			//新增或修改全貌照片
+			if(flag==1){
+				//获取照片
+				byte[]bytes = getter.getPhotoByRowkey(newFccPid, "origin");
+				//设置全貌
+				byte[] photo=FileUtils.makeFullViewImage(bytes); 
+				//上传全貌照片
+				HBaseController hbaseController = new HBaseController();
+				InputStream newIn = new ByteInputStream(photo, photo.length);
+				//调用hadoop方法传输文件流，获取photo_id
+				String photoId = hbaseController.putPhoto(newIn);
+				
+				result.put("PID", photoId);
+			}else{
+				//删除全景照片
+				//TODO
+			}
+			
+			return new ModelAndView("jsonView", success(result));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
 	}
 }

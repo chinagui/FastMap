@@ -125,8 +125,6 @@ public class SelectorUtils {
 			selectSql.append(fromSql).append(innerLeftJoinSql).append(whereSql).append(")tmp").append(outerLeftJoinSql);
 
 			sql = getSqlFromBufferCondition(selectSql, false);
-
-			System.out.println(sql);
 		}
 
 		try {

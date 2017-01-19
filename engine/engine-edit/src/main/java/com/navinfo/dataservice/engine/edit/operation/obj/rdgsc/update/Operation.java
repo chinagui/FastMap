@@ -377,29 +377,54 @@ public class Operation implements IOperation {
 
 			for (Map.Entry<Integer, Geometry> entry : linkGeoMap.entrySet()) {
 				Geometry geometry = entry.getValue();
-
-				int linkPid = entry.getKey();
-
-				RdGscLink gscLink = new RdGscLink();
-
+				
 				// 截取精度，防止位置序号计算错误
 				Geometry tmpLinkGeo = GeoTranslator.transform(geometry, 1, 0);
+				
+				List<Integer> shpSeqNum = RdGscOperateUtils.calcShpSeqNum(gscGeo,
+						tmpLinkGeo.getCoordinates());
+				
+				if(shpSeqNum.size() <= 2)
+				{
+					for(int shpNum : shpSeqNum)
+					{
+						int linkPid = entry.getKey();
 
-				List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, tmpLinkGeo.getCoordinates());
+						RdGscLink gscLink = new RdGscLink();
+						
+						int startEndFlag = 0;
+						// 计算形状点号：SHP_SEQ_NUM
+						if (shpNum == 0) {
+							startEndFlag = 1;
+						} else if (shpNum == geometry.getCoordinates().length - 1) {
+							startEndFlag = 2;
+						}
+						else
+						{
+							startEndFlag = 0;
+						}
+						
+						gscLink.setStartEnd(startEndFlag);
+						
+						gscLink.setShpSeqNum(shpNum);
 
-				gscLink.setPid(rr.getPid());
+						gscLink.setPid(rr.getPid());
 
-				gscLink.setLinkPid(linkPid);
+						gscLink.setLinkPid(linkPid);
 
-				gscLink.setTableName(tableName.toUpperCase());
+						gscLink.setTableName(tableName.toUpperCase());
 
-				gscLink.setZlevel(i);
+						gscLink.setZlevel(i);
 
-				gscLink.setShpSeqNum(shpSeqNumList.get(0));
-
-				result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
-
-				i++;
+						result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
+					}
+					//link打断后link上的立交点位只有一个的时候zlevel才递增，有多个代表自相交，level一致，不增
+					i++;
+				}
+				else if(shpSeqNum.size() >2)
+				{
+					throw new Exception("过于复杂的自相交立交打断不支持");
+				}
 			}
 		}
 	}
@@ -465,8 +490,11 @@ public class Operation implements IOperation {
 						newRdGsclLink.setLinkPid(newLinkPid);
 
 						newRdGsclLink.setPid(rdGsc.getPid());
-
-						int startEndFlag = GeometryUtils.getStartOrEndType(geometry.getCoordinates(),
+						
+						// 截取精度，防止位置序号计算错误
+						Geometry tmpLinkGeo = GeoTranslator.transform(geometry, 1, 0);
+						
+						int startEndFlag = GeometryUtils.getStartOrEndType(tmpLinkGeo.getCoordinates(),
 								rdGsc.getGeometry());
 
 						newRdGsclLink.setStartEnd(startEndFlag);

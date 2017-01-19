@@ -66,8 +66,11 @@ public class GLM01208 extends baseRule {
                     continue;
                 }
 
+                int formOfWay = rdLinkForm.getFormOfWay();
+                if (rdLinkForm.changedFields().containsKey("formOfWay"))
+                    formOfWay = (int) rdLinkForm.changedFields().get("formOfWay");
                 //rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
-                if (rdLinkForm.getFormOfWay() != 33) {
+                if (formOfWay != 33) {
                     continue;
                 }
 

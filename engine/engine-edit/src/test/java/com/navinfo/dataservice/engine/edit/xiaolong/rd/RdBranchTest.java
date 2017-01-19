@@ -32,7 +32,7 @@ public class RdBranchTest extends InitApplication {
 
 	@Test
 	public void testAdd3dBranch() {
-		String parameter = "{\"type\":\"RDBRANCH\",\"command\":\"UPDATE\",\"dbId\":19,\"data\":{\"signboards\":[{\"backimageCode\":\"000200DJ001\",\"pid\":202000001,\"objStatus\":\"UPDATE\",\"arrowCode\":\"200200DJ001\"}],\"pid\":204000035}}";
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":259,\"type\":\"RDBRANCH\",\"detailId\":0,\"rowId\":\"061779F2EA25463698E74F78119E2DBF\",\"branchType\":5}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

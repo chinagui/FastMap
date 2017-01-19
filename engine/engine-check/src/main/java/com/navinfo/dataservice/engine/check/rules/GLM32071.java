@@ -44,12 +44,12 @@ public class GLM32071 extends baseRule{
 			// 新增/修改详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			// 新增/修改车信
 			else if (obj instanceof RdLaneConnexity) {
 				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity) obj;
-				checkRdLaneConnexity(rdLaneConnexity,checkCommand.getOperType());
+				checkRdLaneConnexity(rdLaneConnexity);
 			}	
 		}
 		
@@ -60,7 +60,7 @@ public class GLM32071 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity, OperType operType) throws Exception {
+	private void checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT 1 FROM RD_LANE_CONNEXITY RLC, RD_LANE RLN,RD_LINK RL");
 		sb.append(" WHERE RL.LINK_PID = RLN.LINK_PID");
@@ -129,7 +129,7 @@ public class GLM32071 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT 1 FROM RD_LANE_CONNEXITY RLC, RD_LANE RLN,RD_LINK RL");
 		sb.append(" WHERE RL.LINK_PID = RLN.LINK_PID");

@@ -14,6 +14,8 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -177,8 +179,81 @@ public class GLM19001_3 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
-		
+		for(IRow obj : checkCommand.getGlmList()){
+			//道路属性编辑
+			if(obj instanceof RdLinkForm ){
+				RdLinkForm RdLinkForm=(RdLinkForm) obj;
+				checkRdLinkForm(RdLinkForm);
+			}
+		}
+	}
+
+	/**
+	 * @param rdLinkForm
+	 * @throws Exception 
+	 */
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		boolean checkFlg = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				//交叉口内道路修改为非交叉口内道路
+				if(rdLinkForm.getFormOfWay()==50){
+					checkFlg = true;
+				}
+				//环岛
+				int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
+				if(formOfWay==22){
+					checkFlg = true;
+				}
+			}
+		}else if(rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay==22){
+				checkFlg = true;
+			}
+		}
+
+		if(checkFlg){
+			StringBuilder sb2 = new StringBuilder();
+
+			sb2.append("SELECT 1 FROM RD_LANE_CONNEXITY C,RD_LINK_FORM F");
+			sb2.append(" WHERE C.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb2.append(" AND C.U_RECORD <> 2");
+			sb2.append(" AND F.LINK_PID = C.IN_LINK_PID");
+			sb2.append(" AND F.FORM_OF_WAY = 22");
+			sb2.append(" AND F.U_RECORD <> 2");
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM FROM RD_LANE_TOPOLOGY L,RD_LINK_FORM F");
+			sb2.append(" WHERE L.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb2.append(" AND L.U_RECORD <> 2");
+			sb2.append(" AND F.LINK_PID = L.OUT_LINK_PID");
+			sb2.append(" AND F.FORM_OF_WAY = 22");
+			sb2.append(" AND F.U_RECORD <> 2");
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_LANE_VIA V,RD_LINK_FORM F");
+			sb2.append(" WHERE V.LINK_PID = " + rdLinkForm.getLinkPid());
+			sb2.append(" AND V.U_RECORD <> 2");
+			sb2.append(" AND F.LINK_PID = V.LINK_PID");
+			sb2.append(" AND F.FORM_OF_WAY = 22");
+			sb2.append(" AND F.U_RECORD <> 2");
+			sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM FF");
+			sb2.append(" WHERE FF.LINK_PID = V.LINK_PID");
+			sb2.append(" AND FF.FORM_OF_WAY = 50");
+			sb2.append(" AND FF.U_RECORD <> 2)");
+
+
+			String sql2 = sb2.toString();
+			log.info("RdLinkForm后检查GLM19001_3:" + sql2);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql2);
+
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
 	}
 
 }

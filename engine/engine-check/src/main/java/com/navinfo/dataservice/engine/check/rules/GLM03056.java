@@ -75,7 +75,7 @@ public class GLM03056 extends baseRule {
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
 			 
-			sb.append("SELECT N.NODE_PID,COUNT(1) FROM RD_NODE N, RD_LINK R");
+			sb.append("SELECT DISTINCT N.NODE_PID FROM RD_NODE N, RD_LINK R");
 			sb.append(" WHERE N.NODE_PID = "+rdNodeForm.getNodePid());
 			sb.append(" AND N.U_RECORD <> 2 AND R.U_RECORD <> 2");
 			sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");

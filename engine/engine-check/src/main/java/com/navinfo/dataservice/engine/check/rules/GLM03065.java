@@ -165,7 +165,7 @@ public class GLM03065 extends baseRule {
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
 			 
-			sb.append("SELECT COUNT(1),N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R,RD_LINK RL,");
+			sb.append("SELECT DISTINCT N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R,RD_LINK RL,");
 			sb.append(" RD_LINK_FORM RF WHERE N.NODE_PID = F.NODE_PID AND R.LINK_PID = 203003139");
 			sb.append(" AND RL.LINK_PID = RF.LINK_PID AND F.FORM_OF_WAY = 13 AND RF.FORM_OF_WAY = 31");
 			sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2 ");

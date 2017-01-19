@@ -41,7 +41,7 @@ public class RdNodeTest extends InitApplication{
 	
 	@Test
 	public void testMove() {
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":19,\"type\":\"RDNODE\",\"objId\":303002377,\"infect\":1}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"LUFACE\",\"objId\":210000012,\"data\":{\"faceNames\":[{\"pid\":210000012,\"nameGroupid\":1,\"langCode\":\"CHI\",\"name\":\"行\",\"phonetic\":\"(Hang,Xing)\",\"srcFlag\":0,\"objStatus\":\"INSERT\"}],\"pid\":210000012}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

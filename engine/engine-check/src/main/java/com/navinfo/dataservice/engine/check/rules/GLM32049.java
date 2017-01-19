@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
@@ -77,12 +78,12 @@ public class GLM32049 extends baseRule{
 			// 新增/修改详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			// 新增收费站RdTollgate
 			else if (obj instanceof RdTollgate) {
 				RdTollgate rdTollgate = (RdTollgate) obj;
-				checkRdTollgate(rdTollgate,checkCommand.getOperType());
+				checkRdTollgate(rdTollgate);
 			}	
 		}
 		
@@ -93,70 +94,71 @@ public class GLM32049 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdTollgate(RdTollgate rdTollgate, OperType operType) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
-		sb.append(" WHERE RT.IN_LINK_PID = L.LINK_PID");
-		sb.append(" AND L.LINK_PID = RL.LINK_PID");
-		sb.append(" AND L.S_NODE_PID = RT.NODE_PID");
-		sb.append(" AND RL.LANE_DIR IN (3, 1)");
-		sb.append(" AND RT.PASSAGE_NUM <> 0");
-		sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
-		sb.append(" AND RT.PID = " + rdTollgate.getPid());
-		sb.append(" AND RT.U_RECORD <> 2");
-		sb.append(" AND L.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" UNION");
-		
-		sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
-		sb.append(" WHERE RT.IN_LINK_PID = L.LINK_PID");
-		sb.append(" AND L.LINK_PID = RL.LINK_PID");
-		sb.append(" AND L.E_NODE_PID = RT.NODE_PID");
-		sb.append(" AND RL.LANE_DIR IN (2, 1)");
-		sb.append(" AND RT.PASSAGE_NUM <> 0");
-		sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
-		sb.append(" AND RT.PID = " + rdTollgate.getPid());
-		sb.append(" AND RT.U_RECORD <> 2");
-		sb.append(" AND L.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" UNION");
+	private void checkRdTollgate(RdTollgate rdTollgate) throws Exception {
+		if(rdTollgate.status().equals(ObjStatus.INSERT)){
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
+			sb.append(" WHERE RT.IN_LINK_PID = L.LINK_PID");
+			sb.append(" AND L.LINK_PID = RL.LINK_PID");
+			sb.append(" AND L.S_NODE_PID = RT.NODE_PID");
+			sb.append(" AND RL.LANE_DIR IN (3, 1)");
+			sb.append(" AND RT.PASSAGE_NUM <> 0");
+			sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
+			sb.append(" AND RT.PID = " + rdTollgate.getPid());
+			sb.append(" AND RT.U_RECORD <> 2");
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" UNION");
+			
+			sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
+			sb.append(" WHERE RT.IN_LINK_PID = L.LINK_PID");
+			sb.append(" AND L.LINK_PID = RL.LINK_PID");
+			sb.append(" AND L.E_NODE_PID = RT.NODE_PID");
+			sb.append(" AND RL.LANE_DIR IN (2, 1)");
+			sb.append(" AND RT.PASSAGE_NUM <> 0");
+			sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
+			sb.append(" AND RT.PID = " + rdTollgate.getPid());
+			sb.append(" AND RT.U_RECORD <> 2");
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" UNION");
 
-		sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
-		sb.append(" WHERE RT.OUT_LINK_PID = L.LINK_PID");
-		sb.append(" AND L.LINK_PID = RL.LINK_PID");
-		sb.append(" AND L.S_NODE_PID = RT.NODE_PID");
-		sb.append(" AND RL.LANE_DIR IN (2, 1)");
-		sb.append(" AND RT.PASSAGE_NUM <> 0");
-		sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
-		sb.append(" AND RT.PID = " + rdTollgate.getPid());
-		sb.append(" AND RT.U_RECORD <> 2");
-		sb.append(" AND L.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" UNION");
-		
-		sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
-		sb.append(" WHERE RT.OUT_LINK_PID = L.LINK_PID");
-		sb.append(" AND L.LINK_PID = RL.LINK_PID");
-		sb.append(" AND L.E_NODE_PID = RT.NODE_PID");
-		sb.append(" AND RL.LANE_DIR IN (3, 1)");
-		sb.append(" AND RT.PASSAGE_NUM <> 0");
-		sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
-		sb.append(" AND RT.PID = " + rdTollgate.getPid());
-		sb.append(" AND RT.U_RECORD <> 2");
-		sb.append(" AND L.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
+			sb.append(" WHERE RT.OUT_LINK_PID = L.LINK_PID");
+			sb.append(" AND L.LINK_PID = RL.LINK_PID");
+			sb.append(" AND L.S_NODE_PID = RT.NODE_PID");
+			sb.append(" AND RL.LANE_DIR IN (2, 1)");
+			sb.append(" AND RT.PASSAGE_NUM <> 0");
+			sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
+			sb.append(" AND RT.PID = " + rdTollgate.getPid());
+			sb.append(" AND RT.U_RECORD <> 2");
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" UNION");
+			
+			sb.append(" SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
+			sb.append(" WHERE RT.OUT_LINK_PID = L.LINK_PID");
+			sb.append(" AND L.LINK_PID = RL.LINK_PID");
+			sb.append(" AND L.E_NODE_PID = RT.NODE_PID");
+			sb.append(" AND RL.LANE_DIR IN (3, 1)");
+			sb.append(" AND RT.PASSAGE_NUM <> 0");
+			sb.append(" AND RT.PASSAGE_NUM <> RL.LANE_NUM");
+			sb.append(" AND RT.PID = " + rdTollgate.getPid());
+			sb.append(" AND RT.U_RECORD <> 2");
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
 
-		String sql = sb.toString();
-		log.info("RdTollgate后检查GLM32049:" + sql);
+			String sql = sb.toString();
+			log.info("RdTollgate后检查GLM32049:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(!resultList.isEmpty()){
-			this.setCheckResult("", "[RD_TOLLGATE," + rdTollgate.getPid() + "]", 0);
-		}	
-		
+			if(!resultList.isEmpty()){
+				this.setCheckResult("", "[RD_TOLLGATE," + rdTollgate.getPid() + "]", 0);
+			}	
+		}
 	}
 
 	/**
@@ -164,7 +166,7 @@ public class GLM32049 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT 1 FROM RD_TOLLGATE RT, RD_LINK L, RD_LANE RL");
 		sb.append(" WHERE RT.IN_LINK_PID = L.LINK_PID");

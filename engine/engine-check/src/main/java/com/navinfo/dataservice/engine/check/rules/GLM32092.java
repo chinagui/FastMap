@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
@@ -43,7 +44,7 @@ public class GLM32092 extends baseRule{
 			// 新增/修改详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			//修改详细车道RdLaneCondition
 			else if(obj instanceof RdLaneCondition){
@@ -53,13 +54,13 @@ public class GLM32092 extends baseRule{
 //			// Link属性编辑RdLink
 //			else if (obj instanceof RdLink) {
 //				RdLink rdLink = (RdLink) obj;
-//				checkRdLink(rdLink,checkCommand.getOperType());
+//				checkRdLink(rdLink);
 //			}
 
 			// Link属性编辑RdLinkForm
 			else if (obj instanceof RdLinkForm) {
 				RdLinkForm rdLinkForm = (RdLinkForm) obj;
-				checkRdLinkForm(rdLinkForm,checkCommand.getOperType());
+				checkRdLinkForm(rdLinkForm);
 			}	
 		}
 		
@@ -70,15 +71,16 @@ public class GLM32092 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLinkForm(RdLinkForm rdLinkForm, OperType operType) throws Exception {
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		int formOfWay = 0;
-		if(rdLinkForm.changedFields().containsKey("formOfWay")){
-			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
-		}else{
+		if(rdLinkForm.status().equals(ObjStatus.INSERT)){
 			formOfWay = rdLinkForm.getFormOfWay();
+		}else if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+			}
 		}
 		if(formOfWay==22){
-//		if(rdLinkForm.getFormOfWay() == 22){
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT RL.GEOMETRY,'[RD_LINK,' || RL.LINK_PID || ']',RL.MESH_ID FROM RD_LINK RL");
@@ -112,7 +114,7 @@ public class GLM32092 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
+	private void checkRdLink(RdLink rdLink) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
 
@@ -183,7 +185,7 @@ public class GLM32092 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("SELECT 1 FROM RD_LINK RL, RD_LINK_FORM RLF,RD_LANE A");

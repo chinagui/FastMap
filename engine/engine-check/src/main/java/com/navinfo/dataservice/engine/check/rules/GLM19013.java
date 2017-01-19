@@ -81,7 +81,7 @@ public class GLM19013 extends baseRule{
 			sb2.append(" AND F.FORM_OF_WAY = 33");
 			sb2.append(" AND F.U_RECORD <> 2");
 			sb2.append(" UNION");
-			sb2.append(" SELECT 1 FROM FROM RD_LANE_TOPOLOGY L,RD_LINK_FORM F");
+			sb2.append(" SELECT 1 FROM RD_LANE_TOPOLOGY L,RD_LINK_FORM F");
 			sb2.append(" WHERE L.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
 			sb2.append(" AND L.U_RECORD <> 2");
 			sb2.append(" AND F.LINK_PID = L.OUT_LINK_PID");
@@ -133,7 +133,7 @@ public class GLM19013 extends baseRule{
 					sb2.append(" WHERE C.IN_LINK_PID = " + rdLink.getPid());
 					sb2.append(" AND C.U_RECORD <> 2");
 					sb2.append(" UNION");
-					sb2.append(" SELECT 1 FROM FROM RD_LANE_TOPOLOGY L");
+					sb2.append(" SELECT 1 FROM RD_LANE_TOPOLOGY L");
 					sb2.append(" WHERE L.OUT_LINK_PID = " + rdLink.getPid());
 					sb2.append(" AND L.U_RECORD <> 2");
 					sb2.append(" UNION");

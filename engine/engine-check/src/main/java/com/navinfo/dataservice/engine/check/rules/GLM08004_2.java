@@ -232,6 +232,12 @@ public class GLM08004_2 extends baseRule{
 				}
 			}
 		}
+		else if(rdLinkForm.status().equals(ObjStatus.DELETE)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay==50){
+				checkFlg = true;
+			}
+		}
 		
 		if(checkFlg){
 			StringBuilder sb = new StringBuilder();

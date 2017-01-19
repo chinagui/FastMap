@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLaneCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -143,10 +144,12 @@ public class GLM32021 extends baseRule {
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//道路属性为20，触发检查
 		int formOfWay = 0;
-		if(rdLinkForm.changedFields().containsKey("formOfWay")){
-			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
-		}else{
+		if(rdLinkForm.status().equals(ObjStatus.INSERT)){
 			formOfWay = rdLinkForm.getFormOfWay();
+		}else if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+			}
 		}
 		if(formOfWay==20){	
 			StringBuilder sb = new StringBuilder();

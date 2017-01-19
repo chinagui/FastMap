@@ -194,26 +194,74 @@ public class Operation implements IOperation {
 			RdLink currentLink = command.getLinks().get(i);
 			RdLink nextLink = command.getLinks().get(i + 1);
 			currentPid = this.getIntersectPid(currentLink, nextLink);
+			List<RdLink> rightLinks = new ArrayList<RdLink>();
+			List<RdLink> leftLinks = new ArrayList<RdLink>();
 			List<RdLink> links = nodeSelector.loadByDepartNodePid(currentPid,
 					currentLink.getPid(), nextLink.getPid(), true);
 			for (RdLink link : links) {
-				if (flagBooleans.size() > 1) {
-					break;
+				boolean flag = CompPolylineUtil.isRightSide(JtsGeometryFactory
+						.createLineString(currentLink.getGeometry()
+								.getCoordinates()), JtsGeometryFactory
+						.createLineString(nextLink.getGeometry()
+								.getCoordinates()), JtsGeometryFactory
+						.createLineString(link.getGeometry().getCoordinates()));
+				flagBooleans.add(flag);
+				if (flag) {
+					rightLinks.add(link);
+				} else {
+					leftLinks.add(link);
 				}
-				flagBooleans.add(CompPolylineUtil.isRightSide(
-						JtsGeometryFactory.createLineString(currentLink
-								.getGeometry().getCoordinates()),
-						JtsGeometryFactory.createLineString(nextLink
-								.getGeometry().getCoordinates()),
-						JtsGeometryFactory.createLineString(link.getGeometry()
-								.getCoordinates())));
 			}
 			if (flagBooleans.size() > 1) {
+				// 计算生成link的方向
+				int driect = this.createInnerLinkDir(currentPid, rightLinks,
+						leftLinks);
 				this.createInnerLine(lines[i], lines[lines.length - i - 1],
-						map, result);
+						map, driect, result);
+
 			}
 		}
 
+	}
+
+	/***
+	 * 如果该点挂接的两根link方向相同，则该段link赋与挂接link相同的方向值； 如果该点挂接的两根link方向值不同，则该link方向赋默认值；
+	 * 
+	 * @param currentPid
+	 * @param rightLinks
+	 * @param leftLinks
+	 */
+	private int createInnerLinkDir(int currentPid, List<RdLink> rightLinks,
+			List<RdLink> leftLinks) {
+		// 默认双方向
+		int direct = 1;
+		for (RdLink rLink : rightLinks) {
+			if (rLink.getDirect() == 1) {
+				return 1;
+			}
+			for (RdLink lLink : leftLinks) {
+				if (lLink.getDirect() == 1) {
+					return 1;
+				}
+				if ((rLink.getDirect() == 2 && rLink.geteNodePid() == currentPid)
+						|| (rLink.getDirect() == 3 && rLink.getsNodePid() == currentPid)
+						&& (lLink.getDirect() == 2 && lLink.geteNodePid() == currentPid)
+						|| (lLink.getDirect() == 3 && lLink.getsNodePid() == currentPid)) {
+					return 1;
+				} else {
+					direct = 2;
+				}
+				if ((rLink.getDirect() == 2 && rLink.getsNodePid() == currentPid)
+						|| (rLink.getDirect() == 3 && rLink.geteNodePid() == currentPid)
+						&& (lLink.getDirect() == 2 && lLink.getsNodePid() == currentPid)
+						|| (lLink.getDirect() == 3 && lLink.geteNodePid() == currentPid)) {
+					return 1;
+				} else {
+					direct = 3;
+				}
+			}
+		}
+		return direct;
 	}
 
 	/***
@@ -226,8 +274,8 @@ public class Operation implements IOperation {
 	 */
 
 	private void createInnerLine(LineString lineDownString,
-			LineString lineUpString, Map<Geometry, RdNode> map, Result result)
-			throws Exception {
+			LineString lineUpString, Map<Geometry, RdNode> map, int direct,
+			Result result) throws Exception {
 		Coordinate[] coordinates = new Coordinate[2];
 		Coordinate sCoordinate = lineDownString.getCoordinates()[lineDownString
 				.getCoordinates().length - 1];
@@ -250,7 +298,7 @@ public class Operation implements IOperation {
 		List<RdLink> links = RdLinkOperateUtils.addRdLink(sNode, eNode,
 				innerLink, innerLink, result);
 		for (RdLink link : links) {
-
+			link.setDirect(direct);
 			result.insertObject(link, ObjStatus.INSERT, link.getPid());
 			AdminIDBatchUtils.updateAdminID(link, null, conn);
 			ZoneIDBatchUtils.updateZoneID(link, null, conn, result);

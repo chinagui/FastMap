@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -659,12 +660,29 @@ public class OpRefRelationObj {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-
-		String laneInfos = connexity.getLaneInfo();
+		
+		String laneInfos = null;
+		
+		//修改车信车道信息
+		if(connexity.changedFields().containsKey("laneInfo"))
+		{
+			laneInfos = connexity.changedFields().get("laneInfo").toString();
+		}
+		else
+		{
+			//新增场景
+			laneInfos = connexity.getLaneInfo();
+		}
 
 		List<String> laneInfoList = new ArrayList<>();
 
 		for (String info : laneInfos.split(",")) {
+			//去除公交车道车道信息数据
+			info = StringUtils.removeSpeLetter(info);
+			if(StringUtils.isEmpty(info))
+			{
+				continue;
+			}
 			if (info.contains("[")) {
 				// 理论值带[]
 				laneInfoList.add(info.substring(1, 2));

@@ -243,22 +243,26 @@ public class Operation implements IOperation {
 				if (lLink.getDirect() == 1) {
 					return 1;
 				}
-				if ((rLink.getDirect() == 2 && rLink.geteNodePid() == currentPid)
-						|| (rLink.getDirect() == 3 && rLink.getsNodePid() == currentPid)
-						&& (lLink.getDirect() == 2 && lLink.geteNodePid() == currentPid)
-						|| (lLink.getDirect() == 3 && lLink.getsNodePid() == currentPid)) {
+				if (((rLink.getDirect() == 2 && rLink.geteNodePid() == currentPid)
+						|| (rLink.getDirect() == 3 && rLink.getsNodePid() == currentPid))
+						&& ((lLink.getDirect() == 2 && lLink.geteNodePid() == currentPid)
+						|| (lLink.getDirect() == 3 && lLink.getsNodePid() == currentPid))) {
 					return 1;
-				} else {
-					direct = 2;
 				}
-				if ((rLink.getDirect() == 2 && rLink.getsNodePid() == currentPid)
-						|| (rLink.getDirect() == 3 && rLink.geteNodePid() == currentPid)
-						&& (lLink.getDirect() == 2 && lLink.getsNodePid() == currentPid)
-						|| (lLink.getDirect() == 3 && lLink.geteNodePid() == currentPid)) {
+				if (((rLink.getDirect() == 2 && rLink.getsNodePid() == currentPid)
+						|| (rLink.getDirect() == 3 && rLink.geteNodePid() == currentPid))
+						&& ((lLink.getDirect() == 2 && lLink.getsNodePid() == currentPid)
+						|| (lLink.getDirect() == 3 && lLink.geteNodePid() == currentPid))) {
 					return 1;
-				} else {
-					direct = 3;
 				}
+     
+			}
+			RdLink flagLink = rightLinks.get(0);
+			if((flagLink.getDirect() == 2 && flagLink.getsNodePid() == currentPid)
+					|| (flagLink.getDirect() == 3 && flagLink.geteNodePid() == currentPid)){
+				direct =3;
+			}else{
+				direct =2;
 			}
 		}
 		return direct;

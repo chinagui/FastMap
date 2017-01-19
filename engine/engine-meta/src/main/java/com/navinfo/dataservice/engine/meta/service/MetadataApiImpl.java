@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
+import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
@@ -37,8 +38,11 @@ import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
+import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
+import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
+import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
@@ -52,6 +56,33 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * select pid,name from sc_point_nomingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointNominganListPidNameList() throws Exception{
+		return ScPointNominganList.getInstance().scPointNominganListPidNameList();
+	}
+	/**
+	 * select pid,name from sc_point_mingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	@Override
+	public List<String> scPointMinganListPidNameList() throws Exception{
+		return ScPointMinganList.getInstance().scPointMinganListPidNameList();
+	}
+	/**
+	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
+	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception{
+		return ScSensitiveWords.getInstance().scSensitiveWordsMap();
+	}
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
 	 * @return 

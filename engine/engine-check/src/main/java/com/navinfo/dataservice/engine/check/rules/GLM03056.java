@@ -74,10 +74,10 @@ public class GLM03056 extends baseRule {
 		}
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
-		    
-			sb.append("SELECT N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R");
-			sb.append(" WHERE N.NODE_PID = F.NODE_PID AND N.NODE_PID = "+rdNodeForm.getNodePid());
-			sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2");
+			 
+			sb.append("SELECT DISTINCT N.NODE_PID FROM RD_NODE N, RD_LINK R");
+			sb.append(" WHERE N.NODE_PID = "+rdNodeForm.getNodePid());
+			sb.append(" AND N.U_RECORD <> 2 AND R.U_RECORD <> 2");
 			sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
 			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) <> 2");
 			String sql = sb.toString();

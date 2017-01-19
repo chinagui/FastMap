@@ -154,14 +154,14 @@ public class GLM03059 extends baseRule {
 		}
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT DISTINCT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK RS, RD_LINK RE");
-			sb.append(" WHERE F.NODE_PID = "+rdNodeForm.getNodePid());
-			sb.append(" AND (RS.S_NODE_PID = F.NODE_PID OR RS.E_NODE_PID = F.NODE_PID)");
-			sb.append(" AND (RE.S_NODE_PID = F.NODE_PID OR RE.E_NODE_PID = F.NODE_PID)");
-			sb.append(" AND RS.LINK_PID <> RE.LINK_PID AND F.U_RECORD <> 2 AND RS.U_RECORD <> 2");
+			 
+			sb.append("SELECT DISTINCT N.NODE_PID FROM RD_NODE N,RD_LINK RS, RD_LINK RE");
+			sb.append(" WHERE N.NODE_PID = "+rdNodeForm.getNodePid());
+			sb.append(" AND (RS.S_NODE_PID = N.NODE_PID OR RS.E_NODE_PID = N.NODE_PID)");
+			sb.append(" AND (RE.S_NODE_PID = N.NODE_PID OR RE.E_NODE_PID = N.NODE_PID)");
+			sb.append(" AND RS.LINK_PID <> RE.LINK_PID AND N.U_RECORD <> 2 AND RS.U_RECORD <> 2");
 			sb.append(" AND RE.U_RECORD <> 2 AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
-			sb.append(" GROUP BY F.NODE_PID HAVING COUNT(1)=2");
+			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1)=2");
 			String sql = sb.toString();
 			log.info("RdNode后检查GLM03059--sql:" + sql);
 			

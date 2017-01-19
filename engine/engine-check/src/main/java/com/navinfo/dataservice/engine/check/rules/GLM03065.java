@@ -80,11 +80,11 @@ public class GLM03065 extends baseRule {
 		}
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
-		     
-			sb.append("SELECT N.NODE_PID FROM RD_NODE N, RD_NODE_FORM F, RD_LINK R ,RD_LINK_FORM RF");
-			sb.append(" WHERE N.NODE_PID = F.NODE_PID AND N.NODE_PID = "+rdNodeForm.getNodePid());
+			 
+			sb.append("SELECT N.NODE_PID FROM RD_NODE N,RD_LINK R ,RD_LINK_FORM RF");
+			sb.append(" WHERE N.NODE_PID = "+rdNodeForm.getNodePid());
 			sb.append(" AND R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 31");
-			sb.append(" AND N.U_RECORD <> 2 AND F.U_RECORD <> 2 AND R.U_RECORD <> 2 AND RF.U_RECORD <> 2");
+			sb.append(" AND N.U_RECORD <> 2 AND R.U_RECORD <> 2 AND RF.U_RECORD <> 2");
 			sb.append(" AND (R.S_NODE_PID = N.NODE_PID OR R.E_NODE_PID = N.NODE_PID)");
 			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1) > 2");
 			String sql = sb.toString();

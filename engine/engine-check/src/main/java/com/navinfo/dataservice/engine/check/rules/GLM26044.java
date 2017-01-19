@@ -126,11 +126,10 @@ public class GLM26044 extends baseRule{
 		sb.append(" AND RCL.U_RECORD <> 2");
 		sb.append(" AND RCL.PID = " + rdCross.getPid());
 		sb.append(" UNION");
-		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
 		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
 		sb.append(" AND RLF.FORM_OF_WAY = 33");
-		sb.append(" AND RLF.U_RECORD <> 2)");
+		sb.append(" AND RLF.U_RECORD <> 2");
 		sb.append(" AND RCL.U_RECORD <> 2");
 		sb.append(" AND RCL.PID = " + rdCross.getPid());
 

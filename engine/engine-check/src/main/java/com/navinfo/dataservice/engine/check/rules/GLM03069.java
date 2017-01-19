@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -31,13 +32,21 @@ public class GLM03069 extends baseRule{
 			if (obj instanceof RdNodeForm){
 				boolean isBorderNode = false;
 				RdNodeForm rdNodeForm = (RdNodeForm) obj;
-				Map<String, Object> changedFields = rdNodeForm.changedFields();
-				int formOfWay = 1;
-				if(changedFields.containsKey("formOfWay")){
-					formOfWay = (int) changedFields.get("formOfWay");
-				}
-				if (formOfWay == 2){
-					isBorderNode = true;
+				if(rdNodeForm.status().equals(ObjStatus.UPDATE)){
+					Map<String, Object> changedFields = rdNodeForm.changedFields();
+					if(!changedFields.isEmpty()){
+						if(changedFields.containsKey("formOfWay")){
+							int formOfWay = (int) changedFields.get("formOfWay");
+							if(formOfWay == 2){
+								isBorderNode = true;
+							}
+						}
+					}
+				}else if (rdNodeForm.status().equals(ObjStatus.INSERT)){
+					int formOfWay = rdNodeForm.getFormOfWay();
+					if(formOfWay == 2){
+						isBorderNode = true;
+					}
 				}
 				if (isBorderNode){
 					//图廓点

@@ -44,12 +44,12 @@ public class GLM32051 extends baseRule{
 			// 新增/修改详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			// 新增/修改车信
 			else if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
+				checkRdLink(rdLink);
 			}	
 		}
 		
@@ -60,27 +60,30 @@ public class GLM32051 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']', L.MESH_ID");
-		sb.append(" FROM RD_LANE RL, RD_LINK L");
-		sb.append(" WHERE (BITAND(RL.LANE_TYPE, 8) = 8 OR");
-		sb.append(" BITAND(RL.LANE_TYPE, 2) = 2)");
-		sb.append(" AND RL.LINK_PID = L.LINK_PID");
-		sb.append(" AND L.KIND NOT IN (1, 2)");
-		sb.append(" AND L.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND L.LINK_PID = " + rdLink.getPid());
-		
-		String sql = sb.toString();
-		log.info("RdLink后检查GLM32051:" + sql);
-
-		DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
-		
-		if(!resultList.isEmpty()){
-			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),(int)resultList.get(2));
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		//link种别编辑
+		if(rdLink.changedFields().containsKey("kind")){
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']', L.MESH_ID");
+			sb.append(" FROM RD_LANE RL, RD_LINK L");
+			sb.append(" WHERE (BITAND(RL.LANE_TYPE, 8) = 8 OR");
+			sb.append(" BITAND(RL.LANE_TYPE, 2) = 2)");
+			sb.append(" AND RL.LINK_PID = L.LINK_PID");
+			sb.append(" AND L.KIND NOT IN (1, 2)");
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" AND L.LINK_PID = " + rdLink.getPid());
+			
+			String sql = sb.toString();
+			log.info("RdLink后检查GLM32051:" + sql);
+	
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),(int)resultList.get(2));
+			}
 		}
 		
 	}
@@ -90,7 +93,7 @@ public class GLM32051 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT 1 FROM RD_LANE RL, RD_LINK L");
 		sb.append(" WHERE (BITAND(RL.LANE_TYPE, 8) = 8 OR");

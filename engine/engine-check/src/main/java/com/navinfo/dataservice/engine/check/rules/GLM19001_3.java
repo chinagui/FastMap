@@ -211,6 +211,11 @@ public class GLM19001_3 extends baseRule{
 			if(formOfWay==22){
 				checkFlg = true;
 			}
+		}else if(rdLinkForm.status().equals(ObjStatus.DELETE)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay==50){
+				checkFlg = true;
+			}
 		}
 
 		if(checkFlg){

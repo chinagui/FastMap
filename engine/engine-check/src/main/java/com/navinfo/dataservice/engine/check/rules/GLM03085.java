@@ -62,6 +62,11 @@ public class GLM03085 extends baseRule {
 							if(formOfWay != 2){
 								checkFlag = true;
 							}
+						}else if (rdNodeForm.status().equals(ObjStatus.DELETE)){
+							int formOfWay = rdNodeForm.getFormOfWay();
+							if(formOfWay == 2){
+								checkFlag = true;
+							}
 						}
 						if(checkFlag){
 							this.setCheckResult("", "[RD_NODE,"+nodePid+"]", 0);

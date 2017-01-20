@@ -51,7 +51,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByLinkKind()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":306003206,\"data\":{\"kind\":9,\"pid\":306003206,\"objStatus\":\"UPDATE\",\"routeAdopt\":0,\"limits\":[{\"linkPid\":306003206,\"rowId\":\"\",\"type\":3,\"limitDir\":0,\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":2,\"objStatus\":\"INSERT\"}]}}";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":\"9.8\",\"data\":{\"linkPids\":[202003226,300003318]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -90,7 +90,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testUpdatRdLaneByTrafficsignal()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":17,\"data\":{\"inLinkPid\":201002710,\"nodePid\":210002133,\"outLinkPids\":[302002723],\"laneInfo\":\"a\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLANECONNEXITY\",\"objId\":208000048,\"data\":{\"laneInfo\":\"a<a>,c\",\"rowId\":\"84FBB659321B48A7BEE994899E394989\",\"pid\":208000048,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

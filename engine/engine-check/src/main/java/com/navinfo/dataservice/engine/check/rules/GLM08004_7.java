@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
@@ -24,6 +25,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 进不去出不来的link（加了永久穿行限制，并且车辆类型限制同时且只制作了允许步行者、急救车的link）不能作为交限（包括路口和线线结构里的所有交限）的进入线或者退出线（也查线线经过线，但不查线线经过线为交叉口内link的情况）
  * 新增交限/卡车交限：RdRestriction
  * 修改交限/卡车交限：RdRestrictionDetail(新增，修改outLinkPid),RdRestrictionVia(新增，修改LinkPid)
+ * 限制类型编辑
+ * 车辆类型编辑
  */
 public class GLM08004_7 extends baseRule{
 
@@ -208,7 +211,93 @@ public class GLM08004_7 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdLinkLimit ){
+				RdLinkLimit rdLinkLimit=(RdLinkLimit) obj;
+				checkRdLinkLimit(rdLinkLimit);
+			}
+		}
+		
+	}
+
+	/**
+	 * @param rdLinkLimit
+	 * @throws Exception 
+	 */
+	private void checkRdLinkLimit(RdLinkLimit rdLinkLimit) throws Exception {
+		boolean checkFlg = false;
+		//进不去出不来的link
+		if(rdLinkLimit.status().equals(ObjStatus.INSERT)){
+			if((rdLinkLimit.getType()==2)&&(rdLinkLimit.getVehicle()==2147483784L)&&(rdLinkLimit.getTimeDomain().isEmpty())){
+				checkFlg = true;
+			}
+		}
+		else if(rdLinkLimit.status().equals(ObjStatus.UPDATE)){
+			int type;
+			long vehicle;
+			String timeDomain;
+			if(rdLinkLimit.changedFields().containsKey("type")){
+				type = Integer.parseInt(rdLinkLimit.changedFields().get("type").toString());
+			}else{
+				type = rdLinkLimit.getType();
+			}
+			
+			if(rdLinkLimit.changedFields().containsKey("vehicle")){
+				vehicle = Long.parseLong(rdLinkLimit.changedFields().get("vehicle").toString());
+			}else{
+				vehicle = rdLinkLimit.getVehicle();
+			}
+			
+			if(rdLinkLimit.changedFields().containsKey("timeDomain")){
+				if(rdLinkLimit.changedFields().get("timeDomain")!=null){
+					timeDomain = rdLinkLimit.changedFields().get("timeDomain").toString();
+					if(timeDomain.isEmpty()){
+						timeDomain = null;
+					}
+				}
+				else{
+					timeDomain = null;
+				}
+			}else{
+				timeDomain = null;
+			}
+			
+			if((type==2)&&(vehicle==2147483784L)&&(timeDomain==null)){
+				checkFlg = true;
+			}
+		}
+		
+		if(checkFlg){
+			StringBuilder sb2 = new StringBuilder();
+
+			sb2.append("SELECT 1 FROM RD_RESTRICTION RR");
+			sb2.append(" WHERE RR.IN_LINK_PID = " + rdLinkLimit.getLinkPid());
+			sb2.append(" AND RR.U_RECORD <> 2");
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL RRD");
+			sb2.append(" WHERE RRD.OUT_LINK_PID = " + rdLinkLimit.getLinkPid());
+			sb2.append(" AND RRD.U_RECORD <> 2");
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_RESTRICTION_VIA RRV");
+			sb2.append(" WHERE RRV.LINK_PID = " + rdLinkLimit.getLinkPid());
+			sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+			sb2.append(" WHERE RLF.LINK_PID = RRV.LINK_PID");
+			sb2.append(" AND RLF.FORM_OF_WAY = 50");
+			sb2.append(" AND RLF.U_RECORD <> 2)");
+			sb2.append(" AND RRV.U_RECORD <> 2");
+
+			String sql2 = sb2.toString();
+			log.info("RdLinkLimit后检查GLM08004_7:" + sql2);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql2);
+
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLinkLimit.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
 		
 	}
 

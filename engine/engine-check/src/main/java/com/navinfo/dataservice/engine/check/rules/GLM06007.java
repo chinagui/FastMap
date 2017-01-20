@@ -15,7 +15,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 2017年1月9日 下午3:03:49
  * @Description TODO
  * 如果分岔口点,不允许有两条及以上的进入线。屏蔽条件：如果多组分岔口信息，进入线不同退出线相同的，不报log
- * 新增分岔口提示	服务端后检查
+ * 新增分岔口提示	服务端前检查
  */
 public class GLM06007 extends baseRule {
 
@@ -51,7 +51,7 @@ public class GLM06007 extends baseRule {
 		sb.append(" AND SE.OUT_LINK_PID != "+rdSe.getOutLinkPid());
 		sb.append(" AND SE.U_RECORD <>2");
 		String sql = sb.toString();
-		log.info("新增分岔口提示后检查GLM06007--sql:" + sql);
+		log.info("新增分岔口提示前检查GLM06007--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

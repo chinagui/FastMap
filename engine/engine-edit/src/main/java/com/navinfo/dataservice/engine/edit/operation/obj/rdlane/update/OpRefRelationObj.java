@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -345,16 +346,23 @@ public class OpRefRelationObj {
 			// 删除高速分歧，分歧上包含影响详细车道的模式图
 			case RDBRANCH:
 				RdBranch branch = (RdBranch) row;
-				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
-				String patternCode = detail.getPatternCode();
-				// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
-				if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
-						|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
-					return;
-				}
+				RdBranchDetail detail = null;
+				if(CollectionUtils.isNotEmpty(branch.getDetails()))
+				{
+					detail = (RdBranchDetail) branch.getDetails().get(0);
+					if(detail.getBranchType() == 0)
+					{
+						String patternCode = detail.getPatternCode();
+						// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
+						if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
+								|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
+							return;
+						}
 
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+					}
+				}
 				break;
 			// link上删除车辆类型限制信息
 			case RDLINKLIMIT:
@@ -569,11 +577,38 @@ public class OpRefRelationObj {
 			if (objType == ObjType.RDLANE) {
 				// 新增的详细车道维护限制信息
 				RdLane rdLane = (RdLane) row;
+				
+				int linkPid = rdLane.getLinkPid();
+				
+				Map<Integer,List<IRow>> limitMap = updateLimitMap.get(linkPid);
+				
+				sortMapByKey(limitMap);
+				
+				RdLinkLimit limit = null;
+				
+				RdLinkForm form = null;
+				
+				//获取修改或者新增的level3要素，这个要素还没入库，需要从内存中获取
+				if(limitMap != null)
+				{
+					List<IRow> limitRowsList = limitMap.get(LINK_LANE_VEHICLE_31);
+					
+					if(CollectionUtils.isNotEmpty(limitRowsList))
+					{
+						limit = (RdLinkLimit) limitRowsList.get(0);
+					}
+					else
+					{
+						List<IRow> formRowsList = limitMap.get(LINK_FORM_32);
+						
+						form = (RdLinkForm) formRowsList.get(0);
+					}
+				}
 
-				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), null, null);
+				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), limit, null);
 
 				if (flag) {
-					updateByRdLinkForm(rdLane.getLinkPid(), null, rdLane);
+					updateByRdLinkForm(rdLane.getLinkPid(), form, rdLane);
 				}
 			}
 		}
@@ -625,12 +660,29 @@ public class OpRefRelationObj {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-
-		String laneInfos = connexity.getLaneInfo();
+		
+		String laneInfos = null;
+		
+		//修改车信车道信息
+		if(connexity.changedFields().containsKey("laneInfo"))
+		{
+			laneInfos = connexity.changedFields().get("laneInfo").toString();
+		}
+		else
+		{
+			//新增场景
+			laneInfos = connexity.getLaneInfo();
+		}
 
 		List<String> laneInfoList = new ArrayList<>();
 
 		for (String info : laneInfos.split(",")) {
+			//去除公交车道车道信息数据
+			info = StringUtils.removeSpeLetter(info);
+			if(StringUtils.isEmpty(info))
+			{
+				continue;
+			}
 			if (info.contains("[")) {
 				// 理论值带[]
 				laneInfoList.add(info.substring(1, 2));
@@ -660,9 +712,7 @@ public class OpRefRelationObj {
 				int formOfWay = (int) form.changedFields().get("formOfWay");
 				if (sourceFormOfWay == 50 && formOfWay != 50) {
 					formCrossFlag = 2;
-				}
-				else if(sourceFormOfWay != 50 && formOfWay == 50)
-				{
+				} else if (sourceFormOfWay != 50 && formOfWay == 50) {
 					formCrossFlag = 1;
 				}
 			}

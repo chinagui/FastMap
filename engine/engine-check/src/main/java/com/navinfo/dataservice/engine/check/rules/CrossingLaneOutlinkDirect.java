@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -162,7 +163,60 @@ public class CrossingLaneOutlinkDirect extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj:checkCommand.getGlmList()){
+			if(obj instanceof RdLink ){
+				RdLink rdLink=(RdLink) obj;
+				checkRdLink(rdLink);
+			}
+		}
+	}
+
+	/**
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		if(rdLink.changedFields().containsKey("direct")){
+			int direct;
+			direct = Integer.parseInt(rdLink.changedFields().get("direct").toString());
+			if((direct==2)||(direct==3)){
+				StringBuilder sb2 = new StringBuilder();
+
+				sb2.append("SELECT 1 FROM RD_LINK R, RD_LANE_TOPOLOGY T, RD_LANE_CONNEXITY C ");
+				sb2.append(" WHERE R.LINK_PID = " + rdLink.getPid());
+				sb2.append(" AND T.OUT_LINK_PID = R.LINK_PID");
+				sb2.append(" AND T.RELATIONSHIP_TYPE = 1");
+				sb2.append(" AND C.PID = T.CONNEXITY_PID");
+				sb2.append(" AND T.U_RECORD <> 2");
+				sb2.append(" AND R.U_RECORD <> 2");
+				sb2.append(" AND R.DIRECT = 2");
+				sb2.append(" AND C.U_RECORD <> 2");
+				sb2.append(" AND R.E_NODE_PID = C.NODE_PID");
+				sb2.append(" UNION");
+				sb2.append(" SELECT 1 FROM RD_LINK R, RD_LANE_TOPOLOGY T, RD_LANE_CONNEXITY C");
+				sb2.append(" WHERE R.LINK_PID = " + rdLink.getPid());
+				sb2.append(" AND T.OUT_LINK_PID = R.LINK_PID");
+				sb2.append(" AND T.RELATIONSHIP_TYPE = 1");
+				sb2.append(" AND C.PID = T.CONNEXITY_PID");
+				sb2.append(" AND T.U_RECORD <> 2");
+				sb2.append(" AND R.U_RECORD <> 2");
+				sb2.append(" AND C.U_RECORD <> 2");
+				sb2.append(" AND R.DIRECT = 3");
+				sb2.append(" AND R.S_NODE_PID = C.NODE_PID");
+				
+				String sql2 = sb2.toString();
+				log.info("RdLink后检查CrossingLaneOutlinkDirect:" + sql2);
+	
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql2);
+	
+				if(resultList.size()>0){
+					String target = "[RD_LINK," + rdLink.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
+			}
+		}
 		
 	}
 

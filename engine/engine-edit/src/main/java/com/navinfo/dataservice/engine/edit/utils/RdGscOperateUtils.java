@@ -159,7 +159,8 @@ public class RdGscOperateUtils {
 		for (int i = 0; i < linkCoors.length; i++) {
 			Coordinate linkCoor = linkCoors[i];
 
-			if (gscCoor.x == linkCoor.x && gscCoor.y == linkCoor.y) {
+			if(linkCoor.distance(gscCoor) <1)
+			{
 				shpSeqNum.add(i);
 			}
 		}

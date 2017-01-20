@@ -50,24 +50,24 @@ public class FM14Sum110401 extends BasicCheckRule {
 						"分类为综合医院（170101）,专科医院（170102）的设施名字中不包含“门”，但与综合医院,专科医院的设施建立了父子关系。");
 				return;
 			}
-			Set<Long> parentPids = new HashSet<Long>();
-			parentPids.add(poi.getPid());
-			List<Long> childrenPids = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(),
-					parentPids);
-			if (childrenPids.size() == 0) {
-				return;
-			}
-			for (Long childPid : childrenPids) {
-				BasicObj childobj = ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", null, true,
-						childPid, false);
-				IxPoiObj childPoiObj = (IxPoiObj) childobj;
-				IxPoi childPoi = (IxPoi) childPoiObj.getMainrow();
-				if (childPoi.getKindCode().equals("170101") || childPoi.getKindCode().equals("170102")) {
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),
-							"分类为综合医院（170101）,专科医院（170102）的设施名字中不包含“门”，但与综合医院,专科医院的设施建立了父子关系。");
-					return;
-				}
-			}
+//			Set<Long> parentPids = new HashSet<Long>();
+//			parentPids.add(poi.getPid());
+//			List<Long> childrenPids = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(),
+//					parentPids);
+//			if (childrenPids.size() == 0) {
+//				return;
+//			}
+//			for (Long childPid : childrenPids) {
+//				BasicObj childobj = ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", null, true,
+//						childPid, false);
+//				IxPoiObj childPoiObj = (IxPoiObj) childobj;
+//				IxPoi childPoi = (IxPoi) childPoiObj.getMainrow();
+//				if (childPoi.getKindCode().equals("170101") || childPoi.getKindCode().equals("170102")) {
+//					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),
+//							"分类为综合医院（170101）,专科医院（170102）的设施名字中不包含“门”，但与综合医院,专科医院的设施建立了父子关系。");
+//					return;
+//				}
+//			}
 
 		}
 

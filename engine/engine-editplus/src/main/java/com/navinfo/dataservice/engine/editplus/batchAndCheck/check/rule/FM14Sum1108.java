@@ -34,16 +34,21 @@ public class FM14Sum1108 extends BasicCheckRule {
 		if (obj.objName().equals(ObjectName.IX_POI)) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
-			if (parentIds!=null && parentIds.containsKey(poi.getPid())) {
+			if (parentIds ==null  ||  !parentIds.containsKey(poi.getPid())) {
 				return;
 			}
 			
-			String sqlStr=" SELECT P2.KIND_CODE"
-					+ " FROM IX_POI P1,"
-					+ " IX_POI P2,"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 3"
-					+ " AND P1.PID=:1"
-					+ " AND P2.PID!=P1.PID";
+			String sqlStr=" WITH T AS"
+					+ " (SELECT P1.PID PID2, P1.GEOMETRY G2,P1.KIND_CODE"
+					+ " FROM IX_POI P1"
+					+ " WHERE P1.KIND_CODE IN ('200103','200104','120101')"
+					+ " AND P1.U_RECORD != 2"
+					+ " AND P1.PID !=:1)"
+					+ " SELECT /*+ NO_MERGE(T)*/"
+					+ " T.Kind_Code,PID2"
+					+ " FROM T, IX_POI P"
+					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 3"
+					+" AND P.PID =:2";
 			
 			Connection conn = this.getCheckRuleCommand().getConn();
 			
@@ -54,6 +59,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 				List<String> kindCodeList = new ArrayList<String>();
 				pstmt=conn.prepareStatement(sqlStr);
 				pstmt.setLong(1, poi.getPid());
+				pstmt.setLong(2, poi.getPid());
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					kindCodeList.add(rs.getString("KIND_CODE"));

@@ -29,7 +29,7 @@ public class FM14Sum1114 extends BasicCheckRule {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
 			
-			if (!poi.getKindCode().equals("230215") || !poi.getKindCode().equals("230216")) {
+			if (!poi.getKindCode().equals("230215") && !poi.getKindCode().equals("230216")) {
 				return;
 			}
 			

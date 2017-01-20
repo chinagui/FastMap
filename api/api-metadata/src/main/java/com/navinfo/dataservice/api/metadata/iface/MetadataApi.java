@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
+import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,6 +15,24 @@ import net.sf.json.JSONObject;
  *
  */
 public interface MetadataApi {
+	/**
+	 * select pid,name from sc_point_nomingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	public List<String> scPointNominganListPidNameList() throws Exception;
+	/**
+	 * select pid,name from sc_point_mingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	public List<String> scPointMinganListPidNameList() throws Exception;
+	/**
+	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
+	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
+	 * @throws Exception
+	 */
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception;
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
 	 * @return 

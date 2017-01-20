@@ -6,6 +6,8 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -17,6 +19,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * link有别名或曾用名，不能没有官方名称；除高速、城市高速之外种别的道路不应该有曾用名.增加屏蔽条件：点门牌类型名称不查
  * 名称分类编辑	服务端后检查
+ * Link种别编辑	服务端后检查
+ * 新增道路名	服务端后检查
  */
 public class GLM02056 extends baseRule {
 
@@ -30,10 +34,15 @@ public class GLM02056 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//名称分类编辑
+			//名称分类编辑,新增道路名
 			if (row instanceof RdLinkName){
 				RdLinkName rdLinkName = (RdLinkName) row;
 				this.checkRdLinkName(rdLinkName);
+			}
+			//Link种别编辑
+			else if (row instanceof RdLink){
+				RdLink rdLink = (RdLink) row;
+				this.checkRdLink(rdLink);
 			}
 		}
 	}
@@ -45,20 +54,71 @@ public class GLM02056 extends baseRule {
 	 */
 	private void checkRdLinkName(RdLinkName rdLinkName) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkName.changedFields();
-		if(!changedFields.isEmpty()){
-			//名称分类编辑
-			if(changedFields.containsKey("nameClass")){
-				boolean check = this.check(rdLinkName.getLinkPid());
-				
-				if(check){
-					String target = "[RD_LINK," + rdLinkName.getLinkPid() + "]";
-					this.setCheckResult("", target, 0);
+		boolean checkFlag = false;
+		if(rdLinkName.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkName.changedFields();
+			if(!changedFields.isEmpty()){
+				//名称分类编辑
+				if(changedFields.containsKey("nameClass")){
+					checkFlag = true;
 				}
+			}
+		}
+		//新增道路名
+		else if (rdLinkName.status().equals(ObjStatus.INSERT)){
+			checkFlag = true;
+		}
+		if(checkFlag){
+			boolean check = this.check(rdLinkName.getLinkPid());
+			
+			if(check){
+				String target = "[RD_LINK," + rdLinkName.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}
 
+	/**
+	 * @author Han Shaoming
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		// TODO Auto-generated method stub
+		Map<String, Object> changedFields = rdLink.changedFields();
+		if(!changedFields.isEmpty()){
+			//Link种别编辑
+			if(changedFields.containsKey("kind")){
+				int kind = (int) changedFields.get("kind");
+				if(kind != 1 && kind != 2){
+					StringBuilder sb = new StringBuilder();
+					
+					sb.append("SELECT N1.LINK_PID FROM RD_LINK_NAME N1");
+					sb.append(" WHERE N1.LINK_PID ="+rdLink.getPid()+" AND N1.NAME_CLASS IN (2,3)");
+					sb.append(" AND N1.NAME_TYPE <> 14 AND N1.U_RECORD <>2");
+					sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_NAME N2");
+					sb.append(" WHERE N2.LINK_PID = N1.LINK_PID AND N2.U_RECORD <>2");
+					sb.append(" AND N2.NAME_CLASS = 1)");
+					sb.append(" UNION");
+					sb.append(" SELECT L.LINK_PID FROM RD_LINK L, RD_LINK_NAME N");
+					sb.append(" WHERE L.LINK_PID ="+rdLink.getPid()+" AND L.LINK_PID = N.LINK_PID");
+					sb.append(" AND N.NAME_TYPE <> 14 AND N.NAME_CLASS = 3 AND L.U_RECORD <>2 AND N.U_RECORD <>2");
+					String sql = sb.toString();
+					log.info("后检查GLM02056--sql:" + sql);
+					
+					DatabaseOperator getObj = new DatabaseOperator();
+					List<Object> resultList = new ArrayList<Object>();
+					resultList = getObj.exeSelect(this.getConn(), sql);
+					
+					if(!resultList.isEmpty()){
+						String target = "[RD_LINK," + rdLink.getPid() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
+			}
+		}
+	}
+	
 	/**
 	 * @author Han Shaoming
 	 * @param rdNodeForm

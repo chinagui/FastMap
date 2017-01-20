@@ -138,7 +138,7 @@ public class ReflectionAttrUtils {
 		case RDVOICEGUIDE:
 			return "RD_VOICEGUIDE";
 		case RDVARIABLESPEED:
-			return "RD_VARIABLESPEED";
+			return "RD_VARIABLE_SPEED";
 		case RDLANE:
 			return "RD_LANE";
 		case IXSAMEPOI:

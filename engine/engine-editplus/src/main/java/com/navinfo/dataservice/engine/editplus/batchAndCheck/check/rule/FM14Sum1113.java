@@ -15,7 +15,7 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  * 检查条件：Lifecycle为“1（删除）”不检查； 检查原则： 没有子设施的机场设施（分类：230126）。
  *
  */
-public class FM14Sum11113 extends BasicCheckRule {
+public class FM14Sum1113 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

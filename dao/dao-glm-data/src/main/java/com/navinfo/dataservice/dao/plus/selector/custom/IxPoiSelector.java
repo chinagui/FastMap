@@ -140,6 +140,8 @@ public class IxPoiSelector {
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
 					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.U_RECORD != 2"
+					+ " AND IPC.U_RECORD != 2"
 					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
 			
 			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {

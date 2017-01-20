@@ -68,40 +68,30 @@ public class RdLane002 extends baseRule {
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
 			int viaNum = rdLaneTopology.getVias().size();
-//			List<String> viaLinks = new ArrayList<String>();
-//			String sql = "SELECT LISTAGG(V.LINK_PID,',') WITHIN GROUP (ORDER BY V.LINK_PID)"
-//					+ " FROM RD_LANE_VIA V"
-//					+ " WHERE V.TOPOLOGY_ID = " + rdLaneTopology.getPid()
-//					+ " AND V.U_RECORD <> 2 ";
-//			DatabaseOperator getObj = new DatabaseOperator();
-//			List<Object> resultList = new ArrayList<Object>();
-//			resultList = getObj.exeSelect(this.getConn(), sql);
-//			
-//			if(resultList.size()>0){
-//				viaLinks = Arrays.asList(resultList.get(0).toString().split(","));
-//			}
-			for(IRow objInnerLoop : checkCommand.getGlmList()){
-				if(objInnerLoop instanceof RdLaneVia){
-					RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
-					//删除的经过线
-					if(rdLaneVia.status().equals(ObjStatus.DELETE)){
-						if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
-							viaNum --;
+			if(rdLaneTopology.getRelationshipType()==2){
+				for(IRow objInnerLoop : checkCommand.getGlmList()){
+					if(objInnerLoop instanceof RdLaneVia){
+						RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
+						//删除的经过线
+						if(rdLaneVia.status().equals(ObjStatus.DELETE)){
+							if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
+								viaNum --;
+							}
+							continue;
 						}
-						continue;
-					}
-					//新增的经过线
-					if(rdLaneVia.status().equals(ObjStatus.INSERT)){
-						if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
-							viaNum ++;
+						//新增的经过线
+						if(rdLaneVia.status().equals(ObjStatus.INSERT)){
+							if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
+								viaNum ++;
+							}
+							continue;
 						}
-						continue;
 					}
 				}
-			}
-			
-			if(viaNum==0){
-				this.setCheckResult("", "", 0);
+				
+				if(viaNum==0){
+					this.setCheckResult("", "", 0);
+				}
 			}
 		}
 		

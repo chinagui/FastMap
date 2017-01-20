@@ -106,7 +106,7 @@ public class ScSensitiveWords {
         if(!word.contains("%")){
             if(word.equals("连续三位及三位以上数字")){
                 return ".*[零一二三四五六七八九十〇0-9０-９]{3,}.*";}
-            word="^(%s)+$"+word;
+            word="^("+word+")+$";
             return word;}
         if(word.startsWith("%")){word=".*("+word.substring(1);}
         else{word="("+word;}

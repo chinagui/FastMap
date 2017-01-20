@@ -32,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
+import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
@@ -56,6 +57,15 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
+	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaContactMap();
+	}
 	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表

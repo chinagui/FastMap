@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -23,6 +24,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
  * 路线属性编辑	服务端后检查
  * 主从CODE编辑	服务端后检查
  * Link种别编辑	服务端后检查
+ * 新增道路名	服务端后检查
  */
 public class GLM02256 extends baseRule {
 
@@ -41,7 +43,7 @@ public class GLM02256 extends baseRule {
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
 			}
-			//路线属性编辑,主从CODE编辑
+			//路线属性编辑,主从CODE编辑,新增道路名
 			else if (row instanceof RdLinkName){
 				RdLinkName rdLinkName = (RdLinkName) row;
 				this.checkRdLinkName(rdLinkName);
@@ -65,9 +67,12 @@ public class GLM02256 extends baseRule {
 					List<Object> resultList = this.check(rdLink.getPid());
 					
 					if (!resultList.isEmpty()) {
+						int j = 0;
 						for (int i = 0; i < resultList.size()/4; i++) {
-							this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-									(int) resultList.get(i+2), resultList.get(i+3).toString());
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
 						}
 					}
 				}
@@ -82,28 +87,51 @@ public class GLM02256 extends baseRule {
 	 */
 	private void checkRdLinkName(RdLinkName rdLinkName) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkName.changedFields();
-		if (!changedFields.isEmpty()) {
-			// 路线属性编辑
-			if (changedFields.containsKey("routeAtt")) {
-				List<Object> resultList = this.check(rdLinkName.getLinkPid());
+		//路线属性编辑,主从CODE编辑
+		if(rdLinkName.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkName.changedFields();
+			if (!changedFields.isEmpty()) {
+				// 路线属性编辑
+				if (changedFields.containsKey("routeAtt")) {
+					List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
-				if (!resultList.isEmpty()) {
-					for (int i = 0; i < resultList.size()/4; i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-								(int) resultList.get(i+2), resultList.get(i+3).toString());
+					if (!resultList.isEmpty()) {
+						int j = 0;
+						for (int i = 0; i < resultList.size()/4; i++) {
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
+						}
+					}
+				}
+				// 主从CODE编辑
+				if (changedFields.containsKey("code")) {
+					List<Object> resultList = this.check(rdLinkName.getLinkPid());
+
+					if (!resultList.isEmpty()) {
+						int j = 0;
+						for (int i = 0; i < resultList.size()/4; i++) {
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
+						}
 					}
 				}
 			}
-			// 主从CODE编辑
-			if (changedFields.containsKey("code")) {
-				List<Object> resultList = this.check(rdLinkName.getLinkPid());
+		}
+		//新增道路名
+		else if (rdLinkName.status().equals(ObjStatus.INSERT)){
+			List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
-				if (!resultList.isEmpty()) {
-					for (int i = 0; i < resultList.size()/4; i++) {
-						this.setCheckResult(resultList.get(i).toString(), resultList.get(i+1).toString(),
-								(int) resultList.get(i+2), resultList.get(i+3).toString());
-					}
+			if (!resultList.isEmpty()) {
+				int j = 0;
+				for (int i = 0; i < resultList.size()/4; i++) {
+					
+					this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+							(int) resultList.get(j+2), resultList.get(j+3).toString());
+					j +=4;
 				}
 			}
 		}

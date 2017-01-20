@@ -28,6 +28,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
  * 名称分类编辑	服务端后检查
  * 名称类型编辑	服务端后检查
  * 道路名称编辑	服务端后检查
+ * 新增道路名	服务端后检查
  */
 public class GLM02257 extends baseRule {
 
@@ -46,7 +47,7 @@ public class GLM02257 extends baseRule {
 				RdLinkForm rdLinkForm = (RdLinkForm) row;
 				this.checkRdLinkForm(rdLinkForm);
 			}
-			//名称分类编辑,名称类型编辑,道路名称编辑
+			//名称分类编辑,名称类型编辑,道路名称编辑,新增道路名
 			else if (row instanceof RdLinkName){
 				RdLinkName rdLinkName = (RdLinkName) row;
 				this.checkRdLinkName(rdLinkName);
@@ -101,51 +102,69 @@ public class GLM02257 extends baseRule {
 	 */
 	private void checkRdLinkName(RdLinkName rdLinkName) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkName.changedFields();
-		if (!changedFields.isEmpty()) {
-			// 名称分类编辑
-			if (changedFields.containsKey("nameClass")) {
-				List<Object> resultList = this.check(rdLinkName.getLinkPid());
+		//名称分类编辑,名称类型编辑,道路名称编辑
+		if(rdLinkName.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkName.changedFields();
+			if (!changedFields.isEmpty()) {
+				// 名称分类编辑
+				if (changedFields.containsKey("nameClass")) {
+					List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
-				if (!resultList.isEmpty()) {
-					int j = 0;
-					for (int i = 0; i < resultList.size()/4; i++) {
-						
-						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
-								(int) resultList.get(j+2), resultList.get(j+3).toString());
-						j +=4;
+					if (!resultList.isEmpty()) {
+						int j = 0;
+						for (int i = 0; i < resultList.size()/4; i++) {
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
+						}
 					}
 				}
-			}
-			// 名称类型编辑
-			if (changedFields.containsKey("nameType")) {
-				List<Object> resultList = this.check(rdLinkName.getLinkPid());
+				// 名称类型编辑
+				if (changedFields.containsKey("nameType")) {
+					List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
-				if (!resultList.isEmpty()) {
-					int j = 0;
-					for (int i = 0; i < resultList.size()/4; i++) {
-						
-						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
-								(int) resultList.get(j+2), resultList.get(j+3).toString());
-						j +=4;
+					if (!resultList.isEmpty()) {
+						int j = 0;
+						for (int i = 0; i < resultList.size()/4; i++) {
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
+						}
 					}
 				}
-			}
-			// 道路名称编辑
-			if (changedFields.containsKey("nameGroupid")) {
-				List<Object> resultList = this.check(rdLinkName.getLinkPid());
+				// 道路名称编辑
+				if (changedFields.containsKey("nameGroupid")) {
+					List<Object> resultList = this.check(rdLinkName.getLinkPid());
 
-				if (!resultList.isEmpty()) {
-					int j = 0;
-					for (int i = 0; i < resultList.size()/4; i++) {
-						
-						this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
-								(int) resultList.get(j+2), resultList.get(j+3).toString());
-						j +=4;
+					if (!resultList.isEmpty()) {
+						int j = 0;
+						for (int i = 0; i < resultList.size()/4; i++) {
+							
+							this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+									(int) resultList.get(j+2), resultList.get(j+3).toString());
+							j +=4;
+						}
 					}
 				}
 			}
 		}
+		//新增道路名
+		else if (rdLinkName.status().equals(ObjStatus.INSERT)){
+			List<Object> resultList = this.check(rdLinkName.getLinkPid());
+
+			if (!resultList.isEmpty()) {
+				int j = 0;
+				for (int i = 0; i < resultList.size()/4; i++) {
+					
+					this.setCheckResult(resultList.get(j).toString(), resultList.get(j+1).toString(),
+							(int) resultList.get(j+2), resultList.get(j+3).toString());
+					j +=4;
+				}
+			}
+		}
+		
 	}
 	
 	/**
@@ -191,18 +210,25 @@ public class GLM02257 extends baseRule {
 		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || S.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '隧道link上有多个隧道名' AS LOG FROM S_NAME_NUM S WHERE S.NUM > 1");
 		sb.append(" UNION");
+		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || SN.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append(" '隧道link上没有隧道名' AS LOG");
+		sb.append(" FROM N_S_NAME_NUM SN WHERE SN.NUM < 1");
+		sb.append(" UNION");
 		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || S.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '隧道link上的隧道名称类型错误' AS LOG FROM N_S_NAME S, N_S_NAME_NUM SN WHERE SN.NUM = 1");
 		sb.append(" AND S.LINK_PID = SN.LINK_PID AND S.NAME_TYPE <> 5");
 		sb.append(" UNION");
-		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || S.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-		sb.append(" '隧道link上有多个隧道名' AS LOG FROM N_S_NAME_NUM S WHERE S.NUM > 1");
+		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || SN.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append(" '隧道link上有多个隧道名' AS LOG FROM N_S_NAME_NUM SN WHERE SN.NUM > 1");
 		sb.append(" UNION");
-		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RLF.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-		sb.append(" '官方名称中有多个隧道类型' AS LOG FROM RD_LINK_FORM RLF,RD_LINK_NAME RLN");
-		sb.append(" WHERE RLF.LINK_PID ="+pid);
-		sb.append(" AND RLF.LINK_PID = RLN.LINK_PID AND RLN.NAME_CLASS = 1 AND RLN.NAME_TYPE = 5");
-		sb.append(" AND RLF.U_RECORD <>2 AND RLN.U_RECORD <>2 GROUP BY RLF.LINK_PID HAVING COUNT(1) > 1");
+		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+		sb.append(" '官方名称中有多个隧道类型名称类型为“隧道”的道路不含隧道属性' AS LOG");
+		sb.append(" FROM RD_LINK RL,RD_LINK_FORM RLF,RD_LINK_NAME RLN");
+		sb.append(" WHERE RL.LINK_PID ="+pid);
+		sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 31");
+		sb.append(" AND RL.LINK_PID = RLN.LINK_PID AND RLN.NAME_CLASS = 1 AND RLN.NAME_TYPE = 5");
+		sb.append(" AND RL.U_RECORD <>2 AND RLF.U_RECORD <>2 AND RLN.U_RECORD <>2 ");
+		sb.append(" GROUP BY RL.LINK_PID HAVING COUNT(1) > 1");
 		String sql = sb.toString();
 		log.info("后检查GLM02257--sql:" + sql);
 

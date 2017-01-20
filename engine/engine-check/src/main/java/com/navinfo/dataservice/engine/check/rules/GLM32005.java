@@ -48,12 +48,12 @@ public class GLM32005 extends baseRule{
 			// 详细车道RdLane
 			if (obj instanceof RdLane) {
 				RdLane rdLane = (RdLane) obj;
-				checkRdLane(rdLane,checkCommand.getOperType());
+				checkRdLane(rdLane);
 			}
 			// Link方向编辑
 			else if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink,checkCommand.getOperType());
+				checkRdLink(rdLink);
 			}	
 		}
 	}
@@ -63,7 +63,7 @@ public class GLM32005 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
+	private void checkRdLink(RdLink rdLink) throws Exception {
 		if(rdLink.changedFields().containsKey("direct")){
 			int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString()) ;
 			//非单向道路，不触发检查
@@ -97,7 +97,7 @@ public class GLM32005 extends baseRule{
 	 * @param operType
 	 * @throws Exception 
 	 */
-	private void checkRdLane(RdLane rdLane, OperType operType) throws Exception {
+	private void checkRdLane(RdLane rdLane) throws Exception {
 		//如果车道方向不为1（无），触发检查
 		int laneDir = 1;
 		if(rdLane.changedFields().containsKey("laneDir")){

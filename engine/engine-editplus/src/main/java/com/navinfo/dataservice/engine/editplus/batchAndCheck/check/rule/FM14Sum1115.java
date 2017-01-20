@@ -38,13 +38,17 @@ public class FM14Sum1115 extends BasicCheckRule {
 			List<Long> childrenPids = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(),
 					parentPids);
 			
-			String sqlStr=" SELECT P2.PID"
-					+ " FROM IX_POI P1,"
-					+ " IX_POI P2,"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P1.GEOMETRY, P2.GEOMETRY, 0.00000005) < 3"
-					+ " AND P1.PID=:1"
-					+ " AND P2.KIND_CODE IN ('130105','130800','130804','130806','130807')"
-					+ " AND P2.PID!=P1.PID";
+			String sqlStr=" WITH T AS"
+					+ " (SELECT P1.PID PID2, P1.GEOMETRY G2,P1.KIND_CODE"
+					+ " FROM IX_POI P1"
+					+ " WHERE P1.KIND_CODE IN ('130105','130800','130804','130806','130807')"
+					+ " AND P1.U_RECORD != 2"
+					+ " AND P1.PID !=:1)"
+					+ " SELECT /*+ NO_MERGE(T)*/"
+					+ " T.Kind_Code,PID2"
+					+ " FROM T, IX_POI P"
+					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 3"
+					+" AND P.PID =:2";
 			
 			Connection conn = this.getCheckRuleCommand().getConn();
 			
@@ -55,6 +59,7 @@ public class FM14Sum1115 extends BasicCheckRule {
 				List<Long> pidList = new ArrayList<Long>();
 				pstmt=conn.prepareStatement(sqlStr);
 				pstmt.setLong(1, poi.getPid());
+				pstmt.setLong(2, poi.getPid());
 				rs = pstmt.executeQuery();
 				while (rs.next()) {
 					pidList.add(rs.getLong("PID"));

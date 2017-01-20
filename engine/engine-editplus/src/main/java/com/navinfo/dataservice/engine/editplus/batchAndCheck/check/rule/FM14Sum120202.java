@@ -1,15 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.dbutils.ResultSetHandler;
-import org.apache.commons.lang.StringUtils;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -20,8 +17,9 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNominganList;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScSensitiveWordsUtils;
-import com.navinfo.navicommons.database.QueryRunner;
 /**
  * FM-14Sum-12-02-02	名称错别字检查	D
  * 检查条件：Lifecycle为“0（无）\1（删除）\4（验证）”或 分类为170101\170102\210302不检查；
@@ -37,7 +35,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  *
  */
 public class FM14Sum120202 extends BasicCheckRule {
-	private Map<Long, Integer> adminMap=new HashMap<Long, Integer>();
+	private Map<Long, Long> adminMap=new HashMap<Long, Long>();
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -54,10 +52,9 @@ public class FM14Sum120202 extends BasicCheckRule {
 			MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			if(poi.getHisOpType().equals(OperationType.INSERT)
 					||(nameObj.getHisOpType().equals(OperationType.UPDATE)&&nameObj.hisOldValueContains(IxPoiName.NAME)
-							&&!api.scPointMinganListPidNameList().contains(pidName)
-							&&!api.scPointNominganListPidNameList().contains(pidName))){
+							&&!api.scPointMinganListPidNameList().contains(pidName))){
 				List<ScSensitiveWordsObj> compareList = api.scSensitiveWordsMap().get(2);
-				List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(nameStr, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList);	
+				List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(nameStr, poi.getKindCode(), Integer.valueOf(adminMap.get(poi.getPid()).toString()), compareList);	
 				if(wordList==null||wordList.isEmpty()){return;}
 				List<String> errorlist = new ArrayList<String>();
 				for(ScSensitiveWordsObj errorTmp:wordList){
@@ -67,6 +64,8 @@ public class FM14Sum120202 extends BasicCheckRule {
 						errorlist.add(errorTmp.getSensitiveWord()+","+errorTmp.getSensitiveWord2());
 					}
 				}
+				if(nameObj.getHisOpType().equals(OperationType.UPDATE)&&nameObj.hisOldValueContains(IxPoiName.NAME)
+						&&ScPointNominganList.scPointNominganListPidNameList(pidName)){return;}
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "名称中包含敏感字："+errorlist.toString().replace("[", "").replace("]", ""));
 				return;
 			}
@@ -76,27 +75,11 @@ public class FM14Sum120202 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
-		List<Long> regionIdList=new ArrayList<Long>();
+		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			regionIdList.add(poi.getRegionId());
+			pidList.add(obj.objPid());
 		}
-		String sql = "SELECT REGION_ID, ADMIN_ID FROM AD_ADMIN"
-				+ " WHERE REGION_ID IN (" + StringUtils.join(regionIdList.toArray(),",") + ")";
-		
-		ResultSetHandler<Map<Long,Integer>> rsHandler = new ResultSetHandler<Map<Long,Integer>>() {
-			public Map<Long,Integer> handle(ResultSet rs) throws SQLException {
-				Map<Long,Integer> result = new HashMap<Long,Integer>();
-				while (rs.next()) {
-					int admin = rs.getInt("ADMIN_ID");
-					long region = rs.getLong("REGION_ID");
-					result.put(region, admin);
-				}
-				return result;
-			}
-		};
-		adminMap = new QueryRunner().query(getCheckRuleCommand().getConn(),sql, rsHandler);
+		adminMap = IxPoiSelector.getAdminIdByPids(getCheckRuleCommand().getConn(),pidList);
 	}
 
 }

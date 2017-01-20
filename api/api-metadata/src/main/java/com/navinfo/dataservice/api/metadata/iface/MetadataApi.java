@@ -16,6 +16,12 @@ import net.sf.json.JSONObject;
  */
 public interface MetadataApi {
 	/**
+	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
+	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception;
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception

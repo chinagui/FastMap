@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
@@ -17,6 +18,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
  * @Description TODO
  * 道路名的名称类型不能为“4.桥”、“7.出口编号”、“8.编号名称”、“14.点门牌”，否则报log
  * 名称类型编辑	服务端后检查
+ * 新增道路名	服务端后检查
  */
 public class GLM02264 extends baseRule {
 
@@ -30,7 +32,7 @@ public class GLM02264 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//名称类型编辑
+			//名称类型编辑,新增道路名
 			if (row instanceof RdLinkName){
 				RdLinkName rdLinkName = (RdLinkName) row;
 				this.checkRdLinkName(rdLinkName);
@@ -45,19 +47,29 @@ public class GLM02264 extends baseRule {
 	 */
 	private void checkRdLinkName(RdLinkName rdLinkName) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdLinkName.changedFields();
-		if(!changedFields.isEmpty()){
-			//名称类型编辑
-			if(changedFields.containsKey("nameType")){
-				int nameType = (int) changedFields.get("nameType");
-				if(nameType == 4 || nameType == 7 || nameType == 8 || nameType == 14){
-					List<Object> resultList = this.check(rdLinkName.getLinkPid());
-					
-					if(!resultList.isEmpty()){
-						this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), 
-								(int)resultList.get(2),resultList.get(3).toString());
+		boolean checkFlag = false;
+		if(rdLinkName.status().equals(ObjStatus.UPDATE)){
+			Map<String, Object> changedFields = rdLinkName.changedFields();
+			if(!changedFields.isEmpty()){
+				//名称类型编辑
+				if(changedFields.containsKey("nameType")){
+					int nameType = (int) changedFields.get("nameType");
+					if(nameType == 4 || nameType == 7 || nameType == 8 || nameType == 14){
+						checkFlag = true;
 					}
 				}
+			}
+		}
+		//新增道路名
+		else if (rdLinkName.status().equals(ObjStatus.INSERT)){
+			checkFlag = true;
+		}
+		if(checkFlag){
+			List<Object> resultList = this.check(rdLinkName.getLinkPid());
+			
+			if(!resultList.isEmpty()){
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), 
+						(int)resultList.get(2),resultList.get(3).toString());
 			}
 		}
 	}

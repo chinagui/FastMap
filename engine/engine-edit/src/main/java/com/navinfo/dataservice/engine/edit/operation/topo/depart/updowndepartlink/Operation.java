@@ -199,12 +199,7 @@ public class Operation implements IOperation {
 			List<RdLink> links = nodeSelector.loadByDepartNodePid(currentPid,
 					currentLink.getPid(), nextLink.getPid(), true);
 			for (RdLink link : links) {
-				boolean flag = CompPolylineUtil.isRightSide(JtsGeometryFactory
-						.createLineString(currentLink.getGeometry()
-								.getCoordinates()), JtsGeometryFactory
-						.createLineString(nextLink.getGeometry()
-								.getCoordinates()), JtsGeometryFactory
-						.createLineString(link.getGeometry().getCoordinates()));
+				boolean flag = this.isRightSide(currentLink, nextLink, link);
 				flagBooleans.add(flag);
 				if (flag) {
 					rightLinks.add(link);
@@ -243,26 +238,26 @@ public class Operation implements IOperation {
 				if (lLink.getDirect() == 1) {
 					return 1;
 				}
-				if (((rLink.getDirect() == 2 && rLink.geteNodePid() == currentPid)
-						|| (rLink.getDirect() == 3 && rLink.getsNodePid() == currentPid))
-						&& ((lLink.getDirect() == 2 && lLink.geteNodePid() == currentPid)
-						|| (lLink.getDirect() == 3 && lLink.getsNodePid() == currentPid))) {
+				if (((rLink.getDirect() == 2 && rLink.geteNodePid() == currentPid) || (rLink
+						.getDirect() == 3 && rLink.getsNodePid() == currentPid))
+						&& ((lLink.getDirect() == 2 && lLink.geteNodePid() == currentPid) || (lLink
+								.getDirect() == 3 && lLink.getsNodePid() == currentPid))) {
 					return 1;
 				}
-				if (((rLink.getDirect() == 2 && rLink.getsNodePid() == currentPid)
-						|| (rLink.getDirect() == 3 && rLink.geteNodePid() == currentPid))
-						&& ((lLink.getDirect() == 2 && lLink.getsNodePid() == currentPid)
-						|| (lLink.getDirect() == 3 && lLink.geteNodePid() == currentPid))) {
+				if (((rLink.getDirect() == 2 && rLink.getsNodePid() == currentPid) || (rLink
+						.getDirect() == 3 && rLink.geteNodePid() == currentPid))
+						&& ((lLink.getDirect() == 2 && lLink.getsNodePid() == currentPid) || (lLink
+								.getDirect() == 3 && lLink.geteNodePid() == currentPid))) {
 					return 1;
 				}
-     
+
 			}
 			RdLink flagLink = rightLinks.get(0);
-			if((flagLink.getDirect() == 2 && flagLink.getsNodePid() == currentPid)
-					|| (flagLink.getDirect() == 3 && flagLink.geteNodePid() == currentPid)){
-				direct =3;
-			}else{
-				direct =2;
+			if ((flagLink.getDirect() == 2 && flagLink.getsNodePid() == currentPid)
+					|| (flagLink.getDirect() == 3 && flagLink.geteNodePid() == currentPid)) {
+				direct = 3;
+			} else {
+				direct = 2;
 			}
 		}
 		return direct;
@@ -343,13 +338,7 @@ public class Operation implements IOperation {
 			for (RdLink link : links) {
 				LineString targetLine = null;
 
-				if (CompPolylineUtil.isRightSide(JtsGeometryFactory
-						.createLineString(currentLink.getGeometry()
-								.getCoordinates()), JtsGeometryFactory
-						.createLineString(nextLink.getGeometry()
-								.getCoordinates()), JtsGeometryFactory
-						.createLineString(link.getGeometry().getCoordinates()))) {
-
+				if (this.isRightSide(currentLink, nextLink, link)) {
 					targetLine = CompPolylineUtil.cut(lines[i], lines[i + 1],
 							JtsGeometryFactory.createLineString(GeoTranslator
 									.transform(link.getGeometry(), 0.00001, 5)
@@ -1074,12 +1063,16 @@ public class Operation implements IOperation {
 	 */
 	private boolean isRightSide(RdLink startLine, RdLink endLine,
 			RdLink adjacentLine) throws Exception {
+		LineString adjacentLineString = JtsGeometryFactory
+				.createLineString(adjacentLine.getGeometry().getCoordinates());
+		if (adjacentLine.getsNodePid() != this.getIntersectPid(startLine,
+				endLine)) {
+			adjacentLineString = (LineString) adjacentLineString.reverse();
+		}
 		return CompPolylineUtil.isRightSide(JtsGeometryFactory
 				.createLineString(startLine.getGeometry().getCoordinates()),
 				JtsGeometryFactory.createLineString(endLine.getGeometry()
-						.getCoordinates()), JtsGeometryFactory
-						.createLineString(startLine.getGeometry()
-								.getCoordinates()));
+						.getCoordinates()), adjacentLineString);
 	}
 
 	/**

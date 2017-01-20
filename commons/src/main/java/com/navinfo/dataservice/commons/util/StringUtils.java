@@ -111,6 +111,24 @@ public class StringUtils {
 		return sdf.format(date);
 	}
 
+	public static String removeSpeLetter(String str)
+	{
+		if(str.contains("<"))
+		{
+			int index = str.indexOf("<");
+			
+			str = str.substring(0,index)+str.substring(index+3);
+			
+			removeSpeLetter(str);
+		}
+		else
+		{
+			return str;
+		}
+		
+		return str;
+	}
+	
 	/**
 	 * 移除字符串中的空字符，包括空格、制表符、换行、回车换行。
 	 * 
@@ -269,14 +287,6 @@ public class StringUtils {
 	}
 
 	public static void main(String[] args) {
-
-		/*
-		 * if (column.equals("open24h")) { column = "open_24h"; } else if
-		 * (column.equals("level")) { column = "\"LEVEL\""; } else {
-		 * 
-		 * column = StringUtils.toColumnName(column); }
-		 */
-
-		System.out.println(toColumnName("level"));
+		System.out.println(removeSpeLetter("a<a>"));
 	}
 }

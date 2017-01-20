@@ -55,10 +55,10 @@ public class GLM03079 extends baseRule {
 					
 					sb.append("WITH T AS(");
 					sb.append(" SELECT R.S_NODE_PID NODE_PID,R.LINK_PID FROM RD_LINK R");
-					sb.append(" WHERE R.LINK_PID =220003225 AND R.U_RECORD <>2");
+					sb.append(" WHERE R.LINK_PID ="+rdLink.getPid()+" AND R.U_RECORD <>2");
 					sb.append(" UNION");
 					sb.append(" SELECT R.E_NODE_PID NODE_PID,R.LINK_PID FROM RD_LINK R");
-					sb.append(" WHERE R.LINK_PID =220003225 AND R.U_RECORD <>2)");
+					sb.append(" WHERE R.LINK_PID ="+rdLink.getPid()+" AND R.U_RECORD <>2)");
 					sb.append(" SELECT DISTINCT T.LINK_PID FROM RD_LINK R1,RD_LINK R2,T");
 					sb.append(" WHERE R1.U_RECORD <>2 AND R2.U_RECORD <>2 AND R1.LINK_PID <> R2.LINK_PID");
 					sb.append(" AND (R1.S_NODE_PID=T.NODE_PID OR R1.E_NODE_PID=T.NODE_PID)");

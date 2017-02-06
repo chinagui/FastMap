@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -54,6 +56,12 @@ public class IxPoiSearch implements ISearch {
 	private JSONObject NAVICOVPYMAP;
 	
 	private JSONObject ENGSHORTMAP;
+	
+	private JSONObject NAMEUNIFYSHORT;
+	
+	private JSONObject CHISHORT;
+	
+	private JSONObject ALIASNAME;
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -758,6 +766,12 @@ public class IxPoiSearch implements ISearch {
 			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
 			
 			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
+			
+			this.NAMEUNIFYSHORT = metaData.getJSONObject("nameUnifyShort");
+			
+			this.CHISHORT = metaData.getJSONObject("chishort");
+			
+			this.ALIASNAME = metaData.getJSONObject("aliasName");
 			for (int pid:pids) {
 				
 				IxPoiSelector poiSelector = new IxPoiSelector(conn);
@@ -949,6 +963,7 @@ public class IxPoiSearch implements ISearch {
 		//String nameFlag="";
 		List<IRow> nRows = poi.getNames();
 		try{
+			List<JSONObject> chiNameList = new ArrayList<JSONObject>();
 			for (IRow nRow:nRows) {
 				//名称组:pid关联ix_poi_name，将多组名称记录转换为json格式的名称组；
 				IxPoiName name = (IxPoiName) nRow;
@@ -964,8 +979,9 @@ public class IxPoiSearch implements ISearch {
 							nameObj.put("multiPinyin", pyList);
 						}
 					}
-				}
+				}		
 				nameArray.add(nameObj);
+				
 				//nameFlag赋值
 //				if (firstWordItem.equals("poi_englishname")) {
 //					if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
@@ -976,6 +992,61 @@ public class IxPoiSearch implements ISearch {
 //						}
 //					}
 //				}
+				
+				//chiNameList
+				/**特殊处理：当一级作业项为：poi_name、二级作业项为：nameUnify时，如果名称中包含元数据库表SC_POINT_NAMECK表type=1,2,3,4,8,11
+				 * 对应的记录pre_key的值，则将该记录的result_key对应的值报出，多个追加显示，描述为：名称“pre_key”应为“result_key”
+				例：multiPinyin：{"记念":"纪念","检查":"检察"}*/
+				if (secondWorkItem.equals("nameUnify")) {
+					Map<String, String> nameUnifyshort=(Map<String, String>) NAMEUNIFYSHORT;
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 1) {
+						for(String key:nameUnifyshort.keySet()){
+							if(name.getName().contains(key)){
+								JSONObject jsonObject = new JSONObject();
+								String result=nameUnifyshort.get(key);
+								jsonObject.put("key", key);
+								jsonObject.put("result", result);
+								chiNameList.add(jsonObject);
+							}
+						}
+					}
+				}
+				
+				/**特殊处理：当一级作业项为：poi_name、二级作业项为：shortName时，如果名称中包含元数据库表SC_POINT_NAMECK表type=4，
+				 * 10对应的记录pre_key的值，则将该记录的result_key对应的值报出，多个追加显示，描述为：名称“pre_key”应为“result_key”；
+				例：multiPinyin：{"记念":"纪念","检查":"检察"}*/
+				if (secondWorkItem.equals("shortName")) {
+					Map<String, String> chiShort=(Map<String, String>) CHISHORT;
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 5) {
+						for(String key:chiShort.keySet()){
+							if(name.getName().contains(key)){
+								JSONObject jsonObject = new JSONObject();
+								String result=chiShort.get(key);
+								jsonObject.put("key", key);
+								jsonObject.put("result", result);
+								chiNameList.add(jsonObject);
+							}
+						}
+					}
+				}
+				
+				/**特殊处理：当一级作业项为：poi_name、二级作业项为：shortName时，如果名称中包含元数据库表SC_POINT_NAMECK表type=4对应的记录pre_key的值，
+				 * 则将该记录的result_key对应的值报出，多个追加显示，描述为：名称“pre_key”是应为“result_key”；
+				例：multiPinyin：{"记念":"纪念","检查":"检察"}*/
+				if (secondWorkItem.equals("aliasName")) {
+					Map<String, String> aliasShort=(Map<String, String>) ALIASNAME;
+					if (name.getLangCode().equals("CHI") && name.getNameType() == 1 && name.getNameClass() == 3) {
+						for(String key:aliasShort.keySet()){
+							if(name.getName().contains(key)){
+								JSONObject jsonObject = new JSONObject();
+								String result=aliasShort.get(key);
+								jsonObject.put("key", key);
+								jsonObject.put("result", result);
+								chiNameList.add(jsonObject);
+							}
+						}
+					}
+				}
 				//nameList赋值
 				if (firstWordItem.equals("poi_englishname")) {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
@@ -994,6 +1065,7 @@ public class IxPoiSearch implements ISearch {
 					}
 				}
 			}
+			dataObj.put("chiNameList", chiNameList);
 			dataObj.put("names", nameArray);
 			//dataObj.put("nameFlag", nameFlag);
 			return dataObj;

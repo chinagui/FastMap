@@ -88,7 +88,7 @@ public class columnSaveTest {
 		Connection conn = null;
 		List<Integer> pidList = new ArrayList<Integer>();
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-		String param = "{\"taskId\":\"84\",\"secondWorkItem\":\"namePinyin\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"19\",\"type\":\"IXPOI\",\"objId\":335,\"data\":{\"names\":[{\"namePhonetic\":\"Tai Xing Qu Huang No.Dai Fu 1\",\"rowId\":\"3AE1FCF65D1D92F7E050A8C08304EE23\",\"pid\":1341414,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4B0B6492F7E050A8C08304EE4C\",\"pid\":335,\"objStatus\":\"UPDATE\"}}]},\"stepCount\":2,\"userId\":2}";
+		String param = "{\"taskId\":\"84\",\"secondWorkItem\":\"nameUnify\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"19\",\"type\":\"IXPOI\",\"objId\":14655830,\"data\":{\"names\":[{\"name\":\"ＳＯＨＯ国际停车场二三四233\",\"rowId\":\"3AE1FD3C28CB92F7E050A8C08304EE4C\",\"pid\":101711245,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB608C0592F7E050A8C08304EE4C\",\"pid\":14655830,\"objStatus\":\"UPDATE\"}}]}";
 		try {
 			JSONObject paramJson = JSONObject.fromObject(param);
 			int userId = 2;

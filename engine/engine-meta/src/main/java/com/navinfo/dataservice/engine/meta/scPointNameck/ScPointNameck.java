@@ -29,6 +29,10 @@ public class ScPointNameck {
 	private Map<String, String> typeD7 = new HashMap<String, String>();
 	
 	private List<String> type9=new ArrayList<String>();
+	
+	private Map<String, String> typeD1_2_3_4_8_11 = new HashMap<String, String>();
+	
+	private Map<String, String> typeD4_10 = new HashMap<String, String>();
 
 	private static class SingletonHolder {
 		private static final ScPointNameck INSTANCE = new ScPointNameck();
@@ -310,5 +314,69 @@ public class ScPointNameck {
 			}
 		}
 		return typeD6;
+	}
+	public Map<String,String> scPointNameckTypeD1_2_3_4_8_11() throws Exception{
+		if (typeD1_2_3_4_8_11==null||typeD1_2_3_4_8_11.isEmpty()) {
+				synchronized (this) {
+					if (typeD1_2_3_4_8_11==null||typeD1_2_3_4_8_11.isEmpty()) {
+						try {
+							String sql = "SELECT PRE_KEY, RESULT_KEY"
+									+ "  FROM SC_POINT_NAMECK"
+									+ " WHERE TYPE IN (1,2,3,4,8,11) "
+									+ "   AND HM_FLAG <> 'HM'";
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeD1_2_3_4_8_11.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.commitAndCloseQuietly(conn);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeD1_2_3_4_8_11;
+	}
+	public Map<String,String> scPointNameckTypeD4_10() throws Exception{
+		if (typeD4_10==null||typeD4_10.isEmpty()) {
+				synchronized (this) {
+					if (typeD4_10==null||typeD4_10.isEmpty()) {
+						try {
+							String sql = "SELECT PRE_KEY, RESULT_KEY"
+									+ "  FROM SC_POINT_NAMECK"
+									+ " WHERE TYPE = 7"
+									+ "   AND HM_FLAG <> 'HM'";
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeD4_10.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.commitAndCloseQuietly(conn);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeD4_10;
 	}
 }

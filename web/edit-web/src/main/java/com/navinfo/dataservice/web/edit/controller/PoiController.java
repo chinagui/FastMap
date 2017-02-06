@@ -19,6 +19,7 @@ import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 //import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import net.sf.json.JSONArray;
@@ -102,8 +103,8 @@ public class PoiController extends BaseController{
 			Long userId = tokenObj.getUserId();
 			
 			String filePath = unzipByJobId(jobId,userId);
-			//UploadOperationByGather operation = new UploadOperationByGather(userId);
-			UploadOperation operation = new UploadOperation(userId);
+			UploadOperationByGather operation = new UploadOperationByGather(userId);
+			//UploadOperation operation = new UploadOperation(userId);
 			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
 			Date endTime = new Date();
 			logger.info("poi import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");

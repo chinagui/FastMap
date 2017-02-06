@@ -84,7 +84,7 @@ public class UploadOperationByGather {
 		Connection manConn = null;
 		//Connection conn = null;
 		// 获取当前做业季
-		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		//String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		try {
 			
 			manConn = DBConnector.getInstance().getManConnection();

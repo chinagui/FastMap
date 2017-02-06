@@ -326,7 +326,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			//System.out.println(sql.toString());
+			System.out.println(sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
@@ -466,7 +466,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("memo", resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
 //			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-			rdNameObj.put("city", resultSet.getString("CITY"));
+			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
+				rdNameObj.put("city", resultSet.getString("CITY"));
+			}else{
+				rdNameObj.put("city", "");
+			}
+			
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

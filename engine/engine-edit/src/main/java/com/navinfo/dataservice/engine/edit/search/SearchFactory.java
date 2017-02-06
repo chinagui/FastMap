@@ -38,8 +38,12 @@ public class SearchFactory {
                 return new RdLaneConnexitySearch(conn);
             case RDSPEEDLIMIT:
                 return new RdSpeedlimitSearch(conn);
+            case RDSPEEDLIMIT_DEPENDENT:
+                return new RdSpeedlimitSearch(conn,"DEPENDENT");
             case RDLINKSPEEDLIMIT:
                 return new RdLinkSpeedLimitSearch(conn);
+            case RDLINKSPEEDLIMIT_DEPENDENT:
+                return new RdLinkSpeedLimitSearch(conn,"DEPENDENT");
             case RDBRANCH:
                 return new RdBranchSearch(conn);
             case RDLINKINTRTIC:

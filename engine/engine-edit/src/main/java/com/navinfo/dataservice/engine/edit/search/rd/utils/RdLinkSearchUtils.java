@@ -216,7 +216,7 @@ public class RdLinkSearchUtils {
 	 * @param direct
 	 *            限速方向
 	 * @param queryType
-	 *            限速类型：1点限速，2线限速
+	 *            限速类型：1:RDSPEEDLIMIT(普通点限速);2：RDSPEEDLIMIT_DEPENDENT(条件点限速)
 	 * @return
 	 * @throws Exception
 	 */
@@ -249,31 +249,8 @@ public class RdLinkSearchUtils {
 		getConnectLink(targetLink, nodePid, nextLinkPids, queryType);
 
 		return nextLinkPids;
-	}
-
-	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids)
-			throws Exception {
-		AbstractSelector speedlimitSelector = new AbstractSelector(
-				RdLinkSpeedlimit.class, conn);
-
-		List<IRow> rows = speedlimitSelector
-				.loadRowsByParentIds(linkPids, true);
-
-		JSONArray array = new JSONArray();
-
-		for (IRow row : rows) {
-
-			RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
-
-			if (speedlimit.getSpeedType() == 0) {
-
-				array.add(speedlimit.Serialize(ObjLevel.FULL));
-			}
-		}
-
-		return array;
-	}
-
+	}	
+	
 	private void getConnectLink(RdLink targetLink, int connectNodePid,
 			List<Integer> linkPids, String type) throws Exception {
 
@@ -283,12 +260,19 @@ public class RdLinkSearchUtils {
 		} else {
 			return;
 		}
-		if (linkPids.size() > 998) {
+		if (linkPids.size() > 29) {
 
 			return;
 		}
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2)  SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3))))) RDSPEEDLIMIT, (SELECT COUNT(1) FROM RD_LINK_SPEEDLIMIT L WHERE L.LINK_PID = B.LINK_PID AND L.U_RECORD != 2 AND L.SPEED_TYPE = 0 AND ((B.DIRECT = 2 AND L.FROM_SPEED_LIMIT > 0) OR (B.DIRECT = 3 AND L.TO_SPEED_LIMIT > 0) OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :7 AND L.FROM_SPEED_LIMIT > 0) OR (B.E_NODE_PID = :8 AND L.TO_SPEED_LIMIT > 0))))) RDLINKSPEEDLIMIT FROM TMP1 B";
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, S_NODE_PID, E_NODE_PID, DIRECT, GEOMETRY FROM RD_LINK T WHERE ((S_NODE_PID = :1 AND DIRECT = 2) OR (E_NODE_PID = :2 AND DIRECT = 3) OR ((S_NODE_PID = :3 OR E_NODE_PID = :4) AND DIRECT = 1)) AND U_RECORD != 2) SELECT B.*, (SELECT COUNT(1) FROM RD_SPEEDLIMIT S WHERE S.LINK_PID = B.LINK_PID AND S.U_RECORD != 2 AND (B.DIRECT = S.DIRECT OR (B.DIRECT = 1 AND ((B.S_NODE_PID = :5 AND S.DIRECT = 2) OR (B.E_NODE_PID = :6 AND S.DIRECT = 3)))) ";
+
+		if (type.equals("RDSPEEDLIMIT_DEPENDENT")) {
+
+			sql += " AND S.SPEED_TYPE = 3 ";
+		}
+		
+		sql += "  ) RDSPEEDLIMIT FROM TMP1 B ";
 
 		PreparedStatement pstmt = null;
 
@@ -304,14 +288,10 @@ public class RdLinkSearchUtils {
 			pstmt.setInt(4, connectNodePid);
 			pstmt.setInt(5, connectNodePid);
 			pstmt.setInt(6, connectNodePid);
-			pstmt.setInt(7, connectNodePid);
-			pstmt.setInt(8, connectNodePid);
 
 			resultSet = pstmt.executeQuery();
 
 			int speedlimitCount = -1;
-
-			int linkspeedlimitCount = -1;
 
 			RdLink nextLink = new RdLink();
 
@@ -357,25 +337,15 @@ public class RdLinkSearchUtils {
 					nextLink = link;
 
 					speedlimitCount = resultSet.getInt("RDSPEEDLIMIT");
-
-					linkspeedlimitCount = resultSet.getInt("RDLINKSPEEDLIMIT");
 				}
 			}
 
-			if (speedlimitCount == -1 || linkspeedlimitCount == -1) {
-				return;
-			}
-
-			if (type.equals("RDSPEEDLIMIT") && speedlimitCount > 0) {
-				return;
-			}
-
-			if (type.equals("RDLINKSPEEDLIMIT")
-					&& (speedlimitCount > 0 || linkspeedlimitCount > 0)) {
+			if (speedlimitCount > 0) {
 				return;
 			}
 
 			int targetNodePid = nextLink.getsNodePid() == connectNodePid ? nextLink
+					
 					.geteNodePid() : nextLink.getsNodePid();
 
 			getConnectLink(nextLink, targetNodePid, linkPids, type);
@@ -388,8 +358,48 @@ public class RdLinkSearchUtils {
 
 			DBUtils.closeStatement(pstmt);
 		}
-
 	}
+
+	public JSONArray getRdLinkSpeedlimit(List<Integer> linkPids,
+			String queryType, int speedDependnt) throws Exception {
+		
+		AbstractSelector speedlimitSelector = new AbstractSelector(
+				RdLinkSpeedlimit.class, conn);
+
+		List<IRow> rows = speedlimitSelector
+				.loadRowsByParentIds(linkPids, true);
+
+		JSONArray array = new JSONArray();
+
+		for (IRow row : rows) {
+
+			RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
+
+			if (queryType.equals("RDSPEEDLIMIT_DEPENDENT")
+					&& speedlimit.getSpeedType() == 3) {
+
+				if (speedDependnt != -1) {
+					if (speedlimit.getSpeedDependent() == speedDependnt) {
+						array.add(speedlimit.Serialize(ObjLevel.FULL));
+
+						continue;
+					}
+				} else {
+
+					array.add(speedlimit.Serialize(ObjLevel.FULL));
+				}
+			}
+			if (queryType.equals("RDSPEEDLIMIT")
+					&& speedlimit.getSpeedType() == 0) {
+
+				array.add(speedlimit.Serialize(ObjLevel.FULL));
+			}
+		}
+
+		return array;
+	}
+
+	
 
 	/***
 	 * @查询上下线分离关联的link 1.关联link数量不能超过maxNum 2.关联查找link必须联通link方向一致

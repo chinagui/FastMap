@@ -72,6 +72,23 @@ public class PoiRelationImportor extends AbstractOperation{
 			//处理父子关系导入
 			if(poiRelation.getPoiRelationType().equals(PoiRelationType.FATHER_AND_SON)){
 				long pid = poiRelation.getPid();
+				if(pid == 0){
+					String fid = poiRelation.getFid();
+					for(Map.Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
+						BasicRow fatherObj = entry.getValue().getMainrow();
+						if(fatherObj.getAttrByColName("POI_NUM").equals(fid)){
+							pid= fatherObj.getObjPid();
+							break;
+						}
+					}
+					if(pid == 0){
+						//result中没有,去数据库查
+						List<String> childFid = new ArrayList<String>();
+						childFid.add(fid);
+						Map<String,Long> fidPidMap = IxPoiSelector.getPidByFids(conn, childFid);
+						pid = fidPidMap.get(fid);
+					}
+				}
 				long fatherPid = poiRelation.getFatherPid();
 				childPidParentPid.put(pid, fatherPid);
 				//需要加载的父对象存在pid,优先用pid加载;pid不存在用fid加载;pid/fid均为空则不加载

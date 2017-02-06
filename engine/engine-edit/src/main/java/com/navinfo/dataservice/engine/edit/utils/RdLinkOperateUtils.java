@@ -37,8 +37,8 @@ public class RdLinkOperateUtils {
      * @param geometry 要分割线的几何 sNodePid 起点pid eNodePid 终点pid catchLinks
      * 挂接的线和点的集合 1.生成所有不存在的RDNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
      */
-    public static Map<Geometry, JSONObject> splitRdLink(Geometry geometry, int sNodePid, int eNodePid,
-                                                        JSONArray catchLinks, Result result) throws Exception {
+    public static Map<Geometry, JSONObject> splitRdLink(Geometry geometry, int sNodePid, int eNodePid, JSONArray
+            catchLinks, Result result) throws Exception {
         Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
         JSONArray coordinates = GeoTranslator.jts2Geojson(geometry).getJSONArray("coordinates");
         JSONObject tmpGeom = new JSONObject();
@@ -52,8 +52,8 @@ public class RdLinkOperateUtils {
 
         int pc = 1;
         // 挂接的第一个点是LINK的几何属性第一个点
-        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon")
-                && tmpCs.getJSONArray(0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
+        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon") && tmpCs.getJSONArray
+                (0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
             p = 1;
         }
         JSONObject se = new JSONObject();
@@ -80,8 +80,8 @@ public class RdLinkOperateUtils {
         while (p < catchLinks.size() && pc < coordinates.size()) {
             tmpCs.add(coordinates.getJSONArray(pc));
 
-            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon")
-                    && coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
+            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon") &&
+                    coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
 
                 tmpGeom.put("coordinates", tmpCs);
                 if (catchLinks.getJSONObject(p).containsKey("nodePid")) {
@@ -214,49 +214,46 @@ public class RdLinkOperateUtils {
                 links.add(((RdLink) addLinkByNoResult(sNode, eNode, link, sourceLink)));
             }
         }
-		// 跨图幅
-		else {
-			Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+        // 跨图幅
+        else {
+            Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
 
-			if (sNode.changedFields().containsKey("geometry")) {
-				
-				JSONObject jsonGeo = (JSONObject) sNode.changedFields().get(
-						"geometry");
+            if (sNode.changedFields().containsKey("geometry")) {
 
-				Geometry sGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
+                JSONObject jsonGeo = (JSONObject) sNode.changedFields().get("geometry");
 
-				maps.put(sGeo.getCoordinate(), sNode.getPid());
-				
-			} else {
-				
-				Geometry sGeo = GeoTranslator.transform(sNode.getGeometry(),
-						0.00001, 5);
+                Geometry sGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
 
-				maps.put(sGeo.getCoordinate(), sNode.getPid());
-			}
+                maps.put(sGeo.getCoordinate(), sNode.getPid());
 
-			if (eNode.changedFields().containsKey("geometry")) {
-				
-				JSONObject jsonGeo = (JSONObject) eNode.changedFields().get(
-						"geometry");
+            } else {
 
-				Geometry eGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
+                Geometry sGeo = GeoTranslator.transform(sNode.getGeometry(), 0.00001, 5);
 
-				maps.put(eGeo.getCoordinate(), eNode.getPid());
+                maps.put(sGeo.getCoordinate(), sNode.getPid());
+            }
 
-			} else {
+            if (eNode.changedFields().containsKey("geometry")) {
 
-				Geometry eGeo = GeoTranslator.transform(eNode.getGeometry(),
-						0.00001, 5);
+                JSONObject jsonGeo = (JSONObject) eNode.changedFields().get("geometry");
 
-				maps.put(eGeo.getCoordinate(), eNode.getPid());
-			}
+                Geometry eGeo = GeoTranslator.geojson2Jts(jsonGeo, 0.00001, 5);
+
+                maps.put(eGeo.getCoordinate(), eNode.getPid());
+
+            } else {
+
+                Geometry eGeo = GeoTranslator.transform(eNode.getGeometry(), 0.00001, 5);
+
+                maps.put(eGeo.getCoordinate(), eNode.getPid());
+            }
 
             Iterator<String> it = meshes.iterator();
-            
+
             while (it.hasNext()) {
                 String meshIdStr = it.next();
-                Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr),1,5));
+                Geometry geomInter = MeshUtils.linkInterMeshPolygon(link.getGeometry(), GeoTranslator.transform
+                        (MeshUtils.mesh2Jts(meshIdStr), 1, 5));
                 geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
                 createRdLinkWithMeshNoResult(geomInter, maps, sourceLink, result, links);
 
@@ -265,8 +262,8 @@ public class RdLinkOperateUtils {
         return links;
     }
 
-    public static void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
-                                            List<RdLink> links) throws Exception {
+    public static void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result
+            result, List<RdLink> links) throws Exception {
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
                 calRdLinkWithMesh(g, maps, sourceLink, result, links);
@@ -280,8 +277,8 @@ public class RdLinkOperateUtils {
         }
     }
 
-    public static void createRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
-                                                    List<RdLink> links) throws Exception {
+    public static void createRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink,
+                                                    Result result, List<RdLink> links) throws Exception {
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
                 calRdLinkWithMeshNoResult(g, maps, sourceLink, result, links);
@@ -298,8 +295,8 @@ public class RdLinkOperateUtils {
     /*
      * 创建道路线线 针对跨图幅创建图廓点不能重复
      */
-    private static void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
-                                          List<RdLink> links) throws Exception {
+    private static void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result
+            result, List<RdLink> links) throws Exception {
         // 定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -336,8 +333,8 @@ public class RdLinkOperateUtils {
     /*
      * 创建道路线线 针对跨图幅创建图廓点不能重复
      */
-    private static void calRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink, Result result,
-                                                  List<RdLink> links) throws Exception {
+    private static void calRdLinkWithMeshNoResult(Geometry g, Map<Coordinate, Integer> maps, RdLink sourceLink,
+                                                  Result result, List<RdLink> links) throws Exception {
         // 定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -372,8 +369,8 @@ public class RdLinkOperateUtils {
     /*
      * 创建一条RDLINK对应的端点
      */
-    public static JSONObject createRdNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result)
-            throws Exception {
+    public static JSONObject createRdNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result) throws
+            Exception {
         JSONObject node = new JSONObject();
         if (0 == sNodePid) {
             Coordinate point = g.getCoordinates()[0];
@@ -395,45 +392,45 @@ public class RdLinkOperateUtils {
         return node;
 
     }
-    
-	/*
-	 * 创建一条RDLINK对应的端点
-	 */
-	public static JSONObject createRdNodeForLink(List<Coordinate> g,
-			int sNodePid, int eNodePid, Result result) throws Exception {
-		JSONObject node = new JSONObject();
-		if (0 == sNodePid) {
-			Coordinate point = g.get(0);
-			RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
-			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
-			node.put("s", rdNode.getPid());
-		} else {
-			node.put("s", sNodePid);
-		}
-		// 创建终止点信息
-		if (0 == eNodePid) {
-			Coordinate point = g.get(g.size() - 1);
-			RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
-			result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
-			node.put("e", rdNode.getPid());
-		} else {
-			node.put("e", eNodePid);
-		}
-		return node;
 
-	}
+    /*
+     * 创建一条RDLINK对应的端点
+     */
+    public static JSONObject createRdNodeForLink(List<Coordinate> g, int sNodePid, int eNodePid, Result result)
+            throws Exception {
+        JSONObject node = new JSONObject();
+        if (0 == sNodePid) {
+            Coordinate point = g.get(0);
+            RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
+            result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
+            node.put("s", rdNode.getPid());
+        } else {
+            node.put("s", sNodePid);
+        }
+        // 创建终止点信息
+        if (0 == eNodePid) {
+            Coordinate point = g.get(g.size() - 1);
+            RdNode rdNode = NodeOperateUtils.createRdNode(point.x, point.y);
+            result.insertObject(rdNode, ObjStatus.INSERT, rdNode.pid());
+            node.put("e", rdNode.getPid());
+        } else {
+            node.put("e", eNodePid);
+        }
+        return node;
+
+    }
 
     /*
      * 创建生成一条RDLINK
      */
-    public static RdLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result,RdLink sourceLink) throws Exception {
+    public static RdLink addLink(Geometry geo, int sNodePid, int eNodePid, Result result, RdLink sourceLink) throws
+            Exception {
         RdLink link = new RdLink();
 
         link.setPid(PidUtil.getInstance().applyLinkPid());
-        
-        if(sourceLink != null)
-        {
-        	link.copy(sourceLink);
+
+        if (sourceLink != null) {
+            link.copy(sourceLink);
         }
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geo);
 
@@ -462,21 +459,20 @@ public class RdLinkOperateUtils {
         link.setsNodePid(sNodePid);
 
         link.seteNodePid(eNodePid);
-        
-        if(sourceLink == null)
-        {
-        	setLinkChildren(link);
+
+        if (sourceLink == null) {
+            setLinkChildren(link);
         }
 
         return link;
     }
-    
+
     /*
      * 创建生成一条无pid的RDLINK
      */
     public static RdLink addLinkNoPid(int sNodePid, int eNodePid) throws Exception {
         RdLink link = new RdLink();
-        
+
         link.setPid(1);
 
         link.setOriginLinkPid(link.getPid());
@@ -514,12 +510,15 @@ public class RdLinkOperateUtils {
         RdLinkSpeedlimit speedlimit = new RdLinkSpeedlimit();
 
         // 新创建道路默认为7级路，2车道，限速值为50km/h
-        speedlimit.setFromSpeedLimit(500);
-        speedlimit.setToSpeedLimit(500);
+        speedlimit.setFromSpeedLimit(600);
+        speedlimit.setToSpeedLimit(600);
 
         // 新建link限速来源均赋值为未调查
         speedlimit.setFromLimitSrc(9);
         speedlimit.setToLimitSrc(9);
+
+        // 新建link限速等级赋值为5
+        speedlimit.setSpeedClass(5);
 
         speedlimit.setMesh(link.mesh());
 
@@ -541,23 +540,23 @@ public class RdLinkOperateUtils {
      * @return
      * @throws Exception
      */
-    public static List<RdLink> getCreateRdLinksWithMesh(Geometry g,
-                                                        Map<Coordinate, Integer> maps, Result result,RdLink sourceLink) throws Exception {
+    public static List<RdLink> getCreateRdLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,
+                                                        RdLink sourceLink) throws Exception {
         List<RdLink> links = new ArrayList<RdLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
-                links.add(getCalRdLinkWithMesh(g, maps, result,sourceLink));
+                links.add(getCalRdLinkWithMesh(g, maps, result, sourceLink));
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(getCalRdLinkWithMesh(g.getGeometryN(i), maps, result,sourceLink));
+                    links.add(getCalRdLinkWithMesh(g.getGeometryN(i), maps, result, sourceLink));
                 }
             }
             if (GeometryTypeName.GEOMETRYCOLLECTION.equals(g.getGeometryType())) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
                     Geometry geometry = g.getGeometryN(i);
                     if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
-                        links.add(getCalRdLinkWithMesh(geometry, maps, result,sourceLink));
+                        links.add(getCalRdLinkWithMesh(geometry, maps, result, sourceLink));
                     }
                 }
             }
@@ -568,8 +567,8 @@ public class RdLinkOperateUtils {
     /*
      * 创建道路线 针对跨图幅创建图廓点不能重复
      */
-    public static RdLink getCalRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                              Result result,RdLink sourceLink) throws Exception {
+    public static RdLink getCalRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, RdLink
+            sourceLink) throws Exception {
         //定义创建道路线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -582,8 +581,7 @@ public class RdLinkOperateUtils {
             eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
         }
         //创建线对应的点
-        JSONObject node = RdLinkOperateUtils.createRdNodeForLink(
-                g, sNodePid, eNodePid, result);
+        JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
         if (!maps.containsValue(node.get("s"))) {
             maps.put(g.getCoordinates()[0], (int) node.get("s"));
         }
@@ -591,8 +589,7 @@ public class RdLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         //创建线
-        RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result,sourceLink);
+        RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result, sourceLink);
 
         result.insertObject(link, ObjStatus.INSERT, link.pid());
 

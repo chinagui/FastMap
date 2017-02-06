@@ -14,11 +14,9 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -64,9 +62,9 @@ public class RdNameSelector {
 
 			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 
-			int startRow = pageNum * pageSize + 1;
+			int startRow = pageNum * pageSize;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 
 			pstmt = conn.prepareStatement(sql);
 

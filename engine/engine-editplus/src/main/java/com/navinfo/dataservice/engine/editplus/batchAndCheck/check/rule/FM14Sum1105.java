@@ -25,6 +25,9 @@ public class FM14Sum1105 extends BasicCheckRule {
 		if (obj.objName().equals(ObjectName.IX_POI)) {
 			IxPoiObj poiObj = (IxPoiObj) obj;
 			IxPoi poi = (IxPoi) poiObj.getMainrow();
+			if (!poi.getKindCode().equals("230111")) {
+				return;
+			}
 			if (parentIds == null || !parentIds.containsKey(poi.getPid())) {
 				return;
 			}

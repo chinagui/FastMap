@@ -47,6 +47,8 @@ public class ColumnSubmitJob extends AbstractJob {
 	@Override
 	public void execute() throws JobException {
 		
+		log.info("start submit....");
+		
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
 		List<Integer> pidList = new ArrayList<Integer>();
@@ -61,9 +63,12 @@ public class ColumnSubmitJob extends AbstractJob {
 			String firstWorkItem = columnSubmitJobRequest.getFirstWorkItem();
 			String secondWorkItem = columnSubmitJobRequest.getSecondWorkItem();
 			
+			log.info("params:taskId="+taskId+";userId="+userId+";firstWorkItem="+firstWorkItem+";secondWorkItem="+secondWorkItem);
+			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			
 			int dbId = subtask.getDbId();
+			log.info("dbId="+dbId);
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			// TODO 区分大陆/港澳
@@ -80,9 +85,10 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			
 			for (String second:secondWorkList) {
+				log.info("当前提交二级项:"+second);
 				// 查询可提交数据
 				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
-				
+				log.info("查询可提交数据pdis:"+pidList);
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();
 				deepControl.cleanCheckResult(pidList, conn);
@@ -96,6 +102,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				PoiLogDetailStat logDetail = new PoiLogDetailStat();
 				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
+				log.info("提交log:"+submitLogs);
 				List<BasicObj> objList = new ArrayList<BasicObj>();
 				ObjHisLogParser logParser = new ObjHisLogParser();
 				for (int pid:pidList) {
@@ -112,7 +119,9 @@ public class ColumnSubmitJob extends AbstractJob {
 					
 				// 批处理
 				if (columnOpConf.getSubmitExebatch() == 1) {
+					log.info("执行批处理");
 					if (columnOpConf.getSubmitBatchrules() != null) {
+						log.info(columnOpConf.getSubmitBatchrules());
 						BatchCommand batchCommand=new BatchCommand();		
 						for (String ruleId:columnOpConf.getSubmitBatchrules().split(",")) {
 							batchCommand.setRuleId(ruleId);
@@ -125,7 +134,9 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				// 检查
 				if (columnOpConf.getSubmitExecheck() == 1) {
+					log.info("检查批处理");
 					if (columnOpConf.getSubmitCkrules() != null) {
+						log.info(columnOpConf.getSubmitCkrules());
 						CheckCommand checkCommand=new CheckCommand();		
 						List<String> checkList=new ArrayList<String>();
 						for (String ckRule:columnOpConf.getSubmitCkrules().split(",")) {
@@ -148,16 +159,19 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 修改poi_deep_status表作业项状态
+				log.info("更新状态pids:"+pidList);
 				updateDeepStatus(pidList, conn, 3,second);
 				
 				
 				// 重分类
 				if (columnOpConf.getSubmitExeclassify()==1) {
+					log.info("执行重分类");
 					if (columnOpConf.getSubmitCkrules() != null && columnOpConf.getSubmitClassifyrules() != null) {
 						HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 						classifyMap.put("userId", userId);
 						classifyMap.put("ckRules", columnOpConf.getSubmitCkrules());
 						classifyMap.put("classifyRules", columnOpConf.getSubmitClassifyrules());
+						log.info(columnOpConf.getSubmitClassifyrules());
 						
 						classifyMap.put("pids", pidList);
 						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
@@ -166,6 +180,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 清理重分类检查结果
+				log.info("清理重分类检查结果");
 				List<String> ckRules = new ArrayList<String>();
 				String classifyrules = columnOpConf.getSubmitCkrules();
 				if (classifyrules != null) {
@@ -176,7 +191,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 			}
 			
-			
+			log.info("提交完成");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);

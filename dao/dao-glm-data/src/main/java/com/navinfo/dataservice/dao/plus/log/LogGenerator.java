@@ -4,19 +4,20 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
-
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.dbutils.handlers.MapHandler;
-
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.BasicObjGrid;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
-import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.vividsolutions.jts.geom.Geometry;
 
 /** 
  * @ClassName: LogGenerator
@@ -33,9 +34,11 @@ public class LogGenerator {
 	PreparedStatement perstmtLogOperation = null;
 	PreparedStatement perstmtLogDetail = null;
 	PreparedStatement perstmtLogDetailGrid = null;
-
+	
+	private OperationResult result =null;
 	public void writeLog(Connection conn,boolean isUnionOperation,OperationResult result,String opCmd,int srcDb,long userId,int subtaskId) throws Exception{
 		Collection<BasicObj> allObjs = result.getAllObjs();
+		this.result = result;
 		try{
 			writeLog( conn, isUnionOperation, allObjs, opCmd, srcDb, userId,subtaskId);
 		}finally{
@@ -96,6 +99,8 @@ public class LogGenerator {
 			
 			//log_operation
 			for(BasicObj basicObj:basicObjs){
+				//判断basicObj 是 FEATURE还是 RELATION
+				String objType = basicObj.objType();
 				//对象未修改则不记log
 				if(!basicObj.isChanged()){
 					continue;
@@ -123,18 +128,39 @@ public class LogGenerator {
 					perstmtLogOperation.addBatch();
 				}
 
-				//主表，更新log_detail,log_detail_grid
-				goThroughOneBasicRow(conn,basicObj,basicObj.getMainrow(),opId);
-				//子表，更新log_detail,log_detail_grid
-				for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
-					List<BasicRow> subrows = entry.getValue();
-					if(subrows!=null){
-						for(BasicRow subrow:subrows){
-							//遍历每个子表，更新log_detail,log_detail_grid
-							goThroughOneBasicRow(conn,basicObj,subrow,opId);
+				//"FEATURE";
+				//"RELATION";
+				if(objType.equals("RELATION")){
+					BasicObjGrid  grid = null;
+					//子表，更新log_detail,log_detail_grid
+					for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
+						List<BasicRow> subrows = entry.getValue();
+						if(subrows!=null){
+							for(BasicRow subrow:subrows){
+								grid = getGrid(conn,subrow);
+								//遍历每个子表，更新log_detail,log_detail_grid
+								goThroughOneBasicRow(conn,basicObj,subrow,opId,grid);
+							}
+						}
+					}
+					//主表，更新log_detail,log_detail_grid
+					goThroughOneBasicRow(conn,basicObj,basicObj.getMainrow(),opId,grid);
+					
+				}else{
+					//主表，更新log_detail,log_detail_grid
+					goThroughOneBasicRow(conn,basicObj,basicObj.getMainrow(),opId,null);
+					//子表，更新log_detail,log_detail_grid
+					for(Entry<String, List<BasicRow>> entry:basicObj.getSubrows().entrySet()){
+						List<BasicRow> subrows = entry.getValue();
+						if(subrows!=null){
+							for(BasicRow subrow:subrows){
+								//遍历每个子表，更新log_detail,log_detail_grid
+								goThroughOneBasicRow(conn,basicObj,subrow,opId,null);
+							}
 						}
 					}
 				}
+				
 			}
 			
 			//log_action。此次操作确实产生了履历
@@ -152,6 +178,48 @@ public class LogGenerator {
 		}
 	}
 	
+	//***************************
+	
+	/**
+	 * @Title: getGrid
+	 * @Description: 根据子表获取poi 的pid 再去ix_poi 中获取 GEOMETRY
+	 * @param conn
+	 * @param row
+	 * @return
+	 * @throws Exception  BasicObjGrid
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年1月18日 下午3:15:50 
+	 */
+	public BasicObjGrid getGrid(Connection conn, BasicRow row){
+		try {
+			Geometry geo = null;
+			long poiPid = row.getGeoPid();
+			BasicObj ixpoiObj = ObjSelector.selectByPid(conn, ObjectName.IX_POI, null,true, poiPid, true);
+			geo = (Geometry) ixpoiObj.getMainrow().getAttrByColName("GEOMETRY");
+			
+			Set<String> grids = CompGeometryUtil.geo2GridsWithoutBreak(geo);
+			BasicObjGrid grid = new BasicObjGrid();
+			grid.setGridListAfter(grids);
+			if(row.getOldValues()!=null&&!row.getOldValues().isEmpty()&&row.getOldValues().containsKey("GEOMETRY")){
+				Geometry geoBefore = (Geometry) row.getOldValues().get("GEOMETRY");
+				Set<String> gridsBefore = CompGeometryUtil.geo2GridsWithoutBreak(geoBefore);
+				grid.setGridListBefore(gridsBefore);
+			}
+			grid.setGridListBefore(grids);
+		
+		return grid;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
+	
+	
+	
+	//***************************
+	
 	/**
 	 * @param conn
 	 * @param perstmtLogDetail
@@ -159,14 +227,15 @@ public class LogGenerator {
 	 * @param basicObj
 	 * @param subrow
 	 * @param opId
+	 * @param grid 
 	 * @throws Exception 
 	 */
-	private void goThroughOneBasicRow(Connection conn, BasicObj basicObj, BasicRow subrow, String opId) throws Exception {
+	private void goThroughOneBasicRow(Connection conn, BasicObj basicObj, BasicRow subrow, String opId, BasicObjGrid grid) throws Exception {
 		//UUID
 		String logDetailRowId = UuidUtils.genUuid();
 		assembleLogDetail(conn,basicObj,subrow,logDetailRowId,opId);
 		//log_detail_grid
-		assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId);
+		assembleLogDetailGrid(conn,basicObj,subrow,logDetailRowId,grid);
 	}
 
 	/**
@@ -222,21 +291,32 @@ public class LogGenerator {
 	 * @param basicObj
 	 * @param subrow
 	 * @param logDetailRowId
+	 * @param grid2 
 	 * @param perstmtLogDetailGrid
 	 * @throws Exception 
 	 */
-	private void assembleLogDetailGrid(Connection conn, BasicObj basicObj, BasicRow subrow, String logDetailRowId) throws Exception {
+	private void assembleLogDetailGrid(Connection conn, BasicObj basicObj, BasicRow subrow, String logDetailRowId, BasicObjGrid grid) throws Exception {
 		if(!subrow.isChanged()){
 			return;
 		}
 		if(perstmtLogDetailGrid==null){
 			perstmtLogDetailGrid = conn.prepareStatement(insertLogDetailGridSql);
 		}
-		BasicObjGrid grid = basicObj.getGrid();
-		if(subrow.getGeoPid()!=basicObj.objPid()){
-			BasicObj referObj = ObjSelector.selectByPid(conn, basicObj.objName(), null,true, subrow.getGeoPid(), true);
-			grid = referObj.getGrid();
+		if(grid == null){//obj 类型是 FEATURE
+			grid = basicObj.getGrid();
+			if(subrow.getGeoPid()!=basicObj.objPid()){
+				BasicObj referObj =null;
+				if(result.isObjExist(basicObj.objName(), subrow.getGeoPid())){
+					Map<Long,BasicObj> objMap = result.getObjsMapByType(basicObj.objName());
+					referObj = objMap.get(subrow.getGeoPid());
+				}else{
+					referObj =  ObjSelector.selectByPid(conn, basicObj.objName(), null,true, subrow.getGeoPid(), true);
+				}
+				 
+				grid = referObj.getGrid();
+			}
 		}
+		 
 		for(String gridId:grid.getGridListBefore()){
 			perstmtLogDetailGrid.setString(1, logDetailRowId);
 			perstmtLogDetailGrid.setLong(2, Long.parseLong(gridId));

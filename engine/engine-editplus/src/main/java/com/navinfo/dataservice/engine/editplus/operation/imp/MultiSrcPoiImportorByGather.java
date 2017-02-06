@@ -467,11 +467,23 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					JSONArray childrenpoiList = jo.getJSONArray("relateChildren");
 					for (int i=0;i<childrenpoiList.size();i++) {
 						JSONObject relateChildrenObj = childrenpoiList.getJSONObject(i);
-						IxPoiChildren newIxPoiChildren;
+						//*******zl 2017.01.20 **********
+						//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+						if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+							//创建子的 PoiRelation
+							PoiRelation pr2 = new PoiRelation();
+							pr2.setFatherPid(ixPoi.getPid());
+							pr2.setFid(relateChildrenObj.getString("childFid"));
+							pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+							parentPid.add(pr2);
+						}else{
+							IxPoiChildren newIxPoiChildren;
 							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
 							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
 							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+						}
+						
 					}
 				}
 				//********************************
@@ -911,10 +923,22 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					try {
 						ret = getDifferent(oldArray,newChildrenObj);
 						if (ret == 0) {//新增
-							IxPoiChildren newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
-							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
-							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							//********zl 2017.01.20*******
+							//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+							if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+								//创建子的 PoiRelation
+								PoiRelation pr2 = new PoiRelation();
+								pr2.setFatherPid(pid);
+								pr2.setFid(relateChildrenObj.getString("childFid"));
+								pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+								parentPid.add(pr2);
+							}else{
+								IxPoiChildren newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
+								newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
+								newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
+								newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							}
+							
 							
 						} else if (ret == 1) {//修改
 							for (IxPoiChildren oldChildren : oldChildrenpoiList) {
@@ -949,14 +973,25 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//JSONArray relateChildren = jo.getJSONArray("relateChildren");
 				for (int i=0;i<childrenpoiList.size();i++) {
 					JSONObject relateChildrenObj = childrenpoiList.getJSONObject(i);
-					IxPoiChildren newIxPoiChildren;
-					try {
-						newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
-						newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
-						newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-						newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
-					} catch (Exception e) {
-						e.printStackTrace();
+					//********zl 2017.01.20*******
+					//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+					if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+						//创建子的 PoiRelation
+						PoiRelation pr2 = new PoiRelation();
+						pr2.setFatherPid(pid);
+						pr2.setFid(relateChildrenObj.getString("childFid"));
+						pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+						parentPid.add(pr2);
+					}else{
+						IxPoiChildren newIxPoiChildren;
+						try {
+							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
+							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
+							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
+							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}

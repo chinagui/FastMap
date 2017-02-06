@@ -31,19 +31,17 @@ public class FMBAT20141 extends BasicBatchRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			//存在IX_POI_NAME标准化中文名称，新增或者修改履历
-			List<IxPoiName> br=poiObj.getIxPoiNames();
+			IxPoiName name=poiObj.getOfficeStandardCHIName();
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			for(IxPoiName name:br){
-				if(name.getNameType()==1&&(name.getHisOpType().equals(OperationType.INSERT)
-						||(name.getHisOpType().equals(OperationType.UPDATE)&&name.hisOldValueContains(IxPoiName.NAME)))){
-					String oldName=(String) name.getHisOldValue(IxPoiName.NAME);
-					String newName=name.getName();
-					if(!newName.equals(oldName)){
-						//批拼音
-						name.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
-					}
-					
+			if(name.getHisOpType().equals(OperationType.INSERT)
+					||(name.getHisOpType().equals(OperationType.UPDATE)&&name.hisOldValueContains(IxPoiName.NAME))){
+				String oldName=(String) name.getHisOldValue(IxPoiName.NAME);
+				String newName=name.getName();
+				if(!newName.equals(oldName)){
+					//批拼音
+					name.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
 				}
+				
 			}
 		}		
 	}

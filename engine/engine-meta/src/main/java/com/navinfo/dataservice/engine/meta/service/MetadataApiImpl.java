@@ -220,6 +220,10 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));
+			result.put("nameUnifyShort", scPointNameckTypeD1_2_3_4_8_11());
+			result.put("chishort", scPointNameckTypeD4_10());
+			result.put("aliasName", scPointNameckTypeD4());
+			
 
 			return result;
 		} catch (Exception e) {
@@ -344,6 +348,17 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointNameckTypeD7() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD7();
+	}
+	@Override
+	public Map<String, String> scPointNameckTypeD1_2_3_4_8_11() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD1_2_3_4_8_11();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD4_10() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD4_10();
 	}
 	/**
 	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA

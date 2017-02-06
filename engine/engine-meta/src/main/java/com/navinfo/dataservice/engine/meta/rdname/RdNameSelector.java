@@ -62,7 +62,7 @@ public class RdNameSelector {
 
 			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 
-			int startRow = pageNum * pageSize;
+			int startRow = (pageNum-1) * pageSize+1;
 
 			int endRow = pageNum * pageSize;
 

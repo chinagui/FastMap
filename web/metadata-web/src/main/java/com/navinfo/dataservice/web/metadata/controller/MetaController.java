@@ -38,6 +38,7 @@ import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 import com.navinfo.dataservice.engine.meta.chain.ChainSelector;
 import com.navinfo.dataservice.engine.meta.chain.FocusSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
+import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageSelector;
@@ -1051,6 +1052,39 @@ public class MetaController extends BaseController {
             int truck = selector.getTruck(kind, chain, fuelType);
 
             return new ModelAndView("jsonView", success(truck));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+    }
+    
+    /**
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException
+     * 查询level接口
+     */
+    @RequestMapping(value = "/queryLevel")
+    public ModelAndView queryLevel(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+        Connection conn = null;
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            conn = DBConnector.getInstance().getMetaConnection();
+            LevelSelector selector = new LevelSelector(conn);
+
+			JSONObject res = selector.getLevel(jsonReq);
+
+            return new ModelAndView("jsonView", success(res));
 
         } catch (Exception e) {
 

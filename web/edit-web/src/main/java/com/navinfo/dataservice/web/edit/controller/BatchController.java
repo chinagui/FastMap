@@ -69,23 +69,16 @@ public class BatchController extends BaseController {
 	 * @throws IOException
 	 */
 	@RequestMapping(value = "/batch/run")
-	public ModelAndView checkRun(HttpServletRequest request)
+	public ModelAndView batchRun(HttpServletRequest request)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
 		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			int subtaskId=jsonReq.getInt("subtaskId");
-			int batchType=jsonReq.getInt("batchType");
-			String batchRules = "";
-			if (jsonReq.containsKey("batchRules")) {
-				batchRules = jsonReq.getString("batchRules");
-			}
-			
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			//long userId=2;
-			long jobId=BatchService.getInstance().batchRun(subtaskId,userId,batchType,batchRules);				
+			long jobId=BatchService.getInstance().batchRun(userId,jsonReq);				
 			return new ModelAndView("jsonView", success(jobId));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

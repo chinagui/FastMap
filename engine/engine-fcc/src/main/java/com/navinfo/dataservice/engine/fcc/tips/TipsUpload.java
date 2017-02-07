@@ -28,6 +28,7 @@ import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -50,6 +51,8 @@ class ErrorType {
 	static int Notexist = 4;
 
 	static int InvalidData = 5;
+	
+	static int FreshnessVerificationData = 6; //鲜度验证tips(不入库)
 	
 }
 
@@ -134,6 +137,8 @@ public class TipsUpload {
 		loadOldTips(htab, gets);
 
 		List<Put> puts = new ArrayList<Put>();
+		
+		//新增(已存在)或者修改的时候判断是否是鲜度验证的tips
 
 		doInsert(puts);
 
@@ -347,6 +352,10 @@ public class TipsUpload {
 				get.addColumn("data".getBytes(), "track".getBytes());
 
 				get.addColumn("data".getBytes(), "feedback".getBytes());
+				
+				get.addColumn("data".getBytes(), "deep".getBytes());
+				
+				get.addColumn("data".getBytes(), "geometry".getBytes());
 
 				gets.add(get);
 
@@ -418,7 +427,6 @@ public class TipsUpload {
 
 				String track = new String(result.getValue("data".getBytes(),
 						"track".getBytes()));
-
 				jo.put("track",track);
 
 				if (result.containsColumn("data".getBytes(),
@@ -431,6 +439,17 @@ public class TipsUpload {
 				} else {
 					jo.put("feedback", TipsUtils.OBJECT_NULL_DEFAULT_VALUE);
 				}
+				
+				String geometry = new String(result.getValue("data".getBytes(),
+						"geometry".getBytes()));
+				jo.put("geometry",geometry);
+				
+				
+				String deep = new String(result.getValue("data".getBytes(),
+						"deep".getBytes()));
+				jo.put("deep",deep);
+				
+				
 
 				oldTips.put(rowkey, jo);
 			} catch (Exception e) {
@@ -469,6 +488,15 @@ public class TipsUpload {
 
 					JSONObject oldTip = oldTips.get(rowkey);
 					
+					//差分判断是不是tips无变更(鲜度验证的tips)，是则不更新
+					if(isFreshnessVerification(oldTip,json)){
+						
+						reasons.add(newReasonObject(rowkey,
+								ErrorType.FreshnessVerificationData));
+						
+						continue;
+					}
+					
 					//对比采集时间，采集时间和数据库中 hbase old.trackinfo.date(最后一条)
 					int res = canUpdate(oldTip, json.getString("t_operateDate"));
 					if (res < 0) {
@@ -486,7 +514,7 @@ public class TipsUpload {
 						continue;
 					}
 					
-					put = updatePut(rowkey, json, oldTip);
+				    put = updatePut(rowkey, json, oldTip);
 
 				} else {
 					put = insertPut(rowkey, json);
@@ -507,6 +535,50 @@ public class TipsUpload {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * @Description:判断是否是鲜度验证的tips
+	 * @param oldTip
+	 * @param json
+	 * @return
+	 * @author: y
+	 * @time:2017-1-18 下午1:39:55
+	 */
+	private boolean isFreshnessVerification(JSONObject oldTip, JSONObject json) {
+		
+		//（鲜度验证的数据不入库：geometry、deep、feedback、track.t_command等字段内容不变）。 已确认不需要每个属性字段差分。几个属性合起来比较就可以了
+		//old
+		//solr里面就是字符串
+		String geometryOld=oldTip.getString("geometry");
+		JSONObject geoObj=JSONObject.fromObject(geometryOld);
+		String g_locationOld=geoObj.getString("g_location");
+		String g_guideOld=geoObj.getString("g_guide");
+		String deepOld=oldTip.getString("deep");
+		String feedbackOld=oldTip.getString("feedback");
+		
+		JSONObject trackOld=oldTip.getJSONObject("track");
+		int tCommandOld=trackOld.getInt("t_command");
+		
+		String mdb5Old=MD5Utils.md5(g_locationOld+g_guideOld+deepOld+feedbackOld+tCommandOld);
+		
+		
+		//new
+		String g_locationNew=json.getString("g_location");
+		String g_guideNew=json.getString("g_guide");
+		String deepNew=json.getString("deep");
+		String feedbackNew=json.getString("feedback");
+		
+		//JSONObject trackNew=json.getJSONObject("track");
+		int tCommandNew=json.getInt("t_command");
+		
+		String mdb5New=MD5Utils.md5(g_locationNew+g_guideNew+deepNew+feedbackNew+tCommandNew);
+		
+		if(mdb5Old.equals(mdb5New)){
+			return true;
+		}
+		
+		return false;
 	}
 
 	private Put insertPut(String rowkey, JSONObject json) {
@@ -591,7 +663,17 @@ public class TipsUpload {
 				JSONObject oldTip = oldTips.get(rowkey);
 
 				JSONObject json = en.getValue();
+				
+				//是否是鲜度验证的tips
+				if(isFreshnessVerification(oldTip,json)){
+					
+					reasons.add(newReasonObject(rowkey,
+							ErrorType.FreshnessVerificationData));
+					
+					continue;
+				}
 
+				//时间判断
 				int res = canUpdate(oldTip, json.getString("t_operateDate"));
 				if (res < 0) {
 					failed += 1;
@@ -605,6 +687,7 @@ public class TipsUpload {
 
 					continue;
 				}
+				
 
 				Put put = updatePut(rowkey, json, oldTip);
 

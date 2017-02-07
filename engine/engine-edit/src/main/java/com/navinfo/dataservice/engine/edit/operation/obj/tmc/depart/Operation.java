@@ -34,13 +34,14 @@ public class Operation {
 	 *            分离后左线
 	 * @param rightLinks
 	 *            分离后右线
+	 * @param noTargetLinks 
 	 * @param result
 	 *            结果集
 	 * @return
 	 * @throws Exception
 	 */
 	public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks,
-			Result result) throws Exception {
+			Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
 		for (RdLink link : links) {
 			updateTmcLocation(link.getTmclocations(), link, leftLinks.get(link.getPid()),
 					rightLinks.get(link.getPid()), result);
@@ -65,6 +66,7 @@ public class Operation {
 
 		for (IRow row : tmcLocationLinks) {
 			RdTmclocationLink link = (RdTmclocationLink) row;
+			
 			// 找到原link的tmc信息，赋值给分离后的同方向的link
 			if (link.getLinkPid() == originLinkPid) {
 				if (leftLink.getDirect() == originDirect) {

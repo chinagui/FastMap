@@ -41,19 +41,19 @@ public class EditPoiBatchPlusJob extends AbstractJob{
 		EditPoiBatchPlusJobRequest releaseJobRequest=(EditPoiBatchPlusJobRequest) request;
 		Connection conn = null;
 		try {
-			log.info(releaseJobRequest.getTargetDbId());
+			//log.info(releaseJobRequest.getTargetDbId());
 			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
-			log.info(releaseJobRequest.getTargetDbId());
+			//log.info(releaseJobRequest.getTargetDbId());
 			//获取log
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(conn, releaseJobRequest.getPids());
 			Set<String> tabNames=getChangeTableSet(logs);
 			//获取poi对象			
 			Map<Long, BasicObj> objs =null;
 			if(tabNames==null||tabNames.size()==0){
-				log.info(1);
+				//log.info(1);
 				objs=ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, true,
 						releaseJobRequest.getPids(), false, false);
-				log.info(2);
+				//log.info(2);
 			}else{
 				objs=ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames, false,
 						releaseJobRequest.getPids(), false, false);

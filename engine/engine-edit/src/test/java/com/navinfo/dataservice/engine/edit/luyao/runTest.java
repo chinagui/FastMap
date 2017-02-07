@@ -1265,4 +1265,24 @@ public class runTest extends InitApplication {
 	}
 	
 	
+	@Test
+	public void run_0207_1() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[300001979,310001938,301001969,310001939,208001974],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":3,\"fromSpeedLimit\":300,\"fromLimitSrc\":2,\"toSpeedLimit\":0,\"toLimitSrc\":0,\"speedDependent\":6}}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0207_2() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[300001979,310001938,301001969,310001939,208001974],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":400,\"fromLimitSrc\":0,\"toSpeedLimit\":0,\"toLimitSrc\":0,\"speedClassWork\":1}}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

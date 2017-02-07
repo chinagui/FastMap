@@ -137,7 +137,7 @@ public class TipsSelectorTest {
 			
 			//{"gap":40,"mdFlag":"d","z":17,"x":107944,"y":49615}
 			//{"gap":40,"mdFlag":"d","z":17,"x":107940,"y":49619}
-			System.out.println(solrSelector.searchDataByTileWithGap(107940, 49619, 17,
+			System.out.println(solrSelector.searchDataByTileWithGap(107945, 49616, 17,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -211,7 +211,7 @@ public class TipsSelectorTest {
 					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
 			
 			JSONArray grid = JSONArray
-					.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
+					.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131,59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
 			JSONArray stage = new JSONArray();
 			stage.add(1);
 			stage.add(2);
@@ -238,7 +238,7 @@ public class TipsSelectorTest {
 		
 		
 		//根据wkt范围获取tips的snapshot列表
-//		@Test
+		@Test
 		public void testSearchDataBySpatial() {
 			try {
 				JSONArray ja =

@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -21,6 +24,9 @@ public class TipsUtils {
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
+	
+	
+	
 	/**
 	 * 组装Track(上传、接边、预处理都调用)
 	 * 

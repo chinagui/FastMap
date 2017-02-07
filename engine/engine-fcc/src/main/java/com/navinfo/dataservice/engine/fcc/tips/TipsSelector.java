@@ -337,6 +337,10 @@ public class TipsSelector {
 
 						m.put("e", deep.getString("name"));
 					}
+					//20170207修改，需求来源于：赵航——有个需求是，如果上传的步行街有时间段，我们要渲染不同的图标，现在渲染接口没有时间段这个字段
+					if( type == 1507){
+						m.put("f", deep.getString("time"));
+					}
 
 					if (type == 1517) {
 

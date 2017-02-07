@@ -28,6 +28,35 @@ public class Operation implements IOperation {
 
 		this.conn = conn;
 	}
+	
+	/**
+	 * 处理变更内容
+	 * 
+	 * @param limitContent
+	 * @param direct
+	 * @return
+	 */
+	private JSONObject handleLimitContent(JSONObject content) {
+		
+		int direct = this.command.getDirect();
+		
+		if (direct == 2) {
+
+			content.put("speedLimit", content.getInt("fromSpeedLimit"));
+
+			content.put("limitSrc", content.getInt("fromLimitSrc"));
+
+		}
+
+		else if (direct == 3) {
+
+			content.put("speedLimit", content.getInt("toSpeedLimit"));
+
+			content.put("limitSrc", content.getInt("toLimitSrc"));
+		}
+
+		return content;
+	}
 
 	@Override
 	public String run(Result result) throws Exception {
@@ -37,18 +66,17 @@ public class Operation implements IOperation {
 
 		linkPids.addAll(this.command.getLinkPids());
 
-		int direct = this.command.getDirect();
-
 		JSONObject limitContent = this.command.getSpeedLimitContent();
+		
+		limitContent = handleLimitContent(limitContent);
 
-		if (limitContent.containsKey("speedType")
-				&& limitContent.getInt("speedType") == 3) {
+		if (limitContent.getInt("speedType") == 3) {
 
-			msg = batchForDependent(result, linkPids, limitContent, direct);
+			msg = batchForDependent(result, linkPids, limitContent);
 
 		} else {
 
-			msg = batch(result, linkPids, limitContent, direct);
+			msg = batch(result, linkPids, limitContent);
 		}
 
 		return msg;
@@ -107,32 +135,7 @@ public class Operation implements IOperation {
 		return limits;
 	}
 
-	/**
-	 * 处理变更内容
-	 * 
-	 * @param limitContent
-	 * @param direct
-	 * @return
-	 */
-	private JSONObject handleLimitContent(JSONObject content, int direct) {
-
-		if (direct == 2) {
-
-			content.put("speedLimit", content.getInt("fromSpeedLimit"));
-
-			content.put("limitSrc", content.getInt("fromLimitSrc"));
-
-		}
-
-		else if (direct == 3) {
-
-			content.put("speedLimit", content.getInt("toSpeedLimit"));
-
-			content.put("limitSrc", content.getInt("toLimitSrc"));
-		}
-
-		return content;
-	}
+	
 
 	/**
 	 * 批量编辑普通线限速
@@ -145,9 +148,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private String batch(Result result, List<Integer> linkPids,
-			JSONObject limitContent, int direct) throws Exception {
-
-		limitContent = handleLimitContent(limitContent, direct);
+			JSONObject limitContent) throws Exception {
 
 		Map<Integer, RdLinkSpeedlimit> limits = getSpeedlimits(linkPids);
 
@@ -161,31 +162,37 @@ public class Operation implements IOperation {
 
 				throw new Exception("RdLink:" + String.valueOf(linkPid)
 						+ "不存在,终止本次操作");
-			}
-
+			}			
+			
 			RdLink link = rdLinks.get(linkPid);
+			
+			int direct =link.getDirect();
+			
+			if (i == 0) {
 
-			if (i == 0 || link.getDirect() == 2 || link.getDirect() == 3) {
+				direct = this.command.getDirect();
 
-				SetSpeedLimit(result, linkPid, limits, link.getDirect(),
-						limitContent);
-
-				continue;
-			}
-
-			if (link.getDirect() == 1) {
+			} else if (link.getDirect() == 1 || link.getDirect() == 0) {
 
 				int preLinkPid = linkPids.get(i - 1);
+				
+				int preSNode = rdLinks.get(preLinkPid).getsNodePid();
 
-				if (link.getsNodePid() == rdLinks.get(preLinkPid).getsNodePid()
-						|| link.getsNodePid() == rdLinks.get(preLinkPid)
-								.geteNodePid()) {
+				int preENode = rdLinks.get(preLinkPid).geteNodePid();
+				
+				int currSNode =link.getsNodePid();
 
-					SetSpeedLimit(result, linkPid, limits, 2, limitContent);
+				if (currSNode == preSNode || currSNode == preENode) {
+
+					direct = 2;
+
 				} else {
-					SetSpeedLimit(result, linkPid, limits, 3, limitContent);
+
+					direct = 3;
 				}
 			}
+
+			SetSpeedLimit(result, linkPid, limits, direct, limitContent);
 		}
 
 		return null;
@@ -389,15 +396,13 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private String batchForDependent(Result result, List<Integer> linkPids,
-			JSONObject limitContent, int direct) throws Exception {
-
-		limitContent = handleLimitContent(limitContent, direct);
+			JSONObject limitContent) throws Exception {
 
 		Map<Integer, List<RdLinkSpeedlimit>> limits = getSpeedlimitsForDependent(linkPids);
 
 		Map<Integer, RdLink> rdLinks = getRdLinks(linkPids);
 
-		for (int i = 1; i < linkPids.size(); i++) {
+		for (int i = 0; i < linkPids.size(); i++) {
 
 			int linkPid = linkPids.get(i);
 
@@ -406,32 +411,35 @@ public class Operation implements IOperation {
 				throw new Exception("RdLink:" + String.valueOf(linkPid)
 						+ "不存在,终止本次操作");
 			}
-
+			
 			RdLink link = rdLinks.get(linkPid);
 
-			if (i == 0 || link.getDirect() == 2 || link.getDirect() == 3) {
+			int direct = link.getDirect();
 
-				SetSpeedLimitForDependent(result, linkPid, limits.get(linkPid),
-						link.getDirect(), limitContent);
+			if (i == 0) {
 
-				continue;
-			}
+				direct = this.command.getDirect();
 
-			if (link.getDirect() == 1) {
+			} else if (link.getDirect() == 1 || link.getDirect() == 0) {
 
-				int preLinkPid = linkPids.get(i - 1);
+				int preSNode = rdLinks.get(linkPids.get(i - 1)).getsNodePid();
 
-				if (link.getsNodePid() == rdLinks.get(preLinkPid).getsNodePid()
-						|| link.getsNodePid() == rdLinks.get(preLinkPid)
-								.geteNodePid()) {
+				int preENode = rdLinks.get(linkPids.get(i - 1)).geteNodePid();
 
-					SetSpeedLimitForDependent(result, linkPid,
-							limits.get(linkPid), 2, limitContent);
+				int currSNode = link.getsNodePid();
+
+				if (currSNode == preSNode || currSNode == preENode) {
+
+					direct = 2;
+
 				} else {
-					SetSpeedLimitForDependent(result, linkPid,
-							limits.get(linkPid), 3, limitContent);
+
+					direct = 3;
 				}
 			}
+			
+			SetSpeedLimitForDependent(result, linkPid,
+					limits.get(linkPid), direct, limitContent);
 		}
 
 		return null;
@@ -482,91 +490,142 @@ public class Operation implements IOperation {
 	private void SetSpeedLimitForDependent(Result result, int linkPid,
 			List<RdLinkSpeedlimit> limits, int direct, JSONObject limitContent)
 			throws Exception {
-
+		
+		if (limits == null) {
+			insertDependentSpeedlimit(result, linkPid, direct, limitContent);
+			return;
+		}
+		
 		boolean hadLimit = false;
-
-		int speedDependent = limitContent.getInt("speedDependent");
-
-		int limitValue = limitContent.getInt("speedLimit");
 
 		// 更新
 		for (RdLinkSpeedlimit speedlimit : limits) {
 
-			if (speedlimit.getSpeedDependent() != speedDependent) {
+			if (speedlimit.getSpeedDependent() != limitContent
+					.getInt("speedDependent")) {
 				continue;
 			}
 
-			int limitSrc = limitContent.getInt("limitSrc");
-
 			hadLimit = true;
 
-			if (direct == 2) {
-
-				if (speedlimit.getFromSpeedLimit() != limitValue) {
-
-					speedlimit.changedFields()
-							.put("fromSpeedLimit", limitValue);
-
-					if (limitValue == 0) {
-
-						limitSrc = 0;
-					}
-				}
-				if (speedlimit.getFromLimitSrc() != limitSrc) {
-
-					speedlimit.changedFields().put("fromLimitSrc", limitSrc);
-				}
-
-			} else if (direct == 3) {
-
-				if (speedlimit.getToSpeedLimit() != limitValue) {
-
-					speedlimit.changedFields().put("toSpeedLimit", limitValue);
-
-					if (limitValue == 0) {
-
-						limitSrc = 0;
-					}
-				}
-
-				if (speedlimit.getToLimitSrc() != limitSrc) {
-
-					speedlimit.changedFields().put("toLimitSrc", limitSrc);
-				}
-			}
-
-			result.insertObject(speedlimit, ObjStatus.UPDATE, linkPid);
+			updataDependentSpeedlimit(result, limitContent, direct, speedlimit);
 		}
 
 		// 新增
 		if (!hadLimit) {
 
-			RdLinkSpeedlimit newLimit = new RdLinkSpeedlimit();
-
-			newLimit.setSpeedType(3);
-
-			newLimit.setSpeedDependent(speedDependent);
-
-			int limitSrc = limitContent.getInt("limitSrc");
-
-			if (direct == 2) {
-
-				newLimit.setFromSpeedLimit(limitValue);
-
-				newLimit.setFromLimitSrc(limitSrc);
-
-			} else if (direct == 3) {
-
-				newLimit.setToSpeedLimit(limitValue);
-
-				newLimit.setToLimitSrc(limitSrc);
-			}
-			if (limitContent.containsKey("timeDomain")) {
-
-				newLimit.setTimeDomain(limitContent.getString("timeDomain"));
-			}
-
-			result.insertObject(newLimit, ObjStatus.INSERT, linkPid);
+			insertDependentSpeedlimit(result, linkPid, direct, limitContent);
 		}
 	}
+	
+	/**
+	 * 更新条件限速
+	 * @param result
+	 * @param limitContent
+	 * @param direct
+	 * @param speedlimit
+	 */
+	private void updataDependentSpeedlimit(Result result,
+			JSONObject limitContent, int direct, RdLinkSpeedlimit speedlimit) {
+
+		int limitSrc = limitContent.getInt("limitSrc");
+
+		int limitValue = limitContent.getInt("speedLimit");
+
+		if (direct == 2) {
+
+			if (speedlimit.getFromSpeedLimit() != limitValue) {
+
+				speedlimit.changedFields().put("fromSpeedLimit", limitValue);
+
+				limitSrc = 1;
+
+				if (limitValue == 0) {
+
+					limitSrc = 0;
+				}
+			}
+
+			if (speedlimit.getFromLimitSrc() != limitSrc) {
+
+				speedlimit.changedFields().put("fromLimitSrc", limitSrc);
+			}
+
+		} else if (direct == 3) {
+
+			if (speedlimit.getToSpeedLimit() != limitValue) {
+
+				speedlimit.changedFields().put("toSpeedLimit", limitValue);
+
+				limitSrc = 1;
+
+				if (limitValue == 0) {
+
+					limitSrc = 0;
+				}
+			}
+
+			if (speedlimit.getToLimitSrc() != limitSrc) {
+
+				speedlimit.changedFields().put("toLimitSrc", limitSrc);
+			}
+		}
+
+		if (limitContent.containsKey("timeDomain")) {
+
+			String timeDomain = limitContent.getString("timeDomain");
+
+			if (!speedlimit.getTimeDomain().equals(timeDomain)) {
+
+				speedlimit.changedFields().put("timeDomain", timeDomain);
+			}
+		}
+
+		result.insertObject(speedlimit, ObjStatus.UPDATE,
+				speedlimit.getLinkPid());
+	}
+
+	/**
+	 * 新增条件限速
+	 * @param result
+	 * @param linkPid
+	 * @param direct
+	 * @param limitContent
+	 */
+	private void insertDependentSpeedlimit(Result result, int linkPid,
+			int direct, JSONObject limitContent) {
+		
+		RdLinkSpeedlimit newLimit = new RdLinkSpeedlimit();
+
+		newLimit.setLinkPid(linkPid);
+
+		newLimit.setSpeedType(3);
+
+		newLimit.setSpeedDependent(limitContent.getInt("speedDependent"));
+
+		int limitValue = limitContent.getInt("speedLimit");
+
+		int limitSrc = limitContent.getInt("limitSrc");
+
+		if (direct == 2) {
+
+			newLimit.setFromSpeedLimit(limitValue);
+
+			newLimit.setFromLimitSrc(limitSrc);
+
+		} else if (direct == 3) {
+
+			newLimit.setToSpeedLimit(limitValue);
+
+			newLimit.setToLimitSrc(limitSrc);
+		}
+		if (limitContent.containsKey("timeDomain")) {
+
+			newLimit.setTimeDomain(limitContent.getString("timeDomain"));
+		}
+
+		result.insertObject(newLimit, ObjStatus.INSERT, linkPid);
+	}
+
+	
 }

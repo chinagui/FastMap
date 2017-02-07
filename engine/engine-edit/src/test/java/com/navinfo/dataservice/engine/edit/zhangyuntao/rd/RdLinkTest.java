@@ -32,8 +32,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":307002679," +
-                "\"data\":{\"functionClass\":1,\"pid\":307002679,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":302003223," +
+                "\"data\":{\"limits\":[{\"linkPid\":302003223,\"rowId\":\"\",\"type\":3,\"limitDir\":0," +
+                "\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":0," +
+                "\"objStatus\":\"INSERT\"}],\"pid\":302003223}}";
         TestUtil.run(parameter);
     }
 
@@ -81,10 +83,8 @@ public class RdLinkTest extends InitApplication {
         parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"8.3\"," +
                 "\"data\":{\"linkPids\":[86366612,87757818,87757819,86366614,663904,663906,663908,677530,87758006," +
                 "87758007,87729181]}}";
-        parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDSAMENODE\",\"objId\":70828," +
-                "\"data\":{\"parts\":[{\"objStatus\":\"INSERT\"},{\"objStatus\":\"INSERT\"}," +
-                "{\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1F4D1014992F7E050A8C08304EE4C\",\"pid\":70828," +
-                "\"objStatus\":\"UPDATE\"}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":\"9.8\"," +
+                "\"data\":{\"linkPids\":[301003307,210003291,309003293]}}";
         TestUtil.run(parameter);
     }
 
@@ -103,8 +103,8 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
                 "\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
-                "\"data\":{\"linkPids\":[307002979]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":\"9.8\"," +
+                "\"data\":{\"linkPids\":[206003329,201003275,220003427]}}";
         TestUtil.run(parameter);
     }
 

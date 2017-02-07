@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -25,9 +27,16 @@ import oracle.sql.STRUCT;
 public class RdSpeedlimitSearch implements ISearch {
 
 	private Connection conn;
+	
+	String queryType="";
 
 	public RdSpeedlimitSearch(Connection conn) {
 		this.conn = conn;
+	}
+	
+	public RdSpeedlimitSearch(Connection conn, String queryType) {
+		this.conn = conn;
+		this.queryType = queryType;
 	}
 
 	@Override
@@ -61,6 +70,10 @@ public class RdSpeedlimitSearch implements ISearch {
 	@Override
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
+		
+		if (queryType.equals("DEPENDENT")) {
+			return handleCondition(x, y, z, gap);
+		}		
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
@@ -179,21 +192,86 @@ public class RdSpeedlimitSearch implements ISearch {
 			e.printStackTrace();
 			throw new SQLException(e);
 		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
+			DbUtils.close(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 
-				}
+		return list;
+	}
+	
+	
+
+	private List<SearchSnapshot> handleCondition(int x, int y, int z,
+			int gap) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = "SELECT a.pid, a.limit_src,a.speed_value, a.speed_dependent,a.direct, a.link_pid, b.geometry link_geom,a.geometry point_geom FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type=3  ORDER BY A.LINK_PID";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject jsonM = new JSONObject();
+
+				snapshot.setI(resultSet.getInt("pid"));
+
+				snapshot.setT(51);
+				
+				int limitSrc = resultSet.getInt("limit_src");
+
+				int speedValue = resultSet.getInt("speed_value");
+
+				int speedDependent = resultSet.getInt("speed_dependent");
+
+				int direct = resultSet.getInt("direct");
+
+				int linkPid = resultSet.getInt("link_pid");
+
+				jsonM.put("a", String.valueOf(linkPid));				
+				jsonM.put("b", String.valueOf(limitSrc));
+				jsonM.put("c", String.valueOf(speedValue));
+				jsonM.put("d", String.valueOf(speedDependent));
+				jsonM.put("e", String.valueOf(direct));
+
+				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
+
+				JGeometry geom2 = JGeometry.load(struct2);
+
+				double angle = calAngle(resultSet);
+
+				jsonM.put("f", String.valueOf((int) angle));
+				
+				snapshot.setM(jsonM);
+
+				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
+						geom2.getFirstPoint()[1], z, px, py));
+
+				list.add(snapshot);
 			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-
-				}
-			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new SQLException(e);
+		} finally {
+			DbUtils.close(resultSet);
+			DbUtils.closeQuietly(pstmt);
 
 		}
 

@@ -140,6 +140,8 @@ public class IxPoiSelector {
 			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
 					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.U_RECORD != 2"
+					+ " AND IPC.U_RECORD != 2"
 					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
 			
 			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
@@ -162,6 +164,52 @@ public class IxPoiSelector {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
 		}
+
+	}
+	
+	/**
+	 * @Title: getSamePoiPidsByThisPids
+	 * @Description: 获取同组的另一个poi 的 pid
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException  Map<Long,Long>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年1月9日 下午12:06:21 
+	 */
+	public static Map<Long,Long> getSamePoiPidsByThisPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		for(final Long pid : pidList){
+			try{
+				String sql = "select nvl(p.poi_pid,0) otherpid from ix_samepoi_part p where p.group_id =(select t.group_id from ix_samepoi_part t where t.poi_pid= "+pid+" and t.u_record != 2 ) and p.poi_pid != "+pid+"  and p.u_record != 2 ";
+
+				
+				ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
+					public Map<Long,Long> handle(ResultSet rs) throws SQLException {
+						Map<Long,Long> result = new HashMap<Long,Long>();
+						while (rs.next()) {
+							long samepoiPid = rs.getLong("otherpid");
+							if(samepoiPid != 0){
+								result.put(pid, samepoiPid);
+							}
+						}
+						return result;
+					}
+				};
+				
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				 childPidParentPid.putAll(new QueryRunner().query(conn,sql, rsHandler));
+			}catch(Exception e){
+				DbUtils.rollbackAndCloseQuietly(conn);
+				log.error(e.getMessage(), e);
+				throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+			}
+		}
+		return childPidParentPid;
 
 	}
 	
@@ -288,5 +336,80 @@ public class IxPoiSelector {
 			log.info("selectByFids开始加载子表");
 		}
 		return objs;
+	}
+	/**
+	 * @Title: getGroupIdByPids
+	 * @Description: 获取每个pid 在 ix_samepoi_part 中的group_id
+	 * @param conn
+	 * @param pidOriginSamePoiPidNeedToBeLoad
+	 * @return  Map<Long,Long>
+	 * @throws ServiceException 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年1月10日 上午9:42:00 
+	 */
+	public static List<Map<String,Long>> getIxSamePoiGroupIdsByPids(Connection conn, Set<Long> pidSet) throws ServiceException {
+		List<Map<String,Long>> groupIdList = new ArrayList<Map<String,Long>>();
+		if(pidSet.isEmpty()){
+			return groupIdList;
+		}
+		try{
+			String sql = " select distinct  p.group_id ,p.poi_pid   from ix_samepoi_part p "
+					+ " where p.poi_pid IN (" + StringUtils.join(pidSet.toArray(),",") + ")" 
+					+ " and p.u_record != 2 " ;
+			ResultSetHandler<List<Map<String,Long>>> rsHandler = new ResultSetHandler<List<Map<String,Long>>>() {
+				public List<Map<String,Long>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Long>> result = new ArrayList<Map<String,Long>>();
+					while (rs.next()) {
+						Map<String,Long> map= new HashMap<String,Long>();
+						long groupId = rs.getLong("group_id");
+						long poiPid = rs.getLong("poi_pid");
+						map.put("group_id", groupId);
+						map.put("poi_pid", poiPid);
+						
+						result.add(map);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<Map<>>)："+sql);
+			groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			return groupIdList;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	public static List<Long> getIxSamePoiGroupIdsByPids(Connection conn, List<Long> pidList) throws ServiceException {
+		List<Long> groupIdList = new ArrayList<Long>();
+		if(pidList.isEmpty()){
+			return groupIdList;
+		}
+		try{
+			String sql = " select distinct  p.group_id    from ix_samepoi_part p "
+					+ " where p.poi_pid IN (" + StringUtils.join(pidList.toArray(),",") + ")" 
+					+ " and p.u_record != 2 " ;
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> result = new ArrayList<Long>();
+					while (rs.next()) {
+						long groupId = rs.getLong("group_id");
+						//long poiPid = rs.getLong("poi_pid");
+						result.add(groupId);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<>)："+sql);
+			groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			return groupIdList;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
 	}
 }

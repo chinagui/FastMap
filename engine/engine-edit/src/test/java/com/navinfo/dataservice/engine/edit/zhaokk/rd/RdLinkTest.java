@@ -110,9 +110,9 @@ public class RdLinkTest extends InitApplication {
 		// "[689377,689376,19689131,19689130,710604,710603,699493,704371,697069,648751,15827796,15827797,693579,693580,701090,19689128,19689129,705810,692581,87767844,87767843,690536,49047568,49047570,49047569,702861,689037,711053,19361357,689048,695032,691035,691034,691049,650228,650227,697023,697022,704239,701032,15480410,15480409,701279,701278,701277,689427,689426,697918,697916,697917,691038,17168486,17168487,17168488,54013231,54013235,54013236,54013238,695397,695396]";
 		// String line = "[693580,701090,19689128,19689129]";
 		// String line = "[690786,692316,692317]";
-		String line = "[678037,700374]";
+		String line = "[310003302,305003391]";
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":13.4,\"dbId\":17,\"data\":{\"linkPids\":"
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"distance\":8.2,\"dbId\":19,\"data\":{\"linkPids\":"
 				+ line + "}}";
 		Transaction t = new Transaction(parameter);
 		try {
@@ -173,6 +173,22 @@ public class RdLinkTest extends InitApplication {
 
 		String parameter = "{\"command\":\"DEPART\",\"type\":\"RDLINK\",\"dbId\":17,"
 				+ "\"data\":{\"objId\":220000040,\"linkPid\":307000039,\"catchNodePid\":0,\"longitude\":116.28849,\"latitude\":40.65765}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	@Test
+	public void updateRdSe() throws Exception {
+		//parameter:{"command":"UPDATE","type":"RDSE","dbId":19,"data":{"outLinkPid":304003261,"rowId":"50D9DD0EBDB946239B7312EAE7E222FB","pid":303000012,"objStatus":"UPDATE"}}
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSE\",\"dbId\":19,"
+				+ "\"data\":{\"pid\":303000012,\"outLinkPid\":304003261,\"rowId\":\"50D9DD0EBDB946239B7312EAE7E222FB\",\"pid\":303000012,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

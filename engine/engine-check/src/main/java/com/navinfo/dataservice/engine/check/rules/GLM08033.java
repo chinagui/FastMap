@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -136,8 +137,63 @@ public class GLM08033 extends baseRule {
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for(IRow obj : checkCommand.getGlmList()){
+			//道路属性编辑
+			if(obj instanceof RdLinkForm ){
+				RdLinkForm RdLinkForm=(RdLinkForm) obj;
+				checkRdLinkForm(RdLinkForm);
+			}
+		}
+	}
+	/**
+	 * @param rdLinkForm
+	 * @throws Exception 
+	 */
+	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
+		boolean checkFlg = false;
+		if(rdLinkForm.status().equals(ObjStatus.UPDATE)){
+			if(rdLinkForm.changedFields().containsKey("formOfWay")){
+				//交叉口内道路
+				int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString());
+				if(formOfWay==50){
+					checkFlg = true;
+				}
+			}
+		}else if(rdLinkForm.status().equals(ObjStatus.INSERT)){
+			int formOfWay = rdLinkForm.getFormOfWay();
+			if(formOfWay==50){
+				checkFlg = true;
+			}
+		}
 
+		if(checkFlg){
+			StringBuilder sb2 = new StringBuilder();
+
+			sb2.append("SELECT 1 FROM RD_RESTRICTION RR,RD_RESTRICTION_DETAIL RRD");
+			sb2.append(" WHERE RR.PID = RRD.RESTRIC_PID");
+			sb2.append(" AND RR.IN_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb2.append(" AND RR.U_RECORD <> 2");
+			sb2.append(" AND RRD.RELATIONSHIP_TYPE = 1");
+			sb2.append(" AND RRD.U_RECORD <> 2");
+			sb2.append(" UNION");
+			sb2.append(" SELECT 1 FROM RD_RESTRICTION_DETAIL RRD");
+			sb2.append(" WHERE RRD.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
+			sb2.append(" AND RRD.U_RECORD <> 2");
+			sb2.append(" AND RRD.RELATIONSHIP_TYPE = 1");
+			
+
+			String sql2 = sb2.toString();
+			log.info("RdLinkForm后检查GLM08033:" + sql2);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql2);
+
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
 	}
 
 }

@@ -21,10 +21,12 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
@@ -62,11 +64,23 @@ public class PoiRowValidationJob extends AbstractJob {
 					myRequest.getPids(), false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
+			log.info("PoiRowValidationJob:获取要检查的同一关系数据的履历");
+			//获取log
+			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, myRequest.getPids());
+			Set<String> sametabNames=getChangeTableSet(samelogs);
+			log.info("PoiRowValidationJob:加载同一关系检查对象");
+			//获取poi对象			
+			List<Long> groupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, myRequest.getPids());
+			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames, false,
+					groupIds, false, false);
+			//将poi对象与履历合并起来
+			ObjHisLogParser.parse(sameobjs, samelogs);
 			log.info("PoiRowValidationJob:执行检查");
 			//构造检查参数，执行检查
 			OperationResult operationResult=new OperationResult();
 			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
 			objsMap.put(ObjectName.IX_POI, objs);
+			objsMap.put(ObjectName.IX_SAMEPOI, sameobjs);
 			operationResult.putAll(objsMap);
 			
 			CheckCommand checkCommand=new CheckCommand();

@@ -53,9 +53,11 @@ public class Operation {
                 if (GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
                 // 计算rdHgwgLimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(mileagepile.getGeometry
+                        (), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
-                    mileagepile.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
+                    mileagepile.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (coor.x, coor.y)));
                     result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
                 }
             }
@@ -71,13 +73,15 @@ public class Operation {
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection
+                        (GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
                 if (GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, GeoTranslator.transform(linkGeo, 0.00001, 5));
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, GeoTranslator.transform
+                            (linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(eyeCoor, tmpCoor);
                         if (minLength == 0 || length < minLength) {
@@ -88,7 +92,8 @@ public class Operation {
                     }
                 }
                 if (null != minCoor) {
-                    mileagepile.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(minCoor.x, minCoor.y)));
+                    mileagepile.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (minCoor.x, minCoor.y)));
                     mileagepile.changedFields().put("linkPid", minLinkPid);
                     result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
                 }
@@ -108,7 +113,8 @@ public class Operation {
      * @return
      * @throws Exception
      */
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
+            rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
         // 查找上下线分离对影响到的里程桩
         List<Integer> linkPids = new ArrayList<>();
         linkPids.addAll(leftLinks.keySet());
@@ -116,34 +122,38 @@ public class Operation {
         List<RdMileagepile> mileagepiles = selector.loadByLinkPids(linkPids, true);
         // 里程桩数量为零则不需要维护
         if (mileagepiles.size() != 0) {
-            // 构建RdLinkPid-里程桩的对应集合
-            Map<Integer, List<RdMileagepile>> mileagepileMap = new HashMap<Integer, List<RdMileagepile>>();
             for (RdMileagepile mileagepile : mileagepiles) {
-                List<RdMileagepile> list = mileagepileMap.get(mileagepile.getLinkPid());
-                if (null != list) {
-                    list.add(mileagepile);
-                } else {
-                    list = new ArrayList<>();
-                    list.add(mileagepile);
-                    mileagepileMap.put(mileagepile.getLinkPid(), list);
-                }
+                mileagepile.changedFields().put("linkPid", 0);
+                result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
             }
-            for (RdLink link : links) {
-                RdLink leftLink = leftLinks.get(link.pid());
-                RdLink rightLink = rightLinks.get(link.pid());
-                if (mileagepileMap.containsKey(link.getPid())) {
-                    List<RdMileagepile> mileagepiles1 = mileagepileMap.get(link.getPid());
-                    for (RdMileagepile mileagepile : mileagepiles1) {
-                        int direct = mileagepile.getDirect();
-                        if (2 == direct)
-                            // 里程桩为顺方向则关联link为右线
-                            updateMileagepile(rightLink, mileagepile, result);
-                        else if (0 == direct || 3 == direct)
-                            // 里程桩为逆方向则关联link为左线
-                            updateMileagepile(leftLink, mileagepile, result);
-                    }
-                }
-            }
+//            // 构建RdLinkPid-里程桩的对应集合
+//            Map<Integer, List<RdMileagepile>> mileagepileMap = new HashMap<Integer, List<RdMileagepile>>();
+//            for (RdMileagepile mileagepile : mileagepiles) {
+//                List<RdMileagepile> list = mileagepileMap.get(mileagepile.getLinkPid());
+//                if (null != list) {
+//                    list.add(mileagepile);
+//                } else {
+//                    list = new ArrayList<>();
+//                    list.add(mileagepile);
+//                    mileagepileMap.put(mileagepile.getLinkPid(), list);
+//                }
+//            }
+//            for (RdLink link : links) {
+//                RdLink leftLink = leftLinks.get(link.pid());
+//                RdLink rightLink = rightLinks.get(link.pid());
+//                if (mileagepileMap.containsKey(link.getPid())) {
+//                    List<RdMileagepile> mileagepiles1 = mileagepileMap.get(link.getPid());
+//                    for (RdMileagepile mileagepile : mileagepiles1) {
+//                        int direct = mileagepile.getDirect();
+//                        if (2 == direct)
+//                            // 里程桩为顺方向则关联link为右线
+//                            updateMileagepile(rightLink, mileagepile, result);
+//                        else if (0 == direct || 3 == direct)
+//                            // 里程桩为逆方向则关联link为左线
+//                            updateMileagepile(leftLink, mileagepile, result);
+//                    }
+//                }
+//            }
         }
         // 维护非目标Link的信息
         for (Map.Entry<Integer, RdLink> entry : noTargetLinks.entrySet()) {
@@ -155,7 +165,8 @@ public class Operation {
 
             Geometry newGeo = null;
             if (sourceLink.changedFields().containsKey("geometry")) {
-                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get
+                        ("geometry")), 100000, 5);
             }
             if (null == newGeo || newGeo.isEmpty())
                 continue;
@@ -171,9 +182,11 @@ public class Operation {
     }
 
     // 更新里程桩信息
+
     private void updateMileagepile(RdLink link, RdMileagepile mileagepile, Result result) throws Exception {
         // 计算原里程桩坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(mileagepile.getGeometry
+                (), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});

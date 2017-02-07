@@ -1,13 +1,20 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchRealimage;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchSchematic;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSeriesbranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignasreal;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -25,9 +32,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 2016年8月18日
  * @Description: 相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧
  *               相同的进入线、进入点不能创建两组（车信、普通交限、顺行、分歧、语音引导、收费站、大门、自然语音引导）
- *               相同的进入线、进入点、退出线不能创建两组分叉口提示
- * 新增车信前检查
- * 修改车信前检查
+ *               相同的进入线、进入点、退出线不能创建两组分叉口提示 新增车信前检查 修改车信前检查
  */
 public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
@@ -48,19 +53,81 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj : checkCommand.getGlmList()) {
+			
 			// 分歧RdBranch
-			if (obj instanceof RdBranch) {
-				RdBranch rdBranch = (RdBranch) obj;
-				boolean result = checkRdBranch(rdBranch);
-				if (!result) {
-					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
-					return;
-				}
-			} else if (obj instanceof RdBranchDetail) {
+			if (obj instanceof RdBranchDetail) {
 				RdBranchDetail rdBranchDetail = (RdBranchDetail) obj;
 				boolean result = checkRdBranchDetail(rdBranchDetail);
 				if (!result) {
-					this.setCheckResult("", "", 0, "相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			} else if (obj instanceof RdBranchRealimage) {
+				RdBranchRealimage rdBranch = (RdBranchRealimage) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_BRANCH_REALIMAGE",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdBranchSchematic) {
+				RdBranchSchematic rdBranch = (RdBranchSchematic) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_BRANCH_SCHEMATIC",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSeriesbranch) {
+				RdSeriesbranch rdBranch = (RdSeriesbranch) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SERIESBRANCH",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSignasreal) {
+				RdSignasreal rdBranch = (RdSignasreal) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SIGNASREAL",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			}
+			else if (obj instanceof RdSignboard) {
+				RdSignboard rdBranch = (RdSignboard) obj;
+
+				boolean result = checkRdBranch(
+						String.valueOf(rdBranch.getBranchPid()), "RD_SIGNBOARD",
+						obj.status());
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
+					return;
+				}
+			} else if (obj instanceof RdBranch) {
+				RdBranch rdBranch = (RdBranch) obj;
+				boolean result = checkRdBranch(rdBranch);
+				if (!result) {
+					this.setCheckResult("", "", 0,
+							"相同的进入线，进入点，经过线，退出线，不能创建两组相同类型分歧");
 					return;
 				}
 			}
@@ -76,7 +143,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 			// 交限RdRestriction
 			else if (obj instanceof RdRestriction) {
 				RdRestriction rdRestriction = (RdRestriction) obj;
-				boolean result = checkRdRestriction(rdRestriction,checkCommand.getOperType());
+				boolean result = checkRdRestriction(rdRestriction,
+						checkCommand.getOperType());
 				if (!result) {
 					this.setCheckResult("", "", 0, "相同的进入线、进入点不能创建两组普通交限");
 					return;
@@ -145,12 +213,13 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdRestriction(RdRestrictionDetail rdRestrictionDetail) throws Exception {
-		if(rdRestrictionDetail.changedFields().containsKey("outLinkPid"))
-		{
+	private boolean checkRdRestriction(RdRestrictionDetail rdRestrictionDetail)
+			throws Exception {
+		if (rdRestrictionDetail.changedFields().containsKey("outLinkPid")) {
 			int restrictPid = rdRestrictionDetail.getRestricPid();
 
-			int outLinkPid = (int) rdRestrictionDetail.changedFields().get("outLinkPid");
+			int outLinkPid = (int) rdRestrictionDetail.changedFields().get(
+					"outLinkPid");
 
 			StringBuilder sb = new StringBuilder();
 
@@ -178,7 +247,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity) throws Exception {
+	private boolean checkRdLaneConnexity(RdLaneConnexity rdLaneConnexity)
+			throws Exception {
 		// TODO Auto-generated method stub
 		int inLinkPid = rdLaneConnexity.getInLinkPid();
 		int nodePid = rdLaneConnexity.getNodePid();
@@ -208,7 +278,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdVoiceguide(RdVoiceguide rdVoiceguide) throws Exception {
+	private boolean checkRdVoiceguide(RdVoiceguide rdVoiceguide)
+			throws Exception {
 		// TODO Auto-generated method stub
 		int inLinkPid = rdVoiceguide.getInLinkPid();
 		int nodePid = rdVoiceguide.getNodePid();
@@ -273,6 +344,12 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		int inLinkPid = rdSe.getInLinkPid();
 		int nodePid = rdSe.getNodePid();
 		int outLinkPid = rdSe.getOutLinkPid();
+		if (rdSe.changedFields() != null) {
+			if (rdSe.changedFields().containsKey("outLinkPid")) {
+				outLinkPid = Integer.parseInt(rdSe.changedFields()
+						.get("outLinkPid").toString());
+			}
+		}
 
 		StringBuilder sb = new StringBuilder();
 
@@ -301,7 +378,8 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
+	private boolean checkRdDirectroute(RdDirectroute rdDirectroute)
+			throws Exception {
 		// TODO Auto-generated method stub
 		int inLinkPid = rdDirectroute.getInLinkPid();
 		int nodePid = rdDirectroute.getNodePid();
@@ -328,13 +406,13 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 	/**
 	 * @param rdRestriction
-	 * @param operType 
+	 * @param operType
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
-		if(operType == OperType.CREATE)
-		{
+	private boolean checkRdRestriction(RdRestriction rdRestriction,
+			OperType operType) throws Exception {
+		if (operType == OperType.CREATE) {
 			int inLinkPid = rdRestriction.getInLinkPid();
 			int nodePid = rdRestriction.getNodePid();
 
@@ -366,8 +444,10 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		RdBranchDetail detail = (RdBranchDetail) rdBranch.getDetails().get(0);
 		int branchType = detail.getBranchType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rb.branch_pid" + "  from rd_branch rb, rd_branch_detail d"
-				+ " where rb.branch_pid = d.branch_pid" + "   AND d.branch_type=" + branchType
+		sb.append("select rb.branch_pid"
+				+ "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid"
+				+ "   AND d.branch_type=" + branchType
 				+ "   AND RB.u_record != 2" + "   AND d.u_record != 2");
 		sb.append(" and rb.in_link_pid = ");
 		sb.append(inLinkPid);
@@ -388,11 +468,14 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 		return true;
 	}
 
-	private boolean checkRdBranchDetail(RdBranchDetail rdBranchDetail) throws Exception {
+	private boolean checkRdBranchDetail(RdBranchDetail rdBranchDetail)
+			throws Exception {
 		int branchType = rdBranchDetail.getBranchType();
 		StringBuilder sb = new StringBuilder();
-		sb.append("select rb.branch_pid" + "  from rd_branch rb, rd_branch_detail d"
-				+ " where rb.branch_pid = d.branch_pid" + "   AND d.branch_type=" + branchType
+		sb.append("select rb.branch_pid"
+				+ "  from rd_branch rb, rd_branch_detail d"
+				+ " where rb.branch_pid = d.branch_pid"
+				+ "   AND d.branch_type=" + branchType
 				+ "   AND RB.u_record != 2" + "   AND d.u_record != 2");
 		sb.append(" and rb.branch_pid = ");
 		sb.append(rdBranchDetail.getBranchPid());
@@ -401,6 +484,29 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (resultList.size() > 0) {
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkRdBranch(String branchPId, String tableName,
+			ObjStatus status) throws Exception {
+
+		if (status != ObjStatus.INSERT) {
+			return true;
+		}
+
+		String strFormat = "SELECT RB.BRANCH_PID FROM RD_BRANCH RB, {0} T WHERE RB.BRANCH_PID = {1} AND T.BRANCH_PID = RB.BRANCH_PID AND RB.U_RECORD <> 2 AND T.U_RECORD <> 2";
+
+		String sql = MessageFormat.format(strFormat, tableName, branchPId);
+
+		DatabaseOperator getObj = new DatabaseOperator();
+
+		List<Object> resultList = new ArrayList<Object>();
+
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if (resultList.size() > 0) {

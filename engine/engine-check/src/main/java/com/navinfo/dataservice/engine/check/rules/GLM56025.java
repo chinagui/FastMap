@@ -17,7 +17,6 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * 线限速的限速类型不为“普通”时,若顺向限速值不为0，则顺向限速来源必须为“现场标牌”；若逆向限速值不为0，逆向限速来源必须为“现场标牌”，否则报log
  * 条件线限速限速来源	服务端后检查
- * 条件线限速限速值	服务端后检查
  */
 public class GLM56025 extends baseRule {
 
@@ -31,7 +30,7 @@ public class GLM56025 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//条件线限速限速来源,条件线限速限速值
+			//条件线限速限速来源
 			if (row instanceof RdLinkSpeedlimit){
 				RdLinkSpeedlimit rdLinkSpeedlimit = (RdLinkSpeedlimit) row;
 				this.checkRdLinkSpeedlimit(rdLinkSpeedlimit);
@@ -50,7 +49,7 @@ public class GLM56025 extends baseRule {
 		if(!changedFields.isEmpty()){
 			//条件线限速限速值
 			//顺方向 
-			if(changedFields.containsKey("fromSpeedLimit")){
+			/*if(changedFields.containsKey("fromSpeedLimit")){
 				int fromSpeedLimit = (int) changedFields.get("fromSpeedLimit");
 				if(fromSpeedLimit != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -60,9 +59,9 @@ public class GLM56025 extends baseRule {
 						this.setCheckResult("", target, 0);
 					}
 				}
-			}
+			}*/
 			//逆方向
-			if(changedFields.containsKey("toSpeedLimit")){
+			/*if(changedFields.containsKey("toSpeedLimit")){
 				int toSpeedLimit = (int) changedFields.get("toSpeedLimit");
 				if(toSpeedLimit != 0){
 					boolean check = this.check(rdLinkSpeedlimit.getLinkPid());
@@ -72,7 +71,7 @@ public class GLM56025 extends baseRule {
 						this.setCheckResult("", target, 0);
 					}
 				}
-			}
+			}*/
 			//条件线限速限速来源
 			//顺方向 
 			if(changedFields.containsKey("fromLimitSrc")){

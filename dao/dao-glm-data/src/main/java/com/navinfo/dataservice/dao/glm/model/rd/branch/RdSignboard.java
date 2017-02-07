@@ -7,15 +7,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class RdSignboard implements IObj {
 
@@ -34,6 +34,8 @@ public class RdSignboard implements IObj {
 	private List<IRow> names = new ArrayList<IRow>();
 	
 	public Map<Integer, RdSignboardName> nameMap = new HashMap<Integer, RdSignboardName>();
+	
+	protected  ObjStatus status;
 
 	@Override
 	public void setRowId(String rowId) {
@@ -141,12 +143,12 @@ public class RdSignboard implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status=os;
 	}
 
 	@Override

@@ -1,10 +1,18 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.common;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 
 public class CheckUtil {
@@ -172,6 +180,23 @@ public class CheckUtil {
         String returnString = new String(c);
         return returnString;
     }
+    /**
+     * 半角转全角
+     * @param input String.
+     * @return 全角字符串
+     */
+    public static String strB2Q(String input) {
+    	char c[] = input.toCharArray();
+        for (int i = 0; i < c.length; i++) {
+        	if (c[i] == ' ') {
+        		c[i] = '\u3000';
+        	} else if (c[i] < '\177') {
+        		c[i] = (char) (c[i] + 65248);
+        	}
+        }
+        String returnString = new String(c);
+        return returnString;
+    }
     
     /**
      * 1） 回车符检查：包含回车符的记录；
@@ -182,6 +207,9 @@ public class CheckUtil {
      * @return 错误原因列表 ["前后空格","多个空格"]
      */
     public static List<String> checkIllegalBlank(String word){
+    	if (word == null) {
+    		return null;
+    	}
     	List<String> errorList=new ArrayList<String>();
     	//2、前后空格检查：不能以空格开头或结尾；
 		if(word.startsWith(" ")||word.endsWith(" ")){
@@ -214,9 +242,22 @@ public class CheckUtil {
      * @return String 若括号符合规则，则返回null；否则返回字符串
      */
     public static String isRightKuohao(String word){
+        return isRightKuohao(word,"(",")");
+    }
+    
+    /**
+     * 若存在括号，则
+     *   1、括号“（”和“）”要成对出现；
+     *   2、括号“（”和“）”中间必须有内容；
+     *   3、不允许括号嵌套
+     *   调用isRight获取错误信息。若括号符合要求，则返回None
+     * @param word
+     * @return String 若括号符合规则，则返回null；否则返回字符串
+     */
+    public static String isRightKuohao(String word,String left,String right){
     	String wordB=strQ2B(word);
-    	String wordLeft = wordB.replace("(", "");
-    	String wordRight = wordB.replace(")", "");
+    	String wordLeft = wordB.replace(left, "");
+    	String wordRight = wordB.replace(right, "");
     	//左右括号数量不一致
     	if(!(wordLeft.length()==wordRight.length())){
     		return "括号需要成对出现";
@@ -228,8 +269,8 @@ public class CheckUtil {
         int rindex=-1;
         int tmpRIndex=-1;
         while(true){
-        	lindex = wordB.indexOf("(",lindex+1);
-            rindex = wordB.indexOf(")",rindex+1);
+        	lindex = wordB.indexOf(left,lindex+1);
+            rindex = wordB.indexOf(right,rindex+1);
             if(lindex==-1 || rindex==-1){
             	if(!(lindex==-1 && rindex==-1)){return "括号需要成对出现";}
             	break;
@@ -316,61 +357,199 @@ public class CheckUtil {
      */
     public static String getMergerAddrPhonetic(IxPoiAddress addr) throws Exception {
 		String mergeAddrPhonetic = "";
-		if (addr.getProvince() != null) {
+		if (addr.getProvPhonetic() != null) {
 			mergeAddrPhonetic += addr.getProvPhonetic();
 		}
-		if (addr.getCity() != null) {
+		if (addr.getCityPhonetic() != null) {
 			mergeAddrPhonetic += addr.getCityPhonetic();
 		}
-		if (addr.getCounty() != null) {
+		if (addr.getCountyPhonetic() != null) {
 			mergeAddrPhonetic += addr.getCountyPhonetic();
 		}
-		if (addr.getTown() != null) {
+		if (addr.getTownPhonetic() != null) {
 			mergeAddrPhonetic += addr.getTownPhonetic();
 		}
-		if (addr.getPlace() != null) {
+		if (addr.getPlacePhonetic() != null) {
 			mergeAddrPhonetic += addr.getPlacePhonetic();
 		}
-		if (addr.getStreet() != null) {
+		if (addr.getStreetPhonetic() != null) {
 			mergeAddrPhonetic += addr.getStreetPhonetic();
 		}
-		if (addr.getLandmark() != null) {
+		if (addr.getLandmarkPhonetic() != null) {
 			mergeAddrPhonetic += addr.getLandmarkPhonetic();
 		}
-		if (addr.getPrefix() != null) {
+		if (addr.getPrefixPhonetic() != null) {
 			mergeAddrPhonetic += addr.getPrefixPhonetic();
 		}
-		if (addr.getHousenum() != null) {
+		if (addr.getHousenumPhonetic() != null) {
 			mergeAddrPhonetic += addr.getHousenumPhonetic();
 		}
-		if (addr.getType() != null) {
+		if (addr.getTypePhonetic() != null) {
 			mergeAddrPhonetic += addr.getTypePhonetic();
 		}
-		if (addr.getSubnum() != null) {
+		if (addr.getSubnumPhonetic() != null) {
 			mergeAddrPhonetic += addr.getSubnumPhonetic();
 		}
-		if (addr.getSurfix() != null) {
+		if (addr.getSurfixPhonetic() != null) {
 			mergeAddrPhonetic += addr.getSurfixPhonetic();
 		}
-		if (addr.getEstab() != null) {
+		if (addr.getEstabPhonetic() != null) {
 			mergeAddrPhonetic += addr.getEstabPhonetic();
 		}
-		if (addr.getBuilding() != null) {
+		if (addr.getBuildingPhonetic() != null) {
 			mergeAddrPhonetic += addr.getBuildingPhonetic();
 		}
-		if (addr.getUnit() != null) {
+		if (addr.getUnitPhonetic() != null) {
 			mergeAddrPhonetic += addr.getUnitPhonetic();
 		}
-		if (addr.getFloor() != null) {
+		if (addr.getFloorPhonetic() != null) {
 			mergeAddrPhonetic += addr.getFloorPhonetic();
 		}
-		if (addr.getRoom() != null) {
+		if (addr.getRoomPhonetic() != null) {
 			mergeAddrPhonetic += addr.getRoomPhonetic();
 		}
-		if (addr.getAddons() != null) {
+		if (addr.getAddonsPhonetic() != null) {
 			mergeAddrPhonetic += addr.getAddonsPhonetic();
 		}
 		return mergeAddrPhonetic;
 	}
+    /**
+     * 查询街巷名与道路名是否匹配
+     * @param input String.
+     * @return boolean
+     * @throws Exception 
+     */
+    public static boolean matchStreet(String street,int regionId,Connection connRegion) throws Exception {
+    	Connection connMeta = null;
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try{
+    		AdAdminSearch adAdminSearch = new AdAdminSearch(connRegion);
+			AdAdmin adAdmin = (AdAdmin) adAdminSearch.searchDataByPid(regionId);
+			int adminId=adAdmin.getAdminId();
+			String admin=String.valueOf(adminId).substring(0, 2);
+			
+			connMeta = DBConnector.getInstance().getMetaConnection();
+	    	String spName = "SELECT COUNT(1) ct FROM rd_name r WHERE r.admin_id<>214 AND r.lang_code='CHI' AND r.admin_id like '"+admin+"%' AND r.name='"+street+"'";
+	    	pstmt = connMeta.prepareCall(spName);
+	    	rs = pstmt.executeQuery();
+			while (rs.next()) {
+				if(rs.getInt("ct")==0){return true;}					
+			}
+			return false;
+    	} catch (Exception e) {
+    		throw e;
+		} finally {
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
+		}
+    }
+    /**
+     * FMGLM60377
+     * @param input String.
+     * @return boolean
+     * @throws Exception 
+     */
+    public static boolean matchAdminName(String data,int regionId,Connection connRegion) throws Exception {
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try{
+	    	String spName = "SELECT adn.name FROM ad_admin_name adn WHERE adn.region_id="+regionId+" AND adn.lang_code IN ('CHI','CHT') AND adn.name_class=1";
+	    	pstmt = connRegion.prepareCall(spName);
+	    	rs = pstmt.executeQuery();
+			while (rs.next()) {
+				if(rs.getString("name").equals(data)){return true;}					
+			}
+			return false;
+    	} catch (Exception e) {
+    		throw e;
+		} finally {
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
+		}
+    }
+    
+    /**
+     * 查询poi是否存在检查错误
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static boolean getPoiCheckResult(Long pid,Connection conn) throws Exception {
+    	String sql = "SELECT 1 FROM ck_result_object WHERE table_name='IX_POI' AND pid=:1";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		if (rs.next()) {
+    			return true;
+    		}
+    		return false;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过pid查询parent表中的groupId
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static List<Long> getParentGroupIds(Long pid,Connection conn) throws Exception {
+    	String sql = "select t.group_id from ix_poi_parent t where t.parent_poi_pid=:1 and t.u_record != 2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> groupIds = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			groupIds.add(rs.getLong("group_id"));
+    		}
+    		return groupIds;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过pid查询children表中的groupId
+     * @param pid
+     * @param conn
+     * @return
+     * @throws Exception
+     */
+    public static List<Long> getChildGroupIds(Long pid,Connection conn) throws Exception {
+    	String sql = "select t.group_id from ix_poi_children t where t.child_poi_pid=:1 and t.u_record != 2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> groupIds = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			groupIds.add(rs.getLong("group_id"));
+    		}
+    		return groupIds;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
     
 }

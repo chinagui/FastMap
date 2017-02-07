@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -29,8 +30,19 @@ public class RdTollgate implements IObj {
 	private int feeType = 2;
 	private int feeStd;
 	private int systemId;
+	private int truckFlag = 1;
+
+	public int getTruckFlag() {
+		return truckFlag;
+	}
+
+	public void setTruckFlag(int truckFlag) {
+		this.truckFlag = truckFlag;
+	}
+
 	private int locationFlag;
 	private String rowId;
+	protected ObjStatus status;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
 	private List<IRow> names = new ArrayList<IRow>();
 	public Map<String, RdTollgateName> tollgateNameMap = new HashMap<String, RdTollgateName>();
@@ -137,7 +149,6 @@ public class RdTollgate implements IObj {
 		return rowId;
 	}
 
-
 	public List<IRow> getNames() {
 		return names;
 	}
@@ -171,11 +182,12 @@ public class RdTollgate implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -279,7 +291,13 @@ public class RdTollgate implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		// JSONObject json = JSONObject.fromObject(this);
+		// return json;
 		JSONObject json = JSONObject.fromObject(this);
+
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 		return json;
 	}
 

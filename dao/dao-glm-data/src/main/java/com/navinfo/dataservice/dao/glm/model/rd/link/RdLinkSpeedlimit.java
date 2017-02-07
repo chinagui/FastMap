@@ -17,319 +17,309 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
 public class RdLinkSpeedlimit implements IRow {
 
-	private String rowId;
+    private String rowId;
 
-	public int getSpeedType() {
-		return speedType;
-	}
+    public int getSpeedType() {
+        return speedType;
+    }
 
-	public void setSpeedType(int speedType) {
-		this.speedType = speedType;
-	}
+    public void setSpeedType(int speedType) {
+        this.speedType = speedType;
+    }
 
-	public int getFromSpeedLimit() {
-		return fromSpeedLimit;
-	}
+    public int getFromSpeedLimit() {
+        return fromSpeedLimit;
+    }
 
-	public void setFromSpeedLimit(int fromSpeedLimit) {
-		this.fromSpeedLimit = fromSpeedLimit;
-	}
+    public void setFromSpeedLimit(int fromSpeedLimit) {
+        this.fromSpeedLimit = fromSpeedLimit;
+    }
 
-	public int getToSpeedLimit() {
-		return toSpeedLimit;
-	}
+    public int getToSpeedLimit() {
+        return toSpeedLimit;
+    }
 
-	public void setToSpeedLimit(int toSpeedLimit) {
-		this.toSpeedLimit = toSpeedLimit;
-	}
+    public void setToSpeedLimit(int toSpeedLimit) {
+        this.toSpeedLimit = toSpeedLimit;
+    }
 
-	public int getSpeedClass() {
-		return speedClass;
-	}
+    public int getSpeedClass() {
+        return speedClass;
+    }
 
-	public void setSpeedClass(int speedClass) {
-		this.speedClass = speedClass;
-	}
+    public void setSpeedClass(int speedClass) {
+        this.speedClass = speedClass;
+    }
 
-	public int getFromLimitSrc() {
-		return fromLimitSrc;
-	}
+    public int getFromLimitSrc() {
+        return fromLimitSrc;
+    }
 
-	public void setFromLimitSrc(int fromLimitSrc) {
-		this.fromLimitSrc = fromLimitSrc;
-	}
+    public void setFromLimitSrc(int fromLimitSrc) {
+        this.fromLimitSrc = fromLimitSrc;
+    }
 
-	public int getToLimitSrc() {
-		return toLimitSrc;
-	}
+    public int getToLimitSrc() {
+        return toLimitSrc;
+    }
 
-	public void setToLimitSrc(int toLimitSrc) {
-		this.toLimitSrc = toLimitSrc;
-	}
+    public void setToLimitSrc(int toLimitSrc) {
+        this.toLimitSrc = toLimitSrc;
+    }
 
-	public int getSpeedDependent() {
-		return speedDependent;
-	}
+    public int getSpeedDependent() {
+        return speedDependent;
+    }
 
-	public void setSpeedDependent(int speedDependent) {
-		this.speedDependent = speedDependent;
-	}
+    public void setSpeedDependent(int speedDependent) {
+        this.speedDependent = speedDependent;
+    }
 
-	public int getSpeedClassWork() {
-		return speedClassWork;
-	}
+    public int getSpeedClassWork() {
+        return speedClassWork;
+    }
 
-	public void setSpeedClassWork(int speedClassWork) {
-		this.speedClassWork = speedClassWork;
-	}
+    public void setSpeedClassWork(int speedClassWork) {
+        this.speedClassWork = speedClassWork;
+    }
 
-	private int speedType;
+    private int speedType;
 
-	private int fromSpeedLimit;
+    private int fromSpeedLimit;
 
-	private int toSpeedLimit;
+    private int toSpeedLimit;
 
-	private int speedClass;
+    private int speedClass;
 
-	private int fromLimitSrc;
+    private int fromLimitSrc;
 
-	private int toLimitSrc;
+    private int toLimitSrc;
 
-	private int speedDependent;
+    private int speedDependent;
 
-	private String timeDomain;
+    private String timeDomain;
 
-	private int speedClassWork = 1;
+    private int speedClassWork = 1;
 
-	private int linkPid;
+    private int linkPid;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+    protected ObjStatus status;
 
-	public int getLinkPid() {
-		return linkPid;
-	}
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
+    public int getLinkPid() {
+        return linkPid;
+    }
 
-	public RdLinkSpeedlimit() {
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
 
-	}
+    public RdLinkSpeedlimit() {
 
-	public String getTimeDomain() {
-		return timeDomain;
-	}
+    }
 
-	public void setTimeDomain(String timeDomain) {
-		this.timeDomain = timeDomain;
-	}
+    public String getTimeDomain() {
+        return timeDomain;
+    }
 
-	public String getRowId() {
-		return rowId;
-	}
+    public void setTimeDomain(String timeDomain) {
+        this.timeDomain = timeDomain;
+    }
 
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
+    public String getRowId() {
+        return rowId;
+    }
 
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) {
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
+    }
 
-		if (objLevel == ObjLevel.FULL) {
-			fromSpeedLimit /= 10;
-			toSpeedLimit /= 10;
-		}
+    @Override
+    public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
-	}
+        if (objLevel == ObjLevel.FULL) {
+            fromSpeedLimit /= 10;
+            toSpeedLimit /= 10;
+        }
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
+        return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+    }
 
-		Iterator keys = json.keys();
+    @Override
+    public boolean Unserialize(JSONObject json) throws Exception {
 
-		while (keys.hasNext()) {
+        Iterator keys = json.keys();
 
-			String key = (String) keys.next();
+        while (keys.hasNext()) {
 
-			if (!"objStatus".equals(key)) {
+            String key = (String) keys.next();
 
-				Field f = this.getClass().getDeclaredField(key);
+            if (!"objStatus".equals(key)) {
 
-				f.setAccessible(true);
+                Field f = this.getClass().getDeclaredField(key);
 
-				if ("fromSpeedLimit".equals(key) || "toSpeedLimit".equals(key)) {
-					int value = json.getInt(key);
+                f.setAccessible(true);
 
-					f.set(this, value * 10);
-				} else {
-					f.set(this, json.get(key));
-				}
-			}
+                if ("fromSpeedLimit".equals(key) || "toSpeedLimit".equals(key)) {
+                    int value = json.getInt(key);
 
-		}
-		return true;
-	}
+                    f.set(this, value * 10);
+                } else {
+                    f.set(this, json.get(key));
+                }
+            }
 
-	@Override
-	public String tableName() {
+        }
+        return true;
+    }
 
-		return "rd_link_speedlimit";
-	}
+    @Override
+    public String tableName() {
+        return "rd_link_speedlimit";
+    }
 
-	@Override
-	public ObjStatus status() {
+    @Override
+    public ObjStatus status() {
+        return status;
+    }
 
-		return null;
-	}
+    @Override
+    public void setStatus(ObjStatus os) {
+        status = os;
+    }
 
-	@Override
-	public void setStatus(ObjStatus os) {
+    @Override
+    public ObjType objType() {
+        return ObjType.RDLINKSPEEDLIMIT;
+    }
 
-	}
+    @Override
+    public void copy(IRow row) {
+        RdLinkSpeedlimit sourceLimit = (RdLinkSpeedlimit) row;
 
-	@Override
-	public ObjType objType() {
+        this.setSpeedType(sourceLimit.getSpeedType());
 
-		return ObjType.RDLINKSPEEDLIMIT;
-	}
+        this.setFromSpeedLimit(sourceLimit.getFromSpeedLimit());
 
-	@Override
-	public void copy(IRow row) {
+        this.setToSpeedLimit(sourceLimit.getToSpeedLimit());
 
-		RdLinkSpeedlimit sourceLimit = (RdLinkSpeedlimit) row;
+        this.setSpeedClass(sourceLimit.getSpeedClass());
 
-		this.setSpeedType(sourceLimit.getSpeedType());
+        this.setFromLimitSrc(sourceLimit.getFromLimitSrc());
 
-		this.setFromSpeedLimit(sourceLimit.getFromSpeedLimit());		
+        this.setToLimitSrc(sourceLimit.getToLimitSrc());
 
-		this.setToSpeedLimit(sourceLimit.getToSpeedLimit());	
+        this.setSpeedDependent(sourceLimit.getSpeedDependent());
 
-		this.setSpeedClass(sourceLimit.getSpeedClass());
-		
-		this.setFromLimitSrc(sourceLimit.getFromLimitSrc());
-		
-		this.setToLimitSrc(sourceLimit.getToLimitSrc());
-		
-		this.setSpeedDependent(sourceLimit.getSpeedDependent());
-		
-		this.setTimeDomain(sourceLimit.getTimeDomain());
-		
-		this.setSpeedClassWork(sourceLimit.getSpeedClassWork());	
-		
-		this.setRowId(sourceLimit.getRowId());
-		
-		this.setMesh(sourceLimit.mesh());
-	}
+        this.setTimeDomain(sourceLimit.getTimeDomain());
 
-	@Override
-	public Map<String, Object> changedFields() {
+        this.setSpeedClassWork(sourceLimit.getSpeedClassWork());
 
-		return changedFields;
-	}
+        this.setRowId(sourceLimit.getRowId());
 
-	@Override
-	public String parentPKName() {
+        this.setMesh(sourceLimit.mesh());
+    }
 
-		return "link_pid";
-	}
+    @Override
+    public Map<String, Object> changedFields() {
+        return changedFields;
+    }
 
-	@Override
-	public int parentPKValue() {
+    @Override
+    public String parentPKName() {
+        return "link_pid";
+    }
 
-		return this.getLinkPid();
-	}
+    @Override
+    public int parentPKValue() {
+        return this.getLinkPid();
+    }
 
-	@Override
-	public List<List<IRow>> children() {
+    @Override
+    public List<List<IRow>> children() {
+        return null;
+    }
 
-		return null;
-	}
+    @Override
+    public String parentTableName() {
+        return "rd_link";
+    }
 
-	@Override
-	public String parentTableName() {
+    @Override
+    public String rowId() {
+        return rowId;
+    }
 
-		return "rd_link";
-	}
+    @Override
+    public boolean fillChangeFields(JSONObject json) throws Exception {
 
-	@Override
-	public String rowId() {
+        Iterator keys = json.keys();
 
-		return rowId;
-	}
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-	@Override
-	public boolean fillChangeFields(JSONObject json) throws Exception {
+            if (json.get(key) instanceof JSONArray) {
+                continue;
+            } else {
+                if (!"objStatus".equals(key)) {
 
-		Iterator keys = json.keys();
+                    Field field = this.getClass().getDeclaredField(key);
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+                    field.setAccessible(true);
 
-			if (json.get(key) instanceof JSONArray) {
-				continue;
-			} else {
-				if (!"objStatus".equals(key)) {
+                    Object objValue = field.get(this);
 
-					Field field = this.getClass().getDeclaredField(key);
+                    String oldValue = null;
 
-					field.setAccessible(true);
+                    if (objValue == null) {
+                        oldValue = "null";
+                    } else {
+                        oldValue = String.valueOf(objValue);
+                    }
 
-					Object objValue = field.get(this);
+                    String newValue = json.getString(key);
 
-					String oldValue = null;
+                    if (!newValue.equals(oldValue)) {
+                        if (key.equals("fromSpeedLimit") || key.equals("toSpeedLimit")) {
 
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
+                            int limit = json.getInt(key) * 10;
 
-					String newValue = json.getString(key);
+                            newValue = String.valueOf(limit);
 
-					if (!newValue.equals(oldValue)) {
-						if (key.equals("fromSpeedLimit")
-								|| key.equals("toSpeedLimit")) {
+                            if (!newValue.equals(oldValue)) {
+                                changedFields.put(key, limit);
+                            }
+                        } else {
+                            Object value = json.get(key);
 
-							int limit = json.getInt(key) * 10;
+                            if (value instanceof String) {
+                                changedFields.put(key, newValue.replace("'", "''"));
+                            } else {
+                                changedFields.put(key, value);
+                            }
 
-							newValue = String.valueOf(limit);
+                        }
+                    }
 
-							if (!newValue.equals(oldValue)) {
-								changedFields.put(key, limit);
-							}
-						} else {
-							Object value = json.get(key);
-							
-							if(value instanceof String){
-								changedFields.put(key, newValue.replace("'", "''"));
-							}
-							else{
-								changedFields.put(key, value);
-							}
+                }
+            }
+        }
 
-						}
-					}
+        if (changedFields.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
 
-				}
-			}
-		}
+    }
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
+    @Override
+    public int mesh() {
+        return 0;
+    }
 
-	}
-
-	@Override
-	public int mesh() {
-		return 0;
-	}
-
-	@Override
-	public void setMesh(int mesh) {
-	}
+    @Override
+    public void setMesh(int mesh) {
+    }
 }

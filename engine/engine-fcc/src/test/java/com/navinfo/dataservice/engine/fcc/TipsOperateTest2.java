@@ -100,7 +100,7 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"rowkey\":\"0280017b8ead071595417cb3305ac9d8e49d73\",\"memo\":\"示例备注信息\",\"user\":10402,\"stage\":2}";
+		parameter="{\"rowkey\":\"0280020a7b590cca364f699b60530825077452\",\"memo\":\"示例备注信息\",\"user\":2,\"stage\":2}";
 		
 		if (StringUtils.isEmpty(parameter)) {
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -237,6 +237,7 @@ public class TipsOperateTest2 extends InitApplication{
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
 		parameter="{\"rowkey\":\"0280017b8ead071595417cb3305ac9d8e49d73\",\"user\":233,\"pointGeo\":{\"type\":\"Point\",\"coordinates\":[115.48297,40.01363]} }";
+		parameter="{\"rowkey\":\"02800177931904b83b4dc1acf5bb66ca5fb0cd\",\"pointGeo\":{\"type\":\"Point\",\"coordinates\":[116.47382431497496,40.01010289187674]}}";
 		
 		if (StringUtils.isEmpty(parameter)) {
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -248,7 +249,7 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		JSONObject pointGeo = jsonReq.getJSONObject("pointGeo"); //修改改坐标(点几何)
 		
-		int user = jsonReq.getInt("user");
+		int user = 123;
 
 		if (StringUtils.isEmpty(rowkey)) {
 			throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -307,6 +308,8 @@ public class TipsOperateTest2 extends InitApplication{
 	
 	@Test
 	public void testSubmitPre() throws Exception {
+		
+	//	http://192.168.4.188:8000/service/fcc/tip/submitPre/?access_token=00000002IXTSI12VB09E09592F3300CCB65D2A3A59DCB7D0&parameter={"grids":[60560303],"user":123}
 		
 		String parameter="{\"grids\":[60560303],\"user\":123}";
 		

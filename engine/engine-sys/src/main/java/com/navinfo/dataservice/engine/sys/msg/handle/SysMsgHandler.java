@@ -90,6 +90,7 @@ public class SysMsgHandler implements MsgHandler {
 					sendMessage(id);
 				}else if(msgType==2){
 					//管理消息
+					sendMessage(id);
 					sendManMsg(id);
 				}
 			}

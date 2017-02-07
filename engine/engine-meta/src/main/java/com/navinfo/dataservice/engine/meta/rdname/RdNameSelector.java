@@ -14,11 +14,9 @@ import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -64,9 +62,9 @@ public class RdNameSelector {
 
 			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 
-			int startRow = pageNum * pageSize + 1;
+			int startRow = (pageNum-1) * pageSize+1;
 
-			int endRow = (pageNum + 1) * pageSize;
+			int endRow = pageNum * pageSize;
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -235,7 +233,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = params.getInt("flag");//1是任务查，0是全库查
+			int flag = 0;//params.getInt("flag");//1是任务查，0是全库查
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
 			
 			
@@ -328,7 +326,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			//System.out.println(sql.toString());
+			System.out.println(sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
@@ -468,7 +466,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("memo", resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
 //			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-//			rdNameObj.put("city", resultSet.getString("CITY"));
+			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
+				rdNameObj.put("city", resultSet.getString("CITY"));
+			}else{
+				rdNameObj.put("city", "");
+			}
+			
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

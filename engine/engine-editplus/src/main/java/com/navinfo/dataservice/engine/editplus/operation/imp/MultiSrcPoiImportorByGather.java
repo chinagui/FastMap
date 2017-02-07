@@ -54,6 +54,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
+	//protected List<PoiRelation> samePoiRel = new ArrayList<PoiRelation>();
 	
 	public Map<Long, String> getSourceTypes() {
 		return sourceTypes;
@@ -231,7 +232,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-				ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
+				ixPoi.setGeometry(geometry);
 				if (jo.getJSONObject("guide").size() > 0) {
 					ixPoi.setXGuide(jo.getJSONObject("guide").getDouble("longitude"));
 					ixPoi.setYGuide(jo.getJSONObject("guide").getDouble("latitude"));
@@ -465,25 +467,39 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					JSONArray childrenpoiList = jo.getJSONArray("relateChildren");
 					for (int i=0;i<childrenpoiList.size();i++) {
 						JSONObject relateChildrenObj = childrenpoiList.getJSONObject(i);
-						IxPoiChildren newIxPoiChildren;
+						//*******zl 2017.01.20 **********
+						//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+						if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+							//创建子的 PoiRelation
+							PoiRelation pr2 = new PoiRelation();
+							pr2.setFatherPid(ixPoi.getPid());
+							pr2.setFid(relateChildrenObj.getString("childFid"));
+							pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+							parentPid.add(pr2);
+						}else{
+							IxPoiChildren newIxPoiChildren;
 							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
 							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
 							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+						}
+						
 					}
 				}
 				//********************************
 				
 				// 同一关系
 				//处理同一关系
-				/*String samepoi = null;
-				if(!JSONUtils.isNull(jo.get("sameFid"))){
-					samepoi = jo.getString("sameFid");
+				String sameFid = null;
+				if(!JSONUtils.isNull(jo.get("sameFid")) && StringUtils.isNotEmpty(jo.getString("sameFid"))){
+					sameFid = jo.getString("sameFid");
 				}
-				PoiRelation samePoiPr = new PoiRelation();
-				samePoiPr.setSameFid(samepoi);
-				samePoiPr.setPid(poi.objPid());
-				samePoiPr.setPoiRelationType(PoiRelationType.SAME_POI);*/
+				PoiRelation sr = new PoiRelation();
+				sr.setSameFid(sameFid);
+				sr.setPid(ixPoi.getPid());
+				sr.setPoiRelationType(PoiRelationType.SAME_POI);
+				//samePoiRel.add(sr);
+				parentPid.add(sr);
 				
 				// 加油站
 				if (!JSONUtils.isNull(jo.get("gasStation")) && jo.getJSONObject("gasStation").size() > 0) {
@@ -797,14 +813,16 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				
 				// 同一关系
 				//处理同一关系
-				/*String samepoi = null;
-				if(!JSONUtils.isNull(jo.get("sameFid"))){
-					samepoi = jo.getString("sameFid");
+				String sameFid = null;
+				if(!JSONUtils.isNull(jo.get("sameFid")) && StringUtils.isNotEmpty(jo.getString("sameFid"))){
+					sameFid = jo.getString("sameFid");
 				}
-				PoiRelation samePoiPr = new PoiRelation();
-				samePoiPr.setSameFid(samepoi);
-				samePoiPr.setPid(poi.objPid());
-				samePoiPr.setPoiRelationType(PoiRelationType.SAME_POI);*/
+				PoiRelation sr = new PoiRelation();
+				sr.setSameFid(sameFid);
+				sr.setPid(ixPoi.getPid());
+				sr.setPoiRelationType(PoiRelationType.SAME_POI);
+				//samePoiRel.add(sr);
+				parentPid.add(sr);
 				
 				//改加油站
 				//if(!JSONUtils.isNull(jo.get("gasStation")) && jo.getJSONObject("gasStation").size() > 0){
@@ -905,10 +923,22 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					try {
 						ret = getDifferent(oldArray,newChildrenObj);
 						if (ret == 0) {//新增
-							IxPoiChildren newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
-							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
-							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							//********zl 2017.01.20*******
+							//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+							if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+								//创建子的 PoiRelation
+								PoiRelation pr2 = new PoiRelation();
+								pr2.setFatherPid(pid);
+								pr2.setFid(relateChildrenObj.getString("childFid"));
+								pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+								parentPid.add(pr2);
+							}else{
+								IxPoiChildren newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
+								newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
+								newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
+								newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							}
+							
 							
 						} else if (ret == 1) {//修改
 							for (IxPoiChildren oldChildren : oldChildrenpoiList) {
@@ -943,14 +973,25 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//JSONArray relateChildren = jo.getJSONArray("relateChildren");
 				for (int i=0;i<childrenpoiList.size();i++) {
 					JSONObject relateChildrenObj = childrenpoiList.getJSONObject(i);
-					IxPoiChildren newIxPoiChildren;
-					try {
-						newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
-						newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
-						newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-						newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
-					} catch (Exception e) {
-						e.printStackTrace();
+					//********zl 2017.01.20*******
+					//如果此子poi 的 childPid == 0 需要放到PoiRelation 中后续处理
+					if(relateChildrenObj.getInt("childPid") == 0 && relateChildrenObj.getString("childFid") != null && StringUtils.isNotEmpty(relateChildrenObj.getString("childFid"))){
+						//创建子的 PoiRelation
+						PoiRelation pr2 = new PoiRelation();
+						pr2.setFatherPid(pid);
+						pr2.setFid(relateChildrenObj.getString("childFid"));
+						pr2.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
+						parentPid.add(pr2);
+					}else{
+						IxPoiChildren newIxPoiChildren;
+						try {
+							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
+							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
+							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
+							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
 			}
@@ -1651,9 +1692,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			}
 		}
 
-		
-		
-		
 		// 差分，区分删除的数据
 		private JSONArray getOldDel(JSONArray oldArray, List<String> newRowIdList) throws Exception {
 			try {
@@ -1898,6 +1936,13 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					pr.setPid(poi.objPid());
 					pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 					parentPid.add(pr);
+					
+					//处理同一关系
+					PoiRelation sr = new PoiRelation();
+					sr.setPid(poi.objPid());
+					sr.setPoiRelationType(PoiRelationType.SAME_POI);
+					//samePoiRel.add(sr);
+					parentPid.add(sr);
 				}
 				return true;
 			}else{

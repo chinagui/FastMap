@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
+import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,6 +15,48 @@ import net.sf.json.JSONObject;
  *
  */
 public interface MetadataApi {
+	/**
+	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
+	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception;
+	/**
+	 * select pid,name from sc_point_nomingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	public List<String> scPointNominganListPidNameList() throws Exception;
+	/**
+	 * select pid,name from sc_point_mingan_list
+	 * @return List<String>: pid|name 所拼字符串列表
+	 * @throws Exception
+	 */
+	public List<String> scPointMinganListPidNameList() throws Exception;
+	/**
+	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
+	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
+	 * @throws Exception
+	 */
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception;
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
+	 * @return 
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception;
+	/**
+	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
+	 * @return Map<String, List<String>> key:chain value:poikind列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointBrandFoodtypeChainKindMap() throws Exception;
+	/**
+	 * SELECT CHAIN_CODE FROM SC_POINT_CHAIN_CODE WHERE TYPE = 1
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> scPointChainCodeList() throws Exception;
 
 	public int queryAdminIdByLocation(double longitude, double latitude)
 			throws Exception;
@@ -84,6 +127,10 @@ public interface MetadataApi {
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;
+	
+	public Map<String, String> scPointNameckTypeD1_2_3_4_8_11() throws Exception;
+	
+	public Map<String, String> scPointNameckTypeD4_10() throws Exception;
 	/**
 	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
 	 * @return List<String> ADMIN_CODE的列表
@@ -206,10 +253,17 @@ public interface MetadataApi {
 	 */
 	public Map<String, String> scPointFoodtypeDrinkMap() throws Exception;
 	/**
-	 * SELECT foodtype FROM SC_POINT_FOODTYPE WHERE POIKIND='110302'
-	 * @return List<String> foodtype列表,即SC_POINT_FOODTYP的poikind=110302的foodtype列表
+	 * SELECT POIKIND, FOODTYPE, TYPE FROM SC_POINT_FOODTYPE
+	 * @return Map<String, Map<String, String>> key:POIKIND value:Map<String, String> (key:FOODTYPE,value:TYPE)
 	 * @throws Exception
 	 */
-	public List<String> scPointFoodtype110302FoodTypes() throws Exception;
+	public Map<String, Map<String, String>> scPointFoodtypeFoodTypes() throws Exception;
+
+	/**
+	 * select PRE_KEY,CHAIN from SC_POINT_CHAIN_BRAND_KEY where hm_flag='D'
+	 * @return Map<String, String> key:PRE_KEY value:CHAIN
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointChainBrandKeyDMap() throws Exception;
 
 }

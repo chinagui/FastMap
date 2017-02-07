@@ -126,11 +126,10 @@ public class GLM26044 extends baseRule{
 		sb.append(" AND RCL.U_RECORD <> 2");
 		sb.append(" AND RCL.PID = " + rdCross.getPid());
 		sb.append(" UNION");
-		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
 		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
 		sb.append(" AND RLF.FORM_OF_WAY = 33");
-		sb.append(" AND RLF.U_RECORD <> 2)");
+		sb.append(" AND RLF.U_RECORD <> 2");
 		sb.append(" AND RCL.U_RECORD <> 2");
 		sb.append(" AND RCL.PID = " + rdCross.getPid());
 
@@ -156,7 +155,7 @@ public class GLM26044 extends baseRule{
 		//link属性为路口内link或环岛
 		if(rdLinkForm.changedFields().containsKey("formOfWay")){
 			int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
-			if(formOfWay==50||formOfWay==33){
+			if(formOfWay==33){
 				StringBuilder sb = new StringBuilder();
 
 				sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
@@ -185,48 +184,51 @@ public class GLM26044 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception { 
-		StringBuilder sb = new StringBuilder();
+		if(rdLink.changedFields().containsKey("specialTraffic")){
+			int specialTraffic = Integer.parseInt(rdLink.changedFields().get("specialTraffic").toString());
+			if(specialTraffic==1){
+				StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
-		sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
-		sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL, RD_LINK RL");
-		sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 50");
-		sb.append(" AND RLF.U_RECORD <> 2)");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
-		sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 33");
-		sb.append(" AND RLF.U_RECORD <> 2)");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
-		
-		String sql = sb.toString();
-		log.info("RdLink后检查GLM26044:" + sql);
+				sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
+				sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
+				sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
+				sb.append(" AND RCL.U_RECORD <> 2");
+				sb.append(" AND RL.U_RECORD <> 2");
+				sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
+				sb.append(" UNION");
+				sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL, RD_LINK RL");
+				sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
+				sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+				sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+				sb.append(" AND RLF.FORM_OF_WAY = 50");
+				sb.append(" AND RLF.U_RECORD <> 2)");
+				sb.append(" AND RCL.U_RECORD <> 2");
+				sb.append(" AND RL.U_RECORD <> 2");
+				sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
+				sb.append(" UNION");
+				sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
+				sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
+				sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+				sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+				sb.append(" AND RLF.FORM_OF_WAY = 33");
+				sb.append(" AND RLF.U_RECORD <> 2)");
+				sb.append(" AND RCL.U_RECORD <> 2");
+				sb.append(" AND RL.U_RECORD <> 2");
+				sb.append(" AND RL.LINK_PID = " + rdLink.getPid());
+				
+				String sql = sb.toString();
+				log.info("RdLink后检查GLM26044:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(resultList.size()>0){
-			String target = "[RD_LINK," + rdLink.getPid() + "]";
-			this.setCheckResult("", target, 0,resultList.get(0).toString());
+				if(resultList.size()>0){
+					String target = "[RD_LINK," + rdLink.getPid() + "]";
+					this.setCheckResult("", target, 0,resultList.get(0).toString());
+				}
+			}
 		}
-
-		
 	}
 
 	/**

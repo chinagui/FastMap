@@ -86,7 +86,8 @@ public class ZoneLinkOperateUtils {
     /*
      * 创建生成一条ZONELINK返回
      * */
-    public static ZoneLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result, ZoneLink sourceLink) throws Exception {
+    public static ZoneLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result, ZoneLink sourceLink)
+            throws Exception {
         ZoneLink link = new ZoneLink();
         link.setPid(PidUtil.getInstance().applyZoneLinkPid());
         if (sourceLink != null) {
@@ -94,6 +95,8 @@ public class ZoneLinkOperateUtils {
         }
         Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
         Iterator<String> it = meshes.iterator();
+        if (it.hasNext())
+            link.getMeshes().clear();
         while (it.hasNext()) {
             setLinkChildrenMesh(link, Integer.parseInt(it.next()));
         }
@@ -112,7 +115,8 @@ public class ZoneLinkOperateUtils {
      * 创建生成一条ZONELINK
      * 继承原有LINK的属性
      * */
-    public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, ZoneLink sourcelink, Result result) throws Exception {
+    public static IRow addLinkBySourceLink(Geometry g, int sNodePid, int eNodePid, ZoneLink sourcelink, Result
+            result) throws Exception {
         ZoneLink link = new ZoneLink();
         link.setPid(PidUtil.getInstance().applyZoneLinkPid());
         link.copy(sourcelink);
@@ -196,7 +200,8 @@ public class ZoneLinkOperateUtils {
      * 挂接的线和点的集合 1.生成所有不存在的RDNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
      */
     public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid,
-                                                      int eNodePid, JSONArray catchLinks, ObjType objType, Result result) throws Exception {
+                                                      int eNodePid, JSONArray catchLinks, ObjType objType, Result
+                                                              result) throws Exception {
         Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
         JSONArray coordinates = GeoTranslator.jts2Geojson(geometry)
                 .getJSONArray("coordinates");
@@ -314,7 +319,8 @@ public class ZoneLinkOperateUtils {
     /*
      * 根据移动link端点重新生成link的几何
      */
-    public static Geometry caleLinkGeomertyForMvNode(ZoneLink link, int nodePid, double lon, double lat) throws JSONException {
+    public static Geometry caleLinkGeomertyForMvNode(ZoneLink link, int nodePid, double lon, double lat) throws
+            JSONException {
         Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
         Coordinate[] cs = geom.getCoordinates();
         double[][] ps = new double[cs.length][2];
@@ -365,7 +371,8 @@ public class ZoneLinkOperateUtils {
     }
 
     public static List<ZoneLink> getCreateZoneLinksWithMesh(Geometry g,
-                                                            Map<Coordinate, Integer> maps, Result result, ZoneLink sourceLink) throws Exception {
+                                                            Map<Coordinate, Integer> maps, Result result, ZoneLink
+                                                                    sourceLink) throws Exception {
         List<ZoneLink> links = new ArrayList<ZoneLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -373,9 +380,12 @@ public class ZoneLinkOperateUtils {
             }
             if (g.getGeometryType() == GeometryTypeName.MULTILINESTRING) {
                 for (int i = 0; i < g.getNumGeometries(); i++) {
-                    links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g.getGeometryN(i), maps, result, sourceLink));
+                    Geometry geometry = g.getGeometryN(i);
+                    if (GeometryTypeName.LINESTRING.equals(geometry.getGeometryType())) {
+                        links.add(ZoneLinkOperateUtils.getCalZoneLinkWithMesh(g.getGeometryN(i), maps, result,
+                                sourceLink));
+                    }
                 }
-
             }
         }
         return links;

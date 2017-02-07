@@ -48,6 +48,9 @@ public class RdLink implements IObj {
     private int routeAdopt = 2;
 
     private int multiDigitized = 0;
+    
+    //link的状态
+    protected ObjStatus linkStatus;
 
     private int developState;
 
@@ -105,8 +108,12 @@ public class RdLink implements IObj {
     public double getFeeStd() {
         return feeStd;
     }
+    
+    public String getRowId() {
+		return rowId;
+	}
 
-    public void setFeeStd(double feeStd) {
+	public void setFeeStd(double feeStd) {
         this.feeStd = feeStd;
     }
 
@@ -338,6 +345,8 @@ public class RdLink implements IObj {
             }
 
             json.put("speedlimits", array);
+            
+            json.remove("linkStatus");
 
             return json;
         } else if (objLevel == ObjLevel.BRIEF) {
@@ -476,12 +485,12 @@ public class RdLink implements IObj {
 
     @Override
     public ObjStatus status() {
-
-        return null;
+        return linkStatus;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
+    	this.linkStatus = os;
     }
 
     @Override

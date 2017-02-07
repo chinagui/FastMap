@@ -472,6 +472,8 @@ public class TipsController extends BaseController {
             }
 
 			TipsSelector selector = new TipsSelector();
+			
+			stages.add(5);
 
 			JSONObject data = selector.getStats(grids, stages);
 

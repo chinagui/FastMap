@@ -56,8 +56,22 @@ public class FMM0102 extends BasicCheckRule {
 			String newKindCode=poi.getKindCode();
 			String chain=poi.getChain();
 			if(newKindCode.equals("160202")&&chain!=null){
-				String log="网络搜集英文作业！";
-				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"网络搜集英文作业！");
+				if(childIds.size()==0){return;}
+				for(long childId:childIds){
+					BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childId);
+					IxPoiObj childPoiObj=(IxPoiObj) childObj;
+					IxPoi cPoi=(IxPoi) childPoiObj.getMainrow(); 
+					IxPoiName cName=childPoiObj.getOfficeStandardCHIName();
+					if(cName!=null){
+						String cNameStr= cName.getName();
+						IxPoiName pName=poiObj.getOfficeStandardCHIName();
+						String pNameStr= pName.getName();
+						if(cNameStr.contains(pNameStr)){
+							setCheckResult(cPoi.getGeometry(), "[IX_POI,"+cPoi.getPid()+"]", cPoi.getMeshId(),"网络搜集英文作业！");
+						}
+					}
+				}
 				return;
 			}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -69,29 +83,28 @@ public class FMM0102 extends BasicCheckRule {
 				int rating= hotel.getRating();
 				if (type14.containsKey(newKindCode)){
 					if(type14.get(newKindCode).contains(String.valueOf(rating))){
-						String log="网络搜集英文作业！";
-						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"网络搜集英文作业！");
+						if(childIds.size()==0){return;}
+						for(long childId:childIds){
+							BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childId);
+							IxPoiObj childPoiObj=(IxPoiObj) childObj;
+							IxPoi cPoi=(IxPoi) childPoiObj.getMainrow(); 
+							IxPoiName cName=childPoiObj.getOfficeStandardCHIName();
+							if(cName!=null){
+								String cNameStr= cName.getName();
+								IxPoiName pName=poiObj.getOfficeStandardCHIName();
+								String pNameStr= pName.getName();
+								if(cNameStr.contains(pNameStr)){
+									setCheckResult(cPoi.getGeometry(), "[IX_POI,"+cPoi.getPid()+"]", cPoi.getMeshId(),"网络搜集英文作业！");
+								}
+							}
+						}
 						return;
 					}
 				}
 
 			}
-			if(childIds.size()==0){return;}
-			for(long childId:childIds){
-				BasicObj childObj=myReferDataMap.get(ObjectName.IX_POI).get(childId);
-				IxPoiObj childPoiObj=(IxPoiObj) childObj;
-				IxPoi cPoi=(IxPoi) childPoiObj.getMainrow(); 
-				IxPoiName cName=childPoiObj.getOfficeStandardCHIName();
-				if(cName!=null){
-					String cNameStr= cName.getName();
-					IxPoiName pName=poiObj.getOfficeStandardCHIName();
-					String pNameStr= pName.getName();
-					if(cNameStr.contains(pNameStr)){
-						String log="网络搜集英文作业！";
-						setCheckResult(cPoi.getGeometry(), "[IX_POI,"+cPoi.getPid()+"]", cPoi.getMeshId(),log);
-					}
-				}
-			}
+			
 		}
 	}
 	private boolean isCheck(IxPoiObj poiObj){

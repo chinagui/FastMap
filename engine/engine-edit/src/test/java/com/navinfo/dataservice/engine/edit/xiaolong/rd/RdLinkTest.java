@@ -16,9 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
-import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
-import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.utils.TableNameFactory;
@@ -95,7 +93,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testAddRdLink() {
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.19535446166992,40.54250421360651],[116.19640588760376,40.54186011563341],[116.19714617729187,40.54196610686484],[116.19754314422607,40.541436149030645]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":209003265,\"data\":{\"longitude\":116.21100917458534,\"latitude\":40.53466047250868},\"type\":\"RDNODE\"}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();
@@ -132,7 +130,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testGetByElementCondition()
 	{
-		String parameter = "{\"dbId\":19,\"pageNum\":1,\"pageSize\":5,\"data\":{\"pid\":\"612846\"},\"type\":\"RDINTER\"}";
+		String parameter = "{\"dbId\":19,\"pageNum\":1,\"pageSize\":5,\"data\":{\"detailId\":\"10208\"},\"type\":\"RDBRANCHDETAIL\"}";
 
 		Connection conn = null;
 
@@ -165,7 +163,7 @@ public class RdLinkTest extends InitApplication {
 	@Test
 	public void testBatch()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSE\",\"dbId\":17,\"data\":{\"inLinkPid\":206002831,\"outLinkPid\":200002787,\"nodePid\":301002167}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":259,\"type\":\"RDLINK\",\"objId\":400001194,\"data\":{\"forms\":[{\"linkPid\":400001194,\"formOfWay\":20,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"},{\"linkPid\":400001194,\"rowId\":\"2AED548354544F6C804F2D67C3DDB351\",\"objStatus\":\"DELETE\"}],\"pid\":400001194,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

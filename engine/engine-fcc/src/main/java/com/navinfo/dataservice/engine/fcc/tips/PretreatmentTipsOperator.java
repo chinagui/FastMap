@@ -513,7 +513,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
 			
-			newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo1
+			newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo2
 					.toString().getBytes());
 			
 			

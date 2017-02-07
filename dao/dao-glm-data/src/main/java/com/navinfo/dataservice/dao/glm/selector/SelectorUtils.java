@@ -14,7 +14,6 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -48,13 +47,13 @@ public class SelectorUtils {
 		ResultSet resultSet = null;
 		JSONObject result = new JSONObject();
 		JSONArray array = new JSONArray();
+		String key = object.keys().next().toString();
+
 		String sql = "";
 
 		if (objType == ObjType.RDLINK || objType == ObjType.IXPOI) {
 			sql = getSearchSqlFromLinkPOI(objType, object, isLock);
 		} else {
-
-			String key = object.keys().next().toString();
 
 			int pid = object.getInt(key);
 
@@ -113,7 +112,9 @@ public class SelectorUtils {
 
 			String whereCondition = editQuerySql.substring(whereIndex);
 
-			whereSql.append(" " + whereCondition + " AND P." + columnName + "= " + pid + " AND P.U_RECORD !=2 ");
+			whereSql.append(
+					" " + whereCondition + " AND P." + ReflectionAttrUtils.getBranchPrimaryKey(objType, columnName)
+							+ "= " + pid + " AND P.U_RECORD !=2 ");
 
 			StringBuilder outerLeftJoinSql = new StringBuilder();
 
@@ -124,12 +125,11 @@ public class SelectorUtils {
 			selectSql.append(fromSql).append(innerLeftJoinSql).append(whereSql).append(")tmp").append(outerLeftJoinSql);
 
 			sql = getSqlFromBufferCondition(selectSql, false);
-
-			System.out.println(sql);
 		}
 
 		try {
 			pstmt = conn.prepareStatement(sql);
+
 			int total = 0;
 			int startRow = (pageNum - 1) * pageSize + 1;
 			int endRow = pageNum * pageSize;
@@ -143,18 +143,24 @@ public class SelectorUtils {
 					total = resultSet.getInt("total");
 				}
 				JSONObject json = new JSONObject();
-				int pid = resultSet.getInt("pid");
-				json.put("pid", pid);
+				//连续分歧返回rowId
+				String rowId = null;
+				int pid = 0;
+				if (key.equals("rowId")) {
+					rowId = resultSet.getString("pid");
+				} else {
+					pid = resultSet.getInt("pid");
+				}
+				json.put("pid", rowId==null?pid:rowId);
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				json.put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.struct2Jts(struct)));
 				String name = resultSet.getString("name");
-				if(name == null)
-				{
+				if (name == null) {
 					name = "";
 				}
 				json.put("name", name);
 				json.put("type", objType);
-				String jsonStr = pid + "," + name + "," + objType;
+				String jsonStr = (rowId==null?pid:rowId) + "," + name + "," + objType;
 				if (dataStr.contains(jsonStr)) {
 					total = total - 1;
 				} else {

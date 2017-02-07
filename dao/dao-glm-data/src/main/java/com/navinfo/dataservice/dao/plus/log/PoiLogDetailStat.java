@@ -130,4 +130,40 @@ public class PoiLogDetailStat {
 			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog());
 		}
 	}
+	
+	/**
+	 * 对应行编提交的履历统计
+	 *
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long,List<LogDetail>> loadAllLog(Connection conn,Collection<Long> pids)throws Exception{
+		if(pids==null||pids.size()==0)return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
+				+ "FROM LOG_DETAIL T"
+				+ " WHERE T.OB_NM='"+ObjectName.IX_POI+"'");
+		
+		List<Object> values=new ArrayList<Object>();
+		if(pids!=null && pids.size()>0){
+			if(pids.size()>1000){
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids,","));
+				sb.append(" AND T.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+				values.add(clob);
+			}else{
+				sb.append(" AND T.OB_PID IN ("+StringUtils.join(pids,",")+")");
+			}}
+		if(values!=null&&values.size()>0){
+			Object[] queryValues=new Object[values.size()];
+			for(int i=0;i<values.size();i++){
+				queryValues[i]=values.get(i);
+			}
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog(),queryValues);
+		}else{
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog());
+		}
+	}
 }

@@ -20,6 +20,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -281,36 +282,28 @@ public class Operation implements IOperation {
 		return targetPid;
 	}
 
-	public void breakRdLink(Result result, IObj oldLink,
-			List<? extends IObj> newLinks) throws Exception {
+	public void breakRdLink(Result result, IObj oldLink, List<? extends IObj> newLinks) throws Exception {
 
-		String linkType = ReflectionAttrUtils.getTableNameByObjType(oldLink
-				.objType());
+		String linkType = ReflectionAttrUtils.getTableNameByObjType(oldLink.objType());
 
-		int pid=0;
-		
-		if(oldLink instanceof RdLink)
-		{
-			pid=((RdLink)oldLink).getPid();
+		int pid = 0;
+
+		if (oldLink instanceof RdLink) {
+			pid = ((RdLink) oldLink).getPid();
+		} else if (oldLink instanceof RwLink) {
+			pid = ((RwLink) oldLink).getPid();
+		} else if (oldLink instanceof LcLink) {
+			pid = ((LcLink) oldLink).getPid();
 		}
-		else if(oldLink instanceof RwLink)
-		{
-			pid=((RwLink)oldLink).getPid();
-		}
-		else if(oldLink instanceof LcLink)
-		{
-			pid=((LcLink)oldLink).getPid();
-		}
-		
+
 		// 获取由该link组成的立交（RDGSC）
 		RdGscSelector selector = new RdGscSelector(conn);
 
-		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(pid, linkType,
-				true);
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(pid, linkType, true);
 
 		breakLineForGsc(result, oldLink, newLinks, rdGscList);
 	}
-	
+
 	public void breakLineForGsc(Result result, IObj oldLink, List<? extends IObj> newLinks, List<RdGsc> rdGscList)
 			throws Exception {
 		for (RdGsc rr : rdGscList) {
@@ -336,13 +329,12 @@ public class Operation implements IOperation {
 	 *            立交对象
 	 * @throws Exception
 	 */
-	private void handleSelfGscOnBreak(RdGsc rr, Result result, IObj oldLink, List<? extends IObj> newLinks) throws Exception {
+	private void handleSelfGscOnBreak(RdGsc rr, Result result, IObj oldLink, List<? extends IObj> newLinks)
+			throws Exception {
 
 		Geometry gscGeo = rr.getGeometry();
 
-		List<IObj> newGscLink = new ArrayList<>();
-		
-		Map<Integer,Geometry> linkGeoMap = new HashMap<>();
+		Map<Integer, Geometry> linkGeoMap = new HashMap<>();
 
 		for (IObj link : newLinks) {
 			if (tableName.equalsIgnoreCase("RD_LINK")) {
@@ -364,42 +356,75 @@ public class Operation implements IOperation {
 		}
 
 		// 打断link后还是自相交立交
-		if (newGscLink.size() == 1) {
+		if (linkGeoMap.size() == 1) {
 			for (int i = 0; i < rr.getLinks().size(); i++) {
 				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(i);
 
-				rdGscLink.changedFields().put("linkPid", newGscLink.get(0).pid());
+				rdGscLink.changedFields().put("linkPid", linkGeoMap.keySet().iterator().next());
 
 				result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGscLink.getPid());
 			}
 		} else {
 			// 打断后生成多线（双线）立交
+			// 先删除立交组成线，再新增新生成的线，主要是连续打断后不确定是否和原始组成link条数一致，所以这里线删除后新增
+			for (int j = 0; j < rr.getLinks().size(); j++) {
+				RdGscLink rdGscLink = (RdGscLink) rr.getLinks().get(j);
+
+				result.insertObject(rdGscLink, ObjStatus.DELETE, rdGscLink.getPid());
+			}
+
 			int i = 0;
+
 			for (Map.Entry<Integer, Geometry> entry : linkGeoMap.entrySet()) {
 				Geometry geometry = entry.getValue();
 				
-				int linkPid = entry.getKey();
-
-				RdGscLink gscLink = new RdGscLink();
-
 				// 截取精度，防止位置序号计算错误
 				Geometry tmpLinkGeo = GeoTranslator.transform(geometry, 1, 0);
-
-				List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(gscGeo, tmpLinkGeo.getCoordinates());
-
-				gscLink.setPid(rr.getPid());
-
-				gscLink.setLinkPid(linkPid);
-
-				gscLink.setTableName(tableName.toUpperCase());
-
-				gscLink.setZlevel(i);
-
-				gscLink.setShpSeqNum(shpSeqNumList.get(0));
-
-				result.insertObject(gscLink, ObjStatus.UPDATE, gscLink.getPid());
 				
-				i++;
+				List<Integer> shpSeqNum = RdGscOperateUtils.calcShpSeqNum(gscGeo,
+						tmpLinkGeo.getCoordinates());
+				
+				if(shpSeqNum.size() <= 2)
+				{
+					for(int shpNum : shpSeqNum)
+					{
+						int linkPid = entry.getKey();
+
+						RdGscLink gscLink = new RdGscLink();
+						
+						int startEndFlag = 0;
+						// 计算形状点号：SHP_SEQ_NUM
+						if (shpNum == 0) {
+							startEndFlag = 1;
+						} else if (shpNum == geometry.getCoordinates().length - 1) {
+							startEndFlag = 2;
+						}
+						else
+						{
+							startEndFlag = 0;
+						}
+						
+						gscLink.setStartEnd(startEndFlag);
+						
+						gscLink.setShpSeqNum(shpNum);
+
+						gscLink.setPid(rr.getPid());
+
+						gscLink.setLinkPid(linkPid);
+
+						gscLink.setTableName(tableName.toUpperCase());
+
+						gscLink.setZlevel(i);
+
+						result.insertObject(gscLink, ObjStatus.INSERT, gscLink.getPid());
+					}
+					//link打断后link上的立交点位只有一个的时候zlevel才递增，有多个代表自相交，level一致，不增
+					i++;
+				}
+				else if(shpSeqNum.size() >2)
+				{
+					throw new Exception("过于复杂的自相交立交打断不支持");
+				}
 			}
 		}
 	}
@@ -420,11 +445,9 @@ public class Operation implements IOperation {
 			// 找到打断的那条link
 			if (rdGscLink.getLinkPid() == oldLink.pid()) {
 
-				int linkPid = 0;
-
-				Geometry geometry = null;
-
 				List<? extends IObj> linkList = newLinks;
+
+				Map<Integer, Geometry> newGscLinkMap = new HashMap<>();
 
 				for (IObj newLink : linkList) {
 					Geometry tmpGeo = null;
@@ -451,33 +474,54 @@ public class Operation implements IOperation {
 						tmpGeo = tmpLink.getGeometry();
 					}
 					// 计算代表点和生成的线最近的link
-					if (distance == 0) {
-						linkPid = newLink.pid();
-
-						geometry = tmpGeo;
-
-						break;
+					if (distance < 1) {
+						newGscLinkMap.put(newLink.pid(), tmpGeo);
 					}
 				}
 
-				if (linkPid != 0) {
-					// 打断后，立交的link和link序号需要重新计算
-					List<Integer> shpSeqNum = RdGscOperateUtils.calcShpSeqNum(rdGsc.getGeometry(),
-							geometry.getCoordinates());
+				if (newGscLinkMap.size() > 0) {
+					for (Map.Entry<Integer, Geometry> entry : newGscLinkMap.entrySet()) {
+						RdGscLink newRdGsclLink = new RdGscLink();
 
-					JSONObject updateContent = new JSONObject();
+						int newLinkPid = entry.getKey();
 
-					updateContent.put("shpSeqNum", shpSeqNum.get(0));
+						Geometry geometry = entry.getValue();
 
-					updateContent.put("linkPid", linkPid);
+						newRdGsclLink.setLinkPid(newLinkPid);
 
-					boolean changed = rdGscLink.fillChangeFields(updateContent);
+						newRdGsclLink.setPid(rdGsc.getPid());
+						
+						// 截取精度，防止位置序号计算错误
+						Geometry tmpLinkGeo = GeoTranslator.transform(geometry, 1, 0);
+						
+						int startEndFlag = GeometryUtils.getStartOrEndType(tmpLinkGeo.getCoordinates(),
+								rdGsc.getGeometry());
 
-					if (changed) {
-						result.insertObject(rdGscLink, ObjStatus.UPDATE, rdGsc.pid());
+						newRdGsclLink.setStartEnd(startEndFlag);
+
+						int seqNum = 0;
+						// 计算形状点号：SHP_SEQ_NUM
+						if (startEndFlag == 1) {
+							seqNum = 0;
+						} else if (startEndFlag == 2) {
+							seqNum = geometry.getCoordinates().length - 1;
+						}
+						else{
+							// 打断后，立交的link和link序号需要重新计算
+							List<Integer> shpSeqNum = RdGscOperateUtils.calcShpSeqNum(rdGsc.getGeometry(),
+									geometry.getCoordinates());
+							
+							seqNum = shpSeqNum.get(0);
+						}
+
+						newRdGsclLink.setShpSeqNum(seqNum);
+						
+						newRdGsclLink.setTableName(rdGscLink.getTableName());
+
+						result.insertObject(newRdGsclLink, ObjStatus.INSERT, rdGsc.pid());
 					}
+					result.insertObject(rdGscLink, ObjStatus.DELETE, rdGsc.getPid());
 				}
-
 			}
 		}
 	}

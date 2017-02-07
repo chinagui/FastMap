@@ -327,7 +327,84 @@ public class serchConditionTest extends InitApplication {
 		}
 	}
 	
-	
-	
+	@Test
+	public void getByCondition2() {
 
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT_DEPENDENT\",\"linkPid\":310001938,\"direct\":2}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
+
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	
+	@Test
+	public void getByCondition3() {
+
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":310001938,\"direct\":2}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
+
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }

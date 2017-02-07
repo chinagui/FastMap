@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartli
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 
 public class OpRefRelationObj {
 
@@ -132,7 +131,7 @@ public class OpRefRelationObj {
     // 维护TMC信息
     public String handlerRdLinkTmc(Command command, Result result) throws Exception {
         com.navinfo.dataservice.engine.edit.operation.obj.tmc.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.tmc.depart.Operation(conn);
-        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(),command.getNoTargetLinks(),result);
     }
 
     // 维护IxPoi信息

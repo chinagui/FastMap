@@ -10,6 +10,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -229,7 +230,11 @@ public class OpRefRelationObj {
 						handleRowList(LINK_CROSS_FORM_23, row.parentPKValue(), row, updateLevelMap);
 					}
 					// 修改link形态，新增其他形态（公交车道或者步行街）
-					if (formOfWay == 20 || formOfWay == 22) {
+					if (sourceFormOfWay == 20 || sourceFormOfWay == 22) {
+						if (formOfWay != 20 && formOfWay != 22) {
+							handleRowList(LINK_FORM_32, row.parentPKValue(), row, delLimitMap);
+						}
+					} else if (formOfWay == 20 || formOfWay == 22) {
 						handleRowList(LINK_FORM_32, row.parentPKValue(), row, updateLimitMap);
 					}
 				}
@@ -239,7 +244,8 @@ public class OpRefRelationObj {
 				RdTollgate rdTollgate = (RdTollgate) row;
 				if (row.changedFields().containsKey("passageNum")) {
 					handleRowList(LINK_TOLLGATE_21, rdTollgate.getInLinkPid(), row, updateLevelMap);
-					handleRowList(LINK_TOLLGATE_21, rdTollgate.getOutLinkPid(), row, updateLevelMap);
+					// handleRowList(LINK_TOLLGATE_21,
+					// rdTollgate.getOutLinkPid(), row, updateLevelMap);
 				}
 				break;
 			// 修改车信
@@ -340,16 +346,23 @@ public class OpRefRelationObj {
 			// 删除高速分歧，分歧上包含影响详细车道的模式图
 			case RDBRANCH:
 				RdBranch branch = (RdBranch) row;
-				RdBranchDetail detail = (RdBranchDetail) branch.getDetails().get(0);
-				String patternCode = detail.getPatternCode();
-				// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
-				if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
-						|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
-					return;
-				}
+				RdBranchDetail detail = null;
+				if(CollectionUtils.isNotEmpty(branch.getDetails()))
+				{
+					detail = (RdBranchDetail) branch.getDetails().get(0);
+					if(detail.getBranchType() == 0)
+					{
+						String patternCode = detail.getPatternCode();
+						// 必须是高速分歧和3个例外模式图号的删除才走通道进行更新
+						if (patternCode == null || detail.getBranchType() != 0 || patternCode.equals("80261009")
+								|| patternCode.equals("80271009") || patternCode.equals("80361009")) {
+							return;
+						}
 
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
-				handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getInLinkPid(), branch, delLevelMap);
+						handleRowList(BRANCH_PATTERN_CODE_24, branch.getOutLinkPid(), branch, delLevelMap);
+					}
+				}
 				break;
 			// link上删除车辆类型限制信息
 			case RDLINKLIMIT:
@@ -523,11 +536,11 @@ public class OpRefRelationObj {
 				if (level == LINK_LANE_VEHICLE_31) {
 					RdLinkLimit limit = (RdLinkLimit) levelEntry.getValue().get(0);
 					updateByRdLinkVehicle(linkPid, limit, null);
-					updateByRdLinkForm(linkPid, null);
+					updateByRdLinkForm(linkPid, null, null);
 				} else if (level == LINK_FORM_32) {
 					// 公交车形态和步行街形态不会共存，只会存在一个
 					RdLinkForm form = (RdLinkForm) levelEntry.getValue().get(0);
-					updateByRdLinkForm(linkPid, form);
+					updateByRdLinkForm(linkPid, form, null);
 				}
 				break;
 			}
@@ -551,7 +564,7 @@ public class OpRefRelationObj {
 				} else if (level == LINK_FORM_32) {
 					// 公交车形态和步行街形态不会共存，只会存在一个
 					RdLinkForm form = (RdLinkForm) levelEntry.getValue().get(0);
-					updateByRdLinkForm(linkPid, form);
+					updateByRdLinkForm(linkPid, form, null);
 					break;
 				}
 				break;
@@ -564,11 +577,38 @@ public class OpRefRelationObj {
 			if (objType == ObjType.RDLANE) {
 				// 新增的详细车道维护限制信息
 				RdLane rdLane = (RdLane) row;
+				
+				int linkPid = rdLane.getLinkPid();
+				
+				Map<Integer,List<IRow>> limitMap = updateLimitMap.get(linkPid);
+				
+				sortMapByKey(limitMap);
+				
+				RdLinkLimit limit = null;
+				
+				RdLinkForm form = null;
+				
+				//获取修改或者新增的level3要素，这个要素还没入库，需要从内存中获取
+				if(limitMap != null)
+				{
+					List<IRow> limitRowsList = limitMap.get(LINK_LANE_VEHICLE_31);
+					
+					if(CollectionUtils.isNotEmpty(limitRowsList))
+					{
+						limit = (RdLinkLimit) limitRowsList.get(0);
+					}
+					else
+					{
+						List<IRow> formRowsList = limitMap.get(LINK_FORM_32);
+						
+						form = (RdLinkForm) formRowsList.get(0);
+					}
+				}
 
-				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), null, null);
+				boolean flag = updateByRdLinkVehicle(rdLane.getLinkPid(), limit, null);
 
 				if (flag) {
-					updateByRdLinkForm(rdLane.getLinkPid(), null);
+					updateByRdLinkForm(rdLane.getLinkPid(), form, rdLane);
 				}
 			}
 		}
@@ -620,12 +660,29 @@ public class OpRefRelationObj {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-
-		String laneInfos = connexity.getLaneInfo();
+		
+		String laneInfos = null;
+		
+		//修改车信车道信息
+		if(connexity.changedFields().containsKey("laneInfo"))
+		{
+			laneInfos = connexity.changedFields().get("laneInfo").toString();
+		}
+		else
+		{
+			//新增场景
+			laneInfos = connexity.getLaneInfo();
+		}
 
 		List<String> laneInfoList = new ArrayList<>();
 
 		for (String info : laneInfos.split(",")) {
+			//去除公交车道车道信息数据
+			info = StringUtils.removeSpeLetter(info);
+			if(StringUtils.isEmpty(info))
+			{
+				continue;
+			}
 			if (info.contains("[")) {
 				// 理论值带[]
 				laneInfoList.add(info.substring(1, 2));
@@ -645,25 +702,24 @@ public class OpRefRelationObj {
 	private void updateByRdCrossLink(int pid, RdLinkForm form) throws Exception {
 		// link的交叉口形态状态：新增是1，删除是2
 		int formCrossFlag = 0;
-		//form为null说明是通过递归level进行维护，则按新增处理
-		if(form == null)
-		{
+		// form为null说明是通过递归level进行维护，则按新增处理
+		if (form == null) {
 			formCrossFlag = 1;
-		}
-		else if (form.status() == ObjStatus.UPDATE) {
+		} else if (form.status() == ObjStatus.UPDATE) {
 			int sourceFormOfWay = form.getFormOfWay();
 			// 判断是否是删除了交叉口形态
 			if (form.changedFields().containsKey("formOfWay")) {
 				int formOfWay = (int) form.changedFields().get("formOfWay");
 				if (sourceFormOfWay == 50 && formOfWay != 50) {
 					formCrossFlag = 2;
+				} else if (sourceFormOfWay != 50 && formOfWay == 50) {
+					formCrossFlag = 1;
 				}
 			}
 		} else if (form.status() == ObjStatus.DELETE) {
 			formCrossFlag = 2;
 		}
-		if(formCrossFlag != 0)
-		{
+		if (formCrossFlag != 0) {
 			abstractSelector.setCls(RdLink.class);
 
 			RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);
@@ -791,11 +847,11 @@ public class OpRefRelationObj {
 		operation.caleRdlinesForRdlinkDirect(result);
 	}
 
-	private void updateByRdLinkForm(int pid, RdLinkForm linkForm) throws Exception {
+	private void updateByRdLinkForm(int pid, RdLinkForm linkForm, RdLane rdLane) throws Exception {
 
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
-		int formOfWay = 0;
+		int formOfWay = -1;
 		// link车辆类型限制没有维护详细车道限制，走形态维护
 		if (linkForm == null) {
 			List<IRow> forms = abstractSelector.loadRowsByClassParentId(RdLinkForm.class, pid, true, null, null);
@@ -809,29 +865,43 @@ public class OpRefRelationObj {
 				}
 			}
 		} else {
-			formOfWay = linkForm.getFormOfWay();
 			// 删除form
 			if (linkForm != null && linkForm.status() == ObjStatus.DELETE) {
+				formOfWay = linkForm.getFormOfWay();
 				operation.setFormCrossFlag(3);
 			} else if (linkForm.status() == ObjStatus.INSERT) {
 				formOfWay = linkForm.getFormOfWay();
-
 				// 1代表新增
 				operation.setFormCrossFlag(1);
 			} else {
 				// 2代表修改
-				operation.setFormCrossFlag(2);
+				formOfWay = (int) linkForm.changedFields().get("formOfWay");
+				int sourceFormOfWay = linkForm.getFormOfWay();
+				// 修改link形态，新增其他形态（公交车道或者步行街）
+				if (sourceFormOfWay == 20 || sourceFormOfWay == 22) {
+					if (formOfWay != 20 && formOfWay != 22) {
+						operation.setFormCrossFlag(3);
+					}
+				} else if (formOfWay == 20 || formOfWay == 22) {
+					operation.setFormCrossFlag(2);
+				}
 			}
 		}
 
-		if (formOfWay != 0) {
+		if (formOfWay != -1) {
 			abstractSelector.setCls(RdLink.class);
 
 			RdLink link = (RdLink) abstractSelector.loadAllById(pid, true, true);
 
 			operation.setLink(link);
 
-			operation.refRdLaneForRdlinkForm(result, formOfWay);
+			List<RdLane> lanes = new ArrayList<>();
+
+			if (rdLane != null) {
+				lanes.add(rdLane);
+			}
+
+			operation.refRdLaneForRdlinkForm(result, formOfWay, lanes);
 		}
 	}
 

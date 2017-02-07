@@ -26,7 +26,7 @@ public class TipsImportTest extends InitApplication {
 
 	 @Test
 	public void test() {
-		String parameter = "{\"jobId\":123}";
+		String parameter = "{\"jobId\":2677}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -37,7 +37,8 @@ public class TipsImportTest extends InitApplication {
 
 			// String filePath = upload.unzipByJobId(jobId); //服务测试
 
-			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425"; // 本地测试用
+			//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
+			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
 
 			// String
 			// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";

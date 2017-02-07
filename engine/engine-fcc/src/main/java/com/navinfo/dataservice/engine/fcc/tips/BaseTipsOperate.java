@@ -219,8 +219,15 @@ public class BaseTipsOperate {
 				}
 				
 				
-				String deep = new String(result.getValue("data".getBytes(),
-						"deep".getBytes()));
+				byte[] deepByte=result.getValue("data".getBytes(),
+						"deep".getBytes());
+				
+				String deep=null;
+				
+				if(deepByte!=null){
+					 deep = new String(deepByte);
+				}
+				
 				jo.put("deep",deep);
 				
 				oldTip = jo;

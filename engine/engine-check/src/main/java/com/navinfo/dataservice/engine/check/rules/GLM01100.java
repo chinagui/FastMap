@@ -14,21 +14,21 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
- * @ClassName: GLM01065
+ * @ClassName: GLM01100
  * @author zhangxiaolong
  * @date 2017年2月7日
- * @Description: 具有公交车专用道形态的link，开发状态只能为详细开发，其它报log。
+ * @Description: 桥形态的link铺设状态不能是“未铺设”
  */
-public class GLM01065 extends baseRule {
+public class GLM01100 extends baseRule {
 
-	private static Logger logger = Logger.getLogger(GLM01065.class);
+	private static Logger logger = Logger.getLogger(GLM01100.class);
 
 	/**
-	 * link形态为公交车道，并且为非详细开发状态的link
+	 * link形态为桥，并且为link铺设状态为非“未铺设”的link
 	 */
-	private Map<Integer, RdLink> linkDevStateMap = new HashMap<>();
+	private Map<Integer, RdLink> linkPaveStateMap = new HashMap<>();
 
-	public GLM01065() {
+	public GLM01100() {
 	}
 
 	@Override
@@ -38,10 +38,10 @@ public class GLM01065 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareData(checkCommand);
-		for (Map.Entry<Integer, RdLink> entry : linkDevStateMap.entrySet()) {
+		for (Map.Entry<Integer, RdLink> entry : linkPaveStateMap.entrySet()) {
 			int linkPid = entry.getKey();
 			RdLink rdLink = entry.getValue();
-			logger.debug("检查类型：postCheck， 检查规则：GLM01065， 检查要素：RDLINK(" + linkPid + "), 触法时机：道路形态编辑；link开发状态属性编辑");
+			logger.debug("检查类型：postCheck， 检查规则：GLM01100， 检查要素：RDLINK(" + linkPid + "), 触法时机：道路形态编辑；link属性编辑");
 			this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + linkPid + "]", rdLink.getMeshId());
 		}
 	}
@@ -55,16 +55,16 @@ public class GLM01065 extends baseRule {
 		for (IRow row : checkCommand.getGlmList()) {
 			if (row instanceof RdLink) {
 				RdLink rdLink = (RdLink) row;
-				int developState = rdLink.getDevelopState();
-				if (rdLink.changedFields().containsKey("developState")) {
-					developState = (int) rdLink.changedFields().get("developState");
+				int paveStatus = rdLink.getPaveStatus();
+				if (rdLink.changedFields().containsKey("paveStatus")) {
+					paveStatus = (int) rdLink.changedFields().get("paveStatus");
 				}
-				if (developState != 1) {
+				if (paveStatus == 1) {
 					for (IRow formRow : rdLink.getForms()) {
 						RdLinkForm form = (RdLinkForm) formRow;
 
-						if (form.getFormOfWay() == 22) {
-							linkDevStateMap.put(rdLink.getPid(), rdLink);
+						if (form.getFormOfWay() == 30) {
+							linkPaveStateMap.put(rdLink.getPid(), rdLink);
 							break;
 						}
 					}
@@ -77,17 +77,17 @@ public class GLM01065 extends baseRule {
 				if (form.status() == ObjStatus.UPDATE && form.changedFields().containsKey("formOfWay")) {
 					formOfWay = (int) form.changedFields().get("formOfWay");
 				}
-				if (form.status() != ObjStatus.DELETE && formOfWay == 22) {
-					if (!linkDevStateMap.containsKey(form.getLinkPid())) {
+				if (form.status() != ObjStatus.DELETE && formOfWay == 30) {
+					if (!linkPaveStateMap.containsKey(form.getLinkPid())) {
 						RdLink link = (RdLink) selector.loadById(form.getLinkPid(), true, true);
 
-						if (link.getDevelopState() != 1) {
-							linkDevStateMap.put(link.getPid(), link);
+						if (link.getPaveStatus() == 1) {
+							linkPaveStateMap.put(link.getPid(), link);
 						}
 					}
 				}
-				if (form.status() == ObjStatus.DELETE && formOfWay == 22) {
-					linkDevStateMap.remove(form.getLinkPid());
+				if (form.status() == ObjStatus.DELETE && formOfWay == 30) {
+					linkPaveStateMap.remove(form.getLinkPid());
 				}
 			}
 		}

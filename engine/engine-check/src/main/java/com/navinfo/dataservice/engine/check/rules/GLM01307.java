@@ -18,29 +18,29 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
- * GLM01008 GLM01008 Link信息 道路方向 无方向 全封闭道路不能为“双方向”
+ * GLM01307 单向道路的限速类型为“普通”时，限速来源不能是“方向限速”，否则报log
  * 
- * @ClassName: GLM01008
+ * @ClassName: GLM01307
  * @author Zhang Xiaolong
  * @date 2017年2月6日 上午11:30:45
  * @Description: TODO
  */
 
-public class GLM01008 extends baseRule {
+public class GLM01307 extends baseRule {
 
-	private static Logger logger = Logger.getLogger(GLM01008.class);
+	private static Logger logger = Logger.getLogger(GLM01307.class);
 
 	/**
-	 * 方向为双方向的link
+	 * 方向为单方向的link
 	 */
 	private Map<Integer, RdLink> linkDirectMap = new HashMap<>();
 
 	/**
-	 * 形态为全封闭道路的link
+	 * 限速类型为普通限速，限速来源为“方向限速”
 	 */
 	private Set<Integer> linkFormOf14List = new HashSet<>();
 
-	public GLM01008() {
+	public GLM01307() {
 	}
 
 	@Override
@@ -81,7 +81,7 @@ public class GLM01008 extends baseRule {
 				if (rdLink.changedFields().containsKey("direct")) {
 					direct = (int) rdLink.changedFields().get("direct");
 				}
-				if (direct == 1) {
+				if (direct != 1) {
 					linkDirectMap.put(rdLink.getPid(), rdLink);
 					
 					for(IRow formRow : rdLink.getForms())

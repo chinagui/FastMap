@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -300,5 +301,75 @@ public class IxPoiParentSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return rows;
+	}
+	
+	
+	/**
+	 * 获取poi的父pid
+	 * @param pid
+	 * @return parentPid
+	 * @throws Exception 
+	 */
+	public int getParentPid(int pid) throws Exception{
+		
+		String sql = "select p.parent_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and c.child_poi_pid=:1";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, pid);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+				return resultSet.getInt("parent_poi_pid");
+			}
+			return 0;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 获取poi的所有子pid
+	 * @param pid
+	 * @return childrenPids
+	 * @throws Exception 
+	 */
+	public List<Integer> getChildrenPids(int pid) throws Exception{
+		
+		String sql = "select c.child_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and p.parent_poi_pid=:1";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, pid);
+
+			resultSet = pstmt.executeQuery();
+			List<Integer> childrenPids = new ArrayList<Integer>();
+			
+			if (resultSet.next()) {
+				childrenPids.add(resultSet.getInt("child_poi_pid"));
+			}
+			return childrenPids;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 	}
 }

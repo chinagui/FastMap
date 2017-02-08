@@ -2,7 +2,6 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -24,8 +23,6 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.photo.HBaseController;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-import com.navinfo.dataservice.engine.dropbox.dao.DBController;
-import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 
 @Controller
 public class PhotoController extends BaseController {

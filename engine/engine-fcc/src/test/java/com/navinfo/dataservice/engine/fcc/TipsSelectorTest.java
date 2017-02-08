@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.fcc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -22,29 +24,41 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 
-public class TipsSelectorTest {
+public class TipsSelectorTest extends InitApplication {
 
 	TipsSelector solrSelector = new TipsSelector();
 	
 	
 	private static SolrController conn = new SolrController();
+	
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
+
 	
 	
 	/*	
@@ -98,6 +112,7 @@ public class TipsSelectorTest {
 	@Test
 	public void testSearchDataByTileWithGap() {
 		JSONArray types = new JSONArray();
+		types.add(1507);
 		//types.add(8001);
 	/*	types.add(1205);
 		types.add(1401);
@@ -137,7 +152,9 @@ public class TipsSelectorTest {
 			
 			//{"gap":40,"mdFlag":"d","z":17,"x":107944,"y":49615}
 			//{"gap":40,"mdFlag":"d","z":17,"x":107940,"y":49619}
-			System.out.println(solrSelector.searchDataByTileWithGap(107945, 49616, 17,
+			
+			//{"gap":40,"mdFlag":"d","z":20,"x":863573,"y":396921}
+			System.out.println(solrSelector.searchDataByTileWithGap(863573, 396921, 20,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -707,6 +724,60 @@ public class TipsSelectorTest {
 
 		}
 
+		
+		 @Test
+			public void testImport() {
+				String parameter = "{\"jobId\":2677}";
+				try {
+
+					JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+					int jobId = jsonReq.getInt("jobId");
+
+					//UploadService upload = UploadService.getInstance();
+
+					// String filePath = upload.unzipByJobId(jobId); //服务测试
+
+					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
+					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+					
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
+
+					// String
+					// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
+
+					Map<String, Photo> photoMap = new HashMap<String, Photo>();
+
+					Map<String, Audio> audioMap = new HashMap<String, Audio>();
+
+					TipsUpload tipsUploader = new TipsUpload();
+
+					tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+
+					//CollectorImport.importPhoto(photoMap, filePath);
+
+					//AudioImport.importAudio(audioMap, filePath);
+
+					JSONArray patternImageResultImpResult=PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
+					
+					JSONObject result = new JSONObject();
+
+					result.put("total", tipsUploader.getTotal());
+
+					result.put("failed", tipsUploader.getFailed());
+
+					result.put("reasons", tipsUploader.getReasons());
+					
+					result.put("JVImageResult", patternImageResultImpResult);
+					
+
+					System.out.println("开始上传tips完成，jobId:" + jobId + "\tresult:"
+							+ result);
+
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		 }
 		
 
 

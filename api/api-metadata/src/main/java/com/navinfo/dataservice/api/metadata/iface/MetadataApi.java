@@ -121,6 +121,8 @@ public interface MetadataApi {
 	public Map<String, String> scPointNameckTypeD5() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;
+	
+	public Map<String, String> scPointNameckTypeHM6() throws Exception;
 	/**
 	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
 	 * @return List<String> ADMIN_CODE的列表

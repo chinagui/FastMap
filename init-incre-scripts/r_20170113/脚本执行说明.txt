@@ -1,0 +1,16 @@
+1. fm_sys/batch_rule.dmp 
+	功能：
+	目标库：fm_sys
+	author：栋斌
+
+2. fm_regiondb_month/poi_column_workitem_conf.sql
+	功能：
+	目标库：fm_regiondb_month
+	author：鹏蓉
+
+3. 鹏蓉: poi_column_workitem_conf.sql
+
+4. sysCheck.dmp
+	目标库：sys
+	功能：检查项导入
+	author:宋冬燕

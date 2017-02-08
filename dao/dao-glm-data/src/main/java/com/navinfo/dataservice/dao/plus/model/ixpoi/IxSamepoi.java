@@ -10,7 +10,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 */
 public class IxSamepoi extends BasicRow {
 	protected long groupId ;
-	protected int relationType ;
+	protected int relationType = 1 ;
 	
 	public IxSamepoi (long objPid){
 		super(objPid);

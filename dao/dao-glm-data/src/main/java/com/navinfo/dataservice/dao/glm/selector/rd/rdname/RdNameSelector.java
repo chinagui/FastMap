@@ -44,9 +44,9 @@ public class RdNameSelector {
 				return result;
 			}
 
-			String sql = "SELECT * FROM (SELECT C.*, ROWNUM RN FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, A.NAME_GROUPID, A.NAME,A.road_type,c.name as PROVINCE FROM RD_NAME A, AD_ADMIN B,ad_admin_name c WHERE A.NAME LIKE :1 AND a.ADMIN_ID = b.ADMIN_ID and b.REGION_ID = c.region_id and c.NAME_CLASS =1 and c.LANG_CODE = 'CHI') C WHERE ROWNUM <= :2) WHERE RN >= :3";
+			String sql = "SELECT * FROM (SELECT C.*, ROWNUM RN FROM (SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, A.NAME_GROUPID, A.NAME,A.road_type,c.name as PROVINCE FROM RD_NAME A, AD_ADMIN B,ad_admin_name c WHERE A.NAME LIKE :1 AND a.ADMIN_ID = b.ADMIN_ID and b.REGION_ID = c.region_id and c.NAME_CLASS =1 and c.LANG_CODE = 'CHI') C WHERE ROWNUM <= :2) WHERE RN > :3";
 
-			int startRow = pageNum * pageSize;
+			int startRow = (pageNum-1) * pageSize;
 
 			int endRow = pageNum * pageSize;
 			

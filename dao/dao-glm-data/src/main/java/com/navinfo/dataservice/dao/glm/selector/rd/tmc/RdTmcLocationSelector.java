@@ -44,6 +44,12 @@ public class RdTmcLocationSelector extends AbstractSelector {
 
 		tmclocation.setLinks(tmcLinks);
 		
+		for(IRow row : tmcLinks)
+		{
+			RdTmclocationLink tmclocationLink = (RdTmclocationLink) row;
+			tmclocation.linkMap.put(tmclocationLink.rowId(), tmclocationLink);
+		}
+		
 		return tmclocation;
 	}
 	

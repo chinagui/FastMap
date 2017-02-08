@@ -32,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
+import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
@@ -56,6 +57,15 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
+	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaContactMap();
+	}
 	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
@@ -251,6 +261,10 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));
+			result.put("nameUnifyShort", scPointNameckTypeD1_2_3_4_8_11());
+			result.put("chishort", scPointNameckTypeD4_10());
+			result.put("aliasName", scPointNameckTypeD4());
+			
 
 			return result;
 		} catch (Exception e) {
@@ -375,6 +389,17 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointNameckTypeD7() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointNameck.getInstance().scPointNameckTypeD7();
+	}
+	@Override
+	public Map<String, String> scPointNameckTypeD1_2_3_4_8_11() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD1_2_3_4_8_11();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeD4_10() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointNameck.getInstance().scPointNameckTypeD4_10();
 	}
 	/**
 	 * SELECT ADMIN_CODE FROM SC_POINT_DEEP_PLANAREA
@@ -532,6 +557,11 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception {
 		return ScPointAddrAdmin.getInstance().scEngshortListMap();
+	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeHM6() throws Exception {
+		return ScPointNameck.getInstance().scPointNameckTypeHM6();
 	}
 
 }

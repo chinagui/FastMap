@@ -8,6 +8,9 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
  */
 public class PoiRelation {
 	protected long pid;
+	//*******zl 2017.01.20 *********
+	protected String fid;
+	//******************************
 	protected long fatherPid;
 	protected String fatherFid;
 	protected long samePid = 0L;
@@ -28,6 +31,14 @@ public class PoiRelation {
 	public void setPid(long pid) {
 		this.pid = pid;
 	}
+	//*******zl 2017.01.20 *********
+	public String getFid() {
+		return fid;
+	}
+	public void setFid(String fid) {
+		this.fid = fid;
+	}
+	//******************************
 	public long getFatherPid() {
 		return fatherPid;
 	}

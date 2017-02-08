@@ -109,7 +109,7 @@ public class LcFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid, a.geometry from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.face_pid, a.geometry, a.kind from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -130,6 +130,12 @@ public class LcFaceSearch implements ISearch {
 
 			while (resultSet.next()) {
 				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("c", resultSet.getInt("kind"));
+
+				snapshot.setM(m);
 
 				snapshot.setT(32);
 

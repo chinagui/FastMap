@@ -65,9 +65,15 @@ public class BatchService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public long batchRun(int subtaskId,long userId,int batchType,String batchRules) throws Exception{
+	public long batchRun(long userId,JSONObject jsonReq) throws Exception{
 		long jobId=0;
 		
+		int subtaskId=jsonReq.getInt("subtaskId");
+		int batchType=jsonReq.getInt("batchType");
+		String batchRules = "";
+		if (jsonReq.containsKey("batchRules")) {
+			batchRules = jsonReq.getString("batchRules");
+		}
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
 		int dbId=subtaskObj.getDbId();
@@ -84,14 +90,20 @@ public class BatchService {
 			//TODO 根据checkType获取 规则 号 
 			ruleList.add("1");
 		}
-		
-		JSONObject batchRequestJSON=new JSONObject();
-		batchRequestJSON.put("grids", grids);
-		batchRequestJSON.put("rules", ruleList);
-		batchRequestJSON.put("targetDbId", dbId);
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		jobId=apiService.createJob("gdbBatch", batchRequestJSON, userId,subtaskId,"批处理");
+		if(batchType==9){//测试用poi月编poi批处理
+			JSONObject batchRequestJSON=new JSONObject();
+			batchRequestJSON.put("pids", jsonReq.getJSONArray("pids"));
+			batchRequestJSON.put("batchRules", ruleList);
+			batchRequestJSON.put("targetDbId", dbId);
+			jobId=apiService.createJob("editPoiBatchPlus", batchRequestJSON, userId,subtaskId,"POI批处理");			
+		}else{
+			JSONObject batchRequestJSON=new JSONObject();
+			batchRequestJSON.put("grids", grids);
+			batchRequestJSON.put("rules", ruleList);
+			batchRequestJSON.put("targetDbId", dbId);
+			jobId=apiService.createJob("gdbBatch", batchRequestJSON, userId,subtaskId,"批处理");}
 		
 		return jobId;
-	}
+	}	
 }

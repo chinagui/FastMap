@@ -85,7 +85,38 @@ public class commonTest extends InitApplication {
 		Connection conn;
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":0,\"rowId\":\"41937B0F3A6842929633FA164D077DDC\",\"branchType\":5}";
+			String parameter = "{\"dbId\":17,\"type\":\"RDBRANCH\",\"detailId\":210000028,\"rowId\":\"\",\"branchType\":1}";
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int dbId = jsonReq.getInt("dbId");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			if (jsonReq.containsKey("detailId")) {
+				int detailId = jsonReq.getInt("detailId");
+				int branchType = jsonReq.getInt("branchType");
+				String rowId = jsonReq.getString("rowId");
+				RdBranchSelector selector = new RdBranchSelector(conn);
+				IRow row = selector.loadByDetailId(detailId, branchType, rowId,
+						false);
+
+				if (row != null) {
+
+					System.out.println(row.Serialize(ObjLevel.FULL));
+				}
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testGetByPid1() {
+		Connection conn;
+		try {
+
+			String parameter = "{\"dbId\":17,\"type\":\"RDBRANCH\",\"detailId\":97790,\"rowId\":\"\",\"branchType\":3}";
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			int dbId = jsonReq.getInt("dbId");

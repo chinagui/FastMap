@@ -99,7 +99,7 @@ public class GLM01091 extends baseRule {
         if (rdLink.changedFields().containsKey("functionClass")) {
             int functionClass = Integer.parseInt(rdLink.changedFields().get("functionClass").toString());
             //非单向道路，不触发检查
-            if (functionClass != 5) {
+            if (functionClass == 5) {
                 return;
             }
             StringBuilder sb = new StringBuilder();

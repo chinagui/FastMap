@@ -244,6 +244,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					ixPoi.setLinkPid(0);
 				}
 				ixPoi.setChain(jo.getString("chain"));
+				//**********zl 2017.2.8  补增********
+				ixPoi.setKindCode(jo.getString("kindCode"));
 				ixPoi.setOpen24h(jo.getInt("open24H"));
 				// meshid非0时原值转出；为0时根据几何计算；
 				int meshId = jo.getInt("meshid");

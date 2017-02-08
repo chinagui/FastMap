@@ -16,9 +16,9 @@ import net.sf.json.JSONObject;
 public class IxPoiChargingstation extends BasicRow implements ISerializable{
 	protected long chargingId ;
 	protected long poiPid ;
-	protected int chargingType ;
+	protected int chargingType =3;
 	protected String changeBrands ;
-	protected String changeOpenType ;
+	protected String changeOpenType = "1" ;
 	protected int chargingNum ;
 	protected String serviceProv ;
 	protected String memo ;

@@ -207,6 +207,9 @@ public class CheckUtil {
      * @return 错误原因列表 ["前后空格","多个空格"]
      */
     public static List<String> checkIllegalBlank(String word){
+    	if (word == null) {
+    		return null;
+    	}
     	List<String> errorList=new ArrayList<String>();
     	//2、前后空格检查：不能以空格开头或结尾；
 		if(word.startsWith(" ")||word.endsWith(" ")){

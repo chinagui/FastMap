@@ -1204,4 +1204,85 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}		
 		
+		@Test
+	public void run_0113_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"9.0\",\"sideType\":1,\"sNodePid\":\"215837\",\"data\":{\"linkPids\":[201000200]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+		
+		@Test
+	public void run_0113_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":306000059,\"data\":{\"details\":[{\"names\":[{\"pid\":0,\"seqNum\":1,\"nameGroupid\":2,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"voiceFile\":\"\",\"objStatus\":\"INSERT\"},{\"pid\":0,\"seqNum\":1,\"nameGroupid\":1,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"voiceFile\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"04430BCD2B1B4446AD9BF36913F861C3\",\"pid\":307000039,\"objStatus\":\"UPDATE\"}],\"rowId\":\"9EFE30E65F6B432C9231D105B49311DA\",\"pid\":306000059,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}		
+		
+		
+	@Test
+	public void run_0114_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":208000041,\"data\":{\"details\":[{\"names\":[{\"srcFlag\":1,\"rowId\":\"0F601476B86F471FAB6344FB193E7D4A\",\"pid\":302000028,\"objStatus\":\"UPDATE\"}],\"rowId\":\"15653B71F444491A908C83906BCE974A\",\"pid\":310000045,\"objStatus\":\"UPDATE\"}],\"rowId\":\"4131F4CB9D9A4C69BE266D10B2042A6D\",\"pid\":208000041,\"objStatus\":\"UPDATE\"}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+	@Test
+	public void run_0118_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":203001135,\"data\":{\"kind\":9,\"pid\":203001135,\"objStatus\":\"UPDATE\"}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0118_2() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":249,\"type\":\"RDBRANCH\",\"detailId\":0,\"rowId\":\"0824AFB032BB444CBA2856268C12B54D\",\"branchType\":5}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0118_3() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":304000056,\"data\":{\"details\":[{\"names\":[{\"voiceFile\":\"1234\",\"rowId\":\"DC7AEF26A57840D2A0BB0D2FFFAF48B4\",\"pid\":200000021,\"objStatus\":\"UPDATE\"}],\"rowId\":\"030CF7B0F2754127ADFAFDE861CF6D59\",\"pid\":207000038,\"objStatus\":\"UPDATE\"}],\"rowId\":\"8CD6143170A547F4A0B116E9A71873C0\",\"pid\":304000056,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
+	@Test
+	public void run_0207_1() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[300001979,310001938,301001969,310001939,208001974],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":3,\"fromSpeedLimit\":300,\"fromLimitSrc\":2,\"toSpeedLimit\":0,\"toLimitSrc\":0,\"speedDependent\":6}}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0207_2() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINKSPEEDLIMIT\",\"dbId\":17,\"data\":{\"linkPids\":[300001979,310001938,301001969,310001939,208001974],\"direct\":2,\"linkSpeedLimit\":{\"speedType\":0,\"fromSpeedLimit\":400,\"fromLimitSrc\":0,\"toSpeedLimit\":0,\"toLimitSrc\":0,\"speedClassWork\":1}}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

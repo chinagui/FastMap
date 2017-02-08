@@ -30,6 +30,16 @@ public class RdTollgate implements IObj {
 	private int feeType = 2;
 	private int feeStd;
 	private int systemId;
+	private int truckFlag = 1;
+
+	public int getTruckFlag() {
+		return truckFlag;
+	}
+
+	public void setTruckFlag(int truckFlag) {
+		this.truckFlag = truckFlag;
+	}
+
 	private int locationFlag;
 	private String rowId;
 	protected ObjStatus status;
@@ -138,7 +148,6 @@ public class RdTollgate implements IObj {
 	public String getRowId() {
 		return rowId;
 	}
-
 
 	public List<IRow> getNames() {
 		return names;
@@ -282,10 +291,10 @@ public class RdTollgate implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-//		JSONObject json = JSONObject.fromObject(this);
-//		return json;
+		// JSONObject json = JSONObject.fromObject(this);
+		// return json;
 		JSONObject json = JSONObject.fromObject(this);
-		
+
 		if (objLevel == ObjLevel.HISTORY) {
 			json.remove("status");
 		}

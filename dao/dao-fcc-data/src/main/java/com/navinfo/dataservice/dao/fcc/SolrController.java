@@ -268,10 +268,24 @@ public class SolrController {
 		}
 		
 		//不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
-		
 		if(!isPre){
-			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+			
+			if("".equals(builder.toString())){
+				builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+			}else{
+				builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+			}
 		}
+		
+		//过滤315 web不显示的tips 20170118
+		if(!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)){
+			if("".equals(builder.toString())){
+				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}else{
+				builder.append(" AND "+SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}
+		}
+		
 
 		SolrQuery query = new SolrQuery();
 
@@ -423,28 +437,49 @@ public class SolrController {
 		
 		String param = "wkt:\"intersects(" + wkt + ")\"";
 
-		String fq = "";
+		StringBuffer builder = new StringBuffer();
 
-		if(stages!=null){
+		if (stages.size() > 0) {
+
+			builder.append("stage:(");
+
 			for (int i = 0; i < stages.size(); i++) {
 				int stage = stages.getInt(i);
 
-				fq += "stage:" + stage;
-
-				if (i != stages.size() - 1) {
-					fq += " OR ";
+				if (i > 0) {
+					builder.append(" ");
 				}
+				builder.append(stage);
+			}
+
+			builder.append(")");
+		}
+		
+			
+		//过滤315 web不显示的tips 20170118
+		if(!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)){
+			if("".equals(builder.toString())){
+				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}else{
+				builder.append(" AND "+SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
 			}
 		}
 		
 		//取掉fc预处理没有提交的tips
-		fq+=" AND -(t_pStatus:0 AND s_sourceType:8001)";
+		if("".equals(builder.toString())){
+			builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+		}else{
+			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+		}
+		
 
 		SolrQuery query = new SolrQuery();
 
 		query.set("q", param);
-
-		query.set("fq", fq);
+		
+		if(!"".equals(builder.toString())){
+			query.set("fq", builder.toString());
+		}
 
 		query.set("start", 0);
 
@@ -478,10 +513,25 @@ public class SolrController {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
 		String param = "wkt:\"intersects(" + wkt + ")\"";
+		
+		StringBuilder builder = new StringBuilder();
+		
+		//过滤315 web不显示的tips 20170118
+		if(!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)){
+			if("".equals(builder.toString())){
+				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}else{
+				builder.append(" AND "+SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}
+		}
 
 		SolrQuery query = new SolrQuery();
 
 		query.set("q", param);
+		
+		if(!"".equals(builder.toString())){
+			query.set("fq", builder.toString());
+		}
 
 		query.set("start", 0);
 
@@ -660,7 +710,22 @@ public class SolrController {
 		//不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
 		
 		if(!isPre){
-			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+			
+			if("".equals(builder.toString())){
+				builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+			}else{
+				builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+			}
+		}
+		
+		
+		//过滤315 web不显示的tips 20170118
+		if(!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)){
+			if("".equals(builder.toString())){
+				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}else{
+				builder.append(" AND "+SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+			}
 		}
 
 		SolrQuery query = new SolrQuery();

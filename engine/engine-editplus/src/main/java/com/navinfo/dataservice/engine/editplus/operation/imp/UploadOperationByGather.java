@@ -80,11 +80,11 @@ public class UploadOperationByGather {
 	private JSONObject changeData(JSONArray ja) throws Exception {
 		Date startTime = new Date();
 		JSONObject retObj = new JSONObject();
-		List<String> errList = new ArrayList<String>();
+		//List<String> errList = new ArrayList<String>();
 		Connection manConn = null;
 		//Connection conn = null;
 		// 获取当前做业季
-		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		//String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		try {
 			
 			manConn = DBConnector.getInstance().getManConnection();
@@ -122,11 +122,21 @@ public class UploadOperationByGather {
 				}
 			}
 			
-			retObj.put("success", poiMap.size()-errLog.size());
+			/*retObj.put("success", poiMap.size()-errLog.size());
 			JSONObject failJson=new JSONObject();
 			failJson.put("count", errLog.size());
-			failJson.put("fids", errLog);
-			retObj.put("fail", failJson);
+			failJson.put("fids", errLog);*/
+			retObj.put("success", ja.size()-errLog.size());//成功的poi 总数
+			List<JSONObject> errList = new ArrayList<JSONObject>();
+			if(errLog != null && errLog.size() > 0 ){
+				for(String key : errLog.keySet()){
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", key);
+					errObj.put("reason", errLog.get(key));
+					errList.add(errObj);
+				}
+			}
+			retObj.put("fail", errList);
 			return retObj;
 		} catch (Exception e) {
 			throw e;

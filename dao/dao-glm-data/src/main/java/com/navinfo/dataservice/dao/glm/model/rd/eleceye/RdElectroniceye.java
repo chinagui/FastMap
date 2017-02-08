@@ -59,7 +59,9 @@ public class RdElectroniceye implements IObj {
     private Date creationDate;
 
     private int highViolation;
-
+    
+    protected ObjStatus eyeStatus;
+    
     private Map<String, Object> changedFields = new HashMap<String, Object>();
 
     private List<IRow> parts = new ArrayList<IRow>();
@@ -87,11 +89,12 @@ public class RdElectroniceye implements IObj {
 
     @Override
     public ObjStatus status() {
-        return null;
+        return eyeStatus;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
+    	this.eyeStatus = os;
     }
 
     @Override
@@ -216,6 +219,7 @@ public class RdElectroniceye implements IObj {
             speedLimit /= 10;
         }
         JSONObject json = JSONObject.fromObject(this, jsonConfig);
+        json.remove("eyeStatus");
         return json;
     }
 

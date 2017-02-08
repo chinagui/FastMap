@@ -83,16 +83,15 @@ public class Operation implements IOperation {
             this.initCommandPara();
             this.caleCatchModifyRdLink();
 
-            map = RdLinkOperateUtils.splitRdLink(command.getGeometry(),
-                    command.getsNodePid(), command.geteNodePid(),
+            map = RdLinkOperateUtils.splitRdLink(command.getGeometry(), command.getsNodePid(), command.geteNodePid(),
                     command.getCatchLinks(), result);
 
         }
         if (command.getCatchLinks().size() == 0 || map.size() == 0) {
             JSONObject se = new JSONObject();
 
-            se = RdLinkOperateUtils.createRdNodeForLink(command.getGeometry(),
-                    command.getsNodePid(), command.geteNodePid(), result);
+            se = RdLinkOperateUtils.createRdNodeForLink(command.getGeometry(), command.getsNodePid(), command
+                    .geteNodePid(), result);
 
             map.put(command.getGeometry(), se);
         }
@@ -132,16 +131,13 @@ public class Operation implements IOperation {
             // 如果有挂接的node 用node的几何替换对应位置线的形状点
             if (jo.containsKey("nodePid")) {
                 RdNodeSelector nodeSelector = new RdNodeSelector(this.conn);
-                IRow row = nodeSelector.loadById(jo.getInt("nodePid"), true,
-                        true);
+                IRow row = nodeSelector.loadById(jo.getInt("nodePid"), true, true);
                 int seqNum = jo.getInt("seqNum");
                 RdNode node = (RdNode) row;
-                Geometry geom = GeoTranslator.transform(node.getGeometry(),
-                        0.00001, 5);
+                Geometry geom = GeoTranslator.transform(node.getGeometry(), 0.00001, 5);
                 jo.put("lon", geom.getCoordinate().x);
                 jo.put("lat", geom.getCoordinate().y);
-                this.command.getGeometry().getCoordinates()[seqNum] = geom
-                        .getCoordinate();
+                this.command.getGeometry().getCoordinates()[seqNum] = geom.getCoordinate();
             }
             // 挂接link精度处理
             if (jo.containsKey("linkPid")) {
@@ -149,8 +145,7 @@ public class Operation implements IOperation {
                 JSONObject geoPoint = new JSONObject();
 
                 geoPoint.put("type", "Point");
-                geoPoint.put("coordinates", new double[]{jo.getDouble("lon"),
-                        jo.getDouble("lat")});
+                geoPoint.put("coordinates", new double[]{jo.getDouble("lon"), jo.getDouble("lat")});
                 Geometry geometry = GeoTranslator.geojson2Jts(geoPoint, 1, 5);
                 jo.put("lon", geometry.getCoordinate().x);
                 jo.put("lat", geometry.getCoordinate().y);
@@ -163,13 +158,10 @@ public class Operation implements IOperation {
     /*
      * 创建RDLINK 不跨图幅生成线
      */
-    private void createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid,
-                                        Result result) throws Exception {
+    private void createRdLinkWithNoMesh(Geometry g, int sNodePid, int eNodePid, Result result) throws Exception {
         if (g != null) {
-            JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g,
-                    sNodePid, eNodePid, result);
-            RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-                    (int) node.get("e"), result, null);
+            JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
+            RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result, null);
 
             link.setKind(command.getKind());
 
@@ -209,9 +201,8 @@ public class Operation implements IOperation {
      * @throws Exception
      */
 
-    private void createRdLinkWithMesh(Geometry g,
-                                      Map<Coordinate, Integer> maps, Result result, String meshId)
-            throws Exception {
+    private void createRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, String meshId) throws
+            Exception {
         if (g != null) {
 
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -234,8 +225,7 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                   Result result) throws Exception {
+    private void calRdLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
         // 定义创建RDLINK的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -245,22 +235,18 @@ public class Operation implements IOperation {
         }
         // 判断新创建的线终始点对应的pid是否存在，如果存在取出赋值
         if (maps.containsKey(g.getCoordinates()[g.getCoordinates().length - 1])) {
-            eNodePid = maps
-                    .get(g.getCoordinates()[g.getCoordinates().length - 1]);
+            eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
         }
         // 创建线对应的点
-        JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid,
-                eNodePid, result);
+        JSONObject node = RdLinkOperateUtils.createRdNodeForLink(g, sNodePid, eNodePid, result);
         if (!maps.containsValue(node.get("s"))) {
             maps.put(g.getCoordinates()[0], (int) node.get("s"));
         }
         if (!maps.containsValue(node.get("e"))) {
-            maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-                    (int) node.get("e"));
+            maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         // 创建线
-        RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result, null);
+        RdLink link = RdLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result, null);
 
         link.setKind(command.getKind());
 
@@ -278,8 +264,8 @@ public class Operation implements IOperation {
         if (link.getUrban() == 1) {
             for (IRow row : link.getSpeedlimits()) {
                 RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
-                limit.setFromSpeedLimit(limit.getFromLimitSrc() + 100);
-                limit.setToSpeedLimit(limit.getToLimitSrc() + 100);
+                limit.setFromSpeedLimit(limit.getFromLimitSrc() - 100);
+                limit.setToSpeedLimit(limit.getToLimitSrc() - 100);
             }
         }
         this.linkList.add(link);
@@ -294,48 +280,38 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    public void createRdLinks(Map<Geometry, JSONObject> map, Result result)
-            throws Exception {
+    public void createRdLinks(Map<Geometry, JSONObject> map, Result result) throws Exception {
 
         for (Geometry g : map.keySet()) {
             Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
             // 不跨图幅
             if (meshes.size() == 1) {
-                createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map
-                        .get(g).get("e"), result);
+                createRdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
             }
             // 跨图幅
             else {
                 Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
                 maps.put(g.getCoordinates()[0], (int) map.get(g).get("s"));
-                maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
-                        (int) map.get(g).get("e"));
+                maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) map.get(g).get("e"));
                 Iterator<String> it = meshes.iterator();
                 while (it.hasNext()) {
                     String meshIdStr = it.next();
-                    Geometry geomInter = MeshUtils.linkInterMeshPolygon(
-                            g,
-                            GeoTranslator.transform(
-                                    MeshUtils.mesh2Jts(meshIdStr), 1, 5));
+                    Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, GeoTranslator.transform(MeshUtils.mesh2Jts
+                            (meshIdStr), 1, 5));
                     if (geomInter instanceof GeometryCollection) {
                         int geoNum = geomInter.getNumGeometries();
                         for (int i = 0; i < geoNum; i++) {
                             Geometry subGeo = geomInter.getGeometryN(i);
                             if (subGeo instanceof LineString) {
-                                subGeo = GeoTranslator
-                                        .geojson2Jts(GeoTranslator
-                                                .jts2Geojson(subGeo), 1, 5);
+                                subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
 
-                                this.createRdLinkWithMesh(subGeo, maps, result,
-                                        meshIdStr);
+                                this.createRdLinkWithMesh(subGeo, maps, result, meshIdStr);
                             }
                         }
                     } else {
-                        geomInter = GeoTranslator.geojson2Jts(
-                                GeoTranslator.jts2Geojson(geomInter), 1, 5);
+                        geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
 
-                        this.createRdLinkWithMesh(geomInter, maps, result,
-                                meshIdStr);
+                        this.createRdLinkWithMesh(geomInter, maps, result, meshIdStr);
                     }
                 }
             }
@@ -353,22 +329,20 @@ public class Operation implements IOperation {
      */
     public void breakLine(Result result) throws Exception {
         // 处理连续打断参数
-        JSONArray resultArr = BasicServiceUtils.getBreakArray(command
-                .getCatchLinks());
+        JSONArray resultArr = BasicServiceUtils.getBreakArray(command.getCatchLinks());
 
         // 组装打断操作流程
         for (int i = 0; i < resultArr.size(); i++) {
             JSONObject obj = resultArr.getJSONObject(i);
-            JSONObject breakJson = BasicServiceUtils.getBreaksPara(obj,
-                    this.command.getDbId());
+            JSONObject breakJson = BasicServiceUtils.getBreaksPara(obj, this.command.getDbId());
             // 组装打断线的参数
             // 保证是同一个连接
             com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command breakCommand = new com
-                    .navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(
-                    breakJson, breakJson.toString());
+                    .navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Command(breakJson, breakJson
+                    .toString());
             com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process breakProcess = new com
-                    .navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(
-                    breakCommand, conn, result);
+                    .navinfo.dataservice.engine.edit.operation.topo.breakin.breakrdpoint.Process(breakCommand, conn,
+                    result);
             breakProcess.innerRun();
 
         }
@@ -384,13 +358,10 @@ public class Operation implements IOperation {
             JSONObject modifyJson = command.getCatchLinks().getJSONObject(i);
             if (modifyJson.containsKey("linkPid")) {
                 RdLinkSelector linkSelector = new RdLinkSelector(conn);
-                IRow row = linkSelector.loadByIdOnlyRdLink(
-                        modifyJson.getInt("linkPid"), false);
+                IRow row = linkSelector.loadByIdOnlyRdLink(modifyJson.getInt("linkPid"), false);
                 RdLink link = (RdLink) row;
-                Geometry geometry = GeoTranslator.transform(link.getGeometry(),
-                        0.00001, 5);
-                if (geometry.getCoordinates()[0].x == modifyJson
-                        .getDouble("lon")
+                Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+                if (geometry.getCoordinates()[0].x == modifyJson.getDouble("lon")
 
                         && geometry.getCoordinates()[0].y == modifyJson
 
@@ -399,8 +370,7 @@ public class Operation implements IOperation {
                     modifyJson.put("nodePid", link.getsNodePid());
 
                 }
-                if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson
-                        .getDouble("lon")
+                if (geometry.getCoordinates()[geometry.getCoordinates().length - 1].x == modifyJson.getDouble("lon")
 
                         && geometry.getCoordinates()[geometry.getCoordinates().length - 1].y == modifyJson
 

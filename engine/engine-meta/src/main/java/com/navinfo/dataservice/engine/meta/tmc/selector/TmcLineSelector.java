@@ -6,9 +6,13 @@ package com.navinfo.dataservice.engine.meta.tmc.selector;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.List;
 
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
+import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.navicommons.database.sql.DBUtils;
+
+import net.sf.json.JSONArray;
 
 /**
  * @ClassName: TmcLineSelector
@@ -71,6 +75,20 @@ public class TmcLineSelector {
 				tmcLine.setTypeCode(resultSet.getString("TYPE_CODE"));
 				
 				tmcLine.setUplineTmcId(resultSet.getInt("UPLINE_TMC_ID"));
+				
+				TmcSelector selector = new TmcSelector(conn);
+				
+				List<TmcPoint> tmcPointList = selector.queryTmcPointByLineId(tmcLineId);
+
+				JSONArray lineGeo = new JSONArray();
+
+				for (TmcPoint tmcPoint : tmcPointList) {
+					JSONArray pointGeo = tmcPoint.getGeometry();
+
+					lineGeo.add(pointGeo);
+				}
+				
+				tmcLine.setGeometry(lineGeo);
 				
 				// 获取LINK对应的关联数据 rd_link_name
 				tmcLine.setNames(new TmcLineNameSelector(conn).loadRowsByParentId(tmcLine.getTmcId()));

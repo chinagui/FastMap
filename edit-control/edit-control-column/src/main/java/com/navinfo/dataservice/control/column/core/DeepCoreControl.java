@@ -523,14 +523,14 @@ public class DeepCoreControl {
 		List<String> rules = new ArrayList<String>();
 		if ("deepDetail".equals(secondWorkItem)){
 			// 通用
-			rules.add("FMBAT20195");
-			rules.add("FMBAT20196");
+			rules.add("FM-BAT-20-195");
+			rules.add("FM-BAT-20-196");
 		}else if ("deepParking".equals(secondWorkItem)){
 			// 停车场
-			rules.add("FMBAT20198");
+			rules.add("FM-BAT-20-198");
 		}else if ("deepCarrental".equals(secondWorkItem)){
 			// 汽车租赁
-			rules.add("FMBAT20197");
+			rules.add("FM-BAT-20-197");
 		}
 			return rules;
 	}

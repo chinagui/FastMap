@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.tmc.update;
 
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.tmc.RdTmcLocationSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
@@ -14,11 +16,9 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public boolean prepareData() throws Exception {
 
-		AbstractSelector selector = new AbstractSelector(RdTmclocation.class,
-				this.getConn());
+		RdTmcLocationSelector selector = new RdTmcLocationSelector(RdTmclocation.class, this.getConn());
 
-		RdTmclocation location = (RdTmclocation) selector.loadById(this.getCommand().getPid(),
-				true);
+		RdTmclocation location = (RdTmclocation) selector.getById(this.getCommand().getPid(), true);
 
 		this.getCommand().setRdTmclocation(location);
 
@@ -28,7 +28,7 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 
-		return new Operation(this.getCommand(),this.getConn()).run(this.getResult());
+		return new Operation(this.getCommand(), this.getConn()).run(this.getResult());
 	}
 
 }

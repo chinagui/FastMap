@@ -40,6 +40,10 @@
 		class="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.GdbBatchJobRequest"
 	/>
+	<type name="editPoiBatchPlus" 
+		class="com.navinfo.dataservice.edit.job.EditPoiBatchPlusJob"
+	 	request="com.navinfo.dataservice.edit.job.EditPoiBatchPlusJobRequest"
+	/>
 	<type name="batchCore" 
 		class="com.navinfo.dataservice.cop.waistcoat.job.BatchCoreJob"
 	 	request="com.navinfo.dataservice.cop.waistcoat.job.BatchCoreJobRequest"

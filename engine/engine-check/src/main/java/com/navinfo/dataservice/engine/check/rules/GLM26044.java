@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -65,43 +66,44 @@ public class GLM26044 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdCrossLink(RdCrossLink rdCrossLink) throws Exception {
-		StringBuilder sb = new StringBuilder();
+		if(rdCrossLink.status().equals(ObjStatus.INSERT)){
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
-		sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
-		sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 50");
-		sb.append(" AND RLF.U_RECORD <> 2)");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 33");
-		sb.append(" AND RLF.U_RECORD <> 2)");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
+			sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
+			sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
+			sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
+			sb.append(" UNION");
+			sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
+			sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RLF.FORM_OF_WAY = 50");
+			sb.append(" AND RLF.U_RECORD <> 2)");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
+			sb.append(" UNION");
+			sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL");
+			sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RLF.FORM_OF_WAY = 33");
+			sb.append(" AND RLF.U_RECORD <> 2)");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
 
-		String sql = sb.toString();
-		log.info("RdCrossLink后检查GLM26044:" + sql);
+			String sql = sb.toString();
+			log.info("RdCrossLink后检查GLM26044:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(resultList.size()>0){
-			String target = "[RD_CROSS," + rdCrossLink.getPid() + "]";
-			this.setCheckResult("", target, 0,resultList.get(0).toString());
+			if(resultList.size()>0){
+				String target = "[RD_CROSS," + rdCrossLink.getPid() + "]";
+				this.setCheckResult("", target, 0,resultList.get(0).toString());
+			}
 		}
-		
 	}
 
 	/**
@@ -109,42 +111,43 @@ public class GLM26044 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdCross(RdCross rdCross) throws Exception {
-		StringBuilder sb = new StringBuilder();
+		if(rdCross.status().equals(ObjStatus.INSERT)){
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
-		sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
-		sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RCL.PID = " + rdCross.getPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 50");
-		sb.append(" AND RLF.U_RECORD <> 2)");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RCL.PID = " + rdCross.getPid());
-		sb.append(" UNION");
-		sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
-		sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-		sb.append(" AND RLF.FORM_OF_WAY = 33");
-		sb.append(" AND RLF.U_RECORD <> 2");
-		sb.append(" AND RCL.U_RECORD <> 2");
-		sb.append(" AND RCL.PID = " + rdCross.getPid());
+			sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL, RD_LINK RL");
+			sb.append(" WHERE RCL.LINK_PID = RL.LINK_PID");
+			sb.append(" AND RL.SPECIAL_TRAFFIC <> 0");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RL.U_RECORD <> 2");
+			sb.append(" AND RCL.PID = " + rdCross.getPid());
+			sb.append(" UNION");
+			sb.append(" SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
+			sb.append(" WHERE NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF");
+			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RLF.FORM_OF_WAY = 50");
+			sb.append(" AND RLF.U_RECORD <> 2)");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RCL.PID = " + rdCross.getPid());
+			sb.append(" UNION");
+			sb.append(" SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
+			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RLF.FORM_OF_WAY = 33");
+			sb.append(" AND RLF.U_RECORD <> 2");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RCL.PID = " + rdCross.getPid());
 
-		String sql = sb.toString();
-		log.info("RdCross后检查GLM26044:" + sql);
+			String sql = sb.toString();
+			log.info("RdCross后检查GLM26044:" + sql);
 
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(resultList.size()>0){
-			String target = "[RD_CROSS," + rdCross.getPid() + "]";
-			this.setCheckResult("", target, 0,resultList.get(0).toString());
-		}
-		
+			if(resultList.size()>0){
+				String target = "[RD_CROSS," + rdCross.getPid() + "]";
+				this.setCheckResult("", target, 0,resultList.get(0).toString());
+			}
+		}	
 	}
 
 	/**
@@ -163,6 +166,27 @@ public class GLM26044 extends baseRule{
 				sb.append(" AND RLF.U_RECORD <> 2");
 				sb.append(" AND RCL.U_RECORD <> 2");
 				sb.append(" AND RLF.LINK_PID = " + rdLinkForm.getLinkPid());
+
+				String sql = sb.toString();
+				log.info("RdLinkForm后检查GLM26044:" + sql);
+
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+
+				if(resultList.size()>0){
+					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+					this.setCheckResult("", target, 0,resultList.get(0).toString());
+				}
+			}
+			
+			else if(rdLinkForm.getFormOfWay() == 50){
+				StringBuilder sb = new StringBuilder();
+
+				sb.append("SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
+				sb.append(" WHERE RCL.LINK_PID = " + rdLinkForm.getLinkPid());
+				sb.append(" AND RCL.U_RECORD <> 2");
+				sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RCL.LINK_PID AND RLF.FORM_OF_WAY = 50 AND RLF.U_RECORD <> 2)");
 
 				String sql = sb.toString();
 				log.info("RdLinkForm后检查GLM26044:" + sql);

@@ -116,28 +116,32 @@ public class GLM04008_2 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void checkRdLink(RdLink rdLink, OperType operType) throws Exception {
-		StringBuilder sb = new StringBuilder();
+		if(rdLink.changedFields().containsKey("direct")){
+			int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString());
+			if((direct==2)||(direct==3)){
+				StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID FROM RD_LINK R ");
-		sb.append("WHERE R.LINK_PID = " + rdLink.getPid());
-		sb.append("AND R.U_RECORD != 2 ");
-		sb.append("AND EXISTS( ");
-		sb.append("SELECT 1 FROM RD_GATE G ");
-		sb.append("WHERE G.DIR=2 ");
-		sb.append("AND (R.LINK_PID = G.IN_LINK_PID OR R.LINK_PID = G.OUT_LINK_PID ) ");
-		sb.append("AND R.DIRECT in (2,3) ");
-		sb.append("AND G.U_RECORD <> 2 ") ;
-		sb.append(")") ;
+				sb.append("SELECT R.GEOMETRY,'[RD_LINK,' || R.LINK_PID || ']',R.MESH_ID FROM RD_LINK R ");
+				sb.append("WHERE R.LINK_PID = " + rdLink.getPid());
+				sb.append("AND R.U_RECORD != 2 ");
+				sb.append("AND EXISTS( ");
+				sb.append("SELECT 1 FROM RD_GATE G ");
+				sb.append("WHERE G.DIR=2 ");
+				sb.append("AND (R.LINK_PID = G.IN_LINK_PID OR R.LINK_PID = G.OUT_LINK_PID ) ");
+				sb.append("AND G.U_RECORD <> 2 ") ;
+				sb.append(")") ;
 
-		String sql = sb.toString();
-		log.info("RdLink后检查GLM04008_2:" + sql);
+				String sql = sb.toString();
+				log.info("RdLink后检查GLM04008_2:" + sql);
 
-		DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+				DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
 
-		if(!resultList.isEmpty()){
-			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2));
+				if(!resultList.isEmpty()){
+					this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int)resultList.get(2));
+				}
+			}
 		}
 	}
 

@@ -26,6 +26,8 @@ public class ScPointNameck {
 	
 	private Map<String, Map<String, String>> typeD6 = new HashMap<String, Map<String, String>>();
 	
+	private Map<String, String> typeHM6 = new HashMap<String,String>();
+	
 	private Map<String, String> typeD7 = new HashMap<String, String>();
 	
 	private List<String> type9=new ArrayList<String>();
@@ -281,6 +283,38 @@ public class ScPointNameck {
 	}
 
 
+	public Map<String,String> scPointNameckTypeHM6() throws Exception{
+		if (typeHM6==null||typeHM6.isEmpty()) {
+			synchronized (this) {
+				if (typeHM6==null||typeHM6.isEmpty()) {
+					try {
+						String sql = "SELECT PRE_KEY,RESULT_KEY,ADMINAREA"
+								+ "  FROM SC_POINT_NAMECK"
+								+ " WHERE TYPE = 6 AND HM_FLAG != 'D' ";
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								typeHM6.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));
+							}
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.commitAndCloseQuietly(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return typeHM6;
+	}
+	
 	public Map<String,Map<String,String>> scPointNameckTypeD6() throws Exception{
 		if (typeD6==null||typeD6.isEmpty()) {
 			synchronized (this) {

@@ -20,6 +20,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.util.FileUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class PatternImageImporter {
@@ -36,28 +37,16 @@ public class PatternImageImporter {
 	private static String sqlSvg = "update SC_VECTOR_MATCH set format=:1,file_content=:2 where file_name=:3";
 	private static int counter = 0;
 	
-	/*public  PatternImageImporter(PreparedStatement pstmt1,PreparedStatement pstmtSvg1){
-		this.pstmt=pstmt1;
-		this.pstmtSvg=pstmtSvg1;
-	}*/
-//
-//	public static InputStream getJpgStream(String filePath) throws Exception {
-//		ByteArrayOutputStream out = new ByteArrayOutputStream();
-//
-//		BufferedImage bufferedImage = ImageIO.read(new File(filePath));
-//
-//		BufferedImage newBufferedImage = new BufferedImage(
-//				bufferedImage.getWidth(), bufferedImage.getHeight(),
-//				BufferedImage.TYPE_INT_RGB);
-//		newBufferedImage.createGraphics().drawImage(bufferedImage, 0, 0,
-//				Color.WHITE, null);
-//
-//		ImageIO.write(newBufferedImage, "jpg", out);
-//
-//		InputStream in = new ByteArrayInputStream(out.toByteArray());
-//
-//		return in;
-//	}
+	
+	static class ErrorType {
+		static int DataExists = 1;
+
+		static int SUCESS = 0;
+
+		static int FAIL = 3;
+
+	}
+	
 
 	public static void main(String[] args) throws Exception {
 
@@ -274,27 +263,30 @@ public class PatternImageImporter {
 	 * @throws Exception
 	 * @time:2016-12-29 下午2:30:53
 	 */
-	public static void importImage(String filePath, String imageDirectory)
+	public static JSONArray importImage(String filePath, String imageDirectory)
 			throws Exception {
 
+		JSONArray result=new JSONArray();
+		
+		String fileName4Msg=null;
 		try {
 			File file1 = new File(filePath);
 
 			if (!file1.exists()&&!file1.isFile()) {
-				return;
+				return null;
 			}
 			
 			// 1. 读取txt获取模式图信息
 			Map<String, PatternImage> imageMap = loadFileData(filePath);
 
 			if (imageMap.size() == 0) {
-				return;
+				return null;
 			}
 
 			File file = new File(imageDirectory);
 
 			if (!file.exists()&&!file.isDirectory()) {
-				return;
+				return null;
 			}
 
 			// 2. readPhotos 读取同照片 这里不用修改
@@ -311,6 +303,8 @@ public class PatternImageImporter {
 			List<PatternImage> importImages = new ArrayList<PatternImage>();
 
 			for (String fileName : keys) {
+				
+				fileName4Msg=fileName;//异常信息使用
 
 				PatternImage image = imageMap.get(fileName);
 				
@@ -322,6 +316,12 @@ public class PatternImageImporter {
 				if (!selector.isFileExists(name)) {
 
 					importImages.add(image);
+					
+					result.add(newReasonObject(name,ErrorType.SUCESS));
+					
+				}else{
+					
+					result.add(newReasonObject(name,ErrorType.DataExists));
 				}
 			}
 			
@@ -330,11 +330,28 @@ public class PatternImageImporter {
 			uploader.run(importImages);
 			
 			logger.info("模式图导入成功");
+			
+			return result;
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("模式图导入失败：" + e.getMessage(),e);
+			
+			result.add(newReasonObject(fileName4Msg,ErrorType.SUCESS));
+			
 			throw new Exception("模式图导入失败：" + e.getMessage(),e);
 		}
 
+	}
+	
+	
+	private static JSONObject newReasonObject(String rowkey, int type) {
+
+		JSONObject json = new JSONObject();
+
+		json.put("name", rowkey);
+
+		json.put("type", type);
+
+		return json;
 	}
 
 	/**

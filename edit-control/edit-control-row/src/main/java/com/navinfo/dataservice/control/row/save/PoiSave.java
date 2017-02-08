@@ -106,6 +106,12 @@ public class PoiSave {
                 Integer parentPoiPid = 0;
                 if (OperType.CREATE == operType || OperType.UPDATE == operType) {
                     parentPoiPid = json.getInt("parentPid");
+                    // 一个父子关系家族中，最多允许3级父子关系存在，大于3级以上，不可制作父子关系,
+                    // 判断制作父子关系是否超过三级
+	                boolean errorFlag = ParentChildReletion3level(conn, childPoiPid, parentPoiPid);
+	                if (!errorFlag){
+	                	throw new Exception("父子关系大于3级以上，不可制作父子关系！");
+	                }
                 } else if (OperType.DELETE == operType) {
                     IxPoiParentSelector selector = new IxPoiParentSelector(conn);
                     List<IRow> parents = selector.loadParentRowsByChildrenId(childPoiPid, true);
@@ -115,6 +121,7 @@ public class PoiSave {
                         break;
                     }
                 }
+                
                 sb.append(childPoiPid).append(",").append(parentPoiPid);
                 result = editApiImpl.runPoi(json);
                 if (OperType.CREATE != operType) {
@@ -215,6 +222,67 @@ public class PoiSave {
             DBUtils.closeStatement(pstmt);
         }
 
+    }
+    
+    /**
+     * 判断poiPid的父子关系是否超过三级
+     * @param conn 大区库conn
+     * @param poiPid 当前poi的pid
+     * @param parentPid 当前poi的父pid，如果没有父，传0
+     * @return 
+     * @throws Exception 
+     */
+    public boolean ParentChildReletion3level(Connection conn, int poiPid, int parentPid) throws Exception{
+    	IxPoiParentSelector poiParentSelector = new IxPoiParentSelector(conn);
+    	List<Integer> childPids = poiParentSelector.getChildrenPids(poiPid);
+    	List<String> error = new ArrayList<String>();
+    	if (childPids.size() != 0){
+    		// 遍历每个1级子有没有2级子
+    		for (int oneChildPid: childPids){
+    			List<Integer> twoChildPids = poiParentSelector.getChildrenPids(oneChildPid);
+				// 有二级子
+    			if (twoChildPids.size() != 0){
+    				if (parentPid != 0){
+    					// 有二级子，并且有父，即父子关系为4级，则报错
+    					error.add("F");
+    				} else{
+    					// 遍历每个2级子有没有3级子
+    					for (int twoChildPid: twoChildPids){
+    						List<Integer> threeChildPids = poiParentSelector.getChildrenPids(twoChildPid);
+    						// 有三级子，即父子关系为4级，则报错
+    						if (threeChildPids.size() != 0){
+    							error.add("F");
+    						}
+    					}
+    				}
+    			} else{
+    				if (parentPid != 0){
+    					int twoParentPid = poiParentSelector.getParentPid(parentPid);
+    					if (twoParentPid != 0){
+    						// 有一级子，有二级父，父子关系为4级，报错
+    						error.add("F");
+    					}
+    				}
+    				
+    			}
+    		}
+    	} else{
+    		// 当前poi没有子，但是有3级父，报错
+    		if (parentPid != 0){
+				int twoParentPid = poiParentSelector.getParentPid(parentPid);
+				if (twoParentPid != 0){
+					int threeParentPid = poiParentSelector.getParentPid(twoParentPid);
+					if (threeParentPid != 0){
+						error.add("F");
+					}
+				}
+    		}
+    	}
+    	
+    	if (error.contains("F")){
+    		return false;
+    	}
+    	return true;
     }
 
 }

@@ -162,6 +162,72 @@ public class TipsController extends BaseController {
 		}
 	}
 	
+	
+	
+	/**
+	 * @Description:批量编辑tips状态
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-2-8 上午9:15:07
+	 */
+	@RequestMapping(value = "/tip/batchEditStatus")
+	public ModelAndView batchEditStatus(HttpServletRequest request )
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+
+			//int stage = jsonReq.getInt("stage");
+
+			int handler = jsonReq.getInt("handler");
+			
+			String mdFlag= jsonReq.getString("mdFlag");
+			
+			 if (StringUtils.isEmpty(rowkey)) {
+	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
+	         }
+			
+			 if (StringUtils.isEmpty(mdFlag)) {
+	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+	         }
+			
+			  //值域验证
+            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+            }
+
+
+			String pid = null;
+
+			if (jsonReq.containsKey("pid")) {
+				pid = jsonReq.getString("pid");
+			}
+
+			TipsOperator op = new TipsOperator();
+
+			op.update(rowkey,  handler, pid,mdFlag);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
 	@RequestMapping(value = "/tip/import")
 	public ModelAndView importTips(HttpServletRequest request
 			) throws ServletException, IOException {
@@ -199,7 +265,7 @@ public class TipsController extends BaseController {
 			
 			AudioImport.importAudio(audioMap,filePath);
 			
-			//PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
+			JSONArray patternImageResultImpResult=PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
 			
 			JSONObject result = new JSONObject();
 
@@ -208,6 +274,8 @@ public class TipsController extends BaseController {
 			result.put("failed", tipsUploader.getFailed());
 
 			result.put("reasons", tipsUploader.getReasons());
+			
+			result.put("JVImageResult", patternImageResultImpResult);
 			
 			logger.info("开始上传tips完成，jobId:"+jobId+"\tresult:"+result);
 

@@ -42,7 +42,7 @@ public class RdTmcLocationTest extends InitApplication{
 	@Test
 	public void testRdTmcLocation()
 	{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDTMCLOCATION\",\"objId\":300000037,\"data\":{\"links\":[{\"locDirect\":1,\"rowId\":\"183473C00D28472CA0690681287E7510\",\"linkPid\":304002786,\"objStatus\":\"UPDATE\"}],\"rowId\":\"4467045AA2B04A7C973F947934428173\",\"pid\":300000037,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDTMCLOCATION\",\"objId\":200000064,\"data\":{\"links\":[{\"locDirect\":1,\"rowId\":\"20013AA06CDD4566B18D392D8B359F68\",\"linkPid\":589102,\"objStatus\":\"UPDATE\"},{\"locDirect\":3,\"rowId\":\"D7B486C3F0C4465293C44A8B8824A850\",\"linkPid\":580137,\"objStatus\":\"UPDATE\"}],\"rowId\":\"57EC0B8B4069421880EF5B41C5BD29A2\",\"pid\":200000064,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

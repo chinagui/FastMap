@@ -90,7 +90,7 @@ public class CheckService {
 			jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId,subtaskId, "检查");
 		}//20161214 by zxy,目前行编按需检查规则未实现，不能使用新框架进行检查，暂时行编自定义检查还是通过cop检查执行，
 		//但是相关job接口已ok，检查规则实现后，开放即可
-		/*else if(checkType ==0){//checkType ==0poi行编
+		else if(checkType ==9){//checkType ==0poi行编
 			JSONObject poiRequestJSON=new JSONObject();
 //			*checkType ==0poi行编 
 //			 * 必传参数：subtaskId,ckRules
@@ -103,7 +103,7 @@ public class CheckService {
 			poiRequestJSON.put("rules", ruleList);
 			poiRequestJSON.put("targetDbId", dbId);
 			jobId=apiService.createJob("poiRowValidation", poiRequestJSON, userId,subtaskId, "检查");
-		}*/
+		}
 		else if (checkType ==1){//checkType ==1poi精编
 			JSONObject poiRequestJSON=new JSONObject();
 			/*checkType ==1poi精编 

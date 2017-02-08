@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
+import com.navinfo.dataservice.control.row.save.PoiSave;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.engine.batch.BatchProcess;
@@ -134,4 +135,14 @@ public class PoiSaveTest {
 		}
 
 	}
+	
+	@Test
+	public void testPoiSave() throws Exception{
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":305000048}";
+		PoiSave ps = new PoiSave();
+		JSONObject res = ps.save(parameter, 2);
+		System.out.println(res);
+	}
+	
+	
 }

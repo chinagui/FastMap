@@ -103,25 +103,29 @@ public class Operation implements IOperation {
 
 		int seqNum = 1;
 
-		List<IRow> vias = new ArrayList<IRow>();
+		//路口关系的分歧不记录经过线
+		if(branch.getRelationshipType() != 1)
+		{
+			List<IRow> vias = new ArrayList<IRow>();
+			
+			for (Integer linkPid : viaLinks) {
+				RdBranchVia via = new RdBranchVia();
 
-		for (Integer linkPid : viaLinks) {
-			RdBranchVia via = new RdBranchVia();
+				via.setBranchPid(branch.getPid());
 
-			via.setBranchPid(branch.getPid());
+				via.setLinkPid(linkPid);
 
-			via.setLinkPid(linkPid);
+				via.setSeqNum(seqNum);
 
-			via.setSeqNum(seqNum);
+				vias.add(via);
 
-			vias.add(via);
+				via.setMesh(meshId);
 
-			via.setMesh(meshId);
+				seqNum++;
+			}
 
-			seqNum++;
+			branch.setVias(vias);
 		}
-
-		branch.setVias(vias);
 
 		return branch;
 	}

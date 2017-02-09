@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class RdSignboard implements IObj {
 
@@ -28,6 +29,14 @@ public class RdSignboard implements IObj {
 	private String backimageCode;
 	
 	private String rowId;
+	private Geometry geometry;
+	public Geometry getGeometry() {
+		return geometry;
+	}
+
+	public void setGeometry(Geometry geometry) {
+		this.geometry = geometry;
+	}
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	

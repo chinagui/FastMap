@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
@@ -267,5 +268,13 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointChainBrandKeyDMap() throws Exception;
+	
+	/**
+	 * 简体字查询
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception;
 
 }

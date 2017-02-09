@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONObject;
@@ -30,7 +31,12 @@ public class TyCharacterFjtHmCheckSelector {
 		
 		JSONObject characterMap = new JSONObject();
 		
+		boolean connFlag = false;
 		try {
+			if (conn == null) {
+				conn = DBConnector.getInstance().getMetaConnection();
+				connFlag = true;
+			}
 			pstmt = conn.prepareStatement(sql);
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
@@ -40,6 +46,10 @@ public class TyCharacterFjtHmCheckSelector {
 		} catch (Exception e) {
 			throw e;
 		} finally {
+			if (connFlag) {
+				DBUtils.closeConnection(conn);
+			}
+			
 			DBUtils.closeResultSet(resultSet);
 
 			DBUtils.closeStatement(pstmt);

@@ -64,13 +64,13 @@ public class PoiRowValidationJob extends AbstractJob {
 					myRequest.getPids(), false, false);
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
+			log.info("PoiRowValidationJob:加载同一关系检查对象");
+			//获取poi对象			
+			List<Long> groupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, myRequest.getPids());
 			log.info("PoiRowValidationJob:获取要检查的同一关系数据的履历");
 			//获取log
 			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, myRequest.getPids());
 			Set<String> sametabNames=getChangeTableSet(samelogs);
-			log.info("PoiRowValidationJob:加载同一关系检查对象");
-			//获取poi对象			
-			List<Long> groupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, myRequest.getPids());
 			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames, false,
 					groupIds, false, false);
 			//将poi对象与履历合并起来

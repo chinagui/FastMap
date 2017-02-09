@@ -141,12 +141,28 @@ public class TipsSelector {
 				// 日编月编状态
 
 				if ("d".equals(mdFlag)) {
+					
+					//如果日编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
+					if(json.getInt("t_dInProc")==1){
+						
+						m.put("a", 2);
+						
+					}else{
+						
+						m.put("a", json.getString("t_dStatus"));
+					}
 
-					m.put("a", json.getString("t_dStatus"));
 
 				} else if ("m".equals(mdFlag)) {
 
-					m.put("a", json.getString("t_mStatus"));
+					//如果月编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
+					if(json.getInt("t_mInProc")==1){
+						
+						m.put("a", 2);
+					}else 
+					{
+						m.put("a", json.getString("t_mStatus"));
+					}
 
 				}
 

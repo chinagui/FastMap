@@ -882,33 +882,32 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select count(1) as num, c.first_work_item as type");
-			sb.append("  from poi_column_status s, poi_column_workitem_conf c,ix_poi p");
-			sb.append(" where s.work_item_id = c.work_item_id");
-			sb.append("  and s.pid=p.pid");
-			sb.append("  and sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
-			sb.append("  and c.first_work_item in");
-			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
-			sb.append("  and s.first_work_status = 1");
-			sb.append("  and s.handler = 0");
-			sb.append(" GROUP BY c.first_work_item");
+			sb.append(" with t1 as");
+			sb.append("  (select s.pid");
+			sb.append("     from poi_column_status s, poi_column_workitem_conf c, ix_poi p");
+			sb.append("    where s.work_item_id = c.work_item_id");
+			sb.append("      and s.pid = p.pid");
+			sb.append("      and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+			sb.append("      and (c.first_work_item in ('poi_name', 'poi_address','poi_englishname','poi_englishaddress') or");
+			sb.append("          c.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental'))");
+			sb.append("      and s.first_work_status = 1");
+			sb.append("      and s.handler = 0)");
+			sb.append(" select count (1) as num, c.first_work_item as type");
+			sb.append("   from poi_column_status s, poi_column_workitem_conf c, t1 p");
+			sb.append("  where s.work_item_id = c.work_item_id and s.pid = p.pid and c.first_work_item in ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress') and s.first_work_status = 1 and s.handler = 0");
+			sb.append("  GROUP BY c.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, c1.second_work_item as type");
-			sb.append("  from poi_column_status s1, poi_column_workitem_conf c1,ix_poi p1");
-			sb.append(" where s1.work_item_id = c1.work_item_id");
-			sb.append("  and s1.pid=p1.pid");
-			sb.append("  and sdo_within_distance(p1.geometry, sdo_geometry(    :2  , 8307), 'mask=anyinteract') = 'TRUE'");
-			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
-			sb.append("  and s1.second_work_status = 1");
-			sb.append("  and s1.handler = 0");
-			sb.append(" GROUP BY c1.second_work_item");
+			sb.append("   from poi_column_status s1, poi_column_workitem_conf c1, t1 p1");
+			sb.append("  where s1.work_item_id = c1.work_item_id and s1.pid = p1.pid and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental') and s1.second_work_status = 1 and s1.handler = 0");
+			sb.append("  GROUP BY c1.second_work_item");
+
 
 			pstmt = conn.prepareStatement(sb.toString());
 			 
 			Clob geoClob =ConnectionUtil.createClob(conn);
 			geoClob.setString(1, subtask.getGeometry());
 			pstmt.setClob(1, geoClob);
-			pstmt.setClob(2, geoClob);
 			
 			resultSet = pstmt.executeQuery();
 			

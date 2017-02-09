@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -41,45 +40,6 @@ public class Check {
 			
 			//检查link形态
 			checkLinkDirect(linkList);
-		}
-	}
-	
-	/**
-	 * 检查link参数正确性
-	 * @param linkList link集合
-	 * @throws Exception
-	 */
-	private void checkLink(List<RdLink> linkList) throws Exception {
-		if(linkList != null && command.getLinkArray() != null && command.getLinkArray().size()>0)
-		{
-			@SuppressWarnings("unchecked")
-			List<Integer> linkPids = (List<Integer>) JSONArray.toCollection(command.getLinkArray());
-			if(linkList.size() != linkPids.size())
-			{
-				throw new Exception("传递的link参数不正确:包含的link个数错误");
-			}
-			else
-			{
-				List<Integer> dbLinkPids = new ArrayList<>();
-				
-				for(RdLink link :linkList)
-				{
-					dbLinkPids.add(link.getPid());
-				}
-				
-				if(!(linkPids.containsAll(dbLinkPids) && dbLinkPids.containsAll(linkPids)))
-				{
-					throw new Exception("传递的link参数不正确：link_pid错误");
-				}
-				else
-				{
-					this.checkLinkDirect(linkList);
-				}
-			}
-		}
-		if(CollectionUtils.isNotEmpty(linkList) && ((command.getLinkArray() == null)||(command.getLinkArray().size() == 0)))
-		{
-			throw new Exception("传递的link参数不正确：缺失link参数");
 		}
 	}
 

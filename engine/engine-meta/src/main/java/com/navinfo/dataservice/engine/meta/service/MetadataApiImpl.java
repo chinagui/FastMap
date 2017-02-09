@@ -217,7 +217,8 @@ public class MetadataApiImpl implements MetadataApi {
 		return areaSelector.getAdminMap();
 	}
 
-	public JSONObject getCharacterMap(Connection conn) throws Exception {
+	@Override
+	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception {
 		TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
 		return tyCharacterFjtHmCheckSelector.getCharacterMap();
 	}
@@ -257,7 +258,7 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("chain", getChainMap(conn));
 			result.put("kindCode", getKindCodeMap(conn));
 			result.put("admin", getAdminMap(conn));
-			result.put("character", getCharacterMap(conn));
+			result.put("character", getTyCharacterFjtHmCheckMap(conn));
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));

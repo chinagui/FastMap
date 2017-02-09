@@ -3,9 +3,12 @@ package com.navinfo.dataservice.dao.glm.selector.rd.cross;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
@@ -66,5 +69,50 @@ public class RdCrossNodeSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 		return node;
+	}	
+	
+	/**
+	 * 根据node所关联路口组成的所有nodePid
+	 * @param nodePid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Integer> getCrossNodePidByNode(int nodePid)
+			throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		String sql = "SELECT N2.NODE_PID FROM RD_CROSS_NODE N1, RD_CROSS_NODE N2, RD_CROSS C WHERE N1.NODE_PID = :1 AND N1.PID = C.PID AND N2.PID = C.PID AND N1.U_RECORD <> 2 AND N2.U_RECORD <> 2 AND C.U_RECORD <> 2";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			resultSet = pstmt.executeQuery();
+			
+			
+			while (resultSet.next()) {
+
+				nodePids.add(resultSet.getInt("NODE_PID"));
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return nodePids;
 	}
 }

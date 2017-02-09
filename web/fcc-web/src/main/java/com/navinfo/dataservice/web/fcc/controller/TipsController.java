@@ -185,17 +185,17 @@ public class TipsController extends BaseController {
             }
 		    
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			//{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
 
-			String rowkey = jsonReq.getString("rowkey");
-
-			//int stage = jsonReq.getInt("stage");
+			JSONArray data = jsonReq.getJSONArray("data");
 
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
 			
-			 if (StringUtils.isEmpty(rowkey)) {
-	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
+			 if (data==null||data.size()==0) {
+	                throw new IllegalArgumentException("参数错误:data不能为空");
 	         }
 			
 			 if (StringUtils.isEmpty(mdFlag)) {
@@ -207,16 +207,9 @@ public class TipsController extends BaseController {
             	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
             }
 
-
-			String pid = null;
-
-			if (jsonReq.containsKey("pid")) {
-				pid = jsonReq.getString("pid");
-			}
-
 			TipsOperator op = new TipsOperator();
 
-			op.update(rowkey,  handler, pid,mdFlag);
+			op.batchUpdateStatus(data,handler,mdFlag);
 
 			return new ModelAndView("jsonView", success());
 

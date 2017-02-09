@@ -50,6 +50,49 @@ public class TipsOperateTest {
 		}
 
 	}
+	
+	/**
+	 * 批量修改tips状态
+	 * @Description:TOOD
+	 * @author: y
+	 * @time:2017-2-9 上午9:45:51
+	 */
+	@Test
+	public void testBatchEdit() {
+
+		TipsOperator operate = new TipsOperator();
+		
+		//JSONArray data, int handler, String mdFlag
+		
+		JSONArray data=new JSONArray();
+		
+		JSONObject b=new JSONObject();
+		
+		b.put("rowkey", "1115023838453");
+		
+		b.put("status", "2");
+		
+		data.add(b);
+		
+		JSONObject a=new JSONObject();
+		
+		a.put("rowkey", "1115024070073");
+		
+		a.put("status", "2");
+		
+		data.add(a);
+		
+		int handler=2922;
+		
+		String mdFlag="m";
+
+		try {
+			operate.batchUpdateStatus(data, handler, mdFlag);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 
 	// @Test
 	public void testUpdateAll() {

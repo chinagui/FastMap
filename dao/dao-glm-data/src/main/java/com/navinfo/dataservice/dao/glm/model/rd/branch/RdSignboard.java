@@ -10,6 +10,7 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -94,7 +95,7 @@ public class RdSignboard implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		return JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
 	}
 
 	@Override

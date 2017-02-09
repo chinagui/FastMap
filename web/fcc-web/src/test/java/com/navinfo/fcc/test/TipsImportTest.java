@@ -4,11 +4,11 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.photo.Photo;
 import com.navinfo.dataservice.commons.util.FileUtils;
@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.photo.HBaseController;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.tips.CopyOfTipsUpload;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
@@ -44,7 +45,9 @@ public class TipsImportTest extends InitApplication {
 			// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 			//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+			//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+			
+			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 
 			// String
 			// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
@@ -61,9 +64,8 @@ public class TipsImportTest extends InitApplication {
 
 			AudioImport.importAudio(audioMap, filePath);
 
-			// PatternImageImporter.importImage(filePath + "/"+
-			// "JVImage.txt",filePath+"/JVImage"); //JVImage为模式图的文件夹
-
+			JSONArray patternImageResultImpResult=PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
+			
 			JSONObject result = new JSONObject();
 
 			result.put("total", tipsUploader.getTotal());
@@ -71,6 +73,9 @@ public class TipsImportTest extends InitApplication {
 			result.put("failed", tipsUploader.getFailed());
 
 			result.put("reasons", tipsUploader.getReasons());
+			
+			result.put("JVImageResult", patternImageResultImpResult);
+			
 
 			System.out.println("开始上传tips完成，jobId:" + jobId + "\tresult:"
 					+ result);

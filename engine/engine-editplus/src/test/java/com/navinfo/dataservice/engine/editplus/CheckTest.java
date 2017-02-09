@@ -64,13 +64,13 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 2179861, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
-		row.setKindCode("230126");
+//		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
-		Map<String, Object> oldValues=new HashMap<String, Object>();
-		oldValues.put("KIND_CODE", "121");
-		logg.setOldValues(oldValues);
+//		Map<String, Object> oldValues=new HashMap<String, Object>();
+//		oldValues.put("KIND_CODE", "121");
+//		logg.setOldValues(oldValues);
 		logg.setOpType(OperationType.UPDATE);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
@@ -79,7 +79,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A04-19");
+		ruleIdList.add("FM-14Sum-06-01-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

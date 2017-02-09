@@ -1,18 +1,19 @@
 package com.navinfo.dataservice.engine.fcc.patternImage;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Types;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
-import java.util.Scanner;
 
 import org.apache.commons.dbutils.DbUtils;
 
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 
 public class PatternImageUploader {
 
@@ -45,8 +46,6 @@ public class PatternImageUploader {
 
 		Connection conn = null;
 
-		//Scanner scanner = null;
-
 		try {
 			conn = DBConnector.getInstance().getMetaConnection();
 
@@ -54,17 +53,17 @@ public class PatternImageUploader {
 
 			int counter = 0;
 			
+			String seasonVersion=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+			
 			for (PatternImage image : images) {
-				
-				//pstmt.setNull(1, Types.INTEGER);
 				
 				pstmt.setLong(1, getFileId(conn));//FILE_ID
 
-				pstmt.setString(2, "NIDB-G");//PRODUCT_LINE  ???
+				pstmt.setString(2, "NIDB-G");//PRODUCT_LINE  :NIDB-G
 
-				pstmt.setString(3, "16冬");//VERSION  ???
+				pstmt.setString(3,seasonVersion);//VERSION  获取sys服务下sys_config表中的当前版本号
 
-				pstmt.setString(4, "博士"); //PROJECT_NM ???
+				pstmt.setString(4, "博士"); //PROJECT_NM :获取sys服务下sys_config表中的当前版本号
 
 				pstmt.setNull(5, Types.VARCHAR); //SPECIFICATION
 
@@ -76,23 +75,23 @@ public class PatternImageUploader {
 
 				pstmt.setString(9, image.getName());//FILE_NAME
 				
-				pstmt.setNull(10, Types.VARCHAR); //SIZE
+				pstmt.setNull(10, Types.VARCHAR); //SIZE 空
 
 				pstmt.setString(11, image.getFormat());//  FORMAT
 
-				pstmt.setString(12, "test"); //IMP_WORKER  ??
+				pstmt.setString(12, String.valueOf(image.getUserId())); //IMP_WORKER   原值导入
 
-			//	pstmt.setString(13, ""); //IMP_DATE
-
-				pstmt.setString(13, " ");//URL_DB
-
-				pstmt.setString(14, " ");//URL_FILE
+				//pstmt.setString(13, ""); //IMP_DATE 在语句中已经赋值
 				
-				pstmt.setString(15, "");//MEMO
+				pstmt.setString(13,"/multimedia/data/3D/pattern/"+image.getName()+"."+image.getFormat());//URL_DB
+
+				pstmt.setString(14, "D:\\2.模式图\\3D\\pattern\\"+image.getName()+"."+image.getFormat());//URL_FILE
+				
+				pstmt.setString(15, "");//MEMO 空
 
 				ByteArrayInputStream stream = new ByteArrayInputStream(image.getContent()); //FILE_CONTENT
 
-				pstmt.setBlob(16, stream);
+				pstmt.setBlob(16, stream); 
 
 				pstmt.setInt(17, 0); //FILE_TYPE
 
@@ -136,7 +135,19 @@ public class PatternImageUploader {
 		}
 	}
 	
-	
+	/**
+	 * 
+	 * @Description:获取fileId
+	 * 原则：
+	 * 1. 前4位：当前年份
+	 * 2. 第5位：0
+	 * 3. 后8位：顺序编号 ：max（数据中后8位）+1
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2017-2-8 上午9:40:02
+	 */
 	private long getFileId(Connection conn) throws Exception{
 		PreparedStatement pstmt=null;
 		
@@ -144,8 +155,15 @@ public class PatternImageUploader {
 		
 		try{
 		
+		//1. 前4位：当前年份
+		Calendar c = Calendar.getInstance();
 		
-		String sql="SELECT MAX(FILE_ID) + 1  file_id FROM SC_MODEL_MATCH_G ";
+		c.setTime(new Date());
+		
+		String year=String.valueOf((c.get(Calendar.YEAR))) ;
+		
+		//max（数据中后8位）+1
+		String sql="SELECT  max(SUBSTR(file_id,-7,7))+1  file_id FROM SC_MODEL_MATCH_G ";
 		
 		pstmt = conn.prepareStatement(sql);
 		
@@ -153,7 +171,7 @@ public class PatternImageUploader {
 		
 		if(rs.next()){
 			
-			return rs.getLong("file_id");
+			return Long.valueOf(year+"0"+String.valueOf(rs.getLong("file_id")));
 		}
 		
 		}catch (Exception e) {

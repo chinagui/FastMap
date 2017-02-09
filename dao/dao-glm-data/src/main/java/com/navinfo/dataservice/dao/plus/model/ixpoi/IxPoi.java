@@ -22,7 +22,7 @@ public class IxPoi extends AbstractIx {
 	protected String meshId5k ;
 	protected long regionId ;
 	protected String postCode ;
-	protected int editFlag ;
+	protected int editFlag =1 ;
 	protected String difGroupid ;
 	protected String reserved ;
 	protected int state ;
@@ -42,10 +42,10 @@ public class IxPoi extends AbstractIx {
 	protected long taskId ;
 	protected String dataVersion ;
 	protected long fieldTaskId ;
-	protected int verifiedFlag ;
+	protected int verifiedFlag  = 9;
 	protected String collectTime ;
-	protected int geoAdjustFlag ;
-	protected int fullAttrFlag ;
+	protected int geoAdjustFlag = 9;
+	protected int fullAttrFlag = 9;
 	protected double oldXGuide ;
 	protected double oldYGuide ;
 	protected int truckFlag ;

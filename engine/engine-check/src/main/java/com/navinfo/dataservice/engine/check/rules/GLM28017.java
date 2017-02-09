@@ -61,39 +61,59 @@ public class GLM28017 extends baseRule {
 	 */
 	private void check(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT COUNT(1) FROM (");
-		sb.append("SELECT DISTINCT RIN.PID FROM RD_INTER_NODE RIN");
-		sb.append(" WHERE RIN.NODE_PID IN");
-		sb.append(" (");
-		sb.append(" SELECT R.S_NODE_PID");
-		sb.append(" FROM RD_LINK R");
-		sb.append(" WHERE R.DIRECT = 2");
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
-				+ pid + ")");
+
+		sb.append(" SELECT COUNT(1) FROM ");
+		sb.append(" ( ");
+		sb.append(" SELECT DISTINCT RIN.PID FROM RD_INTER_NODE RIN ");
+		sb.append(" WHERE RIN.NODE_PID IN ");
+		sb.append(" ( ");
+		sb.append(" SELECT DISTINCT RL.S_NODE_PID FROM RD_ROAD_LINK RRL,RD_LINK RL ");
+		sb.append(" WHERE RRL.LINK_PID = RL.LINK_PID ");
+		sb.append(" AND RRL.U_RECORD <> 2 ");
+		sb.append(" AND RL.U_RECORD <> 2 ");
+		sb.append(" AND RRL.PID = " + pid + ")");
 		sb.append(" UNION ");
-		sb.append(" SELECT R.E_NODE_PID");
-		sb.append(" FROM RD_LINK R");
-		sb.append(" WHERE R.DIRECT = 2");
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
-				+ pid + ")");
-		sb.append(" UNION ");
-		sb.append(" SELECT R.S_NODE_PID");
-		sb.append(" FROM RD_LINK R");
-		sb.append(" WHERE R.DIRECT = 3");
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
-				+ pid + ")");
-		sb.append(" UNION ");
-		sb.append(" SELECT R.E_NODE_PID");
-		sb.append(" FROM RD_LINK R");
-		sb.append(" WHERE R.DIRECT = 3");
-		sb.append(" AND R.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
-				+ pid + ")");
-		sb.append(" )");
-		sb.append(" AND RIN.U_RECORD <> 2)");
+		sb.append(" SELECT DISTINCT RL.E_NODE_PID FROM RD_ROAD_LINK RRL,RD_LINK RL ");
+		sb.append(" WHERE RRL.LINK_PID = RL.LINK_PID ");
+		sb.append(" AND RRL.U_RECORD <> 2 ");
+		sb.append(" AND RL.U_RECORD <> 2 ");
+		sb.append(" AND RRL.PID = " + pid + ")");
+		sb.append(" ) ");
+		sb.append(" ) ");
+		
+//		sb.append("SELECT COUNT(1) FROM (");
+//		sb.append("SELECT DISTINCT RIN.PID FROM RD_INTER_NODE RIN");
+//		sb.append(" WHERE RIN.NODE_PID IN");
+//		sb.append(" (");
+//		sb.append(" SELECT R.S_NODE_PID");
+//		sb.append(" FROM RD_LINK R");
+//		sb.append(" WHERE R.DIRECT = 2");
+//		sb.append(" AND R.U_RECORD <> 2");
+//		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
+//				+ pid + ")");
+//		sb.append(" UNION ");
+//		sb.append(" SELECT R.E_NODE_PID");
+//		sb.append(" FROM RD_LINK R");
+//		sb.append(" WHERE R.DIRECT = 2");
+//		sb.append(" AND R.U_RECORD <> 2");
+//		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
+//				+ pid + ")");
+//		sb.append(" UNION ");
+//		sb.append(" SELECT R.S_NODE_PID");
+//		sb.append(" FROM RD_LINK R");
+//		sb.append(" WHERE R.DIRECT = 3");
+//		sb.append(" AND R.U_RECORD <> 2");
+//		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
+//				+ pid + ")");
+//		sb.append(" UNION ");
+//		sb.append(" SELECT R.E_NODE_PID");
+//		sb.append(" FROM RD_LINK R");
+//		sb.append(" WHERE R.DIRECT = 3");
+//		sb.append(" AND R.U_RECORD <> 2");
+//		sb.append(" AND R.LINK_PID IN (SELECT RRL.LINK_PID FROM RD_ROAD_LINK RRL WHERE RRL.U_RECORD <> 2 AND RRL.PID = "
+//				+ pid + ")");
+//		sb.append(" )");
+//		sb.append(" AND RIN.U_RECORD <> 2)");
 
 		String sql = sb.toString();
 		log.info("RdRoad后检查GLM28017:" + sql);

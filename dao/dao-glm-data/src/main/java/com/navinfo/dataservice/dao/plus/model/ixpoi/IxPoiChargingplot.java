@@ -15,27 +15,27 @@ import net.sf.json.JSONObject;
 */
 public class IxPoiChargingplot extends BasicRow implements ISerializable{
 	protected long poiPid ;
-	protected int groupId ;
-	protected int count ;
+	protected int groupId = 1;
+	protected int count =1;
 	protected int acdc ;
-	protected String plugType ;
+	protected String plugType = "9";
 	protected String power ;
 	protected String voltage ;
 	protected String current ;
 	protected int mode ;
 	protected String memo ;
-	protected int plugNum ;
+	protected int plugNum  =1;
 	protected String prices ;
-	protected String openType ;
+	protected String openType = "1";
 	protected int availableState ;
 	protected String manufacturer ;
 	protected String factoryNum ;
 	protected String plotNum ;
 	protected String productNum ;
 	protected String parkingNum ;
-	protected int floor ;
+	protected int floor =1;
 	protected int locationType ;
-	protected String payment ;
+	protected String payment ="4";
 	
 	public IxPoiChargingplot (long objPid){
 		super(objPid);

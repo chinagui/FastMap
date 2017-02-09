@@ -558,5 +558,10 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception {
 		return ScPointAddrAdmin.getInstance().scEngshortListMap();
 	}
+	
+	@Override
+	public Map<String, String> scPointNameckTypeHM6() throws Exception {
+		return ScPointNameck.getInstance().scPointNameckTypeHM6();
+	}
 
 }

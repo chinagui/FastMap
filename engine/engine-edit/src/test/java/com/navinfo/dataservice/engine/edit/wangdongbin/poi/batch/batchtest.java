@@ -20,8 +20,8 @@ public class batchtest extends InitApplication {
 	@Test
 	public void test() {
 		try {
-			long jobId=BatchService.getInstance().batchRun(7,2,1,"BATCH_POI_GUIDELINK");	
-			System.out.println(jobId);
+//			long jobId=BatchService.getInstance().batchRun(7,2,1,"BATCH_POI_GUIDELINK");	
+//			System.out.println(jobId);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

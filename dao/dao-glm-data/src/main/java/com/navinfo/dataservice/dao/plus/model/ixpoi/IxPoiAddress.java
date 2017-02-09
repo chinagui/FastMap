@@ -14,7 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 */
 public class IxPoiAddress extends BasicRow {
 	protected long nameId ;
-	protected long nameGroupid ;
+	protected long nameGroupid =1 ;
 	protected long poiPid ;
 	protected String langCode ;
 	protected int srcFlag ;

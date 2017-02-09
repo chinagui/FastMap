@@ -128,6 +128,8 @@ public interface MetadataApi {
 	
 	public Map<String, String> scPointNameckTypeD7() throws Exception;
 	
+	public Map<String, String> scPointNameckTypeHM6() throws Exception;
+	
 	public Map<String, String> scPointNameckTypeD1_2_3_4_8_11() throws Exception;
 	
 	public Map<String, String> scPointNameckTypeD4_10() throws Exception;

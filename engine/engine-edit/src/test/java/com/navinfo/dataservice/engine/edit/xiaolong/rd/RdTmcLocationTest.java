@@ -42,7 +42,7 @@ public class RdTmcLocationTest extends InitApplication{
 	@Test
 	public void testRdTmcLocation()
 	{
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDTMCLOCATION\",\"dbId\":17,\"data\":{\"tmcId\":\"522001350\",\"direct\":\"1\",\"locDirect\":\"0\",\"loctableId\":\"32\",\"linkPids\":[220003073,210002933,205002956]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDTMCLOCATION\",\"objId\":200000064,\"data\":{\"links\":[{\"locDirect\":1,\"rowId\":\"20013AA06CDD4566B18D392D8B359F68\",\"linkPid\":589102,\"objStatus\":\"UPDATE\"},{\"locDirect\":3,\"rowId\":\"D7B486C3F0C4465293C44A8B8824A850\",\"linkPid\":580137,\"objStatus\":\"UPDATE\"}],\"rowId\":\"57EC0B8B4069421880EF5B41C5BD29A2\",\"pid\":200000064,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

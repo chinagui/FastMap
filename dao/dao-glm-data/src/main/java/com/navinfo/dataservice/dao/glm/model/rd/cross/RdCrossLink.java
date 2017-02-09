@@ -22,6 +22,8 @@ public class RdCrossLink implements IRow {
 	private int linkPid;
 
 	private String rowId;
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -52,7 +54,14 @@ public class RdCrossLink implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+//		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override
@@ -86,12 +95,12 @@ public class RdCrossLink implements IRow {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

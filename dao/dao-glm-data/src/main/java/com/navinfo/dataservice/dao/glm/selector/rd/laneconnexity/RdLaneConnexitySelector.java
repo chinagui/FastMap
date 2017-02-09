@@ -582,4 +582,105 @@ public class RdLaneConnexitySelector extends AbstractSelector {
 		return laneConns;
 	}
 
+	/**
+	 * 根据经过点获取车信pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByPassNode(List<Integer> nodePids)
+			throws Exception {
+		
+		List<Integer> connexityPids = new ArrayList<Integer>();
+
+		if (nodePids == null || nodePids.isEmpty()) {
+
+			return connexityPids;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = "SELECT DISTINCT C.PID FROM RD_LANE_VIA V, RD_LINK L, RD_LANE_TOPOLOGY T,RD_LANE_CONNEXITY C WHERE ( ";
+
+		sql += " L.S_NODE_PID IN (" + pids + ")  OR ";
+
+		sql += " L.E_NODE_PID IN (" + pids + ") ";
+
+		sql += " ) AND L.LINK_PID = V.LINK_PID AND V.TOPOLOGY_ID = T.TOPOLOGY_ID AND T.CONNEXITY_PID = C.PID  AND L.U_RECORD <> 2 AND V.U_RECORD <> 2 AND T.U_RECORD <> 2 AND C.U_RECORD <> 2 ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				connexityPids.add(resultSet.getInt("PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return connexityPids;
+	}
+	
+	/**
+	 * 根据进入点获取车信pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByInNode(List<Integer> nodePids) throws Exception {
+		
+		List<Integer> connexityPids = new ArrayList<Integer>();
+		
+		String pids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = " SELECT DISTINCT PID FROM RD_LANE_CONNEXITY WHERE NODE_PID IN ( "
+				+ pids + " ) AND U_RECORD!=2 ";
+	
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				connexityPids.add(resultSet.getInt("PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return connexityPids;
+	}
 }

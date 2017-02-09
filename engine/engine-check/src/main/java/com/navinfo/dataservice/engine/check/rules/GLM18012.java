@@ -69,7 +69,8 @@ public class GLM18012 extends baseRule {
 			
 			sb.append("SELECT V.IN_LINK_PID LINK_PID FROM RD_VOICEGUIDE V, RD_VOICEGUIDE_DETAIL D");
 			sb.append(" WHERE V.IN_LINK_PID = "+rdLinkForm.getLinkPid()+"  AND V.PID = D.VOICEGUIDE_PID");
-			sb.append(" AND V.U_RECORD != 2 AND D.U_RECORD != 2 AND D.RELATIONSHIP_TYPE = 1");
+			sb.append(" AND V.U_RECORD != 2 AND D.U_RECORD != 2 ");
+			//sb.append(" AND D.RELATIONSHIP_TYPE = 1");
 			sb.append(" UNION");
 			sb.append(" SELECT D.OUT_LINK_PID LINK_PID FROM RD_VOICEGUIDE_DETAIL D");
 			sb.append(" WHERE D.OUT_LINK_PID = "+rdLinkForm.getLinkPid());

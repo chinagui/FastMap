@@ -784,7 +784,7 @@ public class LogWriter {
 		String sql = "insert into log_action (act_id, us_id,op_cmd,src_db,stk_id) values (?,?,?,?,?)";
 		try {
 			QueryRunner run = new QueryRunner();
-			run.update(conn, sql, actId,  this.getUserId(),opCmd,
+			run.update(conn, sql, actId, this.getUserId(), opCmd,
 					this.getDbType(), this.getTaskId());
 
 		} catch (Exception e) {
@@ -821,8 +821,11 @@ public class LogWriter {
 						json.put(StringUtils.toColumnName(key).toUpperCase(),
 								rowJson.get(key));
 					} else {
-						json.put("geometry".toUpperCase(), Geojson
-								.geojson2Wkt(rowJson.getString("geometry")));
+						if (StringUtils.isNotEmpty(rowJson
+								.getString("geometry"))) {
+							json.put("geometry".toUpperCase(), Geojson
+									.geojson2Wkt(rowJson.getString("geometry")));
+						}
 					}
 				} else {
 

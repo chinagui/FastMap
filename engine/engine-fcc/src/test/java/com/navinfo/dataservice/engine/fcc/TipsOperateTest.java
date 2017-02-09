@@ -18,6 +18,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
@@ -50,6 +51,97 @@ public class TipsOperateTest {
 		}
 
 	}
+	
+	/**
+	 * 批量修改tips状态
+	 * @Description:TOOD
+	 * @author: y
+	 * @time:2017-2-9 上午9:45:51
+	 */
+	@Test
+	public void testBatchEdit() {
+
+		TipsOperator operate = new TipsOperator();
+		
+		//JSONArray data, int handler, String mdFlag
+		
+		JSONArray data=new JSONArray();
+		
+		JSONObject b=new JSONObject();
+		
+		b.put("rowkey", "1115023838453");
+		
+		b.put("status", "2");
+		
+		data.add(b);
+		
+		JSONObject a=new JSONObject();
+		
+		a.put("rowkey", "1115024070073");
+		
+		a.put("status", "2");
+		
+		data.add(a);
+		
+		int handler=2922;
+		
+		String mdFlag="m";
+
+		try {
+			operate.batchUpdateStatus(data, handler, mdFlag);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	@Test
+	public void testBatchEditStatus2() throws Exception {
+		
+		try{
+
+		 String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
+		 if (StringUtils.isEmpty(parameter)) {
+             throw new IllegalArgumentException("parameter参数不能为空。");
+         }
+		    
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			//{mdflag:'',handler:'',data:[{rowkey:'',status:''}]}
+
+			JSONArray data = jsonReq.getJSONArray("data");
+
+			int handler = jsonReq.getInt("handler");
+			
+			String mdFlag= jsonReq.getString("mdFlag");
+			
+			 if (data==null||data.size()==0) {
+	                throw new IllegalArgumentException("参数错误:data不能为空");
+	         }
+			
+			 if (StringUtils.isEmpty(mdFlag)) {
+	                throw new IllegalArgumentException("参数错误:mdFlag不能为空");
+	         }
+			
+			  //值域验证
+         if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)){
+         	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+         }
+
+			TipsOperator op = new TipsOperator();
+
+			op.batchUpdateStatus(data,handler,mdFlag);
+
+			//return new ModelAndView("jsonView", success());
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	
+	
+	
 
 	// @Test
 	public void testUpdateAll() {

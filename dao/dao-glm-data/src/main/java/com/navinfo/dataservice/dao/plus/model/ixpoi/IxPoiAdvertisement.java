@@ -12,8 +12,8 @@ public class IxPoiAdvertisement extends BasicRow {
 	protected long advertiseId ;
 	protected long poiPid ;
 	protected String labelText ;
-	protected String type ;
-	protected int priority ;
+	protected String type ="1";
+	protected int priority = 1;
 	protected String startTime ;
 	protected String endTime ;
 	

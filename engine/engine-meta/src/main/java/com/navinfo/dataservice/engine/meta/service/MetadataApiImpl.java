@@ -564,5 +564,10 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointNameckTypeHM6() throws Exception {
 		return ScPointNameck.getInstance().scPointNameckTypeHM6();
 	}
+	
+	@Override
+	public List<Map<String, Object>> searchByErrorName(String name) throws Exception {
+		return ScPointAdminarea.getInstance().searchByErrorName(name);
+	}
 
 }

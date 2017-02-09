@@ -276,5 +276,13 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception;
+	
+	/**
+	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录
+	 * @param name
+	 * @return List<Map<String, Object>>
+	 * @throws Exception
+	 */
+	public List<Map<String, Object>> searchByErrorName(String name) throws Exception;
 
 }

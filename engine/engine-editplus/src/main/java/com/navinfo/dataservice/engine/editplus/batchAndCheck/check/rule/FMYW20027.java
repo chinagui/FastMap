@@ -36,11 +36,16 @@ public class FMYW20027 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			if(ixPoiAddress == null){return;}
-			String fullname = ixPoiAddress.getFullname();
+			String addressFullname = ixPoiAddress.getFullname();
+			if(addressFullname == null){return;}
+			//全角空格转半角空格
+			String fullname = CheckUtil.strQ2B(addressFullname);
 			List<String> errMsgList = new ArrayList<String>();
 			//address中存在空格，且空格前后若为以下组合，将Err的情况，程序报出；---见空格规则表
 			String blankRuleErrStr = CheckUtil.blankRuleErrStr(fullname);
-			errMsgList.add("地址空格错误:"+blankRuleErrStr);
+			if(blankRuleErrStr != null){
+				errMsgList.add("地址空格错误:"+blankRuleErrStr);
+			}
 			//address前后空格检查,多个空格检查,回车符检查,Tab符检查
 			List<String> checkIllegalBlank = CheckUtil.checkIllegalBlank(fullname);
 			if(checkIllegalBlank != null && !checkIllegalBlank.isEmpty()){

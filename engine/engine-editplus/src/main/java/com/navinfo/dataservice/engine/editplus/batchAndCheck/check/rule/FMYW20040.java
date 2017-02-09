@@ -33,7 +33,8 @@ public class FMYW20040 extends BasicCheckRule {
 			//错误数据
 			if(ixPoiAddress==null){return;}
 			if(ixPoiAddress.getHisOpType().equals(OperationType.INSERT)
-					||(ixPoiAddress.getHisOpType().equals(OperationType.UPDATE))){
+					||((ixPoiAddress.getHisOpType().equals(OperationType.UPDATE))
+							&&ixPoiAddress.hisOldValueContains(IxPoiAddress.FULLNAME))){
 				String fullname = ixPoiAddress.getFullname();
 				if(fullname != null){
 					if(fullname.endsWith("路")||fullname.endsWith("街")||fullname.endsWith("道")||fullname.endsWith("弄")

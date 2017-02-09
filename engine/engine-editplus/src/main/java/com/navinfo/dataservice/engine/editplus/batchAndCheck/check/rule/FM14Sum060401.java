@@ -31,7 +31,8 @@ public class FM14Sum060401 extends BasicCheckRule {
 			String fullname = ixPoiAddress.getFullname();
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
 			String name = ixPoiName.getName();
-			if(fullname != null && fullname.equals(name)){
+			if(fullname == null || name == null){return;}
+			if(fullname.equals(name)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 			}
 		}

@@ -41,7 +41,7 @@ public class FM14Sum080201 extends BasicCheckRule {
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			String kind=poi.getKindCode();
-			if(kind.equals("230227")){continue;}
+			//if(kind.equals("230227")){continue;}
 			if(kind.equals("230210")||kind.equals("230213")||kind.equals("230214")){pid2.add(poi.getPid());}
 			else{pid1.add(poi.getPid());}
 		}

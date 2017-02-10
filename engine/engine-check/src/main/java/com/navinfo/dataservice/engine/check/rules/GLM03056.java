@@ -104,12 +104,12 @@ public class GLM03056 extends baseRule {
 		Map<String, Object> changedFields = rdLink.changedFields();
 		Set<Integer> nodePids = new HashSet<Integer>();
 		//新增LINK
-		if(changedFields.isEmpty()){
+		if(ObjStatus.INSERT.equals(rdLink.status())){
 			nodePids.add(rdLink.getsNodePid());
 			nodePids.add(rdLink.geteNodePid());
 		}
 		//分离节点,平滑修形
-		if(!changedFields.isEmpty()){
+		if(ObjStatus.UPDATE.equals(rdLink.status())){
 			Integer sNodePid = null;
 			Integer eNodePid = null;
 			if(changedFields.containsKey("sNodePid")){

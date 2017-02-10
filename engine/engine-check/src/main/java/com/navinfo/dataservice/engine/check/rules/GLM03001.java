@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -50,12 +51,12 @@ public class GLM03001 extends baseRule {
 		Set<Integer> nodePids = new HashSet<Integer>();
 		Map<String, Object> changedFields = rdLink.changedFields();
 		//新增LINK
-		if(changedFields.isEmpty()){
+		if(ObjStatus.INSERT.equals(rdLink.status())){
 			nodePids.add(rdLink.getsNodePid());
 			nodePids.add(rdLink.geteNodePid());
 		}
 		//分离节点,平滑修形
-		else if(!changedFields.isEmpty()){
+		if(ObjStatus.UPDATE.equals(rdLink.status())){
 			Integer sNodePid = null;
 			Integer eNodePid = null;
 			if(changedFields.containsKey("sNodePid")){

@@ -27,6 +27,7 @@ public abstract class LogSelector {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected OracleSchema logSchema;
 	protected List<Integer> grids;
+	protected List<Integer> filterGrids;
 	protected Date stopTime;
 	protected String tempTable;
 	protected QueryRunner run;
@@ -104,5 +105,11 @@ public abstract class LogSelector {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	public List<Integer> getFilterGrids() {
+		return filterGrids;
+	}
+	public void setFilterGrids(List<Integer> filterGrids) {
+		this.filterGrids = filterGrids;
 	}
 }

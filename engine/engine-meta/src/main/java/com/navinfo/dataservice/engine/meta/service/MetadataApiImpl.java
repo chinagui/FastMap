@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -563,6 +564,21 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, String> scPointNameckTypeHM6() throws Exception {
 		return ScPointNameck.getInstance().scPointNameckTypeHM6();
+	}
+
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> listMeshes4Partition()throws Exception{
+		//to-do
+		return null;
+	}
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(int[] admincodes)throws Exception{
+		//to-do
+				return null;
 	}
 
 }

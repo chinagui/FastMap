@@ -44,7 +44,7 @@ cache 20;
  */
 public class FmDay2MonSync implements Serializable {
 	private long sid;
-	private long cityId;//315已不用
+//	private long cityId;//315已不用
 	private Date syncTime;
 	private int syncStatus;
 	private long jobId;
@@ -54,12 +54,6 @@ public class FmDay2MonSync implements Serializable {
 	}
 	public void setSid(long sid) {
 		this.sid = sid;
-	}
-	public long getCityId() {
-		return cityId;
-	}
-	public void setCityId(long cityId) {
-		this.cityId = cityId;
 	}
 	public Date getSyncTime() {
 		return syncTime;
@@ -87,7 +81,7 @@ public class FmDay2MonSync implements Serializable {
 	}
 	@Override
 	public String toString() {
-		return "FmDay2MonSync [sid=" + sid + ", cityId=" + cityId + ", syncTime=" + syncTime + ", syncStatus="
+		return "FmDay2MonSync [sid=" + sid + ", syncTime=" + syncTime + ", syncStatus="
 				+ syncStatus + ", jobId=" + jobId+ ", regionId=" + regionId + "]";
 	}
 	/**

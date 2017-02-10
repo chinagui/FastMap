@@ -409,7 +409,7 @@ public class CompGeometryUtil {
 		try{
 			Geometry g = JtsGeometryFactory.read("LINESTRING (116.37481 40, 116.37515 40)");
 			Set<String> results = geo2GridsWithoutBreak(g);
-			System.out.println(StringUtils.join(results,","));
+			System.out.println("out:"+StringUtils.join(results,","));
 		}catch(Exception e){
 			e.printStackTrace();
 		}

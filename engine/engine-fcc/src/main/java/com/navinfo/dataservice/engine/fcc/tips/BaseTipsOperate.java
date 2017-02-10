@@ -145,7 +145,7 @@ public class BaseTipsOperate {
 
 			solrIndex.put("handler", user);
 
-			solrIndex.put("feedback", newFeedback);
+			solrIndex.put("feedback", feedBack);
 
 			solr.addTips(solrIndex);
 

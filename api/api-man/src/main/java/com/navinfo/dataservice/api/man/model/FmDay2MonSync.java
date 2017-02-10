@@ -44,10 +44,11 @@ cache 20;
  */
 public class FmDay2MonSync implements Serializable {
 	private long sid;
-	private long cityId;
+	private long cityId;//315已不用
 	private Date syncTime;
 	private int syncStatus;
 	private long jobId;
+	private long regionId;//315增加，以大区为单位日落月
 	public long getSid() {
 		return sid;
 	}
@@ -78,10 +79,16 @@ public class FmDay2MonSync implements Serializable {
 	public void setJobId(long jobId) {
 		this.jobId = jobId;
 	}
+	public long getRegionId() {
+		return regionId;
+	}
+	public void setRegionId(long regionId) {
+		this.regionId = regionId;
+	}
 	@Override
 	public String toString() {
 		return "FmDay2MonSync [sid=" + sid + ", cityId=" + cityId + ", syncTime=" + syncTime + ", syncStatus="
-				+ syncStatus + ", jobId=" + jobId + "]";
+				+ syncStatus + ", jobId=" + jobId+ ", regionId=" + regionId + "]";
 	}
 	/**
 	 * 同步状态， 1.创建；2.开始刷库.3，开始搬移履历；4.执行精编批处理检查；5.执行深度信息分类;6.同步完成；7.同步失败.

@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls>
+   <feature name="临时表统计信息收集">
+   		
+		<step value="8">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_SPEEDLIMIT'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_ELECTRONICEYE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RW_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_ADMIN_RG'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CMG_BUILDLINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CMG_BUILDFACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CM_BUILDLINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CM_BUILDING'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CM_BUILDFACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_IX_POINTADDRESS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ADAS_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ADAS_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_HAMLET'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_ANNOTATION'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_IX_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_IX_POINTADDRESS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_LINE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_PLATFORM'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_STRAND'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_COMPANY'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_SYSTEM'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_ETA_ACCESS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_ETA_STOP'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_ETA_LINE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_TRANSFER'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_NATGUD_JUN'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HWY_JUNCTION'); END;]]></sql>          	
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HWY_JCT'); END;]]></sql>          	
+        	<!-- 210模型删除 <sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_NODE_INFO_ADAS'); END;]]></sql>-->          	
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_NATGUD'); END;]]></sql>
+        	          	
+        </step>
+        <step value="11">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FACE'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FACE'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_FACE'); END;]]></sql>
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS'); END;]]></sql>   
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI'); END;]]></sql>  
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS'); END;]]></sql> 
+			<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEGID'); END;]]></sql>
+            <sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ELECEYE_GROUP'); END;]]></sql>
+        </step>
+        
+        <step value="14">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_SIGNPOST'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_INTER'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_ROAD'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_OBJECT'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_CROSS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_VIRCONNECT'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_CHAIN'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LANE_CONNEXITY'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_GATE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_VARIABLE_SPEED'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_SE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_TOLLGATE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_BRANCH'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_VOICEGUIDE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_RESTRICTION'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_DIRECTROUTE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_CROSSWALK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_SLOPE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_TMC'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RW_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RW_FEATURE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CM_BUILDNODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_IX_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HW_POSITION'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HW_ROUTE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ADAS_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEGID'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LANE_TOPO_DETAIL'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_LANE'); END;]]></sql>
+        	
+        	
+        	
+        </step>
+        <step value="17">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LANE_TOPOLOGY'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_BRANCH_DETAIL'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_SIGNBOARD'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_RESTRICTION_DETAIL'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LANE_TOPO_DETAIL'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_FACE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HW_ESTAB'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LANE'); END;]]></sql>
+        	
+        	
+        </step>
+         <step value="20">         
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CMG_BUILDING'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_PLATFORM'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_LANE'); END;]]></sql>
+        	
+        </step>
+        <step value="23">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LC_FEATURE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_FEATURE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_CMG_BUILDNODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_ADMIN_RG'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_HW_ESTAB'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_TRANSFER'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_STRAND'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS_GROUP'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI_GROUP'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_FILTER_RD_LANE'); END;]]></sql>
+        	        	
+        	
+        </step>
+        <step value="26">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_ROAD2'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_INTER2'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POINTADDRESS_GROUP'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_LINE'); END;]]></sql>
+        	
+        </step>
+        <step value="29">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_LU_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_ZONE_NODE'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_SYSTEM'); END;]]></sql>
+        </step>
+        <step value="32">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_PT_COMPANY'); END;]]></sql>
+        	
+        </step>
+        <step value="38">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_AD_ADMIN_GROUP'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_IX_POI_GROUP'); END;]]></sql>
+        	
+        </step>
+        <step value="41">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_GSC'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_LINK_NAMEGID'); END;]]></sql>        	        	
+        </step>
+        <step value="59">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_RD_NODE'); END;]]></sql>
+        </step>
+        <step value="68">
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_SAME_LINK'); END;]]></sql>
+        	<sql><![CDATA[BEGIN  PK_TABLE_STATS.gather('TEMP_SAME_NODE'); END;]]></sql>          	
+        </step>
+        
+
+    </feature>
+</sqls>

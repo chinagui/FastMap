@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-23
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////铁路/////////////////////////////////////////////////////////-->
+    <feature name="RW_LINK_FILTER">
+        <step value="7">
+            <!--按图幅过滤RW_LINK-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RW_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM RW_LINK WHERE MESH_ID [mesh]);
+                        ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RW_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM RW_LINK WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE');
+                        ]]></sql>
+        </step>
+    </feature>
+
+    <feature name="RW_NODE_FILTER">
+        <step value="7">
+            <!--按图幅过滤RW_NODE-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RW_NODE
+                          (PID)
+                          (SELECT NODE_PID FROM RW_NODE_MESH WHERE MESH_ID [mesh]);
+                        ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RW_NODE
+                          (PID)
+                          (SELECT NODE_PID FROM RW_NODE WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE');
+                        ]]></sql>
+        </step>
+    </feature>
+
+
+    <feature name="夸图幅Link">
+        <!--
+        查找夸图幅的图廓点，然后提取图廓点两边的link
+        目前仅支持按图幅提取
+        -->
+        <step value="13">
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RW_LINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM RW_LINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID
+                                                  FROM (SELECT COUNT(1), N.PID
+                                                          FROM RW_NODE_MESH M, TEMP_FILTER_RW_NODE N
+                                                         WHERE N.PID = M.NODE_PID
+                                                         GROUP BY N.PID
+                                                        HAVING COUNT(1) > 1))
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM RW_LINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID
+                                                  FROM (SELECT COUNT(1), N.PID
+                                                          FROM RW_NODE_MESH M, TEMP_FILTER_RW_NODE N
+                                                         WHERE N.PID = M.NODE_PID
+                                                         GROUP BY N.PID
+                                                        HAVING COUNT(1) > 1))
+                        );
+                    ]]></sql>
+
+
+        </step>
+
+    </feature>
+    <!--
+        /////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////铁路//////////////////////////////////////////////////////
+        /////////////////////////////////////////////////////////////////////////////////////////////
+    -->
+    <feature name="RW_FEATURE">
+        <!--
+        铁路提取规则：
+        1.根据link提取RW_FEATURE
+        2.去重
+        3.补充link
+        4.提取铁路信息
+        -->
+        <step value="13">
+            <!--根据link提取RW_FEATURE，并去重-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RW_FEATURE
+                          (PID)
+                          (SELECT DISTINCT CN.FEATURE_PID
+                             FROM TEMP_FILTER_RW_LINK N, RW_LINK CN
+                            WHERE N.PID = CN.LINK_PID
+                            AND CN.FEATURE_PID!=0 AND CN.FEATURE_PID!=-1);
+                        ]]></sql>
+
+        </step>
+        <step value="16">
+            <!--根据link提取RW_FEATURE，并去重-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RW_LINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM RW_LINK P, TEMP_RW_FEATURE T
+                            WHERE P.FEATURE_PID = T.PID);
+                        ]]></sql>
+
+        </step>
+        <step value="19">
+            <!--合并RW_LINK-->
+            <sql><![CDATA[INSERT/*+ append */ INTO TEMP_FILTER_RW_LINK(PID)(SELECT PID FROM TEMP_RW_LINK);]]></sql>
+        </step>
+        <step value="22">
+            <!--去重-->
+            <sql>
+                <![CDATA[
+                        DELETE FROM TEMP_FILTER_RW_LINK A
+                         WHERE A.ROWID !=
+                               (SELECT MAX(B.ROWID) FROM TEMP_FILTER_RW_LINK B WHERE A.PID = B.PID);
+                        ]]></sql>
+        </step>
+
+        <step value="25">
+
+
+            <!--查询RW_LINK的两端端点并去重-->
+            <sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RW_NODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM RW_LINK P, TEMP_FILTER_RW_LINK T WHERE P.LINK_PID = T.PID
+                            UNION  ALL
+                           SELECT P.E_NODE_PID FROM RW_LINK P, TEMP_FILTER_RW_LINK T WHERE P.LINK_PID = T.PID
+                           );
+                        ]]></sql>
+
+        </step>
+
+        <step value="28">
+            <!--去重-->
+            <sql>
+                <![CDATA[
+                        DELETE FROM TEMP_FILTER_RW_NODE A
+                         WHERE A.ROWID !=
+                               (SELECT MAX(B.ROWID) FROM TEMP_FILTER_RW_NODE B WHERE A.PID = B.PID);
+                        ]]></sql>
+        </step>
+        <step value="31">
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LINK_NAMEID
+                           (PID)
+                           (SELECT P.NAME_ID
+                              FROM RD_NAME P
+                             WHERE EXISTS (SELECT P1.NAME_GROUPID FROM RW_LINK_NAME P1,TEMP_FILTER_RW_LINK T1 WHERE P1.LINK_PID=T1.PID AND P.NAME_GROUPID = P1.NAME_GROUPID));
+                         ]]></sql>
+        </step>
+
+        <step value="100">
+            <!--
+                提取铁路信息:
+                1. RW_FEATURE
+                2. RW_LINK
+                3. RW_LINK_NAME
+                4. RW_NODE
+                5. RW_NODE_MESH
+
+            -->
+            <sql><![CDATA[SELECT P.* FROM RW_FEATURE P,TEMP_RW_FEATURE T WHERE P.FEATURE_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RW_LINK P,TEMP_FILTER_RW_LINK T WHERE P.LINK_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RW_LINK_NAME P,TEMP_FILTER_RW_LINK T WHERE P.LINK_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RW_NODE P,TEMP_FILTER_RW_NODE T WHERE P.NODE_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RW_NODE_MESH P,TEMP_FILTER_RW_NODE T WHERE P.NODE_PID=T.PID;]]></sql>
+        </step>
+
+        <step value="101">
+            <!--
+                提取铁路信息:
+                1. RW_FEATURE
+                2. RW_LINK
+                3. RW_LINK_NAME
+                4. RW_NODE
+                5. RW_NODE_MESH
+
+            -->
+            <sql><![CDATA[DELETE FROM RW_FEATURE P WHERE P.FEATURE_PID IN (SELECT T.PID FROM TEMP_RW_FEATURE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RW_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RW_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RW_LINK_NAME P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RW_LINK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RW_NODE P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_FILTER_RW_NODE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RW_NODE_MESH P WHERE P.NODE_PID IN (SELECT T.PID FROM TEMP_FILTER_RW_NODE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RW_FEATURE
+					  SELECT FEATURE_PID
+					    FROM RW_FEATURE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RW_FEATURE  B WHERE A.FEATURE_PID = B.FEATURE_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_FILTER_RW_LINK
+					  SELECT LINK_PID
+					    FROM RW_LINK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RW_LINK  B WHERE A.LINK_PID = B.LINK_PID);
+				]]></sql>
+
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_FILTER_RW_NODE
+					  SELECT NODE_PID
+					    FROM RW_NODE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RW_NODE  B WHERE A.NODE_PID = B.NODE_PID);
+				]]></sql>
+        </step>
+    </feature>
+</sqls>

@@ -1,0 +1,5 @@
+-- glm upgrade
+UPDATE SYS_CONFIG SET CONF_VALUE='270+' WHERE CONF_KEY='gdb.version';
+
+COMMIT;
+EXIT;

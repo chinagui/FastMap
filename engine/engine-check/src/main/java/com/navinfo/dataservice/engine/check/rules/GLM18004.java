@@ -102,7 +102,7 @@ public class GLM18004 extends baseRule {
 		sb.append(" AND RV.PID = RVD.VOICEGUIDE_PID AND RR.PID = RRD.RESTRIC_PID");
 		sb.append(" AND RV.IN_LINK_PID = RR.IN_LINK_PID AND RV.NODE_PID = RR.NODE_PID");
 		sb.append(" AND RVD.OUT_LINK_PID = RRD.OUT_LINK_PID");
-		sb.append(" AND RVD.RELATIONSHIP_TYPE = 1 AND RRD.RELATIONSHIP_TYPE = 1");
+		//sb.append(" AND RVD.RELATIONSHIP_TYPE = 1 AND RRD.RELATIONSHIP_TYPE = 1");
 		sb.append(" AND RRD.TYPE = 1 AND RV.U_RECORD <> 2");
 		sb.append(" AND RR.U_RECORD <> 2 AND RVD.U_RECORD <> 2 AND RRD.U_RECORD <> 2");
 		String sql = sb.toString();

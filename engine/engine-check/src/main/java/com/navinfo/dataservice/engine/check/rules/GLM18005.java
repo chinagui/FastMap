@@ -97,8 +97,9 @@ public class GLM18005 extends baseRule {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("SELECT RV.PID FROM RD_VOICEGUIDE RV, RD_VOICEGUIDE_DETAIL RVD, RD_DIRECTROUTE RD");
-		sb.append(" WHERE RV.PID = "+voiceguidePid+" AND RD.RELATIONSHIP_TYPE = 1");
-		sb.append(" AND RVD.RELATIONSHIP_TYPE = 1 AND RV.PID = RVD.VOICEGUIDE_PID");
+		sb.append(" WHERE RV.PID = "+voiceguidePid);
+		//sb.append(" AND RD.RELATIONSHIP_TYPE = 1 AND RVD.RELATIONSHIP_TYPE = 1");
+		sb.append(" AND RV.PID = RVD.VOICEGUIDE_PID");
 		sb.append(" AND RV.IN_LINK_PID = RD.IN_LINK_PID AND RV.NODE_PID = RD.NODE_PID");
 		sb.append(" AND RVD.OUT_LINK_PID = RD.OUT_LINK_PID AND RV.U_RECORD <> 2");
 		sb.append(" AND RVD.U_RECORD <> 2 AND RD.U_RECORD <> 2");

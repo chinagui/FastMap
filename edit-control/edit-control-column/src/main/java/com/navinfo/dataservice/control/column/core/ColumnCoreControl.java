@@ -478,7 +478,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId);
 			
 			return result;
 		} catch (Exception e) {

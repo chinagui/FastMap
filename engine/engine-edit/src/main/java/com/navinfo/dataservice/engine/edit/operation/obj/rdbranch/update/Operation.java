@@ -135,7 +135,7 @@ public class Operation implements IOperation {
 
 			content.put("relationshipType", relationShipType);
 		}
-
+		
 		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn, this.branch.getInLinkPid(),
 				this.branch.getNodePid(), outPid);
 		// 删除原经过线
@@ -143,25 +143,28 @@ public class Operation implements IOperation {
 			result.insertObject(row, ObjStatus.DELETE, branch.pid());
 		}
 
-		int seqNum = 1;
+		//路口关系的分歧不记录经过线
+		if(relationShipType != 1)
+		{
+			int seqNum = 1;
 
-		// 重新设置经过线
-		for (Integer linkPid : viaLinks) {
-			RdBranchVia via = new RdBranchVia();
+			// 重新设置经过线
+			for (Integer linkPid : viaLinks) {
+				RdBranchVia via = new RdBranchVia();
 
-			via.setBranchPid(branch.getPid());
+				via.setBranchPid(branch.getPid());
 
-			via.setLinkPid(linkPid);
+				via.setLinkPid(linkPid);
 
-			via.setSeqNum(seqNum);
+				via.setSeqNum(seqNum);
 
-			via.setMesh(this.branch.mesh());
+				via.setMesh(this.branch.mesh());
 
-			seqNum++;
+				seqNum++;
 
-			result.insertObject(via, ObjStatus.INSERT, branch.pid());
+				result.insertObject(via, ObjStatus.INSERT, branch.pid());
+			}
 		}
-
 	}
 
 	/**

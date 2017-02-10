@@ -89,7 +89,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			//获取region对应的省份
 			List<CpRegionProvince> regionProvs = manApi.listCpRegionProvince();
 			//获取meshes开关等信息
-			List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(admincodes);
+			List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(null);
 			Set<Integer> statusValues = new HashSet<Integer>();
 			statusValues.add(0);
 			JSONObject conditionJson = new JSONObject().element("status", statusValues);
@@ -122,11 +122,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	private void doSync(ManApi manApi, DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi, Integer regionId)
 			throws Exception{
-		Map<String, Object> cityInfo = manApi.getCityById(cityId);
+		Map<String, Object> cityInfo = manApi.getCityById(regionId);
 		log.info("得到城市基础信息:"+cityInfo);
-		List<Integer> gridsOfCity = manApi.queryGridOfCity(cityId);
+		List<Integer> gridsOfCity = manApi.queryGridOfCity(regionId);
 		log.info("得到城市的grids");
-		Integer regionId = (Integer) cityInfo.get("regionId");
+		//Integer regionId = (Integer) cityInfo.get("regionId");
 		Region regionInfo = manApi.queryByRegionId(regionId);
 		log.info("获取大区信息:"+regionInfo);
 		if(regionInfo==null) return ;
@@ -136,10 +136,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Integer monthDbId = regionInfo.getMonthlyDbId();
 		DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
 		log.info("获取monthDbInfo信息:"+monthDbInfo);
-		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(cityId);
+		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(regionId);
 		log.info("获取最新的成功同步信息："+lastSyncInfo);				
 		Date syncTimeStamp= new Date();
-		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
+		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, regionId,syncTimeStamp);//记录本次的同步信息
 		d2mSyncApi.insertSyncInfo(curSyncInfo);
 		Day2MonPoiLogSelector logSelector = null;
 		OracleSchema dailyDbSchema = new OracleSchema(
@@ -181,7 +181,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			log.info("finished:"+cityId);
+			log.info("finished:"+regionId);
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
@@ -229,9 +229,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		return result;
 	}
 
-	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, Integer cityId, Date syncTimeStamp) throws Exception {
+	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, int regionId, Date syncTimeStamp) throws Exception {
 		FmDay2MonSync info = new FmDay2MonSync();
-		info.setCityId(cityId);
+		info.setRegionId(regionId);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.CREATE.getValue());
 		info.setJobId(this.getJobInfo().getId());
 		Long sid = d2mSyncApi.insertSyncInfo(info );//写入本次的同步信息

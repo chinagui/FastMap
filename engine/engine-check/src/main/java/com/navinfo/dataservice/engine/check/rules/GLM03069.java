@@ -159,7 +159,7 @@ public class GLM03069 extends baseRule{
 			if (resultList1.size() != 2){
 				flag = true;
 			}
-		}else if (resultList.size() > 2){
+		}else if (resultList.size() != 2){
 			flag = true;
 		}
 		return flag;

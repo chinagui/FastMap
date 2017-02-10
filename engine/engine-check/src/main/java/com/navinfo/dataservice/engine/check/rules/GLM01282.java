@@ -36,7 +36,7 @@ public class GLM01282 extends baseRule {
                     direct = (int) link.changedFields().get("direct");
 
                 if (singltonLimitLink.contains(link.pid()) && (direct == 2 || direct == 3)) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkLimit && row.status() != ObjStatus.DELETE) {
                 RdLinkLimit linkLimit = (RdLinkLimit) row;
@@ -49,7 +49,7 @@ public class GLM01282 extends baseRule {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(linkLimit.getLinkPid(),
                             false);
                     if (link.getDirect() == 2 || link.getDirect() == 3) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

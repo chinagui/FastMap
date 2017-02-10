@@ -30,7 +30,7 @@ public class GLM01102 extends baseRule {
                     paveStatus = (int) link.changedFields().get("paveStatus");
 
                 if ((kind == 11 || kind == 13) && paveStatus == 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

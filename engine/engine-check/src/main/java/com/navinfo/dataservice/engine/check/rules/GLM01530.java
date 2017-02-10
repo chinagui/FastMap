@@ -52,7 +52,7 @@ public class GLM01530 extends baseRule {
             }
         }
         if (hasFlyover && hasTypical) {
-            setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+            setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
         }
     }
 }

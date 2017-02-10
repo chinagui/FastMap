@@ -41,7 +41,7 @@ public class GLM01028_8 extends baseRule {
                 if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(link.pid(), false);
                     if (!gates.isEmpty()) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {

@@ -38,7 +38,7 @@ public class GLM01099 extends baseRule {
                     paveStatus = (int) link.changedFields().get("paveStatus");
 
                 if (tunnelLink.contains(link.pid()) && paveStatus == 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm) {
                 RdLinkForm form = (RdLinkForm) row;

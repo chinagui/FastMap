@@ -33,14 +33,14 @@ public class GLM01012 extends baseRule {
 
                 int multiDigitized = link.getMultiDigitized();
                 if (link.changedFields().containsKey("multiDigitized"))
-                    multiDigitized = (int) link.changedFields().get("multiDigitized");
+                    multiDigitized = Integer.valueOf(link.changedFields().get("multiDigitized").toString());
 
                 if (multiDigitized == 1) {
                     int direct = link.getDirect();
                     if (link.changedFields().containsKey("direct"))
-                        direct = (int) link.changedFields().get("direct");
+                        direct = Integer.valueOf(link.changedFields().get("direct").toString());
                     if (direct == 0 || direct == 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
@@ -48,12 +48,12 @@ public class GLM01012 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 33) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
                     if (link.getDirect() == 0 || link.getDirect() == 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

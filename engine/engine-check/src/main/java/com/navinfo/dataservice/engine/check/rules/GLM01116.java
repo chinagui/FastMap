@@ -43,7 +43,7 @@ public class GLM01116 extends baseRule {
 
                 if ((pedestrianLink.contains(link.pid()) || kind == 9 || kind == 11 || kind == 13 || kind == 15) &&
                         laneClass != 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
@@ -55,7 +55,7 @@ public class GLM01116 extends baseRule {
                 if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
                     if (link.getLaneClass() != 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

@@ -30,7 +30,7 @@ public class GLM01470 extends baseRule {
                     walkFlag = (int) link.changedFields().get("walkFlag");
 
                 if (kind == 15 && walkFlag != 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

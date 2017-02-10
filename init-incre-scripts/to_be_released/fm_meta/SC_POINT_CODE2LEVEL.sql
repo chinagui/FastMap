@@ -1,6 +1,9 @@
+﻿prompt PL/SQL Developer import file
+prompt Created on 2017年2月9日 by jch
 set feedback off
 set define off
 drop table SC_POINT_CODE2LEVEL;
+prompt Creating SC_POINT_CODE2LEVEL...
 create table SC_POINT_CODE2LEVEL
 (
   ID            NUMBER(4) not null,
@@ -606,4 +609,10 @@ values (611, '加水站', '230228', 'B2', 'B2', null, '16冬新增；需求溯�
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (612, '紧急停车带', '230229', 'B2', 'B2', null, '16冬新增；需求溯源号：PPRM-353', 'KG', 'DHM', null, null, null, 1, '0');
 commit;
+prompt 281 records loaded
+prompt Enabling triggers for SC_POINT_CODE2LEVEL...
+alter table SC_POINT_CODE2LEVEL enable all triggers;
+set feedback on
+set define on
+prompt Done.
 EXIT;

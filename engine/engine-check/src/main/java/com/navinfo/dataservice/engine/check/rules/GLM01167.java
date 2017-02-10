@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -8,10 +10,9 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * @ClassName: GLM01167
@@ -54,11 +55,28 @@ public class GLM01167 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareData(checkCommand);
-		AbstractSelector selector = new AbstractSelector(RdLink.class, getConn());
 		for (Integer linkPid : resultLinkPidSet) {
-			logger.debug("检查类型：postCheck， 检查规则：GLM01167， 检查要素：RDLINK(" + linkPid + "), 触法时机：道路属性编辑");
-			RdLink rdLink = (RdLink) selector.loadById(linkPid, true, true);
-			this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + linkPid + "]", rdLink.getMeshId());
+			StringBuilder sb = new StringBuilder();
+
+			sb.append(
+					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK      L, RD_LINK_FORM F, RD_LINK_FORM F1, RD_LINK_FORM F2, RD_LINK_FORM F3 WHERE L.LINK_PID = F.LINK_PID AND L.LINK_PID =");
+
+			sb.append(linkPid);
+
+			sb.append(
+					" AND L.U_RECORD <> 2 AND F.U_RECORD <> 2 AND F1.U_RECORD <> 2 AND F2.U_RECORD <> 2 AND F3.U_RECORD <> 2 AND F.FORM_OF_WAY IN (12, 13) AND F1.LINK_PID = F.LINK_PID AND F1.FORM_OF_WAY = 15 AND F2.LINK_PID = F.LINK_PID AND F2.FORM_OF_WAY IN (10, 11) AND F3.LINK_PID = F.LINK_PID AND F3.FORM_OF_WAY = 36 ");
+
+			
+			log.info("RdLink后检查GLM01167 SQL:" + sb.toString());
+			
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sb.toString());
+
+			if (!resultList.isEmpty()) {
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
+						(int) resultList.get(2));
+			}
 		}
 	}
 
@@ -110,8 +128,8 @@ public class GLM01167 extends baseRule {
 		}
 		//获取满足sa/pa,ic/jct,poi连接路的link
 		resultLinkPidSet.addAll(poiFormSet);
-		resultLinkPidSet.retainAll(saPaLinkPidSet);
-		resultLinkPidSet.retainAll(icJctLinkPidSet);
+		resultLinkPidSet.addAll(saPaLinkPidSet);
+		resultLinkPidSet.addAll(icJctLinkPidSet);
 	}
 
 }

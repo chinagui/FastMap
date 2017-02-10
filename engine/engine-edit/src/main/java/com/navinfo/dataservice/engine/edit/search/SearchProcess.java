@@ -261,11 +261,15 @@ public class SearchProcess {
 					
 					String queryType = condition.getString("queryType");
 					
-					// 批量编辑普通限速link追踪
-					if (queryType.equals("RDSPEEDLIMIT_DEPENDENT")
-							|| queryType.equals("RDSPEEDLIMIT")) {
+					// 批量编辑限速link追踪
+					if (queryType.equals("RDSPEEDLIMIT")) {
+						
 						int linkPid = condition.getInt("linkPid");
-						int direct = condition.getInt("direct");
+						
+						int direct = condition.getInt("direct");						
+						
+						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
+								conn);
 						
 						int speedDependnt = -1;
 						
@@ -273,11 +277,10 @@ public class SearchProcess {
 						{
 							speedDependnt = condition.getInt("speedDependnt");
 						}
-						
-						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
-								conn);
+
 						List<Integer> nextLinkPids = searchUtils
-								.getConnectLinks(linkPid, direct, queryType);
+								.getConnectLinks(linkPid, direct, speedDependnt);
+
 						JSONArray linkPidsArray = new JSONArray();
 
 						for (int pid : nextLinkPids) {
@@ -287,7 +290,7 @@ public class SearchProcess {
 						array.add(linkPidsArray);
 
 						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids, queryType,speedDependnt);
+								.getRdLinkSpeedlimit(nextLinkPids,speedDependnt);
 
 						array.add(speedlimitArray);
 					}

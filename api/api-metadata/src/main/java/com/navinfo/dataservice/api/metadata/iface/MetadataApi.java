@@ -286,4 +286,13 @@ public interface MetadataApi {
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(int[] admincodes)throws Exception;
+	
+	/**
+	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录
+	 * @param name
+	 * @return List<Map<String, Object>>
+	 * @throws Exception
+	 */
+	public List<Map<String, Object>> searchByErrorName(String name) throws Exception;
+
 }

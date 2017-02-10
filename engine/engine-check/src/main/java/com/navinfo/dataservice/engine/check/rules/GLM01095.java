@@ -35,22 +35,22 @@ public class GLM01095 extends baseRule {
 
                 int functionClass = link.getFunctionClass();
                 if (link.changedFields().containsKey("functionClass"))
-                    functionClass = (int) link.changedFields().get("functionClass");
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
 
                 if (functionClass != 5 && regionLink.contains(link.pid())) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 52) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
                     if (link.getFunctionClass() != 5) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }
@@ -79,7 +79,7 @@ public class GLM01095 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

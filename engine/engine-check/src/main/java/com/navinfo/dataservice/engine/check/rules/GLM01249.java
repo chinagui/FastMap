@@ -45,7 +45,7 @@ public class GLM01249 extends baseRule {
                         }
                     }
                     if (flag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkSpeedlimit && row.status() != ObjStatus.DELETE) {
@@ -75,7 +75,7 @@ public class GLM01249 extends baseRule {
                         }
                     }
                     if (flag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

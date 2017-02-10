@@ -23,14 +23,14 @@ public class GLM01110 extends baseRule {
 
                 int laneLeft = link.getLaneLeft();
                 if (link.changedFields().containsKey("laneLeft"))
-                    laneLeft = (int) link.changedFields().get("laneLeft");
+                    laneLeft = Integer.valueOf(link.changedFields().get("laneLeft").toString());
 
                 int laneRight = link.getLaneRight();
                 if (link.changedFields().containsKey("laneRight"))
-                    laneRight = (int) link.changedFields().get("laneRight");
+                    laneRight = Integer.valueOf(link.changedFields().get("laneRight").toString());
 
                 if ((laneLeft != 0 && laneRight == 0) || (laneLeft == 0 && laneRight != 0)) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

@@ -38,7 +38,7 @@ public class GLM01261_1 extends baseRule {
                     kind = (int) link.changedFields().get("kind");
 
                 if ((kind == 11 || kind == 13) && !speedLimitLink.contains(link.pid())) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkSpeedlimit && row.status() == ObjStatus.UPDATE) {
                 RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
@@ -56,7 +56,7 @@ public class GLM01261_1 extends baseRule {
                             false);
 
                     if (link.getKind() == 11 || link.getKind() == 13) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

@@ -39,7 +39,7 @@ public class GLM01269 extends baseRule {
                     specialTraffic = (int) link.changedFields().get("specialTraffic");
 
                 if (specialTraffic == 1 && speedLimitLink.contains(link.pid())) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkSpeedlimit && row.status() != ObjStatus.DELETE) {
                 RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
@@ -56,7 +56,7 @@ public class GLM01269 extends baseRule {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(speedlimit.getLinkPid(),
                             false);
                     if (link.getSpecialTraffic() == 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

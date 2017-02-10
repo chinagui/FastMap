@@ -37,7 +37,7 @@ public class GLM01381 extends baseRule {
             //    RdLink link = (RdLink) row;
             //
             //    if (landspaceName.contains(link.pid()) && !landspaceLink.contains(link.pid())) {
-            //        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+            //        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
             //    }
             //} else
                 if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
@@ -45,7 +45,7 @@ public class GLM01381 extends baseRule {
 
                 int nameType = name.getNameType();
                 if (name.changedFields().containsKey("nameType"))
-                    nameType = (int) name.changedFields().get("nameType");
+                    nameType = Integer.valueOf(name.changedFields().get("nameType").toString());
 
                 if (nameType == 3) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(name.getLinkPid(), false);
@@ -59,7 +59,7 @@ public class GLM01381 extends baseRule {
                         }
                     }
                     if (formFlag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
@@ -67,7 +67,7 @@ public class GLM01381 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 60) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
@@ -81,7 +81,7 @@ public class GLM01381 extends baseRule {
                         }
                     }
                     if (nameFlag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }
@@ -116,7 +116,7 @@ public class GLM01381 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }
@@ -128,7 +128,7 @@ public class GLM01381 extends baseRule {
                             } else {
                                 int nameType = name.getNameType();
                                 if (name.changedFields().containsKey("nameType"))
-                                    nameType = (int) name.changedFields().get("nameType");
+                                    nameType = Integer.valueOf(name.changedFields().get("nameType").toString());
                                 names.put(name.getRowId(), nameType);
                             }
                         }

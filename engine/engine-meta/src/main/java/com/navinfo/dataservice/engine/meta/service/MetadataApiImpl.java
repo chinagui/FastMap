@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
@@ -581,7 +582,7 @@ public class MetadataApiImpl implements MetadataApi {
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
-	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(int[] admincodes)throws Exception{
+	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
 		//to-do
 				return null;
 	}

@@ -114,6 +114,7 @@ public class BaseTipsOperate {
 					break;
 				}
 			}
+			
 			// 如果count=0,则说明原来没有备注，则，增加一条
 
 			int type = 3; // 文字
@@ -145,7 +146,7 @@ public class BaseTipsOperate {
 
 			solrIndex.put("handler", user);
 
-			solrIndex.put("feedback", f_array);
+			solrIndex.put("feedback", feedBack);
 
 			solr.addTips(solrIndex);
 

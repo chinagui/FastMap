@@ -22,7 +22,7 @@ public class Day2MonthSynServiceTest {
 	public void testInsertSyncInfo() throws Exception {
 		Day2MonthSyncService svr = Day2MonthSyncService.getInstance();
 		FmDay2MonSync info = new FmDay2MonSync();
-		info.setCityId(7);
+		//info.setCityId(7);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.CREATE.getValue());
 		info.setSyncTime(new Date());
 		svr.insertSyncInfo(info );
@@ -33,7 +33,7 @@ public class Day2MonthSynServiceTest {
 		Day2MonthSyncService svr = Day2MonthSyncService.getInstance();
 		FmDay2MonSync info = new FmDay2MonSync();
 		info.setSid(3);
-		info.setCityId(7);
+		//info.setCityId(7);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 		info.setSyncTime(new Date());
 		svr.updateSyncInfo(info );

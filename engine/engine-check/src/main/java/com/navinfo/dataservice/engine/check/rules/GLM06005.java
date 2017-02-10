@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -73,7 +74,7 @@ public class GLM06005 extends baseRule {
 		Set<Integer> nodePids = new HashSet<Integer>();
 		//分离节点
 		Map<String, Object> changedFields = rdLink.changedFields();
-		if(!changedFields.isEmpty()){
+		if(ObjStatus.UPDATE.equals(rdLink.status())){
 			//分离节点之前的node点
 			if(changedFields.containsKey("sNodePid")){
 				nodePids.add(rdLink.getsNodePid());

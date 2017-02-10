@@ -17,7 +17,9 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
@@ -64,22 +66,34 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, 2179861, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
-		row.setKindCode("230126");
+		IxPoiObj poiObj=(IxPoiObj) obj;
+		IxPoiAddress chiAddress = poiObj.getCHAddress();
+//		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
-		Map<String, Object> oldValues=new HashMap<String, Object>();
-		oldValues.put("KIND_CODE", "121");
-		logg.setOldValues(oldValues);
+//		Map<String, Object> oldValues=new HashMap<String, Object>();
+//		oldValues.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心");
+//		logg.setOldValues(oldValues);
 		logg.setOpType(OperationType.UPDATE);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
+		
+//		ChangeLog logg1=new ChangeLog();
+//		Map<String, Object> oldValues1=new HashMap<String, Object>();
+//		oldValues1.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+//		logg1.setOldValues(oldValues1);
+//		logg1.setOpType(OperationType.UPDATE);
+//		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
+//		logList1.add(logg1);
+//		chiAddress.setHisChangeLogs(logList1);
+		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-A04-19");
+		ruleIdList.add("FM-14Sum-06-03-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

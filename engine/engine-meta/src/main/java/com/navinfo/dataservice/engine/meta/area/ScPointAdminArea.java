@@ -3,6 +3,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -10,6 +14,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -282,46 +287,6 @@ public class ScPointAdminArea {
 		}
 	}
 	
-	/**
-	 * 根据省份获取电话列表
-	 * @param name
-	 * @return JSONArray
-	 * @throws Exception
-	 */
-//	public JSONArray searchByProvince(String name)
-//			throws Exception {
-//	    StringBuilder builder = new StringBuilder();
-//		builder.append(" SELECT DECODE (type,'省直辖县',district ,city, ");
-//		builder.append(" type, '省直辖市',district,city, ");
-//		builder.append(" type,'独立区号', district,city )city, ");
-//		builder.append(" adminareacode, areacode,phonenum_len");
-//		builder.append(" FROM sc_point_adminarea ");
-//		builder.append(" WHERE province = :1");
-//		Connection conn = DBConnector.getInstance().getMetaConnection();
-//		try{
-//			QueryRunner runner = new QueryRunner();
-//		    return runner.query(DBConnector.getInstance().getMetaConnection(),builder.toString(), new ResultSetHandler<JSONArray>(){
-//				@Override
-//				public JSONArray handle(ResultSet rs) throws SQLException {
-//					JSONArray array  = new JSONArray();
-//					while(rs.next()){
-//						JSONObject  jsonObject = new JSONObject();
-//						jsonObject.put("city", rs.getString("city"));
-//						jsonObject.put("cityCode", rs.getString("adminareacode"));
-//						jsonObject.put("code", rs.getString("areacode"));
-//						jsonObject.put("telLength", rs.getString("phonenum_len"));
-//						array.add(jsonObject);
-//					}
-//					return array;
-//				}
-//			},name);
-//		}catch (Exception e) {
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
-//		} finally {
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
+	
 	
 }

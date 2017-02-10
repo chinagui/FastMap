@@ -75,7 +75,7 @@ public class GLM01267 extends baseRule {
 				if (form.status() != ObjStatus.DELETE && formOfWay == 33) {
 					formOf33Set.add(form.getLinkPid());
 				}
-				if (form.status() == ObjStatus.DELETE && formOfWay == 30) {
+				if (form.status() == ObjStatus.DELETE && formOfWay == 33) {
 					formOf33Set.remove(form.getLinkPid());
 				}
 			}

@@ -3,9 +3,10 @@ package com.navinfo.dataservice.engine.check.rules;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
@@ -14,11 +15,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Crayeres on 2017/2/6.
+ * Created by Crayeres on 2017/2/9.
  */
-public class GLM01101 extends baseRule {
+public class GLM01028_8 extends baseRule {
 
-    private List<Integer> roundaboutLink = new ArrayList<>();
+    private List<Integer> pedestrianLink = new ArrayList<>();
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -30,17 +31,18 @@ public class GLM01101 extends baseRule {
         preparData(checkCommand);
 
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdLink) {
+            if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
-                if (link.status() == ObjStatus.DELETE)
-                    continue;
 
-                int paveStatus = link.getPaveStatus();
-                if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                int kind = link.getKind();
+                if (link.changedFields().containsKey("kind"))
+                    kind = (int) link.changedFields().get("kind");
 
-                if (paveStatus == 1 && roundaboutLink.contains(link.pid())) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
+                    List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(link.pid(), false);
+                    if (!gates.isEmpty()) {
+                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    }
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
@@ -49,10 +51,10 @@ public class GLM01101 extends baseRule {
                 if (form.changedFields().containsKey("formOfWay"))
                     formOfWay = (int) form.changedFields().get("formOfWay");
 
-                if (formOfWay == 33) {
-                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
-                    if (link.getPaveStatus() == 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                if (formOfWay == 20) {
+                    List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(form.getLinkPid(), false);
+                    if (!gates.isEmpty()) {
+                        setCheckResult("", "", 0);
                     }
                 }
             }
@@ -88,8 +90,9 @@ public class GLM01101 extends baseRule {
                     }
                 }
 
-                if (formOfWays.containsValue(33))
-                    roundaboutLink.add(link.pid());
+                if (formOfWays.containsValue(20)) {
+                    pedestrianLink.add(link.pid());
+                }
             }
         }
     }

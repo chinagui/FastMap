@@ -17,8 +17,11 @@ import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -77,8 +80,16 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				.getBean("datahubApi");
 		Day2MonthSyncApi d2mSyncApi = (Day2MonthSyncApi)ApplicationContextUtil
 				.getBean("day2MonthSyncApi");
+		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil
+				.getBean("metadataApi");
 		try {
 			log.info("开始获取日落月开关控制信息");
+			//获取region列表
+			List<Region> regions = manApi.queryRegionList();
+			//获取region对应的省份
+			List<CpRegionProvince> regionProvs = manApi.listCpRegionProvince();
+			//获取meshes开关等信息
+			List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(null);
 			Set<Integer> statusValues = new HashSet<Integer>();
 			statusValues.add(0);
 			JSONObject conditionJson = new JSONObject().element("status", statusValues);
@@ -86,9 +97,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			response("获取日落月开关控制信息ok",null);
 			log.info("开始获取日落月城市信息:城市的基础信息、城市的grid，城市的大区库");
 			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
-			String reqCityId = day2MonRequest==null?null:day2MonRequest.getCityId();
-			if(StringUtils.isNotEmpty(reqCityId)){
-				doSync(manApi, datahubApi, d2mSyncApi, Integer.parseInt(reqCityId));
+//			String reqCityId = day2MonRequest==null?null:day2MonRequest.getCityId();
+			int specRegionId = day2MonRequest.getSpecRegionId();
+			//判断是否有指定大区的日落月
+			if(specRegionId>0){
+				doSync(manApi, datahubApi, d2mSyncApi, specRegionId);
 			}else{//全部DAY2MONTH_CONFIG中处于打开状态的城市
 				for(Map<String,Object> d2mInfo:d2mInfoList){
 					Integer cityId = (Integer) d2mInfo.get("cityId");
@@ -107,13 +120,13 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	}
 
-	private void doSync(ManApi manApi, DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi, Integer cityId)
+	private void doSync(ManApi manApi, DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi, Integer regionId)
 			throws Exception{
-		Map<String, Object> cityInfo = manApi.getCityById(cityId);
+		Map<String, Object> cityInfo = manApi.getCityById(regionId);
 		log.info("得到城市基础信息:"+cityInfo);
-		List<Integer> gridsOfCity = manApi.queryGridOfCity(cityId);
+		List<Integer> gridsOfCity = manApi.queryGridOfCity(regionId);
 		log.info("得到城市的grids");
-		Integer regionId = (Integer) cityInfo.get("regionId");
+		//Integer regionId = (Integer) cityInfo.get("regionId");
 		Region regionInfo = manApi.queryByRegionId(regionId);
 		log.info("获取大区信息:"+regionInfo);
 		if(regionInfo==null) return ;
@@ -123,10 +136,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Integer monthDbId = regionInfo.getMonthlyDbId();
 		DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
 		log.info("获取monthDbInfo信息:"+monthDbInfo);
-		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(cityId);
+		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(regionId);
 		log.info("获取最新的成功同步信息："+lastSyncInfo);				
 		Date syncTimeStamp= new Date();
-		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, cityId,syncTimeStamp);//记录本次的同步信息
+		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, regionId,syncTimeStamp);//记录本次的同步信息
 		d2mSyncApi.insertSyncInfo(curSyncInfo);
 		Day2MonPoiLogSelector logSelector = null;
 		OracleSchema dailyDbSchema = new OracleSchema(
@@ -140,7 +153,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("开始获取日编库履历");
 			
 			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
-			logSelector.setGrids(gridsOfCity);
+			logSelector.setFilterGrids(gridsOfCity);
+//			logSelector.setGrids(gridsOfCity);
 			logSelector.setStopTime(syncTimeStamp);
 			String tempOpTable = logSelector.select();
 			log.info("开始奖日库履历刷新到月库,temptable:"+tempOpTable);
@@ -167,7 +181,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			log.info("finished:"+cityId);
+			log.info("finished:"+regionId);
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
@@ -215,9 +229,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		return result;
 	}
 
-	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, Integer cityId, Date syncTimeStamp) throws Exception {
+	private FmDay2MonSync createSyncInfo(Day2MonthSyncApi d2mSyncApi, int regionId, Date syncTimeStamp) throws Exception {
 		FmDay2MonSync info = new FmDay2MonSync();
-		info.setCityId(cityId);
+		info.setRegionId(regionId);
 		info.setSyncStatus(FmDay2MonSync.SyncStatusEnum.CREATE.getValue());
 		info.setJobId(this.getJobInfo().getId());
 		Long sid = d2mSyncApi.insertSyncInfo(info );//写入本次的同步信息

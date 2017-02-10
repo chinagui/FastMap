@@ -62,7 +62,8 @@ public class BaseBatchUtils {
      * @return
      * @throws Exception
      */
-    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry, Result result) throws Exception {
+    protected static boolean isInBoundary(Connection conn, Integer nodePid, Geometry faceGeometry, Result result)
+            throws Exception {
         RdNode node = null;
         try {
             node = (RdNode) new RdNodeSelector(conn).loadById(nodePid, false);
@@ -91,9 +92,8 @@ public class BaseBatchUtils {
      * @return
      */
     protected static boolean isContainOrCover(Geometry linkGeometry, Geometry faceGeometry) {
-        return GeoRelationUtils.Interior(linkGeometry, faceGeometry)
-                || GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)
-                || GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, faceGeometry);
+        return GeoRelationUtils.Interior(linkGeometry, faceGeometry) || GeoRelationUtils.InteriorAnd1Intersection
+                (linkGeometry, faceGeometry) || GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, faceGeometry);
     }
 
     /**
@@ -110,8 +110,8 @@ public class BaseBatchUtils {
             Method method = clazz.getMethod("getGeometry");
             return (Geometry) method.invoke(row);
         } catch (Exception e) {
-            throw new Exception(
-                    "PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() + "对象没有找到Geometry属性");
+            throw new Exception("PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() +
+                    "对象没有找到Geometry属性");
         }
     }
 
@@ -123,11 +123,14 @@ public class BaseBatchUtils {
      * @throws Exception
      */
     protected static void setRegionId(IRow row, Integer regionId) throws Exception {
-        Class<?> clazz;
         try {
-            clazz = Class.forName(row.getClass().getName());
-            Method method = clazz.getMethod("setRegionId");
-            method.invoke(row, regionId);
+            Method[] methods = row.getClass().getDeclaredMethods();
+            for (Method method : methods) {
+                if ("setRegionId".equals(method.getName())) {
+                    method.invoke(row, regionId);
+                    break;
+                }
+            }
         } catch (Exception e) {
             throw new Exception("PID为" + row.parentPKValue() + "的" + row.getClass().getSimpleName() + "对象设置RegionId失败");
         }

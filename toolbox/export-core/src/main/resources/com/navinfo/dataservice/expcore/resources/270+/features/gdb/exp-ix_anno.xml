@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2010-08-25 -->
+<sqls>
+
+	<!--索引：文字表 -->
+	<feature name="IX_ANNOTATION">
+		<step value="7">
+			<!--按图幅过滤IX_POI -->
+			<sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_ANNOTATION
+                          (PID)
+                          (SELECT P.PID FROM IX_ANNOTATION P WHERE P.MESH_ID [mesh]);
+                        ]]></sql>
+			<sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_ANNOTATION
+                          (PID)
+                          (SELECT PID FROM IX_ANNOTATION P
+                    WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE');
+                        ]]></sql>
+
+		</step>
+
+		<!-- 提取原则： 1.按图幅提取 -->
+		<step value="100">
+			<!--IX_ANNOTATION -->
+			<sql><![CDATA[
+                         SELECT P.*
+                           FROM IX_ANNOTATION P, TEMP_IX_ANNOTATION T
+                          WHERE P.PID = T.PID;
+                         ]]></sql>
+			<!--IX_ANNOTATION_NAME -->
+			<sql><![CDATA[
+                         SELECT P.*
+                           FROM IX_ANNOTATION_NAME P, TEMP_IX_ANNOTATION T
+                          WHERE P.PID = T.PID;
+                         ]]></sql>
+			<!-- <sql><![CDATA[ SELECT /*+ index(P EXP_IX_14) */ P.* FROM IX_ANNOTATION_NAME 
+				P, TEMP_IX_ANNOTATION T WHERE P.PID = T.PID; ]]></sql> -->
+
+
+			<!--IX_ANNOTATION_FLAG -->
+			<sql><![CDATA[
+                         SELECT  P.*
+                           FROM IX_ANNOTATION_FLAG P, TEMP_IX_ANNOTATION T
+                          WHERE P.PID = T.PID;
+                         ]]></sql>
+			<!-- <sql><![CDATA[ SELECT /*+ index(P EXP_IX_23) */ P.* FROM IX_ANNOTATION_FLAG 
+				P, TEMP_IX_ANNOTATION T WHERE P.PID = T.PID; ]]></sql> -->
+
+
+		</step>
+
+		<step value="101">
+			<!--IX_ANNOTATION -->
+			<sql><![CDATA[DELETE FROM IX_ANNOTATION P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_ANNOTATION T);]]></sql>
+			<!--IX_ANNOTATION_NAME -->
+			<sql><![CDATA[DELETE FROM IX_ANNOTATION_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_ANNOTATION T ); ]]></sql>
+			<!-- <sql><![CDATA[ SELECT /*+ index(P EXP_IX_14) */ P.* FROM IX_ANNOTATION_NAME
+				P, TEMP_IX_ANNOTATION T WHERE P.PID = T.PID; ]]></sql> -->
+
+
+			<!--IX_ANNOTATION_FLAG -->
+			<sql><![CDATA[DELETE FROM IX_ANNOTATION_FLAG P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_ANNOTATION T ); ]]></sql>
+
+			<!-- <sql><![CDATA[ SELECT /*+ index(P EXP_IX_23) */ P.* FROM IX_ANNOTATION_FLAG
+				P, TEMP_IX_ANNOTATION T WHERE P.PID = T.PID; ]]></sql> -->
+
+
+		</step>
+
+		<step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_IX_ANNOTATION
+					  SELECT PID
+					    FROM IX_ANNOTATION A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM IX_ANNOTATION  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+
+	</feature>
+
+</sqls>

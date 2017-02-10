@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossNode;
 import com.navinfo.dataservice.dao.glm.model.rd.crosswalk.RdCrosswalk;
@@ -457,6 +458,8 @@ public class VariablesFactory {
             rdLinkSet.add(String.valueOf(((RdCrossName) data).getPid()));
         } else if (data instanceof RdCrossNode) {
             rdLinkSet.add(String.valueOf(((RdCrossNode) data).getPid()));
+        } else if (data instanceof RdCrossLink) {
+            rdLinkSet.add(String.valueOf(((RdCrossLink) data).getPid()));
         }
         return rdLinkSet;
     }

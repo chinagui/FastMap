@@ -510,8 +510,8 @@ public class RdLinkOperateUtils {
         RdLinkSpeedlimit speedlimit = new RdLinkSpeedlimit();
 
         // 新创建道路默认为7级路，2车道，限速值为50km/h
-        speedlimit.setFromSpeedLimit(600);
-        speedlimit.setToSpeedLimit(600);
+        speedlimit.setFromSpeedLimit(500);
+        speedlimit.setToSpeedLimit(500);
 
         // 新建link限速来源均赋值为未调查
         speedlimit.setFromLimitSrc(9);

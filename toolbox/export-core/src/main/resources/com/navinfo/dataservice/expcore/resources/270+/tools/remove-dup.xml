@@ -1,0 +1,2828 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-24
+-->
+<sqls>
+
+	<feature name="REMOVE_DUP_DATA">
+	   
+        <step value="109">
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI','PID='||PID ,mesh_id from  IX_POI a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POINTADDRESS','PID='||PID ,mesh_id from  IX_POINTADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POINTADDRESS_CHILDREN','CHILD_PA_PID='||CHILD_PA_PID||',GROUP_ID='||GROUP_ID ,null from  IX_POINTADDRESS_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_CHILDREN b where 1=1
+				and a.CHILD_PA_PID = b.CHILD_PA_PID
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POINTADDRESS_FLAG','FLAG_CODE='||FLAG_CODE||',PID='||PID ,null from  IX_POINTADDRESS_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POINTADDRESS_NAME','NAME_ID='||NAME_ID ,null from  IX_POINTADDRESS_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POINTADDRESS_PARENT','GROUP_ID='||GROUP_ID ,null from  IX_POINTADDRESS_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_PARENT b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_ADDRESS','NAME_ID='||NAME_ID ,null from  IX_POI_ADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ADDRESS b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_ATTRACTION','ATTRACTION_ID='||ATTRACTION_ID ,null from  IX_POI_ATTRACTION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ATTRACTION b where 1=1
+				and a.ATTRACTION_ID = b.ATTRACTION_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_AUDIO','AUDIO_ID='||AUDIO_ID||',POI_PID='||POI_PID ,null from  IX_POI_AUDIO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_AUDIO b where 1=1
+				and a.AUDIO_ID = b.AUDIO_ID
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_BUILDING','POI_PID='||POI_PID ,null from  IX_POI_BUILDING a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_BUILDING b where 1=1
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_CHILDREN','CHILD_POI_PID='||CHILD_POI_PID||',GROUP_ID='||GROUP_ID ,null from  IX_POI_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CHILDREN b where 1=1
+				and a.CHILD_POI_PID = b.CHILD_POI_PID
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_CONTACT','CONTACT='||CONTACT||',CONTACT_TYPE='||CONTACT_TYPE||',POI_PID='||POI_PID ,null from  IX_POI_CONTACT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CONTACT b where 1=1
+				and a.CONTACT = b.CONTACT
+				and a.CONTACT_TYPE = b.CONTACT_TYPE
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_ENTRYIMAGE','POI_PID='||POI_PID ,null from  IX_POI_ENTRYIMAGE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ENTRYIMAGE b where 1=1
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_FLAG','FLAG_CODE='||FLAG_CODE||',POI_PID='||POI_PID ,null from  IX_POI_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_HOTEL','HOTEL_ID='||HOTEL_ID ,null from  IX_POI_HOTEL a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_HOTEL b where 1=1
+				and a.HOTEL_ID = b.HOTEL_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'IX_POI_ICON', 'REL_ID=' || rel_id, c.mesh_id
+				    FROM ix_poi_icon a, ix_poi c
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM ix_poi_icon b
+				                      WHERE 1 = 1
+				                        AND a.rel_id = b.rel_id)
+				     AND a.poi_pid = c.pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_INTRODUCTION','INTRODUCTION_ID='||INTRODUCTION_ID ,null from  IX_POI_INTRODUCTION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_INTRODUCTION b where 1=1
+				and a.INTRODUCTION_ID = b.INTRODUCTION_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_NAME','NAME_ID='||NAME_ID ,null from  IX_POI_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_NAME_FLAG','FLAG_CODE='||FLAG_CODE||',NAME_ID='||NAME_ID ,null from  IX_POI_NAME_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_NAME_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_PARENT','GROUP_ID='||GROUP_ID ,null from  IX_POI_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PARENT b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_PHOTO','PHOTO_ID='||PHOTO_ID||',POI_PID='||POI_PID ,null from  IX_POI_PHOTO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PHOTO b where 1=1
+				and a.PHOTO_ID = b.PHOTO_ID
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_RESTAURANT','RESTAURANT_ID='||RESTAURANT_ID ,null from  IX_POI_RESTAURANT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_RESTAURANT b where 1=1
+				and a.RESTAURANT_ID = b.RESTAURANT_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_VIDEO','POI_PID='||POI_PID||',VIDEO_ID='||VIDEO_ID ,null from  IX_POI_VIDEO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_VIDEO b where 1=1
+				and a.POI_PID = b.POI_PID
+				and a.VIDEO_ID = b.VIDEO_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POSTCODE','POST_ID='||POST_ID ,mesh_id from  IX_POSTCODE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POSTCODE b where 1=1
+				and a.POST_ID = b.POST_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_SAMEPOI','GROUP_ID='||GROUP_ID ,null from  IX_SAMEPOI a
+                where a.rowid !=
+                (select max(b.rowid) from IX_SAMEPOI b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_SAMEPOI_PART','GROUP_ID='||GROUP_ID||',POI_PID='||POI_PID ,null from  IX_SAMEPOI_PART a
+                where a.rowid !=
+                (select max(b.rowid) from IX_SAMEPOI_PART b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'LC_FACE', 'FACE_PID=' || a.face_pid, e.mesh_id
+					    FROM lc_face a, lc_face_topo c, lc_link d, lc_link_mesh e
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM lc_face b
+					                      WHERE 1 = 1
+					                        AND a.face_pid = b.face_pid)
+					     AND a.face_pid = c.face_pid
+					     AND c.link_pid = d.link_pid
+					     AND d.link_pid = e.link_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LC_FACE_NAME','NAME_ID='||NAME_ID ,null from  LC_FACE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FACE_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				       SELECT 'LC_FACE_TOPO',
+				              'FACE_PID=' || a.face_pid || ',LINK_PID=' || a.link_pid,
+				              e.mesh_id
+				         FROM lc_face_topo a, lc_link d, lc_link_mesh e
+				        WHERE a.rowid != (SELECT MAX(b.rowid)
+				                            FROM lc_face_topo b
+				                           WHERE 1 = 1
+				                             AND a.face_pid = b.face_pid
+				                             AND a.link_pid = b.link_pid)
+				          AND a.link_pid = d.link_pid
+				          AND d.link_pid = e.link_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LC_FEATURE','FEATURE_PID='||FEATURE_PID ,null from  LC_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FEATURE b where 1=1
+				and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[     INSERT INTO dup_pk_delete_record_mesh
+				       SELECT 'LC_LINK', 'LINK_PID=' || a.link_pid, c.mesh_id
+				         FROM lc_link a, lc_link_mesh c
+				        WHERE a.rowid != (SELECT MAX(b.rowid)
+				                            FROM lc_link b
+				                           WHERE 1 = 1
+				                             AND a.link_pid = b.link_pid)
+				          AND a.link_pid = c.link_pid;
+				]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LC_LINK_KIND','FORM='||FORM||',KIND='||KIND||',LINK_PID='||LINK_PID ,null from  LC_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from LC_LINK_KIND b where 1=1
+				and a.FORM = b.FORM
+				and a.KIND = b.KIND
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LC_LINK_MESH','LINK_PID='||LINK_PID||',MESH_ID='||MESH_ID ,MESH_ID from  LC_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LC_LINK_MESH b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'LC_NODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+					    FROM lc_node a, lc_node_mesh c
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM lc_node b
+					                      WHERE 1 = 1
+					                        AND a.node_pid = b.node_pid)
+					     AND a.node_pid = c.node_pid]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LC_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  LC_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LC_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_FACE','FACE_PID='||FACE_PID ,mesh_id from  LU_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE b where 1=1
+				and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_FACE_NAME','NAME_ID='||NAME_ID ,null from  LU_FACE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_FACE_TOPO','FACE_PID='||FACE_PID||',LINK_PID='||LINK_PID ,null from  LU_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE_TOPO b where 1=1
+				and a.FACE_PID = b.FACE_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_FEATURE','FEATURE_PID='||FEATURE_PID ,null from  LU_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FEATURE b where 1=1
+				and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'LU_LINK', 'LINK_PID=' || a.link_pid, c.mesh_id
+					    FROM lu_link a, lu_link_mesh c
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM lu_link b
+					                      WHERE 1 = 1
+					                        AND a.link_pid = b.link_pid)
+					     AND a.link_pid = c.link_pid
+					;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_LINK_KIND','KIND='||KIND||',LINK_PID='||LINK_PID ,null from  LU_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from LU_LINK_KIND b where 1=1
+				and a.KIND = b.KIND
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_LINK_MESH','LINK_PID='||LINK_PID||',MESH_ID='||MESH_ID ,MESH_ID from  LU_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LU_LINK_MESH b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'LU_NODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+					    FROM lu_node a, lu_node_mesh c
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM lu_node b
+					                      WHERE 1 = 1
+					                        AND a.node_pid = b.node_pid)
+					     AND a.node_pid = c.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SERIESBRANCH','BRANCH_PID='||BRANCH_PID ,null from  RD_SERIESBRANCH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SERIESBRANCH b where 1=1
+				and a.BRANCH_PID = b.BRANCH_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SIGNASREAL','SIGNBOARD_ID='||SIGNBOARD_ID ,null from  RD_SIGNASREAL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNASREAL b where 1=1
+				and a.SIGNBOARD_ID = b.SIGNBOARD_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SIGNBOARD','SIGNBOARD_ID='||SIGNBOARD_ID ,null from  RD_SIGNBOARD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNBOARD b where 1=1
+				and a.SIGNBOARD_ID = b.SIGNBOARD_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SIGNBOARD_NAME','NAME_ID='||NAME_ID ,null from  RD_SIGNBOARD_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNBOARD_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SLOPE','PID='||PID ,null from  RD_SLOPE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SLOPE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SPEEDLIMIT','PID='||PID ,mesh_id from  RD_SPEEDLIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDLIMIT b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TMCLOCATION','GROUP_ID='||GROUP_ID ,null from  RD_TMCLOCATION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TMCLOCATION b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TMCLOCATION_LINK','DIRECT='||DIRECT||',GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID ,null from  RD_TMCLOCATION_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TMCLOCATION_LINK b where 1=1
+				and a.DIRECT = b.DIRECT
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE','PID='||PID ,null from  RD_TOLLGATE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE_COST','TOLLCOST_ID='||TOLLCOST_ID ,null from  RD_TOLLGATE_COST a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_COST b where 1=1
+				and a.TOLLCOST_ID = b.TOLLCOST_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE_FEE','TOLLCOST_ID='||TOLLCOST_ID ,null from  RD_TOLLGATE_FEE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_FEE b where 1=1
+				and a.TOLLCOST_ID = b.TOLLCOST_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE_MAPPING','MAPPING_ID='||MAPPING_ID ,null from  RD_TOLLGATE_MAPPING a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_MAPPING b where 1=1
+				and a.MAPPING_ID = b.MAPPING_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE_NAME','NAME_ID='||NAME_ID ,null from  RD_TOLLGATE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TOLLGATE_PASSAGE','PID='||PID||',SEQ_NUM='||SEQ_NUM ,null from  RD_TOLLGATE_PASSAGE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_PASSAGE b where 1=1
+				and a.PID = b.PID
+				and a.SEQ_NUM = b.SEQ_NUM
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_TRAFFICSIGNAL','PID='||PID ,null from  RD_TRAFFICSIGNAL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TRAFFICSIGNAL b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VARIABLE_SPEED','VSPEED_PID='||VSPEED_PID ,null from  RD_VARIABLE_SPEED a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VARIABLE_SPEED b where 1=1
+				and a.VSPEED_PID = b.VSPEED_PID
+                );]]></sql>
+                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VARIABLE_SPEED_VIA','VSPEED_PID='||VSPEED_PID ,null from  RD_VARIABLE_SPEED_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VARIABLE_SPEED_VIA b where 1=1
+				and a.VSPEED_PID = b.VSPEED_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VIRCONNECT','PID='||PID ,null from  RD_VIRCONNECT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VIRCONNECT_NAME','NAME_ID='||NAME_ID ,null from  RD_VIRCONNECT_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VIRCONNECT_TRANSIT','FIR_NODE_PID='||FIR_NODE_PID||',PID='||PID||',SEN_NODE_PID='||SEN_NODE_PID ,null from  RD_VIRCONNECT_TRANSIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT_TRANSIT b where 1=1
+				and a.FIR_NODE_PID = b.FIR_NODE_PID
+				and a.PID = b.PID
+				and a.SEN_NODE_PID = b.SEN_NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VOICEGUIDE','PID='||PID ,null from  RD_VOICEGUIDE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VOICEGUIDE_DETAIL','DETAIL_ID='||DETAIL_ID ,null from  RD_VOICEGUIDE_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE_DETAIL b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_VOICEGUIDE_VIA','DETAIL_ID='||DETAIL_ID||',GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID ,null from  RD_VOICEGUIDE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE_VIA b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_WARNINGINFO','PID='||PID ,null from  RD_WARNINGINFO a
+                where a.rowid !=
+                (select max(b.rowid) from RD_WARNINGINFO b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RW_FEATURE','FEATURE_PID='||FEATURE_PID ,null from  RW_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from RW_FEATURE b where 1=1
+				and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RW_LINK','LINK_PID='||LINK_PID ,mesh_id from  RW_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RW_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RW_LINK_NAME','LINK_PID='||LINK_PID||',NAME_GROUPID='||NAME_GROUPID ,null from  RW_LINK_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RW_LINK_NAME b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'RW_NODE', 'NODE_PID=' || a.node_pid, b.mesh_id
+				    FROM rw_node a, rw_node_mesh b
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM rw_node b
+				                      WHERE 1 = 1
+				                        AND a.node_pid = b.node_pid)
+				     AND a.node_pid = b.node_pid;
+				]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RW_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  RW_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from RW_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'ZONE_FACE', 'FACE_PID=' || a.face_pid, d.mesh_id
+				    FROM zone_face a, zone_face_topo b, zone_link c, zone_link_mesh d
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM zone_face b
+				                      WHERE 1 = 1
+				                        AND a.face_pid = b.face_pid)
+				     AND a.face_pid = b.face_pid
+				     AND b.link_pid = c.link_pid
+				     AND c.link_pid = d.link_pid;
+				]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ZONE_FACE_TOPO','FACE_PID='||FACE_PID||',LINK_PID='||LINK_PID ,null from  ZONE_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_FACE_TOPO b where 1=1
+				and a.FACE_PID = b.FACE_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'ZONE_LINK', 'LINK_PID=' || a.link_pid, b.mesh_id
+					    FROM zone_link a, zone_link_mesh b
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM zone_link b
+					                      WHERE 1 = 1
+					                        AND a.link_pid = b.link_pid)
+					     AND a.link_pid = b.link_pid;
+					]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ZONE_LINK_KIND','KIND='||KIND||',LINK_PID='||LINK_PID ,null from  ZONE_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_LINK_KIND b where 1=1
+				and a.KIND = b.KIND
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ZONE_LINK_MESH','LINK_PID='||LINK_PID||',MESH_ID='||MESH_ID ,mesh_id from  ZONE_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_LINK_MESH b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'ZONE_NODE', 'NODE_PID=' || a.node_pid, b.mesh_id
+				    FROM zone_node a, zone_node_mesh b
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM zone_node b
+				                      WHERE 1 = 1
+				                        AND a.node_pid = b.node_pid)
+				     AND a.node_pid = b.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ZONE_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  ZONE_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'LU_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  LU_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LU_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_COMPANY','COMPANY_ID='||COMPANY_ID ,null from  PT_COMPANY a
+                where a.rowid !=
+                (select max(b.rowid) from PT_COMPANY b where 1=1
+				and a.COMPANY_ID = b.COMPANY_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_ETA_ACCESS','POI_PID='||POI_PID ,null from  PT_ETA_ACCESS a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_ACCESS b where 1=1
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_ETA_COMPANY','COMPANY_ID='||COMPANY_ID ,null from  PT_ETA_COMPANY a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_COMPANY b where 1=1
+				and a.COMPANY_ID = b.COMPANY_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_ETA_LINE','PID='||PID ,null from  PT_ETA_LINE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_LINE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_ETA_STOP','POI_PID='||POI_PID ,null from  PT_ETA_STOP a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_STOP b where 1=1
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_ETA_SYSTEM','SYSTEM_ID='||SYSTEM_ID ,null from  PT_ETA_SYSTEM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_SYSTEM b where 1=1
+				and a.SYSTEM_ID = b.SYSTEM_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_LINE','PID='||PID ,null from  PT_LINE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_LINE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_LINE_NAME','NAME_ID='||NAME_ID ,null from  PT_LINE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_LINE_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_PLATFORM','PID='||PID ,null from  PT_PLATFORM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_PLATFORM_ACCESS','RELATE_ID='||RELATE_ID ,null from  PT_PLATFORM_ACCESS a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM_ACCESS b where 1=1
+				and a.RELATE_ID = b.RELATE_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_PLATFORM_NAME','NAME_ID='||NAME_ID ,null from  PT_PLATFORM_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_POI','PID='||PID ,mesh_id from  PT_POI a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_POI_CHILDREN','CHILD_POI_PID='||CHILD_POI_PID||',GROUP_ID='||GROUP_ID ,null from  PT_POI_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_CHILDREN b where 1=1
+				and a.CHILD_POI_PID = b.CHILD_POI_PID
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_POI_FLAG','FLAG_CODE='||FLAG_CODE||',POI_PID='||POI_PID ,null from  PT_POI_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_POI_NAME','NAME_ID='||NAME_ID ,null from  PT_POI_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_POI_PARENT','GROUP_ID='||GROUP_ID ,null from  PT_POI_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_PARENT b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_STRAND','PID='||PID ,null from  PT_STRAND a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_STRAND_NAME','NAME_ID='||NAME_ID ,null from  PT_STRAND_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_STRAND_PLATFORM','PLATFORM_PID='||PLATFORM_PID||',SEQ_NUM='||SEQ_NUM||',STRAND_PID='||STRAND_PID ,null from  PT_STRAND_PLATFORM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_PLATFORM b where 1=1
+				and a.PLATFORM_PID = b.PLATFORM_PID
+				and a.SEQ_NUM = b.SEQ_NUM
+				and a.STRAND_PID = b.STRAND_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_STRAND_SCHEDULE','END_TIME='||END_TIME||',START_TIME='||START_TIME||',STRAND_PID='||STRAND_PID ,null from  PT_STRAND_SCHEDULE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_SCHEDULE b where 1=1
+				and a.END_TIME = b.END_TIME
+				and a.START_TIME = b.START_TIME
+				and a.STRAND_PID = b.STRAND_PID
+                and a.VALID_DAY = b.VALID_DAY
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_SYSTEM','SYSTEM_ID='||SYSTEM_ID ,null from  PT_SYSTEM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_SYSTEM b where 1=1
+				and a.SYSTEM_ID = b.SYSTEM_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'PT_TRANSFER','TRANSFER_ID='||TRANSFER_ID ,null from  PT_TRANSFER a
+                where a.rowid !=
+                (select max(b.rowid) from PT_TRANSFER b where 1=1
+				and a.TRANSFER_ID = b.TRANSFER_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH','BRANCH_PID='||BRANCH_PID ,null from  RD_BRANCH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH b where 1=1
+				and a.BRANCH_PID = b.BRANCH_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH_DETAIL','DETAIL_ID='||DETAIL_ID ,null from  RD_BRANCH_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_DETAIL b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH_NAME','NAME_ID='||NAME_ID ,null from  RD_BRANCH_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH_REALIMAGE','BRANCH_PID='||BRANCH_PID||',IMAGE_TYPE='||IMAGE_TYPE ,null from  RD_BRANCH_REALIMAGE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_REALIMAGE b where 1=1
+				and a.BRANCH_PID = b.BRANCH_PID
+				and a.IMAGE_TYPE = b.IMAGE_TYPE
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH_SCHEMATIC','SCHEMATIC_ID='||SCHEMATIC_ID ,null from  RD_BRANCH_SCHEMATIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_SCHEMATIC b where 1=1
+				and a.SCHEMATIC_ID = b.SCHEMATIC_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_BRANCH_VIA','BRANCH_PID='||BRANCH_PID||',GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID ,null from  RD_BRANCH_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_VIA b where 1=1
+				and a.BRANCH_PID = b.BRANCH_PID
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_MAINSIDE','GROUP_ID='||GROUP_ID ,null from  RD_MAINSIDE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MAINSIDE b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_MAINSIDE_LINK','GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID||',SIDE='||SIDE ,null from  RD_MAINSIDE_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MAINSIDE_LINK b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+				and a.SIDE = b.SIDE
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSS','PID='||PID ,null from  RD_CROSS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSSWALK','PID='||PID ,null from  RD_CROSSWALK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSSWALK_INFO','LINK_PID='||LINK_PID||',NODE_PID='||NODE_PID||',PID='||PID ,null from  RD_CROSSWALK_INFO a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK_INFO b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.NODE_PID = b.NODE_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSSWALK_NODE','FIR_NODE_PID='||FIR_NODE_PID||',PID='||PID||',SEN_NODE_PID='||SEN_NODE_PID ,null from  RD_CROSSWALK_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK_NODE b where 1=1
+				and a.FIR_NODE_PID = b.FIR_NODE_PID
+				and a.PID = b.PID
+				and a.SEN_NODE_PID = b.SEN_NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSS_LINK','LINK_PID='||LINK_PID||',PID='||PID ,null from  RD_CROSS_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSS_NAME','NAME_ID='||NAME_ID ,null from  RD_CROSS_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_CROSS_NODE','NODE_PID='||NODE_PID||',PID='||PID ,null from  RD_CROSS_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_NODE b where 1=1
+				and a.NODE_PID = b.NODE_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_DIRECTROUTE','PID='||PID ,null from  RD_DIRECTROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_DIRECTROUTE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_DIRECTROUTE_VIA','GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID||',PID='||PID ,null from  RD_DIRECTROUTE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_DIRECTROUTE_VIA b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_ELECTRONICEYE','PID='||PID ,mesh_id from  RD_ELECTRONICEYE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECTRONICEYE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_ELECEYE_PAIR','GROUP_ID='||GROUP_ID ,null from  RD_ELECEYE_PAIR a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECEYE_PAIR b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_ELECEYE_PART','GROUP_ID='||GROUP_ID||',ELECEYE_PID='||ELECEYE_PID ,null from  RD_ELECEYE_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECEYE_PART b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.ELECEYE_PID = b.ELECEYE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_GATE','PID='||PID ,null from  RD_GATE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GATE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_GATE_CONDITION','PID='||PID||',VALID_OBJ='||VALID_OBJ ,null from  RD_GATE_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GATE_CONDITION b where 1=1
+				and a.PID = b.PID
+				and a.VALID_OBJ = b.VALID_OBJ
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'RD_GSC', 'PID=' || a.pid, d.mesh_id
+				    FROM rd_gsc a, rd_gsc_link c, rd_link d
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM rd_gsc b
+				                      WHERE 1 = 1
+				                        AND a.pid = b.pid)
+				     AND a.pid = c.pid
+				     AND c.link_pid = d.link_pid
+				     AND c.table_name = 'RD_LINK';
+				]]></sql>
+				 <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'RD_GSC', 'PID=' || a.pid, d.mesh_id
+					    FROM rd_gsc a, rd_gsc_link c, rw_link d
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM rd_gsc b
+					                      WHERE 1 = 1
+					                        AND a.pid = b.pid)
+					     AND a.pid = c.pid
+					     AND c.link_pid = d.link_pid
+					     AND c.table_name = 'RW_LINK';]]></sql>
+				<sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'RD_GSC', 'PID=' || a.pid, e.mesh_id
+					    FROM rd_gsc a, rd_gsc_link c, ad_link d, ad_link_mesh e
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM rd_gsc b
+					                      WHERE 1 = 1
+					                        AND a.pid = b.pid)
+					     AND a.pid = c.pid
+					     AND c.link_pid = d.link_pid
+					     AND c.table_name = 'AD_LINK'
+					     AND d.link_pid = e.link_pid;]]></sql>	     
+				<sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'RD_GSC', 'PID=' || a.pid, e.mesh_id
+					    FROM rd_gsc a, rd_gsc_link c, zone_link d, zone_link_mesh e
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM rd_gsc b
+					                      WHERE 1 = 1
+					                        AND a.pid = b.pid)
+					     AND a.pid = c.pid
+					     AND c.link_pid = d.link_pid
+					     AND c.table_name = 'ZONE_LINK'
+					     AND d.link_pid = e.link_pid;]]></sql>	     
+				<sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'RD_GSC', 'PID=' || a.pid, e.mesh_id
+					    FROM rd_gsc a, rd_gsc_link c, cmg_buildlink d, cmg_buildlink_mesh e
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM rd_gsc b
+					                      WHERE 1 = 1
+					                        AND a.pid = b.pid)
+					     AND a.pid = c.pid
+					     AND c.link_pid = d.link_pid
+					     AND c.table_name = 'CMG_BUILDLINK'
+					     AND d.link_pid = e.link_pid;]]></sql>	     
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_GSC_LINK','LINK_PID='||LINK_PID||',PID='||PID||',TABLE_NAME='||TABLE_NAME ,null from  RD_GSC_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GSC_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+				and a.TABLE_NAME = b.TABLE_NAME
+                and a.ZLEVEL = b.ZLEVEL
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_INTER','PID='||PID ,null from  RD_INTER a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_INTER_LINK','LINK_PID='||LINK_PID||',PID='||PID ,null from  RD_INTER_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_INTER_NODE','NODE_PID='||NODE_PID||',PID='||PID ,null from  RD_INTER_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER_NODE b where 1=1
+				and a.NODE_PID = b.NODE_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE','LANE_PID='||LANE_PID ,null from  RD_LANE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE b where 1=1
+				and a.LANE_PID = b.LANE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_CONDITION','DIRECTION='||DIRECTION||',LANE_PID='||LANE_PID ,null from  RD_LANE_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_CONDITION b where 1=1
+				and a.DIRECTION = b.DIRECTION
+				and a.LANE_PID = b.LANE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_CONNEXITY','PID='||PID ,null from  RD_LANE_CONNEXITY a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_CONNEXITY b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_TOPOLOGY','TOPOLOGY_ID='||TOPOLOGY_ID ,null from  RD_LANE_TOPOLOGY a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPOLOGY b where 1=1
+				and a.TOPOLOGY_ID = b.TOPOLOGY_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_TOPO_DETAIL','TOPO_ID='||TOPO_ID ,null from  RD_LANE_TOPO_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPO_DETAIL b where 1=1
+				and a.TOPO_ID = b.TOPO_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_TOPO_VIA','GROUP_ID='||GROUP_ID||',TOPO_ID='||TOPO_ID||',VIA_LINK_PID='||VIA_LINK_PID ,null from  RD_LANE_TOPO_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPO_VIA b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.TOPO_ID = b.TOPO_ID
+				and a.VIA_LINK_PID = b.VIA_LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LANE_VIA','GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID||',TOPOLOGY_ID='||TOPOLOGY_ID ,null from  RD_LANE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_VIA b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+				and a.TOPOLOGY_ID = b.TOPOLOGY_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK','LINK_PID='||LINK_PID ,mesh_id from  RD_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_ADDRESS','ADDRESS_TYPE='||ADDRESS_TYPE||',LINK_PID='||LINK_PID||',NAME_GROUPID='||NAME_GROUPID ,null from  RD_LINK_ADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_ADDRESS b where 1=1
+				and a.ADDRESS_TYPE = b.ADDRESS_TYPE
+				and a.LINK_PID = b.LINK_PID
+				and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_FORM','FORM_OF_WAY='||FORM_OF_WAY||',LINK_PID='||LINK_PID ,null from  RD_LINK_FORM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_FORM b where 1=1
+				and a.FORM_OF_WAY = b.FORM_OF_WAY
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_LIMIT','LIMIT_DIR='||LIMIT_DIR||',LINK_PID='||LINK_PID||',TYPE='||TYPE ,null from  RD_LINK_LIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_LIMIT b where 1=1
+				and a.LIMIT_DIR = b.LIMIT_DIR
+				and a.LINK_PID = b.LINK_PID
+				and a.TYPE = b.TYPE
+                );]]></sql>
+                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_LIMIT_TRUCK','LIMIT_DIR='||LIMIT_DIR||',LINK_PID='||LINK_PID||',RES_TRAILER='||RES_TRAILER||',RES_WEIGH='||RES_WEIGH||',RES_AXLE_LOAD='||RES_AXLE_LOAD||',RES_AXLE_COUNT='||RES_AXLE_COUNT||',RES_OUT='||RES_OUT,null from  RD_LINK_LIMIT_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_LIMIT_TRUCK b where 1=1
+				and a.LIMIT_DIR = b.LIMIT_DIR 
+				and a.LINK_PID = b.LINK_PID 
+				and a.RES_TRAILER = b.RES_TRAILER 
+				and a.RES_WEIGH = b.RES_WEIGH 
+				and a.RES_AXLE_LOAD = b.RES_AXLE_LOAD 
+				and a.RES_AXLE_COUNT = b.RES_AXLE_COUNT 
+				and a.RES_OUT = b.RES_OUT
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ADAS_ITPLINK_GEOMETRY','LINK_PID='||LINK_PID||',SHP_SEQ_NUM='||SHP_SEQ_NUM,null from  ADAS_ITPLINK_GEOMETRY a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_ITPLINK_GEOMETRY b where 1=1
+				and a.LINK_PID = b.LINK_PID 
+				and a.SHP_SEQ_NUM = b.SHP_SEQ_NUM 
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_NAME','LINK_PID='||LINK_PID||',NAME_GROUPID='||NAME_GROUPID ,null from  RD_LINK_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_NAME b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_RTIC','CODE='||CODE||',LINK_PID='||LINK_PID||',UPDOWN_FLAG='||UPDOWN_FLAG ,null from  RD_LINK_RTIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_RTIC b where 1=1
+				and a.CODE = b.CODE
+				and a.LINK_PID = b.LINK_PID
+				and a.UPDOWN_FLAG = b.UPDOWN_FLAG
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_INT_RTIC','CODE='||CODE||',LINK_PID='||LINK_PID||',UPDOWN_FLAG='||UPDOWN_FLAG ,null from  RD_LINK_INT_RTIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_INT_RTIC b where 1=1
+				and a.CODE = b.CODE
+				and a.LINK_PID = b.LINK_PID
+				and a.UPDOWN_FLAG = b.UPDOWN_FLAG
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SIDEWALK','LINK_PID='||LINK_PID ,null from  RD_LINK_SIDEWALK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SIDEWALK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SPEEDLIMIT','LINK_PID='||LINK_PID ,null from  RD_LINK_SPEEDLIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SPEEDLIMIT b where 1=1
+				and a.LINK_PID = b.LINK_PID and a.SPEED_TYPE=b.SPEED_TYPE and a.SPEED_DEPENDENT=b.SPEED_DEPENDENT
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_WALKSTAIR','LINK_PID='||LINK_PID ,null from  RD_LINK_WALKSTAIR a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_WALKSTAIR b where 1=1
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_ZONE','LINK_PID='||LINK_PID||',REGION_ID='||REGION_ID||',SIDE='||SIDE ,null from  RD_LINK_ZONE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_ZONE b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.REGION_ID = b.REGION_ID
+				and a.SIDE = b.SIDE
+                and a.TYPE = b.TYPE
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'RD_NODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+					    FROM rd_node a, rd_node_mesh c
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM rd_node b
+					                      WHERE 1 = 1
+					                        AND a.node_pid = b.node_pid)
+					     AND a.node_pid = c.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NODE_FORM','FORM_OF_WAY='||FORM_OF_WAY||',NODE_PID='||NODE_PID ,null from  RD_NODE_FORM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_FORM b where 1=1
+				and a.FORM_OF_WAY = b.FORM_OF_WAY
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  RD_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NODE_NAME','NAME_ID='||NAME_ID ,null from  RD_NODE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'RD_OBJECT', 'PID=' || a.pid, d.mesh_id
+				    FROM rd_object a, rd_object_link c, rd_link d
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM rd_object b
+				                      WHERE 1 = 1
+				                        AND a.pid = b.pid)
+				     AND a.pid = c.pid
+				     AND c.link_pid = d.link_pid;]]></sql>
+				 <sql><![CDATA[ INSERT INTO dup_pk_delete_record_mesh
+					    SELECT 'RD_OBJECT', 'PID=' || a.pid, e.mesh_id
+					      FROM rd_object a, rd_object_node c, rd_node d, rd_node_mesh e
+					     WHERE a.rowid != (SELECT MAX(b.rowid)
+					                         FROM rd_object b
+					                        WHERE 1 = 1
+					                          AND a.pid = b.pid)
+					       AND a.pid = c.pid
+					       AND c.node_pid = d.node_pid
+					       AND d.node_pid = e.node_pid;]]></sql>					            
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_OBJECT_INTER','INTER_PID='||INTER_PID||',PID='||PID ,null from  RD_OBJECT_INTER a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_INTER b where 1=1
+				and a.INTER_PID = b.INTER_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_OBJECT_LINK','LINK_PID='||LINK_PID||',PID='||PID ,null from  RD_OBJECT_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_OBJECT_NAME','NAME_ID='||NAME_ID ,null from  RD_OBJECT_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_OBJECT_NODE','NODE_PID='||NODE_PID||',PID='||PID ,null from  RD_OBJECT_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_NODE b where 1=1
+				and a.NODE_PID = b.NODE_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_OBJECT_ROAD','PID='||PID||',ROAD_PID='||ROAD_PID ,null from  RD_OBJECT_ROAD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_ROAD b where 1=1
+				and a.PID = b.PID
+				and a.ROAD_PID = b.ROAD_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_RESTRICTION','PID='||PID ,null from  RD_RESTRICTION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_RESTRICTION_CONDITION','DETAIL_ID='||DETAIL_ID ,null from  RD_RESTRICTION_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_CONDITION b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_RESTRICTION_DETAIL','DETAIL_ID='||DETAIL_ID ,null from  RD_RESTRICTION_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_DETAIL b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_RESTRICTION_VIA','DETAIL_ID='||DETAIL_ID||',GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID ,null from  RD_RESTRICTION_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_VIA b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_ROAD','PID='||PID ,null from  RD_ROAD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ROAD b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_ROAD_LINK','LINK_PID='||LINK_PID||',PID='||PID ,null from  RD_ROAD_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ROAD_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SAMELINK','GROUP_ID='||GROUP_ID ,null from  RD_SAMELINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMELINK b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SAMELINK_PART','GROUP_ID='||GROUP_ID||',LINK_PID='||LINK_PID||',TABLE_NAME='||TABLE_NAME ,null from  RD_SAMELINK_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMELINK_PART b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.LINK_PID = b.LINK_PID
+				and a.TABLE_NAME = b.TABLE_NAME
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SAMENODE','GROUP_ID='||GROUP_ID ,null from  RD_SAMENODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMENODE b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SAMENODE_PART','GROUP_ID='||GROUP_ID||',NODE_PID='||NODE_PID||',TABLE_NAME='||TABLE_NAME ,null from  RD_SAMENODE_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMENODE_PART b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.NODE_PID = b.NODE_PID
+				and a.TABLE_NAME = b.TABLE_NAME
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SE','PID='||PID ,null from  RD_SE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SE b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ADAS_LINK','LINK_PID='||LINK_PID ,mesh_id from  ADAS_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_LINK b where 1=1
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+							  SELECT 'ADAS_LINK_GEOMETRY',
+							         'LINK_PID=' || a.link_pid || ',SHP_SEQ_NUM=' || shp_seq_num,
+							         c.mesh_id
+							    FROM adas_link_geometry a, adas_link c
+							   WHERE a.rowid != (SELECT MAX(b.rowid)
+							                       FROM adas_link_geometry b
+							                      WHERE 1 = 1
+							                        AND a.link_pid = b.link_pid
+							                        AND a.shp_seq_num = b.shp_seq_num)
+							     AND a.link_pid = c.link_pid;]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+						  SELECT 'ADAS_NODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+						    FROM adas_node a, adas_node_mesh c
+						   WHERE a.rowid != (SELECT MAX(b.rowid)
+						                       FROM adas_node b
+						                      WHERE 1 = 1
+						                        AND a.node_pid = b.node_pid)
+						     AND a.node_pid = c.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ADAS_NODE_INFO','IN_LINK_PID='||IN_LINK_PID||',NODE_PID='||NODE_PID||',OUT_LINK_PID='||OUT_LINK_PID ,null from  ADAS_NODE_INFO a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_NODE_INFO b where 1=1
+				and a.IN_LINK_PID = b.IN_LINK_PID
+				and a.NODE_PID = b.NODE_PID
+				and a.OUT_LINK_PID = b.OUT_LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ADAS_SLOPE','LINK_PID='||LINK_PID||',NODE_PID='||NODE_PID ,null from  ADAS_SLOPE a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_SLOPE b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_ADMIN','REGION_ID='||REGION_ID ,mesh_id from  AD_ADMIN a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN b where 1=1
+				and a.REGION_ID = b.REGION_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_ADMIN_GROUP','GROUP_ID='||GROUP_ID ,null from  AD_ADMIN_GROUP a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_GROUP b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_ADMIN_NAME','NAME_ID='||NAME_ID ,null from  AD_ADMIN_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_ADMIN_PART','GROUP_ID='||GROUP_ID||',REGION_ID_DOWN='||REGION_ID_DOWN ,null from  AD_ADMIN_PART a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_PART b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+				and a.REGION_ID_DOWN = b.REGION_ID_DOWN
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_FACE','FACE_PID='||FACE_PID ,mesh_id from  AD_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from AD_FACE b where 1=1
+				and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_FACE_TOPO','FACE_PID='||FACE_PID||',LINK_PID='||LINK_PID ,null from  AD_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from AD_FACE_TOPO b where 1=1
+				and a.FACE_PID = b.FACE_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+						  SELECT 'AD_LINK', 'LINK_PID=' || a.link_pid, c.mesh_id
+						    FROM ad_link a, ad_link_mesh c
+						   WHERE a.rowid != (SELECT MAX(b.rowid)
+						                       FROM ad_link b
+						                      WHERE 1 = 1
+						                        AND a.link_pid = b.link_pid)
+						     AND a.link_pid = c.link_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_LINK_MESH','LINK_PID='||LINK_PID||',MESH_ID='||MESH_ID ,mesh_id from  AD_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from AD_LINK_MESH b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+						  SELECT 'AD_NODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+						    FROM ad_node a, ad_node_mesh c
+						   WHERE a.rowid != (SELECT MAX(b.rowid)
+						                       FROM ad_node b
+						                      WHERE 1 = 1
+						                        AND a.node_pid = b.node_pid)
+						     AND a.node_pid = c.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_NODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  AD_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from AD_NODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDFACE','FACE_PID='||FACE_PID ,mesh_id from  CMG_BUILDFACE a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE b where 1=1
+				and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDFACE_TENANT','FACE_PID='||FACE_PID||',POI_PID='||POI_PID ,null from  CMG_BUILDFACE_TENANT a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE_TENANT b where 1=1
+				and a.FACE_PID = b.FACE_PID
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDFACE_TOPO','FACE_PID='||FACE_PID||',LINK_PID='||LINK_PID ,null from  CMG_BUILDFACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE_TOPO b where 1=1
+				and a.FACE_PID = b.FACE_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDING','PID='||PID ,null from  CMG_BUILDING a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDING_3DICON','BUILDING_PID='||BUILDING_PID ,null from  CMG_BUILDING_3DICON a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_3DICON b where 1=1
+				and a.BUILDING_PID = b.BUILDING_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDING_3DMODEL','MODEL_ID='||MODEL_ID ,null from  CMG_BUILDING_3DMODEL a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_3DMODEL b where 1=1
+				and a.MODEL_ID = b.MODEL_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDING_NAME','NAME_ID='||NAME_ID ,null from  CMG_BUILDING_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDING_POI','BUILDING_PID='||BUILDING_PID||',POI_PID='||POI_PID ,null from  CMG_BUILDING_POI a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_POI b where 1=1
+				and a.BUILDING_PID = b.BUILDING_PID
+				and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+					  SELECT 'CMG_BUILDLINK', 'LINK_PID=' || a.link_pid, c.mesh_id
+					    FROM cmg_buildlink a, cmg_buildlink_mesh c
+					   WHERE a.rowid != (SELECT MAX(b.rowid)
+					                       FROM cmg_buildlink b
+					                      WHERE 1 = 1
+					                        AND a.link_pid = b.link_pid)
+					     AND a.link_pid = c.link_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDLINK_MESH','LINK_PID='||LINK_PID||',MESH_ID='||MESH_ID ,mesh_id from  CMG_BUILDLINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDLINK_MESH b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+						  SELECT 'CMG_BUILDNODE', 'NODE_PID=' || a.node_pid, c.mesh_id
+						    FROM cmg_buildnode a, cmg_buildnode_mesh c
+						   WHERE a.rowid != (SELECT MAX(b.rowid)
+						                       FROM cmg_buildnode b
+						                      WHERE 1 = 1
+						                        AND a.node_pid = b.node_pid)
+						     AND a.node_pid = c.node_pid;]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'CMG_BUILDNODE_MESH','MESH_ID='||MESH_ID||',NODE_PID='||NODE_PID ,mesh_id from  CMG_BUILDNODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDNODE_MESH b where 1=1
+				and a.MESH_ID = b.MESH_ID
+				and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB','PID='||PID ,mesh_id from  HW_ESTAB a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_CONTAIN','ESTAB_PID='||ESTAB_PID||',GROUP_ID='||GROUP_ID ,null from  HW_ESTAB_CONTAIN a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_CONTAIN b where 1=1
+				and a.ESTAB_PID = b.ESTAB_PID
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_JCT','JCT_PID='||JCT_PID ,null from  HW_ESTAB_JCT a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_JCT b where 1=1
+				and a.JCT_PID = b.JCT_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_MAIN','GROUP_ID='||GROUP_ID ,null from  HW_ESTAB_MAIN a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_MAIN b where 1=1
+				and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_NAME','NAME_ID='||NAME_ID ,null from  HW_ESTAB_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_ROUTE_POS','ESTAB_PID='||ESTAB_PID||',POSITION_PID='||POSITION_PID||',ROUTE_PID='||ROUTE_PID ,null from  HW_ESTAB_ROUTE_POS a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_ROUTE_POS b where 1=1
+				and a.ESTAB_PID = b.ESTAB_PID
+				and a.POSITION_PID = b.POSITION_PID
+				and a.ROUTE_PID = b.ROUTE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ESTAB_SA','ESTAB_PID='||ESTAB_PID||',INNER_ITEM='||INNER_ITEM ,null from  HW_ESTAB_SA a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_SA b where 1=1
+				and a.ESTAB_PID = b.ESTAB_PID
+				and a.INNER_ITEM = b.INNER_ITEM
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_POSITION','POSITION_PID='||POSITION_PID ,null from  HW_POSITION a
+                where a.rowid !=
+                (select max(b.rowid) from HW_POSITION b where 1=1
+				and a.POSITION_PID = b.POSITION_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HW_ROUTE','ROUTE_PID='||ROUTE_PID ,null from  HW_ROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ROUTE b where 1=1
+				and a.ROUTE_PID = b.ROUTE_PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_ANNOTATION','PID='||PID ,mesh_id from  IX_ANNOTATION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_ANNOTATION_FLAG','FLAG_CODE='||FLAG_CODE||',PID='||PID ,null from  IX_ANNOTATION_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_ANNOTATION_NAME','NAME_ID='||NAME_ID ,null from  IX_ANNOTATION_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_HAMLET','PID='||PID ,mesh_id from  IX_HAMLET a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_HAMLET_FLAG','FLAG_CODE='||FLAG_CODE||',PID='||PID ,null from  IX_HAMLET_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET_FLAG b where 1=1
+				and a.FLAG_CODE = b.FLAG_CODE
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_HAMLET_NAME','NAME_ID='||NAME_ID ,null from  IX_HAMLET_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SPEEDBUMP','BUMP_PID='||BUMP_PID ,null from  RD_SPEEDBUMP a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDBUMP b where 1=1
+				and a.BUMP_PID = b.BUMP_PID
+                );]]></sql>
+                
+                <!--glm190 POI深度信息    -->             
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_PARKING','PARKING_ID='||PARKING_ID ,null from  IX_POI_PARKING a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PARKING b where 1=1
+				and a.PARKING_ID = b.PARKING_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_TOURROUTE','TOUR_ID='||TOUR_ID ,null from  IX_POI_TOURROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_TOURROUTE b where 1=1
+				and a.TOUR_ID = b.TOUR_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_EVENT','EVENT_ID='||EVENT_ID ,null from  IX_POI_EVENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_EVENT b where 1=1
+				and a.EVENT_ID = b.EVENT_ID
+                );]]></sql>
+                
+                 <!--ADAS属性-->
+                 <!-- 
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SLOPE_DTM','LINK_PID='||LINK_PID ,null from  RD_LINK_SLOPE_DTM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SLOPE_DTM b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.OFFSET=b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SLOPE_ADAS','LINK_PID='||LINK_PID ,null from  RD_LINK_SLOPE_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SLOPE_ADAS b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.OFFSET = b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_CURHEAD_ADAS','LINK_PID='||LINK_PID ,null from  RD_LINK_CURHEAD_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_CURHEAD_ADAS b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.OFFSET = b.OFFSET
+                );]]></sql>210模型删除 -->
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_PARAM_ADAS','LINK_PID='||LINK_PID ,null from  RD_LINK_PARAM_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_PARAM_ADAS b where 1=1
+				and a.LINK_PID = b.LINK_PID
+				and a.OFFSET = b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'AD_ADMIN_DETAIL','ADMIN_ID='||ADMIN_ID ,null from  AD_ADMIN_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_DETAIL b where 1=1
+				and a.ADMIN_ID = b.ADMIN_ID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SIGNPOST','PID='||PID ,mesh_id from  RD_SIGNPOST a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNPOST b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                
+                <!-- 200 新增 -->
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NATGUD_JUN','PID='||PID ,null from  RD_NATGUD_JUN a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NATGUD_JUN b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                DETAIL_ID
+
+
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NATGUD_JUN_VIA','DETAIL_ID='||DETAIL_ID||',LINK_PID='||LINK_PID||',GROUP_ID='||GROUP_ID ,null from  RD_NATGUD_JUN_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NATGUD_JUN_VIA b where 1=1
+				and a.DETAIL_ID = b.DETAIL_ID and a.LINK_PID = b.LINK_PID and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                                
+                <sql><![CDATA[INSERT INTO dup_pk_delete_record_mesh
+				  SELECT 'RD_NATGUD_JUN_DETAIL', 'DETAIL_ID=' || detail_id, c.mesh_id
+				    FROM rd_natgud_jun_detail a, rd_link c
+				   WHERE a.rowid != (SELECT MAX(b.rowid)
+				                       FROM rd_natgud_jun_detail b
+				                      WHERE 1 = 1
+				                        AND a.detail_id = b.detail_id)
+				     AND (a.out_link_pid = c.link_pid OR a.exp_link_pid = c.link_pid);
+				]]></sql>
+                                
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_NATGUD','PID='||PID ,mesh_id from  IX_NATGUD a
+                where a.rowid !=
+                (select max(b.rowid) from IX_NATGUD b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                                
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_NATGUD_NAME','NAME_ID='||NAME_ID ,null from  IX_NATGUD_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_NATGUD_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                
+                
+                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HWY_JUNCTION','JUNC_PID='||JUNC_PID ,null from  HWY_JUNCTION a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JUNCTION b where 1=1
+				and a.JUNC_PID = b.JUNC_PID
+                );]]></sql>
+                
+                  <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HWY_JUNCTION_NAME','NAME_ID='||NAME_ID ,null from  HWY_JUNCTION_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JUNCTION_NAME b where 1=1
+				and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                
+                   <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HWY_SAPA','JUNC_PID='||JUNC_PID||',ESTAB_ITEM='||ESTAB_ITEM ,null from  HWY_SAPA a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_SAPA b where 1=1
+				and a.JUNC_PID = b.JUNC_PID
+				and a.ESTAB_ITEM = b.ESTAB_ITEM
+                );]]></sql>
+                
+                    <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HWY_JCT','JCT_PID='||JCT_PID ,null from  HWY_JCT a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JCT b where 1=1
+				and a.JCT_PID = b.JCT_PID
+                );]]></sql>
+                
+                
+                   <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'HWY_JCT_LINK','JCT_PID='||JCT_PID||',LINK_PID='||LINK_PID ,null from  HWY_JCT_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JCT_LINK b where 1=1
+				and a.JCT_PID = b.JCT_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                
+                
+                    <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_HGWG_LIMIT','PID='||PID ,null from  RD_HGWG_LIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_HGWG_LIMIT b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                
+                <!-- 
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_NODE_INFO_ADAS','NODE_PID='||NODE_PID||',IN_LINK_PID='||IN_LINK_PID||',OUT_LINK_PID='||OUT_LINK_PID ,null from  RD_NODE_INFO_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_INFO_ADAS b where 1=1
+				and a.NODE_PID = b.NODE_PID
+				and a.IN_LINK_PID = b.IN_LINK_PID
+				and a.OUT_LINK_PID = b.OUT_LINK_PID
+                );]]></sql>
+                 -->
+                
+                  <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'ADAS_NODE_MESH','NODE_PID='||NODE_PID||',MESH_ID='||MESH_ID,mesh_id from  ADAS_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_NODE_MESH b where 1=1
+				and a.NODE_PID = b.NODE_PID
+				and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                
+                    <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SLOPE_VIA','SLOPE_PID='||SLOPE_PID||',LINK_PID='||LINK_PID,null from  RD_SLOPE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SLOPE_VIA b where 1=1
+				and a.SLOPE_PID = b.SLOPE_PID
+				and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+              
+                
+        </step>
+    </feature>
+    <feature name="removeDuplicate">
+        <step value="110">
+                <sql><![CDATA[delete from IX_POI a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POINTADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POINTADDRESS_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_CHILDREN b where 1=1
+                and a.CHILD_PA_PID = b.CHILD_PA_PID
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POINTADDRESS_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POINTADDRESS_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POINTADDRESS_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POINTADDRESS_PARENT b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_ADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ADDRESS b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_ATTRACTION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ATTRACTION b where 1=1
+                and a.ATTRACTION_ID = b.ATTRACTION_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_AUDIO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_AUDIO b where 1=1
+                and a.AUDIO_ID = b.AUDIO_ID
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_BUILDING a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_BUILDING b where 1=1
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CHILDREN b where 1=1
+                and a.CHILD_POI_PID = b.CHILD_POI_PID
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_CONTACT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CONTACT b where 1=1
+                and a.CONTACT = b.CONTACT
+                and a.CONTACT_TYPE = b.CONTACT_TYPE
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_ENTRYIMAGE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ENTRYIMAGE b where 1=1
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_HOTEL a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_HOTEL b where 1=1
+                and a.HOTEL_ID = b.HOTEL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_ICON a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_ICON b where 1=1
+                and a.REL_ID = b.REL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_INTRODUCTION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_INTRODUCTION b where 1=1
+                and a.INTRODUCTION_ID = b.INTRODUCTION_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_NAME_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_NAME_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PARENT b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_PHOTO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PHOTO b where 1=1
+                and a.PHOTO_ID = b.PHOTO_ID
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_RESTAURANT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_RESTAURANT b where 1=1
+                and a.RESTAURANT_ID = b.RESTAURANT_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_VIDEO a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_VIDEO b where 1=1
+                and a.POI_PID = b.POI_PID
+                and a.VIDEO_ID = b.VIDEO_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POSTCODE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POSTCODE b where 1=1
+                and a.POST_ID = b.POST_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_SAMEPOI a
+                where a.rowid !=
+                (select max(b.rowid) from IX_SAMEPOI b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_SAMEPOI_PART a
+                where a.rowid !=
+                (select max(b.rowid) from IX_SAMEPOI_PART b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FACE b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_FACE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FACE_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FACE_TOPO b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from LC_FEATURE b where 1=1
+                and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from LC_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from LC_LINK_KIND b where 1=1
+                and a.FORM = b.FORM
+                and a.KIND = b.KIND
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LC_LINK_MESH b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from LC_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LC_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LC_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_FACE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FACE_TOPO b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from LU_FEATURE b where 1=1
+                and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from LU_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from LU_LINK_KIND b where 1=1
+                and a.KIND = b.KIND
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LU_LINK_MESH b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from LU_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SERIESBRANCH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SERIESBRANCH b where 1=1
+                and a.BRANCH_PID = b.BRANCH_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SIGNASREAL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNASREAL b where 1=1
+                and a.SIGNBOARD_ID = b.SIGNBOARD_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SIGNBOARD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNBOARD b where 1=1
+                and a.SIGNBOARD_ID = b.SIGNBOARD_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SIGNBOARD_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNBOARD_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SLOPE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SLOPE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SPEEDLIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDLIMIT b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TMCLOCATION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TMCLOCATION b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TMCLOCATION_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TMCLOCATION_LINK b where 1=1
+                and a.DIRECT = b.DIRECT
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE_COST a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_COST b where 1=1
+                and a.TOLLCOST_ID = b.TOLLCOST_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE_FEE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_FEE b where 1=1
+                and a.TOLLCOST_ID = b.TOLLCOST_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE_MAPPING a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_MAPPING b where 1=1
+                and a.MAPPING_ID = b.MAPPING_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TOLLGATE_PASSAGE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TOLLGATE_PASSAGE b where 1=1
+                and a.PID = b.PID
+                and a.SEQ_NUM = b.SEQ_NUM
+                );]]></sql>
+                <sql><![CDATA[delete from RD_TRAFFICSIGNAL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_TRAFFICSIGNAL b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VARIABLE_SPEED a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VARIABLE_SPEED b where 1=1
+                and a.VSPEED_PID = b.VSPEED_PID
+                );]]></sql>
+                 <sql><![CDATA[delete from RD_VARIABLE_SPEED_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VARIABLE_SPEED_VIA b where 1=1
+                and a.VSPEED_PID = b.VSPEED_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VIRCONNECT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VIRCONNECT_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VIRCONNECT_TRANSIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VIRCONNECT_TRANSIT b where 1=1
+                and a.FIR_NODE_PID = b.FIR_NODE_PID
+                and a.PID = b.PID
+                and a.SEN_NODE_PID = b.SEN_NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VOICEGUIDE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VOICEGUIDE_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE_DETAIL b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_VOICEGUIDE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_VOICEGUIDE_VIA b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_WARNINGINFO a
+                where a.rowid !=
+                (select max(b.rowid) from RD_WARNINGINFO b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RW_FEATURE a
+                where a.rowid !=
+                (select max(b.rowid) from RW_FEATURE b where 1=1
+                and a.FEATURE_PID = b.FEATURE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RW_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RW_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RW_LINK_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RW_LINK_NAME b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[delete from RW_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RW_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RW_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from RW_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_FACE b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_FACE_TOPO b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_LINK_KIND a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_LINK_KIND b where 1=1
+                and a.KIND = b.KIND
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_LINK_MESH b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ZONE_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ZONE_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from LU_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from LU_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_COMPANY a
+                where a.rowid !=
+                (select max(b.rowid) from PT_COMPANY b where 1=1
+                and a.COMPANY_ID = b.COMPANY_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_ETA_ACCESS a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_ACCESS b where 1=1
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_ETA_COMPANY a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_COMPANY b where 1=1
+                and a.COMPANY_ID = b.COMPANY_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_ETA_LINE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_LINE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_ETA_STOP a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_STOP b where 1=1
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_ETA_SYSTEM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_ETA_SYSTEM b where 1=1
+                and a.SYSTEM_ID = b.SYSTEM_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_LINE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_LINE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_LINE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_LINE_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_PLATFORM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_PLATFORM_ACCESS a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM_ACCESS b where 1=1
+                and a.RELATE_ID = b.RELATE_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_PLATFORM_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_PLATFORM_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_POI a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_POI_CHILDREN a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_CHILDREN b where 1=1
+                and a.CHILD_POI_PID = b.CHILD_POI_PID
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_POI_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_POI_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_POI_PARENT a
+                where a.rowid !=
+                (select max(b.rowid) from PT_POI_PARENT b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_STRAND a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_STRAND_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_STRAND_PLATFORM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_PLATFORM b where 1=1
+                and a.PLATFORM_PID = b.PLATFORM_PID
+                and a.SEQ_NUM = b.SEQ_NUM
+                and a.STRAND_PID = b.STRAND_PID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_STRAND_SCHEDULE a
+                where a.rowid !=
+                (select max(b.rowid) from PT_STRAND_SCHEDULE b where 1=1
+                and a.END_TIME = b.END_TIME
+                and a.START_TIME = b.START_TIME
+                and a.STRAND_PID = b.STRAND_PID
+                and a.VALID_DAY = b.VALID_DAY
+                );]]></sql>
+                <sql><![CDATA[delete from PT_SYSTEM a
+                where a.rowid !=
+                (select max(b.rowid) from PT_SYSTEM b where 1=1
+                and a.SYSTEM_ID = b.SYSTEM_ID
+                );]]></sql>
+                <sql><![CDATA[delete from PT_TRANSFER a
+                where a.rowid !=
+                (select max(b.rowid) from PT_TRANSFER b where 1=1
+                and a.TRANSFER_ID = b.TRANSFER_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH b where 1=1
+                and a.BRANCH_PID = b.BRANCH_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_DETAIL b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH_REALIMAGE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_REALIMAGE b where 1=1
+                and a.BRANCH_PID = b.BRANCH_PID
+                and a.IMAGE_TYPE = b.IMAGE_TYPE
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH_SCHEMATIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_SCHEMATIC b where 1=1
+                and a.SCHEMATIC_ID = b.SCHEMATIC_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_BRANCH_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_BRANCH_VIA b where 1=1
+                and a.BRANCH_PID = b.BRANCH_PID
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_MAINSIDE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MAINSIDE b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_MAINSIDE_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MAINSIDE_LINK b where 1=1
+                and a.GROUP_ID = b.GROUP_ID 
+                and a.LINK_PID = b.LINK_PID 
+                and a.SIDE = b.SIDE
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSSWALK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSSWALK_INFO a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK_INFO b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.NODE_PID = b.NODE_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSSWALK_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSSWALK_NODE b where 1=1
+                and a.FIR_NODE_PID = b.FIR_NODE_PID
+                and a.PID = b.PID
+                and a.SEN_NODE_PID = b.SEN_NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSS_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSS_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_CROSS_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_CROSS_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_DIRECTROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_DIRECTROUTE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_DIRECTROUTE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_DIRECTROUTE_VIA b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_ELECTRONICEYE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECTRONICEYE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_ELECEYE_PAIR a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECEYE_PAIR b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_ELECEYE_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ELECEYE_PART b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.ELECEYE_PID = b.ELECEYE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_GATE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GATE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_GATE_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GATE_CONDITION b where 1=1
+                and a.PID = b.PID
+                and a.VALID_OBJ = b.VALID_OBJ
+                );]]></sql>
+                <sql><![CDATA[delete from RD_GSC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GSC b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_GSC_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_GSC_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                and a.TABLE_NAME = b.TABLE_NAME
+                and a.ZLEVEL = b.ZLEVEL
+                );]]></sql>
+                <sql><![CDATA[delete from RD_INTER a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_INTER_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_INTER_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_INTER_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE b where 1=1
+                and a.LANE_PID = b.LANE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_CONDITION b where 1=1
+                and a.DIRECTION = b.DIRECTION
+                and a.LANE_PID = b.LANE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_CONNEXITY a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_CONNEXITY b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_TOPOLOGY a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPOLOGY b where 1=1
+                and a.TOPOLOGY_ID = b.TOPOLOGY_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_TOPO_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPO_DETAIL b where 1=1
+                and a.TOPO_ID = b.TOPO_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_TOPO_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_TOPO_VIA b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.TOPO_ID = b.TOPO_ID
+                and a.VIA_LINK_PID = b.VIA_LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LANE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LANE_VIA b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                and a.TOPOLOGY_ID = b.TOPOLOGY_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_ADDRESS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_ADDRESS b where 1=1
+                and a.ADDRESS_TYPE = b.ADDRESS_TYPE
+                and a.LINK_PID = b.LINK_PID
+                and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_FORM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_FORM b where 1=1
+                and a.FORM_OF_WAY = b.FORM_OF_WAY
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_LIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_LIMIT b where 1=1
+                and a.LIMIT_DIR = b.LIMIT_DIR
+                and a.LINK_PID = b.LINK_PID
+                and a.TYPE = b.TYPE
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_NAME b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.NAME_GROUPID = b.NAME_GROUPID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_RTIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_RTIC b where 1=1
+                and a.CODE = b.CODE
+                and a.LINK_PID = b.LINK_PID
+                and a.UPDOWN_FLAG = b.UPDOWN_FLAG
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_INT_RTIC a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_INT_RTIC b where 1=1
+                and a.CODE = b.CODE
+                and a.LINK_PID = b.LINK_PID
+                and a.UPDOWN_FLAG = b.UPDOWN_FLAG
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_SIDEWALK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SIDEWALK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_SPEEDLIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SPEEDLIMIT b where 1=1
+                and a.LINK_PID = b.LINK_PID and a.SPEED_TYPE=b.SPEED_TYPE and a.SPEED_DEPENDENT=b.SPEED_DEPENDENT
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_WALKSTAIR a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_WALKSTAIR b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_ZONE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_ZONE b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.REGION_ID = b.REGION_ID
+                and a.SIDE = b.SIDE
+                and a.TYPE = b.TYPE
+                );]]></sql>
+                <sql><![CDATA[delete from RD_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_NODE_FORM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_FORM b where 1=1
+                and a.FORM_OF_WAY = b.FORM_OF_WAY
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_NODE_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT_INTER a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_INTER b where 1=1
+                and a.INTER_PID = b.INTER_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_OBJECT_ROAD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_OBJECT_ROAD b where 1=1
+                and a.PID = b.PID
+                and a.ROAD_PID = b.ROAD_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_RESTRICTION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_RESTRICTION_CONDITION a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_CONDITION b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_RESTRICTION_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_DETAIL b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_RESTRICTION_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_RESTRICTION_VIA b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_ROAD a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ROAD b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_ROAD_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_ROAD_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SAMELINK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMELINK b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SAMELINK_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMELINK_PART b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.LINK_PID = b.LINK_PID
+                and a.TABLE_NAME = b.TABLE_NAME
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SAMENODE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMENODE b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SAMENODE_PART a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SAMENODE_PART b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.NODE_PID = b.NODE_PID
+                and a.TABLE_NAME = b.TABLE_NAME
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SE b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from ADAS_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ADAS_LINK_GEOMETRY a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_LINK_GEOMETRY b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.SHP_SEQ_NUM = b.SHP_SEQ_NUM
+                );]]></sql>
+                <sql><![CDATA[delete from ADAS_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ADAS_NODE_INFO a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_NODE_INFO b where 1=1
+                and a.IN_LINK_PID = b.IN_LINK_PID
+                and a.NODE_PID = b.NODE_PID
+                and a.OUT_LINK_PID = b.OUT_LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from ADAS_SLOPE a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_SLOPE b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_ADMIN a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN b where 1=1
+                and a.REGION_ID = b.REGION_ID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_ADMIN_GROUP a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_GROUP b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_ADMIN_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_ADMIN_PART a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_PART b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                and a.REGION_ID_DOWN = b.REGION_ID_DOWN
+                );]]></sql>
+                <sql><![CDATA[delete from AD_FACE a
+                where a.rowid !=
+                (select max(b.rowid) from AD_FACE b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_FACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from AD_FACE_TOPO b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from AD_LINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_LINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from AD_LINK_MESH b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_NODE a
+                where a.rowid !=
+                (select max(b.rowid) from AD_NODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from AD_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from AD_NODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDFACE a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDFACE_TENANT a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE_TENANT b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDFACE_TOPO a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDFACE_TOPO b where 1=1
+                and a.FACE_PID = b.FACE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDING a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDING_3DICON a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_3DICON b where 1=1
+                and a.BUILDING_PID = b.BUILDING_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDING_3DMODEL a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_3DMODEL b where 1=1
+                and a.MODEL_ID = b.MODEL_ID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDING_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDING_POI a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDING_POI b where 1=1
+                and a.BUILDING_PID = b.BUILDING_PID
+                and a.POI_PID = b.POI_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDLINK a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDLINK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDLINK_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDLINK_MESH b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDNODE a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDNODE b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from CMG_BUILDNODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from CMG_BUILDNODE_MESH b where 1=1
+                and a.MESH_ID = b.MESH_ID
+                and a.NODE_PID = b.NODE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_CONTAIN a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_CONTAIN b where 1=1
+                and a.ESTAB_PID = b.ESTAB_PID
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_JCT a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_JCT b where 1=1
+                and a.JCT_PID = b.JCT_PID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_MAIN a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_MAIN b where 1=1
+                and a.GROUP_ID = b.GROUP_ID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_ROUTE_POS a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_ROUTE_POS b where 1=1
+                and a.ESTAB_PID = b.ESTAB_PID
+                and a.POSITION_PID = b.POSITION_PID
+                and a.ROUTE_PID = b.ROUTE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ESTAB_SA a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ESTAB_SA b where 1=1
+                and a.ESTAB_PID = b.ESTAB_PID
+                and a.INNER_ITEM = b.INNER_ITEM
+                );]]></sql>
+                <sql><![CDATA[delete from HW_POSITION a
+                where a.rowid !=
+                (select max(b.rowid) from HW_POSITION b where 1=1
+                and a.POSITION_PID = b.POSITION_PID
+                );]]></sql>
+                <sql><![CDATA[delete from HW_ROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from HW_ROUTE b where 1=1
+                and a.ROUTE_PID = b.ROUTE_PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_ANNOTATION a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_ANNOTATION_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_ANNOTATION_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_ANNOTATION_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_HAMLET a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_HAMLET_FLAG a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET_FLAG b where 1=1
+                and a.FLAG_CODE = b.FLAG_CODE
+                and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_HAMLET_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_HAMLET_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SPEEDBUMP a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDBUMP b where 1=1
+                and a.BUMP_PID = b.BUMP_PID
+                );]]></sql>
+                
+                <!--glm190 POI深度信息    -->             
+                <sql><![CDATA[delete from IX_POI_PARKING a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_PARKING b where 1=1
+                and a.PARKING_ID = b.PARKING_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_TOURROUTE a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_TOURROUTE b where 1=1
+                and a.TOUR_ID = b.TOUR_ID
+                );]]></sql>
+                <sql><![CDATA[delete from IX_POI_EVENT a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_EVENT b where 1=1
+                and a.EVENT_ID = b.EVENT_ID
+                );]]></sql>
+                
+                 <!--ADAS属性-->
+                 <!-- 210模型删除
+                <sql><![CDATA[delete from RD_LINK_SLOPE_DTM a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SLOPE_DTM b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.OFFSET=b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_SLOPE_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SLOPE_ADAS b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.OFFSET = b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[delete from RD_LINK_CURHEAD_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_CURHEAD_ADAS b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.OFFSET = b.OFFSET
+                );]]></sql> -->
+                <sql><![CDATA[delete from RD_LINK_PARAM_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_PARAM_ADAS b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.OFFSET = b.OFFSET
+                );]]></sql>
+                <sql><![CDATA[delete from AD_ADMIN_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from AD_ADMIN_DETAIL b where 1=1
+                and a.ADMIN_ID = b.ADMIN_ID
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SIGNPOST a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SIGNPOST b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                
+                <!-- 200新增 -->
+                 <sql><![CDATA[delete from RD_NATGUD_JUN a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NATGUD_JUN b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                
+                 <sql><![CDATA[delete from RD_NATGUD_JUN_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NATGUD_JUN_VIA b where 1=1
+                and a.DETAIL_ID= b.DETAIL_ID 
+                and  a.LINK_PID= b.LINK_PID
+                and  a.GROUP_ID= b.GROUP_ID
+                );]]></sql>
+                
+                 <sql><![CDATA[delete from RD_NATGUD_JUN_DETAIL a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NATGUD_JUN_DETAIL b where 1=1
+                and a.DETAIL_ID = b.DETAIL_ID
+                );]]></sql>
+                
+                 <sql><![CDATA[delete from IX_NATGUD a
+                where a.rowid !=
+                (select max(b.rowid) from IX_NATGUD b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                
+                 <sql><![CDATA[delete from IX_NATGUD_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from IX_NATGUD_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                
+                
+                 <sql><![CDATA[delete from HWY_JUNCTION a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JUNCTION b where 1=1
+                and a.JUNC_PID = b.JUNC_PID
+                );]]></sql>
+                
+                
+                <sql><![CDATA[delete from HWY_JUNCTION_NAME a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JUNCTION_NAME b where 1=1
+                and a.NAME_ID = b.NAME_ID
+                );]]></sql>
+                
+                 <sql><![CDATA[delete from HWY_SAPA a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_SAPA b where 1=1
+                and a.JUNC_PID = b.JUNC_PID
+                and a.ESTAB_ITEM = b.ESTAB_ITEM
+                );]]></sql>
+                
+                
+                 <sql><![CDATA[delete from HWY_JCT a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JCT b where 1=1
+                and a.JCT_PID = b.JCT_PID
+                );]]></sql>
+                
+                     <sql><![CDATA[delete from HWY_JCT_LINK a
+                where a.rowid !=
+                (select max(b.rowid) from HWY_JCT_LINK b where 1=1
+                and a.JCT_PID = b.JCT_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                
+                  <sql><![CDATA[delete from RD_HGWG_LIMIT a
+                where a.rowid !=
+                (select max(b.rowid) from RD_HGWG_LIMIT b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                
+                <!-- 
+                   <sql><![CDATA[delete from RD_NODE_INFO_ADAS a
+                where a.rowid !=
+                (select max(b.rowid) from RD_NODE_INFO_ADAS b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                and a.IN_LINK_PID = b.IN_LINK_PID
+                and a.OUT_LINK_PID = b.OUT_LINK_PID
+                );]]></sql> -->
+                
+                  <sql><![CDATA[delete from ADAS_NODE_MESH a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_NODE_MESH b where 1=1
+                and a.NODE_PID = b.NODE_PID
+                and a.MESH_ID = b.MESH_ID
+                );]]></sql>
+                
+                
+                   <sql><![CDATA[delete from RD_SLOPE_VIA a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SLOPE_VIA b where 1=1
+                and a.SLOPE_PID = b.SLOPE_PID
+                and a.LINK_PID = b.LINK_PID
+                );]]></sql>
+                
+                      
+                   <sql><![CDATA[delete from RD_LINK_LIMIT_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_LIMIT_TRUCK b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.LIMIT_DIR = b.LIMIT_DIR
+				and a.RES_TRAILER = b.RES_TRAILER 
+				and a.RES_WEIGH = b.RES_WEIGH 
+				and a.RES_AXLE_LOAD = b.RES_AXLE_LOAD 
+				and a.RES_AXLE_COUNT = b.RES_AXLE_COUNT 
+				and a.RES_OUT = b.RES_OUT
+                );]]></sql>
+                
+                <sql><![CDATA[delete from ADAS_ITPLINK_GEOMETRY a
+                where a.rowid !=
+                (select max(b.rowid) from ADAS_ITPLINK_GEOMETRY b where 1=1
+                and a.LINK_PID = b.LINK_PID
+                and a.SHP_SEQ_NUM = b.SHP_SEQ_NUM
+                );]]></sql>
+             
+        </step>
+    </feature>
+</sqls>

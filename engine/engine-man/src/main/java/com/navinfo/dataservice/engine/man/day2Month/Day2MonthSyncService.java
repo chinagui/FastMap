@@ -4,16 +4,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.DataBaseUtils;
@@ -41,8 +37,8 @@ public class Day2MonthSyncService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			long sid = DataBaseUtils.fetchSequence(conn, "fm_day2month_sync_seq");
-			String sql = "insert into fm_day2month_sync (sync_id,city_id,sync_time,sync_status,job_id)values(?,?,sysdate,?,?)";
-			run.update(conn, sql, sid,info.getCityId(),info.getSyncStatus(),info.getJobId());
+			String sql = "insert into fm_day2month_sync (sync_id,region_id,sync_time,sync_status,job_id)values(?,?,sysdate,?,?)";
+			run.update(conn, sql, sid,info.getRegionId(),info.getSyncStatus(),info.getJobId());
 			return sid;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -62,9 +58,9 @@ public class Day2MonthSyncService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String sql = "update fm_day2month_sync set city_id=?,sync_time=to_date(?,'yyyyMMddhh24miss'),sync_status=?,job_id=? where sync_id=?";
+			String sql = "update fm_day2month_sync set region_id=?,sync_time=to_date(?,'yyyyMMddhh24miss'),sync_status=?,job_id=? where sync_id=?";
 			String syncTime =  new SimpleDateFormat("yyyyMMddHHmmss").format(info.getSyncTime());
-			return run.update(conn, sql, info.getCityId(),syncTime,info.getSyncStatus(),info.getJobId(),info.getSid());
+			return run.update(conn, sql, info.getRegionId(),syncTime,info.getSyncStatus(),info.getJobId(),info.getSid());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -83,8 +79,7 @@ public class Day2MonthSyncService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			long sid = DataBaseUtils.fetchSequence(conn, "fm_day2month_sync_seq");
-			String sql = "select * from (select sync_id,city_id,sync_time,sync_status,job_id from  fm_day2month_sync where city_Id=? and sync_status=? order by sync_time desc) where rownum=1 ";
+			String sql = "select * from (select sync_id,region_id,sync_time,sync_status,job_id from  fm_day2month_sync where city_Id=? and sync_status=? order by sync_time desc) where rownum=1 ";
 			ResultSetHandler<FmDay2MonSync> rsh = new ResultSetHandler<FmDay2MonSync>(){
 
 				@Override
@@ -92,7 +87,7 @@ public class Day2MonthSyncService {
 					if(rs.next()){
 						FmDay2MonSync syncInfo = new FmDay2MonSync();
 						syncInfo.setSid(rs.getLong("sync_id"));
-						syncInfo.setCityId(rs.getLong("city_id"));
+						syncInfo.setRegionId(rs.getLong("region_id"));
 						syncInfo.setJobId(rs.getLong("job_id"));
 						syncInfo.setSyncStatus(rs.getInt("sync_status"));
 						syncInfo.setSyncTime(rs.getDate("sync_time"));

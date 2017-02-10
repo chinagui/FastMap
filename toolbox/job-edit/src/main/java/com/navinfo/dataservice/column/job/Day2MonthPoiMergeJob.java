@@ -3,7 +3,9 @@ package com.navinfo.dataservice.column.job;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,7 @@ import com.navinfo.dataservice.impcore.mover.LogMover;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 import net.sf.json.JSONObject;
 
@@ -83,33 +86,51 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil
 				.getBean("metadataApi");
 		try {
-			log.info("开始获取日落月开关控制信息");
-			//获取region列表
-			List<Region> regions = manApi.queryRegionList();
+			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
+			int specRegionId = day2MonRequest.getSpecRegionId();
+			//确定需要日落月的大区
+			List<Region> regions = null;
+			if(specRegionId>0){//判断是否有指定大区的日落月
+				Region r = manApi.queryByRegionId(specRegionId);
+				regions = new ArrayList<Region>();
+				regions.add(r);
+			}else{//全部大区
+				regions = manApi.queryRegionList();
+			}
+			log.info("确定日落月大区库个数："+regions.size()+"个。");
+			response("确定日落月大区库个数："+regions.size()+"个。",null);
 			//获取region对应的省份
 			List<CpRegionProvince> regionProvs = manApi.listCpRegionProvince();
-			//获取meshes开关等信息
-			List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(null);
-			Set<Integer> statusValues = new HashSet<Integer>();
-			statusValues.add(0);
-			JSONObject conditionJson = new JSONObject().element("status", statusValues);
-			List<Map<String, Object>> d2mInfoList= manApi.queryDay2MonthList(conditionJson );
-			response("获取日落月开关控制信息ok",null);
-			log.info("开始获取日落月城市信息:城市的基础信息、城市的grid，城市的大区库");
-			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
-//			String reqCityId = day2MonRequest==null?null:day2MonRequest.getCityId();
-			int specRegionId = day2MonRequest.getSpecRegionId();
-			//判断是否有指定大区的日落月
-			if(specRegionId>0){
-				doSync(manApi, datahubApi, d2mSyncApi, specRegionId);
-			}else{//全部DAY2MONTH_CONFIG中处于打开状态的城市
-				for(Map<String,Object> d2mInfo:d2mInfoList){
-					Integer cityId = (Integer) d2mInfo.get("cityId");
-					doSync(manApi, datahubApi, d2mSyncApi, cityId);
+			Map<Integer,Set<Integer>> adminMap = new HashMap<Integer,Set<Integer>>();
+			for(CpRegionProvince cp:regionProvs){
+				if(adminMap.containsKey(cp.getRegionId())){
+					adminMap.get(cp.getRegionId()).add(cp.getAdmincode());
+				}else{
+					Set<Integer> codes = new HashSet<Integer>();
+					codes.add(cp.getAdmincode());
+					adminMap.put(cp.getRegionId(), codes);
 				}
 			}
-			
-			log.info("日落月完成");
+			//开始分配
+			for(Region region:regions){
+				//获取region包含的省份
+				Set<Integer> admins = adminMap.get(region.getRegionId());
+				//过去大区库内的关闭图幅并转换成girds
+				List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(admins);
+				List<Integer> filterGrids = new ArrayList<Integer>();
+				for(Mesh4Partition m:meshes){
+					if(m.getDay2monSwitch()==0){
+						int mId = m.getMesh();
+						for(int i=0;i<4;i++){
+							for(int j=0;j<4;j++){
+								filterGrids.add(mId*100 + i*10+ j);
+							}
+						}
+					}
+				}
+				doSync(region,filterGrids, datahubApi, d2mSyncApi);
+				log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
+			}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(),e);
@@ -120,27 +141,24 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	}
 
-	private void doSync(ManApi manApi, DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi, Integer regionId)
+	private void doSync(Region region,List<Integer> filterGrids,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi)
 			throws Exception{
-		Map<String, Object> cityInfo = manApi.getCityById(regionId);
-		log.info("得到城市基础信息:"+cityInfo);
-		List<Integer> gridsOfCity = manApi.queryGridOfCity(regionId);
-		log.info("得到城市的grids");
-		//Integer regionId = (Integer) cityInfo.get("regionId");
-		Region regionInfo = manApi.queryByRegionId(regionId);
-		log.info("获取大区信息:"+regionInfo);
-		if(regionInfo==null) return ;
-		Integer dailyDbId = regionInfo.getDailyDbId();
+		
+		//1. 获取最新的成功同步信息，并记录本次同步信息
+		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(region.getRegionId());
+		log.info("获取最新的成功同步信息："+lastSyncInfo);		
+		Date syncTimeStamp= new Date();
+		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, region.getRegionId(),syncTimeStamp);//记录本次的同步信息
+		d2mSyncApi.insertSyncInfo(curSyncInfo);
+		
+		log.info("获取大区库连接信息:"+region);
+		if(region==null) return ;
+		Integer dailyDbId = region.getDailyDbId();
 		DbInfo dailyDbInfo = datahubApi.getDbById(dailyDbId);
 		log.info("获取dailyDbInfo信息:"+dailyDbInfo);
-		Integer monthDbId = regionInfo.getMonthlyDbId();
+		Integer monthDbId = region.getMonthlyDbId();
 		DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
-		log.info("获取monthDbInfo信息:"+monthDbInfo);
-		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(regionId);
-		log.info("获取最新的成功同步信息："+lastSyncInfo);				
-		Date syncTimeStamp= new Date();
-		FmDay2MonSync curSyncInfo = createSyncInfo(d2mSyncApi, regionId,syncTimeStamp);//记录本次的同步信息
-		d2mSyncApi.insertSyncInfo(curSyncInfo);
+		log.info("获取monthDbInfo信息:"+monthDbInfo);		
 		Day2MonPoiLogSelector logSelector = null;
 		OracleSchema dailyDbSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
@@ -153,7 +171,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("开始获取日编库履历");
 			
 			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
-			logSelector.setFilterGrids(gridsOfCity);
+			logSelector.setFilterGrids(filterGrids);
 //			logSelector.setGrids(gridsOfCity);
 			logSelector.setStopTime(syncTimeStamp);
 			String tempOpTable = logSelector.select();
@@ -181,7 +199,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			log.info("finished:"+regionId);
+			log.info("finished:"+region.getRegionId());
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();

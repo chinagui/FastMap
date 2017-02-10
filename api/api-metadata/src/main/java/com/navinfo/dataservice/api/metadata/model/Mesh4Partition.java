@@ -15,6 +15,7 @@ public class Mesh4Partition implements Serializable {
 	private String provinceCode;
 	private int action;//出品批次
 	private int day2monSwitch;//日落月开关状态，0-关闭，1-打开
+	
 	public Mesh4Partition(){}
 	public int getMesh() {
 		return mesh;

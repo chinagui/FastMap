@@ -3,6 +3,7 @@ package com.navinfo.dataservice.api.metadata.iface;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
@@ -285,7 +286,7 @@ public interface MetadataApi {
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
-	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(int[] admincodes)throws Exception;
+	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception;
 	
 	/**
 	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录

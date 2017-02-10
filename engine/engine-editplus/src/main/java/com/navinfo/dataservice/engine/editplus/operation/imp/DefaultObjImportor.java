@@ -340,11 +340,23 @@ public class DefaultObjImportor extends AbstractOperation{
 				for(Iterator it = json.keys();it.hasNext();){
 					String attName = (String)it.next();
 					Object attValue = json.get(attName);
-					if((attValue==null && (!(attValue instanceof JSONNull)))
-							||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
-							||"pid".equals(attName)||"rowId".equals(attName)){
-						log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
-						continue;
+					//处理子表主键
+					if("photos".equals(subRowName)||"videoes".equals(subRowName)
+							||"audioes".equals(subRowName)){
+						if((attValue==null && (!(attValue instanceof JSONNull)))
+								||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
+								||"photoId".equals(attName)||"rowId".equals(attName)
+								||"videoId".equals(attName)||"audioId".equals(attName)){
+							log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
+							continue;
+						}
+					}else{
+						if((attValue==null && (!(attValue instanceof JSONNull)))
+								||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
+								||"pid".equals(attName)||"rowId".equals(attName)){
+							log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
+							continue;
+						}
 					}
 					try{
 						if(attValue instanceof String

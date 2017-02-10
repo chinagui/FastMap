@@ -265,7 +265,7 @@ public class ixpoitest {
 	@Test
 	public void testcolumnKc() throws Exception{
 		int taskId = 84;
-		long userId = 4994;
+		long userId = 2;
 		try {
 			ColumnCoreControl column = new ColumnCoreControl();
 			JSONObject result = column.getLogCount(taskId, userId);

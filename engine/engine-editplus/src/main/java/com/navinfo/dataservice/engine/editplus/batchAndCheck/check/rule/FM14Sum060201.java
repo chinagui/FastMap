@@ -52,21 +52,20 @@ public class FM14Sum060201 extends BasicCheckRule {
 			if(ixPoiAddress == null){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			String fullname = ixPoiAddress.getFullname();
-			//地址（address）中包含敏感字
-			List<ScSensitiveWordsObj> compareList = metadataApi.scSensitiveWordsMap().get(1);
-			List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList);	
-			if(wordList==null||wordList.isEmpty()){return;}
-			for(ScSensitiveWordsObj errorTmp:wordList){
-				if(errorTmp.getType() == 1){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在绝对敏感字，请确认后修改地址或删除地址");
-					return;
-				}else if(errorTmp.getType() == 2){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在需要确认的敏感字，请确认后修改地址或删除地址");
-					return;
-				}
+			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap();
+			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=1时
+			List<ScSensitiveWordsObj> compareList1 = scSensitiveWordsMap.get(1);
+			List<ScSensitiveWordsObj> wordList1 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList1);	
+			if(wordList1!=null && !wordList1.isEmpty()){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在绝对敏感字，请确认后修改地址或删除地址");
+			}
+			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=2时
+			List<ScSensitiveWordsObj> compareList2 = scSensitiveWordsMap.get(2);
+			List<ScSensitiveWordsObj> wordList2 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList2);	
+			if(wordList2!=null && !wordList2.isEmpty()){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在需要确认的敏感字，请确认后修改地址或删除地址");
 			}
 		}
-
 	}
 
 	@Override

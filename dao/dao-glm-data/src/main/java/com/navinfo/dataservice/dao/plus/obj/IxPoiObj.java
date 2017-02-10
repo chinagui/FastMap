@@ -934,6 +934,22 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/*
+	 * 标准化简体中文名称
+	 */
+	public List<IxPoiName> getStandardCHIName(){
+		List<IxPoiName> standardCHName=new ArrayList<IxPoiName>();
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if((br.getNameClass()==1||br.getNameClass()==3
+					||br.getNameClass()==5||br.getNameClass()==6)&&br.getNameType()==1
+					&&br.getLangCode().equals("CHI")){
+				standardCHName.add(br);
+			}
+		}
+		return standardCHName;
+	}
+	
+	/*
 	 * 获取名称组中最大group_id
 	 */
 	public long getMaxGroupIdFromNames(){

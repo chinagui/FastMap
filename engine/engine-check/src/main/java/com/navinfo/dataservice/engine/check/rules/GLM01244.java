@@ -25,7 +25,7 @@ public class GLM01244 extends baseRule {
 
                 int direct = link.getDirect();
                 if (link.changedFields().containsKey("direct"))
-                    direct = (int) link.changedFields().get("direct");
+                    direct = Integer.valueOf(link.changedFields().get("direct").toString());
 
                 if (direct == 2 || direct == 3) {
                     RdLinkSpeedlimit speedlimit = null;
@@ -47,23 +47,34 @@ public class GLM01244 extends baseRule {
 
                     int speedType = speedlimit.getSpeedType();
                     if (speedlimit.changedFields().containsKey("speedType"))
-                        speedType = (int) speedlimit.changedFields().get("speedType");
+                        speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
                     if (speedType != 0)
                         continue;
 
-                    if (direct == 2 && speedlimit.getToSpeedLimit() != 0) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
-                    } else if (direct == 3 && speedlimit.getFromLimitSrc() != 0) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    int toSpeedLimit = speedlimit.getToSpeedLimit();
+                    if (speedlimit.changedFields().containsKey("toSpeedLimit"))
+                        toSpeedLimit = Integer.valueOf(speedlimit.changedFields().get("toSpeedLimit").toString());
+
+                    int fromSpeedLimit = speedlimit.getFromSpeedLimit();
+                    if (speedlimit.changedFields().containsKey("fromSpeedLimit"))
+                        fromSpeedLimit = Integer.valueOf(speedlimit.changedFields().get("fromSpeedLimit").toString());
+
+                    log.info("GLM01244:[Direct=" + direct + ",toSpeedLimit=" + toSpeedLimit + ",fromSpeedLimit=" +
+                            fromSpeedLimit + "]");
+
+                    if (direct == 2 && toSpeedLimit != 0) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    } else if (direct == 3 && fromSpeedLimit != 0) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkSpeedlimit && row.status() == ObjStatus.UPDATE) {
                 RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
                 RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(speedlimit.getLinkPid(), false);
                 if (link.getDirect() == 2 && speedlimit.getToSpeedLimit() != 0) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 } else if (link.getDirect() == 3 && speedlimit.getFromSpeedLimit() != 0) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

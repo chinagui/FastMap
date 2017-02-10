@@ -870,68 +870,150 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 	/**
 	 * 统计精编库存log量统计
 	 * @param subtask
+	 * @param userId
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getColumnCount(Subtask subtask) throws Exception{
+	public JSONObject getColumnCount(Subtask subtask,long userId) throws Exception{
+		int taskId = subtask.getSubtaskId();
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		
 		try {
 			StringBuilder sb = new StringBuilder();
-			sb.append("select count(1) as num, c.first_work_item as type");
-			sb.append("  from poi_column_status s, poi_column_workitem_conf c,ix_poi p");
-			sb.append(" where s.work_item_id = c.work_item_id");
-			sb.append("  and s.pid=p.pid");
-			sb.append("  and sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
-			sb.append("  and c.first_work_item in");
-			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
-			sb.append("  and s.first_work_status = 1");
-			sb.append("  and s.handler = 0");
-			sb.append(" GROUP BY c.first_work_item");
+			sb.append(" with t1 as");
+			sb.append("  (select s.pid");
+			sb.append("     from poi_column_status s, poi_column_workitem_conf c, ix_poi p");
+			sb.append("    where s.work_item_id = c.work_item_id");
+			sb.append("      and s.pid = p.pid");
+			sb.append("      and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
+			sb.append("      and (c.first_work_item in ('poi_name', 'poi_address','poi_englishname','poi_englishaddress') or");
+			sb.append("          c.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental'))");
+			sb.append("      and s.first_work_status = 1");
+			sb.append("      and s.handler = 0)");
+			sb.append(" select count (1) as num, c.first_work_item as type");
+			sb.append("   from poi_column_status s, poi_column_workitem_conf c, t1 p");
+			sb.append("  where s.work_item_id = c.work_item_id and s.pid = p.pid and c.first_work_item in ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress') and s.first_work_status = 1 and s.handler = 0");
+			sb.append("  GROUP BY c.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, c1.second_work_item as type");
-			sb.append("  from poi_column_status s1, poi_column_workitem_conf c1,ix_poi p1");
-			sb.append(" where s1.work_item_id = c1.work_item_id");
-			sb.append("  and s1.pid=p1.pid");
-			sb.append("  and sdo_within_distance(p1.geometry, sdo_geometry(    :2  , 8307), 'mask=anyinteract') = 'TRUE'");
-			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
-			sb.append("  and s1.second_work_status = 1");
-			sb.append("  and s1.handler = 0");
-			sb.append(" GROUP BY c1.second_work_item");
+			sb.append("   from poi_column_status s1, poi_column_workitem_conf c1, t1 p1");
+			sb.append("  where s1.work_item_id = c1.work_item_id and s1.pid = p1.pid and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental') and s1.second_work_status = 1 and s1.handler = 0");
+			sb.append("  GROUP BY c1.second_work_item");
+
 
 			pstmt = conn.prepareStatement(sb.toString());
 			 
 			Clob geoClob =ConnectionUtil.createClob(conn);
 			geoClob.setString(1, subtask.getGeometry());
 			pstmt.setClob(1, geoClob);
-			pstmt.setClob(2, geoClob);
 			
 			resultSet = pstmt.executeQuery();
 			
-			String parameter = "{\"poi_name\":0,\"poi_address\":0,\"poi_englishname\":0,\"poi_englishaddress\":0,\"deepDetail\":0,\"deepParking\":0,\"deepCarrental\":0}";
+			String parameter = "{\"poi_name\":{\"kcLog\":0,\"flag\":0},\"poi_address\":{\"kcLog\":0,\"flag\":0},\"poi_englishname\":{\"kcLog\":0,\"flag\":0},\"poi_englishaddress\":{\"kcLog\":0,\"flag\":0},\"deepDetail\":{\"kcLog\":0,\"flag\":0},\"deepParking\":{\"kcLog\":0,\"flag\":0},\"deepCarrental\":{\"kcLog\":0,\"flag\":0}}";
 			JSONObject result = JSONObject.fromObject(parameter);
 			
 			while (resultSet.next()) {
 				String type = resultSet.getString("type");
+				JSONObject json = result.getJSONObject(type);
+				int num = resultSet.getInt("num");
+				json.put("kcLog", num);
+				
 				if ("poi_name".equals(type)) {
-					result.put("poi_name", resultSet.getInt("num"));
+					result.put("poi_name", json);
 				} else if ("poi_address".equals(type)) {
-					result.put("poi_address", resultSet.getInt("num"));
+					result.put("poi_address", json);
 				} else if ("poi_englishname".equals(type)) {
-					result.put("poi_englishname", resultSet.getInt("num"));
+					result.put("poi_englishname", json);
 				} else if ("poi_englishaddress".equals(type)) {
-					result.put("poi_englishaddress", resultSet.getInt("num"));
+					result.put("poi_englishaddress", json);
 				} else if ("deepDetail".equals(type)) {
-					result.put("deepDetail", resultSet.getInt("num"));
+					result.put("deepDetail", json);
 				} else if ("deepParking".equals(type)) {
-					result.put("deepParking", resultSet.getInt("num"));
+					result.put("deepParking", json);
 				} else if ("deepCarrental".equals(type)) {
-					result.put("deepCarrental", resultSet.getInt("num"));
+					result.put("deepCarrental", json);
 				}
 			}
+			JSONObject res = getKcLogFlag(result, taskId, userId);
+			return res;
+		} catch (Exception e){
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	
+	/**
+	 * 库存log统计接口变更-返回值增加是否有数据标记位
+	 * @param result
+	 * @param taskId
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONObject getKcLogFlag(JSONObject res, int taskId, long userId) throws Exception{
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select count(1) as num, c.first_work_item as type");
+			sb.append("  from poi_column_status s, poi_column_workitem_conf c");
+			sb.append(" where s.work_item_id = c.work_item_id");
+			sb.append("  and c.first_work_item in");
+			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
+			sb.append("  and s.task_id = :1");
+			sb.append("  and s.handler = :2");
+			sb.append(" GROUP BY c.first_work_item");
+			sb.append(" union all");
+			sb.append(" select count(1) as num, c1.second_work_item as type");
+			sb.append("  from poi_column_status s1, poi_column_workitem_conf c1");
+			sb.append(" where s1.work_item_id = c1.work_item_id");
+			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
+			sb.append("  and s1.task_id = :3");
+			sb.append("  and s1.handler = :4");
+			sb.append(" GROUP BY c1.second_work_item");
+
+			pstmt = conn.prepareStatement(sb.toString());
+			 
+			pstmt.setInt(1, taskId);
+			pstmt.setLong(2, userId);
+			pstmt.setInt(3, taskId);
+			pstmt.setLong(4, userId);
 			
+			resultSet = pstmt.executeQuery();
+			
+			JSONObject result = res;
+			
+			while (resultSet.next()) {
+				String type = resultSet.getString("type");
+				int flag = 0;
+				if (resultSet.getInt("num") != 0){
+					flag = 1;
+				}
+				JSONObject json = result.getJSONObject(type);
+				json.put("flag", flag);
+				
+				if ("poi_name".equals(type)) {
+					result.put("poi_name", json);
+				} else if ("poi_address".equals(type)) {
+					result.put("poi_address", json);
+				} else if ("poi_englishname".equals(type)) {
+					result.put("poi_englishname", json);
+				} else if ("poi_englishaddress".equals(type)) {
+					result.put("poi_englishaddress", json);
+				} else if ("deepDetail".equals(type)) {
+					result.put("deepDetail", json);
+				} else if ("deepParking".equals(type)) {
+					result.put("deepParking", json);
+				} else if ("deepCarrental".equals(type)) {
+					result.put("deepCarrental", json);
+				}
+			}
 			return result;
 		} catch (Exception e){
 			throw e;
@@ -941,6 +1023,7 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		}
 
 	}
+	
 	/**
 	 * 根据status,userid,secondWorkItem,subtask 获取可提交的数据rowIds
 	 * @param subtask

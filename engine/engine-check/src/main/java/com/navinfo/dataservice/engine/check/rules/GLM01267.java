@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -8,11 +10,10 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * @ClassName: GLM01267
@@ -50,11 +51,28 @@ public class GLM01267 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareData(checkCommand);
-		AbstractSelector selector = new AbstractSelector(RdLink.class, getConn());
 		for (Integer linkPid : resultLinkPidSet) {
-			RdLink rdLink = (RdLink) selector.loadById(linkPid, true, true);
-			logger.debug("检查类型：postCheck， 检查规则：GLM01267， 检查要素：RDLINK(" + linkPid + "), 触法时机：线限速等级编辑");
-			this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + linkPid + "]", rdLink.getMeshId());
+			StringBuilder sb = new StringBuilder();
+
+			sb.append(
+					"SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']' TARGET, R.MESH_ID FROM RD_LINK_SPEEDLIMIT LS, RD_LINK_FORM F, RD_LINK R WHERE R.LINK_PID = LS.LINK_PID AND R.LINK_PID = F.LINK_PID AND LS.LINK_PID = F.LINK_PID AND R.LINK_PID =");
+
+			sb.append(linkPid);
+
+			sb.append(
+					" AND LS.U_RECORD != 2 AND F.U_RECORD != 2 AND R.U_RECORD != 2 AND F.FORM_OF_WAY = 33 AND LS.SPEED_CLASS IN (1, 2, 3) AND LS.SPEED_TYPE = 0 ");
+
+			
+			log.info("RdLink后检查GLM01267 SQL:" + sb.toString());
+			
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sb.toString());
+
+			if (!resultList.isEmpty()) {
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
+						(int) resultList.get(2));
+			}
 		}
 	}
 
@@ -75,7 +93,7 @@ public class GLM01267 extends baseRule {
 				if (form.status() != ObjStatus.DELETE && formOfWay == 33) {
 					formOf33Set.add(form.getLinkPid());
 				}
-				if (form.status() == ObjStatus.DELETE && formOfWay == 30) {
+				if (form.status() == ObjStatus.DELETE && formOfWay == 33) {
 					formOf33Set.remove(form.getLinkPid());
 				}
 			}
@@ -113,7 +131,7 @@ public class GLM01267 extends baseRule {
 		//取交集就是符合log条件的linkpid
 		resultLinkPidSet.addAll(formOf33Set);
 		
-		resultLinkPidSet.retainAll(speedLimitLinkPidSet);
+		resultLinkPidSet.addAll(speedLimitLinkPidSet);
 	}
 
 }

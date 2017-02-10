@@ -1,10 +1,5 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
-import java.sql.Connection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -16,7 +11,10 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
-import static org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.Scope.row;
+import java.sql.Connection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author zhangyt
@@ -89,14 +87,14 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
                 // 其他情况暂不处理
             }
         } else {
-            geometry = shrink(null == geometry ? loadGeometry(row) : geometry);
+            Geometry g = shrink(null == geometry ? loadGeometry(row) : geometry);
             // 获取关联AdFace
-            AdFace face = loadAdFace(conn, geometry);
+            AdFace face = loadAdFace(conn, g);
             if (null == face)
                 return;
             Geometry faceGeometry = shrink(face.getGeometry());
             // 判断row是否处于AdFace内部
-            if (isContainOrCover(geometry, faceGeometry)) {
+            if ("POINT".equalsIgnoreCase(g.getGeometryType())) {
                 int faceRegionId = face.getRegionId();
                 // 新增row时赋值
                 if (null == geometry)
@@ -141,6 +139,12 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         }
         Map<Integer, RdLink> maps = new HashMap<>();
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+
+        Geometry p1 = GeoTranslator.transform(faceGeometry.getCentroid(), 0.00001, 5);
+        Geometry p2 = GeoTranslator.transform(geometry.getCentroid(), 0.00001, 5);
+        if (p1.equals(p2))
+            return;
+
         // 修形时对面内新增link赋regionId
         List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {

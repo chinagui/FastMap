@@ -52,8 +52,14 @@ public class GLM11124 extends baseRule {
 
 				RdLink rdLink = (RdLink) row;
 
-				if (rdLink.changedFields().containsKey("kind")) {
+				if (!rdLink.changedFields().containsKey("kind")) {
 
+					continue;
+				}
+
+				int kind = (int) rdLink.changedFields().get("kind");
+
+				if (kind >= 8) {
 					linkPids.add(rdLink.getPid());
 				}
 			}

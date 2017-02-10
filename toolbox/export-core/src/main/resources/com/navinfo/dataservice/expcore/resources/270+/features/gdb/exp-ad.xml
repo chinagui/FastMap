@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- @authur:liuqing @time:2010-08-23 -->
+<sqls>
+	<!--///////////////////////////////////////////////////行政区划///////////////////////////////////////////////////////// -->
+	<feature name="AD_ADMIN">
+		<!-- 行政区划提取原则: 1.FACE直接根据图幅号提取 ,根据face提取link，根据link提取node 2.行政区划和乡镇根据FACE的要素关系提取 
+			zone 14时提取ad_admin -->
+		<step value="7">
+			<!--提取link -->
+			<sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_AD_LINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM AD_LINK_MESH P
+                         WHERE P.MESH_ID [mesh]);
+                     ]]></sql>
+			<sql condition="mesh"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_AD_ADMIN_RG
+                       (PID)
+                       (SELECT P.REGION_ID
+                          FROM AD_ADMIN P
+                         WHERE P.MESH_ID [mesh]);
+                     ]]></sql>
+			<sql condition="area"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_AD_LINK
+                       (PID)
+                       (SELECT P.LINK_PID
+                          FROM AD_LINK P
+                         WHERE SDO_ANYINTERACT(P.GEOMETRY,[area]) = 'TRUE');
+                     ]]></sql>
+
+
+			<!--提取图廓点 -->
+			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                     INSERT /*+ append */
+                     INTO TEMP_AD_NODE
+                       (PID)
+                       (SELECT NODE_PID
+                          FROM (SELECT COUNT(1), N.NODE_PID
+                                  FROM AD_NODE_MESH M,
+                                       (SELECT NODE_PID FROM AD_NODE_MESH WHERE MESH_ID [mesh]) N
+                                 WHERE N.NODE_PID = M.NODE_PID
+                                 GROUP BY N.NODE_PID
+                                HAVING COUNT(1) > 1)
+                       );
+                     ]]></sql>
+
+		</step>
+		<step value="10">
+			<!--根据图框线提取face -->
+			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_FACE
+                           (PID)
+                           (
+                            SELECT DISTINCT FT.FACE_PID
+                              FROM (SELECT COUNT(1), N.PID
+                                      FROM AD_LINK_MESH M, TEMP_AD_LINK N
+                                     WHERE N.PID = M.LINK_PID
+                                     GROUP BY N.PID
+                                    HAVING COUNT(1) > 1) T,
+                                   AD_FACE_TOPO FT
+                             WHERE T.PID = FT.LINK_PID
+                           );
+                         ]]></sql>
+
+
+		</step>
+		<step value="13">
+			<!--根据图框线提取的face补link -->
+			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_AD_FACE P, AD_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+			<!--根据图廓点提取link -->
+			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_AD_LINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM AD_LINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID FROM TEMP_AD_NODE)
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM AD_LINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID FROM TEMP_AD_NODE)
+                        );
+                    ]]></sql>
+
+		</step>
+		<step value="16">
+			<!--按图幅提取FACE信息 -->
+			<sql condition="mesh">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_FACE
+                           (PID)
+                           (SELECT P.FACE_PID FROM AD_FACE P WHERE P.MESH_ID [mesh]);
+                         ]]></sql>
+			<!--按区域提取face -->
+			<sql condition="area">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_FACE
+                           (PID)
+                           (SELECT P.FACE_PID FROM AD_FACE P
+                            WHERE SDO_ANYINTERACT(P.GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+		</step>
+		<step value="19">
+			<!--face去重复 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_AD_FACE A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_AD_FACE B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+		</step>
+		<step value="22">
+			<!--根据face提取admin 并去重 -->
+			<sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_ADMIN_RG
+                           (PID)
+                           (SELECT DISTINCT R.REGION_ID
+                              FROM AD_FACE R,TEMP_AD_FACE T
+                             WHERE R.FACE_PID=T.PID
+                             AND R.REGION_ID!=0 AND R.REGION_ID!=-1);
+
+                         ]]></sql>
+
+             <!--根据face补link -->
+             <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_AD_LINK
+                           (PID)
+                           (SELECT T.LINK_PID
+                              FROM TEMP_AD_FACE P, AD_FACE_TOPO T
+                             WHERE P.PID = T.FACE_PID);
+                         ]]></sql>
+
+		</step>
+
+
+
+		<step value="25">
+			<!--查询关联的行政区划的父对象 -->
+			<sql><![CDATA[
+                    INSERT /*+ APPEND */
+                    INTO TEMP_AD_ADMIN_RG
+                      (PID)
+                      (SELECT REGION_ID
+                         FROM VIEW_AD_ADMIN
+                       CONNECT BY NOCYCLE PRIOR REGION_ID_UP = REGION_ID
+                        START WITH REGION_ID IN (SELECT PID FROM TEMP_AD_ADMIN_RG));
+                         ]]></sql>
+		</step>
+
+		<!--zone 第7步插入 TEMP_AD_ADMIN_RG -->
+
+		<step value="28">
+			<!--行政区划去重复 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_AD_ADMIN_RG A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_AD_ADMIN_RG B WHERE A.PID = B.PID);
+                    ]]></sql>
+			<!--AD_LINK重复 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_AD_LINK A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_AD_LINK B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+		</step>
+		<step value="31">
+			<!--查询AD_LINK的两端端点并去重 -->
+			<sql><![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_AD_NODE
+                          (PID)
+                          (SELECT P.S_NODE_PID FROM AD_LINK P, TEMP_AD_LINK T WHERE P.LINK_PID = T.PID
+                             UNION ALL
+                           SELECT P.E_NODE_PID FROM AD_LINK P, TEMP_AD_LINK T WHERE P.LINK_PID = T.PID
+                           );
+                        ]]></sql>
+
+		</step>
+		<step value="34">
+			<!--AD_NODE重复 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_AD_NODE A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_AD_NODE B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+		</step>
+
+		<step value="37">
+			<sql>
+                <![CDATA[
+                   INSERT /*+ append */
+                       INTO TEMP_AD_ADMIN_GROUP
+                         (PID)
+                         (SELECT DISTINCT P.GROUP_ID FROM AD_ADMIN_PART P,TEMP_AD_ADMIN_RG T WHERE P.REGION_ID_DOWN=T.PID);
+                    ]]></sql>
+
+		</step>
+
+
+
+	</feature>
+	<import file="exp-ad_select.xml" />
+</sqls>

@@ -37,8 +37,7 @@ public class SamepoiLogDetailStat {
 				+ "FROM LOG_DETAIL T,LOG_OPERATION LP,POI_EDIT_STATUS P"
 				+ " WHERE T.OP_ID=LP.OP_ID "
 				+ " AND T.OB_NM='"+ObjectName.IX_SAMEPOI+"'"
-				+ " AND T.GEO_NM='"+ObjectName.IX_POI+"'"
-				+ "   AND T.GEO_PID=P.PID");
+				+ " AND T.OB_PID=P.PID");
 		//若P.SUBMIT_DATE最后一次提交时间为空，则，取poi的全部履历；否则取SUBMIT_DATE最后一次提交时间之后的所有履历。
 		sb.append(" AND ((LP.OP_DT>=P.SUBMIT_DATE AND P.SUBMIT_DATE IS NOT NULL) OR P.SUBMIT_DATE IS NULL)");
 		

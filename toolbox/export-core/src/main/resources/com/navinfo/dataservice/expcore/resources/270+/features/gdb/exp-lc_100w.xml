@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-01-24
+导出100万
+
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////土地覆盖/////////////////////////////////////////////////////////-->
+    <feature name="LC_FEATURE">
+        <!--
+            土地覆盖提取原则:
+            1.LINK、NODE、FACE直接根据图幅号提取
+            2.土地覆盖根据FACE的要素关系提取
+        -->
+
+
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                1.LC_FACE_100W
+                2.LC_FACE_TOPO_100W
+                3.LC_LINK_100W
+                4.LC_LINK_MESH_100W
+                5.LC_LINK_KIND_100W
+                6.LC_NODE_100W
+                7.LC_NODE_MESH_100W
+                9.LC_FEATURE_100W
+            -->
+            <!--LC_FACE-->
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_100W P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_NAME_100W P; ]]></sql>
+
+            <!--LC_FACE_TOPO_100W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_FACE_TOPO_100W P;
+                        ]]></sql>
+            <!--LC_LINK_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_100W P;
+                         ]]></sql>
+            <!--LC_LINK_MESH_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_MESH_100W P;
+                         ]]></sql>
+            <!--LC_LINK_KIND_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_LINK_KIND_100W P;
+                         ]]></sql>
+
+            <!--LC_NODE_100W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE_100W P;
+                        ]]></sql>
+            <!--LC_NODE_MESH_100W-->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM LC_NODE_MESH_100W P;
+                        ]]></sql>
+            <!--LC_FEATURE_100W-->
+            <sql><![CDATA[
+                         SELECT P.*
+                          FROM LC_FEATURE_100W P;
+                         ]]></sql>
+        </step>
+    </feature>
+</sqls>

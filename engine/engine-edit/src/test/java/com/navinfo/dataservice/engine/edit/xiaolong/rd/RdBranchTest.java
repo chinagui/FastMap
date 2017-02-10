@@ -1,20 +1,23 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
-import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
-import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchViaSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -48,7 +51,7 @@ public class RdBranchTest extends InitApplication {
 		Connection conn;
 		try {
 
-			String parameter = "{\"dbId\":42,\"type\":\"RDBRANCH\",\"detailId\":\"97660\",\"rowId\":\"\",\"branchType\":3}";
+			String parameter = "{\"dbId\":19,\"type\":\"RDBRANCH\",\"detailId\":\"92878\",\"rowId\":\"\",\"branchType\":3}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -62,10 +65,29 @@ public class RdBranchTest extends InitApplication {
 				String rowId = jsonReq.getString("rowId");
 				RdBranchSelector selector = new RdBranchSelector(conn);
 				IRow row = selector.loadByDetailId(detailId, branchType, rowId, false);
-
 				if (row != null) {
-
-					System.out.println(row.Serialize(ObjLevel.FULL));
+					JSONObject obj = row.Serialize(ObjLevel.FULL);
+					if (!obj.containsKey("geometry")) {
+						int pageNum = 1;
+						int pageSize = 1;
+						JSONObject data = new JSONObject();
+						String primaryKey = "branch_pid";
+						if (row instanceof IObj) {
+							IObj iObj = (IObj) row;
+							primaryKey = iObj.primaryKey().toLowerCase();
+						}
+						data.put(primaryKey, row.parentPKValue());
+						SelectorUtils selectorUtils = new SelectorUtils(conn);
+						JSONObject jsonObject = selectorUtils.loadByElementCondition(data, row.objType(), pageSize,
+								pageNum, false);
+						obj.put("geometry", jsonObject.getJSONArray("rows").getJSONObject(0).getString("geometry"));
+					}
+					
+					Map<String,Object> result = new HashMap<String,Object>();
+			    	result.put("errcode", 1);
+			    	result.put("errmsg", "");
+			    	result.put("data", obj);
+					new ModelAndView("jsonView", result);
 				}
 			}
 
@@ -125,20 +147,17 @@ public class RdBranchTest extends InitApplication {
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
-			
+
 			RdBranchViaSelector viaSelector = new RdBranchViaSelector(conn);
-			
+
 			List<List<RdBranchVia>> loadRdBranchViaByLinkPid = viaSelector.loadRdBranchViaByLinkPid(linkPid, false);
-			
-			for(List<RdBranchVia> viaList : loadRdBranchViaByLinkPid)
-			{
-				for(RdBranchVia via : viaList)
-				{
+
+			for (List<RdBranchVia> viaList : loadRdBranchViaByLinkPid) {
+				for (RdBranchVia via : viaList) {
 					System.out.println(via.Serialize(null));
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 		}
 	}
 }

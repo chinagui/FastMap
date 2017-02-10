@@ -71,14 +71,19 @@ public class RdSpeedlimitSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
 		
-		if (queryType.equals("DEPENDENT")) {
-			return handleCondition(x, y, z, gap);
-		}		
-
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT a.pid, a.link_pid, a.speed_type, a.direct, a.capture_flag, a.speed_flag, a.speed_value, a.lane_speed_value, a.speed_dependent,b.geometry link_geom,a.geometry point_geom,a.descript FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type IN (0,3,4)";
-
+		String sql = "SELECT A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
+		
+		if (queryType.equals("DEPENDENT")) {
+			
+			sql += " AND A.SPEED_TYPE = 3 ";
+			
+		} else {
+			
+			sql += " AND A.SPEED_TYPE IN (0,1,4)";
+		}
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -183,6 +188,8 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("f", resultSet.getString("descript") == null ? ""
 						: resultSet.getString("descript"));
+				
+				jsonM.put("h", resultSet.getInt("LIMIT_SRC"));
 
 				snapshot.setM(jsonM);
 
@@ -200,83 +207,6 @@ public class RdSpeedlimitSearch implements ISearch {
 	}
 	
 	
-
-	private List<SearchSnapshot> handleCondition(int x, int y, int z,
-			int gap) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "SELECT a.pid, a.limit_src,a.speed_value, a.speed_dependent,a.direct, a.link_pid, b.geometry link_geom,a.geometry point_geom FROM rd_speedlimit  a left join rd_link b on a.link_pid = b.link_pid WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.u_record != 2 and a.speed_type=3  ORDER BY A.LINK_PID";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject jsonM = new JSONObject();
-
-				snapshot.setI(resultSet.getInt("pid"));
-
-				snapshot.setT(51);
-				
-				int limitSrc = resultSet.getInt("limit_src");
-
-				int speedValue = resultSet.getInt("speed_value");
-
-				int speedDependent = resultSet.getInt("speed_dependent");
-
-				int direct = resultSet.getInt("direct");
-
-				int linkPid = resultSet.getInt("link_pid");
-
-				jsonM.put("a", String.valueOf(linkPid));				
-				jsonM.put("b", String.valueOf(limitSrc));
-				jsonM.put("c", String.valueOf(speedValue));
-				jsonM.put("d", String.valueOf(speedDependent));
-				jsonM.put("e", String.valueOf(direct));
-
-				STRUCT struct2 = (STRUCT) resultSet.getObject("point_geom");
-
-				JGeometry geom2 = JGeometry.load(struct2);
-
-				double angle = calAngle(resultSet);
-
-				jsonM.put("f", String.valueOf((int) angle));
-				
-				snapshot.setM(jsonM);
-
-				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
-						geom2.getFirstPoint()[1], z, px, py));
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new SQLException(e);
-		} finally {
-			DbUtils.close(resultSet);
-			DbUtils.closeQuietly(pstmt);
-
-		}
-
-		return list;
-	}
 
 	// 计算角度
 	private double calAngle(ResultSet resultSet) throws Exception {

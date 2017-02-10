@@ -32,7 +32,7 @@ public class GLM50072 extends baseRule {
                 RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(linkKind.getLinkPid(), false);
                 Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
                 if (MeshUtils.isMeshLine(geometry))
-                    setCheckResult(geometry, "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(geometry, "[RD_LINK," + link.pid() + "]", link.mesh());
             }
         }
     }

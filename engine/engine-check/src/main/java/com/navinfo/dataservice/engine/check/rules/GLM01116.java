@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Crayeres on 2017/2/6.
+ * Created by Crayeres on 2017/2/9.
  */
-public class GLM01101 extends baseRule {
+public class GLM01116 extends baseRule {
 
-    private List<Integer> roundaboutLink = new ArrayList<>();
+    private List<Integer> pedestrianLink = new ArrayList<>();
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -30,16 +30,19 @@ public class GLM01101 extends baseRule {
         preparData(checkCommand);
 
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdLink) {
+            if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
-                if (link.status() == ObjStatus.DELETE)
-                    continue;
 
-                int paveStatus = link.getPaveStatus();
-                if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                int kind = link.getKind();
+                if (link.changedFields().containsKey("kind"))
+                    kind = (int) link.changedFields().get("kind");
 
-                if (paveStatus == 1 && roundaboutLink.contains(link.pid())) {
+                int laneClass = link.getLaneClass();
+                if (link.changedFields().containsKey("laneClass"))
+                    laneClass = (int) link.changedFields().get("laneClass");
+
+                if ((pedestrianLink.contains(link.pid()) || kind == 9 || kind == 11 || kind == 13 || kind == 15) &&
+                        laneClass != 1) {
                     setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
@@ -49,9 +52,9 @@ public class GLM01101 extends baseRule {
                 if (form.changedFields().containsKey("formOfWay"))
                     formOfWay = (int) form.changedFields().get("formOfWay");
 
-                if (formOfWay == 33) {
+                if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
-                    if (link.getPaveStatus() == 1) {
+                    if (link.getLaneClass() != 1) {
                         setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                     }
                 }
@@ -88,8 +91,8 @@ public class GLM01101 extends baseRule {
                     }
                 }
 
-                if (formOfWays.containsValue(33))
-                    roundaboutLink.add(link.pid());
+                if (formOfWays.containsValue(20))
+                    pedestrianLink.add(link.pid());
             }
         }
     }

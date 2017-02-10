@@ -14,11 +14,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by Crayeres on 2017/2/6.
+ * Created by Crayeres on 2017/2/9.
  */
-public class GLM01101 extends baseRule {
+public class GLM01090 extends baseRule {
 
-    private List<Integer> roundaboutLink = new ArrayList<>();
+    private List<Integer> pedestrianLink = new ArrayList<>();
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -27,19 +27,15 @@ public class GLM01101 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-        preparData(checkCommand);
-
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdLink) {
+            if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
-                if (link.status() == ObjStatus.DELETE)
-                    continue;
 
-                int paveStatus = link.getPaveStatus();
-                if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                int functionClass = link.getFunctionClass();
+                if (link.changedFields().containsKey("functionClass"))
+                    functionClass = (int) link.changedFields().get("functionClass");
 
-                if (paveStatus == 1 && roundaboutLink.contains(link.pid())) {
+                if (pedestrianLink.contains(link.pid()) && functionClass != 5) {
                     setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
@@ -49,9 +45,10 @@ public class GLM01101 extends baseRule {
                 if (form.changedFields().containsKey("formOfWay"))
                     formOfWay = (int) form.changedFields().get("formOfWay");
 
-                if (formOfWay == 33) {
+                if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
-                    if (link.getPaveStatus() == 1) {
+
+                    if (link.getFunctionClass() != 5) {
                         setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                     }
                 }
@@ -88,8 +85,9 @@ public class GLM01101 extends baseRule {
                     }
                 }
 
-                if (formOfWays.containsValue(33))
-                    roundaboutLink.add(link.pid());
+                if (formOfWays.containsValue(20)) {
+                    pedestrianLink.add(link.pid());
+                }
             }
         }
     }

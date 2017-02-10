@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
@@ -17,8 +18,6 @@ import java.util.Map;
  */
 public class GLM01012 extends baseRule {
 
-    private List<Integer> roundaboutLink = new ArrayList<>();
-
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
 
@@ -26,8 +25,6 @@ public class GLM01012 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-        preparData(checkCommand);
-
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof RdLink) {
                 RdLink link = (RdLink) row;
@@ -38,7 +35,7 @@ public class GLM01012 extends baseRule {
                 if (link.changedFields().containsKey("multiDigitized"))
                     multiDigitized = (int) link.changedFields().get("multiDigitized");
 
-                if (multiDigitized == 1 || roundaboutLink.contains(link.pid())) {
+                if (multiDigitized == 1) {
                     int direct = link.getDirect();
                     if (link.changedFields().containsKey("direct"))
                         direct = (int) link.changedFields().get("direct");
@@ -46,41 +43,19 @@ public class GLM01012 extends baseRule {
                         setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                     }
                 }
-            }
-        }
-    }
+            } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
+                RdLinkForm form = (RdLinkForm) row;
 
-    private void preparData(CheckCommand checkCommand) {
-        for (IRow obj : checkCommand.getGlmList()) {
-            if (obj instanceof RdLink) {
-                RdLink link = (RdLink) obj;
-                if (link.status() == ObjStatus.DELETE)
-                    continue;
+                int formOfWay = form.getFormOfWay();
+                if (form.changedFields().containsKey("formOfWay"))
+                    formOfWay = (int) form.changedFields().get("formOfWay");
 
-                Map<String, Integer> formOfWays = new HashMap<>();
-                for (IRow f : link.getForms()) {
-                    RdLinkForm form = (RdLinkForm) f;
-                    formOfWays.put(form.getRowId(), form.getFormOfWay());
-                }
-
-                for (IRow row : checkCommand.getGlmList()) {
-                    if (row instanceof RdLinkForm) {
-                        RdLinkForm form = (RdLinkForm) row;
-                        if (form.getLinkPid() == link.pid()) {
-                            if (form.status() == ObjStatus.DELETE) {
-                                formOfWays.remove(form.getRowId());
-                            } else {
-                                int formOfWay = form.getFormOfWay();
-                                if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
-                                formOfWays.put(form.getRowId(), formOfWay);
-                            }
-                        }
+                if (formOfWay == 33) {
+                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
+                    if (link.getDirect() == 0 || link.getDirect() == 1) {
+                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
                     }
                 }
-
-                if (formOfWays.containsValue(33))
-                    roundaboutLink.add(link.pid());
             }
         }
     }

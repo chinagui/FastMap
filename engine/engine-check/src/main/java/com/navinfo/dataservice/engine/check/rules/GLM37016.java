@@ -4,9 +4,6 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import net.sf.json.JSONObject;
-
-import java.util.regex.Pattern;
 
 /**
  * Created by chaixin on 2016/12/7 0007.
@@ -20,11 +17,12 @@ public class GLM37016 extends baseRule {
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdMileagepile) {
-                RdMileagepile mileagepile = new RdMileagepile();
-                mileagepile.copy(obj);
-                mileagepile.Unserialize(JSONObject.fromObject(obj.changedFields()));
+                RdMileagepile mileagepile = (RdMileagepile) obj;
 
                 String roadName = mileagepile.getRoadName();
+                if(mileagepile.changedFields().containsKey("roadName"))
+                    roadName = (String) mileagepile.changedFields().get("roadName");
+
                 String regex = "[0-9a-zA-Z|]{1}";
                 roadName = roadName.replaceAll(regex, "");
                 if (roadName.length() == 0) {
@@ -36,6 +34,6 @@ public class GLM37016 extends baseRule {
 
     public static void main(String[] args) {
         String regex = "[0-9a-zA-Z|]{1}";
-        System.out.println("12@3a2A|1c4bBb21FF##".replaceAll(regex, ""));
+        System.out.println("aaa111bbb||||啊".replaceAll(regex, "").length());
     }
 }

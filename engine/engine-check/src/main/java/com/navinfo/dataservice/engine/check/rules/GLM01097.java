@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
@@ -40,6 +41,19 @@ public class GLM01097 extends baseRule {
 
                 if (functionClass != 5 && busOnlyLink.contains(link.pid())) {
                     setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                }
+            } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
+                RdLinkForm form = (RdLinkForm) row;
+
+                int formOfWay = form.getFormOfWay();
+                if (form.changedFields().containsKey("formOfWay"))
+                    formOfWay = (int) form.changedFields().get("formOfWay");
+
+                if (formOfWay == 22) {
+                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
+                    if (link.getFunctionClass() != 5) {
+                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    }
                 }
             }
         }

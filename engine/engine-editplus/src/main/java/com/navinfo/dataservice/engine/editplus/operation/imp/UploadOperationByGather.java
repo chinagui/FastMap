@@ -127,8 +127,8 @@ public class UploadOperationByGather {
 					errLog.putAll(imp.getErrLog());
 					log.debug("dbId("+dbId+")转入成功。");
 					//*************zl 2017.02.09 采集成果自动批任务标识**************
-					OperationResult result = imp.getResult();
-					poiAutoBatchTaskId(result,conn);
+					/*OperationResult result = imp.getResult();
+					poiAutoBatchTaskId(result,conn);*/
 					
 				}catch(Exception e){
 					DbUtils.rollbackAndCloseQuietly(conn);

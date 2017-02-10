@@ -472,11 +472,11 @@ public class HBaseOperateTest {
 
 	public static void main(String[] args) throws Exception {
 		HBaseOperateTest test = new HBaseOperateTest();
-		String rowkey = "028002011320838c194aeb8e3039886bf760c6";
+		String rowkey = "id:0211039CCC643A25994E9E93DF4F4EB366F658";
 		// test.QueryAll();
-		// test.QueryByCondition1(rowkey);
+		 test.QueryByCondition1(rowkey);
 		 
-		 test. QueryByCondition4();
+		// test. QueryByCondition4();
 		 
 		//test.testDbCopy();
 	/*	JSONObject geoJson=JSONObject.fromObject("{\"type\":\"LineString\",\"coordinates\":[[116.69374,39.90471],[116.69376,39.9047],[116.69381,39.90468],[116.69387,39.90465],[116.69391,39.90463],[116.69395,39.90459],[116.69395,39.90458],[116.69392,39.90457],[116.6939,39.90456],[116.69387,39.90455],[116.69384,39.90455],[116.69381,39.90456],[116.69377,39.90458],[116.69376,39.9046],[116.69376,39.90461],[116.69378,39.90461],[116.69379,39.90461],[116.69382,39.90459],[116.69383,39.90457],[116.69382,39.90455],[116.69382,39.90454],[116.69379,39.90452],[116.69376,39.9045],[116.69373,39.90449],[116.6937,39.90449],[116.69366,39.90451],[116.69366,39.90451]]}");

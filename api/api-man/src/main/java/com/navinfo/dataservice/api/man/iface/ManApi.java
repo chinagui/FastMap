@@ -85,5 +85,14 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
+	
+	/**
+	 * @param grid 
+	 * @return grid对应的taskId的list
+	 * @throws Exception
+	 * author zl 2017.02.09
+	 */
+	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception;
+	
 }
 

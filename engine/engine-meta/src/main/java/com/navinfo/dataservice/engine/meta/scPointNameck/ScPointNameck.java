@@ -388,7 +388,7 @@ public class ScPointNameck {
 						try {
 							String sql = "SELECT PRE_KEY, RESULT_KEY"
 									+ "  FROM SC_POINT_NAMECK"
-									+ " WHERE TYPE = 7"
+									+ " WHERE TYPE IN (4,10)"
 									+ "   AND HM_FLAG <> 'HM'";
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;

@@ -425,7 +425,9 @@ public class TipsSelector {
 								JSONObject o = new JSONObject();
 
 								Geojson.coord2Pixel(geo, z, px, py);
-
+								
+								o.put("t", geo.getString("type"));
+								
 								o.put("g", geo.getJSONArray("coordinates"));
 
 								o.put("s", style);

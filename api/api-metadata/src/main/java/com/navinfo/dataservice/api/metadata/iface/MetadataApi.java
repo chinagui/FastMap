@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -276,6 +277,15 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception;
+	
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> listMeshes4Partition()throws Exception;
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(int[] admincodes)throws Exception;
 	
 	/**
 	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录

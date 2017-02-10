@@ -1,0 +1,2451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-08-23
+-->
+<sqls>
+    <!--///////////////////////////////////////////////////道路/////////////////////////////////////////////////////////-->
+    <feature name="RD_LINK_FILTER">
+        <step value="7">
+            <!--
+             condition="mesh"：按图幅导出的sql
+             condition="area"：按区域导出的sql
+             no condition ：所有都符合
+            -->
+            <!--按图幅过滤RD_LINK-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RD_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM RD_LINK WHERE MESH_ID [mesh]);
+                    ]]></sql>
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RD_LINK
+                          (PID)
+                          (SELECT LINK_PID FROM RD_LINK
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                    ]]></sql>
+        </step>
+
+
+    </feature>
+
+    <feature name="RD_NODE_FILTER">
+        <step value="7">
+
+            <!--按图幅过滤RD_NODE-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RD_NODE
+                          (PID)
+                          (SELECT NODE_PID FROM RD_NODE_MESH WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_FILTER_RD_NODE
+                          (PID)
+                          (SELECT NODE_PID FROM RD_NODE
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+    </feature>
+	<!-- RD_SPEEDLIMIT和RD_ELECTRONICEYE作为主元素提取，不再作为RD_LINK子元素提取，20140506，肖小文 -->
+    <feature name="RD_SPEEDLIMIT">
+        <step value="7">
+            <!--按图幅过滤RD_SPEEDLIMIT-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_SPEEDLIMIT
+                          (PID)
+                          (SELECT PID FROM RD_SPEEDLIMIT WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_SPEEDLIMIT
+                          (PID)
+                          (SELECT PID FROM RD_SPEEDLIMIT
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+        <step value="16">
+			<!--通过RD_SPEEDLIMIT补关联RD_LINK -->
+			<sql  sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID FROM RD_SPEEDLIMIT P, TEMP_RD_SPEEDLIMIT T WHERE P.PID=T.PID);
+                        ]]></sql>
+
+		</step>
+    </feature>
+    <feature name="RD_ELECTRONICEYE">
+        <step value="7">
+
+            <!--按图幅过滤RD_ELECTRONICEYE-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_ELECTRONICEYE
+                          (PID)
+                          (SELECT PID FROM RD_ELECTRONICEYE WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_ELECTRONICEYE
+                          (PID)
+                          (SELECT PID FROM RD_ELECTRONICEYE
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+        <!--240新增  -->
+        <!-- 区间测试电子眼提取 -->
+        <step value="9">
+            <!--根据电子眼提取group_id-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_ELECEYE_GROUP
+                          (PID)
+                          (SELECT DISTINCT(P.GROUP_ID) FROM RD_ELECEYE_PART P,TEMP_RD_ELECTRONICEYE T WHERE P.ELECEYE_PID=T.PID);
+                         ]]></sql>
+        </step>
+        
+        <step value="19">
+			<!-- 通过RD_ELECTRONICEYE补关联RD_LINK -->
+			<sql  sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID FROM RD_ELECTRONICEYE P, TEMP_RD_ELECTRONICEYE T WHERE P.PID=T.PID);
+                        ]]></sql>
+
+		</step>
+    </feature>
+	
+    <feature name="夸图幅Link">
+        <!--
+        查找夸图幅的图廓点，然后提取图廓点两边的link
+        目前仅支持按图幅提取
+        -->
+        <step value="13">
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT L.LINK_PID
+                          FROM RD_LINK L
+                         WHERE L.S_NODE_PID IN (SELECT PID
+                                                  FROM (SELECT COUNT(1), N.PID
+                                                          FROM RD_NODE_MESH M, TEMP_FILTER_RD_NODE N
+                                                         WHERE M.NODE_PID = N.PID
+                                                         GROUP BY N.PID
+                                                        HAVING COUNT(1) > 1))
+                        UNION ALL
+                        SELECT L.LINK_PID
+                          FROM RD_LINK L
+                         WHERE L.E_NODE_PID IN (SELECT PID
+                                                  FROM (SELECT COUNT(1), N.PID
+                                                          FROM RD_NODE_MESH M, TEMP_FILTER_RD_NODE N
+                                                         WHERE M.NODE_PID = N.PID
+                                                         GROUP BY N.PID
+                                                        HAVING COUNT(1) > 1))
+                        );
+                    ]]></sql>
+
+
+        </step>
+
+    </feature>
+
+
+    <feature name="RD_SIGNPOST">
+        <step value="13">
+            <!--提取Link关联标牌信息 -->
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_SIGNPOST
+                           (PID)
+                           (SELECT P.PID
+                              FROM RD_SIGNPOST P, TEMP_FILTER_RD_LINK T
+                             WHERE P.LINK_PID = T.PID);
+                         ]]></sql>
+        </step>
+        <step value="16">
+            <sql  sqlType="dataIntegrity"><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID FROM RD_SIGNPOST_LINK P,TEMP_RD_SIGNPOST T WHERE P.SIGNPOST_PID=T.PID);
+                    ]]></sql>
+            <!--将-标牌关联的多媒体文件插入临时表（CM_BUILDING_3DMODEL） -->
+            <!--<sql><![CDATA[
+            INSERT /*+ append */
+            INTO TEMP_AU_MULTIMEDIA
+              (PID)
+              (SELECT P.PHOTO_ID FROM RD_SIGNPOST_PHOTO P,TEMP_RD_SIGNPOST T WHERE P.SIGNPOST_PID=T.PID);
+            ]]></sql>-->
+
+        </step>
+
+    </feature>
+    <!--////////////////////////////////////////////////////RD_INTER//////////////////////////////////////////////////////-->
+    <feature name="RD_INTER">
+        <step value="13">
+            <!--
+                CRF交叉点提取规则:
+                1.从组成node和link，找到rd_inter
+                2.去重复
+                3.提取rd_inter
+                4.提取不在图幅内的link和node
+            -->
+            <!--按node提取关联的rd_inter-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_INTER
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_NODE N, RD_INTER_NODE CN
+                        WHERE N.PID = CN.NODE_PID);
+                    ]]></sql>
+            <!--按link提取关联的rd_inter-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_INTER
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_LINK N, RD_INTER_LINK CN
+                        WHERE N.PID = CN.LINK_PID);
+                    ]]></sql>
+
+        </step>
+        <step value="16">
+            <!--RD_INTER去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_INTER A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_INTER B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <step value="19">
+            <!--提取不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_INTER_LINK P, TEMP_RD_INTER T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--提取不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM RD_INTER_NODE P, TEMP_RD_INTER T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+
+        </step>
+        
+        <step value="100">
+            <!--查询返回RD_INTER相关信息：
+                1.RD_INTER
+                2.RD_INTER_LINK
+                3.RD_INTER_NODE
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_INTER P, TEMP_RD_INTER T WHERE P.PID = T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_INTER_LINK P,TEMP_RD_INTER T WHERE P.PID = T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_INTER_NODE P,TEMP_RD_INTER T WHERE P.PID = T.PID;]]></sql>
+
+        </step>
+
+        <step value="101">
+            <!--删除RD_INTER相关信息：
+                1.RD_INTER
+                2.RD_INTER_LINK
+                3.RD_INTER_NODE
+            -->
+            <sql><![CDATA[DELETE FROM RD_INTER P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_INTER T);]]></sql>
+            <sql><![CDATA[DELETE FROM RD_INTER_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_INTER T);]]></sql>
+            <sql><![CDATA[DELETE FROM RD_INTER_NODE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_INTER T);]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复的RD_INTER相关信息：
+                1.RD_INTER
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_INTER
+					  SELECT PID
+					    FROM RD_INTER A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_INTER B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+
+    </feature>
+    <feature name="RD_ROAD">
+        <!--////////////////////////////////////////////////////RD_ROAD//////////////////////////////////////////////////////-->
+        <step value="13">
+            <!--
+                CRF道路提取规则:
+                1.从组成link，找到rd_road
+                2.去重复
+                3.找到rd_road
+                4.提取不在图幅内的link
+            -->
+            <!--按link提取关联的rd_road-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_ROAD
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_LINK N, RD_ROAD_LINK CN
+                        WHERE N.PID = CN.LINK_PID);
+                    ]]></sql>
+        </step>
+        <step value="16">
+            <!--RD_ROAD去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_ROAD A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_ROAD B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <step value="19">
+            <!--提取不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_ROAD_LINK P, TEMP_RD_ROAD T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_ROAD相关信息：
+                1.RD_ROAD
+                2.RD_ROAD_LINK
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_ROAD P,TEMP_RD_ROAD T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_ROAD_LINK P,TEMP_RD_ROAD T WHERE P.PID=T.PID;]]></sql>
+
+        </step>
+
+        <step value="101">
+            <!--删除RD_ROAD相关信息：
+                1.RD_ROAD
+                2.RD_ROAD_LINK
+            -->
+            <sql><![CDATA[DELETE FROM RD_ROAD P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_ROAD T);]]></sql>
+            <sql><![CDATA[DELETE FROM RD_ROAD_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_ROAD T);]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_ROAD
+					  SELECT PID
+					    FROM RD_ROAD A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_ROAD B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <feature name="RD_OBJECT">
+        <!--////////////////////////////////////////////////////RD_OBJECT//////////////////////////////////////////////////////-->
+        <step value="13">
+            <!--
+                CRF Object提取规则:
+                1.按去重后的rd_inter提取rd_object
+                2.按去重后的rd_road提取rd_object
+                3.按link提取rd_object
+                4.按node提取rd_object
+                5.去重rd_object
+                6.补充rd_inter、rd_road、link、node
+            -->
+            <!--按node提取关联的RD_OBJECT-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_OBJECT
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_NODE N, RD_OBJECT_NODE CN
+                        WHERE N.PID = CN.NODE_PID);
+                    ]]></sql>
+            <!--按link提取关联的RD_OBJECT-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_OBJECT
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_LINK N, RD_OBJECT_LINK CN
+                        WHERE N.PID = CN.LINK_PID);
+                    ]]></sql>
+        </step>
+        <step value="19">
+            <!--
+                按去重后的rd_inter提取rd_object
+                rd_inter去重是step 5，所以现在这个功能应该为step 6
+            -->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_OBJECT
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_RD_INTER N, RD_OBJECT_INTER CN
+                        WHERE N.PID = CN.INTER_PID);
+                    ]]></sql>
+            <!--
+                按去重后的rd_inter提取rd_road
+                rd_inter去重是step 5，所以现在这个功能应该为step 6
+            -->
+
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_OBJECT
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_RD_ROAD N, RD_OBJECT_ROAD CN
+                            WHERE N.PID = CN.ROAD_PID);
+                    ]]></sql>
+        </step>
+        <step value="22">
+            <!--RD_OBJECT去重-->
+            <sql>
+                <![CDATA[
+                     DELETE FROM TEMP_RD_OBJECT A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_OBJECT B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <step value="25">
+            <!--
+                补充RD_OBJECT组成要素：
+                rd_inter、rd_road、link、node
+            -->
+            <!--补充RD_OBJECT组成要素：rd_link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_OBJECT_LINK P, TEMP_RD_OBJECT T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--补充RD_OBJECT组成要素：rd_node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM RD_OBJECT_NODE P, TEMP_RD_OBJECT T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--补充RD_OBJECT组成要素：RD_ROAD-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_ROAD2
+                      (PID)
+                      (SELECT P.ROAD_PID
+                         FROM RD_OBJECT_ROAD P, TEMP_RD_OBJECT T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--补充RD_OBJECT组成要素：RD_INTER-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_INTER2
+                      (PID)
+                      (SELECT P.INTER_PID
+                         FROM RD_OBJECT_INTER P, TEMP_RD_OBJECT T
+                        WHERE P.PID = T.PID);
+                     ]]></sql>
+
+        </step>
+        <step value="28">
+            <!--
+                补充RD_OBJECT组成要素：
+                RD_INTER 的组成要素link和node
+            -->
+            <!--补充RD_OBJECT组成要素：RD_INTER 的组成要素link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_INTER_LINK P, TEMP_RD_INTER2 T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--补充RD_OBJECT组成要素：RD_INTER 的组成要素node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM RD_INTER_NODE P, TEMP_RD_INTER2 T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--
+                补充RD_OBJECT组成要素：
+                RD_ROAD 的组成要素link
+            -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_ROAD_LINK P, TEMP_RD_ROAD2 T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+        </step>
+        <step value="31">
+            <!--合并RD_ROAD-->
+            <sql><![CDATA[
+                     INSERT/*+ append */ INTO TEMP_RD_ROAD(PID)(SELECT PID FROM TEMP_RD_ROAD2 );
+                     ]]></sql>
+            <!--合并RD_INTER-->
+            <sql><![CDATA[
+                     INSERT/*+ append */ INTO TEMP_RD_INTER(PID)(SELECT PID FROM TEMP_RD_INTER2 );
+                     ]]></sql>
+        </step>
+        <step value="34">
+            <!--去重RD_ROAD-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_ROAD A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_ROAD B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+            <!--去重RD_INTER-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_INTER A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_INTER B WHERE A.PID = B.PID);
+                    ]]></sql>
+
+        </step>
+        <step value="100">
+            <!--查询返回RD_OBJECT相关信息：
+                1.RD_OBJECT
+                2.RD_OBJECT_NAME
+                3.RD_OBJECT_ROAD
+                4.RD_OBJECT_INTER
+                5.RD_OBJECT_NODE
+                6.RD_OBJECT_LINK
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT_NAME P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT_ROAD P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT_INTER P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT_NODE P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_OBJECT_LINK P,TEMP_RD_OBJECT T WHERE P.PID=T.PID;]]></sql>
+
+        </step>
+
+        <step value="101">
+            <!--删除RD_OBJECT相关信息：
+                1.RD_OBJECT
+                2.RD_OBJECT_NAME
+                3.RD_OBJECT_ROAD
+                4.RD_OBJECT_INTER
+                5.RD_OBJECT_NODE
+                6.RD_OBJECT_LINK
+            -->
+            <sql><![CDATA[DELETE FROM RD_OBJECT P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+            <sql><![CDATA[DELETE FROM RD_OBJECT_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+            <sql><![CDATA[DELETE FROM RD_OBJECT_ROAD P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+            <sql><![CDATA[DELETE FROM RD_OBJECT_INTER P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+            <sql><![CDATA[DELETE FROM RD_OBJECT_NODE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+            <sql><![CDATA[DELETE FROM RD_OBJECT_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_OBJECT T );]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_OBJECT
+					  SELECT PID
+					    FROM RD_OBJECT A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_OBJECT B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+
+    <!--////////////////////////////////////////////////////RD_HIGHWAY//////////////////////////////////////////////////////-->
+    <!--////////////////////////////////////////////////////RD_CROSS//////////////////////////////////////////////////////-->
+    <feature name="RD_CROSS">
+        <!--
+            路口提取规则:
+            1.从组成node和link，找到rd_cross
+            2.去重复
+            3.提取rd_cross
+            4.提取不在图幅内的link和node
+        -->
+        <step value="13">
+            <!--从组成node找rd_cross-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_CROSS
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_NODE N, RD_CROSS_NODE CN
+                        WHERE N.PID = CN.NODE_PID);
+                    ]]></sql>
+            <!--从组成link找rd_cross-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_CROSS
+                      (PID)
+                      (SELECT CN.PID
+                         FROM TEMP_FILTER_RD_LINK N, RD_CROSS_LINK CN
+                        WHERE N.PID = CN.LINK_PID);
+                    ]]></sql>
+
+        </step>
+        <step value="16">
+            <!--rd_cross去重-->
+            <sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_CROSS A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_CROSS B WHERE A.PID = B.PID);
+                    ]]></sql>
+        </step>
+        <step value="19">
+            <!--新增不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM RD_CROSS_LINK P, TEMP_RD_CROSS T
+                            WHERE P.PID = T.PID);
+                        ]]></sql>
+            <!--新增不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_NODE
+                          (PID)
+                          (SELECT P.NODE_PID
+                             FROM RD_CROSS_NODE P, TEMP_RD_CROSS T
+                            WHERE P.PID = T.PID);
+                        ]]></sql>
+        </step>
+
+        <!--<step value="100">-->
+        <step value="100">
+            <!--查询返回RD_CROSS相关信息：
+                1.RD_CROSS
+                2.RD_CROSS_LINK
+                3.RD_CROSS_NAME
+                4.RD_CROSS_NODE
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_CROSS P,TEMP_RD_CROSS T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CROSS_LINK P,TEMP_RD_CROSS T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CROSS_NAME P,TEMP_RD_CROSS T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CROSS_NODE P,TEMP_RD_CROSS T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+        <step value="101">
+            <!--删除RD_CROSS相关信息：
+                1.RD_CROSS
+                2.RD_CROSS_LINK
+                3.RD_CROSS_NAME
+                4.RD_CROSS_NODE
+            -->
+            <sql><![CDATA[DELETE FROM RD_CROSS P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSS T) ; ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CROSS_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSS T) ; ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CROSS_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSS T) ; ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CROSS_NODE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSS T) ; ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_CROSS
+					  SELECT PID
+					    FROM RD_CROSS A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_CROSS B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_VIRCONNECT//////////////////////////////////////////////////////-->
+    <feature name="RD_VIRCONNECT">
+        <!--
+            路口提取规则:
+            1.从组成node，找到RD_VIRCONNECT
+            2.去重复
+            3.提取RD_VIRCONNECT
+            4.提取不在图幅内的node
+        -->
+        <step value="13">
+            <!--从组成node找RD_VIRCONNECT，并去重-->
+            <sql>
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_VIRCONNECT
+                      (PID)
+                      (SELECT DISTINCT CN.PID
+                         FROM TEMP_FILTER_RD_NODE N, RD_VIRCONNECT_TRANSIT CN
+                        WHERE (N.PID = CN.FIR_NODE_PID OR N.PID = CN.SEN_NODE_PID));
+                    ]]></sql>
+        </step>
+        <step value="16">
+            <!--新增不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_NODE
+                          (PID)
+                          (SELECT P.FIR_NODE_PID
+                             FROM RD_VIRCONNECT_TRANSIT P, TEMP_RD_VIRCONNECT T
+                            WHERE P.PID = T.PID
+                           UNION ALL
+                           SELECT P.SEN_NODE_PID
+                             FROM RD_VIRCONNECT_TRANSIT P, TEMP_RD_VIRCONNECT T
+                            WHERE P.PID = T.PID);
+                        ]]></sql>
+
+        </step>
+        <step value="100">
+            <!--查询返回RD_VIRCONNECT相关信息：
+                1.RD_VIRCONNECT
+                2.RD_VIRCONNECT_NAME
+                3.RD_VIRCONNECT_TRANSIT
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_VIRCONNECT P,TEMP_RD_VIRCONNECT T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_VIRCONNECT_NAME P,TEMP_RD_VIRCONNECT T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_VIRCONNECT_TRANSIT P,TEMP_RD_VIRCONNECT T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+        <step value="101">
+            <!--删除RD_VIRCONNECT相关信息：
+                1.RD_VIRCONNECT
+                2.RD_VIRCONNECT_NAME
+                3.RD_VIRCONNECT_TRANSIT
+            -->
+            <sql><![CDATA[DELETE FROM RD_VIRCONNECT P WHERE P.PID IN (SELECT T.PID FROM  TEMP_RD_VIRCONNECT T); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_VIRCONNECT_NAME P WHERE P.PID IN (SELECT T.PID FROM  TEMP_RD_VIRCONNECT T); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_VIRCONNECT_TRANSIT P WHERE P.PID IN (SELECT T.PID FROM  TEMP_RD_VIRCONNECT T); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_VIRCONNECT
+					  SELECT PID
+					    FROM RD_VIRCONNECT A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_VIRCONNECT B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_CROSS//////////////////////////////////////////////////////-->
+    <feature name="RD_CHAIN">
+        <!--
+            路链提取规则:
+            1.从组成link，找到RD_CHAIN
+            2.去重复
+            3.提取RD_CHAIN
+            4.提取不在图幅内的link
+        -->
+        <step value="13">
+            <!--从组成link，找到RD_CHAIN,distinct 去重复 -->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_CHAIN
+                          (PID)
+                          (SELECT DISTINCT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_CHAIN_LINK CN
+                            WHERE N.PID = CN.LINK_PID);
+                        ]]></sql>
+        </step>
+        <step value="16">
+            <!--新增不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID
+                             FROM RD_CHAIN_LINK P, TEMP_RD_CHAIN T
+                            WHERE P.PID = T.PID);
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_CHAIN相关信息：
+                1.RD_CHAIN
+                2.RD_CHAIN_LINK
+                3.RD_CHAIN_NAME
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_CHAIN P,TEMP_RD_CHAIN T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CHAIN_LINK P,TEMP_RD_CHAIN T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CHAIN_NAME P,TEMP_RD_CHAIN T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+        <step value="101">
+            <!--删除RD_CHAIN相关信息：
+                1.RD_CHAIN
+                2.RD_CHAIN_LINK
+                3.RD_CHAIN_NAME
+            -->
+            <sql><![CDATA[DELETE FROM RD_CHAIN P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CHAIN T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CHAIN_LINK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CHAIN T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CHAIN_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CHAIN T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_CHAIN
+					  SELECT PID
+					    FROM RD_CHAIN A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_CHAIN B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_LANE_CONNEXITY//////////////////////////////////////////////////////-->
+    <feature name="RD_LANE_CONNEXITY">
+        <!--
+            车信提取规则:
+            1.从进入link，提取车信，node 和out_link不考虑
+            2.去重复
+            3.提取车信
+            4.将out_link和经过link不在图幅内的提取出
+        -->
+        <step value="13">
+            <!--进入link、经过 link  退出link 提取车信并去重-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LANE_CONNEXITY
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_LANE_CONNEXITY CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                            SELECT CN.CONNEXITY_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_LANE_TOPOLOGY CN
+                            WHERE N.PID = CN.OUT_LINK_PID
+                            UNION
+                            SELECT T.CONNEXITY_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_LANE_VIA CN,RD_LANE_TOPOLOGY T
+                            WHERE N.PID = CN.LINK_PID
+                            AND CN.TOPOLOGY_ID=T.TOPOLOGY_ID
+                            );
+                        ]]></sql>
+
+                        <!--进入link提取车信并去重-->
+            <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LANE_CONNEXITY
+                          (PID)
+                          (SELECT DISTINCT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_LANE_CONNEXITY CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                           );
+                        ]]></sql>
+        </step>
+        <step value="16">
+
+            <!--临时保存RD_LANE_TOPOLOGY-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LANE_TOPOLOGY 
+                          (PID)
+                          (SELECT CN.TOPOLOGY_ID
+                             FROM TEMP_RD_LANE_CONNEXITY N, RD_LANE_TOPOLOGY CN
+                            WHERE N.PID = CN.CONNEXITY_PID);
+                        ]]></sql>
+
+        </step>
+        <step value="19">
+            <!--提取车信经过link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.LINK_PID
+                             FROM TEMP_RD_LANE_TOPOLOGY N, RD_LANE_VIA CN
+                            WHERE N.PID = CN.TOPOLOGY_ID);
+                        ]]></sql>
+
+            <!--提取车信退出link IN_LINK-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_LANE_TOPOLOGY N, RD_LANE_TOPOLOGY CN
+                            WHERE N.PID = CN.TOPOLOGY_ID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_LANE_CONNEXITY N, RD_LANE_CONNEXITY CN
+                            WHERE N.PID = CN.PID
+                          );
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_LANE_CONNEXITY相关信息：
+                1.RD_LANE_CONNEXITY
+                2.RD_LANE_VIA
+                3.RD_LANE_TOPOLOGY
+
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_LANE_CONNEXITY P,TEMP_RD_LANE_CONNEXITY T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_LANE_VIA P,TEMP_RD_LANE_TOPOLOGY T WHERE P.TOPOLOGY_ID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_LANE_TOPOLOGY P,TEMP_RD_LANE_TOPOLOGY T WHERE P.TOPOLOGY_ID=T.PID; ]]></sql>
+
+
+        </step>
+
+        <step value="101">
+            <!--删除RD_LANE_CONNEXITY相关信息：
+                1.RD_LANE_CONNEXITY
+                2.RD_LANE_VIA
+                3.RD_LANE_TOPOLOGY
+
+            -->
+            <sql><![CDATA[DELETE FROM RD_LANE_CONNEXITY P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_LANE_CONNEXITY T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_LANE_VIA P WHERE P.TOPOLOGY_ID IN (SELECT T.PID FROM TEMP_RD_LANE_TOPOLOGY T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_LANE_TOPOLOGY P WHERE P.TOPOLOGY_ID IN (SELECT T.PID FROM TEMP_RD_LANE_TOPOLOGY T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_LANE_CONNEXITY
+					  SELECT PID
+					    FROM RD_LANE_CONNEXITY A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_LANE_CONNEXITY B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+        <step value="103">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */
+                        INTO TEMP_RD_LANE_TOPOLOGY
+                          (PID)
+                          (SELECT CN.TOPOLOGY_ID
+                             FROM TEMP_RD_LANE_CONNEXITY N, RD_LANE_TOPOLOGY CN
+                            WHERE N.PID = CN.CONNEXITY_PID);
+				]]></sql>
+        </step>
+
+    </feature>
+    <!--////////////////////////////////////////////////////RD_GATE//////////////////////////////////////////////////////-->
+    <feature name="RD_GATE">
+        <!--
+            大门提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提取大门和限制信息
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link,退出link 提取大门，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_GATE
+                            (PID)
+                            (SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_GATE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                              UNION
+                             SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_GATE CN
+                              WHERE N.PID = CN.OUT_LINK_PID
+                              );
+                          ]]></sql>
+            <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_GATE
+                            (PID)
+                            (SELECT DISTINCT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_GATE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                              );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取大门out_link in_link -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_GATE N, RD_GATE CN
+                            WHERE N.PID = CN.PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_GATE N, RD_GATE CN
+                            WHERE N.PID = CN.PID
+                          );
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_GATE相关信息：
+                1.RD_GATE
+                2.RD_GATE_CONDITION
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_GATE P,TEMP_RD_GATE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_GATE_CONDITION P,TEMP_RD_GATE GA WHERE GA.PID=P.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+            <!--删除RD_GATE相关信息：
+                1.RD_GATE
+                2.RD_GATE_CONDITION
+            -->
+            <sql><![CDATA[DELETE FROM RD_GATE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_GATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_GATE_CONDITION P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_GATE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_GATE
+					  SELECT PID
+					    FROM RD_GATE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_GATE  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+
+    <!--////////////////////////////////////////////////////RD_VARIABLE_SPEED//////////////////////////////////////////////////////-->
+    <feature name="RD_VARIABLE_SPEED">
+
+        <!--进入link 退出link 接续LINK提取RD_VARIABLE_SPEED，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_VARIABLE_SPEED
+                            (PID)
+                            (SELECT CN.VSPEED_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_VARIABLE_SPEED CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                            SELECT CN.VSPEED_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_VARIABLE_SPEED CN
+                              WHERE N.PID = CN.OUT_LINK_PID
+                            UNION
+                            SELECT CN.VSPEED_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_VARIABLE_SPEED_VIA CN
+                              WHERE N.PID = CN.LINK_PID
+                            );
+                          ]]></sql>
+          <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_VARIABLE_SPEED
+                            (PID)
+                            (SELECT DISTINCT CN.VSPEED_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_VARIABLE_SPEED CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取out_link IN_LINK-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_VARIABLE_SPEED N, RD_VARIABLE_SPEED CN
+                            WHERE N.PID = CN.VSPEED_PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_VARIABLE_SPEED N, RD_VARIABLE_SPEED CN
+                            WHERE N.PID = CN.VSPEED_PID
+                            UNION ALL
+                          SELECT CN.LINK_PID
+                             FROM TEMP_RD_VARIABLE_SPEED N, RD_VARIABLE_SPEED_VIA CN
+                            WHERE N.PID = CN.VSPEED_PID
+                            );
+                        ]]></sql>
+        </step>
+
+        <step value="100">
+            <!--查询返回VSPEED_PID相关信息：
+                1.VSPEED_PID
+            -->
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_VARIABLE_SPEED P,TEMP_RD_VARIABLE_SPEED T WHERE P.VSPEED_PID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_VARIABLE_SPEED_VIA P,TEMP_RD_VARIABLE_SPEED T WHERE P.VSPEED_PID=T.PID; ]]></sql>
+        </step>
+        <step value="101">
+            <!--删除VSPEED_PID相关信息：
+                1.VSPEED_PID
+            -->
+            <sql><![CDATA[DELETE FROM RD_VARIABLE_SPEED P WHERE P.VSPEED_PID IN (SELECT T.PID FROM TEMP_RD_VARIABLE_SPEED T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_VARIABLE_SPEED_VIA P WHERE P.VSPEED_PID IN (SELECT T.PID FROM TEMP_RD_VARIABLE_SPEED T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_VARIABLE_SPEED
+					  SELECT VSPEED_PID
+					    FROM RD_VARIABLE_SPEED A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_VARIABLE_SPEED  B WHERE A.VSPEED_PID = B.VSPEED_PID);
+				]]></sql>
+        </step>
+    </feature>
+    
+    
+    
+        <!--////////////////////////////////////////////////////RD_NATGUD_JUN//////////////////////////////////////////////////////-->
+    <feature name="RD_NATGUD_JUN">
+
+        <!--进入link 退出link 经过LINK提取"RD_NATGUD_JUN"，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_NATGUD_JUN
+                            (PID)
+                            (SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_NATGUD_JUN CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                            SELECT CN.NG_COND_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_NATGUD_JUN_DETAIL CN
+                              WHERE N.PID = CN.OUT_LINK_PID
+                            UNION
+                            SELECT D.NG_COND_PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_NATGUD_JUN_VIA CN , RD_NATGUD_JUN_DETAIL D
+                              WHERE N.PID = CN.LINK_PID
+                              and 
+                              CN.DETAIL_ID = D.DETAIL_ID
+                            );
+                          ]]></sql>
+                          
+             <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_NATGUD_JUN
+                            (PID)
+                             (SELECT distinct CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_NATGUD_JUN CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            );
+                          ]]></sql>
+                          
+ 			<!--按图幅过滤-->
+            <sql condition="mesh">
+                <![CDATA[
+                       INSERT /*+ append */
+                         INTO TEMP_RD_NATGUD_JUN
+                            (PID)
+                            (SELECT distinct N.NG_COND_PID
+                               FROM IX_NATGUD CN ,RD_NATGUD_JUN_DETAIL N
+                              WHERE N.NG_ASSO_PID = CN.PID and  CN.MESH_ID  [mesh]
+                            );
+                    ]]></sql>
+            <sql condition="area">
+                <![CDATA[
+                		INSERT /*+ append */
+                         INTO TEMP_RD_NATGUD_JUN
+                            (PID)
+                            (SELECT distinct N.NG_COND_PID
+                               FROM IX_NATGUD CN ,RD_NATGUD_JUN_DETAIL N
+                              WHERE N.NG_ASSO_PID = CN.PID and  SDO_ANYINTERACT(CN.GEOMETRY,
+                                              [area]) = 'TRUE');
+                    ]]></sql>
+        </step>
+        
+        <!--按照图幅补充IX_NATGUD-->
+        <step value="14">
+ 			<!--按图幅过滤-->
+            <sql condition="mesh">
+                <![CDATA[
+                       INSERT /*+ append */
+                         INTO TEMP_IX_NATGUD
+                            (PID)
+                            (SELECT distinct CN.PID
+                               FROM IX_NATGUD CN 
+                              WHERE CN.MESH_ID  [mesh]
+                            );
+                    ]]></sql>
+            <sql condition="area">
+                <![CDATA[
+                		INSERT /*+ append */
+                         INTO TEMP_IX_NATGUD
+                            (PID)
+                            (SELECT distinct CN.PID
+                               FROM IX_NATGUD CN 
+                              WHERE SDO_ANYINTERACT(CN.GEOMETRY,
+                                              [area]) = 'TRUE');
+                    ]]></sql>
+                    
+           <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_IX_NATGUD
+                            (PID)
+                            (
+                            SELECT distinct CN.NG_ASSO_PID
+							  FROM  TEMP_RD_NATGUD_JUN N, RD_NATGUD_JUN_DETAIL CN
+							 WHERE 
+							   CN.NG_COND_PID = N.PID
+                            );
+                     ]]></sql>
+        </step>
+        
+        <step value="16">
+            <!--提取out_link IN_LINK-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.IN_LINK_PID
+                             FROM (select distinct PID  from TEMP_RD_NATGUD_JUN) N, RD_NATGUD_JUN CN
+                            WHERE N.PID = CN.PID
+                          UNION ALL
+                          SELECT CN.OUT_LINK_PID
+                             FROM (select distinct PID  from TEMP_RD_NATGUD_JUN) N, RD_NATGUD_JUN_DETAIL CN
+                            WHERE N.PID = CN.NG_COND_PID
+                            UNION ALL
+                          SELECT VA.LINK_PID
+                              FROM (select distinct PID  from TEMP_RD_NATGUD_JUN) N, RD_NATGUD_JUN_DETAIL CN , RD_NATGUD_JUN_VIA VA
+                            WHERE CN.DETAIL_ID = VA.DETAIL_ID and  CN.NG_COND_PID = N.PID
+                            );
+                        ]]></sql>
+        </step>
+        
+        
+         <step value="19">
+               <!--TEMP_RD_NATGUD_JUN去重 -->
+			<sql>
+                <![CDATA[
+                    DELETE FROM TEMP_RD_NATGUD_JUN A
+                     WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_RD_NATGUD_JUN B WHERE A.PID = B.PID);
+                    ]]></sql>
+                    
+          <!--TEMP_IX_NATGUD去重 -->    
+           <sql>
+            <![CDATA[
+                DELETE FROM TEMP_IX_NATGUD A
+                 WHERE A.ROWID !=
+                       (SELECT MAX(B.ROWID) FROM TEMP_IX_NATGUD B WHERE A.PID = B.PID);
+                ]]></sql>
+        </step>
+        
+
+        <step value="100">
+            <!--查询返回RD_NATGUD_JUN相关信息：
+                1.VSPEED_PID
+            -->
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_NATGUD_JUN P,TEMP_RD_NATGUD_JUN T WHERE P.PID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_NATGUD_JUN_DETAIL P,TEMP_RD_NATGUD_JUN T WHERE P.NG_COND_PID=T.PID; ]]></sql>
+             <sql>
+                <![CDATA[SELECT P.* FROM RD_NATGUD_JUN_VIA P, RD_NATGUD_JUN_DETAIL p2 ,TEMP_RD_NATGUD_JUN T WHERE p.DETAIL_ID = p2.DETAIL_ID and  P2.NG_COND_PID=T.PID; ]]></sql>
+                
+             <sql>
+                <![CDATA[select P.* FROM IX_NATGUD P,TEMP_IX_NATGUD T WHERE P.PID=T.PID; ]]></sql>
+             <sql>
+                <![CDATA[select P.* FROM IX_NATGUD_NAME P,TEMP_IX_NATGUD T WHERE P.NG_ASSO_PID=T.PID;  ]]></sql>
+        </step>
+        
+         <step value="101">
+            <!--删除RD_NATGUD_JUN相关信息：
+                1.VSPEED_PID
+            -->
+            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_NATGUD_JUN T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN_DETAIL P WHERE P.NG_COND_PID IN (SELECT T.PID FROM TEMP_RD_NATGUD_JUN T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN_VIA P WHERE p.DETAIL_ID IN (SELECT p2.DETAIL_ID FROM RD_NATGUD_JUN_DETAIL p2, TEMP_RD_NATGUD_JUN T where P2.NG_COND_PID=T.PID ); ]]></sql>
+            <sql><![CDATA[DELETE FROM IX_NATGUD P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_NATGUD T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM IX_NATGUD_NAME P WHERE p.NG_ASSO_PID IN (SELECT T.PID FROM TEMP_IX_NATGUD T ); ]]></sql>
+        </step>
+        
+        
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_NATGUD_JUN
+					  SELECT PID
+					    FROM RD_NATGUD_JUN A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_NATGUD_JUN  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+
+    <!--////////////////////////////////////////////////////RD_SE//////////////////////////////////////////////////////-->
+    <feature name="RD_SE">
+        <!--
+            分岔口提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提取分岔口
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link 退出link提取分岔口，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_SE
+                            (PID)
+                            (SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_SE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                            SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_SE CN
+                              WHERE N.PID = CN.OUT_LINK_PID
+                            );
+                          ]]></sql>
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_SE
+                            (PID)
+                            (SELECT DISTINCT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_SE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取分岔口out_link in_link -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_SE N, RD_SE CN
+                            WHERE N.PID = CN.PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_SE N, RD_SE CN
+                            WHERE N.PID = CN.PID
+                          );
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_SE相关信息：
+                1.RD_SE
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_SE P,TEMP_RD_SE T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+            <!--删除RD_SE相关信息：
+                1.RD_SE
+            -->
+            <sql><![CDATA[DELETE FROM RD_SE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_SE T ); ]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_SE
+					  SELECT PID
+					    FROM RD_SE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_SE
+						B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_TOLLGATE//////////////////////////////////////////////////////-->
+    <feature name="RD_TOLLGATE">
+        <!--
+            收费站提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提取收费站和名称
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link，推出link 提取收费站，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_TOLLGATE
+                            (PID)
+                            (SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_TOLLGATE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                            SELECT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_TOLLGATE CN
+                              WHERE N.PID = CN.OUT_LINK_PID
+                            );
+                          ]]></sql>
+             <sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_TOLLGATE
+                            (PID)
+                            (SELECT DISTINCT CN.PID
+                               FROM TEMP_FILTER_RD_LINK N, RD_TOLLGATE CN
+                              WHERE N.PID = CN.IN_LINK_PID
+                            );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取收费站out_link in_link  -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_TOLLGATE N, RD_TOLLGATE CN
+                            WHERE N.PID = CN.PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_TOLLGATE N, RD_TOLLGATE CN
+                            WHERE N.PID = CN.PID
+                          );
+                        ]]></sql>
+
+        </step>
+        <step value="100">
+            <!--查询返回RD_TOLLGATE相关信息：
+                1.RD_TOLLGATE
+                2.RD_TOLLGATE_NAME
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_TOLLGATE P,TEMP_RD_TOLLGATE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_TOLLGATE_NAME P,TEMP_RD_TOLLGATE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_TOLLGATE_PASSAGE P,TEMP_RD_TOLLGATE T WHERE P.PID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT DISTINCT P.* FROM RD_TOLLGATE_COST P,TEMP_RD_TOLLGATE T WHERE (P.IN_TOLLGATE=T.PID OR P.OUT_TOLLGATE=T.PID); ]]></sql>
+        </step>
+
+
+        <step value="101">
+            <!--删除RD_TOLLGATE相关信息：
+                1.RD_TOLLGATE
+                2.RD_TOLLGATE_NAME
+            -->
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_PASSAGE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.IN_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.OUT_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_TOLLGATE
+					  SELECT PID
+					    FROM RD_TOLLGATE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_TOLLGATE
+						B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+
+
+    <!--////////////////////////////////////////////////////RD_BRANCH//////////////////////////////////////////////////////-->
+    <feature name="RD_BRANCH">
+        <!--
+            分歧提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提取分歧和其它信息
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link,推出link，经过link 提取收费站，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_BRANCH
+                          (PID)
+                          (SELECT CN.BRANCH_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_BRANCH CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          UNION
+                          SELECT CN.BRANCH_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_BRANCH CN
+                            WHERE N.PID = CN.OUT_LINK_PID
+                          UNION
+                          SELECT CN.BRANCH_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_BRANCH_VIA CN
+                            WHERE N.PID = CN.LINK_PID
+                          );
+                          ]]></sql>
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_BRANCH
+                          (PID)
+                          (SELECT DISTINCT CN.BRANCH_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_BRANCH CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取分歧out_link IN_LINK-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_BRANCH N, RD_BRANCH CN
+                            WHERE N.PID = CN.BRANCH_PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_BRANCH N, RD_BRANCH CN
+                            WHERE N.PID = CN.BRANCH_PID
+                            );
+                        ]]></sql>
+            <!--临时保存分歧详细信息-->
+            <sql><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_BRANCH_DETAIL
+                      (PID)
+                      (SELECT CN.DETAIL_ID
+                             FROM TEMP_RD_BRANCH N, RD_BRANCH_DETAIL CN
+                            WHERE N.PID = CN.BRANCH_PID);
+                    ]]></sql>
+            <!-- 根据分歧提取方向看板 -->
+            <sql>
+                <![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_SIGNBOARD 
+                            (PID)
+                            (SELECT DISTINCT CN.SIGNBOARD_ID
+                               FROM TEMP_RD_BRANCH N, RD_SIGNBOARD CN
+                              WHERE N.PID = CN.BRANCH_PID);
+                          ]]></sql>
+
+
+        </step>
+        <step value="19">
+            <!--提取分歧经过link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.LINK_PID
+                             FROM TEMP_RD_BRANCH N, RD_BRANCH_VIA CN
+                            WHERE N.PID = CN.BRANCH_PID);
+                        ]]></sql>
+
+            <!--提取方向看板名称表中的多媒体文件-->
+            <!-- <sql>
+    <![CDATA[
+            INSERT /*+ append */
+            INTO TEMP_AU_MULTIMEDIA
+              (PID)
+              (SELECT DISTINCT CN.VOICE_ID
+                 FROM TEMP_RD_SIGNBOARD N, RD_SIGNBOARD_NAME CN
+                WHERE N.PID = CN.SIGNBOARD_ID);
+            ]]></sql>-->
+
+            <!--提取分歧名称语音文件-->
+            <!-- <sql>
+    <![CDATA[
+            INSERT /*+ append */
+            INTO TEMP_AU_MULTIMEDIA
+              (PID)
+              (SELECT DISTINCT CN.VOICE_ID
+                 FROM TEMP_RD_BRANCH_DETAIL N, RD_BRANCH_NAME CN
+                WHERE N.PID = CN.DETAIL_ID);
+            ]]></sql>-->
+
+        </step>
+        <step value="100">
+            <!--查询返回RD_BRANCH相关信息：
+                1.RD_BRANCH
+                2.RD_BRANCH_REALIMAGE
+                3.RD_SERIESBRANCH
+                4.RD_BRANCH_VIA
+                5.RD_BRANCH_DETAIL
+                6.RD_BRANCH_NAME
+                7.RD_SIGNBOARD
+                8.RD_SIGNBOARD_NAME
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SIGNASREAL P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_REALIMAGE P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_SCHEMATIC P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SERIESBRANCH P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_VIA P,TEMP_RD_BRANCH T WHERE P.BRANCH_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_DETAIL P,TEMP_RD_BRANCH_DETAIL T WHERE P.DETAIL_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_NAME P,TEMP_RD_BRANCH_DETAIL T WHERE P.DETAIL_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_BRANCH_NAME_TONE P,(SELECT P.NAME_ID FROM RD_BRANCH_NAME P,TEMP_RD_BRANCH_DETAIL T WHERE P.DETAIL_ID=T.PID) T WHERE P.NAME_ID=T.NAME_ID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SIGNBOARD P,TEMP_RD_SIGNBOARD T WHERE P.SIGNBOARD_ID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SIGNBOARD_NAME P,TEMP_RD_SIGNBOARD T WHERE P.SIGNBOARD_ID=T.PID; ]]></sql>
+        </step>
+
+
+        <step value="101">
+            <!--删除RD_BRANCH相关信息：
+                1.RD_BRANCH
+                2.RD_BRANCH_REALIMAGE
+                3.RD_SERIESBRANCH
+                4.RD_BRANCH_VIA
+                5.RD_BRANCH_DETAIL
+                6.RD_BRANCH_NAME
+                7.RD_SIGNBOARD
+                8.RD_SIGNBOARD_NAME
+            -->
+            <sql><![CDATA[DELETE FROM RD_BRANCH P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_REALIMAGE P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_SCHEMATIC P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SERIESBRANCH P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SIGNASREAL P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_VIA P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_DETAIL P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_BRANCH_DETAIL T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_NAME P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_BRANCH_DETAIL T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_BRANCH_NAME_TONE P
+							 WHERE P.NAME_ID IN (SELECT P.NAME_ID
+							                       FROM RD_BRANCH_NAME P, TEMP_RD_BRANCH_DETAIL T
+							                      WHERE P.DETAIL_ID = T.PID);
+							                      ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SIGNBOARD P WHERE P.SIGNBOARD_ID IN (SELECT T.PID FROM TEMP_RD_SIGNBOARD T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SIGNBOARD_NAME P WHERE P.SIGNBOARD_ID IN (SELECT T.PID FROM TEMP_RD_SIGNBOARD T ); ]]></sql>
+
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_BRANCH
+					  SELECT BRANCH_PID
+					    FROM RD_BRANCH A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_BRANCH  B WHERE A.BRANCH_PID = B.BRANCH_PID);
+				]]></sql>
+			<sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_SIGNBOARD
+					  SELECT SIGNBOARD_ID
+					    FROM RD_SIGNBOARD A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_SIGNBOARD  B WHERE A.SIGNBOARD_ID = B.SIGNBOARD_ID);
+				]]></sql>
+        </step>
+      <step value="103">
+        	<sql><![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_BRANCH_DETAIL
+                      (PID)
+                      (SELECT CN.DETAIL_ID
+                             FROM TEMP_RD_BRANCH N, RD_BRANCH_DETAIL CN
+                            WHERE N.PID = CN.BRANCH_PID);
+                    ]]></sql>
+
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_VOICEGUIDE//////////////////////////////////////////////////////-->
+    <feature name="RD_VOICEGUIDE">
+        <!--
+            语音引导提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提取语音引导和其它信息
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link,退出link ，经过link 提取语音引导，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_VOICEGUIDE
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_VOICEGUIDE CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          UNION
+                          SELECT CN.VOICEGUIDE_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_VOICEGUIDE_DETAIL CN
+                            WHERE N.PID = CN.OUT_LINK_PID
+                          UNION
+                          SELECT T.VOICEGUIDE_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_VOICEGUIDE_VIA CN ,RD_VOICEGUIDE_DETAIL T
+                            WHERE N.PID = CN.LINK_PID
+                            AND CN.DETAIL_ID=T.DETAIL_ID
+                          );
+                          ]]></sql>
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_VOICEGUIDE
+                          (PID)
+                          (SELECT DISTINCT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_VOICEGUIDE CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          );
+                          ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取语音引导out_link,IN_LINK -->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_VOICEGUIDE N, RD_VOICEGUIDE_DETAIL CN
+                            WHERE N.PID = CN.VOICEGUIDE_PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_VOICEGUIDE N, RD_VOICEGUIDE CN
+                            WHERE N.PID = CN.PID
+                          );
+                        ]]></sql>
+            <!--提取语音引导经过link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID
+							  FROM RD_VOICEGUIDE_VIA P,
+							       (SELECT P.DETAIL_ID
+							          FROM RD_VOICEGUIDE_DETAIL P, TEMP_RD_VOICEGUIDE T
+							         WHERE P.VOICEGUIDE_PID = T.PID) T
+							 WHERE P.DETAIL_ID = T.DETAIL_ID);
+                        ]]></sql>
+        </step>
+        <step value="100">
+            <!--查询返回RD_VOICEGUIDE相关信息：
+                1.RD_VOICEGUIDE
+                2.RD_VOICEGUIDE_VIA
+                3.RD_VOICEGUIDE_DETAIL
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_VOICEGUIDE P,TEMP_RD_VOICEGUIDE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[
+						 SELECT P.*
+							  FROM RD_VOICEGUIDE_VIA P,
+							       (SELECT distinct P.DETAIL_ID
+							          FROM RD_VOICEGUIDE_DETAIL P, TEMP_RD_VOICEGUIDE T
+							         WHERE P.VOICEGUIDE_PID = T.PID) T
+							 WHERE P.DETAIL_ID = T.DETAIL_ID;	
+						 ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_VOICEGUIDE_DETAIL P,TEMP_RD_VOICEGUIDE T WHERE P.VOICEGUIDE_PID=T.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+            <!--删除RD_VOICEGUIDE相关信息：
+                1.RD_VOICEGUIDE
+                2.RD_VOICEGUIDE_VIA
+                3.RD_VOICEGUIDE_DETAIL
+            -->
+            <sql><![CDATA[DELETE FROM RD_VOICEGUIDE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_VOICEGUIDE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_VOICEGUIDE_DETAIL P WHERE P.VOICEGUIDE_PID IN (SELECT T.PID FROM TEMP_RD_VOICEGUIDE T ); ]]></sql>
+            <sql><![CDATA[
+						 DELETE FROM RD_VOICEGUIDE_VIA P
+							 WHERE P.DETAIL_ID IN (SELECT P.DETAIL_ID
+							                       FROM RD_VOICEGUIDE_DETAIL P, TEMP_RD_VOICEGUIDE T
+							                      WHERE P.VOICEGUIDE_PID = T.PID);
+						 ]]></sql>
+        </step>
+
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_VOICEGUIDE
+					  SELECT PID
+					    FROM RD_VOICEGUIDE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_VOICEGUIDE  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_RESTRICTION//////////////////////////////////////////////////////-->
+    <feature name="RD_RESTRICTION">
+        <!--
+            交限提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提交限和其它信息
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link、退出link 、提取交限，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_RESTRICTION
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_RESTRICTION CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                            UNION
+                          SELECT CN.RESTRIC_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_RESTRICTION_DETAIL CN
+                            WHERE N.PID = CN.OUT_LINK_PID
+                            UNION
+                          SELECT T.RESTRIC_PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_RESTRICTION_VIA CN,RD_RESTRICTION_DETAIL T
+                            WHERE N.PID = CN.LINK_PID
+                            AND  CN.DETAIL_ID=T.DETAIL_ID
+                            );
+                             ]]></sql>
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_RESTRICTION
+                          (PID)
+                          (SELECT DISTINCT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_RESTRICTION CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                            );
+                             ]]></sql>
+        </step>
+        <step value="16">
+            <!--提取交限临时信息-->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_RESTRICTION_DETAIL
+                          (PID)
+                          (SELECT CN.DETAIL_ID
+                             FROM TEMP_RD_RESTRICTION N, RD_RESTRICTION_DETAIL CN
+                            WHERE N.PID = CN.RESTRIC_PID);
+                           ]]></sql>
+            <!--提交限out_link IN_LINK-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_RESTRICTION N, RD_RESTRICTION_DETAIL CN
+                            WHERE N.PID = CN.RESTRIC_PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_RESTRICTION N, RD_RESTRICTION CN
+                            WHERE N.PID = CN.PID
+                          );
+                           ]]></sql>
+
+        </step>
+        <step value="19">
+            <!--提取交限经过link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.LINK_PID
+                             FROM TEMP_RD_RESTRICTION_DETAIL N, RD_RESTRICTION_VIA CN
+                            WHERE N.PID = CN.DETAIL_ID);
+                           ]]></sql>
+
+        </step>
+        <step value="100">
+            <!--
+                查询返回RD_RESTRICTION相关信息：
+                1.RD_RESTRICTION
+                2.RD_RESTRICTION_VIA
+                3.RD_RESTRICTION_CONDITION
+                4.RD_RESTRICTION_DETAIL
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_RESTRICTION P,TEMP_RD_RESTRICTION T WHERE P.PID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_RESTRICTION_CONDITION P,TEMP_RD_RESTRICTION_DETAIL T WHERE P.DETAIL_ID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_RESTRICTION_VIA P,TEMP_RD_RESTRICTION_DETAIL T WHERE P.DETAIL_ID=T.PID; ]]></sql>
+            <sql>
+                <![CDATA[SELECT P.* FROM RD_RESTRICTION_DETAIL P,TEMP_RD_RESTRICTION_DETAIL T WHERE P.DETAIL_ID=T.PID; ]]></sql>
+        </step>
+
+
+        <step value="101">
+            <!--
+               	删除RD_RESTRICTION相关信息：
+                1.RD_RESTRICTION
+                2.RD_RESTRICTION_VIA
+                3.RD_RESTRICTION_CONDITION
+                4.RD_RESTRICTION_DETAIL
+            -->
+            <sql><![CDATA[DELETE FROM RD_RESTRICTION P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_RESTRICTION T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_RESTRICTION_CONDITION P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_RESTRICTION_DETAIL T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_RESTRICTION_VIA P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_RESTRICTION_DETAIL T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_RESTRICTION_DETAIL P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_RESTRICTION_DETAIL T ); ]]></sql>
+        </step>
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_RESTRICTION
+					  SELECT PID
+					    FROM TEMP_RD_RESTRICTION A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_RESTRICTION  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+        <step value="103">
+            <!--查找重复信息：
+            -->
+            <sql>
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_RESTRICTION_DETAIL
+                          (PID)
+                          (SELECT CN.DETAIL_ID
+                             FROM TEMP_RD_RESTRICTION N, RD_RESTRICTION_DETAIL CN
+                            WHERE N.PID = CN.RESTRIC_PID);
+                           ]]></sql>
+        </step>
+    </feature>
+    <!--////////////////////////////////////////////////////RD_DIRECTROUTE//////////////////////////////////////////////////////-->
+    <feature name="RD_DIRECTROUTE">
+        <!--
+            顺行提取规则:
+            1.从进入link，提取，node 和out_link不考虑
+            2.去重复
+            3.提顺行和其它信息
+            4.将out_link不在图幅内的提取出
+        -->
+        <!--进入link,推出link ，进过linnk 提取顺行，并去重-->
+        <step value="13">
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_DIRECTROUTE
+                          (PID)
+                          (SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_DIRECTROUTE CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          UNION
+                          SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_DIRECTROUTE CN
+                            WHERE N.PID = CN.OUT_LINK_PID
+                          UNION
+                          SELECT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_DIRECTROUTE_VIA CN
+                            WHERE N.PID = CN.LINK_PID
+
+                          );
+                             ]]></sql>
+
+
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_DIRECTROUTE
+                          (PID)
+                          (SELECT DISTINCT CN.PID
+                             FROM TEMP_FILTER_RD_LINK N, RD_DIRECTROUTE CN
+                            WHERE N.PID = CN.IN_LINK_PID
+                          );
+                             ]]></sql>
+        </step>
+        <step value="16">
+            <!--提顺行out_link in_link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.OUT_LINK_PID
+                             FROM TEMP_RD_DIRECTROUTE N, RD_DIRECTROUTE CN
+                            WHERE N.PID = CN.PID
+                          UNION ALL
+                          SELECT CN.IN_LINK_PID
+                             FROM TEMP_RD_DIRECTROUTE N, RD_DIRECTROUTE CN
+                            WHERE N.PID = CN.PID
+                          );
+                           ]]></sql>
+            <!--提取顺行经过link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT CN.LINK_PID
+                             FROM TEMP_RD_DIRECTROUTE N, RD_DIRECTROUTE_VIA CN
+                            WHERE N.PID = CN.PID);
+                           ]]></sql>
+        </step>
+        <step value="100">
+            <!--
+                查询返回RD_DIRECTROUTE相关信息：
+                1.RD_DIRECTROUTE
+                2.RD_DIRECTROUTE_VIA
+            -->
+            <sql><![CDATA[SELECT P.* FROM RD_DIRECTROUTE P,TEMP_RD_DIRECTROUTE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_DIRECTROUTE_VIA P,TEMP_RD_DIRECTROUTE T WHERE P.PID=T.PID; ]]></sql>
+        </step>
+
+        <step value="101">
+            <!--
+                删除RD_DIRECTROUTE相关信息：
+                1.RD_DIRECTROUTE
+                2.RD_DIRECTROUTE_VIA
+            -->
+            <sql><![CDATA[DELETE FROM RD_DIRECTROUTE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_DIRECTROUTE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_DIRECTROUTE_VIA P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_DIRECTROUTE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_DIRECTROUTE
+					  SELECT PID
+					    FROM RD_DIRECTROUTE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_DIRECTROUTE  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+
+    <!--//////////////////////////////////////同一关系//////////////////////////////////////////-->
+
+    <!--//////////////////////////////////////立交//////////////////////////////////////////-->
+
+
+    <!--////////////////////////////////////////////////////RD_MAINSIDE//////////////////////////////////////////////////////-->
+    <feature name="RD_MAINSIDE">
+
+        <step value="100">
+
+            <sql>
+                <![CDATA[SELECT DISTINCT P.* FROM RD_MAINSIDE_LINK P ,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <sql><![CDATA[
+                        SELECT P2.*
+                          FROM RD_MAINSIDE P2,
+                               (SELECT DISTINCT P.GROUP_ID
+                                  FROM RD_MAINSIDE_LINK P, TEMP_FILTER_RD_LINK T
+                                 WHERE P.LINK_PID = T.PID) T2
+                         WHERE P2.GROUP_ID = T2.GROUP_ID;
+                    ]]></sql>
+        </step>
+
+        <step value="101">
+
+            <sql><![CDATA[DELETE FROM RD_MAINSIDE_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
+            <sql><![CDATA[
+                        DELETE
+                          FROM RD_MAINSIDE P2  WHERE P2.GROUP_ID IN
+                               (SELECT DISTINCT P.GROUP_ID
+                                  FROM RD_MAINSIDE_LINK P, TEMP_FILTER_RD_LINK T
+                                 WHERE P.LINK_PID = T.PID) ;
+                    ]]></sql>
+        </step>
+    </feature>
+
+    <!--////////////////////////////////////////////////////RD_MULTIDIGITIZED//////////////////////////////////////////////////////-->
+    <feature name="RD_MULTIDIGITIZED">
+
+        <step value="100">
+
+            <sql>
+                <![CDATA[SELECT DISTINCT P.* FROM RD_MULTIDIGITIZED_LINK P ,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <sql><![CDATA[
+                        SELECT P2.*
+                          FROM RD_MULTIDIGITIZED P2,
+                               (SELECT DISTINCT P.GROUP_ID
+                                  FROM RD_MULTIDIGITIZED_LINK P, TEMP_FILTER_RD_LINK T
+                                 WHERE P.LINK_PID = T.PID) T2
+                         WHERE P2.GROUP_ID = T2.GROUP_ID;
+                    ]]></sql>
+        </step>
+
+        <step value="101">
+
+            <sql><![CDATA[DELETE FROM RD_MULTIDIGITIZED_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
+            <sql><![CDATA[
+                        DELETE
+                          FROM RD_MULTIDIGITIZED P2 WHERE P2.GROUP_ID IN
+                               (SELECT DISTINCT P.GROUP_ID
+                                  FROM RD_MULTIDIGITIZED_LINK P, TEMP_FILTER_RD_LINK T
+                                 WHERE P.LINK_PID = T.PID);
+                    ]]></sql>
+        </step>
+    </feature>
+
+
+    <feature name="RD_CROSSWALK">
+        <step value="13">
+            <!--
+                CRF交叉点提取规则:
+                1.从组成node，找到RD_CROSSWALK
+                2.去重复
+                3.提取找到RD_CROSSWALK
+                4.提取不在图幅内的link和node
+            -->
+
+            <!--提取Link关联人行过道信息 -->
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_CROSSWALK
+                           (PID)
+                           (SELECT DISTINCT CN.PID
+                              FROM TEMP_FILTER_RD_NODE N, RD_CROSSWALK_INFO CN
+                             WHERE N.PID = CN.NODE_PID);
+                         ]]></sql>
+
+        </step>
+
+        <step value="16">
+            <!--提取不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_CROSSWALK_INFO P, TEMP_RD_CROSSWALK T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+
+            <!--提取不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM RD_CROSSWALK_INFO P, TEMP_RD_CROSSWALK T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+            <!--提取不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.FIR_NODE_PID
+                         FROM RD_CROSSWALK_NODE P, TEMP_RD_CROSSWALK T
+                        WHERE P.PID = T.PID
+                        UNION ALL
+                       SELECT P.SEN_NODE_PID
+                         FROM RD_CROSSWALK_NODE P, TEMP_RD_CROSSWALK T
+                        WHERE P.PID = T.PID);
+                    ]]></sql>
+
+        </step>
+        <step value="100">
+            <!--查询返回RD_CROSSWALK相关信息：
+                1.RD_CROSSWALK
+                2.RD_CROSSWALK_INFO
+                3.RD_CROSSWALK_NODE
+            -->
+            <!--人行过道 -->
+            <sql><![CDATA[SELECT P.* FROM RD_CROSSWALK_INFO P,TEMP_RD_CROSSWALK T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CROSSWALK P,TEMP_RD_CROSSWALK T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_CROSSWALK_NODE P,TEMP_RD_CROSSWALK T WHERE P.PID=T.PID; ]]></sql>
+
+
+        </step>
+
+        <step value="101">
+            <!--查询返回RD_CROSSWALK相关信息：
+                1.RD_CROSSWALK
+                2.RD_CROSSWALK_INFO
+                3.RD_CROSSWALK_NODE
+            -->
+            <!--人行过道 -->
+            <sql><![CDATA[DELETE FROM RD_CROSSWALK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSSWALK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CROSSWALK_INFO P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSSWALK T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_CROSSWALK_NODE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_CROSSWALK T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_CROSSWALK
+					  SELECT PID
+					    FROM RD_CROSSWALK A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_CROSSWALK  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <feature name="RD_SLOPE">
+        <step value="15">
+            <!--
+                RD_SLOPE交叉点提取规则:
+                1.从组成link(图幅内和跨图幅的link)，找到RD_SLOPE
+                2.去重复
+                3.根据RD_SLOPE提取找到RD_SLOPE_VIA
+                4.提取不在图幅内的link和node
+            -->
+
+            <!--提取Link关联RD_SLOPE -->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+						 INTO TEMP_RD_SLOPE
+						  (PID)
+						  (SELECT DISTINCT CN.PID
+						     FROM TEMP_FILTER_RD_LINK N, RD_SLOPE CN
+						    WHERE N.PID = CN.LINK_PID
+						   UNION 
+						   SELECT DISTINCT CN.SLOPE_PID
+						     FROM TEMP_FILTER_RD_LINK N, RD_SLOPE_VIA CN
+						    WHERE N.PID = CN.LINK_PID)
+                         ]]></sql>
+                         
+            <sql sqlType="dataNotIntegrity"><![CDATA[
+                         INSERT /*+ append */
+						 INTO TEMP_RD_SLOPE
+						  (PID)
+						  (SELECT DISTINCT CN.PID
+						     FROM TEMP_FILTER_RD_LINK N, RD_SLOPE CN
+						    WHERE N.PID = CN.LINK_PID
+						  )
+                         ]]></sql>
+
+        </step>
+
+        <step value="16">
+            <!--提取不在图幅内的link-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_LINK
+                      (PID)
+                      (SELECT P.LINK_PID
+                         FROM RD_SLOPE_VIA P, TEMP_RD_SLOPE T
+                        WHERE P.SLOPE_PID = T.PID
+                        union
+                        SELECT P.LINK_PID
+                         FROM RD_SLOPE P, TEMP_RD_SLOPE T
+                        WHERE P.PID = T.PID
+                        );
+                    ]]></sql>
+                    
+             <!--提取不在图幅内的node-->
+            <sql sqlType="dataIntegrity">
+                <![CDATA[
+                    INSERT /*+ append */
+                    INTO TEMP_RD_NODE
+                      (PID)
+                      (SELECT P.NODE_PID
+                         FROM RD_SLOPE P, TEMP_RD_SLOPE T
+                        WHERE P.PID = T.PID
+                        );
+                    ]]></sql>
+			
+        </step>
+        <step value="100">
+            <!--查询返回RD_SLOPE相关信息：
+                1.RD_SLOPE
+                2.RD_SLOPE_VIA
+            -->
+           <!--坡度 -->
+            <sql><![CDATA[SELECT P.* FROM RD_SLOPE P,TEMP_RD_SLOPE T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SLOPE_VIA P,TEMP_RD_SLOPE T WHERE P.SLOPE_PID=T.PID; ]]></sql>
+
+        </step>
+
+        <step value="101">
+            <!--查询返回RD_SLOPE相关信息：
+                1.RD_SLOPE
+                2.RD_SLOPE_VIA
+            -->
+            <!--坡度 -->
+            <sql><![CDATA[DELETE FROM RD_SLOPE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_SLOPE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SLOPE_VIA P WHERE P.SLOPE_PID IN (SELECT T.PID FROM TEMP_RD_SLOPE T ); ]]></sql>
+        </step>
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_SLOPE
+					  SELECT PID
+					    FROM RD_SLOPE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_SLOPE  B WHERE A.PID = B.PID);
+				]]></sql>
+        </step>
+    </feature>
+    <!--//////////////////////////////////////////提取RD_LINK和LINK相关属性表//////////////////////////////////-->
+    <feature name="RD_LINK">
+        <step value="13">
+
+            <!--提取Link关联TMC信息，并去重 -->
+            <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LINK_TMC
+                           (PID)
+                           (SELECT DISTINCT P.GROUP_ID
+                              FROM RD_TMCLOCATION_LINK P, TEMP_FILTER_RD_LINK T
+                             WHERE P.LINK_PID = T.PID);
+                         ]]></sql>
+
+            <!--提取Link关联车道信息 -->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LANE_TOPO_DETAIL
+                           (PID)
+                           (SELECT TD.TOPO_ID
+                              FROM RD_LANE_TOPO_DETAIL TD, TEMP_FILTER_RD_LINK T
+                             WHERE (TD.IN_LINK_PID = T.PID OR TD.OUT_LINK_PID = T.PID)
+                            UNION
+                            SELECT VI.TOPO_ID
+                              FROM RD_LANE_TOPO_VIA VI, TEMP_FILTER_RD_LINK T
+                             WHERE VI.VIA_LINK_PID = T.PID);
+                         ]]></sql>
+            <sql sqlType="dataNotIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LANE_TOPO_DETAIL
+                           (PID)
+                           (SELECT TD.TOPO_ID
+                              FROM RD_LANE_TOPO_DETAIL TD, TEMP_FILTER_RD_LINK T
+                             WHERE TD.IN_LINK_PID = T.PID);
+                         ]]></sql>
+             <!-- <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_FILTER_RD_LANE
+                           (PID)
+                           (SELECT CN.LANE_PID
+                              FROM TEMP_FILTER_RD_LINK N, RD_LANE CN
+                             WHERE N.PID = CN.LINK_PID  );
+                         ]]></sql> -->
+
+
+            
+
+        </step>
+        <step value="16">
+            <!--根据RD_LANE_TOPO_DETAIL补充RD_LINK,暂时先放到TEMP_RD_LANE-->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                        INTO TEMP_RD_LANE
+                          (PID)
+                          (SELECT P.IN_LINK_PID
+                             FROM RD_LANE_TOPO_DETAIL P, TEMP_RD_LANE_TOPO_DETAIL T
+                            WHERE P.TOPO_ID = T.PID
+                          UNION ALL
+                          SELECT P.OUT_LINK_PID
+                             FROM RD_LANE_TOPO_DETAIL P, TEMP_RD_LANE_TOPO_DETAIL T
+                            WHERE P.TOPO_ID = T.PID
+                          UNION ALL
+                          SELECT V.VIA_LINK_PID
+                             FROM RD_LANE_TOPO_VIA V, TEMP_RD_LANE_TOPO_DETAIL T
+                            WHERE V.TOPO_ID = T.PID
+                          );
+                         ]]></sql>
+
+
+        </step>
+        <step value="19">
+            <!--根据TEMP_RD_LANE中保存的补充RD_LINK-->
+            <!-- <sql><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_FILTER_RD_LANE
+                           (PID)
+                           (SELECT CN.LANE_PID
+                              FROM TEMP_RD_LANE N, RD_LANE CN
+                             WHERE N.PID = CN.LINK_PID  );
+                         ]]></sql> -->
+			<sql sqlType="dataIntegrity"><![CDATA[
+                         INSERT /*+ append */
+                         INTO TEMP_RD_LINK
+                           (PID)
+                           (SELECT P.PID
+                              FROM TEMP_RD_LANE P);
+                         ]]></sql>
+
+        </step>
+        <!--去重
+        <step value="22">
+
+            <sql>
+                <![CDATA[
+                        DELETE FROM TEMP_FILTER_RD_LANE A
+                    WHERE A.ROWID !=
+                           (SELECT MAX(B.ROWID) FROM TEMP_FILTER_RD_LANE B WHERE A.PID = B.PID);
+                        ]]></sql>
+
+
+        </step>-->
+    </feature>
+   
+    <!--立交关系-->
+    <import file="exp-rd_gsc.xml"/>
+    <!--同一关系-->
+    <import file="exp-rd_sameln.xml"/>
+    <!--导出link属性-->
+    <import file="exp-rd_link.xml"/>
+    <!--导出node属性-->
+    <import file="exp-rd_node.xml"/>
+
+</sqls>

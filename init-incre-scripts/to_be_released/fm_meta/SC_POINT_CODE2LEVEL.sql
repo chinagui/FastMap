@@ -615,3 +615,4 @@ alter table SC_POINT_CODE2LEVEL enable all triggers;
 set feedback on
 set define on
 prompt Done.
+EXIT;

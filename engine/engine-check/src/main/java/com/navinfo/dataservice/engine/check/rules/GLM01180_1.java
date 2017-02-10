@@ -37,7 +37,7 @@ public class GLM01180_1 extends baseRule {
                     RdCrossSelector selector = new RdCrossSelector(getConn());
                     List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(null, linkPids, false);
                     if (crosses.isEmpty()) {
-                        setCheckResult("", "[RD_LINK, " + form.getLinkPid() + "]", 0);
+                        setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
             }

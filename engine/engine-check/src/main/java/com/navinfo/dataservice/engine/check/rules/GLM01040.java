@@ -30,7 +30,7 @@ public class GLM01040 extends baseRule {
                     tollInfo = (int) link.changedFields().get("tollInfo");
 
                 if (kind >= 3 && tollInfo == 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

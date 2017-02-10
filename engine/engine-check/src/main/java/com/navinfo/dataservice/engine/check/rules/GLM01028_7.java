@@ -95,12 +95,12 @@ public class GLM01028_7 extends baseRule {
         List<IRow> forms = link.getForms();
         for (IRow f : forms) {
             if (((RdLinkForm) f).getFormOfWay() == 20) {
-                setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 break;
             }
         }
         if (link.getKind() == 11 || link.getKind() == 15) {
-            setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+            setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
             return true;
         }
         return false;

@@ -38,7 +38,7 @@ public class GLM01096 extends baseRule {
                     functionClass = (int) link.changedFields().get("functionClass");
 
                 if (poiConnLink.contains(link.pid()) && functionClass != 5) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
@@ -51,7 +51,7 @@ public class GLM01096 extends baseRule {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
 
                     if (link.getFunctionClass() != 5) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

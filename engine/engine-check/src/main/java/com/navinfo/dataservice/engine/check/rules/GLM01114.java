@@ -30,7 +30,7 @@ public class GLM01114 extends baseRule {
                     laneClass = (int) link.changedFields().get("laneClass");
 
                 if (kind == 8 && laneClass == 3) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

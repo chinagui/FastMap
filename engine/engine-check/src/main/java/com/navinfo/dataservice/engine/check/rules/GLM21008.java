@@ -55,7 +55,7 @@ public class GLM21008 extends baseRule {
                     }
                 }
                 if (flag) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

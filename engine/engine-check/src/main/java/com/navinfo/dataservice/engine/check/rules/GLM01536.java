@@ -35,7 +35,7 @@ public class GLM01536 extends baseRule {
                         RdLinkForm form = (RdLinkForm) l.getForms().get(0);
 
                         if (form.getFormOfWay() == 50) {
-                            setCheckResult(l.getGeometry().toString(), "[RD_LINK, " + l.pid() + "]", l.mesh());
+                            setCheckResult(l.getGeometry().toString(), "[RD_LINK," + l.pid() + "]", l.mesh());
                         }
                     }
                 }
@@ -45,7 +45,7 @@ public class GLM01536 extends baseRule {
                 if (forms.size() != 1) {
                     RdLinkForm form = (RdLinkForm) forms.get(0);
                     if (form.getFormOfWay() == 50) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

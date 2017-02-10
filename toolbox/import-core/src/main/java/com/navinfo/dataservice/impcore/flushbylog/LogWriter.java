@@ -66,7 +66,7 @@ public class LogWriter {
 
 		} else if (op_tp == 2) { // 删除
 			listener.preDelete();
-			if (deleteData(editLog) == 0) {
+			if (PhysicalDeleteData(editLog) == 0) {
 				listener.deleteFailed(editLog);
 			}
 		}
@@ -436,6 +436,27 @@ public class LogWriter {
 		try {
 			String sql = "update " + editLog.getTableName()
 					+ " set u_record = 2 where row_id =hextoraw('"
+					+ editLog.getTableRowId() + "')";
+			this.log.debug(sql);
+			pstmt = this.targetDbConn.prepareStatement(sql);
+			int result = pstmt.executeUpdate();
+			return result;
+
+		} catch (Exception e) {
+			this.handleFlushException( e);
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
+		return 0;
+
+	}
+	private int PhysicalDeleteData(EditLog editLog) throws Exception {
+
+		PreparedStatement pstmt = null;
+
+		try {
+			String sql = "delete from " + editLog.getTableName()
+					+ " where row_id =hextoraw('"
 					+ editLog.getTableRowId() + "')";
 			this.log.debug(sql);
 			pstmt = this.targetDbConn.prepareStatement(sql);

@@ -39,7 +39,7 @@ public class PoiUploadTest {
 //			conn = DBConnector.getInstance().getConnectionById(17);;
 			
 			UploadOperationByGather uploadOperation = new UploadOperationByGather((long) 0);
-			JSONObject retObj = uploadOperation.importPoi("F://poi3.txt");//F://testpoi.txt
+			JSONObject retObj = uploadOperation.importPoi("F://poi003.txt");//F://testpoi.txt
 			
 			System.out.println("retObj: "+ retObj);
 			

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -180,6 +181,13 @@ public class ManApiImpl implements ManApi {
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception {
 		JSONObject condition = new JSONObject().element("cityId", cityId);
 		return GridService.getInstance().queryListByCondition(condition);
+	}
+	@Override
+	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
+		Map<String,Integer> map = new HashMap<String, Integer>();
+		map.put("quickTaskId", 1);
+		map.put("centre", 1);
+		return map;
 	}
 }
 

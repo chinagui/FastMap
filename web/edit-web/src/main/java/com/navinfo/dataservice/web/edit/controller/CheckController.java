@@ -568,7 +568,6 @@ public class CheckController extends BaseController {
 	 * @Title: getCkRules
 	 * @Description: 获取道路名检察的规则列表(修)(第七迭代)
 	 * @param request  type	是	类型 0 poi粗编 ;1 poi精编 ; 2 道路粗编 ; 3 道路名 ; 4道路精编 ; 5 其他 
-	 * （0 POI， 1道路 ,2 道路名）
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException  ModelAndView

@@ -1,0 +1,4 @@
+﻿1. fm_sys/update_sys_config.sql
+	功能：模型升级，将模型版本配置修改为270+
+	目标库：fm_sys
+	author：XXW

@@ -16,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 
 public class Operation {
 
@@ -412,7 +411,6 @@ public class Operation {
 	/**
 	 * 判断node是否是路口组成node。
 	 * 
-	 * @param laneConnexity
 	 * @param nodePid
 	 * @return
 	 * @throws Exception

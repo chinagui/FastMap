@@ -36,7 +36,7 @@ public class GLM01028_8 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
                 if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(link.pid(), false);
@@ -49,7 +49,7 @@ public class GLM01028_8 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(form.getLinkPid(), false);
@@ -83,7 +83,7 @@ public class GLM01028_8 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

@@ -17,10 +17,10 @@ public class LogWriteListener implements ILogWriteListener {
 	}
 
 	@Override
-	public void insertFail(EditLog editLog) {
+	public void insertFail(EditLog editLog,String log) {
 		flushResult.addInsertFailed();
 		flushResult.addInsertFailedRowId(editLog.getRowId());
-		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId());
+		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId(),log);
 	}
 
 	@Override
@@ -30,10 +30,10 @@ public class LogWriteListener implements ILogWriteListener {
 	}
 
 	@Override
-	public void updateFailed(EditLog editLog) {
+	public void updateFailed(EditLog editLog,String log) {
 		flushResult.addUpdateFailed();
 		flushResult.addUpdateFailedRowId(editLog.getRowId());
-		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId());
+		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId(),log);
 
 	}
 
@@ -44,10 +44,10 @@ public class LogWriteListener implements ILogWriteListener {
 	}
 
 	@Override
-	public void deleteFailed(EditLog editLog) {
+	public void deleteFailed(EditLog editLog,String log) {
 		flushResult.addDeleteFailed();
 		flushResult.addDeleteFailedRowId(editLog.getRowId());
-		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId());
+		flushResult.insertFailedLog(editLog.getOpId(), editLog.getRowId(),log);
 
 	}
 

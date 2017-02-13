@@ -36,6 +36,7 @@ public class FM11Win0502 extends BasicCheckRule {
 			//错误数据
 			if(ixPoiAddress==null){return;}
 			String fullname = ixPoiAddress.getFullname();
+			if(fullname==null){return;}
 			List<String> errorList=new ArrayList<String>();
 			MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, List<String>> map = api.tyCharacterEgalcharExtGetExtentionTypeMap();

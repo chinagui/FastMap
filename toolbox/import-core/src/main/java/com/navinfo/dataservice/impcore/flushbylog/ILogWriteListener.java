@@ -8,15 +8,15 @@ public interface ILogWriteListener {
 
 	void preInsert();
 
-	void insertFail(EditLog editLog);
+	void insertFail(EditLog editLog,String log);
 
 	void preUpdate();
 
-	void updateFailed(EditLog editLog);
+	void updateFailed(EditLog editLog,String log);
 
 	void preDelete();
 
-	void deleteFailed(EditLog editLog);
+	void deleteFailed(EditLog editLog,String log);
 
 }
 

@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
 
 /** 
 * @ClassName: GLM03004 
@@ -124,40 +123,29 @@ public class GLM03004 extends baseRule{
 			}
 		}
 		for (Integer nodePid : nodePids) {
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("WITH T AS(SELECT DISTINCT RN.NODE_PID FROM RD_NODE RN,RD_LINK RL");
-			sb.append(" WHERE RN.NODE_PID = "+nodePid);
-			sb.append(" AND (RN.NODE_PID = RL.S_NODE_PID OR RN.NODE_PID = RL.E_NODE_PID)");
-			sb.append(" AND RN.KIND = 3 AND RN.U_RECORD <>2 AND RL.U_RECORD <>2");
-			sb.append(" GROUP BY RN.NODE_PID HAVING COUNT(1)<>2)");
-			sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-			sb.append(" '路上点(收费站)只能挂接2根Link' LOG");
-			sb.append(" FROM RD_NODE_FORM RNF, RD_LINK RL ,T");
-			sb.append(" WHERE RL.LINK_PID ="+rdLink.getPid());
-			sb.append(" AND (T.NODE_PID = RL.S_NODE_PID OR T.NODE_PID = RL.E_NODE_PID)");
-			sb.append(" AND RNF.FORM_OF_WAY = 4 AND RNF.NODE_PID = T.NODE_PID");
-			sb.append(" AND RNF.U_RECORD <>2 AND RL.U_RECORD <>2");
-			sb.append(" UNION");
-			sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-			sb.append(" '路上点只能挂接2根Link' LOG");
-			sb.append(" FROM RD_NODE_FORM RNF, RD_LINK RL ,T");
-			sb.append(" WHERE RL.LINK_PID ="+rdLink.getPid());
-			sb.append(" AND (RNF.NODE_PID = RL.S_NODE_PID OR RNF.NODE_PID = RL.E_NODE_PID)");
-			sb.append(" AND RNF.FORM_OF_WAY <> 4 AND RNF.NODE_PID = T.NODE_PID");
-			sb.append(" AND RNF.U_RECORD <>2 AND RL.U_RECORD <>2");
-			
-			String sql = sb.toString();
-			log.info("后检查GLM03004判断node是否为收费站--sql:" + sql);
-			
-			DatabaseOperatorResult getObj = new DatabaseOperatorResult();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(!resultList.isEmpty()){
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), 
-						(int)resultList.get(2),resultList.get(3).toString());
-			}
+			boolean check = this.check(nodePid);
+			 
+ 		    if(check){
+ 				StringBuilder sb = new StringBuilder();
+ 				
+ 				sb.append("SELECT RNF.NODE_PID FROM RD_NODE_FORM RNF");
+ 				sb.append(" WHERE RNF.NODE_PID = "+nodePid);
+ 				sb.append(" AND RNF.FORM_OF_WAY = 4 AND RNF.U_RECORD <> 2");
+ 				String sql = sb.toString();
+ 				log.info("后检查GLM03004判断node是否为收费站--sql:" + sql);
+ 				
+ 				DatabaseOperator getObj = new DatabaseOperator();
+ 				List<Object> resultList = new ArrayList<Object>();
+ 				resultList = getObj.exeSelect(this.getConn(), sql);
+ 				
+ 				if(!resultList.isEmpty()){
+ 					String target = "[RD_LINK," + rdLink.getPid() + "]";
+ 					this.setCheckResult("", target, 0,"路上点(收费站)只能挂接2根Link");
+ 				}else{
+ 					String target = "[RD_LINK," + rdLink.getPid() + "]";
+ 					this.setCheckResult("", target, 0,"路上点只能挂接2根Link");
+ 				}
+ 			}
 		}
 	}
 	
@@ -171,16 +159,17 @@ public class GLM03004 extends baseRule{
 		boolean flag = false;
 		 
 		StringBuilder sb = new StringBuilder();
-        sb.append("SELECT DISTINCT L.LINK_PID FROM RD_LINK L");
-        sb.append(" WHERE ("+nodePid+" = L.S_NODE_PID OR "+nodePid+" = L.E_NODE_PID)");
-        sb.append(" AND L.U_RECORD != 2");
+		sb.append("SELECT DISTINCT L.LINK_PID FROM RD_NODE RD, RD_LINK L");
+		sb.append(" WHERE (RD.NODE_PID = L.S_NODE_PID OR RD.NODE_PID = L.E_NODE_PID)");
+        sb.append(" AND RD.NODE_PID = "+nodePid);
+        sb.append(" AND RD.KIND = 3 AND RD.U_RECORD != 2 AND L.U_RECORD != 2");
 		String sql = sb.toString();
 		
 		DatabaseOperator getObj=new DatabaseOperator();
 		List<Object> resultList=new ArrayList<Object>();
 		resultList=getObj.exeSelect(this.getConn(), sql);
 		// 点挂接link数不为2
-		if (resultList.size() != 2){
+		if ((!resultList.isEmpty())&&resultList.size() != 2){
 			flag = true;
 		}
 		return flag;

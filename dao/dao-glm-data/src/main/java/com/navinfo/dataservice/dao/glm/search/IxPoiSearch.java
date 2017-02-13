@@ -879,10 +879,10 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("brandName", brandName);
 			//ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
 			//待确认
-			if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-				dataObj.put("whole", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+			if (ADMINMAP.containsKey(dataObj.get("adminCode").toString())) {
+				dataObj.put("whole", ADMINMAP.get(dataObj.get("adminCode").toString()));
 			} else {
-				dataObj.put("whole", Integer.toString(poi.getAdminReal()));
+				dataObj.put("whole", "");
 			}
 					
 			return dataObj;	

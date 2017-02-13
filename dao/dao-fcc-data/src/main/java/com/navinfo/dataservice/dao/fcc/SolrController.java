@@ -82,6 +82,8 @@ public class SolrController {
 		doc.addField("feedback", json.getString("feedback"));
 		
 		doc.addField("s_reliability", json.getInt("s_reliability"));
+		
+		doc.addField("tipdiff", json.getString("tipdiff"));
 
 		client.add(doc);
 

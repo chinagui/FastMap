@@ -27,6 +27,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -74,8 +75,11 @@ public class UploadOperationByGather {
 		while (importPois.hasNextLine()) {
 			try {
 				String line = importPois.nextLine();
-				JSONObject json = JSONObject.fromObject(line);
-				ja.add(json);
+				if(line != null && StringUtils.isNotEmpty(line)){
+					JSONObject json = JSONObject.fromObject(line);
+					ja.add(json);
+				}
+				
 			} catch (Exception e) {
 				throw e;
 			}

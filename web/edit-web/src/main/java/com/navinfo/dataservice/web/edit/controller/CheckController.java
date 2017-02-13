@@ -353,7 +353,7 @@ public class CheckController extends BaseController {
 	 * @Description: 
 	 * 检查执行
 	 * dbId	是	子任务id
-	 * type	是	检查类型（0 poi行编，1poi精编, 2道路 , 3道路名）
+	 * type	是	检查类型 (1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
 	 * 根据输入的子任务和检查类型，对任务范围内的数据执行，执行检查。不执行检查结果清理
 	 * @param request
 	 * @return
@@ -567,7 +567,7 @@ public class CheckController extends BaseController {
 	/**
 	 * @Title: getCkRules
 	 * @Description: 获取道路名检察的规则列表(修)(第七迭代)
-	 * @param request  type	是	类型 0 poi粗编 ;1 poi精编 ; 2 道路粗编 ; 3 道路名 ; 4道路精编 ; 5 其他 
+	 * @param request  type	是	类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException  ModelAndView

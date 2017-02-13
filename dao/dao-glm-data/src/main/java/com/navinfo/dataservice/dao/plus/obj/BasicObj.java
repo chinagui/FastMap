@@ -255,20 +255,20 @@ public abstract class BasicObj {
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	public List<RunnableSQL> generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public List<RunnableSQL> generateSql(boolean physiDelete) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		List<RunnableSQL> sqlList = new ArrayList<RunnableSQL>();
 		//mainrow
 		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)||mainrow.getOpType().equals(OperationType.PRE_DELETED)){
 			return sqlList;
 		}
-		RunnableSQL mainsql = mainrow.generateSql();
+		RunnableSQL mainsql = mainrow.generateSql(physiDelete);
 		if(mainsql!=null){
 			sqlList.add(mainsql);
 		}
 		//subrow
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
 			for(BasicRow subrow:entry.getValue()){
-				RunnableSQL sql = subrow.generateSql();
+				RunnableSQL sql = subrow.generateSql(physiDelete);
 				if(sql!=null){
 					sqlList.add(sql);
 				}	

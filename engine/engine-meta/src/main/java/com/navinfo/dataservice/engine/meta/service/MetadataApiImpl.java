@@ -32,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.scPartitionMeshlist;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
@@ -576,15 +577,13 @@ public class MetadataApiImpl implements MetadataApi {
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> listMeshes4Partition()throws Exception{
-		//to-do
-		return null;
+		return scPartitionMeshlist.getInstance().listMeshes4Partition();
 	}
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
-		//to-do
-				return null;
+		return scPartitionMeshlist.getInstance().queryMeshes4PartitionByAdmincodes(admincodes);
 	}
 
 }

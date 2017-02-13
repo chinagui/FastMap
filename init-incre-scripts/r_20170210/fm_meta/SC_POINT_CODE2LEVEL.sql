@@ -1,4 +1,5 @@
-﻿drop table SC_POINT_CODE2LEVEL;
+﻿-- Create table
+drop table SC_POINT_CODE2LEVEL;
 
 create table SC_POINT_CODE2LEVEL
 (

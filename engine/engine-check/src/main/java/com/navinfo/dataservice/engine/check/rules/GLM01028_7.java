@@ -86,7 +86,7 @@ public class GLM01028_7 extends baseRule {
         result.addAll(list3);
 
         if (!result.isEmpty()) {
-            setCheckResult("", "", 0);
+            setCheckResult("", "[RD_LINK," + linkPid + "]", 0);
         }
     }
 

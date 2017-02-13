@@ -148,8 +148,14 @@ public class CalLinkOperateUtils {
             }
 
         } catch (Exception e) {
-            throw e;
-
+        	if(e.getMessage().contains("value too large"))
+			{
+				throw new Exception("经过线长度超过最大长度限制");
+			}
+			else
+			{
+				throw e;
+			}
         } finally {
             try {
                 if (pstmt != null) {

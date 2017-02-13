@@ -61,7 +61,12 @@ public abstract class BasicCheckRule {
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
-				runCheck(obj);}
+				try{
+					runCheck(obj);
+				}catch(Exception e){
+					log.warn(e.getMessage(),e);
+				}
+			}
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.column.job;
+package com.navinfo.dataservice.edit.job;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -13,11 +13,14 @@ import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.column.job.ColumnCoreOperation;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
@@ -35,21 +38,19 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.jobframework.exception.JobException;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
-public class ColumnSubmitJob extends AbstractJob {
-	
-	public ColumnSubmitJob(JobInfo jobInfo) {
-		super(jobInfo);
+public class columnSubmitTest {
+
+	@Before
+	public void before(){
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] {"dubbo-consumer-man-test.xml"}); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
 	}
-
-	@SuppressWarnings("static-access")
-	@Override
-	public void execute() throws JobException {
-		
-		log.info("start submit....");
-		
+	
+	@Test
+	public void submitTest() {
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
 		List<Integer> pidList = new ArrayList<Integer>();
@@ -57,19 +58,17 @@ public class ColumnSubmitJob extends AbstractJob {
 		Connection conn = null;
 		
 		try {
-			ColumnSubmitJobRequest columnSubmitJobRequest = (ColumnSubmitJobRequest) this.request;
+//			ColumnSubmitJobRequest columnSubmitJobRequest = (ColumnSubmitJobRequest) this.request;
 			
-			int taskId = columnSubmitJobRequest.getTaskId();
-			int userId = columnSubmitJobRequest.getUserId();
-			String firstWorkItem = columnSubmitJobRequest.getFirstWorkItem();
-			String secondWorkItem = columnSubmitJobRequest.getSecondWorkItem();
+			int taskId = 619;
+			int userId = 4577;
+			String firstWorkItem = "poi_name";
+			String secondWorkItem = "nameUnify";
 			
-			log.info("params:taskId="+taskId+";userId="+userId+";firstWorkItem="+firstWorkItem+";secondWorkItem="+secondWorkItem);
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			
 			int dbId = subtask.getDbId();
-			log.info("dbId="+dbId);
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			// TODO 区分大陆/港澳
@@ -86,10 +85,8 @@ public class ColumnSubmitJob extends AbstractJob {
 			}
 			
 			for (String second:secondWorkList) {
-				log.info("当前提交二级项:"+second);
 				// 查询可提交数据
 				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
-				log.info("查询可提交数据pdis:"+pidList);
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();
 				deepControl.cleanCheckResult(pidList, conn);
@@ -103,7 +100,6 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				PoiLogDetailStat logDetail = new PoiLogDetailStat();
 				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
-				log.info("提交log:"+submitLogs);
 				List<BasicObj> objList = new ArrayList<BasicObj>();
 				ObjHisLogParser logParser = new ObjHisLogParser();
 				for (int pid:pidList) {
@@ -120,9 +116,7 @@ public class ColumnSubmitJob extends AbstractJob {
 					
 				// 批处理
 				if (columnOpConf.getSubmitExebatch() == 1) {
-					log.info("执行批处理");
 					if (columnOpConf.getSubmitBatchrules() != null) {
-						log.info(columnOpConf.getSubmitBatchrules());
 						BatchCommand batchCommand=new BatchCommand();		
 						for (String ruleId:columnOpConf.getSubmitBatchrules().split(",")) {
 							batchCommand.setRuleId(ruleId);
@@ -135,9 +129,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				
 				// 检查
 				if (columnOpConf.getSubmitExecheck() == 1) {
-					log.info("检查批处理");
 					if (columnOpConf.getSubmitCkrules() != null) {
-						log.info(columnOpConf.getSubmitCkrules());
 						CheckCommand checkCommand=new CheckCommand();		
 						List<String> checkList=new ArrayList<String>();
 						for (String ckRule:columnOpConf.getSubmitCkrules().split(",")) {
@@ -165,19 +157,16 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 修改poi_deep_status表作业项状态
-				log.info("更新状态pids:"+pidList);
 				updateDeepStatus(pidList, conn, 3,second);
 				
 				
 				// 重分类
 				if (columnOpConf.getSubmitExeclassify()==1) {
-					log.info("执行重分类");
 					if (columnOpConf.getSubmitCkrules() != null && columnOpConf.getSubmitClassifyrules() != null) {
 						HashMap<String,Object> classifyMap = new HashMap<String,Object>();
 						classifyMap.put("userId", userId);
 						classifyMap.put("ckRules", columnOpConf.getSubmitCkrules());
 						classifyMap.put("classifyRules", columnOpConf.getSubmitClassifyrules());
-						log.info(columnOpConf.getSubmitClassifyrules());
 						
 						classifyMap.put("pids", pidList);
 						ColumnCoreOperation columnCoreOperation = new ColumnCoreOperation();
@@ -186,7 +175,6 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 				
 				// 清理重分类检查结果
-				log.info("清理重分类检查结果");
 				List<String> ckRules = new ArrayList<String>();
 				String classifyrules = columnOpConf.getSubmitCkrules();
 				if (classifyrules != null) {
@@ -197,21 +185,15 @@ public class ColumnSubmitJob extends AbstractJob {
 				}
 			}
 			
-			log.info("提交完成");
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
-			throw new JobException(e);
+			e.printStackTrace();
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
-	/**
-	 * 更新配置表状态
-	 * @param rowIdList
-	 * @param conn
-	 * @throws Exception
-	 */
+	
 	public void updateDeepStatus(List<Integer> pidList,Connection conn,int status,String second) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE poi_column_status SET first_work_status="+status+",second_work_status="+status+",handler=0 WHERE work_item_id IN (SELECT cf.work_item_id FROM POI_COLUMN_WORKITEM_CONF cf WHERE cf.second_work_item='"+second+"') AND  pid in (select to_number(column_value) from table(clob_to_table(?)))");
@@ -237,5 +219,5 @@ public class ColumnSubmitJob extends AbstractJob {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
-
+	
 }

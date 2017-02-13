@@ -33,23 +33,29 @@ public class Operation {
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
         for (RdLink link : links) {
             int direct = link.getDirect();
-            if (1 == direct) {
-                this.updateTwoDirection(link.getRtics(), leftLinks.get(link.pid()), rightLinks.get(link.pid()), result);
-            } else if (2 == direct) {
-                this.updateSingleDirection(link.getRtics(), rightLinks.get(link.pid()), result);
-            } else if (3 == direct) {
-                this.updateSingleDirection(link.getRtics(), leftLinks.get(link.pid()), result);
-            }
+			if (1 == direct) {
+				this.updateTwoDirection(link.getRtics(),
+						leftLinks.get(link.pid()), rightLinks.get(link.pid()),
+						result);
+			} else if (2 == direct || 3 == direct) {
+				this.updateSingleDirection(link.getRtics(),
+						rightLinks.get(link.pid()), result);
+			}
         }
         return "";
     }
 
     // 处理单方向link
     private void updateSingleDirection(List<IRow> rtics, RdLink link, Result result) {
-        for (IRow row : rtics) {
-            RdLinkRtic rtic = (RdLinkRtic) row;
-            rtic.setLinkPid(link.pid());
-            result.insertObject(rtic, ObjStatus.INSERT, link.pid());
+        for (IRow row : rtics) {        	
+        	
+			RdLinkRtic insertRtic = new RdLinkRtic();
+
+			insertRtic.copy(row);
+
+			insertRtic.setLinkPid(link.pid());
+        	
+            result.insertObject(insertRtic, ObjStatus.INSERT, link.pid());
         }
     }
 

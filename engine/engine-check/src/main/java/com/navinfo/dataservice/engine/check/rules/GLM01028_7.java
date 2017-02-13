@@ -39,7 +39,7 @@ public class GLM01028_7 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
                 if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
                     checkRdLaneConnexity(link.pid());
                 }
@@ -49,7 +49,7 @@ public class GLM01028_7 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     checkRdLaneConnexity(form.getLinkPid());
@@ -59,7 +59,7 @@ public class GLM01028_7 extends baseRule {
 
                 int linkPid = topology.getOutLinkPid();
                 if (topology.changedFields().containsKey("outLinkPid"))
-                    linkPid = (int) topology.changedFields().get("outLinkPid");
+                    linkPid = Integer.valueOf(topology.changedFields().get("outLinkPid").toString());
 
                 if (checkLinkForm(linkPid))
                     break;
@@ -68,7 +68,7 @@ public class GLM01028_7 extends baseRule {
 
                 int linkPid = via.getLinkPid();
                 if (via.changedFields().containsKey("linkPid"))
-                    linkPid = (int) via.changedFields().get("linkPid");
+                    linkPid = Integer.valueOf(via.changedFields().get("linkPid").toString());
 
                 if (checkLinkForm(linkPid))
                     break;
@@ -128,7 +128,7 @@ public class GLM01028_7 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

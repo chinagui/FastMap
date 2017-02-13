@@ -24,7 +24,7 @@ public class GLM33006 extends baseRule {
                 pids.add(speed.getInLinkPid());
                 int outLinkPid = speed.getOutLinkPid();
                 if (speed.changedFields().containsKey("outLinkPid"))
-                    outLinkPid = (int) speed.changedFields().get("outLinkPid");
+                    outLinkPid = Integer.valueOf(speed.changedFields().get("outLinkPid").toString());
                 pids.add(outLinkPid);
                 for (IRow via : speed.getVias()) {
                     RdVariableSpeedVia speedVia = (RdVariableSpeedVia) via;
@@ -32,10 +32,10 @@ public class GLM33006 extends baseRule {
                 }
 
                 String sql = "SELECT 1 FROM RD_LINK RL, RD_LINK_FORM RLF, RD_LINK_LIMIT RLL WHERE RL.LINK_PID IN (" +
-                        StringUtils.getInteStr(pids) + ") AND RL.LINK_PID = RLF.LINK_PID AND RL.LINK_PID = RLL" +
-                        ".LINK_PID AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND (RL.KIND IN " +
-                        "(0, 8, 9, 10, 11, 13) OR RLF.FORM_OF_WAY IN (18, 20, 33, 50) OR RL.IMI_CODE IN (1, 2) OR " +
-                        "(RLL.TYPE = 2 AND RLL.TIME_DOMAIN IS NULL) OR RLL.TYPE = 3)";
+                        StringUtils.getInteStr(pids) + ") AND RL.LINK_PID = RLF.LINK_PID AND RL.LINK_PID = RLL" + ""
+                        + ".LINK_PID AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND (RL.KIND IN" +
+                        " " + "(0, 8, 9, 10, 11, 13) OR RLF.FORM_OF_WAY IN (18, 20, 33, 50) OR RL.IMI_CODE IN (1, 2) " +
+                        "OR " + "(RLL.TYPE = 2 AND RLL.TIME_DOMAIN IS NULL) OR RLL.TYPE = 3)";
                 DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
                 List<Object> resultList = getObj.exeSelect(getConn(), sql);
                 if (!resultList.isEmpty())

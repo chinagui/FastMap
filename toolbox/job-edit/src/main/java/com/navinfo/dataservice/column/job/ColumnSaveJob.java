@@ -72,6 +72,7 @@ public class ColumnSaveJob extends AbstractJob {
 			EditJson editJson = new EditJson();
 			editJson.addJsonPoi(data);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+			importor.setPhysiDelete(true);
 			importor.operate(command);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			

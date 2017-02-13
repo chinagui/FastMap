@@ -35,7 +35,7 @@ public class GLM01261_1 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
                 if ((kind == 11 || kind == 13) && !speedLimitLink.contains(link.pid())) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
@@ -45,11 +45,11 @@ public class GLM01261_1 extends baseRule {
 
                 int speedType = speedlimit.getSpeedType();
                 if (speedlimit.changedFields().containsKey("speedType"))
-                    speedType = (int) speedlimit.changedFields().get("speedType");
+                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                 int speedClass = speedlimit.getSpeedClass();
                 if (speedlimit.changedFields().containsKey("speedClass"))
-                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass").toString());
 
                 if (speedType == 0 && speedClass != 7) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(speedlimit.getLinkPid(),
@@ -86,11 +86,12 @@ public class GLM01261_1 extends baseRule {
                             } else {
                                 int speedType = speedlimit.getSpeedType();
                                 if (speedlimit.changedFields().containsKey("speedType"))
-                                    speedType = (int) speedlimit.changedFields().get("speedType");
+                                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                                 int speedClass = speedlimit.getSpeedClass();
                                 if (speedlimit.changedFields().containsKey("speedClass"))
-                                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass")
+                                            .toString());
 
                                 speedLimits.put(speedlimit.getRowId(), speedType + "," + speedClass);
                             }

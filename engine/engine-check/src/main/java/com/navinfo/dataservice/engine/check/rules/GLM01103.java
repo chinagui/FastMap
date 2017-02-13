@@ -23,11 +23,11 @@ public class GLM01103 extends baseRule {
 
                 int specialTraffic = link.getSpecialTraffic();
                 if (link.changedFields().containsKey("specialTraffic"))
-                    specialTraffic = (int) link.changedFields().get("specialTraffic");
+                    specialTraffic = Integer.valueOf(link.changedFields().get("specialTraffic").toString());
 
                 int paveStatus = link.getPaveStatus();
                 if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                    paveStatus = Integer.valueOf(link.changedFields().get("paveStatus").toString());
 
                 if (specialTraffic == 1 && paveStatus == 1) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());

@@ -36,7 +36,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.day2mon.Check;
 import com.navinfo.dataservice.day2mon.Classifier;
-import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
+import com.navinfo.dataservice.day2mon.Day2MonPoiLogByFilterGridsSelector;
 import com.navinfo.dataservice.day2mon.DeepInfoMarker;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
@@ -159,7 +159,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Integer monthDbId = region.getMonthlyDbId();
 		DbInfo monthDbInfo = datahubApi.getDbById(monthDbId);
 		log.info("获取monthDbInfo信息:"+monthDbInfo);		
-		Day2MonPoiLogSelector logSelector = null;
+		Day2MonPoiLogByFilterGridsSelector logSelector = null;
 		OracleSchema dailyDbSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
 		Connection dailyConn = dailyDbSchema.getPoolDataSource().getConnection();
@@ -170,7 +170,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		try{
 			log.info("开始获取日编库履历");
 			
-			logSelector = new Day2MonPoiLogSelector(dailyDbSchema);
+			logSelector = new Day2MonPoiLogByFilterGridsSelector(dailyDbSchema);
 			logSelector.setFilterGrids(filterGrids);
 //			logSelector.setGrids(gridsOfCity);
 			logSelector.setStopTime(syncTimeStamp);

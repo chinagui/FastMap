@@ -33,7 +33,7 @@ public class FMTEMP4 extends BasicCheckRule {
 
 		// 调用元数据请求接口
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		JSONObject characterMap = metaApi.getTyCharacterFjtHmCheckMap(null);
+		JSONObject characterMap = metaApi.getTyCharacterFjtHmCheckMap(null,0);
 
 		List<IxPoiParking> parkings = poiObj.getIxPoiParkings();
 		for (IxPoiParking parking : parkings) {

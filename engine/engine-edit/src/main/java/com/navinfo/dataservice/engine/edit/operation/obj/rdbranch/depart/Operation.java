@@ -12,13 +12,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 
 public class Operation {
 
@@ -40,27 +36,18 @@ public class Operation {
 	// 右侧link映射。Integer：原linkpid RdLink；新生成link
 	private Map<Integer, RdLink> rightLinkMapping = new HashMap<Integer, RdLink>();
 
-	// 端口改变的非目标link映射
-	private Map<Integer, RdLink> changedNodeLinkMap = new HashMap<Integer, RdLink>();
-
-	// 非目标link映射
-	private Map<Integer, RdLink> noTargetLinkMap = new HashMap<Integer, RdLink>();
-
 	// 连接Node
-	private Set<Integer> connectNodePid = new HashSet<Integer>();
+	private Set<Integer> connectNodePids = new HashSet<Integer>();
 
 	// 目标linkPid
-	private List<Integer> targetLinkPids = new ArrayList<Integer>();	
-
+	private List<Integer> targetLinkPids = new ArrayList<Integer>();
 
 	private Map<Integer, RdBranch> delBranch = new HashMap<Integer, RdBranch>();
 
-	private Set<Integer> updateBranch = new HashSet<Integer>();
-
 	RdBranchSelector branchSelector = null;
 	
-	RdLinkSelector linkSelector = null;
-
+	RdCrossNodeSelector crossNodeSelector = null;
+	
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
 
@@ -73,8 +60,9 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		branchSelector = new RdBranchSelector(this.conn);
-
-		linkSelector = new RdLinkSelector(this.conn);
+		
+		crossNodeSelector = new RdCrossNodeSelector(
+				this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -101,31 +89,16 @@ public class Operation {
 				targetLinkPids.add(link.getPid());
 			}
 			
-			connectNodePid.add(link.getsNodePid());
+			connectNodePids.add(link.getsNodePid());
 			
-			connectNodePid.add(link.geteNodePid());
+			connectNodePids.add(link.geteNodePid());
 		}		
 
-		connectNodePid.remove((Integer) preNodePid);
+		connectNodePids.remove((Integer) preNodePid);
 
-		connectNodePid.remove((Integer) lastNodePid);
-
-		for (RdLink link : noTargetLinks.values()) {
-
-			noTargetLinkMap.put(link.getPid(), link);
-
-			if (link.changedFields().containsKey("eNodePid")) {
-
-				changedNodeLinkMap.put(link.getPid(), link);
-				
-			}
-			if (link.changedFields().containsKey("sNodePid")) {
-
-				changedNodeLinkMap.put(link.getPid(), link);
-			}
-		}
+		connectNodePids.remove((Integer) lastNodePid);
 	}
-
+	
 	public void upDownPart(Map<Integer, RdLink> leftLinkMapping,
 			Map<Integer, RdLink> rightLinkMapping, Result result)
 			throws Exception {
@@ -136,41 +109,33 @@ public class Operation {
 
 		this.leftLinkMapping = leftLinkMapping;
 
-		handleTargetLinkDel();
+		if (connectNodePids.size() == 0) {
 
-		handleChangedNodeLinkDel();
+			handlePassLinkDel();
+			
+		} else {
 
-		handleInLinkUpdate();
-
-		handleOutLinkUpdate();
-
-		for (RdBranch branch : delBranch.values()) {
-
-			if (updateBranch.contains(branch.getPid())) {
-
-				continue;
-			}
+			handleConnectNodeDel();
+		}
+		
+		handleEndPoint();
+		
+		for (RdBranch branch  : delBranch.values()) {
 
 			result.insertObject(branch, ObjStatus.DELETE,
 					branch.getPid());
 		}
 	}
-
+	
 	/**
-	 * 处理目标link上的分歧
+	 * 处理目标link为经过线的分歧
 	 * 
 	 * @throws Exception
 	 */
-	private void handleTargetLinkDel() throws Exception {
+	private void handlePassLinkDel() throws Exception {
 
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
-
-		// 目标link为进入线
-		branchs.addAll(branchSelector.loadByLinks(targetLinkPids,
-				1, true));
-		// 目标link为退出线
-		branchs.addAll(branchSelector.loadByLinks(targetLinkPids,
-				2, true));
+		
 		// 目标link为经过线
 		branchs.addAll(branchSelector.loadByLinks(targetLinkPids,
 				3, true));
@@ -179,441 +144,245 @@ public class Operation {
 
 			delBranch.put(branch.getPid(), branch);
 		}
-	}
-
-	private int getNewNodePid(int changedLinkPid) {
-
-		if (!changedNodeLinkMap.containsKey(changedLinkPid)) {
-
-			return 0;
-		}
-
-		RdLink changedLink = changedNodeLinkMap.get(changedLinkPid);
-
-		int newNodePid = 0;
-
-		if (changedLink.changedFields().containsKey("sNodePid")) {
-
-			newNodePid = (Integer) changedLink.changedFields().get("sNodePid");
-
-		} else if (changedLink.changedFields().containsKey("eNodePid")) {
-
-			newNodePid = (Integer) changedLink.changedFields().get("eNodePid");
-		}
-
-		return newNodePid;
-	}
-
-	private boolean haveNewNodePid(List<Integer> connectLinkPids, int newNodePid) {
-
-		boolean isHave = false;
-
-		for (int linkPid : connectLinkPids) {
-
-			if (!noTargetLinkMap.containsKey(linkPid)) {
-
-				continue;
-			}
-
-			RdLink link = noTargetLinkMap.get(linkPid);
-
-			int sPid = link.getsNodePid();
-
-			int ePid = link.geteNodePid();
-
-			if (link.changedFields().containsKey("sNodePid")) {
-
-				sPid = (Integer) link.changedFields().get("sNodePid");
-
-			} else if (link.changedFields().containsKey("eNodePid")) {
-
-				sPid = (Integer) link.changedFields().get("eNodePid");
-			}
-
-			if (sPid == newNodePid || ePid == newNodePid) {
-
-				isHave = true;
-
-				break;
-			}
-		}
-
-		return isHave;
-	}
-
+	}	
+	
 	/**
-	 * 是否包含非目标link
+	 * 处理目标link连接点关联的分歧
 	 * 
-	 * @param connectLinkPids
-	 * @return
+	 * @throws Exception
 	 */
-	private boolean containNoTargetLink(List<Integer> linkPids) {
+	private void handleConnectNodeDel() throws Exception {
+		
+		List<Integer> nodePids = new ArrayList<Integer>();
 
-		for (int pid : linkPids) {
+		nodePids.addAll(connectNodePids);
 
-			if (this.noTargetLinkMap.containsKey(pid)) {
+		Set<Integer> pids = new HashSet<Integer>();
 
-				return true;
-			}
-		}
+		// 经过点获取pid
+		pids.addAll(branchSelector.getPidByPassNode(nodePids));
 
-		return false;
-	}
+		// 进入点获取pid
+		pids.addAll(branchSelector.getPidByInNode(nodePids));
 
-	/**
-	 * 是否包含目标link
-	 * 
-	 * @param connectLinkPids
-	 * @return
-	 */
-	private boolean containTargetLink(List<Integer> linkPids) {
+		List<Integer> branchPids = new ArrayList<Integer>();
 
-		for (int pid : linkPids) {
+		branchPids.addAll(pids);
 
-			if (this.targetLinkPids.contains(pid)) {
+		List<IRow> rows = branchSelector.loadByIds(branchPids, true, true);
 
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private void handleChangedNodeLinkDel() throws Exception {
-
-		if (changedNodeLinkMap == null || changedNodeLinkMap.isEmpty()) {
-			return;
-		}
-
-		List<Integer> changedNodeLinks = new ArrayList<Integer>();
-
-		changedNodeLinks.addAll(changedNodeLinkMap.keySet());
-
-		List<RdBranch> branchs = new ArrayList<RdBranch>();
-
-		// 端点改变的非目标link做进入线的分歧
-		branchs = branchSelector.loadByLinks(changedNodeLinks, 1,
-				true);
-
-		for (RdBranch branch : branchs) {
-
-			if (delBranch.containsKey(branch.getPid())) {
-
-				continue;
-			}
-
-			// 进入点不是 制作上下线分离link的连接点
-			if (!connectNodePid.contains(branch.getNodePid())) {
-
-				continue;
-			}
+		for (IRow row : rows) {
 			
+			RdBranch branch = (RdBranch) row;
+
+
 			delBranch.put(branch.getPid(), branch);
 		}
-
-		// 端点改变的非目标link做退出线的分歧
-		branchs = branchSelector.loadByLinks(changedNodeLinks, 2,
-				true);
-
-		for (RdBranch branch : branchs) {
-
-			if (delBranch.containsKey(branch.getPid())) {
-
-				continue;
-			}
 		
-			if (!changedNodeLinkMap.containsKey(branch.getOutLinkPid())) {
-				continue;
+		for (int nodePid : nodePids) {
+
+			// 获取node关联link做为退出线的分歧pid
+			List<Integer> pidTmps = branchSelector.getPidByOutNode(nodePid);
+
+			List<Integer> outPids = new ArrayList<>();
+
+			for (int pid : pidTmps) {
+
+				if (!delBranch.containsKey(pid)) {
+
+					outPids.add(pid);
+				}
 			}
 
-			int newNodePid = getNewNodePid(branch.getOutLinkPid());
+			rows = branchSelector.loadByIds(outPids, true, true);
 
-			List<Integer> connectLinkPids = new ArrayList<Integer>();
+			for (IRow row : rows) {
 
-			connectLinkPids.add(branch.getInLinkPid());
+				RdBranch branch = (RdBranch) row;
 
-			for (IRow rowVia : branch.getVias()) {
-
-				RdBranchVia via = (RdBranchVia) rowVia;
-
-				connectLinkPids.add(via.getLinkPid());
-			}
-
-			// 退出线不与其他非目标link挂接
-			if (!containNoTargetLink(connectLinkPids)) {
-				continue;
-			}
-
-			boolean isHave = haveNewNodePid(connectLinkPids, newNodePid);
-
-			if (!isHave) {
-
-				delBranch.put(branch.getPid(), branch);
-
-				break;
-			}
-			
-		}
-
-		// 端点改变的非目标link做经过线的分歧
-		branchs = branchSelector.loadByLinks(changedNodeLinks, 3,
-				true);
-
-		for (RdBranch branch : branchs) {
-
-			if (delBranch.containsKey(branch.getPid())) {
-
-				continue;
-			}
-
-			boolean isHave = false;
-
-			Set<Integer> allConnectLinkPids = new HashSet<Integer>();
-
-			allConnectLinkPids.add(branch.getInLinkPid());
-
-			allConnectLinkPids.add(branch.getOutLinkPid());
-
-			for (IRow rowVia : branch.getVias()) {
-
-				RdBranchVia via = (RdBranchVia) rowVia;
-
-				allConnectLinkPids.add(via.getLinkPid());
-			}
-
-			for (IRow rowVia : branch.getVias()) {
-
-				RdBranchVia via = (RdBranchVia) rowVia;
-
-				if (!changedNodeLinkMap.containsKey(via.getLinkPid())) {
+				if (branch.getRelationshipType() == 2) {
 
 					continue;
 				}
 
-				int newNodePid = getNewNodePid(via.getLinkPid());
+				if (isSameCross(branch.getNodePid(), nodePid)) {
 
-				List<Integer> connectLinkPids = new ArrayList<Integer>();
-
-				connectLinkPids.addAll(allConnectLinkPids);
-
-				connectLinkPids.remove((Integer) via.getLinkPid());
-
-				isHave = haveNewNodePid(connectLinkPids, newNodePid);
-
-				if (!isHave) {
-
-					break;
+					delBranch.put(branch.getPid(), branch);
 				}
 			}
-
-			if (!isHave) {
-
-				delBranch.put(branch.getPid(), branch);
-
-				break;
-			}			
 		}
 	}
+	
+	/**
+	 * 处理端点
+	 * @throws Exception
+	 */
+	private void handleEndPoint() throws Exception {
 
+		List<RdBranch> updataBranchs = new ArrayList<RdBranch>();	
+
+		updataBranchs.addAll(handleInLinkUpdate(preNodePid, preLinkPid));
+
+		updataBranchs.addAll(handleOutLink(preNodePid, preLinkPid));
+
+		updataBranchs.addAll(handleInLinkUpdate(lastNodePid, lastLinkPid));
+
+		updataBranchs.addAll(handleOutLink(lastNodePid, lastLinkPid));
+
+		for (RdBranch branch : updataBranchs) {
+			
+			if (delBranch.containsKey(branch.getPid())) {
+				continue;
+			}
+
+			result.insertObject(branch, ObjStatus.UPDATE,
+					branch.getPid());
+		}
+	}
+	
 	/**
 	 * 处理与端点挂接的目标link做进入线的分歧
 	 * 
 	 * @throws Exception
 	 */
-	private void handleInLinkUpdate() throws Exception {
-
-		Map<Integer, RdBranch> handleMap = new HashMap<Integer, RdBranch>();
-
-		List<RdBranch> branchs = new ArrayList<RdBranch>();
-
-		branchs = branchSelector.loadByLinkPid(preLinkPid, 1, true);
-
-		for (RdBranch branch : branchs) {
-
-			if (branch.getNodePid() == preNodePid) {
-
-				handleMap.put(branch.getPid(), branch);
-			}
-		}
-
-		branchs = branchSelector.loadByLinkPid(lastLinkPid, 1, true);
-
-		for (RdBranch branch : branchs) {
-
-			if (branch.getNodePid() == lastNodePid) {
-
-				handleMap.put(branch.getPid(), branch);
-			}
-		}
-
-		for (RdBranch branch : handleMap.values()) {
-
-			RdLink lRdLink = leftLinkMapping.get(branch.getInLinkPid());
-
-			if ((lRdLink.getsNodePid() == branch.getNodePid() && lRdLink
-					.getDirect() == 3)
-					|| (lRdLink.geteNodePid() == branch.getNodePid() && lRdLink
-							.getDirect() == 2)) {
-				branch.changedFields()
-						.put("inLinkPid", lRdLink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE,
-						branch.getPid());
-
-				updateBranch.add(branch.getPid());
-			}
-
-			RdLink rRdLink = rightLinkMapping.get(branch.getInLinkPid());
-
-			if ((rRdLink.getsNodePid() == branch.getNodePid() && rRdLink
-					.getDirect() == 3)
-					|| (rRdLink.geteNodePid() == branch.getNodePid() && rRdLink
-							.getDirect() == 2)) {
-				
-				branch.changedFields()
-						.put("inLinkPid", rRdLink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE,
-						branch.getPid());
-
-				updateBranch.add(branch.getPid());
-			}
-		}
-	}
-
-	/**
-	 * 处理与端点挂接的目标link做退出线的分歧
-	 * 
-	 * @throws Exception
-	 */
-	private void handleOutLinkUpdate() throws Exception {
-
-		handleOutLink(preLinkPid, preNodePid);
-
-		handleOutLink(lastLinkPid, lastNodePid);
-	}
-
-	
-	/**
-	 * 处理与端点挂接的目标link做退出线的分歧
-	 * 
-	 * @throws Exception
-	 */
-	private void handleOutLink(int linkPid, int nodePid) throws Exception {
+	private List<RdBranch> handleInLinkUpdate(int nodePid,int linkPid ) throws Exception {
 
 		Map<Integer, RdBranch> handleMap = new HashMap<Integer, RdBranch>();
 
 		List<RdBranch> branchs = branchSelector
-				.loadByLinkPid(linkPid, 2, true);
+				.loadByLinkPid(linkPid, 1, true);
 
 		for (RdBranch branch : branchs) {
 
-			List<Integer> connectLinkPids = new ArrayList<Integer>();
-			
-			for (IRow rowVia : branch.getVias()) {
-
-				RdBranchVia via = (RdBranchVia) rowVia;
-
-				if (!connectLinkPids.contains(via.getLinkPid())) {
-					connectLinkPids.add(via.getLinkPid());
-				}
-			}
-
-			boolean isOutLinkInNode = isOutLinkInNode(branch, connectLinkPids,
-					nodePid);
-
-			if (!isOutLinkInNode) {
-				
+			if (branch.getNodePid() != nodePid) {
 				continue;
 			}
 
-			connectLinkPids.add(branch.getInLinkPid());
-			
+			if (branch.getRelationshipType() == 2) {
 
-			if (containNoTargetLink(connectLinkPids)
-					|| containTargetLink(connectLinkPids)) {
+				delBranch.put(branch.getPid(), branch);
 
 				continue;
 			}			
 
+			if (delBranch.containsKey(branch.getPid())) {
+				continue;
+			}
+
 			handleMap.put(branch.getPid(), branch);
 		}
 
-		if (!handleMap.isEmpty()) {
+		List<RdBranch> updatabranchs = new ArrayList<RdBranch>();
 
-			updateBranch(handleMap, nodePid);
+		for (RdBranch branch : handleMap.values()) {
+
+			RdLink rdLink = leftLinkMapping.get(branch.getInLinkPid());
+
+			if ((rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				branch.changedFields().put("inLinkPid", rdLink.getPid());
+
+				updatabranchs.add(branch);
+
+				continue;
+			}
+
+			rdLink = rightLinkMapping.get(branch.getInLinkPid());
+
+			if ((rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				branch.changedFields().put("inLinkPid", rdLink.getPid());
+
+				updatabranchs.add(branch);
+			}
 		}
+		
+		return updatabranchs;
+	}
+	
+	
+	/**
+	 * 处理与端点挂接的目标link做退出线的分歧
+	 * 
+	 * @throws Exception
+	 */
+	private List<RdBranch> handleOutLink(int nodePid, int linkPid)
+			throws Exception {
+
+		Map<Integer, RdBranch> handleMap = new HashMap<Integer, RdBranch>();
+
+		List<RdBranch> branchs = branchSelector.loadByLinkPid(linkPid, 2, true);
+
+		for (RdBranch branch : branchs) {
+
+			if (branch.getRelationshipType() == 2 ) {
+
+				delBranch.put(branch.getPid(), branch);
+
+				continue;
+			}
+
+			if (branch.getNodePid() == nodePid
+					|| isSameCross(branch.getNodePid(), nodePid)) {
+
+				handleMap.put(branch.getPid(), branch);
+			}
+		}
+
+		List<RdBranch> updatabranchs = new ArrayList<RdBranch>();
+
+		for (RdBranch branch : handleMap.values()) {
+
+			RdLink rdLink = leftLinkMapping.get(branch.getOutLinkPid());
+
+			if ((rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				branch.changedFields().put("outLinkPid", rdLink.getPid());
+
+				updatabranchs.add(branch);
+
+				continue;
+			}
+
+			rdLink = rightLinkMapping.get(branch.getOutLinkPid());
+
+			if ((rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				branch.changedFields().put("outLinkPid", rdLink.getPid());
+				
+				updatabranchs.add(branch);
+			}
+		}
+
+		return updatabranchs;
 	}
 	
 	/**
-	 * 判断node是不是 进入退出线的点。
-	 * 
-	 * @param restriction
-	 * @param detail
+	 * 判断退出线的端点node是否与进入node为同一路口。
+	 * @param inNodePid
 	 * @param nodePid
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean isOutLinkInNode(RdBranch branch,List<Integer> viaPids,
-			 int nodePid) throws Exception {
+	private boolean isSameCross(int inNodePid, int nodePid)
+			throws Exception {
 		
-		if (viaPids.size() == 0) {
-
-			if (branch.getNodePid() != nodePid) {
-
-				return false;
-			} else {
-				return true;
-			}
+		if (crossNodeSelector == null) {
+			return false;
 		}
 
-		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
-				false);
+		List<Integer> nodePids = crossNodeSelector.getCrossNodePidByNode(
+				nodePid);
 
-		for (IRow linkRow : linkRows) {
-			
-			RdLink link = (RdLink) linkRow;
+		if (nodePids.contains(inNodePid) && nodePids.contains(nodePid)) {
 
-			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
-
-				return true;
-			}
-			
+			return true;
 		}
-		
 		return false;
 	}
 
-	private void updateBranch(Map<Integer, RdBranch> handleLastMap,
-			int nodePid) {
-
-		for (RdBranch branch : handleLastMap.values()) {
-
-			RdLink rRdLink = rightLinkMapping.get(branch.getOutLinkPid());
-
-			if ((rRdLink.getsNodePid() == nodePid && rRdLink.getDirect() == 2)
-					|| (rRdLink.geteNodePid() == nodePid && rRdLink.getDirect() == 3)) {
-
-				branch.changedFields().put("outLinkPid", rRdLink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE,
-						branch.getPid());
-
-				updateBranch.add(branch.getPid());
-			}
-
-			RdLink lRdLink = leftLinkMapping.get(branch.getOutLinkPid());
-
-			if ((lRdLink.getsNodePid() == nodePid && lRdLink.getDirect() == 2)
-					|| (lRdLink.geteNodePid() == nodePid && lRdLink.getDirect() == 3)) {
-
-				branch.changedFields().put("outLinkPid", lRdLink.getPid());
-
-				result.insertObject(branch, ObjStatus.UPDATE,
-						branch.getPid());
-
-				updateBranch.add(branch.getPid());
-			}
-		}
-	}
 }

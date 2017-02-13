@@ -805,5 +805,157 @@ public class RdBranchSelector extends AbstractSelector {
 		}
 		return branchs;
 	}
+	
+	
+	/**
+	 * 根据经过点获取分歧pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByPassNode(List<Integer> nodePids)
+			throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();
+
+		if (nodePids == null || nodePids.isEmpty()) {
+
+			return pids;
+		}
+
+		String strNodePids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = "SELECT DISTINCT B.BRANCH_PID FROM RD_BRANCH_VIA V, RD_LINK L, RD_BRANCH B WHERE ( ";
+
+		sql += " L.S_NODE_PID IN (" + strNodePids + ") OR ";
+
+		sql += " L.E_NODE_PID IN (" + strNodePids + ") ";
+
+		sql += " ) AND L.LINK_PID = V.LINK_PID AND V.BRANCH_PID = B.BRANCH_PID AND L.U_RECORD <> 2 AND V.U_RECORD <> 2 AND B.U_RECORD <> 2 ";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("BRANCH_PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
+	
+	/**
+	 * 根据进入点获取分歧pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByInNode(List<Integer> nodePids) throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();
+		
+		String strNodePids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = " SELECT DISTINCT BRANCH_PID FROM RD_BRANCH WHERE NODE_PID IN ( "
+				+ strNodePids + " ) AND U_RECORD!=2 ";
+	
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("BRANCH_PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
+	
+	/**
+	 *  获取node关联link做为退出线的分歧pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByOutNode(int nodePid)
+			throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();		
+
+		String sql = "SELECT DISTINCT B.BRANCH_PID FROM RD_LINK L, RD_BRANCH B WHERE (";
+
+		sql += " L.S_NODE_PID = " + String.valueOf(nodePid) + " OR ";
+
+		sql += " L.E_NODE_PID = " + String.valueOf(nodePid) + " ) ";
+
+		sql += " AND L.LINK_PID = B.OUT_LINK_PID  AND L.U_RECORD <> 2 AND B.U_RECORD <> 2 ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("BRANCH_PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
 
 }

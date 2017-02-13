@@ -21,9 +21,13 @@ public class TyCharacterFjtHmCheckSelector {
 		this.conn = conn;
 	}
 	
-	public JSONObject getCharacterMap() throws Exception{
+	public JSONObject getCharacterMap(int type) throws Exception{
 		
 		String sql = "SELECT distinct hz,correct FROM ty_character_fjt_hm_check";
+		
+		if (type != 0) {
+			sql += " WHERE type="+type;
+		}
 		
 		ResultSet resultSet = null;
 		

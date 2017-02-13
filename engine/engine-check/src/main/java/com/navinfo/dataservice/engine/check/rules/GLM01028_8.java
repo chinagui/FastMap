@@ -41,7 +41,12 @@ public class GLM01028_8 extends baseRule {
                 if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(link.pid(), false);
                     if (!gates.isEmpty()) {
-                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                        for (RdGate gate : gates) {
+                            if (gate.getType() == 0) {
+                                setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                                break;
+                            }
+                        }
                     }
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
@@ -54,7 +59,12 @@ public class GLM01028_8 extends baseRule {
                 if (formOfWay == 20) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(form.getLinkPid(), false);
                     if (!gates.isEmpty()) {
-                        setCheckResult("", "", 0);
+                        for (RdGate gate : gates) {
+                            if (gate.getType() == 0) {
+                                setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
+                                break;
+                            }
+                        }
                     }
                 }
             }

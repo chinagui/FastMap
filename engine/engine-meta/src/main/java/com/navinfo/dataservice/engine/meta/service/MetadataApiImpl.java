@@ -220,9 +220,9 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception {
+	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception {
 		TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
-		return tyCharacterFjtHmCheckSelector.getCharacterMap();
+		return tyCharacterFjtHmCheckSelector.getCharacterMap(type);
 	}
 
 	public JSONObject getNavicovpyMap(Connection conn) throws Exception {
@@ -260,7 +260,7 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("chain", getChainMap(conn));
 			result.put("kindCode", getKindCodeMap(conn));
 			result.put("admin", getAdminMap(conn));
-			result.put("character", getTyCharacterFjtHmCheckMap(conn));
+			result.put("character", getTyCharacterFjtHmCheckMap(conn,0));
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));

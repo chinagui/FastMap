@@ -2,26 +2,21 @@ package com.navinfo.dataservice.dao.plus.editman;
 
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -231,6 +226,37 @@ public class PoiEditStatus {
 	}
 
 
+	/**
+	 * @Title: updateTaskIdByPid
+	 * @Description: 更新poi_edit_status 表中的快线,中线任务标识
+	 * @param conn
+	 * @param pid
+	 * @param quickTaskId
+	 * @param centreTaskId
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月9日 下午7:02:25 
+	 */
+	public static void updateTaskIdByPid(Connection conn, Long pid ,Integer quickTaskId,Integer centreTaskId) throws Exception {
+		try{
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_STATUS T SET quickTaskId="+quickTaskId);
+			sb.append(",centreTaskId="+centreTaskId);
+			
+				sb.append(" WHERE T.PID = "+pid);
+
+			
+				new QueryRunner().update(conn, sb.toString());
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("采集成果自动批任务标识失败");
+		}
+	}
+	
 	public static void main(String[] args) throws Exception{
 
 		System.out.println("ok");
@@ -256,5 +282,7 @@ public class PoiEditStatus {
 			insertPoiEditStatus(conn,pids,status);
 		}
 	}
+	
+	
 	
 }

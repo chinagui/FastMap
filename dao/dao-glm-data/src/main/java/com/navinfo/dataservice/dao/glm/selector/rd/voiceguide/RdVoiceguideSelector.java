@@ -139,7 +139,7 @@ public class RdVoiceguideSelector extends AbstractSelector {
 			sql = "select a.pid from rd_voiceguide a where u_record != 2 and pid in (select distinct b.voiceguide_pid from rd_voiceguide_detail b where u_record!=2 and out_link_pid=:1 )";
 			break;
 		case 3:
-			sql = "select a.pid from rd_voiceguide a where u_record != 2 and pid in ( select distinct b.voiceguide_pid from rd_voiceguide_detail b where b.u_record!=2 and b.detail_id in (select distinct c.detail_id from rd_voiceguide_via c where c.u_record!=2 and c.link_pid=:1)";
+			sql = "select a.pid from rd_voiceguide a where u_record != 2 and pid in ( select distinct b.voiceguide_pid from rd_voiceguide_detail b where b.u_record!=2 and b.detail_id in (select distinct c.detail_id from rd_voiceguide_via c where c.u_record!=2 and c.link_pid=:1))";
 			break;
 		default:
 			return pids;

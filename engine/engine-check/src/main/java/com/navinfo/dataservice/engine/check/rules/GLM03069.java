@@ -115,16 +115,20 @@ public class GLM03069 extends baseRule{
 		}
 		for (Integer nodePid : nodePids) {
 			StringBuilder sb = new StringBuilder();
-			 
-			sb.append("SELECT RN.NODE_PID FROM RD_NODE RN,RD_NODE_FORM RNF,RD_LINK RL1 ,RD_LINK RL2");
-			sb.append(" WHERE RN.NODE_PID = "+nodePid);
-			sb.append(" AND RNF.FORM_OF_WAY = 2 AND RN.NODE_PID = RNF.NODE_PID");
-			sb.append(" AND (RN.NODE_PID = RL1.S_NODE_PID OR RN.NODE_PID = RL1.E_NODE_PID)");
-			sb.append(" AND (RN.NODE_PID = RL2.S_NODE_PID OR RN.NODE_PID = RL2.E_NODE_PID)");
-			sb.append(" AND RL1.MESH_ID <> RL2.MESH_ID AND RL1.LINK_PID <> RL2.LINK_PID");
-			sb.append(" AND RN.U_RECORD <> 2 AND RNF.U_RECORD <> 2");
-			sb.append(" AND RL1.U_RECORD <>2 AND RL2.U_RECORD <>2");
-			sb.append(" GROUP BY RN.NODE_PID HAVING COUNT(1) =2");
+			
+			sb.append("WITH T AS(SELECT RN.NODE_PID FROM RD_NODE RN,RD_NODE_FORM RNF");
+			sb.append(" WHERE RN.NODE_PID ="+nodePid);
+			sb.append(" AND RN.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 2");
+			sb.append(" AND RN.U_RECORD <>2 AND RNF.U_RECORD <>2)");
+			sb.append(" SELECT DISTINCT T.NODE_PID FROM RD_LINK RL,T");
+			sb.append(" WHERE (T.NODE_PID = RL.S_NODE_PID OR T.NODE_PID = RL.E_NODE_PID)");
+			sb.append(" AND RL.U_RECORD <>2 GROUP BY T.NODE_PID HAVING COUNT(1) <>2");
+			sb.append(" UNION");
+			sb.append(" SELECT DISTINCT T.NODE_PID FROM RD_LINK RL1 ,RD_LINK RL2,T");
+			sb.append(" WHERE RL1.U_RECORD <>2 AND RL2.U_RECORD <>2");
+			sb.append(" AND (T.NODE_PID = RL1.S_NODE_PID OR T.NODE_PID = RL1.E_NODE_PID)");
+			sb.append(" AND (T.NODE_PID = RL2.S_NODE_PID OR T.NODE_PID = RL2.E_NODE_PID)");
+			sb.append(" AND RL1.MESH_ID = RL2.MESH_ID AND RL1.LINK_PID <> RL2.LINK_PID");
 			
 			String sql = sb.toString();
 			log.info("RdLink后检查GLM03069--sql:" + sql);
@@ -133,7 +137,7 @@ public class GLM03069 extends baseRule{
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sql);
 			
-			if(resultList.isEmpty()){
+			if(!resultList.isEmpty()){
 				String target = "[RD_LINK," + rdLink.getPid() + "]";
 				this.setCheckResult("", target, 0);
 			}

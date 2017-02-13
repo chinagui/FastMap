@@ -44,7 +44,12 @@ public class GLM01454 extends baseRule {
 
     private void checkCrossNode(RdLinkSelector linkSelector, RdLink link, int sNodePid) throws Exception {
         RdCrossSelector crossSelector = new RdCrossSelector(getConn());
-        RdCross cross = crossSelector.loadCrossByNodePid(sNodePid, false);
+        RdCross cross = null;
+        try {
+            cross = crossSelector.loadCrossByNodePid(sNodePid, false);
+        } catch (Exception e) {
+            return;
+        }
         List<Integer> nodes = new ArrayList<>();
         for (IRow n : cross.getNodes()) {
             nodes.add(((RdCrossNode) n).getNodePid());

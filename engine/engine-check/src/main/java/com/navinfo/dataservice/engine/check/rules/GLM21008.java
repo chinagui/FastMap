@@ -29,27 +29,33 @@ public class GLM21008 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 12 || formOfWay == 13) {
                     RdSameLinkPart part = new RdSameLinkSelector(getConn()).loadLinkPartByLink(form.getLinkPid(),
                             "RD_LINK", false);
                     if (null != part) {
-                        setCheckResult("", "", 0);
+                        setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
             } else if (row instanceof RdSameLinkPart && row.status() != ObjStatus.DELETE) {
                 RdSameLinkPart part = (RdSameLinkPart) row;
+                log.info("GLM21008:[LINK_PID=]" + part.getLinkPid());
+
+                String tableName = part.getTableName();
+                if ("".equals(tableName) || !"RD_LINK".equals(tableName))
+                    continue;
 
                 int linkPid = part.getLinkPid();
                 if (part.changedFields().containsKey("linkPid"))
-                    linkPid = (int) part.changedFields().get("linkPid");
+                    linkPid = Integer.valueOf(part.changedFields().get("linkPid").toString());
 
                 RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(linkPid, false);
                 List<IRow> forms = link.getForms();
                 boolean flag = false;
                 for (IRow f : forms) {
                     RdLinkForm ff = (RdLinkForm) f;
+                    log.info("GLM21008:[FORM_OF_WAY=]" + ff.getFormOfWay());
                     if (ff.getFormOfWay() == 12 || ff.getFormOfWay() == 13) {
                         flag = true;
                     }

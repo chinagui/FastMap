@@ -27,13 +27,15 @@ public class GLM01282 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
+        preparData(checkCommand);
+
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
 
                 int direct = link.getDirect();
                 if (link.changedFields().containsKey("direct"))
-                    direct = (int) link.changedFields().get("direct");
+                    direct = Integer.valueOf(link.changedFields().get("direct").toString());
 
                 if (singltonLimitLink.contains(link.pid()) && (direct == 2 || direct == 3)) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
@@ -43,7 +45,7 @@ public class GLM01282 extends baseRule {
 
                 int type = linkLimit.getType();
                 if (linkLimit.changedFields().containsKey("type"))
-                    type = (int) linkLimit.changedFields().get("type");
+                    type = Integer.valueOf(linkLimit.changedFields().get("type").toString());
 
                 if (type == 1) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(linkLimit.getLinkPid(),
@@ -78,7 +80,7 @@ public class GLM01282 extends baseRule {
                             } else {
                                 int type = linkLimit.getType();
                                 if (linkLimit.changedFields().containsKey("type"))
-                                    type = (int) linkLimit.changedFields().get("type");
+                                    type = Integer.valueOf(linkLimit.changedFields().get("type").toString());
                                 linkLimits.put(linkLimit.getRowId(), type);
                             }
                         }

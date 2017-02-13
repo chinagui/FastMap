@@ -28,7 +28,7 @@ public class GLM01257 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
@@ -50,11 +50,11 @@ public class GLM01257 extends baseRule {
 
                 int speedType = speedlimit.getSpeedType();
                 if (speedlimit.changedFields().containsKey("speedType"))
-                    speedType = (int) speedlimit.changedFields().get("speedType");
+                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                 int speedClass = speedlimit.getSpeedClass();
                 if (speedlimit.changedFields().containsKey("speedClass"))
-                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass").toString());
 
                 if (speedType == 0 && speedClass != 8) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(speedlimit.getLinkPid(), false);

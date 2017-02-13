@@ -37,7 +37,18 @@ public class DefaultLogSelector extends LogSelector {
 	}
 	@Override
 	protected int extendLog(Connection conn)throws Exception{
-		int result = run.update(conn, getExtendLogSql());
+		
+		QueryRunner run = new QueryRunner();
+		SqlClause sqlClause = this.getExtendLogSql(conn);
+		this.log.debug(sqlClause.getSql());
+		if (sqlClause==null) return 0;
+		int result =0;
+		if (sqlClause.getValues()==null || sqlClause.getValues().size()==0){
+			result= run.update(conn, sqlClause.getSql());
+		}else{
+			result= run.update(conn, sqlClause.getSql(),sqlClause.getValues().toArray());
+		}
+		
 		if(result>0){
 			return result+extendLog(conn);
 		}
@@ -65,13 +76,15 @@ public class DefaultLogSelector extends LogSelector {
 		return sqlClause;
 	}
 
-	protected String getExtendLogSql() {
+	protected SqlClause getExtendLogSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO ");
 		sb.append(tempTable);
 		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(tempTable);
 		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.COM_STA=0) TP ON (T.OP_ID=TP.OP_ID) WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT,TP.OP_SEQ)");
-		return sb.toString();
+		List<Object> values = new ArrayList<Object> ();
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
 	}
 }

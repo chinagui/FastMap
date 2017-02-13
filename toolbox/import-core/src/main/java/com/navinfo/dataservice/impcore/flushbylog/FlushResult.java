@@ -40,10 +40,11 @@ public class FlushResult {
 
 	private String tempFailLogTable;
 
-	public void insertFailedLog(String opId,String rowId){
+	public void insertFailedLog(String opId,String rowId,String log){
 		List<String> row = new ArrayList<String>();
 		row.add(opId);
 		row.add(rowId);
+		row.add(log);
 		failedLog.add(row);
 	}
 	public List<List> getFailedLog() {

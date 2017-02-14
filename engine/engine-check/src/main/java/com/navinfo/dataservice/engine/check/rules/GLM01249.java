@@ -30,7 +30,7 @@ public class GLM01249 extends baseRule {
                 int oldFormOfWay = form.getFormOfWay();
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (oldFormOfWay == 15 && formOfWay != 15) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
@@ -53,15 +53,15 @@ public class GLM01249 extends baseRule {
 
                 int speedType = speedlimit.getSpeedType();
                 if (speedlimit.changedFields().containsKey("speedType"))
-                    speedType = (int) speedlimit.changedFields().get("speedType");
+                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                 int fromLimitSrc = speedlimit.getFromLimitSrc();
                 if (speedlimit.changedFields().containsKey("fromLimitSrc"))
-                    fromLimitSrc = (int) speedlimit.changedFields().get("fromLimitSrc");
+                    fromLimitSrc = Integer.valueOf(speedlimit.changedFields().get("fromLimitSrc").toString());
 
                 int toLimitSrc = speedlimit.getToLimitSrc();
                 if (speedlimit.changedFields().containsKey("toLimitSrc"))
-                    toLimitSrc = (int) speedlimit.changedFields().get("toLimitSrc");
+                    toLimitSrc = Integer.valueOf(speedlimit.changedFields().get("toLimitSrc").toString());
 
                 if (speedType == 0 && (fromLimitSrc == 7 || toLimitSrc == 7)) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(speedlimit.getLinkPid(), false);

@@ -27,7 +27,7 @@ public class GLM01536 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
                 if (kind == 1) {
                     RdLink l = (RdLink) new RdLinkSelector(getConn()).loadById(link.pid(), false);

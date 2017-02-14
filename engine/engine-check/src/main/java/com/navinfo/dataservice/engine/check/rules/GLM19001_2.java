@@ -227,7 +227,7 @@ public class GLM19001_2 extends baseRule{
 			sb2.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
 			sb2.append(" AND V.U_RECORD <> 2");
 			sb2.append(" AND T.U_RECORD <> 2");
-			sb2.append(" AND T.OUT_LINK_PID = " + rdLink.getPid());
+			sb2.append(" AND V.LINK_PID = " + rdLink.getPid());
 			
 			String sql2 = sb2.toString();
 			log.info("RdLink后检查GLM19001_2:" + sql2);

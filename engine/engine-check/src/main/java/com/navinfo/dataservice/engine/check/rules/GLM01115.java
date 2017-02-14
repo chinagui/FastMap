@@ -23,7 +23,7 @@ public class GLM01115 extends baseRule {
 
                 int laneClass = link.getLaneClass();
                 if (link.changedFields().containsKey("laneClass"))
-                    laneClass = (int) link.changedFields().get("laneClass");
+                    laneClass = Integer.valueOf(link.changedFields().get("laneClass").toString());
 
                 if (laneClass <= 0) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());

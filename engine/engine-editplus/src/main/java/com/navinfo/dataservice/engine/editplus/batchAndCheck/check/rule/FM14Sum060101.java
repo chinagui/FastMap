@@ -29,6 +29,7 @@ public class FM14Sum060101 extends BasicCheckRule {
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			if(ixPoiAddress == null){return;}
 			String fullname = ixPoiAddress.getFullname();
+			if(fullname==null){return;}
 			String firstName = fullname.substring(0, 1);
 			//地址（address）不是以汉字开头的
 			boolean check = CheckUtil.isChinese(firstName);

@@ -1296,7 +1296,6 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
-	
 	@Test
 	public void run_0210_1() throws Exception {
 
@@ -1307,14 +1306,26 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	
 	@Test
-	public void run_0213_1() throws Exception {
+	public void run_0213_2() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[308003401,201003357,205003359]}}";
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[301003406,300003409,205003370]}}";
 
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_0214_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\",\"data\":{\"linkPids\":[220003525,205003379,208003454]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 	
 }

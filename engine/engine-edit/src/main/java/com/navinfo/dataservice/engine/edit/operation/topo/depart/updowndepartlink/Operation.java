@@ -1,12 +1,28 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.rd.link.*;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -19,11 +35,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
-import net.sf.json.JSONObject;
-import org.apache.log4j.Logger;
-
-import java.sql.Connection;
-import java.util.*;
 
 /**
  * @author zhaokk 上下线分离具体实现操作类
@@ -537,12 +548,53 @@ public class Operation implements IOperation {
 		// 卡车限制信息
 		link.getLimitTrucks().clear();
 	}
+	
+	
+	private RdLink getSourceLink(RdLink link, int upDownFlag) {
+		Map<Integer, RdLink> linkMap = new HashMap<Integer, RdLink>();
+
+		if (upDownFlag == 1) {
+			linkMap = command.getRightLinkMapping();
+		}
+
+		if (upDownFlag == 0) {
+			linkMap = command.getLeftLinkMapping();
+		}
+
+		for (Map.Entry<Integer, RdLink> entry : linkMap.entrySet()) {
+
+			if (link.getPid() == entry.getValue().getPid()) {
+				for (RdLink sourceLink : command.getLinks()) {
+					if (sourceLink.getPid() == entry.getKey()) {
+						return sourceLink;
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 	// 如果双方向道路变上下线分离，则将上行方向的RTIC信息作为“上行”赋到分离后通行方向与上行方向相同的link上；
 	// 将下行方向的RTIC信息作为“上行”的RTIC信息赋到分离后通行方向与原RTIC上行方向相反的link上；
 	// RTIC方向值由程序根据制作RTIC时的方向与划线方向的关系自动计算，其余信息继承原link；
 	// 单方向道路变上下线分离，将单方向道路上的RTIC信息赋值给与该单方向道路通行方向相同的一侧道路上。
 	private void relationRticForLink(RdLink link, int upDownFlag) {
+		
+		RdLink sourceLink = getSourceLink(link, upDownFlag);
+
+		if (sourceLink == null) {
+			return;
+		}
+
+		if (sourceLink.getDirect() == 2 || sourceLink.getDirect() == 3) {
+			if (upDownFlag == 0) {
+
+				link.getRtics().clear();
+				link.getIntRtics().clear();
+			}
+			return;
+		}
+		
 		// 道路:LINK 与 RTIC 关系表（车导客户用）
 		List<RdLinkRtic> linkRtics = new ArrayList<RdLinkRtic>();
 		List<RdLinkIntRtic> linkIntRtics = new ArrayList<RdLinkIntRtic>();

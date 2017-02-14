@@ -716,5 +716,36 @@ public class TaskService {
 		}
 	}
 	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONArray getGridListByTaskId(int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
+			
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					ArrayList<String> arrayList = new ArrayList<String>();
+					if(rs.next()) {
+						arrayList.add(rs.getString("GRID_ID"));
+					}
+					return JSONArray.fromObject(arrayList);
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 	
 }

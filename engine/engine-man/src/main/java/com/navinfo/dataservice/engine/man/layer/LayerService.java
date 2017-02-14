@@ -486,10 +486,10 @@ public class LayerService {
 		List<Integer> userIdList=UserInfoOperation.getUserListBySql(conn, userSql);
 		for(int userId:userIdList){
 			//查询用户名称
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
 			String pushUserName = null;
-			if(userInfo != null && userInfo.size() > 0){
-				pushUserName = (String) userInfo.get("userRealName");
+			if(userInfo != null && userInfo.getUserRealName()!=null){
+				pushUserName = userInfo.getUserRealName();
 			}
 			for(Map<String, Object> map:msgContentList){
 				//发送消息到消息队列
@@ -519,15 +519,15 @@ public class LayerService {
 		String mailContent = null;
 		//查询用户详情
 		for (int userId : userIdList) {
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
-			if(userInfo != null && userInfo.get("userEmail") != null){
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+			if(userInfo != null && userInfo.getUserEmail() != null){
 				for (Map<String, Object> map : msgContentList) {
 					//判断邮箱格式
 					String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
 	                Pattern regex = Pattern.compile(check);
-	                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+	                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
 	                if(matcher.matches()){
-	                	toMail = (String) userInfo.get("userEmail");
+	                	toMail = (String) userInfo.getUserEmail();
 	                	mailTitle = msgTitle;
 	                	mailContent = (String) map.get("msgContent");
 	                	//发送邮件到消息队列

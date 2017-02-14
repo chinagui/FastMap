@@ -82,7 +82,7 @@ public class CheckService {
 			//System.out.println("jobId == "+jobId);
 			}
 		}else if(checkType==2 ||checkType ==0){//道路
-			List<Integer> grids= subtaskObj.getGridIds();
+			List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("grids", grids);
 			validationRequestJSON.put("rules", ruleList);

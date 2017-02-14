@@ -153,7 +153,7 @@ public class RdNodeSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select node_pid, geometry     from rd_node    where sdo_relate(geometry, sdo_geometry(    :1 , 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2),  tmp2 as (      select /*+ index(a) */    b.node_pid, listagg(a.link_pid, ',') within group(order by b.node_pid) linkpids     from rd_link a, tmp1 b    where a.u_record != 2      and (a.s_node_pid=b.node_pid or a.e_node_pid=b.node_pid)    group by b.node_pid)    select a.node_pid,a.geometry,b.linkpids from tmp1 a, tmp2 b where a.node_pid = b.node_pid";
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS FROM RD_LINK A, TMP1 B WHERE A.U_RECORD != 2 AND (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ A.NODE_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_FORMS FROM RD_NODE_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.NODE_PID = B.NODE_PID GROUP BY A.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, B.LINKPIDS, C.NODE_FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.NODE_PID = B.NODE_PID AND A.NODE_PID = C.NODE_PID";
 
 		PreparedStatement pstmt = null;
 
@@ -180,6 +180,8 @@ public class RdNodeSearch implements ISearch {
 				JSONObject m = new JSONObject();
 
 				m.put("a", resultSet.getString("linkpids"));
+				
+				m.put("b", resultSet.getString("node_forms"));
 
 				snapshot.setM(m);
 

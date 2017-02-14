@@ -352,6 +352,7 @@ public class GlmGridCalculator {
 				geoInfo.setGrids(rowGrids.toArray(new String[0]));
 				return geoInfo;
 			} catch (Exception e) {
+				log.error(e.getMessage());
 				throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"
 						+ rowId, e);
 			}

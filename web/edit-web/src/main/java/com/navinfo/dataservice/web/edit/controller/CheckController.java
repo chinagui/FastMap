@@ -78,6 +78,8 @@ public class CheckController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 
 			int pageNum = jsonReq.getInt("pageNum");
+			
+			int flag = jsonReq.getInt("flag");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
@@ -107,7 +109,7 @@ public class CheckController extends BaseController {
 			}
 			
 			//************************************
-*/			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+*/			Page page = selector.list(subtaskType,grids, pageSize, pageNum,flag);
 			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));
@@ -311,6 +313,7 @@ public class CheckController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 
 			String id = jsonReq.getString("id");
+			int oldType = jsonReq.getInt("oldType");
 
 			int type = jsonReq.getInt("type");
 
@@ -318,7 +321,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatus(id, oldType,type);
 
 			return new ModelAndView("jsonView", success());
 
@@ -369,7 +372,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatusForRd(id, type);
 
 			return new ModelAndView("jsonView", success());
 

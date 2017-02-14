@@ -273,18 +273,56 @@ public class NiValExceptionSelector {
 		return 0;
 	}
 
-	public Page list(int subtaskType,Collection<String> grids, final int pageSize, final int pageNum)
-			throws Exception {
-		
+	/***
+	 * 
+	 * @param subtaskType
+	 * @param grids
+	 * @param pageSize
+	 * @param pageNum
+	 * @param flag
+	 *            0 待处理 1 例外 2 确认(修改 和 不修改)
+	 * @return
+	 * @throws Exception
+	 */
+	public Page list(int subtaskType, Collection<String> grids,
+			final int pageSize, final int pageNum, int flag) throws Exception {
+
 		Clob pidsClob = ConnectionUtil.createClob(conn);
-		pidsClob.setString(1, StringUtils.join(grids, ","));		
-		StringBuilder sql = new StringBuilder("select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-				+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-				+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
-				+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
-				+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
-		
-		if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
+		pidsClob.setString(1, StringUtils.join(grids, ","));
+		StringBuilder sql = null;
+		if (flag == 0) {
+			sql = new StringBuilder(
+					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
+							+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
+							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
+		}
+		if (flag == 1) {
+			sql = new StringBuilder(
+					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
+							+ "worker from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
+							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
+
+		}
+		if (flag == 2) {
+			sql = new StringBuilder(
+					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
+							+ "worker from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
+							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
+							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
+							+ "worker from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
+							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
+							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
+		}
+
+		if (subtaskType == 0 || subtaskType == 5 || subtaskType == 6
+				|| subtaskType == 7) {
 			sql.append(" and EXISTS ("
 					+ " SELECT 1 FROM CK_RESULT_OBJECT O "
 					+ " WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')"
@@ -292,48 +330,77 @@ public class NiValExceptionSelector {
 		}
 
 		sql.append(" order by created desc,md5_code desc");
-		
-		return new QueryRunner().query(pageNum,pageSize,conn, sql.toString(), new ResultSetHandler<Page>(){
+		Page page = null;
+		if (flag == 2) {
+			page = new QueryRunner().query(pageNum, pageSize, conn,
+					sql.toString(), new ResultSetHandler<Page>() {
 
-			@Override
-			public Page handle(ResultSet rs) throws SQLException {
-				Page page =new Page(pageNum);
-				page.setPageSize(pageSize);
-				int total = 0;
-				JSONArray results = new JSONArray();
-				while(rs.next()){
-					
-					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
-					
-					JSONObject json = new JSONObject();
-					
-					json.put("id",  rs.getString("md5_code"));
+						@Override
+						public Page handle(ResultSet rs) throws SQLException {
+							return handResult(pageNum, pageSize, rs);
+						}
+					}, pidsClob, pidsClob);
+		} else {
+			page = new QueryRunner().query(pageNum, pageSize, conn,
+					sql.toString(), new ResultSetHandler<Page>() {
 
-					json.put("ruleid", rs.getString("ruleid"));
+						@Override
+						public Page handle(ResultSet rs) throws SQLException {
+							return handResult(pageNum, pageSize, rs);
+						}
+					}, pidsClob);
+		}
+		return page;
+	}
 
-					json.put("situation", rs.getString("situation"));
+	/***
+	 * 
+	 * @param pageNum
+	 * @param pageSize
+	 * @param rs
+	 * @return
+	 * @throws SQLException
+	 */
+	private Page handResult(int pageNum, int pageSize, ResultSet rs)
+			throws SQLException {
 
-					json.put("rank", rs.getInt("level_"));
+		Page page = new Page(pageNum);
+		page.setPageSize(pageSize);
+		int total = 0;
+		JSONArray results = new JSONArray();
+		while (rs.next()) {
 
-					json.put("targets", rs.getString("targets"));
-
-					json.put("information", rs.getString("information"));
-
-					json.put("geometry",
-							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
-
-					json.put("create_date", rs.getString("created"));
-
-					json.put("worker", rs.getString("worker"));
-
-					results.add(json);
-				}
-				page.setTotalCount(total);
-				page.setResult(results);
-				return page;
+			if (total == 0) {
+				total = rs.getInt("TOTAL_RECORD_NUM_");
 			}
-			
-		},pidsClob);
+
+			JSONObject json = new JSONObject();
+
+			json.put("id", rs.getString("md5_code"));
+
+			json.put("ruleid", rs.getString("ruleid"));
+
+			json.put("situation", rs.getString("situation"));
+
+			json.put("rank", rs.getInt("level_"));
+
+			json.put("targets", rs.getString("targets"));
+
+			json.put("information", rs.getString("information"));
+
+			json.put("geometry",
+					"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
+			json.put("create_date", rs.getString("created"));
+
+			json.put("worker", rs.getString("worker"));
+
+			results.add(json);
+		}
+		page.setTotalCount(total);
+		page.setResult(results);
+		return page;
+
 	}
 	//******************************
 /**

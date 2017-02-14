@@ -661,84 +661,49 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		return ruleList;
 	}
 
+	
+	
 	/**
-	 * @Title: poiCheckResultList
-	 * @Description: poi 检查结果查询
-	 * @param subtaskType
-	 * @param grids
-	 * @param pageSize
-	 * @param pageNum
+	 * @Title: poiCheckResults
+	 * @Description: poi 检查结果
+	 * @param pid
 	 * @return
-	 * @throws Exception  Page
+	 * @throws Exception  JSONObject
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年2月13日 下午10:07:57 
+	 * @date 2017年2月14日 下午8:04:09 
 	 */
-	public Page poiCheckResultList(int subtaskType, Set<String> grids, final int pageSize, final int pageNum) throws Exception {
-		long pageStartNum = (pageNum - 1) * pageSize + 1;
-		long pageEndNum = pageNum * pageSize;
-		Clob pidsClob = ConnectionUtil.createClob(conn);
-		pidsClob.setString(1, StringUtils.join(grids, ","));
-		
-		//*********临时方案***************
-		String gridsStr = StringUtils.join(grids, ",");
-		//************************
-		
-		StringBuilder sql = new StringBuilder(
-				"with q1 as( "
-				+ "select a.md5_code,a.ruleid,a.situation,a.targets,a.information,a.worker ,a.created from ni_val_exception a where  " //'"+gridsStr+"'
-					+ "exists( select 1 from ni_val_exception_grid b,(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table('"+gridsStr+"'))) grid_table  where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE) "
-				+ " and EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
-				+ " union all "
-					+ "select c.md5_code,c.rule_id ruleid,c.situation,c.targets,c.information,c.worker ,c.create_date created from ck_exception c where "
-						+ "exists( select 1 from ck_exception_grid d,(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table('"+gridsStr+"'))) grid_table  where c.row_id = d.ck_row_id and d.grid_id =grid_table.COLUMN_VALUE) "
-				+ " and EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
-				+ " ), "
-				+ "q2 as ( "
-					+ "select e.md5_code,e.ruleid,e.situation,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
-						+ " from q1 e CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "//IX_POI
-				+ "),"
-				+ "q3 as ( "
-					+ " select f.md5_code,f.ruleid,f.situation,p.pid,f.information,f.worker ,f.created ,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
-						+ "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
-							+ " from ix_poi p , q2 f  where f.pid = p.pid  "
-				+ ")");
+	public JSONObject poiCheckResults(int pid) throws Exception {
 
-		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
-				+ "FROM "
-				+ "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
-		sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
-				+ "WHERE A.ROWNO >= "+pageStartNum+" ");
-		sql.append(" order by created desc,md5_code desc ");
+		StringBuilder sql = new StringBuilder(
+				" select p.pid,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
+						+ "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
+							+ " from ix_poi p  where   p.pid = "+pid+" ");
 		
-		System.out.println("poiCheckResultList:  "+ sql);
-		Object [] params = new Object[]{pidsClob, pidsClob};//, pidsClob
+		System.out.println("poiCheckResults:  "+ sql);
 		
-		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<Page>(){
+		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONObject>(){
 
 			@Override
-			public Page handle(ResultSet rs) throws SQLException {
+			public JSONObject handle(ResultSet rs) throws SQLException {
 				
-				Page page =new Page();
-				int total = 0;
+				JSONObject resultsJson = new JSONObject();
 				JSONArray results = new JSONArray();
 				while(rs.next()){
 					
-					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
-					
 					JSONObject json = new JSONObject();
 					
-					json.put("id",  rs.getString("md5_code"));
-
-					json.put("ruleid", rs.getString("ruleid"));
-
-					json.put("situation", rs.getString("situation"));
-
+					json.put("name", rs.getString("name"));
+					
 					json.put("rank", rs.getInt("level_"));
 
 					json.put("pid", rs.getInt("pid"));
+					
+					json.put("linkPid", rs.getInt("link_pid"));
 
-					json.put("information", rs.getString("information"));
+					json.put("fid", rs.getString("fid"));
+					
+					json.put("kindCode", rs.getString("kind_code"));
 					
 					STRUCT struct = (STRUCT) rs.getObject("geometry");
 					GeoTranslator trans = null;
@@ -748,22 +713,104 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 						 geometry = GeoTranslator.struct2Jts(struct);
 						 trans = new GeoTranslator();
 						 geometryStr= trans.jts2Wkt(geometry,1,5);
-						 System.out.println(geometryStr);
 					} catch (Exception e) {
 						System.out.println("查询结果获取Geometry失败");
-						//throw new Exception("查询结果获取Geometry失败");
+						e.printStackTrace();
 					}
 
 					json.put("geometry",geometryStr);
 
+					json.put("rowId",rs.getString("row_id"));
+					//*****************************
+					//查询此poi的 exception信息
+					if(rs.getInt("pid") != 0){
+						JSONArray checkResults = null;
+						try {
+							checkResults = poiCheckResultList(rs.getInt("pid"));
+						} catch (Exception e) {
+							System.out.println("查询关联poi信息失败");
+							e.printStackTrace();
+						}
+						if(checkResults != null && checkResults.size() > 0){
+							json.put("checkResults", checkResults);
+							json.put("total", checkResults.size());
+						}else{
+							json.put("checkResults", new JSONArray());
+							json.put("total", 0);
+						}
+						
+					}else{
+						json.put("checkResults", new JSONArray());
+						json.put("total", 0);
+					}
+					
+					//********************************
+
+					results.add(json);
+				}
+				resultsJson.put("data", results);
+				return resultsJson;
+			}
+		}
+		);
+	}
+	/**
+	 * @Title: poiCheckResultList
+	 * @Description: 根据 pid 查询  exception
+	 * @return
+	 * @throws Exception 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月13日 下午10:07:57 
+	 */
+	public JSONArray poiCheckResultList(int pid) throws Exception {
+		
+		StringBuilder sql = new StringBuilder(
+				"with q1 as( "
+				+ "select a.md5_code,a.ruleid,a.targets,a.information,a.worker ,a.created from ni_val_exception a where  " 
+					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
+				+ " union all "
+				+ "select c.md5_code,c.rule_id ruleid,c.targets,c.information,c.worker ,c.create_date created from ck_exception c where "
+					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
+				+ " ), "
+				+ "q2 as ( "
+					+ "select distinct  e.md5_code,e.ruleid,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
+						+ " from q1 e "
+						+ " where 1=1 "
+						+ " CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "//IX_POI
+				+ "),"
+				+ "q3 as ( "
+					+ " select distinct  b.md5_code,b.ruleid,b.pid,b.information,b.worker ,b.created  from q2 b where b.pid = "+pid+" "
+				+ ")");
+
+		sql.append(" select * from q3 order by created desc,md5_code desc ");
+		
+		System.out.println("poiCheckResultList:  "+ sql);
+		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
+
+			@Override
+			public JSONArray handle(ResultSet rs) throws SQLException {
+				
+				JSONArray results = new JSONArray();
+				while(rs.next()){
+					
+					JSONObject json = new JSONObject();
+					
+					json.put("id",  rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("pid", rs.getInt("pid"));
+
+					json.put("information", rs.getString("information"));
+					
 					json.put("create_date", rs.getString("created"));
 
 					json.put("worker", rs.getString("worker"));
 					
-					//*****************************
 					//查询关联poi根据pid 
 					if(rs.getInt("pid") != 0){
-						JSONArray refFeaturesArr = queryRefFeatures(rs.getInt("pid"));//poi.getChildren();
+						JSONArray refFeaturesArr = queryRefFeatures(rs.getInt("pid"));
 						if(refFeaturesArr != null){
 							json.put("refFeatures", refFeaturesArr);
 							json.put("refCount", refFeaturesArr.size());
@@ -777,19 +824,24 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 						json.put("refCount", 0);
 					}
 					
-					//********************************
-
+					
 					results.add(json);
 				}
-				page.setTotalCount(total);
-				page.setResult(results);
-				return page;
+				return results;
 			}
 		}
 		);
-		//,params);
 	}
 	
+	/**
+	 * @Title: queryRefFeatures
+	 * @Description: 根据pid 获取关联poi的数据
+	 * @param pid
+	 * @return  JSONArray
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月14日 下午8:02:27 
+	 */
 	@SuppressWarnings("unchecked")
 	public JSONArray queryRefFeatures(int pid) {
 		StringBuilder sql = new StringBuilder(
@@ -852,8 +904,6 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 						
 						json.put("linkPid", rs.getInt("link_pid"));
 						
-						//json.put("information", rs.getString("information"));
-						
 						STRUCT struct = (STRUCT) rs.getObject("geometry");
 						Geometry geometry = null;
 						GeoTranslator trans = null;
@@ -862,10 +912,9 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 							 geometry = GeoTranslator.struct2Jts(struct);
 							 trans = new GeoTranslator();
 							 geometryStr= trans.jts2Wkt(geometry,1,5);
-							 System.out.println(geometryStr);
 						} catch (Exception e) {
 							System.out.println("查询结果获取Geometry失败");
-							//throw new Exception("查询结果获取Geometry失败");
+							e.printStackTrace();
 						}
 
 						json.put("geometry",geometryStr);

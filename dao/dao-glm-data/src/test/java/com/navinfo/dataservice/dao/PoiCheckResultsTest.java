@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /** 
  * @ClassName: RdNameImportTest.java
@@ -41,13 +42,12 @@ public class PoiCheckResultsTest {
 			grids.add("60561202");
 			grids.add("60561203");
 				
-				Page page = null;
+			JSONObject page = null;
 				//List<JSONObject> page =null;
 				try {
-					 page =a.poiCheckResultList(0, grids, 5, 1);
+					 page =a.poiCheckResults(767);
 					//page =a.list(2, grids, 5, 1);
-					 System.out.println(page.getResult());
-					 System.out.println(page.getTotalCount());
+					 System.out.println(page);
 					
 					/*JSONArray results = a.queryRefFeatures(1810842);
 					System.out.println(results);*/

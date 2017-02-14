@@ -82,6 +82,20 @@ public class SubtaskService {
 	 */
 	public void create(long userId,JSONObject dataJson) throws ServiceException, ParseException{
 		try{
+			//处理grid：1list转map;2根据grid计算几何
+			if(dataJson.containsKey("gridIds")){
+				JSONArray gridIds = dataJson.getJSONArray("gridIds");
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					for(Object gridId:gridIds.toArray()){
+						gridIdMap.put(gridId.toString(), 1);
+					}
+					dataJson.put("gridIds",gridIdMap);
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					dataJson.put("geometry",wkt);	
+				}
+			}
+			
 			//质检子任务信息
 			int qualityExeUserId = 0;
 			String qualityPlanStartDate = "";
@@ -281,6 +295,20 @@ public class SubtaskService {
 		List<Subtask> subtaskList = new ArrayList<Subtask>();
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 
+		//处理grid：1list转map;2根据grid计算几何
+		if(dataJson.containsKey("gridIds")){
+			JSONArray gridIds = dataJson.getJSONArray("gridIds");
+			if(!gridIds.isEmpty() || gridIds.size()>0){
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(Object gridId:gridIds.toArray()){
+					gridIdMap.put(gridId.toString(), 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(gridIds);
+				dataJson.put("geometry",wkt);	
+			}
+		}
+		
 		int qualitySubtaskId = 0;//质检子任务id
 		int qualityExeUserId = 0;//是否新建质检子任务标识
 		String qualityPlanStartDate = "";
@@ -320,12 +348,12 @@ public class SubtaskService {
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 				qualitySubtask.setExeUserId(qualityExeUserId);
-				if(dataJson.containsKey("gridIds")){
-					qualitySubtask.setGridIds(subtask.getGridIds());
-					//根据gridIds获取wkt
-					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
-					qualitySubtask.setGeometry(wkt);
-				}
+//				if(dataJson.containsKey("gridIds")){
+//					qualitySubtask.setGridIds(subtask.getGridIds());
+//					//根据gridIds获取wkt
+//					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
+//					qualitySubtask.setGeometry(wkt);
+//				}
 					
 				//创建质检子任务 subtask	
 				Integer newQualitySubtaskId = createSubtask(qualitySubtask);	
@@ -482,7 +510,7 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
 			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
@@ -577,14 +605,15 @@ public class SubtaskService {
 						}	
 						
 						if(1 == rs.getInt("STATUS")){
-							SubtaskStatInfo stat = new SubtaskStatInfo();
-							try{	
-								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-							} catch (Exception e) {
-								log.warn("subtask query error",e);
-							}
-							subtask.setPercent(stat.getPercent());
+							subtask.setPercent(100);
+//							SubtaskStatInfo stat = new SubtaskStatInfo();
+//							try{	
+//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//							} catch (Exception e) {
+//								log.warn("subtask query error",e);
+//							}
+//							subtask.setPercent(stat.getPercent());
 						}
 						subtask.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;
@@ -965,6 +994,48 @@ public class SubtaskService {
 	}
 
 
+//	/**
+//	 * @Title: createSubtaskBean
+//	 * @Description: (修改)根据参数生成subtask bean(第七迭代)
+//	 * @param userId
+//	 * @param dataJson
+//	 * @return
+//	 * @throws ServiceException  Subtask
+//	 * @throws 
+//	 * @author zl zhangli5174@navinfo.com
+//	 * @date 2016年11月3日 下午5:07:59 
+//	 */
+//	public Subtask createSubtaskBean(long userId, JSONObject dataJson) throws ServiceException {
+//		try{
+//			String wkt = null;
+//			JSONArray gridIds;
+//			if(!dataJson.containsKey("gridIds")){
+//				int taskId = dataJson.getInt("taskId");
+//				gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
+//			}else{
+//				gridIds = dataJson.getJSONArray("gridIds");
+//			}
+//			if(!gridIds.isEmpty() || gridIds.size()>0){
+//				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//				for(Object gridId:gridIds.toArray()){
+//					gridIdMap.put(gridId.toString(), 1);
+//				}
+//				dataJson.put("gridIds",gridIdMap);
+//				//根据gridIds获取wkt
+//				wkt = GridUtils.grids2Wkt(gridIds);
+//				dataJson.put("geometry",wkt);	
+//			}
+//			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+//			bean.setCreateUserId((int)userId);
+//			bean.setGeometry(wkt);
+//			return bean;
+//			
+//		} catch (Exception e) {
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
+//		}
+//	}
+	
 	/**
 	 * @Title: createSubtaskBean
 	 * @Description: (修改)根据参数生成subtask bean(第七迭代)
@@ -978,23 +1049,23 @@ public class SubtaskService {
 	 */
 	public Subtask createSubtaskBean(long userId, JSONObject dataJson) throws ServiceException {
 		try{
-			String wkt = null;
-			JSONArray gridIds;
-			if(!dataJson.containsKey("gridIds")){
+			if(!dataJson.containsKey("gridIds")&&dataJson.containsKey("taskId")){
 				int taskId = dataJson.getInt("taskId");
-				gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
-			}else{
-				gridIds = dataJson.getJSONArray("gridIds");
+				JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					for(Object gridId:gridIds.toArray()){
+						gridIdMap.put(gridId.toString(), 1);
+					}
+					dataJson.put("gridIds",gridIdMap);
+					//根据gridIds获取wkt
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					dataJson.put("geometry",wkt);	
+				}
 			}
-			if(!gridIds.isEmpty() || gridIds.size()>0){
-				Object[] gridIdList = gridIds.toArray();
-				dataJson.put("gridIds",gridIdList);
-				//根据gridIds获取wkt
-				wkt = GridUtils.grids2Wkt(gridIds);
-			}
+			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
-			bean.setGeometry(wkt);
 			return bean;
 			
 		} catch (Exception e) {

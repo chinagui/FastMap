@@ -39,6 +39,12 @@ public class InforManOperation {
 		run.update(conn,sql);
 	}
 	
+	public static void updatePlanStatus(Connection conn,String inforId,int planStatus) throws Exception{
+		String sql="update infor set plan_status="+planStatus+" where infor_id='"+inforId+"'";
+		QueryRunner run = new QueryRunner();
+		run.update(conn,sql);
+	}
+	
 	public static void closeByTasks(Connection conn,List<Integer> taskIds) throws Exception{
 		String sql="UPDATE INFOR I SET I.PLAN_STATUS = 2 WHERE I.TASK_ID IN ("+taskIds.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+") AND I.PLAN_STATUS = 1";

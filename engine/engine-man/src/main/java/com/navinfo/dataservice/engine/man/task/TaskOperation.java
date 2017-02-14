@@ -2075,5 +2075,15 @@ public class TaskOperation {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @param gridIds
+	 */
+	public static void adjustTaskRegion(Connection conn, Integer taskId, List<Integer> gridIds) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

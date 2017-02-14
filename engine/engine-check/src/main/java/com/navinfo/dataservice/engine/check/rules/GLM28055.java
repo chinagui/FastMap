@@ -52,16 +52,16 @@ public class GLM28055 extends baseRule{
 				RdRoadLink RdRoadLink = (RdRoadLink)obj;
 				checkRdRoadLink(RdRoadLink);
 			}
-			//RdInter新增会触发
-			else if (obj instanceof RdInter){
-				RdInter RdInter = (RdInter)obj;
-				checkRdInter(RdInter);
-			}
-			//RdInterLink新增会触发
-			else if (obj instanceof RdInterLink){
-				RdInterLink RdInterLink = (RdInterLink)obj;
-				checkRdInterLink(RdInterLink);
-			}
+//			//RdInter新增会触发
+//			else if (obj instanceof RdInter){
+//				RdInter RdInter = (RdInter)obj;
+//				checkRdInter(RdInter);
+//			}
+//			//RdInterLink新增会触发
+//			else if (obj instanceof RdInterLink){
+//				RdInterLink RdInterLink = (RdInterLink)obj;
+//				checkRdInterLink(RdInterLink);
+//			}
 			//RdLink属性修改会触发
 			else if (obj instanceof RdLink){
 				RdLink RdLink = (RdLink)obj;
@@ -79,14 +79,10 @@ public class GLM28055 extends baseRule{
 			int multiDigitized = Integer.parseInt(rdLink.changedFields().get("multiDigitized").toString());
 			if(multiDigitized == 0){
 				StringBuilder sb = new StringBuilder();
-
-				sb.append("SELECT 1 FROM RD_INTER_LINK RIL");
-				sb.append(" WHERE RIL.U_RECORD <> 2");
-				sb.append(" AND RIL.PID = " + rdLink.getPid());
-				sb.append(" UNION");
+				
 				sb.append("SELECT 1 FROM RD_ROAD_LINK RRL");
 				sb.append(" WHERE RRL.U_RECORD <> 2");
-				sb.append(" AND RRL.PID = " + rdLink.getPid());
+				sb.append(" AND RRL.LINK_PID = " + rdLink.getPid());
 				
 				String sql = sb.toString();
 				log.info("RdLink后检查GLM28055:" + sql);

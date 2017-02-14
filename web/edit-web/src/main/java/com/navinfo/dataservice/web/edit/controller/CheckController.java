@@ -96,8 +96,19 @@ public class CheckController extends BaseController {
 				}
 				logger.info("end check/list manApi");
 			}		
-			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
-			logger.info("end check/list");
+			//***********zl 2017.02.13************
+			Page page = null;
+			if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
+				page = selector.poiCheckResultList(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/poiCheckResultList");
+			}else{
+				page = selector.list(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/list");
+			}
+			
+			//************************************
+			/*Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+			logger.info("end check/list");*/
 
 			return new ModelAndView("jsonView", success(page));
 

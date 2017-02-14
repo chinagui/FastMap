@@ -9,6 +9,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONArray;
@@ -18,8 +21,11 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValExceptionSelector {
 
@@ -653,5 +659,228 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		}
 
 		return ruleList;
+	}
+
+	/**
+	 * @Title: poiCheckResultList
+	 * @Description: poi 检查结果查询
+	 * @param subtaskType
+	 * @param grids
+	 * @param pageSize
+	 * @param pageNum
+	 * @return
+	 * @throws Exception  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月13日 下午10:07:57 
+	 */
+	public Page poiCheckResultList(int subtaskType, Set<String> grids, final int pageSize, final int pageNum) throws Exception {
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		Clob pidsClob = ConnectionUtil.createClob(conn);
+		pidsClob.setString(1, StringUtils.join(grids, ","));
+		
+		//*********临时方案***************
+		String gridsStr = StringUtils.join(grids, ",");
+		//************************
+		
+		StringBuilder sql = new StringBuilder(
+				"with q1 as( "
+				+ "select a.md5_code,a.ruleid,a.situation,a.targets,a.information,a.worker ,a.created from ni_val_exception a where  " //'"+gridsStr+"'
+					+ "exists( select 1 from ni_val_exception_grid b,(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table('"+gridsStr+"'))) grid_table  where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE) "
+				+ " and EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
+				+ " union all "
+					+ "select c.md5_code,c.rule_id ruleid,c.situation,c.targets,c.information,c.worker ,c.create_date created from ck_exception c where "
+						+ "exists( select 1 from ck_exception_grid d,(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table('"+gridsStr+"'))) grid_table  where c.row_id = d.ck_row_id and d.grid_id =grid_table.COLUMN_VALUE) "
+				+ " and EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
+				+ " ), "
+				+ "q2 as ( "
+					+ "select e.md5_code,e.ruleid,e.situation,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
+						+ " from q1 e CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "//IX_POI
+				+ "),"
+				+ "q3 as ( "
+					+ " select f.md5_code,f.ruleid,f.situation,p.pid,f.information,f.worker ,f.created ,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
+						+ "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
+							+ " from ix_poi p , q2 f  where f.pid = p.pid  "
+				+ ")");
+
+		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM "
+				+ "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
+		sql.append(" WHERE ROWNUM <= "+pageEndNum+") A "
+				+ "WHERE A.ROWNO >= "+pageStartNum+" ");
+		sql.append(" order by created desc,md5_code desc ");
+		
+		System.out.println("poiCheckResultList:  "+ sql);
+		Object [] params = new Object[]{pidsClob, pidsClob};//, pidsClob
+		
+		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<Page>(){
+
+			@Override
+			public Page handle(ResultSet rs) throws SQLException {
+				
+				Page page =new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while(rs.next()){
+					
+					if(total ==0){total=rs.getInt("TOTAL_RECORD_NUM_");}
+					
+					JSONObject json = new JSONObject();
+					
+					json.put("id",  rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("pid", rs.getInt("pid"));
+
+					json.put("information", rs.getString("information"));
+					
+					STRUCT struct = (STRUCT) rs.getObject("geometry");
+					GeoTranslator trans = null;
+					String geometryStr = null;
+					Geometry geometry = null;
+					try {
+						 geometry = GeoTranslator.struct2Jts(struct);
+						 trans = new GeoTranslator();
+						 geometryStr= trans.jts2Wkt(geometry,1,5);
+						 System.out.println(geometryStr);
+					} catch (Exception e) {
+						System.out.println("查询结果获取Geometry失败");
+						//throw new Exception("查询结果获取Geometry失败");
+					}
+
+					json.put("geometry",geometryStr);
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+					
+					//*****************************
+					//查询关联poi根据pid 
+					if(rs.getInt("pid") != 0){
+						JSONArray refFeaturesArr = queryRefFeatures(rs.getInt("pid"));//poi.getChildren();
+						if(refFeaturesArr != null){
+							json.put("refFeatures", refFeaturesArr);
+							json.put("refCount", refFeaturesArr.size());
+						}else{
+							json.put("refFeatures", new JSONArray());
+							json.put("refCount", 0);
+						}
+						
+					}else{
+						json.put("refFeatures", new JSONArray());
+						json.put("refCount", 0);
+					}
+					
+					//********************************
+
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		}
+		);
+		//,params);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public JSONArray queryRefFeatures(int pid) {
+		StringBuilder sql = new StringBuilder(
+				" with q1 as( "
+						+ "select z.child_poi_pid ref_pid,2 ref_type from ix_poi_parent f ,ix_poi_children z  where f.group_id = z.group_id and f.parent_poi_pid = "+pid+"  "
+						+ " union all  "
+						+ " select f.parent_poi_pid ref_pid,1 ref_type from ix_poi_parent f ,ix_poi_children z where f.group_id = z.group_id and z.child_poi_pid ="+pid+" "
+						+ " union all "
+						+ "	select (select pp.poi_pid  from ix_samepoi_part pp where pp.group_id = p.group_id and pp.poi_pid != p.poi_pid)  ref_pid   ,3 ref_type "
+								+ " from ix_samepoi s , ix_samepoi_part p where s.group_id = p.group_id  and s.u_record != 2 and p.u_record != 2  and p.poi_pid = "+pid+" "
+						+ "),"
+						+ "q2 as( "
+						+ " select distinct q.ref_pid ,q.ref_type  from q1 q"
+						+ ") "
+						+ " select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name,m.ref_type "
+								+ "from ix_poi t ,q2 m where t.pid =m.ref_pid"
+						+ " ");
+
+		
+		System.out.println("queryRefFeatures sql :  "+ sql);
+		try {
+			return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
+
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					
+					JSONArray results = new JSONArray();
+					while(rs.next()){
+						JSONObject json = new JSONObject();
+						
+						json.put("name",  rs.getString("name"));
+
+						json.put("kindCode", rs.getString("kind_code"));
+
+						json.put("fid", rs.getString("fid"));
+
+						json.put("level", rs.getInt("level_"));
+
+						json.put("pid", rs.getInt("pid"));
+
+						json.put("refType", rs.getInt("ref_type"));
+						
+						int lifecycle = 0;
+						switch (rs.getInt("u_record")) {
+						case 0:
+							lifecycle = 0 ;
+							break;
+						case 1:
+							lifecycle = 3 ;
+							break;
+						case 2:
+							lifecycle = 1 ;
+							break;
+						case 3:
+							lifecycle = 2 ;
+							break;
+						}
+						
+						json.put("lifecycle", lifecycle);
+						
+						json.put("linkPid", rs.getInt("link_pid"));
+						
+						//json.put("information", rs.getString("information"));
+						
+						STRUCT struct = (STRUCT) rs.getObject("geometry");
+						Geometry geometry = null;
+						GeoTranslator trans = null;
+						String geometryStr = null;
+						try {
+							 geometry = GeoTranslator.struct2Jts(struct);
+							 trans = new GeoTranslator();
+							 geometryStr= trans.jts2Wkt(geometry,1,5);
+							 System.out.println(geometryStr);
+						} catch (Exception e) {
+							System.out.println("查询结果获取Geometry失败");
+							//throw new Exception("查询结果获取Geometry失败");
+						}
+
+						json.put("geometry",geometryStr);
+
+						
+						
+						results.add(json);
+					}
+					
+					return results;
+				}
+			});
+		} catch (SQLException e) {
+			return null;
+			//e.printStackTrace();
+		}
 	}
 }

@@ -48,8 +48,8 @@ public class scPartitionMeshlist {
 								conn = DBConnector.getInstance().getMetaConnection();
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
-								Mesh4Partition meshs =new Mesh4Partition();
 								while (rs.next()) {
+									Mesh4Partition meshs =new Mesh4Partition();
 									meshs.setMesh(rs.getInt("mesh"));
 									meshs.setAdminCode(rs.getInt("admincode"));
 									meshs.setProvince(rs.getString("province"));

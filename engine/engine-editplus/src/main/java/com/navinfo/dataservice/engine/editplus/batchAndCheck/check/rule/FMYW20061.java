@@ -39,6 +39,9 @@ public class FMYW20061 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			//存在IxPoiAddress新增或者修改履历
 			IxPoiAddress address=poiObj.getCHAddress();
+			if (address == null) {
+				return;
+			}
 			if(address.getHisOpType().equals(OperationType.INSERT)||(address.getHisOpType().equals(OperationType.UPDATE))){
 				
 				String allStr = address.getProvince()+"|"+address.getCity()+"|"+address.getCounty()+"|"+address.getTown()+"|"

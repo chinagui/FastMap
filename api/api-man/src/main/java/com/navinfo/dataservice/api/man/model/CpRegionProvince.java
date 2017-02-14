@@ -1,12 +1,14 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
+
 /** 
 * @ClassName:  Block 
 * @author code generator
 * @date 2016-06-08 01:32:01 
 * @Description: TODO
 */
-public class CpRegionProvince  {
+public class CpRegionProvince implements Serializable {
 	private int regionId ;
 	private String ndsRegioncode ;
 	private int admincode ;

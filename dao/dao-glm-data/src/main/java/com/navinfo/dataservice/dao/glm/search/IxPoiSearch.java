@@ -1050,8 +1050,8 @@ public class IxPoiSearch implements ISearch {
 				//nameList赋值
 				if (firstWordItem.equals("poi_englishname")) {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
-						List<String> nameList = new ArrayList<String>();
 						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
+							List<String> nameList = new ArrayList<String>();
 							String nameStr = name.getName();
 							if(nameStr==null||nameStr.isEmpty()){continue;}
 							String[] wordList = nameStr.split(" ");
@@ -1060,11 +1060,15 @@ public class IxPoiSearch implements ISearch {
 									nameList.add(word + "&" + ENGSHORTMAP.get(word));
 								}
 							}
+							dataObj.put("nameList", nameList);
 						}
-						dataObj.put("nameList", nameList);
 					}
 				}
 			}
+			if (!dataObj.containsKey("nameList")) {
+				dataObj.put("nameList", new ArrayList<String>());
+			}
+			
 			dataObj.put("chiNameList", chiNameList);
 			dataObj.put("names", nameArray);
 			//dataObj.put("nameFlag", nameFlag);
@@ -1139,8 +1143,9 @@ public class IxPoiSearch implements ISearch {
 					}
 					addrArray.add(addrObj);
 					//addressList赋值
-					List<String> addrList = new ArrayList<String>();
+					
 					if (address.getLangCode().equals("ENG")) {
+						List<String> addrList = new ArrayList<String>();
 						String fullname = address.getFullname();
 						if(fullname==null||fullname.isEmpty()){continue;}
 						String[] wordList = fullname.split(" ");
@@ -1149,8 +1154,14 @@ public class IxPoiSearch implements ISearch {
 								addrList.add(word + "&" + ENGSHORTMAP.get(word));
 							}
 						}
+						if (addrList.size()>0) {
+							dataObj.put("addressList", addrList);
+						}
 					}
-					dataObj.put("addressList", addrList);	
+					
+				}
+				if (!dataObj.containsKey("addressList")) {
+					dataObj.put("addressList", new ArrayList<String>());
 				}
 				dataObj.put("addresses", addrArray);	
 			} 

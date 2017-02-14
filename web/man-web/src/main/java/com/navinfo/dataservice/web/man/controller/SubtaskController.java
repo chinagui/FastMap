@@ -217,7 +217,7 @@ public class SubtaskController extends BaseController {
 			
 			int subtaskId = dataJson.getInt("subtaskId");
 
-			Subtask subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);
+			Map<String,Object> subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);
 			return new ModelAndView("jsonView", success(subtask));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

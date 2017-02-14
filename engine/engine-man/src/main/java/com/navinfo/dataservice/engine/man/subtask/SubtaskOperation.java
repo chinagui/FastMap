@@ -1448,7 +1448,7 @@ public class SubtaskOperation {
 
 			ResultSetHandler<Map<Integer,Integer>> rsHandler = new ResultSetHandler<Map<Integer,Integer>>() {
 				public Map<Integer,Integer> handle(ResultSet rs) throws SQLException {
-					Map<Integer,Integer> gridIds = null;
+					Map<Integer,Integer> gridIds = new HashMap<Integer,Integer>();
 					while (rs.next()) {
 						gridIds.put(rs.getInt("grid_id"), rs.getInt("type"));
 		

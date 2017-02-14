@@ -82,6 +82,20 @@ public class SubtaskService {
 	 */
 	public void create(long userId,JSONObject dataJson) throws ServiceException, ParseException{
 		try{
+			//处理grid：1list转map;2根据grid计算几何
+			if(dataJson.containsKey("gridIds")){
+				JSONArray gridIds = dataJson.getJSONArray("gridIds");
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					for(Object gridId:gridIds.toArray()){
+						gridIdMap.put(gridId.toString(), 1);
+					}
+					dataJson.put("gridIds",gridIdMap);
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					dataJson.put("geometry",wkt);	
+				}
+			}
+			
 			//质检子任务信息
 			int qualityExeUserId = 0;
 			String qualityPlanStartDate = "";
@@ -281,6 +295,20 @@ public class SubtaskService {
 		List<Subtask> subtaskList = new ArrayList<Subtask>();
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 
+		//处理grid：1list转map;2根据grid计算几何
+		if(dataJson.containsKey("gridIds")){
+			JSONArray gridIds = dataJson.getJSONArray("gridIds");
+			if(!gridIds.isEmpty() || gridIds.size()>0){
+				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+				for(Object gridId:gridIds.toArray()){
+					gridIdMap.put(gridId.toString(), 1);
+				}
+				dataJson.put("gridIds",gridIdMap);
+				String wkt = GridUtils.grids2Wkt(gridIds);
+				dataJson.put("geometry",wkt);	
+			}
+		}
+		
 		int qualitySubtaskId = 0;//质检子任务id
 		int qualityExeUserId = 0;//是否新建质检子任务标识
 		String qualityPlanStartDate = "";
@@ -320,12 +348,12 @@ public class SubtaskService {
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 				qualitySubtask.setExeUserId(qualityExeUserId);
-				if(dataJson.containsKey("gridIds")){
-					qualitySubtask.setGridIds(subtask.getGridIds());
-					//根据gridIds获取wkt
-					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
-					qualitySubtask.setGeometry(wkt);
-				}
+//				if(dataJson.containsKey("gridIds")){
+//					qualitySubtask.setGridIds(subtask.getGridIds());
+//					//根据gridIds获取wkt
+//					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
+//					qualitySubtask.setGeometry(wkt);
+//				}
 					
 				//创建质检子任务 subtask	
 				Integer newQualitySubtaskId = createSubtask(qualitySubtask);	
@@ -474,7 +502,7 @@ public class SubtaskService {
 	 * @throws ServiceException
 	 */
 	
-	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
+	public Map<String,Object> queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -482,7 +510,7 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
 			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
@@ -491,20 +519,20 @@ public class SubtaskService {
 			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
 	
 			String selectSql = sb.toString();
-			
 
-			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
-				public Subtask handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
 					if (rs.next()) {
-						Subtask subtask = new Subtask();						
-						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
-						subtask.setName(rs.getString("NAME"));
-						subtask.setType(rs.getInt("TYPE"));
-						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
-						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						subtask.setDescp(rs.getString("DESCP"));
-						subtask.setStatus(rs.getInt("STATUS"));
-						subtask.setReferId(rs.getInt("REFER_ID"));
+						Map<String,Object> subtask = new HashMap<String,Object>();						
+						subtask.put("subtaskId",rs.getInt("SUBTASK_ID"));
+						subtask.put("name",rs.getString("NAME"));
+						subtask.put("type",rs.getInt("TYPE"));
+						subtask.put("planStartDate",rs.getTimestamp("PLAN_START_DATE"));
+						subtask.put("planEndDate",rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("descp",rs.getString("DESCP"));
+						subtask.put("status",rs.getInt("STATUS"));
+						subtask.put("stage",rs.getInt("STAGE"));
+						subtask.put("referId",rs.getInt("REFER_ID"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -513,9 +541,9 @@ public class SubtaskService {
 							//获取作业员名称
 							try {
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
-								subtask.setExeUserId(exeUserId);
-								subtask.setExecuterId(exeUserId);
-								subtask.setExecuter(userInfo.getUserRealName());
+								subtask.put("exeUserId",exeUserId);
+								subtask.put("executerId",exeUserId);
+								subtask.put("executer",userInfo.getUserRealName());
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -524,25 +552,25 @@ public class SubtaskService {
 							//获取作业组名称
 							try {
 								String userGroupName = UserGroupService.getInstance().getGroupNameByGroupId(exeGroupId);
-								subtask.setExeGroupId(exeUserId);
-								subtask.setExecuterId(exeUserId);
-								subtask.setExecuter(userGroupName);
+								subtask.put("exeGroupId",exeUserId);
+								subtask.put("executerId",exeUserId);
+								subtask.put("executer",userGroupName);
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
-						subtask.setQualitySubtaskId(rs.getInt("QUALITY_SUBTASK_ID"));
+						subtask.put("qualitySubtaskId",rs.getInt("QUALITY_SUBTASK_ID"));
 						//获取质检任务信息
-						if(subtask.getQualitySubtaskId()!=0){
+						if(!subtask.get("qualitySubtaskId").toString().equals("0")){
 							try {
-								Subtask subtaskQuality = queryBySubtaskIdS(subtask.getQualitySubtaskId());
-								subtask.setQualityExeUserId(subtaskQuality.getExecuterId());
-								subtask.setQualityPlanStartDate(subtaskQuality.getPlanStartDate());
-								subtask.setQualityPlanEndDate(subtaskQuality.getPlanEndDate());
-								subtask.setQualityTaskStatus(subtaskQuality.getStatus());
+								Subtask subtaskQuality = queryBySubtaskIdS((Integer)subtask.get("qualitySubtaskId"));
+								subtask.put("qualityExeUserId",subtaskQuality.getExecuterId());
+								subtask.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
+								subtask.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
+								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
-								subtask.setQualityExeUserName(userInfo.getUserRealName());
+								subtask.put("qualityExeUserName",userInfo.getUserRealName());
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -552,9 +580,9 @@ public class SubtaskService {
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 						try {
-							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+							subtask.put("geometry",GeoTranslator.struct2Wkt(struct));
 							String clobStr = GeoTranslator.struct2Wkt(struct);
-							subtask.setGeometryJSON(Geojson.wkt2Geojson(clobStr));
+							subtask.put("geometryJSON",Geojson.wkt2Geojson(clobStr));
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -562,31 +590,32 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
+							subtask.put("gridIds",gridIds.keySet());
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						
-						subtask.setTaskId(rs.getInt("TASK_ID"));
+						subtask.put("taskId",rs.getInt("TASK_ID"));
 						if (2 == rs.getInt("TASK_TYPE")) {
 							//月编子任务
-							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
 						} else {
-							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+							subtask.put("dbId",rs.getInt("DAILY_DB_ID"));
 						}	
 						
 						if(1 == rs.getInt("STATUS")){
-							SubtaskStatInfo stat = new SubtaskStatInfo();
-							try{	
-								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-							} catch (Exception e) {
-								log.warn("subtask query error",e);
-							}
-							subtask.setPercent(stat.getPercent());
+							subtask.put("percent",100);
+//							SubtaskStatInfo stat = new SubtaskStatInfo();
+//							try{	
+//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+//							} catch (Exception e) {
+//								log.warn("subtask query error",e);
+//							}
+//							subtask.setPercent(stat.getPercent());
 						}
-						subtask.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;
 					}
 					return null;
@@ -601,6 +630,142 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+//	/**
+//	 * 获取subtask详情
+//	 * @param subtaskId
+//	 * @return
+//	 * @throws ServiceException
+//	 */
+//	
+//	public Subtask queryBySubtaskId(Integer subtaskId) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			QueryRunner run = new QueryRunner();
+//			
+//			StringBuilder sb = new StringBuilder();
+//			
+//			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+//			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
+//			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
+//			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
+//			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
+//			sb.append(" AND T.REGION_ID = R.REGION_ID");
+//			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
+//	
+//			String selectSql = sb.toString();
+//			
+//
+//			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
+//				public Subtask handle(ResultSet rs) throws SQLException {
+//					if (rs.next()) {
+//						Subtask subtask = new Subtask();						
+//						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+//						subtask.setName(rs.getString("NAME"));
+//						subtask.setType(rs.getInt("TYPE"));
+//						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+//						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+//						subtask.setDescp(rs.getString("DESCP"));
+//						subtask.setStatus(rs.getInt("STATUS"));
+//						subtask.setReferId(rs.getInt("REFER_ID"));
+//						
+//						//作业员/作业组信息
+//						int exeUserId = rs.getInt("EXE_USER_ID");
+//						int exeGroupId = rs.getInt("EXE_GROUP_ID");
+//						if(exeUserId!=0){
+//							//获取作业员名称
+//							try {
+//								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
+//								subtask.setExeUserId(exeUserId);
+//								subtask.setExecuterId(exeUserId);
+//								subtask.setExecuter(userInfo.getUserRealName());
+//							} catch (ServiceException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}else{
+//							//获取作业组名称
+//							try {
+//								String userGroupName = UserGroupService.getInstance().getGroupNameByGroupId(exeGroupId);
+//								subtask.setExeGroupId(exeUserId);
+//								subtask.setExecuterId(exeUserId);
+//								subtask.setExecuter(userGroupName);
+//							} catch (ServiceException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						subtask.setQualitySubtaskId(rs.getInt("QUALITY_SUBTASK_ID"));
+//						//获取质检任务信息
+//						if(subtask.getQualitySubtaskId()!=0){
+//							try {
+//								Subtask subtaskQuality = queryBySubtaskIdS(subtask.getQualitySubtaskId());
+//								subtask.setQualityExeUserId(subtaskQuality.getExecuterId());
+//								subtask.setQualityPlanStartDate(subtaskQuality.getPlanStartDate());
+//								subtask.setQualityPlanEndDate(subtaskQuality.getPlanEndDate());
+//								subtask.setQualityTaskStatus(subtaskQuality.getStatus());
+//								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
+//								subtask.setQualityExeUserName(userInfo.getUserRealName());
+//							} catch (ServiceException e) {
+//								// TODO Auto-generated catch block
+//								e.printStackTrace();
+//							}
+//						}
+//						
+//						//GEOMETRY
+//						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+//						try {
+//							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+//							String clobStr = GeoTranslator.struct2Wkt(struct);
+//							subtask.setGeometryJSON(Geojson.wkt2Geojson(clobStr));
+//						} catch (Exception e1) {
+//							// TODO Auto-generated catch block
+//							e1.printStackTrace();
+//						}
+//						
+//						try {
+//							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+//							subtask.setGridIds(gridIds);
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						
+//						subtask.setTaskId(rs.getInt("TASK_ID"));
+//						if (2 == rs.getInt("TASK_TYPE")) {
+//							//月编子任务
+//							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+//						} else {
+//							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+//						}	
+//						
+//						if(1 == rs.getInt("STATUS")){
+//							subtask.setPercent(100);
+////							SubtaskStatInfo stat = new SubtaskStatInfo();
+////							try{	
+////								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+////								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+////							} catch (Exception e) {
+////								log.warn("subtask query error",e);
+////							}
+////							subtask.setPercent(stat.getPercent());
+//						}
+//						subtask.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+//						return subtask;
+//					}
+//					return null;
+//				}	
+//			};
+//			return run.query(conn, selectSql,rsHandler);			
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 
 //	/**
 //	 * @Title: queryBySubtaskId
@@ -965,6 +1130,48 @@ public class SubtaskService {
 	}
 
 
+//	/**
+//	 * @Title: createSubtaskBean
+//	 * @Description: (修改)根据参数生成subtask bean(第七迭代)
+//	 * @param userId
+//	 * @param dataJson
+//	 * @return
+//	 * @throws ServiceException  Subtask
+//	 * @throws 
+//	 * @author zl zhangli5174@navinfo.com
+//	 * @date 2016年11月3日 下午5:07:59 
+//	 */
+//	public Subtask createSubtaskBean(long userId, JSONObject dataJson) throws ServiceException {
+//		try{
+//			String wkt = null;
+//			JSONArray gridIds;
+//			if(!dataJson.containsKey("gridIds")){
+//				int taskId = dataJson.getInt("taskId");
+//				gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
+//			}else{
+//				gridIds = dataJson.getJSONArray("gridIds");
+//			}
+//			if(!gridIds.isEmpty() || gridIds.size()>0){
+//				Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//				for(Object gridId:gridIds.toArray()){
+//					gridIdMap.put(gridId.toString(), 1);
+//				}
+//				dataJson.put("gridIds",gridIdMap);
+//				//根据gridIds获取wkt
+//				wkt = GridUtils.grids2Wkt(gridIds);
+//				dataJson.put("geometry",wkt);	
+//			}
+//			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+//			bean.setCreateUserId((int)userId);
+//			bean.setGeometry(wkt);
+//			return bean;
+//			
+//		} catch (Exception e) {
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("子任务创建失败，原因为:" + e.getMessage(), e);
+//		}
+//	}
+	
 	/**
 	 * @Title: createSubtaskBean
 	 * @Description: (修改)根据参数生成subtask bean(第七迭代)
@@ -978,23 +1185,23 @@ public class SubtaskService {
 	 */
 	public Subtask createSubtaskBean(long userId, JSONObject dataJson) throws ServiceException {
 		try{
-			String wkt = null;
-			JSONArray gridIds;
-			if(!dataJson.containsKey("gridIds")){
+			if(!dataJson.containsKey("gridIds")&&dataJson.containsKey("taskId")){
 				int taskId = dataJson.getInt("taskId");
-				gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
-			}else{
-				gridIds = dataJson.getJSONArray("gridIds");
+				JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
+				if(!gridIds.isEmpty() || gridIds.size()>0){
+					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					for(Object gridId:gridIds.toArray()){
+						gridIdMap.put(gridId.toString(), 1);
+					}
+					dataJson.put("gridIds",gridIdMap);
+					//根据gridIds获取wkt
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					dataJson.put("geometry",wkt);	
+				}
 			}
-			if(!gridIds.isEmpty() || gridIds.size()>0){
-				Object[] gridIdList = gridIds.toArray();
-				dataJson.put("gridIds",gridIdList);
-				//根据gridIds获取wkt
-				wkt = GridUtils.grids2Wkt(gridIds);
-			}
+			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
 			bean.setCreateUserId((int)userId);
-			bean.setGeometry(wkt);
 			return bean;
 			
 		} catch (Exception e) {

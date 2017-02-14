@@ -40,10 +40,11 @@ public class FlushResult {
 
 	private String tempFailLogTable;
 
-	public void insertFailedLog(String opId,String rowId){
+	public void insertFailedLog(String opId,String rowId,String log){
 		List<String> row = new ArrayList<String>();
 		row.add(opId);
 		row.add(rowId);
+		row.add(log);
 		failedLog.add(row);
 	}
 	public List<List> getFailedLog() {
@@ -94,12 +95,12 @@ public class FlushResult {
 	}
 
 	public int getFailedTotal() {
-		return failedTotal;
+		return this.getDeleteFailed()+this.getInsertFailed()+this.getUpdateFailed();
 	}
 
-	public void setFailedTotal(int failedTotal) {
-		this.failedTotal = failedTotal;
-	}
+//	public void setFailedTotal(int failedTotal) {
+//		this.failedTotal = failedTotal;
+//	}
 
 	public List<String> getInsertFailedList() {
 		return insertFailedList;
@@ -257,7 +258,7 @@ public class FlushResult {
 	public void recordFailLog2Temptable(Connection conn) throws Exception{
 		if (this.isSuccess()) return ;
 		QueryRunner run = new QueryRunner();
-		String sql = "insert into "+tempFailLogTable+" values(?,?)";
+		String sql = "insert into "+tempFailLogTable+" values(?,?,?)";
 		Object[][] batchParams = NaviListUtils.toArrayMatrix(this.getFailedLog());
 		run.batch(conn, sql, batchParams);
 	}

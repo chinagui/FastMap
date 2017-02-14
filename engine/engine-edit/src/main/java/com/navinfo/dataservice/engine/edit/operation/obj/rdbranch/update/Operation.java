@@ -146,23 +146,30 @@ public class Operation implements IOperation {
 		//路口关系的分歧不记录经过线
 		if(relationShipType != 1)
 		{
-			int seqNum = 1;
+			if(viaLinks.size() <= 32)
+			{
+				int seqNum = 1;
 
-			// 重新设置经过线
-			for (Integer linkPid : viaLinks) {
-				RdBranchVia via = new RdBranchVia();
+				// 重新设置经过线
+				for (Integer linkPid : viaLinks) {
+					RdBranchVia via = new RdBranchVia();
 
-				via.setBranchPid(branch.getPid());
+					via.setBranchPid(branch.getPid());
 
-				via.setLinkPid(linkPid);
+					via.setLinkPid(linkPid);
 
-				via.setSeqNum(seqNum);
+					via.setSeqNum(seqNum);
 
-				via.setMesh(this.branch.mesh());
+					via.setMesh(this.branch.mesh());
 
-				seqNum++;
+					seqNum++;
 
-				result.insertObject(via, ObjStatus.INSERT, branch.pid());
+					result.insertObject(via, ObjStatus.INSERT, branch.pid());
+				}
+			}
+			else
+			{
+				throw new Exception("分歧经过线数目不能超过32条:"+viaLinks.size());
 			}
 		}
 	}

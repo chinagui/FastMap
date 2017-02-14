@@ -14,6 +14,7 @@ import net.sf.json.JsonConfig;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -42,6 +43,8 @@ public class RdNode implements IObj {
 	private Geometry geometry;
 
 	private String reserved;
+	
+	protected ObjStatus status;
 
 	private List<IRow> forms = new ArrayList<IRow>();
 
@@ -169,12 +172,12 @@ public class RdNode implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override
@@ -188,7 +191,11 @@ public class RdNode implements IObj {
 
 		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
+		//JSONObject json = JSONObject.fromObject(this, jsonConfig);
 		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 
 		return json;
 	}

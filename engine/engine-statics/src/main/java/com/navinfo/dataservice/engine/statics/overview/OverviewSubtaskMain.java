@@ -100,7 +100,7 @@ public class OverviewSubtaskMain {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		
 		stat.put("subtaskId", subtask.getSubtaskId());
-		stat.put("blockManId", subtask.getBlockManId());
+//		stat.put("blockManId", subtask.getBlockManId());
 		stat.put("status", subtask.getStatus());
 		stat.put("planStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("planEndDate", df.format(subtask.getPlanEndDate()));
@@ -112,7 +112,7 @@ public class OverviewSubtaskMain {
 		stat.put("statTime", stat_time);
 
 		
-		List<Integer> gridIds = subtask.getGridIds();
+		List<Integer> gridIds = (List<Integer>) subtask.getGridIds().keySet();
 		List<String> gridIdList = new ArrayList<String>();
 		//grid进度详情
 		Map<String,Integer> gridPercentDetailPOI = new HashMap<String,Integer>();
@@ -256,7 +256,7 @@ public class OverviewSubtaskMain {
 				e.printStackTrace();
 			}
 			
-			subtask.setGridIds(gridIds);
+//			subtask.setGridIds(gridIds);
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//POI日编，一体化GRID粗编
@@ -271,7 +271,7 @@ public class OverviewSubtaskMain {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			subtask.setGridIds(gridIds);	
+//			subtask.setGridIds(gridIds);	
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//一体化区域粗编
@@ -293,7 +293,7 @@ public class OverviewSubtaskMain {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		
 		stat.put("subtaskId", subtask.getSubtaskId());
-		stat.put("blockManId", subtask.getBlockManId());
+//		stat.put("blockManId", subtask.getBlockManId());
 		stat.put("status", subtask.getStatus());
 		stat.put("planStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("planEndDate", df.format(subtask.getPlanEndDate()));

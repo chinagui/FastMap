@@ -84,6 +84,7 @@ public class TipsUtils {
 		oldTrackInfo.add(jsonTrackInfo);
 
 		jsonTrack.put("t_trackInfo", oldTrackInfo);
+		
 
 		return jsonTrack;
 	}
@@ -156,6 +157,8 @@ public class TipsUtils {
 				g_location, feedbacks));
 
 		index.put("s_reliability", 100);
+		
+		index.put("tipdiff", "{}"); //???????
 
 		return index;
 		
@@ -264,6 +267,8 @@ public class TipsUtils {
 				String.valueOf(sourceType), deep, g_location, feedbackObj));
 
 		index.put("s_reliability", s_reliability);
+		
+		index.put("tipdiff", "{}"); //???????
 
 		return index;
 	}

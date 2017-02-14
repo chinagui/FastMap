@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -152,7 +153,12 @@ public class ColumnSubmitJob extends AbstractJob {
 						if (errorMap != null) {
 							Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
 							for (long pid:poiMap.keySet()) {
-								pidList.remove(pid);
+								Iterator <Integer> it = pidList.iterator();
+								while (it.hasNext()) {
+									if (it.next() == pid) {
+										it.remove();
+									}
+								}
 							}
 						}
 					}

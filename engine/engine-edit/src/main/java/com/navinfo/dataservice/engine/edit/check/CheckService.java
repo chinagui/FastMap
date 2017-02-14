@@ -37,7 +37,8 @@ public class CheckService {
 	 * @param dbId
 	 * @param subTaskId
 	 * @param userId
-	 * @param checkType 检查类型（0 poi行编，1poi精编, 2道路,3 道路名）
+	 * @param checkType 检查类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
+	 * （0 poi行编，1poi精编, 2道路,3 道路名）
 	 * @return
 	 * @throws Exception 
 	 */
@@ -65,8 +66,7 @@ public class CheckService {
 		}
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		if(checkType == 3){  //道路名检查 ,直接调元数据库 全表检查		
-			//System.out.println("checkType == 3");
+		if(checkType == 5){  //道路名检查 ,直接调元数据库 全表检查		
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
@@ -81,7 +81,7 @@ public class CheckService {
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
 			//System.out.println("jobId == "+jobId);
 			}
-		}else if(checkType==2 ||checkType ==0){//道路
+		}else if(checkType==3 ||checkType ==4){//道路
 			List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("grids", grids);
@@ -90,7 +90,7 @@ public class CheckService {
 			jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId,subtaskId, "检查");
 		}//20161214 by zxy,目前行编按需检查规则未实现，不能使用新框架进行检查，暂时行编自定义检查还是通过cop检查执行，
 		//但是相关job接口已ok，检查规则实现后，开放即可
-		else if(checkType ==9){//checkType ==0poi行编
+		else if(checkType ==1){//checkType ==1poi行编
 			JSONObject poiRequestJSON=new JSONObject();
 //			*checkType ==0poi行编 
 //			 * 必传参数：subtaskId,ckRules
@@ -104,7 +104,7 @@ public class CheckService {
 			poiRequestJSON.put("targetDbId", dbId);
 			jobId=apiService.createJob("poiRowValidation", poiRequestJSON, userId,subtaskId, "检查");
 		}
-		else if (checkType ==1){//checkType ==1poi精编
+		else if (checkType ==2){//checkType ==2poi精编
 			JSONObject poiRequestJSON=new JSONObject();
 			/*checkType ==1poi精编 
 			 * 必传参数：subtaskId，firstWorkItem，secondWorkItem

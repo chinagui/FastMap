@@ -87,7 +87,7 @@ public class LogTest {
 			long userId = 1;
 			
 			for(BasicObj basicObj:basicObjs){
-				List<RunnableSQL> runnableSqlList = basicObj.generateSql();
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql(true);
 				for(RunnableSQL runnableSql:runnableSqlList){
 					runnableSql.run(conn);
 				}
@@ -138,7 +138,7 @@ public class LogTest {
 			basicObjs.add(obj);
 
 			for(BasicObj basicObj:basicObjs){
-				List<RunnableSQL> runnableSqlList = basicObj.generateSql();
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql(true);
 				for(RunnableSQL runnableSql:runnableSqlList){
 					runnableSql.run(conn);
 				}
@@ -171,7 +171,7 @@ public class LogTest {
 			objNew.getMainrow().setAttrByCol("GEOMETRY", geo);
 
 			for(BasicObj basicObj:basicObjs){
-				List<RunnableSQL> runnableSqlList = basicObj.generateSql();
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql(true);
 				for(RunnableSQL runnableSql:runnableSqlList){
 					runnableSql.run(conn);
 				}
@@ -216,7 +216,7 @@ public class LogTest {
 			basicObjs.add(obj);
 
 			for(BasicObj basicObj:basicObjs){
-				List<RunnableSQL> runnableSqlList = basicObj.generateSql();
+				List<RunnableSQL> runnableSqlList = basicObj.generateSql(true);
 				for(RunnableSQL runnableSql:runnableSqlList){
 					runnableSql.run(conn);
 				}

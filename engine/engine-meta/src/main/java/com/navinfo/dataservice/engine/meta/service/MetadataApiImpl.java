@@ -3,12 +3,14 @@ package com.navinfo.dataservice.engine.meta.service;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -30,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.scPartitionMeshlist;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
@@ -218,9 +221,9 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception {
+	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception {
 		TyCharacterFjtHmCheckSelector tyCharacterFjtHmCheckSelector = new TyCharacterFjtHmCheckSelector(conn);
-		return tyCharacterFjtHmCheckSelector.getCharacterMap();
+		return tyCharacterFjtHmCheckSelector.getCharacterMap(type);
 	}
 
 	public JSONObject getNavicovpyMap(Connection conn) throws Exception {
@@ -258,7 +261,7 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("chain", getChainMap(conn));
 			result.put("kindCode", getKindCodeMap(conn));
 			result.put("admin", getAdminMap(conn));
-			result.put("character", getTyCharacterFjtHmCheckMap(conn));
+			result.put("character", getTyCharacterFjtHmCheckMap(conn,0));
 			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));
@@ -568,6 +571,19 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public List<Map<String, Object>> searchByErrorName(String name) throws Exception {
 		return ScPointAdminarea.getInstance().searchByErrorName(name);
+	}
+
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> listMeshes4Partition()throws Exception{
+		return scPartitionMeshlist.getInstance().listMeshes4Partition();
+	}
+	/**
+	 * cp_meshlist,sc_partition_meshlist查询图幅相关
+	 */
+	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
+		return scPartitionMeshlist.getInstance().queryMeshes4PartitionByAdmincodes(admincodes);
 	}
 
 }

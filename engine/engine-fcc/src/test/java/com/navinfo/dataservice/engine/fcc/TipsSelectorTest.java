@@ -111,17 +111,38 @@ public class TipsSelectorTest extends InitApplication {
     //根据瓦片扩圈获取Tips数据
 	@Test
 	public void testSearchDataByTileWithGap() {
-		JSONArray types = new JSONArray();
-		types.add(1507);
+	/*	JSONArray types = new JSONArray();
+		types.add(8001);
+		types.add(8002);
+	//	types.add(1806);
 		//types.add(8001);
-	/*	types.add(1205);
+		types.add(1205);
 		types.add(1401);
 		types.add(1110);
 		types.add(1515);
 		types.add(1105);
 		types.add(1806);
-		types.add(1509);*/
-		
+		types.add(1509);
+		*/
+		JSONArray types = new JSONArray();
+		types.add(1501);
+		types.add(1502);
+		types.add(1503);
+		types.add(1504);
+		types.add(1505);
+		types.add(1506);
+		types.add(1507);
+		types.add(1508);
+		types.add(1509);
+		types.add(1510);
+		types.add(1511);
+		types.add(1512);
+		types.add(1513);
+		types.add(1514);
+		types.add(1515);
+		types.add(1516);
+		types.add(1517);
+
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		
 		//{"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99231}
@@ -154,7 +175,11 @@ public class TipsSelectorTest extends InitApplication {
 			//{"gap":40,"mdFlag":"d","z":17,"x":107940,"y":49619}
 			
 			//{"gap":40,"mdFlag":"d","z":20,"x":863573,"y":396921}
-			System.out.println(solrSelector.searchDataByTileWithGap(863573, 396921, 20,
+			
+			//getByTileWithGap?parameter={"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99230}
+			
+			//{"gap":40,"mdFlag":"d","z":17,"x":107898,"y":49599}
+			System.out.println(solrSelector.searchDataByTileWithGap(107898, 49599, 17,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -243,11 +268,11 @@ public class TipsSelectorTest extends InitApplication {
 		
 		
 		//根据rowkey获取单个tips的详细信息
-		//@Test
+		@Test
 		public void testSearchDataByRowkey() {
 			try {
 				System.out.println("sorl by rowkey:");
-				System.out.println(solrSelector.searchDataByRowkey("11111146543817"));
+				System.out.println(solrSelector.searchDataByRowkey("73c0077b-e950-4079-9d3b-c7454c4109f9"));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -739,9 +764,9 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
 					
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
+					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 
 					// String
 					// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";

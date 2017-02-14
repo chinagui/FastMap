@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2011-1-17
+POI导出查询
+-->
+<sqls>
+
+    <feature name="IX_POI">
+
+        <!--查询group并去重-->
+        <step value="37">
+            <sql id="poi_parent_group_sql"  sqlType="dataIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_GROUP
+                          (PID)
+                          (  SELECT DISTINCT P.GROUP_ID
+                               FROM IX_POI_PARENT P, TEMP_IX_POI T
+                              WHERE P.PARENT_POI_PID = T.PID
+                          );
+                        ]]></sql>
+            <!--非毛边提取，根据子提子的group_id  -->
+			<sql sqlType="dataNotIntegrity">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_IX_POI_GROUP
+                          (PID)
+                          (SELECT DISTINCT P.GROUP_ID
+                               FROM IX_POI_CHILDREN P, TEMP_IX_POI T
+                              WHERE P.CHILD_POI_PID = T.PID
+                          );
+                        ]]></sql>
+
+        </step>
+        
+        <!--根据引导link，删除引导link未导出的ix_poi-->
+		<step value="40">
+            <sql condition="area">
+                <![CDATA[
+                        DELETE FROM TEMP_IX_POI T
+					 WHERE T.PID IN
+					       (SELECT PID
+					          FROM IX_POI P
+					         WHERE P.LINK_PID NOT IN (SELECT PID FROM TEMP_FILTER_RD_LINK));
+
+                        ]]></sql>
+
+
+        </step>
+
+
+        <step value="100">
+            <!--
+                提取POI信息:
+                1. IX_POI
+                2. IX_POI_CONTACT
+                3. IX_POI_CHILDREN
+                4. IX_POI_PARENT
+                5. IX_POI_NAME
+                6. IX_POI_ADDRESS
+                7. IX_POI_ICON
+                8. IX_POI_PHOTO
+                9. IX_POI_NODE
+                10. IX_SAMEPOI
+                11. IX_SAMEPOI_PART
+            -->
+            <!--IX_POI-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI P WHERE EXISTS ( SELECT 1 FROM TEMP_IX_POI T WHERE P.PID=T.PID);]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P PK_IX_POI) */ P.* FROM IX_POI P,TEMP_IX_POI T WHERE P.PID=T.PID;]]></sql> -->
+            <!--IX_POI_CONTACT-->
+            <!-- <sql><![CDATA[SELECT /*+ index(P EXP_IX_04) */ P.* FROM IX_POI_CONTACT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql> -->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_CONTACT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <!--IX_POI_CHILDREN-->
+            <sql sqlType="dataIntegrity"><![CDATA[
+                          SELECT P.*
+                            FROM IX_POI_CHILDREN P, TEMP_IX_POI_GROUP T
+                           WHERE P.GROUP_ID = T.PID;
+                         ]]></sql>
+            <sql sqlType="dataNotIntegrity"><![CDATA[
+                          SELECT P.*
+                            FROM IX_POI_CHILDREN P, TEMP_IX_POI T
+                           WHERE P.CHILD_POI_PID = T.PID;
+                         ]]></sql>
+            <!--IX_POI_PARENT-->
+            <sql><![CDATA[
+                          SELECT P.*
+                            FROM IX_POI_PARENT P, TEMP_IX_POI_GROUP T
+                           WHERE (P.GROUP_ID = T.PID);
+                         ]]></sql>
+            <!--IX_POI_NAME-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_NAME P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <!--IX_POI_NAME_FLAG-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_NAME_FLAG P where exists (select 1 from IX_POI_NAME P2, TEMP_IX_POI T WHERE P2.POI_PID = T.PID AND P.NAME_ID = P2.NAME_ID);]]></sql>
+             <!--IX_POI_NAME_TONE-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_NAME_TONE P WHERE EXISTS (SELECT 1 FROM IX_POI_NAME P2, TEMP_IX_POI T WHERE P2.POI_PID = T.PID AND P.NAME_ID = P2.NAME_ID);]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P EXP_IX_07) */ P.* FROM IX_POI_NAME P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql> -->
+            <!--IX_POI_ADDRESS-->
+            <sql><![CDATA[SELECT  P.* FROM IX_POI_ADDRESS P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P EXP_IX_25) */ P.* FROM IX_POI_ADDRESS P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql> -->
+            <!--IX_POI_ICON-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_ICON P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <!--IX_POI_PHOTO-->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_PHOTO P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+
+            <!-- IX_SAMEPOI -->
+            <sql><![CDATA[
+                        SELECT P.*
+                          FROM IX_SAMEPOI P, TEMP_IX_SAMEPOI T
+                         WHERE P.GROUP_ID = T.PID;]]></sql>
+            <!-- IX_SAMEPOI_PART -->
+            <sql><![CDATA[SELECT P.* FROM IX_SAMEPOI_PART P,TEMP_IX_SAMEPOI T WHERE P.GROUP_ID=T.PID;]]></sql>
+
+
+            <!-- glm1.7.0 new -->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_FLAG P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+<!--             <sql><![CDATA[SELECT /*+ index(P EXP_IX_35) */ P.* FROM IX_POI_FLAG P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql> -->
+            <sql><![CDATA[SELECT P.* FROM IX_POI_AUDIO P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_VIDEO P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_BUILDING P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_INTRODUCTION P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_ADVERTISEMENT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_HOTEL P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_ATTRACTION P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_GASSTATION P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_RESTAURANT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_BUSINESSTIME P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.* FROM IX_POI_CHARGINGSTATION P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+            <sql><![CDATA[SELECT P.*FROM IX_POI_CHARGINGPLOT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			<!-- 240 新增表--> 
+			<sql><![CDATA[SELECT P.*FROM IX_POI_CHARGINGPLOT_PH P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			
+			<sql><![CDATA[SELECT P.* FROM IX_POI_ENTRYIMAGE P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			<sql><![CDATA[SELECT P.* FROM IX_POI_PHOTO P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>			
+			
+			<sql><![CDATA[SELECT P.* FROM IX_POI_DETAIL P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>			
+			<sql><![CDATA[SELECT P.* FROM IX_POI_PARKING P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			<!-- <sql><![CDATA[SELECT P.* FROM IX_POI_TOURROUTE  P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>			
+			<sql><![CDATA[SELECT P.* FROM IX_POI_EVENT P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>		
+			 -->	
+			<!-- 210模型增加 -->
+			<sql><![CDATA[SELECT P.* FROM IX_POI_CARRENTAL P,TEMP_IX_POI T WHERE P.POI_PID=T.PID;]]></sql>
+			
+        </step>
+
+
+
+        <step value="101">
+            <!--
+                                 删除POI信息:
+                1. IX_POI
+                2. IX_POI_CONTACT
+                3. IX_POI_CHILDREN
+                4. IX_POI_PARENT
+                5. IX_POI_NAME
+                6. IX_POI_ADDRESS
+                7. IX_POI_ICON
+                8. IX_POI_PHOTO
+                9. IX_POI_NODE
+                10. IX_SAMEPOI
+                11. IX_SAMEPOI_PART
+            -->
+            <!--IX_POI-->
+            <sql><![CDATA[DELETE FROM IX_POI P WHERE P.PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_CONTACT P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_NAME P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_ADDRESS P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_FLAG P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_ICON P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_PHOTO P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_AUDIO P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_VIDEO P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_INTRODUCTION P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_ADVERTISEMENT P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_HOTEL P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_ATTRACTION P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_GASSTATION P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_RESTAURANT P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_BUSINESSTIME P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_CHARGINGSTATION P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_CHARGINGPLOT P WHERE POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_CHARGINGPLOT_PH P WHERE POI_PID IN (SELECT PID FROM TEMP_IX_POI T );]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_ENTRYIMAGE P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>
+			<sql><![CDATA[DELETE FROM IX_POI_BUILDING P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>			
+			<sql><![CDATA[DELETE FROM IX_POI_PHOTO P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>
+			<sql><![CDATA[DELETE FROM IX_POI_NAME_FLAG P WHERE P.NAME_ID IN(SELECT T2.NAME_ID FROM IX_POI_NAME T2, TEMP_IX_POI T WHERE T2.POI_PID=T.PID);]]></sql>                             
+			<sql><![CDATA[DELETE FROM IX_POI_NAME_TONE P WHERE P.NAME_ID IN(SELECT T2.NAME_ID FROM IX_POI_NAME T2, TEMP_IX_POI T WHERE T2.POI_PID=T.PID);]]></sql>                             
+            <!--IX_POI_PARENT-->
+            <sql><![CDATA[
+                          DELETE FROM IX_POI_PARENT P WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_IX_POI_GROUP T);
+                         ]]></sql>
+
+            <!--IX_POI_CHILDREN-->
+            <sql sqlType="dataIntegrity"><![CDATA[
+            			DELETE FROM IX_POI_CHILDREN P WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_IX_POI_GROUP T);
+                         ]]></sql>
+            <sql sqlType="dataNotIntegrity"><![CDATA[
+           				DELETE FROM IX_POI_CHILDREN P WHERE P.CHILD_POI_PID IN (SELECT PID FROM TEMP_IX_POI T);
+                         ]]></sql>
+            <!-- IX_SAMEPOI -->
+            <sql><![CDATA[DELETE FROM IX_SAMEPOI P WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_IX_SAMEPOI T);]]></sql>
+            <!-- IX_SAMEPOI_PART -->
+            <sql><![CDATA[DELETE FROM IX_SAMEPOI_PART P WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_IX_SAMEPOI T);]]></sql>
+
+			<sql><![CDATA[DELETE FROM IX_POI_DETAIL P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI );]]></sql>			
+			<sql><![CDATA[DELETE FROM IX_POI_PARKING P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI );]]></sql>
+			<!-- <sql><![CDATA[DELETE FROM IX_POI_TOURROUTE  P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI );]]></sql>			
+			<sql><![CDATA[DELETE FROM IX_POI_EVENT P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI );]]></sql>	
+			-->
+			<!-- 210模型增加 -->
+			<sql><![CDATA[DELETE FROM IX_POI_CARRENTAL P WHERE P.POI_PID IN (SELECT PID FROM TEMP_IX_POI );]]></sql>
+
+        </step>
+
+
+        <step value="102">
+            <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_IX_POI
+					  SELECT PID
+					    FROM IX_POI A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM IX_POI  B WHERE A.PID = B.PID);
+				]]></sql>
+
+				<!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_IX_POI_GROUP
+					  SELECT GROUP_ID
+					    FROM IX_POI_PARENT A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM IX_POI_PARENT  B WHERE A.GROUP_ID = B.GROUP_ID);
+				]]></sql>
+
+
+				<!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_IX_SAMEPOI
+					  SELECT GROUP_ID
+					    FROM IX_SAMEPOI A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM IX_SAMEPOI  B WHERE A.GROUP_ID = B.GROUP_ID);
+				]]></sql>
+				
+        </step>
+
+
+    </feature>
+</sqls>

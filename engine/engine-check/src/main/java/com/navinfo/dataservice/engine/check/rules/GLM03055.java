@@ -22,7 +22,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * 具有障碍物属性的点所挂接的link上具有步行街属性，报err；（挂接的多条link具有步行街属性，只报一次）
  * 道路属性编辑	服务端后检查
- * 分离节点	服务端后检查
+ * 分离节点,平滑修形	服务端后检查
  * node属性编辑	服务端后检查
  */
 public class GLM03055 extends baseRule {
@@ -47,7 +47,7 @@ public class GLM03055 extends baseRule {
 				RdNodeForm rdNodeForm = (RdNodeForm) row;
 				this.checkRdNodeForm(rdNodeForm);
 			}
-			//分离节点
+			//分离节点,平滑修形
 			else if (row instanceof RdLink){
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
@@ -159,7 +159,7 @@ public class GLM03055 extends baseRule {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLink.changedFields();
 		if(!changedFields.isEmpty()){
-			//分离节点
+			//分离节点,平滑修形
 			Set<Integer> nodePids = new HashSet<Integer>();
 			Integer sNodePid = null;
 			Integer eNodePid = null;

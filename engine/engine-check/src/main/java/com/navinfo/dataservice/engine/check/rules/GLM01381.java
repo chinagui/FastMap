@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
@@ -32,11 +33,56 @@ public class GLM01381 extends baseRule {
         preparData(checkCommand);
 
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdLink) {
-                RdLink link = (RdLink) row;
+            //if (row instanceof RdLink) {
+            //    RdLink link = (RdLink) row;
+            //
+            //    if (landspaceName.contains(link.pid()) && !landspaceLink.contains(link.pid())) {
+            //        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+            //    }
+            //} else
+                if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
+                RdLinkName name = (RdLinkName) row;
 
-                if (landspaceName.contains(link.pid()) && !landspaceLink.contains(link.pid())) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                int nameType = name.getNameType();
+                if (name.changedFields().containsKey("nameType"))
+                    nameType = Integer.valueOf(name.changedFields().get("nameType").toString());
+
+                if (nameType == 3) {
+                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(name.getLinkPid(), false);
+                    List<IRow> forms = link.getForms();
+                    boolean formFlag = true;
+                    for (IRow f : forms) {
+                        RdLinkForm ff = (RdLinkForm) f;
+                        if (ff.getFormOfWay() == 60) {
+                            formFlag = false;
+                            break;
+                        }
+                    }
+                    if (formFlag) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    }
+                }
+            } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
+                RdLinkForm form = (RdLinkForm) row;
+
+                int formOfWay = form.getFormOfWay();
+                if (form.changedFields().containsKey("formOfWay"))
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
+
+                if (formOfWay == 60) {
+                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
+                    List<IRow> names = link.getNames();
+                    boolean nameFlag = true;
+                    for (IRow n : names) {
+                        RdLinkName nn = (RdLinkName) n;
+                        if (nn.getNameType() == 3) {
+                            nameFlag = false;
+                            break;
+                        }
+                    }
+                    if (nameFlag) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    }
                 }
             }
         }
@@ -70,7 +116,7 @@ public class GLM01381 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }
@@ -82,7 +128,7 @@ public class GLM01381 extends baseRule {
                             } else {
                                 int nameType = name.getNameType();
                                 if (name.changedFields().containsKey("nameType"))
-                                    nameType = (int) name.changedFields().get("nameType");
+                                    nameType = Integer.valueOf(name.changedFields().get("nameType").toString());
                                 names.put(name.getRowId(), nameType);
                             }
                         }

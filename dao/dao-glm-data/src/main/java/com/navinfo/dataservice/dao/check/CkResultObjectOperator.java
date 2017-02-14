@@ -31,7 +31,7 @@ public class CkResultObjectOperator {
 
 				pstmt.setString(2, ss[0]);
 
-				pstmt.setInt(3, Integer.valueOf(ss[1]));
+				pstmt.setInt(3, Integer.valueOf(ss[1].trim()));
 
 				pstmt.executeUpdate();
 			}

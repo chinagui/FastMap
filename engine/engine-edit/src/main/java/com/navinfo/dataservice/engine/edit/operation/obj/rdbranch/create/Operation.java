@@ -106,25 +106,32 @@ public class Operation implements IOperation {
 		//路口关系的分歧不记录经过线
 		if(branch.getRelationshipType() != 1)
 		{
-			List<IRow> vias = new ArrayList<IRow>();
-			
-			for (Integer linkPid : viaLinks) {
-				RdBranchVia via = new RdBranchVia();
+			if(viaLinks.size() <= 32)
+			{
+				List<IRow> vias = new ArrayList<IRow>();
+				
+				for (Integer linkPid : viaLinks) {
+					RdBranchVia via = new RdBranchVia();
 
-				via.setBranchPid(branch.getPid());
+					via.setBranchPid(branch.getPid());
 
-				via.setLinkPid(linkPid);
+					via.setLinkPid(linkPid);
 
-				via.setSeqNum(seqNum);
+					via.setSeqNum(seqNum);
 
-				vias.add(via);
+					vias.add(via);
 
-				via.setMesh(meshId);
+					via.setMesh(meshId);
 
-				seqNum++;
+					seqNum++;
+				}
+
+				branch.setVias(vias);
 			}
-
-			branch.setVias(vias);
+			else
+			{
+				throw new Exception("分歧经过线数目不能超过32条:"+viaLinks.size());
+			}
 		}
 
 		return branch;
@@ -232,8 +239,14 @@ public class Operation implements IOperation {
 			}
 
 		} catch (Exception e) {
-			throw e;
-
+			if(e.getMessage().contains("value too large"))
+			{
+				throw new Exception("经过线长度超过最大长度限制");
+			}
+			else
+			{
+				throw e;
+			}
 		} finally {
 			try {
 				if (pstmt != null) {

@@ -33,12 +33,19 @@ public abstract class AbstractOperation {
 	protected Connection conn;
 	protected boolean unionOperation=false;//设置true，会在生成履历时把所有有几何修改的对象合并到一个operation
 	protected int subtaskId;
+	protected boolean physiDelete=false; 
 	
 	public int getSubtaskId() {
 		return subtaskId;
 	}
 	public void setSubtaskId(int subtaskId) {
 		this.subtaskId = subtaskId;
+	}
+	public boolean isPhysiDelete() {
+		return physiDelete;
+	}
+	public void setPhysiDelete(boolean physiDelete) {
+		this.physiDelete = physiDelete;
 	}
 	public AbstractOperation(Connection conn,OperationResult preResult){
 		this.conn=conn;
@@ -82,7 +89,7 @@ public abstract class AbstractOperation {
 		//持久化数据
 		for(Iterator<BasicObj> it=result.getAllObjs().iterator(); it.hasNext();){
 			BasicObj obj = it.next();
-			List<RunnableSQL> sqls = obj.generateSql();
+			List<RunnableSQL> sqls = obj.generateSql(physiDelete);
 			if(sqls!=null){
 				for(RunnableSQL sql:sqls){
 					log.info("持久化sql:" + sql.getSql());

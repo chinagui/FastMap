@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
+import com.alibaba.dubbo.common.json.JSON;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -80,6 +81,8 @@ public class TipsSelector {
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
 			JSONArray types, String mdFlag) throws Exception {
 		JSONArray array = new JSONArray();
+		
+		String rowkey=null;
 
 		try {
 
@@ -120,6 +123,8 @@ public class TipsSelector {
 					stages, false,isPre);
 
 			for (JSONObject json : snapshots) {
+				
+				rowkey=json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
@@ -425,7 +430,9 @@ public class TipsSelector {
 								JSONObject o = new JSONObject();
 
 								Geojson.coord2Pixel(geo, z, px, py);
-
+								
+								o.put("t", geo.getString("type"));
+								
 								o.put("g", geo.getJSONArray("coordinates"));
 
 								o.put("s", style);
@@ -460,13 +467,30 @@ public class TipsSelector {
 				else if (type == 1704) {
 					m.put("c", deep.getString("name"));
 				}
+				
+				
+				//返回差分结果：20160213修改
+				JSONObject tipdiff =null;
+				
+				if(json.containsKey("tipdiff")){
+				    
+				    JSONObject.fromObject(json.getString("tipdiff"));
+	                
+	                //坐标转换，需要根据类型转换为屏幕坐标
+	                JSONObject convertGeoDiff=converDiffGeo(type,tipdiff,z, px, py); 
+	                
+	                if(convertGeoDiff!=null){
+	                    m.put("i", convertGeoDiff);
+	                }
+				}
+				
 				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
 
 			}
 		} catch (Exception e) {
-			logger.error("渲染报错，数据错误："+e.getMessage());
+			logger.error("渲染报错，数据错误："+e.getMessage()+rowkey);
 			throw e;
 		} finally {
 			try {
@@ -478,6 +502,53 @@ public class TipsSelector {
 		return array;
 	}
 
+	
+	/**
+     * @Description:tipdiff数据坐标转换，将差分结果中的坐标转换为屏幕坐标
+     * @param type
+     * @param tipdiff
+     * @return
+     * @author:liya
+     * @param py
+     * @param px
+     * @param z
+     * @time:2017-2-13下午1:34:53
+     */
+    private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
+            double px, double py) {
+
+        if (tipdiff == null)
+            return null;
+
+        JSONArray diffArr = tipdiff.getJSONArray("diff_array");
+        
+        JSONArray diffArrNew =new JSONArray();
+
+        for (Object object : diffArr) {
+
+            JSONObject json = JSONObject.fromObject(object);
+
+            if (json.containsKey("geo")) {
+
+                JSONObject geojson = JSONObject.fromObject(json
+                        .getString("geo"));
+                // 渲染的坐标都是屏幕坐标
+                Geojson.coord2Pixel(geojson, z, px, py);
+                
+                json.put("geo", geojson);
+
+            }
+            
+            diffArrNew.add(json);
+
+        }
+        
+        tipdiff.put("diff_array", diffArrNew);
+        
+
+        return tipdiff;
+    }
+	
 	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag) throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -571,6 +642,7 @@ public class TipsSelector {
 			json.put("rowkey", rowkey);
 
 			for (KeyValue kv : list) {
+				System.out.println(kv);
 				JSONObject injson = JSONObject
 						.fromObject(new String(kv.value()));
 

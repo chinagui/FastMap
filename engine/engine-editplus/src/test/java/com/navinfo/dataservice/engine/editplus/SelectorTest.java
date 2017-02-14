@@ -105,7 +105,7 @@ public class SelectorTest {
 			boolean isLock = false;
 
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, null,true, pid, isLock);
-			List<RunnableSQL> sqlList = obj.generateSql();
+			List<RunnableSQL> sqlList = obj.generateSql(true);
 			System.out.println("Over.");
 			
 		}catch(Exception e){
@@ -221,7 +221,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_CARRENTAL");
 
 			BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, tabNames,true, colName,colValue, isLock);
-			List<RunnableSQL> sqlList = obj.generateSql();
+			List<RunnableSQL> sqlList = obj.generateSql(true);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

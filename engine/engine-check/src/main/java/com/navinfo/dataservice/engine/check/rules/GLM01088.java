@@ -23,11 +23,11 @@ public class GLM01088 extends baseRule {
 
                 int paveStatus = link.getPaveStatus();
                 if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                    paveStatus = Integer.valueOf(link.changedFields().get("paveStatus").toString());
 
                 int functionClass = link.getFunctionClass();
                 if (link.changedFields().containsKey("functionClass"))
-                    functionClass = (int) link.changedFields().get("functionClass");
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
 
                 if (paveStatus == 1 && (functionClass == 1 || functionClass == 2)) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());

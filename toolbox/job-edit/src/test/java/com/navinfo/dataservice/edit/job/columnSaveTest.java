@@ -88,7 +88,7 @@ public class columnSaveTest {
 		Connection conn = null;
 		List<Integer> pidList = new ArrayList<Integer>();
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-		String param = "{\"taskId\":\"84\",\"secondWorkItem\":\"nameUnify\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"19\",\"type\":\"IXPOI\",\"objId\":14655830,\"data\":{\"names\":[{\"name\":\"ＳＯＨＯ国际停车场二三四233\",\"rowId\":\"3AE1FD3C28CB92F7E050A8C08304EE4C\",\"pid\":101711245,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB608C0592F7E050A8C08304EE4C\",\"pid\":14655830,\"objStatus\":\"UPDATE\"}}]}";
+		String param = "{\"taskId\":\"84\",\"secondWorkItem\":\"shortName\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"19\",\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"names\":[{\"pid\":0,\"poiPid\":602474,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":5,\"nameType\":1,\"name\":\"大夫大夫乐或\",\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474,\"objStatus\":\"UPDATE\"}}]}";
 		try {
 			JSONObject paramJson = JSONObject.fromObject(param);
 			int userId = 2;

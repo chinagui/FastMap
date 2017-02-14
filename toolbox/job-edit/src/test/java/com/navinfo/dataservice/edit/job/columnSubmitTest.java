@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -102,12 +103,16 @@ public class columnSubmitTest {
 				Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, taskId, firstWorkItem, second);
 				List<BasicObj> objList = new ArrayList<BasicObj>();
 				ObjHisLogParser logParser = new ObjHisLogParser();
+				Set<String> tabNames = new HashSet<String>();
+				tabNames.add("IX_POI_NAME");
+				tabNames.add("IX_POI_ADDRESS");
+				tabNames.add("IX_POI_FLAG");
 				for (int pid:pidList) {
-				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,true, pid, false);
-					if (submitLogs.containsKey(pid)) {
-						logParser.parse(obj, submitLogs.get(pid));
+					BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, pid, false);
+					if (submitLogs.containsKey(new Long((long)pid))) {
+						logParser.parse(obj, submitLogs.get(new Long((long)pid)));
 					}
-				objList.add(obj);
+					objList.add(obj);
 				}
 					
 				operationResult.putAll(objList);

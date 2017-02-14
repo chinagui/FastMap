@@ -114,6 +114,8 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 				int toLimitSrc = resultSet.getInt("to_limit_src");
 
+				int speedDependent = resultSet.getInt("speed_dependent");
+
 				int link_pid = resultSet.getInt("link_pid");
 				
 				SearchSnapshot snapshot =null;
@@ -133,10 +135,7 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 					snapshot.setT(9);
 					jsonM = new JSONObject();
 					meArray = new JSONArray();
-					
-					jsonM.put("f", resultSet.getInt("speed_dependent"));
-
-					jsonM.put("g", resultSet.getInt("speed_type"));
+					jsonM.put("f", resultSet.getInt("speed_type"));
 				}
 
 				int direct = 0;
@@ -148,15 +147,6 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 				WKT wktSpatial = new WKT();
 
 				String linkWkt = new String(wktSpatial.fromJGeometry(linkGeom));
-				
-				String info = String.valueOf(fromSpeedLimit) + ","
-						+ String.valueOf(fromLimitSrc) + ","
-						+ String.valueOf(toSpeedLimit) + ","
-						+ String.valueOf(toLimitSrc);
-
-				meArray.add(info);
-				
-				jsonM.put("e", meArray);
 				
 				if (fromSpeedLimit > 0) {
 
@@ -193,7 +183,16 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 						jsonM.put("d", angle);
 					}
 				}
+				
+				String info = String.valueOf(fromSpeedLimit) + ","
+						+ String.valueOf(fromLimitSrc) + ","
+						+ String.valueOf(toSpeedLimit) + ","
+						+ String.valueOf(toLimitSrc) + ","
+						+ String.valueOf(speedDependent);
 
+				meArray.add(info);
+				
+				jsonM.put("e", meArray);
 				
 				snapshot.setM(jsonM);
 			}

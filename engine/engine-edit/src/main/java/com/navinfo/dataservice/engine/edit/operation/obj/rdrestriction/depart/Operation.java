@@ -218,15 +218,15 @@ public class Operation {
 
 		List<RdRestriction> updataRestrictions = new ArrayList<RdRestriction>();
 
-		Map<Integer, List<RdRestrictionDetail>> updataTopologys = new HashMap<Integer, List<RdRestrictionDetail>>();
+		Map<Integer, List<RdRestrictionDetail>> updataDetails = new HashMap<Integer, List<RdRestrictionDetail>>();
 
 		updataRestrictions.addAll(handleInLinkUpdate(preNodePid, preLinkPid));
 
-		updataTopologys.putAll(handleOutLink(preNodePid, preLinkPid));
+		updataDetails.putAll(handleOutLink(preNodePid, preLinkPid));
 
 		updataRestrictions.addAll(handleInLinkUpdate(lastNodePid, lastLinkPid));
 
-		updataTopologys.putAll(handleOutLink(lastNodePid, lastLinkPid));
+		updataDetails.putAll(handleOutLink(lastNodePid, lastLinkPid));
 
 		for (RdRestriction restriction : updataRestrictions) {
 			
@@ -238,7 +238,7 @@ public class Operation {
 					restriction.getPid());
 		}
 
-		for (Map.Entry<Integer, List<RdRestrictionDetail>> entry : updataTopologys
+		for (Map.Entry<Integer, List<RdRestrictionDetail>> entry : updataDetails
 				.entrySet()) {
 
 			updateDetail(entry.getValue(), entry.getKey());
@@ -377,7 +377,7 @@ public class Operation {
 	}
 	
 	/**
-	 * 更新Topology退出线
+	 * 更新Detail退出线
 	 */
 	private void updateDetail(List<RdRestrictionDetail> details, int nodePid) {
 
@@ -453,7 +453,7 @@ public class Operation {
 	 */
 	private boolean isCrossNode(int nodePid) throws Exception {
 
-		RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
+		crossNodeSelector = new RdCrossNodeSelector(
 				this.conn);
 
 		List<Integer> nodePids = crossNodeSelector.getCrossNodePidByNode(

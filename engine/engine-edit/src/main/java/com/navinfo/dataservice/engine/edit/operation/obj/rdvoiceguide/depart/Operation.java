@@ -12,13 +12,9 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
 
 public class Operation {
@@ -41,14 +37,10 @@ public class Operation {
 	// 右侧link映射。Integer：原linkpid RdLink；新生成link
 	private Map<Integer, RdLink> rightLinkMapping = new HashMap<Integer, RdLink>();
 
-	// 端口改变的非目标link映射
-	private Map<Integer, RdLink> changedNodeLinkMap = new HashMap<Integer, RdLink>();
 
-	// 非目标link映射
-	private Map<Integer, RdLink> noTargetLinkMap = new HashMap<Integer, RdLink>();
 
 	// 连接Node
-	private Set<Integer> connectNodePid = new HashSet<Integer>();
+	private Set<Integer> connectNodePids = new HashSet<Integer>();
 
 	// 目标linkPid
 	private List<Integer> targetLinkPids = new ArrayList<Integer>();	
@@ -56,11 +48,11 @@ public class Operation {
 
 	private Map<Integer, RdVoiceguide> delVoiceguide = new HashMap<Integer, RdVoiceguide>();
 
-	private Set<Integer> updateVoiceguide = new HashSet<Integer>();
+	
 
 	RdVoiceguideSelector voiceguideSelector = null;
 	
-	RdLinkSelector linkSelector = null;
+	RdCrossNodeSelector crossNodeSelector = null;	
 
 	public Operation(Connection conn, int preNodePid, int lastNodePid,
 			Map<Integer, RdLink> noTargetLinks, List<RdLink> targetLinks) {
@@ -74,8 +66,10 @@ public class Operation {
 		init(noTargetLinks, targetLinks);
 
 		voiceguideSelector = new RdVoiceguideSelector(this.conn);
+		
+		crossNodeSelector = new RdCrossNodeSelector(
+				this.conn);
 
-		linkSelector = new RdLinkSelector(this.conn);
 	}
 
 	private void init(Map<Integer, RdLink> noTargetLinks,
@@ -102,31 +96,18 @@ public class Operation {
 				targetLinkPids.add(link.getPid());
 			}
 			
-			connectNodePid.add(link.getsNodePid());
+			connectNodePids.add(link.getsNodePid());
 			
-			connectNodePid.add(link.geteNodePid());
+			connectNodePids.add(link.geteNodePid());
 		}		
 
-		connectNodePid.remove((Integer) preNodePid);
+		connectNodePids.remove((Integer) preNodePid);
 
-		connectNodePid.remove((Integer) lastNodePid);
+		connectNodePids.remove((Integer) lastNodePid);
 
-		for (RdLink link : noTargetLinks.values()) {
-
-			noTargetLinkMap.put(link.getPid(), link);
-
-			if (link.changedFields().containsKey("eNodePid")) {
-
-				changedNodeLinkMap.put(link.getPid(), link);
-				
-			}
-			if (link.changedFields().containsKey("sNodePid")) {
-
-				changedNodeLinkMap.put(link.getPid(), link);
-			}
-		}
-	}
-
+		
+	}	
+	
 	public void upDownPart(Map<Integer, RdLink> leftLinkMapping,
 			Map<Integer, RdLink> rightLinkMapping, Result result)
 			throws Exception {
@@ -137,20 +118,17 @@ public class Operation {
 
 		this.leftLinkMapping = leftLinkMapping;
 
-		handleTargetLinkDel();
+		if (connectNodePids.size() == 0) {
 
-		handleChangedNodeLinkDel();
+			handlePassLinkDel();
+		} else {
 
-		handleInLinkUpdate();
+			handleConnectNodeDel();
+		}
 
-		handleOutLinkUpdate();
+		handleEndPoint();
 
 		for (RdVoiceguide voiceguide : delVoiceguide.values()) {
-
-			if (updateVoiceguide.contains(voiceguide.getPid())) {
-
-				continue;
-			}
 
 			result.insertObject(voiceguide, ObjStatus.DELETE,
 					voiceguide.getPid());
@@ -162,19 +140,13 @@ public class Operation {
 	 * 
 	 * @throws Exception
 	 */
-	private void handleTargetLinkDel() throws Exception {
+	private void handlePassLinkDel() throws Exception {
 
 		List<RdVoiceguide> voiceguides = new ArrayList<RdVoiceguide>();
 
-		// 目标link为进入线
-		voiceguides.addAll(voiceguideSelector.loadByLinks(targetLinkPids,
-				1, true));
-		// 目标link为退出线
-		voiceguides.addAll(voiceguideSelector.loadByLinks(targetLinkPids,
-				2, true));
 		// 目标link为经过线
-		voiceguides.addAll(voiceguideSelector.loadByLinks(targetLinkPids,
-				3, true));
+		voiceguides.addAll(voiceguideSelector.loadByLinks(targetLinkPids, 3,
+				true));
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
@@ -182,340 +154,177 @@ public class Operation {
 		}
 	}
 
-	private int getNewNodePid(int changedLinkPid) {
-
-		if (!changedNodeLinkMap.containsKey(changedLinkPid)) {
-
-			return 0;
-		}
-
-		RdLink changedLink = changedNodeLinkMap.get(changedLinkPid);
-
-		int newNodePid = 0;
-
-		if (changedLink.changedFields().containsKey("sNodePid")) {
-
-			newNodePid = (Integer) changedLink.changedFields().get("sNodePid");
-
-		} else if (changedLink.changedFields().containsKey("eNodePid")) {
-
-			newNodePid = (Integer) changedLink.changedFields().get("eNodePid");
-		}
-
-		return newNodePid;
-	}
-
-	private boolean haveNewNodePid(List<Integer> connectLinkPids, int newNodePid) {
-
-		boolean isHave = false;
-
-		for (int linkPid : connectLinkPids) {
-
-			if (!noTargetLinkMap.containsKey(linkPid)) {
-
-				continue;
-			}
-
-			RdLink link = noTargetLinkMap.get(linkPid);
-
-			int sPid = link.getsNodePid();
-
-			int ePid = link.geteNodePid();
-
-			if (link.changedFields().containsKey("sNodePid")) {
-
-				sPid = (Integer) link.changedFields().get("sNodePid");
-
-			} else if (link.changedFields().containsKey("eNodePid")) {
-
-				sPid = (Integer) link.changedFields().get("eNodePid");
-			}
-
-			if (sPid == newNodePid || ePid == newNodePid) {
-
-				isHave = true;
-
-				break;
-			}
-		}
-
-		return isHave;
-	}
-
 	/**
-	 * 是否包含非目标link
-	 * 
-	 * @param connectLinkPids
-	 * @return
-	 */
-	private boolean containNoTargetLink(List<Integer> linkPids) {
-
-		for (int pid : linkPids) {
-
-			if (this.noTargetLinkMap.containsKey(pid)) {
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * 是否包含目标link
-	 * 
-	 * @param connectLinkPids
-	 * @return
-	 */
-	private boolean containTargetLink(List<Integer> linkPids) {
-
-		for (int pid : linkPids) {
-
-			if (this.targetLinkPids.contains(pid)) {
-
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	private void handleChangedNodeLinkDel() throws Exception {
-
-		if (changedNodeLinkMap == null || changedNodeLinkMap.isEmpty()) {
-			return;
-		}
-
-		List<Integer> changedNodeLinks = new ArrayList<Integer>();
-
-		changedNodeLinks.addAll(changedNodeLinkMap.keySet());
-
-		List<RdVoiceguide> voiceguides = new ArrayList<RdVoiceguide>();
-
-		// 端点改变的非目标link做进入线的语音引导
-		voiceguides = voiceguideSelector.loadByLinks(changedNodeLinks, 1,
-				true);
-
-		for (RdVoiceguide voiceguide : voiceguides) {
-
-			if (delVoiceguide.containsKey(voiceguide.getPid())) {
-
-				continue;
-			}
-
-			// 进入点不是 制作上下线分离link的连接点
-			if (!connectNodePid.contains(voiceguide.getNodePid())) {
-
-				continue;
-			}
-			
-			delVoiceguide.put(voiceguide.getPid(), voiceguide);
-
-//			int newNodePid = getNewNodePid(voiceguide.getInLinkPid());
-//
-//			for (IRow rowDetail : voiceguide.getDetails()) {
-//
-//				List<Integer> connectLinkPids = new ArrayList<Integer>();
-//
-//				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
-//
-//				connectLinkPids.add(detail.getOutLinkPid());
-//
-//				for (IRow rowVia : detail.getVias()) {
-//
-//					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-//
-//					connectLinkPids.add(via.getLinkPid());
-//				}
-//
-//				boolean isHave = haveNewNodePid(connectLinkPids, newNodePid);
-//
-//				if (!isHave) {
-//
-//					delVoiceguide.put(voiceguide.getPid(), voiceguide);
-//
-//					break;
-//				}
-//			}
-		}
-
-		// 端点改变的非目标link做退出线的语音引导
-		voiceguides = voiceguideSelector.loadByLinks(changedNodeLinks, 2,
-				true);
-
-		for (RdVoiceguide voiceguide : voiceguides) {
-
-			if (delVoiceguide.containsKey(voiceguide.getPid())) {
-
-				continue;
-			}
-
-			for (IRow rowDetail : voiceguide.getDetails()) {
-
-				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
-
-				if (!changedNodeLinkMap.containsKey(detail.getOutLinkPid())) {
-					continue;
-				}
-
-				int newNodePid = getNewNodePid(detail.getOutLinkPid());
-
-				List<Integer> connectLinkPids = new ArrayList<Integer>();
-
-				connectLinkPids.add(voiceguide.getInLinkPid());
-
-				for (IRow rowVia : detail.getVias()) {
-
-					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-
-					connectLinkPids.add(via.getLinkPid());
-				}
-
-				// 退出线不与其他非目标link挂接
-				if (!containNoTargetLink(connectLinkPids)) {
-					continue;
-				}
-
-				boolean isHave = haveNewNodePid(connectLinkPids, newNodePid);
-
-				if (!isHave) {
-
-					delVoiceguide.put(voiceguide.getPid(), voiceguide);
-
-					break;
-				}
-			}
-		}
-
-		// 端点改变的非目标link做经过线的语音引导
-		voiceguides = voiceguideSelector.loadByLinks(changedNodeLinks, 3,
-				true);
-
-		for (RdVoiceguide voiceguide : voiceguides) {
-
-			if (delVoiceguide.containsKey(voiceguide.getPid())) {
-
-				continue;
-			}
-
-			boolean isHave = false;
-
-			for (IRow rowDetail : voiceguide.getDetails()) {
-
-				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
-
-				Set<Integer> allConnectLinkPids = new HashSet<Integer>();
-
-				allConnectLinkPids.add(voiceguide.getInLinkPid());
-
-				allConnectLinkPids.add(detail.getOutLinkPid());
-
-				for (IRow rowVia : detail.getVias()) {
-
-					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-
-					allConnectLinkPids.add(via.getLinkPid());
-				}
-
-				for (IRow rowVia : detail.getVias()) {
-
-					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-
-					if (!changedNodeLinkMap.containsKey(via.getLinkPid())) {
-
-						continue;
-					}
-
-					int newNodePid = getNewNodePid(via.getLinkPid());
-
-					List<Integer> connectLinkPids = new ArrayList<Integer>();
-
-					connectLinkPids.addAll(allConnectLinkPids);
-
-					connectLinkPids.remove((Integer) via.getLinkPid());
-
-					isHave = haveNewNodePid(connectLinkPids, newNodePid);
-
-					if (!isHave) {
-
-						break;
-					}
-				}
-
-				if (!isHave) {
-
-					delVoiceguide.put(voiceguide.getPid(), voiceguide);
-
-					break;
-				}
-			}
-		}
-	}
-
-	/**
-	 * 处理与端点挂接的目标link做进入线的语音引导
+	 * 处理目标link连接点关联的语音引导
 	 * 
 	 * @throws Exception
 	 */
-	private void handleInLinkUpdate() throws Exception {
+	private void handleConnectNodeDel() throws Exception {
+
+		List<Integer> nodePids = new ArrayList<Integer>();
+
+		nodePids.addAll(connectNodePids);
+
+		Set<Integer> pids = new HashSet<Integer>();
+
+		// 经过点获取pid
+		pids.addAll(voiceguideSelector.getPidByPassNode(nodePids));
+
+		// 进入点获取pid
+		pids.addAll(voiceguideSelector.getPidByInNode(nodePids));
+
+		List<Integer> voiceguidePids = new ArrayList<Integer>();
+
+		voiceguidePids.addAll(pids);
+
+		List<IRow> rows = voiceguideSelector.loadByIds(voiceguidePids, true,
+				true);
+
+		for (IRow row : rows) {
+
+			RdVoiceguide voiceguide = (RdVoiceguide) row;
+
+			delVoiceguide.put(voiceguide.getPid(), voiceguide);
+		}
+
+		for (int nodePid : nodePids) {
+
+			// 获取node关联link做为退出线的语音引导pid
+			List<Integer> pidTmps = voiceguideSelector.getPidByOutNode(nodePid);
+
+			List<Integer> outPids = new ArrayList<>();
+
+			for (int pid : pidTmps) {
+
+				if (!delVoiceguide.containsKey(pid)) {
+
+					outPids.add(pid);
+				}
+			}
+
+			rows = voiceguideSelector.loadByIds(outPids, true, true);
+
+			for (IRow row : rows) {
+
+				RdVoiceguide voiceguide = (RdVoiceguide) row;
+
+				if (isSameCross(voiceguide.getNodePid(), nodePid)) {
+
+					delVoiceguide.put(voiceguide.getPid(), voiceguide);
+				}
+			}
+		}
+	}
+
+	/**
+	 * 处理端点
+	 * 
+	 * @throws Exception
+	 */
+	private void handleEndPoint() throws Exception {
+
+		List<RdVoiceguide> updataVoiceguides = new ArrayList<RdVoiceguide>();
+
+		Map<Integer, List<RdVoiceguideDetail>> updataDetails = new HashMap<Integer, List<RdVoiceguideDetail>>();
+
+		updataVoiceguides.addAll(handleInLinkUpdate(preNodePid, preLinkPid));
+
+		updataDetails.putAll(handleOutLink(preNodePid, preLinkPid));
+
+		updataVoiceguides.addAll(handleInLinkUpdate(lastNodePid, lastLinkPid));
+
+		updataDetails.putAll(handleOutLink(lastNodePid, lastLinkPid));
+
+		for (RdVoiceguide voiceguide : updataVoiceguides) {
+
+			if (delVoiceguide.containsKey(voiceguide.getPid())) {
+				continue;
+			}
+
+			result.insertObject(voiceguide, ObjStatus.UPDATE,
+					voiceguide.getPid());
+		}
+
+		for (Map.Entry<Integer, List<RdVoiceguideDetail>> entry : updataDetails
+				.entrySet()) {
+
+			updateDetail(entry.getValue(), entry.getKey());
+		}
+	}
+
+	/**
+	 * 处理与端点挂接的目标link做进入线的车信
+	 * 
+	 * @throws Exception
+	 */
+	private List<RdVoiceguide> handleInLinkUpdate(int nodePid, int linkPid)
+			throws Exception {
 
 		Map<Integer, RdVoiceguide> handleMap = new HashMap<Integer, RdVoiceguide>();
 
-		List<RdVoiceguide> voiceguides = new ArrayList<RdVoiceguide>();
-
-		voiceguides = voiceguideSelector.loadRdVoiceguideByLinkPid(preLinkPid, 1, true);
-
-		for (RdVoiceguide voiceguide : voiceguides) {
-
-			if (voiceguide.getNodePid() == preNodePid) {
-
-				handleMap.put(voiceguide.getPid(), voiceguide);
-			}
-		}
-
-		voiceguides = voiceguideSelector.loadRdVoiceguideByLinkPid(lastLinkPid, 1, true);
+		List<RdVoiceguide> voiceguides = voiceguideSelector
+				.loadRdVoiceguideByLinkPid(linkPid, 1, true);
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
-			if (voiceguide.getNodePid() == lastNodePid) {
-
-				handleMap.put(voiceguide.getPid(), voiceguide);
+			if (voiceguide.getNodePid() != nodePid) {
+				continue;
 			}
+
+			if (!isCrossNode(nodePid)) {
+
+				delVoiceguide.put(voiceguide.getPid(), voiceguide);
+
+				continue;
+			}
+
+			for (IRow row : voiceguide.getDetails()) {
+
+				RdVoiceguideDetail detail = (RdVoiceguideDetail) row;
+
+				if (detail.getRelationshipType() == 2) {
+
+					delVoiceguide.put(voiceguide.getPid(), voiceguide);
+
+					break;
+				}
+			}
+
+			if (delVoiceguide.containsKey(voiceguide.getPid())) {
+				continue;
+			}
+
+			handleMap.put(voiceguide.getPid(), voiceguide);
 		}
+
+		List<RdVoiceguide> updataVoiceguides = new ArrayList<RdVoiceguide>();
 
 		for (RdVoiceguide voiceguide : handleMap.values()) {
 
-			RdLink lRdLink = leftLinkMapping.get(voiceguide.getInLinkPid());
+			RdLink rdLink = leftLinkMapping.get(voiceguide.getInLinkPid());
 
-			if ((lRdLink.getsNodePid() == voiceguide.getNodePid() && lRdLink
-					.getDirect() == 3)
-					|| (lRdLink.geteNodePid() == voiceguide.getNodePid() && lRdLink
-							.getDirect() == 2)) {
-				voiceguide.changedFields()
-						.put("inLinkPid", lRdLink.getPid());
+			if ((rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 3)) {
 
-				result.insertObject(voiceguide, ObjStatus.UPDATE,
-						voiceguide.getPid());
+				voiceguide.changedFields().put("inLinkPid", rdLink.getPid());
 
-				updateVoiceguide.add(voiceguide.getPid());
+				updataVoiceguides.add(voiceguide);
+
+				continue;
 			}
 
-			RdLink rRdLink = rightLinkMapping.get(voiceguide.getInLinkPid());
+			rdLink = rightLinkMapping.get(voiceguide.getInLinkPid());
 
-			if ((rRdLink.getsNodePid() == voiceguide.getNodePid() && rRdLink
-					.getDirect() == 3)
-					|| (rRdLink.geteNodePid() == voiceguide.getNodePid() && rRdLink
-							.getDirect() == 2)) {
-				
-				voiceguide.changedFields()
-						.put("inLinkPid", rRdLink.getPid());
+			if ((rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 3)) {
 
-				result.insertObject(voiceguide, ObjStatus.UPDATE,
-						voiceguide.getPid());
+				voiceguide.changedFields().put("inLinkPid", rdLink.getPid());
 
-				updateVoiceguide.add(voiceguide.getPid());
+				updataVoiceguides.add(voiceguide);
 			}
 		}
+
+		return updataVoiceguides;
 	}
 
 	/**
@@ -523,171 +332,144 @@ public class Operation {
 	 * 
 	 * @throws Exception
 	 */
-	private void handleOutLinkUpdate() throws Exception {
+	private Map<Integer, List<RdVoiceguideDetail>> handleOutLink(int nodePid,
+			int linkPid) throws Exception {
 
-		handleOutLink(preLinkPid, preNodePid);
+		Map<Integer, List<RdVoiceguideDetail>> handleMap = new HashMap<Integer, List<RdVoiceguideDetail>>();
 
-		handleOutLink(lastLinkPid, lastNodePid);
-	}
+		List<RdVoiceguideDetail> details = new ArrayList<RdVoiceguideDetail>();
 
-	
-	/**
-	 * 处理与端点挂接的目标link做退出线的语音引导
-	 * 
-	 * @throws Exception
-	 */
-	private void handleOutLink(int linkPid, int nodePid) throws Exception {
-
-		Map<Integer, RdVoiceguideDetail> handleMap = new HashMap<Integer, RdVoiceguideDetail>();
+		handleMap.put(nodePid, details);
 
 		List<RdVoiceguide> voiceguides = voiceguideSelector
 				.loadRdVoiceguideByLinkPid(linkPid, 2, true);
 
 		for (RdVoiceguide voiceguide : voiceguides) {
 
-			// 进入线、经过线是目标link或者是非目标link
-			boolean isContain = false;
-
 			RdVoiceguideDetail updateDetail = null;
 
-			for (IRow rowDetail : voiceguide.getDetails()) {
+			for (IRow row : voiceguide.getDetails()) {
 
-				List<Integer> connectLinkPids = new ArrayList<Integer>();
+				RdVoiceguideDetail detail = (RdVoiceguideDetail) row;
 
-				connectLinkPids.add(voiceguide.getInLinkPid());
+				if (detail.getRelationshipType() == 2) {
 
-				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
-
-				if (detail.getOutLinkPid() == linkPid) {
-
-				
-					boolean isOutLinkInNode = isOutLinkInNode(voiceguide,
-							detail, nodePid);
-
-					if (isOutLinkInNode) {
-
-						updateDetail = detail;
-					}
-
-				} else {
-					connectLinkPids.add(detail.getOutLinkPid());
-					
-				}
-
-				for (IRow rowVia : detail.getVias()) {
-
-					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-
-					connectLinkPids.add(via.getLinkPid());
-				}
-
-				if (containNoTargetLink(connectLinkPids)
-						|| containTargetLink(connectLinkPids)) {
-
-					isContain = true;
+					delVoiceguide.put(voiceguide.getPid(), voiceguide);
 
 					break;
 				}
+
+				if (detail.getOutLinkPid() == linkPid) {
+
+					boolean sameCrossNode = isSameCross(
+							voiceguide.getNodePid(), nodePid);
+
+					if (sameCrossNode) {
+
+						updateDetail = detail;
+					}
+				}
 			}
 
-			if (isContain) {
-				
+			if (delVoiceguide.containsKey(voiceguide.getPid())) {
+				continue;
+			}
+			if (updateDetail != null) {
+
+				handleMap.get(nodePid).add(updateDetail);
+			}
+		}
+
+		return handleMap;
+	}
+
+	/**
+	 * 更新Detail退出线
+	 */
+	private void updateDetail(List<RdVoiceguideDetail> details, int nodePid) {
+
+		if (details == null || details.isEmpty()) {
+
+			return;
+		}
+
+		for (RdVoiceguideDetail detail : details) {
+
+			if (delVoiceguide.containsKey(detail.getVoiceguidePid())) {
+
 				continue;
 			}
 
-			if (updateDetail != null) {
-				handleMap.put(updateDetail.getPid(), updateDetail);
+			RdLink rdLink = leftLinkMapping.get(detail.getOutLinkPid());
+
+			if ((rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				detail.changedFields().put("outLinkPid", rdLink.getPid());
+
+				result.insertObject(detail, ObjStatus.UPDATE,
+						detail.getVoiceguidePid());
+
+				continue;
+			}
+
+			rdLink = rightLinkMapping.get(detail.getOutLinkPid());
+
+			if ((rdLink.getsNodePid() == nodePid && rdLink.getDirect() == 2)
+					|| (rdLink.geteNodePid() == nodePid && rdLink.getDirect() == 3)) {
+
+				detail.changedFields().put("outLinkPid", rdLink.getPid());
+
+				result.insertObject(detail, ObjStatus.UPDATE,
+						detail.getVoiceguidePid());
+
 			}
 		}
-
-		if (!handleMap.isEmpty()) {
-
-			updateDetail(handleMap, nodePid);
-		}
 	}
-	
+
 	/**
-	 * 判断node是不是 进入退出线的点。
+	 * 判断退出线的端点node是否与进入node为同一路口。
 	 * 
-	 * @param restriction
-	 * @param detail
+	 * @param inNodePid
 	 * @param nodePid
 	 * @return
 	 * @throws Exception
 	 */
-	private boolean isOutLinkInNode(RdVoiceguide voiceguide,
-			RdVoiceguideDetail detail, int nodePid) throws Exception {
-		
-		if (detail.getVias().size() == 0) {
+	private boolean isSameCross(int inNodePid, int nodePid) throws Exception {
 
-			if (voiceguide.getNodePid() != nodePid) {
-
-				return false;
-			} else {
-				return true;
-			}
+		if (crossNodeSelector == null) {
+			return false;
 		}
 
-		List<Integer> viaPids = new ArrayList<Integer>();
+		List<Integer> nodePids = crossNodeSelector
+				.getCrossNodePidByNode(nodePid);
 
-		for (IRow rowVia : detail.getVias()) {
+		if (nodePids.contains(inNodePid) && nodePids.contains(nodePid)) {
 
-			RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
-
-			if (!viaPids.contains(via.getLinkPid())) {
-
-				viaPids.add(via.getLinkPid());
-			}
-		}		
-
-		List<IRow> linkRows = linkSelector.loadByIds(viaPids, true,
-				false);
-
-		for (IRow linkRow : linkRows) {
-			
-			RdLink link = (RdLink) linkRow;
-
-			if (link.getsNodePid() == nodePid || link.geteNodePid() == nodePid) {
-
-				return true;
-			}
-			
+			return true;
 		}
-		
 		return false;
 	}
 
+	/**
+	 * 判断node是否是路口组成node。
+	 * 
+	 * @param nodePid
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean isCrossNode(int nodePid) throws Exception {
 
-	private void updateDetail(Map<Integer, RdVoiceguideDetail> handleLastMap,
-			int nodePid) {
+		crossNodeSelector = new RdCrossNodeSelector(this.conn);
 
-		for (RdVoiceguideDetail detail : handleLastMap.values()) {
+		List<Integer> nodePids = crossNodeSelector
+				.getCrossNodePidByNode(nodePid);
 
-			RdLink rRdLink = rightLinkMapping.get(detail.getOutLinkPid());
+		if (nodePids.size() > 0) {
 
-			if ((rRdLink.getsNodePid() == nodePid && rRdLink.getDirect() == 2)
-					|| (rRdLink.geteNodePid() == nodePid && rRdLink.getDirect() == 3)) {
-
-				detail.changedFields().put("outLinkPid", rRdLink.getPid());
-
-				result.insertObject(detail, ObjStatus.UPDATE,
-						detail.getPid());
-
-				updateVoiceguide.add(detail.getVoiceguidePid());
-			}
-
-			RdLink lRdLink = leftLinkMapping.get(detail.getOutLinkPid());
-
-			if ((lRdLink.getsNodePid() == nodePid && lRdLink.getDirect() == 2)
-					|| (lRdLink.geteNodePid() == nodePid && lRdLink.getDirect() == 3)) {
-
-				detail.changedFields().put("outLinkPid", lRdLink.getPid());
-
-				result.insertObject(detail, ObjStatus.UPDATE,
-						detail.getPid());
-
-				updateVoiceguide.add(detail.getVoiceguidePid());
-			}
+			return true;
 		}
+		return false;
 	}
 }
+

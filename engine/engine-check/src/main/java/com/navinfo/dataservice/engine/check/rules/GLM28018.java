@@ -15,10 +15,12 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoadLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /** 
  * @ClassName: GLM28018
@@ -52,6 +54,52 @@ public class GLM28018 extends baseRule{
 			else if (obj instanceof RdRoadLink){
 				RdRoadLink rdRoadLink = (RdRoadLink)obj;
 				checkRdRoadLink(rdRoadLink);
+			}
+			//删除CRFI
+			else if (obj instanceof RdInter){
+				RdInter rdInter = (RdInter)obj;
+				checkRdInter(rdInter);
+			}
+		}
+	}
+
+	/**
+	 * @param rdInter
+	 * @throws SQLException 
+	 */
+	private void checkRdInter(RdInter rdInter) throws SQLException {
+		if(!rdInter.status().equals(ObjStatus.DELETE)){
+			return;
+		}
+		
+		//获取该CRFI所涉及的CRFRoadPid
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT DISTINCT RRL.PID FROM RD_ROAD_LINK RRL,RD_LINK RL,RD_INTER_NODE RIN");
+		sb.append(" WHERE RIN.PID = " + rdInter.getPid() );
+		sb.append(" AND (RIN.NODE_PID = RL.S_NODE_PID OR RIN.NODE_PID = RL.E_NODE_PID) ");
+		sb.append(" AND RRL.LINK_PID = RL.LINK_PID");
+		sb.append(" AND RRL.U_RECORD <> 2 ");
+		sb.append(" AND RL.U_RECORD <> 2");
+		sb.append(" AND RIN.U_RECORD <> 2");
+		String sql = sb.toString();
+		log.info("RdInter前检查GLM28009:" + sql);
+		
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+			
+		ResultSet resultSet2 = pstmt.executeQuery();
+		List<Long> rdRoadPidList=new ArrayList<Long>();
+
+		while (resultSet2.next()){
+			rdRoadPidList.add(resultSet2.getLong("PID"));
+		} 
+		resultSet2.close();
+		pstmt.close();
+		
+		for(long pid:rdRoadPidList){
+			if(!isClosedLoop(pid)){
+				String target = "[RD_ROAD," + pid + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

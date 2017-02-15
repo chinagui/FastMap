@@ -98,7 +98,7 @@ public class GLM01268 extends baseRule {
 						{
 							speedClass = limit.getSpeedClass();
 						}
-						if(speedClass == 1 || speedClass == 2 || speedClass == 3)
+						if(speedClass == 1 || speedClass == 2)
 						{
 							speedLimitLinkPidSet.add(limit.getLinkPid());
 						}

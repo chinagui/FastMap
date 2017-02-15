@@ -199,7 +199,12 @@ public class CheckController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			JSONObject data = selector.poiCheckResults(pid);
+			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
+			JSONArray checkResultsArr = selector.poiCheckResultList(pid);
+			data.put("data", checkResultsArr);
+			data.put("total", checkResultsArr.size());
+			
+			
 			logger.info("end check/list");
 			logger.debug(data);
 			return new ModelAndView("jsonView", success(data));

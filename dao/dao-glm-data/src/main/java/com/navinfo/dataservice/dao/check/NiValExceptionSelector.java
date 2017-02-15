@@ -743,14 +743,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年2月14日 下午8:04:09 
 	 */
-	public JSONObject poiCheckResults(int pid) throws Exception {
+	/*public JSONObject poiCheckResults(int pid) throws Exception {
 
 		StringBuilder sql = new StringBuilder(
 				" select p.pid,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
 						+ "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
 							+ " from ix_poi p  where   p.pid = "+pid+" ");
 		
-		System.out.println("poiCheckResults:  "+ sql);
+//		System.out.println("poiCheckResults:  "+ sql);
 		
 		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONObject>(){
 
@@ -821,7 +821,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 			}
 		}
 		);
-	}
+	}*/
 	/**
 	 * @Title: poiCheckResultList
 	 * @Description: 根据 pid 查询  exception
@@ -854,7 +854,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		//b.md5_code,b.ruleid,b.pid,b.information,b.worker ,b.created
 		sql.append(" select A.*,B.pids from q2 A ,q3 B where A.md5_code = B.md5_code  and A.pid = "+pid+" order by A.created desc,A.md5_code desc ");
 		
-		System.out.println("poiCheckResultList:  "+ sql);
+//		System.out.println("poiCheckResultList:  "+ sql);
 		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
 
 			@Override
@@ -940,7 +940,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 								+ "from ix_poi t ,q2 m where t.pid =m.ref_pid"
 						+ " ");*/
 
-		System.out.println("queryRefFeatures sql :  "+ sql);
+//		System.out.println("queryRefFeatures sql :  "+ sql);
 		try {
 			return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
 
@@ -979,7 +979,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 							break;
 						}
 						
-						json.put("lifecycle", lifecycle);
+						json.put("state", lifecycle);
 						
 						json.put("linkPid", rs.getInt("link_pid"));
 						

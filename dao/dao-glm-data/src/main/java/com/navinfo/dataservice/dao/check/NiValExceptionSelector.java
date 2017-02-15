@@ -293,16 +293,16 @@ public class NiValExceptionSelector {
 		if (flag == 0) {
 			sql = new StringBuilder(
 					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-							+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+							+ "worker,qa_worker,qa_status from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		}
 		if (flag == 1) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
-							+ "worker from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
 
@@ -310,13 +310,13 @@ public class NiValExceptionSelector {
 		if (flag == 2) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
-							+ "worker from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
 							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-							+ "worker from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		}
@@ -392,8 +392,11 @@ public class NiValExceptionSelector {
 					"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
 
 			json.put("create_date", rs.getString("created"));
+			json.put("update_date", rs.getString("updated"));
 
 			json.put("worker", rs.getString("worker"));
+			json.put("qa_worker", rs.getString("qa_worker") == null ? "":rs.getString("qa_worker"));
+			json.put("qa_status", rs.getString("qa_status"));
 
 			results.add(json);
 		}

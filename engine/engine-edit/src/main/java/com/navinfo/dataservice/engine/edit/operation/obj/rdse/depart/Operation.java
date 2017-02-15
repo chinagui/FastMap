@@ -50,9 +50,9 @@ public class Operation {
                 if (nodePids.contains(rdSe.getNodePid()))
                     continue;
                 if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[0]).pid());
+                    rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[0]).pid());
                 } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[0]).pid());
+                    rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[0]).pid());
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }
@@ -66,9 +66,9 @@ public class Operation {
                 if (nodePids.contains(rdSe.getNodePid()))
                     continue;
                 if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
+                    rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
                 } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
+                    rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }

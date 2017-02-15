@@ -183,10 +183,15 @@ public class RdLinkOperateUtils {
         link.copy(sourceLink);
 
         double linkLength = GeometryUtils.getLinkLength(geometry);
+        if (linkLength <= 2) {
+            throw new Exception("道路link长度应大于2米");
+        }
+
         // 计算Geometry
         link.setGeometry(GeoTranslator.transform(geometry, 100000, 0));
 
         link.setLength(linkLength);
+
         link.setOriginLinkPid(link.getPid());
         link.setsNodePid(sNode.getPid());
         link.seteNodePid(eNode.getPid());

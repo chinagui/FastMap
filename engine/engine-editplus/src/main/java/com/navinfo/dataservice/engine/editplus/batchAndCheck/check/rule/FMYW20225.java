@@ -44,7 +44,7 @@ public class FMYW20225 extends BasicCheckRule {
 				//支付方式
 				String payment=ixPoiParking.getPayment();
 				//1.收费方式与支付方式不能同时有值
-				if (StringUtils.isEmpty(tollWay)&&StringUtils.isEmpty(payment)){
+				if (StringUtils.isNotEmpty(tollWay)&&StringUtils.isNotEmpty(payment)){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "收费方式与支付方式同时有值");
 				}
 //				long regionId = poi.getRegionId();

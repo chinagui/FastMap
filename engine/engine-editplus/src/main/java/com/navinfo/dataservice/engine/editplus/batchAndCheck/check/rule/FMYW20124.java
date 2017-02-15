@@ -36,6 +36,7 @@ public class FMYW20124 extends BasicCheckRule {
 					||(ixPoiAddress.getHisOpType().equals(OperationType.UPDATE)
 					&&ixPoiAddress.hisOldValueContains(IxPoiAddress.FULLNAME))){
 				String fullname = ixPoiAddress.getFullname();
+				if(fullname == null){return;}
 				//1）主地址（address）只含有阿拉伯数字时，报log1；
 				if(CheckUtil.isDigit(fullname)){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址只含有数字，请确认");

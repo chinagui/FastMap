@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -33,17 +34,28 @@ public class FMYW20227 extends BasicCheckRule {
 			List<IxPoiParking> ixPoiParkings = poiObj.getIxPoiParkings();
 			//错误数据
 			if(ixPoiParkings==null || ixPoiParkings.isEmpty()){return;}
+			boolean flag = false;
 			for (IxPoiParking ixPoiParking : ixPoiParkings) {
 				//收费标准
 				String tollStd = ixPoiParking.getTollStd();
 				if(tollStd == null){return;}
-				if("5".equals(tollStd)){
+				List<Integer> tollStds = StringUtils.getIntegerListByStr(tollStd.replaceAll("\\|", ","));
+				if(tollStds.contains(5)){
 					String remark = ixPoiParking.getRemark();
-					if(remark == null){return;}
-					if(!remark.contains("0")){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					if(remark == null){
+						flag = true;
+						break;
+					}else {
+						List<Integer> remarks = StringUtils.getIntegerListByStr(remark.replaceAll("\\|", ","));
+						if(!remarks.contains(0)){
+							flag = true;
+							break;
+						}
 					}
 				}
+			}
+			if(flag){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 			}
 		}
 	}

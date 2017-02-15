@@ -14,7 +14,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author Han Shaoming
  * @date 2017年2月13日 下午7:09:57
  * @Description TODO
- * 检查条件：    lifecycle！=1
+ * 检查条件：   非删除POI对象
  * 检查原则：
  * 插头类型（chargingPole-plugType）大于4个值，报LOG：
  */

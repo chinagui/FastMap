@@ -14,7 +14,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author Han Shaoming
  * @date 2017年2月13日 下午7:36:44
  * @Description TODO
- * 检查条件：    lifecycle！=1
+ * 检查条件：    非删除POI对象
  * 检查原则：
  * 1. 充电桩位置类型（chargingPole-locationType）为室外0，楼层（chargingPole-floor）不为正整数。
  * 2. 充电桩位置类型（chargingPole-locationType）为室内地上1，楼层（chargingPole-floor）不为正整数。
@@ -39,6 +39,7 @@ public class FMYW20203 extends BasicCheckRule {
 				if((locationType == 0 && floor < 1)||(locationType == 1 && floor < 1)
 						||(locationType == 2 && floor > -1)){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					return;
 				}
 			}
 		}

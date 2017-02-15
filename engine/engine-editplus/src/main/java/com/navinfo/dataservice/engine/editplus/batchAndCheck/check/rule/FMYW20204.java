@@ -12,7 +12,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * @author Han Shaoming
  * @date 2017年2月13日 下午7:18:54
  * @Description TODO
- * 检查条件：    lifecycle！=1 
+ * 检查条件：    非删除POI对象
  * 检查原则：
  * 1. 名称以充电桩结尾，但分类赋的是充电站（230218）分类。
  * 2. 名称以充电站、充电点结尾，但分类赋的是充电桩（230227）分类。

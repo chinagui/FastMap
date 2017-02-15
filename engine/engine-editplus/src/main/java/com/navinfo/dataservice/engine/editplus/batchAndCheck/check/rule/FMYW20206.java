@@ -20,7 +20,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * @author Han Shaoming
  * @date 2017年2月13日 下午4:09:05
  * @Description TODO
- * 检查条件：     Lifecycle！=1（删除）；
+ * 检查条件：     非删除POI对象
  * 检查原则：
  * 停车收费备注（chargingStation-parkingInfo），设备生产商（chargingPole-manufacturer），出厂编号（chargingPole-factoryNum），
  * 充电桩编号（chargingPole-plotNum），产品型号（chargingPole-productNum），电动车泊位号码（chargingPole-parkingNum）
@@ -96,17 +96,17 @@ public class FMYW20206 extends BasicCheckRule {
 					}
 					//充电功率
 					String power = ixPoiChargingPlot.getPower();
-					if(!CheckUtil.isChinese(power)){
+					if(power != null && !CheckUtil.isChinese(power)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电功率只能包含全半角阿拉伯数字");
 					}
 					//充电电压
 					String voltage = ixPoiChargingPlot.getVoltage();
-					if(!CheckUtil.isChinese(voltage)){
+					if(voltage != null && !CheckUtil.isChinese(voltage)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电压只能包含全半角阿拉伯数字");
 					}
 					//充电电流
 					String curent = ixPoiChargingPlot.getCurrent();
-					if(!CheckUtil.isChinese(curent)){
+					if(curent != null && !CheckUtil.isChinese(curent)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电流只能包含全半角阿拉伯数字");
 					}
 				}

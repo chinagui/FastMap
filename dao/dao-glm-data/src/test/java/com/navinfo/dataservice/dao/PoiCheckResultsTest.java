@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.HashSet;
 import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
@@ -62,5 +63,24 @@ public class PoiCheckResultsTest {
 		}
 	}
 	
+	public static void main(String[] args) {
+		int pid = 176;
+		String pids = "170,176";
+		String[] pidsArr = pids.split(",");
+		
+		if(pidsArr != null && pidsArr.length >1){
+			for(String pidStr :pidsArr){
+				System.out.println(pidStr.equals(pid));
+				if(pidStr != null && StringUtils.isNotEmpty(pidStr) ){
+					int refPid = Integer.parseInt(pidStr);
+					if(refPid != pid){
+						System.out.println(pidStr);
+						System.out.println(Integer.parseInt(pidStr)+1);
+					}
+					
+				}
+			}
+		}
+	}
 
 }

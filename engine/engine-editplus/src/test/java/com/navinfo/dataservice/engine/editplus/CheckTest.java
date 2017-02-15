@@ -67,10 +67,10 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 64, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
-		IxPoiAddress chiAddress = poiObj.getCHAddress();
+//		IxPoiAddress chiAddress = poiObj.getCHAddress();
 //		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
@@ -95,7 +95,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-11Win-05-02");
+		ruleIdList.add("FM-YW-20-204");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

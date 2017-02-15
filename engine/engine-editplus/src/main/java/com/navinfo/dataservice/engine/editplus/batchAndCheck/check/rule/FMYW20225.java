@@ -11,16 +11,16 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /**
+ * @ClassName FMYW20225
+ * @author Han Shaoming
+ * @date 2017年2月14日 上午10:06:32
+ * @Description TODO
  * 检查条件：
  * 非删除（根据履历判断删除）
  * 检查原则：(收费方式字段：IX_POI_PARKING.TOLL_WAY；支付方式字段：IX_POI_PARKING.PAYMENT)
-					1.收费方式与支付方式不能同时有值
-					2.收费方式只有大陆数据才能有值
-					3.支付方式只能港澳数据才能有值
-					log1：收费方式与支付方式同时有值
-					log2：港澳数据，收费方式不能有值
-					log3：大陆数据，支付方式不能有值
- * @author gaopengrong
+ * 1.收费方式与支付方式不能同时有值
+ * 2.收费方式只有大陆数据才能有值
+ * 3.支付方式只能港澳数据才能有值
  */
 public class FMYW20225 extends BasicCheckRule {
 	
@@ -35,15 +35,27 @@ public class FMYW20225 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();	
-			List<IxPoiParking> parkings = poiObj.getIxPoiParkings();
-			String log;
-			for(IxPoiParking parking : parkings){
-				//对于大陆数据，支付方式不能有值。
-				String payment=parking.getPayment();
-				if (StringUtils.isNotEmpty(payment)){
-					log = "大陆数据，支付方式不能有值";
-					setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
+			List<IxPoiParking> ixPoiParkings = poiObj.getIxPoiParkings();
+			//错误数据
+			if(ixPoiParkings==null || ixPoiParkings.isEmpty()){return;}
+			for (IxPoiParking ixPoiParking : ixPoiParkings) {
+				//收费方式
+				String tollWay = ixPoiParking.getTollWay();
+				//支付方式
+				String payment=ixPoiParking.getPayment();
+				//1.收费方式与支付方式不能同时有值
+				if (StringUtils.isEmpty(tollWay)&&StringUtils.isEmpty(payment)){
+					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "收费方式与支付方式同时有值");
 				}
+//				long regionId = poi.getRegionId();
+				//2.收费方式只有大陆数据才能有值
+//				if (StringUtils.isEmpty(tollWay)&&StringUtils.isEmpty(payment)){
+//					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "收费方式与支付方式同时有值");
+//				}
+				//3.支付方式只能港澳数据才能有值
+//				if (StringUtils.isEmpty(tollWay)&&StringUtils.isEmpty(payment)){
+//					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "收费方式与支付方式同时有值");
+//				}
 			}		
 		}
 	}

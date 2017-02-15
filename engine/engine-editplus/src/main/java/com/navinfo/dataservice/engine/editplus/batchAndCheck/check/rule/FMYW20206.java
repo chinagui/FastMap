@@ -51,7 +51,6 @@ public class FMYW20206 extends BasicCheckRule {
 					if(errorList.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电站停车收费备注含有非法字符“"
 								+errorList.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 				}
 			}
@@ -66,7 +65,6 @@ public class FMYW20206 extends BasicCheckRule {
 					if(manufacturerErrors.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩设备生产商含有非法字符“"
 								+manufacturerErrors.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 					//出厂编号
 					String factoryNum = ixPoiChargingPlot.getFactoryNum();
@@ -74,7 +72,6 @@ public class FMYW20206 extends BasicCheckRule {
 					if(factoryNumErrors.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩出厂编号含有非法字符“"
 								+factoryNumErrors.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 					//充电桩编号
 					String plotNum = ixPoiChargingPlot.getPlotNum();
@@ -82,7 +79,6 @@ public class FMYW20206 extends BasicCheckRule {
 					if(plotNumErrors.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩编号含有非法字符“"
 								+plotNumErrors.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 					//产品型号
 					String productNum = ixPoiChargingPlot.getProductNum();
@@ -90,7 +86,6 @@ public class FMYW20206 extends BasicCheckRule {
 					if(productNumErrors.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩产品型号含有非法字符“"
 								+productNumErrors.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 					//电动车泊位号码
 					String parkingNum = ixPoiChargingPlot.getParkingNum();
@@ -98,25 +93,21 @@ public class FMYW20206 extends BasicCheckRule {
 					if(parkingNumErrors.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩电动车泊位号码含有非法字符“"
 								+parkingNumErrors.toString().replace("[", "").replace("]", "")+"”");
-						return;
 					}
 					//充电功率
 					String power = ixPoiChargingPlot.getPower();
-					if(CheckUtil.isChinese(power)){
+					if(!CheckUtil.isChinese(power)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电功率只能包含全半角阿拉伯数字");
-						return;
 					}
 					//充电电压
 					String voltage = ixPoiChargingPlot.getVoltage();
-					if(CheckUtil.isChinese(voltage)){
+					if(!CheckUtil.isChinese(voltage)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电压只能包含全半角阿拉伯数字");
-						return;
 					}
 					//充电电流
 					String curent = ixPoiChargingPlot.getCurrent();
-					if(CheckUtil.isChinese(curent)){
+					if(!CheckUtil.isChinese(curent)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电流只能包含全半角阿拉伯数字");
-						return;
 					}
 				}
 			}

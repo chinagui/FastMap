@@ -493,11 +493,9 @@ public class IxPoiAddress extends BasicRow {
         splitAddList.add(this.getHousenum());
         splitAddList.add(this.getPrefix());
         splitAddList.add(this.getLandmark());
-        if (StringUtils.isNotEmpty(this.getRoadname())){
-        	splitAddList.add(this.getStreet());
-        	splitAddList.add(this.getPlace());
-        	splitAddList.add(this.getTown());
-        }
+    	splitAddList.add(this.getStreet());
+    	splitAddList.add(this.getPlace());
+    	splitAddList.add(this.getTown());
         
         String splitAddStr = splitAddList.toString().replace("[", "").replace("]", "").replaceAll(",","");
         return splitAddStr;

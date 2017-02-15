@@ -816,7 +816,7 @@ public class SubtaskOperation {
 			}
 
 			if (bean.getStatus() != null) {
-				sb.append(" and st.TYPE = "+ bean.getStatus());
+				sb.append(" and st.status = "+ bean.getStatus());
 			}
 
 

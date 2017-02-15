@@ -269,7 +269,7 @@ public class OracleDao {
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+//						subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
 						
 						list.add(subtask);		
 					}

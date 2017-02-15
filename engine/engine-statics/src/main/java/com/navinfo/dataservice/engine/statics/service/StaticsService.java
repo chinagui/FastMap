@@ -466,7 +466,8 @@ public class StaticsService {
 				||(subtask.getType()==5&&subtask.getStage()==1)){
 			String poiColName = PoiDailyMain.col_name_block;
 			String roadColName = RoadDailyMain.col_name_block;
-			int blockId = subtask.getBlockId();
+//			int blockId = subtask.getBlockId();
+			int blockId = 1;
 					
 			SubtaskStatInfo result = StaticsOperation.getSubtaskStatByBlock(blockId,poiColName,roadColName);
 			//一体化区域粗编

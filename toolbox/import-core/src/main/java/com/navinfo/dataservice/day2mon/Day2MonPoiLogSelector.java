@@ -17,6 +17,11 @@ import com.navinfo.dataservice.impcore.selector.DefaultLogSelector;
 public class Day2MonPoiLogSelector extends DefaultLogSelector{
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Date startTime;
+	public Day2MonPoiLogSelector(OracleSchema logSchema,Date stopTime,List<Integer> grids) {
+		super(logSchema);
+		this.stopTime = stopTime;
+		this.grids = grids;
+	}
 	public Day2MonPoiLogSelector(OracleSchema logSchema) {
 		super(logSchema);
 	}

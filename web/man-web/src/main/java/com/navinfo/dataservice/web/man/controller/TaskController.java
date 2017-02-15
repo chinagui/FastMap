@@ -145,6 +145,55 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+//	/*
+//	 * 规划管理页面--任务管理--查看任务页面
+//	 */
+//	@SuppressWarnings("rawtypes")
+//	@RequestMapping(value = "/task/list")
+//	public ModelAndView list(HttpServletRequest request){
+//		try{	
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+//			JSONObject condition = new JSONObject();	
+//			if(dataJson.containsKey("condition")){
+//				condition=dataJson.getJSONObject("condition");
+//			}
+//			JSONObject order = new JSONObject();	
+//			if(dataJson.containsKey("order")){
+//				order=dataJson.getJSONObject("order");
+//			}			
+//			int curPageNum= 1;//默认为第一页
+//			if (dataJson.containsKey("pageNum")){
+//				curPageNum = dataJson.getInt("pageNum");
+//			}
+//			int curPageSize= 20;//默认为20条记录/页
+//			if (dataJson.containsKey("pageSize")){
+//				curPageSize = dataJson.getInt("pageSize");
+//			}
+//			int snapshot = 0; 
+//			if(dataJson.containsKey("snapshot")){
+//				snapshot=dataJson.getInt("snapshot");
+//			}
+//			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
+//			int planStatus = 1;	
+//			if(dataJson.containsKey("planStatus")){
+//				planStatus=dataJson.getInt("planStatus");
+//			}
+//			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
+//			int taskType = 1;	
+//			if(dataJson.containsKey("taskType")){
+//				taskType=dataJson.getInt("taskType");
+//			}
+//			Page data = TaskService.getInstance().list(taskType,planStatus,condition,order,curPageNum,curPageSize,snapshot);
+//			Map<String, Object> returnMap=new HashMap<String, Object>();
+//			returnMap.put("result", (List)data.getResult());
+//			returnMap.put("totalCount", data.getTotalCount());
+//			return new ModelAndView("jsonView", success(returnMap));
+//		}catch(Exception e){
+//			log.error("获取列表失败，原因："+e.getMessage(), e);
+//			return new ModelAndView("jsonView",exception(e));
+//		}
+//	}
+	
 	/*
 	 * 规划管理页面--任务管理--查看任务页面
 	 */
@@ -157,10 +206,10 @@ public class TaskController extends BaseController {
 			if(dataJson.containsKey("condition")){
 				condition=dataJson.getJSONObject("condition");
 			}
-			JSONObject order = new JSONObject();	
-			if(dataJson.containsKey("order")){
-				order=dataJson.getJSONObject("order");
-			}			
+//			JSONObject order = new JSONObject();	
+//			if(dataJson.containsKey("order")){
+//				order=dataJson.getJSONObject("order");
+//			}			
 			int curPageNum= 1;//默认为第一页
 			if (dataJson.containsKey("pageNum")){
 				curPageNum = dataJson.getInt("pageNum");
@@ -169,21 +218,21 @@ public class TaskController extends BaseController {
 			if (dataJson.containsKey("pageSize")){
 				curPageSize = dataJson.getInt("pageSize");
 			}
-			int snapshot = 0; 
-			if(dataJson.containsKey("snapshot")){
-				snapshot=dataJson.getInt("snapshot");
-			}
-			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
-			int planStatus = 1;	
-			if(dataJson.containsKey("planStatus")){
-				planStatus=dataJson.getInt("planStatus");
-			}
-			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
-			int taskType = 1;	
-			if(dataJson.containsKey("taskType")){
-				taskType=dataJson.getInt("taskType");
-			}
-			Page data = TaskService.getInstance().list(taskType,planStatus,condition,order,curPageNum,curPageSize,snapshot);
+//			int snapshot = 0; 
+//			if(dataJson.containsKey("snapshot")){
+//				snapshot=dataJson.getInt("snapshot");
+//			}
+//			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
+//			int planStatus = 1;	
+//			if(dataJson.containsKey("planStatus")){
+//				planStatus=dataJson.getInt("planStatus");
+//			}
+//			//snapshot=0时，显示全部常规/情报任务，taskType,planStatus失效，可不传
+//			int taskType = 1;	
+//			if(dataJson.containsKey("taskType")){
+//				taskType=dataJson.getInt("taskType");
+//			}
+			Page data = TaskService.getInstance().list(condition,curPageNum,curPageSize);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());

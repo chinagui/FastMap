@@ -947,12 +947,12 @@ public class SubtaskOperation {
 			sb.append(" AND (T.EXE_USER_ID = " + bean.getExeUserId() + " OR T.EXE_GROUP_ID = " + bean.getExeGroupId() + ")");
 			
 			if (bean.getStage() != null) {
-				sb.append(" AND T.STAGE = " + bean.getStage());
+				sb.append(" AND ST.STAGE = " + bean.getStage());
 			}else{
 				if(0 == platForm){//采集端
-					sb.append(" AND T.STAGE = 0");
+					sb.append(" AND ST.STAGE = 0");
 				}else if(1 == platForm){//编辑端
-					sb.append(" AND T.STAGE IN (1,2) ");
+					sb.append(" AND ST.STAGE IN (1,2) ");
 				}
 			}
 

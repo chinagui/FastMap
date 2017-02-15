@@ -3,6 +3,8 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -427,27 +429,221 @@ public class TaskService {
 		return page;
 	}
 		
-	public Page list(int taskType, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
+//	public Page list(int taskType, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize,int snapshot)throws Exception{
+//		Connection conn = null;
+//		try{
+//			conn = DBConnector.getInstance().getManConnection();
+//			if (snapshot==1){
+//				if(taskType==4){
+//					//情报任务查询列表
+//					return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+//				}else{
+//					//常规任务查询列表
+//					return this.commonList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+//				}
+//			}else{
+//				Page page = TaskOperation.getListIntegrate(conn,conditionJson,orderJson,currentPageNum,pageSize);
+//				return page;
+//			}
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
+//		}finally{
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
+	
+
+	public Page list(JSONObject condition,int curPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			if (snapshot==1){
-				if(taskType==4){
-					//情报任务查询列表
-					return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
-				}else{
-					//常规任务查询列表
-					return this.commonList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+			//查询条件
+			String conditionSql = "";
+			Iterator<?> conditionKeys = condition.keys();
+			while (conditionKeys.hasNext()) {
+				String key = (String) conditionKeys.next();
+				//查询条件
+				if ("programId".equals(key)) {
+					conditionSql+=" AND TASK_LIST.PROGRAM_ID="+condition.getInt(key);
 				}
-			}else{
-				Page page = TaskOperation.getListIntegrate(conn,conditionJson,orderJson,currentPageNum,pageSize);
-				return page;
+				if ("type".equals(key)) {
+					conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
+				}
+				if ("groupId".equals(key)) {
+					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+				}
+				//任务名称模糊查询
+				if ("name".equals(key)) {	
+					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
+				}
+				//筛选条件
+				//"progress":[1,3] //进度。1采集正常，2采集异常，3日编正常，4日编异常， 5月编正常，6月编异常，7已关闭，8已完成, 9草稿, 11逾期完成，12按时完成，13提前完成
+				//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，14按时完成，15提前完成，16逾期完成
+				if ("progress".equals(key)){
+					JSONArray progress = condition.getJSONArray(key);
+					if(progress.isEmpty()){
+						continue;
+					}
+					List<String> progressList = new ArrayList<String>();
+					for(Object i:progress){
+						int tmp=(int) i;
+						//1采集正常，2采集异常，3采集完成
+						if(tmp==1){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 ");}
+						if(tmp==2){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0");}
+						if(tmp==3){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=0");}
+						//4日编正常，5日编异常，6日编完成
+						if(tmp==4){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1 ");}
+						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1");}
+						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=1");}
+						//7月编正常，8月编异常，9月编完成
+						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=2 ");}
+						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=2");}
+						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=2");}
+						//10未规划，11草稿, 12已完成，13已关闭
+						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
+						if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
+						if(tmp==12){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100");}
+						if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
+						//14按时完成，15提前完成，16逾期完成
+						if(tmp==14){
+							progressList.add("TASK_LIST.DIFF_DATE = 0 AND TASK_LIST.PERCENT = 100 ");
+						}
+						if(tmp==15){
+							progressList.add("TASK_LIST.DIFF_DATE > 0 AND TASK_LIST.PERCENT = 100 ");
+						}
+						if(tmp==16){
+							progressList.add("TASK_LIST.DIFF_DATE < 0 AND TASK_LIST.PERCENT = 100 ");
+						}
+
+						if(!progressList.isEmpty()){
+							String tempSql = StringUtils.join(progressList," OR ");
+							conditionSql = " AND (" + tempSql + ")";
+						}
+					}
+				}
 			}
-		}catch(Exception e){
+			
+			
+			QueryRunner run = new QueryRunner();
+			long pageStartNum = (curPageNum - 1) * pageSize + 1;
+			long pageEndNum = curPageNum * pageSize;
+			
+			StringBuilder sb = new StringBuilder();
+			
+			/*• 记录默认排序原则：
+			 * ①根据状态排序：开启>待分配>草稿>未规划>100%(已完成)>已关闭
+			 * 用order_status来表示这个排序的先后顺序。分别是开启1>待分配2>草稿3>未规划4>100%(已完成)5>已关闭6
+			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
+			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
+			 */
+			sb.append("WITH FF AS ( ");
+			sb.append("SELECT *");
+			sb.append("  FROM (SELECT TASK_LIST.*,");
+			sb.append("               CASE");
+			sb.append("                 WHEN (TASK_LIST.STATUS = 2) THEN");
+			sb.append("                  3");
+			sb.append("                 WHEN (TASK_LIST.STATUS = 0) THEN");
+			sb.append("                  6");
+			sb.append("                 WHEN (TASK_LIST.STATUS = 4) THEN");
+			sb.append("                  4");
+			sb.append("                 WHEN (TASK_LIST.STATUS = 1) THEN");
+			sb.append("                  CASE");
+			sb.append("                    WHEN (TASK_LIST.PERCENT = 100) THEN");
+			sb.append("                     5");
+			sb.append("                    ELSE");
+			sb.append("                     CASE");
+			sb.append("                       WHEN (TASK_LIST.SUBTASK_NUM = 0) THEN");
+			sb.append("                        2");
+			sb.append("                       ELSE");
+			sb.append("                        1");
+			sb.append("                     END");
+			sb.append("                  END");
+			sb.append("               END ORDER_STATUS");
+			sb.append("          FROM (SELECT P.PROGRAM_ID,");
+			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
+			sb.append("                       T.NAME,");
+			sb.append("                       NVL(T.STATUS, 4) STATUS,");
+			sb.append("                       T.TYPE,");
+			sb.append("                       T.GROUP_ID,");
+			sb.append("                       T.PLAN_START_DATE,");
+			sb.append("                       T.PLAN_END_DATE,");
+			sb.append("                       T.ROAD_PLAN_TOTAL,");
+			sb.append("                       T.POI_PLAN_TOTAL,");
+			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
+			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
+			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       B.BLOCK_ID,");
+			sb.append("                       B.PLAN_STATUS,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
+			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT");
+			sb.append("                 WHERE T.BLOCK_ID(+) = B.BLOCK_ID");
+			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
+			sb.append("                   AND P.CITY_ID = B.CITY_ID) TASK_LIST) FINAL_TABLE");
+			sb.append(" WHERE 1=1 ");
+			sb.append(conditionSql);
+			sb.append(" ORDER BY FINAL_TABLE.ORDER_STATUS ASC ,DIFF_DATE DESC PERCEBT DESC");
+			sb.append(")");
+			sb.append(" SELECT /*+FIRST_ROWS ORDERED*/");
+			sb.append(" TT.*, (SELECT COUNT(1) FROM FF) AS TOTAL_RECORD_NUM");
+			sb.append("  FROM (SELECT FF.*, ROWNUM AS ROWNUM_");
+			sb.append(" FROM FF");
+			sb.append(" WHERE ROWNUM <= "+pageEndNum+") TT");
+			sb.append(" WHERE TT.ROWNUM_ >= "+pageStartNum);
+
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page();
+				    int totalCount = 0;
+				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					while (rs.next()) {
+						HashMap<Object,Object> task = new HashMap<Object,Object>();
+						task.put("taskId", rs.getInt("TASK_ID"));
+						task.put("taskName", rs.getString("NAME"));
+						task.put("status", rs.getInt("STATUS"));
+						task.put("type", rs.getInt("TYPE"));
+						
+						task.put("percent", rs.getInt("PERCENT"));
+						task.put("diffDate", rs.getInt("DIFF_DATE"));
+						task.put("progress", rs.getInt("PROGRESS"));
+						
+						task.put("groupId", rs.getInt("GROUP_ID"));
+
+						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
+						if(planStartDate != null){
+							task.put("planStartDate", df.format(planStartDate));
+						}else {task.put("planStartDate", null);}
+						if(planEndDate != null){
+							task.put("planEndDate",df.format(planEndDate));
+						}else{task.put("planEndDate", null);}
+						
+						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+						task.put("poiPlanTotal", rs.getString("POI_PLAN_TOTAL"));
+						totalCount=rs.getInt("TOTAL_RECORD_NUM");
+						list.add(task);
+					}					
+					page.setTotalCount(totalCount);
+					page.setResult(list);
+					return page;
+				}
+
+			};
+			
+			Page page= run.query(conn, sb.toString(), rsHandler);
+			page.setPageNum(curPageNum);
+		    page.setPageSize(pageSize);
+		    return page;
+		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("查询列表失败，原因为:"+e.getMessage(),e);
-		}finally{
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

@@ -6,8 +6,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class CkExceptionSelector {
@@ -20,8 +22,116 @@ public class CkExceptionSelector {
 		this.conn = conn;
 	}
 
-	public void loadById(int id, boolean isLock) throws Exception {
+	public CkException loadById(String id, boolean isLock) throws Exception {
+		CkException exception = new CkException();
 
+		String sql = "select * from ck_exception where md5_code=:1";
+		
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setString(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				exception.setExceptionId(resultSet.getInt("pid"));
+
+				exception.setRuleId(resultSet.getString("rule_id"));
+
+				exception.setTaskName(resultSet.getString("task_name"));
+
+				exception.setStatus(resultSet.getInt("status"));
+
+				exception.setGroupId(resultSet.getInt("group_id"));
+
+				exception.setRank(resultSet.getInt("rank"));
+
+				exception.setSituation(resultSet.getString("situation"));
+
+				exception.setInformation(resultSet.getString("information"));
+
+				exception.setSuggestion(resultSet.getString("suggestion"));
+
+				exception.setGeometry(resultSet.getString("geometry"));
+
+				exception.setTargets(resultSet.getString("targets"));
+
+				exception.setAdditionInfo(resultSet.getString("addition_info"));
+
+				exception.setMemo(resultSet.getString("memo"));
+
+				exception.setCreateDate(resultSet.getString("create_date"));
+
+				exception.setUpdateDate(resultSet.getString("update_date"));
+
+				exception.setMeshId(resultSet.getInt("mesh_id"));
+
+				exception.setScopeFlag(resultSet.getInt("scope_flag"));
+
+				exception.setProvinceName(resultSet.getString("province_name"));
+
+				exception.setMapScale(resultSet.getInt("map_scale"));
+
+				exception.setReserved(resultSet.getString("reserved"));
+
+				exception.setExtended(resultSet.getString("extended"));
+
+				exception.setTaskId(resultSet.getString("task_id"));
+
+				exception.setQaStatus(resultSet.getInt("qa_status"));
+
+				exception.setQaTaskId(resultSet.getString("qa_task_id"));
+
+				exception.setWorker(resultSet.getString("worker"));
+
+				exception.setQaWorker(resultSet.getString("qa_worker"));
+
+				exception.setMemo1(resultSet.getString("memo1"));
+
+				exception.setMemo2(resultSet.getString("memo2"));
+
+				exception.setMemo3(resultSet.getString("memo3"));
+
+
+			} else {
+
+				throw new DataNotFoundException("数据不存在");
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return exception;
+	
 	}
 
 	/**

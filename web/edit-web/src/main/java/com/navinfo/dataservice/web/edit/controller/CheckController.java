@@ -78,6 +78,8 @@ public class CheckController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 
 			int pageNum = jsonReq.getInt("pageNum");
+			
+			int flag = jsonReq.getInt("flag");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
@@ -96,7 +98,18 @@ public class CheckController extends BaseController {
 				}
 				logger.info("end check/list manApi");
 			}		
-			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+			/*//***********zl 2017.02.13************
+			Page page = null;
+			if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
+				//page = selector.poiCheckResultList(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/poiCheckResultList");
+			}else{
+				page = selector.list(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/list");
+			}
+			
+			//************************************
+*/			Page page = selector.list(subtaskType,grids, pageSize, pageNum,flag);
 			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));
@@ -171,6 +184,35 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	@RequestMapping(value = "/check/poiResults")
+	public ModelAndView poiCheckResults(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int pid = jsonReq.getInt("pid");
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+			JSONObject data = selector.poiCheckResults(pid);
+			logger.info("end check/list");
+			logger.debug(data);
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -271,6 +313,7 @@ public class CheckController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 
 			String id = jsonReq.getString("id");
+			int oldType = jsonReq.getInt("oldType");
 
 			int type = jsonReq.getInt("type");
 
@@ -278,7 +321,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatus(id, oldType,type);
 
 			return new ModelAndView("jsonView", success());
 
@@ -329,7 +372,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatusForRd(id, type);
 
 			return new ModelAndView("jsonView", success());
 

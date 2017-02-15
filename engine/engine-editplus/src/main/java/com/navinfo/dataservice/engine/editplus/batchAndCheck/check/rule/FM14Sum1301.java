@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
@@ -50,24 +51,25 @@ public class FM14Sum1301 extends BasicCheckRule {
 					String fuelType = ixPoiGasStation.getFuelType();
 					if(fuelType != null){
 						//判断为加油站还是加气站
-						String oilType = "0126";
-						String gasType = "345789";
+						String oilType = "0,1,2,6";
+						List<Integer> oilTypes = StringUtils.getIntegerListByStr(oilType);
+						String gasType = "3,4,5,7,8,9";
+						List<Integer> gasTypes = StringUtils.getIntegerListByStr(gasType);
 						boolean oilFlag = true;
-						boolean gasFlag = true; 
-						for (char type : fuelType.toCharArray()) {
-							String typeStr = String.valueOf(type);
+						boolean gasFlag = true;
+						String[] fuelTypes = fuelType.split("\\|");
+						for (String type : fuelTypes) {
+							int typeStr = Integer.valueOf(type);
 							//加油站
-							if(!oilType.contains(typeStr)){oilFlag = false;}
+							if(!oilTypes.contains(typeStr)){oilFlag = false;}
 							//加气站
-							if(!gasType.contains(typeStr)){oilFlag = false;}
+							if(!gasTypes.contains(typeStr)){gasFlag = false;}
 						}
 						if(oilFlag&&!"230215".equals(kindCode)){
 							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "不允许采集加油站深度信息的设施采集了加油站深度信息");
-							return;
 						}
 						if(gasFlag&&!"230216".equals(kindCode)){
 							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "不允许采集加气站深度信息的设施采集了加气站深度信息");
-							return;
 						}
 					}
 				}

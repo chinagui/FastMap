@@ -5,22 +5,20 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
-import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.trafficsignal.RdTrafficsignalSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+import org.apache.log4j.Logger;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by Crayeres on 2017/2/15.
  */
 public class Operation {
+    private Logger logger = Logger.getLogger(Operation.class);
+
     private Connection conn;
 
     public Operation(Connection conn) {
@@ -29,6 +27,7 @@ public class Operation {
 
     public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
             rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+        logger.info("UPDOWNDEPART:关联维护分叉口提示");
         RdSeSelector selector = new RdSeSelector(conn);
         Integer[] leftLinkPids = leftLinks.keySet().toArray(new Integer[]{});
         Integer[] rightLinkPids = rightLinks.keySet().toArray(new Integer[]{});

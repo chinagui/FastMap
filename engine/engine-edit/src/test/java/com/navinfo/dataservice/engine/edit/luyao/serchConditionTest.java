@@ -138,7 +138,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"gap\":20,\"types\":[\"rdLinkNameContent\"],\"z\":16,\"x\":53953,\"y\":24804}";
+			String parameter = "{\"dbId\":17,\"gap\":20,\"types\":[\"rdLinkProperty\"],\"z\":18,\"x\":215672,\"y\":98705}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 

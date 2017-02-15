@@ -105,7 +105,9 @@ public enum SpecialMapType {
 	// ZONE个数
 	rdLinkZoneCount(551),
 	// link的左右ZONE号码
-	rdLinkZoneSide(552);
+	rdLinkZoneSide(552),	
+	// link属性
+	rdLinkProperty(553);
 
 	private int value;
 

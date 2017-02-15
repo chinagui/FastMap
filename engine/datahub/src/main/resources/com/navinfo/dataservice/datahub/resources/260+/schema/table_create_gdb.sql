@@ -40,43 +40,43 @@ comment on table ACH_GDB_INFO is
 '[173A]';
 
 comment on column ACH_GDB_INFO.ACH_GDB_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ACH_GDB_INFO.SYS_INFO is
-'Êý¾Ý¿âÃû,ÓÃ»§Ãû,Êý¾Ý¿âIP';
+'ï¿½ï¿½Ý¿ï¿½ï¿½ï¿½,ï¿½Ã»ï¿½ï¿½ï¿½,ï¿½ï¿½Ý¿ï¿½IP';
 
 comment on column ACH_GDB_INFO.CREATE_PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column ACH_GDB_INFO.VER_NAME is
-'Èç:12Q1';
+'ï¿½ï¿½:12Q1';
 
 comment on column ACH_GDB_INFO.VER_NUM is
-'¸ù¾Ý³É¹û¿â°æ±¾Ãû³Æ,´Ó1.0¿ªÊ¼,ÒÀ´Î¼Ó1.Èç:1.0,2.0 ';
+'ï¿½ï¿½Ý³É¹ï¿½ï¿½æ±¾ï¿½ï¿½ï¿½,ï¿½ï¿½1.0ï¿½ï¿½Ê¼,ï¿½ï¿½ï¿½Î¼ï¿½1.ï¿½ï¿½:1.0,2.0 ';
 
 comment on column ACH_GDB_INFO.SUB_VER_NUM is
-'ÈË¹¤ÃüÃû';
+'ï¿½Ë¹ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ACH_GDB_INFO.PARENT_VER_NUM is
-'´Ó×÷Òµ¿â³öÀ´Ê±,´ËÏîÎª¿Õ';
+'ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column ACH_GDB_INFO.STATUS is
-'·â¿â,½â¿â';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½';
 
 comment on column ACH_GDB_INFO.ITEM is
-'ÓÃ»§ÉèÖÃ:Èç13CY,NIMIF-G,NAVEX,NIGDF-G,ÆäËû';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½13CY,NIMIF-G,NAVEX,NIGDF-G,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ACH_GDB_INFO.SUBMIT_PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column ACH_GDB_INFO.TASK_RANGE is
-'²Î¿¼"BI_TASK"';
+'ï¿½Î¿ï¿½"BI_TASK"';
 
 comment on column ACH_GDB_INFO.TASK_DESCRIPT is
-'²Î¿¼"BI_TASK"';
+'ï¿½Î¿ï¿½"BI_TASK"';
 
 comment on column ACH_GDB_INFO.RECEIVE_PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 /*==============================================================*/
 /* Table: RD_NODE                                               */
@@ -105,20 +105,20 @@ create table RD_NODE  (
 );
 
 comment on column RD_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column RD_NODE.ADAS_FLAG is
-'±êÖ¾ÊÇ·ñ´æÔÚADASÊý¾Ý';
+'ï¿½ï¿½Ö¾ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ADASï¿½ï¿½ï¿½';
 
 comment on column RD_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RD_NODE.DIF_GROUPID is
-'[172A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[172A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column RD_NODE.SRC_FLAG is
 '[180A]13CY';
@@ -130,10 +130,10 @@ comment on column RD_NODE.RESERVED is
 '[1802A]';
 
 comment on column RD_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK                                               */
@@ -233,44 +233,44 @@ create table RD_LINK  (
 );
 
 comment on table RD_LINK is
-'µÀÂ·LinkÊÇ¹¹³ÉµÀÂ·µÄ»ù±¾ÔªËØ,°üÀ¨µÀÂ·µÄ¼¸ºÎÐÎ×´,ÍØÆË¹ØÏµ,ÒÔ¼°»ù±¾µÄµÀÂ·ÊôÐÔÐÅÏ¢,ÈçµÀÂ·Ãû³Æ,µÀÂ·ÖÖ±ð,Â·¾¶²ÉÄÉ,µÀÂ··ù¿íµÈ.';
+'ï¿½ï¿½Â·Linkï¿½Ç¹ï¿½ï¿½Éµï¿½Â·ï¿½Ä»ï¿½Ôªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½×´,ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½Ô¼ï¿½ï¿½ï¿½Äµï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢,ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½Ö±ï¿½,Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½.';
 
 comment on column RD_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_LINK.KIND is
-'[180U]´æ´¢Îª10½øÖÆÊý×Ö,NaviMapÏÔÊ¾Îª16½øÖÆÐÎÊ½
+'[180U]ï¿½æ´¢Îª10ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,NaviMapï¿½ï¿½Ê¾Îª16ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½
 ';
 
 comment on column RD_LINK.DIRECT is
-'ÃèÊö³µÁ¾ÔÚµÀÂ·ÉÏµÄÍ¨ÐÐ·½Ïò,ÓÃÏà¶ÔÓÚLink·½ÏòµÄË³ºÍÄæÀ´±íÊ¾';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Â·ï¿½Ïµï¿½Í¨ï¿½Ð·ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾';
 
 comment on column RD_LINK.APP_INFO is
-'[180U]ÃèÊöµÀÂ·Í¨ÐÐÐÅÏ¢';
+'[180U]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Í¨ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_LINK.FUNCTION_CLASS is
 '[180U]';
 
 comment on column RD_LINK.URBAN is
-'ÊÇ·ñÎª³ÇÊÐµÀÂ·';
+'ï¿½Ç·ï¿½Îªï¿½ï¿½ï¿½Ðµï¿½Â·';
 
 comment on column RD_LINK.LANE_NUM is
-'[180U](1)µ¥·½ÏòµÀÂ·:Ö»¼ÇÂ¼"×Ü³µµÀÊý"
-(2)Ë«·½ÏòµÀÂ·:
-Èç¹û×óÓÒ³µµÀÊýÒ»ÖÂ, Ö»¼ÇÂ¼"×Ü³µµÀÊý"
-Èç¹û×óÓÒ³µµÀÊý²»Ò»ÖÂ,Ôò·Ö±ð¼ÇÂ¼"×ó/ÓÒ³µµÀÊý"';
+'[180U](1)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·:Ö»ï¿½ï¿½Â¼"ï¿½Ü³ï¿½ï¿½ï¿½ï¿½ï¿½"
+(2)Ë«ï¿½ï¿½ï¿½ï¿½ï¿½Â·:
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½, Ö»ï¿½ï¿½Â¼"ï¿½Ü³ï¿½ï¿½ï¿½ï¿½ï¿½"
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½,ï¿½ï¿½Ö±ï¿½ï¿½Â¼"ï¿½ï¿½/ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LINK.LANE_WIDTH_LEFT is
-'[200]ÈýÎ¬clm[210]ÐÞ¸Ä×Ö¶Îº¬Òå';
+'[200]ï¿½ï¿½Î¬clm[210]ï¿½Þ¸ï¿½ï¿½Ö¶Îºï¿½ï¿½ï¿½';
 
 comment on column RD_LINK.LANE_WIDTH_RIGHT is
-'[200]ÈýÎ¬clm[210]ÐÞ¸Ä×Ö¶Îº¬Òå';
+'[200]ï¿½ï¿½Î¬clm[210]ï¿½Þ¸ï¿½ï¿½Ö¶Îºï¿½ï¿½ï¿½';
 
 comment on column RD_LINK.LANE_CLASS is
 '[180U]';
@@ -279,45 +279,45 @@ comment on column RD_LINK.WIDTH is
 '[180U]';
 
 comment on column RD_LINK.LEFT_REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇøÓòºÅÂëÕÒ¶ÔÓ¦µÄ×óÐÐÕþ´úÂëºÍ×óÏçÕò´úÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK.RIGHT_REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇøÓòºÅÂëÕÒ¶ÔÓ¦µÄÓÒÐÐÕþ´úÂëºÍÓÒÏçÕò´úÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column RD_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_LINK.ONEWAY_MARK is
 '[181A]';
 
 comment on column RD_LINK.STREET_LIGHT is
-'µÀÂ·ÊÇ·ñ¾ßÓÐÂ·µÆÖ®ÀàµÄÕÕÃ÷ÉèÊ©';
+'ï¿½ï¿½Â·ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©';
 
 comment on column RD_LINK.PARKING_LOT is
-'µÀÂ·ÊÇ·ñ¾ßÓÐÍ£³µ´ø»òÍ£³µÎ»';
+'ï¿½ï¿½Â·ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½Î»';
 
 comment on column RD_LINK.ADAS_FLAG is
-'±êÖ¾ÊÇ·ñ´æÔÚADASÊý¾Ý
-[190]Ôö¼Ó2:¼Ù';
+'ï¿½ï¿½Ö¾ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ADASï¿½ï¿½ï¿½
+[190]ï¿½ï¿½ï¿½ï¿½2:ï¿½ï¿½';
 
 comment on column RD_LINK.SIDEWALK_FLAG is
-'×¢:µ±±ê¼ÇÖµÎª2 Ê±,ÔÚRD_LINK_SIDEWALK ÖÐ¼ÇÂ¼ÏêÏ¸±ãµÀÐÅÏ¢';
+'×¢:ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÎª2 Ê±,ï¿½ï¿½RD_LINK_SIDEWALK ï¿½Ð¼ï¿½Â¼ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_LINK.WALKSTAIR_FLAG is
-'×¢: ±ê¼ÇÖµÎª2 Ê±,ÔÚRD_LINK_WALKSTAIR ÖÐ¼ÇÂ¼ÏêÏ¸½×ÌÝÐÅÏ¢';
+'×¢: ï¿½ï¿½ï¿½ÖµÎª2 Ê±,ï¿½ï¿½RD_LINK_WALKSTAIR ï¿½Ð¼ï¿½Â¼ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_LINK.DICI_TYPE is
-'[180U]È«ÒªËØ»ò¼ò»¯°æ';
+'[180U]È«Òªï¿½Ø»ï¿½ò»¯°ï¿½';
 
 comment on column RD_LINK.WALK_FLAG is
-'[180U]ÔÊÐí»ò½ûÖ¹ÐÐÈËÍ¨ÐÐ';
+'[180U]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½';
 
 comment on column RD_LINK.DIF_GROUPID is
-'[172A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[172A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column RD_LINK.SRC_FLAG is
 '[180A]13CY';
@@ -326,22 +326,22 @@ comment on column RD_LINK.DIGITAL_LEVEL is
 '[1802A]13CY';
 
 comment on column RD_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RD_LINK.TRUCK_FLAG is
-'[200]¿¨³µµØÍ¼ÊôÐÔÊÇ·ñÒÑÑéÖ¤';
+'[200]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Ö¤';
 
 comment on column RD_LINK.MEMO is
-'[171A]¼ÇÂ¼Êý¾ÝÀ´Ô´(²Î¿¼Ó°Ïñ¸üÐÂ»òÍâ°üÊý¾ÝµÈ)ÒÔ¼°µ¼ÈëGDB µÄÊ±¼ä»ò°æ±¾';
+'[171A]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Ô´(ï¿½Î¿ï¿½Ó°ï¿½ï¿½ï¿½ï¿½Â»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ýµï¿½)ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½GDB ï¿½ï¿½Ê±ï¿½ï¿½ï¿½æ±¾';
 
 comment on column RD_LINK.RESERVED is
 '[1802A]';
 
 comment on column RD_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_ITPLINK_GEOMETRY                                 */
@@ -371,28 +371,28 @@ comment on table ADAS_ITPLINK_GEOMETRY is
 '[210]';
 
 comment on column ADAS_ITPLINK_GEOMETRY.OFFSET is
-'µ¥Î»£ºÃ×';
+'ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ADAS_ITPLINK_GEOMETRY.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ5Î»¾­Î³¶È×ø±ê
-Æðµã(RD_LINK ±íS_NODE_PID)ºÍÖÕµã(RD_LINK ±íE_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢£¬ÆäÆÂ¶ÈºÍÇúÂÊº½ÏòÐÅÏ¢ÔÚ±¾±íÎÞÐ§£¬Ðè¸ù¾ÝADAS_NODE±íµÄ¹ØÁª¹ØÏµ²Î¿¼ADAS_SLOPE±íºÍADAS_NODE_INFO±í»ñÈ¡
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½ï¿½5Î»ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½(RD_LINK ï¿½ï¿½S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(RD_LINK ï¿½ï¿½E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½Â¶Èºï¿½ï¿½ï¿½ï¿½Êºï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ADAS_NODEï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½Î¿ï¿½ADAS_SLOPEï¿½ï¿½ï¿½ADAS_NODE_INFOï¿½ï¿½ï¿½È¡
 ';
 
 comment on column ADAS_ITPLINK_GEOMETRY.Z_VALUE is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ADAS_ITPLINK_GEOMETRY.HEADING is
-'µ¥Î»:¶È,ÖµÓò:[0,360]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[0,360]';
 
 comment on column ADAS_ITPLINK_GEOMETRY.CURVATURE is
-'µ¥Î»:1/Ã×,ÖµÓò:[-1,1]';
+'ï¿½ï¿½Î»:1/ï¿½ï¿½,Öµï¿½ï¿½:[-1,1]';
 
 comment on column ADAS_ITPLINK_GEOMETRY.SLOPE is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]
-ÆðÖÕµãÎÞÐ§ÖµÎª-999999';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]
+ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½Ð§ÖµÎª-999999';
 
 comment on column ADAS_ITPLINK_GEOMETRY.BANKING is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]';
 
 /*==============================================================*/
 /* Table: ADAS_NODE                                             */
@@ -418,24 +418,24 @@ comment on table ADAS_NODE is
 '[170]';
 
 comment on column ADAS_NODE.NODE_PID is
-'[173U]Ö÷¼ü';
+'[173U]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ADAS_NODE.RDNODE_PID is
-'[173U]²Î¿¼"RD_NODE"
-[260]´æÔÚ¶à¸öNODE_PID¶ÔÓ¦Í¬Ò»¸öRDNODE_PIDµÄÇé¿ö';
+'[173U]ï¿½Î¿ï¿½"RD_NODE"
+[260]ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½NODE_PIDï¿½ï¿½Ó¦Í¬Ò»ï¿½ï¿½RDNODE_PIDï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ADAS_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ7 Î»¾­Î³¶È×ø±ê
-Îª°üº¬x£¬y£¬z×ø±êµÄÈýÎ¬×ø±ê';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½ï¿½7 Î»ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½
+Îªï¿½ï¿½xï¿½ï¿½yï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¬ï¿½ï¿½ï¿½';
 
 comment on column ADAS_NODE.Z_VALUE is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ADAS_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_LINK                                             */
@@ -473,30 +473,30 @@ comment on table ADAS_LINK is
 '[170]';
 
 comment on column ADAS_LINK.LINK_PID is
-'[173U]Ö÷¼ü';
+'[173U]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ADAS_LINK.S_NODE_PID is
-'[173U]Íâ¼ü,ÒýÓÃ"ADAS_NODE"';
+'[173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_NODE"';
 
 comment on column ADAS_LINK.E_NODE_PID is
-'[173U]Íâ¼ü,ÒýÓÃ"ADAS_NODE"';
+'[173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_NODE"';
 
 comment on column ADAS_LINK.GEOMETRY is
-'[171A](1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ7 Î»¾­Î³¶È×ø±êÐòÁÐ
-(2)Îª°üº¬x£¬y£¬z×ø±êµÄÈýÎ¬×ø±ê
-(3)Æðµã(S_ADAS_NODEID) ºÍÖÕµã(E_ADAS_NODEID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'[171A](1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½ï¿½7 Î»ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)Îªï¿½ï¿½xï¿½ï¿½yï¿½ï¿½zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¬ï¿½ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½(S_ADAS_NODEID) ï¿½ï¿½ï¿½Õµï¿½(E_ADAS_NODEID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column ADAS_LINK.RDLINK_PID is
-'[173U]²Î¿¼"RD_LINK"';
+'[173U]ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column ADAS_LINK.MESH_ID is
 '[171A]';
 
 comment on column ADAS_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_LINK_GEOMETRY                                    */
@@ -523,33 +523,33 @@ comment on table ADAS_LINK_GEOMETRY is
 '[170]';
 
 comment on column ADAS_LINK_GEOMETRY.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"ADAS_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_LINK"';
 
 comment on column ADAS_LINK_GEOMETRY.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ7Î»¾­Î³¶È×ø±ê
-(2)Æðµã(S_ADAS_NODEID)ºÍÖÕµã(E_ADAS_NODEID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢£¬ÆäÆÂ¶ÈºÍÇúÂÊº½ÏòÐÅÏ¢ÔÚ±¾±íÎÞÐ§£¬Ðè²Î¿¼ADAS_SLOPE±íºÍADAS_NODE_INFO±í[210]';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½ï¿½7Î»ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_ADAS_NODEID)ï¿½ï¿½ï¿½Õµï¿½(E_ADAS_NODEID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½Â¶Èºï¿½ï¿½ï¿½ï¿½Êºï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ADAS_SLOPEï¿½ï¿½ï¿½ADAS_NODE_INFOï¿½ï¿½[210]';
 
 comment on column ADAS_LINK_GEOMETRY.Z_VALUE is
-'[171U]µ¥Î»:Ã×';
+'[171U]ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ADAS_LINK_GEOMETRY.HEADING is
-'µ¥Î»:¶È,ÖµÓò:[0,360]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[0,360]';
 
 comment on column ADAS_LINK_GEOMETRY.CURVATURE is
-'[210]ÐÞ¸Äµ¥Î».
-µ¥Î»:1/Ã×,ÖµÓò:[-1,1]';
+'[210]ï¿½Þ¸Äµï¿½Î».
+ï¿½ï¿½Î»:1/ï¿½ï¿½,Öµï¿½ï¿½:[-1,1]';
 
 comment on column ADAS_LINK_GEOMETRY.SLOPE is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_LINK_GEOMETRY.BANKING is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_LINK_GEOMETRY.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_LINK_GEOMETRY.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_NODE_INFO                                        */
@@ -577,26 +577,26 @@ comment on table ADAS_NODE_INFO is
 '[170]';
 
 comment on column ADAS_NODE_INFO.NODE_PID is
-'[171U][173U]Íâ¼ü,ÒýÓÃ"ADAS_NODE"';
+'[171U][173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_NODE"';
 
 comment on column ADAS_NODE_INFO.IN_LINK_PID is
-'[171U][173U]Íâ¼ü,ÒýÓÃ"ADAS_LINK"';
+'[171U][173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_LINK"';
 
 comment on column ADAS_NODE_INFO.OUT_LINK_PID is
-'[171U][173U]Íâ¼ü,ÒýÓÃ"ADAS_LINK"';
+'[171U][173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_LINK"';
 
 comment on column ADAS_NODE_INFO.HEADING is
-'µ¥Î»:¶È,ÖµÓò:[0,360]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[0,360]';
 
 comment on column ADAS_NODE_INFO.CURVATURE is
-'[210]ÐÞ¸Äµ¥Î».
-µ¥Î»:1/Ã×,ÖµÓò:[-1,1]';
+'[210]ï¿½Þ¸Äµï¿½Î».
+ï¿½ï¿½Î»:1/ï¿½ï¿½,Öµï¿½ï¿½:[-1,1]';
 
 comment on column ADAS_NODE_INFO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_NODE_INFO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_NODE_MESH                                        */
@@ -641,34 +641,34 @@ comment on table ADAS_RDLINK_GEOMETRY_DTM is
 '[210]';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.OFFSET is
-'µ¥Î»£ºÃ×';
+'ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ7Î»¾­Î³¶È×ø±ê
-(2)Æðµã(S_ADAS_NODEID)ºÍÖÕµã(E_ADAS_NODEID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢£¬ÆäÆÂ¶ÈºÍÇúÂÊº½ÏòÐÅÏ¢ÔÚ±¾±íÎÞÐ§£¬Ðè²Î¿¼ADAS_SLOPE±íºÍADAS_NODE_INFO±í';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½ï¿½7Î»ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_ADAS_NODEID)ï¿½ï¿½ï¿½Õµï¿½(E_ADAS_NODEID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½ï¿½Â¶Èºï¿½ï¿½ï¿½ï¿½Êºï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½Ú±ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½Î¿ï¿½ADAS_SLOPEï¿½ï¿½ï¿½ADAS_NODE_INFOï¿½ï¿½';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.Z_VALUE is
-'[171U]µ¥Î»:Ã×';
+'[171U]ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.HEADING is
-'µ¥Î»:¶È,ÖµÓò:[0,360]
-ÆðÖÕµãÎÞÐ§ÖµÎª-9999999';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[0,360]
+ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½Ð§ÖµÎª-9999999';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.CURVATURE is
-'µ¥Î»:1/Ã×,ÖµÓò:[-1,1]
-ÆðÖÕµãÎÞÐ§ÖµÎª-9999';
+'ï¿½ï¿½Î»:1/ï¿½ï¿½,Öµï¿½ï¿½:[-1,1]
+ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½Ð§ÖµÎª-9999';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.SLOPE is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.BANKING is
-'µ¥Î»:¶È,ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_RDLINK_GEOMETRY_DTM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_RDNODE_INFO_DTM                                  */
@@ -696,17 +696,17 @@ comment on table ADAS_RDNODE_INFO_DTM is
 '[210]';
 
 comment on column ADAS_RDNODE_INFO_DTM.HEADING is
-'µ¥Î»:¶È,ÖµÓò:[0,360]';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½:[0,360]';
 
 comment on column ADAS_RDNODE_INFO_DTM.CURVATURE is
-'[210]ÐÞ¸Äµ¥Î».
-µ¥Î»:1/Ã×,ÖµÓò:[-1,1]';
+'[210]ï¿½Þ¸Äµï¿½Î».
+ï¿½ï¿½Î»:1/ï¿½ï¿½,Öµï¿½ï¿½:[-1,1]';
 
 comment on column ADAS_RDNODE_INFO_DTM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_RDNODE_INFO_DTM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_RDNODE_SLOPE_DTM                                 */
@@ -727,13 +727,13 @@ create table ADAS_RDNODE_SLOPE_DTM  (
 );
 
 comment on column ADAS_RDNODE_SLOPE_DTM.SLOPE is
-'µ¥Î»:¶È, ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½, Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_RDNODE_SLOPE_DTM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_RDNODE_SLOPE_DTM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ADAS_SLOPE                                            */
@@ -757,19 +757,19 @@ comment on table ADAS_SLOPE is
 '[170]';
 
 comment on column ADAS_SLOPE.NODE_PID is
-'[173U]Íâ¼ü,ÒýÓÃ"ADAS_NODE"';
+'[173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_NODE"';
 
 comment on column ADAS_SLOPE.LINK_PID is
-'[173U]Íâ¼ü,ÒýÓÃ"ADAS_LINK"';
+'[173U]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ADAS_LINK"';
 
 comment on column ADAS_SLOPE.SLOPE is
-'µ¥Î»:¶È, ÖµÓò:[-90,90]';
+'ï¿½ï¿½Î»:ï¿½ï¿½, Öµï¿½ï¿½:[-90,90]';
 
 comment on column ADAS_SLOPE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ADAS_SLOPE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN                                              */
@@ -805,43 +805,43 @@ create table AD_ADMIN  (
 );
 
 comment on column AD_ADMIN.REGION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.ADMIN_TYPE is
-'[181U]·ÖÎª¹ú¼ÒµØÇø¼¶,Ê¡¼¶,µØ¼¶ÊÐ¼¶,Çø/ÏØ¼¶µÈÀàÐÍ';
+'[181U]ï¿½ï¿½Îªï¿½ï¿½Òµï¿½ï¿½ï¿½,Ê¡ï¿½ï¿½,ï¿½Ø¼ï¿½ï¿½Ð¼ï¿½,ï¿½ï¿½/ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.CAPITAL is
-'×¢:TYPE=2 ºÍ2.5 ¼ÇÂ¼ÎªÊ¡»á/Ö±Ï½ÊÐ,TYPE=0¼ÇÂ¼ÎªÊ×¶¼,ÆäËûÎªÎ´¶¨Òå';
+'×¢:TYPE=2 ï¿½ï¿½2.5 ï¿½ï¿½Â¼ÎªÊ¡ï¿½ï¿½/Ö±Ï½ï¿½ï¿½,TYPE=0ï¿½ï¿½Â¼Îªï¿½×¶ï¿½,ï¿½ï¿½ï¿½ï¿½ÎªÎ´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.POPULATION is
-'µ¥Î»:ÍòÈË';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AD_ADMIN.NAME_GROUPID is
-'²Î¿¼"RD_NAME"';
+'ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column AD_ADMIN.ROAD_FLAG is
 '[170]';
 
 comment on column AD_ADMIN.PMESH_ID is
-'[171A]Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'[171A]Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_ADMIN.MEMO is
 '[173A]';
 
 comment on column AD_ADMIN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN_DETAIL                                       */
@@ -866,20 +866,20 @@ create table AD_ADMIN_DETAIL  (
 );
 
 comment on column AD_ADMIN_DETAIL.ADMIN_ID is
-'Ö÷¼ü,Í¬AD_ADMIN ÖÐ¡±ÐÐÕþ´úÂë¡±';
+'ï¿½ï¿½ï¿½ï¿½,Í¬AD_ADMIN ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¡±';
 
 comment on column AD_ADMIN_DETAIL.COUNTRY is
-'Èç¹ûÐÐÕþ´úÂëÊÇ¹ú¼Ò¼¶±ð,ÖµÎª¿Õ;ÆäËû¼¶±ð
-ÖµÎª¹ú¼Ò´úÂë»òÃû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹ï¿½Ò¼ï¿½ï¿½ï¿½,ÖµÎªï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½
+ÖµÎªï¿½ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_DETAIL.PHOTO_NAME is
-'¶à¸öÕÕÆ¬Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column AD_ADMIN_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN_GROUP                                        */
@@ -898,16 +898,16 @@ create table AD_ADMIN_GROUP  (
 );
 
 comment on column AD_ADMIN_GROUP.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_GROUP.REGION_ID_UP is
-'Íâ¼ü,ÒýÓÃ"AD_ADMIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN"';
 
 comment on column AD_ADMIN_GROUP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN_GROUP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN_NAME                                         */
@@ -935,16 +935,16 @@ create table AD_ADMIN_NAME  (
 );
 
 comment on column AD_ADMIN_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_NAME.REGION_ID is
-'Íâ¼ü,ÒýÓÃ"AD_ADMIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN"';
 
 comment on column AD_ADMIN_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_NAME.NAME_CLASS is
 '[170][172U]';
@@ -953,20 +953,20 @@ comment on column AD_ADMIN_NAME.NAME is
 '[172A]';
 
 comment on column AD_ADMIN_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_ADMIN_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
 ×¢:
 (1)AOIZone È¡Öµ0~6
 (2)GCZone È¡Öµ:0
-(3)ÆäËûÈ¡Öµ:0~1';
+(3)ï¿½ï¿½ï¿½ï¿½È¡Öµ:0~1';
 
 comment on column AD_ADMIN_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN_NAME_TONE                                    */
@@ -992,28 +992,28 @@ comment on table AD_ADMIN_NAME_TONE is
 '[170]';
 
 comment on column AD_ADMIN_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"AD_ADMIN_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN_NAME"';
 
 comment on column AD_ADMIN_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column AD_ADMIN_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column AD_ADMIN_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column AD_ADMIN_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column AD_ADMIN_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column AD_ADMIN_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_ADMIN_PART                                         */
@@ -1033,16 +1033,16 @@ create table AD_ADMIN_PART  (
 );
 
 comment on column AD_ADMIN_PART.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"AD_ADMIN_GROUP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN_GROUP"';
 
 comment on column AD_ADMIN_PART.REGION_ID_DOWN is
-'Íâ¼ü,ÒýÓÃ"AD_ADMIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN"';
 
 comment on column AD_ADMIN_PART.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_ADMIN_PART.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_FACE                                               */
@@ -1067,28 +1067,28 @@ create table AD_FACE  (
 );
 
 comment on column AD_FACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_FACE.REGION_ID is
-'[170]Íâ¼ü,ÒýÓÃ"AD_ADMIN"';
+'[170]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN"';
 
 comment on column AD_FACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column AD_FACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_FACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column AD_FACE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_FACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_FACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_NODE                                               */
@@ -1111,25 +1111,25 @@ create table AD_NODE  (
 );
 
 comment on column AD_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_NODE.KIND is
-'Æ½Ãæ½»²æµã,ÐÐÕþÇø»®±ß½çµã';
+'Æ½ï¿½æ½»ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½';
 
 comment on column AD_NODE.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column AD_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_LINK                                               */
@@ -1161,45 +1161,45 @@ create table AD_LINK  (
 );
 
 comment on table AD_LINK is
-'µ±ÐÐÕþÇø»®±ß½ç(°üÀ¨Ê¡/Ö±Ï½ÊÐ±ß½ç,ÊÐÐÐÕþÇø½ç,ÇøÏØ±ß½ç,ÏçÕò±ß½ç,´å±ß½ç,¹ú½ç)Ö®¼ä¹²ÓÃÊ±,LinkÖÖ±ðÈ¡¸ßµÈ¼¶±ß½ç,ÈçÊ¡½çÓëÊÐ½ç¹²LinkÊ±,LinkÖÖ±ðÎª"Ê¡½ç"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½(ï¿½ï¿½ï¿½ï¿½Ê¡/Ö±Ï½ï¿½Ð±ß½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ø±ß½ï¿½,ï¿½ï¿½ï¿½ï¿½ß½ï¿½,ï¿½ï¿½ß½ï¿½,ï¿½ï¿½ï¿½)Ö®ï¿½ä¹²ï¿½ï¿½Ê±,Linkï¿½Ö±ï¿½È¡ï¿½ßµÈ¼ï¿½ï¿½ß½ï¿½,ï¿½ï¿½Ê¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ç¹²LinkÊ±,Linkï¿½Ö±ï¿½Îª"Ê¡ï¿½ï¿½"';
 
 comment on column AD_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE"';
 
 comment on column AD_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE"';
 
 comment on column AD_LINK.KIND is
 '×¢:
-(1)2.5 ÍòÊý¾Ý:0~5
-(2)°ÙÍòÊý¾Ý:1,6,7';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:0~5
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:1,6,7';
 
 comment on column AD_LINK.FORM is
 '×¢:
-(1)2.5 ÍòÊý¾Ý:0~1
-(2)°ÙÍòÊý¾Ý:0~2,6~9';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:0~1
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:0~2,6~9';
 
 comment on column AD_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column AD_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column AD_LINK.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,°ÙÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AD_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_FACE_TOPO                                          */
@@ -1220,22 +1220,22 @@ create table AD_FACE_TOPO  (
 );
 
 comment on table AD_FACE_TOPO is
-'¼ÇÂ¼¹¹³ÉFaceµÄLinkÐòÁÐ±í,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Faceï¿½ï¿½Linkï¿½ï¿½ï¿½Ð±ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column AD_FACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_FACE"';
 
 comment on column AD_FACE_TOPO.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_FACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"AD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_LINK"';
 
 comment on column AD_FACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_FACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_NODE_100W                                          */
@@ -1258,25 +1258,25 @@ create table AD_NODE_100W  (
 );
 
 comment on column AD_NODE_100W.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_NODE_100W.KIND is
-'Æ½Ãæ½»²æµã,ÐÐÕþÇø»®±ß½çµã';
+'Æ½ï¿½æ½»ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½';
 
 comment on column AD_NODE_100W.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column AD_NODE_100W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_NODE_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_NODE_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_NODE_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_LINK_100W                                          */
@@ -1308,45 +1308,45 @@ create table AD_LINK_100W  (
 );
 
 comment on table AD_LINK_100W is
-'µ±ÐÐÕþÇø»®±ß½ç(°üÀ¨Ê¡/Ö±Ï½ÊÐ±ß½ç,ÊÐÐÐÕþÇø½ç,ÇøÏØ±ß½ç,ÏçÕò±ß½ç,´å±ß½ç,¹ú½ç)Ö®¼ä¹²ÓÃÊ±,LinkÖÖ±ðÈ¡¸ßµÈ¼¶±ß½ç,ÈçÊ¡½çÓëÊÐ½ç¹²LinkÊ±,LinkÖÖ±ðÎª"Ê¡½ç"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½(ï¿½ï¿½ï¿½ï¿½Ê¡/Ö±Ï½ï¿½Ð±ß½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ø±ß½ï¿½,ï¿½ï¿½ï¿½ï¿½ß½ï¿½,ï¿½ï¿½ß½ï¿½,ï¿½ï¿½ï¿½)Ö®ï¿½ä¹²ï¿½ï¿½Ê±,Linkï¿½Ö±ï¿½È¡ï¿½ßµÈ¼ï¿½ï¿½ß½ï¿½,ï¿½ï¿½Ê¡ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ç¹²LinkÊ±,Linkï¿½Ö±ï¿½Îª"Ê¡ï¿½ï¿½"';
 
 comment on column AD_LINK_100W.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AD_LINK_100W.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE_100W"';
 
 comment on column AD_LINK_100W.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE_100W"';
 
 comment on column AD_LINK_100W.KIND is
 '×¢:
-(1)2.5 ÍòÊý¾Ý:0~5
-(2)°ÙÍòÊý¾Ý:1,6,7';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:0~5
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:1,6,7';
 
 comment on column AD_LINK_100W.FORM is
 '×¢:
-(1)2.5 ÍòÊý¾Ý:0~1
-(2)°ÙÍòÊý¾Ý:0~2,6~9';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:0~1
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:0~2,6~9';
 
 comment on column AD_LINK_100W.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column AD_LINK_100W.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column AD_LINK_100W.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,°ÙÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AD_LINK_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AD_LINK_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_LINK_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_LINK_MESH                                          */
@@ -1364,13 +1364,13 @@ create table AD_LINK_MESH  (
 );
 
 comment on column AD_LINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"AD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_LINK"';
 
 comment on column AD_LINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_LINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_LINK_MESH_100W                                     */
@@ -1388,13 +1388,13 @@ create table AD_LINK_MESH_100W  (
 );
 
 comment on column AD_LINK_MESH_100W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"AD_LINK_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_LINK_100W"';
 
 comment on column AD_LINK_MESH_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_LINK_MESH_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_NODE_MESH                                          */
@@ -1412,13 +1412,13 @@ create table AD_NODE_MESH  (
 );
 
 comment on column AD_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE"';
 
 comment on column AD_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AD_NODE_MESH_100W                                     */
@@ -1436,13 +1436,13 @@ create table AD_NODE_MESH_100W  (
 );
 
 comment on column AD_NODE_MESH_100W.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"AD_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_NODE_100W"';
 
 comment on column AD_NODE_MESH_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column AD_NODE_MESH_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: AU_ADAS_MARK                                          */
@@ -1493,40 +1493,40 @@ comment on table AU_ADAS_MARK is
 '[171A]';
 
 comment on column AU_ADAS_MARK.MARK_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.ANGLE is
-'±ê¼ÇÓëÕý±±·½ÏòµÄ¼Ð½Ç,0~360¶È';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,0~360ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.TYPE is
-'ÎÄ×Ö(Ä¬ÈÏÖµ)²ÎÊý»¯±ê¼Ç,²ÝÍ¼,ÕÕÆ¬,ÒôÆµ,²âÏßµÈ';
+'ï¿½ï¿½ï¿½ï¿½(Ä¬ï¿½ï¿½Öµ)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¼,ï¿½ï¿½Æ¬,ï¿½ï¿½Æµ,ï¿½ï¿½ï¿½ßµï¿½';
 
 comment on column AU_ADAS_MARK.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_ADAS_MARK.NODE_PID is
-'²Î¿¼"RD_NODE"';
+'ï¿½Î¿ï¿½"RD_NODE"';
 
 comment on column AU_ADAS_MARK.DAY_TIME is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_ADAS_MARK.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_ADAS_MARK.PARAM_EX is
-'²âµã±ê¼ÇÀàÐÍ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.TASK_ID is
-'¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_ADAS_MARK.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_ADAS_GPSRECORD                                     */
@@ -1550,13 +1550,13 @@ comment on table AU_ADAS_GPSRECORD is
 '[171A]';
 
 comment on column AU_ADAS_GPSRECORD.GPSRECORD_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_GPSRECORD.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_ADAS_GPSRECORD.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_ADAS_GPSTRACK                                      */
@@ -1584,22 +1584,22 @@ comment on table AU_ADAS_GPSTRACK is
 '[171A]';
 
 comment on column AU_ADAS_GPSTRACK.GPSTRACK_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_GPSTRACK.GPS_TEXT is
-'GPS½ÓÊÕÎÄ±¾´®';
+'GPSï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_GPSTRACK.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_ADAS_GPSTRACK.TASK_ID is
-'¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_ADAS_GPSTRACK.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_ADAS_GPSTRACK.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_AUDIO                                              */
@@ -1621,16 +1621,16 @@ create table AU_AUDIO  (
 );
 
 comment on column AU_AUDIO.AUDIO_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_AUDIO.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_AUDIO.URL_FILE is
-'ÒôÆµÎÄ¼þ´æ´¢µÄ±¾µØÏà¶ÔÂ·¾¶Ãû,Èç\Data\Audio\';
+'ï¿½ï¿½Æµï¿½Ä¼ï¿½ï¿½æ´¢ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Audio\';
 
 comment on column AU_AUDIO.FILE_NAME is
-'[170]ÎÄ¼þÃû(º¬À©Õ¹Ãû)';
+'[170]ï¿½Ä¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½)';
 
 comment on column AU_AUDIO."SIZE" is
 '[170]';
@@ -1639,19 +1639,19 @@ comment on column AU_AUDIO.FORMAT is
 '[170]WAV,ADP';
 
 comment on column AU_AUDIO.DAY_TIME is
-'[170]¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'[170]ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_AUDIO.WORKER is
-'[170]²Î¿¼"BI_PERSON"';
+'[170]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_AUDIO.IMP_WORKER is
-'[170]²Î¿¼"BI_PERSON"';
+'[170]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_AUDIO.IMP_VERSION is
 '[170]';
 
 comment on column AU_AUDIO.IMP_DATE is
-'[170]¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'[170]ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_AUDIO.MESH_ID is
 '[170]';
@@ -1671,13 +1671,13 @@ create table AU_COMMUNICATION  (
 );
 
 comment on column AU_COMMUNICATION.ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_COMMUNICATION.TITLE is
-'¼´Ö÷Ìâ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_COMMUNICATION.GEOMETRY is
-'ÓÃÓÚWEBGIS½»»¥';
+'ï¿½ï¿½ï¿½ï¿½WEBGISï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_DATA_STATISTICS                                    */
@@ -1746,31 +1746,31 @@ create table AU_MARK  (
 );
 
 comment on column AU_MARK.MARK_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_MARK.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_MARK.ANGLE is
-'±ê¼ÇÓëÕý±±·½ÏòµÄ¼Ð½Ç,0~360¶È';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,0~360ï¿½ï¿½';
 
 comment on column AU_MARK.TYPE is
-'ÎÄ×Ö(Ä¬ÈÏÖµ)²ÎÊý»¯±ê¼Ç,²ÝÍ¼,ÕÕÆ¬,ÒôÆµ,²âÏßµÈ';
+'ï¿½ï¿½ï¿½ï¿½(Ä¬ï¿½ï¿½Öµ)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¼,ï¿½ï¿½Æ¬,ï¿½ï¿½Æµ,ï¿½ï¿½ï¿½ßµï¿½';
 
 comment on column AU_MARK.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_MARK.NODE_PID is
-'²Î¿¼"RD_NODE"';
+'ï¿½Î¿ï¿½"RD_NODE"';
 
 comment on column AU_MARK.DAY_TIME is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_MARK.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_MARK.IN_WORKER is
-'[173sp1]²Î¿¼"BI_PERSON"';
+'[173sp1]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_MARK.PARAM_EX is
 '[173sp1]';
@@ -1782,13 +1782,13 @@ comment on column AU_MARK.ADJA_FLAG is
 '[180A]';
 
 comment on column AU_MARK.TASK_ID is
-'¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_MARK.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_MARK.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_DRAFT                                              */
@@ -1810,13 +1810,13 @@ create table AU_DRAFT  (
 );
 
 comment on column AU_DRAFT.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_DRAFT.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_DRAFT.STYLE is
-'ÊµÏß,ÐéÏß';
+'Êµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_DRAFT.COLOR is
 '[173sp1]';
@@ -1844,19 +1844,19 @@ create table AU_GPSRECORD  (
 );
 
 comment on column AU_GPSRECORD.GPSRECORD_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_GPSRECORD.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_GPSRECORD.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_GPSRECORD.NAME is
-'°´¡±Ãû³ÆID,Ãû³ÆÄÚÈÝ¡±·½Ê½´æ´¢,¶à¸öÃû³ÆÒÔÓ¢ÎÄ°ë½Ç"|"·Ö¸î,Èç¡±100,Ñ§ÔºÂ·|202,³É¸®Â·¡±';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ý¡ï¿½ï¿½ï¿½Ê½ï¿½æ´¢,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,ï¿½ç¡±100,Ñ§ÔºÂ·|202,ï¿½É¸ï¿½Â·ï¿½ï¿½';
 
 comment on column AU_GPSRECORD.KIND is
-'ÓëTABLE_NAME±í¶ÔÓ¦µÄÖÖ±ð´úÂëÏàÍ¬,ÈçTABLE_NAMEÎª"LU_LINK_KIND",¸Ã×Ö¶ÎÈ¡ÖµÓëLU_LINK_KIND±íÖÐµÄ"KIND"ÖÖ±ð´úÂëÖµÏàÍ¬';
+'ï¿½ï¿½TABLE_NAMEï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬,ï¿½ï¿½TABLE_NAMEÎª"LU_LINK_KIND",ï¿½ï¿½ï¿½Ö¶ï¿½È¡Öµï¿½ï¿½LU_LINK_KINDï¿½ï¿½ï¿½Ðµï¿½"KIND"ï¿½Ö±ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Í¬';
 
 /*==============================================================*/
 /* Table: AU_GPSTRACK_GROUP                                     */
@@ -1899,7 +1899,7 @@ create table AU_GPSTRACK  (
 );
 
 comment on column AU_GPSTRACK.GPSTRACK_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_GPSTRACK_GROUP_VIDEO                               */
@@ -1913,7 +1913,7 @@ create table AU_GPSTRACK_GROUP_VIDEO  (
 );
 
 comment on column AU_GPSTRACK_GROUP_VIDEO.VIDEO_ID is
-'²Î¿¼"AU_VIDEO"';
+'ï¿½Î¿ï¿½"AU_VIDEO"';
 
 /*==============================================================*/
 /* Table: AU_GPSTRACK_PHOTO                                     */
@@ -1930,13 +1930,13 @@ comment on table AU_GPSTRACK_PHOTO is
 '[210]';
 
 comment on column AU_GPSTRACK_PHOTO.GPSTRACK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_GPSTRACK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_GPSTRACK"';
 
 comment on column AU_GPSTRACK_PHOTO.PHOTO_GUID is
-'²Î¿¼º£Á¿ÕÕÆ¬´æ´¢±í';
+'ï¿½Î¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬ï¿½æ´¢ï¿½ï¿½';
 
 comment on column AU_GPSTRACK_PHOTO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_IX_ANNOTATION                                      */
@@ -1992,122 +1992,122 @@ create table AU_IX_ANNOTATION  (
 );
 
 comment on table AU_IX_ANNOTATION is
-'[171A]ÔÚµ¼º½Éè±¸ÉÏÏÔÊ¾×ÔÈ»µØÐÎÃû,µØÃû,µÀÂ·Ãû,½¨ÖþÎïÃû³ÆµÈµÄÊý¾Ý';
+'[171A]ï¿½Úµï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÈµï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.PID is
-'²Î¿¼"IX_ANNOTATION"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION"';
 
 comment on column AU_IX_ANNOTATION.KIND_CODE is
-'²Î¿¼"IX_ANNOTATION_CODE"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION_CODE"';
 
 comment on column AU_IX_ANNOTATION.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.RANK is
-'²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾
-Ò»¸öÏÔÊ¾µÈ¼¶(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞÐ§/ÓÐÐ§,
-Èç:00000111 ±íÊ¾ÎÄ×ÖÔÚ1,2,4 ÍòµÈ¼¶ÉÏ¾ù¿ÉÏÔÊ¾
-µÚ0bit:1 Íò
-µÚ1bit:2 Íò
-µÚ2bit:4 Íò
-µÚ3bit:8 Íò
-µÚ4bit:16 Íò
-µÚ5bit:32 Íò
-µÚ6bit:64 Íò
-µÚ7bit:128 Íò
-µÚ8bit:256 Íò
-µÚ9bit:512 Íò
-µÚ10bit:1024 Íò
-µÚ11bit:2048 Íò
-µÚ12bit:4096 Íò
-µÚ13bit:8192 Íò
+'ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾
+Ò»ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½È¼ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½Ð§/ï¿½ï¿½Ð§,
+ï¿½ï¿½:00000111 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1,2,4 ï¿½ï¿½È¼ï¿½ï¿½Ï¾ï¿½ï¿½ï¿½ï¿½Ê¾
+ï¿½ï¿½0bit:1 ï¿½ï¿½
+ï¿½ï¿½1bit:2 ï¿½ï¿½
+ï¿½ï¿½2bit:4 ï¿½ï¿½
+ï¿½ï¿½3bit:8 ï¿½ï¿½
+ï¿½ï¿½4bit:16 ï¿½ï¿½
+ï¿½ï¿½5bit:32 ï¿½ï¿½
+ï¿½ï¿½6bit:64 ï¿½ï¿½
+ï¿½ï¿½7bit:128 ï¿½ï¿½
+ï¿½ï¿½8bit:256 ï¿½ï¿½
+ï¿½ï¿½9bit:512 ï¿½ï¿½
+ï¿½ï¿½10bit:1024 ï¿½ï¿½
+ï¿½ï¿½11bit:2048 ï¿½ï¿½
+ï¿½ï¿½12bit:4096 ï¿½ï¿½
+ï¿½ï¿½13bit:8192 ï¿½ï¿½
 ×¢:
-(1)2.5 ÍòÊý¾Ý:1~8 Íò
-(2)20 ÍòÊý¾Ý:16~32 Íò
-(3)°ÙÍòÊý¾Ý:64~512
-(4)TOP ¼¶Êý¾Ý:1024~8192 Íò';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:1~8 ï¿½ï¿½
+(2)20 ï¿½ï¿½ï¿½ï¿½ï¿½:16~32 ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:64~512
+(4)TOP ï¿½ï¿½ï¿½ï¿½ï¿½:1024~8192 ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.SRC_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.SRC_PID is
-'ÎÄ×ÖÀ´Ô´µÄÊý¾ÝID,ÈçÀ´×ÔPOIÔòÎªPOµÄPID;À´×ÔµÀÂ·ÃûÔòÎªµÀÂ·ÃûID
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ÎªPOï¿½ï¿½PID;ï¿½ï¿½ï¿½Ôµï¿½Â·ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Â·ï¿½ï¿½ID
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.CLIENT_FLAG is
-'¸ù¾Ý²»Í¬¿Í»§ÐèÇó,Êä³ö²»Í¬ÎÄ×Ö,ÖµÓò°üÀ¨:
-MB ÈýÁâ
-HD ¹ã±¾
-TY ·áÌï
-PI ÏÈ·æ
-PA ËÉÏÂ
+'ï¿½ï¿½Ý²ï¿½Í¬ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½,Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+MB ï¿½ï¿½ï¿½ï¿½
+HD ï¿½ã±¾
+TY ï¿½ï¿½ï¿½ï¿½
+PI ï¿½È·ï¿½
+PA ï¿½ï¿½ï¿½ï¿½
 NE NavEx
 13CY 13CY
-NBT ±¦Âí
+NBT ï¿½ï¿½ï¿½ï¿½
 ×¢:
-(1)ÒÔÉÏÃ¿Ò»´úÂë±íÊ¾Ö»Êä³ö¸øÄ³Ò»¿Í»§,ÈçÖ»¸øÈýÁâ,±íÊ¾Îª"MB"
-(2)Èç¹û±íÊ¾Êä³ö¸ø³ýÄ³Ò»¿Í»§ÍâµÄÆäËû¿Í»§,ÔòÔÚÒÔÉÏ´úÂëÇ°¼ÓÓ¢ÎÄ°ë½Ç"-",ÈçÊä³ö¸ø³ýÈýÁâÍâµÄ¿Í»§,Ôò±íÊ¾Îª"-MB"
-(3)¶à¸öÖ®¼äÒÔÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Èç±íÊ¾Êä³ö¸øÈýÁâ¶ø²»¸ø·áÌï,Ôò±íÊ¾Îª"MB|-TY"
-(4)Ä¬ÈÏÎª¿Õ,±íÊ¾ËùÓÐ¿Í»§¶¼Êä³ö
-(5)¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+(1)ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½,ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ê¾Îª"MB"
+(2)ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"-",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Í»ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"-MB"
+(3)ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"MB|-TY"
+(4)Ä¬ï¿½ï¿½Îªï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ð¿Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(5)ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.SPECTIAL_FLAG is
-'²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾Ò»¸öÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ
-µÚ0bit:3DICON
-µÚ1bit:ÔÚË®ÖÐ
-ËùÓÐbit Îª¾ùÎª0,±íÊ¾ÎÞÌØÊâ±êÊ¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½
+ï¿½ï¿½0bit:3DICON
+ï¿½ï¿½1bit:ï¿½ï¿½Ë®ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½bit Îªï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.EDIT_FLAG is
-'ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AU_IX_ANNOTATION.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column AU_IX_ANNOTATION.RESERVED is
 '[181A]';
 
 comment on column AU_IX_ANNOTATION.MODIFY_FLAG is
-'¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.FIELD_MODIFY_FLAG is
-'¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.EXTRACT_INFO is
-'(1)´æ·Å"°æ±¾+´ÓË÷ÒýÖÐÌáÈ¡"
-(2)À´×ÔAddress ×Ö¶Î
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'(1)ï¿½ï¿½ï¿½"ï¿½æ±¾+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡"
+(2)ï¿½ï¿½ï¿½ï¿½Address ï¿½Ö¶ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.EXTRACT_PRIORITY is
-'ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.REMARK is
-'×ªÊý¾ÝÊ±,À´×Ôpage×Ö¶Î,ÄÚÈÝÈç:"ÏÔÊ¾×ø±ê"ºÍ"Òýµ¼×ø±ê"';
+'×ªï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½pageï¿½Ö¶ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_ANNOTATION.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column AU_IX_ANNOTATION.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_ANNOTATION.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_ANNOTATION.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 comment on column AU_IX_ANNOTATION.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_IX_ANNOTATION_NAME                                 */
@@ -2138,28 +2138,28 @@ comment on table AU_IX_ANNOTATION_NAME is
 '[171A]';
 
 comment on column AU_IX_ANNOTATION_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_ANNOTATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_ANNOTATION"';
 
 comment on column AU_IX_ANNOTATION_NAME.NAME_ID is
-'²Î¿¼"IX_ANNOTATION_NAME"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION_NAME"';
 
 comment on column AU_IX_ANNOTATION_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION_NAME.PID is
-'²Î¿¼"IX_ANNOTATION"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION"';
 
 comment on column AU_IX_ANNOTATION_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_ANNOTATION_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_ANNOTATION_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI                                             */
@@ -2254,89 +2254,89 @@ comment on table AU_IX_POI is
 '[171A]';
 
 comment on column AU_IX_POI.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI.KIND_CODE is
-'²Î¿¼"IX_POI_CODE"';
+'ï¿½Î¿ï¿½"IX_POI_CODE"';
 
 comment on column AU_IX_POI.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã,ÓÃÓÚPOIÏÔÊ¾ºÍ¼ÆËãLink×óÓÒ¹ØÏµ
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½Ê¾ï¿½Í¼ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ò¹ï¿½Ïµ
 ';
 
 comment on column AU_IX_POI.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_IX_POI.SIDE is
-'¼ÇÂ¼POIÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ,×ó²à»òÓÒ²à';
+'ï¿½ï¿½Â¼POIÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column AU_IX_POI.NAME_GROUPID is
-'[173sp2]²Î¿¼"RD_NAME"';
+'[173sp2]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column AU_IX_POI.PMESH_ID is
-'Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.IMPORTANCE is
-'¼ÇÂ¼ÒÔÏÂ·ÖÀàµÄPOIÎªÖØÒª,¼´IMPORTANCEÎª1,·ñÔòÎª0
-(1)ÓµÓÐ¹ú¼Ê½ø³ö¸Û¿ÚµÄ»ú³¡
-(2)¹ú¼ÒÂÃÓÎ¾ÖÆÀ¶¨µÄµÈ¼¶Îª3A,4A,5AµÄ·ç¾°Çø
-(3)ÊÀ½çÎÄ»¯ÒÅ²ú';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½POIÎªï¿½ï¿½Òª,ï¿½ï¿½IMPORTANCEÎª1,ï¿½ï¿½ï¿½ï¿½Îª0
+(1)Óµï¿½Ð¹ï¿½Ê½ï¿½ï¿½ï¿½Û¿ÚµÄ»ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄµÈ¼ï¿½Îª3A,4A,5Aï¿½Ä·ç¾°ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½Å²ï¿½';
 
 comment on column AU_IX_POI.CHAIN is
-'Ö÷ÒªÖÆ×÷¶ÔÏóÊÇ±ö¹ÝºÍ¼ÓÓÍÕ¾';
+'ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç±ï¿½ï¿½ÝºÍ¼ï¿½ï¿½ï¿½Õ¾';
 
 comment on column AU_IX_POI.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column AU_IX_POI.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.EDIT_FLAG is
-'ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AU_IX_POI.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column AU_IX_POI.RESERVED is
 '[181A]';
 
 comment on column AU_IX_POI.FIELD_STATE is
-'¸ÄÃû³Æ,¸ÄµØÖ·,¸Ä·ÖÀà';
+'ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Äµï¿½Ö·,ï¿½Ä·ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.LABEL is
-'[181U]¼ÇÂ¼Â·,Ë®,ÂÌµØ,µ¥ÏîÊÕ·Ñ,Ë«ÏòÊÕ·Ñ,ÏÔÊ¾Î»ÖÃ,24Ð¡Ê±±ãÀûµê';
+'[181U]ï¿½ï¿½Â¼Â·,Ë®,ï¿½Ìµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½,Ë«ï¿½ï¿½ï¿½Õ·ï¿½,ï¿½ï¿½Ê¾Î»ï¿½ï¿½,24Ð¡Ê±ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.ADDRESS_FLAG is
-'±êÖ¾POI µØÖ·(IX_POI_ADDRESS)ÍêÕûÐÔ';
+'ï¿½ï¿½Ö¾POI ï¿½ï¿½Ö·(IX_POI_ADDRESS)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.EX_PRIORITY is
-'ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)';
+'ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)';
 
 comment on column AU_IX_POI.EDITION_FLAG is
-'¼ÇÂ¼Êý¾ÝÊÇÓÉÄÚÒµ»¹ÊÇÍâÒµÐÞ¸Ä,ÐÂÔö,É¾³ýµÈ±êÖ¾';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Þ¸ï¿½,ï¿½ï¿½ï¿½ï¿½,É¾ï¿½ï¿½È±ï¿½Ö¾';
 
 comment on column AU_IX_POI.OLD_BLOCKCODE is
-'Ô­½á¹¹ÖÐµÄ"OLD´ó×Ö"';
+'Ô­ï¿½á¹¹ï¿½Ðµï¿½"OLDï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POI.POI_NUM is
-'¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_IX_POI.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_IX_POI.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POINTADDRESS                                    */
@@ -2402,70 +2402,70 @@ create table AU_IX_POINTADDRESS  (
 );
 
 comment on table AU_IX_POINTADDRESS is
-'[171A]ÃÅÅÆºÅÂëÊÇÓÉµØÃûÖ÷¹Ü²¿ÃÅ°´ÕÕÒ»¶¨¹æÔò±àÖÆ,ÓÃÀ´¶¨Î»½¨ÖþÎïËùÔÚÎ»ÖÃµÄ±êÅÆ,°üÀ¨ÃÅÅÆ(¸½ºÅÅÆ),Â¥(¶°)ÅÆ,µ¥ÔªÅÆ,»§ºÅÅÆµÈ.';
+'[171A]ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü²ï¿½ï¿½Å°ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ÃµÄ±ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½),Â¥(ï¿½ï¿½)ï¿½ï¿½,ï¿½ï¿½Ôªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½.';
 
 comment on column AU_IX_POINTADDRESS.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.PID is
-'²Î¿¼"IX_POINTADDRESS" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS" ';
 
 comment on column AU_IX_POINTADDRESS.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.GUIDE_LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_IX_POINTADDRESS.LOCATE_LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_IX_POINTADDRESS.LOCATE_NAME_GROUPID is
-'²Î¿¼"RD_NAME"';
+'ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column AU_IX_POINTADDRESS.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.EDIT_FLAG is
-'ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AU_IX_POINTADDRESS.DPR_NAME is
-'ÍâÒµ²É¼¯µÀÂ·Ãû';
+'ï¿½ï¿½Òµï¿½É¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.DP_NAME is
-'ÍâÒµ²É¼¯ÃÅÅÆºÅ';
+'ï¿½ï¿½Òµï¿½É¼ï¿½ï¿½ï¿½ï¿½Æºï¿½';
 
 comment on column AU_IX_POINTADDRESS.OPERATOR is
-'ÍâÒµµÄOPERATOR×Ö¶ÎÖÐµÄÄÚÈÝÔ­Ñù×ªÈë';
+'ï¿½ï¿½Òµï¿½ï¿½OPERATORï¿½Ö¶ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½×ªï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.MEMOIRE is
-'±ê×¢ÐÅÏ¢(µ¼ÈëÍâÒµLABEL)';
+'ï¿½ï¿½×¢ï¿½ï¿½Ï¢(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLABEL)';
 
 comment on column AU_IX_POINTADDRESS.POSTER_ID is
-'ÓÊµÝÔ±±àºÅ';
+'ï¿½Êµï¿½Ô±ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.ADDRESS_FLAG is
-'µãÃÅÅÆµÄµØÖ·È·ÈÏ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÄµï¿½Ö·È·ï¿½Ï±ï¿½Ê¶';
 
 comment on column AU_IX_POINTADDRESS.STATE is
 '[173sp2]';
 
 comment on column AU_IX_POINTADDRESS.LOG is
-'ÔËÐÐ²ð·Ö³ÌÐòºó²úÉúµÄ×Ö¶Î';
+'ï¿½ï¿½ï¿½Ð²ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶ï¿½';
 
 comment on column AU_IX_POINTADDRESS.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 comment on column AU_IX_POINTADDRESS.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_IX_POINTADDRESS_CHILDREN                           */
@@ -2494,19 +2494,19 @@ comment on table AU_IX_POINTADDRESS_CHILDREN is
 '[171A][1901U]';
 
 comment on column AU_IX_POINTADDRESS_CHILDREN.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POINTADDRESS"';
 
 comment on column AU_IX_POINTADDRESS_CHILDREN.GROUP_ID is
-'²Î¿¼"IX_POINTADDRESS_PARENT" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS_PARENT" ';
 
 comment on column AU_IX_POINTADDRESS_CHILDREN.CHILD_PA_PID is
-'²Î¿¼"IX_POINTADDRESS" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS" ';
 
 comment on column AU_IX_POINTADDRESS_CHILDREN.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS_CHILDREN.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POINTADDRESS_FLAG                               */
@@ -2529,19 +2529,19 @@ comment on table AU_IX_POINTADDRESS_FLAG is
 '[1901A]';
 
 comment on column AU_IX_POINTADDRESS_FLAG.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POINTADDRESS"';
 
 comment on column AU_IX_POINTADDRESS_FLAG.POINTADDRESS_PID is
-'²Î¿¼"IX_POINTADDRESS"';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS"';
 
 comment on column AU_IX_POINTADDRESS_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column AU_IX_POINTADDRESS_FLAG.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS_FLAG.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POINTADDRESS_NAME                               */
@@ -2612,28 +2612,28 @@ comment on table AU_IX_POINTADDRESS_NAME is
 '[171A]';
 
 comment on column AU_IX_POINTADDRESS_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POINTADDRESS"';
 
 comment on column AU_IX_POINTADDRESS_NAME.NAME_ID is
-'²Î¿¼"IX_POINTADDRESS_NAME" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS_NAME" ';
 
 comment on column AU_IX_POINTADDRESS_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.PID is
-'²Î¿¼"IX_POINTADDRESS" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS" ';
 
 comment on column AU_IX_POINTADDRESS_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.SUM_CHAR is
-'µãÃÅÅÆµÄºÅÂëÌØÕ÷,ÈçÁ¬Ðø,ÆæÅ¼,»ìºÏ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÄºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Å¼,ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.SPLIT_FLAG is
 '[173sp2]';
 
 comment on column AU_IX_POINTADDRESS_NAME.FULLNAME is
-'¼ÇÂ¼²ð·ÖÇ°µÄÈ«µØÖ·Ãû³Æ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ç°ï¿½ï¿½È«ï¿½ï¿½Ö·ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.ROADNAME is
 '[173sp1]';
@@ -2648,64 +2648,64 @@ comment on column AU_IX_POINTADDRESS_NAME.ADDRNAME_PHONETIC is
 '[173sp1]';
 
 comment on column AU_IX_POINTADDRESS_NAME.PROVINCE is
-'±êÅÆÖÐ"Ê¡Ãû/Ö±Ï½ÊÐ/×ÔÖÎÇø/ÌØ±ðÐÐÕþÇøÃû"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"Ê¡ï¿½ï¿½/Ö±Ï½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.CITY is
-'±êÅÆÖÐ"µØ¼¶ÊÐÃû/×ÔÖÎÖÞÃû"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.COUNTY is
-'±êÅÆÖÐ"ÏØ¼¶ÊÐÃû/ÏØÃû/ÇøÃû(º¬Ö±Ï½ÊÐµÄÇø)"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ö±Ï½ï¿½Ðµï¿½ï¿½ï¿½)"';
 
 comment on column AU_IX_POINTADDRESS_NAME.TOWN is
-'ÏçÕò½ÖµÀ°ìÃû³Æ';
+'ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.PLACE is
-'×ÔÈ»´åÂä,¾ÓÃñÐ¡Çø,ÇøÓòµØÃû,¿ª·¢ÇøÃû';
+'ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.STREET is
-'½ÖµÀ,µÀÂ·Ãû, ºúÍ¬,Ïï,Ìõ,Åª';
+'ï¿½Öµï¿½,ï¿½ï¿½Â·ï¿½ï¿½, ï¿½ï¿½Í¬,ï¿½ï¿½,ï¿½ï¿½,Åª';
 
 comment on column AU_IX_POINTADDRESS_NAME.LANDMARK is
-'Ö¸ÓÐµØÀí±íÊ¾×÷ÓÃµÄµêÆÌ,¹«¹²ÉèÊ©,µ¥Î»,½¨Öþ»ò½»Í¨ÔËÊäÉèÊ©,°üÀ¨ÇÅÁº,¹«Â·»·µº,½»Í¨Õ¾³¡µÈ';
+'Ö¸ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.PREFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆºÅºÅÂëµÄ³É·Ö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½Ä³É·ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.HOUSENUM is
-'Ö÷ÃÅÅÆºÅºÅÂë,ÒÔÐòºÅ·½Ê½ÃüÃûµÄÅª»òÌõ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Å·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Åªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.TYPE is
-'ÃÅÅÆºÅºÅÂëÀàÐÍ';
+'ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.SUBNUM is
-'Ö÷ÃÅÅÆºÅËùÊôµÄ×ÓÃÅÅÆºÅ¼°ÐÞÊÎ¸Ã×ÓÃÅÅÆµÄÇ°×ºÐÅÏ¢';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅ¼ï¿½ï¿½ï¿½ï¿½Î¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç°×ºï¿½ï¿½Ï¢';
 
 comment on column AU_IX_POINTADDRESS_NAME.SURFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆµØÖ·µÄ´ÊÓï,Æä±¾ÉíÃ»ÓÐÊµ¼ÊÒâÒå,²»Ó°ÏìÃÅÅÆµØÖ·µÄº¬Òå,Èç:×Ô±à,ÁÙÊ±';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Ä´ï¿½ï¿½ï¿½,ï¿½ä±¾ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Äºï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½Ô±ï¿½,ï¿½ï¿½Ê±';
 
 comment on column AU_IX_POINTADDRESS_NAME.ESTAB is
-'Èç"**´óÏÃ","**Ð¡Çø"';
+'ï¿½ï¿½"**ï¿½ï¿½ï¿½ï¿½","**Ð¡ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.BUILDING is
-'Èç"A¶°,12¶°,31Â¥,B×ù"µÈ';
+'ï¿½ï¿½"Aï¿½ï¿½,12ï¿½ï¿½,31Â¥,Bï¿½ï¿½"ï¿½ï¿½';
 
 comment on column AU_IX_POINTADDRESS_NAME.UNIT is
-'Èç"2ÃÅ"';
+'ï¿½ï¿½"2ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.FLOOR is
-'Èç"12²ã"';
+'ï¿½ï¿½"12ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.ROOM is
-'Èç"503ÊÒ"';
+'ï¿½ï¿½"503ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.ADDONS is
-'Èç"¶ÔÃæ,ÅÔ±ß,¸½½ü"';
+'ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½,ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POINTADDRESS_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POINTADDRESS_PARENT                             */
@@ -2739,19 +2739,19 @@ comment on table AU_IX_POINTADDRESS_PARENT is
 '[171A][1901U]';
 
 comment on column AU_IX_POINTADDRESS_PARENT.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POINTADDRESS"';
 
 comment on column AU_IX_POINTADDRESS_PARENT.GROUP_ID is
-'²Î¿¼"IX_POINTADDRESS_PARENT" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS_PARENT" ';
 
 comment on column AU_IX_POINTADDRESS_PARENT.PARENT_PA_PID is
-'²Î¿¼"IX_POINTADDRESS" ';
+'ï¿½Î¿ï¿½"IX_POINTADDRESS" ';
 
 comment on column AU_IX_POINTADDRESS_PARENT.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POINTADDRESS_PARENT.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_ADDRESS                                     */
@@ -2821,22 +2821,22 @@ comment on table AU_IX_POI_ADDRESS is
 '[171A]';
 
 comment on column AU_IX_POI_ADDRESS.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_ADDRESS.NAME_ID is
-'²Î¿¼"IX_POI_ADDRESS"';
+'ï¿½Î¿ï¿½"IX_POI_ADDRESS"';
 
 comment on column AU_IX_POI_ADDRESS.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_ADDRESS.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column AU_IX_POI_ADDRESS.ROADNAME is
 '[173sp1]';
@@ -2851,64 +2851,64 @@ comment on column AU_IX_POI_ADDRESS.ADDRNAME_PHONETIC is
 '[173sp1]';
 
 comment on column AU_IX_POI_ADDRESS.PROVINCE is
-'POI±êÅÆÖÐµÄ"Ê¡Ãû/Ö±Ï½ÊÐ/×ÔÖÎÇø/ÌØ±ðÐÐÕþÇøÃû"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"Ê¡ï¿½ï¿½/Ö±Ï½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.CITY is
-'POI±êÅÆÖÐµÄ"µØ¼¶ÊÐÃû/×ÔÖÎÖÞÃû"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.COUNTY is
-'POI±êÅÆÖÐµÄ"ÏØ¼¶ÊÐÃû/ÏØÃû/ÇøÃû(º¬Ö±Ï½ÊÐµÄÇø)"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ö±Ï½ï¿½Ðµï¿½ï¿½ï¿½)"';
 
 comment on column AU_IX_POI_ADDRESS.TOWN is
-'ÏçÕò½ÖµÀ°ìÃû³Æ';
+'ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.PLACE is
-'×ÔÈ»´åÂä,¾ÓÃñÐ¡Çø,ÇøÓòµØÃû,¿ª·¢ÇøÃû';
+'ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.STREET is
-'½ÖµÀ,µÀÂ·Ãû, ºúÍ¬,Ïï,Ìõ,Åª';
+'ï¿½Öµï¿½,ï¿½ï¿½Â·ï¿½ï¿½, ï¿½ï¿½Í¬,ï¿½ï¿½,ï¿½ï¿½,Åª';
 
 comment on column AU_IX_POI_ADDRESS.LANDMARK is
-'Ö¸ÓÐµØÀí±íÊ¾×÷ÓÃµÄµêÆÌ,¹«¹²ÉèÊ©,µ¥Î»,½¨Öþ»ò½»Í¨ÔËÊäÉèÊ©,°üÀ¨ÇÅÁº,¹«Â·»·µº,½»Í¨Õ¾³¡µÈ';
+'Ö¸ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.PREFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆºÅºÅÂëµÄ³É·Ö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½Ä³É·ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.HOUSENUM is
-'Ö÷ÃÅÅÆºÅºÅÂë,ÒÔÐòºÅ·½Ê½ÃüÃûµÄÅª»òÌõ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Å·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Åªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.TYPE is
-'ÃÅÅÆºÅºÅÂëÀàÐÍ';
+'ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.SUBNUM is
-'Ö÷ÃÅÅÆºÅËùÊôµÄ×ÓÃÅÅÆºÅ¼°ÐÞÊÎ¸Ã×ÓÃÅÅÆµÄÇ°×ºÐÅÏ¢';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅ¼ï¿½ï¿½ï¿½ï¿½Î¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç°×ºï¿½ï¿½Ï¢';
 
 comment on column AU_IX_POI_ADDRESS.SURFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆµØÖ·µÄ´ÊÓï,Æä±¾ÉíÃ»ÓÐÊµ¼ÊÒâÒå,²»Ó°ÏìÃÅÅÆµØÖ·µÄº¬Òå,Èç:×Ô±à,ÁÙÊ±';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Ä´ï¿½ï¿½ï¿½,ï¿½ä±¾ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Äºï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½Ô±ï¿½,ï¿½ï¿½Ê±';
 
 comment on column AU_IX_POI_ADDRESS.ESTAB is
-'Èç"**´óÏÃ","**Ð¡Çø"';
+'ï¿½ï¿½"**ï¿½ï¿½ï¿½ï¿½","**Ð¡ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.BUILDING is
-'Èç"A¶°,12¶°,31Â¥,B×ù"µÈ';
+'ï¿½ï¿½"Aï¿½ï¿½,12ï¿½ï¿½,31Â¥,Bï¿½ï¿½"ï¿½ï¿½';
 
 comment on column AU_IX_POI_ADDRESS.FLOOR is
-'Èç"12²ã"';
+'ï¿½ï¿½"12ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.UNIT is
-'Èç"2ÃÅ"';
+'ï¿½ï¿½"2ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.ROOM is
-'Èç"503ÊÒ"';
+'ï¿½ï¿½"503ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.ADDONS is
-'Èç"¶ÔÃæ,ÅÔ±ß,¸½½ü"';
+'ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½,ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POI_ADDRESS.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_ADDRESS.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_BUILDING                                    */
@@ -2933,16 +2933,16 @@ comment on table AU_IX_POI_BUILDING is
 '[181A]';
 
 comment on column AU_IX_POI_BUILDING.AUDATA_ID is
-'Íâ¼ü';
+'ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_BUILDING.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_BUILDING.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_BUILDING.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_CHARGINGSTATION                             */
@@ -2990,75 +2990,75 @@ comment on table AU_IX_POI_CHARGINGSTATION is
 '[190A]';
 
 comment on column AU_IX_POI_CHARGINGSTATION.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_CHARGINGSTATION.CHARGING_ID is
-'²Î¿¼"IX_POI_CHARGINGSTATION"';
+'ï¿½Î¿ï¿½"IX_POI_CHARGINGSTATION"';
 
 comment on column AU_IX_POI_CHARGINGSTATION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_CHARGINGSTATION.CHARGING_NUM is
-'´óÓÚµÈÓÚ0,¿Õ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½0,ï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION.EXCHANGE_NUM is
-'¿Õ±íÊ¾Î´µ÷²é';
+'ï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION.PAYMENT is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËû 
-1	ÏÖ½ð
-2	ÐÅÓÃ¿¨
-3	IC¿¨
-4	ÌØÖÆ³äÖµ¿¨
-¶àÖÖ¸¶·Ñ·½Ê½Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½ 
+1	ï¿½Ö½ï¿½
+2	ï¿½ï¿½ï¿½Ã¿ï¿½
+3	ICï¿½ï¿½
+4	ï¿½ï¿½ï¿½Æ³ï¿½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ñ·ï¿½Ê½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION.SERVICE_PROV is
-'ÖµÓò°üÀ¨:
-1	¹ú¼ÒµçÍø
-2	ÄÏ·½µçÍø
-3	ÖÐÊ¯ÓÍ
-4	ÖÐÊ¯»¯
-5	       ÖÐº£ÓÍ
-6	ÆäËü
-¸Û°ÄÖµÓò
-11	   ÖÐëŠ
-12	   ¸ÛŸô
-13	   °ÄëŠ
-14       ÆäËû
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+1	ï¿½ï¿½Òµï¿½ï¿½ï¿½
+2	ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½
+3	ï¿½ï¿½Ê¯ï¿½ï¿½
+4	ï¿½ï¿½Ê¯ï¿½ï¿½
+5	       ï¿½Ðºï¿½ï¿½ï¿½
+6	ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½
+11	   ï¿½ï¿½ï¿½
+12	   ï¿½ÛŸï¿½
+13	   ï¿½ï¿½ï¿½
+14       ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION.ATT_TASK_ID is
-'DMS µ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_CHARGINGSTATION.FIELD_TASK_ID is
-'ÍâÒµPOI µ¼ÈëDMS Ê±¸³Öµ';
+'ï¿½ï¿½ÒµPOI ï¿½ï¿½ï¿½ï¿½DMS Ê±ï¿½ï¿½Öµ';
 
 comment on column AU_IX_POI_CHARGINGSTATION.PARKING_NUM is
-'¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ';
+'ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION."MODE" is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-1	˜ËœÊ³äëŠ
-2	ÖÐËÙ³äëŠ
-3	¿ìËÙ³äëŠ
-¶àÖÖÄ£Ê½Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+1	ï¿½ËœÊ³ï¿½ï¿½
+2	ï¿½ï¿½ï¿½Ù³ï¿½ï¿½
+3	ï¿½ï¿½ï¿½Ù³ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½Ä£Ê½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGSTATION.PLUG_TYPE is
-'ÖµÓò°üÀ¨: µÚÒ»Î»±íÊ¾³äµçÄ£Ê½
-´úÂë	Ãû³Æ
-11	3¿×¼ÒÓÃ
-12	7¿×šWÊ½†ÎÏàëŠ
-21	7¿×šWÊ½ÈýÏàëŠ
-22	5¿×ÃÀÊ½
-23	3¿×¼ÒÓÃ
-31	ÈÕ±¾CHAdeMO˜ËœÊ²åî^
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½Ò»Î»ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ä£Ê½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+11	3ï¿½×¼ï¿½ï¿½ï¿½
+12	7ï¿½×šWÊ½ï¿½ï¿½ï¿½ï¿½ï¿½
+21	7ï¿½×šWÊ½ï¿½ï¿½ï¿½ï¿½ï¿½
+22	5ï¿½ï¿½ï¿½ï¿½Ê½
+23	3ï¿½×¼ï¿½ï¿½ï¿½
+31	ï¿½Õ±ï¿½CHAdeMOï¿½ËœÊ²ï¿½ï¿½^
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_CHARGINGPLOT                                */
@@ -3104,43 +3104,43 @@ comment on table AU_IX_POI_CHARGINGPLOT is
 '[190A]';
 
 comment on column AU_IX_POI_CHARGINGPLOT.AUCHARG_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI_CHARGINGSTATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI_CHARGINGSTATION"';
 
 comment on column AU_IX_POI_CHARGINGPLOT.CHARGING_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POI_CHARGINESTATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI_CHARGINESTATION"';
 
 comment on column AU_IX_POI_CHARGINGPLOT.GROUP_ID is
-'½»/Ö±Á÷µç,²åÍ·ÀàÐÍ,³äµç¹¦ÂÊºÍµçÑ¹¶¼ÏàÍ¬µÄ³äµç×®ÎªÒ»×é';
+'ï¿½ï¿½/Ö±ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ç¹¦ï¿½ÊºÍµï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½Í¬ï¿½Ä³ï¿½ï¿½×®ÎªÒ»ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGPLOT.COUNT is
-'Í¬Ò»×éÄÚµÄ³äµç×®¸öÊý';
+'Í¬Ò»ï¿½ï¿½ï¿½ÚµÄ³ï¿½ï¿½×®ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGPLOT.PLUG_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0 ½»Á÷µç3¿×²å²Û
-1 ½»Á÷µç7¿×²å²Û
-2 Ö±Á÷µç9¿×²å²Û
-9 ÆäËû
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3ï¿½×²ï¿½ï¿½
+1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½7ï¿½×²ï¿½ï¿½
+2 Ö±ï¿½ï¿½ï¿½ï¿½9ï¿½×²ï¿½ï¿½
+9 ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CHARGINGPLOT.POWER is
-'µ¥Î»ÎªKW';
+'ï¿½ï¿½Î»ÎªKW';
 
 comment on column AU_IX_POI_CHARGINGPLOT.VOLTAGE is
-'µ¥Î»ÎªV,';
+'ï¿½ï¿½Î»ÎªV,';
 
 comment on column AU_IX_POI_CHARGINGPLOT."CURRENT" is
-'[180A]µ¥Î»ÎªA';
+'[180A]ï¿½ï¿½Î»ÎªA';
 
 comment on column AU_IX_POI_CHARGINGPLOT.MEMO is
 '[180A]';
 
 comment on column AU_IX_POI_CHARGINGPLOT.ATT_TASK_ID is
-'DMS µ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_CHARGINGPLOT.FIELD_TASK_ID is
-'ÍâÒµPOI µ¼ÈëDMS Ê±¸³Öµ';
+'ï¿½ï¿½ÒµPOI ï¿½ï¿½ï¿½ï¿½DMS Ê±ï¿½ï¿½Öµ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_CHILDREN                                    */
@@ -3171,19 +3171,19 @@ comment on table AU_IX_POI_CHILDREN is
 '[171A][1901U]';
 
 comment on column AU_IX_POI_CHILDREN.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_CHILDREN.GROUP_ID is
-'²Î¿¼"IX_POI_PARENT"';
+'ï¿½Î¿ï¿½"IX_POI_PARENT"';
 
 comment on column AU_IX_POI_CHILDREN.CHILD_POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_CHILDREN.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_CHILDREN.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_CONTACT                                     */
@@ -3208,35 +3208,35 @@ create table AU_IX_POI_CONTACT  (
 );
 
 comment on table AU_IX_POI_CONTACT is
-'[171A]µ±´æÔÚ¶à¸öÁªÏµ·½Ê½Ê±,´æ´¢Îª¶àÌõ¼ÇÂ¼';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½Ê½Ê±,ï¿½æ´¢Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼';
 
 comment on column AU_IX_POI_CONTACT.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_CONTACT.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_CONTACT.CONTACT is
-'¼ÇÂ¼°üÀ¨ÇøºÅÔÚÄÚµÄµç»°ºÅÂë,´æ´¢ÎªÓ¢ÎÄ°ë½ÇÊý×Ö×Ö·û,¶þÕßÖ®¼äÒÔ°ë½Ç"-"·Ö¸ô,Èç010-82306399';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÚµÄµç»°ï¿½ï¿½ï¿½ï¿½,ï¿½æ´¢ÎªÓ¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½,ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½Ô°ï¿½ï¿½"-"ï¿½Ö¸ï¿½,ï¿½ï¿½010-82306399';
 
 comment on column AU_IX_POI_CONTACT.CONTACT_DEPART is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»¸ö·þÎñ²¿ÃÅ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ,Èç:00000011 ±íÊ¾×Ü»úºÍ¿Í·þ;00000101 ±íÊ¾×Ü»úºÍÔ¤¶©
-µÚ0bit:×Ü»ú
-µÚ1bit:¿Í·þ
-µÚ2bit:Ô¤¶©
-µÚ3bit:ÏúÊÛ
-µÚ4bit:Î¬ÐÞ
-µÚ5bit:ÆäËû
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000011 ï¿½ï¿½Ê¾ï¿½Ü»ï¿½Í¿Í·ï¿½;00000101 ï¿½ï¿½Ê¾ï¿½Ü»ï¿½ï¿½Ô¤ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½Ü»ï¿½
+ï¿½ï¿½1bit:ï¿½Í·ï¿½
+ï¿½ï¿½2bit:Ô¤ï¿½ï¿½
+ï¿½ï¿½3bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½4bit:Î¬ï¿½ï¿½
+ï¿½ï¿½5bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CONTACT.PRIORITY is
-'[1901U]ÁªÏµ·½Ê½µÄÓÅÏÈ¼¶ÅÅÐò';
+'[1901U]ï¿½ï¿½Ïµï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_CONTACT.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_CONTACT.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_FLAG                                        */
@@ -3259,19 +3259,19 @@ comment on table AU_IX_POI_FLAG is
 '[180]';
 
 comment on column AU_IX_POI_FLAG.AUDATA_ID is
-'Íâ¼ü';
+'ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_FLAG.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column AU_IX_POI_FLAG.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_FLAG.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_GASSTATION                                  */
@@ -3316,157 +3316,157 @@ comment on table AU_IX_POI_GASSTATION is
 '[190A]';
 
 comment on column AU_IX_POI_GASSTATION.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_GASSTATION.GASSTATION_ID is
-'²Î¿¼"IX_POI_GASSTATION"';
+'ï¿½Î¿ï¿½"IX_POI_GASSTATION"';
 
 comment on column AU_IX_POI_GASSTATION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_GASSTATION.FUEL_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	²ñÓÍ(Diesel)
-1	ÆûÓÍ(Gasoline)
-2	¼×´¼ÆûÓÍ(MG85)
-3	ÆäËû
-4	Òº»¯Ê¯ÓÍÆø(LPG)
-5	ÌìÈ»Æø(CNG)
-6	ÒÒ´¼ÆûÓÍ(E10)
-7	ÇâÈ¼ÁÏ(Hydrogen)
-8	ÉúÎï²ñÓÍ(Biodiesel)
-9	Òº»¯ÌìÈ»Æø(LNG)
-10	Ñ¹ËõÌìÈ»Æø
-¸Û°ÄÖµÓò£º µÚÒ»Î»´ú±í¶ÔÓ¦µÄ·þÎñÌá¹©ÉÌ
-´úÂë	Ãû³Æ
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½(Diesel)
+1	ï¿½ï¿½ï¿½ï¿½(Gasoline)
+2	ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½(MG85)
+3	ï¿½ï¿½ï¿½ï¿½
+4	Òºï¿½ï¿½Ê¯ï¿½ï¿½ï¿½ï¿½(LPG)
+5	ï¿½ï¿½È»ï¿½ï¿½(CNG)
+6	ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ï¿½(E10)
+7	ï¿½ï¿½È¼ï¿½ï¿½(Hydrogen)
+8	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Biodiesel)
+9	Òºï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½(LNG)
+10	Ñ¹ï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½ ï¿½ï¿½Ò»Î»ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä·ï¿½ï¿½ï¿½ï¿½á¹©ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
 11	SINO X Power
 12	SINO Power
 13	SINO Disel
 14	LPG
-21	Á¦„Å²ñÓÍ
-22	ÇåÐÂÆûÓÍ
-23	³¬¼‰ÆûÓÍ
+21	ï¿½ï¿½ï¿½Å²ï¿½ï¿½ï¿½
+22	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+23	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 24	LPG
-31	Gold»Æ½ð
-32	Platinum°×½ð
-33	DieselÌØÅä²ñÓÍ
-34	²ñÓÍÏÖ½ðßÒieselCashCard
-35	Ê¯ÓÍšâAutoGas
-41	Disel³¬µÍÁò²ñÓÍ
-42	8000ëŠÓÍ
-43	F-1ÌØ¼‰ëŠÓÍ
-44	AutoGasÊ¯ÓÍšâ
-51	Disesel²ñÓÍ
-52	FuelSave‘aÓÍÅä·½ÆûÓÍ
+31	Goldï¿½Æ½ï¿½
+32	Platinumï¿½×½ï¿½
+33	Dieselï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+34	ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ieselCashCard
+35	Ê¯ï¿½Íšï¿½AutoGas
+41	Diselï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+42	8000ï¿½ï¿½ï¿½
+43	F-1ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½
+44	AutoGasÊ¯ï¿½Íšï¿½
+51	Diseselï¿½ï¿½ï¿½ï¿½
+52	FuelSaveï¿½aï¿½ï¿½ï¿½ä·½ï¿½ï¿½ï¿½ï¿½
 53	Shell V-Power
-54	AutoGasÊ¯ÓÍšâ
-61	³¬„Å‘aÓÍÅä·½ÆûÓÍ
-62	ÇåÅä·½µÍÁò²ñÓÍ
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
+54	AutoGasÊ¯ï¿½Íšï¿½
+61	ï¿½ï¿½ï¿½Å‘aï¿½ï¿½ï¿½ä·½ï¿½ï¿½ï¿½ï¿½
+62	ï¿½åï¿½ä·½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column AU_IX_POI_GASSTATION.OIL_TYPE is
-'[180U]ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËü
-89            89#ÆûÓÍ
-90	90#ÆûÓÍ
-92            92#ÆûÓÍ
-93	93#ÆûÓÍ
-95            95#ÆûÓÍ
-97	97#ÆûÓÍ
-98	98#ÆûÓÍ 
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=1(ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ
+'[180U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½
+89            89#ï¿½ï¿½ï¿½ï¿½
+90	90#ï¿½ï¿½ï¿½ï¿½
+92            92#ï¿½ï¿½ï¿½ï¿½
+93	93#ï¿½ï¿½ï¿½ï¿½
+95            95#ï¿½ï¿½ï¿½ï¿½
+97	97#ï¿½ï¿½ï¿½ï¿½
+98	98#ï¿½ï¿½ï¿½ï¿½ 
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=1(ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½
 ';
 
 comment on column AU_IX_POI_GASSTATION.EG_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËü
-E90	E90#ÆûÓÍ
-E93	E93#ÆûÓÍ
-E97	E97#ÆûÓÍ
-E98	E98#ÆûÓÍ
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=6(ÒÒ´¼ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½
+E90	E90#ï¿½ï¿½ï¿½ï¿½
+E93	E93#ï¿½ï¿½ï¿½ï¿½
+E97	E97#ï¿½ï¿½ï¿½ï¿½
+E98	E98#ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=6(ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column AU_IX_POI_GASSTATION.MG_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 ÆäËü
-M5 M5#ÆûÓÍ
-M10 M10#ÆûÓÍ
-M15 M15#ÆûÓÍ
-M30 M30#ÆûÓÍ
-M50 M50#ÆûÓÍ
-M85 M85#ÆûÓÍ
-M100 M100#ÆûÓÍ
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=3(¼×´¼ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½ï¿½ï¿½ï¿½
+M5 M5#ï¿½ï¿½ï¿½ï¿½
+M10 M10#ï¿½ï¿½ï¿½ï¿½
+M15 M15#ï¿½ï¿½ï¿½ï¿½
+M30 M30#ï¿½ï¿½ï¿½ï¿½
+M50 M50#ï¿½ï¿½ï¿½ï¿½
+M85 M85#ï¿½ï¿½ï¿½ï¿½
+M100 M100#ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=3(ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column AU_IX_POI_GASSTATION.SERVICE is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-1	±ãÀûµê
-2	Ï´³µ
-3	Æû³µÎ¬ÐÞ
-4	ÎÀÉú¼ä
-5	²ÍÒû
-6	×¡ËÞ
-7	»»ÓÍ
-8	×ÔÖú¼ÓÓÍ
-¸Û°ÄÖµÓò£º
-´úÂë	Ãû³Æ
-11	“QÓÍ·þ„ÕLube Service
-12	Ï´Ü‡·þ„ÕCar Wash
-13	±ãÀûµêConvenience Store
-14	ŽúËùToilet
-¶à¸ö·þÎñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+1	ï¿½ï¿½ï¿½ï¿½ï¿½
+2	Ï´ï¿½ï¿½
+3	ï¿½ï¿½Î¬ï¿½ï¿½
+4	ï¿½ï¿½ï¿½ï¿½ï¿½
+5	ï¿½ï¿½ï¿½ï¿½
+6	×¡ï¿½ï¿½
+7	ï¿½ï¿½ï¿½ï¿½
+8	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+11	ï¿½Qï¿½Í·ï¿½ï¿½ï¿½Lube Service
+12	Ï´Ü‡ï¿½ï¿½ï¿½ï¿½Car Wash
+13	ï¿½ï¿½ï¿½ï¿½ï¿½Convenience Store
+14	ï¿½ï¿½ï¿½ï¿½Toilet
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column AU_IX_POI_GASSTATION.MEMO is
 '[180A]';
 
 comment on column AU_IX_POI_GASSTATION.ATT_TASK_ID is
-'DMS µ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_GASSTATION.FIELD_TASK_ID is
-'ÍâÒµPOI µ¼ÈëDMS Ê±¸³Öµ';
+'ï¿½ï¿½ÒµPOI ï¿½ï¿½ï¿½ï¿½DMS Ê±ï¿½ï¿½Öµ';
 
 comment on column AU_IX_POI_GASSTATION.SERVICE_PROV is
-'1	ÖÐÊ¯»¯(Sinopec)
-2	ÖÐ‡øÊ¯ÓÍ(Chinaoil)
-3	¼ÓµÂÊ¿(Caltex)
-4	°£¿ËÉ­ÃÀæÚºÍ–|·½(Esso Feoso)
-5	Í˜š¤(Shell)
-6	ÄÏ¹âÊ¯ÓÍ(Nkoil)
-7	Ò×¸ß(Towngas)
-8	ÆäËû
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ
+'1	ï¿½ï¿½Ê¯ï¿½ï¿½(Sinopec)
+2	ï¿½Ð‡ï¿½Ê¯ï¿½ï¿½(Chinaoil)
+3	ï¿½Óµï¿½Ê¿(Caltex)
+4	ï¿½ï¿½ï¿½ï¿½É­ï¿½ï¿½ï¿½ÚºÍ–|ï¿½ï¿½(Esso Feoso)
+5	Í˜ï¿½ï¿½(Shell)
+6	ï¿½Ï¹ï¿½Ê¯ï¿½ï¿½(Nkoil)
+7	ï¿½×¸ï¿½(Towngas)
+8	ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½
 ';
 
 comment on column AU_IX_POI_GASSTATION.PAYMENT is
-'¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-ÖµÓò°üÀ¨:
-´óÂ½ÖµÓò£º
-´úÂë	Ãû³Æ
-0	ÏÖ½ð
-1	½è¼Ç¿¨
-2	ÐÅÓÃ¿¨
-¸Û°ÄÖµÓò£º
-10	°Ëß_Í¨
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½Â½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½Ö½ï¿½
+1	ï¿½ï¿½Ç¿ï¿½
+2	ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½
+10	ï¿½ï¿½ï¿½_Í¨
 11	VISA
 12	MasterCard
-13	¬F½ð
-14	ÆäËû
+13	ï¿½Fï¿½ï¿½
+14	ï¿½ï¿½ï¿½ï¿½
 ';
 
 /*==============================================================*/
@@ -3523,70 +3523,70 @@ comment on table AU_IX_POI_HOTEL is
 '[173sp1]';
 
 comment on column AU_IX_POI_HOTEL.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_HOTEL.HOTEL_ID is
-'Íâ¼ü,²Î¿¼"IX_POI_HOTEL"';
+'ï¿½ï¿½ï¿½,ï¿½Î¿ï¿½"IX_POI_HOTEL"';
 
 comment on column AU_IX_POI_HOTEL.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_HOTEL.CREDIT_CARD is
-'ÖµÓò°üÀ¨:
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
 1 Î¬Ê¿(visa)
-2 ÍòÊÂ´ï(mastercard)
-3 ´óÀ´(dinas)
-4 ÈÕ±¾¹ú¼ÊÐÅÓÃ¿¨(jcb)
-5 ÃÀ¹úÔËÍ¨(America
+2 ï¿½ï¿½ï¿½Â´ï¿½(mastercard)
+3 ï¿½ï¿½ï¿½ï¿½(dinas)
+4 ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½(jcb)
+5 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨(America
 Express)
-6 ÒøÁª(unionpay)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª0 ±íÊ¾²»Ö§³ÖÐÅÓÃ¿¨
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+6 ï¿½ï¿½ï¿½ï¿½(unionpay)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_HOTEL.CHECKIN_TIME is
-'¸ñÊ½:HH:mm';
+'ï¿½ï¿½Ê½:HH:mm';
 
 comment on column AU_IX_POI_HOTEL.CHECKOUT_TIME is
-'¸ñÊ½:HH:mm';
+'ï¿½ï¿½Ê½:HH:mm';
 
 comment on column AU_IX_POI_HOTEL.ROOM_COUNT is
-'´óÓÚµÈÓÚ0 µÄÕûÊý,0 ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,0 ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_HOTEL.ROOM_TYPE is
-'ÖµÓò°üÀ¨:
-1 µ¥ÈË¼ä(single)
-2 ±ê×¼¼ä(double)
-3 Ì×·¿(suite)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+1 ï¿½ï¿½ï¿½Ë¼ï¿½(single)
+2 ï¿½ï¿½×¼ï¿½ï¿½(double)
+3 ï¿½×·ï¿½(suite)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_HOTEL.ROOM_PRICE is
-'¶à¸ö¼Û¸ñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Ë³Ðò±ØÐëÓë¿Í·¿ÀàÐÍÒ»ÖÂ
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½ï¿½Û¸ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_HOTEL.SERVICE is
-'ÖµÓò°üÀ¨:
-1 »áÒéÌü
-2 ÉÌÎñÖÐÐÄ
-31 ¾Æ°É
-32 ¿¨À­OK
-33 ½¡ÉíÖÐÐÄ
-34 ÊÒÄÚÓÎÓ¾³Ø
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+31 ï¿½Æ°ï¿½
+32 ï¿½ï¿½ï¿½ï¿½OK
+33 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+34 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½
 35 SPA
-36 É£ÄÃ
-51 ÖÐ²ÍÌü
-52 Î÷²ÍÌü
-53 ¿§·ÈÌü
-54 ²èÊÒ
-¶à¸ö·þÎñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+36 É£ï¿½ï¿½
+51 ï¿½Ð²ï¿½ï¿½ï¿½
+52 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+53 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+54 ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_HOTEL.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_HOTEL.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_NAME                                        */
@@ -3622,19 +3622,19 @@ comment on table AU_IX_POI_NAME is
 '[171A]';
 
 comment on column AU_IX_POI_NAME.AUNAME_ID is
-'[180A]Ö÷¼ü';
+'[180A]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_NAME.NAME_ID is
-'²Î¿¼"IX_POI_NAME"';
+'ï¿½Î¿ï¿½"IX_POI_NAME"';
 
 comment on column AU_IX_POI_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_NAME.NAME_CLASS is
 '[180U]';
@@ -3643,19 +3643,19 @@ comment on column AU_IX_POI_NAME.NAME_TYPE is
 '[180A]';
 
 comment on column AU_IX_POI_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME.KEYWORDS is
-'¼ÇÂ¼POI Ãû³ÆÍêÕûµÄÆ´Òô¹Ø¼ü×Ö»®·ÖÄÚÈÝ,¹Ø¼ü×ÖÖ®¼äÓÃÓ¢ÎÄ°ë½Ç"/"·Ö¸î,Èç"±±¾©ÊÐÕþ¸®"¹Ø¼ü×Ö»®·ÖÎª:"bei jing shi/zheng fu';
+'ï¿½ï¿½Â¼POI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ø¼ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"/"ï¿½Ö¸ï¿½,ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Îª:"bei jing shi/zheng fu';
 
 comment on column AU_IX_POI_NAME.NIDB_PID is
-'¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column AU_IX_POI_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_NAME_FLAG                                   */
@@ -3678,19 +3678,19 @@ comment on table AU_IX_POI_NAME_FLAG is
 '[180]';
 
 comment on column AU_IX_POI_NAME_FLAG.AUNAME_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI_NAME"';
 
 comment on column AU_IX_POI_NAME_FLAG.NAME_ID is
-'²Î¿¼"IX_POI_NAME"';
+'ï¿½Î¿ï¿½"IX_POI_NAME"';
 
 comment on column AU_IX_POI_NAME_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column AU_IX_POI_NAME_FLAG.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_NAME_FLAG.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_RP00                                        */
@@ -3763,86 +3763,86 @@ comment on table AU_IX_POI_RP00 is
 '[181A]';
 
 comment on column AU_IX_POI_RP00.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_RP00.KIND_CODE is
-'²Î¿¼"IX_POI_CODE"';
+'ï¿½Î¿ï¿½"IX_POI_CODE"';
 
 comment on column AU_IX_POI_RP00.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã,ÓÃÓÚPOIÏÔÊ¾ºÍ¼ÆËãLink×óÓÒ¹ØÏµ
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½Ê¾ï¿½Í¼ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ò¹ï¿½Ïµ
 ';
 
 comment on column AU_IX_POI_RP00.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_IX_POI_RP00.SIDE is
-'¼ÇÂ¼POIÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ,×ó²à»òÓÒ²à';
+'ï¿½ï¿½Â¼POIÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column AU_IX_POI_RP00.NAME_GROUPID is
-'²Î¿¼"RD_NAME"';
+'ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column AU_IX_POI_RP00.PMESH_ID is
-'Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.IMPORTANCE is
-'¼ÇÂ¼ÒÔÏÂ·ÖÀàµÄPOIÎªÖØÒª,¼´IMPORTANCEÎª1,·ñÔòÎª0
-(1)ÓµÓÐ¹ú¼Ê½ø³ö¸Û¿ÚµÄ»ú³¡
-(2)¹ú¼ÒÂÃÓÎ¾ÖÆÀ¶¨µÄµÈ¼¶Îª3A,4A,5AµÄ·ç¾°Çø
-(3)ÊÀ½çÎÄ»¯ÒÅ²ú';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½POIÎªï¿½ï¿½Òª,ï¿½ï¿½IMPORTANCEÎª1,ï¿½ï¿½ï¿½ï¿½Îª0
+(1)Óµï¿½Ð¹ï¿½Ê½ï¿½ï¿½ï¿½Û¿ÚµÄ»ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄµÈ¼ï¿½Îª3A,4A,5Aï¿½Ä·ç¾°ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½Å²ï¿½';
 
 comment on column AU_IX_POI_RP00.CHAIN is
-'Ö÷ÒªÖÆ×÷¶ÔÏóÊÇ±ö¹ÝºÍ¼ÓÓÍÕ¾';
+'ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç±ï¿½ï¿½ÝºÍ¼ï¿½ï¿½ï¿½Õ¾';
 
 comment on column AU_IX_POI_RP00.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column AU_IX_POI_RP00.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.DIF_GROUPID is
-'ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column AU_IX_POI_RP00.EDIT_FLAG is
-'ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AU_IX_POI_RP00.FIELD_STATE is
-'¸ÄÃû³Æ,¸ÄµØÖ·,¸Ä·ÖÀà';
+'ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Äµï¿½Ö·,ï¿½Ä·ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.LABEL is
-'¼ÇÂ¼Â·,Ë®,ÂÌµØ,µ¥ÏîÊÕ·Ñ,Ë«ÏòÊÕ·Ñ,ÏÔÊ¾Î»ÖÃ,24Ð¡Ê±±ãÀûµê';
+'ï¿½ï¿½Â¼Â·,Ë®,ï¿½Ìµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½,Ë«ï¿½ï¿½ï¿½Õ·ï¿½,ï¿½ï¿½Ê¾Î»ï¿½ï¿½,24Ð¡Ê±ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.ADDRESS_FLAG is
-'±êÖ¾POI µØÖ·(IX_POI_ADDRESS)ÍêÕûÐÔ';
+'ï¿½ï¿½Ö¾POI ï¿½ï¿½Ö·(IX_POI_ADDRESS)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.EX_PRIORITY is
-'ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)';
+'ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)';
 
 comment on column AU_IX_POI_RP00.EDITION_FLAG is
-'¼ÇÂ¼Êý¾ÝÊÇÓÉÄÚÒµ»¹ÊÇÍâÒµÐÞ¸Ä,ÐÂÔö,É¾³ýµÈ±êÖ¾';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Þ¸ï¿½,ï¿½ï¿½ï¿½ï¿½,É¾ï¿½ï¿½È±ï¿½Ö¾';
 
 comment on column AU_IX_POI_RP00.OLD_BLOCKCODE is
-'Ô­½á¹¹ÖÐµÄ"OLD´ó×Ö"';
+'Ô­ï¿½á¹¹ï¿½Ðµï¿½"OLDï¿½ï¿½ï¿½ï¿½"';
 
 comment on column AU_IX_POI_RP00.POI_NUM is
-'¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_IX_POI_RP00.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_RP00.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_RP00.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 comment on column AU_IX_POI_RP00.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_NAME_RP00                                   */
@@ -3878,34 +3878,34 @@ comment on table AU_IX_POI_NAME_RP00 is
 '[181A]';
 
 comment on column AU_IX_POI_NAME_RP00.AUNAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME_RP00.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI_RP00"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI_RP00"';
 
 comment on column AU_IX_POI_NAME_RP00.NAME_ID is
-'²Î¿¼"IX_POI_NAME"';
+'ï¿½Î¿ï¿½"IX_POI_NAME"';
 
 comment on column AU_IX_POI_NAME_RP00.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME_RP00.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_NAME_RP00.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_NAME_RP00.KEYWORDS is
-'¼ÇÂ¼POI Ãû³ÆÍêÕûµÄÆ´Òô¹Ø¼ü×Ö»®·ÖÄÚÈÝ,¹Ø¼ü×ÖÖ®¼äÓÃÓ¢ÎÄ°ë½Ç"/"·Ö¸î,Èç"±±¾©ÊÐÕþ¸®"¹Ø¼ü×Ö»®·ÖÎª:"bei jing shi/zheng fu';
+'ï¿½ï¿½Â¼POI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ø¼ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"/"ï¿½Ö¸ï¿½,ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Îª:"bei jing shi/zheng fu';
 
 comment on column AU_IX_POI_NAME_RP00.NIDB_PID is
-'¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column AU_IX_POI_NAME_RP00.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_NAME_RP00.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_NOKIA                                       */
@@ -3927,7 +3927,7 @@ comment on table AU_IX_POI_NOKIA is
 '[173sp2]';
 
 comment on column AU_IX_POI_NOKIA.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_PARENT                                      */
@@ -3964,13 +3964,13 @@ comment on table AU_IX_POI_PARENT is
 '[171A][1901U]';
 
 comment on column AU_IX_POI_PARENT.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_PARENT.GROUP_ID is
-'²Î¿¼"IX_POI_PARENT"';
+'ï¿½Î¿ï¿½"IX_POI_PARENT"';
 
 comment on column AU_IX_POI_PARENT.PARENT_POI_PID is
-'²Î¿¼"IX_POI" ';
+'ï¿½Î¿ï¿½"IX_POI" ';
 
 comment on column AU_IX_POI_PARENT.TENANT_FLAG is
 '[181A]';
@@ -3979,10 +3979,10 @@ comment on column AU_IX_POI_PARENT.MEMO is
 '[181A]';
 
 comment on column AU_IX_POI_PARENT.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_PARENT.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_PARKING                                     */
@@ -4039,92 +4039,92 @@ comment on table AU_IX_POI_PARKING is
 '[190A]';
 
 comment on column AU_IX_POI_PARKING.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_PARKING.PARKING_ID is
-'²Î¿¼"IX_POI_PARKING"';
+'ï¿½Î¿ï¿½"IX_POI_PARKING"';
 
 comment on column AU_IX_POI_PARKING.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_PARKING.PARKING_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0	ÊÒÄÚ£¨²»Çø·ÖµØÉÏµØÏÂ£©
-1	ÊÒÍâ
-2	Õ¼µÀ
-3	ÊÒÄÚ£¨µØÉÏ£©
-4	ÊÒÄÚ£¨µØÏÂ£©
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½
+1	ï¿½ï¿½ï¿½ï¿½
+2	Õ¼ï¿½ï¿½
+3	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½Ï£ï¿½
+4	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½Â£ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_PARKING.TOLL_STD is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 °üÄê
-1 °üÔÂ
-2 ¼Æ´Î
-3 ¼ÆÊ±
-4 ·Ö¶Î¼Æ¼Û
-5 Ãâ·Ñ
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é,ÇÒ5(Ãâ·Ñ)²»ÓëÆäËûÀàÐÍ¹²´æ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½ï¿½ï¿½ï¿½
+1 ï¿½ï¿½ï¿½ï¿½
+2 ï¿½Æ´ï¿½
+3 ï¿½ï¿½Ê±
+4 ï¿½Ö¶Î¼Æ¼ï¿½
+5 ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½5(ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¹ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_PARKING.TOLL_WAY is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 ÊÖ¹¤ÊÕ·Ñ
-1 µç×ÓÊÕ·Ñ
-2 ×ÔÖú½É·Ñ
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½Ö¹ï¿½ï¿½Õ·ï¿½
+1 ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½
+2 ï¿½ï¿½ï¿½ï¿½É·ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column AU_IX_POI_PARKING.WORK_TIME is
-'Êý¾ÝÖÆ×÷µÄÈÕÆÚ,Èç:2012-08-10';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½:2012-08-10';
 
 comment on column AU_IX_POI_PARKING.ATT_TASK_ID is
-'DMS µ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMS ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_PARKING.FIELD_TASK_ID is
-'ÍâÒµPOI µ¼ÈëDMS Ê±¸³Öµ';
+'ï¿½ï¿½ÒµPOI ï¿½ï¿½ï¿½ï¿½DMS Ê±ï¿½ï¿½Öµ';
 
 comment on column AU_IX_POI_PARKING.PAYMENT is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-10	°Ëß_Í¨
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+10	ï¿½ï¿½ï¿½_Í¨
 11	VISA
 12	MasterCard
-13	¬F½ð
-14	ÆäËû
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ
+13	ï¿½Fï¿½ï¿½
+14	ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½
 ';
 
 comment on column AU_IX_POI_PARKING.REMARK is
-'ÖµÓò°üÀ¨: 
-´óÂ½£ºÖ»»á³öÏÖÒ»¸öÖµ
-´úÂë	Ãû³Æ
-1	×¡ËÞÃâ·Ñ
-2	¾Í²ÍÃâ·Ñ
-3	¹ºÎïÃâ·Ñ
-4	¹ºÎï»òÏû·ÑÂú¶îÃâ²¿·Ö·ÑÓÃ
-5	ºÍÍ£³µ³¡ËùÔÚµÄÖ÷ÌåPOI²úÉúÏû·Ñ¡¢°ìÊÂ¡¢·ÃÎÊ¡¢¹ÒºÅ¡¢¾ÍÒ½µÈ¹ØÏµÊ±Ãâ·Ñ
-6	Ö»¶ÔÄÚ»ò²úÉúÏû·ÑµÄÈºÌå¿ª·Å
-7	Æû³µÃÀÈÝ
-¸Û°Ä£º¶àÖµÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-´úÂë	Ãû³Æ
-11	´îÉý½µ™C
-12	ìóÏÞÔL¿Í
-13	ìóÍ£Ø›Ü‡
-14	30·ÖçŠÃâÙM
-15	ëŠ„ÓÜ‡³äëŠ
-16	Áô³×
-17	Ï´Ü‡¼°´òÏž
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½: 
+ï¿½ï¿½Â½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Öµ
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+1	×¡ï¿½ï¿½ï¿½ï¿½ï¿½
+2	ï¿½Í²ï¿½ï¿½ï¿½ï¿½
+3	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ö·ï¿½ï¿½ï¿½
+5	ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½Â¡ï¿½ï¿½ï¿½ï¿½Ê¡ï¿½ï¿½ÒºÅ¡ï¿½ï¿½ï¿½Ò½ï¿½È¹ï¿½ÏµÊ±ï¿½ï¿½ï¿½
+6	Ö»ï¿½ï¿½ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñµï¿½Èºï¿½å¿ªï¿½ï¿½
+7	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°Ä£ï¿½ï¿½ï¿½ÖµÊ±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+11	ï¿½ï¿½ï¿½ï¿½C
+12	ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½
+13	ï¿½ï¿½Í£Ø›Ü‡
+14	30ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½M
+15	ëŠ„ï¿½Ü‡ï¿½ï¿½ï¿½
+16	ï¿½ï¿½ï¿½ï¿½
+17	Ï´Ü‡ï¿½ï¿½ï¿½ï¿½Ïž
 ';
 
 comment on column AU_IX_POI_PARKING.SOURCE is
-'1         À´×ÔÏÖ³¡±êÅÆ»òÆäËûÎÄ×ÖËµÃ÷
-2         À´×ÔÑ¯ÎÊ
-3         À´×Ô±êÅÆºÍÑ¯ÎÊ';
+'1         ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½Æ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½
+2         ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½
+3         ï¿½ï¿½ï¿½Ô±ï¿½ï¿½Æºï¿½Ñ¯ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_PHOTO                                       */
@@ -4156,22 +4156,22 @@ comment on table AU_IX_POI_PHOTO is
 '[173sp2]';
 
 comment on column AU_IX_POI_PHOTO.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_PHOTO.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_PHOTO.PHOTO_ID is
-'²Î¿¼"AU_PHOTO"';
+'ï¿½Î¿ï¿½"AU_PHOTO"';
 
 comment on column AU_IX_POI_PHOTO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 comment on column AU_IX_POI_PHOTO.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_PHOTO.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_POI_RESTAURANT                                  */
@@ -4199,38 +4199,38 @@ comment on table AU_IX_POI_RESTAURANT is
 '[171A]';
 
 comment on column AU_IX_POI_RESTAURANT.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_IX_POI"';
 
 comment on column AU_IX_POI_RESTAURANT.RESTAURANT_ID is
-'²Î¿¼"IX_POI_RESTAURANT"';
+'ï¿½Î¿ï¿½"IX_POI_RESTAURANT"';
 
 comment on column AU_IX_POI_RESTAURANT.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column AU_IX_POI_RESTAURANT.FOOD_TYPE is
-'NM±à¼­,¼ÇÂ¼¸÷ÖÖ²ËÏµÀàÐÍ´úÂë,ÈçÂ³²Ë,´¨²Ë,ÈÕ±¾ÁÏÀí,·¨¹ú²ËµÈ,¶à¸ö²ËÏµÖ®¼äÒÔ"|"·Ö¸ô;¿ÕÎªÎ´µ÷²é';
+'NMï¿½à¼­,ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ö²ï¿½Ïµï¿½ï¿½ï¿½Í´ï¿½ï¿½ï¿½,ï¿½ï¿½Â³ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ëµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÖ®ï¿½ï¿½ï¿½ï¿½"|"ï¿½Ö¸ï¿½;ï¿½ï¿½ÎªÎ´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RESTAURANT.CREDIT_CARD is
-'ÖµÓò°üÀ¨:
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
 1 Î¬Ê¿(visa)
-2 ÍòÊÂ´ï(mastercard)
-3 ´óÀ´(dinas)
-4 ÈÕ±¾¹ú¼ÊÐÅÓÃ¿¨(jcb)
-5 ÃÀ¹úÔËÍ¨(America
+2 ï¿½ï¿½ï¿½Â´ï¿½(mastercard)
+3 ï¿½ï¿½ï¿½ï¿½(dinas)
+4 ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½(jcb)
+5 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨(America
 Express)
-6 ÒøÁª(unionpay)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª0 ±íÊ¾²»Ö§³ÖÐÅÓÃ¿¨
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+6 ï¿½ï¿½ï¿½ï¿½(unionpay)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RESTAURANT.AVG_COST is
-'Èç¹ûÎª0 ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_IX_POI_RESTAURANT.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_IX_POI_RESTAURANT.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_IX_SAMEPOI                                         */
@@ -4308,13 +4308,13 @@ comment on table AU_MARK_AUDIO is
 '[170]';
 
 comment on column AU_MARK_AUDIO.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_MARK_AUDIO.AUDIO_ID is
-'²Î¿¼"AU_AUDIO"';
+'ï¿½Î¿ï¿½"AU_AUDIO"';
 
 comment on column AU_MARK_AUDIO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_MARK_PHOTO                                         */
@@ -4329,13 +4329,13 @@ create table AU_MARK_PHOTO  (
 );
 
 comment on column AU_MARK_PHOTO.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_MARK_PHOTO.PHOTO_ID is
-'[170]²Î¿¼"AU_PHOTO"';
+'[170]ï¿½Î¿ï¿½"AU_PHOTO"';
 
 comment on column AU_MARK_PHOTO.STATUS is
-'[170]¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'[170]ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_MARK_VIDEO                                         */
@@ -4352,13 +4352,13 @@ comment on table AU_MARK_VIDEO is
 '[170]';
 
 comment on column AU_MARK_VIDEO.MARK_ID is
-'Íâ¼ü,ÒýÓÃ"AU_MARK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_MARK"';
 
 comment on column AU_MARK_VIDEO.VIDEO_ID is
-'²Î¿¼"AU_VIDEO"';
+'ï¿½Î¿ï¿½"AU_VIDEO"';
 
 comment on column AU_MARK_VIDEO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_PHOTO                                              */
@@ -4394,70 +4394,70 @@ create table AU_PHOTO  (
 );
 
 comment on table AU_PHOTO is
-'¼ÇÂ¼À´×ÔÍâÒµµÄPOIÕÕÆ¬,±ê¼ÇÕÕÆ¬,µÀÂ·ÃûÕÕÆ¬µÈ³É¹û';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POIï¿½ï¿½Æ¬,ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Æ¬ï¿½È³É¹ï¿½';
 
 comment on column AU_PHOTO.PHOTO_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.CLASS is
 '[170]';
 
 comment on column AU_PHOTO.NAME is
-'[170]ÎÄ¼þÃû(º¬À©Õ¹Ãû)';
+'[170]ï¿½Ä¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½)';
 
 comment on column AU_PHOTO.MESH_ID_5K is
-'¼ÇÂ¼ÕÕÆ¬ËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column AU_PHOTO.CAMERA_ID is
-'Ä¬ÈÏÎª0,Ë³Ê±Õë±àºÅ';
+'Ä¬ï¿½ï¿½Îª0,Ë³Ê±ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.ANGLE is
-'ÓëÕý±±µÄ¼Ð½Ç,-180~180¶È';
+'ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,-180~180ï¿½ï¿½';
 
 comment on column AU_PHOTO.DAY_TIME is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_PHOTO.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_PHOTO.IMP_DATE is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_PHOTO.IMP_WORKER is
-'[170]²Î¿¼"BI_PERSON"';
+'[170]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_PHOTO.FORMAT is
-'ÈçJPG,BMP,PNGµÈ';
+'ï¿½ï¿½JPG,BMP,PNGï¿½ï¿½';
 
 comment on column AU_PHOTO.STORE_SPACE is
-'ÕÕÆ¬µÄ´æ´¢ÈÝÁ¿';
+'ï¿½ï¿½Æ¬ï¿½Ä´æ´¢ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO."SIZE" is
-'ÕÕÆ¬³¤¿íµÄÏñËØ¸öÊý,Èç1024*768';
+'ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½,ï¿½ï¿½1024*768';
 
 comment on column AU_PHOTO.DEPTH is
-'ÕÕÆ¬¾ßÓÐµÄÑÕÉ«¸öÊý,Èç8Î»,24Î»µÈ';
+'ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½É«ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½8Î»,24Î»ï¿½ï¿½';
 
 comment on column AU_PHOTO.DPI is
-'Ã¿Ó¢´çµÄÏñËØ¸öÊý';
+'Ã¿Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.TASK_ID is
-'¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_PHOTO.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PHOTO.URL_FILE is
-'ÕÕÆ¬ÎÄ¼þ´æ´¢µÄ±¾µØÏà¶ÔjÂ·¾¶Ãû,Èç\Data\Photo\';
+'ï¿½ï¿½Æ¬ï¿½Ä¼ï¿½ï¿½æ´¢ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½jÂ·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Photo\';
 
 /*==============================================================*/
 /* Table: AU_PT_COMPANY                                         */
@@ -4489,22 +4489,22 @@ create table AU_PT_COMPANY  (
 );
 
 comment on table AU_PT_COMPANY is
-'[171A]¹«½»¹«Ë¾ÊÇÖ¸¸ºÔð¹«½»ÏßÂ·ºÍÏµÍ³ÔËÓªµÄ¹«Ë¾,¼´¹ÜÀí¹«½»ÏµÍ³µÄÉÏ¼¶µ¥Î»';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ð¹«½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ÏµÍ³ï¿½ï¿½Óªï¿½Ä¹ï¿½Ë¾,ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½Î»';
 
 comment on column AU_PT_COMPANY.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_COMPANY.COMPANY_ID is
-'²Î¿¼"PT_COMPANY"';
+'ï¿½Î¿ï¿½"PT_COMPANY"';
 
 comment on column AU_PT_COMPANY.CITY_CODE is
-'´æ´¢³¤¶ÈÎª4Î»';
+'ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½Îª4Î»';
 
 comment on column AU_PT_COMPANY.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_COMPANY.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_POI                                             */
@@ -4559,73 +4559,73 @@ create table AU_PT_POI  (
 );
 
 comment on table AU_PT_POI is
-'[171A]¹«½»POIÓÉÖ÷µã(Stop POI)ºÍ³öÈë¿Ú(Access POI)Á½²¿·Ö×é³É,Ã¿¸öÖ÷µã¶ÔÓ¦Ò»µ½¶à¸ö³öÈë¿Ú,³öÈë¿ÚÊÇÖ÷µãµÄ×ÓPOI.';
+'[171A]ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Stop POI)ï¿½Í³ï¿½ï¿½ï¿½ï¿½(Access POI)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POI.';
 
 comment on column AU_PT_POI.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_POI.POI_KIND is
-'²Î¿¼"IX_POI_CODE"';
+'ï¿½Î¿ï¿½"IX_POI_CODE"';
 
 comment on column AU_PT_POI.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column AU_PT_POI.SIDE is
-'¸ù¾ÝPOIµÄÏÔÊ¾×ø±ê¼ÆËãPOIÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ»ò×ó²à»òÓÒ²à(Ïà¶ÔÓÚLink·½Ïò)';
+'ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POIÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½Ï»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½)';
 
 comment on column AU_PT_POI.NAME_GROUPID is
-'[173sp2]²Î¿¼"RD_NAME"';
+'[173sp2]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column AU_PT_POI.PMESH_ID is
-'Ã¿¸ö×÷Òµ¼¾POIÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POIï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.ACCESS_CODE is
-'³öÈë¿ÚÃû³ÆÖÐµÄË³ÐòºÅ»ò±àºÅ,Èç:¡±°²¶¨ÃÅA ¿Ú¡±,±àºÅÊÇ¡± A¡±;¡±ÉÙÄê¹¬Õ¾£Á£²¿Ú¡±,±àºÅÊÇ¡± £Á£²¡±;¡±ÊÀ½çÖ®´°Õ¾£±ºÅ¿Ú¡±,±àºÅÊÇ¡± £±¡±.³öÈë¿ÚÃû³ÆÖÐÃ»ÓÐ±àºÅµÄÖµÎª¿Õ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Ë³ï¿½ï¿½Å»ï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A ï¿½Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ Aï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ê¹¬Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Å¿Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ ï¿½ï¿½ï¿½ï¿½.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ð±ï¿½Åµï¿½ÖµÎªï¿½ï¿½';
 
 comment on column AU_PT_POI.ACCESS_TYPE is
-'³öÈë,Èë¿Ú,³öÈë¿Ú';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.ACCESS_METH is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»ÖÖ·½Ê½ÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞ/ÓÐ,Èç:00000011 ±íÊ¾Ð±ÆÂºÍ½×ÌÝ;00000101 ±íÊ¾Ð±ÆÂºÍ·öÌÝ
-µÚ0bit:Ð±ÆÂ
-µÚ1bit:½×ÌÝ
-µÚ2bit:·öÌÝ
-µÚ3bit:Ö±ÌÝ
-µÚ4bit:ÆäËû
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾²»Ó¦ÓÃ';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000011 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ½ï¿½ï¿½ï¿½;00000101 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ·ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:Ð±ï¿½ï¿½
+ï¿½ï¿½1bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½2bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½3bit:Ö±ï¿½ï¿½
+ï¿½ï¿½4bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½Ó¦ï¿½ï¿½';
 
 comment on column AU_PT_POI.MESH_ID_5K is
-'¼ÇÂ¼¹«½»POIËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column AU_PT_POI.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.EDIT_FLAG is
-'ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column AU_PT_POI.POI_NUM is
-'¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_PT_POI.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_POI.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_POI.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 comment on column AU_PT_POI.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_PT_ETA_ACCESS                                      */
@@ -4656,25 +4656,25 @@ create table AU_PT_ETA_ACCESS  (
 );
 
 comment on table AU_PT_ETA_ACCESS is
-'[171A]ÃèÊöÏÖÊµÊÀ½ç¹«¹²³öÈë¿ÚËù¾ß±¸µÄ¹¦ÄÜ¼°ÆäÖÜ±ßµÄ¸½Êô·þÎñÉèÊ©µÈ';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß±ï¿½ï¿½Ä¹ï¿½ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½Ü±ßµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©ï¿½ï¿½';
 
 comment on column AU_PT_ETA_ACCESS.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_POI"';
 
 comment on column AU_PT_ETA_ACCESS.POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_ETA_ACCESS.OPEN_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_ACCESS.MANUAL_TICKET_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_ACCESS.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_ETA_ACCESS.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_LINE                                            */
@@ -4704,31 +4704,31 @@ create table AU_PT_LINE  (
 );
 
 comment on table AU_PT_LINE is
-'[171A]¼ÇÂ¼Ä³µØÇøµÄ¹«½»ÏßÂ·ÐÅÏ¢,±ÈÈç 656Â·,ÌØ4Â·µÈ';
+'[171A]ï¿½ï¿½Â¼Ä³ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Ï¢,ï¿½ï¿½ï¿½ï¿½ 656Â·,ï¿½ï¿½4Â·ï¿½ï¿½';
 
 comment on column AU_PT_LINE.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_LINE.PID is
-'²Î¿¼"PT_LINE"';
+'ï¿½Î¿ï¿½"PT_LINE"';
 
 comment on column AU_PT_LINE.SYSTEM_ID is
-'²Î¿¼"PT_SYSTEM"';
+'ï¿½Î¿ï¿½"PT_SYSTEM"';
 
 comment on column AU_PT_LINE.CITY_CODE is
-'ÓëÐÐÕþÇø»®´úÂëÃ»ÓÐÖ±½Ó¹ØÏµ,ÓÉÉú²ú²¿ÃÅÎ¬»¤';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ö±ï¿½Ó¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¬ï¿½ï¿½';
 
 comment on column AU_PT_LINE.COLOR is
-'´æ´¢16½øÖÆµÄRGBÖµ';
+'ï¿½æ´¢16ï¿½ï¿½ï¿½Æµï¿½RGBÖµ';
 
 comment on column AU_PT_LINE.LOG is
 '[173sp1]';
 
 comment on column AU_PT_LINE.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_LINE.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_ETA_LINE                                        */
@@ -4769,22 +4769,22 @@ create table AU_PT_ETA_LINE  (
 );
 
 comment on table AU_PT_ETA_LINE is
-'[171A]ÃèÊöÏÖÊµÊÀ½ç¹«¹²½»Í¨ÏßÂ·ÖÐ¾ß±¸µÄ¹¦ÄÜ,ÈçÔÊÐí×ÔÐÐ³µ,ÐÐÀî¼Ü,ÓÃ²Í·þÎñµÈ';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Â·ï¿½Ð¾ß±ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ã²Í·ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_LINE.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_LINE"';
 
 comment on column AU_PT_ETA_LINE.PID is
-'²Î¿¼"PT_LINE"';
+'ï¿½Î¿ï¿½"PT_LINE"';
 
 comment on column AU_PT_ETA_LINE.BIKE_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_LINE.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_ETA_LINE.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_ETA_STOP                                        */
@@ -4844,40 +4844,40 @@ create table AU_PT_ETA_STOP  (
 );
 
 comment on table AU_PT_ETA_STOP is
-'[171A]ÃèÊöÏÖÊµÊÀ½ç¹«¹²½»Í¨Õ¾µã¾ß±¸µÄ¹¦ÄÜ¼°ÆäÖÜ±ßµÄ¸½Êô·þÎñÉèÊ©µÈ';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ß±ï¿½ï¿½Ä¹ï¿½ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½Ü±ßµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_POI"';
 
 comment on column AU_PT_ETA_STOP.POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_ETA_STOP.PRIVATE_PARK is
-'ÊÕ·Ñ»òÃâ·Ñ';
+'ï¿½Õ·Ñ»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.PRIVATE_PARK_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.BIKE_PARK is
-'ÊÇ·ñÓÐÈË¿´ÊØ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.BIKE_PARK_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.MANUAL_TICKET_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.OPEN_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_ETA_STOP.FARE_AREA is
-'¹Ù·½ÏßÂ·Í¼µÄÖµ';
+'ï¿½Ù·ï¿½ï¿½ï¿½Â·Í¼ï¿½ï¿½Öµ';
 
 comment on column AU_PT_ETA_STOP.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_ETA_STOP.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_LINE_NAME                                       */
@@ -4907,31 +4907,31 @@ comment on table AU_PT_LINE_NAME is
 '[171A]';
 
 comment on column AU_PT_LINE_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_LINE"';
 
 comment on column AU_PT_LINE_NAME.NAME_ID is
-'²Î¿¼"PT_LINE_NAME"';
+'ï¿½Î¿ï¿½"PT_LINE_NAME"';
 
 comment on column AU_PT_LINE_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_LINE_NAME.PID is
-'²Î¿¼"PT_LINE"';
+'ï¿½Î¿ï¿½"PT_LINE"';
 
 comment on column AU_PT_LINE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_LINE_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_LINE_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column AU_PT_LINE_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_LINE_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_PLATFORM                                        */
@@ -4973,37 +4973,37 @@ create table AU_PT_PLATFORM  (
 );
 
 comment on table AU_PT_PLATFORM is
-'[171A]Õ¾Ì¨,Ò²½ÐÔÂÌ¨,¼´¹«¹²½»Í¨³µÁ¾Í£¿¿Ê±,¹©³Ë¿Íºò³µºÍÉÏÏÂ³µµÄÉèÊ©';
+'[171A]Õ¾Ì¨,Ò²ï¿½ï¿½ï¿½ï¿½Ì¨,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ë¿Íºò³µºï¿½ï¿½ï¿½ï¿½Â³ï¿½ï¿½ï¿½ï¿½ï¿½Ê©';
 
 comment on column AU_PT_PLATFORM.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM.PID is
-'²Î¿¼"PT_PLATFORM"';
+'ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_PLATFORM.POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_PLATFORM.P_LEVEL is
-'ÖµÓò:-6~4;0±íÊ¾µØÃæ';
+'Öµï¿½ï¿½:-6~4;0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM.TRANSIT_FLAG is
-'¼ÇÂ¼¸ÃÕ¾Ì¨ÊÇ·ñÄÜºÍÆäËûÕ¾Ì¨»¥Í¨,ÈôÄÜºÍÆäËûÕ¾Ì¨»¥Í¨,±êÊ¶Îª"¿É»»³Ë";Èô²»ÄÜÍ¨ÍùÈÎºÎÆäËûÕ¾Ì¨,±êÊ¶Îª"²»¿É»»³Ë"';
+'ï¿½ï¿½Â¼ï¿½ï¿½Õ¾Ì¨ï¿½Ç·ï¿½ï¿½Üºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Í¨,ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Í¨,ï¿½ï¿½Ê¶Îª"ï¿½É»ï¿½ï¿½ï¿½";ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨,ï¿½ï¿½Ê¶Îª"ï¿½ï¿½ï¿½É»ï¿½ï¿½ï¿½"';
 
 comment on column AU_PT_PLATFORM.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_PLATFORM.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_PLATFORM.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 comment on column AU_PT_PLATFORM.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_PT_PLATFORM_ACCESS                                 */
@@ -5028,25 +5028,25 @@ create table AU_PT_PLATFORM_ACCESS  (
 );
 
 comment on table AU_PT_PLATFORM_ACCESS is
-'[171A]¼ÇÂ¼Õ¾Ì¨ÓëÄÜµ½´ï¸ÃÕ¾Ì¨µÄÈë¿ÚµãÖ®¼äµÄ¶ÔÓ¦¹ØÏµ,Ò»¸öÕ¾Ì¨¿ÉÒÔÓÐ¶à¸öÈë¿Úµã';
+'[171A]ï¿½ï¿½Â¼Õ¾Ì¨ï¿½ï¿½ï¿½Üµï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½ï¿½Úµï¿½Ö®ï¿½ï¿½Ä¶ï¿½Ó¦ï¿½ï¿½Ïµ,Ò»ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Úµï¿½';
 
 comment on column AU_PT_PLATFORM_ACCESS.AUDATA_ID is
-'[173sp1]Íâ¼ü,ÒýÓÃ"AU_PT_PLATFORM"';
+'[173sp1]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_PLATFORM"';
 
 comment on column AU_PT_PLATFORM_ACCESS.RELATE_ID is
-'²Î¿¼"PT_PLATFORM_ACCESS"';
+'ï¿½Î¿ï¿½"PT_PLATFORM_ACCESS"';
 
 comment on column AU_PT_PLATFORM_ACCESS.PLATFORM_ID is
-'[173sp1]²Î¿¼"PT_PLATFORM"';
+'[173sp1]ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_PLATFORM_ACCESS.ACCESS_ID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_PLATFORM_ACCESS.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_PLATFORM_ACCESS.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_PLATFORM_NAME                                   */
@@ -5076,31 +5076,31 @@ comment on table AU_PT_PLATFORM_NAME is
 '[171A]';
 
 comment on column AU_PT_PLATFORM_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"PT_PLATFORM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_PLATFORM_NAME.NAME_ID is
-'²Î¿¼"PT_PLATFORM_NAME"';
+'ï¿½Î¿ï¿½"PT_PLATFORM_NAME"';
 
 comment on column AU_PT_PLATFORM_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM_NAME.PID is
-'²Î¿¼"PT_PLATFORM"';
+'ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_PLATFORM_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_PLATFORM_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column AU_PT_PLATFORM_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_PLATFORM_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_POI_PARENT                                      */
@@ -5119,22 +5119,22 @@ create table AU_PT_POI_PARENT  (
 );
 
 comment on table AU_PT_POI_PARENT is
-'[171A]¼ÇÂ¼Õ¾µãÓë³öÈë¿ÚÖ®¼äµÄ¹ØÏµÐÅÏ¢';
+'[171A]ï¿½ï¿½Â¼Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¹ï¿½Ïµï¿½ï¿½Ï¢';
 
 comment on column AU_PT_POI_PARENT.AUDATA_ID is
-'[173sp1]Ö÷¼ü';
+'[173sp1]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI_PARENT.GROUP_ID is
-'²Î¿¼"PT_POI_PARENT"';
+'ï¿½Î¿ï¿½"PT_POI_PARENT"';
 
 comment on column AU_PT_POI_PARENT.PARENT_POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_POI_PARENT.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_POI_PARENT.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_POI_CHILDREN                                    */
@@ -5156,22 +5156,22 @@ create table AU_PT_POI_CHILDREN  (
 );
 
 comment on table AU_PT_POI_CHILDREN is
-'[171A]¹«½»POIµÄ¸¸×Ó¹ØÏµ,¼´Õ¾µãÓë³öÈë¿ÚÖ®¼äµÄ¹ØÏµÐÅÏ¢';
+'[171A]ï¿½ï¿½ï¿½ï¿½POIï¿½Ä¸ï¿½ï¿½Ó¹ï¿½Ïµ,ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¹ï¿½Ïµï¿½ï¿½Ï¢';
 
 comment on column AU_PT_POI_CHILDREN.AUDATA_ID is
-'[173sp1]Íâ¼ü,ÒýÓÃ"AU_PT_POI_PARENT"';
+'[173sp1]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_POI_PARENT"';
 
 comment on column AU_PT_POI_CHILDREN.GROUP_ID is
-'²Î¿¼"PT_POI_PARENT"';
+'ï¿½Î¿ï¿½"PT_POI_PARENT"';
 
 comment on column AU_PT_POI_CHILDREN.CHILD_POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_POI_CHILDREN.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_POI_CHILDREN.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_POI_NAME                                        */
@@ -5199,34 +5199,34 @@ create table AU_PT_POI_NAME  (
 );
 
 comment on table AU_PT_POI_NAME is
-'[171A]ÓëIX_POI_NAMEÔ­ÔòÏàÍ¬';
+'[171A]ï¿½ï¿½IX_POI_NAMEÔ­ï¿½ï¿½ï¿½ï¿½Í¬';
 
 comment on column AU_PT_POI_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_POI"';
 
 comment on column AU_PT_POI_NAME.NAME_ID is
-'²Î¿¼"PT_POI_NAME"';
+'ï¿½Î¿ï¿½"PT_POI_NAME"';
 
 comment on column AU_PT_POI_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI_NAME.POI_PID is
-'²Î¿¼"PT_POI"';
+'ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_POI_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_POI_NAME.NIDB_PID is
-'¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column AU_PT_POI_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_POI_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_STRAND                                          */
@@ -5239,7 +5239,7 @@ create table AU_PT_STRAND  (
    LINE_ID              NUMBER(10)                     default 0 not null,
    CITY_CODE            NUMBER(6)                      default 0 not null,
    UP_DOWN              VARCHAR2(16)                   
-       check (UP_DOWN is null or (UP_DOWN in ('£Ó','£Ø','£È','£Î£È','£×£È','£Ã£È','£Ã£Î£È','£Ã£×£È'))),
+       check (UP_DOWN is null or (UP_DOWN in ('ï¿½ï¿½','ï¿½ï¿½','ï¿½ï¿½','ï¿½Î£ï¿½','ï¿½×£ï¿½','ï¿½Ã£ï¿½','ï¿½Ã£Î£ï¿½','ï¿½Ã£×£ï¿½'))),
    DISTANCE             VARCHAR2(10),
    TICKET_SYS           NUMBER(2)                      default 0 not null
        check (TICKET_SYS in (0,1,2,9)),
@@ -5273,44 +5273,44 @@ create table AU_PT_STRAND  (
 );
 
 comment on table AU_PT_STRAND is
-'[171A]Strand,¼´°à´Î±í,ÓÃÀ´¼ÇÂ¼Ã¿ÌõÏßÂ·¸÷¸öÐÐ³µ·½ÏòÔÚ²»Í¬µÄÊ±¼äµã·¢³öµÄ°à´Î,¼°¸Ã°à´ÎµÄ¸÷ÀàÏêÏ¸ÐÅÏ¢,Èç¾­¹ýÏßÂ·,Ê×Ä©³µÊ±¼ä,·¢³µ¼ä¸ôµÈ';
+'[171A]Strand,ï¿½ï¿½ï¿½ï¿½Î±ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½Í¬ï¿½ï¿½Ê±ï¿½ï¿½ã·¢ï¿½ï¿½ï¿½Ä°ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ÎµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½Ï¢,ï¿½ç¾­ï¿½ï¿½ï¿½ï¿½Â·,ï¿½ï¿½Ä©ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND.LINE_AUDATA_ID is
-'[173sp1]²Î¿¼"AU_PT_LINE"';
+'[173sp1]ï¿½Î¿ï¿½"AU_PT_LINE"';
 
 comment on column AU_PT_STRAND.PID is
-'²Î¿¼"PT_STRAND"';
+'ï¿½Î¿ï¿½"PT_STRAND"';
 
 comment on column AU_PT_STRAND.LINE_ID is
-'²Î¿¼"PT_LINE"';
+'ï¿½Î¿ï¿½"PT_LINE"';
 
 comment on column AU_PT_STRAND.UP_DOWN is
-'±íÊ¾ÉÏÐÐ,ÏÂÐÐ,»·ÐÐµÈ,´æ´¢ÎªÈ«½Ç×Ö·û';
+'ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ðµï¿½,ï¿½æ´¢ÎªÈ«ï¿½ï¿½ï¿½Ö·ï¿½';
 
 comment on column AU_PT_STRAND.GEOMETRY is
-'(1)Strand ÐÐ³µ¹ì¼£,¼´¼¸ºÎ×ø±êÐòÁÐ,ÓëÍ¼ÀªÏß²»×ö´ò¶Ï,×ø±êÐòÁÐ¿É×ÔÏà½»
-(2)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'(1)Strand ï¿½Ð³ï¿½ï¿½ì¼£,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ß²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½à½»
+(2)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND.LOG is
 '[173sp1]';
 
 comment on column AU_PT_STRAND.IMP_DATE is
-'ÍâÒµPOIµ¼ÈëÊ±,ÓÉDMS¸³Öµ,¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½DMSï¿½ï¿½Öµ,ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_PT_STRAND.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_PT_STRAND.GEO_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_STRAND.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_STRAND.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_STRAND_NAME                                     */
@@ -5342,34 +5342,34 @@ comment on table AU_PT_STRAND_NAME is
 '[171A]';
 
 comment on column AU_PT_STRAND_NAME.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_STRAND" ';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_STRAND" ';
 
 comment on column AU_PT_STRAND_NAME.NAME_ID is
-'²Î¿¼"PT_STRAND_NAME"';
+'ï¿½Î¿ï¿½"PT_STRAND_NAME"';
 
 comment on column AU_PT_STRAND_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND_NAME.PID is
-'²Î¿¼"PT_STRAND"';
+'ï¿½Î¿ï¿½"PT_STRAND"';
 
 comment on column AU_PT_STRAND_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND_NAME.NAME_CLASS is
 '[170][172U]';
 
 comment on column AU_PT_STRAND_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column AU_PT_STRAND_NAME.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_STRAND_NAME.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_STRAND_PLATFORM                                 */
@@ -5402,26 +5402,26 @@ comment on table AU_PT_STRAND_PLATFORM is
 '[171A]';
 
 comment on column AU_PT_STRAND_PLATFORM.AUDATA_ID is
-'Íâ¼ü,ÒýÓÃ"AU_PT_STRAND" ';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_STRAND" ';
 
 comment on column AU_PT_STRAND_PLATFORM.STRAND_PID is
-'²Î¿¼"PT_STRAND"';
+'ï¿½Î¿ï¿½"PT_STRAND"';
 
 comment on column AU_PT_STRAND_PLATFORM.PLATFORM_PID is
-'²Î¿¼"PT_PLATFORM"';
+'ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_STRAND_PLATFORM.SEQ_NUM is
-'(1)¼ÇÂ¼¹«½»ÏßÂ·Ä³ÌõStrandÑØÏßµÄÕ¾Ì¨ÐÅÏ¢
-(2)Ä¿Ç°ËùÓÐÏßÂ·µÄÕ¾Ì¨Í³Ò»´Ó10000¿ªÊ¼Ã¿´ÎµÝÔö10000±àºÅ,¼´10000,20000,30000µÈ';
+'(1)ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ä³ï¿½ï¿½Strandï¿½ï¿½ï¿½ßµï¿½Õ¾Ì¨ï¿½ï¿½Ï¢
+(2)Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Õ¾Ì¨Í³Ò»ï¿½ï¿½10000ï¿½ï¿½Ê¼Ã¿ï¿½Îµï¿½ï¿½ï¿½10000ï¿½ï¿½ï¿½,ï¿½ï¿½10000,20000,30000ï¿½ï¿½';
 
 comment on column AU_PT_STRAND_PLATFORM.INTERVAL is
-'µ¥Î»:·ÖÖÓ';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_STRAND_PLATFORM.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_STRAND_PLATFORM.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_SYSTEM                                          */
@@ -5455,25 +5455,25 @@ create table AU_PT_SYSTEM  (
 );
 
 comment on table AU_PT_SYSTEM is
-'[171A]¹«½»ÏµÍ³ÊÇÒ»¸ö¹«½»¹«Ë¾ÏÂÊô¸ºÔð¹ÜÀí,ÔËÓª¾ßÌå¹«½»ÏßÂ·µÄ·ÖÖ§µ¥Î».Í¨³£ÊÇÖ¸Á¥ÊôÓÚÍ¬Ò»¸öÏµÍ³µÄ¹«½»ÏßÂ·µÄ¹ÜÀíµ¥Î»,¼´Ö±½Ó¹ÜÀí,ÔËÓª°ÍÊ¿/µØÌúµÈÏßÂ·µÄµ¥Î»';
+'[171A]ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Óªï¿½ï¿½ï¿½å¹«ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ä·ï¿½Ö§ï¿½ï¿½Î».Í¨ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ÏµÍ³ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ä¹ï¿½ï¿½?Î»,ï¿½ï¿½Ö±ï¿½Ó¹ï¿½ï¿½ï¿½,ï¿½ï¿½Óªï¿½ï¿½Ê¿/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Äµï¿½Î»';
 
 comment on column AU_PT_SYSTEM.AUDATA_ID is
-'[173sp1]Íâ¼ü,ÒýÓÃ"AU_PT_COMPANY"';
+'[173sp1]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_PT_COMPANY"';
 
 comment on column AU_PT_SYSTEM.SYSTEM_ID is
-'²Î¿¼"PT_SYSTEM"';
+'ï¿½Î¿ï¿½"PT_SYSTEM"';
 
 comment on column AU_PT_SYSTEM.COMPANY_ID is
-'²Î¿¼"PT_COMPANY"';
+'ï¿½Î¿ï¿½"PT_COMPANY"';
 
 comment on column AU_PT_SYSTEM.CITY_CODE is
-'´æ´¢³¤¶ÈÎª4Î»';
+'ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½Îª4Î»';
 
 comment on column AU_PT_SYSTEM.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_SYSTEM.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_PT_TRANSFER                                        */
@@ -5507,44 +5507,44 @@ create table AU_PT_TRANSFER  (
 );
 
 comment on table AU_PT_TRANSFER is
-'[171A]NaviMapÖÆ×÷Ê±,Èç¹ûÏßÂ·Í¼ÖÐµÄ»»³ËÕ¾ÖÆ×÷³ÉÁËÁ½¸ö»ò¶à¸öÖ÷µã(¼´Õ¾µã),ÐèÒª½«¶ÔÓ¦µÄÖ÷µãÖ®¼äÁ½Á½ÖÆ×÷»»³ËÀàÐÍÎª"¿çÕ¾»»³Ë"µÄ¹ØÏµ.
-Èç¹ûÏßÂ·Í¼ÖÐµÄ»»³ËÕ¾ÖÆ×÷³ÉÁËÒ»¸öÖ÷µã,ÐèÒªÔÚ´ËÖ÷µãÖÐËùÓÐÄÜ¹»»¥Í¨µÄÕ¾Ì¨Ö®¼äÁ½Á½ÖÆ×÷»»³ËÀàÐÍÎª"Õ¾ÄÚ»»³Ë"µÄ¹ØÏµ.
-¼´:Èç¹ûÊÇÕ¾ÄÚ»»³Ë,»»³ËµãÓ¦¸ÃÊÇÕ¾Ì¨±àºÅ;Èç¹ûÊÇÕ¾¼ä»»³Ë,»»³ËµãÓ¦¸ÃÊÇÖ÷µã(¼´Õ¾µã)';
+'[171A]NaviMapï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½Â·Í¼ï¿½ÐµÄ»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Õ¾ï¿½ï¿½),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½"ï¿½Ä¹ï¿½Ïµ.
+ï¿½ï¿½ï¿½ï¿½ï¿½Â·Í¼ï¿½ÐµÄ»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Òªï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü¹ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Õ¾Ì¨Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª"Õ¾ï¿½Ú»ï¿½ï¿½ï¿½"ï¿½Ä¹ï¿½Ïµ.
+ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½Ú»ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ëµï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ä»»ï¿½ï¿½,ï¿½ï¿½ï¿½Ëµï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Õ¾ï¿½ï¿½)';
 
 comment on column AU_PT_TRANSFER.AUDATA_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_PT_TRANSFER.TRANSFER_ID is
-'²Î¿¼"PT_TRANSFER"';
+'ï¿½Î¿ï¿½"PT_TRANSFER"';
 
 comment on column AU_PT_TRANSFER.TRANSFER_TYPE is
-'Çø·Ö¿çÕ¾»»³ËºÍÕ¾ÄÚ»»³ËÁ½ÖÖÀàÐÍ:
-(1)¿çÕ¾»»³Ë,±í´ï²»Í¬¹«½»ÏßÂ·ÔÚÁ½¸öÏàÁÚÕ¾µãÖ®¼äµÄ»»³Ë;´ËÊ±,»»³ËµãÒ»ºÍ»»³Ëµã¶þ·Ö±ð±íÊ¾Õ¾µã
-(2)Õ¾ÄÚ»»³Ë,±í´ï²»Í¬¹«½»ÏßÂ·ÔÚÍ¬Ò»¸öÕ¾µãÄÚ²¿µÄ»»³Ë,´ËÊ±,»»³ËµãÒ»ºÍ»»³Ëµã¶þ·Ö±ð±íÊ¾Õ¾Ì¨';
+'ï¿½ï¿½Ö¿ï¿½Õ¾ï¿½ï¿½ï¿½Ëºï¿½Õ¾ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
+(1)ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï²»Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½Ö®ï¿½ï¿½Ä»ï¿½ï¿½ï¿½;ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ëµï¿½Ò»ï¿½Í»ï¿½ï¿½Ëµï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê¾Õ¾ï¿½ï¿½
+(2)Õ¾ï¿½Ú»ï¿½ï¿½ï¿½,ï¿½ï¿½ï²»Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Í¬Ò»ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ú²ï¿½ï¿½Ä»ï¿½ï¿½ï¿½,ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ëµï¿½Ò»ï¿½Í»ï¿½ï¿½Ëµï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê¾Õ¾Ì¨';
 
 comment on column AU_PT_TRANSFER.POI_FIR is
-'[173sp1]²Î¿¼"PT_POI"';
+'[173sp1]ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_TRANSFER.POI_SEC is
-'[173sp1]²Î¿¼"PT_POI"';
+'[173sp1]ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column AU_PT_TRANSFER.PLATFORM_FIR is
-'[173sp1]²Î¿¼"PT_PLATFORM"';
+'[173sp1]ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_TRANSFER.PLATFORM_SEC is
-'[173sp1]²Î¿¼"PT_PLATFORM"';
+'[173sp1]ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column AU_PT_TRANSFER.TRANSFER_TIME is
-'ÒÔ·ÖÖÓÎªµ¥Î»,¼ÇÂ¼³Ë¿Í»»³ËÊ±²½ÐÐÐèÒªµÄÊ±¼ä';
+'ï¿½Ô·ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»,ï¿½ï¿½Â¼ï¿½Ë¿Í»ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ê±ï¿½ï¿½';
 
 comment on column AU_PT_TRANSFER.EXTERNAL_FLAG is
-'Ã¿Ò»×é¿çÕ¾»»³Ë¹ØÏµ,¶¼ÐèÒªÖÆ×÷"Íâ²¿±êÊ¶"ÊôÐÔ,ÓÃÀ´ÃèÊö³Ë¿Í»»³ËÊ±ÊÇ·ñÐèÒª×ßµ½Õ¾µãÍâ²¿.µ±Á½¸öÖ÷µãÖ®¼äÓÐ×¨ÓÃ»»³ËÍ¨µÀÊ±,"Íâ²¿±êÊ¶"ÖÆ×÷Îª"·ñ";ÈôÃ»ÓÐ×¨ÓÃÍ¨µÀ,³Ë¿ÍÐèÒª×ßµ½Õ¾µãÍâÃæ»»³Ë,"Íâ²¿±êÊ¶"ÖÆ×÷Îª"ÊÇ".';
+'Ã¿Ò»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿Í»ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½ßµï¿½Õ¾ï¿½ï¿½ï¿½â²¿.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½×¨ï¿½Ã»ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±,"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½";ï¿½ï¿½Ã»ï¿½ï¿½×¨ï¿½ï¿½Í¨ï¿½ï¿½,ï¿½Ë¿ï¿½ï¿½ï¿½Òªï¿½ßµï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½æ»»ï¿½ï¿½,"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½".';
 
 comment on column AU_PT_TRANSFER.ATT_TASK_ID is
-'DMSµ¼³öÄÚÒµ×÷ÒµÊý¾ÝÊ±¸³Öµ(¸ù¾ÝÍâÒµLOG)';
+'DMSï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Òµï¿½ï¿½ï¿½Ê±ï¿½ï¿½Öµ(ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLOG)';
 
 comment on column AU_PT_TRANSFER.FIELD_TASK_ID is
-'ÍâÒµPOIµ¼ÈëDMSÊ±¸³Öµ ';
+'ï¿½ï¿½ÒµPOIï¿½ï¿½ï¿½ï¿½DMSÊ±ï¿½ï¿½Öµ ';
 
 /*==============================================================*/
 /* Table: AU_RECEIVE                                            */
@@ -5562,13 +5562,13 @@ create table AU_RECEIVE  (
 );
 
 comment on column AU_RECEIVE.ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_RECEIVE.TITLE is
-'¼´»Ø¸´Ö÷Ìâ';
+'ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_RECEIVE.DATA_ID is
-'ÒýÓÃ"AU_SPECIALCASE"»ò"TB_ABSTRACT_INFO"»ò"COMMUNICATION"';
+'ï¿½ï¿½ï¿½ï¿½"AU_SPECIALCASE"ï¿½ï¿½"TB_ABSTRACT_INFO"ï¿½ï¿½"COMMUNICATION"';
 
 /*==============================================================*/
 /* Table: AU_SERIESPHOTO                                        */
@@ -5598,40 +5598,40 @@ create table AU_SERIESPHOTO  (
 );
 
 comment on column AU_SERIESPHOTO.PHOTO_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.PHOTO_GROUPID is
-'[170]²ÉÓÃ"PHOTO_ID"×÷Îª×éºÅ';
+'[170]ï¿½ï¿½ï¿½ï¿½"PHOTO_ID"ï¿½ï¿½Îªï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.ANGLE is
-'ÓëÕý±±µÄ¼Ð½Ç,-180~180¶È';
+'ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,-180~180ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.DAY_TIME is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_SERIESPHOTO.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_SERIESPHOTO.TASK_ID is
-'¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SERIESPHOTO.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\SeriesPhoto\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\SeriesPhoto\';
 
 comment on column AU_SERIESPHOTO.FILE_NAME is
-'[170]ÎÄ¼þÃû(º¬À©Õ¹Ãû)';
+'[170]ï¿½Ä¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½)';
 
 comment on column AU_SERIESPHOTO.FILE_TYPE is
 '[170]';
@@ -5643,13 +5643,13 @@ comment on column AU_SERIESPHOTO.FORMAT is
 '[170]WAV,ADP';
 
 comment on column AU_SERIESPHOTO.IMP_WORKER is
-'[170]²Î¿¼"BI_PERSON"';
+'[170]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_SERIESPHOTO.IMP_VERSION is
 '[170]';
 
 comment on column AU_SERIESPHOTO.IMP_DATE is
-'[170]¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'[170]ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: AU_SPECIALCASE                                        */
@@ -5670,28 +5670,28 @@ create table AU_SPECIALCASE  (
 );
 
 comment on column AU_SPECIALCASE.SPECIALCASE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SPECIALCASE.GEOMETRY is
-'ÌØÀý×÷ÓÃµÄµØÀí·¶Î§»òµãÎ»';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½?Î§ï¿½ï¿½ï¿½Î»';
 
 comment on column AU_SPECIALCASE.STATUS is
-'ÊÇ·ñÓÐÐ§';
+'ï¿½Ç·ï¿½ï¿½ï¿½Ð§';
 
 comment on column AU_SPECIALCASE.TYPE is
-'À´×ÔÏÖÓÐÉú²ú°¸Àý¼¯ºÍÌØÊâ´¦Àí¼¯';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â´¦ï¿½?';
 
 comment on column AU_SPECIALCASE.RANK is
-'Ðè¸ù¾ÝÒµÎñ½øÒ»²½¶¨Òå';
+'ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SPECIALCASE.DAY_TIME is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_SPECIALCASE.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_SPECIALCASE.DESCRIPT is
-'ÌØÀýµÄËµÃ÷ÎÄ×Ö(ÓÉÏµÍ³ÌîÐ´Ê±¼ä,ÈËÔ±ºÍÈÎÎñºÅÂë)';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ÏµÍ³ï¿½ï¿½Ð´Ê±ï¿½ï¿½,ï¿½ï¿½Ô±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)';
 
 /*==============================================================*/
 /* Table: AU_SPECIALCASE_IMAGE                                  */
@@ -5706,16 +5706,16 @@ create table AU_SPECIALCASE_IMAGE  (
 );
 
 comment on column AU_SPECIALCASE_IMAGE.SPECIALCASE_ID is
-'Íâ¼ü,ÒýÓÃ"AU_SPECIALCASE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_SPECIALCASE"';
 
 comment on column AU_SPECIALCASE_IMAGE.FILENAME is
-'¿ìÕÕÍ¼Æ¬µÄÎÄ¼þÃû³Æ(º¬ºó×ºÃû),Èç"256.bmp"';
+'ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½×ºï¿½ï¿½),ï¿½ï¿½"256.bmp"';
 
 comment on column AU_SPECIALCASE_IMAGE.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_SPECIALCASE_IMAGE.URL_FILE is
-'ÕÕÆ¬ÎÄ¼þ´æ´¢µÄ±¾µØÏà¶ÔÂ·¾¶Ãû,Èç\Data\Photo\';
+'ï¿½ï¿½Æ¬ï¿½Ä¼ï¿½ï¿½æ´¢ï¿½Ä±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Photo\';
 
 /*==============================================================*/
 /* Table: AU_TASK_INFO                                          */
@@ -5759,7 +5759,7 @@ create table AU_TOPOIMAGE  (
 );
 
 comment on column AU_TOPOIMAGE.IMAGE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: AU_VIDEO                                              */
@@ -5785,25 +5785,25 @@ create table AU_VIDEO  (
 );
 
 comment on column AU_VIDEO.VIDEO_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_VIDEO.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_VIDEO.ANGLE is
-'ÓëÕý±±µÄ¼Ð½Ç,-180~180¶È';
+'ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,-180~180ï¿½ï¿½';
 
 comment on column AU_VIDEO.WORKER is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_VIDEO.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_VIDEO.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\Video\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Video\';
 
 comment on column AU_VIDEO.FILE_NAME is
-'[170]ÎÄ¼þÃû(º¬À©Õ¹Ãû)';
+'[170]ï¿½Ä¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½)';
 
 comment on column AU_VIDEO.FILE_TYPE is
 '[170]';
@@ -5815,13 +5815,13 @@ comment on column AU_VIDEO.FORMAT is
 '[170]WAV,ADP';
 
 comment on column AU_VIDEO.IMP_WORKER is
-'[170]²Î¿¼"BI_PERSON"';
+'[170]ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column AU_VIDEO.IMP_VERSION is
 '[170]';
 
 comment on column AU_VIDEO.IMP_DATE is
-'[170]¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'[170]ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column AU_VIDEO.MESH_ID is
 '[170]';
@@ -5840,16 +5840,16 @@ create table AU_WHITEBOARD  (
 );
 
 comment on table AU_WHITEBOARD is
-'¼ÇÂ¼°×°åÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½×°ï¿½ï¿½ï¿½Ï¢';
 
 comment on column AU_WHITEBOARD.WHITEBOARD_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_WHITEBOARD.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_WHITEBOARD.STYLE is
-'ÊµÏß,ÐéÏß';
+'Êµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column AU_WHITEBOARD.COLOR is
 '[173sp1]';
@@ -5867,10 +5867,10 @@ create table AU_WHITEBOARD_PARAMETER  (
 );
 
 comment on table AU_WHITEBOARD_PARAMETER is
-'¼ÇÂ¼°×°å²ÎÊýÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½×°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column AU_WHITEBOARD_PARAMETER.WHITEBOARD_ID is
-'Íâ¼ü,ÒýÓÃ"AU_WHITEBOARD"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AU_WHITEBOARD"';
 
 /*==============================================================*/
 /* Table: BI_PERSON                                             */
@@ -5887,16 +5887,16 @@ create table BI_PERSON  (
 );
 
 comment on column BI_PERSON.PERSON_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column BI_PERSON.GENDER is
-'ÄÐ,Å®';
+'ï¿½ï¿½,Å®';
 
 comment on column BI_PERSON.DEPARTMENT is
-'ÈçÑÐ·¢²¿';
+'ï¿½ï¿½ï¿½Ð·ï¿½ï¿½ï¿½';
 
 comment on column BI_PERSON.WORK_GROUP is
-'ÈçÉè¼Æ×é';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: BI_ROLE                                               */
@@ -5910,10 +5910,10 @@ create table BI_ROLE  (
 );
 
 comment on column BI_ROLE.ROLE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column BI_ROLE.TYPE is
-'ÍâÒµ,ÄÚÒµ,Æ·ÖÊ¼ì²é,Æ·ÖÊ¼à²ìµÈ';
+'ï¿½ï¿½Òµ,ï¿½ï¿½Òµ,Æ·ï¿½Ê¼ï¿½ï¿½,Æ·ï¿½Ê¼ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: BI_PERSON_ROLE                                        */
@@ -5928,10 +5928,10 @@ create table BI_PERSON_ROLE  (
 );
 
 comment on column BI_PERSON_ROLE.PERSON_ID is
-'Íâ¼ü,ÒýÓÃ"BI_PERSON"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"BI_PERSON"';
 
 comment on column BI_PERSON_ROLE.ROLE_ID is
-'Íâ¼ü,ÒýÓÃ"BI_ROLE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"BI_ROLE"';
 
 /*==============================================================*/
 /* Table: BI_POWER                                              */
@@ -5945,10 +5945,10 @@ create table BI_POWER  (
 );
 
 comment on column BI_POWER.POWER_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column BI_POWER.TYPE is
-'ÒªËØÐÂÔö,ÐÞ¸Ä,É¾³ý,²éÑ¯,ä¯ÀÀµÈ';
+'Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Þ¸ï¿½,É¾ï¿½ï¿½,ï¿½ï¿½Ñ¯,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: BI_ROLE_POWER                                         */
@@ -5963,10 +5963,10 @@ create table BI_ROLE_POWER  (
 );
 
 comment on column BI_ROLE_POWER.ROLE_ID is
-'Íâ¼ü,ÒýÓÃ"BI_ROLE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"BI_ROLE"';
 
 comment on column BI_ROLE_POWER.POWER_ID is
-'Íâ¼ü,ÒýÓÃ"BI_POWER"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"BI_POWER"';
 
 /*==============================================================*/
 /* Table: BI_TASK                                               */
@@ -5994,61 +5994,61 @@ create table BI_TASK  (
 );
 
 comment on column BI_TASK.TASK_ID is
-'Ö÷¼ü,ÈÎÎñµÄÎ¨Ò»Ë³Ðò±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»Ë³ï¿½ï¿½ï¿½ï¿½';
 
 comment on column BI_TASK.MAN_ID is
-'¸ÃÈÎÎñµÄ×÷ÒµÔ±';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÔ±';
 
 comment on column BI_TASK.FOCUS_ITEM is
-'È«ÒªËØ,Ä³×÷ÒµÏîÄ¿µÈ';
+'È«Òªï¿½ï¿½,Ä³ï¿½ï¿½Òµï¿½ï¿½Ä¿ï¿½ï¿½';
 
 comment on column BI_TASK."RESOURCE" is
-'°üÀ¨³µÁ¾,Éè±¸,ÅäºÏÈËÔ±,×÷Òµ¹æ¸ñ±ä¸üµÄÃèÊö;ÒÔ¼°Ó°Ïñ,ÓïÒôÎÄ¼þ,Ê¾ÒâÍ¼,Ô¤´¦Àí¸å,ÍøÒ³µÈ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½è±¸,ï¿½ï¿½ï¿½ï¿½ï¿½Ô±,ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;ï¿½Ô¼ï¿½Ó°ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½,Ê¾ï¿½ï¿½Í¼,Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ò³ï¿½ï¿½';
 
 comment on column BI_TASK.TASK_TYPE is
-'ÏÖ³¡ÇøÓòÈÎÎñ,ÏÖ³¡¹æ»®Â·ÏßÈÎÎñ,ÊÒÄÚ³É¹ûÂ¼ÈëÈÎÎñ,Ò»Ìå»¯ÈÎÎñ,Çé±¨ÈÎÎñ,ÖÊ¼ìÈÎÎñ,¼à²ìÈÎÎñ,ÎÊÁªÈÎÎñ,ÆÀ¼ÛÈÎÎñ,³åÍ»´¦ÀíÈÎÎñ,½Ó±ßÈÎÎñ,ÄÚÒµÈÎÎñ.';
+'ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ö³ï¿½ï¿½æ»®Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ú³É¹ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ò»ï¿½å»¯ï¿½ï¿½ï¿½ï¿½,ï¿½é±¨ï¿½ï¿½ï¿½ï¿½,ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ó±ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½.';
 
 comment on column BI_TASK.WORK_MODE is
-'³µÉÏ×÷Òµ,²½ÐÐ×÷Òµ,È«ÕÕÆ¬³µÉÏ×÷Òµ,¾«Ï¸»¯ÏÖ³¡²É¼¯×÷Òµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,È«ï¿½ï¿½Æ¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½Ö³ï¿½ï¿½É¼ï¿½ï¿½ï¿½Òµ';
 
 comment on column BI_TASK.TASK_POWER is
-'ÃèÊö¸ÃÈÎÎñÖÐ,×÷ÒµÔ±ËùÓµÓÐµÄÈ¨ÏÞ;±ÈÈçÖ»ÔÊÐí±ê¼Ç×÷Òµ,»òÕßÔÊÐíÊý¾ÝÐÞ¸ÄµÈ.ÒÔ¼°ÈÎÎñ¿ÉÒÔÐÞ¸ÄµÄÊý¾Ý²ã(µÀÂ·,±³¾°µÈ)POI,µÀÂ·,±³¾°µÄ¶ÁÐ´,Ö»¶Á';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ÒµÔ±ï¿½ï¿½Óµï¿½Ðµï¿½È¨ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Äµï¿½.ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Þ¸Äµï¿½ï¿½ï¿½Ý²ï¿½(ï¿½ï¿½Â·,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)POI,ï¿½ï¿½Â·,ï¿½ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½Ð´,Ö»ï¿½ï¿½';
 
 comment on column BI_TASK.GEOMETRY is
-'ÃèÊöÈÎÎñµÄµØÓò·¶Î§';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½Î§';
 
 comment on column BI_TASK.ASSIGN_TIME is
-'ÈÎÎñµÄÏÂ´ïÊ±¼ä
-¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â´ï¿½Ê±ï¿½ï¿½
+ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column BI_TASK.START_TIME is
-'ÈÎÎñµÄÔ¤¼Æ¿ªÊ¼Ê±¼ä
-¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½Æ¿ï¿½Ê¼Ê±ï¿½ï¿½
+ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column BI_TASK.END_TIME is
-'ÈÎÎñµÄ½ØÖ¹Ê±¼ä
-¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½ï¿½ï¿½Ä½ï¿½Ö¹Ê±ï¿½ï¿½
+ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column BI_TASK.DESCRIPT is
-'¹ØÓÚÈÎÎñ±³¾°,×¢ÒâÊÂÏîµÈµÄÃèÊö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ñ±³¾ï¿½,×¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Èµï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column BI_TASK.SCHEDULE is
-'ÈÎÎñ½øÕ¹Ô¤¹À,Èç¸ù¾ÝÀï³Ì½øÐÐ¹ÀËã';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Õ¹Ô¤ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½';
 
 comment on column BI_TASK.STATUS is
-'ÆÕÍ¨×÷ÒµÈÎÎñµÄ×´Ì¬°üÀ¨:×÷ÒµÖÐ,ÖÊ¼ìÖÐ,ÖÊ¼ì·µ¹¤,Íê³É(×÷ÒµÈËÔ±)ÖÊ¼ì×÷ÒµÈÎÎñµÄ×´Ì¬°üÀ¨:ÖÊ¼ìÖÐ,ÖÊ¼ì·µ¹¤µÈ´ý,Íê³É(ÖÊ¼ìÈËÔ±)';
+'ï¿½ï¿½Í¨ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½Òµï¿½ï¿½,ï¿½Ê¼ï¿½ï¿½ï¿½,ï¿½Ê¼ì·µï¿½ï¿½,ï¿½ï¿½ï¿½(ï¿½ï¿½Òµï¿½ï¿½Ô±)ï¿½Ê¼ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½:ï¿½Ê¼ï¿½ï¿½ï¿½,ï¿½Ê¼ì·µï¿½ï¿½ï¿½È´ï¿½,ï¿½ï¿½ï¿½(ï¿½Ê¼ï¿½ï¿½ï¿½Ô±)';
 
 comment on column BI_TASK.RESUME is
-'°üÀ¨:Éú³É,ÒÑ·ÖÅÉ,ÒÑÍê³É,ÒÑÈ¡Ïû(ÈÎÎñ·ÖÅäÈËÔ±)';
+'ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½,ï¿½Ñ·ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½È¡ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô±)';
 
 comment on column BI_TASK.TASK_URL is
-'ÈÎÎñÊý¾ÝµÄ²¿ÊðÂ·¾¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÝµÄ²ï¿½ï¿½ï¿½Â·ï¿½ï¿½';
 
 comment on column BI_TASK.DATABASE_VER is
-'»ù´¡Êý¾Ý¿â°æ±¾:09¶¬,10ÏÄ';
+'ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½æ±¾:09ï¿½ï¿½,10ï¿½ï¿½';
 
 comment on column BI_TASK.URL_INTERFACE is
-'Êý¾Ý¹ÜÀí½Ó¿Ú:URLÐòÁÐ';
+'ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½Ó¿ï¿½:URLï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: CK_EXCEPTION                                          */
@@ -6097,34 +6097,34 @@ create table CK_EXCEPTION  (
 );
 
 comment on column CK_EXCEPTION.EXCEPTION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CK_EXCEPTION.RULE_ID is
-'[173sp1]²Î¿¼"CK_RULE"';
+'[173sp1]ï¿½Î¿ï¿½"CK_RULE"';
 
 comment on column CK_EXCEPTION.STATUS is
 '[1802A]';
 
 comment on column CK_EXCEPTION.GEOMETRY is
-'²ÉÓÃWKT ¸ñÊ½';
+'ï¿½ï¿½ï¿½ï¿½WKT ï¿½ï¿½Ê½';
 
 comment on column CK_EXCEPTION.MEMO is
 '[1802A]';
 
 comment on column CK_EXCEPTION.CREATE_DATE is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column CK_EXCEPTION.UPDATE_DATE is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column CK_EXCEPTION.QA_TASK_ID is
 '[200A]';
 
 comment on column CK_EXCEPTION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CK_EXCEPTION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CK_RULE                                               */
@@ -6145,10 +6145,10 @@ create table CK_RULE  (
 );
 
 comment on column CK_RULE.RULE_ID is
-'[173sp1]Ö÷¼ü';
+'[173sp1]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CK_RULE.CREATE_DATE is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: CMG_BUILDING                                          */
@@ -6166,16 +6166,16 @@ create table CMG_BUILDING  (
 );
 
 comment on column CMG_BUILDING.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING.KIND is
-'¹¤³§,ÉÌÎñÂ¥,¾ÓÃñÂ¥,²ÍÒûµÈ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¥,ï¿½ï¿½ï¿½ï¿½Â¥,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDING.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDFACE                                         */
@@ -6212,34 +6212,34 @@ create table CMG_BUILDFACE  (
 );
 
 comment on column CMG_BUILDFACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDING"';
 
 comment on column CMG_BUILDFACE.HEIGHT is
 '[172U]';
 
 comment on column CMG_BUILDFACE.HEIGHT_ACURACY is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column CMG_BUILDFACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column CMG_BUILDFACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDFACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDFACE_TENANT                                  */
@@ -6269,34 +6269,34 @@ comment on table CMG_BUILDFACE_TENANT is
 '[170]';
 
 comment on column CMG_BUILDFACE_TENANT.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDFACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDFACE"';
 
 comment on column CMG_BUILDFACE_TENANT.POI_PID is
-'¼ÇÂ¼×â»§»ò³ö×â·½µÄPOI ºÅÂë,ÎÞPOI Ê±¼ÇÂ¼Îª0';
+'ï¿½ï¿½Â¼ï¿½â»§ï¿½ï¿½ï¿½ï¿½â·½ï¿½ï¿½POI ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½POI Ê±ï¿½ï¿½Â¼Îª0';
 
 comment on column CMG_BUILDFACE_TENANT.TEL is
-'Èç:86-010-82306399 ';
+'ï¿½ï¿½:86-010-82306399 ';
 
 comment on column CMG_BUILDFACE_TENANT.X is
-'¶ÔÓ¦´óÏÃµÄÏÔÊ¾×ø±ê';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE_TENANT.Y is
-'¶ÔÓ¦´óÏÃµÄÏÔÊ¾×ø±ê';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Ãµï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE_TENANT.NAME is
-'´óÏÃ»òÄÚ²¿×â»§µÄÃû³Æ';
+'ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ú²ï¿½ï¿½â»§ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE_TENANT.FLOOR is
-'´óÏÃ»ò×â»§µÄÂ¥²ãÐÅÏ¢';
+'ï¿½ï¿½ï¿½Ã»ï¿½ï¿½â»§ï¿½ï¿½Â¥ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column CMG_BUILDFACE_TENANT.SRC_FLAG is
-'×¢:Èç¹ûCMG_BUILDING_3DMODEL ÓÐ¼ÇÂ¼¸³Öµ0,·ñÔò¸³Öµ1';
+'×¢:ï¿½ï¿½ï¿½CMG_BUILDING_3DMODEL ï¿½Ð¼ï¿½Â¼ï¿½ï¿½Öµ0,ï¿½ï¿½ï¿½ï¿½Öµ1';
 
 comment on column CMG_BUILDFACE_TENANT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDFACE_TENANT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDNODE                                         */
@@ -6317,22 +6317,22 @@ create table CMG_BUILDNODE  (
 );
 
 comment on column CMG_BUILDNODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDNODE.FORM is
-'ÎÞ,Í¼Àªµã,½Çµã';
+'ï¿½ï¿½,Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column CMG_BUILDNODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDNODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column CMG_BUILDNODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDNODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDLINK                                         */
@@ -6360,32 +6360,32 @@ create table CMG_BUILDLINK  (
 );
 
 comment on column CMG_BUILDLINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDLINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDNODE"';
 
 comment on column CMG_BUILDLINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDNODE"';
 
 comment on column CMG_BUILDLINK.KIND is
-'¼ÙÏëÏß»ò½¨ÖþÎï±ß½çÏß';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDLINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column CMG_BUILDLINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column CMG_BUILDLINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column CMG_BUILDLINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDLINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDFACE_TOPO                                    */
@@ -6406,22 +6406,22 @@ create table CMG_BUILDFACE_TOPO  (
 );
 
 comment on table CMG_BUILDFACE_TOPO is
-'¼ÇÂ¼½¨ÖþÎïÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column CMG_BUILDFACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDFACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDFACE"';
 
 comment on column CMG_BUILDFACE_TOPO.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1 ¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1 ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDFACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDLINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDLINK"';
 
 comment on column CMG_BUILDFACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDFACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDING_3DICON                                   */
@@ -6442,28 +6442,28 @@ create table CMG_BUILDING_3DICON  (
 );
 
 comment on table CMG_BUILDING_3DICON is
-'½¨ÖþÎïµÄ3DLandMarkÍ¼±ê±í';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3DLandMarkÍ¼ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING_3DICON.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDING"';
 
 comment on column CMG_BUILDING_3DICON.WIDTH is
-'µ¥Î»:ÏñËØ,Ä¬ÈÏÎª64';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½,Ä¬ï¿½ï¿½Îª64';
 
 comment on column CMG_BUILDING_3DICON.HEIGHT is
-'µ¥Î»:ÏñËØ,Ä¬ÈÏÎª64';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½,Ä¬ï¿½ï¿½Îª64';
 
 comment on column CMG_BUILDING_3DICON.ICON_NAME is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column CMG_BUILDING_3DICON.ALPHA_NAME is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME",TGA ¸ñÊ½';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME",TGA ï¿½ï¿½Ê½';
 
 comment on column CMG_BUILDING_3DICON.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDING_3DICON.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDING_3DMODEL                                  */
@@ -6487,16 +6487,16 @@ create table CMG_BUILDING_3DMODEL  (
 );
 
 comment on table CMG_BUILDING_3DMODEL is
-'½¨ÖþÎïµÄ3DLandMarkÄ£ÐÍ±í';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3DLandMarkÄ£ï¿½Í±ï¿½';
 
 comment on column CMG_BUILDING_3DMODEL.MODEL_ID is
-'[180U]Ö÷¼ü';
+'[180U]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING_3DMODEL.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDING"';
 
 comment on column CMG_BUILDING_3DMODEL.RESOLUTION is
-'µÍ,ÖÐ,¸ß';
+'ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½';
 
 comment on column CMG_BUILDING_3DMODEL.MODEL_NAME is
 '[170]';
@@ -6505,13 +6505,13 @@ comment on column CMG_BUILDING_3DMODEL.MATERIAL_NAME is
 '[170]';
 
 comment on column CMG_BUILDING_3DMODEL.TEXTURE_NAME is
-'[170]MTL ¸ñÊ½';
+'[170]MTL ï¿½ï¿½Ê½';
 
 comment on column CMG_BUILDING_3DMODEL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDING_3DMODEL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDING_NAME                                     */
@@ -6541,16 +6541,16 @@ create table CMG_BUILDING_NAME  (
 );
 
 comment on column CMG_BUILDING_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING_NAME.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDING"';
 
 comment on column CMG_BUILDING_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CMG_BUILDING_NAME.FULL_NAME_PHONETIC is
 '[171U]';
@@ -6562,16 +6562,16 @@ comment on column CMG_BUILDING_NAME.BUILD_NUM_PHONETIC is
 '[171U]';
 
 comment on column CMG_BUILDING_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
 ×¢:
 (1)BUA È¡Öµ0~1
-(2)ÆäËûÈ¡Öµ0';
+(2)ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column CMG_BUILDING_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDING_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI                                                */
@@ -6652,38 +6652,38 @@ create table IX_POI  (
 );
 
 comment on column IX_POI.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.KIND_CODE is
-'²Î¿¼"IX_POI_CODE"';
+'ï¿½Î¿ï¿½"IX_POI_CODE"';
 
 comment on column IX_POI.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã,ÓÃÓÚPOIÏÔÊ¾ºÍ¼ÆËãLink×óÓÒ¹ØÏµ
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½Ê¾ï¿½Í¼ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ò¹ï¿½Ïµ
 ';
 
 comment on column IX_POI.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column IX_POI.SIDE is
-'¼ÇÂ¼POIÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ,×ó²à»òÓÒ²à';
+'ï¿½ï¿½Â¼POIÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column IX_POI.NAME_GROUPID is
-'[173sp2]²Î¿¼"RD_NAME"';
+'[173sp2]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column IX_POI.ROAD_FLAG is
 '[170]';
 
 comment on column IX_POI.PMESH_ID is
-'[171A]Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'[171A]Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.IMPORTANCE is
-'¼ÇÂ¼ÒÔÏÂ·ÖÀàµÄPOIÎªÖØÒª,¼´IMPORTANCEÎª1,·ñÔòÎª0
-(1)ÓµÓÐ¹ú¼Ê½ø³ö¸Û¿ÚµÄ»ú³¡
-(2)¹ú¼ÒÂÃÓÎ¾ÖÆÀ¶¨µÄµÈ¼¶Îª3A,4A,5AµÄ·ç¾°Çø
-(3)ÊÀ½çÎÄ»¯ÒÅ²ú';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½POIÎªï¿½ï¿½Òª,ï¿½ï¿½IMPORTANCEÎª1,ï¿½ï¿½ï¿½ï¿½Îª0
+(1)Óµï¿½Ð¹ï¿½Ê½ï¿½ï¿½ï¿½Û¿ÚµÄ»ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÄµÈ¼ï¿½Îª3A,4A,5Aï¿½Ä·ç¾°ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½Ä»ï¿½ï¿½Å²ï¿½';
 
 comment on column IX_POI.CHAIN is
-'[171U]Ö÷ÒªÖÆ×÷¶ÔÏóÊÇ±ö¹ÝºÍ¼ÓÓÍÕ¾';
+'[171U]ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç±ï¿½ï¿½ÝºÍ¼ï¿½ï¿½ï¿½Õ¾';
 
 comment on column IX_POI.ACCESS_FLAG is
 '[170]';
@@ -6692,16 +6692,16 @@ comment on column IX_POI.OPEN_24H is
 '[171U]';
 
 comment on column IX_POI.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_POI.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_POI.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_POI.RESERVED is
 '[181A]';
@@ -6710,46 +6710,46 @@ comment on column IX_POI.STATE is
 '[170]';
 
 comment on column IX_POI.FIELD_STATE is
-'[170]¸ÄÃû³Æ,¸ÄµØÖ·,¸Ä·ÖÀà';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Äµï¿½Ö·,ï¿½Ä·ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.LABEL is
-'[181U]¼ÇÂ¼Â·,Ë®,ÂÌµØ,µ¥ÏîÊÕ·Ñ,Ë«ÏòÊÕ·Ñ,ÏÔÊ¾Î»ÖÃ,24Ð¡Ê±±ãÀûµê';
+'[181U]ï¿½ï¿½Â¼Â·,Ë®,ï¿½Ìµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½,Ë«ï¿½ï¿½ï¿½Õ·ï¿½,ï¿½ï¿½Ê¾Î»ï¿½ï¿½,24Ð¡Ê±ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.TYPE is
 '[170]';
 
 comment on column IX_POI.ADDRESS_FLAG is
-'±êÖ¾POI µØÖ·(IX_POI_ADDRESS)ÍêÕûÐÔ';
+'ï¿½ï¿½Ö¾POI ï¿½ï¿½Ö·(IX_POI_ADDRESS)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.EX_PRIORITY is
-'[171A]ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)';
+'[171A]ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)';
 
 comment on column IX_POI.EDITION_FLAG is
-'¼ÇÂ¼Êý¾ÝÊÇÓÉÄÚÒµ»¹ÊÇÍâÒµÐÞ¸Ä,ÐÂÔö,É¾³ýµÈ±êÖ¾';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Þ¸ï¿½,ï¿½ï¿½ï¿½ï¿½,É¾ï¿½ï¿½È±ï¿½Ö¾';
 
 comment on column IX_POI.OLD_BLOCKCODE is
-'Ô­½á¹¹ÖÐµÄ"OLD´ó×Ö"';
+'Ô­ï¿½á¹¹ï¿½Ðµï¿½"OLDï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POI.OLD_KIND is
 '[170]';
 
 comment on column IX_POI.POI_NUM is
-'¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column IX_POI.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column IX_POI.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDING_POI                                      */
@@ -6769,16 +6769,16 @@ create table CMG_BUILDING_POI  (
 );
 
 comment on column CMG_BUILDING_POI.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDING"';
 
 comment on column CMG_BUILDING_POI.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column CMG_BUILDING_POI.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDING_POI.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDLINK_MESH                                    */
@@ -6796,13 +6796,13 @@ create table CMG_BUILDLINK_MESH  (
 );
 
 comment on column CMG_BUILDLINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDLINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDLINK"';
 
 comment on column CMG_BUILDLINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDLINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CMG_BUILDNODE_MESH                                    */
@@ -6820,13 +6820,13 @@ create table CMG_BUILDNODE_MESH  (
 );
 
 comment on column CMG_BUILDNODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CMG_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CMG_BUILDNODE"';
 
 comment on column CMG_BUILDNODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CMG_BUILDNODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDING                                           */
@@ -6842,13 +6842,13 @@ create table CM_BUILDING  (
 );
 
 comment on column CM_BUILDING.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDING.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDING.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDFACE                                          */
@@ -6877,28 +6877,28 @@ create table CM_BUILDFACE  (
 );
 
 comment on column CM_BUILDFACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDFACE.BUILDING_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDING"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDING"';
 
 comment on column CM_BUILDFACE.KIND is
-'¹¤³§,ÉÌÎñÂ¥,¾ÓÃñÂ¥,²ÍÒûµÈ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¥,ï¿½ï¿½ï¿½ï¿½Â¥,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDFACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column CM_BUILDFACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDFACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column CM_BUILDFACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDFACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDNODE                                          */
@@ -6917,19 +6917,19 @@ create table CM_BUILDNODE  (
 );
 
 comment on column CM_BUILDNODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDNODE.FORM is
-'ÎÞ,Í¼Àªµã,½Çµã';
+'ï¿½ï¿½,Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column CM_BUILDNODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDNODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDNODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDLINK                                          */
@@ -6955,29 +6955,29 @@ create table CM_BUILDLINK  (
 );
 
 comment on column CM_BUILDLINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDLINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDNODE"';
 
 comment on column CM_BUILDLINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDNODE"';
 
 comment on column CM_BUILDLINK.KIND is
-'¼ÙÏëÏß»ò½¨ÖþÎï±ß½çÏß';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ß»ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDLINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column CM_BUILDLINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column CM_BUILDLINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDLINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDFACE_TOPO                                     */
@@ -6998,22 +6998,22 @@ create table CM_BUILDFACE_TOPO  (
 );
 
 comment on table CM_BUILDFACE_TOPO is
-'¼ÇÂ¼½¨ÖþÎïÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column CM_BUILDFACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDFACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDFACE"';
 
 comment on column CM_BUILDFACE_TOPO.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column CM_BUILDFACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDLINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDLINK"';
 
 comment on column CM_BUILDFACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDFACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDLINK_MESH                                     */
@@ -7031,13 +7031,13 @@ create table CM_BUILDLINK_MESH  (
 );
 
 comment on column CM_BUILDLINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDLINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDLINK"';
 
 comment on column CM_BUILDLINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDLINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: CM_BUILDNODE_MESH                                     */
@@ -7055,13 +7055,13 @@ create table CM_BUILDNODE_MESH  (
 );
 
 comment on column CM_BUILDNODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"CM_BUILDNODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"CM_BUILDNODE"';
 
 comment on column CM_BUILDNODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column CM_BUILDNODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: DEM_GRID                                              */
@@ -7078,7 +7078,7 @@ create table DEM_GRID  (
 );
 
 comment on column DEM_GRID.DEM_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: DEM_ELEVATION                                         */
@@ -7095,10 +7095,10 @@ create table DEM_ELEVATION  (
 );
 
 comment on column DEM_ELEVATION.ELEVATION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column DEM_ELEVATION.DEM_ID is
-'Íâ¼ü,ÒýÓÃ"DEM_GRID"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"DEM_GRID"';
 
 /*==============================================================*/
 /* Table: DTM_INFO                                              */
@@ -7111,13 +7111,13 @@ create table DTM_INFO  (
 );
 
 comment on column DTM_INFO.DTM_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column DTM_INFO.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column DTM_INFO.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\Video\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Video\';
 
 /*==============================================================*/
 /* Table: EF_3DMAP                                              */
@@ -7130,13 +7130,13 @@ create table EF_3DMAP  (
 );
 
 comment on column EF_3DMAP.THREED_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_3DMAP.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_3DMAP.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\3dmap\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\3dmap\';
 
 /*==============================================================*/
 /* Table: EF_IMAGE                                              */
@@ -7157,19 +7157,19 @@ create table EF_IMAGE  (
 );
 
 comment on column EF_IMAGE.IMAGE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_IMAGE.WIDTH is
-'µ¥Î»:ÏñËØ';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_IMAGE.HEIGHT is
-'µ¥Î»:ÏñËØ';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_IMAGE.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_IMAGE.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\Video\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Video\';
 
 /*==============================================================*/
 /* Table: EF_LINEMAP                                            */
@@ -7184,13 +7184,13 @@ create table EF_LINEMAP  (
 );
 
 comment on column EF_LINEMAP.LINEMAP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_LINEMAP.URL_DB is
-'Êý¾ÝÖÐÐÄµÄÎÄ¼þ´æ´¢Â·¾¶Ãû³Æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½Ä¼ï¿½ï¿½æ´¢Â·ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column EF_LINEMAP.URL_FILE is
-'´æ´¢Ïà¶ÔÂ·¾¶Ãû,Èç\Data\Video\';
+'ï¿½æ´¢ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½\Data\Video\';
 
 /*==============================================================*/
 /* Table: HWY_JUNCTION                                          */
@@ -7223,19 +7223,19 @@ create table HWY_JUNCTION  (
 );
 
 comment on column HWY_JUNCTION.JUNC_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HWY_JUNCTION.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column HWY_JUNCTION.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column HWY_JUNCTION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HWY_JUNCTION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HWY_JCT                                               */
@@ -7302,22 +7302,22 @@ create table HWY_JUNCTION_NAME  (
 );
 
 comment on column HWY_JUNCTION_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HWY_JUNCTION_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HWY_JUNCTION_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HWY_JUNCTION_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column HWY_JUNCTION_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HWY_JUNCTION_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HWY_SAPA                                              */
@@ -7358,16 +7358,16 @@ create table HW_ESTAB  (
 );
 
 comment on column HW_ESTAB.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB.REGION_ID is
-'²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_MAIN                                         */
@@ -7389,22 +7389,22 @@ create table HW_ESTAB_MAIN  (
 );
 
 comment on table HW_ESTAB_MAIN is
-'¼ÇÂ¼HW_ESTAB±íÖÐ±êÊ¶ÎªÖ÷Éè(ÓÐ²¢Éè),¼´FLAG=2µÄÐÅÏ¢';
+'ï¿½ï¿½Â¼HW_ESTABï¿½ï¿½ï¿½Ð±ï¿½Ê¶Îªï¿½ï¿½ï¿½ï¿½(ï¿½Ð²ï¿½ï¿½ï¿½),ï¿½ï¿½FLAG=2ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column HW_ESTAB_MAIN.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_MAIN.ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_MAIN.REL_TYPE is
 '[181A]';
 
 comment on column HW_ESTAB_MAIN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_MAIN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_CONTAIN                                      */
@@ -7425,16 +7425,16 @@ create table HW_ESTAB_CONTAIN  (
 );
 
 comment on column HW_ESTAB_CONTAIN.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB_MAIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB_MAIN"';
 
 comment on column HW_ESTAB_CONTAIN.ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_CONTAIN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_CONTAIN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_JCT                                          */
@@ -7460,28 +7460,28 @@ create table HW_ESTAB_JCT  (
 );
 
 comment on column HW_ESTAB_JCT.JCT_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_JCT.S_ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_JCT.E_ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_JCT.JCTLINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column HW_ESTAB_JCT.DIS_BETW is
-'µ¥Î»:Ã×,ÆðµãÖÁÖÕµãµÄ¾àÀë';
+'ï¿½ï¿½Î»:ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½Ä¾ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_JCT.ORIETATION is
-'µ¥Î»:¶È,ÆðÖÕµãÁ¬ÏßÓëÆðµãÇ°Ò»µãÁ¬ÏßµÄ¼Ð½Ç';
+'ï¿½ï¿½Î»:ï¿½ï¿½,ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç°Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ¼Ð½ï¿½';
 
 comment on column HW_ESTAB_JCT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_JCT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_NAME                                         */
@@ -7508,25 +7508,25 @@ create table HW_ESTAB_NAME  (
 );
 
 comment on column HW_ESTAB_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_NAME.NAME_GROUPID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_NAME.ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_NAME.PHONETIC is
-'ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ESTAB_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_ROUTE_POS                                    */
@@ -7546,19 +7546,19 @@ create table HW_ESTAB_ROUTE_POS  (
 );
 
 comment on column HW_ESTAB_ROUTE_POS.ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_ROUTE_POS.ROUTE_PID is
-'²Î¿¼"HW_ROUTE"';
+'ï¿½Î¿ï¿½"HW_ROUTE"';
 
 comment on column HW_ESTAB_ROUTE_POS.POSITION_PID is
-'²Î¿¼"HW_POSITION"';
+'ï¿½Î¿ï¿½"HW_POSITION"';
 
 comment on column HW_ESTAB_ROUTE_POS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_ROUTE_POS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ESTAB_SA                                           */
@@ -7579,17 +7579,17 @@ create table HW_ESTAB_SA  (
 );
 
 comment on column HW_ESTAB_SA.ESTAB_PID is
-'Íâ¼ü,ÒýÓÃ"HW_ESTAB"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"HW_ESTAB"';
 
 comment on column HW_ESTAB_SA.KIND is
-'Èç"1300"´ú±í²Í¹Ý,"2200"´ú±íÉÌµê
+'ï¿½ï¿½"1300"ï¿½ï¿½ï¿½Í¹ï¿½,"2200"ï¿½ï¿½ï¿½ï¿½Ìµï¿½
 ';
 
 comment on column HW_ESTAB_SA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ESTAB_SA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_POSITION                                           */
@@ -7614,22 +7614,22 @@ create table HW_POSITION  (
 );
 
 comment on column HW_POSITION.POSITION_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_POSITION.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column HW_POSITION.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column HW_POSITION.ACCESS_TYPE is
-'³öÈë¿Ú,Èë¿Ú,³ö¿Ú';
+'ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_POSITION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_POSITION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: HW_ROUTE                                              */
@@ -7655,19 +7655,19 @@ create table HW_ROUTE  (
 );
 
 comment on column HW_ROUTE.ROUTE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column HW_ROUTE.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column HW_ROUTE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column HW_ROUTE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column HW_ROUTE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IDB_COUNTRY_INFO                                      */
@@ -7686,22 +7686,22 @@ comment on table IDB_COUNTRY_INFO is
 '[173A]';
 
 comment on column IDB_COUNTRY_INFO.VER_NAME is
-'Èç12Q1';
+'ï¿½ï¿½12Q1';
 
 comment on column IDB_COUNTRY_INFO.ITEM is
-'ÓÃ»§ÉèÖÃ:Èç13CY,NIMIF-G,NAVEX,NIGDF-G,ÆäËû';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½13CY,NIMIF-G,NAVEX,NIGDF-G,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_COUNTRY_INFO.ITEM_VER is
-'ÏµÍ³´Ó1.0¿ªÊ¼,ÒÀ´Î¼Ó1';
+'ÏµÍ³ï¿½ï¿½1.0ï¿½ï¿½Ê¼,ï¿½ï¿½ï¿½Î¼ï¿½1';
 
 comment on column IDB_COUNTRY_INFO.IDB_REGION_ID is
-'²Î¿¼"IDB_REGION_INFO"';
+'ï¿½Î¿ï¿½"IDB_REGION_INFO"';
 
 comment on column IDB_COUNTRY_INFO.PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column IDB_COUNTRY_INFO.MEMO is
-'ÓÃ»§ÉèÖÃ';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: IDB_DIFF_INFO                                         */
@@ -7723,31 +7723,31 @@ comment on table IDB_DIFF_INFO is
 '[173A]';
 
 comment on column IDB_DIFF_INFO.VER_NAME is
-'Èç12Q1';
+'ï¿½ï¿½12Q1';
 
 comment on column IDB_DIFF_INFO.ITEM is
-'ÓÃ»§ÉèÖÃ:Èç13CY,NIMIF-G,NAVEX,NIGDF-G,ÆäËû';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½13CY,NIMIF-G,NAVEX,NIGDF-G,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_DIFF_INFO.CUR_IDB_REGION_ID is
-'²Î¿¼"IDB_REGION_INFO",¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'ï¿½Î¿ï¿½"IDB_REGION_INFO",ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IDB_DIFF_INFO.PRE_IDB_REGION_ID is
-'²Î¿¼"IDB_REGION_INFO",¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'ï¿½Î¿ï¿½"IDB_REGION_INFO",ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IDB_DIFF_INFO.DIFF_PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column IDB_DIFF_INFO.DIFF_TIME is
-'ÏµÍ³ÉèÖÃ';
+'ÏµÍ³ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_DIFF_INFO.DIFF_SOFT_NAME is
-'ÏµÍ³ÉèÖÃ';
+'ÏµÍ³ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_DIFF_INFO.DIFF_SOFT_VER is
-'ÏµÍ³ÉèÖÃ';
+'ÏµÍ³ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_DIFF_INFO.MEMO is
-'ÓÃ»§ÉèÖÃ';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: IDB_REGION_INFO                                       */
@@ -7768,25 +7768,25 @@ comment on table IDB_REGION_INFO is
 '[173A]';
 
 comment on column IDB_REGION_INFO.IDB_REGION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_REGION_INFO.VER_NAME is
-'Èç12Q1';
+'ï¿½ï¿½12Q1';
 
 comment on column IDB_REGION_INFO.IDB_REGION_NUM is
-'ÏµÍ³´Ó1.0¿ªÊ¼,ÒÀ´Î¼Ó1';
+'ÏµÍ³ï¿½ï¿½1.0ï¿½ï¿½Ê¼,ï¿½ï¿½ï¿½Î¼ï¿½1';
 
 comment on column IDB_REGION_INFO.ACH_GDB_ID is
-'²Î¿¼"ACH_GDB_INFO",¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'ï¿½Î¿ï¿½"ACH_GDB_INFO",ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IDB_REGION_INFO.ITEM is
-'ÓÃ»§ÉèÖÃ:Èç13CY,NIMIF-G,NAVEX,NIGDF-G,ÆäËû';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½:ï¿½ï¿½13CY,NIMIF-G,NAVEX,NIGDF-G,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IDB_REGION_INFO.PERSON is
-'²Î¿¼"BI_PERSON"';
+'ï¿½Î¿ï¿½"BI_PERSON"';
 
 comment on column IDB_REGION_INFO.MEMO is
-'ÓÃ»§ÉèÖÃ';
+'ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION                                         */
@@ -7826,120 +7826,120 @@ create table IX_ANNOTATION  (
 );
 
 comment on table IX_ANNOTATION is
-'ÔÚµ¼º½Éè±¸ÉÏÏÔÊ¾×ÔÈ»µØÐÎÃû,µØÃû,µÀÂ·Ãû,½¨ÖþÎïÃû³ÆµÈµÄÊý¾Ý';
+'ï¿½Úµï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÈµï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.KIND_CODE is
-'²Î¿¼"IX_ANNOTATION_CODE"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION_CODE"';
 
 comment on column IX_ANNOTATION.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.RANK is
-'²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾
-Ò»¸öÏÔÊ¾µÈ¼¶(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞÐ§/ÓÐÐ§,
-Èç:00000111 ±íÊ¾ÎÄ×ÖÔÚ1,2,4 ÍòµÈ¼¶ÉÏ¾ù¿ÉÏÔÊ¾
-µÚ0bit:1 Íò
-µÚ1bit:2 Íò
-µÚ2bit:4 Íò
-µÚ3bit:8 Íò
-µÚ4bit:16 Íò
-µÚ5bit:32 Íò
-µÚ6bit:64 Íò
-µÚ7bit:128 Íò
-µÚ8bit:256 Íò
-µÚ9bit:512 Íò
-µÚ10bit:1024 Íò
-µÚ11bit:2048 Íò
-µÚ12bit:4096 Íò
-µÚ13bit:8192 Íò
+'ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾
+Ò»ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½È¼ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½Ð§/ï¿½ï¿½Ð§,
+ï¿½ï¿½:00000111 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1,2,4 ï¿½ï¿½È¼ï¿½ï¿½Ï¾ï¿½ï¿½ï¿½ï¿½Ê¾
+ï¿½ï¿½0bit:1 ï¿½ï¿½
+ï¿½ï¿½1bit:2 ï¿½ï¿½
+ï¿½ï¿½2bit:4 ï¿½ï¿½
+ï¿½ï¿½3bit:8 ï¿½ï¿½
+ï¿½ï¿½4bit:16 ï¿½ï¿½
+ï¿½ï¿½5bit:32 ï¿½ï¿½
+ï¿½ï¿½6bit:64 ï¿½ï¿½
+ï¿½ï¿½7bit:128 ï¿½ï¿½
+ï¿½ï¿½8bit:256 ï¿½ï¿½
+ï¿½ï¿½9bit:512 ï¿½ï¿½
+ï¿½ï¿½10bit:1024 ï¿½ï¿½
+ï¿½ï¿½11bit:2048 ï¿½ï¿½
+ï¿½ï¿½12bit:4096 ï¿½ï¿½
+ï¿½ï¿½13bit:8192 ï¿½ï¿½
 ×¢:
-(1)2.5 ÍòÊý¾Ý:1~8 Íò
-(2)20 ÍòÊý¾Ý:16~32 Íò
-(3)°ÙÍòÊý¾Ý:64~512
-(4)TOP ¼¶Êý¾Ý:1024~8192 Íò';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:1~8 ï¿½ï¿½
+(2)20 ï¿½ï¿½ï¿½ï¿½ï¿½:16~32 ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:64~512
+(4)TOP ï¿½ï¿½ï¿½ï¿½ï¿½:1024~8192 ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.SRC_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.SRC_PID is
-'ÎÄ×ÖÀ´Ô´µÄÊý¾ÝID,ÈçÀ´×ÔPOIÔòÎªPOµÄPID;À´×ÔµÀÂ·ÃûÔòÎªµÀÂ·ÃûID
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ÎªPOï¿½ï¿½PID;ï¿½ï¿½ï¿½Ôµï¿½Â·ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Â·ï¿½ï¿½ID
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.CLIENT_FLAG is
-'¸ù¾Ý²»Í¬¿Í»§ÐèÇó,Êä³ö²»Í¬ÎÄ×Ö,ÖµÓò°üÀ¨:
-MB ÈýÁâ
-HD ¹ã±¾
-TY ·áÌï
-PI ÏÈ·æ
-PA ËÉÏÂ
+'ï¿½ï¿½Ý²ï¿½Í¬ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½,Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+MB ï¿½ï¿½ï¿½ï¿½
+HD ï¿½ã±¾
+TY ï¿½ï¿½ï¿½ï¿½
+PI ï¿½È·ï¿½
+PA ï¿½ï¿½ï¿½ï¿½
 NE NavEx
 G MIFG
 13CY 13CY
-NBT ±¦Âí
+NBT ï¿½ï¿½ï¿½ï¿½
 ×¢:
-(1)ÒÔÉÏÃ¿Ò»´úÂë±íÊ¾Ö»Êä³ö¸øÄ³Ò»¿Í»§,ÈçÖ»¸øÈýÁâ,±íÊ¾Îª"MB"
-(2)Èç¹û±íÊ¾Êä³ö¸ø³ýÄ³Ò»¿Í»§ÍâµÄÆäËû¿Í»§,ÔòÔÚÒÔÉÏ´úÂëÇ°¼ÓÓ¢ÎÄ°ë½Ç"-",ÈçÊä³ö¸ø³ýÈýÁâÍâµÄ¿Í»§,Ôò±íÊ¾Îª"-MB"
-(3)¶à¸öÖ®¼äÒÔÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Èç±íÊ¾Êä³ö¸øÈýÁâ¶ø²»¸ø·áÌï,Ôò±íÊ¾Îª"MB|-TY"
-(4)Ä¬ÈÏÎª¿Õ,±íÊ¾ËùÓÐ¿Í»§¶¼Êä³ö
-(5)¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+(1)ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½,ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ê¾Îª"MB"
+(2)ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"-",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Í»ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"-MB"
+(3)ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"MB|-TY"
+(4)Ä¬ï¿½ï¿½Îªï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ð¿Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(5)ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.SPECTIAL_FLAG is
-'[170]²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾Ò»¸öÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ
-µÚ0bit:3DICON
-µÚ1bit:ÔÚË®ÖÐ
-ËùÓÐbit Îª¾ùÎª0,±íÊ¾ÎÞÌØÊâ±êÊ¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'[170]ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½
+ï¿½ï¿½0bit:3DICON
+ï¿½ï¿½1bit:ï¿½ï¿½Ë®ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½bit Îªï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_ANNOTATION.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_ANNOTATION.RESERVED is
 '[181A]';
 
 comment on column IX_ANNOTATION.MODIFY_FLAG is
-'¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.FIELD_MODIFY_FLAG is
-'[170]¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'[170]ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.EXTRACT_INFO is
-'(1)´æ·Å"°æ±¾+´ÓË÷ÒýÖÐÌáÈ¡"
-(2)À´×ÔAddress ×Ö¶Î
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'(1)ï¿½ï¿½ï¿½"ï¿½æ±¾+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡"
+(2)ï¿½ï¿½ï¿½ï¿½Address ï¿½Ö¶ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.EXTRACT_PRIORITY is
-'ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.REMARK is
-'×ªÊý¾ÝÊ±,À´×Ôpage×Ö¶Î,ÄÚÈÝÈç:"ÏÔÊ¾×ø±ê"ºÍ"Òýµ¼×ø±ê"';
+'×ªï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½pageï¿½Ö¶ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_ANNOTATION.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION_100W                                    */
@@ -7979,119 +7979,119 @@ create table IX_ANNOTATION_100W  (
 );
 
 comment on table IX_ANNOTATION_100W is
-'ÔÚµ¼º½Éè±¸ÉÏÏÔÊ¾×ÔÈ»µØÐÎÃû,µØÃû,µÀÂ·Ãû,½¨ÖþÎïÃû³ÆµÈµÄÊý¾Ý';
+'ï¿½Úµï¿½ï¿½ï¿½ï¿½è±¸ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÈµï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.KIND_CODE is
-'²Î¿¼"IX_ANNOTATION_CODE"';
+'ï¿½Î¿ï¿½"IX_ANNOTATION_CODE"';
 
 comment on column IX_ANNOTATION_100W.GEOMETRY is
-'Ä¬ÈÏÇé¿öÏÂ,ÎÄ×Ö×ø±êÎªPOIµÄÏÔÊ¾×ø±ê;¸ù¾ÝÎÄ×ÖµÄÑ¹¸ÇÇé¿ö,¿ÉÄÜÐèÒªµ÷ÕûÎÄ×ÖµÄµãÎ»';
+'Ä¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªPOIï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÖµÄµï¿½Î»';
 
 comment on column IX_ANNOTATION_100W.RANK is
-'²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾
-Ò»¸öÏÔÊ¾µÈ¼¶(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞÐ§/ÓÐÐ§,
-Èç:00000111 ±íÊ¾ÎÄ×ÖÔÚ1,2,4 ÍòµÈ¼¶ÉÏ¾ù¿ÉÏÔÊ¾
-µÚ0bit:1 Íò
-µÚ1bit:2 Íò
-µÚ2bit:4 Íò
-µÚ3bit:8 Íò
-µÚ4bit:16 Íò
-µÚ5bit:32 Íò
-µÚ6bit:64 Íò
-µÚ7bit:128 Íò
-µÚ8bit:256 Íò
-µÚ9bit:512 Íò
-µÚ10bit:1024 Íò
-µÚ11bit:2048 Íò
-µÚ12bit:4096 Íò
-µÚ13bit:8192 Íò
+'ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾
+Ò»ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½È¼ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½Ð§/ï¿½ï¿½Ð§,
+ï¿½ï¿½:00000111 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1,2,4 ï¿½ï¿½È¼ï¿½ï¿½Ï¾ï¿½ï¿½ï¿½ï¿½Ê¾
+ï¿½ï¿½0bit:1 ï¿½ï¿½
+ï¿½ï¿½1bit:2 ï¿½ï¿½
+ï¿½ï¿½2bit:4 ï¿½ï¿½
+ï¿½ï¿½3bit:8 ï¿½ï¿½
+ï¿½ï¿½4bit:16 ï¿½ï¿½
+ï¿½ï¿½5bit:32 ï¿½ï¿½
+ï¿½ï¿½6bit:64 ï¿½ï¿½
+ï¿½ï¿½7bit:128 ï¿½ï¿½
+ï¿½ï¿½8bit:256 ï¿½ï¿½
+ï¿½ï¿½9bit:512 ï¿½ï¿½
+ï¿½ï¿½10bit:1024 ï¿½ï¿½
+ï¿½ï¿½11bit:2048 ï¿½ï¿½
+ï¿½ï¿½12bit:4096 ï¿½ï¿½
+ï¿½ï¿½13bit:8192 ï¿½ï¿½
 ×¢:
-(1)2.5 ÍòÊý¾Ý:1~8 Íò
-(2)20 ÍòÊý¾Ý:16~32 Íò
-(3)°ÙÍòÊý¾Ý:64~512
-(4)TOP ¼¶Êý¾Ý:1024~8192 Íò';
+(1)2.5 ï¿½ï¿½ï¿½ï¿½ï¿½:1~8 ï¿½ï¿½
+(2)20 ï¿½ï¿½ï¿½ï¿½ï¿½:16~32 ï¿½ï¿½
+(3)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:64~512
+(4)TOP ï¿½ï¿½ï¿½ï¿½ï¿½:1024~8192 ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.SRC_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.SRC_PID is
-'ÎÄ×ÖÀ´Ô´µÄÊý¾ÝID,ÈçÀ´×ÔPOIÔòÎªPOµÄPID;À´×ÔµÀÂ·ÃûÔòÎªµÀÂ·ÃûID
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ÎªPOï¿½ï¿½PID;ï¿½ï¿½ï¿½Ôµï¿½Â·ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Â·ï¿½ï¿½ID
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.CLIENT_FLAG is
-'¸ù¾Ý²»Í¬¿Í»§ÐèÇó,Êä³ö²»Í¬ÎÄ×Ö,ÖµÓò°üÀ¨:
-MB ÈýÁâ
-HD ¹ã±¾
-TY ·áÌï
-PI ÏÈ·æ
-PA ËÉÏÂ
+'ï¿½ï¿½Ý²ï¿½Í¬ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½,Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+MB ï¿½ï¿½ï¿½ï¿½
+HD ï¿½ã±¾
+TY ï¿½ï¿½ï¿½ï¿½
+PI ï¿½È·ï¿½
+PA ï¿½ï¿½ï¿½ï¿½
 NE NavEx
 13CY 13CY
-NBT ±¦Âí
+NBT ï¿½ï¿½ï¿½ï¿½
 ×¢:
-(1)ÒÔÉÏÃ¿Ò»´úÂë±íÊ¾Ö»Êä³ö¸øÄ³Ò»¿Í»§,ÈçÖ»¸øÈýÁâ,±íÊ¾Îª"MB"
-(2)Èç¹û±íÊ¾Êä³ö¸ø³ýÄ³Ò»¿Í»§ÍâµÄÆäËû¿Í»§,ÔòÔÚÒÔÉÏ´úÂëÇ°¼ÓÓ¢ÎÄ°ë½Ç"-",ÈçÊä³ö¸ø³ýÈýÁâÍâµÄ¿Í»§,Ôò±íÊ¾Îª"-MB"
-(3)¶à¸öÖ®¼äÒÔÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Èç±íÊ¾Êä³ö¸øÈýÁâ¶ø²»¸ø·áÌï,Ôò±íÊ¾Îª"MB|-TY"
-(4)Ä¬ÈÏÎª¿Õ,±íÊ¾ËùÓÐ¿Í»§¶¼Êä³ö
-(5)¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+(1)ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½,ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ê¾Îª"MB"
+(2)ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"-",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Í»ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"-MB"
+(3)ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"MB|-TY"
+(4)Ä¬ï¿½ï¿½Îªï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ð¿Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(5)ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.SPECTIAL_FLAG is
-'[170]²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾Ò»¸öÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ
-µÚ0bit:3DICON
-µÚ1bit:ÔÚË®ÖÐ
-ËùÓÐbit Îª¾ùÎª0,±íÊ¾ÎÞÌØÊâ±êÊ¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'[170]ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½
+ï¿½ï¿½0bit:3DICON
+ï¿½ï¿½1bit:ï¿½ï¿½Ë®ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½bit Îªï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_ANNOTATION_100W.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_ANNOTATION_100W.RESERVED is
 '[181A]';
 
 comment on column IX_ANNOTATION_100W.MODIFY_FLAG is
-'¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.FIELD_MODIFY_FLAG is
-'[170]¼ÇÂ¼ÐÞ¸Ä·½Ê½ÈçÐÂÔö,¸ÄÃû³Æ,¸ÄµÈ¼¶,¸ÄÎ»ÒÆ,É¾³ýµÈ';
+'[170]ï¿½ï¿½Â¼ï¿½Þ¸Ä·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ÄµÈ¼ï¿½,ï¿½ï¿½Î»ï¿½ï¿½,É¾ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.EXTRACT_INFO is
-'(1)´æ·Å"°æ±¾+´ÓË÷ÒýÖÐÌáÈ¡"
-(2)À´×ÔAddress ×Ö¶Î
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'(1)ï¿½ï¿½ï¿½"ï¿½æ±¾+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡"
+(2)ï¿½ï¿½ï¿½ï¿½Address ï¿½Ö¶ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.EXTRACT_PRIORITY is
-'ÌáÈ¡µÄÓÅÏÈ¼¶±ð(³ÇÇøÎªA1~A11;ÏØÏçÎªB2~B5)
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ÎªA1~A11;ï¿½ï¿½ï¿½ï¿½ÎªB2~B5)
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.REMARK is
-'×ªÊý¾ÝÊ±,À´×Ôpage×Ö¶Î,ÄÚÈÝÈç:"ÏÔÊ¾×ø±ê"ºÍ"Òýµ¼×ø±ê"';
+'×ªï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½pageï¿½Ö¶ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_ANNOTATION_100W.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ºÍ20 ÍòÊý¾Ý,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column IX_ANNOTATION_100W.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION_FLAG                                    */
@@ -8112,16 +8112,16 @@ comment on table IX_ANNOTATION_FLAG is
 '[170]';
 
 comment on column IX_ANNOTATION_FLAG.PID is
-'Íâ¼ü,ÒýÓÃ"IX_ANNOTATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_ANNOTATION"';
 
 comment on column IX_ANNOTATION_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_ANNOTATION_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION_FLAG_100W                               */
@@ -8139,19 +8139,19 @@ create table IX_ANNOTATION_FLAG_100W  (
 );
 
 comment on table IX_ANNOTATION_FLAG_100W is
-'[171A]¼ÇÂ¼Ó¢ÎÄÎÄ×ÖµÄÀ´Ô´ÐÅÏ¢';
+'[171A]ï¿½ï¿½Â¼Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ô´ï¿½ï¿½Ï¢';
 
 comment on column IX_ANNOTATION_FLAG_100W.PID is
-'Íâ¼ü,ÒýÓÃ"IX_ANNOTATION_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_ANNOTATION_100W"';
 
 comment on column IX_ANNOTATION_FLAG_100W.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_ANNOTATION_FLAG_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION_FLAG_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION_NAME                                    */
@@ -8178,25 +8178,25 @@ create table IX_ANNOTATION_NAME  (
 );
 
 comment on column IX_ANNOTATION_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"IX_ANNOTATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_ANNOTATION"';
 
 comment on column IX_ANNOTATION_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ANNOTATION_NAME_100W                               */
@@ -8223,28 +8223,28 @@ create table IX_ANNOTATION_NAME_100W  (
 );
 
 comment on column IX_ANNOTATION_NAME_100W.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME_100W.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME_100W.PID is
-'Íâ¼ü,ÒýÓÃ"IX_ANNOTATION_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_ANNOTATION_100W"';
 
 comment on column IX_ANNOTATION_NAME_100W.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME_100W.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ANNOTATION_NAME_100W.NAME_CLASS is
 '[171U]';
 
 comment on column IX_ANNOTATION_NAME_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ANNOTATION_NAME_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_CROSSPOINT                                         */
@@ -8274,31 +8274,31 @@ create table IX_CROSSPOINT  (
 );
 
 comment on table IX_CROSSPOINT is
-'½»²æµãË÷Òý¼ÇÂ¼Á½ÌõÏà»¥½»²æµÄµÀÂ·¼°Æä½»²æµãÎ»';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½à»¥ï¿½ï¿½ï¿½ï¿½Äµï¿½Â·ï¿½ï¿½ï¿½ä½»ï¿½ï¿½ï¿½Î»';
 
 comment on column IX_CROSSPOINT.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_CROSSPOINT.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_CROSSPOINT.TYPE is
-'Æ½½»»òÁ¢½»';
+'Æ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_CROSSPOINT.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_CROSSPOINT.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_CROSSPOINT.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_CROSSPOINT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_CROSSPOINT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_HAMLET                                             */
@@ -8333,50 +8333,50 @@ create table IX_HAMLET  (
 );
 
 comment on table IX_HAMLET is
-'µØÃûË÷Òý±í,¼ÇÂ¼¿ÉÓÃÓÚÒýµ¼µÄ´å,ÏçÕò´ú±íµã';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä´ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_HAMLET.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column IX_HAMLET.SIDE is
-'¼ÇÂ¼HamletÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ,×ó²à»òÓÒ²à';
+'ï¿½ï¿½Â¼HamletÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column IX_HAMLET.NAME_GROUPID is
-'[173sp2]²Î¿¼"RD_NAME"';
+'[173sp2]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column IX_HAMLET.ROAD_FLAG is
 '[170]';
 
 comment on column IX_HAMLET.PMESH_ID is
-'[171A]Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'[171A]Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_HAMLET.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET.POI_PID is
-'[171A]²Î¿¼"IX_POI"';
+'[171A]ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_HAMLET.POI_NUM is
-'[173A]¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'[173A]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_HAMLET.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_HAMLET.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_HAMLET_FLAG                                        */
@@ -8397,16 +8397,16 @@ comment on table IX_HAMLET_FLAG is
 '[170]';
 
 comment on column IX_HAMLET_FLAG.PID is
-'Íâ¼ü,ÒýÓÃ"IX_HAMLET"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_HAMLET"';
 
 comment on column IX_HAMLET_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_HAMLET_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_HAMLET_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_HAMLET_NAME                                        */
@@ -8436,31 +8436,31 @@ comment on table IX_HAMLET_NAME is
 '[170]';
 
 comment on column IX_HAMLET_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"IX_HAMLET"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_HAMLET"';
 
 comment on column IX_HAMLET_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET_NAME.NAME_CLASS is
 '[170]';
 
 comment on column IX_HAMLET_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_HAMLET_NAME.NIDB_PID is
-'[173A]¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'[173A]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column IX_HAMLET_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_HAMLET_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_HAMLET_NAME_TONE                                   */
@@ -8486,28 +8486,28 @@ comment on table IX_HAMLET_NAME_TONE is
 '[170]';
 
 comment on column IX_HAMLET_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"IX_HAMLET_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_HAMLET_NAME"';
 
 comment on column IX_HAMLET_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column IX_HAMLET_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column IX_HAMLET_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column IX_HAMLET_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column IX_HAMLET_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column IX_HAMLET_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_HAMLET_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_IC                                                 */
@@ -8541,13 +8541,13 @@ create table IX_IC  (
 );
 
 comment on column IX_IC.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_IC.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_IC.NAME_GROUPID is
-'[170]²Î¿¼"RD_NAME"';
+'[170]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column IX_IC.ROAD_FLAG is
 '[170]';
@@ -8556,25 +8556,25 @@ comment on column IX_IC.KIND_CODE is
 '[170]';
 
 comment on column IX_IC.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_IC.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_IC.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_IC.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_IC.RESERVED is
 '[181A]';
 
 comment on column IX_IC.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_IC.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_NATGUD                                             */
@@ -8599,17 +8599,17 @@ create table IX_NATGUD  (
 );
 
 comment on column IX_NATGUD.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_NATGUD.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_NATGUD.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_NATGUD.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_NATGUD_NAME                                        */
@@ -8635,16 +8635,16 @@ create table IX_NATGUD_NAME  (
 );
 
 comment on column IX_NATGUD_NAME.NG_ASSO_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_NATGUD_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_NATGUD_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_NATGUD_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POINTADDRESS                                       */
@@ -8695,22 +8695,22 @@ create table IX_POINTADDRESS  (
 );
 
 comment on table IX_POINTADDRESS is
-'ÃÅÅÆºÅÂëÊÇÓÉµØÃûÖ÷¹Ü²¿ÃÅ°´ÕÕÒ»¶¨¹æÔò±àÖÆ,ÓÃÀ´¶¨Î»½¨ÖþÎïËùÔÚÎ»ÖÃµÄ±êÅÆ,°üÀ¨ÃÅÅÆ(¸½ºÅÅÆ),Â¥(¶°)ÅÆ,µ¥ÔªÅÆ,»§ºÅÅÆµÈ.';
+'ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü²ï¿½ï¿½Å°ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ÃµÄ±ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½),Â¥(ï¿½ï¿½)ï¿½ï¿½,ï¿½ï¿½Ôªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½.';
 
 comment on column IX_POINTADDRESS.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.GUIDE_LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column IX_POINTADDRESS.LOCATE_LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column IX_POINTADDRESS.LOCATE_NAME_GROUPID is
-'²Î¿¼"RD_NAME"';
+'ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column IX_POINTADDRESS.GUIDE_LINK_SIDE is
 '[171A]';
@@ -8719,49 +8719,49 @@ comment on column IX_POINTADDRESS.LOCATE_LINK_SIDE is
 '[171A]';
 
 comment on column IX_POINTADDRESS.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_POINTADDRESS.DPR_NAME is
-'ÍâÒµ²É¼¯µÀÂ·Ãû';
+'ï¿½ï¿½Òµï¿½É¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.DP_NAME is
-'ÍâÒµ²É¼¯ÃÅÅÆºÅ';
+'ï¿½ï¿½Òµï¿½É¼ï¿½ï¿½ï¿½ï¿½Æºï¿½';
 
 comment on column IX_POINTADDRESS.OPERATOR is
-'ÍâÒµµÄOPERATOR×Ö¶ÎÖÐµÄÄÚÈÝÔ­Ñù×ªÈë';
+'ï¿½ï¿½Òµï¿½ï¿½OPERATORï¿½Ö¶ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½Ô­ï¿½ï¿½×ªï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.MEMOIRE is
-'±ê×¢ÐÅÏ¢(µ¼ÈëÍâÒµLABEL)';
+'ï¿½ï¿½×¢ï¿½ï¿½Ï¢(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÒµLABEL)';
 
 comment on column IX_POINTADDRESS.DPF_NAME is
 '[170]';
 
 comment on column IX_POINTADDRESS.POSTER_ID is
-'[170]ÓÊµÝÔ±±àºÅ';
+'[170]ï¿½Êµï¿½Ô±ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.ADDRESS_FLAG is
-'[171U]µãÃÅÅÆµÄµØÖ·È·ÈÏ±êÊ¶';
+'[171U]ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÄµï¿½Ö·È·ï¿½Ï±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS.LOG is
-'ÔËÐÐ²ð·Ö³ÌÐòºó²úÉúµÄ×Ö¶Î';
+'ï¿½ï¿½ï¿½Ð²ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶ï¿½';
 
 comment on column IX_POINTADDRESS.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 comment on column IX_POINTADDRESS.STATE is
 '[173sp2]';
@@ -8786,16 +8786,16 @@ comment on table IX_POINTADDRESS_PARENT is
 '[170]';
 
 comment on column IX_POINTADDRESS_PARENT.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_PARENT.PARENT_PA_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS"';
 
 comment on column IX_POINTADDRESS_PARENT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS_PARENT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POINTADDRESS_CHILDREN                              */
@@ -8818,16 +8818,16 @@ comment on table IX_POINTADDRESS_CHILDREN is
 '[170]';
 
 comment on column IX_POINTADDRESS_CHILDREN.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS_PARENT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS_PARENT"';
 
 comment on column IX_POINTADDRESS_CHILDREN.CHILD_PA_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS"';
 
 comment on column IX_POINTADDRESS_CHILDREN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS_CHILDREN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POINTADDRESS_FLAG                                  */
@@ -8848,16 +8848,16 @@ comment on table IX_POINTADDRESS_FLAG is
 '[170]';
 
 comment on column IX_POINTADDRESS_FLAG.PID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS"';
 
 comment on column IX_POINTADDRESS_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_POINTADDRESS_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POINTADDRESS_NAME                                  */
@@ -8924,25 +8924,25 @@ create table IX_POINTADDRESS_NAME  (
 );
 
 comment on column IX_POINTADDRESS_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS"';
 
 comment on column IX_POINTADDRESS_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.SUM_CHAR is
-'µãÃÅÅÆµÄºÅÂëÌØÕ÷,ÈçÁ¬Ðø,ÆæÅ¼,»ìºÏ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÄºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Å¼,ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.SPLIT_FLAG is
 '[173sp2]';
 
 comment on column IX_POINTADDRESS_NAME.FULLNAME is
-'[170]¼ÇÂ¼²ð·ÖÇ°µÄÈ«µØÖ·Ãû³Æ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ç°ï¿½ï¿½È«ï¿½ï¿½Ö·ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.FULLNAME_PHONETIC is
 '[171U][170]';
@@ -8960,58 +8960,58 @@ comment on column IX_POINTADDRESS_NAME.ADDRNAME_PHONETIC is
 '[173sp1]';
 
 comment on column IX_POINTADDRESS_NAME.PROVINCE is
-'[170]±êÅÆÖÐ"Ê¡Ãû/Ö±Ï½ÊÐ/×ÔÖÎÇø/ÌØ±ðÐÐÕþÇøÃû"';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"Ê¡ï¿½ï¿½/Ö±Ï½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.CITY is
-'[170]±êÅÆÖÐ"µØ¼¶ÊÐÃû/×ÔÖÎÖÞÃû"';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.COUNTY is
-'[170]±êÅÆÖÐ"ÏØ¼¶ÊÐÃû/ÏØÃû/ÇøÃû(º¬Ö±Ï½ÊÐµÄÇø)"';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ö±Ï½ï¿½Ðµï¿½ï¿½ï¿½)"';
 
 comment on column IX_POINTADDRESS_NAME.TOWN is
-'[170]ÏçÕò½ÖµÀ°ìÃû³Æ';
+'[170]ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.PLACE is
-'[170]×ÔÈ»´åÂä,¾ÓÃñÐ¡Çø,ÇøÓòµØÃû,¿ª·¢ÇøÃû';
+'[170]ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.STREET is
-'[170]½ÖµÀ,µÀÂ·Ãû, ºúÍ¬,Ïï,Ìõ,Åª';
+'[170]ï¿½Öµï¿½,ï¿½ï¿½Â·ï¿½ï¿½, ï¿½ï¿½Í¬,ï¿½ï¿½,ï¿½ï¿½,Åª';
 
 comment on column IX_POINTADDRESS_NAME.LANDMARK is
-'[170]Ö¸ÓÐµØÀí±íÊ¾×÷ÓÃµÄµêÆÌ,¹«¹²ÉèÊ©,µ¥Î»,½¨Öþ»ò½»Í¨ÔËÊäÉèÊ©,°üÀ¨ÇÅÁº,¹«Â·»·µº,½»Í¨Õ¾³¡µÈ';
+'[170]Ö¸ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.PREFIX is
-'[170]ÓÃÓÚÐÞÊÎÃÅÅÆºÅºÅÂëµÄ³É·Ö';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½Ä³É·ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.HOUSENUM is
-'[170]Ö÷ÃÅÅÆºÅºÅÂë,ÒÔÐòºÅ·½Ê½ÃüÃûµÄÅª»òÌõ';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Å·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Åªï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.TYPE is
-'[170]ÃÅÅÆºÅºÅÂëÀàÐÍ';
+'[170]ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.SUBNUM is
-'[170]Ö÷ÃÅÅÆºÅËùÊôµÄ×ÓÃÅÅÆºÅ¼°ÐÞÊÎ¸Ã×ÓÃÅÅÆµÄÇ°×ºÐÅÏ¢';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅ¼ï¿½ï¿½ï¿½ï¿½Î¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç°×ºï¿½ï¿½Ï¢';
 
 comment on column IX_POINTADDRESS_NAME.SURFIX is
-'[170]ÓÃÓÚÐÞÊÎÃÅÅÆµØÖ·µÄ´ÊÓï,Æä±¾ÉíÃ»ÓÐÊµ¼ÊÒâÒå,²»Ó°ÏìÃÅÅÆµØÖ·µÄº¬Òå,Èç:×Ô±à,ÁÙÊ±';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Ä´ï¿½ï¿½ï¿½,ï¿½ä±¾ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Äºï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½Ô±ï¿½,ï¿½ï¿½Ê±';
 
 comment on column IX_POINTADDRESS_NAME.ESTAB is
-'[170]Èç"**´óÏÃ","**Ð¡Çø"';
+'[170]ï¿½ï¿½"**ï¿½ï¿½ï¿½ï¿½","**Ð¡ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.BUILDING is
-'[170]Èç"A¶°,12¶°,31Â¥,B×ù"µÈ';
+'[170]ï¿½ï¿½"Aï¿½ï¿½,12ï¿½ï¿½,31Â¥,Bï¿½ï¿½"ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME.UNIT is
-'[170]Èç"2ÃÅ"';
+'[170]ï¿½ï¿½"2ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.FLOOR is
-'[170]Èç"12²ã"';
+'[170]ï¿½ï¿½"12ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.ROOM is
-'[170]Èç"503ÊÒ"';
+'[170]ï¿½ï¿½"503ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.ADDONS is
-'[171U][170]Èç"¶ÔÃæ,ÅÔ±ß,¸½½ü"';
+'[171U][170]ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½,ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POINTADDRESS_NAME.PROV_PHONETIC is
 '[171U][170]';
@@ -9068,10 +9068,10 @@ comment on column IX_POINTADDRESS_NAME.ADDONS_PHONETIC is
 '[171U][170]';
 
 comment on column IX_POINTADDRESS_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POINTADDRESS_NAME_TONE                             */
@@ -9102,43 +9102,43 @@ comment on table IX_POINTADDRESS_NAME_TONE is
 '[170]';
 
 comment on column IX_POINTADDRESS_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POINTADDRESS_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POINTADDRESS_NAME"';
 
 comment on column IX_POINTADDRESS_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column IX_POINTADDRESS_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column IX_POINTADDRESS_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column IX_POINTADDRESS_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column IX_POINTADDRESS_NAME_TONE.PA_JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column IX_POINTADDRESS_NAME_TONE.PA_TONE_A is
-'¶ÔÓ¦ÓÚ¶ÔÓ¦ÓÚÃÅÅÆºÅÆ´Òô,Êý×Ö²»×ªÆ´Òô';
+'ï¿½ï¿½Ó¦ï¿½Ú¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½Æ´ï¿½ï¿½,ï¿½ï¿½ï¿½Ö²ï¿½×ªÆ´ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME_TONE.PA_TONE_B is
-'¶ÔÓ¦ÓÚÃÅÅÆºÅµÄÆ´Òô,Êý×Ö×ªÆ´Òô';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅµï¿½Æ´ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½×ªÆ´ï¿½ï¿½';
 
 comment on column IX_POINTADDRESS_NAME_TONE.PA_LH_A is
-'¶ÔÓ¦ÃÅÅÆºÅÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column IX_POINTADDRESS_NAME_TONE.PA_LH_B is
-'¶ÔÓ¦ÃÅÅÆºÅÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column IX_POINTADDRESS_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POINTADDRESS_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_ADDRESS                                        */
@@ -9204,19 +9204,19 @@ create table IX_POI_ADDRESS  (
 );
 
 comment on column IX_POI_ADDRESS.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_ADDRESS.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column IX_POI_ADDRESS.FULLNAME is
 '[170]';
@@ -9237,58 +9237,58 @@ comment on column IX_POI_ADDRESS.ADDRNAME_PHONETIC is
 '[173sp1]';
 
 comment on column IX_POI_ADDRESS.PROVINCE is
-'POI±êÅÆÖÐµÄ"Ê¡Ãû/Ö±Ï½ÊÐ/×ÔÖÎÇø/ÌØ±ðÐÐÕþÇøÃû"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"Ê¡ï¿½ï¿½/Ö±Ï½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.CITY is
-'POI±êÅÆÖÐµÄ"µØ¼¶ÊÐÃû/×ÔÖÎÖÞÃû"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.COUNTY is
-'POI±êÅÆÖÐµÄ"ÏØ¼¶ÊÐÃû/ÏØÃû/ÇøÃû(º¬Ö±Ï½ÊÐµÄÇø)"';
+'POIï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½"ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ö±Ï½ï¿½Ðµï¿½ï¿½ï¿½)"';
 
 comment on column IX_POI_ADDRESS.TOWN is
-'[170]ÏçÕò½ÖµÀ°ìÃû³Æ';
+'[170]ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.PLACE is
-'[170]×ÔÈ»´åÂä,¾ÓÃñÐ¡Çø,ÇøÓòµØÃû,¿ª·¢ÇøÃû';
+'[170]ï¿½ï¿½È»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.STREET is
-'[170]½ÖµÀ,µÀÂ·Ãû, ºúÍ¬,Ïï,Ìõ,Åª';
+'[170]ï¿½Öµï¿½,ï¿½ï¿½Â·ï¿½ï¿½, ï¿½ï¿½Í¬,ï¿½ï¿½,ï¿½ï¿½,Åª';
 
 comment on column IX_POI_ADDRESS.LANDMARK is
-'Ö¸ÓÐµØÀí±íÊ¾×÷ÓÃµÄµêÆÌ,¹«¹²ÉèÊ©,µ¥Î»,½¨Öþ»ò½»Í¨ÔËÊäÉèÊ©,°üÀ¨ÇÅÁº,¹«Â·»·µº,½»Í¨Õ¾³¡µÈ';
+'Ö¸ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ÃµÄµï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.PREFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆºÅºÅÂëµÄ³É·Ö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½Ä³É·ï¿½';
 
 comment on column IX_POI_ADDRESS.HOUSENUM is
-'Ö÷ÃÅÅÆºÅºÅÂë,ÒÔÐòºÅ·½Ê½ÃüÃûµÄÅª»òÌõ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Å·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½Åªï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.TYPE is
-'ÃÅÅÆºÅºÅÂëÀàÐÍ';
+'ï¿½ï¿½ï¿½ÆºÅºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.SUBNUM is
-'Ö÷ÃÅÅÆºÅËùÊôµÄ×ÓÃÅÅÆºÅ¼°ÐÞÊÎ¸Ã×ÓÃÅÅÆµÄÇ°×ºÐÅÏ¢';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÆºÅ¼ï¿½ï¿½ï¿½ï¿½Î¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ç°×ºï¿½ï¿½Ï¢';
 
 comment on column IX_POI_ADDRESS.SURFIX is
-'ÓÃÓÚÐÞÊÎÃÅÅÆµØÖ·µÄ´ÊÓï,Æä±¾ÉíÃ»ÓÐÊµ¼ÊÒâÒå,²»Ó°ÏìÃÅÅÆµØÖ·µÄº¬Òå,Èç:×Ô±à,ÁÙÊ±';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Ä´ï¿½ï¿½ï¿½,ï¿½ä±¾ï¿½ï¿½Ã»ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½Ö·ï¿½Äºï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½Ô±ï¿½,ï¿½ï¿½Ê±';
 
 comment on column IX_POI_ADDRESS.ESTAB is
-'Èç"**´óÏÃ","**Ð¡Çø"';
+'ï¿½ï¿½"**ï¿½ï¿½ï¿½ï¿½","**Ð¡ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.BUILDING is
-'Èç"A¶°,12¶°,31Â¥,B×ù"µÈ';
+'ï¿½ï¿½"Aï¿½ï¿½,12ï¿½ï¿½,31Â¥,Bï¿½ï¿½"ï¿½ï¿½';
 
 comment on column IX_POI_ADDRESS.FLOOR is
-'Èç"12²ã"';
+'ï¿½ï¿½"12ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.UNIT is
-'Èç"2ÃÅ"';
+'ï¿½ï¿½"2ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.ROOM is
-'Èç"503ÊÒ"';
+'ï¿½ï¿½"503ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.ADDONS is
-'[171U]Èç"¶ÔÃæ,ÅÔ±ß,¸½½ü"';
+'[171U]ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½,ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column IX_POI_ADDRESS.PROV_PHONETIC is
 '[171U]';
@@ -9345,10 +9345,10 @@ comment on column IX_POI_ADDRESS.ADDONS_PHONETIC is
 '[171U]';
 
 comment on column IX_POI_ADDRESS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_ADDRESS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_ADVERTISEMENT                                  */
@@ -9374,33 +9374,33 @@ comment on table IX_POI_ADVERTISEMENT is
 '[170]';
 
 comment on column IX_POI_ADVERTISEMENT.ADVERTISE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ADVERTISEMENT.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_ADVERTISEMENT.TYPE is
-'0:Èë¿â
-1:ÌØÊâÏÔÊ¾
-2:¹ã¸æÓï
-3:ÓïÒôÌáÊ¾
-¶à¸ö¹¦ÄÜÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
+'0:ï¿½ï¿½ï¿½
+1:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+2:ï¿½ï¿½ï¿½ï¿½ï¿½
+3:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_POI_ADVERTISEMENT.START_TIME is
-'¸ñÊ½:YYYY:MM:DD
-¶à¸öÊ±¼ä¶ÎÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½Ê½:YYYY:MM:DD
+ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_ADVERTISEMENT.END_TIME is
-'¸ñÊ½:YYYY:MM:DD
-¶à¸öÊ±¼ä¶ÎÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½Ê½:YYYY:MM:DD
+ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_ADVERTISEMENT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_ADVERTISEMENT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_ATTRACTION                                     */
@@ -9436,22 +9436,22 @@ comment on table IX_POI_ATTRACTION is
 '[170][190U][210]';
 
 comment on column IX_POI_ATTRACTION.ATTRACTION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ATTRACTION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_ATTRACTION.CITY is
-'´æ´¢·½Ê½´ý¶¨';
+'ï¿½æ´¢ï¿½ï¿½Ê½ï¿½ï¿½';
 
 comment on column IX_POI_ATTRACTION.PHOTO_NAME is
-'¶à¸öÕÕÆ¬Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_ATTRACTION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_ATTRACTION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_AUDIO                                          */
@@ -9477,19 +9477,19 @@ comment on table IX_POI_AUDIO is
 '[170]';
 
 comment on column IX_POI_AUDIO.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_AUDIO.AUDIO_ID is
-'²Î¿¼"AU_AUDIO"';
+'ï¿½Î¿ï¿½"AU_AUDIO"';
 
 comment on column IX_POI_AUDIO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 comment on column IX_POI_AUDIO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_AUDIO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_BUILDING                                       */
@@ -9510,10 +9510,10 @@ comment on table IX_POI_BUILDING is
 '[1802A]';
 
 comment on column IX_POI_BUILDING.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_BUILDING.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_BUSINESSTIME                                   */
@@ -9544,54 +9544,54 @@ comment on table IX_POI_BUSINESSTIME is
 '[171A][190U]';
 
 comment on column IX_POI_BUSINESSTIME.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_BUSINESSTIME.MON_SRT is
-'ÓªÒµ¿ªÊ¼ÔÂ·Ý,1~12';
+'ÓªÒµï¿½ï¿½Ê¼ï¿½Â·ï¿½,1~12';
 
 comment on column IX_POI_BUSINESSTIME.MON_END is
-'ÓªÒµ½áÊøÔÂ·Ý,1~12';
+'ÓªÒµï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½,1~12';
 
 comment on column IX_POI_BUSINESSTIME.WEEK_IN_YEAR_SRT is
-'Ö¸Ò»ÄêÖÐµÄÆðÊ¼ÖÜ,±íÊ¾´ÓµÚN ÖÜ¿ªÊ¼,N È¡Öµ:
-1~53 »ò-1~-53';
+'Ö¸Ò»ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½Ê¼ï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½Óµï¿½N ï¿½Ü¿ï¿½Ê¼,N È¡Öµ:
+1~53 ï¿½ï¿½-1~-53';
 
 comment on column IX_POI_BUSINESSTIME.WEEK_IN_YEAR_END is
-'Ö¸Ò»ÄêÖÐµÄ½áÊøÖÜ,±íÊ¾µ½µÚN ÖÜ½áÊø,N È¡Öµ:
-1~53 »ò-1~-53';
+'Ö¸Ò»ï¿½ï¿½ï¿½ÐµÄ½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½N ï¿½Ü½ï¿½ï¿½ï¿½,N È¡Öµ:
+1~53 ï¿½ï¿½-1~-53';
 
 comment on column IX_POI_BUSINESSTIME.WEEK_IN_MONTH_SRT is
-'Ö¸¶¨ÔÂ·ÝµÄÓªÒµÆðÊ¼ÖÜ, ±íÊ¾´ÓµÚN ÖÜ¿ªÊ¼,N
-È¡Öµ:1~5 »ò-1~-5';
+'Ö¸ï¿½ï¿½ï¿½Â·Ýµï¿½ÓªÒµï¿½ï¿½Ê¼ï¿½ï¿½, ï¿½ï¿½Ê¾ï¿½Óµï¿½N ï¿½Ü¿ï¿½Ê¼,N
+È¡Öµ:1~5 ï¿½ï¿½-1~-5';
 
 comment on column IX_POI_BUSINESSTIME.WEEK_IN_MONTH_END is
-'Ö¸¶¨ÔÂ·ÝµÄÓªÒµ½áÊøÖÜ, ±íÊ¾µ½µÚN ÖÜ½áÊø,N
-È¡Öµ:1~5 »ò-1~-5';
+'Ö¸ï¿½ï¿½ï¿½Â·Ýµï¿½ÓªÒµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½N ï¿½Ü½ï¿½ï¿½ï¿½,N
+È¡Öµ:1~5 ï¿½ï¿½-1~-5';
 
 comment on column IX_POI_BUSINESSTIME.VALID_WEEK is
-'0/1:ÎÞÐ§/ ÓÐÐ§,¹²7 Î»,Èç1000000 ÎªÖÜÈÕÓªÒµ';
+'0/1:ï¿½ï¿½Ð§/ ï¿½ï¿½Ð§,ï¿½ï¿½7 Î»,ï¿½ï¿½1000000 Îªï¿½ï¿½ï¿½ï¿½ÓªÒµ';
 
 comment on column IX_POI_BUSINESSTIME.DAY_SRT is
-'È¡Öµ:1~31 »ò -31~-1,º¬Òå:
-3 :µ±ÔÂÕýÊýµÚ3 Ìì(3 ºÅ);-4:µ±ÔÂµ¹ÊýµÚËÄÌì';
+'È¡Öµ:1~31 ï¿½ï¿½ -31~-1,ï¿½ï¿½ï¿½ï¿½:
+3 :ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3 ï¿½ï¿½(3 ï¿½ï¿½);-4:ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_BUSINESSTIME.DAY_END is
-'È¡Öµ:1~31 »ò -31~-1';
+'È¡Öµ:1~31 ï¿½ï¿½ -31~-1';
 
 comment on column IX_POI_BUSINESSTIME.TIME_SRT is
-'08:00 ÓªÒµ¿ªÊ¼Ê±¼äÎªÔçÉÏ8 µãÕû
-×¢:Ã°ºÅÎª°ë½Ç¸ñÊ½';
+'08:00 ÓªÒµï¿½ï¿½Ê¼Ê±ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½8 ï¿½ï¿½ï¿½ï¿½
+×¢:Ã°ï¿½ï¿½Îªï¿½ï¿½Ç¸ï¿½Ê½';
 
 comment on column IX_POI_BUSINESSTIME.TIME_DUR is
-'12:00 ÓªÒµÊ±³¤Îª12 Ð¡Ê±0 ·ÖÖÓ
-×¢: time_srt + time_dur ¿É´óÓÚµÈÓÚ24:00,±íÊ¾
-ÓªÒµÖÁ´ÎÈÕÄ³Ê±';
+'12:00 ÓªÒµÊ±ï¿½ï¿½Îª12 Ð¡Ê±0 ï¿½ï¿½ï¿½ï¿½
+×¢: time_srt + time_dur ï¿½É´ï¿½ï¿½Úµï¿½ï¿½ï¿½24:00,ï¿½ï¿½Ê¾
+ÓªÒµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ê±';
 
 comment on column IX_POI_BUSINESSTIME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_BUSINESSTIME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CARRENTAL                                      */
@@ -9611,10 +9611,10 @@ create table IX_POI_CARRENTAL  (
 );
 
 comment on column IX_POI_CARRENTAL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CARRENTAL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CHARGINGPLOT                                   */
@@ -9657,71 +9657,71 @@ comment on table IX_POI_CHARGINGPLOT is
 '[170][190U]';
 
 comment on column IX_POI_CHARGINGPLOT.GROUP_ID is
-'½»/Ö±Á÷µç,²åÍ·ÀàÐÍ,³äµç¹¦ÂÊºÍµçÑ¹¶¼ÏàÍ¬µÄ³äµç×®ÎªÒ»×é';
+'ï¿½ï¿½/Ö±ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ç¹¦ï¿½ÊºÍµï¿½Ñ¹ï¿½ï¿½ï¿½ï¿½Í¬ï¿½Ä³ï¿½ï¿½×®ÎªÒ»ï¿½ï¿½';
 
 comment on column IX_POI_CHARGINGPLOT.COUNT is
-'Í¬Ò»×éÄÚµÄ³äµç×®¸öÊý';
+'Í¬Ò»ï¿½ï¿½ï¿½ÚµÄ³ï¿½ï¿½×®ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CHARGINGPLOT.PLUG_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	½»Á÷µç3¿×¼ÒÓÃ
-1	¹ú±ê½»Á÷µç7¿×²å²Û
-2	¹ú±êÖ±Á÷µç9¿×²å²Û
-3	ÃÀÊ½½»Á÷5¿×²å²Û
-4	ÃÀÊ½Ö±Á÷Combo²å²Û
-5	Å·Ê½½»Á÷7¿×²å²Û
-6	Å·Ê½Ö±Á÷Combo²å²Û
-7	ÈÕÊ½Ö±Á÷CHAdeMO²å²Û
-8	ÌØË¹À­×¨ÓÃ²å²Û
-9	ÆäËû
-10	ÎÞ·¨²É¼¯
-¿É²¢´æ£¬"|"·Ö¸ô
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½3ï¿½×¼ï¿½ï¿½ï¿½
+1	ï¿½ï¿½ê½»ï¿½ï¿½ï¿½ï¿½7ï¿½×²ï¿½ï¿½
+2	ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½9ï¿½×²ï¿½ï¿½
+3	ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½5ï¿½×²ï¿½ï¿½
+4	ï¿½ï¿½Ê½Ö±ï¿½ï¿½Comboï¿½ï¿½ï¿½
+5	Å·Ê½ï¿½ï¿½ï¿½ï¿½7ï¿½×²ï¿½ï¿½
+6	Å·Ê½Ö±ï¿½ï¿½Comboï¿½ï¿½ï¿½
+7	ï¿½ï¿½Ê½Ö±ï¿½ï¿½CHAdeMOï¿½ï¿½ï¿½
+8	ï¿½ï¿½Ë¹ï¿½ï¿½×¨ï¿½Ã²ï¿½ï¿½
+9	ï¿½ï¿½ï¿½ï¿½
+10	ï¿½Þ·ï¿½ï¿½É¼ï¿½
+ï¿½É²ï¿½ï¿½æ£¬"|"ï¿½Ö¸ï¿½
 ';
 
 comment on column IX_POI_CHARGINGPLOT.POWER is
-'[210]µ¥Î»ÎªKW';
+'[210]ï¿½ï¿½Î»ÎªKW';
 
 comment on column IX_POI_CHARGINGPLOT.VOLTAGE is
-'[210]µ¥Î»ÎªV';
+'[210]ï¿½ï¿½Î»ÎªV';
 
 comment on column IX_POI_CHARGINGPLOT."CURRENT" is
-'[180A][210]µ¥Î»ÎªA';
+'[180A][210]ï¿½ï¿½Î»ÎªA';
 
 comment on column IX_POI_CHARGINGPLOT.MEMO is
 '[180A]';
 
 comment on column IX_POI_CHARGINGPLOT.OPEN_TYPE is
-'1	¶ÔËùÓÐ³µÁ¾¿ª·Å
-2	¶Ô»·ÎÀ³µ¿ª·Å
-3	¶Ô¹«½»³µ¿ª·Å
-4	¶Ô³ö×â³µ¿ª·Å
-5	¶ÔÆäËûÌØÖÖ³µÁ¾¿ª·Å
-6	¶Ô×ÔÓÐ³µÁ¾¿ª·Å
-7	¸öÈË³äµç×®
-ChainID£¨¶ÔÄ³Æ·ÅÆÆû³µ¿ª·Å£©
-ÆäÖÐ£º
-1²»ÓëÆäËûÖµ¹²´æ£»
-³ý1Ö®ÍâµÄÆäËûÖµ¿ÉÒÔ¹²´æ£¬¶àÖÖ·½Ê½ÀàÐÍ¼äÒÔ°ë½Ç¡°|¡±·Ö¸ô£¬±íÊ¾Ö»¶ÔÕâÐ©³µÁ¾¿ª·Å£»';
+'1	ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2	ï¿½Ô»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+3	ï¿½Ô¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4	ï¿½Ô³ï¿½ï¿½â³µï¿½ï¿½ï¿½ï¿½
+5	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+6	ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+7	ï¿½ï¿½ï¿½Ë³ï¿½ï¿½×®
+ChainIDï¿½ï¿½ï¿½ï¿½Ä³Æ·ï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½
+ï¿½ï¿½ï¿½Ð£ï¿½
+1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½æ£»
+ï¿½ï¿½1Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ô¹ï¿½ï¿½æ£¬ï¿½ï¿½ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Ô°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ö»ï¿½ï¿½ï¿½ï¿½Ð©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½';
 
 comment on column IX_POI_CHARGINGPLOT.PAYMENT is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËû 
-1	ÏÖ½ð
-2	ÐÅÓÃ¿¨
-3	½è¼Ç¿¨
-4	ÌØÖÆ³äÖµ¿¨
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½ 
+1	ï¿½Ö½ï¿½
+2	ï¿½ï¿½ï¿½Ã¿ï¿½
+3	ï¿½ï¿½Ç¿ï¿½
+4	ï¿½ï¿½ï¿½Æ³ï¿½Öµï¿½ï¿½
 5	 APP
-¶àÖÖ¸¶·Ñ·½Ê½Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
+ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½Ñ·ï¿½Ê½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_POI_CHARGINGPLOT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CHARGINGPLOT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CHARGINGPLOT_PH                                */
@@ -9737,10 +9737,10 @@ create table IX_POI_CHARGINGPLOT_PH  (
 );
 
 comment on column IX_POI_CHARGINGPLOT_PH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CHARGINGPLOT_PH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CHARGINGSTATION                                */
@@ -9774,58 +9774,58 @@ comment on table IX_POI_CHARGINGSTATION is
 '[170][210]';
 
 comment on column IX_POI_CHARGINGSTATION.CHARGING_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CHARGINGSTATION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_CHARGINGSTATION.CHARGING_TYPE is
 '[180U][210]';
 
 comment on column IX_POI_CHARGINGSTATION.CHANGE_OPEN_TYPE is
-'1	ÎÞÏÞÖÆ
-2	¶Ô»·ÎÀ³µ¿ª·Å
-3	¶Ô¹«½»³µ¿ª·Å
-4	¶Ô³ö×â³µ¿ª·Å
-5	¶ÔÆäËûÌØÖÖ³µÁ¾¿ª·Å
-6	¶Ô×ÔÓÐ³µÁ¾¿ª·Å
-1²»ÓëÆäËûÖµ¹²´æ£»
-ÆäËûÖµ¿ÉÒÔ¹²´æ£¬¶àÖµÊ±ÒÔ°ë½Ç¡°|¡±·Ö¸ô£»';
+'1	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2	ï¿½Ô»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+3	ï¿½Ô¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4	ï¿½Ô³ï¿½ï¿½â³µï¿½ï¿½ï¿½ï¿½
+5	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+6	ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+1ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½æ£»
+ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½ï¿½Ô¹ï¿½ï¿½æ£¬ï¿½ï¿½ÖµÊ±ï¿½Ô°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CHARGINGSTATION.CHARGING_NUM is
-'´óÓÚµÈÓÚ0,¿Õ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½0,ï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CHARGINGSTATION.SERVICE_PROV is
-'Ö»ÄÜÓÐÒ»¸öÖµ£¬ÖµÓò°üÀ¨:
-0	ÆäËû
-1	¹ú¼ÒµçÍø
-2	ÄÏ·½µçÍø
-3	ÖÐÊ¯ÓÍ
-4	ÖÐÊ¯»¯
-5	ÖÐº£ÓÍ
-6	ÖÐ¹úÆÕÌì
-7	ÌØÀ´µç
-8	Ñ­µÀÐÂÄÜÔ´
-9	¸»µç¿Æ¼¼
-10	»ªÉÌÈýÓÅ
-11	ÖÐëŠ
-12	¸ÛŸô
-13	°ÄëŠ
-14	ÂÌ¹·
+'Ö»ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Öµï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0	ï¿½ï¿½ï¿½ï¿½
+1	ï¿½ï¿½Òµï¿½ï¿½ï¿½
+2	ï¿½Ï·ï¿½ï¿½ï¿½ï¿½ï¿½
+3	ï¿½ï¿½Ê¯ï¿½ï¿½
+4	ï¿½ï¿½Ê¯ï¿½ï¿½
+5	ï¿½Ðºï¿½ï¿½ï¿½
+6	ï¿½Ð¹ï¿½ï¿½ï¿½ï¿½ï¿½
+7	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+8	Ñ­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
+9	ï¿½ï¿½ï¿½ï¿½Æ¼ï¿½
+10	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+11	ï¿½ï¿½ï¿½
+12	ï¿½ÛŸï¿½
+13	ï¿½ï¿½ï¿½
+14	ï¿½Ì¹ï¿½
 15	EVCARD
-16	ÐÇÐÇ³äµç
-17	µç×®
-18	ÒÀÍþÄÜÔ´
+16	ï¿½ï¿½ï¿½Ç³ï¿½ï¿½
+17	ï¿½ï¿½×®
+18	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
 ChainID';
 
 comment on column IX_POI_CHARGINGSTATION.MEMO is
 '[180A]';
 
 comment on column IX_POI_CHARGINGSTATION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CHARGINGSTATION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_PARENT                                         */
@@ -9847,10 +9847,10 @@ create table IX_POI_PARENT  (
 );
 
 comment on column IX_POI_PARENT.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_PARENT.PARENT_POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_PARENT.TENANT_FLAG is
 '[181U]';
@@ -9859,10 +9859,10 @@ comment on column IX_POI_PARENT.MEMO is
 '[181A]';
 
 comment on column IX_POI_PARENT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_PARENT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CHILDREN                                       */
@@ -9884,16 +9884,16 @@ create table IX_POI_CHILDREN  (
 );
 
 comment on column IX_POI_CHILDREN.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POI_PARENT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI_PARENT"';
 
 comment on column IX_POI_CHILDREN.CHILD_POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_CHILDREN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CHILDREN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_CONTACT                                        */
@@ -9915,32 +9915,32 @@ create table IX_POI_CONTACT  (
 );
 
 comment on table IX_POI_CONTACT is
-'µ±´æÔÚ¶à¸öÁªÏµ·½Ê½Ê±,´æ´¢Îª¶àÌõ¼ÇÂ¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½Ê½Ê±,ï¿½æ´¢Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼';
 
 comment on column IX_POI_CONTACT.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_CONTACT.CONTACT is
-'¼ÇÂ¼°üÀ¨ÇøºÅÔÚÄÚµÄµç»°ºÅÂë,´æ´¢ÎªÓ¢ÎÄ°ë½ÇÊý×Ö×Ö·û,¶þÕßÖ®¼äÒÔ°ë½Ç"-"·Ö¸ô,Èç010-82306399';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÚµÄµç»°ï¿½ï¿½ï¿½ï¿½,ï¿½æ´¢ÎªÓ¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½,ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½Ô°ï¿½ï¿½"-"ï¿½Ö¸ï¿½,ï¿½ï¿½010-82306399';
 
 comment on column IX_POI_CONTACT.CONTACT_DEPART is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»¸ö·þÎñ²¿ÃÅ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ,Èç:00000011 ±íÊ¾×Ü»úºÍ¿Í·þ;00000101 ±íÊ¾×Ü»úºÍÔ¤¶©
-µÚ0bit:×Ü»ú
-µÚ1bit:¿Í·þ
-µÚ2bit:Ô¤¶©
-µÚ3bit:ÏúÊÛ
-µÚ4bit:Î¬ÐÞ
-µÚ5bit:ÆäËû
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000011 ï¿½ï¿½Ê¾ï¿½Ü»ï¿½Í¿Í·ï¿½;00000101 ï¿½ï¿½Ê¾ï¿½Ü»ï¿½ï¿½Ô¤ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½Ü»ï¿½
+ï¿½ï¿½1bit:ï¿½Í·ï¿½
+ï¿½ï¿½2bit:Ô¤ï¿½ï¿½
+ï¿½ï¿½3bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½4bit:Î¬ï¿½ï¿½
+ï¿½ï¿½5bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CONTACT.PRIORITY is
-'[1901U]ÁªÏµ·½Ê½µÄÓÅÏÈ¼¶ÅÅÐò';
+'[1901U]ï¿½ï¿½Ïµï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½ï¿½È¼ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_CONTACT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_CONTACT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_DETAIL                                         */
@@ -9974,31 +9974,31 @@ comment on table IX_POI_DETAIL is
 '[190A][210]';
 
 comment on column IX_POI_DETAIL.WEB_SITE is
-'¼ÇÂ¼ÍøÖ·ÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ö·ï¿½ï¿½Ï¢';
 
 comment on column IX_POI_DETAIL.FAX is
-'¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_DETAIL.STAR_HOTEL is
-'µ±POI KIND=5081,5082,5083,5084,5085 Ê±
-¸³Öµ,ÆäËüÎª¿Õ';
+'ï¿½ï¿½POI KIND=5081,5082,5083,5084,5085 Ê±
+ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column IX_POI_DETAIL.ADVER_FLAG is
-'ÖµÓò°üÀ¨:
-0 ·ñ
-1 ÊÇ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0 ï¿½ï¿½
+1 ï¿½ï¿½';
 
 comment on column IX_POI_DETAIL.CARDTYPE is
 '1	Î¬Ê¿(visa)
-2	ÍòÊÂ´ï(mastercard)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-²»Ö§³ÖÐÅÓÃ¿¨Ê±Îª¿Õ';
+2	ï¿½ï¿½ï¿½Â´ï¿½(mastercard)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½Ê±Îªï¿½ï¿½';
 
 comment on column IX_POI_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_ENTRYIMAGE                                     */
@@ -10027,34 +10027,34 @@ comment on table IX_POI_ENTRYIMAGE is
 '[170]';
 
 comment on column IX_POI_ENTRYIMAGE.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_ENTRYIMAGE.IMAGE_CODE is
-'Í¼ÐÎÎÄ¼þÃû³Æ';
+'Í¼ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ENTRYIMAGE.X_PIXEL_R4 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚX ÖáÏñËØ×ø±ê(reuko id4)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½X ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(reuko id4)';
 
 comment on column IX_POI_ENTRYIMAGE.Y_PIXEL_R4 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚY ÖáÏñËØ×ø±ê(reuko id4)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Y ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(reuko id4)';
 
 comment on column IX_POI_ENTRYIMAGE.X_PIXEL_R5 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚX ÖáÏñËØ×ø±ê(reuko id5)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½X ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(reuko id5)';
 
 comment on column IX_POI_ENTRYIMAGE.Y_PIXEL_R5 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚY ÖáÏñËØ×ø±ê(reuko id5)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Y ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(reuko id5)';
 
 comment on column IX_POI_ENTRYIMAGE.X_PIXEL_35 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚX ÖáÏñËØ×ø±ê(35up id5)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½X ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(35up id5)';
 
 comment on column IX_POI_ENTRYIMAGE.Y_PIXEL_35 is
-'POI ÔÚ¸ÅÂÔÍ¼ÄÚY ÖáÏñËØ×ø±ê(35up id5)';
+'POI ï¿½Ú¸ï¿½ï¿½ï¿½Í¼ï¿½ï¿½Y ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(35up id5)';
 
 comment on column IX_POI_ENTRYIMAGE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_ENTRYIMAGE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_EVENT                                          */
@@ -10088,13 +10088,13 @@ comment on table IX_POI_EVENT is
 '[190A][210]';
 
 comment on column IX_POI_EVENT.POI_PID is
-'¶à¸öPOI Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½POI Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_EVENT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_EVENT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_FLAG                                           */
@@ -10115,16 +10115,16 @@ comment on table IX_POI_FLAG is
 '[170]';
 
 comment on column IX_POI_FLAG.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_POI_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_GASSTATION                                     */
@@ -10154,155 +10154,155 @@ comment on table IX_POI_GASSTATION is
 '[170][190U][210]';
 
 comment on column IX_POI_GASSTATION.GASSTATION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_GASSTATION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_GASSTATION.SERVICE_PROV is
-'1	ÖÐÊ¯»¯(Sinopec)
-2	ÖÐ‡øÊ¯ÓÍ(Chinaoil)
-3	¼ÓµÂÊ¿(Caltex)
-4	°£¿ËÉ­ÃÀæÚºÍ–|·½(Esso Feoso)
-5	Í˜š¤(Shell)
-6	ÄÏ¹âÊ¯ÓÍ(Nkoil)
-7	Ò×¸ß(Towngas)
-8	ÆäËû
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ
+'1	ï¿½ï¿½Ê¯ï¿½ï¿½(Sinopec)
+2	ï¿½Ð‡ï¿½Ê¯ï¿½ï¿½(Chinaoil)
+3	ï¿½Óµï¿½Ê¿(Caltex)
+4	ï¿½ï¿½ï¿½ï¿½É­ï¿½ï¿½ï¿½ÚºÍ–|ï¿½ï¿½(Esso Feoso)
+5	Í˜ï¿½ï¿½(Shell)
+6	ï¿½Ï¹ï¿½Ê¯ï¿½ï¿½(Nkoil)
+7	ï¿½×¸ï¿½(Towngas)
+8	ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½
 ';
 
 comment on column IX_POI_GASSTATION.FUEL_TYPE is
-'[180A][210]ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	²ñÓÍ(Diesel)
-1	ÆûÓÍ(Gasoline)
-2	¼×´¼ÆûÓÍ(MG85)
-3	ÆäËû
-4	Òº»¯Ê¯ÓÍÆø(LPG)
-5	ÌìÈ»Æø(CNG)
-6	ÒÒ´¼ÆûÓÍ(E10)
-7	ÇâÈ¼ÁÏ(Hydrogen)
-8	ÉúÎï²ñÓÍ(Biodiesel)
-9	Òº»¯ÌìÈ»Æø(LNG)
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-¸Û°ÄÖµÓò£º µÚÒ»Î»´ú±í¶ÔÓ¦µÄ·þÎñÌá¹©ÉÌ
-´úÂë	Ãû³Æ
+'[180A][210]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½(Diesel)
+1	ï¿½ï¿½ï¿½ï¿½(Gasoline)
+2	ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½(MG85)
+3	ï¿½ï¿½ï¿½ï¿½
+4	Òºï¿½ï¿½Ê¯ï¿½ï¿½ï¿½ï¿½(LPG)
+5	ï¿½ï¿½È»ï¿½ï¿½(CNG)
+6	ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ï¿½(E10)
+7	ï¿½ï¿½È¼ï¿½ï¿½(Hydrogen)
+8	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Biodiesel)
+9	Òºï¿½ï¿½ï¿½ï¿½È»ï¿½ï¿½(LNG)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½ ï¿½ï¿½Ò»Î»ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä·ï¿½ï¿½ï¿½ï¿½á¹©ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
 11	SINO X Power
 12	SINO Power
 13	SINO Disel
 14	LPG
-21	Á¦„Å²ñÓÍ
-22	ÇåÐÂÆûÓÍ
-23	³¬¼‰ÆûÓÍ
+21	ï¿½ï¿½ï¿½Å²ï¿½ï¿½ï¿½
+22	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+23	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 24	LPG
-31	Gold»Æ½ð
-32	Platinum°×½ð
-33	DieselÌØÅä²ñÓÍ
-34	²ñÓÍÏÖ½ðßÒieselCasCard
-35	Ê¯ÓÍšâAutoGas
-41	Disel³¬µÍÁò²ñÓÍ
-42	8000ëŠÓÍ
-43	F-1ÌØ¼‰ëŠÓÍ
-44	AutoGasÊ¯ÓÍšâ
-51	Disesel²ñÓÍ
-52	FuelSave‘aÓÍÅä·½ÆûÓÍ
+31	Goldï¿½Æ½ï¿½
+32	Platinumï¿½×½ï¿½
+33	Dieselï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+34	ï¿½ï¿½ï¿½ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ieselCasCard
+35	Ê¯ï¿½Íšï¿½AutoGas
+41	Diselï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+42	8000ï¿½ï¿½ï¿½
+43	F-1ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½
+44	AutoGasÊ¯ï¿½Íšï¿½
+51	Diseselï¿½ï¿½ï¿½ï¿½
+52	FuelSaveï¿½aï¿½ï¿½ï¿½ä·½ï¿½ï¿½ï¿½ï¿½
 53	Shell V-Power
-54	AutoGasÊ¯ÓÍšâ
-61	³¬„Å‘aÓÍÅä·½ÆûÓÍ
-62	ÇåÅä·½µÍÁò²ñÓÍ
+54	AutoGasÊ¯ï¿½Íšï¿½
+61	ï¿½ï¿½ï¿½Å‘aï¿½ï¿½ï¿½ä·½ï¿½ï¿½ï¿½ï¿½
+62	ï¿½åï¿½ä·½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_POI_GASSTATION.OIL_TYPE is
-'[180U]ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËü
-89            89#ÆûÓÍ
-90	90#ÆûÓÍ
-92            92#ÆûÓÍ
-93	93#ÆûÓÍ
-95            95#ÆûÓÍ
-97	97#ÆûÓÍ
-98	98#ÆûÓÍ 
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=1(ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ
+'[180U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½
+89            89#ï¿½ï¿½ï¿½ï¿½
+90	90#ï¿½ï¿½ï¿½ï¿½
+92            92#ï¿½ï¿½ï¿½ï¿½
+93	93#ï¿½ï¿½ï¿½ï¿½
+95            95#ï¿½ï¿½ï¿½ï¿½
+97	97#ï¿½ï¿½ï¿½ï¿½
+98	98#ï¿½ï¿½ï¿½ï¿½ 
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=1(ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½
 ';
 
 comment on column IX_POI_GASSTATION.EG_TYPE is
-'[180A]ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-0	ÆäËü
-E90	E90#ÆûÓÍ
-E92	E92#ÆûÓÍ
-E93	E93#ÆûÓÍ
-E95	E95#ÆûÓÍ
-E97	E97#ÆûÓÍ
-E98	E98#ÆûÓÍ
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=6(ÒÒ´¼ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ';
+'[180A]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½
+E90	E90#ï¿½ï¿½ï¿½ï¿½
+E92	E92#ï¿½ï¿½ï¿½ï¿½
+E93	E93#ï¿½ï¿½ï¿½ï¿½
+E95	E95#ï¿½ï¿½ï¿½ï¿½
+E97	E97#ï¿½ï¿½ï¿½ï¿½
+E98	E98#ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=6(ï¿½Ò´ï¿½ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column IX_POI_GASSTATION.MG_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 ÆäËü
-M5 M5#ÆûÓÍ
-M10 M10#ÆûÓÍ
-M15 M15#ÆûÓÍ
-M30 M30#ÆûÓÍ
-M50 M50#ÆûÓÍ
-M85 M85#ÆûÓÍ
-M100 M100#ÆûÓÍ
-¶àÖÖÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-×¢:µ±FUEL_TYPE=2(¼×´¼ÆûÓÍ)Ê±ÓÐÖµ,ÆäËûÎª¿Õ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½ï¿½ï¿½ï¿½
+M5 M5#ï¿½ï¿½ï¿½ï¿½
+M10 M10#ï¿½ï¿½ï¿½ï¿½
+M15 M15#ï¿½ï¿½ï¿½ï¿½
+M30 M30#ï¿½ï¿½ï¿½ï¿½
+M50 M50#ï¿½ï¿½ï¿½ï¿½
+M85 M85#ï¿½ï¿½ï¿½ï¿½
+M100 M100#ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½FUEL_TYPE=2(ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column IX_POI_GASSTATION.PAYMENT is
-'¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é
-ÖµÓò°üÀ¨:
-´óÂ½ÖµÓò£º
-´úÂë	Ãû³Æ
-0	ÏÖ½ð
-1	½è¼Ç¿¨
-2	ÐÅÓÃ¿¨
-¸Û°ÄÖµÓò£º
-10	°Ëß_Í¨
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½Â½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½Ö½ï¿½
+1	ï¿½ï¿½Ç¿ï¿½
+2	ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½
+10	ï¿½ï¿½ï¿½_Í¨
 11	VISA
 12	MasterCard
-13	¬F½ð
-14	ÆäËû
+13	ï¿½Fï¿½ï¿½
+14	ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column IX_POI_GASSTATION.SERVICE is
-'[180U]ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-1 ±ãÀûµê
-2 Ï´³µ
-3Æû³µÎ¬ÐÞ 
-4	ÎÀÉú¼ä
-5	²ÍÒû
-6	×¡ËÞ
-7	»»ÓÍ
-8	×ÔÖú¼ÓÓÍ
-¶à¸ö·þÎñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-¸Û°ÄÖµÓò£º
-´úÂë	Ãû³Æ
-11	“QÓÍ·þ„ÕLube Service
-12	Ï´Ü‡·þ„ÕCar Wash
-13	±ãÀûµêConvenience Store
-14	ŽúËùToilet
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'[180U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+1 ï¿½ï¿½ï¿½ï¿½ï¿½
+2 Ï´ï¿½ï¿½
+3ï¿½ï¿½Î¬ï¿½ï¿½ 
+4	ï¿½ï¿½ï¿½ï¿½ï¿½
+5	ï¿½ï¿½ï¿½ï¿½
+6	×¡ï¿½ï¿½
+7	ï¿½ï¿½ï¿½ï¿½
+8	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½Û°ï¿½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+11	ï¿½Qï¿½Í·ï¿½ï¿½ï¿½Lube Service
+12	Ï´Ü‡ï¿½ï¿½ï¿½ï¿½Car Wash
+13	ï¿½ï¿½ï¿½ï¿½ï¿½Convenience Store
+14	ï¿½ï¿½ï¿½ï¿½Toilet
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_GASSTATION.MEMO is
 '[180A]';
 
 comment on column IX_POI_GASSTATION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_GASSTATION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_HOTEL                                          */
@@ -10345,76 +10345,76 @@ comment on table IX_POI_HOTEL is
 '[170][190U][210]';
 
 comment on column IX_POI_HOTEL.HOTEL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_HOTEL.CREDIT_CARD is
-'ÖµÓò°üÀ¨:
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
 1 Î¬Ê¿(visa)
-2 ÍòÊÂ´ï(mastercard)
-3 ´óÀ´(dinas)
-4 ÈÕ±¾¹ú¼ÊÐÅÓÃ¿¨(jcb)
-5 ÃÀ¹úÔËÍ¨(America
+2 ï¿½ï¿½ï¿½Â´ï¿½(mastercard)
+3 ï¿½ï¿½ï¿½ï¿½(dinas)
+4 ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½(jcb)
+5 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨(America
 Express)
-6 ÒøÁª(unionpay)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª0 ±íÊ¾²»Ö§³ÖÐÅÓÃ¿¨
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+6 ï¿½ï¿½ï¿½ï¿½(unionpay)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.RATING is
 '[210]';
 
 comment on column IX_POI_HOTEL.CHECKIN_TIME is
-'¸ñÊ½:HH:mm';
+'ï¿½ï¿½Ê½:HH:mm';
 
 comment on column IX_POI_HOTEL.CHECKOUT_TIME is
-'¸ñÊ½:HH:mm';
+'ï¿½ï¿½Ê½:HH:mm';
 
 comment on column IX_POI_HOTEL.ROOM_COUNT is
-'´óÓÚµÈÓÚ0 µÄÕûÊý,0 ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,0 ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.ROOM_TYPE is
-'ÖµÓò°üÀ¨:
-1 µ¥ÈË¼ä(single)
-2 ±ê×¼¼ä(double)
-3 Ì×·¿(suite)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+1 ï¿½ï¿½ï¿½Ë¼ï¿½(single)
+2 ï¿½ï¿½×¼ï¿½ï¿½(double)
+3 ï¿½×·ï¿½(suite)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.ROOM_PRICE is
-'¶à¸ö¼Û¸ñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Ë³Ðò±ØÐëÓë¿Í·¿ÀàÐÍÒ»ÖÂ
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½ï¿½Û¸ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.SERVICE is
-'ÖµÓò°üÀ¨:
-1 »áÒéÌü
-2 ÉÌÎñÖÐÐÄ
-31 ¾Æ°É
-32 ¿¨À­OK
-33 ½¡ÉíÖÐÐÄ
-34 ÊÒÄÚÓÎÓ¾³Ø
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+1 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+31 ï¿½Æ°ï¿½
+32 ï¿½ï¿½ï¿½ï¿½OK
+33 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+34 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¾ï¿½ï¿½
 35 SPA
-36 É£ÄÃ
-51 ÖÐ²ÍÌü
-52 Î÷²ÍÌü
-53 ¿§·ÈÌü
-54 ²èÊÒ
-¶à¸ö·þÎñÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+36 É£ï¿½ï¿½
+51 ï¿½Ð²ï¿½ï¿½ï¿½
+52 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+53 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+54 ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.CITY is
-'´æ´¢·½Ê½´ý¶¨';
+'ï¿½æ´¢ï¿½ï¿½Ê½ï¿½ï¿½';
 
 comment on column IX_POI_HOTEL.PHOTO_NAME is
-'¶à¸öÕÕÆ¬Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_HOTEL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_HOTEL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_ICON                                           */
@@ -10438,16 +10438,16 @@ create table IX_POI_ICON  (
 );
 
 comment on table IX_POI_ICON is
-'¼ÇÂ¼POIµÄ3DIconÐÅÏ¢';
+'ï¿½ï¿½Â¼POIï¿½ï¿½3DIconï¿½ï¿½Ï¢';
 
 comment on column IX_POI_ICON.REL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ICON.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_ICON.ICON_NAME is
-'[170]²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'[170]ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column IX_POI_ICON.GEOMETRY is
 '[173sp1]';
@@ -10456,30 +10456,30 @@ comment on column IX_POI_ICON.MANAGE_CODE is
 '[170]';
 
 comment on column IX_POI_ICON.CLIENT_FLAG is
-'[170]¸ù¾Ý²»Í¬¿Í»§ÐèÇó,Êä³ö²»Í¬ÎÄ×Ö,ÖµÓò°üÀ¨:
-MB ÈýÁâ
-HD ¹ã±¾
-TY ·áÌï
-PI ÏÈ·æ
-PA ËÉÏÂ
+'[170]ï¿½ï¿½Ý²ï¿½Í¬ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½,Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+MB ï¿½ï¿½ï¿½ï¿½
+HD ï¿½ã±¾
+TY ï¿½ï¿½ï¿½ï¿½
+PI ï¿½È·ï¿½
+PA ï¿½ï¿½ï¿½ï¿½
 NE NavEx
 G MIFG
 13CY 13CY
-NBT ±¦Âí
+NBT ï¿½ï¿½ï¿½ï¿½
 ×¢:
-(1)ÒÔÉÏÃ¿Ò»´úÂë±íÊ¾Ö»Êä³ö¸øÄ³Ò»¿Í»§,ÈçÖ»¸øÈýÁâ,±íÊ¾Îª"MB"
-(2)Èç¹û±íÊ¾Êä³ö¸ø³ýÄ³Ò»¿Í»§ÍâµÄÆäËû¿Í»§,ÔòÔÚÒÔÉÏ´úÂëÇ°¼ÓÓ¢ÎÄ°ë½Ç"-",ÈçÊä³ö¸ø³ýÈýÁâÍâµÄ¿Í»§,Ôò±íÊ¾Îª"-MB"
-(3)¶à¸öÖ®¼äÒÔÓ¢ÎÄ°ë½Ç"|"·Ö¸ô,Èç±íÊ¾Êä³ö¸øÈýÁâ¶ø²»¸ø·áÌï,Ôò±íÊ¾Îª"MB|-TY"
-(4)Ä¬ÈÏÎª¿Õ,±íÊ¾ËùÓÐ¿Í»§¶¼Êä³ö';
+(1)ï¿½ï¿½ï¿½ï¿½Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½,ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ê¾Îª"MB"
+(2)ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í»ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½Ç°ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"-",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿Í»ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"-MB"
+(3)ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ê¾Îª"MB|-TY"
+(4)Ä¬ï¿½ï¿½Îªï¿½ï¿½,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ð¿Í»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_ICON.MEMO is
 '[170]';
 
 comment on column IX_POI_ICON.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_ICON.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_INTRODUCTION                                   */
@@ -10503,30 +10503,30 @@ create table IX_POI_INTRODUCTION  (
 );
 
 comment on table IX_POI_INTRODUCTION is
-'[170]¼ÇÂ¼µ±Ç°POI ¸½½üµÄÐÐÕþ»ú¹¹,´óÐÍÉÌ³¡,¹«Ô°µÈµØ±ê½¨Öþ,»ò·É»ú³¡,»ð³µÕ¾,¿ÍÔËÕ¾,µØÌúÕ¾µÈÖÜ±ß½»Í¨ÊàÅ¦,ÒÔ¼°POI ¾àÕâÐ©µØ±ê»òÊàÅ¦µÄ¾àÀë,µ¥Î»:KM';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Ç°POI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½,ï¿½ï¿½Ô°ï¿½ÈµØ±ê½¨ï¿½ï¿½,ï¿½ï¿½É»ï¿½,ï¿½ï¿½Õ¾,ï¿½ï¿½ï¿½ï¿½Õ¾,ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ü±ß½ï¿½Í¨ï¿½ï¿½Å¦,ï¿½Ô¼ï¿½POI ï¿½ï¿½ï¿½ï¿½Ð©ï¿½Ø±ï¿½ï¿½ï¿½ï¿½Å¦ï¿½Ä¾ï¿½ï¿½ï¿½,ï¿½ï¿½Î»:KM';
 
 comment on column IX_POI_INTRODUCTION.INTRODUCTION_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_INTRODUCTION.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_INTRODUCTION.INTRODUCTION is
-'ÖÐÎÄÈ«½Ç×Ö·û, ±êµã·ûºÅ·ûºÏÖÐÎÄÊ¹ÓÃÏ°¹ß';
+'ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½Ö·ï¿½, ï¿½ï¿½ï¿½ï¿½Å·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½Ï°ï¿½ï¿½';
 
 comment on column IX_POI_INTRODUCTION.NEIGHBOR is
-'(1)POI ¸½½üµÄµØ±êÐÔ½¨ÖþÎï,»òÐÐÕþ»ú¹¹,´óÐÍÉÌ³¡,¹«Ô°¼°ÆäËûÖøÃûÓÎÀÀ¾°µã
-(2)ÖÐÎÄÈ«½Ç×Ö·û,¶à¸öµØ±êÊ±ÒÔ¡±£ü¡±·Ö¸ô,Èç:±±¾©ÌìÂ×Íõ³¯¾Æµê ×Ï½û³Ç£üÌì°²ÃÅ¹ã³¡£üÍõ¸®¾®´ó½Ö£üÊ¥Ô¼ÉªÌÃ';
+'(1)POI ï¿½ï¿½ï¿½ï¿½ÄµØ±ï¿½ï¿½Ô½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ì³ï¿½,ï¿½ï¿½Ô°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½Ö·ï¿½,ï¿½ï¿½ï¿½ï¿½Ø±ï¿½Ê±ï¿½Ô¡ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ ï¿½Ï½ï¿½Ç£ï¿½ï¿½ì°²ï¿½Å¹ã³¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö£ï¿½Ê¥Ô¼Éªï¿½ï¿½';
 
 comment on column IX_POI_INTRODUCTION.TRAFFIC is
-'(1)POI ¸½½üµÄ´óÐÍ½»Í¨ÊàÅ¦(Ö÷ÒªÓÐ»ú³¡,»ð³µÕ¾,Æû³µ¿ÍÔËÕ¾,¸Û¿ÚÂëÍ·)ÒÔ¼°¾àÕâÐ©ÊàÅ¦µÄ´óÖÂ¾àÀë
-(2)ÖÐÎÄÈ«½Ç×Ö·û,ÊàÅ¦ºóÀ¨ºÅÄÚÎª¾à´ËÊàÅ¦µÄ´óÖÂ¾àÀë,µ¥Î»ÎªKM,¶à¸öÊàÅ¦Ê±ÒÔ¡±£ü¡±·Ö¸ô,Èç:±±¾©ÌìÂ×Íõ³¯¾Æµê ±±¾©Ê×¶¼¹ú¼Ê»ú³¡£¨£³£°£©£ü±±¾©»ð³µÕ¾£¨£³.£µ£©';
+'(1)POI ï¿½ï¿½ï¿½ï¿½Ä´ï¿½ï¿½Í½ï¿½Í¨ï¿½ï¿½Å¦(ï¿½ï¿½Òªï¿½Ð»ï¿½,ï¿½ï¿½Õ¾,ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾,ï¿½Û¿ï¿½ï¿½ï¿½Í·)ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½Ð©ï¿½ï¿½Å¦ï¿½Ä´ï¿½ï¿½Â¾ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½Ö·ï¿½,ï¿½ï¿½Å¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Å¦ï¿½Ä´ï¿½ï¿½Â¾ï¿½ï¿½ï¿½,ï¿½ï¿½Î»ÎªKM,ï¿½ï¿½ï¿½ï¿½ï¿½Å¦Ê±ï¿½Ô¡ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½×¶ï¿½ï¿½ï¿½Ê»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½.ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_INTRODUCTION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_INTRODUCTION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_NAME                                           */
@@ -10556,13 +10556,13 @@ create table IX_POI_NAME  (
 );
 
 comment on column IX_POI_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_NAME.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_NAME.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_NAME.NAME_CLASS is
 '[180U]';
@@ -10571,22 +10571,22 @@ comment on column IX_POI_NAME.NAME_TYPE is
 '[180A]';
 
 comment on column IX_POI_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_NAME.NAME_PHONETIC is
 '[171U]';
 
 comment on column IX_POI_NAME.KEYWORDS is
-'¼ÇÂ¼POI Ãû³ÆÍêÕûµÄÆ´Òô¹Ø¼ü×Ö»®·ÖÄÚÈÝ,¹Ø¼ü×ÖÖ®¼äÓÃÓ¢ÎÄ°ë½Ç"/"·Ö¸î,Èç"±±¾©ÊÐÕþ¸®"¹Ø¼ü×Ö»®·ÖÎª:"bei jing shi/zheng fu';
+'ï¿½ï¿½Â¼POI ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ø¼ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"/"ï¿½Ö¸ï¿½,ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½Ø¼ï¿½ï¿½Ö»ï¿½ï¿½ï¿½Îª:"bei jing shi/zheng fu';
 
 comment on column IX_POI_NAME.NIDB_PID is
-'¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column IX_POI_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_NAME_FLAG                                      */
@@ -10607,16 +10607,16 @@ comment on table IX_POI_NAME_FLAG is
 '[180]';
 
 comment on column IX_POI_NAME_FLAG.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POI_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI_NAME"';
 
 comment on column IX_POI_NAME_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column IX_POI_NAME_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_NAME_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_NAME_TONE                                      */
@@ -10642,28 +10642,28 @@ comment on table IX_POI_NAME_TONE is
 '[170]';
 
 comment on column IX_POI_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"IX_POI_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI_NAME"';
 
 comment on column IX_POI_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column IX_POI_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column IX_POI_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column IX_POI_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column IX_POI_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column IX_POI_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_PARKING                                        */
@@ -10706,89 +10706,89 @@ comment on table IX_POI_PARKING is
 '[190A]';
 
 comment on column IX_POI_PARKING.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_PARKING.PARKING_TYPE is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0	ÊÒÄÚ£¨²»Çø·ÖµØÉÏµØÏÂ£©
-1	ÊÒÍâ
-2	Õ¼µÀ
-3	ÊÒÄÚ£¨µØÉÏ£©
-4	ÊÒÄÚ£¨µØÏÂ£©
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½Ïµï¿½ï¿½Â£ï¿½
+1	ï¿½ï¿½ï¿½ï¿½
+2	Õ¼ï¿½ï¿½
+3	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½Ï£ï¿½
+4	ï¿½ï¿½ï¿½Ú£ï¿½ï¿½ï¿½ï¿½Â£ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_PARKING.TOLL_STD is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 °üÄê
-1 °üÔÂ
-2 ¼Æ´Î
-3 ¼ÆÊ±
-4 ·Ö¶Î¼Æ¼Û
-5 Ãâ·Ñ
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é,ÇÒ5(Ãâ·Ñ)²»ÓëÆäËûÀàÐÍ¹²´æ';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½ï¿½ï¿½ï¿½
+1 ï¿½ï¿½ï¿½ï¿½
+2 ï¿½Æ´ï¿½
+3 ï¿½ï¿½Ê±
+4 ï¿½Ö¶Î¼Æ¼ï¿½
+5 ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½5(ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¹ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_PARKING.TOLL_WAY is
-'ÖµÓò°üÀ¨:
-´úÂë Ãû³Æ
-0 ÈË¹¤ÊÕ·Ñ
-1 µç×ÓÊÕ·Ñ
-2 ×ÔÖú½É·Ñ
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô';
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+0 ï¿½Ë¹ï¿½ï¿½Õ·ï¿½
+1 ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½
+2 ï¿½ï¿½ï¿½ï¿½É·ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_PARKING.PAYMENT is
-'ÖµÓò°üÀ¨:
-´úÂë	Ãû³Æ
-10	°Ëß_Í¨
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+10	ï¿½ï¿½ï¿½_Í¨
 11	VISA
 12	MasterCard
-13	¬F½ð
-14	ÆäËû
-15	´¢Öµ¿¨
-¶à¸ö±ê×¼Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-¸Û°Ä¶ÀÓÐ×Ö¶Î£¬´óÂ½Ê±Îª¿Õ
+13	ï¿½Fï¿½ï¿½
+14	ï¿½ï¿½ï¿½ï¿½
+15	ï¿½ï¿½Öµï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½×¼Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½Û°Ä¶ï¿½ï¿½ï¿½ï¿½Ö¶Î£ï¿½ï¿½ï¿½Â½Ê±Îªï¿½ï¿½
 ';
 
 comment on column IX_POI_PARKING.REMARK is
-'ÖµÓò°üÀ¨: 
-´óÂ½£ºÖ»»á³öÏÖÒ»¸öÖµ
-´úÂë	Ãû³Æ
-0	ÎÞÌõ¼þÃâ·Ñ
-1	×¡ËÞÃâ·Ñ
-2	¾Í²ÍÃâ·Ñ
-3	¹ºÎïÃâ·Ñ
-4	¹ºÎï»òÏû·ÑÂú¶îÃâ²¿·Ö·ÑÓÃ
-5	ºÍÍ£³µ³¡ËùÔÚµÄÖ÷ÌåPOI²úÉúÏû·Ñ¡¢°ìÊÂ¡¢·ÃÎÊ¡¢¹ÒºÅ¡¢¾ÍÒ½µÈ¹ØÏµÊ±Ãâ·Ñ
-6	Ö»¶ÔÄÚ»ò²úÉúÏû·ÑµÄÈºÌå¿ª·Å
-7	Æû³µÃÀÈÝ
-¸Û°Ä£º¶àÖµÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç"|"·Ö¸ô
-´úÂë	Ãû³Æ
-11	´îÉý½µ™C
-12	ìóÏÞÔL¿Í
-13	ìóÍ£Ø›Ü‡
-14	Ê×Ê±¶ÎÃâÙM
-15	ëŠ„ÓÜ‡³äëŠ
-16	Áô³×
-17	Ï´Ü‡¼°´òÏž
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½: 
+ï¿½ï¿½Â½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Öµ
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+0	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+1	×¡ï¿½ï¿½ï¿½ï¿½ï¿½
+2	ï¿½Í²ï¿½ï¿½ï¿½ï¿½
+3	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â²¿ï¿½Ö·ï¿½ï¿½ï¿½
+5	ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½Â¡ï¿½ï¿½ï¿½ï¿½Ê¡ï¿½ï¿½ÒºÅ¡ï¿½ï¿½ï¿½Ò½ï¿½È¹ï¿½ÏµÊ±ï¿½ï¿½ï¿½
+6	Ö»ï¿½ï¿½ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñµï¿½Èºï¿½å¿ªï¿½ï¿½
+7	ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½Û°Ä£ï¿½ï¿½ï¿½ÖµÊ±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"|"ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½ï¿½	ï¿½ï¿½ï¿½
+11	ï¿½ï¿½ï¿½ï¿½C
+12	ï¿½ï¿½ï¿½ï¿½ï¿½Lï¿½ï¿½
+13	ï¿½ï¿½Í£Ø›Ü‡
+14	ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½M
+15	ëŠ„ï¿½Ü‡ï¿½ï¿½ï¿½
+16	ï¿½ï¿½ï¿½ï¿½
+17	Ï´Ü‡ï¿½ï¿½ï¿½ï¿½Ïž
 ';
 
 comment on column IX_POI_PARKING.SOURCE is
-'1         À´×ÔÏÖ³¡±êÅÆ»òÆäËûÎÄ×ÖËµÃ÷
-2         À´×ÔÑ¯ÎÊ
-3         À´×Ô±êÅÆºÍÑ¯ÎÊ
+'1         ï¿½ï¿½ï¿½ï¿½ï¿½Ö³ï¿½ï¿½ï¿½ï¿½Æ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ëµï¿½ï¿½
+2         ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½
+3         ï¿½ï¿½ï¿½Ô±ï¿½ï¿½Æºï¿½Ñ¯ï¿½ï¿½
 ';
 
 comment on column IX_POI_PARKING.WORK_TIME is
-'Êý¾ÝÖÆ×÷µÄÈÕÆÚ,Èç:2012-08-10';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½:2012-08-10';
 
 comment on column IX_POI_PARKING.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_PARKING.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_PHOTO                                          */
@@ -10814,19 +10814,19 @@ comment on table IX_POI_PHOTO is
 '[170]';
 
 comment on column IX_POI_PHOTO.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_PHOTO.PHOTO_ID is
-'²Î¿¼"AU_PHOTO"';
+'ï¿½Î¿ï¿½"AU_PHOTO"';
 
 comment on column IX_POI_PHOTO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 comment on column IX_POI_PHOTO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_PHOTO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_RESTAURANT                                     */
@@ -10861,41 +10861,41 @@ comment on table IX_POI_RESTAURANT is
 '[170][190U][210]';
 
 comment on column IX_POI_RESTAURANT.RESTAURANT_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_RESTAURANT.POI_PID is
-'²Î¿¼"IX_POI"';
+'ï¿½Î¿ï¿½"IX_POI"';
 
 comment on column IX_POI_RESTAURANT.FOOD_TYPE is
-'¼ÇÂ¼¸÷ÖÖ²ËÏµÀàÐÍ´úÂë,ÈçÂ³²Ë,´¨²Ë,ÈÕ±¾ÁÏÀí,·¨¹ú²ËµÈ,¶à¸ö²ËÏµÖ®¼äÒÔ"|"·Ö¸ô;¿ÕÎªÎ´µ÷²é';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Ö²ï¿½Ïµï¿½ï¿½ï¿½Í´ï¿½ï¿½ï¿½,ï¿½ï¿½Â³ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ëµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ÏµÖ®ï¿½ï¿½ï¿½ï¿½"|"ï¿½Ö¸ï¿½;ï¿½ï¿½ÎªÎ´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_RESTAURANT.CREDIT_CARD is
-'ÖµÓò°üÀ¨:
+'Öµï¿½ï¿½ï¿½ï¿½ï¿½:
 1 Î¬Ê¿(visa)
-2 ÍòÊÂ´ï(mastercard)
-3 ´óÀ´(dinas)
-4 ÈÕ±¾¹ú¼ÊÐÅÓÃ¿¨(jcb)
-5 ÃÀ¹úÔËÍ¨(America
+2 ï¿½ï¿½ï¿½Â´ï¿½(mastercard)
+3 ï¿½ï¿½ï¿½ï¿½(dinas)
+4 ï¿½Õ±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½(jcb)
+5 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨(America
 Express)
-6 ÒøÁª(unionpay)
-¶à¸öÀàÐÍÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô
-Èç¹ûÎª0 ±íÊ¾²»Ö§³ÖÐÅÓÃ¿¨
-Èç¹ûÎª¿Õ±íÊ¾Î´µ÷²é';
+6 ï¿½ï¿½ï¿½ï¿½(unionpay)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½
+ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾ï¿½ï¿½Ö§ï¿½ï¿½ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½ï¿½ï¿½Îªï¿½Õ±ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_RESTAURANT.AVG_COST is
-'Èç¹ûÎª0 ±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½Îª0 ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POI_RESTAURANT.CITY is
-'´æ´¢·½Ê½´ý¶¨';
+'ï¿½æ´¢ï¿½ï¿½Ê½ï¿½ï¿½';
 
 comment on column IX_POI_RESTAURANT.PHOTO_NAME is
-'¶à¸öÕÕÆ¬Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Æ¬Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_RESTAURANT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_RESTAURANT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_TOURROUTE                                      */
@@ -10928,13 +10928,13 @@ comment on table IX_POI_TOURROUTE is
 '[190A][210]';
 
 comment on column IX_POI_TOURROUTE.POI_PID is
-'¶à¸öPOI Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'ï¿½ï¿½ï¿½POI Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column IX_POI_TOURROUTE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_TOURROUTE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POI_VIDEO                                          */
@@ -10960,19 +10960,19 @@ comment on table IX_POI_VIDEO is
 '[170]';
 
 comment on column IX_POI_VIDEO.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_POI_VIDEO.VIDEO_ID is
-'²Î¿¼"AU_VIDEO"';
+'ï¿½Î¿ï¿½"AU_VIDEO"';
 
 comment on column IX_POI_VIDEO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 comment on column IX_POI_VIDEO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POI_VIDEO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_POSTCODE                                           */
@@ -10999,31 +10999,31 @@ create table IX_POSTCODE  (
 );
 
 comment on table IX_POSTCODE is
-'ÓÊ±àÊÇÊµÏÖÓÊ¼þ»úÆ÷·Ö¼ðµÄÓÊÕþÍ¨ÐÅ×¨ÓÃ´úºÅ,Ä¿µÄÊÇÌá¸ßÐÅ¼þÔÚ´«µÝ¹ý³ÌÖÐµÄËÙ¶ÈºÍ×¼È·ÐÔ';
+'ï¿½Ê±ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½×¨ï¿½Ã´ï¿½ï¿½,Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å¼ï¿½ï¿½Ú´ï¿½ï¿½Ý¹ï¿½ï¿½ï¿½Ðµï¿½ï¿½Ù¶Èºï¿½×¼È·ï¿½ï¿½';
 
 comment on column IX_POSTCODE.POST_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POSTCODE.POST_CODE is
-'´æ´¢Îª6Î»Ó¢ÎÄ°ë½ÇÊý×Ö';
+'ï¿½æ´¢Îª6Î»Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POSTCODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POSTCODE.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_POSTCODE.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_POSTCODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_POSTCODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_POSTCODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_ROADNAME                                           */
@@ -11048,25 +11048,25 @@ create table IX_ROADNAME  (
 );
 
 comment on column IX_ROADNAME.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ROADNAME.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ROADNAME.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_ROADNAME.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_ROADNAME.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_ROADNAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_ROADNAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_SAMEPOI                                            */
@@ -11084,13 +11084,13 @@ create table IX_SAMEPOI  (
 );
 
 comment on column IX_SAMEPOI.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_SAMEPOI.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_SAMEPOI.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_SAMEPOI_PART                                       */
@@ -11110,16 +11110,16 @@ create table IX_SAMEPOI_PART  (
 );
 
 comment on column IX_SAMEPOI_PART.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"IX_SAMEPOI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_SAMEPOI"';
 
 comment on column IX_SAMEPOI_PART.POI_PID is
-'Íâ¼ü,ÒýÓÃ"IX_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"IX_POI"';
 
 comment on column IX_SAMEPOI_PART.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_SAMEPOI_PART.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: IX_TOLLGATE                                           */
@@ -11154,13 +11154,13 @@ create table IX_TOLLGATE  (
 );
 
 comment on column IX_TOLLGATE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_TOLLGATE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_TOLLGATE.NAME_GROUPID is
-'[170]²Î¿¼"RD_NAME"';
+'[170]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column IX_TOLLGATE.ROAD_FLAG is
 '[170]';
@@ -11172,25 +11172,25 @@ comment on column IX_TOLLGATE.KIND_CODE is
 '[180U]';
 
 comment on column IX_TOLLGATE.MESH_ID_5K is
-'¼ÇÂ¼Ë÷ÒýËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column IX_TOLLGATE.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column IX_TOLLGATE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column IX_TOLLGATE.DIF_GROUPID is
-'[181A]ÓÃÓÚ²î·Ö¸üÐÂÊý¾Ý°üµÄ²úÆ·°æ±¾¹ÜÀí,Èç¹û´æÔÚ¶à¸ö,²ÉÓÃ°ë½Ç"|"·Ö¸ô';
+'[181A]ï¿½ï¿½ï¿½Ú²ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½Ý°ï¿½Ä²ï¿½Æ·ï¿½æ±¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ï¿½"|"ï¿½Ö¸ï¿½';
 
 comment on column IX_TOLLGATE.RESERVED is
 '[181A]';
 
 comment on column IX_TOLLGATE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column IX_TOLLGATE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE                                               */
@@ -11223,49 +11223,49 @@ create table LC_FACE  (
 );
 
 comment on column LC_FACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE.FEATURE_PID is
-'²Î¿¼"LC_FEATURE"';
+'ï¿½Î¿ï¿½"LC_FEATURE"';
 
 comment on column LC_FACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column LC_FACE.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~6,11~17
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,11~17
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,17';
 
 comment on column LC_FACE.FORM is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_FACE.DISPLAY_CLASS is
-'°´ÕÕË®ÏµµÄÃæ»ý´Ó´óµ½Ð¡·ÖÎª1~8 ¼¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½Ë®Ïµï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½Ð¡ï¿½ï¿½Îª1~8 ï¿½ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_FACE.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_FACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_100W                                          */
@@ -11298,49 +11298,49 @@ create table LC_FACE_100W  (
 );
 
 comment on column LC_FACE_100W.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_100W.FEATURE_PID is
-'²Î¿¼"LC_FEATURE_100W"';
+'ï¿½Î¿ï¿½"LC_FEATURE_100W"';
 
 comment on column LC_FACE_100W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column LC_FACE_100W.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~6,11~17
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,11~17
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,17';
 
 comment on column LC_FACE_100W.FORM is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_FACE_100W.DISPLAY_CLASS is
-'°´ÕÕË®ÏµµÄÃæ»ý´Ó´óµ½Ð¡·ÖÎª1~8 ¼¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½Ë®Ïµï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½Ð¡ï¿½ï¿½Îª1~8 ï¿½ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_100W.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_100W.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_FACE_100W.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_100W.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_FACE_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_20W                                           */
@@ -11373,49 +11373,49 @@ create table LC_FACE_20W  (
 );
 
 comment on column LC_FACE_20W.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_20W.FEATURE_PID is
-'²Î¿¼"LC_FEATURE_20W"';
+'ï¿½Î¿ï¿½"LC_FEATURE_20W"';
 
 comment on column LC_FACE_20W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column LC_FACE_20W.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~6,11~17
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,11~17
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,17';
 
 comment on column LC_FACE_20W.FORM is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_FACE_20W.DISPLAY_CLASS is
-'°´ÕÕË®ÏµµÄÃæ»ý´Ó´óµ½Ð¡·ÖÎª1~8 ¼¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½Ë®Ïµï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½Ð¡ï¿½ï¿½Îª1~8 ï¿½ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_20W.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_20W.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_FACE_20W.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_20W.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_20W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_FACE_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_NAME                                          */
@@ -11441,28 +11441,28 @@ create table LC_FACE_NAME  (
 );
 
 comment on column LC_FACE_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE"';
 
 comment on column LC_FACE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column LC_FACE_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_NAME_100W                                     */
@@ -11491,28 +11491,28 @@ comment on table LC_FACE_NAME_100W is
 '[170]';
 
 comment on column LC_FACE_NAME_100W.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_100W.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_100W.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_100W"';
 
 comment on column LC_FACE_NAME_100W.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_100W.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_100W.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column LC_FACE_NAME_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_NAME_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_NAME_20W                                      */
@@ -11541,28 +11541,28 @@ comment on table LC_FACE_NAME_20W is
 '[170]';
 
 comment on column LC_FACE_NAME_20W.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_20W.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_20W.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_20W"';
 
 comment on column LC_FACE_NAME_20W.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_20W.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_20W.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column LC_FACE_NAME_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_NAME_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_TOP                                           */
@@ -11598,49 +11598,49 @@ comment on table LC_FACE_TOP is
 '[170]';
 
 comment on column LC_FACE_TOP.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOP.FEATURE_PID is
-'²Î¿¼"LC_FEATURE_TOP"';
+'ï¿½Î¿ï¿½"LC_FEATURE_TOP"';
 
 comment on column LC_FACE_TOP.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column LC_FACE_TOP.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~6,11~17
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,11~17
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,17';
 
 comment on column LC_FACE_TOP.FORM is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_FACE_TOP.DISPLAY_CLASS is
-'°´ÕÕË®ÏµµÄÃæ»ý´Ó´óµ½Ð¡·ÖÎª1~8 ¼¶
-×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'ï¿½ï¿½ï¿½ï¿½Ë®Ïµï¿½ï¿½ï¿½ï¿½ï¿½Ó´ï¿½Ð¡ï¿½ï¿½Îª1~8 ï¿½ï¿½
+×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_TOP.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOP.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_FACE_TOP.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_TOP.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 Íò,°ÙÍòºÍTOP ¼¶Êý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column LC_FACE_TOP.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_FACE_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_NAME_TOP                                      */
@@ -11669,28 +11669,28 @@ comment on table LC_FACE_NAME_TOP is
 '[170]';
 
 comment on column LC_FACE_NAME_TOP.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_TOP.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_TOP.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_TOP"';
 
 comment on column LC_FACE_NAME_TOP.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_TOP.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_NAME_TOP.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column LC_FACE_NAME_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_NAME_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE                                               */
@@ -11711,23 +11711,23 @@ create table LC_NODE  (
 );
 
 comment on column LC_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_NODE.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column LC_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column LC_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK                                               */
@@ -11753,29 +11753,29 @@ create table LC_LINK  (
 );
 
 comment on column LC_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE"';
 
 comment on column LC_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE"';
 
 comment on column LC_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column LC_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_TOPO                                          */
@@ -11796,22 +11796,22 @@ create table LC_FACE_TOPO  (
 );
 
 comment on table LC_FACE_TOPO is
-'¼ÇÂ¼ÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column LC_FACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE"';
 
 comment on column LC_FACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK"';
 
 comment on column LC_FACE_TOPO.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_100W                                          */
@@ -11832,23 +11832,23 @@ create table LC_NODE_100W  (
 );
 
 comment on column LC_NODE_100W.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_NODE_100W.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column LC_NODE_100W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column LC_NODE_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_NODE_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_100W                                          */
@@ -11874,29 +11874,29 @@ create table LC_LINK_100W  (
 );
 
 comment on column LC_LINK_100W.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_LINK_100W.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_100W"';
 
 comment on column LC_LINK_100W.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_100W"';
 
 comment on column LC_LINK_100W.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column LC_LINK_100W.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_LINK_100W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_LINK_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_TOPO_100W                                     */
@@ -11917,22 +11917,22 @@ create table LC_FACE_TOPO_100W  (
 );
 
 comment on table LC_FACE_TOPO_100W is
-'¼ÇÂ¼ÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column LC_FACE_TOPO_100W.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_100W"';
 
 comment on column LC_FACE_TOPO_100W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_100W"';
 
 comment on column LC_FACE_TOPO_100W.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOPO_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_TOPO_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_20W                                           */
@@ -11953,23 +11953,23 @@ create table LC_NODE_20W  (
 );
 
 comment on column LC_NODE_20W.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_NODE_20W.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column LC_NODE_20W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column LC_NODE_20W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_NODE_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_20W                                           */
@@ -11995,29 +11995,29 @@ create table LC_LINK_20W  (
 );
 
 comment on column LC_LINK_20W.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_LINK_20W.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_20W"';
 
 comment on column LC_LINK_20W.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_20W"';
 
 comment on column LC_LINK_20W.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column LC_LINK_20W.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_LINK_20W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_LINK_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_TOPO_20W                                      */
@@ -12038,22 +12038,22 @@ create table LC_FACE_TOPO_20W  (
 );
 
 comment on table LC_FACE_TOPO_20W is
-'¼ÇÂ¼ÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column LC_FACE_TOPO_20W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_20W"';
 
 comment on column LC_FACE_TOPO_20W.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_20W"';
 
 comment on column LC_FACE_TOPO_20W.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOPO_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_TOPO_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_TOP                                           */
@@ -12077,23 +12077,23 @@ comment on table LC_NODE_TOP is
 '[170]';
 
 comment on column LC_NODE_TOP.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_NODE_TOP.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column LC_NODE_TOP.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 ';
 
 comment on column LC_NODE_TOP.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_NODE_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_TOP                                           */
@@ -12122,29 +12122,29 @@ comment on table LC_LINK_TOP is
 '[170]';
 
 comment on column LC_LINK_TOP.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_LINK_TOP.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_TOP"';
 
 comment on column LC_LINK_TOP.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_TOP"';
 
 comment on column LC_LINK_TOP.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column LC_LINK_TOP.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LC_LINK_TOP.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LC_LINK_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FACE_TOPO_TOP                                      */
@@ -12165,22 +12165,22 @@ create table LC_FACE_TOPO_TOP  (
 );
 
 comment on table LC_FACE_TOPO_TOP is
-'[170]¼ÇÂ¼ÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column LC_FACE_TOPO_TOP.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_FACE_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_FACE_TOP"';
 
 comment on column LC_FACE_TOPO_TOP.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_TOP"';
 
 comment on column LC_FACE_TOPO_TOP.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FACE_TOPO_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FACE_TOPO_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FEATURE                                            */
@@ -12196,16 +12196,16 @@ create table LC_FEATURE  (
 );
 
 comment on table LC_FEATURE is
-'ÍÁµØ¸²¸ÇÒªËØ,°üÀ¨Ë®Ïµ(º£Óò,ºÓ´¨Óò,ºþÕÓ³Ø,Ë®¿â,¸ÛÍå,ÔËºÓ),ÂÌµØ(Ê÷ÁÖÁÖµØ,²ÝµØ,ÂÌ»¯´ø,¹«Ô°,µºÓìµÈ),ÓëNavExÖÐµÄCarto¶ÔÓ¦';
+'ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Òªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ë®Ïµ(ï¿½ï¿½ï¿½ï¿½,ï¿½Ó´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ó³ï¿½,Ë®ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Ëºï¿½),ï¿½Ìµï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½,ï¿½Ýµï¿½,ï¿½Ì»ï¿½ï¿½ï¿½,ï¿½ï¿½Ô°,ï¿½ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½NavExï¿½Ðµï¿½Cartoï¿½ï¿½Ó¦';
 
 comment on column LC_FEATURE.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FEATURE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FEATURE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FEATURE_100W                                       */
@@ -12221,16 +12221,16 @@ create table LC_FEATURE_100W  (
 );
 
 comment on table LC_FEATURE_100W is
-'ÍÁµØ¸²¸ÇÒªËØ,°üÀ¨Ë®Ïµ(º£Óò,ºÓ´¨Óò,ºþÕÓ³Ø,Ë®¿â,¸ÛÍå,ÔËºÓ),ÂÌµØ(Ê÷ÁÖÁÖµØ,²ÝµØ,ÂÌ»¯´ø,¹«Ô°,µºÓìµÈ),ÓëNavExÖÐµÄCarto¶ÔÓ¦';
+'ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Òªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ë®Ïµ(ï¿½ï¿½ï¿½ï¿½,ï¿½Ó´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ó³ï¿½,Ë®ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Ëºï¿½),ï¿½Ìµï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½,ï¿½Ýµï¿½,ï¿½Ì»ï¿½ï¿½ï¿½,ï¿½ï¿½Ô°,ï¿½ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½NavExï¿½Ðµï¿½Cartoï¿½ï¿½Ó¦';
 
 comment on column LC_FEATURE_100W.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FEATURE_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FEATURE_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FEATURE_20W                                        */
@@ -12246,16 +12246,16 @@ create table LC_FEATURE_20W  (
 );
 
 comment on table LC_FEATURE_20W is
-'ÍÁµØ¸²¸ÇÒªËØ,°üÀ¨Ë®Ïµ(º£Óò,ºÓ´¨Óò,ºþÕÓ³Ø,Ë®¿â,¸ÛÍå,ÔËºÓ),ÂÌµØ(Ê÷ÁÖÁÖµØ,²ÝµØ,ÂÌ»¯´ø,¹«Ô°,µºÓìµÈ),ÓëNavExÖÐµÄCarto¶ÔÓ¦';
+'ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Òªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ë®Ïµ(ï¿½ï¿½ï¿½ï¿½,ï¿½Ó´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ó³ï¿½,Ë®ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Ëºï¿½),ï¿½Ìµï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½,ï¿½Ýµï¿½,ï¿½Ì»ï¿½ï¿½ï¿½,ï¿½ï¿½Ô°,ï¿½ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½NavExï¿½Ðµï¿½Cartoï¿½ï¿½Ó¦';
 
 comment on column LC_FEATURE_20W.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FEATURE_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FEATURE_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_FEATURE_TOP                                        */
@@ -12271,16 +12271,16 @@ create table LC_FEATURE_TOP  (
 );
 
 comment on table LC_FEATURE_TOP is
-'[170]ÍÁµØ¸²¸ÇÒªËØ,°üÀ¨Ë®Ïµ(º£Óò,ºÓ´¨Óò,ºþÕÓ³Ø,Ë®¿â,¸ÛÍå,ÔËºÓ),ÂÌµØ(Ê÷ÁÖÁÖµØ,²ÝµØ,ÂÌ»¯´ø,¹«Ô°,µºÓìµÈ),ÓëNavExÖÐµÄCarto¶ÔÓ¦';
+'[170]ï¿½ï¿½ï¿½Ø¸ï¿½ï¿½ï¿½Òªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ë®Ïµ(ï¿½ï¿½ï¿½ï¿½,ï¿½Ó´ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ó³ï¿½,Ë®ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½Ëºï¿½),ï¿½Ìµï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½,ï¿½Ýµï¿½,ï¿½Ì»ï¿½ï¿½ï¿½,ï¿½ï¿½Ô°,ï¿½ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½NavExï¿½Ðµï¿½Cartoï¿½ï¿½Ó¦';
 
 comment on column LC_FEATURE_TOP.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LC_FEATURE_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_FEATURE_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_KIND                                          */
@@ -12301,26 +12301,26 @@ create table LC_LINK_KIND  (
 );
 
 comment on table LC_LINK_KIND is
-'¼ÇÂ¼LinkµÄË®Ïµ,ÂÌµØÖÖ±ð';
+'ï¿½ï¿½Â¼Linkï¿½ï¿½Ë®Ïµ,ï¿½Ìµï¿½ï¿½Ö±ï¿½';
 
 comment on column LC_LINK_KIND.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK"';
 
 comment on column LC_LINK_KIND.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~8,11~18
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,8,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~8,11~18
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,8,17';
 
 comment on column LC_LINK_KIND.FORM is
-'(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+'(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_LINK_KIND.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_KIND.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_KIND_100W                                     */
@@ -12341,26 +12341,26 @@ create table LC_LINK_KIND_100W  (
 );
 
 comment on table LC_LINK_KIND_100W is
-'¼ÇÂ¼LinkµÄË®Ïµ,ÂÌµØÖÖ±ð';
+'ï¿½ï¿½Â¼Linkï¿½ï¿½Ë®Ïµ,ï¿½Ìµï¿½ï¿½Ö±ï¿½';
 
 comment on column LC_LINK_KIND_100W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_100W"';
 
 comment on column LC_LINK_KIND_100W.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~8,11~18
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,8,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~8,11~18
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,8,17';
 
 comment on column LC_LINK_KIND_100W.FORM is
-'(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+'(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_LINK_KIND_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_KIND_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_KIND_20W                                      */
@@ -12381,26 +12381,26 @@ create table LC_LINK_KIND_20W  (
 );
 
 comment on table LC_LINK_KIND_20W is
-'¼ÇÂ¼LinkµÄË®Ïµ,ÂÌµØÖÖ±ð';
+'ï¿½ï¿½Â¼Linkï¿½ï¿½Ë®Ïµ,ï¿½Ìµï¿½ï¿½Ö±ï¿½';
 
 comment on column LC_LINK_KIND_20W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_20W"';
 
 comment on column LC_LINK_KIND_20W.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~8,11~18
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,8,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~8,11~18
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,8,17';
 
 comment on column LC_LINK_KIND_20W.FORM is
-'(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+'(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_LINK_KIND_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_KIND_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_KIND_TOP                                      */
@@ -12421,26 +12421,26 @@ create table LC_LINK_KIND_TOP  (
 );
 
 comment on table LC_LINK_KIND_TOP is
-'[170]¼ÇÂ¼LinkµÄË®Ïµ,ÂÌµØÖÖ±ð';
+'[170]ï¿½ï¿½Â¼Linkï¿½ï¿½Ë®Ïµ,ï¿½Ìµï¿½ï¿½Ö±ï¿½';
 
 comment on column LC_LINK_KIND_TOP.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_TOP"';
 
 comment on column LC_LINK_KIND_TOP.KIND is
 '×¢:
-(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~8,11~18
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~6,8,17';
+(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~8,11~18
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~6,8,17';
 
 comment on column LC_LINK_KIND_TOP.FORM is
-'(1)2.5 ÍòºÍ20 ÍòÊý¾Ý:0~4
-(2)°ÙÍòºÍTOP ¼¶Êý¾Ý:0~4,8,9
-(3)µ±KIND=17 Ê±,È¡Öµ1~4,µ±KIND=3 Ê±,È¡Öµ8,9,ÆäËûÈ¡Öµ0';
+'(1)2.5 ï¿½ï¿½ï¿½20 ï¿½ï¿½ï¿½ï¿½ï¿½:0~4
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½TOP ï¿½ï¿½ï¿½ï¿½ï¿½:0~4,8,9
+(3)ï¿½ï¿½KIND=17 Ê±,È¡Öµ1~4,ï¿½ï¿½KIND=3 Ê±,È¡Öµ8,9,ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LC_LINK_KIND_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_KIND_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_MESH                                          */
@@ -12458,13 +12458,13 @@ create table LC_LINK_MESH  (
 );
 
 comment on column LC_LINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK"';
 
 comment on column LC_LINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_MESH_100W                                     */
@@ -12482,13 +12482,13 @@ create table LC_LINK_MESH_100W  (
 );
 
 comment on column LC_LINK_MESH_100W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_100W"';
 
 comment on column LC_LINK_MESH_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_MESH_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_MESH_20W                                      */
@@ -12506,13 +12506,13 @@ create table LC_LINK_MESH_20W  (
 );
 
 comment on column LC_LINK_MESH_20W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_20W"';
 
 comment on column LC_LINK_MESH_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_MESH_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_LINK_MESH_TOP                                      */
@@ -12530,13 +12530,13 @@ create table LC_LINK_MESH_TOP  (
 );
 
 comment on column LC_LINK_MESH_TOP.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LC_LINK_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_LINK_TOP"';
 
 comment on column LC_LINK_MESH_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_LINK_MESH_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_MESH                                          */
@@ -12554,13 +12554,13 @@ create table LC_NODE_MESH  (
 );
 
 comment on column LC_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE"';
 
 comment on column LC_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_MESH_100W                                     */
@@ -12578,13 +12578,13 @@ create table LC_NODE_MESH_100W  (
 );
 
 comment on column LC_NODE_MESH_100W.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_100W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_100W"';
 
 comment on column LC_NODE_MESH_100W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_MESH_100W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_MESH_20W                                      */
@@ -12602,13 +12602,13 @@ create table LC_NODE_MESH_20W  (
 );
 
 comment on column LC_NODE_MESH_20W.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_20W"';
 
 comment on column LC_NODE_MESH_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_MESH_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LC_NODE_MESH_TOP                                      */
@@ -12629,13 +12629,13 @@ comment on table LC_NODE_MESH_TOP is
 '[170]';
 
 comment on column LC_NODE_MESH_TOP.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LC_NODE_TOP"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LC_NODE_TOP"';
 
 comment on column LC_NODE_MESH_TOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LC_NODE_MESH_TOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_FACE                                               */
@@ -12662,31 +12662,31 @@ create table LU_FACE  (
 );
 
 comment on column LU_FACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE.FEATURE_PID is
-'²Î¿¼"LU_FEATURE"';
+'ï¿½Î¿ï¿½"LU_FEATURE"';
 
 comment on column LU_FACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column LU_FACE.KIND is
-'´óÑ§,Ò½Ôº,¹ºÎïÖÐÐÄµÈ';
+'ï¿½ï¿½Ñ§,Ò½Ôº,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½';
 
 comment on column LU_FACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LU_FACE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LU_FACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_FACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_FACE_NAME                                          */
@@ -12712,31 +12712,31 @@ create table LU_FACE_NAME  (
 );
 
 comment on column LU_FACE_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE_NAME.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LU_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_FACE"';
 
 comment on column LU_FACE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´
 ×¢:
 (1)BUA È¡Öµ0~1
-(2)ÆäËûÈ¡Öµ0';
+(2)ï¿½ï¿½ï¿½ï¿½È¡Öµ0';
 
 comment on column LU_FACE_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_FACE_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_NODE                                               */
@@ -12757,22 +12757,22 @@ create table LU_NODE  (
 );
 
 comment on column LU_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_NODE.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column LU_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LU_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_LINK                                               */
@@ -12798,29 +12798,29 @@ create table LU_LINK  (
 );
 
 comment on column LU_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LU_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_NODE"';
 
 comment on column LU_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LU_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_NODE"';
 
 comment on column LU_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column LU_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column LU_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column LU_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_FACE_TOPO                                          */
@@ -12841,22 +12841,22 @@ create table LU_FACE_TOPO  (
 );
 
 comment on table LU_FACE_TOPO is
-'¼ÇÂ¼ÃæÓëLinkÖ®¼äµÄÍØÆË¹ØÏµ,°´ÕÕÄæÊ±Õë·½Ïò´æ´¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½æ´¢';
 
 comment on column LU_FACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"LU_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_FACE"';
 
 comment on column LU_FACE_TOPO.SEQ_NUM is
-'°´ÄæÊ±Õë·½Ïò,´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ë·½ï¿½ï¿½,ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LU_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_LINK"';
 
 comment on column LU_FACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_FACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_FEATURE                                            */
@@ -12872,16 +12872,16 @@ create table LU_FEATURE  (
 );
 
 comment on table LU_FEATURE is
-'ÍÁµØÀûÓÃÒªËØ,°üÀ¨BUA,¹¦ÄÜÃæ(´óÑ§,Ò½Ôº,¹ºÎïÖÐÐÄ,ÌåÓý³¡,¹«Ä¹,»ú³¡,»ú³¡ÅÜµÀ),ÓëNavExÖÐµÄCarto¶ÔÓ¦';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½BUA,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ñ§,Ò½Ôº,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä¹,ï¿½ï¿½,ï¿½ï¿½ï¿½Üµï¿½),ï¿½ï¿½NavExï¿½Ðµï¿½Cartoï¿½ï¿½Ó¦';
 
 comment on column LU_FEATURE.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column LU_FEATURE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_FEATURE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_LINK_KIND                                          */
@@ -12900,19 +12900,19 @@ create table LU_LINK_KIND  (
 );
 
 comment on table LU_LINK_KIND is
-'¼ÇÂ¼LinkµÄBUA,¹¦ÄÜÃæ(´óÑ§,¹ºÎïÖÐÐÄ,Ò½ÔºµÈ)µÈÖÖ±ð';
+'ï¿½ï¿½Â¼Linkï¿½ï¿½BUA,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ñ§,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ò½Ôºï¿½ï¿½)ï¿½ï¿½ï¿½Ö±ï¿½';
 
 comment on column LU_LINK_KIND.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LU_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_LINK"';
 
 comment on column LU_LINK_KIND.KIND is
-'´óÑ§,Í£³µ³¡,¹ºÎïÖÐÐÄµÄÃæ±ß½çÏßµÈ';
+'ï¿½ï¿½Ñ§,Í£ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ß½ï¿½ï¿½ßµï¿½';
 
 comment on column LU_LINK_KIND.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_LINK_KIND.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_LINK_MESH                                          */
@@ -12930,13 +12930,13 @@ create table LU_LINK_MESH  (
 );
 
 comment on column LU_LINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"LU_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_LINK"';
 
 comment on column LU_LINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_LINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: LU_NODE_MESH                                          */
@@ -12954,13 +12954,13 @@ create table LU_NODE_MESH  (
 );
 
 comment on column LU_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"LU_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"LU_NODE"';
 
 comment on column LU_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column LU_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: M_MESH_TYPE                                           */
@@ -12977,7 +12977,7 @@ comment on table M_MESH_TYPE is
 '[171A]';
 
 comment on column M_MESH_TYPE.MESH_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: M_PARAMETER                                           */
@@ -12989,13 +12989,13 @@ create table M_PARAMETER  (
 );
 
 comment on table M_PARAMETER is
-'¼ÇÂ¼ÏµÍ³²ÎÊý,°üÀ¨:Ä£ÐÍ°æ±¾(GLM_VERSION),Êý¾Ý²ÎÊý(DATA_VERSION),±ÈÀý³ß(MAP_SCALE),×ø±êÏµ(COORDINATE_SYS),¾­Î³¶È×ø±êµ¥Î»(COORDINATE_UNIT),¾­Î³¶È×ø±ê¾«È·¶È(XY_PRECISION),¸ß³Ì×ø±ê¾«¶È(Z_PRECISION),ÇøÓòÐÅÏ¢(REGION_INFO)';
+'ï¿½ï¿½Â¼ÏµÍ³ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½:Ä£ï¿½Í°æ±¾(GLM_VERSION),ï¿½ï¿½Ý²ï¿½ï¿½ï¿½(DATA_VERSION),ï¿½ï¿½ï¿½ï¿½ï¿½(MAP_SCALE),ï¿½ï¿½ï¿½Ïµ(COORDINATE_SYS),ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½êµ¥Î»(COORDINATE_UNIT),ï¿½ï¿½Î³ï¿½ï¿½ï¿½ï¿½ê¾«È·ï¿½ï¿½(XY_PRECISION),ï¿½ß³ï¿½ï¿½ï¿½ê¾«ï¿½ï¿½(Z_PRECISION),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢(REGION_INFO)';
 
 comment on column M_PARAMETER.NAME is
-'Èç:GLM_VERSION,DATA_VERSION,MAP_SCALEµÈ';
+'ï¿½ï¿½:GLM_VERSION,DATA_VERSION,MAP_SCALEï¿½ï¿½';
 
 comment on column M_PARAMETER.PARAMETER is
-'ÈçGLM_VERSION=1.6.1,DATA_VERSION=10winter';
+'ï¿½ï¿½GLM_VERSION=1.6.1,DATA_VERSION=10winter';
 
 /*==============================================================*/
 /* Table: M_UPDATE_PARAMETER                                    */
@@ -13016,31 +13016,31 @@ comment on table M_UPDATE_PARAMETER is
 '[170]';
 
 comment on column M_UPDATE_PARAMETER.DB_TYPE is
-'ÃèÊö³É¹û¿â¡¢²úÆ·¿â¡¢²î·Ö¿â';
+'ï¿½ï¿½ï¿½ï¿½ï¿½É¹ï¿½â¡¢ï¿½ï¿½Æ·ï¿½â¡¢ï¿½ï¿½Ö¿ï¿½';
 
 comment on column M_UPDATE_PARAMETER.VERSION_TYPE is
-'ÃèÊö²î·Ö°æ»¹ÊÇ»ù´¡°æ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö°æ»¹ï¿½Ç»ï¿½ï¿½';
 
 comment on column M_UPDATE_PARAMETER.VERSION_CODE is
-'¿â°æ±¾ºÅ,Èç1.0.0;1.1.0 µÈ';
+'ï¿½ï¿½æ±¾ï¿½ï¿½,ï¿½ï¿½1.0.0;1.1.0 ï¿½ï¿½';
 
 comment on column M_UPDATE_PARAMETER.CREATE_TIME is
-'Éú³É¿âµÄÈÕÆÚÊ±¼ä';
+'ï¿½ï¿½É¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½';
 
 comment on column M_UPDATE_PARAMETER.DB_SOURCE_A is
-'Èç×÷Òµ¿â,³É¹û¿â°æ±¾,Ô­²úÆ·¿â°æ±¾';
+'ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½É¹ï¿½ï¿½æ±¾,Ô­ï¿½ï¿½Æ·ï¿½ï¿½æ±¾';
 
 comment on column M_UPDATE_PARAMETER.DB_SOURCE_B is
-'Èç²î·Ö°æ±¾ÓÐÐ§,ÐÂ²úÆ·¿â°æ±¾';
+'ï¿½ï¿½ï¿½Ö°æ±¾ï¿½ï¿½Ð§,ï¿½Â²ï¿½Æ·ï¿½ï¿½æ±¾';
 
 comment on column M_UPDATE_PARAMETER.CONTENT is
-'ÈçÈ«ÒªËØ,POI,µÀÂ·,¹«½»µÈ';
+'ï¿½ï¿½È«Òªï¿½ï¿½,POI,ï¿½ï¿½Â·,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column M_UPDATE_PARAMETER.DESCRIPT is
-'Êý¾ÝÉý¼¶ÄÚÈÝÃèÊö,°üÀ¨Í³¼ÆÊý×ÖµÈ,Èç±±¾©³ÇÇø¸üÐÂ,µÀÂ·200km,POI ¹²12000 ¸ö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Í³ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½,ï¿½ç±±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·200km,POI ï¿½ï¿½12000 ï¿½ï¿½';
 
 comment on column M_UPDATE_PARAMETER.AVAILABLE_TYPE is
-'ÍøÂç,µ¼º½,GIS µÈ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,GIS ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: NI_VAL_EXCEPTION                                      */
@@ -13080,13 +13080,13 @@ create table NI_VAL_EXCEPTION  (
 );
 
 comment on column NI_VAL_EXCEPTION.RULEID is
-'²Î¿¼"CK_RULE"';
+'ï¿½Î¿ï¿½"CK_RULE"';
 
 comment on column NI_VAL_EXCEPTION.CREATED is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 comment on column NI_VAL_EXCEPTION.UPDATED is
-'¸ñÊ½"YYYY/MM/DD HH:mm:ss"';
+'ï¿½ï¿½Ê½"YYYY/MM/DD HH:mm:ss"';
 
 /*==============================================================*/
 /* Table: PT_COMPANY                                            */
@@ -13116,10 +13116,10 @@ create table PT_COMPANY  (
 );
 
 comment on table PT_COMPANY is
-'¹«½»¹«Ë¾ÊÇÖ¸¸ºÔð¹«½»ÏßÂ·ºÍÏµÍ³ÔËÓªµÄ¹«Ë¾,¼´¹ÜÀí¹«½»ÏµÍ³µÄÉÏ¼¶µ¥Î»';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ð¹«½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ÏµÍ³ï¿½ï¿½Óªï¿½Ä¹ï¿½Ë¾,ï¿½ï¿½ï¿½ï¿½ï¿½?ï¿½ï¿½ÏµÍ³ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½Î»';
 
 comment on column PT_COMPANY.COMPANY_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_COMPANY.PHONETIC is
 '[171U]';
@@ -13128,7 +13128,7 @@ comment on column PT_COMPANY.SRC_FLAG is
 '[170]';
 
 comment on column PT_COMPANY.CITY_CODE is
-'´æ´¢³¤¶ÈÎª4Î»';
+'ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½Îª4Î»';
 
 comment on column PT_COMPANY.DATA_SOURCE is
 '[170]';
@@ -13137,10 +13137,10 @@ comment on column PT_COMPANY.UPDATE_BATCH is
 '[170]';
 
 comment on column PT_COMPANY.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_COMPANY.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI                                                */
@@ -13188,73 +13188,73 @@ create table PT_POI  (
 );
 
 comment on table PT_POI is
-'¹«½»POIÓÉÖ÷µã(Stop POI)ºÍ³öÈë¿Ú(Access POI)Á½²¿·Ö×é³É,Ã¿¸öÖ÷µã¶ÔÓ¦Ò»µ½¶à¸ö³öÈë¿Ú,³öÈë¿ÚÊÇÖ÷µãµÄ×ÓPOI.';
+'ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Stop POI)ï¿½Í³ï¿½ï¿½ï¿½ï¿½(Access POI)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POI.';
 
 comment on column PT_POI.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.POI_KIND is
-'²Î¿¼"IX_POI_CODE"';
+'ï¿½Î¿ï¿½"IX_POI_CODE"';
 
 comment on column PT_POI.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column PT_POI.SIDE is
-'¸ù¾ÝPOIµÄÏÔÊ¾×ø±ê¼ÆËãPOIÎ»ÓÚÒýµ¼µÀÂ·LinkÉÏ»ò×ó²à»òÓÒ²à(Ïà¶ÔÓÚLink·½Ïò)';
+'ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½POIÎ»ï¿½ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½Ï»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½)';
 
 comment on column PT_POI.NAME_GROUPID is
-'[173sp2]²Î¿¼"RD_NAME"';
+'[173sp2]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column PT_POI.ROAD_FLAG is
 '[170]';
 
 comment on column PT_POI.PMESH_ID is
-'[171A]Ã¿¸ö×÷Òµ¼¾POI ÔÚ³É¹û¿âÖÐµÚÒ»´ÎÓëLINK ½¨¹ØÁªÊ±Éú³É,ÇÒ¸Ã×÷Òµ¼¾ÄÚÖØÐÂ½¨¹ØÁªÊ±¸ÃÍ¼·ùºÅ²»±ä,ÒÔ±£Ö¤¸Ã×÷Òµ¼¾Ã¿´ÎÊý¾Ý·ÖÊ¡×ª³öµÄÒ»ÖÂÐÔ';
+'[171A]Ã¿ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½POI ï¿½Ú³É¹ï¿½ï¿½ï¿½Ðµï¿½Ò»ï¿½ï¿½ï¿½ï¿½LINK ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½Ò¸ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Í¼ï¿½ï¿½Å²ï¿½ï¿½ï¿½,ï¿½Ô±ï¿½Ö¤ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½Ý·ï¿½Ê¡×ªï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.ACCESS_CODE is
-'[170]³öÈë¿ÚÃû³ÆÖÐµÄË³ÐòºÅ»ò±àºÅ,Èç:¡±°²¶¨ÃÅA ¿Ú¡±,±àºÅÊÇ¡± A¡±;¡±ÉÙÄê¹¬Õ¾£Á£²¿Ú¡±,±àºÅÊÇ¡± £Á£²¡±;¡±ÊÀ½çÖ®´°Õ¾£±ºÅ¿Ú¡±,±àºÅÊÇ¡± £±¡±.³öÈë¿ÚÃû³ÆÖÐÃ»ÓÐ±àºÅµÄÖµÎª¿Õ';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Ë³ï¿½ï¿½Å»ï¿½ï¿½ï¿½,ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½A ï¿½Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ Aï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ê¹¬Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Å¿Ú¡ï¿½,ï¿½ï¿½ï¿½ï¿½Ç¡ï¿½ ï¿½ï¿½ï¿½ï¿½.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½Ð±ï¿½Åµï¿½ÖµÎªï¿½ï¿½';
 
 comment on column PT_POI.ACCESS_TYPE is
-'³öÈë,Èë¿Ú,³öÈë¿Ú';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.ACCESS_METH is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»ÖÖ·½Ê½ÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞ/ÓÐ,Èç:00000011 ±íÊ¾Ð±ÆÂºÍ½×ÌÝ;00000101 ±íÊ¾Ð±ÆÂºÍ·öÌÝ
-µÚ0bit:Ð±ÆÂ
-µÚ1bit:½×ÌÝ
-µÚ2bit:·öÌÝ
-µÚ3bit:Ö±ÌÝ
-µÚ4bit:ÆäËû
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾²»Ó¦ÓÃ';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000011 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ½ï¿½ï¿½ï¿½;00000101 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ·ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:Ð±ï¿½ï¿½
+ï¿½ï¿½1bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½2bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½3bit:Ö±ï¿½ï¿½
+ï¿½ï¿½4bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½Ó¦ï¿½ï¿½';
 
 comment on column PT_POI.MESH_ID_5K is
-'¼ÇÂ¼¹«½»POIËùÔÚµÄ5000Í¼·ùºÅ,¸ñÊ½Îª:605603_1_3';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Úµï¿½5000Í¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ê½Îª:605603_1_3';
 
 comment on column PT_POI.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇø»®ºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍÏçÕòºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column PT_POI.POI_NUM is
-'[173sp1]¼ÇÂ¼À´×ÔNIDBµÄPOI±àºÅ';
+'[173sp1]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½NIDBï¿½ï¿½POIï¿½ï¿½ï¿½';
 
 comment on column PT_POI.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column PT_POI.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_ETA_ACCESS                                         */
@@ -13283,22 +13283,22 @@ create table PT_ETA_ACCESS  (
 );
 
 comment on table PT_ETA_ACCESS is
-'ÃèÊöÏÖÊµÊÀ½ç¹«¹²³öÈë¿ÚËù¾ß±¸µÄ¹¦ÄÜ¼°ÆäÖÜ±ßµÄ¸½Êô·þÎñÉèÊ©µÈ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß±ï¿½ï¿½Ä¹ï¿½ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½Ü±ßµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©ï¿½ï¿½';
 
 comment on column PT_ETA_ACCESS.POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_ETA_ACCESS.OPEN_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_ACCESS.MANUAL_TICKET_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_ACCESS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_ETA_ACCESS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_ETA_COMPANY                                        */
@@ -13323,40 +13323,40 @@ create table PT_ETA_COMPANY  (
 );
 
 comment on table PT_ETA_COMPANY is
-'¹«½»¹«Ë¾Éî¶ÈÐÅÏ¢:µç»°,ÍøÖ·,Í¼ÏñµÈ
-µç»°ºÍÍøÖ·ÓÃÀ´±í´ï¿ÉÒÔ·ÃÎÊ¸Ã¹«½»¹«Ë¾µÄÁªÂçÐÅÏ¢;Í¼ÏñÓÃÀ´±í´ï¹«½»¹«Ë¾µÄLOGOÍ¼±ê»òÂ·ÏßÍ¼.';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢:ï¿½ç»°,ï¿½ï¿½Ö·,Í¼ï¿½ï¿½ï¿½
+ï¿½ç»°ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô·ï¿½ï¿½Ê¸Ã¹ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢;Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¹«ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½LOGOÍ¼ï¿½ï¿½ï¿½Â·ï¿½ï¿½Í¼.';
 
 comment on column PT_ETA_COMPANY.COMPANY_ID is
-'Íâ¼ü,ÒýÓÃ"PT_COMPANY"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_COMPANY"';
 
 comment on column PT_ETA_COMPANY.TEL_TYPE is
-'[172U]ÖµÓò°üÀ¨:
-0 Î´µ÷²é
-1 ×Ü»ú
-2 ÈÕ³Ì°à´ÎÐÅÏ¢
-3 ·þÎñÐÅÏ¢';
+'[172U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0 Î´ï¿½ï¿½ï¿½ï¿½
+1 ï¿½Ü»ï¿½
+2 ï¿½Õ³Ì°ï¿½ï¿½ï¿½ï¿½Ï¢
+3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column PT_ETA_COMPANY.TELEPHONE is
-'¸ñÊ½Îª:"ÇøºÅ-ºÅÂë",Èç010-82306399.
-¶à¸öºÅÂëÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô,²¢Óëµç»°ÀàÐÍÒ»Ò»¶ÔÓ¦';
+'ï¿½ï¿½Ê½Îª:"ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½",ï¿½ï¿½010-82306399.
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½ï¿½ç»°ï¿½ï¿½ï¿½ï¿½Ò»Ò»ï¿½ï¿½Ó¦';
 
 comment on column PT_ETA_COMPANY.URL_TYPE is
-'[172U]ÖµÓò°üÀ¨:
-0 Î´µ÷²é
-1 Â·¾¶¹æ»®
-2 ÈÕ³Ì°à´ÎÐÅÏ¢
-3 µØÍ¼·þÎñ
-4 Ö÷Ò³';
+'[172U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0 Î´ï¿½ï¿½ï¿½ï¿½
+1 Â·ï¿½ï¿½ï¿½æ»®
+2 ï¿½Õ³Ì°ï¿½ï¿½ï¿½ï¿½Ï¢
+3 ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½
+4 ï¿½ï¿½Ò³';
 
 comment on column PT_ETA_COMPANY.URL is
-'¸ñÊ½:http://xxxxxxxxx,Èçhttp://www.navinfo.com/.
-¶à¸öÍøÖ·Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô,²¢ÓëÍøÖ·ÀàÐÍÒ»Ò»¶ÔÓ¦';
+'ï¿½ï¿½Ê½:http://xxxxxxxxx,ï¿½ï¿½http://www.navinfo.com/.
+ï¿½ï¿½ï¿½ï¿½ï¿½Ö·Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ò»Ò»ï¿½ï¿½Ó¦';
 
 comment on column PT_ETA_COMPANY.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_ETA_COMPANY.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_LINE                                               */
@@ -13384,19 +13384,19 @@ create table PT_LINE  (
 );
 
 comment on table PT_LINE is
-'¼ÇÂ¼Ä³µØÇøµÄ¹«½»ÏßÂ·ÐÅÏ¢,±ÈÈç 656Â·,ÌØ4Â·µÈ';
+'ï¿½ï¿½Â¼Ä³ï¿½ï¿½ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Ï¢,ï¿½ï¿½ï¿½ï¿½ 656Â·,ï¿½ï¿½4Â·ï¿½ï¿½';
 
 comment on column PT_LINE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_LINE.SYSTEM_ID is
-'²Î¿¼"PT_SYSTEM"';
+'ï¿½Î¿ï¿½"PT_SYSTEM"';
 
 comment on column PT_LINE.CITY_CODE is
-'ÓëÐÐÕþÇø»®´úÂëÃ»ÓÐÖ±½Ó¹ØÏµ,ÓÉÉú²ú²¿ÃÅÎ¬»¤';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Ö±ï¿½Ó¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¬ï¿½ï¿½';
 
 comment on column PT_LINE.COLOR is
-'´æ´¢16½øÖÆµÄRGBÖµ';
+'ï¿½æ´¢16ï¿½ï¿½ï¿½Æµï¿½RGBÖµ';
 
 comment on column PT_LINE.LOG is
 '[173sp1]';
@@ -13408,10 +13408,10 @@ comment on column PT_LINE.UPDATE_BATCH is
 '[170]';
 
 comment on column PT_LINE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_LINE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_ETA_LINE                                           */
@@ -13450,19 +13450,19 @@ create table PT_ETA_LINE  (
 );
 
 comment on table PT_ETA_LINE is
-'ÃèÊöÏÖÊµÊÀ½ç¹«¹²½»Í¨ÏßÂ·ÖÐ¾ß±¸µÄ¹¦ÄÜ,ÈçÔÊÐí×ÔÐÐ³µ,ÐÐÀî¼Ü,ÓÃ²Í·þÎñµÈ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Â·ï¿½Ð¾ß±ï¿½ï¿½Ä¹ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Ã²Í·ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_LINE.PID is
-'Íâ¼ü,ÒýÓÃ"PT_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_LINE"';
 
 comment on column PT_ETA_LINE.BIKE_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_LINE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_ETA_LINE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_ETA_STOP                                           */
@@ -13520,37 +13520,37 @@ create table PT_ETA_STOP  (
 );
 
 comment on table PT_ETA_STOP is
-'[170]ÃèÊöÏÖÊµÊÀ½ç¹«¹²½»Í¨Õ¾µã¾ß±¸µÄ¹¦ÄÜ¼°ÆäÖÜ±ßµÄ¸½Êô·þÎñÉèÊ©µÈ';
+'[170]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½ï¿½ç¹«ï¿½ï¿½ï¿½ï¿½Í¨Õ¾ï¿½ï¿½ß±ï¿½ï¿½Ä¹ï¿½ï¿½Ü¼ï¿½ï¿½ï¿½ï¿½Ü±ßµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê©ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_ETA_STOP.PRIVATE_PARK is
-'ÊÕ·Ñ»òÃâ·Ñ';
+'ï¿½Õ·Ñ»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.PRIVATE_PARK_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.BIKE_PARK is
-'ÊÇ·ñÓÐÈË¿´ÊØ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.BIKE_PARK_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.MANUAL_TICKET_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µãÓÐÈË¿´ÊØ,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.OPEN_PERIOD is
-'¸ñÊ½Îª¡±hh:mm¡±,Ö»¼ÇÂ¼Ã¿ÌìµÄ¼¸µã-¼¸µã¿ª·Å,²»¼ÇÂ¼ÈÕÆÚ';
+'ï¿½ï¿½Ê½Îªï¿½ï¿½hh:mmï¿½ï¿½,Ö»ï¿½ï¿½Â¼Ã¿ï¿½ï¿½Ä¼ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ã¿ªï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_ETA_STOP.FARE_AREA is
-'¹Ù·½ÏßÂ·Í¼µÄÖµ';
+'ï¿½Ù·ï¿½ï¿½ï¿½Â·Í¼ï¿½ï¿½Öµ';
 
 comment on column PT_ETA_STOP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_ETA_STOP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_SYSTEM                                             */
@@ -13583,13 +13583,13 @@ create table PT_SYSTEM  (
 );
 
 comment on table PT_SYSTEM is
-'¹«½»ÏµÍ³ÊÇÒ»¸ö¹«½»¹«Ë¾ÏÂÊô¸ºÔð¹ÜÀí,ÔËÓª¾ßÌå¹«½»ÏßÂ·µÄ·ÖÖ§µ¥Î».Í¨³£ÊÇÖ¸Á¥ÊôÓÚÍ¬Ò»¸öÏµÍ³µÄ¹«½»ÏßÂ·µÄ¹ÜÀíµ¥Î»,¼´Ö±½Ó¹ÜÀí,ÔËÓª°ÍÊ¿/µØÌúµÈÏßÂ·µÄµ¥Î»';
+'ï¿½ï¿½ï¿½ï¿½ÏµÍ³ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Óªï¿½ï¿½ï¿½å¹«ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ä·ï¿½Ö§ï¿½ï¿½Î».Í¨ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ÏµÍ³ï¿½Ä¹ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ä¹ï¿½ï¿½?Î»,ï¿½ï¿½Ö±ï¿½Ó¹ï¿½ï¿½ï¿½,ï¿½ï¿½Óªï¿½ï¿½Ê¿/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Äµï¿½Î»';
 
 comment on column PT_SYSTEM.SYSTEM_ID is
-'Ö÷¼ü,ÏµÍ³·ÖÅäÎ¨Ò»Ë³ÐòºÅ';
+'ï¿½ï¿½ï¿½ï¿½,ÏµÍ³ï¿½ï¿½ï¿½ï¿½Î¨Ò»Ë³ï¿½ï¿½ï¿½';
 
 comment on column PT_SYSTEM.COMPANY_ID is
-'Íâ¼ü,ÒýÓÃ"PT_COMPANY"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_COMPANY"';
 
 comment on column PT_SYSTEM.PHONETIC is
 '[171U]';
@@ -13598,7 +13598,7 @@ comment on column PT_SYSTEM.SRC_FLAG is
 '[170]';
 
 comment on column PT_SYSTEM.CITY_CODE is
-'´æ´¢³¤¶ÈÎª4Î»';
+'ï¿½æ´¢ï¿½ï¿½ï¿½ï¿½Îª4Î»';
 
 comment on column PT_SYSTEM.DATA_SOURCE is
 '[170]';
@@ -13607,10 +13607,10 @@ comment on column PT_SYSTEM.UPDATE_BATCH is
 '[170]';
 
 comment on column PT_SYSTEM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_SYSTEM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_ETA_SYSTEM                                         */
@@ -13638,46 +13638,46 @@ create table PT_ETA_SYSTEM  (
 );
 
 comment on table PT_ETA_SYSTEM is
-'Ö÷ÒªÓÐµç»°,ÍøÖ·,Í¼Ïñ,¼Æ·Ñ·½Ê½,¿ÉÓÃ»õ±ÒµÈÐÅÏ¢';
+'ï¿½ï¿½Òªï¿½Ðµç»°,ï¿½ï¿½Ö·,Í¼ï¿½ï¿½,ï¿½Æ·Ñ·ï¿½Ê½,ï¿½ï¿½ï¿½Ã»ï¿½ï¿½Òµï¿½ï¿½ï¿½Ï¢';
 
 comment on column PT_ETA_SYSTEM.SYSTEM_ID is
-'Íâ¼ü,ÒýÓÃ"PT_SYSTEM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_SYSTEM"';
 
 comment on column PT_ETA_SYSTEM.TEL_TYPE is
-'[172U]ÖµÓò°üÀ¨:
-0 Î´µ÷²é
-1 ×Ü»ú
-2 ÈÕ³Ì°à´ÎÐÅÏ¢
-3 ·þÎñÐÅÏ¢';
+'[172U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0 Î´ï¿½ï¿½ï¿½ï¿½
+1 ï¿½Ü»ï¿½
+2 ï¿½Õ³Ì°ï¿½ï¿½ï¿½ï¿½Ï¢
+3 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column PT_ETA_SYSTEM.TELEPHONE is
-'¸ñÊ½Îª:"ÇøºÅ-ºÅÂë",Èç010-82306399.
-¶à¸öºÅÂëÊ±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô,²¢Óëµç»°ÀàÐÍÒ»Ò»¶ÔÓ¦';
+'ï¿½ï¿½Ê½Îª:"ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½ï¿½",ï¿½ï¿½010-82306399.
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½ï¿½ç»°ï¿½ï¿½ï¿½ï¿½Ò»Ò»ï¿½ï¿½Ó¦';
 
 comment on column PT_ETA_SYSTEM.URL_TYPE is
-'[172U]ÖµÓò°üÀ¨:
-0 Î´µ÷²é
-1 Â·¾¶¹æ»®
-2 ÈÕ³Ì°à´ÎÐÅÏ¢
-3 µØÍ¼·þÎñ
-4 Ö÷Ò³';
+'[172U]Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+0 Î´ï¿½ï¿½ï¿½ï¿½
+1 Â·ï¿½ï¿½ï¿½æ»®
+2 ï¿½Õ³Ì°ï¿½ï¿½ï¿½ï¿½Ï¢
+3 ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½
+4 ï¿½ï¿½Ò³';
 
 comment on column PT_ETA_SYSTEM.URL is
-'¸ñÊ½:http://xxxxxxxxx,Èçhttp://www.navinfo.com/.
-¶à¸öÍøÖ·Ê±²ÉÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô,²¢ÓëÍøÖ·ÀàÐÍÒ»Ò»¶ÔÓ¦';
+'ï¿½ï¿½Ê½:http://xxxxxxxxx,ï¿½ï¿½http://www.navinfo.com/.
+ï¿½ï¿½ï¿½ï¿½ï¿½Ö·Ê±ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö·ï¿½ï¿½ï¿½ï¿½Ò»Ò»ï¿½ï¿½Ó¦';
 
 comment on column PT_ETA_SYSTEM.COIN is
-'ÖµÓòÎª:
-CNY ÈËÃñ±Ò(´óÂ½)
-HKD ¸ÛÔª(Ïã¸Û)
-MOP °ÄÃÅ±Ò
-¶àÖÖ»õ±Ò·½Ê½ÓÃÓ¢ÎÄ°ë½Ç¡±|¡±·Ö¸ô';
+'Öµï¿½ï¿½Îª:
+CNY ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â½)
+HKD ï¿½ï¿½Ôª(ï¿½ï¿½ï¿½)
+MOP ï¿½ï¿½ï¿½Å±ï¿½
+ï¿½ï¿½ï¿½Ö»ï¿½ï¿½Ò·ï¿½Ê½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¡ï¿½|ï¿½ï¿½ï¿½Ö¸ï¿½';
 
 comment on column PT_ETA_SYSTEM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_ETA_SYSTEM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_LINE_NAME                                          */
@@ -13706,28 +13706,28 @@ comment on table PT_LINE_NAME is
 '[170]';
 
 comment on column PT_LINE_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_LINE_NAME.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_LINE_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"PT_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_LINE"';
 
 comment on column PT_LINE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_LINE_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_LINE_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column PT_LINE_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_LINE_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_PLATFORM                                           */
@@ -13765,22 +13765,22 @@ create table PT_PLATFORM  (
 );
 
 comment on table PT_PLATFORM is
-'Õ¾Ì¨,Ò²½ÐÔÂÌ¨,¼´¹«¹²½»Í¨³µÁ¾Í£¿¿Ê±,¹©³Ë¿Íºò³µºÍÉÏÏÂ³µµÄÉèÊ©';
+'Õ¾Ì¨,Ò²ï¿½ï¿½ï¿½ï¿½Ì¨,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ë¿Íºò³µºï¿½ï¿½ï¿½ï¿½Â³ï¿½ï¿½ï¿½ï¿½ï¿½Ê©';
 
 comment on column PT_PLATFORM.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM.POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_PLATFORM.COLLECT is
 '[170]';
 
 comment on column PT_PLATFORM.P_LEVEL is
-'ÖµÓò:-6~4;0±íÊ¾µØÃæ';
+'Öµï¿½ï¿½:-6~4;0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM.TRANSIT_FLAG is
-'¼ÇÂ¼¸ÃÕ¾Ì¨ÊÇ·ñÄÜºÍÆäËûÕ¾Ì¨»¥Í¨,ÈôÄÜºÍÆäËûÕ¾Ì¨»¥Í¨,±êÊ¶Îª"¿É»»³Ë";Èô²»ÄÜÍ¨ÍùÈÎºÎÆäËûÕ¾Ì¨,±êÊ¶Îª"²»¿É»»³Ë"';
+'ï¿½ï¿½Â¼ï¿½ï¿½Õ¾Ì¨ï¿½Ç·ï¿½ï¿½Üºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Í¨,ï¿½ï¿½ï¿½Üºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Í¨,ï¿½ï¿½Ê¶Îª"ï¿½É»ï¿½ï¿½ï¿½";ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Îºï¿½ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨,ï¿½ï¿½Ê¶Îª"ï¿½ï¿½ï¿½É»ï¿½ï¿½ï¿½"';
 
 comment on column PT_PLATFORM.DATA_SOURCE is
 '[170]';
@@ -13789,19 +13789,19 @@ comment on column PT_PLATFORM.UPDATE_BATCH is
 '[170]';
 
 comment on column PT_PLATFORM.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column PT_PLATFORM.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_PLATFORM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_PLATFORM_ACCESS                                    */
@@ -13827,22 +13827,22 @@ create table PT_PLATFORM_ACCESS  (
 );
 
 comment on table PT_PLATFORM_ACCESS is
-'¼ÇÂ¼Õ¾Ì¨ÓëÄÜµ½´ï¸ÃÕ¾Ì¨µÄÈë¿ÚµãÖ®¼äµÄ¶ÔÓ¦¹ØÏµ,Ò»¸öÕ¾Ì¨¿ÉÒÔÓÐ¶à¸öÈë¿Úµã';
+'ï¿½ï¿½Â¼Õ¾Ì¨ï¿½ï¿½ï¿½Üµï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½ï¿½Úµï¿½Ö®ï¿½ï¿½Ä¶ï¿½Ó¦ï¿½ï¿½Ïµ,Ò»ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½Úµï¿½';
 
 comment on column PT_PLATFORM_ACCESS.RELATE_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM_ACCESS.PLATFORM_ID is
-'Íâ¼ü,ÒýÓÃ"PT_PLATFORM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_PLATFORM"';
 
 comment on column PT_PLATFORM_ACCESS.ACCESS_ID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_PLATFORM_ACCESS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_PLATFORM_ACCESS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_PLATFORM_NAME                                      */
@@ -13871,28 +13871,28 @@ comment on table PT_PLATFORM_NAME is
 '[170]';
 
 comment on column PT_PLATFORM_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM_NAME.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"PT_PLATFORM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_PLATFORM"';
 
 comment on column PT_PLATFORM_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_PLATFORM_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column PT_PLATFORM_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_PLATFORM_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI_PARENT                                         */
@@ -13911,19 +13911,19 @@ create table PT_POI_PARENT  (
 );
 
 comment on table PT_POI_PARENT is
-'¼ÇÂ¼Õ¾µãÓë³öÈë¿ÚÖ®¼äµÄ¹ØÏµÐÅÏ¢';
+'ï¿½ï¿½Â¼Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¹ï¿½Ïµï¿½ï¿½Ï¢';
 
 comment on column PT_POI_PARENT.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI_PARENT.PARENT_POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_POI_PARENT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI_PARENT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI_CHILDREN                                       */
@@ -13945,19 +13945,19 @@ create table PT_POI_CHILDREN  (
 );
 
 comment on table PT_POI_CHILDREN is
-'¹«½»POIµÄ¸¸×Ó¹ØÏµ,¼´Õ¾µãÓë³öÈë¿ÚÖ®¼äµÄ¹ØÏµÐÅÏ¢';
+'ï¿½ï¿½ï¿½ï¿½POIï¿½Ä¸ï¿½ï¿½Ó¹ï¿½Ïµ,ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½Ä¹ï¿½Ïµï¿½ï¿½Ï¢';
 
 comment on column PT_POI_CHILDREN.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"PT_POI_PARENT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI_PARENT"';
 
 comment on column PT_POI_CHILDREN.CHILD_POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_POI_CHILDREN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI_CHILDREN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI_FLAG                                           */
@@ -13978,16 +13978,16 @@ comment on table PT_POI_FLAG is
 '[170]';
 
 comment on column PT_POI_FLAG.POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_POI_FLAG.FLAG_CODE is
-'²Î¿¼"M_FLAG_CODE"';
+'ï¿½Î¿ï¿½"M_FLAG_CODE"';
 
 comment on column PT_POI_FLAG.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI_FLAG.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI_NAME                                           */
@@ -14014,31 +14014,31 @@ create table PT_POI_NAME  (
 );
 
 comment on table PT_POI_NAME is
-'ÓëIX_POI_NAMEÔ­ÔòÏàÍ¬';
+'ï¿½ï¿½IX_POI_NAMEÔ­ï¿½ï¿½ï¿½ï¿½Í¬';
 
 comment on column PT_POI_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI_NAME.POI_PID is
-'Íâ¼ü,ÒýÓÃ"PT_POI"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI"';
 
 comment on column PT_POI_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_POI_NAME.NIDB_PID is
-'¼ÇÂ¼ÏÖÓÐPOIÖÐÒÑ¾­³öÆ·µÄÓÀ¾ÃID,²»Í¬ÓïÑÔÀàÐÍPID²»Í¬';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½POIï¿½ï¿½ï¿½Ñ¾ï¿½ï¿½ï¿½Æ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID,ï¿½ï¿½Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½Í¬';
 
 comment on column PT_POI_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_POI_NAME_TONE                                      */
@@ -14064,28 +14064,28 @@ comment on table PT_POI_NAME_TONE is
 '[170]';
 
 comment on column PT_POI_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"PT_POI_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_POI_NAME"';
 
 comment on column PT_POI_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column PT_POI_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column PT_POI_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column PT_POI_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column PT_POI_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column PT_POI_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_POI_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_STRAND                                             */
@@ -14096,7 +14096,7 @@ create table PT_STRAND  (
    LINE_ID              NUMBER(10)                      not null,
    CITY_CODE            NUMBER(6)                      default 0 not null,
    UP_DOWN              VARCHAR2(16)                   
-       check (UP_DOWN is null or (UP_DOWN in ('£Ó','£Ø','£È','£Î£È','£×£È','£Ã£È','£Ã£Î£È','£Ã£×£È'))),
+       check (UP_DOWN is null or (UP_DOWN in ('ï¿½ï¿½','ï¿½ï¿½','ï¿½ï¿½','ï¿½Î£ï¿½','ï¿½×£ï¿½','ï¿½Ã£ï¿½','ï¿½Ã£Î£ï¿½','ï¿½Ã£×£ï¿½'))),
    DISTANCE             VARCHAR2(10),
    TICKET_SYS           NUMBER(2)                      default 0 not null
        check (TICKET_SYS in (0,1,2,9)),
@@ -14127,19 +14127,19 @@ create table PT_STRAND  (
 );
 
 comment on table PT_STRAND is
-'Strand,¼´°à´Î±í,ÓÃÀ´¼ÇÂ¼Ã¿ÌõÏßÂ·¸÷¸öÐÐ³µ·½ÏòÔÚ²»Í¬µÄÊ±¼äµã·¢³öµÄ°à´Î,¼°¸Ã°à´ÎµÄ¸÷ÀàÏêÏ¸ÐÅÏ¢,Èç¾­¹ýÏßÂ·,Ê×Ä©³µÊ±¼ä,·¢³µ¼ä¸ôµÈ';
+'Strand,ï¿½ï¿½ï¿½ï¿½Î±ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú²ï¿½Í¬ï¿½ï¿½Ê±ï¿½ï¿½ã·¢ï¿½ï¿½ï¿½Ä°ï¿½ï¿½,ï¿½ï¿½ï¿½Ã°ï¿½ÎµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ï¿½Ï¢,ï¿½ç¾­ï¿½ï¿½ï¿½ï¿½Â·,ï¿½ï¿½Ä©ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND.PAIR_STRAND_PID is
 '[170]';
 
 comment on column PT_STRAND.LINE_ID is
-'Íâ¼ü,ÒýÓÃ"PT_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_LINE"';
 
 comment on column PT_STRAND.UP_DOWN is
-'±íÊ¾ÉÏÐÐ,ÏÂÐÐ,»·ÐÐµÈ,´æ´¢ÎªÈ«½Ç×Ö·û';
+'ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ðµï¿½,ï¿½æ´¢ÎªÈ«ï¿½ï¿½ï¿½Ö·ï¿½';
 
 comment on column PT_STRAND.TICKET_START is
 '[170]';
@@ -14154,8 +14154,8 @@ comment on column PT_STRAND.INCREASED_STEP is
 '[170]';
 
 comment on column PT_STRAND.GEOMETRY is
-'(1)Strand ÐÐ³µ¹ì¼£,¼´¼¸ºÎ×ø±êÐòÁÐ,ÓëÍ¼ÀªÏß²»×ö´ò¶Ï,×ø±êÐòÁÐ¿É×ÔÏà½»
-(2)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ';
+'(1)Strand ï¿½Ð³ï¿½ï¿½ì¼£,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¼ï¿½ï¿½ï¿½ß²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½ï¿½ï¿½ï¿½à½»
+(2)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND.DATA_SOURCE is
 '[170]';
@@ -14167,19 +14167,19 @@ comment on column PT_STRAND.LOG is
 '[173sp1]';
 
 comment on column PT_STRAND.TASK_ID is
-'[170]¼ÇÂ¼ÄÚÒµµÄÈÎÎñ±àºÅ';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND.DATA_VERSION is
-'¼ÇÂ¼Êý¾Ý²É¼¯µÄ×÷Òµ¼¾,Èç10¶¬,11ÏÄ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ý²É¼ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½10ï¿½ï¿½,11ï¿½ï¿½';
 
 comment on column PT_STRAND.FIELD_TASK_ID is
-'¼ÇÂ¼ÍâÒµµÄÈÎÎñ±àºÅ';
+'ï¿½ï¿½Â¼ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_STRAND.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_RUNTIME                                            */
@@ -14205,30 +14205,30 @@ create table PT_RUNTIME  (
 );
 
 comment on table PT_RUNTIME is
-'(1)¼ÇÂ¼²»Í¬°à´ÎµÄ³ö·¢ºÍµ½´ïÊ±¼ä,¼´Ä³ÌõÏßÂ·Strandµ½´ï»òÀë¿ªÖ¸¶¨Õ¾Ì¨µÄÊ±¼ä
-(2)NaviMap²»ÖÆ×÷,¶øÊÇÔÚNavEx³öÆ·Ö®Ç°Í¨¹ý"StrandÔËÐÐÊ±¿Ì±í"ºÍ"StandÓëÕ¾Ì¨¹ØÏµ±í"Åú´¦ÀíÍê³É';
+'(1)ï¿½ï¿½Â¼ï¿½ï¿½Í¬ï¿½ï¿½ÎµÄ³ï¿½ï¿½ï¿½ï¿½Íµï¿½ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½Â·Strandï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¿ªÖ¸ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Ê±ï¿½ï¿½
+(2)NaviMapï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½NavExï¿½ï¿½Æ·Ö®Ç°Í¨ï¿½ï¿½"Strandï¿½ï¿½ï¿½ï¿½Ê±ï¿½Ì±ï¿½"ï¿½ï¿½"Standï¿½ï¿½Õ¾Ì¨ï¿½ï¿½Ïµï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_RUNTIME.STRAND_PID is
-'Íâ¼ü,ÒýÓÃ"PT_STRAND"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_STRAND"';
 
 comment on column PT_RUNTIME.PLATFORM_PID is
-'Íâ¼ü,ÒýÓÃ"PT_PLATFORM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_PLATFORM"';
 
 comment on column PT_RUNTIME.ARRIVAL_TIME is
-'¸ñÊ½Îª24Ð¡Ê±ÖÆ,¸ñÊ½Îª"Ê±:·Ö",ÀýÈç06:05.
-Õû¸ö°à´ÎµÄÊ±¼ä¿çÌìÊ±,Öµ½«´óÓÚ24,±ÈÈçÁè³¿1:30Òª±í´ïÎª25:30';
+'ï¿½ï¿½Ê½Îª24Ð¡Ê±ï¿½ï¿½,ï¿½ï¿½Ê½Îª"Ê±:ï¿½ï¿½",ï¿½ï¿½ï¿½ï¿½06:05.
+ï¿½ï¿½ï¿½ï¿½ï¿½Îµï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ê±,Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½24,ï¿½ï¿½ï¿½ï¿½ï¿½è³¿1:30Òªï¿½ï¿½ï¿½Îª25:30';
 
 comment on column PT_RUNTIME.DEPART_TIME is
-'¸ñÊ½Í¬"µ½´ïÊ±¼ä",ÊýÖµÄ¬ÈÏÎª"µ½´ïÊ±¼äÑÓÊ±Ò»·ÖÖÓ"';
+'ï¿½ï¿½Ê½Í¬"ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½",ï¿½ï¿½ÖµÄ¬ï¿½ï¿½Îª"ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ê±Ò»ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column PT_RUNTIME.VALID_WEEK is
-'ÒÔÖÜÎªµ¥Î»,´Ó×óµ½ÓÒ¹²7Î»±íÊ¾ÖÜÈÕµ½ÖÜÁù,1±íÊ¾ÓÐÐ§,0±íÊ¾ÎÞÐ§.ÈçÐÇÆÚÌìºÍÐÇÆÚ¶þÓÐÐ§:1010000,Ò»Ö±ÓÐÐ§Îª1111111';
+'ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½Ò¹ï¿½7Î»ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½ï¿½,1ï¿½ï¿½Ê¾ï¿½ï¿½Ð§,0ï¿½ï¿½Ê¾ï¿½ï¿½Ð§.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ï¿½Ð§:1010000,Ò»Ö±ï¿½ï¿½Ð§Îª1111111';
 
 comment on column PT_RUNTIME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_RUNTIME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_STRAND_NAME                                        */
@@ -14259,16 +14259,16 @@ comment on table PT_STRAND_NAME is
 '[170]';
 
 comment on column PT_STRAND_NAME.NAME_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_NAME.NAME_GROUPID is
-'[171U]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"PT_STRAND"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_STRAND"';
 
 comment on column PT_STRAND_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_NAME.NAME_CLASS is
 '[170][172U]';
@@ -14277,16 +14277,16 @@ comment on column PT_STRAND_NAME.NAME is
 '[170]';
 
 comment on column PT_STRAND_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_NAME.SRC_FLAG is
-'ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column PT_STRAND_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_STRAND_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_STRAND_PLATFORM                                    */
@@ -14316,17 +14316,17 @@ create table PT_STRAND_PLATFORM  (
 );
 
 comment on column PT_STRAND_PLATFORM.STRAND_PID is
-'Íâ¼ü,ÒýÓÃ"PT_STRAND"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_STRAND"';
 
 comment on column PT_STRAND_PLATFORM.PLATFORM_PID is
-'Íâ¼ü,ÒýÓÃ"PT_PLATFORM"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_PLATFORM"';
 
 comment on column PT_STRAND_PLATFORM.SEQ_NUM is
-'(1)¼ÇÂ¼¹«½»ÏßÂ·Ä³ÌõStrandÑØÏßµÄÕ¾Ì¨ÐÅÏ¢
-(2)Ä¿Ç°ËùÓÐÏßÂ·µÄÕ¾Ì¨Í³Ò»´Ó10000¿ªÊ¼Ã¿´ÎµÝÔö10000±àºÅ,¼´10000,20000,30000µÈ';
+'(1)ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ä³ï¿½ï¿½Strandï¿½ï¿½ï¿½ßµï¿½Õ¾Ì¨ï¿½ï¿½Ï¢
+(2)Ä¿Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Õ¾Ì¨Í³Ò»ï¿½ï¿½10000ï¿½ï¿½Ê¼Ã¿ï¿½Îµï¿½ï¿½ï¿½10000ï¿½ï¿½ï¿½,ï¿½ï¿½10000,20000,30000ï¿½ï¿½';
 
 comment on column PT_STRAND_PLATFORM.INTERVAL is
-'µ¥Î»:·ÖÖÓ';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_PLATFORM.DATA_SOURCE is
 '[170]';
@@ -14335,10 +14335,10 @@ comment on column PT_STRAND_PLATFORM.UPDATE_BATCH is
 '[170]';
 
 comment on column PT_STRAND_PLATFORM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_STRAND_PLATFORM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_STRAND_SCHEDULE                                    */
@@ -14362,40 +14362,40 @@ create table PT_STRAND_SCHEDULE  (
 );
 
 comment on table PT_STRAND_SCHEDULE is
-'¼ÇÂ¼Ä³ÏßÂ·strandµÄÔËÐÐÐÅÏ¢: ·¢³µµÄÆðÖ¹Ê±¼äºÍ¼ä¸ôÊ±¼äµÈ,Õë¶ÔÏã¸ÛµØÇø,´æÔÚ·ÖÊ±¼ä¶ÎµÄ·¢³µÇé¿ö,ÈçÖÜÒ»µ½ÖÜËÄ,Ä³ÌõÏßÂ·9:00µ½12:00,Ã¿¸ô15·ÖÖÓ·¢Ò»´Î,12:00µ½18:00Ã¿¸ô20·ÖÖÓ·¢Ò»´Î';
+'ï¿½ï¿½Â¼Ä³ï¿½ï¿½Â·strandï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢: ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¹Ê±ï¿½ï¿½Í¼ï¿½ï¿½Ê±ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ûµï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ú·ï¿½Ê±ï¿½ï¿½ÎµÄ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ä³ï¿½ï¿½ï¿½ï¿½Â·9:00ï¿½ï¿½12:00,Ã¿ï¿½ï¿½15ï¿½ï¿½ï¿½Ó·ï¿½Ò»ï¿½ï¿½,12:00ï¿½ï¿½18:00Ã¿ï¿½ï¿½20ï¿½ï¿½ï¿½Ó·ï¿½Ò»ï¿½ï¿½';
 
 comment on column PT_STRAND_SCHEDULE.STRAND_PID is
-'Íâ¼ü,ÒýÓÃ"PT_STRAND"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"PT_STRAND"';
 
 comment on column PT_STRAND_SCHEDULE.VALID_DAY is
-'²ÉÓÃ16bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~15bit,Ã¿bit ±íÊ¾Ò»ÖÖÊ±¼äÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞÐ§/ÓÐÐ§,Èç:0000001111000010,±íÊ¾ÏÄ¼¾µÄÖÜÒ»µ½ÖÜËÄÓÐÐ§
-µÚ0bit:¶¬¼¾
-µÚ1bit:ÏÄ¼¾
-µÚ2bit:½Ú¼ÙÈÕ
-µÚ3bit:ÖÜÈÕ
-µÚ4bit:ÖÜÁù
-µÚ5bit:ÖÜÎå
-µÚ6bit:ÖÜËÄ
-µÚ7bit:ÖÜÈý
-µÚ8bit:ÖÜ¶þ
-µÚ9bit:ÖÜÒ»
-µÚ10~15bit ¾ùÎª0
-Èç¹ûµÚ0~9bit Î»¾ùÎª1,±íÊ¾È«²¿ÓÐÐ§';
+'ï¿½ï¿½ï¿½ï¿½16bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~15bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½Ð§/ï¿½ï¿½Ð§,ï¿½ï¿½:0000001111000010,ï¿½ï¿½Ê¾ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð§
+ï¿½ï¿½0bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½1bit:ï¿½Ä¼ï¿½
+ï¿½ï¿½2bit:ï¿½Ú¼ï¿½ï¿½ï¿½
+ï¿½ï¿½3bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½4bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½5bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½6bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½7bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½8bit:ï¿½Ü¶ï¿½
+ï¿½ï¿½9bit:ï¿½ï¿½Ò»
+ï¿½ï¿½10~15bit ï¿½ï¿½Îª0
+ï¿½ï¿½ï¿½ï¿½0~9bit Î»ï¿½ï¿½Îª1,ï¿½ï¿½Ê¾È«ï¿½ï¿½ï¿½ï¿½Ð§';
 
 comment on column PT_STRAND_SCHEDULE.START_TIME is
-'¼ÇÂ¼Ã¿ÌõÏßÂ·¸÷¸öÐÐ³µ·½ÏòµÄ·¢³µ¿ªÊ¼Ê±¼ä;¸ñÊ½Îª24Ð¡Ê±ÖÆ,ÓÃÃ°ºÅ·Ö¸ô,"xx:xx"Á½¶ÎÊýÖµ·Ö±ð¼ÇÂ¼"Ð¡Ê±:·ÖÖÓ",Ã¿Ìõstrand¿ÉÄÜ´æÔÚ¶à×é·¢³µ¿ªÊ¼ºÍ½áÊøÊ±¼ä,²»Çø·Ö½Ú¼ÙÈÕ,ÖÜÄ©';
+'ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Ê±ï¿½ï¿½;ï¿½ï¿½Ê½Îª24Ð¡Ê±ï¿½ï¿½,ï¿½ï¿½Ã°ï¿½Å·Ö¸ï¿½,"xx:xx"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµï¿½Ö±ï¿½ï¿½Â¼"Ð¡Ê±:ï¿½ï¿½ï¿½ï¿½",Ã¿ï¿½ï¿½strandï¿½ï¿½ï¿½Ü´ï¿½ï¿½Ú¶ï¿½ï¿½é·¢ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½Í½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ö½Ú¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©';
 
 comment on column PT_STRAND_SCHEDULE.END_TIME is
-'¼ÇÂ¼Ã¿ÌõÏßÂ·¸÷¸öÐÐ³µ·½ÏòµÄ·¢³µ½áÊøÊ±¼ä,¸ñÊ½Í¬"·¢³µ¿ªÊ¼Ê±¼ä"';
+'ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½Ä·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½ï¿½Ê½Í¬"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼Ê±ï¿½ï¿½"';
 
 comment on column PT_STRAND_SCHEDULE.INTERVAL is
-'¼ÇÂ¼Ã¿Ìõstrandµ¥°à´Î·¢³µµÄ¼ä¸ôÊ±¼ä,ÒÔ·ÖÖÓÎªµ¥Î»¼ÇÂ¼,×îÐ¡µ¥Î»¾«È·µ½0.5·Ö,Ã¿ÌõStrandÖ»¼ÇÂ¼Ò»¸ö·¢³µ¼ä¸ô,²»Çø·Ö½Ú¼ÙÈÕ,ÖÜÄ©,Ò²²»Çø·Ö¸ß·åÊ±¼äµÈ';
+'ï¿½ï¿½Â¼Ã¿ï¿½ï¿½strandï¿½ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½ï¿½Ê±ï¿½ï¿½,ï¿½Ô·ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½Â¼,ï¿½ï¿½Ð¡ï¿½ï¿½Î»ï¿½ï¿½È·ï¿½ï¿½0.5ï¿½ï¿½,Ã¿ï¿½ï¿½StrandÖ»ï¿½ï¿½Â¼Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ö½Ú¼ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©,Ò²ï¿½ï¿½ï¿½ï¿½Ö¸ß·ï¿½Ê±ï¿½ï¿½ï¿½';
 
 comment on column PT_STRAND_SCHEDULE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_STRAND_SCHEDULE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: PT_TRANSFER                                           */
@@ -14427,41 +14427,41 @@ create table PT_TRANSFER  (
 );
 
 comment on table PT_TRANSFER is
-'NaviMapÖÆ×÷Ê±,Èç¹ûÏßÂ·Í¼ÖÐµÄ»»³ËÕ¾ÖÆ×÷³ÉÁËÁ½¸ö»ò¶à¸öÖ÷µã(¼´Õ¾µã),ÐèÒª½«¶ÔÓ¦µÄÖ÷µãÖ®¼äÁ½Á½ÖÆ×÷»»³ËÀàÐÍÎª"¿çÕ¾»»³Ë"µÄ¹ØÏµ.
-Èç¹ûÏßÂ·Í¼ÖÐµÄ»»³ËÕ¾ÖÆ×÷³ÉÁËÒ»¸öÖ÷µã,ÐèÒªÔÚ´ËÖ÷µãÖÐËùÓÐÄÜ¹»»¥Í¨µÄÕ¾Ì¨Ö®¼äÁ½Á½ÖÆ×÷»»³ËÀàÐÍÎª"Õ¾ÄÚ»»³Ë"µÄ¹ØÏµ.
-¼´:Èç¹ûÊÇÕ¾ÄÚ»»³Ë,»»³ËµãÓ¦¸ÃÊÇÕ¾Ì¨±àºÅ;Èç¹ûÊÇÕ¾¼ä»»³Ë,»»³ËµãÓ¦¸ÃÊÇÖ÷µã(¼´Õ¾µã)';
+'NaviMapï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½Â·Í¼ï¿½ÐµÄ»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Õ¾ï¿½ï¿½),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½"ï¿½Ä¹ï¿½Ïµ.
+ï¿½ï¿½ï¿½ï¿½ï¿½Â·Í¼ï¿½ÐµÄ»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Òªï¿½Ú´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü¹ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Õ¾Ì¨Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª"Õ¾ï¿½Ú»ï¿½ï¿½ï¿½"ï¿½Ä¹ï¿½Ïµ.
+ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½Ú»ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ëµï¿½Ó¦ï¿½ï¿½ï¿½ï¿½Õ¾Ì¨ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ä»»ï¿½ï¿½,ï¿½ï¿½ï¿½Ëµï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Õ¾ï¿½ï¿½)';
 
 comment on column PT_TRANSFER.TRANSFER_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column PT_TRANSFER.TRANSFER_TYPE is
-'Çø·Ö¿çÕ¾»»³ËºÍÕ¾ÄÚ»»³ËÁ½ÖÖÀàÐÍ:
-(1)¿çÕ¾»»³Ë,±í´ï²»Í¬¹«½»ÏßÂ·ÔÚÁ½¸öÏàÁÚÕ¾µãÖ®¼äµÄ»»³Ë;´ËÊ±,»»³ËµãÒ»ºÍ»»³Ëµã¶þ·Ö±ð±íÊ¾Õ¾µã
-(2)Õ¾ÄÚ»»³Ë,±í´ï²»Í¬¹«½»ÏßÂ·ÔÚÍ¬Ò»¸öÕ¾µãÄÚ²¿µÄ»»³Ë,´ËÊ±,»»³ËµãÒ»ºÍ»»³Ëµã¶þ·Ö±ð±íÊ¾Õ¾Ì¨';
+'ï¿½ï¿½Ö¿ï¿½Õ¾ï¿½ï¿½ï¿½Ëºï¿½Õ¾ï¿½Ú»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
+(1)ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï²»Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½Ö®ï¿½ï¿½Ä»ï¿½ï¿½ï¿½;ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ëµï¿½Ò»ï¿½Í»ï¿½ï¿½Ëµï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê¾Õ¾ï¿½ï¿½
+(2)Õ¾ï¿½Ú»ï¿½ï¿½ï¿½,ï¿½ï¿½ï²»Í¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Í¬Ò»ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ú²ï¿½ï¿½Ä»ï¿½ï¿½ï¿½,ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ëµï¿½Ò»ï¿½Í»ï¿½ï¿½Ëµï¿½ï¿½ï¿½Ö±ï¿½ï¿½Ê¾Õ¾Ì¨';
 
 comment on column PT_TRANSFER.POI_FIR is
-'[173sp1]²Î¿¼"PT_POI"';
+'[173sp1]ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column PT_TRANSFER.POI_SEC is
-'[173sp1]²Î¿¼"PT_POI"';
+'[173sp1]ï¿½Î¿ï¿½"PT_POI"';
 
 comment on column PT_TRANSFER.PLATFORM_FIR is
-'[173sp1]²Î¿¼"PT_PLATFORM"';
+'[173sp1]ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column PT_TRANSFER.PLATFORM_SEC is
-'[173sp1]²Î¿¼"PT_PLATFORM"';
+'[173sp1]ï¿½Î¿ï¿½"PT_PLATFORM"';
 
 comment on column PT_TRANSFER.TRANSFER_TIME is
-'ÒÔ·ÖÖÓÎªµ¥Î»,¼ÇÂ¼³Ë¿Í»»³ËÊ±²½ÐÐÐèÒªµÄÊ±¼ä';
+'ï¿½Ô·ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»,ï¿½ï¿½Â¼ï¿½Ë¿Í»ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½Ê±ï¿½ï¿½';
 
 comment on column PT_TRANSFER.EXTERNAL_FLAG is
-'[180U]Ã¿Ò»×é¿çÕ¾»»³Ë¹ØÏµ,¶¼ÐèÒªÖÆ×÷"Íâ²¿±êÊ¶"ÊôÐÔ,ÓÃÀ´ÃèÊö³Ë¿Í»»³ËÊ±ÊÇ·ñÐèÒª×ßµ½Õ¾µãÍâ²¿.µ±Á½¸öÖ÷µãÖ®¼äÓÐ×¨ÓÃ»»³ËÍ¨µÀÊ±,"Íâ²¿±êÊ¶"ÖÆ×÷Îª"·ñ";ÈôÃ»ÓÐ×¨ÓÃÍ¨µÀ,³Ë¿ÍÐèÒª×ßµ½Õ¾µãÍâÃæ»»³Ë,"Íâ²¿±êÊ¶"ÖÆ×÷Îª"ÊÇ".';
+'[180U]Ã¿Ò»ï¿½ï¿½ï¿½Õ¾ï¿½ï¿½ï¿½Ë¹ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¿Í»ï¿½ï¿½ï¿½Ê±ï¿½Ç·ï¿½ï¿½ï¿½Òªï¿½ßµï¿½Õ¾ï¿½ï¿½ï¿½â²¿.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½×¨ï¿½Ã»ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±,"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½";ï¿½ï¿½Ã»ï¿½ï¿½×¨ï¿½ï¿½Í¨ï¿½ï¿½,ï¿½Ë¿ï¿½ï¿½ï¿½Òªï¿½ßµï¿½Õ¾ï¿½ï¿½ï¿½ï¿½ï¿½æ»»ï¿½ï¿½,"ï¿½â²¿ï¿½ï¿½Ê¶"ï¿½ï¿½ï¿½ï¿½Îª"ï¿½ï¿½".';
 
 comment on column PT_TRANSFER.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column PT_TRANSFER.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: QC_QUESTION                                           */
@@ -14497,7 +14497,7 @@ create table QC_QUESTION  (
 );
 
 comment on column QC_QUESTION.QU_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH                                             */
@@ -14524,22 +14524,22 @@ create table RD_BRANCH  (
 );
 
 comment on column RD_BRANCH.BRANCH_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_BRANCH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_BRANCH.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_BRANCH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_DETAIL                                      */
@@ -14573,40 +14573,40 @@ create table RD_BRANCH_DETAIL  (
 );
 
 comment on column RD_BRANCH_DETAIL.DETAIL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_DETAIL.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_BRANCH_DETAIL.BRANCH_TYPE is
 '[180U]';
 
 comment on column RD_BRANCH_DETAIL.VOICE_DIR is
-'ÎÞ,ÓÒ,×ó';
+'ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½';
 
 comment on column RD_BRANCH_DETAIL.ESTAB_TYPE is
-'³ö¿Ú,Èë¿Ú,SA,PA,JCTµÈ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½,SA,PA,JCTï¿½ï¿½';
 
 comment on column RD_BRANCH_DETAIL.NAME_KIND is
-'IC,SA,PA,JCT,³ö¿Ú,Èë¿ÚµÈ';
+'IC,SA,PA,JCT,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Úµï¿½';
 
 comment on column RD_BRANCH_DETAIL.ARROW_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME",Èç:0a24030a';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME",ï¿½ï¿½:0a24030a';
 
 comment on column RD_BRANCH_DETAIL.PATTERN_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME",Èç:8a430211';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME",ï¿½ï¿½:8a430211';
 
 comment on column RD_BRANCH_DETAIL.ARROW_FLAG is
 '[171A]';
 
 comment on column RD_BRANCH_DETAIL.GUIDE_CODE is
-'¸ß¼ÜÏòµ¼,UnderpathÏòµ¼µÈ';
+'ï¿½ß¼ï¿½ï¿½ï¿½,Underpathï¿½òµ¼µï¿½';
 
 comment on column RD_BRANCH_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_NAME                                        */
@@ -14638,40 +14638,40 @@ create table RD_BRANCH_NAME  (
 );
 
 comment on column RD_BRANCH_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.DETAIL_ID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH_DETAIL"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH_DETAIL"';
 
 comment on column RD_BRANCH_NAME.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.NAME_CLASS is
-'·½Ïò,³ö¿Ú';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.CODE_TYPE is
-'ÆÕÍ¨µÀÂ·Ãû,ÉèÊ©Ãû,¸ßËÙµÀÂ·ÃûµÈ';
+'ï¿½ï¿½Í¨ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½Ê©ï¿½ï¿½,ï¿½ï¿½ï¿½Ùµï¿½Â·ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column RD_BRANCH_NAME.VOICE_FILE is
-'[170]²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'[170]ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column RD_BRANCH_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_NAME_TONE                                   */
@@ -14697,28 +14697,28 @@ comment on table RD_BRANCH_NAME_TONE is
 '[170]';
 
 comment on column RD_BRANCH_NAME_TONE.NAME_ID is
-'[170]Íâ¼ü,ÒýÓÃ"RD_BRANCH_NAME"';
+'[170]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH_NAME"';
 
 comment on column RD_BRANCH_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column RD_BRANCH_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column RD_BRANCH_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column RD_BRANCH_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column RD_BRANCH_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column RD_BRANCH_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_REALIMAGE                                   */
@@ -14739,21 +14739,21 @@ create table RD_BRANCH_REALIMAGE  (
 );
 
 comment on column RD_BRANCH_REALIMAGE.BRANCH_PID is
-'Íâ¼ü,"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,"RD_BRANCH"';
 
 comment on column RD_BRANCH_REALIMAGE.REAL_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"
-(1)¸ßËÙ³öÈë¿ÚÊµ¾°Í¼ÓëHEG Êµ¾°Í¼´úÂëÏàÍ¬,²ÉÓÃ8 Î»±àÂë,Èç6102500a
-(2) ÆÕÍ¨µÀÂ·Â·¿ÚÊµ¾°Í¼´úÂë9 Î»±àÂë, Èç140230281;';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"
+(1)ï¿½ï¿½ï¿½Ù³ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½Í¼ï¿½ï¿½HEG Êµï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬,ï¿½ï¿½ï¿½ï¿½8 Î»ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½6102500a
+(2) ï¿½ï¿½Í¨ï¿½ï¿½Â·Â·ï¿½ï¿½Êµï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½9 Î»ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½140230281;';
 
 comment on column RD_BRANCH_REALIMAGE.ARROW_CODE is
-'³ýµÚÒ»Î»±àÂë²»Í¬Íâ,ÆäËûÓëÊµ¾°Í¼´úÂëÏàÍ¬';
+'ï¿½ï¿½ï¿½Ò»Î»ï¿½ï¿½ï¿½ë²»Í¬ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Êµï¿½ï¿½Í¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¬';
 
 comment on column RD_BRANCH_REALIMAGE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_REALIMAGE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_SCHEMATIC                                   */
@@ -14775,16 +14775,16 @@ create table RD_BRANCH_SCHEMATIC  (
 );
 
 comment on column RD_BRANCH_SCHEMATIC.SCHEMATIC_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_SCHEMATIC.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_BRANCH_SCHEMATIC.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_SCHEMATIC.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_BRANCH_VIA                                         */
@@ -14806,26 +14806,26 @@ create table RD_BRANCH_VIA  (
 );
 
 comment on table RD_BRANCH_VIA is
-'(1)±í´ïÍ¬Ò»½øÈëLinkºÍÍË³öLinkÖ®¼äµÄ¶à×é¾­¹ýLink,¶øÇÒ¾­¹ýLink²»°üÀ¨½øÈëLinkºÍÍË³öLink
-(2)NaviMap×÷ÒµÖÐ,µ±½øÈëºÍÍË³öLinkÖ±½ÓÔÚÍ¬Ò»Â·¿Ú¹Ò½ÓÊ±,²»ÖÆ×÷¾­¹ýLink;·ñÔò(ÈçÏßÏß¹ØÏµ),ÐèÒªÖÆ×÷¾­¹ýLink';
+'(1)ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½LinkÖ®ï¿½ï¿½Ä¶ï¿½ï¿½é¾­ï¿½ï¿½Link,ï¿½ï¿½ï¿½Ò¾ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Link
+(2)NaviMapï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LinkÖ±ï¿½ï¿½ï¿½ï¿½Í¬Ò»Â·ï¿½Ú¹Ò½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link;ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ß¹ï¿½Ïµ),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link';
 
 comment on column RD_BRANCH_VIA.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_BRANCH_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_BRANCH_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_BRANCH_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_BRANCH_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CHAIN                                              */
@@ -14843,17 +14843,17 @@ create table RD_CHAIN  (
 );
 
 comment on column RD_CHAIN.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN.TYPE is
-'Í¬ÃûÂ·Á´,»·µº,JCTµÈ
+'Í¬ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,JCTï¿½ï¿½
 ';
 
 comment on column RD_CHAIN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CHAIN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CHAIN_LINK                                         */
@@ -14874,19 +14874,19 @@ create table RD_CHAIN_LINK  (
 );
 
 comment on column RD_CHAIN_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CHAIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CHAIN"';
 
 comment on column RD_CHAIN_LINK.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_CHAIN_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CHAIN_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CHAIN_NAME                                         */
@@ -14910,25 +14910,25 @@ create table RD_CHAIN_NAME  (
 );
 
 comment on column RD_CHAIN_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CHAIN"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CHAIN"';
 
 comment on column RD_CHAIN_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CHAIN_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CHAIN_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSS                                              */
@@ -14952,25 +14952,25 @@ create table RD_CROSS  (
 );
 
 comment on column RD_CROSS.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS.TYPE is
-'¼òµ¥Â·¿Ú,¸´ºÏÂ·¿Ú';
+'ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½';
 
 comment on column RD_CROSS.SIGNAL is
-'ÓÐÎÞºìÂÌµÆ,Â·¿ÚºìÂÌµÆ»òÐÐÈËºìÂÌµÆ';
+'ï¿½ï¿½ï¿½Þºï¿½ï¿½Ìµï¿½,Â·ï¿½Úºï¿½ï¿½ÌµÆ»ï¿½ï¿½ï¿½ï¿½Ëºï¿½ï¿½Ìµï¿½';
 
 comment on column RD_CROSS.ELECTROEYE is
-'ÊÇ·ñ¾ßÓÐµç×ÓÑÛ';
+'ï¿½Ç·ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS.KG_FLAG is
-'Çø·ÖÂ·¿ÚÊÇK×¨ÓÃ,G×¨ÓÃ,KG¹²ÓÃµÄ±êÖ¾';
+'ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½K×¨ï¿½ï¿½,G×¨ï¿½ï¿½,KGï¿½ï¿½ï¿½ÃµÄ±ï¿½Ö¾';
 
 comment on column RD_CROSS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSSWALK                                          */
@@ -14989,19 +14989,19 @@ create table RD_CROSSWALK  (
 );
 
 comment on column RD_CROSSWALK.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSSWALK.CURB_RAMP is
-'ÓÐ,ÎÞ»ò²»Ó¦ÓÃ';
+'ï¿½ï¿½,ï¿½Þ»ï¿½Ó¦ï¿½ï¿½';
 
 comment on column RD_CROSSWALK.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_CROSSWALK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSSWALK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSSWALK_INFO                                     */
@@ -15029,35 +15029,35 @@ create table RD_CROSSWALK_INFO  (
 );
 
 comment on column RD_CROSSWALK_INFO.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CROSSWALK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CROSSWALK"';
 
 comment on column RD_CROSSWALK_INFO.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_CROSSWALK_INFO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_CROSSWALK_INFO.TYPE is
-'ÈËÐÐºáµÀ(°ßÂíÏß»òÆ½ÐÐÏß),µØÏÂÍ¨µÀ,¹ý½ÖÌìÇÅµÈ';
+'ï¿½ï¿½ï¿½Ðºï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ß»ï¿½Æ½ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åµï¿½';
 
 comment on column RD_CROSSWALK_INFO.ATTR is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»ÖÖ·½Ê½ÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞ/ÓÐ,Èç:00000011 ±íÊ¾Ð±ÆÂºÍ½×ÌÝ;00000101 ±íÊ¾Ð±ÆÂºÍ·öÌÝ
-µÚ0bit:Ð±ÆÂ
-µÚ1bit:½×ÌÝ
-µÚ2bit:·öÌÝ
-µÚ3bit:Ö±ÌÝ
-µÚ4bit:Ë÷µÀ
-µÚ5bit:ÆäËû
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000011 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ½ï¿½ï¿½ï¿½;00000101 ï¿½ï¿½Ê¾Ð±ï¿½ÂºÍ·ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:Ð±ï¿½ï¿½
+ï¿½ï¿½1bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½2bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½3bit:Ö±ï¿½ï¿½
+ï¿½ï¿½4bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½5bit:ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSSWALK_INFO.SIGNAGE is
-'¼ÇÂ¼´ÓNodeµ½LinkµÄ×ó²à»òÓÒ²àÓÐÎÞ¹ýµÀ±êÅÆÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½Nodeï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½Þ¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_CROSSWALK_INFO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSSWALK_INFO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSSWALK_NODE                                     */
@@ -15080,19 +15080,19 @@ create table RD_CROSSWALK_NODE  (
 );
 
 comment on column RD_CROSSWALK_NODE.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CROSSWALK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CROSSWALK"';
 
 comment on column RD_CROSSWALK_NODE.FIR_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_CROSSWALK_NODE.SEN_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_CROSSWALK_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSSWALK_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSS_LINK                                         */
@@ -15112,19 +15112,19 @@ create table RD_CROSS_LINK  (
 );
 
 comment on table RD_CROSS_LINK is
-'¼´½»²æ¿ÚÄÚLink';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link';
 
 comment on column RD_CROSS_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CROSS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CROSS"';
 
 comment on column RD_CROSS_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_CROSS_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSS_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSS_NAME                                         */
@@ -15150,28 +15150,28 @@ create table RD_CROSS_NAME  (
 );
 
 comment on column RD_CROSS_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CROSS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CROSS"';
 
 comment on column RD_CROSS_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_CROSS_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column RD_CROSS_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSS_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_CROSS_NODE                                         */
@@ -15193,19 +15193,19 @@ create table RD_CROSS_NODE  (
 );
 
 comment on column RD_CROSS_NODE.PID is
-'Íâ¼ü,ÒýÓÃ"RD_CROSS"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_CROSS"';
 
 comment on column RD_CROSS_NODE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_CROSS_NODE.IS_MAIN is
-'Çø·ÖNodeÊÇÂ·¿ÚÖ÷µã»¹ÊÇ×Óµã';
+'ï¿½ï¿½ï¿½Nodeï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ã»¹ï¿½ï¿½ï¿½Óµï¿½';
 
 comment on column RD_CROSS_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_CROSS_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_DIRECTROUTE                                        */
@@ -15236,28 +15236,28 @@ create table RD_DIRECTROUTE  (
 );
 
 comment on column RD_DIRECTROUTE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_DIRECTROUTE.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_DIRECTROUTE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_DIRECTROUTE.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_DIRECTROUTE.FLAG is
-'Î´ÑéÖ¤,ÊµµØË³ÐÐ,ÀíÂÛË³ÐÐ';
+'Î´ï¿½ï¿½Ö¤,Êµï¿½ï¿½Ë³ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½';
 
 comment on column RD_DIRECTROUTE.PROCESS_FLAG is
-'ÈË¹¤Ìí¼Ó»òÅú´¦Àí';
+'ï¿½Ë¹ï¿½ï¿½ï¿½Ó»ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_DIRECTROUTE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_DIRECTROUTE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_DIRECTROUTE_VIA                                    */
@@ -15279,26 +15279,26 @@ create table RD_DIRECTROUTE_VIA  (
 );
 
 comment on table RD_DIRECTROUTE_VIA is
-'(1)±í´ïÍ¬Ò»½øÈëLinkºÍÍË³öLinkÖ®¼äµÄ¶à×é¾­¹ýLink,¶øÇÒ¾­¹ýLink²»°üÀ¨½øÈëLinkºÍÍË³öLink
-(2)NaviMap×÷ÒµÖÐ,µ±½øÈëºÍÍË³öLinkÖ±½ÓÔÚÍ¬Ò»Â·¿Ú¹Ò½ÓÊ±,²»ÖÆ×÷¾­¹ýLink;·ñÔò(ÈçÏßÏß¹ØÏµ),ÐèÒªÖÆ×÷¾­¹ýLink';
+'(1)ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½LinkÖ®ï¿½ï¿½Ä¶ï¿½ï¿½é¾­ï¿½ï¿½Link,ï¿½ï¿½ï¿½Ò¾ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Link
+(2)NaviMapï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LinkÖ±ï¿½ï¿½ï¿½ï¿½Í¬Ò»Â·ï¿½Ú¹Ò½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link;ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ß¹ï¿½Ïµ),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link';
 
 comment on column RD_DIRECTROUTE_VIA.PID is
-'Íâ¼ü,ÒýÓÃ"RD_DIRECTROUTE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_DIRECTROUTE"';
 
 comment on column RD_DIRECTROUTE_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_DIRECTROUTE_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_DIRECTROUTE_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_DIRECTROUTE_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_DIRECTROUTE_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_ELECEYE_PAIR                                       */
@@ -15314,10 +15314,10 @@ create table RD_ELECEYE_PAIR  (
 );
 
 comment on column RD_ELECEYE_PAIR.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_ELECEYE_PAIR.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_ELECTRONICEYE                                      */
@@ -15350,32 +15350,32 @@ create table RD_ELECTRONICEYE  (
 );
 
 comment on column RD_ELECTRONICEYE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_ELECTRONICEYE.KIND is
-'ÏÞËÙÉãÏñÍ·,À×´ï²âËÙÉãÏñÍ·,ÒÆ¶¯Ê½²âËÙ,½»Í¨ÐÅºÅµÆÉãÏñÍ·µÈ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·,ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í·,ï¿½Æ¶ï¿½Ê½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í¨ï¿½ÅºÅµï¿½ï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½';
 
 comment on column RD_ELECTRONICEYE.ANGLE is
-'[171A]µç×ÓÑÛÓëÕý±±·½ÏòµÄ¼Ð½Ç,0~360¶È';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,0~360ï¿½ï¿½';
 
 comment on column RD_ELECTRONICEYE.LOCATION is
-'[172U]²ÉÓÃ3bit±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~2bit,Ã¿bit±íÊ¾Ò»¸öÎ»ÖÃ(ÈçÏÂ),¸³ÖµÎª0/1·Ö±ð±íÊ¾·ñ/ÊÇ,Èç: 101±íÊ¾×óºÍÉÏ
-µÚ0bit:×ó(Left)
-µÚ1bit:ÓÒ(Right)
-µÚ2bit:ÉÏ(Overhead)
-Èç¹ûËùÓÐbitÎ»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'[172U]ï¿½ï¿½ï¿½ï¿½3bitï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~2bit,Ã¿bitï¿½ï¿½Ê¾Ò»ï¿½ï¿½Î»ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½: 101ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½ï¿½(Left)
+ï¿½ï¿½1bit:ï¿½ï¿½(Right)
+ï¿½ï¿½2bit:ï¿½ï¿½(Overhead)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bitÎ»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_ELECTRONICEYE.SPEED_LIMIT is
-'µ±Kind=1~3¡¢20¡¢21 Ê±ÓÐÐ§, µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999';
+'ï¿½ï¿½Kind=1~3ï¿½ï¿½20ï¿½ï¿½21 Ê±ï¿½ï¿½Ð§, ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999';
 
 comment on column RD_ELECTRONICEYE.VERIFIED_FLAG is
 '[173sp2]';
 
 comment on column RD_ELECTRONICEYE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_ELECTRONICEYE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_ELECEYE_PART                                       */
@@ -15395,10 +15395,10 @@ create table RD_ELECEYE_PART  (
 );
 
 comment on column RD_ELECEYE_PART.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_ELECEYE_PART.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_GATE                                               */
@@ -15429,28 +15429,28 @@ create table RD_GATE  (
 );
 
 comment on table RD_GATE is
-'NaviMapÖÆ×÷Ê±½øÈëLinkºÍÍË³öLink±ØÐë½ÓÐø';
+'NaviMapï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_GATE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_GATE.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_GATE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_GATE.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_GATE.FEE is
-'Ãâ·Ñ,ÊÕ·Ñ';
+'ï¿½ï¿½ï¿½,ï¿½Õ·ï¿½';
 
 comment on column RD_GATE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_GATE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_GATE_CONDITION                                     */
@@ -15470,23 +15470,23 @@ create table RD_GATE_CONDITION  (
 );
 
 comment on table RD_GATE_CONDITION is
-'(1)¼ÇÂ¼Õë¶Ô²»Í¬"¿ª·Å¶ÔÏó"µÄ¿ª·ÅÊ±¼ä
-(2)Èç¹û±íÊ¾"»ú¶¯³µºÍÐÐÈË¾ù¿ª·ÅµÄÊ±¼ä",Ôò·Ö±ð´æ´¢ÎªÁ½Ìõ¼ÇÂ¼';
+'(1)ï¿½ï¿½Â¼ï¿½ï¿½Ô²ï¿½Í¬"ï¿½ï¿½ï¿½Å¶ï¿½ï¿½ï¿½"ï¿½Ä¿ï¿½ï¿½ï¿½Ê±ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½Ê¾"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½Åµï¿½Ê±ï¿½ï¿½",ï¿½ï¿½Ö±ï¿½æ´¢Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼';
 
 comment on column RD_GATE_CONDITION.PID is
-'Íâ¼ü,ÒýÓÃ"RD_GATE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_GATE"';
 
 comment on column RD_GATE_CONDITION.VALID_OBJ is
-'»ú¶¯³µÁ¾,ÐÐÈË';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_GATE_CONDITION.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_GATE_CONDITION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_GATE_CONDITION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_GSC                                                */
@@ -15505,22 +15505,22 @@ create table RD_GSC  (
 );
 
 comment on table RD_GSC is
-'¼ÇÂ¼LinkÖ®¼äµÄÁ¢½»¹ØÏµ';
+'ï¿½ï¿½Â¼LinkÖ®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµ';
 
 comment on column RD_GSC.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_GSC.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶ÈÁ¢½»µã×ø±ê';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_GSC.PROCESS_FLAG is
-'Çø·ÖÈË¹¤¸³Öµ,³ÌÐò¸³Öµ,ÌØÊâ´¦ÀíµÈ·½Ê½';
+'ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½â´¦ï¿½ï¿½È·ï¿½Ê½';
 
 comment on column RD_GSC.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_GSC.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_GSC_LINK                                           */
@@ -15543,35 +15543,35 @@ create table RD_GSC_LINK  (
 );
 
 comment on table RD_GSC_LINK is
-'¼ÇÂ¼¾ßÓÐÁ¢½»¹ØÏµµÄLINKÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½LINKï¿½ï¿½Ï¢';
 
 comment on column RD_GSC_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_GSC"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_GSC"';
 
 comment on column RD_GSC_LINK.ZLEVEL is
-'¼ÇÂ¼Á¢½»Link Ö®¼äµÄÉÏÏÂ²ã´Î¹ØÏµ,ÖµÓò°üÀ¨:
-(1)µØÃæ:0
-(2)µØÉÏ: ´óÓÚ0
-(3)µØÏÂ: Ð¡ÓÚ0';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½Link Ö®ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â²ï¿½Î¹ï¿½Ïµ,Öµï¿½ï¿½ï¿½ï¿½ï¿½:
+(1)ï¿½ï¿½ï¿½ï¿½:0
+(2)ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½0
+(3)ï¿½ï¿½ï¿½ï¿½: Ð¡ï¿½ï¿½0';
 
 comment on column RD_GSC_LINK.LINK_PID is
-'²Î¿¼"RD_LINK","AD_LINK"µÈ,¼ÇÂ¼¹¹³ÉÁ¢½»¹ØÏµµÄ²»Í¬ÒªËØÖ÷ÌâµÄLinkºÅÂë,ÈçµÀÂ·Link,ÌúÂ·LinkµÈ';
+'ï¿½Î¿ï¿½"RD_LINK","AD_LINK"ï¿½ï¿½,ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ïµï¿½Ä²ï¿½Í¬Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Â·Link,ï¿½ï¿½Â·Linkï¿½ï¿½';
 
 comment on column RD_GSC_LINK.TABLE_NAME is
-'¼ÇÂ¼ÒªËØËùÔÚµÄÊý¾Ý±í,ÈçLINKºÅÂëÎªµÀÂ·LINK=20ÓëË®ÏµLINK=40Á¢½»Ê±,Êý¾Ý±íÃû·Ö±ðÎª"RD_LINK"ºÍ"LC_LINK"';
+'ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ý±ï¿½,ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Â·LINK=20ï¿½ï¿½Ë®ÏµLINK=40ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½Ý±ï¿½ï¿½ï¿½Ö±ï¿½Îª"RD_LINK"ï¿½ï¿½"LC_LINK"';
 
 comment on column RD_GSC_LINK.SHP_SEQ_NUM is
-'(1)¼ÇÂ¼µ±Ç°Á¢½»µãÔÚLinkÉÏµÄÎ»ÖÃÐòºÅ,µ±Á¢½»µã²»ÊÇLinkÉÏÒÑÓÐÐÎ×´µãÊ±Ôò²åÈë
-(2)ÐòºÅ´Ó0¿ªÊ¼µÝÔö±àºÅ,¼´SHP_SEQ_NUM=0~N-1(NÎª°üÀ¨ÆðµãºÍÖÕµãÔÚÄÚµÄLink×ÜµãÊý).ÆäÖÐ,Æðµã(SHP_SEQ_NUM=0),ÖÕµã(SHP_SEQ_NUM=N-1)';
+'(1)ï¿½ï¿½Â¼ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½Ïµï¿½Î»ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ã²»ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½Å´ï¿½0ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½SHP_SEQ_NUM=0~N-1(NÎªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½ï¿½ï¿½ï¿½Úµï¿½Linkï¿½Üµï¿½ï¿½ï¿½).ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½(SHP_SEQ_NUM=0),ï¿½Õµï¿½(SHP_SEQ_NUM=N-1)';
 
 comment on column RD_GSC_LINK.START_END is
-'¼ÇÂ¼Á¢½»µãÊÇLINKµÄÆðµã(SHP_SEQ_NUM=0),ÖÕµã(SHP_SEQ_NUM=N-1)»òÐÎ×´µã';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½(SHP_SEQ_NUM=0),ï¿½Õµï¿½(SHP_SEQ_NUM=N-1)ï¿½ï¿½ï¿½ï¿½×´ï¿½ï¿½';
 
 comment on column RD_GSC_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_GSC_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_HGWG_LIMIT                                         */
@@ -15598,13 +15598,13 @@ create table RD_HGWG_LIMIT  (
 );
 
 comment on column RD_HGWG_LIMIT.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_HGWG_LIMIT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_HGWG_LIMIT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_INTER                                              */
@@ -15620,13 +15620,13 @@ create table RD_INTER  (
 );
 
 comment on column RD_INTER.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_INTER.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_INTER.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_INTER_LINK                                         */
@@ -15647,19 +15647,19 @@ create table RD_INTER_LINK  (
 );
 
 comment on column RD_INTER_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_INTER"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_INTER"';
 
 comment on column RD_INTER_LINK.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_INTER_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_INTER_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_INTER_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_INTER_NODE                                         */
@@ -15679,16 +15679,16 @@ create table RD_INTER_NODE  (
 );
 
 comment on column RD_INTER_NODE.PID is
-'Íâ¼ü,ÒýÓÃ"RD_INTER"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_INTER"';
 
 comment on column RD_INTER_NODE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_INTER_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_INTER_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE                                               */
@@ -15737,23 +15737,23 @@ create table RD_LANE  (
 );
 
 comment on table RD_LANE is
-'¼ÇÂ¼³µµÀ·½Ïò,¼ýÍ··½Ïò,±êÏßµÈ,ÒÔ¼°ÓëµÀÂ·LinkµÄ¹ØÏµµÈ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ßµï¿½,ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½Â·Linkï¿½Ä¹ï¿½Ïµï¿½ï¿½';
 
 comment on column RD_LANE.LANE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE.LANE_NUM is
-'×¢:ÓëLINK³µµÀÊý±£³ÖÒ»ÖÂ';
+'×¢:ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½';
 
 comment on column RD_LANE.TRAVEL_FLAG is
 '[171A]';
 
 comment on column RD_LANE.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ
-×¢:´óÂ½:´Ó×óµ½ÓÒ;¸Û°Ä:´ÓÓÒµ½×ó
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½Â½:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½;ï¿½Û°ï¿½:ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½
 ';
 
 comment on column RD_LANE.LANE_FORMING is
@@ -15761,78 +15761,78 @@ comment on column RD_LANE.LANE_FORMING is
 
 comment on column RD_LANE.LANE_DIR is
 '×¢: 
-(1)½ö¼ÇÂ¼Ë«·½ÏòLINKµÄ³µµÀ·½Ïò,Èç¹ûÓëLINK»­Ïß·½ÏòÏàÍ¬ÎªË³·½Ïò,·´Ö®Äæ·½Ïò
-(2)ÆäËû¸³ÖµÎÞ';
+(1)ï¿½ï¿½ï¿½ï¿½Â¼Ë«ï¿½ï¿½ï¿½ï¿½LINKï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ÎªË³ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ö®ï¿½æ·½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½';
 
 comment on column RD_LANE.LANE_TYPE is
-'²ÉÓÃ32bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~31bit,Ã¿bit ±íÊ¾Ò»¸öÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾·ñ/ÊÇ, Èç:0000 0000 0011 0000 ±íÊ¾ÂúÔØ³µµÀºÍ¿ì³µµÀ
-µÚ0bit:³£¹æ³µµÀ(Regular Lane)
-µÚ1bit:¸´ºÏ³µµÀ(Auxiliary Lane)
-µÚ2bit:¼ÓËÙ³µµÀ(Accelerate Lane)
-µÚ3bit:¼õËÙ³µµÀ(Decelerate Lane)
-µÚ4bit:ÂúÔØ³µµÀ(HOV Lane)
-µÚ5bit:¿ì³µµÀ(Express Lane)
-µÚ6bit:Âý³µµÀ(Slow Lane)
-µÚ7bit:³¬³µµÀ(Passing/Overtaking Lane)
-µÚ8bit:¿ÉÐÐÊ»Â·¼ç´ø(Drivable shoulder Lane)
-µÚ9bit:¿¨³µÍ£³µµÀ(Truck Parking Lane)
-µÚ10bit:¹ÜÖÆ³µµÀ(Regulated Lane Access)
-µÚ11bit:¿ÉÄæ³µµÀ(Reversible Lane)
-µÚ12bit:ÖÐÐÄ×ªÏò³µµÀ(Center Turn Lane)
-µÚ13bit:×ªÏò³µµÀ(Turn Lane)
-µÚ14bit:¿Õ³µµÀ
-µÚ15bit:×ªÏò¿É±ä³µµÀ
+'ï¿½ï¿½ï¿½ï¿½32bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~31bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½, ï¿½ï¿½:0000 0000 0011 0000 ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½Í¿ì³µï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½ï¿½ï¿½æ³µï¿½ï¿½(Regular Lane)
+ï¿½ï¿½1bit:ï¿½ï¿½ï¿½Ï³ï¿½ï¿½ï¿½(Auxiliary Lane)
+ï¿½ï¿½2bit:ï¿½ï¿½ï¿½Ù³ï¿½ï¿½ï¿½(Accelerate Lane)
+ï¿½ï¿½3bit:ï¿½ï¿½ï¿½Ù³ï¿½ï¿½ï¿½(Decelerate Lane)
+ï¿½ï¿½4bit:ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½(HOV Lane)
+ï¿½ï¿½5bit:ï¿½ì³µï¿½ï¿½(Express Lane)
+ï¿½ï¿½6bit:ï¿½ï¿½ï¿½(Slow Lane)
+ï¿½ï¿½7bit:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Passing/Overtaking Lane)
+ï¿½ï¿½8bit:ï¿½ï¿½ï¿½ï¿½Ê»Â·ï¿½ï¿½ï¿½(Drivable shoulder Lane)
+ï¿½ï¿½9bit:ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½(Truck Parking Lane)
+ï¿½ï¿½10bit:ï¿½ï¿½ï¿½Æ³ï¿½ï¿½ï¿½(Regulated Lane Access)
+ï¿½ï¿½11bit:ï¿½ï¿½ï¿½æ³µï¿½ï¿½(Reversible Lane)
+ï¿½ï¿½12bit:ï¿½ï¿½ï¿½ï¿½×ªï¿½ò³µµï¿½(Center Turn Lane)
+ï¿½ï¿½13bit:×ªï¿½ò³µµï¿½(Turn Lane)
+ï¿½ï¿½14bit:ï¿½Õ³ï¿½ï¿½ï¿½
+ï¿½ï¿½15bit:×ªï¿½ï¿½É±ä³µï¿½ï¿½
 ×¢:
-(1)¿ÉÄæ³µµÀ/ Â·¼ç½ô¼±Í£³µ´øÔÚRD_LANE_CONDITION ±í±ØÐëÓÐÊ±¼ä¶Î´æÔÚ
-(2)³¬³µµÀÖ»ÓÃÓÚË«ÏòµÀÂ·
-(3)¹ÜÖÆ³µµÀÓÃÓÚ¹ÜÖÆ¿¨³µ';
+(1)ï¿½ï¿½ï¿½æ³µï¿½ï¿½/ Â·ï¿½ï¿½ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½RD_LANE_CONDITION ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Î´ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö»ï¿½ï¿½ï¿½ï¿½Ë«ï¿½ï¿½ï¿½Â·
+(3)ï¿½ï¿½ï¿½Æ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¹ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE.ARROW_DIR is
-'¼ÇÂ¼Ã¿Ò»¸ö³µµÀµÄµ¼Ïò¼ýÍ·ÐÅÏ¢,Èç×ó×ª,Ö±×ó,µ÷Í·µÈ';
+'ï¿½ï¿½Â¼Ã¿Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½Í·ï¿½ï¿½Ï¢,ï¿½ï¿½ï¿½ï¿½×ª,Ö±ï¿½ï¿½,ï¿½ï¿½Í·ï¿½ï¿½';
 
 comment on column RD_LANE.LANE_MARK is
-'¼ÇÂ¼Êµ¼ÊµÀÂ·ÖÐÃ¿¸ö³µµÀÉÏ»æÖÆµÄ±êÏß,ÈçÍ£³µÈÃÐÐÏß,¼õËÙÈÃÐÐÏß,¼õËÙÇð±êÏß,ÊÕ·ÑÕ¾¼õËÙ±êÏßµÈ';
+'ï¿½ï¿½Â¼Êµï¿½Êµï¿½Â·ï¿½ï¿½Ã¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï»ï¿½ï¿½ÆµÄ±ï¿½ï¿½ï¿½,ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½Õ·ï¿½Õ¾ï¿½ï¿½ï¿½Ù±ï¿½ï¿½ßµï¿½';
 
 comment on column RD_LANE.WIDTH is
-'[170]µ¥Î»:Ã×';
+'[170]ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_LANE.RESTRICT_HEIGHT is
-'[170]µ¥Î»:Ã×';
+'[170]ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_LANE.TRANSITION_AREA is
 '[170]';
 
 comment on column RD_LANE.FROM_MAX_SPEED is
-'[170]µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999
-Í¬Ò»LINKÉÏË³ÏòÍ¨ÐÐµÄ¸÷³µµÀËÙ¶ÈÏÞÖÆ²»ÍêÈ«ÏàÍ¬Ê±ÓÐÖµ£¬·ñÔòÎªÄ¬ÈÏÖµ0£»';
+'[170]ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999
+Í¬Ò»LINKï¿½ï¿½Ë³ï¿½ï¿½Í¨ï¿½ÐµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½È«ï¿½ï¿½Í¬Ê±ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÄ¬ï¿½ï¿½Öµ0ï¿½ï¿½';
 
 comment on column RD_LANE.TO_MAX_SPEED is
-'[173sp1][170]µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999
-Í¬Ò»LINKÉÏÄæÏòÍ¨ÐÐµÄ¸÷³µµÀËÙ¶ÈÏÞÖÆ²»ÍêÈ«ÏàÍ¬Ê±ÓÐÖµ£¬·ñÔòÎªÄ¬ÈÏÖµ0£»';
+'[173sp1][170]ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999
+Í¬Ò»LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ÐµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù¶ï¿½ï¿½ï¿½ï¿½Æ²ï¿½ï¿½ï¿½È«ï¿½ï¿½Í¬Ê±ï¿½ï¿½Öµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªÄ¬ï¿½ï¿½Öµ0ï¿½ï¿½';
 
 comment on column RD_LANE.FROM_MIN_SPEED is
-'[170]µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999';
+'[170]ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999';
 
 comment on column RD_LANE.TO_MIN_SPEED is
-'[170]µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999';
+'[170]ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999';
 
 comment on column RD_LANE.ELEC_EYE is
-'ÊÇ·ñÓÐ³µµÀµç×ÓÑÛ';
+'ï¿½Ç·ï¿½ï¿½Ð³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE.LANE_DIVIDER is
-'[170][190A]¼ÇÂ¼Î»ÓÚ³µµÀ·½ÏòÓÒ²à(´óÂ½)»ò×ó²à(¸Û°Ä)µÄ·Ö¸ô´ø';
+'[170][190A]ï¿½ï¿½Â¼Î»ï¿½Ú³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½(ï¿½ï¿½Â½)ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Û°ï¿½)ï¿½Ä·Ö¸ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE.CENTER_DIVIDER is
-'[170A][1901U]×¢:¸ù¾ÝµÀÂ··½ÏòÇø·ÖÒÔÏÂÁ½ÖÖÇé¿ö:
-¢ÙË«·½ÏòµÀÂ·:¼ÇÂ¼ÖÐÑë¸ôÀë´ø
-¢Úµ¥·½Ïò»òÉÏÏÂÏß·ÖÀëµÀÂ·:´óÂ½¼ÇÂ¼×î×ó±ß³µµÀ·Ö¸î´ø;Ïã¸Û¼ÇÂ¼×îÓÒ±ß³µµÀ·Ö¸î´ø 
+'[170A][1901U]×¢:ï¿½ï¿½Ýµï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:
+ï¿½ï¿½Ë«ï¿½ï¿½ï¿½ï¿½ï¿½Â·:ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½Â·:ï¿½ï¿½Â½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ß³ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½;ï¿½ï¿½Û¼ï¿½Â¼ï¿½ï¿½ï¿½Ò±ß³ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ 
 ';
 
 comment on column RD_LANE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_CONDITION                                     */
@@ -15854,26 +15854,26 @@ create table RD_LANE_CONDITION  (
 );
 
 comment on column RD_LANE_CONDITION.LANE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE"';
 
 comment on column RD_LANE_CONDITION.DIRECTION is
-'[210]µ±³µµÀÎª³±Ï«³µµÀÊ±£¬¼ÇÂ¼Ä³Ê±¼ä¶ÎÄÚ³µµÀµÄÍ¨ÐÐ·½Ïò£¬Èç¹ûÓëLINK»­Ïß·½ÏòÏàÍ¬ÎªË³·½Ïò£¬·´Ö®Äæ·½Ïò;ÆäËû¸³ÖµÎÞ
+'[210]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ï«ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Â¼Ä³Ê±ï¿½ï¿½ï¿½ï¿½Ú³ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ð·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½ï¿½Í¬ÎªË³ï¿½ï¿½ï¿½ò£¬·ï¿½Ö®ï¿½æ·½ï¿½ï¿½;ï¿½ï¿½ï¿½ï¿½Öµï¿½ï¿½
 ';
 
 comment on column RD_LANE_CONDITION.DIRECTION_TIME is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LANE_CONDITION.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LANE_CONDITION.VEHICLE_TIME is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LANE_CONDITION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_CONDITION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_CONNEXITY                                     */
@@ -15903,42 +15903,42 @@ create table RD_LANE_CONNEXITY  (
 );
 
 comment on table RD_LANE_CONNEXITY is
-'¼ÇÂ¼³µÐÅµÄ½øÈëÏßµã¹ØÏµ,ÒÔ¼°Â·¿Ú´¦»òÂ·ÉÏµÄÍ¨ÐÐ³µµÀ,×óÓÒ¸½¼Ó³µµÀºÍ×óÖ±ÓÒµÈ³µµÀÐÅÏ¢
-(1)Â·¿Ú³µÐÅ:½øÈëNODEºÍÍË³öLINK(RD_LANE_TOPOLOGY)Öµ¾ù²»Îª0
-(2)Â·ÉÏ³µÐÅ:½øÈëNODEºÍÍË³öLINK(RD_LANE_TOPOLOGY)Öµ¾ùÎª0';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ÅµÄ½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½Ïµ,ï¿½Ô¼ï¿½Â·ï¿½Ú´ï¿½ï¿½ï¿½Â·ï¿½Ïµï¿½Í¨ï¿½Ð³ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ò¸ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ÒµÈ³ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+(1)Â·ï¿½Ú³ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½NODEï¿½ï¿½ï¿½Ë³ï¿½LINK(RD_LANE_TOPOLOGY)Öµï¿½ï¿½Îª0
+(2)Â·ï¿½Ï³ï¿½ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½NODEï¿½ï¿½ï¿½Ë³ï¿½LINK(RD_LANE_TOPOLOGY)Öµï¿½ï¿½Îª0';
 
 comment on column RD_LANE_CONNEXITY.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_CONNEXITY.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE_CONNEXITY.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_LANE_CONNEXITY.LANE_INFO is
-'¼ÇÂ¼Â·¿Ú´¦»òµÀÂ·ÉÏµÄ½øÈëLINKµ½ËùÓÐÍË³öLINKµÄ³µµÀÐÅÏ¢
-(1)ÓÉÒ»¸ö»ò¶à¸öÓ¢ÎÄ°ë½Ç³µÐÅ´úÂë¹¹³É,ÄÚÈÝÓëRD_LANEÒ»ÖÂ,Èç:"A"±íÊ¾Ö±ÐÐ;"B"±íÊ¾"×ó×ª
-(2)Èç¹û´æÔÚ¸½¼Ó³µÐÅ,Ôò½«´úÂëÓÃÓ¢ÎÄ°ë½ÇÀ¨ºÅ"[]"À¨ÆðÀ´,Èç"[A]"±íÊ¾¸½¼ÓÖ±ÐÐ,"[B]"±íÊ¾¸½¼Ó×ó×ª,Í¨¹ý×Ö·û´®µÄË³ÐòÀ´Çø·Ö×ó¸½¼Ó»¹ÊÇÓÒ¸½¼Ó
-(3)×éºÏ³µÐÅÖ®¼äÓÃÓ¢ÎÄ°ë½Ç","·Ö¸î,Èç:"[A],A,C,[C]"±íÊ¾"×ó¸½¼ÓÖ±ÐÐ,Ö±ÐÐ,ÓÒ×ª,ÓÒ¸½¼ÓÓÒ×ª"
-(4)¹«½»×¨ÓÃµÀµÄ×ªÏòÐÅÏ¢ÓÃÓ¢ÎÄ°ë½Ç¼âÀ¨ºÅ"<>"±íÊ¾,Èç¹«½»×¨ÓÃÓÒ×ª£¬±íÊ¾Îª"<c>"
-(5)µ±´æÔÚÄ³Ò»³µµÀÉç»á³µÁ¾Óë¹«½»¹²ÓÃÊ±,ÏÈ±í´ïÉç»á³µÁ¾µÄ×ªÏòÐÅÏ¢,ºó±í´ï¹«½»×ªÏòÐÅÏ¢,ÖÐ¼äÎÞ¶ººÅ·Ö¸ô,Èç:Ä³Ò»³µµÀÉç»á³µÁ¾Ö±ÐÐ,Í¬Ê±¹«½»ÓÒ×ªÊ±,±íÊ¾Îª:"b<c>"
-(6)µ±´æÔÚÄ³Ò»³µµÀ¼ÈÊÇ¸½¼Ó³µµÀÓÖÊÇ¹«½»×¨ÓÃÊ±,ÔÚÔ­Ôò2 µÄ»ù´¡ÉÏ,ÓÃ[]±í´ï¸½¼Ó³µµÀ,Èç:Ä³Ò»³µµÀÊÇ¶ÔÉç»á³µÁ¾ÊÇÓÒ¸½¼ÓÖ±ÐÐ,¶øÇÒÊÇ¹«½»×¨ÓÃÓÒ×ª±íÊ¾Îª:"[b<c>]"';
+'ï¿½ï¿½Â¼Â·ï¿½Ú´ï¿½ï¿½ï¿½ï¿½Â·ï¿½ÏµÄ½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LINKï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+(1)ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç³ï¿½ï¿½Å´ï¿½ï¿½ë¹¹ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½RD_LANEÒ»ï¿½ï¿½,ï¿½ï¿½:"A"ï¿½ï¿½Ê¾Ö±ï¿½ï¿½;"B"ï¿½ï¿½Ê¾"ï¿½ï¿½×ª
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ï¿½Ó³ï¿½ï¿½ï¿½,ï¿½ò½«´ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"[]"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½"[A]"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½,"[B]"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ª,Í¨ï¿½ï¿½ï¿½Ö·ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ó¸½¼Ó»ï¿½ï¿½ï¿½ï¿½Ò¸ï¿½ï¿½ï¿½
+(3)ï¿½ï¿½Ï³ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½","ï¿½Ö¸ï¿½,ï¿½ï¿½:"[A],A,C,[C]"ï¿½ï¿½Ê¾"ï¿½ó¸½¼ï¿½Ö±ï¿½ï¿½,Ö±ï¿½ï¿½,ï¿½ï¿½×ª,ï¿½Ò¸ï¿½ï¿½ï¿½ï¿½ï¿½×ª"
+(4)ï¿½ï¿½ï¿½ï¿½×¨ï¿½Ãµï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¼ï¿½ï¿½ï¿½ï¿½ï¿½"<>"ï¿½ï¿½Ê¾,ï¿½ç¹«ï¿½ï¿½×¨ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½Ê¾Îª"<c>"
+(5)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á³µï¿½ï¿½ï¿½ë¹«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½È±ï¿½ï¿½ï¿½ï¿½á³µï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½Ï¢,ï¿½ï¿½ï¿½ï¹«ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½Ï¢,ï¿½Ð¼ï¿½ï¿½Þ¶ï¿½ï¿½Å·Ö¸ï¿½,ï¿½ï¿½:Ä³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½á³µï¿½ï¿½Ö±ï¿½ï¿½,Í¬Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªÊ±,ï¿½ï¿½Ê¾Îª:"b<c>"
+(6)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹ï¿½ï¿½ï¿½×¨ï¿½ï¿½Ê±,ï¿½ï¿½Ô­ï¿½ï¿½2 ï¿½Ä»ï¿½ï¿½ï¿½,ï¿½ï¿½[]ï¿½ï¿½ï¸½ï¿½Ó³ï¿½ï¿½ï¿½,ï¿½ï¿½:Ä³Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ç¶ï¿½ï¿½ï¿½á³µï¿½ï¿½ï¿½ï¿½ï¿½Ò¸ï¿½ï¿½ï¿½Ö±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹ï¿½ï¿½ï¿½×¨ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½Ê¾Îª:"[b<c>]"';
 
 comment on column RD_LANE_CONNEXITY.LANE_NUM is
-'½øÈëLINKÔÚÂ·¿Ú´¦µÄ³µµÀ×ÜÊý(º¬×óÓÒ¸½¼Ó³µµÀ)';
+'ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½Â·ï¿½Ú´ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½Ò¸ï¿½ï¿½Ó³ï¿½ï¿½ï¿½)';
 
 comment on column RD_LANE_CONNEXITY.LEFT_EXTEND is
-'½øÈëLINKÔÚÂ·¿Ú´¦µÄ×ó¸½¼Ó³µµÀÊý';
+'ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½Â·ï¿½Ú´ï¿½ï¿½ï¿½ï¿½ó¸½¼Ó³ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_CONNEXITY.RIGHT_EXTEND is
-'½øÈëLINKÔÚÂ·¿Ú´¦µÄÓÒ¸½¼Ó³µµÀÊý';
+'ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½Â·ï¿½Ú´ï¿½ï¿½ï¿½ï¿½Ò¸ï¿½ï¿½Ó³ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_CONNEXITY.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_CONNEXITY.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_TOPOLOGY                                      */
@@ -15966,28 +15966,28 @@ create table RD_LANE_TOPOLOGY  (
 );
 
 comment on column RD_LANE_TOPOLOGY.TOPOLOGY_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_TOPOLOGY.CONNEXITY_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE_CONNEXITY"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE_CONNEXITY"';
 
 comment on column RD_LANE_TOPOLOGY.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE_TOPOLOGY.IN_LANE_INFO is
-'²ÉÓÃ16bit±íÊ¾,1Îª¿ÉÓÃ³µµÀ,0Îª²»¿ÉÓÃ,Ä¬ÈÏÎª0';
+'ï¿½ï¿½ï¿½ï¿½16bitï¿½ï¿½Ê¾,1Îªï¿½ï¿½ï¿½Ã³ï¿½ï¿½ï¿½,0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_LANE_TOPOLOGY.BUS_LANE_INFO is
-'Í¬"½øÈë³µµÀÐÅÏ¢"';
+'Í¬"ï¿½ï¿½ï¿½ë³µï¿½ï¿½ï¿½ï¿½Ï¢"';
 
 comment on column RD_LANE_TOPOLOGY.REACH_DIR is
-'NaviMapÖÆ×÷ÖÐ,Ö±(1),×ó(a),ÓÒ(4),µ÷(7),×óÐ±Ç°(b,c),ÓÒÐ±Ç°(2,3)À¨ºÅÄÚÎªGDB¶ÔÓ¦µÄNIDBÊýÖµ';
+'NaviMapï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ö±(1),ï¿½ï¿½(a),ï¿½ï¿½(4),ï¿½ï¿½(7),ï¿½ï¿½Ð±Ç°(b,c),ï¿½ï¿½Ð±Ç°(2,3)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªGDBï¿½ï¿½Ó¦ï¿½ï¿½NIDBï¿½ï¿½Öµ';
 
 comment on column RD_LANE_TOPOLOGY.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_TOPOLOGY.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_TOPO_DETAIL                                   */
@@ -16026,38 +16026,38 @@ create table RD_LANE_TOPO_DETAIL  (
 );
 
 comment on table RD_LANE_TOPO_DETAIL is
-'¼ÇÂ¼ÏêÏ¸³µµÀÖ®¼äµÄÁ¬Í¨¹ØÏµ,°üÀ¨Â·¿Ú³µµÀºÍÂ·ÉÏ³µµÀ£»½ö¼ÇÂ¼¿Í³µ£¨Ð¡Æû³µ£©¿ÉÍ¨ÐÐµÄ³µµÀÁ¬Í¨¹ØÏµ£»';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ï¸ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ïµ,ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ú³ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½Ï³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½Í³ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ÐµÄ³ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ïµï¿½ï¿½';
 
 comment on column RD_LANE_TOPO_DETAIL.TOPO_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_TOPO_DETAIL.IN_LANE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE"';
 
 comment on column RD_LANE_TOPO_DETAIL.OUT_LANE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE"';
 
 comment on column RD_LANE_TOPO_DETAIL.IN_LINK_PID is
-'[171A]Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'[171A]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE_TOPO_DETAIL.OUT_LINK_PID is
-'[171A]Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'[171A]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE_TOPO_DETAIL.REACH_DIR is
-'[170]¼ÇÂ¼½øÈë³µµÀµ½ÍË³ö³µµÀµÄÍ¨´ï·½Ïò
-[260]±¾×Ö¶ÎÎÞÐ§';
+'[170]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ë³µï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï·½ï¿½ï¿½
+[260]ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½Ð§';
 
 comment on column RD_LANE_TOPO_DETAIL.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LANE_TOPO_DETAIL.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"£»¸Ã×Ö¶ÎÎÞÐ§£¬ÒòÎª±¾±í½ö¼ÇÂ¼¿Í³µ£¨Ð¡Æû³µ£©¿ÉÍ¨ÐÐµÄ³µµÀÁ¬Í¨¹ØÏµ';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â¼ï¿½Í³ï¿½ï¿½ï¿½Ð¡ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ÐµÄ³ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ïµ';
 
 comment on column RD_LANE_TOPO_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_TOPO_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_TOPO_VIA                                      */
@@ -16083,25 +16083,25 @@ comment on table RD_LANE_TOPO_VIA is
 '[170]';
 
 comment on column RD_LANE_TOPO_VIA.TOPO_ID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE_TOPO_DETAIL"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE_TOPO_DETAIL"';
 
 comment on column RD_LANE_TOPO_VIA.LANE_PID is
-'[171U]²Î¿¼"RD_LANE",½øÈëºÍÍË³öLANE ³ýÍâ';
+'[171U]ï¿½Î¿ï¿½"RD_LANE",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LANE ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_TOPO_VIA.VIA_LINK_PID is
-'[171A]Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'[171A]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LANE_TOPO_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_TOPO_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_TOPO_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_TOPO_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LANE_VIA                                           */
@@ -16123,26 +16123,26 @@ create table RD_LANE_VIA  (
 );
 
 comment on table RD_LANE_VIA is
-'(1)±í´ïÍ¬Ò»½øÈëLinkºÍÍË³öLinkÖ®¼äµÄ¶à×é¾­¹ýLink,¶øÇÒ¾­¹ýLink²»°üÀ¨½øÈëLinkºÍÍË³öLink
-(2)NaviMap×÷ÒµÖÐ,µ±½øÈëºÍÍË³öLinkÖ±½ÓÔÚÍ¬Ò»Â·¿Ú¹Ò½ÓÊ±,¾­¹ýLink´ÓÂ·¿ÚµÄ½»²æ¿ÚÄÚLinkÖÐÈ¡;·ñÔò,¿É¸ù¾ÝÊÊµ±µÄ¼ÆËãÔ­Ôò(Èç¾­¹ýLink×îÉÙ,Í¨ÐÐ·½ÏòÒ»ÖÂµÈ)È¡ÍÆ¼öÂ·¾¶';
+'(1)ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½LinkÖ®ï¿½ï¿½Ä¶ï¿½ï¿½é¾­ï¿½ï¿½Link,ï¿½ï¿½ï¿½Ò¾ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Link
+(2)NaviMapï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LinkÖ±ï¿½ï¿½ï¿½ï¿½Í¬Ò»Â·ï¿½Ú¹Ò½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½Â·ï¿½ÚµÄ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½È¡;ï¿½ï¿½ï¿½ï¿½,ï¿½É¸ï¿½ï¿½ï¿½Êµï¿½ï¿½Ä¼ï¿½ï¿½ï¿½Ô­ï¿½ï¿½(ï¿½ç¾­ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½,Í¨ï¿½Ð·ï¿½ï¿½ï¿½Ò»ï¿½Âµï¿½)È¡ï¿½Æ¼ï¿½Â·ï¿½ï¿½';
 
 comment on column RD_LANE_VIA.TOPOLOGY_ID is
-'Íâ¼ü,ÒýÓÃ"RD_LANE_TOPOLOGY"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LANE_TOPOLOGY"';
 
 comment on column RD_LANE_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK",½øÈëºÍÍË³öLINK³ýÍâ';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LINKï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LANE_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LANE_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_ADDRESS                                       */
@@ -16174,34 +16174,34 @@ create table RD_LINK_ADDRESS  (
 );
 
 comment on table RD_LINK_ADDRESS is
-'ÈçÑ§ÔºÂ·(NAME_ID)10ºÅµ½100ºÅ,Ñ§ÔºÂ··ÖÎªLink1,Link2,Ôò±íÊ¾Link1ÉÏµÄÑ§ÔºÂ·10ºÅµ½25ºÅ,Link2ÉÏµÄÑ§ÔºÂ·26ºÅµ½100ºÅ';
+'ï¿½ï¿½Ñ§ÔºÂ·(NAME_ID)10ï¿½Åµï¿½100ï¿½ï¿½,Ñ§ÔºÂ·ï¿½ï¿½ÎªLink1,Link2,ï¿½ï¿½ï¿½Ê¾Link1ï¿½Ïµï¿½Ñ§ÔºÂ·10ï¿½Åµï¿½25ï¿½ï¿½,Link2ï¿½Ïµï¿½Ñ§ÔºÂ·26ï¿½Åµï¿½100ï¿½ï¿½';
 
 comment on column RD_LINK_ADDRESS.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_ADDRESS.NAME_GROUPID is
-'[170]²Î¿¼"RD_NAME"';
+'[170]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column RD_LINK_ADDRESS.LEFT_TYPE is
-'µ¥ºÅ,Ë«ºÅ,»ìºÏºÅµÈ';
+'ï¿½ï¿½ï¿½ï¿½,Ë«ï¿½ï¿½,ï¿½ï¿½ÏºÅµï¿½';
 
 comment on column RD_LINK_ADDRESS.RIGHT_TYPE is
-'µ¥ºÅ,Ë«ºÅ,»ìºÏºÅµÈ';
+'ï¿½ï¿½ï¿½ï¿½,Ë«ï¿½ï¿½,ï¿½ï¿½ÏºÅµï¿½';
 
 comment on column RD_LINK_ADDRESS.ADDRESS_TYPE is
-'»ù±¾µØÖ·,Ô­µØÖ·,ÉÌÓÃµØÖ·';
+'ï¿½ï¿½ï¿½Ö·,Ô­ï¿½ï¿½Ö·,ï¿½ï¿½ï¿½Ãµï¿½Ö·';
 
 comment on column RD_LINK_ADDRESS.WORK_DIR is
-'ÃÅÅÆ¸³ÖµµÄ²Î¿¼·½Ïò,ÈçË³·½Ïò,Äæ·½Ïò';
+'ï¿½ï¿½ï¿½Æ¸ï¿½Öµï¿½Ä²Î¿ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_ADDRESS.SRC_FLAG is
-'¼ÇÂ¼ÏßÃÅÅÆµÄÀ´Ô´,ÈçµãÃÅÅÆ,ÍâÒµ²É¼¯µÈ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½Ô´,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Òµï¿½É¼ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_ADDRESS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_ADDRESS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_FORM                                          */
@@ -16226,7 +16226,7 @@ create table RD_LINK_FORM  (
 );
 
 comment on column RD_LINK_FORM.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_FORM.EXTENDED_FORM is
 '[171A]';
@@ -16235,13 +16235,13 @@ comment on column RD_LINK_FORM.AUXI_FLAG is
 '[171A]';
 
 comment on column RD_LINK_FORM.KG_FLAG is
-'Çø·ÖµÀÂ·ÐÎÌ¬ÊÇK×¨ÓÃ,G×¨ÓÃ,KG¹²ÓÃµÄ±êÖ¾';
+'ï¿½ï¿½Öµï¿½Â·ï¿½ï¿½Ì¬ï¿½ï¿½K×¨ï¿½ï¿½,G×¨ï¿½ï¿½,KGï¿½ï¿½ï¿½ÃµÄ±ï¿½Ö¾';
 
 comment on column RD_LINK_FORM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_FORM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_INT_RTIC                                      */
@@ -16294,34 +16294,34 @@ create table RD_LINK_LIMIT  (
 );
 
 comment on column RD_LINK_LIMIT.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_LIMIT.LIMIT_DIR is
-'Ë«·½Ïò,Ë³·½Ïò,Äæ·½Ïò';
+'Ë«ï¿½ï¿½ï¿½ï¿½,Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_LIMIT.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LINK_LIMIT.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LINK_LIMIT.TOLL_TYPE is
-'µ±TYPE=6(Usage Fee Required)Ê±ÓÐÐ§,ÆäËûÎª9';
+'ï¿½ï¿½TYPE=6(Usage Fee Required)Ê±ï¿½ï¿½Ð§,ï¿½ï¿½ï¿½ï¿½Îª9';
 
 comment on column RD_LINK_LIMIT.WEATHER is
-'[170]µ±TYPE=7(³¬³µÏÞÖÆ)ÇÒ³µÁ¾ÀàÐÍÎª¿¨³µÊ±ÓÐÐ§';
+'[170]ï¿½ï¿½TYPE=7(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½Ò³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Ð§';
 
 comment on column RD_LINK_LIMIT.INPUT_TIME is
-'µ±TYPE=0»ò=4(Ê©¹¤ÖÐ²»¿ª·Å»òµÀÂ·Î¬ÐÞÖÐ)Ê±ÓÐÐ§,ÆäËûÎª¿Õ';
+'ï¿½ï¿½TYPE=0ï¿½ï¿½=4(Ê©ï¿½ï¿½ï¿½Ð²ï¿½ï¿½ï¿½ï¿½Å»ï¿½ï¿½Â·Î¬ï¿½ï¿½ï¿½ï¿½)Ê±ï¿½ï¿½Ð§,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column RD_LINK_LIMIT.PROCESS_FLAG is
-'ÍâÒµ²É¼¯(ÈË¹¤¸³Öµ),Î´ÑéÖ¤(³ÌÐò¸³Öµ)';
+'ï¿½ï¿½Òµï¿½É¼ï¿½(ï¿½Ë¹ï¿½ï¿½ï¿½Öµ),Î´ï¿½ï¿½Ö¤(ï¿½ï¿½ï¿½ï¿½Öµ)';
 
 comment on column RD_LINK_LIMIT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_LIMIT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_LIMIT_TRUCK                                   */
@@ -16348,19 +16348,19 @@ create table RD_LINK_LIMIT_TRUCK  (
 );
 
 comment on column RD_LINK_LIMIT_TRUCK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_LIMIT_TRUCK.LIMIT_DIR is
-'Ë«·½Ïò,Ë³·½Ïò,Äæ·½Ïò';
+'Ë«ï¿½ï¿½ï¿½ï¿½,Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_LIMIT_TRUCK.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LINK_LIMIT_TRUCK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_LIMIT_TRUCK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_NAME                                          */
@@ -16390,40 +16390,40 @@ create table RD_LINK_NAME  (
 );
 
 comment on column RD_LINK_NAME.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_NAME.NAME_GROUPID is
-'[170]²Î¿¼"RD_NAME"';
+'[170]ï¿½Î¿ï¿½"RD_NAME"';
 
 comment on column RD_LINK_NAME.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_NAME.NAME_CLASS is
-'(1)·ÖÎª¹Ù·½Ãû³Æ,±ðÃû,ÍâÀ´Ãû»òÔøÓÃÃûµÈÀàÐÍ
-(2)NaviMapÖÐ,µ±ÎªÔøÓÃÃûÊ±,Ðè¼ÇÂ¼ÔøÓÃÃûÊ±¼ä(OLD_NAME_TIME)';
+'(1)ï¿½ï¿½Îªï¿½Ù·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)NaviMapï¿½ï¿½,ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½(OLD_NAME_TIME)';
 
 comment on column RD_LINK_NAME.INPUT_TIME is
-'[170](1)µ±NAME_CLASS=3 Ê±ÓÐÐ§,ÆäËûÎª¿Õ
-(2)¼ÇÂ¼·½Ê½ÎªÊý¾Ý°æ±¾,Èç"10 ÏÄ"';
+'[170](1)ï¿½ï¿½NAME_CLASS=3 Ê±ï¿½ï¿½Ð§,ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½
+(2)ï¿½ï¿½Â¼ï¿½ï¿½Ê½Îªï¿½ï¿½Ý°æ±¾,ï¿½ï¿½"10 ï¿½ï¿½"';
 
 comment on column RD_LINK_NAME.NAME_TYPE is
-'Çø·ÖJunction Name,Á¢½»ÇÅÃû(Ö÷Â·)';
+'ï¿½ï¿½ï¿½Junction Name,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â·)';
 
 comment on column RD_LINK_NAME.SRC_FLAG is
-'×¢:µ±À´×ÔÏßÃÅÅÆÊ±,ÐèÅÐ¶ÏLink ÉÏÊÇ·ñÓÐ¹Ù·½Ãû,ÎÞÔò¸³¹Ù·½Ãû;ÓÐÔò¸³±ðÃû';
+'×¢:ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½Ð¶ï¿½Link ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ð¹Ù·ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ò¸³¹Ù·ï¿½ï¿½ï¿½;ï¿½ï¿½ï¿½ò¸³±ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_NAME.ROUTE_ATT is
-'(1)¼ÇÂ¼Â·ÏßµÄÉÏÏÂÐÐ,ÄÚÍâ»·
-(2)NaviMapÊý¾Ý×ª»»ÖÐÖµÎª15µÄ×ªÎª9(Î´¶¨Òå)';
+'(1)ï¿½ï¿½Â¼Â·ï¿½ßµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½â»·
+(2)NaviMapï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ÖµÎª15ï¿½ï¿½×ªÎª9(Î´ï¿½ï¿½ï¿½ï¿½)';
 
 comment on column RD_LINK_NAME.CODE is
-'×¢:µ±Link ÖÖ±ðÎª¸ßËÙ,³ÇÊÐ¸ßËÙ,¹úµÀÊ±,Ö÷´ÓCODE=1,ÆäËûÎª0';
+'×¢:ï¿½ï¿½Link ï¿½Ö±ï¿½Îªï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½CODE=1,ï¿½ï¿½ï¿½ï¿½Îª0';
 
 comment on column RD_LINK_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_PARAM_ADAS                                    */
@@ -16449,25 +16449,25 @@ comment on table RD_LINK_PARAM_ADAS is
 '[190A]';
 
 comment on column RD_LINK_PARAM_ADAS.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_PARAM_ADAS.OFFSET is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_LINK_PARAM_ADAS.RADIUS is
-'µ¥Î»:Ã×,»ØÐýÇúÏßÉÏÄ³µãµÄÇúÂÊ°ë¾¶';
+'ï¿½ï¿½Î»:ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê°ë¾¶';
 
 comment on column RD_LINK_PARAM_ADAS.LEN is
-'µ¥Î»:Ã×,»ØÐýÇúÏßÉÏÖ¸¶¨µãµ½ÆðËãµãµÄÇúÏß³¤';
+'ï¿½ï¿½Î»:ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ãµ½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß³ï¿½';
 
 comment on column RD_LINK_PARAM_ADAS.PARAM is
-'»ØÐýÇúÏßµÄ²ÎÊý,A2=C Îª³£Êý';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ²ï¿½ï¿½ï¿½,A2=C Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_PARAM_ADAS.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_PARAM_ADAS.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_RTIC                                          */
@@ -16493,29 +16493,29 @@ create table RD_LINK_RTIC  (
 );
 
 comment on table RD_LINK_RTIC is
-'¼ÇÂ¼µÀÂ·LINKµÄRTICÊµÊ±½»Í¨ÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½Â·LINKï¿½ï¿½RTICÊµÊ±ï¿½ï¿½Í¨ï¿½ï¿½Ï¢';
 
 comment on column RD_LINK_RTIC.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_RTIC.CODE is
-'Í¬Ò»Í¼·ùÄÚ,Í¬Ò»RTICµÈ¼¶µÄRTIC´úÂë±ØÐëÎ¨Ò»,ÖµÓò·¶Î§:1~4095';
+'Í¬Ò»Í¼ï¿½ï¿½ï¿½ï¿½,Í¬Ò»RTICï¿½È¼ï¿½ï¿½ï¿½RTICï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î¨Ò»,Öµï¿½ï¿½Î§:1~4095';
 
 comment on column RD_LINK_RTIC.RANK is
-'¸ßËÙ,³ÇÊÐ¸ßËÙ,¸ÉÏßµÀÂ·';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ð¸ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ßµï¿½Â·';
 
 comment on column RD_LINK_RTIC.RTIC_DIR is
-'¼ÇÂ¼RTICµÄ¸³Öµ·½Ïò,ÈçË³·½Ïò,Äæ·½Ïò';
+'ï¿½ï¿½Â¼RTICï¿½Ä¸ï¿½Öµï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_RTIC.UPDOWN_FLAG is
-'(1)Ë«·½ÏòµÀÂ·Á½²à·Ö±ðÊÇÉÏÐÐºÍÏÂÐÐ
-(2)µ¥Ïò»òÉÏÏÂÏß·ÖÀëµÀÂ·¾ùÎªÉÏÐÐ';
+'(1)Ë«ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðºï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_RTIC.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_RTIC.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_SIDEWALK                                      */
@@ -16542,31 +16542,31 @@ create table RD_LINK_SIDEWALK  (
 );
 
 comment on table RD_LINK_SIDEWALK is
-'ÈËÐÐ±ãµÀÊÇÎ»ÓÚµÀÂ·Á½²à»òÒ»²à,Â·ÃæÆÌÉèºÃµÄ×¨¹©ÐÐÈËÍ¨ÐÐµÄµÀÂ·';
+'ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½Î»ï¿½Úµï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½,Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ãµï¿½×¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ÐµÄµï¿½Â·';
 
 comment on column RD_LINK_SIDEWALK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_SIDEWALK.SIDEWALK_LOC is
-'¼ÇÂ¼LinkËùÔÚÎ»ÖÃ,ÈçÓÒ²à,ÖÐ¼ä,×ó²à';
+'ï¿½ï¿½Â¼Linkï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½,ï¿½ï¿½ï¿½Ò²ï¿½,ï¿½Ð¼ï¿½,ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_SIDEWALK.DIVIDER_TYPE is
-'¸ß¶È²î¸ôÀë(ÂíÂ·ÑÄ),ÎïÀíÕ¤À¸¸ôÀë,»®Ïß¸ôÀëµÈ';
+'ï¿½ß¶È²ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â·ï¿½ï¿½),ï¿½ï¿½ï¿½ï¿½Õ¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ß¸ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_SIDEWALK.WORK_DIR is
-'ÈËÐÐ±ãµÀ¸³ÖµµÄ²Î¿¼·½Ïò,ÈçË³·½Ïò,Äæ·½Ïò';
+'ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½Öµï¿½Ä²Î¿ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_SIDEWALK.PROCESS_FLAG is
-'Çø·ÖÈË¹¤¸³Öµ,³ÌÐò¸³ÖµµÈ·½Ê½';
+'ï¿½ï¿½ï¿½ï¿½Ë¹ï¿½ï¿½ï¿½Öµ,ï¿½ï¿½ï¿½ï¿½Öµï¿½È·ï¿½Ê½';
 
 comment on column RD_LINK_SIDEWALK.CAPTURE_FLAG is
-'¼ÇÂ¼²É¼¯×´Ì¬,ÈçÎ´²É¼¯,ÍâÒµÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½É¼ï¿½×´Ì¬,ï¿½ï¿½Î´ï¿½É¼ï¿½,ï¿½ï¿½ÒµÈ·ï¿½ï¿½';
 
 comment on column RD_LINK_SIDEWALK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_SIDEWALK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_SPEEDLIMIT                                    */
@@ -16598,21 +16598,21 @@ create table RD_LINK_SPEEDLIMIT  (
 );
 
 comment on column RD_LINK_SPEEDLIMIT.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_SPEEDLIMIT.FROM_SPEED_LIMIT is
-'(1)´æ´¢ÓëLinkÍ¬·½Ïò(¼´Ë³Ïò)µÄ×î´óÏÞËÙ
-(2)ÏÞËÙÖµÎªÕûÊý,Ó¦ÓÃÊ±³ýÒÔ10,µ¥Î»ÊÇ0.1km/h,Ä¬ÈÏÎª0';
+'(1)ï¿½æ´¢ï¿½ï¿½LinkÍ¬ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ë³ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ÖµÎªï¿½ï¿½ï¿½ï¿½,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½10,ï¿½ï¿½Î»ï¿½ï¿½0.1km/h,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_LINK_SPEEDLIMIT.TO_SPEED_LIMIT is
-'(1)´æ´¢ÓëLink·´·½Ïò(¼´ÄæÏò)µÄ×î´óÏÞËÙ
-(2)ÏÞËÙÖµÎªÕûÊý,Ó¦ÓÃÊ±³ýÒÔ10,µ¥Î»ÊÇ0.1km/h,Ä¬ÈÏÎª0';
+'(1)ï¿½æ´¢ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ÖµÎªï¿½ï¿½ï¿½ï¿½,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½10,ï¿½ï¿½Î»ï¿½ï¿½0.1km/h,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_LINK_SPEEDLIMIT.FROM_LIMIT_SRC is
-'¼ÇÂ¼Ë³ÏòÏÞËÙÐÅÏ¢µÄÀ´Ô´,Èç³ÇÇø±êÊ¶,¸ßËÙ±êÊ¶,³µµÀÏÞËÙ,·½ÏòÏÞËÙµÈ';
+'ï¿½ï¿½Â¼Ë³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Ô´,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶,ï¿½ï¿½ï¿½Ù±ï¿½Ê¶,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ùµï¿½';
 
 comment on column RD_LINK_SPEEDLIMIT.TO_LIMIT_SRC is
-'¼ÇÂ¼ÄæÏòÏÞËÙÐÅÏ¢µÄÀ´Ô´,Èç³ÇÇø±êÊ¶,¸ßËÙ±êÊ¶,³µµÀÏÞËÙ,·½ÏòÏÞËÙµÈ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Ô´,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶,ï¿½ï¿½ï¿½Ù±ï¿½Ê¶,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ùµï¿½';
 
 comment on column RD_LINK_SPEEDLIMIT.SPEED_TYPE is
 '[170][172U][190A]';
@@ -16621,16 +16621,16 @@ comment on column RD_LINK_SPEEDLIMIT.SPEED_DEPENDENT is
 '[170][172U]';
 
 comment on column RD_LINK_SPEEDLIMIT.TIME_DOMAIN is
-'[170]¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'[170]ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_LINK_SPEEDLIMIT.SPEED_CLASS_WORK is
-'[181U][190U]¼ÇÂ¼ÏÞËÙµÈ¼¶µÄ¸³Öµ±ê¼Ç';
+'[181U][190U]ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ÙµÈ¼ï¿½ï¿½Ä¸ï¿½Öµï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_SPEEDLIMIT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_SPEEDLIMIT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_SPEED_TRUCK                                   */
@@ -16649,18 +16649,18 @@ create table RD_LINK_SPEED_TRUCK  (
 );
 
 comment on column RD_LINK_SPEED_TRUCK.FROM_SPEED_LIMIT is
-'(1)´æ´¢ÓëLinkÍ¬·½Ïò(¼´Ë³Ïò)µÄ×î´óÏÞËÙ
-(2)ÏÞËÙÖµÎªÕûÊý,Ó¦ÓÃÊ±³ýÒÔ10,µ¥Î»ÊÇ0.1km/h,Ä¬ÈÏÎª0';
+'(1)ï¿½æ´¢ï¿½ï¿½LinkÍ¬ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ë³ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ÖµÎªï¿½ï¿½ï¿½ï¿½,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½10,ï¿½ï¿½Î»ï¿½ï¿½0.1km/h,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_LINK_SPEED_TRUCK.TO_SPEED_LIMIT is
-'(1)´æ´¢ÓëLink·´·½Ïò(¼´ÄæÏò)µÄ×î´óÏÞËÙ
-(2)ÏÞËÙÖµÎªÕûÊý,Ó¦ÓÃÊ±³ýÒÔ10,µ¥Î»ÊÇ0.1km/h,Ä¬ÈÏÎª0';
+'(1)ï¿½æ´¢ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½ï¿½ÖµÎªï¿½ï¿½ï¿½ï¿½,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½10,ï¿½ï¿½Î»ï¿½ï¿½0.1km/h,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_LINK_SPEED_TRUCK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_SPEED_TRUCK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_WALKSTAIR                                     */
@@ -16685,28 +16685,28 @@ create table RD_LINK_WALKSTAIR  (
 );
 
 comment on table RD_LINK_WALKSTAIR is
-'½×ÌÝÓÐºÜ¶àÖÖ´æÔÚÐÎÊ½:µÀÂ·µÄÊôÐÔ,ÈËÐÐ¹ýµÀµÄµ½´ï·½Ê½,ÐéÄâÁ¬½ÓµÄÁ¬Í¨ÕÏ°­,¹«¹²½»Í¨³öÈë¿Ú¼°Õ¾µãµÄµ½´ï·½Ê½µÈ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ÐºÜ¶ï¿½ï¿½Ö´ï¿½ï¿½ï¿½ï¿½ï¿½Ê½:ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ð¹ï¿½ï¿½ï¿½Äµï¿½ï¿½ï·½Ê½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Í¨ï¿½Ï°ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ú¼ï¿½Õ¾ï¿½ï¿½Äµï¿½ï¿½ï·½Ê½ï¿½ï¿½';
 
 comment on column RD_LINK_WALKSTAIR.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_WALKSTAIR.STAIR_LOC is
-'ÈËÐÐ½×ÌÝËùÔÚÎ»ÖÃ,ÈçÓÒ²à,ÖÐ¼ä,×ó²à';
+'ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½,ï¿½ï¿½ï¿½Ò²ï¿½,ï¿½Ð¼ï¿½,ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_WALKSTAIR.STAIR_FLAG is
-'ÉÏÆÂ,ÏÂÆÂ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_WALKSTAIR.WORK_DIR is
-'½×ÌÝ¸³ÖµµÄ²Î¿¼·½Ïò,ÈçË³·½Ïò,Äæ·½Ïò';
+'ï¿½ï¿½ï¿½Ý¸ï¿½Öµï¿½Ä²Î¿ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ë³ï¿½ï¿½ï¿½ï¿½,ï¿½æ·½ï¿½ï¿½';
 
 comment on column RD_LINK_WALKSTAIR.CAPTURE_FLAG is
-'¼ÇÂ¼²É¼¯×´Ì¬,ÈçÎ´²É¼¯,ÍâÒµÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½É¼ï¿½×´Ì¬,ï¿½ï¿½Î´ï¿½É¼ï¿½,ï¿½ï¿½ÒµÈ·ï¿½ï¿½';
 
 comment on column RD_LINK_WALKSTAIR.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_WALKSTAIR.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_LINK_WARNING                                       */
@@ -16752,22 +16752,22 @@ create table RD_LINK_ZONE  (
 );
 
 comment on column RD_LINK_ZONE.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_LINK_ZONE.REGION_ID is
-'[170]²Î¿¼"AD_ADMIN",Í¨¹ýÇøÓòºÅÂëÕÒ¶ÔÓ¦µÄÐÐÕþ´úÂëºÍZONE ºÅÂë';
+'[170]ï¿½Î¿ï¿½"AD_ADMIN",Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò¶ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ZONE ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_LINK_ZONE.TYPE is
 'AOIZone,KDZone,GCZone';
 
 comment on column RD_LINK_ZONE.SIDE is
-'¼ÇÂ¼ZoneËùÔÚLink·½ÏòµÄ×óÓÒ²à';
+'ï¿½ï¿½Â¼Zoneï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column RD_LINK_ZONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_LINK_ZONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_MAINSIDE                                           */
@@ -16783,13 +16783,13 @@ create table RD_MAINSIDE  (
 );
 
 comment on column RD_MAINSIDE.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_MAINSIDE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_MAINSIDE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_MAINSIDE_LINK                                      */
@@ -16814,22 +16814,22 @@ create table RD_MAINSIDE_LINK  (
 );
 
 comment on table RD_MAINSIDE_LINK is
-'Í¨¹ý·Ö¸ô´ø±í´ïÖ÷¸¨Â·Ö®¼äµÄ¹ØÏµ';
+'Í¨ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·Ö®ï¿½ï¿½Ä¹ï¿½Ïµ';
 
 comment on column RD_MAINSIDE_LINK.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"RD_MAINSIDE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_MAINSIDE"';
 
 comment on column RD_MAINSIDE_LINK.SEQ_NUM is
-'×óÓÒ²à·Ö±ð´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½Ò²ï¿½Ö±ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_MAINSIDE_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_MAINSIDE_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_MAINSIDE_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_MILEAGEPILE                                        */
@@ -16859,7 +16859,7 @@ create table RD_MILEAGEPILE  (
 );
 
 comment on table RD_MILEAGEPILE is
-'Àï³Ì×®±í';
+'ï¿½ï¿½ï¿½×®ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: RD_MULTIDIGITIZED                                     */
@@ -16875,13 +16875,13 @@ create table RD_MULTIDIGITIZED  (
 );
 
 comment on column RD_MULTIDIGITIZED.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_MULTIDIGITIZED.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_MULTIDIGITIZED.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_MULTIDIGITIZED_LINK                                */
@@ -16904,26 +16904,26 @@ create table RD_MULTIDIGITIZED_LINK  (
 );
 
 comment on table RD_MULTIDIGITIZED_LINK is
-'(1)Í¨¹ýÖÐÑë·Ö¸ô´ø±í´ïÉÏÏÂÏß·ÖÀëµÀÂ·Ö®¼äµÄ¹ØÏµ
-(2)¹æ¸ñÎ´Ã÷È·,NaviMap±à¼­Æ½Ì¨ÔÝ²»ÊµÏÖ';
+'(1)Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½Â·Ö®ï¿½ï¿½Ä¹ï¿½Ïµ
+(2)ï¿½ï¿½ï¿½Î´ï¿½ï¿½È·,NaviMapï¿½à¼­Æ½Ì¨ï¿½Ý²ï¿½Êµï¿½ï¿½';
 
 comment on column RD_MULTIDIGITIZED_LINK.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"RD_MULTIDIGITIZED"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_MULTIDIGITIZED"';
 
 comment on column RD_MULTIDIGITIZED_LINK.SEQ_NUM is
-'×óÓÒ²à·Ö±ð´Ó1 ¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½ï¿½Ò²ï¿½Ö±ï¿½ï¿½1 ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_MULTIDIGITIZED_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_MULTIDIGITIZED_LINK.SIDE is
-'×ó²à»òÓÒ²à';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ò²ï¿½';
 
 comment on column RD_MULTIDIGITIZED_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_MULTIDIGITIZED_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NATGUD_JUN                                         */
@@ -16945,19 +16945,19 @@ create table RD_NATGUD_JUN  (
 );
 
 comment on column RD_NATGUD_JUN.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_NATGUD_JUN.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_NATGUD_JUN.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NATGUD_JUN.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NATGUD_JUN_DETAIL                                  */
@@ -16988,22 +16988,22 @@ create table RD_NATGUD_JUN_DETAIL  (
 );
 
 comment on column RD_NATGUD_JUN_DETAIL.DETAIL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_DETAIL.NG_COND_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_DETAIL.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_NATGUD_JUN_DETAIL.NG_ASSO_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NATGUD_JUN_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NATGUD_JUN_VIA                                     */
@@ -17025,22 +17025,22 @@ create table RD_NATGUD_JUN_VIA  (
 );
 
 comment on column RD_NATGUD_JUN_VIA.DETAIL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK",½øÈëºÍÍË³öLink ³ýÍâ';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½Link ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NATGUD_JUN_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NATGUD_JUN_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NODE_FORM                                          */
@@ -17061,16 +17061,16 @@ create table RD_NODE_FORM  (
 );
 
 comment on column RD_NODE_FORM.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_NODE_FORM.AUXI_FLAG is
 '[171A]';
 
 comment on column RD_NODE_FORM.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NODE_FORM.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NODE_MESH                                          */
@@ -17088,13 +17088,13 @@ create table RD_NODE_MESH  (
 );
 
 comment on column RD_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_NODE_NAME                                          */
@@ -17120,28 +17120,28 @@ create table RD_NODE_NAME  (
 );
 
 comment on column RD_NODE_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NODE_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NODE_NAME.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_NODE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NODE_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_NODE_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column RD_NODE_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_NODE_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT                                             */
@@ -17158,16 +17158,16 @@ create table RD_OBJECT  (
 );
 
 comment on column RD_OBJECT.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT_INTER                                       */
@@ -17187,16 +17187,16 @@ create table RD_OBJECT_INTER  (
 );
 
 comment on column RD_OBJECT_INTER.PID is
-'Íâ¼ü,ÒýÓÃ"RD_OBJECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_OBJECT"';
 
 comment on column RD_OBJECT_INTER.INTER_PID is
-'Íâ¼ü,ÒýÓÃ"RD_INTER"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_INTER"';
 
 comment on column RD_OBJECT_INTER.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT_INTER.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT_LINK                                        */
@@ -17216,16 +17216,16 @@ create table RD_OBJECT_LINK  (
 );
 
 comment on column RD_OBJECT_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_OBJECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_OBJECT"';
 
 comment on column RD_OBJECT_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_OBJECT_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT_NAME                                        */
@@ -17251,28 +17251,28 @@ create table RD_OBJECT_NAME  (
 );
 
 comment on column RD_OBJECT_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"RD_OBJECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_OBJECT"';
 
 comment on column RD_OBJECT_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_OBJECT_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column RD_OBJECT_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT_NODE                                        */
@@ -17292,16 +17292,16 @@ create table RD_OBJECT_NODE  (
 );
 
 comment on column RD_OBJECT_NODE.PID is
-'Íâ¼ü,ÒýÓÃ"RD_OBJECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_OBJECT"';
 
 comment on column RD_OBJECT_NODE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_OBJECT_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_ROAD                                               */
@@ -17317,13 +17317,13 @@ create table RD_ROAD  (
 );
 
 comment on column RD_ROAD.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_ROAD.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_ROAD.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_OBJECT_ROAD                                        */
@@ -17343,16 +17343,16 @@ create table RD_OBJECT_ROAD  (
 );
 
 comment on column RD_OBJECT_ROAD.PID is
-'Íâ¼ü,ÒýÓÃ"RD_OBJECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_OBJECT"';
 
 comment on column RD_OBJECT_ROAD.ROAD_PID is
-'Íâ¼ü,ÒýÓÃ"RD_ROAD"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_ROAD"';
 
 comment on column RD_OBJECT_ROAD.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_OBJECT_ROAD.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_RESTRICTION                                        */
@@ -17377,31 +17377,31 @@ create table RD_RESTRICTION  (
 );
 
 comment on table RD_RESTRICTION is
-'¼ÇÂ¼½»ÏÞµÄ½øÈëÏßµã¹ØÏµ,ÒÔ¼°´Ó¸ÃÏßµã³ö·¢µ½ÍË³öLinkÉÏµÄËùÓÐÏÞÖÆÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ÞµÄ½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½Ïµ,ï¿½Ô¼ï¿½ï¿½Ó¸ï¿½ï¿½ßµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½Linkï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_RESTRICTION.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_RESTRICTION.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_RESTRICTION.RESTRIC_INFO is
-'¼ÇÂ¼´Ó½øÈëLINKµ½ËùÓÐÍË³öLINKµÄ½»ÏÞÐÅÏ¢
-(1)ÓÉÒ»¸ö»ò¶à¸öÓ¢ÎÄ°ë½ÇÏÞÖÆ´úÂë¹¹³É,ÄÚÈÝÓëRD_RESTRICTION_DETAILÒ»ÖÂ,Èç:"1"±íÊ¾½û×ó
-(2)×éºÏ½»ÏÞÓÃÓ¢ÎÄ°ë½Ç","·Ö¸î,Èç"1,2"±íÊ¾"½ûÖ±ºÍ½û×ó"
-(3)Ä¬ÈÏ±íÊ¾Êµ¼Ê½»ÏÞ,Èç¹ûÊÇÀíÂÛ½»ÏÞ»òÎ´ÑéÖ¤,Ôò½«¾ßÌåÏÞÖÆ´úÂëÓÃÓ¢ÎÄ°ë½Ç"[]"À¨ÆðÀ´,Èç"[2]",±íÊ¾ÀíÂÛ½û×ó';
+'ï¿½ï¿½Â¼ï¿½Ó½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LINKï¿½Ä½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢
+(1)ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ë¹¹ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½RD_RESTRICTION_DETAILÒ»ï¿½ï¿½,ï¿½ï¿½:"1"ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½","ï¿½Ö¸ï¿½,ï¿½ï¿½"1,2"ï¿½ï¿½Ê¾"ï¿½ï¿½Ö±ï¿½Í½ï¿½ï¿½ï¿½"
+(3)Ä¬ï¿½Ï±ï¿½Ê¾Êµï¿½Ê½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û½ï¿½ï¿½Þ»ï¿½Î´ï¿½ï¿½Ö¤,ï¿½ò½«¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½Ó¢ï¿½Ä°ï¿½ï¿½"[]"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½"[2]",ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Û½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION.KG_FLAG is
-'Çø·Ö½»ÏÞÐÅÏ¢ÊÇK×¨ÓÃ,G×¨ÓÃ,KG¹²ÓÃµÄ±êÖ¾';
+'ï¿½ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½K×¨ï¿½ï¿½,G×¨ï¿½ï¿½,KGï¿½ï¿½ï¿½ÃµÄ±ï¿½Ö¾';
 
 comment on column RD_RESTRICTION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_RESTRICTION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_RESTRICTION_DETAIL                                 */
@@ -17431,31 +17431,31 @@ create table RD_RESTRICTION_DETAIL  (
 );
 
 comment on table RD_RESTRICTION_DETAIL is
-'¼ÇÂ¼µ±Ç°ÍË³öLinkÉÏ¾ßÌåµÄÏÞÖÆÀàÐÍ,ÏÞÖÆÐÅÏ¢(½ûÖ±,½û×óµÈ)';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ç°ï¿½Ë³ï¿½Linkï¿½Ï¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢(ï¿½ï¿½Ö±,ï¿½ï¿½ï¿½ï¿½ï¿½)';
 
 comment on column RD_RESTRICTION_DETAIL.DETAIL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION_DETAIL.RESTRIC_PID is
-'Íâ¼ü,ÒýÓÃ"RD_RESTRICTION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_RESTRICTION"';
 
 comment on column RD_RESTRICTION_DETAIL.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_RESTRICTION_DETAIL.FLAG is
-'Î´ÑéÖ¤,ÊµµØ½»ÏÞ,ÀíÂÛ½»ÏÞ';
+'Î´ï¿½ï¿½Ö¤,Êµï¿½Ø½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Û½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION_DETAIL.RESTRIC_INFO is
-'[180U]¼ÇÂ¼µ±Ç°ÍË³öLinkÉÏµÄ½ûÖ±,½û×ó,½ûÓÒ,½ûµ÷µÈÐÅÏ¢';
+'[180U]ï¿½ï¿½Â¼ï¿½ï¿½Ç°ï¿½Ë³ï¿½Linkï¿½ÏµÄ½ï¿½Ö±,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_RESTRICTION_DETAIL.TYPE is
-'½ûÖ¹½øÈë,Ê±¼ä¶Î½ûÖ¹(½øÈëLinkµ½ÍË³öLinkÔÚÊ±¼ä¶ÎÄÚ½ûÖ¹,ÆäËûÊ±¼ä¿ÉÍ¨ÐÐ)';
+'ï¿½ï¿½Ö¹ï¿½ï¿½ï¿½ï¿½,Ê±ï¿½ï¿½Î½ï¿½Ö¹(ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Linkï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ú½ï¿½Ö¹,ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Í¨ï¿½ï¿½)';
 
 comment on column RD_RESTRICTION_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_RESTRICTION_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_RESTRICTION_CONDITION                              */
@@ -17481,25 +17481,25 @@ create table RD_RESTRICTION_CONDITION  (
 );
 
 comment on table RD_RESTRICTION_CONDITION is
-'¼ÇÂ¼µ±Ç°ÍË³öLinkÉÏµÄÊ±¼ä¶ÎºÍ³µÁ¾ÏÞÖÆÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½Ç°ï¿½Ë³ï¿½Linkï¿½Ïµï¿½Ê±ï¿½ï¿½ÎºÍ³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_RESTRICTION_CONDITION.DETAIL_ID is
-'Íâ¼ü,ÒýÓÃ"RD_RESTRICTION_DETAIL"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_RESTRICTION_DETAIL"';
 
 comment on column RD_RESTRICTION_CONDITION.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_RESTRICTION_CONDITION.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_RESTRICTION_CONDITION.RES_WEIGH is
-'[190A]µ¥Î»:¶Ö,0±íÊ¾ÎÞ';
+'[190A]ï¿½ï¿½Î»:ï¿½ï¿½,0ï¿½ï¿½Ê¾ï¿½ï¿½';
 
 comment on column RD_RESTRICTION_CONDITION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_RESTRICTION_CONDITION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_RESTRICTION_VIA                                    */
@@ -17521,26 +17521,26 @@ create table RD_RESTRICTION_VIA  (
 );
 
 comment on table RD_RESTRICTION_VIA is
-'(1)±í´ïÍ¬Ò»½øÈëLinkºÍÍË³öLinkÖ®¼äµÄ¶à×é¾­¹ýLink,¶øÇÒ¾­¹ýLink²»°üÀ¨½øÈëLinkºÍÍË³öLink
-(1)NaviMap×÷ÒµÖÐ,µ±½øÈëºÍÍË³öLinkÖ±½ÓÔÚÍ¬Ò»Â·¿Ú¹Ò½ÓÊ±,²»ÖÆ×÷¾­¹ýLink;·ñÔò(ÈçÏßÏß¹ØÏµ),ÐèÒªÖÆ×÷¾­¹ýLink';
+'(1)ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½LinkÖ®ï¿½ï¿½Ä¶ï¿½ï¿½é¾­ï¿½ï¿½Link,ï¿½ï¿½ï¿½Ò¾ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Link
+(1)NaviMapï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LinkÖ±ï¿½ï¿½ï¿½ï¿½Í¬Ò»Â·ï¿½Ú¹Ò½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link;ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ß¹ï¿½Ïµ),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link';
 
 comment on column RD_RESTRICTION_VIA.DETAIL_ID is
-'Íâ¼ü,ÒýÓÃ"RD_RESTRICTION_DETAIL"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_RESTRICTION_DETAIL"';
 
 comment on column RD_RESTRICTION_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_RESTRICTION_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_RESTRICTION_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_RESTRICTION_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_ROAD_LINK                                          */
@@ -17561,19 +17561,19 @@ create table RD_ROAD_LINK  (
 );
 
 comment on column RD_ROAD_LINK.PID is
-'Íâ¼ü,ÒýÓÃ"RD_ROAD"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_ROAD"';
 
 comment on column RD_ROAD_LINK.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_ROAD_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_ROAD_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_ROAD_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SAMELINK                                           */
@@ -17589,13 +17589,13 @@ create table RD_SAMELINK  (
 );
 
 comment on column RD_SAMELINK.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SAMELINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SAMELINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SAMELINK_PART                                      */
@@ -17614,22 +17614,22 @@ create table RD_SAMELINK_PART  (
 );
 
 comment on table RD_SAMELINK_PART is
-'¼ÇÂ¼Í¬Ò»Link¹ØÏµµÄ×é³ÉLinkÐÅÏ¢';
+'ï¿½ï¿½Â¼Í¬Ò»Linkï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½Ï¢';
 
 comment on column RD_SAMELINK_PART.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"RD_SAMELINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SAMELINK"';
 
 comment on column RD_SAMELINK_PART.LINK_PID is
-'²Î¿¼"RD_LINK","AD_LINK"µÈ';
+'ï¿½Î¿ï¿½"RD_LINK","AD_LINK"ï¿½ï¿½';
 
 comment on column RD_SAMELINK_PART.TABLE_NAME is
-'¼ÇÂ¼LINKËùÔÚµÄÊý¾Ý±í,ÈçµÀÂ·LINK=20ÓëÐÐÕþÇø»®LINK=40ÎªÍ¬Ò»LINKÊ±,Êý¾Ý±íÃû·Ö±ðÎª"RD_LINK"ºÍ"AD_LINK"';
+'ï¿½ï¿½Â¼LINKï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ý±ï¿½,ï¿½ï¿½ï¿½Â·LINK=20ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½LINK=40ÎªÍ¬Ò»LINKÊ±,ï¿½ï¿½Ý±ï¿½ï¿½ï¿½Ö±ï¿½Îª"RD_LINK"ï¿½ï¿½"AD_LINK"';
 
 comment on column RD_SAMELINK_PART.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SAMELINK_PART.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SAMENODE                                           */
@@ -17645,13 +17645,13 @@ create table RD_SAMENODE  (
 );
 
 comment on column RD_SAMENODE.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SAMENODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SAMENODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SAMENODE_PART                                      */
@@ -17670,22 +17670,22 @@ create table RD_SAMENODE_PART  (
 );
 
 comment on table RD_SAMENODE_PART is
-'¼ÇÂ¼Í¬Ò»Node¹ØÏµµÄ×é³ÉNodeÐÅÏ¢';
+'ï¿½ï¿½Â¼Í¬Ò»Nodeï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½Nodeï¿½ï¿½Ï¢';
 
 comment on column RD_SAMENODE_PART.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"RD_SAMENODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SAMENODE"';
 
 comment on column RD_SAMENODE_PART.NODE_PID is
-'²Î¿¼"RD_NODE","AD_NODE"µÈ';
+'ï¿½Î¿ï¿½"RD_NODE","AD_NODE"ï¿½ï¿½';
 
 comment on column RD_SAMENODE_PART.TABLE_NAME is
-'¼ÇÂ¼NODEËùÔÚµÄÊý¾Ý±í,ÈçµÀÂ·NODE=20ÓëÐÐÕþÇø»®NODE=40ÎªÍ¬Ò»NODEÊ±,Êý¾Ý±íÃû·Ö±ðÎª"RD_NODE"ºÍ"AD_NODE"';
+'ï¿½ï¿½Â¼NODEï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½Ý±ï¿½,ï¿½ï¿½ï¿½Â·NODE=20ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½NODE=40ÎªÍ¬Ò»NODEÊ±,ï¿½ï¿½Ý±ï¿½ï¿½ï¿½Ö±ï¿½Îª"RD_NODE"ï¿½ï¿½"AD_NODE"';
 
 comment on column RD_SAMENODE_PART.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SAMENODE_PART.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SE                                                 */
@@ -17710,25 +17710,25 @@ create table RD_SE  (
 );
 
 comment on table RD_SE is
-'NaviMapÖÆ×÷Ê±½øÈëLinkºÍÍË³öLink±ØÐë½ÓÐø';
+'NaviMapï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SE.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_SE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_SE.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_SE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SERIESBRANCH                                       */
@@ -17753,29 +17753,29 @@ create table RD_SERIESBRANCH  (
 );
 
 comment on table RD_SERIESBRANCH is
-'±í´ïÁ¬Ðø·ÖÆçµÄÏßµã¹ØÏµ(ÈçÏßÏß¹ØÏµ)ºÍ·ÖÆçÄ£Ê½Í¼ÐÅÏ¢
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµï¿½ï¿½Ïµ(ï¿½ï¿½ï¿½ï¿½ï¿½ß¹ï¿½Ïµ)ï¿½Í·ï¿½ï¿½ï¿½Ä£Ê½Í¼ï¿½ï¿½Ï¢
 ';
 
 comment on column RD_SERIESBRANCH.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_SERIESBRANCH.VOICE_DIR is
-'ÎÞ,ÓÒ,×ó';
+'ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½';
 
 comment on column RD_SERIESBRANCH.PATTERN_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME",Èç:8a430211';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME",ï¿½ï¿½:8a430211';
 
 comment on column RD_SERIESBRANCH.ARROW_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME",Èç:0a24030a';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME",ï¿½ï¿½:0a24030a';
 
 comment on column RD_SERIESBRANCH.ARROW_FLAG is
 '[180A]';
 
 comment on column RD_SERIESBRANCH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SERIESBRANCH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNASREAL                                         */
@@ -17800,16 +17800,16 @@ comment on table RD_SIGNASREAL is
 '[170]';
 
 comment on column RD_SIGNASREAL.SIGNBOARD_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNASREAL.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_SIGNASREAL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNASREAL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNBOARD                                          */
@@ -17830,22 +17830,22 @@ create table RD_SIGNBOARD  (
 );
 
 comment on column RD_SIGNBOARD.SIGNBOARD_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD.BRANCH_PID is
-'Íâ¼ü,ÒýÓÃ"RD_BRANCH"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_BRANCH"';
 
 comment on column RD_SIGNBOARD.ARROW_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column RD_SIGNBOARD.BACKIMAGE_CODE is
-'Í¬¼ýÍ·Í¼´úÂë,¾ùÎª11 Î»±àÂë';
+'Í¬ï¿½ï¿½Í·Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Îª11 Î»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNBOARD.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNBOARD_NAME                                     */
@@ -17877,40 +17877,40 @@ create table RD_SIGNBOARD_NAME  (
 );
 
 comment on column RD_SIGNBOARD_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.SIGNBOARD_ID is
-'Íâ¼ü,ÒýÓÃ"RD_SIGNBOARD"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SIGNBOARD"';
 
 comment on column RD_SIGNBOARD_NAME.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.NAME_CLASS is
-'·½Ïò,³ö¿Ú';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.CODE_TYPE is
-'ÆÕÍ¨µÀÂ·Ãû,ÉèÊ©Ãû,¸ßËÙµÀÂ·ÃûµÈ';
+'ï¿½ï¿½Í¨ï¿½ï¿½Â·ï¿½ï¿½,ï¿½ï¿½Ê©ï¿½ï¿½,ï¿½ï¿½ï¿½Ùµï¿½Â·ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME.VOICE_FILE is
-'[170]²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'[170]ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column RD_SIGNBOARD_NAME.SRC_FLAG is
-'[170]ÏÖ½öÖ¸Ó¢ÎÄÃûÀ´Ô´';
+'[170]ï¿½Ö½ï¿½Ö¸Ó¢ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô´';
 
 comment on column RD_SIGNBOARD_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNBOARD_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNBOARD_NAME_TONE                                */
@@ -17936,31 +17936,31 @@ comment on table RD_SIGNBOARD_NAME_TONE is
 '[170]';
 
 comment on column RD_SIGNBOARD_NAME_TONE.NAME_ID is
-'Íâ¼ü,ÒýÓÃ"RD_SIGNBOARD_NAME"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SIGNBOARD_NAME"';
 
 comment on column RD_SIGNBOARD_NAME_TONE.TONE_A is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column RD_SIGNBOARD_NAME_TONE.TONE_B is
-'ººÓïÃû³ÆÖÐµÄÊý×Ö½«×ª³ÉÆ´Òô';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½ï¿½ï¿½ï¿½Ö½ï¿½×ªï¿½ï¿½Æ´ï¿½ï¿½';
 
 comment on column RD_SIGNBOARD_NAME_TONE.LH_A is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô1,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½1,×ªï¿½ï¿½LH+';
 
 comment on column RD_SIGNBOARD_NAME_TONE.LH_B is
-'¶ÔÓ¦´øÉùµ÷Æ´Òô2,×ª³öLH+';
+'ï¿½ï¿½Ó¦ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½2,×ªï¿½ï¿½LH+';
 
 comment on column RD_SIGNBOARD_NAME_TONE.JYUTP is
-'ÖÆ×÷ÆÕÍ¨»°Ê±±¾×Ö¶ÎÎª¿ÕÖµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ö¶ï¿½Îªï¿½ï¿½Öµ';
 
 comment on column RD_SIGNBOARD_NAME_TONE.MEMO is
-'ººÓïÃû³Æ¶ÔÓ¦µÄ´øÉùµ÷Æ´Òô(Ä¿Ç°ÎªººÓïÆ´ÒôºÍÔÁÓïÆ´Òô),Êý×ÖºÍ×ÖÄ¸²»×ª,ÒÔÊéÃæÓïÎª×¼';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Ó¦ï¿½Ä´ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½(Ä¿Ç°Îªï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ´ï¿½ï¿½),ï¿½ï¿½ï¿½Öºï¿½ï¿½ï¿½Ä¸ï¿½ï¿½×ª,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª×¼';
 
 comment on column RD_SIGNBOARD_NAME_TONE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNBOARD_NAME_TONE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNPOST                                           */
@@ -17985,44 +17985,44 @@ create table RD_SIGNPOST  (
 );
 
 comment on table RD_SIGNPOST is
-'¼ÇÂ¼±êÅÆ±àÂë,µãÎ»,³¯ÏòµÈ.µ±Ö÷¸¨±êÅÆ¹²´æÊ±,¼ÇÂ¼Ö÷±êÅÆµÄPID¼°Ïà¹ØÐÅÏ¢,Í¬Ê±¼ÇÂ¼¸¨±êÅÆµÄÐÅÏ¢';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Æ±ï¿½ï¿½ï¿½,ï¿½ï¿½Î»,ï¿½ï¿½ï¿½ï¿½ï¿½.ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ¹ï¿½ï¿½ï¿½Ê±,ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½PIDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢,Í¬Ê±ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½Æµï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_SIGNPOST.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNPOST.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column RD_SIGNPOST.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNPOST.TYPE_CODE is
-'²Î¿¼"RD_SIGNPOST_CODE"';
+'ï¿½Î¿ï¿½"RD_SIGNPOST_CODE"';
 
 comment on column RD_SIGNPOST.ANGLE is
-'±êÅÆ¿´°åÓëÕý±±·½ÏòµÄ¼Ð½Ç,µ¥Î»:¶È,ÖµÓò·¶Î§:0.00~360.00';
+'ï¿½ï¿½ï¿½Æ¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼Ð½ï¿½,ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½Î§:0.00~360.00';
 
 comment on column RD_SIGNPOST.POSITION is
-'[172U]²ÉÓÃ3bit±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~2bit,Ã¿bit±íÊ¾Ò»¸öÎ»ÖÃ(ÈçÏÂ),¸³ÖµÎª0/1·Ö±ð±íÊ¾·ñ/ÊÇ,Èç: 101±íÊ¾×óºÍÉÏ
-µÚ0bit:×ó(Left)
-µÚ1bit:ÓÒ(Right)
-µÚ2bit:ÉÏ(Overhead)
-Èç¹ûËùÓÐbitÎ»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'[172U]ï¿½ï¿½ï¿½ï¿½3bitï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~2bit,Ã¿bitï¿½ï¿½Ê¾Ò»ï¿½ï¿½Î»ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½: 101ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½ï¿½(Left)
+ï¿½ï¿½1bit:ï¿½ï¿½(Right)
+ï¿½ï¿½2bit:ï¿½ï¿½(Overhead)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bitÎ»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNPOST.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_SIGNPOST.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_SIGNPOST.DESCRIPT is
-'¼ÇÂ¼ÏÖ³¡±êÅÆÖÐ½âÊÍËµÃ÷µÄÎÄ×Ö';
+'ï¿½ï¿½Â¼ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð½ï¿½ï¿½ï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SIGNPOST.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNPOST.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNPOST_LINK                                      */
@@ -18044,13 +18044,13 @@ comment on table RD_SIGNPOST_LINK is
 ';
 
 comment on column RD_SIGNPOST_LINK.SIGNPOST_PID is
-'Íâ¼ü,ÒýÓÃ"RD_SIGNPOST"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SIGNPOST"';
 
 comment on column RD_SIGNPOST_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNPOST_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SIGNPOST_PHOTO                                     */
@@ -18069,22 +18069,22 @@ create table RD_SIGNPOST_PHOTO  (
 );
 
 comment on table RD_SIGNPOST_PHOTO is
-'GDB±êÅÆÓëÍâÒµÕÕÆ¬³É¹ûÖ®¼äµÄ¹ØÏµ';
+'GDBï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½ï¿½Æ¬ï¿½É¹ï¿½Ö®ï¿½ï¿½Ä¹ï¿½Ïµ';
 
 comment on column RD_SIGNPOST_PHOTO.SIGNPOST_PID is
-'Íâ¼ü,ÒýÓÃ"RD_SIGNPOST"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SIGNPOST"';
 
 comment on column RD_SIGNPOST_PHOTO.PHOTO_ID is
-'²Î¿¼"AU_PHOTO"';
+'ï¿½Î¿ï¿½"AU_PHOTO"';
 
 comment on column RD_SIGNPOST_PHOTO.STATUS is
-'¼ÇÂ¼ÊÇ·ñÈ·ÈÏ';
+'ï¿½ï¿½Â¼ï¿½Ç·ï¿½È·ï¿½ï¿½';
 
 comment on column RD_SIGNPOST_PHOTO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SIGNPOST_PHOTO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SLOPE                                              */
@@ -18109,25 +18109,25 @@ create table RD_SLOPE  (
 );
 
 comment on column RD_SLOPE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SLOPE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_SLOPE.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_SLOPE.TYPE is
-'Ë®Æ½,ÉÏÆÂ,ÏÂÆÂ';
+'Ë®Æ½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SLOPE.ANGLE is
-'µ¥Î»:¶È,ÖµÓò·¶Î§:0~90,Ä¬ÈÏÎª0';
+'ï¿½ï¿½Î»:ï¿½ï¿½,Öµï¿½ï¿½Î§:0~90,Ä¬ï¿½ï¿½Îª0';
 
 comment on column RD_SLOPE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SLOPE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SLOPE_VIA                                          */
@@ -18151,19 +18151,19 @@ comment on table RD_SLOPE_VIA is
 '[1901]';
 
 comment on column RD_SLOPE_VIA.SLOPE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_SLOPE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_SLOPE"';
 
 comment on column RD_SLOPE_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_SLOPE_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SLOPE_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SLOPE_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SPEEDBUMP                                          */
@@ -18187,19 +18187,19 @@ create table RD_SPEEDBUMP  (
 );
 
 comment on column RD_SPEEDBUMP.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_SPEEDBUMP.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_SPEEDBUMP.RESERVED is
-'½á¹¹Ô¤Áô';
+'ï¿½á¹¹Ô¤ï¿½ï¿½';
 
 comment on column RD_SPEEDBUMP.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SPEEDBUMP.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SPEEDLIMIT                                         */
@@ -18247,18 +18247,18 @@ create table RD_SPEEDLIMIT  (
 );
 
 comment on table RD_SPEEDLIMIT is
-'(1)Í¼·ùÄÚµÄ"µãÓë¹ØÁªlink"¹ØÏµ
-(2)ÏÞËÙ¹ØÏµ²»¿çÍ¼·ù,ÏÞËÙÖµÔÚ¹ØÏµÉÏºÍLinkÏÞËÙÊôÐÔÖÐ·Ö±ð¼ÇÂ¼
-(2)²»¼ÇÂ¼"ÏÞËÙ"Óë"½âÏÞËÙ"Ö®¼äµÄ³É¶Ô¹ØÏµ';
+'(1)Í¼ï¿½ï¿½ï¿½Úµï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½link"ï¿½ï¿½Ïµ
+(2)ï¿½ï¿½ï¿½Ù¹ï¿½Ïµï¿½ï¿½ï¿½ï¿½Í¼ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Öµï¿½Ú¹ï¿½Ïµï¿½Ïºï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð·Ö±ï¿½ï¿½Â¼
+(2)ï¿½ï¿½ï¿½ï¿½Â¼"ï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"Ö®ï¿½ï¿½Ä³É¶Ô¹ï¿½Ïµ';
 
 comment on column RD_SPEEDLIMIT.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SPEEDLIMIT.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column RD_SPEEDLIMIT.SPEED_VALUE is
-'¼ÇÂ¼×î¸ßÏÞËÙÖµ,ÖµÓò·¶Î§:1~9999,µ¥Î»:°ÙÃ×/Ê±,Ó¦ÓÃÊ±Ðè³ýÒÔ10';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ,Öµï¿½ï¿½Î§:1~9999,ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½10';
 
 comment on column RD_SPEEDLIMIT.SPEED_TYPE is
 '[170][172U][190A]';
@@ -18267,22 +18267,22 @@ comment on column RD_SPEEDLIMIT.SPEED_DEPENDENT is
 '[170][172U]';
 
 comment on column RD_SPEEDLIMIT.SPEED_FLAG is
-'ÏÞËÙ¿ªÊ¼»òÏÞËÙ½â³ý';
+'ï¿½ï¿½ï¿½Ù¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ù½ï¿½ï¿½';
 
 comment on column RD_SPEEDLIMIT.LIMIT_SRC is
-'¼ÇÂ¼ÏÞËÙÐÅÏ¢µÄÀ´Ô´,Èç³ÇÇø±êÊ¶,¸ßËÙ±êÊ¶,³µµÀÏÞËÙ,·½ÏòÏÞËÙµÈ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢ï¿½ï¿½ï¿½ï¿½Ô´,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¶,ï¿½ï¿½ï¿½Ù±ï¿½Ê¶,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ùµï¿½';
 
 comment on column RD_SPEEDLIMIT.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_SPEEDLIMIT.CAPTURE_FLAG is
-'ÀíÂÛÅÐ¶Ï»òÏÖ³¡²É¼¯';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï»ï¿½ï¿½Ö³ï¿½ï¿½É¼ï¿½';
 
 comment on column RD_SPEEDLIMIT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SPEEDLIMIT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_SPEEDLIMIT_TRUCK                                   */
@@ -18319,25 +18319,25 @@ create table RD_SPEEDLIMIT_TRUCK  (
 );
 
 comment on column RD_SPEEDLIMIT_TRUCK.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_SPEEDLIMIT_TRUCK.LINK_PID is
-'²Î¿¼"RD_LINK"';
+'ï¿½Î¿ï¿½"RD_LINK"';
 
 comment on column RD_SPEEDLIMIT_TRUCK.SPEED_VALUE is
-'¼ÇÂ¼×î¸ßÏÞËÙÖµ,ÖµÓò·¶Î§:1~9999,µ¥Î»:°ÙÃ×/Ê±,Ó¦ÓÃÊ±Ðè³ýÒÔ10';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Öµ,Öµï¿½ï¿½Î§:1~9999,ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Ó¦ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½10';
 
 comment on column RD_SPEEDLIMIT_TRUCK.SPEED_FLAG is
-'ÏÞËÙ¿ªÊ¼»òÏÞËÙ½â³ý';
+'ï¿½ï¿½ï¿½Ù¿ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Ù½ï¿½ï¿½';
 
 comment on column RD_SPEEDLIMIT_TRUCK.CAPTURE_FLAG is
-'ÀíÂÛÅÐ¶Ï»òÏÖ³¡²É¼¯';
+'ï¿½ï¿½ï¿½ï¿½ï¿½Ð¶Ï»ï¿½ï¿½Ö³ï¿½ï¿½É¼ï¿½';
 
 comment on column RD_SPEEDLIMIT_TRUCK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_SPEEDLIMIT_TRUCK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TMCLOCATION                                        */
@@ -18355,16 +18355,16 @@ create table RD_TMCLOCATION  (
 );
 
 comment on column RD_TMCLOCATION.GROUP_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TMCLOCATION.TMC_ID is
-'[170]²Î¿¼"TMC_POINT","TMC_LINE","TMC_AREA"';
+'[170]ï¿½Î¿ï¿½"TMC_POINT","TMC_LINE","TMC_AREA"';
 
 comment on column RD_TMCLOCATION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TMCLOCATION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TMCLOCATION_LINK                                   */
@@ -18388,19 +18388,19 @@ create table RD_TMCLOCATION_LINK  (
 );
 
 comment on column RD_TMCLOCATION_LINK.GROUP_ID is
-'Íâ¼ü,ÒýÓÃ"RD_TMCLOCATION"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_TMCLOCATION"';
 
 comment on column RD_TMCLOCATION_LINK.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_TMCLOCATION_LINK.DIRECT is
-'TMCÎ»ÖÃ·½ÏòÓëµÀÂ·LINK·½ÏòµÄ¹ØÏµ';
+'TMCÎ»ï¿½Ã·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·LINKï¿½ï¿½ï¿½ï¿½Ä¹ï¿½Ïµ';
 
 comment on column RD_TMCLOCATION_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TMCLOCATION_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE                                           */
@@ -18436,46 +18436,46 @@ create table RD_TOLLGATE  (
 );
 
 comment on table RD_TOLLGATE is
-'(1)±í´ïÊÕ·ÑÕ¾µÄÊÕ·ÑÀàÐÍºÍETC³µµÀÊý
-(2)×¢Òâ:½øÈëLINKºÍÍË³öLINK±ØÐë½ÓÐø';
+'(1)ï¿½ï¿½ï¿½ï¿½Õ·ï¿½Õ¾ï¿½ï¿½ï¿½Õ·ï¿½ï¿½ï¿½ï¿½Íºï¿½ETCï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)×¢ï¿½ï¿½:ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½Ë³ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_TOLLGATE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_TOLLGATE.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_TOLLGATE.TYPE is
-'ÊÕ·Ñ,Áì¿¨µÈÀàÐÍ';
+'ï¿½Õ·ï¿½,ï¿½ì¿¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.PASSAGE_NUM is
-'°üÀ¨ETCÍ¨µÀÊýÔÚÄÚµÄÍ¨µÀ×ÜÊý';
+'ï¿½ï¿½ï¿½ï¿½ETCÍ¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.ETC_FIGURE_CODE is
-'²Î¿¼"AU_MULTIMEDIA"ÖÐ"NAME"';
+'ï¿½Î¿ï¿½"AU_MULTIMEDIA"ï¿½ï¿½"NAME"';
 
 comment on column RD_TOLLGATE.HW_NAME is
-'¼ÇÂ¼ÊÕ·ÑÕ¾ËùÔÚµÄ¸ßËÙÃû³Æ';
+'ï¿½ï¿½Â¼ï¿½Õ·ï¿½Õ¾ï¿½ï¿½ï¿½ÚµÄ¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.FEE_TYPE is
-'0 °´Àï³ÌÊÕ·Ñ
-1 ¹Ì¶¨ÊÕ·Ñ
-2 Î´µ÷²é';
+'0 ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Õ·ï¿½
+1 ï¿½Ì¶ï¿½ï¿½Õ·ï¿½
+2 Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.FEE_STD is
-'µ¥Î»:Ôª/´Î»òÔª/¹«Àï';
+'ï¿½ï¿½Î»:Ôª/ï¿½Î»ï¿½Ôª/ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TOLLGATE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE_COST                                      */
@@ -18502,25 +18502,25 @@ create table RD_TOLLGATE_COST  (
 );
 
 comment on table RD_TOLLGATE_COST is
-'[180]ÓÉIDBÍ¨¹ýRD_TOLLGATE_MAPPINGºÍRD_TOLLGATE_FEEÉú³É';
+'[180]ï¿½ï¿½IDBÍ¨ï¿½ï¿½RD_TOLLGATE_MAPPINGï¿½ï¿½RD_TOLLGATE_FEEï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_COST.TOLLCOST_ID is
-'[180U]Ö÷¼ü,È¡×Ô"RD_TOLLGATE_FEE"';
+'[180U]ï¿½ï¿½ï¿½ï¿½,È¡ï¿½ï¿½"RD_TOLLGATE_FEE"';
 
 comment on column RD_TOLLGATE_COST.IN_TOLLGATE is
-'²Î¿¼"RD_TOLLGATE"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE"';
 
 comment on column RD_TOLLGATE_COST.OUT_TOLLGATE is
-'²Î¿¼"RD_TOLLGATE"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE"';
 
 comment on column RD_TOLLGATE_COST.VEHICLE_CLASS is
-'°´ÕÕ½»Í¨²¿ÊÕ·Ñ¹«Â·³µÁ¾Í¨ÐÐ·Ñ³µÐÍ·ÖÀà±ê×¼,·ÖÎª1~5 Àà,';
+'ï¿½ï¿½ï¿½Õ½ï¿½Í¨ï¿½ï¿½ï¿½Õ·Ñ¹ï¿½Â·ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ð·Ñ³ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½×¼,ï¿½ï¿½Îª1~5 ï¿½ï¿½,';
 
 comment on column RD_TOLLGATE_COST.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TOLLGATE_COST.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE_FEE                                       */
@@ -18547,25 +18547,25 @@ create table RD_TOLLGATE_FEE  (
 );
 
 comment on table RD_TOLLGATE_FEE is
-'[180]½öÓÃÓÚÔÚÏß±à¼­Æ½Ì¨';
+'[180]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß±à¼­Æ½Ì¨';
 
 comment on column RD_TOLLGATE_FEE.TOLLCOST_ID is
-'[180A]Ö÷¼ü';
+'[180A]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_FEE.S_TOLL_OLD is
-'È¡×Ô"»ù´¡Êý¾Ý±í"';
+'È¡ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½Ý±ï¿½"';
 
 comment on column RD_TOLLGATE_FEE.E_TOLL_OLD is
-'È¡×Ô"»ù´¡Êý¾Ý±í"';
+'È¡ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½Ý±ï¿½"';
 
 comment on column RD_TOLLGATE_FEE.S_MAPPINGID is
-'²Î¿¼"RD_TOLLGATE_MAPPING"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE_MAPPING"';
 
 comment on column RD_TOLLGATE_FEE.E_MAPPINGID is
-'²Î¿¼"RD_TOLLGATE_MAPPING"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE_MAPPING"';
 
 comment on column RD_TOLLGATE_FEE.VEHICLE_CLASS is
-'°´ÕÕ½»Í¨²¿ÊÕ·Ñ¹«Â·³µÁ¾Í¨ÐÐ·Ñ³µÐÍ·ÖÀà±ê×¼,·ÖÎª1~5 Àà,';
+'ï¿½ï¿½ï¿½Õ½ï¿½Í¨ï¿½ï¿½ï¿½Õ·Ñ¹ï¿½Â·ï¿½ï¿½ï¿½ï¿½Í¨ï¿½Ð·Ñ³ï¿½ï¿½Í·ï¿½ï¿½ï¿½ï¿½×¼,ï¿½ï¿½Îª1~5 ï¿½ï¿½,';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE_MAPPING                                   */
@@ -18585,25 +18585,25 @@ create table RD_TOLLGATE_MAPPING  (
 );
 
 comment on table RD_TOLLGATE_MAPPING is
-'[180]½öÓÃÓÚÔÚÏß±à¼­Æ½Ì¨';
+'[180]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß±à¼­Æ½Ì¨';
 
 comment on column RD_TOLLGATE_MAPPING.MAPPING_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_MAPPING.SE_TOLL_OLD is
-'È¡×Ô"»ù´¡Êý¾Ý±í"';
+'È¡ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½Ý±ï¿½"';
 
 comment on column RD_TOLLGATE_MAPPING.SE_TOLL_NEW is
-'Ô­Ê¼ÆðµãºÍÖÕµã+ÐòºÅ(ÏµÍ³´Ó1¿ªÊ¼ÒÀ´ÎµÝÔö±àºÅ£©';
+'Ô­Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½Õµï¿½+ï¿½ï¿½ï¿½(ÏµÍ³ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½Å£ï¿½';
 
 comment on column RD_TOLLGATE_MAPPING.GDB_TOLL_PID is
-'²Î¿¼"RD_TOLLGATE"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE"';
 
 comment on column RD_TOLLGATE_MAPPING.GDB_TOLL_NAME is
-'²Î¿¼"RD_TOLLGATE_NAME"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE_NAME"';
 
 comment on column RD_TOLLGATE_MAPPING.GDB_TOLL_NODEID is
-'²Î¿¼"RD_TOLLGATE"ÖÐµÄ"NODE_PID"';
+'ï¿½Î¿ï¿½"RD_TOLLGATE"ï¿½Ðµï¿½"NODE_PID"';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE_NAME                                      */
@@ -18627,25 +18627,25 @@ create table RD_TOLLGATE_NAME  (
 );
 
 comment on column RD_TOLLGATE_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"RD_TOLLGATE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_TOLLGATE"';
 
 comment on column RD_TOLLGATE_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TOLLGATE_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TOLLGATE_PASSAGE                                   */
@@ -18667,36 +18667,36 @@ create table RD_TOLLGATE_PASSAGE  (
 );
 
 comment on table RD_TOLLGATE_PASSAGE is
-'¼ÇÂ¼Ã¿Ò»¸öÍ¨µÀµÄÊÕ·Ñ·½Ê½,Áì¿¨·½Ê½ºÍ³µÁ¾ÀàÐÍ';
+'ï¿½ï¿½Â¼Ã¿Ò»ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½Õ·Ñ·ï¿½Ê½,ï¿½ì¿¨ï¿½ï¿½Ê½ï¿½Í³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_PASSAGE.PID is
-'Íâ¼ü,ÒýÓÃ"RD_TOLLGATE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_TOLLGATE"';
 
 comment on column RD_TOLLGATE_PASSAGE.SEQ_NUM is
-'ÊÕ·ÑÕ¾½øÈëLink´Ó×óµ½ÓÒµÄÍ¨µÀÐòºÅ,ÒÀ´Î´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½Õ·ï¿½Õ¾ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½Òµï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Î´ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_PASSAGE.TOLL_FORM is
-'²ÉÓÃ8bit ±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~7bit,Ã¿bit ±íÊ¾Ò»ÖÖ·½Ê½ÀàÐÍ(ÈçÏÂ),¸³ÖµÎª0/1 ·Ö±ð±íÊ¾ÎÞ/ÓÐ,Èç:00000110 ±íÊ¾ÏÖ½ðºÍÒøÐÐ¿¨
-µÚ0bit:ETC
-µÚ1bit:ÏÖ½ð
-µÚ2bit: ÒøÐÐ¿¨(½è¼Ç¿¨)
-µÚ3bit:ÐÅÓÃ¿¨
-µÚ4bit:IC ¿¨
-µÚ5bit:Ô¤¸¶¿¨
-Èç¹ûËùÓÐbit Î»¾ùÎª0,±íÊ¾Î´µ÷²é
-×¢:µ±ÊÕ·Ñ·½Ê½Îª"ETC"Ê±,²»ÔÊÐíÉèÖÃÆäËû·½Ê½';
+'ï¿½ï¿½ï¿½ï¿½8bit ï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~7bit,Ã¿bit ï¿½ï¿½Ê¾Ò»ï¿½Ö·ï¿½Ê½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1 ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½:00000110 ï¿½ï¿½Ê¾ï¿½Ö½ï¿½ï¿½ï¿½ï¿½ï¿½Ð¿ï¿½
+ï¿½ï¿½0bit:ETC
+ï¿½ï¿½1bit:ï¿½Ö½ï¿½
+ï¿½ï¿½2bit: ï¿½ï¿½ï¿½Ð¿ï¿½(ï¿½ï¿½Ç¿ï¿½)
+ï¿½ï¿½3bit:ï¿½ï¿½ï¿½Ã¿ï¿½
+ï¿½ï¿½4bit:IC ï¿½ï¿½
+ï¿½ï¿½5bit:Ô¤ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bit Î»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½
+×¢:ï¿½ï¿½ï¿½Õ·Ñ·ï¿½Ê½Îª"ETC"Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½';
 
 comment on column RD_TOLLGATE_PASSAGE.CARD_TYPE is
-'Ã¿¸öÍ¨µÀµÄÁì¿¨·½Ê½,ÈçETC,ÈË¹¤,×ÔÖúµÈ';
+'Ã¿ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½ï¿½ì¿¨ï¿½ï¿½Ê½,ï¿½ï¿½ETC,ï¿½Ë¹ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TOLLGATE_PASSAGE.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_TOLLGATE_PASSAGE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TOLLGATE_PASSAGE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_TRAFFICSIGNAL                                      */
@@ -18725,32 +18725,32 @@ create table RD_TRAFFICSIGNAL  (
 );
 
 comment on column RD_TRAFFICSIGNAL.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TRAFFICSIGNAL.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_TRAFFICSIGNAL.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_TRAFFICSIGNAL.LOCATION is
-'[172U]²ÉÓÃ3bit±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~2bit,Ã¿bit±íÊ¾Ò»¸öÎ»ÖÃ(ÈçÏÂ),¸³ÖµÎª0/1·Ö±ð±íÊ¾·ñ/ÊÇ,Èç: 101±íÊ¾×óºÍÉÏ
-µÚ0bit:×ó(Left)
-µÚ1bit:ÓÒ(Right)
-µÚ2bit:ÉÏ(Overhead)
-Èç¹ûËùÓÐbitÎ»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'[172U]ï¿½ï¿½ï¿½ï¿½3bitï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~2bit,Ã¿bitï¿½ï¿½Ê¾Ò»ï¿½ï¿½Î»ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½: 101ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½ï¿½(Left)
+ï¿½ï¿½1bit:ï¿½ï¿½(Right)
+ï¿½ï¿½2bit:ï¿½ï¿½(Overhead)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bitÎ»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_TRAFFICSIGNAL.FLAG is
-'ÊÇ·ñÊÜÐÅºÅµÆ¿ØÖÆ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ÅºÅµÆ¿ï¿½ï¿½ï¿½';
 
 comment on column RD_TRAFFICSIGNAL.TYPE is
-'»ú¶¯³µÐÅºÅµÆ,³µµÀÐÅºÅµÆ,·½ÏòÖ¸Ê¾µÆµÈ';
+'ï¿½ï¿½ï¿½ÅºÅµï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ÅºÅµï¿½,ï¿½ï¿½ï¿½ï¿½Ö¸Ê¾ï¿½Æµï¿½';
 
 comment on column RD_TRAFFICSIGNAL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_TRAFFICSIGNAL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VARIABLE_SPEED                                     */
@@ -18786,26 +18786,26 @@ comment on table RD_VARIABLE_SPEED is
 '[170]';
 
 comment on column RD_VARIABLE_SPEED.VSPEED_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VARIABLE_SPEED.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_VARIABLE_SPEED.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_VARIABLE_SPEED.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_VARIABLE_SPEED.LOCATION is
-'[172U]²ÉÓÃ3bit±íÊ¾,´ÓÓÒµ½×óÒÀ´ÎÎª0~2bit,Ã¿bit±íÊ¾Ò»¸öÎ»ÖÃ(ÈçÏÂ),¸³ÖµÎª0/1·Ö±ð±íÊ¾·ñ/ÊÇ,Èç: 101±íÊ¾×óºÍÉÏ
-µÚ0bit:×ó(Left)
-µÚ1bit:ÓÒ(Right)
-µÚ2bit:ÉÏ(Overhead)
-Èç¹ûËùÓÐbitÎ»¾ùÎª0,±íÊ¾Î´µ÷²é';
+'[172U]ï¿½ï¿½ï¿½ï¿½3bitï¿½ï¿½Ê¾,ï¿½ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª0~2bit,Ã¿bitï¿½ï¿½Ê¾Ò»ï¿½ï¿½Î»ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½),ï¿½ï¿½ÖµÎª0/1ï¿½Ö±ï¿½ï¿½Ê¾ï¿½ï¿½/ï¿½ï¿½,ï¿½ï¿½: 101ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½
+ï¿½ï¿½0bit:ï¿½ï¿½(Left)
+ï¿½ï¿½1bit:ï¿½ï¿½(Right)
+ï¿½ï¿½2bit:ï¿½ï¿½(Overhead)
+ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½bitÎ»ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾Î´ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VARIABLE_SPEED.SPEED_VALUE is
-'µ¥Î»:°ÙÃ×/Ê±,ÖµÓò: 1~9999';
+'ï¿½ï¿½Î»:ï¿½ï¿½ï¿½ï¿½/Ê±,Öµï¿½ï¿½: 1~9999';
 
 comment on column RD_VARIABLE_SPEED.SPEED_TYPE is
 '[170][172U]';
@@ -18814,16 +18814,16 @@ comment on column RD_VARIABLE_SPEED.SPEED_DEPENDENT is
 '[170][172U]';
 
 comment on column RD_VARIABLE_SPEED.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_VARIABLE_SPEED.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_VARIABLE_SPEED.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VARIABLE_SPEED.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VARIABLE_SPEED_VIA                                 */
@@ -18844,16 +18844,16 @@ create table RD_VARIABLE_SPEED_VIA  (
 );
 
 comment on column RD_VARIABLE_SPEED_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_VARIABLE_SPEED_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VARIABLE_SPEED_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VARIABLE_SPEED_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VIRCONNECT                                         */
@@ -18878,28 +18878,28 @@ create table RD_VIRCONNECT  (
 );
 
 comment on column RD_VIRCONNECT.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT.TYPE is
-'Ö±ÌÝ,·öÌÝ,½¨ÖþÎï,¹«Ô°,¹ã³¡,½ÖµÀµÈ';
+'Ö±ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ô°,ï¿½ã³¡,ï¿½Öµï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT.OBSTACLE_FREE is
-'[180U]ÊÇ·ñ´æÔÚÎÞÕÏ°­Í¨µÀ';
+'[180U]ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½Í¨ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT.FEE is
-'Ãâ·Ñ,ÊÕ·Ñ';
+'ï¿½ï¿½ï¿½,ï¿½Õ·ï¿½';
 
 comment on column RD_VIRCONNECT.STREET_LIGHT is
-'Î´µ÷²é,ÓÐ,ÎÞ,»ò²»Ó¦ÓÃ';
+'Î´ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½Ó¦ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_VIRCONNECT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VIRCONNECT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VIRCONNECT_NAME                                    */
@@ -18923,25 +18923,25 @@ create table RD_VIRCONNECT_NAME  (
 );
 
 comment on column RD_VIRCONNECT_NAME.NAME_ID is
-'[170]Ö÷¼ü';
+'[170]ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT_NAME.NAME_GROUPID is
-'[171U][170]´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'[171U][170]ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT_NAME.PID is
-'Íâ¼ü,ÒýÓÃ"RD_VIRCONNECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_VIRCONNECT"';
 
 comment on column RD_VIRCONNECT_NAME.LANG_CODE is
-'¼òÌåÖÐÎÄ,·±ÌåÖÐÎÄ,Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT_NAME.PHONETIC is
-'[171U]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VIRCONNECT_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VIRCONNECT_TRANSIT                                 */
@@ -18968,28 +18968,28 @@ create table RD_VIRCONNECT_TRANSIT  (
 );
 
 comment on table RD_VIRCONNECT_TRANSIT is
-'¼ÇÂ¼ÐéÄâÁ¬½ÓÖÐÈÎÒâÁ½µãÖ®¼äµÄÁ¬Í¨¹ØÏµ';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½Ïµ';
 
 comment on column RD_VIRCONNECT_TRANSIT.PID is
-'Íâ¼ü,ÒýÓÃ"RD_VIRCONNECT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_VIRCONNECT"';
 
 comment on column RD_VIRCONNECT_TRANSIT.FIR_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_VIRCONNECT_TRANSIT.SEN_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_VIRCONNECT_TRANSIT.TRANSIT is
-'½ÚµãÒ»µ½½Úµã¶þµÄË³Äæ·½Ïò»ò²»¿ÉÍ¨ÐÐÐÅÏ¢';
+'ï¿½Úµï¿½Ò»ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½Ë³ï¿½æ·½ï¿½ï¿½ò²»¿ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column RD_VIRCONNECT_TRANSIT.SLOPE is
-'ÉÏÆÂ,ÏÂÆÂ';
+'ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VIRCONNECT_TRANSIT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VIRCONNECT_TRANSIT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VOICEGUIDE                                         */
@@ -19011,19 +19011,19 @@ create table RD_VOICEGUIDE  (
 );
 
 comment on column RD_VOICEGUIDE.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE.IN_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_VOICEGUIDE.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_VOICEGUIDE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VOICEGUIDE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VOICEGUIDE_DETAIL                                  */
@@ -19053,25 +19053,25 @@ create table RD_VOICEGUIDE_DETAIL  (
 );
 
 comment on column RD_VOICEGUIDE_DETAIL.DETAIL_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_DETAIL.VOICEGUIDE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_VOICEGUIDE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_VOICEGUIDE"';
 
 comment on column RD_VOICEGUIDE_DETAIL.OUT_LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_VOICEGUIDE_DETAIL.GUIDE_CODE is
-'ÓÒÐ±Ç°,ÓÒ×ª,ÓÒºó×ª,µ÷Í·,×óºó×ªµÈÓïÒôÌáÊ¾ÄÚÈÝ';
+'ï¿½ï¿½Ð±Ç°,ï¿½ï¿½×ª,ï¿½Òºï¿½×ª,ï¿½ï¿½Í·,ï¿½ï¿½ï¿½×ªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_DETAIL.GUIDE_TYPE is
-'Æ½Ãæ,¸ß¼Ü,µØÏÂµÈÓïÒôÀàÐÍ';
+'Æ½ï¿½ï¿½,ï¿½ß¼ï¿½,ï¿½ï¿½ï¿½Âµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_DETAIL.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VOICEGUIDE_DETAIL.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_VOICEGUIDE_VIA                                     */
@@ -19093,26 +19093,26 @@ create table RD_VOICEGUIDE_VIA  (
 );
 
 comment on table RD_VOICEGUIDE_VIA is
-'(1)±í´ïÍ¬Ò»½øÈëLinkºÍÍË³öLinkÖ®¼äµÄ¶à×é¾­¹ýLink,¶øÇÒ¾­¹ýLink²»°üÀ¨½øÈëLinkºÍÍË³öLink
-(2)NaviMap×÷ÒµÖÐ,µ±½øÈëºÍÍË³öLinkÖ±½ÓÔÚÍ¬Ò»Â·¿Ú¹Ò½ÓÊ±,²»ÖÆ×÷¾­¹ýLink;·ñÔò(ÈçÏßÏß¹ØÏµ),ÐèÒªÖÆ×÷¾­¹ýLink';
+'(1)ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½LinkÖ®ï¿½ï¿½Ä¶ï¿½ï¿½é¾­ï¿½ï¿½Link,ï¿½ï¿½ï¿½Ò¾ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ë³ï¿½Link
+(2)NaviMapï¿½ï¿½Òµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½LinkÖ±ï¿½ï¿½ï¿½ï¿½Í¬Ò»Â·ï¿½Ú¹Ò½ï¿½Ê±,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link;ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ß¹ï¿½Ïµ),ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Link';
 
 comment on column RD_VOICEGUIDE_VIA.DETAIL_ID is
-'Íâ¼ü,ÒýÓÃ"RD_VOICEGUIDE_DETAIL"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_VOICEGUIDE_DETAIL"';
 
 comment on column RD_VOICEGUIDE_VIA.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK",½øÈëºÍÍË³öLink ³ýÍâ';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK",ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½Link ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_VIA.GROUP_ID is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_VIA.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_VOICEGUIDE_VIA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_VOICEGUIDE_VIA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RD_WARNINGINFO                                        */
@@ -19140,37 +19140,37 @@ create table RD_WARNINGINFO  (
 );
 
 comment on column RD_WARNINGINFO.PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_WARNINGINFO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RD_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_LINK"';
 
 comment on column RD_WARNINGINFO.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RD_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RD_NODE"';
 
 comment on column RD_WARNINGINFO.TYPE_CODE is
-'²Î¿¼"RD_SIGNPOST_CODE"';
+'ï¿½Î¿ï¿½"RD_SIGNPOST_CODE"';
 
 comment on column RD_WARNINGINFO.VALID_DIS is
-'Êµ¼ÊÔ¤¾¯¾àÀë,µ¥Î»:Ã×';
+'Êµï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_WARNINGINFO.WARN_DIS is
-'ÌáÇ°Ô¤¸æ¾àÀë,Ä¿Ç°Ö»ÓÃÓÚÌúÂ·µÀ¿Ú,µ¥Î»:Ã×';
+'ï¿½ï¿½Ç°Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½,Ä¿Ç°Ö»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RD_WARNINGINFO.TIME_DOMAIN is
-'¸ñÊ½²Î¿¼"Ê±¼äÓò"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"Ê±ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_WARNINGINFO.VEHICLE is
-'¸ñÊ½²Î¿¼"³µÁ¾ÀàÐÍ"';
+'ï¿½ï¿½Ê½ï¿½Î¿ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½"';
 
 comment on column RD_WARNINGINFO.DESCRIPT is
-'¼ÇÂ¼ÏÖ³¡±êÅÆÖÐµÄËµÃ÷ÎÄ×Ö';
+'ï¿½ï¿½Â¼ï¿½Ö³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ðµï¿½Ëµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RD_WARNINGINFO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RD_WARNINGINFO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RI_FEATURE                                            */
@@ -19222,126 +19222,126 @@ comment on table RI_FEATURE is
 '[173U]DATA_LOG';
 
 comment on column RI_FEATURE.DATA_LOG_ID is
-'Êý¾ÝÂÄÀúID';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ID';
 
 comment on column RI_FEATURE.VERSION_ID is
-'°æ±¾±àºÅ';
+'ï¿½æ±¾ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.COMMITED_STATE_ID is
-'ÂÄÀúÌá½»ºó£¬µ±Ç°×´Ì¬Öµ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½á½»ï¿½ó£¬µï¿½Ç°×´Ì¬Öµ';
 
 comment on column RI_FEATURE.ID is
-'ÂÄÀú±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.TASK_ID is
-'ÈÎÎñ¹ÜÀíÆ½Ì¨ÈÎÎñºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.OPERATE_ID is
-'²Ù×÷ºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.OPERATE_NAME is
-'Èç´ò¶ÏLINK£¬ÐÂÔö½»ÏÞ';
+'ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.INNER_ID is
-'×éÄÚ±àºÅ';
+'ï¿½ï¿½ï¿½Ú±ï¿½ï¿½';
 
 comment on column RI_FEATURE.TABLE_NAME is
-'µ±Ç°±íÃû';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.OBJECT_NAME is
-'µ±Ç°¶ÔÏóµÄ¶ÔÏóÃû';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.OBJECT_ID is
-'µ±Ç°¶ÔÏóµÄPID£¬²»ÄÜÎª¿Õ';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column RI_FEATURE.DML_TYPE is
-'0-Ôö¡¢1-¸Ä¡¢2-É¾';
+'0-ï¿½ï¿½ï¿½ï¿½1-ï¿½Ä¡ï¿½2-É¾';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT1 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT1 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.GEOMETRY is
-'ÓÃÓÚÌáÈ¡×÷Òµ·¶Î§ÄÚµÄÂÄÀú£¬¼õÉÙ²»ÔÚ±¾Í¼·ùÄÚµÄÊý¾Ý';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Òµï¿½ï¿½Î§ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù²ï¿½ï¿½Ú±ï¿½Í¼ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.UUID is
-'¼ÇÂ¼Ã¿Ìõ¼ÇÂ¼µÄÎ¨Ò»±êÊ¾';
+'ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½Î¨Ò»ï¿½ï¿½Ê¾';
 
 comment on column RI_FEATURE.HIS_TYPE is
-'1-Õý³£ÂÄÀú
-2-Ä¸¿â³·ÂÄÀú
-3-±¾µØ³·ÏúÂÄÀú
-4-Ä¸¿âÖØ×öÂÄÀú
-5-ÎÞÐ§ÂÄÀú
-6-ÒÑÈë¿âÂÄÀú';
+'1-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2-Ä¸ï¿½â³·ï¿½ï¿½ï¿½ï¿½
+3-ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4-Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+5-ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½
+6-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.REF_ID is
-'¹ØÁªÂÄÀú±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CHANG_COL is
-'ÄÄ¼¸¸ö×Ö¶Î±ä»¯ÁË';
+'ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Ö¶Î±ä»¯ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT2 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT3 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT4 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT5 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT6 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT7 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT8 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT9 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_CONTENT10 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT2 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT3 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT4 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT5 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT6 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT7 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT8 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT9 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_CONTENT10 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.PREVIOUS_GEOMETRY is
-'±ä»¯Ç°¼¸ºÎ';
+'ï¿½ä»¯Ç°ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_FEATURE.CURRENT_GEOMETRY is
-'±ä»¯ºó¼¸ºÎ';
+'ï¿½ä»¯ï¿½ó¼¸ºï¿½';
 
 /*==============================================================*/
 /* Index: IDX_DATA_LOG_VERSION                                  */
@@ -19411,132 +19411,132 @@ comment on table RI_OPERATION is
 '[172U]RAW_OPERATE_LOG';
 
 comment on column RI_OPERATION.OPERATE_LOG_ID is
-'×÷ÒµÂÄÀúID';
+'ï¿½ï¿½Òµï¿½ï¿½ï¿½ï¿½ID';
 
 comment on column RI_OPERATION.OPERATE_STATE_ID is
-'Ìá½»×´Ì¬ºÅ';
+'ï¿½á½»×´Ì¬ï¿½ï¿½';
 
 comment on column RI_OPERATION.VERSION_ID is
-'°æ±¾ºÅ';
+'ï¿½æ±¾ï¿½ï¿½';
 
 comment on column RI_OPERATION.ID is
-'ÂÄÀú±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.TASK_ID is
-'ÈÎÎñ¹ÜÀíÆ½Ì¨ÈÎÎñºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ½Ì¨ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OPERATE_ID is
-'²Ù×÷ºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OPERATE_NAME is
-'Èç´ò¶ÏLINK£¬ÐÂÔö½»ÏÞ';
+'ï¿½ï¿½ï¿½ï¿½LINKï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.INNER_ID is
-'×éÄÚ±àºÅ';
+'ï¿½ï¿½ï¿½Ú±ï¿½ï¿½';
 
 comment on column RI_OPERATION.TABLE_NAME is
-'µ±Ç°±íÃû';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OBJECT_NAME is
-'µ±Ç°¶ÔÏóµÄ¶ÔÏóÃû';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½Ä¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OBJECT_ID is
-'µ±Ç°¶ÔÏóµÄPID£¬²»ÄÜÎª¿Õ';
+'ï¿½ï¿½Ç°ï¿½ï¿½ï¿½ï¿½ï¿½PIDï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½';
 
 comment on column RI_OPERATION.DML_TYPE is
-'0-Ôö¡¢1-¸Ä¡¢2-É¾';
+'0-ï¿½ï¿½ï¿½ï¿½1-ï¿½Ä¡ï¿½2-É¾';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT1 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT1 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.GEOMETRY is
-'ÓÃÓÚÌáÈ¡×÷Òµ·¶Î§ÄÚµÄÂÄÀú£¬¼õÉÙ²»ÔÚ±¾Í¼·ùÄÚµÄÊý¾Ý';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡ï¿½ï¿½Òµï¿½ï¿½Î§ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ù²ï¿½ï¿½Ú±ï¿½Í¼ï¿½ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.UUID is
-'¼ÇÂ¼Ã¿Ìõ¼ÇÂ¼µÄÎ¨Ò»±êÊ¾';
+'ï¿½ï¿½Â¼Ã¿ï¿½ï¿½ï¿½ï¿½Â¼ï¿½ï¿½Î¨Ò»ï¿½ï¿½Ê¾';
 
 comment on column RI_OPERATION.HIS_TYPE is
-'1-Õý³£ÂÄÀú
-2-Ä¸¿â³·ÂÄÀú
-3-±¾µØ³·ÏúÂÄÀú
-4-Ä¸¿âÖØ×öÂÄÀú
-5-ÎÞÐ§ÂÄÀú
-6-ÒÑÈë¿âÂÄÀú';
+'1-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+2-Ä¸ï¿½â³·ï¿½ï¿½ï¿½ï¿½
+3-ï¿½ï¿½ï¿½Ø³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+4-Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+5-ï¿½ï¿½Ð§ï¿½ï¿½ï¿½ï¿½
+6-ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.REF_ID is
-'¹ØÁªÂÄÀú±àºÅ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CHANG_COL is
-'ÄÄ¼¸¸ö×Ö¶Î±ä»¯ÁË';
+'ï¿½Ä¼ï¿½ï¿½ï¿½ï¿½Ö¶Î±ä»¯ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT2 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT3 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT4 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT5 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT6 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT7 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT8 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT9 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.PREVIOUS_CONTENT10 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT2 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT3 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT4 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT5 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT6 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT7 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT8 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT9 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.CURRENT_CONTENT10 is
-'XMLÈçÎªÔöÔòÎª¿Õ¡¢Îª¸ÄÔò¼ÇÂ¼Òª¸Ä×Ö¶ÎÎ´¸ÄÇ°µÄÖµ¡¢ÎªÉ¾Ê±¼ÇÂ¼Êý¾ÝµÄÈ«×Ö¶ÎÄÚÈÝ';
+'XMLï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½Îªï¿½Õ¡ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½Â¼Òªï¿½ï¿½ï¿½Ö¶ï¿½Î´ï¿½ï¿½Ç°ï¿½ï¿½Öµï¿½ï¿½ÎªÉ¾Ê±ï¿½ï¿½Â¼ï¿½ï¿½Ýµï¿½È«ï¿½Ö¶ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OPERATE_DESC is
-'²Ù×÷ÃèÊö';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RI_OPERATION.OPERATION_RUNTIME is
-'²Ù×÷·¢ÉúÊ±¼ä';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½';
 
 comment on column RI_OPERATION.FEATURE_RID is
-'Êý¾ÝÐÐID';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ID';
 
 comment on column RI_OPERATION.FEATURE_BLOB is
-'ÂÄÀú¶þ½øÖÆ±íÊ¾';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ±ï¿½Ê¾';
 
 /*==============================================================*/
 /* Index: IDX_RAW_TASK                                          */
@@ -19567,13 +19567,13 @@ create table RW_FEATURE  (
 );
 
 comment on column RW_FEATURE.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_FEATURE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_FEATURE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_FEATURE_20W                                        */
@@ -19589,13 +19589,13 @@ create table RW_FEATURE_20W  (
 );
 
 comment on column RW_FEATURE_20W.FEATURE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_FEATURE_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_FEATURE_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_NODE                                               */
@@ -19618,25 +19618,25 @@ create table RW_NODE  (
 );
 
 comment on column RW_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_NODE.KIND is
-'Æ½Ãæ½»²æµã»òLinkÊôÐÔ±ä»¯µã';
+'Æ½ï¿½æ½»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ô±ä»¯ï¿½ï¿½';
 
 comment on column RW_NODE.FORM is
-'ÌúÂ·µÀ¿Ú,ÇÅ,ËíµÀ,Í¼Àªµã,ÌúÂ·µÀ¿ÚµÈ';
+'ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½ï¿½,Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½Úµï¿½';
 
 comment on column RW_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RW_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_LINK                                               */
@@ -19673,44 +19673,44 @@ create table RW_LINK  (
 );
 
 comment on column RW_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK.FEATURE_PID is
-'²Î¿¼"RW_FEATURE"';
+'ï¿½Î¿ï¿½"RW_FEATURE"';
 
 comment on column RW_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE"';
 
 comment on column RW_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE"';
 
 comment on column RW_LINK.KIND is
-'ÌúÂ·,´ÅÐü¸¡,Çá¹ì/µØÌú';
+'ï¿½ï¿½Â·,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK.FORM is
-'ÇÅ»òËíµÀ';
+'ï¿½Å»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RW_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column RW_LINK.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 ÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column RW_LINK.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 ÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column RW_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RW_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_NODE_20W                                           */
@@ -19733,25 +19733,25 @@ create table RW_NODE_20W  (
 );
 
 comment on column RW_NODE_20W.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_NODE_20W.KIND is
-'Æ½Ãæ½»²æµã»òLinkÊôÐÔ±ä»¯µã';
+'Æ½ï¿½æ½»ï¿½ï¿½ï¿½ï¿½Linkï¿½ï¿½ï¿½Ô±ä»¯ï¿½ï¿½';
 
 comment on column RW_NODE_20W.FORM is
-'ÌúÂ·µÀ¿Ú,ÇÅ,ËíµÀ,Í¼Àªµã,ÌúÂ·µÀ¿ÚµÈ';
+'ï¿½ï¿½Â·ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½,ï¿½ï¿½ï¿½,Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Â·ï¿½ï¿½ï¿½Úµï¿½';
 
 comment on column RW_NODE_20W.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_NODE_20W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RW_NODE_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_NODE_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_LINK_20W                                           */
@@ -19788,44 +19788,44 @@ create table RW_LINK_20W  (
 );
 
 comment on column RW_LINK_20W.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK_20W.FEATURE_PID is
-'²Î¿¼"RW_FEATURE_20W"';
+'ï¿½Î¿ï¿½"RW_FEATURE_20W"';
 
 comment on column RW_LINK_20W.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE_20W"';
 
 comment on column RW_LINK_20W.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE_20W"';
 
 comment on column RW_LINK_20W.KIND is
-'ÌúÂ·,´ÅÐü¸¡,Çá¹ì/µØÌú';
+'ï¿½ï¿½Â·,ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK_20W.FORM is
-'ÇÅ»òËíµÀ';
+'ï¿½Å»ï¿½ï¿½ï¿½ï¿½';
 
 comment on column RW_LINK_20W.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column RW_LINK_20W.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column RW_LINK_20W.SCALE is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 ÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column RW_LINK_20W.DETAIL_FLAG is
-'×¢:¸Ã×Ö¶Î½öÓÃÓÚ2.5 ÍòÊý¾Ý,20 ÍòÊý¾Ý²»ÐèÒª';
+'×¢:ï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½ï¿½ï¿½ï¿½2.5 ï¿½ï¿½ï¿½ï¿½ï¿½,20 ï¿½ï¿½ï¿½ï¿½Ý²ï¿½ï¿½ï¿½Òª';
 
 comment on column RW_LINK_20W.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column RW_LINK_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_LINK_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_LINK_NAME                                          */
@@ -19843,16 +19843,16 @@ create table RW_LINK_NAME  (
 );
 
 comment on column RW_LINK_NAME.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RW_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_LINK"';
 
 comment on column RW_LINK_NAME.NAME_GROUPID is
-'[171U][170]²Î¿¼µÀÂ·Ãû¿â"RD_NAME"';
+'[171U][170]ï¿½Î¿ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½"RD_NAME"';
 
 comment on column RW_LINK_NAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_LINK_NAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_LINK_NAME_20W                                      */
@@ -19873,16 +19873,16 @@ comment on table RW_LINK_NAME_20W is
 '[170]';
 
 comment on column RW_LINK_NAME_20W.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"RW_LINK_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_LINK_20W"';
 
 comment on column RW_LINK_NAME_20W.NAME_GROUPID is
-'[171U]²Î¿¼µÀÂ·Ãû¿â"RD_NAME"';
+'[171U]ï¿½Î¿ï¿½ï¿½ï¿½Â·ï¿½ï¿½ï¿½"RD_NAME"';
 
 comment on column RW_LINK_NAME_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_LINK_NAME_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_NODE_MESH                                          */
@@ -19900,13 +19900,13 @@ create table RW_NODE_MESH  (
 );
 
 comment on column RW_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE"';
 
 comment on column RW_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: RW_NODE_MESH_20W                                      */
@@ -19924,13 +19924,13 @@ create table RW_NODE_MESH_20W  (
 );
 
 comment on column RW_NODE_MESH_20W.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"RW_NODE_20W"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"RW_NODE_20W"';
 
 comment on column RW_NODE_MESH_20W.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column RW_NODE_MESH_20W.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TB_ABSTRACT_INFO                                      */
@@ -20007,16 +20007,16 @@ create table TB_ABSTRACT_INFO  (
 );
 
 comment on column TB_ABSTRACT_INFO.INFO_UUID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TB_ABSTRACT_INFO.HISTORY_STEP is
-'Ä¬ÈÏÎª0,±íÊ¾Õý³£ÐÅÏ¢,·Ç0ÎªÂÄÀúÐÅÏ¢';
+'Ä¬ï¿½ï¿½Îª0,ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½Ï¢,ï¿½ï¿½0Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï¢';
 
 comment on column TB_ABSTRACT_INFO.CONTENT_MD5 is
-'ÓÃÓÚ±È½Ï';
+'ï¿½ï¿½ï¿½Ú±È½ï¿½';
 
 comment on column TB_ABSTRACT_INFO.ADMIN_CODE_SIX_BIT is
-'ÔÚ·¢²¼Ê±ÉèÖÃ¸Ã±àÂë';
+'ï¿½Ú·ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½Ã¸Ã±ï¿½ï¿½ï¿½';
 
 /*==============================================================*/
 /* Table: TB_INTELLIGENCE                                       */
@@ -20070,7 +20070,7 @@ create table TB_INTELLIGENCE  (
 );
 
 comment on column TB_INTELLIGENCE.SPECIALCASE_ID is
-'Íâ¼ü,ÒýÓÃ"TB_ABSTRACT_INFO"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"TB_ABSTRACT_INFO"';
 
 /*==============================================================*/
 /* Table: TMC_AREA                                              */
@@ -20090,25 +20090,25 @@ create table TMC_AREA  (
 );
 
 comment on column TMC_AREA.TMC_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_AREA.LOCTABLE_ID is
-'²Î¿¼"TMC_LOCATION_CODE"';
+'ï¿½Î¿ï¿½"TMC_LOCATION_CODE"';
 
 comment on column TMC_AREA.LOC_CODE is
-'Óë"LOCTABLE_ID"ÁªºÏÊ¹ÓÃ';
+'ï¿½ï¿½"LOCTABLE_ID"ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½';
 
 comment on column TMC_AREA.TYPE_CODE is
-'TMCÎ»ÖÃ´úÂëÀà±ð(´óÐ´Ó¢ÎÄ°ë½Ç×ÖÄ¸,ÈçP,A,L),ÀàÐÍÒÔ¼°×ÓÀàÐÍ(Ó¢ÎÄ°ë½ÇÊý×Ö,Èç1,2µÈ)¹¹³ÉµÄ×Ö·û´®,Í¨¹ýÓ¢ÎÄ°ë½Ç¾äºÅ"."Á¬½Ó,ÈçA1.0±íÊ¾´óÖÞ,A5.1±íÊ¾º£ÑóµÈ';
+'TMCÎ»ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ð´Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½Ä¸,ï¿½ï¿½P,A,L),ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½1,2ï¿½ï¿½)ï¿½ï¿½ï¿½Éµï¿½ï¿½Ö·ï¿½,Í¨ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¾ï¿½ï¿½"."ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½A1.0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½,A5.1ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_AREA.UPAREA_TMC_ID is
-'[173sp1][170]²Î¿¼¡±TMC_AREA¡±µÄ¡±TMC_ID¡±';
+'[173sp1][170]ï¿½Î¿ï¿½ï¿½ï¿½TMC_AREAï¿½ï¿½ï¿½Ä¡ï¿½TMC_IDï¿½ï¿½';
 
 comment on column TMC_AREA.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_AREA.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_AREA_TRANSLATENAME                                */
@@ -20127,19 +20127,19 @@ create table TMC_AREA_TRANSLATENAME  (
 );
 
 comment on column TMC_AREA_TRANSLATENAME.TMC_ID is
-'Íâ¼ü,ÒýÓÃ"TMC_AREA"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"TMC_AREA"';
 
 comment on column TMC_AREA_TRANSLATENAME.TRANS_LANG is
-'¼òÌåÖÐÎÄ(´óÂ½),·±ÌåÖÐÎÄ(¸Û°Ä),Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â½),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Û°ï¿½),Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_AREA_TRANSLATENAME.PHONETIC is
-'[171U][170]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U][170]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_AREA_TRANSLATENAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_AREA_TRANSLATENAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_LINE                                              */
@@ -20163,37 +20163,37 @@ create table TMC_LINE  (
 );
 
 comment on table TMC_LINE is
-'¼ÇÂ¼TMCµÀÂ·ºÍÂ·¶ÎµÄÐÅÏ¢';
+'ï¿½ï¿½Â¼TMCï¿½ï¿½Â·ï¿½ï¿½Â·ï¿½Îµï¿½ï¿½ï¿½Ï¢';
 
 comment on column TMC_LINE.TMC_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_LINE.LOCTABLE_ID is
-'²Î¿¼"TMC_LOCATION_CODE"';
+'ï¿½Î¿ï¿½"TMC_LOCATION_CODE"';
 
 comment on column TMC_LINE.LOC_CODE is
-'Óë"LOCTABLE_ID"ÁªºÏÊ¹ÓÃ';
+'ï¿½ï¿½"LOCTABLE_ID"ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½';
 
 comment on column TMC_LINE.TYPE_CODE is
-'TMCÎ»ÖÃ´úÂëÀà±ð(´óÐ´Ó¢ÎÄ°ë½Ç×ÖÄ¸,ÈçP,A,L),ÀàÐÍÒÔ¼°×ÓÀàÐÍ(Ó¢ÎÄ°ë½ÇÊý×Ö,Èç1,2µÈ)¹¹³ÉµÄ×Ö·û´®,Í¨¹ýÓ¢ÎÄ°ë½Ç¾äºÅ"."Á¬½Ó,ÈçL1.0±íÊ¾µÀÂ·,L2.0±íÊ¾»·Â·µÈ';
+'TMCÎ»ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ð´Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½Ä¸,ï¿½ï¿½P,A,L),ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½1,2ï¿½ï¿½)ï¿½ï¿½ï¿½Éµï¿½ï¿½Ö·ï¿½,Í¨ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¾ï¿½ï¿½"."ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½L1.0ï¿½ï¿½Ê¾ï¿½ï¿½Â·,L2.0ï¿½ï¿½Ê¾ï¿½ï¿½Â·ï¿½ï¿½';
 
 comment on column TMC_LINE.AREA_TMC_ID is
-'[173sp1][170]²Î¿¼"TMC_AREA"µÄ"TMC_ID"';
+'[173sp1][170]ï¿½Î¿ï¿½"TMC_AREA"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_LINE.LOCOFF_POS is
-'[173sp1]²Î¿¼"TMC_LINE"µÄ"TMC_ID"';
+'[173sp1]ï¿½Î¿ï¿½"TMC_LINE"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_LINE.LOCOFF_NEG is
-'[173sp1]²Î¿¼"TMC_LINE"µÄ"TMC_ID"';
+'[173sp1]ï¿½Î¿ï¿½"TMC_LINE"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_LINE.UPLINE_TMC_ID is
-'[173sp1][170]²Î¿¼"TMC_LINE"µÄ"TMC_ID"';
+'[173sp1][170]ï¿½Î¿ï¿½"TMC_LINE"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_LINE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_LINE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_LINE_TRANSLATENAME                                */
@@ -20214,22 +20214,22 @@ create table TMC_LINE_TRANSLATENAME  (
 );
 
 comment on table TMC_LINE_TRANSLATENAME is
-'TMCµÀÂ·ºÍÂ·¶ÎµÄÒëÃû±í';
+'TMCï¿½ï¿½Â·ï¿½ï¿½Â·ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_LINE_TRANSLATENAME.TMC_ID is
-'Íâ¼ü,ÒýÓÃ"TMC_LINE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"TMC_LINE"';
 
 comment on column TMC_LINE_TRANSLATENAME.TRANS_LANG is
-'¼òÌåÖÐÎÄ(´óÂ½),·±ÌåÖÐÎÄ(¸Û°Ä),Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â½),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Û°ï¿½),Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_LINE_TRANSLATENAME.PHONETIC is
-'[171U][170]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U][170]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_LINE_TRANSLATENAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_LINE_TRANSLATENAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_POINT                                             */
@@ -20274,67 +20274,67 @@ create table TMC_POINT  (
 );
 
 comment on column TMC_POINT.TMC_ID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT.LOCTABLE_ID is
-'²Î¿¼"TMC_LOCATION_CODE"';
+'ï¿½Î¿ï¿½"TMC_LOCATION_CODE"';
 
 comment on column TMC_POINT.LOC_CODE is
-'Óë"LOCTABLE_ID"ÁªºÏÊ¹ÓÃ';
+'ï¿½ï¿½"LOCTABLE_ID"ï¿½ï¿½ï¿½ï¿½Ê¹ï¿½ï¿½';
 
 comment on column TMC_POINT.TYPE_CODE is
-'TMCÎ»ÖÃ´úÂëÀà±ð(´óÐ´Ó¢ÎÄ°ë½Ç×ÖÄ¸,ÈçP,A,L),ÀàÐÍÒÔ¼°×ÓÀàÐÍ(Ó¢ÎÄ°ë½ÇÊý×Ö,Èç1,2µÈ)¹¹³ÉµÄ×Ö·û´®,Í¨¹ýÓ¢ÎÄ°ë½Ç¾äºÅ"."Á¬½Ó,ÈçP1.0±íÊ¾Á¬½Óµã,L1.15±íÊ¾³ö¿ÚµÈ';
+'TMCÎ»ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Ð´Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½Ä¸,ï¿½ï¿½P,A,L),ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Ó¢ï¿½Ä°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½1,2ï¿½ï¿½)ï¿½ï¿½ï¿½Éµï¿½ï¿½Ö·ï¿½,Í¨ï¿½ï¿½Ó¢ï¿½Ä°ï¿½Ç¾ï¿½ï¿½"."ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½P1.0ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Óµï¿½,L1.15ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½Úµï¿½';
 
 comment on column TMC_POINT.IN_POS is
-'ÑØÕý·½Ïò½øÈëµÀÂ·';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·';
 
 comment on column TMC_POINT.IN_NEG is
-'ÑØ¸º·½Ïò½øÈëµÀÂ·';
+'ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â·';
 
 comment on column TMC_POINT.OUT_POS is
-'ÑØÕý·½ÏòÀë¿ªµÀÂ·';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¿ªï¿½ï¿½Â·';
 
 comment on column TMC_POINT.OUT_NEG is
-'ÑØ¸º·½ÏòÀë¿ªµÀÂ·';
+'ï¿½Ø¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¿ªï¿½ï¿½Â·';
 
 comment on column TMC_POINT.PRESENT_POS is
-'ÊÇ·ñ³öÏÖÔÚµÀÂ·µÄÕý·½ÏòÉÏ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Â·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT.PRESENT_NEG is
-'ÊÇ·ñ³öÏÖÔÚµÀÂ·µÄ¸º·½ÏòÉÏ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½Úµï¿½Â·ï¿½Ä¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT.LOCOFF_POS is
-'[173sp1]²Î¿¼"TMC_POINT"µÄ"TMC_ID"';
+'[173sp1]ï¿½Î¿ï¿½"TMC_POINT"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_POINT.LOCOFF_NEG is
-'[173sp1]²Î¿¼"TMC_POINT"µÄ"TMC_ID"';
+'[173sp1]ï¿½Î¿ï¿½"TMC_POINT"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_POINT.LINE_TMC_ID is
-'[173sp1][170]²Î¿¼"TMC_LINE"µÄ"TMC_ID"';
+'[173sp1][170]ï¿½Î¿ï¿½"TMC_LINE"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_POINT.AREA_TMC_ID is
-'[173sp1][170]²Î¿¼"TMC_AREA"µÄ"TMC_ID"';
+'[173sp1][170]ï¿½Î¿ï¿½"TMC_AREA"ï¿½ï¿½"TMC_ID"';
 
 comment on column TMC_POINT.JUNC_LOCCODE is
 '[173sp1]';
 
 comment on column TMC_POINT.URBAN is
-'ÊÇ·ñ³ÇÊÐÄÚ';
+'ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT.INTERUPT_ROAD is
-'ÊÇ·ñ´ò¶ÏµÀÂ·';
+'ï¿½Ç·ï¿½ï¿½Ïµï¿½Â·';
 
 comment on column TMC_POINT.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column TMC_POINT.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_POINT.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_POINT_TRANSLATENAME                               */
@@ -20355,19 +20355,19 @@ create table TMC_POINT_TRANSLATENAME  (
 );
 
 comment on column TMC_POINT_TRANSLATENAME.TMC_ID is
-'Íâ¼ü,ÒýÓÃ"TMC_POINT"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"TMC_POINT"';
 
 comment on column TMC_POINT_TRANSLATENAME.TRANS_LANG is
-'¼òÌåÖÐÎÄ(´óÂ½),·±ÌåÖÐÎÄ(¸Û°Ä),Ó¢ÎÄ,ÆÏÎÄµÈ¶àÖÖÓïÑÔ';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½ï¿½Â½),ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(ï¿½Û°ï¿½),Ó¢ï¿½ï¿½,ï¿½ï¿½ï¿½ÄµÈ¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT_TRANSLATENAME.PHONETIC is
-'[171U][170]ÖÐÎÄÎªÆ´Òô,Ó¢ÎÄ(ÆÏÎÄµÈ)ÎªÒô±ê';
+'[171U][170]ï¿½ï¿½ï¿½ï¿½ÎªÆ´ï¿½ï¿½,Ó¢ï¿½ï¿½(ï¿½ï¿½ï¿½Äµï¿½)Îªï¿½ï¿½ï¿½ï¿½';
 
 comment on column TMC_POINT_TRANSLATENAME.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_POINT_TRANSLATENAME.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: TMC_VERSION                                           */
@@ -20395,16 +20395,16 @@ create table TMC_VERSION  (
 );
 
 comment on column TMC_VERSION.LOCTABLE_ID is
-'²Î¿¼"TMC_LOCATION_CODE"';
+'ï¿½Î¿ï¿½"TMC_LOCATION_CODE"';
 
 comment on column TMC_VERSION.COUNTRY_ID is
-'ÖÐ¹úµØÇø´úÂë:059';
+'ï¿½Ð¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:059';
 
 comment on column TMC_VERSION.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column TMC_VERSION.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: WL_CHECKCOUNT                                         */
@@ -20459,28 +20459,28 @@ create table ZONE_FACE  (
 );
 
 comment on column ZONE_FACE.FACE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_FACE.REGION_ID is
-'[170]Íâ¼ü,ÒýÓÃ"AD_ADMIN"';
+'[170]ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"AD_ADMIN"';
 
 comment on column ZONE_FACE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ,Ê×Ä©½Úµã×ø±êÖØºÏ';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½Ä©ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½Øºï¿½';
 
 comment on column ZONE_FACE.AREA is
-'µ¥Î»:Æ½·½Ã×';
+'ï¿½ï¿½Î»:Æ½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_FACE.PERIMETER is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ZONE_FACE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column ZONE_FACE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_FACE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_NODE                                             */
@@ -20503,25 +20503,25 @@ create table ZONE_NODE  (
 );
 
 comment on column ZONE_NODE.NODE_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_NODE.KIND is
-'Æ½Ãæ½»²æµã,Zone±ß½çµã';
+'Æ½ï¿½æ½»ï¿½ï¿½ï¿½,Zoneï¿½ß½ï¿½ï¿½';
 
 comment on column ZONE_NODE.FORM is
-'Í¼Àªµã,½Çµã';
+'Í¼ï¿½ï¿½ï¿½ï¿½,ï¿½Çµï¿½';
 
 comment on column ZONE_NODE.GEOMETRY is
-'´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êµã';
+'ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_NODE.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column ZONE_NODE.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_NODE.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_LINK                                             */
@@ -20549,29 +20549,29 @@ create table ZONE_LINK  (
 );
 
 comment on column ZONE_LINK.LINK_PID is
-'Ö÷¼ü';
+'ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_LINK.S_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_NODE"';
 
 comment on column ZONE_LINK.E_NODE_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_NODE"';
 
 comment on column ZONE_LINK.GEOMETRY is
-'(1)´æ´¢ÒÔ"¶È"Îªµ¥Î»µÄ¾­Î³¶È×ø±êÐòÁÐ
-(2)Æðµã(S_NODE_PID)ºÍÖÕµã(E_NODE_PID)×ø±ê×÷ÎªÐÎ×´µãÀ´´æ´¢';
+'(1)ï¿½æ´¢ï¿½ï¿½"ï¿½ï¿½"Îªï¿½ï¿½Î»ï¿½Ä¾ï¿½Î³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+(2)ï¿½ï¿½ï¿½(S_NODE_PID)ï¿½ï¿½ï¿½Õµï¿½(E_NODE_PID)ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½×´ï¿½ï¿½ï¿½ï¿½ï¿½æ´¢';
 
 comment on column ZONE_LINK.LENGTH is
-'µ¥Î»:Ã×';
+'ï¿½ï¿½Î»:ï¿½ï¿½';
 
 comment on column ZONE_LINK.EDIT_FLAG is
-'[171A]ÓÃÓÚÊý¾ÝÍêÕûÌáÈ¡Ê±,Çø·ÖÊÇ·ñ¿É±à¼­';
+'[171A]ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¡Ê±,ï¿½ï¿½ï¿½ï¿½Ç·ï¿½É±à¼­';
 
 comment on column ZONE_LINK.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_LINK.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_FACE_TOPO                                        */
@@ -20592,19 +20592,19 @@ create table ZONE_FACE_TOPO  (
 );
 
 comment on column ZONE_FACE_TOPO.FACE_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_FACE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_FACE"';
 
 comment on column ZONE_FACE_TOPO.SEQ_NUM is
-'´Ó1¿ªÊ¼µÝÔö±àºÅ';
+'ï¿½ï¿½1ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½';
 
 comment on column ZONE_FACE_TOPO.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_LINK"';
 
 comment on column ZONE_FACE_TOPO.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_FACE_TOPO.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_LINK_KIND                                        */
@@ -20628,13 +20628,13 @@ comment on table ZONE_LINK_KIND is
 '[173sp1]';
 
 comment on column ZONE_LINK_KIND.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_LINK"';
 
 comment on column ZONE_LINK_KIND.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_LINK_KIND.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_LINK_MESH                                        */
@@ -20652,13 +20652,13 @@ create table ZONE_LINK_MESH  (
 );
 
 comment on column ZONE_LINK_MESH.LINK_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_LINK"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_LINK"';
 
 comment on column ZONE_LINK_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_LINK_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 
 /*==============================================================*/
 /* Table: ZONE_NODE_MESH                                        */
@@ -20676,11 +20676,11 @@ create table ZONE_NODE_MESH  (
 );
 
 comment on column ZONE_NODE_MESH.NODE_PID is
-'Íâ¼ü,ÒýÓÃ"ZONE_NODE"';
+'ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½"ZONE_NODE"';
 
 comment on column ZONE_NODE_MESH.U_RECORD is
-'ÔöÁ¿¸üÐÂ±êÊ¶';
+'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â±ï¿½Ê¶';
 
 comment on column ZONE_NODE_MESH.U_FIELDS is
-'¼ÇÂ¼¸üÐÂµÄÓ¢ÎÄ×Ö¶ÎÃû,¶à¸öÖ®¼ä²ÉÓÃ°ë½Ç''|''·Ö¸ô';
+'ï¿½ï¿½Â¼ï¿½ï¿½ï¿½Âµï¿½Ó¢ï¿½ï¿½ï¿½Ö¶ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½Ö®ï¿½ï¿½ï¿½ï¿½Ã°ï¿½ï¿½''|''ï¿½Ö¸ï¿½';
 

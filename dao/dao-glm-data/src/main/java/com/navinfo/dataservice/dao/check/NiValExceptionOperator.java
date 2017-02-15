@@ -604,15 +604,15 @@ public class NiValExceptionOperator {
 			this.insertNiValExceptionHistoryGrid(md5, sqlExpGrid);
 		}
 		if(tableFlag == 2){
-			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,level,situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,level, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=?";
+			String sqlExpHis = " INSERT INTO ni_val_exception (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=?";
 			this.insertNiValException(md5, sqlExpHis);
-			String sqlExpGridHis = "insert into ni_val_exception_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ck.row_id and  md5_code=?";
+			String sqlExpGridHis = "insert into ni_val_exception_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 		if(tableFlag == 3){
-			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,level,situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,level, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=:4";
+			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=:4";
 			this.insertNiValException(md5, sqlExpHis);
-			String sqlExpGridHis = "insert into ni_val_exception_grid_history select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ck.row_id and  md5_code=?";
+			String sqlExpGridHis = "insert into ni_val_exception_grid_history select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 						this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 	}
@@ -631,8 +631,8 @@ public class NiValExceptionOperator {
 		CkException ckexception = selector.loadById(md5, false);
 		this.insertForException(md5, tableFlag);
 		// 删除ck_exception 插入到ni_val_exception
-		this.delCkException(md5);
 		this.delCkExceptionGrid(md5);
+		this.delCkException(md5);
 		result = new Result();
 		result.insertObject(ckexception, ObjStatus.DELETE,
 				ckexception.getExceptionId());
@@ -777,8 +777,14 @@ public class NiValExceptionOperator {
 	 */
 	private void insertCkExceptionGrid(String rowId, String md5,int tableFlag)
 			throws Exception {
-
-		String sql = "insert into ck_exception_grid select ?,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=?";
+		String tableName= "";
+        if (tableFlag == 1){
+        	tableName = "ni_val_exception_grid";
+        }
+        if(tableFlag == 0){
+        	tableName = "ni_val_exception_grid_history";
+        }
+		String sql = "insert into ck_exception_grid select ?,grid_id from " +tableName+ " where md5_code=?";
 		try {
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, rowId, md5);
@@ -894,7 +900,7 @@ public class NiValExceptionOperator {
 	 */
 	private void delCkExceptionGrid(String md5) throws Exception {
 
-		String sql = " delete from ck_exception_grid where md5_code= ?";
+		String sql = " delete from ck_exception_grid where ck_row_id in (select row_id from ck_exception where md5_code=?) ";
 		try {
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, md5);
@@ -940,6 +946,7 @@ public class NiValExceptionOperator {
 	 */
 	private void recordLogForCkException(Result result) throws Exception {
 		if (result != null) {
+			System.out.println("--------------log--------------");
 			LogWriter writer = new LogWriter(conn);
 
 			Command command = new Command();

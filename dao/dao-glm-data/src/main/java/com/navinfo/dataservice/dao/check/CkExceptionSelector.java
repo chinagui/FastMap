@@ -44,7 +44,7 @@ public class CkExceptionSelector {
 
 			if (resultSet.next()) {
 
-				exception.setExceptionId(resultSet.getInt("pid"));
+				exception.setExceptionId(resultSet.getInt("exception_id"));
 
 				exception.setRuleId(resultSet.getString("rule_id"));
 
@@ -95,12 +95,6 @@ public class CkExceptionSelector {
 				exception.setWorker(resultSet.getString("worker"));
 
 				exception.setQaWorker(resultSet.getString("qa_worker"));
-
-				exception.setMemo1(resultSet.getString("memo1"));
-
-				exception.setMemo2(resultSet.getString("memo2"));
-
-				exception.setMemo3(resultSet.getString("memo3"));
 
 
 			} else {

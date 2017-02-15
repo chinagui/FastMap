@@ -293,16 +293,16 @@ public class NiValExceptionSelector {
 		if (flag == 0) {
 			sql = new StringBuilder(
 					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-							+ "worker from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+							+ "worker,qa_worker,qa_status from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		}
 		if (flag == 1) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
-							+ "worker from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
 
@@ -310,13 +310,13 @@ public class NiValExceptionSelector {
 		if (flag == 2) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,"
-							+ "worker from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
+							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
 							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
-							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,"
-							+ "worker from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
+							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
+							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		}
@@ -392,8 +392,11 @@ public class NiValExceptionSelector {
 					"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
 
 			json.put("create_date", rs.getString("created"));
+			json.put("update_date", rs.getString("updated"));
 
 			json.put("worker", rs.getString("worker"));
+			json.put("qa_worker", rs.getString("qa_worker") == null ? "":rs.getString("qa_worker"));
+			json.put("qa_status", rs.getString("qa_status"));
 
 			results.add(json);
 		}
@@ -789,27 +792,25 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 
 					json.put("rowId",rs.getString("row_id"));
 					//*****************************
+					JSONArray checkResults = new JSONArray();
+					int total = 0 ;
 					//查询此poi的 exception信息
 					if(rs.getInt("pid") != 0){
-						JSONArray checkResults = null;
 						try {
-							checkResults = poiCheckResultList(rs.getInt("pid"));
+							if(poiCheckResultList(rs.getInt("pid")) != null){
+								checkResults = poiCheckResultList(rs.getInt("pid"));
+							}
 						} catch (Exception e) {
 							System.out.println("查询关联poi信息失败");
 							e.printStackTrace();
 						}
 						if(checkResults != null && checkResults.size() > 0){
-							json.put("checkResults", checkResults);
-							json.put("total", checkResults.size());
-						}else{
-							json.put("checkResults", new JSONArray());
-							json.put("total", 0);
+							total = checkResults.size();
 						}
-						
-					}else{
-						json.put("checkResults", new JSONArray());
-						json.put("total", 0);
 					}
+						json.put("checkResults", checkResults);
+						json.put("total", total);
+					
 					
 					//********************************
 
@@ -844,13 +845,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 					+ "select distinct  e.md5_code,e.ruleid,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
 						+ " from q1 e "
 						+ " where 1=1 "
-						+ " CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "//IX_POI
+						+ " CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "
 				+ "),"
 				+ "q3 as ( "
-					+ " select distinct  b.md5_code,b.ruleid,b.pid,b.information,b.worker ,b.created  from q2 b where b.pid = "+pid+" "
+					+ " select distinct md5_code,listagg(pid,' , ') within group (order by  md5_code) as pids  from q2 group by md5_code "
 				+ ")");
 
-		sql.append(" select * from q3 order by created desc,md5_code desc ");
+		//b.md5_code,b.ruleid,b.pid,b.information,b.worker ,b.created
+		sql.append(" select A.*,B.pids from q2 A ,q3 B where A.md5_code = B.md5_code  and A.pid = "+pid+" order by A.created desc,A.md5_code desc ");
 		
 		System.out.println("poiCheckResultList:  "+ sql);
 		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
@@ -875,21 +877,29 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 
 					json.put("worker", rs.getString("worker"));
 					
-					//查询关联poi根据pid 
-					if(rs.getInt("pid") != 0){
-						JSONArray refFeaturesArr = queryRefFeatures(rs.getInt("pid"));
-						if(refFeaturesArr != null){
-							json.put("refFeatures", refFeaturesArr);
-							json.put("refCount", refFeaturesArr.size());
-						}else{
-							json.put("refFeatures", new JSONArray());
-							json.put("refCount", 0);
+					JSONArray refFeaturesArr = new JSONArray();
+					int refPoiCount = 0 ;  
+					
+					String pids = rs.getString("pids");
+					String[] pidsArr = pids.split(",");
+					
+					if(pidsArr != null && pidsArr.length >1){
+						for(String pidStr :pidsArr){
+							if(pidStr != null && StringUtils.isNotEmpty(pidStr) ){
+								int refPid = Integer.parseInt(pidStr.replaceAll(" ", ""));
+								if(refPid != rs.getInt("pid")){
+									//存在关联poi 
+									refFeaturesArr = queryRefFeatures(refPid);
+									refPoiCount+=1;
+								}
+								
+							}
 						}
-						
-					}else{
-						json.put("refFeatures", new JSONArray());
-						json.put("refCount", 0);
 					}
+					
+					//查询关联poi根据pid 
+					json.put("refFeatures", refFeaturesArr);
+					json.put("refCount", refPoiCount);
 					
 					
 					results.add(json);
@@ -912,7 +922,10 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 	@SuppressWarnings("unchecked")
 	public JSONArray queryRefFeatures(int pid) {
 		StringBuilder sql = new StringBuilder(
-				" with q1 as( "
+				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
+						+ "from ix_poi t  where t.pid ="+pid+" "
+				);
+				/*" with q1 as( "
 						+ "select z.child_poi_pid ref_pid,2 ref_type from ix_poi_parent f ,ix_poi_children z  where f.group_id = z.group_id and f.parent_poi_pid = "+pid+"  "
 						+ " union all  "
 						+ " select f.parent_poi_pid ref_pid,1 ref_type from ix_poi_parent f ,ix_poi_children z where f.group_id = z.group_id and z.child_poi_pid ="+pid+" "
@@ -925,9 +938,8 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 						+ ") "
 						+ " select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name,m.ref_type "
 								+ "from ix_poi t ,q2 m where t.pid =m.ref_pid"
-						+ " ");
+						+ " ");*/
 
-		
 		System.out.println("queryRefFeatures sql :  "+ sql);
 		try {
 			return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
@@ -949,7 +961,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 
 						json.put("pid", rs.getInt("pid"));
 
-						json.put("refType", rs.getInt("ref_type"));
+						//json.put("refType", rs.getInt("ref_type"));
 						
 						int lifecycle = 0;
 						switch (rs.getInt("u_record")) {
@@ -983,11 +995,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 							System.out.println("查询结果获取Geometry失败");
 							e.printStackTrace();
 						}
-
 						json.put("geometry",geometryStr);
-
-						
-						
 						results.add(json);
 					}
 					

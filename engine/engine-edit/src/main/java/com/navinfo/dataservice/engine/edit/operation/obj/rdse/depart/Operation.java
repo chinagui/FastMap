@@ -27,16 +27,16 @@ public class Operation {
 
     public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
             rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
-        logger.info("UPDOWNDEPART:关联维护分叉口提示");
+        // logger.info("UPDOWNDEPART:关联维护分叉口提示");
         RdSeSelector selector = new RdSeSelector(conn);
         Integer[] leftLinkPids = leftLinks.keySet().toArray(new Integer[]{});
-        Integer[] rightLinkPids = rightLinks.keySet().toArray(new Integer[]{});
         int length = leftLinkPids.length;
         // 1.分叉口进入点为分离线的经过点时删除分叉口
         List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
         List<RdSe> rdSes = null;
         if (!nodePids.isEmpty()) {
             rdSes = selector.loadRdSesWithNodePids(nodePids, true);
+            // logger.info("需要删除分叉口数量：" + rdSes.size());
             for (RdSe rdSe : rdSes) {
                 result.insertObject(rdSe, ObjStatus.DELETE, rdSe.pid());
             }
@@ -44,13 +44,15 @@ public class Operation {
         if (links.size() > 0) {
             RdLink firstLink = links.get(0);
             RdLink endLink = links.get(length - 1);
-            // 2.分叉口进入线为分离线的分叉口
+            // 2.第一条分离Link相关的分叉口提示
             rdSes = selector.loadRdSesWithLinkPid(firstLink.getPid(), false);
             for (RdSe rdSe : rdSes) {
+                if (nodePids.contains(rdSe.getNodePid()))
+                    continue;
                 if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", leftLinkPids[0]);
+                    rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[0]).pid());
                 } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", rightLinkPids[0]);
+                    rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[0]).pid());
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }
@@ -58,13 +60,15 @@ public class Operation {
             if (firstLink.pid() == endLink.pid())
                 return "";
 
-            // 3.分叉口退出线为分离线的分叉口
+            // 3.最后一条分离Link相关的分叉口提示
             rdSes = selector.loadRdSesWithLinkPid(endLink.getPid(), false);
             for (RdSe rdSe : rdSes) {
+                if (nodePids.contains(rdSe.getNodePid()))
+                    continue;
                 if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", leftLinkPids[length - 1]);
+                    rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
                 } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", rightLinkPids[length - 1]);
+                    rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }

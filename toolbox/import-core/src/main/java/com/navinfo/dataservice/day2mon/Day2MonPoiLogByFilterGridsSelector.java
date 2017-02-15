@@ -24,6 +24,12 @@ import com.navinfo.navicommons.database.QueryRunner;
 public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Date startTime;
+	public Day2MonPoiLogByFilterGridsSelector(OracleSchema logSchema,Date stopTime,List<Integer> filterGrids) {
+		super(logSchema);
+		this.stopTime = stopTime;
+		this.filterGrids = filterGrids;
+		
+	}
 	public Day2MonPoiLogByFilterGridsSelector(OracleSchema logSchema) {
 		super(logSchema);
 	}

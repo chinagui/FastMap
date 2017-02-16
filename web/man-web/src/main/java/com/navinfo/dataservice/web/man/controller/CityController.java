@@ -45,8 +45,12 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-
-	/*@RequestMapping(value = "/city/query")
+	/**
+	 * 常规项目点击后高亮地图区域
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/city/query")
 	public ModelAndView query(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -61,7 +65,7 @@ public class CityController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/city/listByAlloc")
+	/*@RequestMapping(value = "/city/listByAlloc")
 	public ModelAndView queryListByAlloc(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));

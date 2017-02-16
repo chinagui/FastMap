@@ -55,10 +55,10 @@ public class TaskOperation {
 	/*
 	 * task的latest字段，修改成无效，0
 	 */
-	public static void updateLatest(Connection conn,int blockId, Integer type) throws Exception{
+	public static void updateLatest(Connection conn, Integer programId, Integer regionId,int blockId, Integer type) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateBlock="UPDATE TASK SET LATEST=0 WHERE LATEST=1 AND TYPE=" + type + " AND BLOCK_ID="+blockId;
+			String updateBlock="UPDATE TASK SET LATEST=0 WHERE LATEST=1 AND TYPE=" + type + " AND BLOCK_ID="+blockId + " AND PROGRAM_ID="+programId + " AND REGION_ID="+regionId;
 			run.update(conn,updateBlock);			
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -2112,7 +2112,7 @@ public class TaskOperation {
 	 * @param gridIds
 	 * @throws Exception 
 	 */
-	private static void insertTaskGridMapping(Connection conn, Integer taskId, Map<Integer, Integer> gridIds) throws Exception {
+	public static void insertTaskGridMapping(Connection conn, Integer taskId, Map<Integer, Integer> gridIds) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -2134,5 +2134,102 @@ public class TaskOperation {
 		}
 		
 	}
+
+	/**
+	 * @param conn
+	 * @param blockId
+	 * @throws Exception 
+	 */
+	public static void closeBlock(Connection conn, Integer blockId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String updateSql = "UPDATE BLOCK B SET B.PLAN_STATUS = 2"
+					+ " WHERE (SELECT COUNT(1) FROM TASK T WHERE T.BLOCK_ID = B.BLOCK_ID AND T.STATUS <> 0) <> 0";
+
+			run.update(conn, updateSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("更新block状态失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception 
+	 */
+	public static Map<Integer, Integer> getAddedGridMap(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT SM.GRID_ID FROM SUBTASK_GRID_MAPPING SM ,SUBTASK S"); 
+			sb.append("WHERE S.SUBTASK_ID = SM.SUBTASK_ID");
+			sb.append("AND SM.TYPE = 2");
+			sb.append("AND S.TASK_ID = " + taskId);
+
+			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
+				@Override
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> list = new HashMap<Integer, Integer>();
+					while(rs.next()){
+						list.put(rs.getInt("GRID_ID"), 2);
+					}
+					return list;
+				}
+			};
+			Map<Integer, Integer> gridList = run.query(conn, sb.toString(), rsh);
+			return gridList;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param gridIdMap 
+	 * @param taskId：参照任务Id
+	 * @param type:待调整的任务类型
+	 */
+	public static void updateTaskRegion(Connection conn, int taskId, int type, Map<Integer, Integer> gridIdMap) {
+		// TODO Auto-generated method stub
+		
+	}
+
+//	/**
+//	 * @param conn
+//	 * @param taskId
+//	 * @param type
+//	 */
+//	public static void getSubTaskListByType(Connection conn, int taskId, int type) {
+//		try{
+//			QueryRunner run = new QueryRunner();
+//
+//			StringBuilder sb = new StringBuilder();
+//			sb.append("SELECT S.SUBTASK_ID FROM SUBTASK S "); 
+//			sb.append(" WHERE S.TASK_ID = " + taskId);
+//			sb.append(" AND S.TYPE = " + type);
+//
+//			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
+//				@Override
+//				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+//					Map<Integer, Integer> list = new HashMap<Integer, Integer>();
+//					while(rs.next()){
+//						list.put(rs.getInt("GRID_ID"), 2);
+//					}
+//					return list;
+//				}
+//			};
+//			Map<Integer, Integer> gridList = run.query(conn, sb.toString(), rsh);
+//			return gridList;
+//		}catch(Exception e){
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+//		}
+//	}
 	
 }

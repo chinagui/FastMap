@@ -115,7 +115,7 @@ public class TaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	private int create(Connection conn, List<Task> taskList) throws Exception {
+	public int create(Connection conn, List<Task> taskList) throws Exception {
 		// TODO Auto-generated method stub
 		int total = 0;
 		for(Task task:taskList){
@@ -139,7 +139,7 @@ public class TaskService {
 			 * 2.如果block没有开启则开启block
 			 */
 			if(bean.getBlockId()!=0){
-				TaskOperation.updateLatest(conn,bean.getBlockId(),bean.getType());
+				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
 				List<Integer> blockList = new ArrayList<Integer>();
 				blockList.add(bean.getBlockId());
 				BlockOperation.openBlockByBlockIdList(conn,blockList);
@@ -279,11 +279,65 @@ public class TaskService {
 			//查询task数据，包含作业组leaderId
 			List<Task> taskList = getTaskListWithLeader(conn,taskIds);
 			
-			//给作业组leader发送消息
+			List<Task> updatedTaskList = new ArrayList<Task>();
+			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			for(Task task:taskList){
+				if(task.getType() == 3){
+					//二代任务发布特殊处理
+				}else{
+					updatedTaskList.add(task);
+					updatedTaskIdList.add(task.getTaskId());
+					total ++;
+				}
+			}
+			
+			//更新task状态
+			TaskOperation.updateStatus(conn, taskIds);
+			
+			//发布消息
+			taskPushMsg(conn,userId,updatedTaskList);
+			
+			return "task批量发布"+total+"个成功，0个失败";
+//			//给作业组leader发送消息
+//			int total = 0;
+//			List<Object[]> msgContentList=new ArrayList<Object[]>();
+//			String msgTitle="task发布";
+//			for (Task task : taskList) {
+//				if(task.getGroupLeader()!=0){
+//					Object[] msgTmp=new Object[4];
+//					msgTmp[0]=task.getGroupLeader();//收信人
+//					msgTmp[1]=msgTitle;//消息头
+//					msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+//					//关联要素
+//					JSONObject msgParam = new JSONObject();
+//					msgParam.put("relateObject", "TASK");
+//					msgParam.put("relateObjectId", task.getTaskId());
+//					msgTmp[3]=msgParam.toString();//消息对象
+//					msgContentList.add(msgTmp);
+//				}
+//				if(msgContentList.size()>0){
+//					taskPushMsgByMsg(conn,msgContentList,userId);	
+//				}
+//				total++;
+//			}
+//			
+//			return "task批量发布"+total+"个成功，0个失败";
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("task消息发送失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}		
+	}
+	
+	public void taskPushMsg(Connection conn,long userId,List<Task> updatedTaskList) throws Exception{
+		try {
+			//给作业组leader发送消息
 			List<Object[]> msgContentList=new ArrayList<Object[]>();
 			String msgTitle="task发布";
-			for (Task task : taskList) {
+			for (Task task : updatedTaskList) {
 				if(task.getGroupLeader()!=0){
 					Object[] msgTmp=new Object[4];
 					msgTmp[0]=task.getGroupLeader();//收信人
@@ -299,17 +353,10 @@ public class TaskService {
 				if(msgContentList.size()>0){
 					taskPushMsgByMsg(conn,msgContentList,userId);	
 				}
-				total++;
 			}
-			//更新task状态
-			TaskOperation.updateStatus(conn, taskIds);
-			return "task批量发布"+total+"个成功，0个失败";
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("task消息发送失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}		
 	}
 	
@@ -1019,121 +1066,86 @@ public class TaskService {
 //		}
 //	}	
 	
-	public List<Integer> close(List<Integer> taskidList, long userId)throws Exception{
+	/*
+	 * 查询task
+	 * 关闭task,相应修改block状态
+	 * 采集任务:
+	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
+	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
+	 * 日编任务:
+	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 发送消息
+	 */
+	public String close(int taskId, long userId)throws Exception{
 		Connection conn = null;
 		try{
+			
 			conn = DBConnector.getInstance().getManConnection();	
+			Task task = queryByTaskId(taskId);
+			//更新任务状态
+			Task taskTemp = new Task();
+			taskTemp.setTaskId(taskId);
+			taskTemp.setStatus(0);
+			TaskOperation.updateTask(conn, taskTemp);
+			//更新block状态：如果所有task都已关闭，则block状态置3
+			TaskOperation.closeBlock(conn,task.getBlockId());
 			
-			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");
-			//判断任务是否可关闭
-			String checkSql="SELECT T.TASK_ID"
-					+ "    FROM TASK T, BLOCK_MAN BM"
-					+ "   WHERE T.TASK_ID = BM.TASK_ID"
-					+ "     AND NOT EXISTS (SELECT 1"
-					+ "            FROM BLOCK_MAN BMM"
-					+ "           WHERE BMM.TASK_ID = T.TASK_ID"
-					+ "             AND BMM.STATUS <> 0)";
+			//动态调整
+			//获取该任务新增的grid
+			Map<Integer, Integer> gridIdMap = TaskOperation.getAddedGridMap(conn,taskId);
+			//调整该任务范围
+			TaskOperation.insertTaskGridMapping(conn, taskId, gridIdMap);
+			
+			//采集任务
+			if(task.getType() == 0){
+				//调整日编任务范围
+				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
+				//调整区域子任务范围
+				TaskOperation.getSubTaskListByType(conn,taskId,4);
+//				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskId, gridIdMap);;
+				if(task.getBlockId()==0){
+					//调整项目范围
 					
-					/*"SELECT T.TASK_ID, '有未关闭的BLOCK，任务无法关闭'"
-					+ "  FROM TASK T, BLOCK B"
-					+ " WHERE T.TASK_ID IN ("+taskIdStr+")"
-					+ "   AND T.CITY_ID = B.CITY_ID"
-					+ "   AND B.PLAN_STATUS <> 2"
-					+ " UNION"
-					+ " SELECT ST.TASK_ID, '有未关闭的月编子任务，任务无法关闭'"
-					+ "  FROM SUBTASK ST"
-					+ " WHERE ST.TASK_ID IN ("+taskIdStr+")"
-					+ "   AND ST.STAGE = 2"
-					+ "   AND ST.STATUS <> 0";*/
-			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
-			JSONArray closeTask=new JSONArray();
-			List<Integer> newTask=new ArrayList<Integer>();
-			//newTask.addAll(taskidList);
-			HashMap<String,String> checkMap=new HashMap<String,String>();
-			
-			if(checkResult.size()>0){
-				for(int i=0;i<checkResult.size();i++){
-					String taskIdTmp=checkResult.get(i).get(0);
-					newTask.add(Integer.valueOf(taskIdTmp));
-				}		
-			}
-			
-			/*if(checkResult.size()>0){
-				List<Integer> errorTask=new ArrayList<Integer>();
-				for(int i=0;i<checkResult.size();i++){
-					String taskIdTmp=checkResult.get(i).get(0);
-					errorTask.add(Integer.valueOf(taskIdTmp));
-					if(!checkMap.containsKey(taskIdTmp)){checkMap.put(taskIdTmp, "");}
-					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
-				}
-				newTask.removeAll(errorTask);				
-			}*/
-			if(newTask.size()>0){
-				String updateSql="UPDATE TASK SET STATUS=0 "
-						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
-						replace("]", "").replace("\"", "")+")";
-				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
-				
-				//关闭对应的city
-				CityOperation.close(conn);
-				
-				//关闭对应的infor
-				InforManOperation.closeByTasks(conn,newTask);
-			
-				try {
-					//发送消息
-					JSONObject condition=new JSONObject();
-					condition.put("taskIds",JSONArray.fromObject(newTask));
-					List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-					/*任务创建/编辑/关闭
-					 *1.所有生管角色
-					 *2.任务包含的block分配的采集作业组组长
-					 *3.任务包含的block分配的日编作业组组长
-					 *4.分配的月编作业组组长
-					 *任务关闭:XXX(任务名称)已关闭，请关注*/			
-					String msgTitle="任务关闭";
-					List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
-					List<Long> groupIdList = new ArrayList<Long>();
-					for(Map<String, Object> task:openTasks){
-						Map<String,Object> map = new HashMap<String, Object>();
-						String msgContent = "任务关闭:"+task.get("taskName")+"已关闭,请关注";
-						map.put("msgContent", msgContent);
-						//关联要素
-						JSONObject msgParam = new JSONObject();
-						msgParam.put("relateObject", "TASK");
-						msgParam.put("relateObjectId", task.get("taskId"));
-						map.put("msgParam", msgParam.toString());						
-						
-						groupIdList.add((Long) task.get("monthEditGroupId"));
-						List<Long> taskGroupIds = new ArrayList<Long>();
-						taskGroupIds.add((Long) task.get("monthEditGroupId"));
-						//查询block分配的采集和日编作业组组长id
-						if(task.get("taskId") != null){
-							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
-							if(blockMan != null){
-								groupIdList.add((Long) blockMan.get("collectGroupId"));
-								groupIdList.add((Long) blockMan.get("dayEditGroupId"));
-								taskGroupIds.add((Long) blockMan.get("collectGroupId"));
-								taskGroupIds.add((Long) blockMan.get("dayEditGroupId"));
-							}
-						}
-						map.put("taskGroupIds", taskGroupIds);
-						msgContentList.add(map);
-					}
-//					if(msgContentList.size()>0){
-//						taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
-//					}
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-					log.error("任务关闭消息发送失败,原因:"+e.getMessage(), e);
+				}else{
+					//调整二代任务范围
+					TaskOperation.updateTaskRegion(conn,taskId,4,gridIdMap);
 				}
 			}
-	    	return newTask;
+			//日编任务,快速更新项目
+			else if((task.getType()==1)&&(task.getBlockId()==0)){
+				//调整项目范围
+				
+			}
+			
+			//发送消息
+			try {
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="task发布";
+				if(task.getGroupLeader()!=0){
+					Object[] msgTmp=new Object[4];
+					msgTmp[0]=task.getGroupLeader();//收信人
+					msgTmp[1]=msgTitle;//消息头
+					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "TASK");
+					msgParam.put("relateObjectId", task.getTaskId());
+					msgTmp[3]=msgParam.toString();//消息对象
+					msgContentList.add(msgTmp);
+				}
+				if(msgContentList.size()>0){
+					taskPushMsgByMsg(conn,msgContentList,userId);	
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
+			}
+			return "";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("删除失败，原因为:"+e.getMessage(),e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

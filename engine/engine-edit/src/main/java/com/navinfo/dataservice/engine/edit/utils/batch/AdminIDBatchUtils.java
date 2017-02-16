@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
 
 import java.sql.Connection;
 import java.util.HashMap;
@@ -109,9 +110,18 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
     // 获取AdFace，没有关联Face时返回Null
     private static AdFace loadAdFace(Connection conn, Geometry linkGeometry) throws Exception {
         List<AdFace> faces = new AdFaceSelector(conn).loadRelateFaceByGeometry(linkGeometry);
-        if (faces.isEmpty() || faces.size() > 1) {
+        if (faces.isEmpty())
             return null;
+        if (faces.size() > 1) {
+            Point point = linkGeometry.getCentroid();
+            for (AdFace face : faces) {
+                Geometry geo = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
+                if (point.coveredBy(geo)) {
+                    return face;
+                }
+            }
         }
+
         AdFace adFace = faces.get(0);
         return adFace;
     }

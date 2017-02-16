@@ -46,7 +46,7 @@ public class CityController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/city/query")
+	/*@RequestMapping(value = "/city/query")
 	public ModelAndView query(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -74,5 +74,5 @@ public class CityController extends BaseController {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 }

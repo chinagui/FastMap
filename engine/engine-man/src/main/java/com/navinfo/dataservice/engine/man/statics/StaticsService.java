@@ -724,6 +724,129 @@ public class StaticsService {
 	}
 	
 	/**
+	 * @param groupId
+	 * @param stage 
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String,Object> queryTaskOverViewByGroup(int groupId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+
+			String selectSql = "WITH T AS (SELECT T.TASK_ID,"
+					+ "         T.STATUS,"
+					+ "         T.GROUP_ID,"
+					+ "         CASE T.STATUS"
+					+ "           WHEN 0 THEN 4"
+					+ "           ELSE CASE SUM(S.STATUS)"
+					+ "              WHEN 0 THEN 3"
+					+ "              ELSE 2 END"
+					+ "         END TASK_STAT,"
+					+ "         0 UNASSIGNED,"
+					+ "         F.DIFF_DATE,"
+					+ "         F.PROGRESS"
+					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
+					+ "   WHERE T.STATUS IN (0, 1)"
+					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "     AND T.TASK_ID = F.TASK_ID(+)"
+					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
+					+ "  UNION ALL"
+					//+ "  --未分配"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.STATUS,"
+					+ "         T.GROUP_ID,"
+					+ "         2           TASK_STAT,"
+					+ "         1           UNASSIGNED,"
+					+ "         F.DIFF_DATE,"
+					+ "         F.PROGRESS"
+					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
+					+ "   WHERE T.STATUS = 1"
+					+ "     AND NOT EXISTS"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)"
+					+ "     AND T.TASK_ID = F.TASK_ID(+))"
+					+ "SELECT * FROM T WHERE T.GROUP_ID = "+groupId;
+			System.out.println("selectSql: "+selectSql);QueryRunner run = new QueryRunner();
+
+			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+					int total = 0;
+					int finished = 0;
+					int unFinished = 0;
+					
+					int unAssigned = 0;
+					int ongoing = 0;
+					
+					int ongoingRegular = 0;
+					int ongoingUnexpected = 0;
+					int finishedRegular = 0;
+					int finishedAdvanced = 0;
+					int finishedOverdue = 0;
+					while (rs.next()) {
+						total+=1;
+						int taskStat=rs.getInt("TASK_STAT");
+						int unassigned=rs.getInt("UNASSIGNED");
+						if(2==taskStat){
+							unFinished+=1;
+							if(1==unassigned){
+								unAssigned+=1;
+							}else {
+								ongoing+=1;
+								if(1==rs.getInt("PROGRESS")){ongoingRegular+=1;}
+								else if(2==rs.getInt("PROGRESS")){ongoingUnexpected+=1;}
+							}
+						}else{
+							finished+=1;
+							if(0 == rs.getInt("DIFF_DATE")){
+								//按时完成
+								finishedRegular += 1;
+							}else if(0 < rs.getInt("DIFF_DATE")){
+								//提前完成
+								finishedAdvanced += 1;
+							}else if(0 > rs.getInt("DIFF_DATE")){
+								//逾期完成
+								finishedOverdue += 1;
+							}	
+						}
+					}
+					result.put("total", total);
+					result.put("finished", finished);
+					result.put("unFinished", unFinished);
+					
+					result.put("unAssigned", unAssigned);
+					result.put("ongoing", ongoing);
+					
+					
+					
+					Map<String,Integer> ongoingInfo = new HashMap<String,Integer>();
+					ongoingInfo.put("ongoingRegular", ongoingRegular);
+					ongoingInfo.put("ongoingUnexpected", ongoingUnexpected);
+					result.put("ongoingInfo", ongoingInfo);
+					
+					Map<String,Integer> finishedInfo = new HashMap<String,Integer>();
+					finishedInfo.put("finishedRegular", finishedRegular);
+					finishedInfo.put("finishedAdvanced", finishedAdvanced);
+					finishedInfo.put("finishedOverdue", finishedOverdue);
+					result.put("finishedInfo", finishedInfo);
+
+					return result;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
 	 * @Title: queryGroupOverView
 	 * @Description: 查询数据库获取统计详情
 	 * @param groupId
@@ -819,6 +942,268 @@ public class StaticsService {
 			result.put("overdueInfo", overdueInfo);
 
 			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @param type 
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryTaskOverviewByProgram(int programId, int type) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql ="";
+			if(type==1){
+				selectSql = "WITH T AS"
+						+ " (SELECT 0             TASK_ID,"
+						+ "         P.PROGRAM_ID,"
+						+ "         B.BLOCK_ID,"
+						+ "         B.PLAN_STATUS,"
+						+ "         0             TASK_STAT,"
+						+ "         0             TYPE,"
+						+ "         0             STATUS,"
+						+ "         0             DIFF_DATE,"
+						+ "         0             PROGRESS"
+						+ "    FROM BLOCK B, PROGRAM P"
+						+ "   WHERE B.PLAN_STATUS = 0"
+						+ "     AND B.CITY_ID = P.CITY_ID"
+						+ "  UNION ALL"
+						+ "  SELECT T.TASK_ID,"
+						+ "         T.PROGRAM_ID,"
+						+ "         B.BLOCK_ID,"
+						+ "         B.PLAN_STATUS,"
+						+ "         2 TASK_STAT,"
+						+ "         T.TYPE,"
+						+ "         T.STATUS,"
+						+ "         F.DIFF_DATE,"
+						+ "         F.PROGRESS"
+						+ "    FROM TASK T, BLOCK B, FM_STAT_OVERVIEW_TASK F"
+						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
+						+ "     AND T.TASK_ID = F.TASK_ID(+)"
+						+ "     AND NOT EXISTS"
+						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+						+ "  UNION ALL"
+						+ "  SELECT T.TASK_ID,"
+						+ "         T.PROGRAM_ID,"
+						+ "         B.BLOCK_ID,"
+						+ "         B.PLAN_STATUS,"
+						+ "         CASE T.STATUS"
+						+ "           WHEN 0 THEN 4"
+						+ "           ELSE CASE SUM(S.STATUS)"
+						+ "              WHEN 0 THEN 3"
+						+ "              ELSE 2 END"
+						+ "         END TASK_STAT,"
+						+ "         T.TYPE,"
+						+ "         T.STATUS,"
+						+ "         F.DIFF_DATE,"
+						+ "         F.PROGRESS"
+						+ "    FROM TASK T, BLOCK B, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
+						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
+						+ "     AND T.TASK_ID = F.TASK_ID(+)"
+						+ "     AND T.TASK_ID = S.TASK_ID"
+						+ "   GROUP BY T.TASK_ID,"
+						+ "            T.PROGRAM_ID,"
+						+ "            B.BLOCK_ID,"
+						+ "            B.PLAN_STATUS,"
+						+ "            T.STATUS,"
+						+ "            T.TYPE,"
+						+ "            T.STATUS,"
+						+ "            F.DIFF_DATE,"
+						+ "            F.PROGRESS)"
+						+ "SELECT * FROM T WHERE T.PROGRAM_ID = "+programId;
+			}else{
+				selectSql = "WITH T AS"
+					+ " (SELECT T.TASK_ID,"
+					+ "         T.PROGRAM_ID,"
+					+ "         1 PLAN_STATUS,"
+					+ "         2 TASK_STAT,"
+					+ "         T.TYPE,"
+					+ "         T.STATUS,"
+					+ "         F.DIFF_DATE,"
+					+ "         F.PROGRESS"
+					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
+					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
+					+ "     AND T.BLOCK_ID=0"
+					+ "     AND NOT EXISTS"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+					+ "  UNION ALL"
+					+ "  SELECT T.TASK_ID,"
+					+ "         T.PROGRAM_ID,"
+					+ "         1 PLAN_STATUS,"
+					+ "         CASE T.STATUS"
+					+ "           WHEN 0 THEN 4"
+					+ "           ELSE CASE SUM(S.STATUS)"
+					+ "              WHEN 0 THEN 3"
+					+ "              ELSE 2 END"
+					+ "         END TASK_STAT,"
+					+ "         T.TYPE,"
+					+ "         T.STATUS,"
+					+ "         F.DIFF_DATE,"
+					+ "         F.PROGRESS"
+					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
+					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
+					+ "     AND T.BLOCK_ID=0"
+					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "   GROUP BY T.TASK_ID,"
+					+ "            T.PROGRAM_ID,"
+					+ "            T.STATUS,"
+					+ "            T.TYPE,"
+					+ "            T.STATUS,"
+					+ "            F.DIFF_DATE,"
+					+ "            F.PROGRESS)"
+					+ "SELECT * FROM T WHERE T.PROGRAM_ID = "+programId;}
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					int total=0;//总量
+						
+					int unPush=0;//未发布	
+					int ongoing=0;//作业中
+					int unClosed=0;//已完成
+					int closed=0;//已关闭
+						
+					int collect=0;//采集
+					int daily=0;//日编
+					int monthly=0;//月编
+						
+					int draft=0;//草稿
+					int unplanned=0;//未规划
+						
+						//作业中block采集进展
+					int ongoingCollectTotal=0;
+					int ongoingRegularCollect=0;//进展正常
+					int ongoingFinishedCollect=0;//采集完成
+					int ongoingUnexpectedCollect=0;//进展异常
+					
+						//作业中block日编信息
+					int ongoingDailyTotal=0;
+					int ongoingUnexpectedDaily=0;//进展异常
+					int ongoingRegularDaily=0;//进展正常
+					int ongoingFinishedDaily=0;//日编完成
+					
+						//作业中block月编信息
+					int ongoingMonthlyTotal=0;
+					int ongoingUnexpectedMonthly=0;//进展异常
+					int ongoingRegularMonthly=0;//进展正常
+					int ongoingFinishedMonthly=0;//月编完成
+					
+						//完成block逾期统计
+					int dailyOverdue=0;//日编逾期
+					int collectOverdue=0;//采集逾期
+					int monthlyOverdue=0;//月编逾期
+					
+						//完成block进展统计
+					int closedOverdue=0;//逾期完成
+					int closedRegular=0;//正常完成
+					int closedAdvanced=0;//提前完成
+					
+					if (rs.next()) {
+						total+=1;
+						int planStatus=rs.getInt("PLAN_STATUS");
+						int status=rs.getInt("STATUS");
+						int taskStat=rs.getInt("TASK_STAT");
+						int type=rs.getInt("TYPE");
+						if(0==type){collect+=1;}//采
+						else if(1==type){daily+=1;}//日
+						else if(2==type||3==type){monthly+=1;}//月
+						if(0==planStatus){//未发布
+							unPush+=1;
+							unplanned+=1;
+						}else if(2==status){//草稿
+							unPush+=1;
+							draft+=1;
+						}else if (0==status) {//关闭
+							closed+=1;
+							if(0==type&&rs.getInt("DIFF_DATE")<0){collectOverdue+=1;}//采diff_date<0
+							else if(1==type&&rs.getInt("DIFF_DATE")<0){dailyOverdue+=1;}//日
+							else if((2==type||3==type)&&rs.getInt("DIFF_DATE")<0){monthlyOverdue+=1;}//月
+							//按时完成 diff_date=0	 提前完成 diff_date>0 逾期完成 diff_date<0
+							if(rs.getInt("DIFF_DATE")==0){closedRegular+=1;}
+							else if(rs.getInt("DIFF_DATE")>0){closedAdvanced+=1;}
+							else if(rs.getInt("DIFF_DATE")<0){closedOverdue+=1;}
+						}else if(2==taskStat){//进行中的任务progress:1正常(实际作业小于预期)，2异常(实际作业等于或大于预期),3完成（percent=100）
+							ongoing+=1;
+						}else if(3==taskStat){unClosed+=1;}//待关闭
+						if(!(0==planStatus||2==status)){
+							if(0==type){//采
+								ongoingCollectTotal+=1;
+								if(0==status){ongoingFinishedCollect+=1;}
+								else if(1==rs.getInt("PROGRESS")){ongoingRegularCollect+=1;}
+								else if(2==rs.getInt("PROGRESS")){ongoingUnexpectedCollect+=1;}
+							}
+							else if(1==type){//日
+								ongoingDailyTotal+=1;
+								if(0==status){ongoingFinishedDaily+=1;}
+								else if(1==rs.getInt("PROGRESS")){ongoingRegularDaily+=1;}
+								else if(2==rs.getInt("PROGRESS")){ongoingUnexpectedDaily+=1;}
+							}
+							else if(2==type||3==type){//月
+								ongoingMonthlyTotal+=1;
+								if(0==status){ongoingFinishedMonthly+=1;}
+								else if(1==rs.getInt("PROGRESS")){ongoingRegularMonthly+=1;}
+								else if(2==rs.getInt("PROGRESS")){ongoingUnexpectedMonthly+=1;}
+							}
+						}
+					}
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put("total", total);
+					map.put("unPush", unPush);
+					map.put("ongoing", ongoing);
+					map.put("unClosed", unClosed);
+					map.put("closed", closed);
+					map.put("collect", collect);
+					map.put("daily", daily);
+					map.put("monthly", monthly);
+					map.put("draft", draft);
+					map.put("unplanned", unplanned);
+					Map<String, Integer> ongoingCollectInfo=new HashMap<String, Integer>();
+					ongoingCollectInfo.put("ongoingRegularCollect", ongoingRegularCollect);
+					ongoingCollectInfo.put("ongoingFinishedCollect", ongoingFinishedCollect);
+					ongoingCollectInfo.put("ongoingUnexpectedCollect", ongoingUnexpectedCollect);
+					ongoingCollectInfo.put("total", ongoingCollectTotal);
+					map.put("ongoingCollectInfo", ongoingCollectInfo);
+					Map<String, Integer> ongoingDailyInfo=new HashMap<String, Integer>();
+					ongoingDailyInfo.put("ongoingRegularDaily", ongoingRegularDaily);
+					ongoingDailyInfo.put("ongoingFinishedDaily", ongoingFinishedDaily);
+					ongoingDailyInfo.put("ongoingUnexpectedDaily", ongoingUnexpectedDaily);
+					ongoingDailyInfo.put("total", ongoingDailyTotal);
+					map.put("ongoingDailyInfo", ongoingDailyInfo);
+					Map<String, Integer> ongoingMonthlyInfo=new HashMap<String, Integer>();
+					ongoingMonthlyInfo.put("ongoingRegularMonthly", ongoingRegularMonthly);
+					ongoingMonthlyInfo.put("ongoingFinishedMonthly", ongoingFinishedMonthly);
+					ongoingMonthlyInfo.put("ongoingUnexpectedMonthly", ongoingUnexpectedMonthly);
+					ongoingMonthlyInfo.put("total", ongoingMonthlyTotal);
+					map.put("ongoingMonthlyInfo", ongoingMonthlyInfo);
+					
+					Map<String, Integer> overdueInfo=new HashMap<String, Integer>();
+					overdueInfo.put("dailyOverdue", dailyOverdue);
+					overdueInfo.put("collectOverdue", collectOverdue);
+					overdueInfo.put("monthlyOverdue", monthlyOverdue);
+					map.put("overdueInfo", overdueInfo);
+					
+					Map<String, Integer> closedInfo=new HashMap<String, Integer>();
+					closedInfo.put("closedOverdue", closedOverdue);
+					closedInfo.put("closedAdvanced", closedAdvanced);
+					closedInfo.put("closedRegular", closedRegular);
+					map.put("closedInfo", closedInfo);
+					return map;
+				}
+	
+			};
+
+			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1016,7 +1401,7 @@ public class StaticsService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Map<String, Object> querySubtaskOverView(int blockManId, int taskId) throws ServiceException {
+	public Map<String, Object> querySubtaskOverView(int taskId) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
@@ -1029,15 +1414,178 @@ public class StaticsService {
 						+ " FROM SUBTASK S,FM_STAT_OVERVIEW_SUBTASK FSOS"
 						+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID(+)"
 						+ " AND S.TASK_ID = " + taskId;
-			}else{
-				selectSql = "SELECT S.SUBTASK_ID,S.STAGE,S.TYPE,S.STATUS,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
-						+ " FROM SUBTASK S,FM_STAT_OVERVIEW_SUBTASK FSOS"
-						+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID(+)"
-						+ " AND S.BLOCK_MAN_ID = " + blockManId;
-			} 
+			}
 			
 			Map<String,Object> result = StaticsOperation.querySubtaskOverView(conn,selectSql);
 			return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param type
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryProgramOverView(int type) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			String selectSql = "";
+			if(1==type){
+				//常规
+				selectSql = "SELECT 0             PROGRAM_ID,"
+						+ "       C.CITY_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       0             TASK_STAT,"
+						+ "       0                   COLLECT_STAT,"
+						+ "       0                   DAILY_STAT,"
+						+ "       0                   MONTHLY_STAT,"
+						+ "       0 DIFF_DATE,"
+						+ "       0             COLLECT_PROGRESS,"
+						+ "       0             DAILY_PROGRESS,"
+						+ "       0             MONTHLY_PROGRESS"
+						+ "  FROM CITY C"
+						+ " WHERE C.PLAN_STATUS IN (0, 1)"
+						+ " UNION ALL"
+						//+ " --进行中 待分配"
+						+ " SELECT P.PROGRAM_ID,"
+						+ "       C.CITY_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       0                   TASK_STAT,"
+						+ "       0                   COLLECT_STAT,"
+						+ "       0                   DAILY_STAT,"
+						+ "       0                   MONTHLY_STAT,"
+						+ "       F.DIFF_DATE,"
+						+ "       F.COLLECT_PROGRESS,"
+						+ "       F.DAILY_PROGRESS,"
+						+ "       F.MONTHLY_PROGRESS"
+						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
+						+ " WHERE C.CITY_ID = P.CITY_ID"
+						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.STATUS = 1"
+						+ "   AND NOT EXISTS (SELECT 1"
+						+ "          FROM TASK T"
+						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
+						+ "           AND T.LATEST = 1)"
+						+ " UNION ALL"
+						//+ "--进行中SUM(TASK_STATUS)!=0 已完成 SUM(TASK_STATUS)=0 已关闭 STATUS=0"
+						+ " SELECT P.PROGRAM_ID,"
+						+ "       C.CITY_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       CASE P.STATUS"
+						+ "         WHEN 0 THEN 4"
+						+ "         ELSE CASE SUM(T.STATUS)"
+						+ "            WHEN 0 THEN 3"
+						+ "            ELSE 2 END"
+						+ "         END TASK_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+						+ "         WHEN 0 THEN 2"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END END COLLECT_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+						+ "         WHEN 0 THEN 2 "
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END"
+						+ "       END DAILY_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE 1 END) "
+						+ "         WHEN 0 THEN 2"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END"
+						+ "       END MONTHLY_STAT,"
+						+ "       0 DIFF_DATE,"
+						+ "       0 COLLECT_PROGRESS,"
+						+ "       0 DAILY_PROGRESS,"
+						+ "       0 MONTHLY_PROGRESS"
+						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F，TASK T"
+						+ " WHERE C.CITY_ID = P.CITY_ID"
+						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.STATUS = 1"
+						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+						+ "   AND T.LATEST = 1"
+						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS";
+			}else if(4==type){
+				//情报
+				selectSql = "SELECT 0             PROGRAM_ID,"
+						+ "       C.INFOR_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       0             TASK_STAT,"
+						+ "       0                   COLLECT_STAT,"
+						+ "       0                   DAILY_STAT,"
+						+ "       0                   MONTHLY_STAT,"
+						+ "       0 DIFF_DATE,"
+						+ "       0             COLLECT_PROGRESS,"
+						+ "       0             DAILY_PROGRESS,"
+						+ "       0             MONTHLY_PROGRESS"
+						+ "  FROM INFOR C"
+						+ " WHERE C.PLAN_STATUS IN (0, 1)"
+						+ " UNION ALL"
+						//+ " --进行中 待分配"
+						+ " SELECT P.PROGRAM_ID,"
+						+ "       C.INFOR_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       0                   TASK_STAT,"
+						+ "       0                   COLLECT_STAT,"
+						+ "       0                   DAILY_STAT,"
+						+ "       0                   MONTHLY_STAT,"
+						+ "       F.DIFF_DATE,"
+						+ "       F.COLLECT_PROGRESS,"
+						+ "       F.DAILY_PROGRESS,"
+						+ "       F.MONTHLY_PROGRESS"
+						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
+						+ " WHERE C.INFOR_ID = P.INFOR_ID"
+						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.STATUS = 1"
+						+ "   AND NOT EXISTS (SELECT 1"
+						+ "          FROM TASK T"
+						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
+						+ "           AND T.LATEST = 1)"
+						+ " UNION ALL"
+						//+ "--进行中SUM(TASK_STATUS)!=0 已完成 SUM(TASK_STATUS)=0 已关闭 STATUS=0"
+						+ " SELECT P.PROGRAM_ID,"
+						+ "       C.INFOR_ID,"
+						+ "       C.PLAN_STATUS,"
+						+ "       CASE P.STATUS"
+						+ "         WHEN 0 THEN 4"
+						+ "         ELSE CASE SUM(T.STATUS)"
+						+ "            WHEN 0 THEN 3"
+						+ "            ELSE 2 END"
+						+ "         END TASK_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+						+ "         WHEN 0 THEN 2"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END END COLLECT_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+						+ "         WHEN 0 THEN 2 "
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END"
+						+ "       END DAILY_STAT,"
+						+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE 1 END) "
+						+ "         WHEN 0 THEN 2"
+						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
+						+ "            WHEN 0 THEN 3 ELSE 2 END"
+						+ "       END MONTHLY_STAT,"
+						+ "       0 DIFF_DATE,"
+						+ "       0 COLLECT_PROGRESS,"
+						+ "       0 DAILY_PROGRESS,"
+						+ "       0 MONTHLY_PROGRESS"
+						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F，TASK T"
+						+ " WHERE C.INFOR_ID = P.INFOR_ID"
+						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.STATUS = 1"
+						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+						+ "   AND T.LATEST = 1"
+						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS";
+			}
+			Map<String,Object> result = StaticsOperation.queryProgramOverView(conn,selectSql);
+			return result;
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

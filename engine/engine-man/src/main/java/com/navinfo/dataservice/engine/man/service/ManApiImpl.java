@@ -185,10 +185,7 @@ public class ManApiImpl implements ManApi {
 	}
 	@Override
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
-		Map<String,Integer> map = new HashMap<String, Integer>();
-		map.put("quickTaskId", 1);
-		map.put("centreTaskId", 1);
-		return map;
+		return GridService.getInstance().queryTaskIdsByGrid(grid);
 	}
 }
 

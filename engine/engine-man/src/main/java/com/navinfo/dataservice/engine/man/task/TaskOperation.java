@@ -273,7 +273,7 @@ public class TaskOperation {
 				insertPart+=" PLAN_END_DATE ";
 				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getType()!=null && bean.getType()!=0 && StringUtils.isNotEmpty(bean.getType().toString())){
+			if (bean!=null&&bean.getType()!=null && StringUtils.isNotEmpty(bean.getType().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TYPE ";
 				valuePart+=bean.getType();
@@ -1507,52 +1507,42 @@ public class TaskOperation {
 			String baseSql = "update task set ";
 			QueryRunner run = new QueryRunner();
 			String updateSql="";
-			List<Object> values=new ArrayList();
 			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" DESCP=? ";
-				values.add(bean.getDescp());
+				updateSql+=" DESCP= '" + bean.getDescp() + "'";
 			};
 			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" NAME=? ";
-				values.add(bean.getName());
+				updateSql+=" NAME='" + bean.getName() + "'";
 			};
 			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" PLAN_START_DATE=? ";
-				values.add(bean.getPlanStartDate());
+				updateSql+=" PLAN_START_DATE=to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" PLAN_END_DATE=? ";
-				values.add(bean.getPlanEndDate());
+				updateSql+=" PLAN_END_DATE=to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" PRODUCE_PLAN_START_DATE=? ";
-				values.add(bean.getProducePlanStartDate());
+				updateSql+=" PRODUCE_PLAN_START_DATE=to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" PRODUCE_PLAN_END_DATE=? ";
-				values.add(bean.getProducePlanEndDate());
+				updateSql+=" PRODUCE_PLAN_END_DATE=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getLot()!=null && bean.getLot()!=0 && StringUtils.isNotEmpty(bean.getLot().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" LOT=? ";
-				values.add(bean.getLot());
+				updateSql+=" LOT= " + bean.getLot();
 			};
 			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
-				updateSql+=" GROUP_ID=? ";
-				values.add(bean.getGroupId());
+				updateSql+=" GROUP_ID= "+bean.getGroupId();
 			};
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
-				updateSql+=" where TASK_ID=?";
-				values.add(bean.getTaskId());
+				updateSql+=" where TASK_ID=" + bean.getTaskId();
 			};
-			run.update(conn,baseSql+updateSql,values.toArray());
+			run.update(conn,baseSql+updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
@@ -2094,6 +2084,54 @@ public class TaskOperation {
 	 */
 	public static void adjustTaskRegion(Connection conn, Integer taskId, List<Integer> gridIds) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * 插入TASK_GRID_MAPPING
+	 * @throws Exception 
+	 */
+	public static void insertTaskGridMapping(Connection conn, Task bean) throws Exception {
+		try{
+			Map<Integer,Integer> gridIds = bean.getGridIds();
+			
+			insertTaskGridMapping(conn,bean.getTaskId(),gridIds);
+
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @param gridIds
+	 * @throws Exception 
+	 */
+	private static void insertTaskGridMapping(Connection conn, Integer taskId, Map<Integer, Integer> gridIds) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "insert into TASK_GRID_MAPPING (TASK_ID, GRID_ID,TYPE) VALUES (?,?,?)";
+			Object[][] inParam = new Object[gridIds.size()][];
+			int i = 0;
+			for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+				Object[] temp = new Object[3];
+				temp[0] = taskId;
+				temp[1] = entry.getKey();
+				temp[2] = entry.getValue();
+				inParam[i] = temp;
+				i++;
+			}
+			run.batch(conn, createMappingSql, inParam);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
 		
 	}
 	

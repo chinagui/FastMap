@@ -493,4 +493,35 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+
+
+
+	/**
+	 * @param conn 
+	 * @param blockId 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getGridListByBlockId(Connection conn, Integer blockId) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+						
+			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gridIdlist = new ArrayList<Integer>();
+					while (rs.next()) {
+						gridIdlist.add(rs.getInt("GRID_ID"));
+					}
+					return gridIdlist;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
 }

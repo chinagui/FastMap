@@ -236,7 +236,7 @@ public class TaskController extends BaseController {
 			//taskId,taskType
 			int taskId= dataJson.getInt("taskId");
 			
-			Task data = TaskService.getInstance().query(taskId);
+			Map<String,Object> data = TaskService.getInstance().query(taskId);
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

@@ -34,6 +34,9 @@ public class FMYW20027 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			//充电桩（230227）不参与检查
+			String kindCode = poi.getKindCode();
+			if(kindCode == null || "230227".equals(kindCode)){return;}
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			if(ixPoiAddress == null){return;}
 			String addressFullname = ixPoiAddress.getFullname();
@@ -42,25 +45,25 @@ public class FMYW20027 extends BasicCheckRule {
 			String fullname = CheckUtil.strQ2B(addressFullname);
 			List<String> errMsgList = new ArrayList<String>();
 			//address中存在空格，且空格前后若为以下组合，将Err的情况，程序报出；---见空格规则表
-			String blankRuleErrStr = CheckUtil.blankRuleErrStr(fullname);
-			if(blankRuleErrStr != null){
-				errMsgList.add("地址空格错误:"+blankRuleErrStr);
+			boolean blankRuleErrStr = CheckUtil.blankRuleTable(fullname);
+			if(!blankRuleErrStr){
+				errMsgList.add("地址中存在空格，请检查");
 			}
 			//address前后空格检查,多个空格检查,回车符检查,Tab符检查
 			List<String> checkIllegalBlank = CheckUtil.checkIllegalBlank(fullname);
 			if(checkIllegalBlank != null && !checkIllegalBlank.isEmpty()){
 				for (String msg : checkIllegalBlank) {
 					if("前后空格".equals(msg)){
-						errMsgList.add("地址空格错误:地址不能以空格开头或结尾");
+						errMsgList.add("地址中存在空格，请检查");
 					} 
 					if("多个空格".equals(msg)){
-						errMsgList.add("地址空格错误:地址不能出现连续空格");
+						errMsgList.add("地址中存在连续空格，请检查");
 					}
 					if("回车符".equals(msg)){
-						errMsgList.add("地址空格错误:地址不能包含回车符");
+						errMsgList.add("地址中存在回车符，请检查");
 					}
 					if("Tab符".equals(msg)){
-						errMsgList.add("地址空格错误:地址不能包含Tab符号");
+						errMsgList.add("地址中存在Tab符号，请检查");
 					}
 				}
 			}

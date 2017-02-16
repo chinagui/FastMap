@@ -89,13 +89,13 @@ public class CheckTest {
 //		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
 //		logList1.add(logg1);
 //		chiAddress.setHisChangeLogs(logList1);
-		
+//		
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-06-03-01");
+		ruleIdList.add("FM-14Sum-06-02-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

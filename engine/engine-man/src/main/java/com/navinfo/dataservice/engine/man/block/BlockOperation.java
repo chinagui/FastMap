@@ -54,11 +54,11 @@ public class BlockOperation {
 						HashMap map = new HashMap<String, Integer>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
-						map.put("planningStatus", rs.getInt("PLAN_STATUS"));
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						//完成度
-						map.put("percent", rs.getInt("PERCENT"));
-						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						//map.put("percent", rs.getInt("PERCENT"));
+						//map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						try {
 							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 							String clobStr = GeoTranslator.struct2Wkt(struct);

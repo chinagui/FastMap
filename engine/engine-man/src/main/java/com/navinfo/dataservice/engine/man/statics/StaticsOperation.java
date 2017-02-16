@@ -221,6 +221,167 @@ public class StaticsOperation {
 			throw new Exception("查询grid失败:" + e.getMessage(), e);
 		}
 	}
+	
+	/**
+	 * @param conn 
+	 * @param selectSql 
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, Object> queryProgramOverView(Connection conn, String selectSql) throws Exception {
+		// TODO Auto-generated method stub
+		try {
+			QueryRunner run = new QueryRunner();
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> result = new HashMap<String,Object>();
+					int unPush=0;//未发布
+					int ongoing=0;//作业中
+			        int unClosed=0;//待关闭
+			        int closed=0;//已关闭
+			        
+			        int unPlanned=0;//未规划
+					int draft=0;//草稿
+					
+					int ongoingRegularCollect = 0;
+					int ongoingUnexpectedCollect = 0;
+					int ongoingFinishedCollect = 0;
+					
+					int ongoingRegularDaily = 0;
+					int ongoingUnexpectedDaily = 0;
+					int ongoingFinishedDaily = 0;
+					
+					int ongoingRegularMonthly = 0;
+					int ongoingUnexpectedMonthly = 0;
+					int ongoingFinishedMonthly = 0;
+					
+					int unClosedRegular = 0;
+					int unClosedOverdue = 0;
+					int unClosedAdvanced = 0;
+
+					int closedRegular = 0;
+					int closedOverdue = 0;
+					int closedAdvanced = 0;
+					
+					while (rs.next()) {
+						//未规划，草稿，已关闭，进行中
+						int planStatus=rs.getInt("PLAN_STATUS");
+						//1未规划2进行中3待关闭4已关闭
+						int taskStat=rs.getInt("TASK_STAT");
+						//COLLECT_STAT,DAILY_STAT,MONTHLY_STAT 3待关闭2进行中						
+						if(0==planStatus){//未规划
+							unPush+=1;
+							unPlanned+=1;
+						}else if (1==planStatus) {//草稿
+							unPush+=1;
+							draft+=1;
+						}else if (2==planStatus) {//已关闭
+							closed+=1;
+							//完成情况
+							if(0 == rs.getInt("DIFF_DATE")){
+								closedRegular += 1;
+							}else if(0 > rs.getInt("DIFF_DATE")){
+								closedOverdue += 1;
+							}else if(0 < rs.getInt("DIFF_DATE")){
+								closedAdvanced += 1;
+							}
+						}else if (2==taskStat) {//进行中
+							ongoing+=1;
+							//采集作业中情况
+							if(3==rs.getInt("COLLECT_STAT")){ongoingFinishedCollect+=1;}
+							else if(2 == rs.getInt("COLLECT_PROGRESS")){
+								ongoingUnexpectedCollect += 1;
+							}else{
+								ongoingRegularCollect += 1;
+							}
+							//日编作业中情况
+							if(3==rs.getInt("DAILY_STAT")){ongoingFinishedCollect+=1;}
+							else if(2 == rs.getInt("DAILY_PROGRESS")){
+								ongoingUnexpectedDaily += 1;
+							}else{
+								ongoingRegularDaily += 1;
+							}
+							//月编作业中情况
+							if(3==rs.getInt("MONTHLY_STAT")){ongoingFinishedCollect+=1;}
+							else if(2 == rs.getInt("MONTHLY_PROGRESS")){
+								ongoingUnexpectedMonthly += 1;
+							}else{
+								ongoingRegularMonthly += 1;
+							}
+						}else if (3==taskStat) {//待关闭
+							unClosed+=1;
+							//完成情况
+							if(0 == rs.getInt("DIFF_DATE")){
+								unClosedRegular += 1;
+							}else if(0 > rs.getInt("DIFF_DATE")){
+								unClosedOverdue += 1;
+							}else if(0 < rs.getInt("DIFF_DATE")){
+								unClosedAdvanced += 1;
+							}
+						}
+					}
+					Map<String,Integer> cityInfo = new HashMap<String,Integer>();
+					cityInfo.put("unPush", unPush);
+					cityInfo.put("ongoing", ongoing);
+					cityInfo.put("unClosed", unClosed);
+					cityInfo.put("close", closed);
+					cityInfo.put("total", unPush + ongoing + unClosed+closed);
+					result.put("cityInfo", cityInfo);
+					
+					Map<String,Integer> unPushInfo = new HashMap<String,Integer>();
+					unPushInfo.put("unPlanned", unPlanned);
+					unPushInfo.put("draft", draft);
+					result.put("unPushInfo", unPushInfo);
+					
+					Map<String,Object> ongoingInfo = new HashMap<String,Object>();
+					
+					Map<String,Integer> ongoingCollectInfo = new HashMap<String,Integer>();
+					ongoingCollectInfo.put("ongoingRegularCollect", ongoingRegularCollect);
+					ongoingCollectInfo.put("ongoingUnexpectedCollect", ongoingUnexpectedCollect);
+					ongoingCollectInfo.put("ongoingFinishedCollect", ongoingFinishedCollect);
+					ongoingCollectInfo.put("total", ongoingFinishedCollect + ongoingRegularCollect + ongoingUnexpectedCollect);
+					
+					Map<String,Integer> ongoingDailyInfo = new HashMap<String,Integer>();
+					ongoingDailyInfo.put("ongoingRegularDaily", ongoingRegularDaily);
+					ongoingDailyInfo.put("ongoingUnexpectedDaily", ongoingUnexpectedDaily);
+					ongoingDailyInfo.put("ongoingFinishedDaily", ongoingFinishedDaily);
+					ongoingDailyInfo.put("total", ongoingRegularDaily + ongoingUnexpectedDaily + ongoingFinishedDaily);
+					
+					Map<String,Integer> ongoingMonthlyInfo = new HashMap<String,Integer>();
+					ongoingMonthlyInfo.put("ongoingRegularMonthly", ongoingRegularMonthly);
+					ongoingMonthlyInfo.put("ongoingUnexpectedMonthly", ongoingUnexpectedMonthly);
+					ongoingMonthlyInfo.put("ongoingFinishedMonthly", ongoingFinishedMonthly);
+					ongoingMonthlyInfo.put("total", ongoingRegularMonthly + ongoingUnexpectedMonthly + ongoingFinishedMonthly);
+					
+					ongoingInfo.put("ongoingCollectInfo", ongoingCollectInfo);
+					ongoingInfo.put("ongoingDailyInfo", ongoingDailyInfo);
+					ongoingInfo.put("ongoingMonthlyInfo", ongoingMonthlyInfo);
+					
+					result.put("ongoingInfo", ongoingInfo);
+					
+					Map<String,Integer> unClosedInfo = new HashMap<String,Integer>();
+					unClosedInfo.put("unClosedRegular", unClosedRegular);
+					unClosedInfo.put("unClosedAdvanced", unClosedAdvanced);
+					unClosedInfo.put("unClosedOverdue", unClosedOverdue);
+					result.put("unClosedInfo", unClosedInfo);
+					
+					Map<String,Integer> closedInfo = new HashMap<String,Integer>();
+					closedInfo.put("closedRegular", closedRegular);
+					closedInfo.put("closedOverdue", closedOverdue);
+					closedInfo.put("closedAdvanced", closedAdvanced);
+					result.put("closedInfo", closedInfo);
+					return result;
+				}
+			};
+
+			return run.query(conn, selectSql, rsHandler);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
 
 	/**
 	 * @param conn

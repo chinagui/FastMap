@@ -239,18 +239,18 @@ public class BlockService {
 			String wkt = json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
-			int type = 1;
-			if(json.containsKey("type")){
-				type = json.getInt("type");
-			}
+			//int type = 1;
+			//if(json.containsKey("type")){
+			//	type = json.getInt("type");
+			//}
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
-					+ " from BLOCK t "
-					+ ", (SELECT DISTINCT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
-					+ " where t.PLAN_STATUS in "+ planningStatus
-					+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
+			String selectSql = "SELECT T.BLOCK_ID, T.BLOCK_NAME, T.GEOMETRY, T.PLAN_STATUS, T.CITY_ID"
+					+ "  FROM BLOCK T"
+					+ " WHERE T.PLAN_STATUS IN "+planningStatus
+					+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
+					+ "       'TRUE'";
 
-			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
+			/*if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
 					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
 							+ " from BLOCK t"
@@ -258,9 +258,8 @@ public class BlockService {
 							+ " where t.PLAN_STATUS in " + planningStatus
 							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 				}
-			}
-			;
-			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
+			};*/
+			/*if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
 				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
 			} else {
 				if ("within".equals(json.getString("relation"))) {
@@ -273,8 +272,8 @@ public class BlockService {
 				selectSql += " AND t.CITY_ID = 100002";
 			}else if(1==type){
 				selectSql += " AND t.CITY_ID < 100000";
-			}
-
+			}*/
+			log.debug(selectSql);
 			return BlockOperation.queryBlockBySql(conn, selectSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -56,7 +56,7 @@ public class GridController extends BaseController {
 	
 	/**
 	 * 出品管理--日出品管理
-	 * 根据输入的几何，查询跟几何范围内的grid，获取可出品的grid，并返回grid列表。
+	 * 根据输入的几何，查询跟几何范围内的grid，返回已出品的快速更新grid列表。
 	 * @param request
 	 * @return
 	 */
@@ -147,25 +147,26 @@ public class GridController extends BaseController {
 	
 	/**
 	 * 作业管理--采集管理--采集子任务范围选择
-	 * block为大区block时，后台自动计算并在地图上显示该大区block中情报关联的grid
+	 * 后台自动计算并在地图上显示该task关联的grid
+	 * 图层仅展示
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/grid/listByInforBlockManId")
-	public ModelAndView listByInforBlockManId(HttpServletRequest request) {
+	@RequestMapping(value = "/grid/listTaskGrid")
+	public ModelAndView listTaskGrid(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			int blockManId = dataJson.getInt("blockManId");
-			int neighbor = 0;
+			int blockManId = dataJson.getInt("taskId");
+			/*int neighbor = 0;
 			if(dataJson.containsKey("neighbor")){
 				neighbor = dataJson.getInt("neighbor");
-			}
+			}*/
 			
-			List<Integer> data = GridService.getInstance().listByInforBlockManId(blockManId,neighbor);
+			List<Integer> data = GridService.getInstance().listTaskGrid(blockManId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取grid列表失败，原因：" + e.getMessage(), e);

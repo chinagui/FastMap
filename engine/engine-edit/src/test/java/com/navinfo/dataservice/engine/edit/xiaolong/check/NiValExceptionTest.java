@@ -86,7 +86,7 @@ public class NiValExceptionTest extends InitApplication {
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			Page page = selector.list(9, grids, 5, 1, 2);
+			Page page = selector.list(9, grids, 5, 1, 0);
 			System.out.println(page.getResult()
 					+ "-----------------------------------------------");
 		} finally {
@@ -99,10 +99,10 @@ public class NiValExceptionTest extends InitApplication {
 		Connection conn = null;
 		try {
 
-			String id = "7b65c4b86c55d058216aebe46604250f";
+			String id = "6e51ce1f85289caba4b557f33a1da62a";
 			int oldType = 2;
 
-			int type = 3;
+			int type = 0;
 
 			conn = DBConnector.getInstance().getConnectionById(19);
 

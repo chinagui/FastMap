@@ -95,6 +95,7 @@ public class CkExceptionSelector {
 				exception.setWorker(resultSet.getString("worker"));
 
 				exception.setQaWorker(resultSet.getString("qa_worker"));
+				exception.setRowId(resultSet.getString("row_id"));
 
 
 			} else {

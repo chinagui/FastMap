@@ -325,7 +325,7 @@ public class StaticsOperation {
 					cityInfo.put("unPush", unPush);
 					cityInfo.put("ongoing", ongoing);
 					cityInfo.put("unClosed", unClosed);
-					cityInfo.put("close", closed);
+					cityInfo.put("closed", closed);
 					cityInfo.put("total", unPush + ongoing + unClosed+closed);
 					result.put("cityInfo", cityInfo);
 					

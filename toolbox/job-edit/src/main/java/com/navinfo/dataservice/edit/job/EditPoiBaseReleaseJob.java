@@ -195,7 +195,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
-					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
+					+ "   AND ps.status =2"
+					+ "   AND ps.FRESH_VERIFIED=0"
 					+ "   and ip.u_record!=2"
 					+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
@@ -228,7 +229,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
 			String sql="UPDATE POI_EDIT_STATUS E"
-					+ "   SET E.STATUS = 3, FRESH_VERIFIED = 0,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
+					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
 					+ " WHERE E.STATUS = 2"
 					+ "   AND NOT EXISTS (SELECT 1"
 					+ "          FROM CK_RESULT_OBJECT R"

@@ -62,17 +62,17 @@ public class UrbanBatchUtils extends BaseBatchUtils {
         } else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, faceGeometry)) {
             // 判断是否起点处于ring组成线上
             if (isInBoundary(conn, link.getsNodePid(), faceGeometry, result)) {
-                if (isSameNode(conn, link.getsNodePid()))
+                if (isSameNode(conn, result, link.getsNodePid()))
                     link.changedFields().put("urban", IS_URBAN);
                 // 判断是否终点处于ring组成线上
             } else if (isInBoundary(conn, link.geteNodePid(), faceGeometry, result))
-                if (isSameNode(conn, link.geteNodePid()))
+                if (isSameNode(conn, result, link.geteNodePid()))
                     link.changedFields().put("urban", IS_URBAN);
 
             // 判断link是否包含于面内并且两个端点处于面组成线上
         } else if (GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, faceGeometry)) {
             // 判断两个端点是否属于同一点
-            if (isSameNode(conn, link.getsNodePid(), link.geteNodePid()))
+            if (isSameNode(conn, result, link.getsNodePid(), link.geteNodePid()))
                 link.changedFields().put("urban", IS_URBAN);
         } else {
             // 其余情况暂不作处理
@@ -88,7 +88,8 @@ public class UrbanBatchUtils extends BaseBatchUtils {
      * @param result       结果集
      * @throws Exception
      */
-    public static void updateUrban(Geometry faceGeometry, Geometry geometry, Connection conn, Result result) throws Exception {
+    public static void updateUrban(Geometry faceGeometry, Geometry geometry, Connection conn, Result result) throws
+            Exception {
         RdLinkSelector selector = new RdLinkSelector(conn);
         // 删除面时,原面内Link的Urban赋0
         if (null == geometry) {
@@ -99,9 +100,18 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             }
             return;
         }
+        List<RdLink> links = null;
         Map<Integer, RdLink> maps = new HashMap<>();
+        // 修形面时,原几何内link的Urban赋0
+        if (null != faceGeometry && faceGeometry != geometry && !faceGeometry.difference(geometry).isEmpty()) {
+            links = selector.loadLinkByFaceGeo(faceGeometry, true);
+            for (RdLink link : links) {
+                link.changedFields().put("urban", IS_NOT_URBAN);
+                maps.put(link.pid(), link);
+            }
+        }
         // 修形面时,新几何内link的Urban赋1
-        List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
+        links = selector.loadLinkByFaceGeo(geometry, true);
         for (RdLink link : links) {
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
             // 判断link是否完全包含于该面
@@ -111,30 +121,22 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             } else if (GeoRelationUtils.InteriorAnd1Intersection(linkGeometry, geometry)) {
                 // 判断是否起点处于ring组成线上
                 if (isInBoundary(conn, link.getsNodePid(), geometry, result)) {
-                    if (isSameNode(conn, link.getsNodePid()))
+                    if (isSameNode(conn, result, link.getsNodePid()))
                         link.changedFields().put("urban", IS_URBAN);
                     // 判断是否终点处于ring组成线上
                 } else if (isInBoundary(conn, link.geteNodePid(), geometry, result))
-                    if (isSameNode(conn, link.geteNodePid()))
+                    if (isSameNode(conn, result, link.geteNodePid()))
                         link.changedFields().put("urban", IS_URBAN);
 
                 // 判断link是否包含于面内并且两个端点处于面组成线上
             } else if (GeoRelationUtils.InteriorAnd2Intersection(linkGeometry, geometry)) {
                 // 判断两个端点是否属于同一点
-                if (isSameNode(conn, link.getsNodePid(), link.geteNodePid()))
+                if (isSameNode(conn, result, link.getsNodePid(), link.geteNodePid()))
                     link.changedFields().put("urban", IS_URBAN);
             } else {
                 // 其余情况暂不作处理
             }
             maps.put(link.pid(), link);
-        }
-        // 修形面时,原几何内link的Urban赋0
-        if (null != faceGeometry && faceGeometry != geometry && !faceGeometry.difference(geometry).isEmpty()) {
-            links = selector.loadLinkByDiffGeo(faceGeometry, geometry, true);
-            for (RdLink link : links) {
-                link.changedFields().put("urban", IS_NOT_URBAN);
-                maps.put(link.pid(), link);
-            }
         }
         for (RdLink link : maps.values()) {
             result.insertObject(link, ObjStatus.UPDATE, link.pid());

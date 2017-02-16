@@ -944,15 +944,15 @@ public class SubtaskOperation {
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
-			sb.append(" AND (T.EXE_USER_ID = " + bean.getExeUserId() + " OR T.EXE_GROUP_ID = " + bean.getExeGroupId() + ")");
+			sb.append(" AND (ST.EXE_USER_ID = " + bean.getExeUserId() + " OR ST.EXE_GROUP_ID = " + bean.getExeGroupId() + ")");
 			
 			if (bean.getStage() != null) {
-				sb.append(" AND T.STAGE = " + bean.getStage());
+				sb.append(" AND ST.STAGE = " + bean.getStage());
 			}else{
 				if(0 == platForm){//采集端
-					sb.append(" AND T.STAGE = 0");
+					sb.append(" AND ST.STAGE = 0");
 				}else if(1 == platForm){//编辑端
-					sb.append(" AND T.STAGE IN (1,2) ");
+					sb.append(" AND ST.STAGE IN (1,2) ");
 				}
 			}
 
@@ -961,10 +961,10 @@ public class SubtaskOperation {
 			}
 
 			if (bean.getStatus() != null) {
-				sb.append(" AND T.STATUS = "+ bean.getStatus());
+				sb.append(" AND ST.STATUS = "+ bean.getStatus());
 			}else{
 				if(0 == platForm){//采集端
-					sb.append(" AND T.STATUS IN (0,1)");
+					sb.append(" AND ST.STATUS IN (0,1)");
 				}
 			}
 			sb.append(" ORDER BY SUBTASK_ID DESC");

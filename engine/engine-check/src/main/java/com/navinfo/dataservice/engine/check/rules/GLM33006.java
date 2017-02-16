@@ -61,7 +61,7 @@ public class GLM33006 extends baseRule {
                     List<RdVariableSpeed> list2 = new RdVariableSpeedSelector(getConn())
                             .loadRdVariableSpeedByViaLinkPid(link.pid(), false);
 
-                    if (!list1.isEmpty() || list2.isEmpty()) {
+                    if (!list1.isEmpty() || !list2.isEmpty()) {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }

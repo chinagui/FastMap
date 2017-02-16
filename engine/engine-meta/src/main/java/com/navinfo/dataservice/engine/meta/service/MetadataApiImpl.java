@@ -569,7 +569,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public List<Map<String, Object>> searchByErrorName(String name) throws Exception {
+	public List<String> searchByErrorName(String name) throws Exception {
 		return ScPointAdminarea.getInstance().searchByErrorName(name);
 	}
 

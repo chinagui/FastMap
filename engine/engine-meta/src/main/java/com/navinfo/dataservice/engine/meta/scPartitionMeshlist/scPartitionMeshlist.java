@@ -21,6 +21,8 @@ public class scPartitionMeshlist {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	private List<Mesh4Partition> meshList= new ArrayList<Mesh4Partition>();
+	
+	private List<Mesh4Partition> allMeshList= new ArrayList<Mesh4Partition>();
 
 	private static class SingletonHolder {
 		private static final scPartitionMeshlist INSTANCE = new scPartitionMeshlist();
@@ -48,8 +50,8 @@ public class scPartitionMeshlist {
 								conn = DBConnector.getInstance().getMetaConnection();
 								pstmt = conn.prepareStatement(sql);
 								rs = pstmt.executeQuery();
-								Mesh4Partition meshs =new Mesh4Partition();
 								while (rs.next()) {
+									Mesh4Partition meshs =new Mesh4Partition();
 									meshs.setMesh(rs.getInt("mesh"));
 									meshs.setAdminCode(rs.getInt("admincode"));
 									meshs.setProvince(rs.getString("province"));
@@ -79,9 +81,9 @@ public class scPartitionMeshlist {
 	 * @throws Exception
 	 */
 	public List<Mesh4Partition> listMeshes4Partition() throws Exception{
-		if (meshList==null||meshList.isEmpty()) {
+		if (allMeshList==null||allMeshList.isEmpty()) {
 				synchronized (this) {
-					if (meshList==null||meshList.isEmpty()) {
+					if (allMeshList==null||allMeshList.isEmpty()) {
 						try {
 							String sql = "SELECT SPM.MESH mesh,cm.admincode,spm.province,spm.province_code,spm.action,spm.open_flag FROM CP_MESHLIST CM, SC_PARTITION_MESHLIST SPM WHERE CM.MESH = SPM.MESH";
 								
@@ -101,7 +103,7 @@ public class scPartitionMeshlist {
 									meshs.setAction(rs.getInt("action"));
 									meshs.setDay2monSwitch(rs.getInt("open_flag"));
 									
-									meshList.add(meshs);					
+									allMeshList.add(meshs);					
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);
@@ -114,7 +116,7 @@ public class scPartitionMeshlist {
 					}
 				}
 			}
-			return meshList;
+			return allMeshList;
 	}
 	
 }

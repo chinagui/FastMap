@@ -102,7 +102,7 @@ public class FMA0914 extends BasicCheckRule {
 	}
 	
 	private boolean setCheckRet(List<String> errList,String colName,IxPoi poi) throws Exception {
-		if (errList.size() == 0) {
+		if (errList == null || errList.size() == 0) {
 			return false;
 		}
 		String error = "地址格式检查 ：" + colName + "中不能存在" + errList.get(0);

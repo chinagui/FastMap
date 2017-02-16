@@ -24,6 +24,9 @@ public class FMA0910 extends BasicCheckRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 		IxPoiAddress address = poiObj.getCHAddress();
+		if (address == null) {
+			return;
+		}
 		List<String> errList = new ArrayList<String>();
 		if (StringUtils.isEmpty(address.getTown()) && StringUtils.isEmpty(address.getPlace())
 				&& StringUtils.isEmpty(address.getStreet())) {

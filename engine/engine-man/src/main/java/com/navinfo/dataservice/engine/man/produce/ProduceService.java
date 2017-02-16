@@ -52,7 +52,7 @@ public class ProduceService {
 		int subtaskId=dataJson.getInt("subtaskId");
 		String produceType=dataJson.getString("produceType");
 		//通过subtaskId 查询 gridIds 
-		List<Integer> gridIds =SubtaskOperation.getGridIdsBySubtaskId(subtaskId);
+		List<Integer> gridIds =SubtaskOperation.getGridIdListBySubtaskId(subtaskId);
 		
 		//JSONArray gridIds = dataJson.getJSONArray("gridIds");
 		JSONObject paraJson=new JSONObject();

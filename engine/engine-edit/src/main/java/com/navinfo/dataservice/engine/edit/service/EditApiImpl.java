@@ -152,4 +152,13 @@ public class EditApiImpl implements EditApi {
 			DBUtils.closeConnection(subConn);
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.edit.iface.EditApi#getGridIdListBySubtaskIdFromLog(java.lang.Integer, java.lang.Integer)
+	 */
+	@Override
+	public List<Integer> getGridIdListBySubtaskIdFromLog(Integer dbId, Integer subtaskId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

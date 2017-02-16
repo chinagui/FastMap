@@ -51,8 +51,7 @@ public class ZoneLinkOperateUtils {
             if (link.getPid() == currLink.getPid()) {
                 continue;
             }
-            if (link.getsNodePid() == nextNodePid
-                    || link.geteNodePid() == nextNodePid) {
+            if (link.getsNodePid() == nextNodePid || link.geteNodePid() == nextNodePid) {
                 map.clear();
                 map.put(nextNodePid, link);
                 return true;
@@ -100,7 +99,9 @@ public class ZoneLinkOperateUtils {
         while (it.hasNext()) {
             setLinkChildrenMesh(link, Integer.parseInt(it.next()));
         }
-        setLinkChildrenKind(link, g);
+        if (link.getKinds().isEmpty())
+            setLinkChildrenKind(link, g);
+
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
@@ -125,7 +126,8 @@ public class ZoneLinkOperateUtils {
         while (it.hasNext()) {
             setLinkChildrenMesh(link, Integer.parseInt(it.next()));
         }
-        setLinkChildrenKind(link, g);
+        if (link.getKinds().isEmpty())
+            setLinkChildrenKind(link, g);
         double linkLength = GeometryUtils.getLinkLength(g);
         link.setLength(linkLength);
         link.setGeometry(GeoTranslator.transform(g, 100000, 0));
@@ -169,8 +171,8 @@ public class ZoneLinkOperateUtils {
     /*
      * 创建一条ZONE线对应的端点
      */
-    public static JSONObject createZoneNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result)
-            throws Exception {
+    public static JSONObject createZoneNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result) throws
+            Exception {
         JSONObject node = new JSONObject();
         if (0 == sNodePid) {
             Coordinate point = g.getCoordinates()[0];
@@ -199,12 +201,10 @@ public class ZoneLinkOperateUtils {
      * @param geometry 要分割线的几何 sNodePid 起点pid eNodePid 终点pid catchLinks
      * 挂接的线和点的集合 1.生成所有不存在的RDNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
      */
-    public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid,
-                                                      int eNodePid, JSONArray catchLinks, ObjType objType, Result
-                                                              result) throws Exception {
+    public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid, int eNodePid, JSONArray
+            catchLinks, ObjType objType, Result result) throws Exception {
         Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
-        JSONArray coordinates = GeoTranslator.jts2Geojson(geometry)
-                .getJSONArray("coordinates");
+        JSONArray coordinates = GeoTranslator.jts2Geojson(geometry).getJSONArray("coordinates");
         JSONObject tmpGeom = new JSONObject();
         // 组装要生成的link
         tmpGeom.put("type", "LineString");
@@ -216,10 +216,8 @@ public class ZoneLinkOperateUtils {
 
         int pc = 1;
         // 挂接的第一个点是LINK的几何属性第一个点
-        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0)
-                .getDouble("lon")
-                && tmpCs.getJSONArray(0).getDouble(1) == catchLinks
-                .getJSONObject(0).getDouble("lat")) {
+        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon") && tmpCs.getJSONArray
+                (0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
             p = 1;
         }
         JSONObject se = new JSONObject();
@@ -246,10 +244,8 @@ public class ZoneLinkOperateUtils {
         while (p < catchLinks.size() && pc < coordinates.size()) {
             tmpCs.add(coordinates.getJSONArray(pc));
 
-            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks
-                    .getJSONObject(p).getDouble("lon")
-                    && coordinates.getJSONArray(pc).getDouble(1) == catchLinks
-                    .getJSONObject(p).getDouble("lat")) {
+            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon") &&
+                    coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
 
                 tmpGeom.put("coordinates", tmpCs);
                 if (catchLinks.getJSONObject(p).containsKey("nodePid")) {
@@ -354,8 +350,8 @@ public class ZoneLinkOperateUtils {
 	 * 3.跨图幅需要生成和图廓线的交点
 	 */
 
-    public static void createZoneLinkWithMesh(Geometry g,
-                                              Map<Coordinate, Integer> maps, Result result) throws Exception {
+    public static void createZoneLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws
+            Exception {
         if (g != null) {
 
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -370,9 +366,8 @@ public class ZoneLinkOperateUtils {
         }
     }
 
-    public static List<ZoneLink> getCreateZoneLinksWithMesh(Geometry g,
-                                                            Map<Coordinate, Integer> maps, Result result, ZoneLink
-                                                                    sourceLink) throws Exception {
+    public static List<ZoneLink> getCreateZoneLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,
+                                                            ZoneLink sourceLink) throws Exception {
         List<ZoneLink> links = new ArrayList<ZoneLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -394,8 +389,7 @@ public class ZoneLinkOperateUtils {
     /*
      * 创建行政区划线 针对跨图幅创建图廓点不能重复
      */
-    public static void calZoneLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                           Result result) throws Exception {
+    public static void calZoneLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result) throws Exception {
         //定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -408,8 +402,7 @@ public class ZoneLinkOperateUtils {
             eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
         }
         //创建线对应的点
-        JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(
-                g, sNodePid, eNodePid, result);
+        JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(g, sNodePid, eNodePid, result);
         if (!maps.containsValue(node.get("s"))) {
             maps.put(g.getCoordinates()[0], (int) node.get("s"));
         }
@@ -417,15 +410,14 @@ public class ZoneLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         //创建线
-        ZoneLinkOperateUtils.addLink(g, (int) node.get("s"),
-                (int) node.get("e"), result);
+        ZoneLinkOperateUtils.addLink(g, (int) node.get("s"), (int) node.get("e"), result);
     }
 
     /*
      * 创建行政区划线 针对跨图幅创建图廓点不能重复
      */
-    public static ZoneLink getCalZoneLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps,
-                                                  Result result, ZoneLink sourceLink) throws Exception {
+    public static ZoneLink getCalZoneLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, ZoneLink
+            sourceLink) throws Exception {
         //定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;
@@ -438,8 +430,7 @@ public class ZoneLinkOperateUtils {
             eNodePid = maps.get(g.getCoordinates()[g.getCoordinates().length - 1]);
         }
         //创建线对应的点
-        JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(
-                g, sNodePid, eNodePid, result);
+        JSONObject node = ZoneLinkOperateUtils.createZoneNodeForLink(g, sNodePid, eNodePid, result);
         if (!maps.containsValue(node.get("s"))) {
             maps.put(g.getCoordinates()[0], (int) node.get("s"));
         }
@@ -447,8 +438,7 @@ public class ZoneLinkOperateUtils {
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) node.get("e"));
         }
         //创建线
-        return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"),
-                (int) node.get("e"), result, sourceLink);
+        return ZoneLinkOperateUtils.getAddLink(g, (int) node.get("s"), (int) node.get("e"), result, sourceLink);
     }
 
 }

@@ -669,15 +669,51 @@ public class UserInfoOperation {
 		}
 	}
 	
+//	/**
+//	 * 查询用户信息
+//	 * @author Han Shaoming
+//	 * @param conn
+//	 * @param userId
+//	 * @return
+//	 * @throws Exception
+//	 */
+//	public static Map<String,Object> getUserInfoByUserId(Connection conn, long userId) throws Exception {
+//		// TODO Auto-generated method stub
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			// 查询用户所在组组长id
+//			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL "
+//					+ "FROM USER_INFO U WHERE USER_ID = ?";
+//			Object[] params = {userId};		
+//			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+//				@Override
+//				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+//					// TODO Auto-generated method stub
+//					Map<String,Object> map = new HashMap<String, Object>();
+//					while(rs.next()){
+//						map.put("userId", rs.getLong("USER_ID"));
+//						map.put("userRealName", rs.getString("USER_REAL_NAME"));
+//						map.put("userEmail", rs.getString("USER_EMAIL"));
+//					}
+//					return map;
+//				}
+//			};
+//			Map<String, Object> userInfo = run.query(conn, querySql, params, rsh);
+//			return userInfo;
+//		}catch(Exception e){
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+//		}
+//	}
+	
 	/**
 	 * 查询用户信息
-	 * @author Han Shaoming
 	 * @param conn
 	 * @param userId
 	 * @return
 	 * @throws Exception
 	 */
-	public static Map<String,Object> getUserInfoByUserId(Connection conn, long userId) throws Exception {
+	public static UserInfo getUserInfoByUserId(Connection conn, long userId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
@@ -685,20 +721,20 @@ public class UserInfoOperation {
 			String querySql = "SELECT U.USER_ID USER_ID,U.USER_REAL_NAME USER_REAL_NAME,U.USER_EMAIL USER_EMAIL "
 					+ "FROM USER_INFO U WHERE USER_ID = ?";
 			Object[] params = {userId};		
-			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
+			ResultSetHandler<UserInfo> rsh = new ResultSetHandler<UserInfo>() {
 				@Override
-				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+				public UserInfo handle(ResultSet rs) throws SQLException {
 					// TODO Auto-generated method stub
-					Map<String,Object> map = new HashMap<String, Object>();
-					while(rs.next()){
-						map.put("userId", rs.getLong("USER_ID"));
-						map.put("userRealName", rs.getString("USER_REAL_NAME"));
-						map.put("userEmail", rs.getString("USER_EMAIL"));
+					UserInfo userInfo = new UserInfo();
+					if(rs.next()){
+						userInfo.setUserId(rs.getInt("USER_ID"));
+						userInfo.setUserRealName(rs.getString("USER_REAL_NAME"));
+						userInfo.setUserEmail(rs.getString("USER_EMAIL"));
 					}
-					return map;
+					return userInfo;
 				}
 			};
-			Map<String, Object> userInfo = run.query(conn, querySql, params, rsh);
+			UserInfo userInfo = run.query(conn, querySql, params, rsh);
 			return userInfo;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

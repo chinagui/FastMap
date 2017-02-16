@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.database.Page;
@@ -502,6 +503,37 @@ public class UserGroupService {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询列表失败，原因为:"+e.getMessage(),e);
 		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public String getGroupNameByGroupId(long groupId) throws ServiceException{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			// 查询组名
+			String querySql = "select g.group_name from user_group g where g.group_id = " + groupId;
+
+			ResultSetHandler<String> rsh = new ResultSetHandler<String>() {
+				@Override
+				public String handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					String name = null;
+					if(rs.next()){
+						name = rs.getString("group_name");
+					}
+					return name;
+				}
+			};
+			String name = run.query(conn, querySql, rsh);
+			return name;
+		} catch (Exception e) {
+			// TODO: handle exception
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询组名失败，原因为:" + e.getMessage(), e);
+		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

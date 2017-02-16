@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -31,15 +34,34 @@ public class BaseBatchUtils {
      * @return
      * @throws Exception
      */
-    protected static boolean isSameNode(Connection conn, Integer... nodePids) throws Exception {
-        boolean result = true;
+    protected static boolean isSameNode(Connection conn, Result result, Integer... nodePids) throws Exception {
+        boolean flag = true;
         IRow row = null;
         for (Integer nodePid : nodePids) {
-            row = new RdSameNodeSelector(conn).loadByNodePidAndTableName(nodePid, "rd_node", false);
-            if (null == row)
-                return false;
+            row = new RdSameNodeSelector(conn).loadByNodePidAndTableName(nodePid, "RD_NODE", false);
+            if (null == row) {
+                boolean addFlag = false;
+                for (IRow addRow : result.getAddObjects()) {
+                    if (addRow instanceof RdSameNode) {
+                        RdSameNode node = (RdSameNode) addRow;
+                        for (IRow p : node.getParts()) {
+                            RdSameNodePart part = (RdSameNodePart) p;
+                            if (part.getNodePid() == nodePid && "RD_NODE".equalsIgnoreCase(part.getTableName())) {
+                                addFlag = true;
+                                break;
+                            }
+                        }
+                        if (addFlag)
+                            break;
+                    }
+                }
+                if (!addFlag) {
+                    flag = false;
+                    break;
+                }
+            }
         }
-        return result;
+        return flag;
     }
 
     /**

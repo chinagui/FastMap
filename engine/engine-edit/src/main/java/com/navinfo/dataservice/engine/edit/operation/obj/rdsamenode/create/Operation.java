@@ -97,10 +97,10 @@ public class Operation implements IOperation {
 			rdSameNode.getParts().add(sameNodePart);
 		}
 
+        result.insertObject(rdSameNode, ObjStatus.INSERT, rdSameNode.getPid());
+
 		// 更新点的坐标
 		updateNodeGeo(mainNodePid, mainTableName.toUpperCase(), nodeMap, result);
-
-		result.insertObject(rdSameNode, ObjStatus.INSERT, rdSameNode.getPid());
 	}
 
 	/**

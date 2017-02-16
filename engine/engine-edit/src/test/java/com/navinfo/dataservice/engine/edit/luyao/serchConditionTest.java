@@ -31,7 +31,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDLINKSPEEDLIMIT\",\"linkPid\":220000997,\"direct\":2}}";
+			String parameter = "{\"dbId\":17,\"type\":\"RDLINK\",\"data\":{\"queryType\":\"RDSPEEDLIMIT\",\"linkPid\":309000108,\"direct\":3}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -138,7 +138,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"gap\":20,\"types\":[\"rdLinkNameContent\"],\"z\":16,\"x\":53953,\"y\":24804}";
+			String parameter = "{\"dbId\":17,\"gap\":20,\"types\":[\"rdLinkProperty\"],\"z\":18,\"x\":215672,\"y\":98705}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -405,6 +405,27 @@ public class serchConditionTest extends InitApplication {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	
+	@Test
+	public void getTitleWithGap2() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLINKSPEEDLIMIT);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 431357,
+					197416, 19, 80));
+
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

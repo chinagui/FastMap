@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -990,14 +991,14 @@ public class BlockService {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
-			if(userInfo != null && userInfo.get("userEmail") != null){
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
+			if(userInfo != null && userInfo.getUserEmail() != null){
 				//判断邮箱格式
 				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
                 Pattern regex = Pattern.compile(check);
-                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
                 if(matcher.matches()){
-                	toMail = (String) userInfo.get("userEmail");
+                	toMail = userInfo.getUserEmail();
                 	mailTitle = (String) msgContent[1];
                 	mailContent = (String) msgContent[2];
                 	//发送邮件到消息队列
@@ -1007,8 +1008,8 @@ public class BlockService {
 			}
 			//查询用户名称
 			String pushUserName = null;
-			if(userInfo != null && userInfo.size() > 0){
-				pushUserName = (String) userInfo.get("userRealName");
+			if(userInfo != null){
+				pushUserName = (String) userInfo.getUserRealName();
 			}
 			//发送消息到消息队列
 			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong((String) msgContent[0])}, 2, (String)msgContent[3], pushUserName);

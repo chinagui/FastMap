@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.edit.iface;
 
+import java.util.List;
+
 import net.sf.json.JSONObject;
 
 /** 
@@ -25,4 +27,6 @@ public interface EditApi {
 	 * @throws Exception
 	 */
 	public void runBatch(JSONObject dataObj) throws Exception;
+	
+	public List<Integer> getGridIdListBySubtaskIdFromLog(Integer dbId,Integer subtaskId);
 }

@@ -16,6 +16,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -138,10 +139,10 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				for(int userId:userIdList){
 					for(Map<String, Object> msg:msgContentList){
 						//查询用户名称
-						Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+						UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
 						String pushUserName = null;
-						if(userInfo != null && userInfo.size() > 0){
-							pushUserName = (String) userInfo.get("userRealName");
+						if(userInfo != null && userInfo.getUserRealName()!=null){
+							pushUserName = (String) userInfo.getUserRealName();
 						}
 						//发送消息到消息队列
 						String manMsgContent = (String) msg.get("msgContent");
@@ -155,15 +156,15 @@ public class InfoChangeMsgHandler implements MsgHandler {
 				String mailContent = null;
 				//查询用户详情
 				for (int userId : userIdList) {
-					Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
-					if(userInfo != null && userInfo.get("userEmail") != null){
+					UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, userId);
+					if(userInfo != null && userInfo.getUserEmail() != null){
 						for (Map<String, Object> msg : msgContentList) {
 							//判断邮箱格式
 							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
 			                Pattern regex = Pattern.compile(check);
-			                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+			                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
 			                if(matcher.matches()){
-			                	toMail = (String) userInfo.get("userEmail");
+			                	toMail = (String) userInfo.getUserEmail();
 			                	mailTitle = msgTitle;
 			                	mailContent = (String) msg.get("msgContent");
 			                	//发送邮件到消息队列

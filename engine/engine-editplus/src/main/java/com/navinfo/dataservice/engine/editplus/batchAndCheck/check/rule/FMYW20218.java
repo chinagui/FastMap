@@ -60,6 +60,9 @@ public class FMYW20218 extends BasicCheckRule {
 		List<IxPoiDetail> poiDetails = poiObj.getIxPoiDetails();
 		for (IxPoiDetail poiDetail : poiDetails) {
 			String webSite = poiDetail.getWebSite();
+			if (webSite == null) {
+				return;
+			}
 			if (!webSite.startsWith("http://")) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 						"网址信息格式错误，网址不是以”http://”开头");

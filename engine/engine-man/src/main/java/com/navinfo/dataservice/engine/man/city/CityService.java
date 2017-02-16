@@ -51,11 +51,20 @@ public class CityService {
 					
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']', ')');
 			
-			String selectSql = " select t.CITY_ID,t.CITY_NAME, t.geometry,t.plan_status,k.percent, k.task_id from CITY t, "
-					+ "(SELECT T.TASK_ID,T.CITY_ID,nvl(O.PERCENT,0) percent FROM TASK T,FM_STAT_OVERVIEW_TASK O "
-					+ "WHERE T.TASK_ID=O.TASK_ID(+) and latest=1) k where t.city_id=k.city_id(+) and t.PLAN_STATUS in "+planningStatus
-					+" and SDO_ANYINTERACT(t.geometry,sdo_geometry(?,8307))='TRUE'";
-		
+			String selectSql = "SELECT T.CITY_ID,"
+					+ "       T.CITY_NAME,"
+					+ "       T.GEOMETRY,"
+					+ "       T.PLAN_STATUS,"
+					+ "       K.PERCENT,"
+					+ "       K.PROGRAM_ID"
+					+ "  FROM CITY T,"
+					+ "       (SELECT T.PROGRAM_ID, T.CITY_ID, NVL(O.PERCENT, 0) PERCENT "
+					+ "         FROM PROGRAM T, FM_STAT_OVERVIEW_PROGRAM O"
+					+ "         WHERE T.PROGRAM_ID = O.PROGRAM_ID(+)"
+					+ "           AND LATEST = 1) K"
+					+ " WHERE T.CITY_ID = K.CITY_ID(+)"
+					+ "   AND T.PLAN_STATUS IN "+planningStatus
+					+ "   AND SDO_ANYINTERACT(T.GEOMETRY,SDO_GEOMETRY(?,8307))='TRUE'";		
 			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
 				public List<HashMap> handle(ResultSet rs) throws SQLException {
 					List<HashMap> list = new ArrayList<HashMap>();
@@ -73,9 +82,9 @@ public class CityService {
 								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
-							map.put("cityPlanStatus", rs.getInt("plan_status"));
-							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
-							map.put("taskId", rs.getInt("task_id"));
+							map.put("planStatus", rs.getInt("plan_status"));
+							map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+							map.put("programId", rs.getInt("program_id"));
 							map.put("percent", rs.getInt("percent"));
 							list.add(map);
 						} catch (Exception e) {
@@ -87,7 +96,8 @@ public class CityService {
 				}
 	    		
 	    	}		;
-
+	    	log.debug(selectSql);
+	    	log.debug(json.getString("wkt"));
 	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

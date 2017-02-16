@@ -208,7 +208,7 @@ public abstract class BasicRow{
 	 * @throws InvocationTargetException 
 	 * @throws NoSuchMethodException 
 	 */
-	public RunnableSQL generateSql() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
+	public RunnableSQL generateSql(boolean physiDelete) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException{
 		//判断是否有变化
 		if(!isChanged()){
 			return null;
@@ -252,10 +252,16 @@ public abstract class BasicRow{
 				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
 			}
 		}else if(OperationType.DELETE.equals(this.opType)){
-			//更新U_RECORD字段为2
-			sb.append("UPDATE "+ tbName + " SET U_RECORD = ?,U_DATE=SYSDATE");
-			sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
-			columnValues.add(2);
+			if(physiDelete){
+				//物理删除
+				sb.append("DELETE FROM  "+ tbName);
+				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
+			}else{
+				//更新U_RECORD字段为2
+				sb.append("UPDATE "+ tbName + " SET U_RECORD = ?,U_DATE=SYSDATE");
+				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
+				columnValues.add(2);
+			}
 		}
 		sql.setSql(sb.toString());
 		sql.setArgs(columnValues);

@@ -1,9 +1,6 @@
-﻿prompt PL/SQL Developer import file
-prompt Created on 2017年2月9日 by jch
-set feedback off
-set define off
+﻿-- Create table
 drop table SC_POINT_CODE2LEVEL;
-prompt Creating SC_POINT_CODE2LEVEL...
+
 create table SC_POINT_CODE2LEVEL
 (
   ID            NUMBER(4) not null,
@@ -20,28 +17,12 @@ create table SC_POINT_CODE2LEVEL
   FLAGCODE      VARCHAR2(12),
   CATEGORY      NUMBER(2),
   TYPE          VARCHAR2(3)
-)
-tablespace GDB_DATA
-  pctfree 10
-  initrans 1
-  maxtrans 255
-  storage
-  (
-    initial 80K
-    next 1M
-    minextents 1
-    maxextents unlimited
-  );
+);
+
 alter table SC_POINT_CODE2LEVEL
   add constraint CKC_CODE2LEVEL
-  check (TYPE in (0,1));
-
-prompt Disabling triggers for SC_POINT_CODE2LEVEL...
-alter table SC_POINT_CODE2LEVEL disable all triggers;
-prompt Deleting SC_POINT_CODE2LEVEL...
-delete from SC_POINT_CODE2LEVEL;
-commit;
-prompt Loading SC_POINT_CODE2LEVEL...
+  check (TYPE in (0,1));/
+  
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (321, '家装建材零售', '130703', 'B3|B4|C', 'B4', null, '16夏修改KIND_NAME,由“建材、洁具零售”改为“家装建材零售”；需求溯源号：TPD-127', 'KG', 'DHM', null, null, null, 1, '1');
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
@@ -243,7 +224,7 @@ values (254, '会议中心、展览中心', '200101', 'B1', 'B1', null, null, 'K
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (255, '培训中心', '200102', 'B1', 'B1', null, null, 'KG', 'DHM', null, null, null, 1, '0');
 commit;
-prompt 100 records committed...
+
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (256, '疾病预防控制及防疫', '170108', 'B2', 'B2', null, null, 'KG', 'DHM', null, null, null, 1, '0');
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
@@ -445,7 +426,7 @@ values (530, '皮草/鞋/包保养', '210203', 'B4|C', 'B4', null, null, 'KG', '
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (56, '商品交易/批发市场零售', '130101', 'B3', 'B3', null, null, 'KG', 'DHM', null, null, null, 1, '0');
 commit;
-prompt 200 records committed...
+
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (57, '百货商场零售', '130102', 'B1', 'B1', null, null, 'KG', 'DHM', null, null, null, 1, '0');
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
@@ -609,10 +590,5 @@ values (611, '加水站', '230228', 'B2', 'B2', null, '16冬新增；需求溯�
 insert into SC_POINT_CODE2LEVEL (ID, KIND_NAME, KIND_CODE, OLD_POI_LEVEL, NEW_POI_LEVEL, MEMO, DESCRIPT, KG_FLAG, HM_FLAG, CHAIN, RATING, FLAGCODE, CATEGORY, TYPE)
 values (612, '紧急停车带', '230229', 'B2', 'B2', null, '16冬新增；需求溯源号：PPRM-353', 'KG', 'DHM', null, null, null, 1, '0');
 commit;
-prompt 281 records loaded
-prompt Enabling triggers for SC_POINT_CODE2LEVEL...
-alter table SC_POINT_CODE2LEVEL enable all triggers;
-set feedback on
-set define on
-prompt Done.
+
 EXIT;

@@ -85,68 +85,11 @@ public class SubtaskController extends BaseController {
 			if(dataJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//质检子任务信息
-			Integer qualityExeUserId = 0;
-			String qualityPlanStartDate = "";
-			String qualityPlanEndDate = "";
-			if(dataJson.containsKey("qualityExeUserId")){
-				qualityExeUserId = dataJson.getInt("qualityExeUserId");
-				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
-				//删除传入参数的对应键值对,因为bean中没有这些字段
-				dataJson.discard("qualityExeUserId");
-				dataJson.discard("qualityPlanStartDate");
-				dataJson.discard("qualityPlanEndDate");}
 			
-			//自采自录子任务
-			Integer isSelfRecord = 0;//是否进行自采自录，0否1是
-			Integer selfRecordType = 0;//自采自录日编子任务作业类型
-			String selfRecordName = "";//自采自录日编子任务名称
-			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
-				isSelfRecord = dataJson.getInt("isSelfRecord");
-				selfRecordType = dataJson.getInt("selfRecordType");
-				selfRecordName = dataJson.getString("selfRecordName");
-				//删除传入参数的对应键值对,因为bean中没有这些字段
-				dataJson.discard("isSelfRecord");
-				dataJson.discard("selfRecordType");
-				dataJson.discard("selfRecordName");}
-			
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			long userId = tokenObj.getUserId();
-			
-			Integer qualitySubtaskId = 0;
-			Integer selfRecordSubtaskId = 0;
-			if(qualityExeUserId != 0 ){//表示要创建质检子任务
-				//根据参数生成质检子任务 subtask qualityBean
-				Subtask qualityBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-				qualityBean.setName(qualityBean.getName()+"_质检");
-				qualityBean.setIsQuality(1);
-				qualityBean.setStatus(2);
-				qualityBean.setExeUserId(qualityExeUserId);
-				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-				//创建质检子任务 subtask	
-				qualitySubtaskId = SubtaskService.getInstance().create(qualityBean);	
-			}
-			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
-				//根据参数生成日编子任务 subtask dailyBean
-				Subtask dailyBean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-				dailyBean.setName(selfRecordName);
-				dailyBean.setIsQuality(0);
-				dailyBean.setStatus(2);
-				dailyBean.setStage(1);
-				//创建质检子任务 subtask	
-				selfRecordSubtaskId = SubtaskService.getInstance().create(dailyBean);	
-			}
-			
-			//根据参数生成subtask bean
-			Subtask bean = SubtaskService.getInstance().createSubtaskBean(userId,dataJson);
-			bean.setIsQuality(0);
-			if(qualitySubtaskId!=0){
-				bean.setQualitySubtaskId(qualitySubtaskId);
-			}
 			//创建subtask	
-			SubtaskService.getInstance().create(bean);
+			SubtaskService.getInstance().create(userId,dataJson);
+
 			return new ModelAndView("jsonView", success());
 		}catch(Exception e){
 			log.error("创建失败，原因："+e.getMessage(), e);
@@ -274,13 +217,10 @@ public class SubtaskController extends BaseController {
 			
 			int subtaskId = dataJson.getInt("subtaskId");
 
-//			Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);			
-//			Subtask subtask = SubtaskService.getInstance().query(bean);	
-			Map<String, Object> subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);
+			Map<String,Object> subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);
 			return new ModelAndView("jsonView", success(subtask));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);
-			SubtaskQueryResponse response = new SubtaskQueryResponse(0,"success",null);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
@@ -310,15 +250,8 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			if(!dataJson.containsKey("subtasks")){
-				throw new IllegalArgumentException("请输入subtasks");
-			}
-			
-			JSONArray subtaskArray=dataJson.getJSONArray("subtasks");
-			
-			String message=SubtaskService.getInstance().update(subtaskArray,userId);
-			//NullResponse result = new NullResponse(0,"success",message);
-			return new ModelAndView("jsonView", success(message));
+			SubtaskService.getInstance().update(dataJson,userId);
+			return new ModelAndView("jsonView", success());
 			
 		}catch(Exception e){
 			log.error("更新失败，原因："+e.getMessage(), e);
@@ -327,47 +260,47 @@ public class SubtaskController extends BaseController {
 		}
 	}
 	
-	/*
-	 * 关闭多个子任务。
-	 */
-	//@ApiOperation(value = "关闭subtask", notes = "关闭subtask")  
-	@RequestMapping(value = { "/subtask/close" })
-	public ModelAndView close(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskIds\":[12]#子任务列表<br/>	}")@RequestParam( value = "parameter") String parameter
-			,HttpServletRequest request){
-		try{		
-			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-			long userId=tokenObj.getUserId();
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if(dataJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			
-			if(!dataJson.containsKey("subtaskIds")){
-				throw new IllegalArgumentException("subtaskIds不能为空。");
-			}
-			
-			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
-			
-			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
-			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList,userId);
-			
-			String message = "批量关闭子任务：" + (subtaskIdList.size() - unClosedSubtaskList.size()) + "个成功，" + unClosedSubtaskList.size() + "个失败。";
-			return new ModelAndView("jsonView", success(message));
-		
-		}catch(Exception e){
-			log.error("批量关闭失败，原因："+e.getMessage(), e);
-			//NullResponse result = new NullResponse(-1,e.getMessage(),null);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
+//	/*
+//	 * 关闭多个子任务。
+//	 */
+//	//@ApiOperation(value = "关闭subtask", notes = "关闭subtask")  
+//	@RequestMapping(value = { "/subtask/close" })
+//	public ModelAndView close(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+//			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskIds\":[12]#子任务列表<br/>	}")@RequestParam( value = "parameter") String parameter
+//			,HttpServletRequest request){
+//		try{		
+//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+//			long userId=tokenObj.getUserId();
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			if(dataJson==null){
+//				throw new IllegalArgumentException("parameter参数不能为空。");
+//			}
+//			
+//			if(!dataJson.containsKey("subtaskIds")){
+//				throw new IllegalArgumentException("subtaskIds不能为空。");
+//			}
+//			
+//			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
+//			
+//			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
+//			List<Integer> unClosedSubtaskList = SubtaskService.getInstance().close(subtaskIdList,userId);
+//			
+//			String message = "批量关闭子任务：" + (subtaskIdList.size() - unClosedSubtaskList.size()) + "个成功，" + unClosedSubtaskList.size() + "个失败。";
+//			return new ModelAndView("jsonView", success(message));
+//		
+//		}catch(Exception e){
+//			log.error("批量关闭失败，原因："+e.getMessage(), e);
+//			//NullResponse result = new NullResponse(-1,e.getMessage(),null);
+//			return new ModelAndView("jsonView", exception(e));
+//		}
+//	}
 	
 	/*
 	 * 关闭单个子任务。
 	 */
 	//@ApiOperation(value = "关闭subtask", notes = "关闭subtask")  
-	@RequestMapping(value = { "/subtask/closeOne" })
-	public ModelAndView closeOne(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+	@RequestMapping(value = { "/subtask/close" })
+	public ModelAndView close(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
 			,@ApiParam(required =true, name = "parameter", value="{<br/>\"subtaskId\":12#子任务<br/>	}")@RequestParam( value = "parameter") String parameter
 			,HttpServletRequest request){
 		try{		
@@ -384,7 +317,7 @@ public class SubtaskController extends BaseController {
 			
 			int subtaskId = dataJson.getInt("subtaskId");
 			
-			String message = SubtaskService.getInstance().closeOne(subtaskId,userId);
+			String message = SubtaskService.getInstance().close(subtaskId,userId);
 			if((message!=null)&&(!message.isEmpty())){
 				return new ModelAndView("jsonView", exception(message));
 			}else{
@@ -412,17 +345,15 @@ public class SubtaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			
-			if(!dataJson.containsKey("subtaskIds")){
-				throw new IllegalArgumentException("subtaskIds不能为空。");
+			if(!dataJson.containsKey("subtaskId")){
+				throw new IllegalArgumentException("subtaskId不能为空。");
 			}
 			
-			JSONArray subtaskIds = dataJson.getJSONArray("subtaskIds");
+			int subtaskId = dataJson.getInt("subtaskId");
 			
-			List<Integer> subtaskIdList = (List<Integer>)JSONArray.toCollection(subtaskIds,Integer.class);
-			SubtaskService.getInstance().delete(subtaskIdList);
+			SubtaskService.getInstance().delete(subtaskId);
 			
-			String message = "批量删除子任务：" + subtaskIdList.size() + "个成功，0个失败。";
-			return new ModelAndView("jsonView", success(message));
+			return new ModelAndView("jsonView", success());
 		
 		}catch(Exception e){
 			log.error("批量关闭失败，原因："+e.getMessage(), e);
@@ -545,9 +476,10 @@ public class SubtaskController extends BaseController {
 			}
 			//查询条件
 			JSONObject condition = dataJson.getJSONObject("condition");
-			//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
-			int planStatus = dataJson.getInt("planStatus");			
-			Page page = SubtaskService.getInstance().list(planStatus,condition,pageSize,curPageNum);
+//			//block/task规划状态。2:"已发布",3:"已完成" 。状态不同，排序方式不同。
+//			int planStatus = dataJson.getInt("planStatus");			
+//			Page page = SubtaskService.getInstance().list(planStatus,condition,pageSize,curPageNum);
+			Page page = SubtaskService.getInstance().list(condition,pageSize,curPageNum);
 			return new ModelAndView("jsonView",success(page));
 		
 		}catch(Exception e){

@@ -44,17 +44,16 @@ public class NiValExceptionTest extends InitApplication {
 
 			int data = selector.loadCountByGrid(grids);
 
-			System.out.println("data:"+data);
+			System.out.println("data:" + data);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	@Test
-	public void testCheck() throws Exception
-	{
+	public void testCheck() throws Exception {
 		String parameter = "{\"dbId\":42,\"type\":2,\"id\":\"9aab29cf60bbbc997f12d8368b5920c2\"}";
-		
+
 		JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 		int dbId = jsonReq.getInt("dbId");
@@ -67,24 +66,52 @@ public class NiValExceptionTest extends InitApplication {
 
 		NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-		selector.updateCheckLogStatus(id, type);
+		// selector.updateCheckLogStatus(id, type);
 	}
 
 	@Test
-	public void testList() throws Exception
-	{
+	public void testList() throws Exception {
 		Connection conn = null;
-		try{
-			Set<String> grids = new HashSet<String>();
-			grids.add("60560303");
+		try {
 
-			conn = DBConnector.getInstance().getConnectionById(17);
+			// parameter:{"dbId":19,"pageNum":1,"subtaskType":9,"pageSize":5,"subtaskId":"454","grids":[60564613,60564612,60564603,60564602,60563632]}
+			Set<String> grids = new HashSet<String>();
+			grids.add("60564613,60564612,60564603,60564602,60563632");
+			grids.add("60564612");
+			grids.add("60564603");
+			grids.add("60564602");
+			grids.add("60561210");
+
+			conn = DBConnector.getInstance().getConnectionById(19);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
 
-			Page page = selector.list(0, grids,20,1);
-			System.out.println(page.getResult());
-		}finally{
+			Page page = selector.list(9, grids, 5, 1, 0);
+			System.out.println(page.getResult()
+					+ "-----------------------------------------------");
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+
+	@Test
+	public void testAddStatus() throws Exception {
+		Connection conn = null;
+		try {
+
+			String id = "6e51ce1f85289caba4b557f33a1da62a";
+			int oldType = 2;
+
+			int type = 0;
+
+			conn = DBConnector.getInstance().getConnectionById(19);
+
+			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+
+			selector.updateCheckLogStatus(id, oldType, type);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
 			DbUtils.closeQuietly(conn);
 		}
 	}

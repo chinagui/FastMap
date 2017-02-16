@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 
@@ -17,7 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValException implements IObj {
-
+	private static Logger logger = Logger.getLogger(NiValException.class);
 	private int valExceptionId;
 
 	private String ruleid;
@@ -71,7 +73,7 @@ public class NiValException implements IObj {
 	private int logType;
 
 	private String md5Code;
-	
+
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public NiValException() {
@@ -343,6 +345,57 @@ public class NiValException implements IObj {
 	@Override
 	public void copy(IRow row) {
 
+		CkException ckException = (CkException) row;
+		this.setRuleid(ckException.getRuleId());
+		this.setTaskName(ckException.getTaskName());
+		this.setGroupid(ckException.getGroupId());
+
+		this.setLevel(ckException.getRank());
+
+		this.setSituation(ckException.getSituation());
+
+		this.setInformation(ckException.getInformation());
+
+		this.setSuggestion(ckException.getSuggestion());
+
+		try {
+			this.setLocation(GeoTranslator.wkt2Geometry(ckException
+					.getGeometry()));
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+		}
+
+		this.setTargets(ckException.getTargets());
+
+		this.setAdditionInfo(ckException.getAdditionInfo());
+
+		this.setCreated(ckException.getCreateDate());
+
+		this.setUpdated(ckException.getUpdateDate());
+
+		this.setMeshId(ckException.getMeshId());
+
+		this.setScopeFlag(ckException.getScopeFlag());
+
+		this.setProvinceName(ckException.getProvinceName());
+
+		this.setMapScale(ckException.getMapScale());
+
+		this.setReserved(ckException.getReserved());
+
+		this.setExtended(ckException.getExtended());
+
+		this.setTaskId(ckException.getTaskId());
+
+		this.setQaTaskId(ckException.getQaTaskId());
+
+		this.setQaStatus(ckException.getQaStatus());
+
+		this.setWorker(ckException.getWorker());
+
+		this.setQaWorker(ckException.getQaWorker());
+
+		this.setRowId(ckException.rowId());
 	}
 
 	@Override
@@ -423,7 +476,9 @@ public class NiValException implements IObj {
 		this.md5Code = md5Code;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
 	 */
 	@Override
@@ -432,11 +487,13 @@ public class NiValException implements IObj {
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
 	 */
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}

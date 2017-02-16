@@ -23,7 +23,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 检查原则：该Node上若挂接了10级路，报err
  * node属性编辑服务端后检查:RdNodeForm
  * Link种别编辑服务端后检查:RdLink
- * 分离节点	服务端后检查
+ * 分离节点,平滑修形	服务端后检查
  */
 public class GLM03058 extends baseRule {
 
@@ -42,7 +42,7 @@ public class GLM03058 extends baseRule {
 				RdNodeForm rdNodeForm = (RdNodeForm) row;
 				this.checkRdNodeForm(rdNodeForm);
 			}
-			//Link种别编辑,分离节点
+			//Link种别编辑,分离节点,平滑修形
 			else if (row instanceof RdLink){
 				RdLink rdLink = (RdLink) row;
 				this.checkRdLink(rdLink);
@@ -82,7 +82,7 @@ public class GLM03058 extends baseRule {
 					}
 				}
 			}
-			//分离节点
+			//分离节点,平滑修形
 			Set<Integer> nodePids = new HashSet<Integer>();
 			Integer sNodePid = null;
 			Integer eNodePid = null;

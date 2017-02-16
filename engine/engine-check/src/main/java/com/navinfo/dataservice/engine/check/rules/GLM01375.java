@@ -22,14 +22,14 @@ public class GLM01375 extends baseRule {
 
                 int multiDigitized = link.getMultiDigitized();
                 if (link.changedFields().containsKey("multiDigitized"))
-                    multiDigitized = (int) link.changedFields().get("multiDigitized");
+                    multiDigitized = Integer.valueOf(link.changedFields().get("multiDigitized").toString());
 
                 int imiCode = link.getImiCode();
                 if (link.changedFields().containsKey("imiCode"))
-                    imiCode = (int) link.changedFields().get("imiCode");
+                    imiCode = Integer.valueOf(link.changedFields().get("imiCode").toString());
 
                 if (multiDigitized == 1 && imiCode == 2) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

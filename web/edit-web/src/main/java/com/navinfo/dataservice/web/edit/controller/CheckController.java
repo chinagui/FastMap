@@ -78,6 +78,8 @@ public class CheckController extends BaseController {
 			int pageSize = jsonReq.getInt("pageSize");
 
 			int pageNum = jsonReq.getInt("pageNum");
+			
+			int flag = jsonReq.getInt("flag");
 
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
@@ -96,7 +98,18 @@ public class CheckController extends BaseController {
 				}
 				logger.info("end check/list manApi");
 			}		
-			Page page = selector.list(subtaskType,grids, pageSize, pageNum);
+			/*//***********zl 2017.02.13************
+			Page page = null;
+			if(subtaskType==0||subtaskType==5||subtaskType==6||subtaskType==7){
+				//page = selector.poiCheckResultList(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/poiCheckResultList");
+			}else{
+				page = selector.list(subtaskType,grids, pageSize, pageNum);
+				logger.info("end check/list");
+			}
+			
+			//************************************
+*/			Page page = selector.list(subtaskType,grids, pageSize, pageNum,flag);
 			logger.info("end check/list");
 
 			return new ModelAndView("jsonView", success(page));
@@ -171,6 +184,35 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	@RequestMapping(value = "/check/poiResults")
+	public ModelAndView poiCheckResults(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int pid = jsonReq.getInt("pid");
+			int dbId = jsonReq.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
+			JSONObject data = selector.poiCheckResults(pid);
+			logger.info("end check/list");
+			logger.debug(data);
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 	@RequestMapping(value = "/check/get")
 	public ModelAndView getCheck(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -271,6 +313,7 @@ public class CheckController extends BaseController {
 			int dbId = jsonReq.getInt("dbId");
 
 			String id = jsonReq.getString("id");
+			int oldType = jsonReq.getInt("oldType");
 
 			int type = jsonReq.getInt("type");
 
@@ -278,7 +321,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatus(id, oldType,type);
 
 			return new ModelAndView("jsonView", success());
 
@@ -329,7 +372,7 @@ public class CheckController extends BaseController {
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 
-			selector.updateCheckLogStatus(id, type);
+			selector.updateCheckLogStatusForRd(id, type);
 
 			return new ModelAndView("jsonView", success());
 
@@ -353,7 +396,7 @@ public class CheckController extends BaseController {
 	 * @Description: 
 	 * 检查执行
 	 * dbId	是	子任务id
-	 * type	是	检查类型（0 poi行编，1poi精编, 2道路 , 3道路名）
+	 * type	是	检查类型 (1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
 	 * 根据输入的子任务和检查类型，对任务范围内的数据执行，执行检查。不执行检查结果清理
 	 * @param request
 	 * @return
@@ -567,8 +610,7 @@ public class CheckController extends BaseController {
 	/**
 	 * @Title: getCkRules
 	 * @Description: 获取道路名检察的规则列表(修)(第七迭代)
-	 * @param request  type	是	类型 0 poi粗编 ;1 poi精编 ; 2 道路粗编 ; 3 道路名 ; 4道路精编 ; 5 其他 
-	 * （0 POI， 1道路 ,2 道路名）
+	 * @param request  type	是	类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException  ModelAndView
@@ -606,7 +648,6 @@ public class CheckController extends BaseController {
 			}
 		}
 	}
-	
 	
 	/**
 	 * 清检查结果接口

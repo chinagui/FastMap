@@ -34,22 +34,22 @@ public class GLM01546 extends baseRule {
                 RdLink link = (RdLink) row;
                 int walkFlag = link.getWalkFlag();
                 if (link.changedFields().containsKey("walkFlag"))
-                    walkFlag = (int) link.changedFields().get("walkFlag");
+                    walkFlag = Integer.valueOf(link.changedFields().get("walkFlag").toString());
 
                 if (pedestrianStreetLink.contains(link.pid()) && walkFlag != 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
                     if (link.getWalkFlag() != 1) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }
@@ -78,7 +78,7 @@ public class GLM01546 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

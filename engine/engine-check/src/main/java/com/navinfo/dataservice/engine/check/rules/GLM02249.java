@@ -29,7 +29,7 @@ public class GLM02249 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 52) {
                     List<IRow> names = new AbstractSelector(RdLinkName.class, getConn()).loadRowsByParentId(form
@@ -37,7 +37,7 @@ public class GLM02249 extends baseRule {
                     for (IRow n : names) {
                         RdLinkName name = (RdLinkName) n;
                         if (name.getNameType() == 15) {
-                            setCheckResult("", "", 0);
+                            setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                             break;
                         }
                     }
@@ -47,7 +47,7 @@ public class GLM02249 extends baseRule {
 
                 int nameType = name.getNameType();
                 if (name.changedFields().containsKey("nameType"))
-                    nameType = (int) name.changedFields().get("nameType");
+                    nameType = Integer.valueOf(name.changedFields().get("nameType").toString());
 
                 if (nameType == 15) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(name.getLinkPid(), false);
@@ -61,7 +61,7 @@ public class GLM02249 extends baseRule {
                         }
                     }
                     if (flag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }

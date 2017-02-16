@@ -50,6 +50,7 @@ public class ExpMeta2SqliteScriptsInterface {
 			scPointNameck(conn,sqliteConn);
 			//scPointChargeManu(conn,sqliteConn);
 			ciParaKindSame(conn, sqliteConn);
+			scPointCode2Level(conn,sqliteConn);
 			
 			System.out.println("Metadata export end");
 		} catch (Exception e) {
@@ -60,6 +61,8 @@ public class ExpMeta2SqliteScriptsInterface {
 			DbUtils.closeQuietly(gdbConn);
 		}
 	}
+
+	
 
 	/**
 	 * @Title: createSqlite
@@ -142,7 +145,8 @@ public class ExpMeta2SqliteScriptsInterface {
 		//sqliteList.add("CREATE TABLE SC_POINT_CHARGE_MANU (serial_id text,full_name text,simply_name text,product_model text,product_type text,voltate text,current text,power text,memo text)");
 		//15.同一关系分类表：
 		sqliteList.add("CREATE TABLE CI_PARA_KIND_SAME (id integer PRIMARY KEY,kind_code text,kind_code_samepoi text )");
-		
+		//16.poi分类与poi分级对照表:
+		sqliteList.add("CREATE TABLE SC_POINT_CODE2LEVEL (id integer PRIMARY KEY,kind_name text,kind_code text,old_poi_level text,new_poi_level text,chain text,rating integer ,flagcode text,category integer,memo text,descript text,kg_flag text,hm_flag text ,type text )");
 		return sqliteList;
 	}
 	
@@ -954,7 +958,65 @@ public class ExpMeta2SqliteScriptsInterface {
 			DBUtils.closeStatement(prep);
 		}
 	}
+	
+	/**16
+	 * @Title: scPointCode2Level
+	 * @Description: SC_POINT_CODE2LEVEL
+	 * @param conn
+	 * @param sqliteConn  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月9日 下午8:11:58 
+	 */
+	private static void scPointCode2Level(Connection conn, Connection sqliteConn) throws Exception{
+		System.out.println("Start to export SC_POINT_CODE2LEVEL...");
+		String insertSql = "insert into SC_POINT_CODE2LEVEL(id ,kind_name ,kind_code ,old_poi_level ,new_poi_level ,chain ,rating  ,flagcode ,category ,memo ,descript ,kg_flag ,hm_flag  ,type ) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		String selectSql = "select id ,kind_name ,kind_code ,old_poi_level ,new_poi_level ,chain ,rating  ,flagcode ,category ,memo ,descript ,kg_flag ,hm_flag  ,type   "
+				+"from SC_POINT_CODE2LEVEL ";
+		Statement pstmt = null;
+		ResultSet resultSet = null;
+		PreparedStatement prep = null;
+		try {
+			prep = sqliteConn.prepareStatement(insertSql);
+			pstmt = conn.createStatement();
+			resultSet = pstmt.executeQuery(selectSql);
+			resultSet.setFetchSize(5000);
+			int count = 0;
+
+			while (resultSet.next()) {
+				prep.setInt(1, resultSet.getInt("id"));
+				prep.setString(2, resultSet.getString("kind_name"));
+				prep.setString(3, resultSet.getString("kind_code"));
+				prep.setString(4, resultSet.getString("old_poi_level"));
+				prep.setString(5, resultSet.getString("new_poi_level"));
+				prep.setString(6, resultSet.getString("chain"));
+				prep.setInt(7, resultSet.getInt("rating"));
+				prep.setString(8, resultSet.getString("flagcode"));
+				prep.setInt(9, resultSet.getInt("category"));
+				prep.setString(10, resultSet.getString("memo"));
+				prep.setString(11, resultSet.getString("descript"));
+				prep.setString(12, resultSet.getString("kg_flag"));
+				prep.setString(13, resultSet.getString("hm_flag"));
+				prep.setString(14, resultSet.getString("type"));
+				
+				prep.executeUpdate();
+				
+				count += 1;
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			sqliteConn.commit();
+			System.out.println("SC_POINT_CODE2LEVEL end");
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeStatement(prep);
+		}
 		
+	}
 
 	
 	public static void export2SqliteByNames(String dir) throws Exception{

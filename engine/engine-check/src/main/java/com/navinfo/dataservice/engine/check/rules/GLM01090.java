@@ -27,29 +27,31 @@ public class GLM01090 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
+        preparData(checkCommand);
+
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
 
                 int functionClass = link.getFunctionClass();
                 if (link.changedFields().containsKey("functionClass"))
-                    functionClass = (int) link.changedFields().get("functionClass");
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
 
                 if (pedestrianLink.contains(link.pid()) && functionClass != 5) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
 
                     if (link.getFunctionClass() != 5) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }
@@ -78,7 +80,7 @@ public class GLM01090 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

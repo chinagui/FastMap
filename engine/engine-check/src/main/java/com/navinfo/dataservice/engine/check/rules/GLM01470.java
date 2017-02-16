@@ -23,14 +23,14 @@ public class GLM01470 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
                 int walkFlag = link.getWalkFlag();
                 if (link.changedFields().containsKey("walkFlag"))
-                    walkFlag = (int) link.changedFields().get("walkFlag");
+                    walkFlag = Integer.valueOf(link.changedFields().get("walkFlag").toString());
 
                 if (kind == 15 && walkFlag != 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

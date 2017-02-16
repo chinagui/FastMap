@@ -178,15 +178,17 @@ public class Operation implements IOperation {
                         Coordinate sCoor = zoneLink.getGeometry().getCoordinates()[0];
                         Coordinate eCoor = zoneLink.getGeometry().getCoordinates()[zoneLink.getGeometry()
                                 .getCoordinates().length - 1];
-                        for (IObj obj : objList) {
-                            ZoneLink link = (ZoneLink) obj;
-                            Coordinate[] coors = link.getGeometry().getCoordinates();
-                            if (sCoor.equals(coors[0]) && eCoor.equals(coors[coors.length - 1])) {
-                                zoneLink.setGeometry(zoneLink.getGeometry().reverse());
-                                int nodePid = zoneLink.getsNodePid();
-                                zoneLink.setsNodePid(zoneLink.geteNodePid());
-                                zoneLink.seteNodePid(nodePid);
-                                break;
+                        if (null != objList) {
+                            for (IObj obj : objList) {
+                                ZoneLink link = (ZoneLink) obj;
+                                Coordinate[] coors = link.getGeometry().getCoordinates();
+                                if (sCoor.equals(coors[0]) && eCoor.equals(coors[coors.length - 1])) {
+                                    zoneLink.setGeometry(zoneLink.getGeometry().reverse());
+                                    int nodePid = zoneLink.getsNodePid();
+                                    zoneLink.setsNodePid(zoneLink.geteNodePid());
+                                    zoneLink.seteNodePid(nodePid);
+                                    break;
+                                }
                             }
                         }
                         links.add(zoneLink);
@@ -336,8 +338,8 @@ public class Operation implements IOperation {
             index++;
             map.put(currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()), index);
             Geometry tmpGeo = currLinkAndPidMap.get(currLinkAndPidMap.keySet().iterator().next()).getGeometry();
-//            if (currLink.getGeometry().getCoordinates()[0].equals(tmpGeo.getCoordinates()[0]))
-                list.add(tmpGeo);
+            //            if (currLink.getGeometry().getCoordinates()[0].equals(tmpGeo.getCoordinates()[0]))
+            list.add(tmpGeo);
         }
         // 线几何组成面的几何
         if (this.updateFlag) {

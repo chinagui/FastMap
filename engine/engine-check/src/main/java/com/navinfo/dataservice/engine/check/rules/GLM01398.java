@@ -18,20 +18,20 @@ public class GLM01398 extends baseRule {
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdLinkLimit && row.status() == ObjStatus.UPDATE) {
+            if (row instanceof RdLinkLimit && row.status() != ObjStatus.DELETE) {
                 RdLinkLimit limit = (RdLinkLimit) row;
 
                 int type = limit.getType();
                 if (limit.changedFields().containsKey("type"))
-                    type = (int) limit.changedFields().get("type");
+                    type = Integer.valueOf(limit.changedFields().get("type").toString());
 
                 if (type == 6) {
                     int tollType = limit.getTollType();
                     if (limit.changedFields().containsKey("tollType"))
-                        tollType = (int) limit.changedFields().get("tollType");
+                        tollType = Integer.valueOf(limit.changedFields().get("tollType").toString());
 
                     if (tollType != 2 && tollType != 3) {
-                        setCheckResult("", "", 0);
+                        setCheckResult("", "[RD_LINK," + limit.getLinkPid() + "]", 0);
                     }
                 }
             }

@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import org.apache.poi.hssf.record.formula.functions.False;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,21 +42,21 @@ public class GLM01513 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 43) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
                     List<IRow> speeds = link.getSpeedlimits();
-                    boolean speedFlag = true;
+                    boolean speedFlag = false;
                     for (IRow s : speeds) {
                         RdLinkSpeedlimit ss = (RdLinkSpeedlimit) s;
                         if (ss.getSpeedClass() != 7 && ss.getSpeedClass() != 8) {
-                            speedFlag = false;
+                            speedFlag = true;
                             break;
                         }
                     }
                     if (speedFlag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkSpeedlimit && row.status() != ObjStatus.DELETE) {
@@ -63,7 +64,7 @@ public class GLM01513 extends baseRule {
 
                 int speedClass = speedlimit.getSpeedClass();
                 if (speedlimit.changedFields().containsKey("speedClass"))
-                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass").toString());
 
                 if (speedClass != 7 && speedClass != 8) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(speedlimit.getLinkPid(), false);
@@ -77,7 +78,7 @@ public class GLM01513 extends baseRule {
                         }
                     }
                     if (formFlag) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             }
@@ -106,7 +107,7 @@ public class GLM01513 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,6 +12,7 @@ import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
@@ -106,7 +108,7 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskOperation.getGridIdsBySubtaskId(subtaskId);
+		return SubtaskOperation.getGridIdListBySubtaskId(subtaskId);
 	}
 	@Override
 	public void close(int subtaskId) throws Exception {
@@ -137,7 +139,7 @@ public class ManApiImpl implements ManApi {
 		return StaticsService.getInstance().queryTaskStatByTaskId(taskId);
 	}
 	@Override
-	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception {
+	public UserInfo getUserInfoByUserId(long userId) throws Exception {
 		// TODO Auto-generated method stub
 		return UserInfoService.getInstance().getUserInfoByUserId(userId);
 	}
@@ -180,6 +182,10 @@ public class ManApiImpl implements ManApi {
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception {
 		JSONObject condition = new JSONObject().element("cityId", cityId);
 		return GridService.getInstance().queryListByCondition(condition);
+	}
+	@Override
+	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
+		return GridService.getInstance().queryTaskIdsByGrid(grid);
 	}
 }
 

@@ -5,11 +5,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 
 public class Command implements ICommand {
+	private OperType operType =  OperType.CREATE;
+
+	public void setOperType(OperType operType) {
+		this.operType = operType;
+	}
 
 	@Override
 	public OperType getOperType() {
 		// TODO Auto-generated method stub
-		return OperType.CREATE;
+		return operType;
 	}
 
 	@Override

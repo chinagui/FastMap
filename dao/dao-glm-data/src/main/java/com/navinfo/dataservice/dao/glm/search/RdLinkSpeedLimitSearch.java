@@ -5,8 +5,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
@@ -66,15 +69,15 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(a) */ A.LINK_PID, A.FROM_SPEED_LIMIT, A.FROM_LIMIT_SRC, A.TO_SPEED_LIMIT, A.TO_LIMIT_SRC, A.SPEED_DEPENDENT, A.SPEED_TYPE, B.GEOMETRY LINK_GEOM FROM RD_LINK_SPEEDLIMIT A, TMP1 B WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2";
-		
-		if (queryType.equals("DEPENDENT")) {
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(a) */ A.LINK_PID, A.FROM_SPEED_LIMIT, A.FROM_LIMIT_SRC, A.TO_SPEED_LIMIT, A.TO_LIMIT_SRC, A.SPEED_DEPENDENT, A.SPEED_TYPE, B.GEOMETRY LINK_GEOM FROM RD_LINK_SPEEDLIMIT A, TMP1 B WHERE A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 ";
 			
-			sql +=" AND A.SPEED_TYPE = 3 ";
-		}
-		else
-		{
-			sql +=" AND A.SPEED_TYPE = 0 ";
+		if (queryType.equals("DEPENDENT")) {
+
+			sql += " AND A.SPEED_TYPE = 3 ";
+
+		} else {
+
+			sql += " AND A.SPEED_TYPE IN (0,1)";
 		}
 		
 		PreparedStatement pstmt = null;
@@ -94,6 +97,8 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 			double py = MercatorProjection.tileYToPixelY(y);
 			
+			Map<Integer,SearchSnapshot> snapshotMap=new HashMap<Integer,SearchSnapshot>();
+			
 			while (resultSet.next()) {
 
 				int fromSpeedLimit = resultSet.getInt("from_speed_limit");
@@ -104,14 +109,34 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 					continue;
 				}
+				
+				int fromLimitSrc = resultSet.getInt("from_limit_src");
 
-				SearchSnapshot snapshot = new SearchSnapshot();
+				int toLimitSrc = resultSet.getInt("to_limit_src");
 
-				JSONObject jsonM = new JSONObject();
+				int speedDependent = resultSet.getInt("speed_dependent");
 
-				snapshot.setI(resultSet.getInt("link_pid"));
+				int link_pid = resultSet.getInt("link_pid");
+				
+				SearchSnapshot snapshot =null;
 
-				snapshot.setT(9);
+				JSONObject jsonM = null;
+
+				JSONArray meArray = null;
+
+				if (snapshotMap.containsKey(link_pid)) {
+					snapshot = snapshotMap.get(link_pid);
+					jsonM = snapshot.getM();
+					meArray = jsonM.getJSONArray("e");
+				} else {
+					snapshot = new SearchSnapshot();
+					snapshotMap.put(link_pid, snapshot);
+					snapshot.setI(link_pid);
+					snapshot.setT(9);
+					jsonM = new JSONObject();
+					meArray = new JSONArray();
+					jsonM.put("f", resultSet.getInt("speed_type"));
+				}
 
 				int direct = 0;
 
@@ -122,57 +147,57 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 				WKT wktSpatial = new WKT();
 
 				String linkWkt = new String(wktSpatial.fromJGeometry(linkGeom));
-
+				
 				if (fromSpeedLimit > 0) {
 
 					direct = 2;
 					
-					double[] position = DisplayUtils.getMid2MPosition(linkWkt,
-							direct,DisplayUtils.getVerUint(z));
+					if (!jsonM.containsKey("a") && !jsonM.containsKey("b")) {
 
-					jsonM.put("a", Geojson.lonlat2Pixel(position[0],
-							position[1], z, px, py));
+						double[] position = DisplayUtils.getMid2MPosition(
+								linkWkt, direct, DisplayUtils.getVerUint(z));
 
-					double angle = calAngle(position, linkGeom, direct);
+						jsonM.put("a", Geojson.lonlat2Pixel(position[0],
+								position[1], z, px, py));
 
-					int fromLimitSrc = resultSet.getInt("from_limit_src");
-
-					String info = String.valueOf(fromSpeedLimit) + ","
-							+ String.valueOf(fromLimitSrc) + ","
-							+ String.valueOf(angle);
-
-					jsonM.put("b", info);
+						double angle = calAngle(position, linkGeom, direct);
+						
+						jsonM.put("b", angle);
+					}
 				}
 
 				if (toSpeedLimit > 0) {
 
 					direct = 3;
 
-					double[] position = DisplayUtils.getMid2MPosition(linkWkt,
-							direct,DisplayUtils.getVerUint(z));
+					if (!jsonM.containsKey("c") && !jsonM.containsKey("d")) {
 
-					jsonM.put("c", Geojson.lonlat2Pixel(position[0],
-							position[1], z, px, py));
+						double[] position = DisplayUtils.getMid2MPosition(
+								linkWkt, direct, DisplayUtils.getVerUint(z));
 
-					double angle = calAngle(position, linkGeom, direct);
+						jsonM.put("c", Geojson.lonlat2Pixel(position[0],
+								position[1], z, px, py));
 
-					int toLimitSrc = resultSet.getInt("to_limit_src");
+						double angle = calAngle(position, linkGeom, direct);
 
-					String info = String.valueOf(toSpeedLimit) + ","
-							+ String.valueOf(toLimitSrc) + ","
-							+ String.valueOf(angle);
-
-					jsonM.put("d", info);
+						jsonM.put("d", angle);
+					}
 				}
-
-				jsonM.put("e", resultSet.getInt("speed_dependent"));
 				
-				jsonM.put("f", resultSet.getInt("speed_type"));
+				String info = String.valueOf(fromSpeedLimit) + ","
+						+ String.valueOf(fromLimitSrc) + ","
+						+ String.valueOf(toSpeedLimit) + ","
+						+ String.valueOf(toLimitSrc) + ","
+						+ String.valueOf(speedDependent);
+
+				meArray.add(info);
+				
+				jsonM.put("e", meArray);
 				
 				snapshot.setM(jsonM);
-
-				list.add(snapshot);
 			}
+			
+			list.addAll(snapshotMap.values());
 		} catch (Exception e) {
 
 			throw new SQLException(e);
@@ -185,6 +210,8 @@ public class RdLinkSpeedLimitSearch implements ISearch {
 
 		return list;
 	}
+	
+	
 	
 
 	// 计算角度

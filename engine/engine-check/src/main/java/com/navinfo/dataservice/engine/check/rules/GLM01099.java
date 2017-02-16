@@ -35,23 +35,23 @@ public class GLM01099 extends baseRule {
 
                 int paveStatus = link.getPaveStatus();
                 if (link.changedFields().containsKey("paveStatus"))
-                    paveStatus = (int) link.changedFields().get("paveStatus");
+                    paveStatus = Integer.valueOf(link.changedFields().get("paveStatus").toString());
 
                 if (tunnelLink.contains(link.pid()) && paveStatus == 1) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm) {
                 RdLinkForm form = (RdLinkForm) row;
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 31) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(), false);
 
                     if (link.getPaveStatus() == 1) {
-                        setCheckResult("", "", 0);
+                        setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
             }
@@ -80,7 +80,7 @@ public class GLM01099 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }

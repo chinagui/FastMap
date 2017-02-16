@@ -879,10 +879,10 @@ public class IxPoiSearch implements ISearch {
 			dataObj.put("brandName", brandName);
 			//ix_poi表通过region_id关联ad_admin，获取adminCode，去元数据表sc_point_adminarea中匹配获取相应的名称
 			//待确认
-			if (ADMINMAP.containsKey(Integer.toString(poi.getAdminReal()))) {
-				dataObj.put("whole", ADMINMAP.get(Integer.toString(poi.getAdminReal())));
+			if (ADMINMAP.containsKey(dataObj.get("adminCode").toString())) {
+				dataObj.put("whole", ADMINMAP.get(dataObj.get("adminCode").toString()));
 			} else {
-				dataObj.put("whole", Integer.toString(poi.getAdminReal()));
+				dataObj.put("whole", "");
 			}
 					
 			return dataObj;	
@@ -968,6 +968,13 @@ public class IxPoiSearch implements ISearch {
 				//名称组:pid关联ix_poi_name，将多组名称记录转换为json格式的名称组；
 				IxPoiName name = (IxPoiName) nRow;
 				JSONObject nameObj = name.Serialize(null);
+				
+				String nameStr = name.getName();
+				if(nameStr==null||nameStr.isEmpty()) {
+					nameArray.add(nameObj);
+					continue;
+				}
+				
 				/**特殊处理：当一级作业项为：poi_name、二级作业项为：namePinyin时，对'langCode'== 'CHI' and 'type'==1 and 'nameClass' 
 				in [1,3,5,8]的记录，添加字段multiPinyin，multiPinyin的取值原则：对name中存在多音字获取其对应的拼音，
 				例：multiPinyin：[[0, "大", "Da", "Dai", "Tai"], [2, "区", "Qu", "Ou"]]*/
@@ -1050,21 +1057,23 @@ public class IxPoiSearch implements ISearch {
 				//nameList赋值
 				if (firstWordItem.equals("poi_englishname")) {
 					if (!secondWorkItem.equals("confirmAliasEngName")&&!secondWorkItem.equals("officalStandardAliasEngName")) {
-						List<String> nameList = new ArrayList<String>();
 						if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1) {
-							String nameStr = name.getName();
-							if(nameStr==null||nameStr.isEmpty()){continue;}
+							List<String> nameList = new ArrayList<String>();
 							String[] wordList = nameStr.split(" ");
 							for (String word:wordList) {
 								if (ENGSHORTMAP.containsKey(word)) {
 									nameList.add(word + "&" + ENGSHORTMAP.get(word));
 								}
 							}
+							dataObj.put("nameList", nameList);
 						}
-						dataObj.put("nameList", nameList);
 					}
 				}
 			}
+			if (!dataObj.containsKey("nameList")) {
+				dataObj.put("nameList", new ArrayList<String>());
+			}
+			
 			dataObj.put("chiNameList", chiNameList);
 			dataObj.put("names", nameArray);
 			//dataObj.put("nameFlag", nameFlag);
@@ -1139,8 +1148,9 @@ public class IxPoiSearch implements ISearch {
 					}
 					addrArray.add(addrObj);
 					//addressList赋值
-					List<String> addrList = new ArrayList<String>();
+					
 					if (address.getLangCode().equals("ENG")) {
+						List<String> addrList = new ArrayList<String>();
 						String fullname = address.getFullname();
 						if(fullname==null||fullname.isEmpty()){continue;}
 						String[] wordList = fullname.split(" ");
@@ -1149,8 +1159,14 @@ public class IxPoiSearch implements ISearch {
 								addrList.add(word + "&" + ENGSHORTMAP.get(word));
 							}
 						}
+						if (addrList.size()>0) {
+							dataObj.put("addressList", addrList);
+						}
 					}
-					dataObj.put("addressList", addrList);	
+					
+				}
+				if (!dataObj.containsKey("addressList")) {
+					dataObj.put("addressList", new ArrayList<String>());
 				}
 				dataObj.put("addresses", addrArray);	
 			} 

@@ -51,23 +51,27 @@ public class LogWriter {
 
 	public void write(EditLog editLog,ILogWriteListener listener) throws Exception{
 		int op_tp = editLog.getOpType();
+		JSONObject data= new JSONObject();
 		if (op_tp == 1) {// 新增
 			listener.preInsert();
-			if (insertData(editLog) == 0) {
-				listener.insertFail(editLog);
+			data=insertData(editLog);
+			if (data.get("result").equals(0)) {
+				listener.insertFail(editLog,data.get("log").toString());
 			}
 
 		} else if (op_tp == 3) { // 修改
 
 			listener.preUpdate();
-			if (updateData(editLog) == 0) {
-				listener.updateFailed(editLog);
+			data=updateData(editLog);
+			if ( data.get("result").equals(0)) {
+				listener.updateFailed(editLog,data.get("log").toString());
 			}
 
 		} else if (op_tp == 2) { // 删除
 			listener.preDelete();
-			if (deleteData(editLog) == 0) {
-				listener.deleteFailed(editLog);
+			data=PhysicalDeleteData(editLog);
+			if (data.get("result").equals(0)) {
+				listener.deleteFailed(editLog,data.get("log").toString());
 			}
 		}
 	}
@@ -138,12 +142,13 @@ public class LogWriter {
 		}
 	}
 	
-	private int insertData(EditLog editLog) throws Exception {
+	private JSONObject insertData(EditLog editLog) throws Exception {
 
 		StringBuilder sb = new StringBuilder("insert into ");
 
 		PreparedStatement pstmt = null;
-
+		
+		JSONObject data= new JSONObject();
 		try {
 			String newValue = editLog.getNewValue();
 			JSONObject json = JSONObject.fromObject(newValue);
@@ -280,11 +285,15 @@ public class LogWriter {
 				}
 
 			}
-
+			
 			int result = pstmt.executeUpdate();
-			return result;
+			data.put("result", result);
+			data.put("log", "");
+			return data;
 		} catch (Exception e) {
-			return handleFlushException( e);
+			data.put("result", handleFlushException( e));
+			data.put("log", e.getMessage());
+			return data;
 			
 		} finally {
 			DbUtils.closeQuietly(pstmt);
@@ -328,11 +337,13 @@ public class LogWriter {
 				||"type".equalsIgnoreCase(filed);
 	}
 
-	private int updateData(EditLog editLog) throws Exception {
+	private JSONObject updateData(EditLog editLog) throws Exception {
 
 		PreparedStatement pstmt = null;
 
 		StringBuilder sb = new StringBuilder("update ");
+		
+		JSONObject data= new JSONObject();
 
 		try {
 			String newValue = editLog.getNewValue();
@@ -418,20 +429,28 @@ public class LogWriter {
 				}
 
 			}
-			int result = pstmt.executeUpdate();
-			return result;
+//			int result = pstmt.executeUpdate();
+//			return result;
 
+			int result = pstmt.executeUpdate();
+			data.put("result", result);
+			data.put("log", "");
+			return data;
 		} catch (Exception e) {
-			return handleFlushException(e);
+			data.put("result", handleFlushException( e));
+			data.put("log", e.getMessage());
+			return data;
 			
 		} finally {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
 
-	private int deleteData(EditLog editLog) throws Exception {
+	private JSONObject deleteData(EditLog editLog) throws Exception {
 
 		PreparedStatement pstmt = null;
+		
+		JSONObject data= new JSONObject();
 
 		try {
 			String sql = "update " + editLog.getTableName()
@@ -440,14 +459,42 @@ public class LogWriter {
 			this.log.debug(sql);
 			pstmt = this.targetDbConn.prepareStatement(sql);
 			int result = pstmt.executeUpdate();
-			return result;
-
+			data.put("result", result);
+			data.put("log", "");
+			return data;
 		} catch (Exception e) {
-			this.handleFlushException( e);
+			data.put("result", handleFlushException( e));
+			data.put("log", e.getMessage());
+			return data;
 		} finally {
 			DbUtils.closeQuietly(pstmt);
 		}
-		return 0;
+//		return 0;
+
+	}
+	private JSONObject PhysicalDeleteData(EditLog editLog) throws Exception {
+
+		PreparedStatement pstmt = null;
+		
+		JSONObject data= new JSONObject();
+
+		try {
+			String sql = "delete from " + editLog.getTableName()
+					+ " where row_id =hextoraw('"
+					+ editLog.getTableRowId() + "')";
+			this.log.debug(sql);
+			pstmt = this.targetDbConn.prepareStatement(sql);
+			int result = pstmt.executeUpdate();
+			data.put("result", result);
+			data.put("log", "");
+			return data;
+		} catch (Exception e) {
+			data.put("result", handleFlushException( e));
+			data.put("log", e.getMessage());
+			return data;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+		}
 
 	}
 }

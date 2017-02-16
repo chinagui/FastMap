@@ -74,7 +74,7 @@ public class GLM01205 extends baseRule {
 
                 int formOfWay = rdLinkForm.getFormOfWay();
                 if (rdLinkForm.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) rdLinkForm.changedFields().get("formOfay");
+                    formOfWay = Integer.valueOf(rdLinkForm.changedFields().get("formOfWay").toString());
                 //rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
                 if (formOfWay != 33) {
                     continue;
@@ -107,7 +107,7 @@ public class GLM01205 extends baseRule {
 
         int fc = rdLink.getFunctionClass();
         if (rdLink.changedFields().containsKey("functionClass"))
-            fc = (int) rdLink.changedFields().get("functionClass");
+            fc = Integer.valueOf(rdLink.changedFields().get("functionClass").toString());
         Iterator<RdLink> huandaoIterator = huandaoChain.iterator();
         String target = "";
         boolean isError = false;

@@ -60,8 +60,8 @@ public class RdTollgateSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH tmp1 AS ( SELECT a.geometry, a.node_pid FROM rd_node a, rd_tollgate b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid, tmp1.geometry as geometry  from rd_tollgate a, tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
-
+		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.NODE_PID FROM RD_NODE A, RD_TOLLGATE B WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2) SELECT T.PID, T.TYPE, TMP1.GEOMETRY AS GEOMETRY FROM RD_TOLLGATE T, TMP1 WHERE T.NODE_PID = TMP1.NODE_PID AND T.U_RECORD != 2";		
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -93,6 +93,12 @@ public class RdTollgateSearch implements ISearch {
 				Geojson.point2Pixel(geojson, z, px, py);
 
 				snapshot.setG(geojson.getJSONArray("coordinates"));
+				
+				JSONObject m = new JSONObject();
+				
+				m.put("a",resultSet.getInt("type"));
+				
+				snapshot.setM(m);
 
 				list.add(snapshot);
 			}

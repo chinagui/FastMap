@@ -32,7 +32,7 @@ public class GLM12051_2 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     RdBranchSelector selector = new RdBranchSelector(getConn());
@@ -45,7 +45,7 @@ public class GLM12051_2 extends baseRule {
                         List<IRow> images = new AbstractSelector(RdBranchRealimage.class, getConn())
                                 .loadRowsByParentId(branch.pid(), false);
                         if (!images.isEmpty()) {
-                            setCheckResult("", "", 0);
+                            setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                             break;
                         }
                     }
@@ -55,12 +55,12 @@ public class GLM12051_2 extends baseRule {
 
                 int inLinkPid = branch.getInLinkPid();
                 if (branch.changedFields().containsKey("inLinkPid")) {
-                    inLinkPid = (int) branch.changedFields().get("inLinkPid");
+                    inLinkPid = Integer.valueOf(branch.changedFields().get("inLinkPid").toString());
                 }
 
                 int outLinkPid = branch.getOutLinkPid();
                 if (branch.changedFields().containsKey("outLinkPid")) {
-                    outLinkPid = (int) branch.changedFields().get("outLinkPid");
+                    outLinkPid = Integer.valueOf(branch.changedFields().get("outLinkPid").toString());
                 }
 
                 RdLinkSelector selector = new RdLinkSelector(getConn());
@@ -75,7 +75,7 @@ public class GLM12051_2 extends baseRule {
                     }
                 }
                 if (flag) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     continue;
                 }
 
@@ -90,7 +90,7 @@ public class GLM12051_2 extends baseRule {
                     }
                 }
                 if (flag) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     continue;
                 }
             }

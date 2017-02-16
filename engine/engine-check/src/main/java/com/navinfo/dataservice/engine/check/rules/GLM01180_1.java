@@ -28,7 +28,7 @@ public class GLM01180_1 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 50) {
                     List<Integer> linkPids = new ArrayList<>();
@@ -37,7 +37,7 @@ public class GLM01180_1 extends baseRule {
                     RdCrossSelector selector = new RdCrossSelector(getConn());
                     List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(null, linkPids, false);
                     if (crosses.isEmpty()) {
-                        setCheckResult("", "[RD_LINK, " + form.getLinkPid() + "]", 0);
+                        setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
             }

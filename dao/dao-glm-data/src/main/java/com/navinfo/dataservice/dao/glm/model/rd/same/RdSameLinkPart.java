@@ -17,195 +17,196 @@ import net.sf.json.JSONObject;
 
 /**
  * 同一线关系表
- * @author zhaokaikai
  *
+ * @author zhaokaikai
  */
 public class RdSameLinkPart implements IRow {
-	
-	private int groupId;
-	
-	private int linkPid= 0 ;
-	
-	private String rowId;
-	
-	private String tableName;
-	
-	public String getTableName() {
-		return tableName;
-	}
 
-	public void setTableName(String tableName) {
-		this.tableName = tableName;
-	}
+    private int groupId;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	
+    private int linkPid = 0;
 
-	public int getGroupId() {
-		return groupId;
-	}
+    private String rowId;
 
-	public void setGroupId(int groupId) {
-		this.groupId = groupId;
-	}
+    private String tableName;
 
-	public int getLinkPid() {
-		return linkPid;
-	}
+    public String getTableName() {
+        return tableName;
+    }
 
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
+    public void setTableName(String tableName) {
+        this.tableName = tableName;
+    }
 
-	public String getRowId() {
-		return rowId;
-	}
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
 
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
-		return json;
-	}
+    public int getGroupId() {
+        return groupId;
+    }
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
+    public void setGroupId(int groupId) {
+        this.groupId = groupId;
+    }
 
-		while (keys.hasNext()) {
+    public int getLinkPid() {
+        return linkPid;
+    }
 
-			String key = (String) keys.next();
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
 
-			if (!"objStatus".equals(key)) {
+    public String getRowId() {
+        return rowId;
+    }
 
-				Field f = this.getClass().getDeclaredField(key);
+    protected ObjStatus status;
 
-				f.setAccessible(true);
+    @Override
+    public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+        JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
 
-				f.set(this, json.get(key));
-			}
+        return json;
+    }
 
-		}
-		return true;
-	}
+    @Override
+    public boolean Unserialize(JSONObject json) throws Exception {
+        @SuppressWarnings("rawtypes") Iterator keys = json.keys();
 
-	@Override
-	public String rowId() {
-		return this.rowId;
-	}
+        while (keys.hasNext()) {
 
-	@Override
-	public void setRowId(String rowId) {
-		this.rowId = rowId;
-	}
+            String key = (String) keys.next();
 
-	@Override
-	public String tableName() {
-		return "rd_samelink_part";
-	}
+            if (!"objStatus".equals(key)) {
 
-	@Override
-	public ObjStatus status() {
-		return null;
-	}
+                Field f = this.getClass().getDeclaredField(key);
 
-	@Override
-	public void setStatus(ObjStatus os) {
-	}
+                f.setAccessible(true);
 
-	@Override
-	public ObjType objType() {
-		return ObjType.RDSAMELINKPART;
-	}
+                f.set(this, json.get(key));
+            }
 
-	@Override
-	public void copy(IRow row) {
-	}
+        }
+        return true;
+    }
 
-	@Override
-	public Map<String, Object> changedFields() {
-		return this.changedFields;
-	}
+    @Override
+    public String rowId() {
+        return this.rowId;
+    }
 
-	@Override
-	public String parentPKName() {
-		return "group_id";
-	}
+    @Override
+    public void setRowId(String rowId) {
+        this.rowId = rowId;
+    }
 
-	@Override
-	public int parentPKValue() {
-		return this.getGroupId();
-	}
+    @Override
+    public String tableName() {
+        return "rd_samelink_part";
+    }
 
-	@Override
-	public String parentTableName() {
-		return "rd_samelink";
-	}
+    @Override
+    public ObjStatus status() {
+        return status;
+    }
 
-	@Override
-	public List<List<IRow>> children() {
-		return null;
-	}
+    @Override
+    public void setStatus(ObjStatus os) {
+        this.status = os;
+    }
 
-	@Override
-	public boolean fillChangeFields(JSONObject json) throws Exception {
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
+    @Override
+    public ObjType objType() {
+        return ObjType.RDSAMELINKPART;
+    }
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+    @Override
+    public void copy(IRow row) {
+    }
 
-			if (json.get(key) instanceof JSONArray) {
-				continue;
-			} else {
-				if (!"objStatus".equals(key)) {
+    @Override
+    public Map<String, Object> changedFields() {
+        return this.changedFields;
+    }
 
-					Field field = this.getClass().getDeclaredField(key);
+    @Override
+    public String parentPKName() {
+        return "group_id";
+    }
 
-					field.setAccessible(true);
+    @Override
+    public int parentPKValue() {
+        return this.getGroupId();
+    }
 
-					Object objValue = field.get(this);
+    @Override
+    public String parentTableName() {
+        return "rd_samelink";
+    }
 
-					String oldValue = null;
+    @Override
+    public List<List<IRow>> children() {
+        return null;
+    }
 
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
+    @Override
+    public boolean fillChangeFields(JSONObject json) throws Exception {
+        @SuppressWarnings("rawtypes") Iterator keys = json.keys();
 
-					String newValue = json.getString(key);
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-					if (!newValue.equals(oldValue)) {
-						Object value = json.get(key);
+            if (json.get(key) instanceof JSONArray) {
+                continue;
+            } else {
+                if (!"objStatus".equals(key)) {
 
-						if (value instanceof String) {
-							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
-							changedFields.put(key, value);
-						}
+                    Field field = this.getClass().getDeclaredField(key);
 
-					}
+                    field.setAccessible(true);
 
-				}
-			}
-		}
+                    Object objValue = field.get(this);
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+                    String oldValue = null;
 
-	@Override
-	public int mesh() {
-		return 0;
-	}
+                    if (objValue == null) {
+                        oldValue = "null";
+                    } else {
+                        oldValue = String.valueOf(objValue);
+                    }
 
-	@Override
-	public void setMesh(int mesh) {
-	}
+                    String newValue = json.getString(key);
+
+                    if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
+
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
+                        } else {
+                            changedFields.put(key, value);
+                        }
+
+                    }
+
+                }
+            }
+        }
+
+        if (changedFields.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int mesh() {
+        return 0;
+    }
+
+    @Override
+    public void setMesh(int mesh) {
+    }
 
 }

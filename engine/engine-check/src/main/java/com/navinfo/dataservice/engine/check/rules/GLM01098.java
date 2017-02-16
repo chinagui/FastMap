@@ -23,14 +23,14 @@ public class GLM01098 extends baseRule {
 
                 int developState = link.getDevelopState();
                 if (link.changedFields().containsKey("developState"))
-                    developState = (int) link.changedFields().get("developState");
+                    developState = Integer.valueOf(link.changedFields().get("developState").toString());
 
                 int functionClass = link.getFunctionClass();
                 if (link.changedFields().containsKey("functionClass"))
-                    functionClass = (int) link.changedFields().get("functionClass");
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
 
                 if (developState == 2 && functionClass != 5) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }
         }

@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,16 +39,19 @@ public class GLM01094 extends baseRule {
 
                 int functionClass = link.getFunctionClass();
                 if (link.changedFields().containsKey("functionClass"))
-                    functionClass = (int) link.changedFields().get("functionClass");
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
+
+                log.info("GLM01094:[saOrPaLink=" + Arrays.toString(saOrPaLink.toArray()) + ",icOrJctLink=" + Arrays
+                        .toString(icOrJctLink.toArray()) + "]");
 
                 if (saOrPaLink.contains(link.pid()) && !icOrJctLink.contains(link.pid()) && functionClass != 5) {
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm) {
                 RdLinkForm form = (RdLinkForm) row;
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 12 || formOfWay == 13) {
                     List<IRow> forms = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(form
@@ -64,7 +68,7 @@ public class GLM01094 extends baseRule {
                         RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(form.getLinkPid(),
                                 false);
                         if (link.getFunctionClass() != 5) {
-                            setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                            setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                         }
                     }
                 }
@@ -95,16 +99,19 @@ public class GLM01094 extends baseRule {
                             } else {
                                 int formOfWay = form.getFormOfWay();
                                 if (form.changedFields().containsKey("formOfWay"))
-                                    formOfWay = (int) form.changedFields().get("formOfWay");
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
                                 formOfWays.put(form.getRowId(), formOfWay);
                             }
                         }
                     }
                 }
 
+                log.info("GLM01094:[formOfWays" + Arrays.toString(formOfWays.values().toArray()) + "]");
+
                 if (formOfWays.containsValue(12) || formOfWays.containsValue(13)) {
                     saOrPaLink.add(link.pid());
-                } else if (formOfWays.containsValue(10) || formOfWays.containsValue(11)) {
+                }
+                if (formOfWays.containsValue(10) || formOfWays.containsValue(11)) {
                     icOrJctLink.add(link.pid());
                 }
             }

@@ -25,16 +25,16 @@ public class GLM01010 extends baseRule {
 
                 int specialTraffic = link.getSpecialTraffic();
                 if (link.changedFields().containsKey("specialTraffic"))
-                    specialTraffic = (int) link.changedFields().get("specialTraffic");
+                    specialTraffic = Integer.valueOf(link.changedFields().get("specialTraffic").toString());
                 if (specialTraffic == 0)
                     continue;
 
                 int direct = link.getDirect();
                 if (link.changedFields().containsKey("direct"))
-                    direct = (int) link.changedFields().get("direct");
+                    direct = Integer.valueOf(link.changedFields().get("direct").toString());
 
                 if (direct == 0 || direct == 1)
-                    setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
             }
         }
     }

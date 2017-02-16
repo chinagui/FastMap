@@ -24,11 +24,12 @@ public class FM14Sum060101 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			//充电桩（230227）不参与检查
-			//String kindCode = poi.getKindCode();
-			//if("230227".equals(kindCode)){return;}
+			String kindCode = poi.getKindCode();
+			if(kindCode == null || "230227".equals(kindCode)){return;}
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			if(ixPoiAddress == null){return;}
 			String fullname = ixPoiAddress.getFullname();
+			if(fullname == null){return;}
 			String firstName = fullname.substring(0, 1);
 			//地址（address）不是以汉字开头的
 			boolean check = CheckUtil.isChinese(firstName);

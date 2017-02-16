@@ -18,6 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -239,18 +240,18 @@ public class BlockService {
 			String wkt = json.getString("wkt");
 			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
 					')');
-			int type = 1;
-			if(json.containsKey("type")){
-				type = json.getInt("type");
-			}
+			//int type = 1;
+			//if(json.containsKey("type")){
+			//	type = json.getInt("type");
+			//}
 
-			String selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.GEOMETRY,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
-					+ " from BLOCK t "
-					+ ", (SELECT DISTINCT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
-					+ " where t.PLAN_STATUS in "+ planningStatus
-					+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
+			String selectSql = "SELECT T.BLOCK_ID, T.BLOCK_NAME, T.GEOMETRY, T.PLAN_STATUS, T.CITY_ID"
+					+ "  FROM BLOCK T"
+					+ " WHERE T.PLAN_STATUS IN "+planningStatus
+					+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
+					+ "       'TRUE'";
 
-			if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
+			/*if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
 				if ("1".equals(json.getString("snapshot"))) {
 					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
 							+ " from BLOCK t"
@@ -258,9 +259,8 @@ public class BlockService {
 							+ " where t.PLAN_STATUS in " + planningStatus
 							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
 				}
-			}
-			;
-			if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
+			};*/
+			/*if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
 				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
 			} else {
 				if ("within".equals(json.getString("relation"))) {
@@ -273,8 +273,8 @@ public class BlockService {
 				selectSql += " AND t.CITY_ID = 100002";
 			}else if(1==type){
 				selectSql += " AND t.CITY_ID < 100000";
-			}
-
+			}*/
+			log.debug(selectSql);
 			return BlockOperation.queryBlockBySql(conn, selectSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -991,14 +991,14 @@ public class BlockService {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
-			if(userInfo != null && userInfo.get("userEmail") != null){
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
+			if(userInfo != null && userInfo.getUserEmail() != null){
 				//判断邮箱格式
 				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
                 Pattern regex = Pattern.compile(check);
-                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
                 if(matcher.matches()){
-                	toMail = (String) userInfo.get("userEmail");
+                	toMail = userInfo.getUserEmail();
                 	mailTitle = (String) msgContent[1];
                 	mailContent = (String) msgContent[2];
                 	//发送邮件到消息队列
@@ -1008,8 +1008,8 @@ public class BlockService {
 			}
 			//查询用户名称
 			String pushUserName = null;
-			if(userInfo != null && userInfo.size() > 0){
-				pushUserName = (String) userInfo.get("userRealName");
+			if(userInfo != null){
+				pushUserName = (String) userInfo.getUserRealName();
 			}
 			//发送消息到消息队列
 			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong((String) msgContent[0])}, 2, (String)msgContent[3], pushUserName);

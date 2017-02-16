@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.dao.glm.iface;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -55,6 +58,10 @@ public class Result implements ISerializable {
 	private JSONArray checkResults = new JSONArray();
 
 	private JSONArray logs = new JSONArray();
+	
+	HashMap<String, TreeMap<Integer, TreeMap<Integer, IVia>>> viaMap = null;
+	
+	Map<String, TreeMap<Integer, IVia>> nextViaMap = null;
 
 	public JSONArray getCheckResults() {
 		return checkResults;
@@ -196,5 +203,133 @@ public class Result implements ISerializable {
 		this.listAddIRow.addAll(result.getAddObjects());
 		this.listUpdateIRow.addAll(result.getUpdateObjects());
 		this.listDelIRow.addAll(result.getDelObjects());
+	}
+	
+	
+
+	/**
+	 * 连续打断Via维护
+	 * @param tableNamePid via表名+父Pid+GROUP_ID(via表有GROUP_ID字段时加)
+	 * @param oldSeqNum 打断前Via的seqNum
+	 * @param newVias 打断后新增的Via
+	 * @param nextVias 后续seqNum变化的Via
+	 */
+	public void breakVia(String tableNamePid,int oldSeqNum,TreeMap<Integer,IVia> newVias,TreeMap<Integer, IVia> nextVias)
+	{
+		if (newVias.size() == 0) {
+			return;
+		}
+			
+		if (viaMap == null) {
+			viaMap = new HashMap<String, TreeMap<Integer, TreeMap<Integer, IVia>>>();
+		}
+		
+		if (nextViaMap == null) {
+			nextViaMap = new HashMap<String, TreeMap<Integer, IVia>>();
+		}
+		
+		String nextViaFlag = tableNamePid + String.valueOf(oldSeqNum);
+		
+		nextViaMap.put(nextViaFlag, nextVias);
+		
+		//原seqnum,newVias
+		TreeMap<Integer, TreeMap<Integer, IVia>> sameGroupVias=null;
+		
+		if (!viaMap.containsKey(tableNamePid)) {
+
+			sameGroupVias = new TreeMap<Integer, TreeMap<Integer, IVia>>();
+
+			viaMap.put(tableNamePid, sameGroupVias);
+		}
+		
+		sameGroupVias = viaMap.get(tableNamePid);
+
+		if (!sameGroupVias.containsKey(oldSeqNum)) {
+
+			sameGroupVias.put(oldSeqNum, newVias);
+		}
+		
+		handleViaSeqNum(tableNamePid, sameGroupVias);
+	}
+	
+	/**
+	 * 更新seqnum
+	 * 
+	 * @param tableNamePid
+	 *            via表名+父Pid+GROUP_ID(via表有GROUP_ID字段时加)
+	 * @param sameGroupVias
+	 *            TreeMap<Integer：原via的seqnum, TreeMap<Integer：新via的seqnum,
+	 *            IVia：新via>>
+	 */
+	private void handleViaSeqNum(String tableNamePid,
+			TreeMap<Integer, TreeMap<Integer, IVia>> sameGroupVias) {
+
+		if (sameGroupVias.size() < 2) {
+
+			return;
+		}
+
+		int addSumCount=0;
+
+		for (Map.Entry<Integer, TreeMap<Integer, IVia>> entry : sameGroupVias
+				.entrySet()) {
+
+			int newSeqNum = entry.getKey();
+
+			if (entry.getKey() == 0) {
+				
+				newSeqNum = 1;
+			}
+
+			newSeqNum += addSumCount;
+
+			TreeMap<Integer, IVia> newVias = entry.getValue();
+
+			if (newVias == null || newVias.size() == 0) {
+				continue;
+			}
+			
+			for(Map.Entry<Integer, IVia> entryNew: newVias.entrySet())
+			{
+				entryNew.getValue().setSeqNum(newSeqNum++);
+			}		
+
+			String nextViaFlag = tableNamePid + String.valueOf(entry.getKey());
+
+			if (nextViaMap.containsKey(nextViaFlag)) {
+
+				TreeMap<Integer, IVia> nextVias = nextViaMap.get(nextViaFlag);
+
+				for (Map.Entry<Integer, IVia> entryNext : nextVias.entrySet()) {
+					
+					IRow row = (IRow) entryNext.getValue();
+					
+					setUpdateObjectVia(row.rowId(),  newSeqNum++);
+				}
+			}
+
+			addSumCount += newVias.size() - 1;
+
+			if (entry.getKey() == 0) {
+
+				addSumCount = newVias.size();
+			}
+		}
+	}
+	
+	/**
+	 * 处理更新结果集合里冗余的VIA序号（seqNum）
+	 * @param rowId VIA的rowId
+	 * @param seqNum 最新seqNum
+	 */
+	private void setUpdateObjectVia(String rowId, int seqNum) {
+
+		for (IRow updateRow : listUpdateIRow) {
+
+			if (updateRow instanceof IVia && updateRow.rowId().equals(rowId)) {
+
+				updateRow.changedFields().put("seqNum", seqNum);
+			}
+		}
 	}
 }

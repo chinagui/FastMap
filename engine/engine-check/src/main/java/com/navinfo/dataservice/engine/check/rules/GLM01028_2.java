@@ -28,12 +28,12 @@ public class GLM01028_2 extends baseRule {
 
                 int kind = link.getKind();
                 if (link.changedFields().containsKey("kind"))
-                    kind = (int) link.changedFields().get("kind");
+                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
                 if (kind == 11 || kind == 15) {
                     List<RdSe> rdSes = new RdSeSelector(getConn()).loadRdSesWithLinkPid(link.pid(), false);
                     if (!rdSes.isEmpty()) {
-                        setCheckResult(link.getGeometry().toString(), "[RD_LINK, " + link.pid() + "]", link.mesh());
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
             } else if (row instanceof RdLinkForm) {
@@ -41,12 +41,12 @@ public class GLM01028_2 extends baseRule {
 
                 int formOfWay = form.getFormOfWay();
                 if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) form.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
 
                 if (formOfWay == 20) {
                     List<RdSe> rdSes = new RdSeSelector(getConn()).loadRdSesWithLinkPid(form.getLinkPid(), false);
                     if (!rdSes.isEmpty()) {
-                        setCheckResult("", "", 0);
+                        setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
             }

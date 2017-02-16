@@ -11,7 +11,7 @@ public class LogFlusherHelper {
 		String table = "TEMP_FAIL_LOG_"+new Random().nextInt(1000000);
 		sb.append("CREATE TABLE ");
 		sb.append(table);
-		sb.append("(OP_ID RAW(16),ROW_ID RAW(16))");
+		sb.append("(OP_ID RAW(16),ROW_ID RAW(16),LOG varchar2(4000))");
 		new QueryRunner().execute(conn, sb.toString());
 		return table;
 	}

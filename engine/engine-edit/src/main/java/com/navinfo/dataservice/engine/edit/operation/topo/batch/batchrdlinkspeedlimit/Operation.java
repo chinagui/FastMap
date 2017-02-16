@@ -575,7 +575,7 @@ public class Operation implements IOperation {
 
 			String timeDomain = limitContent.getString("timeDomain");
 
-			if (!speedlimit.getTimeDomain().equals(timeDomain)) {
+			if (speedlimit.getTimeDomain()==null||!speedlimit.getTimeDomain().equals(timeDomain)) {
 
 				speedlimit.changedFields().put("timeDomain", timeDomain);
 			}

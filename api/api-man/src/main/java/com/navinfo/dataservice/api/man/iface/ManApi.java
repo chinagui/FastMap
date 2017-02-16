@@ -8,6 +8,7 @@ import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 
 import net.sf.json.JSONObject;
 
@@ -60,7 +61,7 @@ public interface ManApi{
 	
 	public Map<String, Object> queryTaskStatByTaskId(long taskId) throws Exception;
 	
-	public Map<String, Object> getUserInfoByUserId(long userId) throws Exception;
+	public UserInfo getUserInfoByUserId(long userId) throws Exception;
 	
 	public int createJob(long userId,String produceType, JSONObject paraJson) throws Exception;
 
@@ -85,5 +86,14 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
+	
+	/**
+	 * @param grid 
+	 * @return grid对应的taskId的list
+	 * @throws Exception
+	 * author zl 2017.02.09
+	 */
+	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception;
+	
 }
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -14,6 +15,7 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
@@ -146,23 +148,30 @@ public class Operation implements IOperation {
 		//路口关系的分歧不记录经过线
 		if(relationShipType != 1)
 		{
-			int seqNum = 1;
+			if(viaLinks.size() <= 32)
+			{
+				int seqNum = 1;
 
-			// 重新设置经过线
-			for (Integer linkPid : viaLinks) {
-				RdBranchVia via = new RdBranchVia();
+				// 重新设置经过线
+				for (Integer linkPid : viaLinks) {
+					RdBranchVia via = new RdBranchVia();
 
-				via.setBranchPid(branch.getPid());
+					via.setBranchPid(branch.getPid());
 
-				via.setLinkPid(linkPid);
+					via.setLinkPid(linkPid);
 
-				via.setSeqNum(seqNum);
+					via.setSeqNum(seqNum);
 
-				via.setMesh(this.branch.mesh());
+					via.setMesh(this.branch.mesh());
 
-				seqNum++;
+					seqNum++;
 
-				result.insertObject(via, ObjStatus.INSERT, branch.pid());
+					result.insertObject(via, ObjStatus.INSERT, branch.pid());
+				}
+			}
+			else
+			{
+				throw new Exception("分歧经过线数目不能超过32条:"+viaLinks.size());
 			}
 		}
 	}
@@ -968,7 +977,11 @@ public class Operation implements IOperation {
 			if (oldVia == null) {
 				continue;
 			}
-
+			
+			TreeMap<Integer,IVia> newVias=new TreeMap<Integer,IVia>();
+			
+			TreeMap<Integer, IVia> nextVias=new TreeMap<Integer,IVia>();
+			
 			// 与进入线或前一个经过线的连接点
 			int connectionNodePid = 0;
 
@@ -1014,6 +1027,8 @@ public class Operation implements IOperation {
 					newVia.setSeqNum(oldVia.getSeqNum() + i);
 
 					result.insertObject(newVia, ObjStatus.INSERT, newVia.getBranchPid());
+					
+					newVias.put(newVia.getSeqNum(), newVia);
 				}
 
 			} else {
@@ -1030,6 +1045,8 @@ public class Operation implements IOperation {
 					newVia.setSeqNum(oldVia.getSeqNum() + newLinks.size() - i);
 
 					result.insertObject(newVia, ObjStatus.INSERT, newVia.getBranchPid());
+					
+					newVias.put(newVia.getSeqNum(), newVia);
 				}
 			}
 
@@ -1043,8 +1060,13 @@ public class Operation implements IOperation {
 					via.changedFields().put("seqNum", via.getSeqNum() + newLinks.size() - 1);
 
 					result.insertObject(via, ObjStatus.UPDATE, via.getBranchPid());
+					
+					nextVias.put(via.getSeqNum(), via);
 				}
 			}
+			String tableNamePid=oldVia.tableName()+oldVia.getBranchPid()+oldVia.getGroupId();
+			
+			result.breakVia( tableNamePid,oldVia.getSeqNum(), newVias,nextVias);
 		}
 	}
 

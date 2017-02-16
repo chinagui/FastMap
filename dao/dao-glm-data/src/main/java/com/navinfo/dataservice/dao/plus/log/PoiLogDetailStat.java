@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -22,6 +23,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  * @Description: LogStat.java
  */
 public class PoiLogDetailStat {
+	private static Logger log = Logger.getLogger(PoiLogDetailStat.class);
 
 	/**
 	 * 对应日落月的履历统计
@@ -120,6 +122,7 @@ public class PoiLogDetailStat {
 			}else{
 				sb.append(" AND P.PID IN ("+StringUtils.join(pids,",")+")");
 			}}
+		log.debug(sb.toString());
 		if(values!=null&&values.size()>0){
 			Object[] queryValues=new Object[values.size()];
 			for(int i=0;i<values.size();i++){

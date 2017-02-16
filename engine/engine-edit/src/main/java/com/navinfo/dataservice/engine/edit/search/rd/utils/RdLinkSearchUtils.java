@@ -293,7 +293,7 @@ public class RdLinkSearchUtils {
 
 			int speedlimitCount = -1;
 
-			RdLink nextLink = new RdLink();
+			RdLink nextLink = null;
 
 			double minAngle = Double.MAX_VALUE;
 
@@ -340,7 +340,7 @@ public class RdLinkSearchUtils {
 				}
 			}
 
-			if (speedlimitCount > 0) {
+			if (speedlimitCount > 0 || nextLink == null) {
 				return;
 			}
 

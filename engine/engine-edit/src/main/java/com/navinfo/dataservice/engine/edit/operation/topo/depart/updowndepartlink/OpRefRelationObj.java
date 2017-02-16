@@ -213,4 +213,10 @@ public class OpRefRelationObj {
         com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.depart.Operation(conn);
         return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), command.getNoTargetLinks(), result);
     }
+
+    // 维护分叉口提示
+    public String handlerRdSe(Command command, Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.rdse.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdse.depart.Operation(conn);
+        return operation.updownDepart(command.getsNode(), command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), command.getNoTargetLinks(), result);
+    }
 }

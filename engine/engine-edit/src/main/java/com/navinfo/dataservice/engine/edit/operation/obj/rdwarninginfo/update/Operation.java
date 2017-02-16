@@ -50,16 +50,14 @@ public class Operation implements IOperation {
         }
 
         if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-            result.insertObject(rdWarninginfo, ObjStatus.DELETE,
-                    rdWarninginfo.pid());
+            result.insertObject(rdWarninginfo, ObjStatus.DELETE, rdWarninginfo.pid());
             return null;
         }
 
         boolean isChanged = rdWarninginfo.fillChangeFields(content);
 
         if (isChanged) {
-            result.insertObject(rdWarninginfo, ObjStatus.UPDATE,
-                    rdWarninginfo.pid());
+            result.insertObject(rdWarninginfo, ObjStatus.UPDATE, rdWarninginfo.pid());
         }
 
         return null;
@@ -74,8 +72,8 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    public void breakRdLink(Map<RdNode, List<RdLink>> nodeLinkRelation, int linkPid, List<RdLink> newLinks, Result result)
-            throws Exception {
+    public void breakRdLink(Map<RdNode, List<RdLink>> nodeLinkRelation, int linkPid, List<RdLink> newLinks, Result
+            result) throws Exception {
         if (conn == null) {
             return;
         }
@@ -93,6 +91,9 @@ public class Operation implements IOperation {
             List<RdWarninginfo> infos = selector.loadByNodePids(catchIds, true);
             catchIds = new ArrayList<>();
             for (RdWarninginfo info : infos) {
+                if (info.getLinkPid() != linkPid)
+                    continue;
+
                 catchIds.add(info.pid());
                 result.insertObject(info, ObjStatus.DELETE, info.pid());
             }
@@ -109,11 +110,9 @@ public class Operation implements IOperation {
 
         for (RdWarninginfo warninginfo : warninginfos) {
             for (RdLink link : newLinks) {
-                if (link.getsNodePid() == warninginfo.getNodePid()
-                        || link.geteNodePid() == warninginfo.getNodePid()) {
+                if (link.getsNodePid() == warninginfo.getNodePid() || link.geteNodePid() == warninginfo.getNodePid()) {
                     warninginfo.changedFields().put("linkPid", link.getPid());
-                    result.insertObject(warninginfo, ObjStatus.UPDATE,
-                            warninginfo.pid());
+                    result.insertObject(warninginfo, ObjStatus.UPDATE, warninginfo.pid());
                 }
             }
         }
@@ -128,8 +127,7 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-                           Result result) throws Exception {
+    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks, Result result) throws Exception {
 
         int linkPid = link.getPid();
 
@@ -149,8 +147,7 @@ public class Operation implements IOperation {
 
             if (warninginfo.getNodePid() == nodePid) {
 
-                result.insertObject(warninginfo, ObjStatus.DELETE,
-                        warninginfo.getPid());
+                result.insertObject(warninginfo, ObjStatus.DELETE, warninginfo.getPid());
 
             } else if (warninginfoMesh != null) {
 
@@ -163,13 +160,11 @@ public class Operation implements IOperation {
             return;
         }
 
-        int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-                : link.getsNodePid();
+        int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid() : link.getsNodePid();
 
         for (RdLink rdlink : rdlinks) {
 
-            if (rdlink.getsNodePid() != connectNode
-                    && rdlink.geteNodePid() != connectNode) {
+            if (rdlink.getsNodePid() != connectNode && rdlink.geteNodePid() != connectNode) {
 
                 continue;
             }

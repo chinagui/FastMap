@@ -35,6 +35,7 @@ public class FMYW20036 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow(); 
 			IxPoiName name=poiObj.getOfficeStandardCHIName();
+			if(name==null){return;}
 			String nameStr= name.getName();
 			if(nameStr.isEmpty()){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");

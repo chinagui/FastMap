@@ -6,79 +6,113 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
+import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.LineSegment;
 
 public class SearchTest extends InitApplication{
-	
+	private Connection conn;
 	@Override
 	@Before
 	public void init() {
 		initContext();
+		try {
+			this.conn = DBConnector.getInstance().getConnectionById(19);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
-	private Connection conn;
-	private RdLinkSelector linkSelector;
+
 	public SearchTest() throws Exception{
-		this.conn = DBConnector.getInstance().getConnectionById(11);
-		 linkSelector = new RdLinkSelector(conn);
-	}
-	
-	@Test
-	public List<RdLink> getNextTrackLinks(int cuurentLinkPid,int cruuentNodePidDir) throws Exception{
-		List<RdLink> tracks = new ArrayList<RdLink>();
-		tracks.add((RdLink) linkSelector.loadById(cuurentLinkPid, true));
-		List<RdLink> nextLinks = linkSelector.loadTrackLink(cuurentLinkPid, cruuentNodePidDir, true);
-		while (nextLinks.size() > 0 && tracks.size() <= 999 ){
-			RdLink currentLink = (RdLink) linkSelector.loadById(cuurentLinkPid, true);
-			Geometry currentGeometry = currentLink.getGeometry();
-			LineSegment currentLinklineSegment = null;
-			if(currentLink.getsNodePid() == cruuentNodePidDir){
-				currentLinklineSegment = new LineSegment(currentGeometry.getCoordinates()[currentGeometry.getCoordinates().length-2], 
-						currentGeometry.getCoordinates()[currentGeometry.getCoordinates().length-1]);
-			}if(currentLink.geteNodePid() == cruuentNodePidDir){
-				currentLinklineSegment = new LineSegment(currentGeometry.getCoordinates()[1], 
-						currentGeometry.getCoordinates()[0]);
-			} 
 		
-		    Map<Double,RdLink>  map = new HashMap<Double,RdLink>();
-			for(RdLink ad: nextLinks){
-				LineSegment nextLinklineSegment = null;
-				Geometry nextgeometry = ad.getGeometry();
-				nextLinklineSegment = new LineSegment(nextgeometry.getCoordinates()[0], 
-						nextgeometry.getCoordinates()[1]) ;
-				double minAngle =  AngleCalculator.getAngle(currentLinklineSegment, nextLinklineSegment);
-				if(map.size()  > 0){
-					if(map.keySet().iterator().next() < minAngle){
-						map.clear();
-						map.put(minAngle, ad);
+		
+	}
+	@Test
+	public void testQuery(){
+		//Connection conn = null;
+
+		try {
+			//JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			String objType = "RDBRANCH";
+
+			//int dbId = 19;
+
+			//conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			
+				int detailId = 92878;
+				int branchType = 3;
+				String rowId = "";
+				RdBranchSelector selector = new RdBranchSelector(conn);
+				IRow row = selector.loadByDetailId(detailId, branchType, rowId,
+						false);
+
+				if (row != null) {
+					JSONObject obj = row.Serialize(ObjLevel.FULL);
+					if (!obj.containsKey("geometry")) {
+						int pageNum = 1;
+						int pageSize = 1;
+						JSONObject data = new JSONObject();
+						String primaryKey = "branch_pid";
+						if(row instanceof IObj){
+							IObj iObj = (IObj)row;
+							primaryKey = iObj.primaryKey().toLowerCase();
+						}
+						data.put(primaryKey, row.parentPKValue());
+						SelectorUtils selectorUtils = new SelectorUtils(conn);
+						JSONObject jsonObject = selectorUtils
+								.loadByElementCondition(data,
+										row.objType(), pageSize,
+										pageNum, false);
+						obj.put("geometry", jsonObject.getJSONArray("rows")
+								.getJSONObject(0).getString("geometry"));
 					}
-						
-				}else{
-					map.put(minAngle, ad);
+					
+					obj.put("geoLiveType", objType);
+					
+					
+				//return new ModelAndView("jsonView", success(obj));
+
+				} else {
+					//return new ModelAndView("jsonView", success());
+				}
+
+			
+		} catch (Exception e) {
+			//logger.info(e.getMessage(), e);
+
+			//logger.error(e.getMessage(), e);
+
+			//return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
-			RdLink link = map.values().iterator().next();
-			cuurentLinkPid = link.getPid();
-			if (link.getDirect()  == 2){
-				cruuentNodePidDir = link.geteNodePid();
-			}if(link.getDirect()  == 3){
-				cruuentNodePidDir = link.getsNodePid();
-			}if (link.getDirect()  == 1){
-				cruuentNodePidDir =(cruuentNodePidDir == link.getsNodePid())? link.geteNodePid():link.getsNodePid();
-			}
-			tracks.add(link);
-			nextLinks = linkSelector.loadTrackLink(cuurentLinkPid, cruuentNodePidDir, true);
 		}
-		return tracks;
 	}
+	
+	
+	
 
 }

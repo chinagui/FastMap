@@ -396,5 +396,160 @@ public class RdVoiceguideSelector extends AbstractSelector {
 		}
 
 	}
+	
+	
+
+	/**
+	 * 根据经过点获取语音引导pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByPassNode(List<Integer> nodePids)
+			throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();
+
+		if (nodePids == null || nodePids.isEmpty()) {
+
+			return pids;
+		}
+
+		String strPids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = " SELECT DISTINCT R.PID FROM RD_VOICEGUIDE_VIA V, RD_LINK L, RD_VOICEGUIDE_DETAIL D,RD_VOICEGUIDE R WHERE ( ";
+		
+		sql += " L.S_NODE_PID IN (" + strPids + ")  OR ";
+
+		sql += " L.E_NODE_PID IN (" + strPids + ") ";
+
+		sql += " ) AND L.LINK_PID = V.LINK_PID AND V.DETAIL_ID = D.DETAIL_ID AND D.VOICEGUIDE_PID = R.PID  AND L.U_RECORD <> 2 AND V.U_RECORD <> 2 AND D.U_RECORD <> 2 AND R.U_RECORD <> 2 ";
+		
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
+	
+	/**
+	 * 根据进入点获取语音引导pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByInNode(List<Integer> nodePids) throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();
+		
+		String strPids = org.apache.commons.lang.StringUtils.join(nodePids, ",");
+
+		String sql = " SELECT DISTINCT PID FROM RD_VOICEGUIDE WHERE NODE_PID IN ( "
+				+ strPids + " ) AND U_RECORD!=2 ";
+	
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			
+			pstmt = getConn().prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
+	
+
+	/**
+	 *  获取node关联link做为退出线的语音引导pid
+	 * 
+	 * @param nodePids
+	 *            不能超过1000个
+	 * @param isLock
+	 * @return
+	 */
+	public List<Integer> getPidByOutNode(int nodePid)
+			throws Exception {
+		
+		List<Integer> pids = new ArrayList<Integer>();		
+
+		String sql = "SELECT DISTINCT R.PID FROM RD_LINK L, RD_VOICEGUIDE R ,RD_VOICEGUIDE_DETAIL D WHERE ( ";
+
+		sql += " L.S_NODE_PID = " + String.valueOf(nodePid )+ " OR ";
+
+		sql += " L.E_NODE_PID = " + String.valueOf(nodePid )+ " ) ";
+
+		sql += " AND L.LINK_PID = D.OUT_LINK_PID AND D.VOICEGUIDE_PID = R.PID AND L.U_RECORD <> 2 AND R.U_RECORD <> 2 AND D.U_RECORD <> 2 ";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = getConn().prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				pids.add(resultSet.getInt("PID"));
+			}
+
+		} catch (Exception e) {
+			
+			throw e;
+			
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+			
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return pids;
+	}
 
 }

@@ -52,6 +52,7 @@ public class FM14Sum060201 extends BasicCheckRule {
 			if(ixPoiAddress == null){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			String fullname = ixPoiAddress.getFullname();
+			if(fullname==null){return;}
 			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap();
 			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=1时
 			List<ScSensitiveWordsObj> compareList1 = scSensitiveWordsMap.get(1);

@@ -34,7 +34,9 @@ public class SolrQueryUtils {
 		notDisplayTipTpye.add("1402");//Real Sign
 		notDisplayTipTpye.add("1406");//实景图
 		notDisplayTipTpye.add("1409");//普通路口模式图
-		notDisplayTipTpye.add("1513");//窄道
+		//20170213 屏蔽Tips类型取消窄道tips，增加可变限速tips
+//		notDisplayTipTpye.add("1513");//窄道
+        notDisplayTipTpye.add("1112");//可变限速
 		notDisplayTipTpye.add("1707");//里程桩
 		
 		if(notDisplayTipTpye.size()!=0){

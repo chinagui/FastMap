@@ -50,25 +50,25 @@ public class FMGLM60377 extends BasicCheckRule {
 					}
 					String place = addr.getPlace();
 					if(!(place==null||place.isEmpty())){
-						if(CheckUtil.matchAdminName(town,region,conn)){
+						if(CheckUtil.matchAdminName(place,region,conn)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "四级地址中存在前三级地址"+place);
 						}
 					}
 					String street = addr.getStreet();
 					if(!(town==null||town.isEmpty())){
-						if(CheckUtil.matchAdminName(town,region,conn)){
+						if(CheckUtil.matchAdminName(street,region,conn)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "四级地址中存在前三级地址"+street);
 						}
 					}
 					String estab = addr.getEstab();
 					if(!(estab==null||estab.isEmpty())){
-						if(CheckUtil.matchAdminName(town,region,conn)){
+						if(CheckUtil.matchAdminName(estab,region,conn)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "四级地址中存在前三级地址:"+estab);
 						}
 					}
 					String addons = addr.getAddons();
 					if(!(addons==null||addons.isEmpty())){
-						if(CheckUtil.matchAdminName(town,region,conn)){
+						if(CheckUtil.matchAdminName(addons,region,conn)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "四级地址中存在前三级地址"+addons);
 						}
 					}

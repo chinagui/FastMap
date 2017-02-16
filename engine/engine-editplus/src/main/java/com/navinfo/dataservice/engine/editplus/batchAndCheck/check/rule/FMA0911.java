@@ -25,6 +25,9 @@ public class FMA0911 extends BasicCheckRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 		IxPoiAddress address = poiObj.getCHAddress();
+		if (address == null) {
+			return;
+		}
 		if (!address.getHisOpType().equals(OperationType.INSERT)&& !address.getHisOpType().equals(OperationType.UPDATE)) {
 			return;
 		}

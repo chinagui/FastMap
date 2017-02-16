@@ -277,7 +277,7 @@ public interface MetadataApi {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn) throws Exception;
+	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception;
 	
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关

@@ -234,6 +234,9 @@ public class SpecialMapUtils {
 			case rdLinkZoneSide:
 				list = rdLinkZoneSide(x, y, z, gap, specialMapType);
 				break;
+			case rdLinkProperty:
+				list = rdLinkProperty(x, y, z, gap, specialMapType);
+				break;
 
 			default:
 				list = new ArrayList<SearchSnapshot>();
@@ -2808,6 +2811,97 @@ public class SpecialMapUtils {
 				list.add(snapshot);
 			}
 
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return list;
+	}
+	
+	
+	
+	/**
+	 * link的左右ZONE号码
+	 * 
+	 * @param x
+	 * @param y
+	 * @param z
+	 * @param gap
+	 * @return
+	 * @throws Exception
+	 */
+	private List<SearchSnapshot> rdLinkProperty(int x, int y, int z, int gap,
+			SpecialMapType specialMapType) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, LANE_NUM, TOLL_INFO, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME, E.SPEED_CLASS FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D, (SELECT /*+ index(t) */ T.SPEED_CLASS, T.LINK_PID FROM RD_LINK_SPEEDLIMIT T,TMP1 WHERE T.LINK_PID = TMP1.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) E WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+)  ";
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+			pstmt.setString(1, wkt);
+
+			resultSet = pstmt.executeQuery();
+
+			double px = MercatorProjection.tileXToPixelX(x);
+
+			double py = MercatorProjection.tileYToPixelY(y);
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getString("kind"));
+
+				m.put("b", resultSet.getString("name"));
+
+				m.put("c", resultSet.getString("limits"));
+
+				m.put("d", resultSet.getString("direct"));
+
+				m.put("e", resultSet.getString("s_node_pid"));
+
+				m.put("f", resultSet.getString("e_node_pid"));
+
+				m.put("h", resultSet.getString("forms"));
+
+				m.put("i", resultSet.getString("function_class"));
+
+				m.put("j", resultSet.getString("imi_code"));
+				
+				m.put("k", resultSet.getString("length"));
+
+				m.put("l", resultSet.getInt("lane_num"));
+				m.put("m", resultSet.getInt("toll_info"));
+				m.put("n", resultSet.getInt("speed_class"));
+				snapshot.setM(m);
+
+				snapshot.setT(specialMapType.getValue());
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+				snapshot.setG(jo.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
 		} catch (Exception e) {
 
 			throw new Exception(e);

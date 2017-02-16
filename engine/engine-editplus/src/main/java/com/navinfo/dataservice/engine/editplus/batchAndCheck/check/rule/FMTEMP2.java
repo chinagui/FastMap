@@ -30,7 +30,7 @@ public class FMTEMP2 extends BasicCheckRule {
 			return;
 		}
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		JSONObject charMap = metadataApi.getTyCharacterFjtHmCheckMap(null);
+		JSONObject charMap = metadataApi.getTyCharacterFjtHmCheckMap(null,0);
 		List<IxPoiDetail> poiDetails = poiObj.getIxPoiDetails();
 		for (IxPoiDetail poiDetail : poiDetails) {
 			String briefDesc = poiDetail.getBriefDesc();

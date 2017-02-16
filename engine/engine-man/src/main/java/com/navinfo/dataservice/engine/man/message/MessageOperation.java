@@ -14,6 +14,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Message;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
@@ -75,14 +76,14 @@ public class MessageOperation {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			Map<String, Object> userInfo = UserInfoOperation.getUserInfoByUserId(conn, message.getReceiverId());
-			if(userInfo != null && userInfo.get("userEmail") != null){
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, message.getReceiverId());
+			if(userInfo != null && userInfo.getUserEmail() != null){
 				//判断邮箱格式
 				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
                 Pattern regex = Pattern.compile(check);
-                Matcher matcher = regex.matcher((CharSequence) userInfo.get("userEmail"));
+                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
                 if(matcher.matches()){
-                	toMail = (String) userInfo.get("userEmail");
+                	toMail = (String) userInfo.getUserEmail();
                 	mailTitle = message.getMsgTitle();
                 	mailContent = message.getMsgContent();
                 	//发送邮件到消息队列

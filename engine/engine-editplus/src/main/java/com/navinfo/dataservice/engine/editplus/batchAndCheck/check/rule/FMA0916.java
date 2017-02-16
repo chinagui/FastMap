@@ -27,6 +27,9 @@ public class FMA0916 extends BasicCheckRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
 		IxPoiAddress address = poiObj.getCHAddress();
+		if (address == null) {
+			return;
+		}
 		List<String> errList = new ArrayList<String>();
 		checkPhonetic(address.getProvince(),address.getProvPhonetic(),"省名",errList);
 		checkPhonetic(address.getCity(),address.getCityPhonetic(),"市名",errList);
@@ -61,7 +64,7 @@ public class FMA0916 extends BasicCheckRule {
 			phoneticList.add(phonetics[i]);
 		}
 		if (!phoneticList.contains(phonetic)) {
-			errList.add("检查地址与地址拼音不匹配检查："+colName+"与"+colName+"拼音不匹配");
+			errList.add("检查地址与地址拼音不匹配检查："+colName+"与"+phonetic+"不匹配");
 		}
 	}
 

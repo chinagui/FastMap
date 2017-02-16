@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class GLM01269 extends baseRule {
 
                 int specialTraffic = link.getSpecialTraffic();
                 if (link.changedFields().containsKey("specialTraffic"))
-                    specialTraffic = (int) link.changedFields().get("specialTraffic");
+                    specialTraffic = Integer.valueOf(link.changedFields().get("specialTraffic").toString());
 
                 if (specialTraffic == 1 && speedLimitLink.contains(link.pid())) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
@@ -46,11 +47,11 @@ public class GLM01269 extends baseRule {
 
                 int speedType = speedlimit.getSpeedType();
                 if (speedlimit.changedFields().containsKey("speedType"))
-                    speedType = (int) speedlimit.changedFields().get("speedType");
+                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                 int speedClass = speedlimit.getSpeedClass();
                 if (speedlimit.changedFields().containsKey("speedClass"))
-                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass").toString());
 
                 if (speedType == 0 && (speedClass == 1 || speedClass == 2 || speedClass == 3)) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadByIdOnlyRdLink(speedlimit.getLinkPid(),
@@ -74,7 +75,7 @@ public class GLM01269 extends baseRule {
                 for (IRow sl : link.getSpeedlimits()) {
                     RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) sl;
                     speedlimitMap.put(speedlimit.getRowId(), speedlimit.getSpeedType() + "," + speedlimit
-                            .getSpeedType());
+                            .getSpeedClass());
                 }
 
                 for (IRow row : checkCommand.getGlmList()) {
@@ -86,11 +87,12 @@ public class GLM01269 extends baseRule {
                             } else {
                                 int speedType = speedlimit.getSpeedType();
                                 if (speedlimit.changedFields().containsKey("speedType"))
-                                    speedType = (int) speedlimit.changedFields().get("speedType");
+                                    speedType = Integer.valueOf(speedlimit.changedFields().get("speedType").toString());
 
                                 int speedClass = speedlimit.getSpeedClass();
                                 if (speedlimit.changedFields().containsKey("speedClass"))
-                                    speedClass = (int) speedlimit.changedFields().get("speedClass");
+                                    speedClass = Integer.valueOf(speedlimit.changedFields().get("speedClass")
+                                            .toString());
 
                                 speedlimitMap.put(speedlimit.getRowId(), speedType + "," + speedClass);
                             }

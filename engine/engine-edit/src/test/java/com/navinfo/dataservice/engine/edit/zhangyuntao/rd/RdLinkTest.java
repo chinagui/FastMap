@@ -32,17 +32,22 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void testUpdate() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":302003223," +
-                "\"data\":{\"limits\":[{\"linkPid\":302003223,\"rowId\":\"\",\"type\":3,\"limitDir\":0," +
-                "\"timeDomain\":\"\",\"vehicle\":0,\"tollType\":9,\"weather\":9,\"inputTime\":\"\",\"processFlag\":0," +
-                "\"objStatus\":\"INSERT\"}],\"pid\":302003223}}";
+        String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"type\":\"RDSAMENODE\"," +
+                "\"data\":{\"nodes\":[{\"nodePid\":205002730,\"type\":\"RDNODE\",\"isMain\":1}," +
+                "{\"nodePid\":303000068,\"type\":\"LUNODE\",\"isMain\":0}]}}";
         TestUtil.run(parameter);
     }
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"RDLINK\",\"objId\":209003106," +
-                "\"data\":{\"kind\":10,\"pid\":209003106,\"objStatus\":\"UPDATE\"}}";
+        String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINK\",\"dbId\":19,\"data\":[{\"kind\":4," +
+                "\"routeAdopt\":2,\"speedlimits\":[{\"fromSpeedLimit\":40,\"toSpeedLimit\":40,\"speedClass\":6," +
+                "\"rowId\":\"C7AC04BD91AB42988F6245D919BD9F32\",\"linkPid\":310003401,\"objStatus\":\"UPDATE\"}]," +
+                "\"rowId\":\"E8948C133BB9438FBD0977D5F32D083E\",\"pid\":310003401,\"objStatus\":\"UPDATE\"}," +
+                "{\"kind\":4,\"routeAdopt\":2,\"speedlimits\":[{\"fromSpeedLimit\":40,\"toSpeedLimit\":40," +
+                "\"speedClass\":6,\"rowId\":\"C7AC04BD91AB42988F6245D919BD9F32\",\"linkPid\":203003480," +
+                "\"objStatus\":\"UPDATE\"}],\"rowId\":\"F3020F3C49E24B0394D0C0D8E5EB6038\",\"pid\":203003480," +
+                "\"objStatus\":\"UPDATE\"}]}";
 
         //        try {
         //            Connection conn = DBConnector.getInstance().getConnectionById(42);
@@ -61,7 +66,7 @@ public class RdLinkTest extends InitApplication {
         String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849," +
                 "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083]," +
                 "[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]}," +
-                "\"type\":\"RDLINK\"}";
+                "" + "\"type\":\"RDLINK\"}";
         parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
                 "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802]," +
                 "[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
@@ -71,8 +76,8 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]}," +
-                "\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]},"
+                + "\"catchLinks\":[]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
@@ -110,8 +115,8 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void move() {
-        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564," +
-                "\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
+        String parameter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":304000034,\"data\":{\"longitude\":116.37564,"
+                + "\"latitude\":38.51548},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
     }
 
@@ -125,34 +130,35 @@ public class RdLinkTest extends InitApplication {
         // {\"rowId\":[\"F16A0EEA8FB04EC2A1F1F099EBA60392\",\"CBEACA83C9664EB19024F7E8A3B80CBA\"],
         // \"objStatus\":\"DELETE\"}]}}";
         String requester = "{ \"command\": \"UPDATE\", \"dbId\": 17, \"type\": \"RDLINK\", \"linkPids\": [302002756, " +
-                "303002740, 304002735], \"data\": [{ \"kind\": 6, \"pid\": 302002756, \"objStatus\": \"UPDATE\", " +
-                "\"names\": [{ \"rowId\": \"8E19A3597DCB4FE4AB46769F6BAA8766\", \"objStatus\": \"UPDATE\", " +
+                "" + "303002740, 304002735], \"data\": [{ \"kind\": 6, \"pid\": 302002756, \"objStatus\": \"UPDATE\"," +
+                " " + "\"names\": [{ \"rowId\": \"8E19A3597DCB4FE4AB46769F6BAA8766\", \"objStatus\": \"UPDATE\", " +
                 "\"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": 302002756, \"rowId\": " +
-                "\"7E0F87B8EDFB469D810A15C5BAF429B4\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, " +
-                "\"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": " +
-                "0, \"objStatus\": \"DELETE\", \"pid\": 302002756 }, { \"linkPid\": 302002756, \"rowId\": \"\", " +
-                "\"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", " +
-                "\"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" }] }, { " +
-                "\"kind\": 6, \"pid\": 303002740, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": " +
-                "\"037FED0808AA4CAD953EB4543C2B9889\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, \"name\": " +
-                "\"212 City Ave\" }, { \"linkPid\": 303002740, \"rowId\": \"05598049E4924812A0B8A95D409747FB\", " +
-                "\"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", " +
-                "\"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"DELETE\", \"pid\": " +
-                "303002740 }, { \"linkPid\": 303002740, \"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": " +
-                "\"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" }] }, { \"kind\": 6, \"pid\": 304002735, " +
-                "\"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": \"0682BB237F7645B7B3ABF29EB8AB39B7\", " +
-                "\"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": " +
-                "304002735, \"rowId\": \"8C7CBE80D2CC4D239DE09C7CD5AC2BAB\", \"nameGroupid\": 3539279, \"name\": " +
-                "\"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, \"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 304002735 }, { \"linkPid\": " +
-                "304002735, \"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, " +
-                "\"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": " +
-                "0, \"objStatus\": \"INSERT\" }] }] }";
+                "\"7E0F87B8EDFB469D810A15C5BAF429B4\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, "
+                + "\"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\":" +
+                " " + "0, \"objStatus\": \"DELETE\", \"pid\": 302002756 }, { \"linkPid\": 302002756, \"rowId\": \"\"," +
+                " " + "\"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, \"nameClass\": 1, \"inputTime\": " +
+                "\"\", " + "\"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" " +
+                "}] }, { " + "\"kind\": 6, \"pid\": 303002740, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": "
+                + "\"037FED0808AA4CAD953EB4543C2B9889\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, " +
+                "\"name\": " + "\"212 City Ave\" }, { \"linkPid\": 303002740, \"rowId\": " +
+                "\"05598049E4924812A0B8A95D409747FB\", " + "\"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\":" +
+                " 2, \"nameClass\": 1, \"inputTime\": \"\", " + "\"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, " +
+                "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": " + "303002740 }, { \"linkPid\": 303002740, " +
+                "\"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": " + "\"１７线街\", \"seqNum\": 2, \"nameClass\": 1," +
+                " \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " + "\"routeAtt\": 0, \"code\": 0, " +
+                "\"objStatus\": \"INSERT\" }] }, { \"kind\": 6, \"pid\": 304002735, " + "\"objStatus\": \"UPDATE\", " +
+                "\"names\": [{ \"rowId\": \"0682BB237F7645B7B3ABF29EB8AB39B7\", " + "\"objStatus\": \"UPDATE\", " +
+                "\"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": " + "304002735, \"rowId\": " +
+                "\"8C7CBE80D2CC4D239DE09C7CD5AC2BAB\", \"nameGroupid\": 3539279, \"name\": " + "\"１７线街\", \"seqNum\":" +
+                " 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " + "\"routeAtt\": 0, " +
+                "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 304002735 }, { \"linkPid\": " + "304002735, " +
+                "\"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, " + "\"nameClass\": 1," +
+                " \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, \"code\": " + "0, " +
+                "\"objStatus\": \"INSERT\" }] }] }";
         requester = "{\"command\":\"BATCH\",\"dbId\":249,\"type\":\"RDLINK\"," +
                 "\"data\":[{\"intRtics\":[{\"linkPid\":490986,\"rowId\":\"DDA3B301E2AE47DBA6B3E75C6282CE05\"," +
-                "\"code\":1,\"rank\":3,\"rticDir\":2,\"updownFlag\":\"1\",\"rangeType\":1,\"objStatus\":\"UPDATE\"}," +
-                "{\"linkPid\":490986,\"rowId\":\"DDA3B301E2AE47DBA6B3E75C6282CE05\",\"code\":1,\"rank\":3," +
+                "\"code\":1,\"rank\":3,\"rticDir\":2,\"updownFlag\":\"1\",\"rangeType\":1,\"objStatus\":\"UPDATE\"},"
+                + "{\"linkPid\":490986,\"rowId\":\"DDA3B301E2AE47DBA6B3E75C6282CE05\",\"code\":1,\"rank\":3," +
                 "\"rticDir\":2,\"updownFlag\":0,\"rangeType\":1,\"objStatus\":\"UPDATE\"}],\"pid\":490986}," +
                 "{\"intRtics\":[{\"linkPid\":18758970,\"rowId\":\"DDA3B301E2AE47DBA6B3E75C6282CE05\",\"code\":1," +
                 "\"rank\":3,\"rticDir\":2,\"updownFlag\":\"1\",\"rangeType\":1,\"objStatus\":\"UPDATE\"}," +

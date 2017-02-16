@@ -31,6 +31,9 @@ public class FM11Win0502 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			//充电桩（230227）不参与检查
+			String kindCode = poi.getKindCode();
+			if(kindCode == null || "230227".equals(kindCode)){return;}
 			//存在IxPoiAddress
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			//错误数据

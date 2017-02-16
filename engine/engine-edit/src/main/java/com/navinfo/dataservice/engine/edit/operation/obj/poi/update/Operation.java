@@ -1474,18 +1474,14 @@ public class Operation implements IOperation {
 
         geojson.put("coordinates", new double[]{nearestPoint.x, nearestPoint.y});
 
-        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson, 1, 0);
+        Geometry nearestPointGeo = GeoTranslator.geojson2Jts(geojson);
 
         int side = GeometryUtils.calulatPointSideOflink(poiGeo, linkGeo, nearestPointGeo);
 
         if (side != 0) {
-            Geometry guidePoint = GeoTranslator.transform(nearestPointGeo, 0.00001, 5);
-
-            ixPoi.changedFields().put("xGuide", guidePoint.getCoordinate().x);
-
-            ixPoi.changedFields().put("yGuide", guidePoint.getCoordinate().y);
-
-//            ixPoi.changedFields().put("side", side);
+            ixPoi.changedFields().put("xGuide", nearestPointGeo.getCoordinate().x);
+            ixPoi.changedFields().put("yGuide", nearestPointGeo.getCoordinate().y);
+            //            ixPoi.changedFields().put("side", side);
         }
     }
 
@@ -1507,7 +1503,8 @@ public class Operation implements IOperation {
 
             double minLength = 0;
             for (RdLink newLink : newLinks) {
-                Coordinate cor = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), GeoTranslator.transform(newLink.getGeometry(), 0.000001, 5));
+                Coordinate cor = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), GeoTranslator.transform
+                        (newLink.getGeometry(), 0.000001, 5));
                 if (cor != null) {
                     double length = GeometryUtils.getDistance(cor, point.getCoordinate());
                     if (minLength == 0 || minLength > length)

@@ -6,7 +6,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.vividsolutions.jts.geom.Point;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -336,8 +338,16 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
     // 根据linkGeometry获取相关联的ZoneFace，没有时返回Null
     private static ZoneFace loadZoneFace(Connection conn, Geometry linkGeometry) throws Exception {
         List<ZoneFace> faces = new ZoneFaceSelector(conn).loadRelateFaceByGeometry(linkGeometry);
-        if (faces.isEmpty() || faces.size() > 1) {
+        if (faces.isEmpty())
             return null;
+        if (faces.size() > 1) {
+            Point point = linkGeometry.getCentroid();
+            for (ZoneFace face : faces) {
+                Geometry geo = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
+                if (point.coveredBy(geo)) {
+                    return face;
+                }
+            }
         }
         ZoneFace zoneFace = faces.get(0);
         return zoneFace;

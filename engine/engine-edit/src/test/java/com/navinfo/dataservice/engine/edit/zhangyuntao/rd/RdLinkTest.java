@@ -40,14 +40,10 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"BATCH\",\"type\":\"RDLINK\",\"dbId\":19,\"data\":[{\"kind\":4," +
-                "\"routeAdopt\":2,\"speedlimits\":[{\"fromSpeedLimit\":40,\"toSpeedLimit\":40,\"speedClass\":6," +
-                "\"rowId\":\"C7AC04BD91AB42988F6245D919BD9F32\",\"linkPid\":310003401,\"objStatus\":\"UPDATE\"}]," +
-                "\"rowId\":\"E8948C133BB9438FBD0977D5F32D083E\",\"pid\":310003401,\"objStatus\":\"UPDATE\"}," +
-                "{\"kind\":4,\"routeAdopt\":2,\"speedlimits\":[{\"fromSpeedLimit\":40,\"toSpeedLimit\":40," +
-                "\"speedClass\":6,\"rowId\":\"C7AC04BD91AB42988F6245D919BD9F32\",\"linkPid\":203003480," +
-                "\"objStatus\":\"UPDATE\"}],\"rowId\":\"F3020F3C49E24B0394D0C0D8E5EB6038\",\"pid\":203003480," +
-                "\"objStatus\":\"UPDATE\"}]}";
+        String parameter = "{\"command\":\"REPAIR\",\"dbId\":19,\"objId\":308003473," +
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62678,39.75126]," +
+                "[116.62719011306763,39.75074524577661],[116.6287136077881,39.75066275883986],[116.6293,39.75147]]}," +
+                "\"catchInfos\":[]},\"type\":\"RDLINK\"}";
 
         //        try {
         //            Connection conn = DBConnector.getInstance().getConnectionById(42);
@@ -108,8 +104,8 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
                 "\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":\"9.8\"," +
-                "\"data\":{\"linkPids\":[206003329,201003275,220003427]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":19,\"distance\":6.6," +
+                "\"data\":{\"linkPids\":[683232]}}";
         TestUtil.run(parameter);
     }
 

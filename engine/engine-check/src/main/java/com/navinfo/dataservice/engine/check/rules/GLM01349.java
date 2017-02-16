@@ -11,23 +11,23 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
- * @ClassName: GLM01278
+ * @ClassName: GLM01349
  * @author zhangxiaolong
  * @date 2017年2月7日
- * @Description: 单方向的路只能制作单方向的UsageFee，并且UsageFee的通行方向应与Link的通行方向一致，否则报log
+ * @Description:若点具有障碍物信息，且该点挂接有FC为1-4的Link报log
  */
-public class GLM01278 extends baseRule {
+public class GLM01349 extends baseRule {
 
-	private static Logger logger = Logger.getLogger(GLM01278.class);
+	private static Logger logger = Logger.getLogger(GLM01349.class);
 
 	private Set<Integer> check1 = new HashSet<>();
-	
-	public GLM01278() {
+
+	public GLM01349() {
 	}
 
 	@Override
@@ -41,14 +41,14 @@ public class GLM01278 extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append(
-					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID FROM RD_LINK RL, RD_LINK_LIMIT RLL WHERE RL.LINK_PID = RLL.LINK_PID AND RL.LINK_PID = ");
+					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID FROM RD_LINK RL, RD_NODE RN, RD_NODE_FORM RNF WHERE RL.LINK_PID =");
 
 			sb.append(linkPid);
 
 			sb.append(
-					" AND RL.DIRECT <> 1 AND RLL.TYPE = 7 AND RL.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND RLL.LIMIT_DIR <> RL.DIRECT   ");
-
-			logger.info("RdLink后检查GLM01278 check1-> SQL:" + sb.toString());
+					" AND (RL.S_NODE_PID = RN.NODE_PID OR RL.E_NODE_PID = RN.NODE_PID) AND RN.NODE_PID = RNF.NODE_PID AND RL.FUNCTION_CLASS BETWEEN 1 AND 4 AND RNF.FORM_OF_WAY = 15 AND RN.U_RECORD <> 2 AND RNF.U_RECORD <> 2 ");
+			
+			logger.info("RdLink后检查GLM01349 check1-> SQL:" + sb.toString());
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
@@ -67,42 +67,36 @@ public class GLM01278 extends baseRule {
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
-			if (row instanceof RdLinkLimit) {
-				RdLinkLimit limit = (RdLinkLimit) row;
-				int type = limit.getType();
-				if (limit.status() != ObjStatus.DELETE) {
-					if(limit.changedFields().containsKey("type"))
-					{
-						type = (int) limit.changedFields().get("type");
+			if (row instanceof RdLink) {
+				RdLink rdLink = (RdLink) row;
+				int functionClass = rdLink.getFunctionClass();
+
+				if (rdLink.status() != ObjStatus.DELETE) {
+					if (rdLink.changedFields().containsKey("functionClass")) {
+						functionClass = (int) rdLink.changedFields().get("functionClass");
 					}
-					//Usage Fee Required
-					if (type == 6) {
-						check1.add(limit.getLinkPid());
-					}
-					if(limit.changedFields().containsKey("limitDir"))
-					{
-						check1.add(limit.getLinkPid());
+					if (functionClass != 0 && functionClass != 5) {
+						check1.add(rdLink.getPid());
 					}
 				}
-				else if(row instanceof RdLink)
+			}
+			else if(row instanceof RdLinkForm)
+			{
+				RdLinkForm form = (RdLinkForm) row;
+				int formOfWay = form.getFormOfWay();
+				
+				if(form.status() != ObjStatus.DELETE)
 				{
-					RdLink rdLink = (RdLink) row;
-					
-					int direct = rdLink.getDirect();
-					if (rdLink.status() != ObjStatus.DELETE) {
-						if(rdLink.changedFields().containsKey("direct"))
-						{
-							direct = (int) rdLink.changedFields().get("direct");
-						}
-						//单方向道路
-						if(direct != 1)
-						{
-							check1.add(rdLink.getPid());
-						}
+					if(form.changedFields().containsKey("formOfWay"))
+					{
+						formOfWay = (int) form.changedFields().get("formOfWay");
 					}
-					
+					if(formOfWay == 15)
+					{
+						check1.add(form.getLinkPid());
+					}
 				}
-			} 
+			}
 		}
 	}
 

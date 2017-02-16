@@ -11,11 +11,12 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class RdVoiceguideVia implements IRow {
+public class RdVoiceguideVia implements IRow ,IVia{
 
 	private String rowId;
 
@@ -53,10 +54,12 @@ public class RdVoiceguideVia implements IRow {
 		this.groupId = groupId;
 	}
 
+	@Override
 	public int getSeqNum() {
 		return seqNum;
 	}
 
+	@Override
 	public void setSeqNum(int seqNum) {
 		this.seqNum = seqNum;
 	}

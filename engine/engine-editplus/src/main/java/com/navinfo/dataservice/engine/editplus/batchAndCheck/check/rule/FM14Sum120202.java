@@ -53,7 +53,7 @@ public class FM14Sum120202 extends BasicCheckRule {
 			if(poi.getHisOpType().equals(OperationType.INSERT)
 					||(nameObj.getHisOpType().equals(OperationType.UPDATE)&&nameObj.hisOldValueContains(IxPoiName.NAME)
 							&&!api.scPointMinganListPidNameList().contains(pidName))){
-				List<ScSensitiveWordsObj> compareList = api.scSensitiveWordsMap().get(2);
+				List<ScSensitiveWordsObj> compareList = api.scSensitiveWordsMap(2).get(2);
 				List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(nameStr, poi.getKindCode(), Integer.valueOf(adminMap.get(poi.getPid()).toString()), compareList);	
 				if(wordList==null||wordList.isEmpty()){return;}
 				List<String> errorlist = new ArrayList<String>();

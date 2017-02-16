@@ -142,7 +142,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	
 	@Override
 	public void lockResources() throws LockException {
-		EditPoiBaseReleaseJobRequest req = (EditPoiBaseReleaseJobRequest) request;
+		/*EditPoiBaseReleaseJobRequest req = (EditPoiBaseReleaseJobRequest) request;
 		// 预处理
 		try {
 			ManApi man = (ManApi) ApplicationContextUtil.getBean("manApi");
@@ -161,12 +161,12 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);
-		}
+		}*/
 	}
 
 	@Override
 	public void unlockResources() throws LockException {
-		if (lockSeq < 0)
+		/*if (lockSeq < 0)
 			return;
 		try {
 			DatalockApi datalock = (DatalockApi) ApplicationContextUtil.getBean("datalockApi");
@@ -174,7 +174,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);
-		}
+		}*/
 	}
 	
 	/**

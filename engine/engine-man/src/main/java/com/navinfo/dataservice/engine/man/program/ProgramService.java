@@ -1359,7 +1359,7 @@ public class ProgramService {
 	}
 	
 	private static ResultSetHandler<Page> getCloseQuery(final int currentPageNum,final int pageSize){
-		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 			public Page handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -1383,7 +1383,7 @@ public class ProgramService {
 					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
-					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+					map.put("version", version);
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}

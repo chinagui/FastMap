@@ -53,8 +53,9 @@ public class ObjHisLogParser {
 	 * @throws Exception
 	 */
 	public static void parse(Map<Long,BasicObj> objs,Map<Long,List<LogDetail>> logs)throws Exception{
-		if(logs==null||objs==null){
+		if(logs==null||logs.size()==0||objs==null||objs.size()==0){
 			log.debug("parse nothing.");
+			return;
 		}
 		for(Map.Entry<Long, List<LogDetail>> entry:logs.entrySet()){
 			BasicObj obj = objs.get(entry.getKey());

@@ -16,18 +16,18 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
- * @ClassName: GLM01278
+ * @ClassName: GLM01089
  * @author zhangxiaolong
  * @date 2017年2月7日
- * @Description: 单方向的路只能制作单方向的UsageFee，并且UsageFee的通行方向应与Link的通行方向一致，否则报log
+ * @Description:制作了穿行限制或车辆限制道路FC必须为5
  */
-public class GLM01278 extends baseRule {
+public class GLM01089 extends baseRule {
 
-	private static Logger logger = Logger.getLogger(GLM01278.class);
+	private static Logger logger = Logger.getLogger(GLM01089.class);
 
 	private Set<Integer> check1 = new HashSet<>();
-	
-	public GLM01278() {
+
+	public GLM01089() {
 	}
 
 	@Override
@@ -46,9 +46,9 @@ public class GLM01278 extends baseRule {
 			sb.append(linkPid);
 
 			sb.append(
-					" AND RL.DIRECT <> 1 AND RLL.TYPE = 7 AND RL.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND RLL.LIMIT_DIR <> RL.DIRECT   ");
+					" AND RLL.U_RECORD <> 2 AND (RLL.TYPE = 2 OR RLL.TYPE = 3) AND RL.FUNCTION_CLASS <> 5");
 
-			logger.info("RdLink后检查GLM01278 check1-> SQL:" + sb.toString());
+			logger.info("RdLink后检查GLM01089 check1-> SQL:" + sb.toString());
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
@@ -68,41 +68,32 @@ public class GLM01278 extends baseRule {
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
 			if (row instanceof RdLinkLimit) {
-				RdLinkLimit limit = (RdLinkLimit) row;
-				int type = limit.getType();
-				if (limit.status() != ObjStatus.DELETE) {
-					if(limit.changedFields().containsKey("type"))
-					{
-						type = (int) limit.changedFields().get("type");
+				RdLinkLimit rdLinkLimit = (RdLinkLimit) row;
+				int type = rdLinkLimit.getType();
+				if (rdLinkLimit.status() != ObjStatus.DELETE) {
+					if (rdLinkLimit.changedFields().containsKey("type")) {
+						type = (int) rdLinkLimit.changedFields().get("type");
 					}
-					//Usage Fee Required
-					if (type == 6) {
-						check1.add(limit.getLinkPid());
-					}
-					if(limit.changedFields().containsKey("limitDir"))
-					{
-						check1.add(limit.getLinkPid());
+					if (type == 2 || type == 3) {
+						check1.add(rdLinkLimit.getLinkPid());
 					}
 				}
-				else if(row instanceof RdLink)
-				{
-					RdLink rdLink = (RdLink) row;
-					
-					int direct = rdLink.getDirect();
-					if (rdLink.status() != ObjStatus.DELETE) {
-						if(rdLink.changedFields().containsKey("direct"))
-						{
-							direct = (int) rdLink.changedFields().get("direct");
-						}
-						//单方向道路
-						if(direct != 1)
-						{
-							check1.add(rdLink.getPid());
-						}
+			}
+			else if (row instanceof RdLink) {
+				RdLink rdLink = (RdLink) row;
+
+				int functionClass = rdLink.getFunctionClass();
+
+				if (rdLink.status() != ObjStatus.DELETE) {
+					if (rdLink.changedFields().containsKey("functionClass")) {
+						functionClass = (int) rdLink.changedFields().get("functionClass");
 					}
-					
+
+					if (functionClass != 5) {
+						check1.add(rdLink.getPid());
+					}
 				}
-			} 
+			}
 		}
 	}
 

@@ -40,12 +40,14 @@ public class FMYW20124 extends BasicCheckRule {
 					&&ixPoiAddress.hisOldValueContains(IxPoiAddress.FULLNAME))){
 				String fullname = ixPoiAddress.getFullname();
 				if(fullname == null){return;}
+				//全角转半角
+				String fullnameB = CheckUtil.strQ2B(fullname);
 				//1）主地址（address）只含有阿拉伯数字时，报log1；
-				if(CheckUtil.isDigit(fullname)){
+				if(CheckUtil.isDigit(fullnameB)){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址只含有数字，请确认");
 				}
 				//2）主地址（address）为长度为1时，报log2；
-				if(fullname.length() == 1){
+				if(fullnameB.length() == 1){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址只有1个字，请确认");
 				}
 			}

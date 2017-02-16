@@ -21,6 +21,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * 分岔口中相同进入线、进入点，只能对应两条或两条以上的退出线
  * 新增分岔口提示	服务端后检查
+ * 删除分岔口提示	服务端后检查
  * 分离节点	服务端后检查
  */
 public class GLM06005 extends baseRule {
@@ -36,7 +37,7 @@ public class GLM06005 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//新增分岔口提示
+			//新增分岔口提示,删除分岔口提示
 			if (row instanceof RdSe){
 				RdSe rdSe = (RdSe) row;
 				this.checkRdSe(rdSe);
@@ -56,12 +57,33 @@ public class GLM06005 extends baseRule {
 	 */
 	private void checkRdSe(RdSe rdSe) throws Exception {
 		// TODO Auto-generated method stub
-		if(ObjStatus.INSERT.equals(rdSe.status())||ObjStatus.DELETE.equals(rdSe.status())){
+		if(ObjStatus.INSERT.equals(rdSe.status())){
 			boolean check = this.check(rdSe.getNodePid());
 			
 			if(check){
 				String target = "[RD_SE," + rdSe.getPid() + "]";
 				this.setCheckResult("", target, 0);
+			}
+		}else if(ObjStatus.DELETE.equals(rdSe.status())){
+			boolean check = this.check(rdSe.getNodePid());
+			if(check){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT DISTINCT SE.PID FROM RD_SE SE");
+				sb.append(" WHERE SE.NODE_PID = "+rdSe.getNodePid());
+				sb.append(" AND SE.IN_LINK_PID ="+rdSe.getInLinkPid());
+				sb.append(" AND SE.U_RECORD <>2");
+				String sql = sb.toString();
+				log.info("后检查GLM06005查询关联影响的分岔口提示--sql:" + sql);
+				
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				
+				if(!resultList.isEmpty()){
+					String target = "[RD_SE," + resultList.get(0) + "]";
+					this.setCheckResult("", target, 0);
+				}
 			}
 		}
 	}

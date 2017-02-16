@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -46,9 +47,27 @@ public class GLM11024 extends baseRule {
 
 				RdBranch rdBranch = (RdBranch) row;
 
-				this.checkRdBranch(rdBranch);
+				this.checkRdBranch(rdBranch.getPid());
 
-			} else if (row instanceof RdLink) {
+			} else if (row instanceof RdBranchDetail) {
+
+				RdBranchDetail rdBranchDetail = (RdBranchDetail) row;
+
+				int branchType = rdBranchDetail.getBranchType();
+
+				if (rdBranchDetail.changedFields().containsKey("branchType")) {
+					branchType = (int) rdBranchDetail.changedFields().get(
+							"branchType");
+				}
+
+				if (branchType == 1) {
+
+					this.checkRdBranch(rdBranchDetail.getBranchPid());
+				}
+
+			}
+			
+			else if (row instanceof RdLink) {
 
 				RdLink rdLink = (RdLink) row;
 
@@ -67,13 +86,13 @@ public class GLM11024 extends baseRule {
 	 * @param rdNode
 	 * @throws Exception 
 	 */
-	private void checkRdBranch(RdBranch rdBranch) throws Exception {
+	private void checkRdBranch(int rdBranchPid) throws Exception {
 		
-		String strLog = check(rdBranch.getPid());
+		String strLog = check(rdBranchPid);
 
 		if (strLog != null) {
 
-			String target = "[RD_BRANCH," + rdBranch.getPid() + "]";
+			String target = "[RD_BRANCH," +rdBranchPid + "]";
 
 			this.setCheckResult("", target, 0, strLog);
 		}

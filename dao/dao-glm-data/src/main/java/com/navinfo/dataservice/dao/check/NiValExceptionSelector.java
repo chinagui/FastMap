@@ -292,7 +292,7 @@ public class NiValExceptionSelector {
 		StringBuilder sql = null;
 		if (flag == 0) {
 			sql = new StringBuilder(
-					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
 							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
 							+ "worker,qa_worker,qa_status from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
@@ -300,21 +300,21 @@ public class NiValExceptionSelector {
 		}
 		if (flag == 1) {
 			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+					"select a.md5_code,rule_id as ruleid,situation,status level_,1 state,"
 							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
 
 		}
 		if (flag == 2) {
 			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+					"select a.md5_code,rule_id as ruleid,situation,status level_,2 state,"
 							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
-							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
 							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
 							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
@@ -383,6 +383,7 @@ public class NiValExceptionSelector {
 			json.put("situation", rs.getString("situation"));
 
 			json.put("rank", rs.getInt("level_"));
+			json.put("status", rs.getInt("state"));
 
 			json.put("targets", rs.getString("targets"));
 

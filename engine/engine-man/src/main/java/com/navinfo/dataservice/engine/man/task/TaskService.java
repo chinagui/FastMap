@@ -1101,7 +1101,7 @@ public class TaskService {
 				//调整日编任务范围
 				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
 				//调整区域子任务范围
-				TaskOperation.getSubTaskListByType(conn,taskId,4);
+//				TaskOperation.getSubTaskListByType(conn,taskId,4);
 //				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskId, gridIdMap);;
 				if(task.getBlockId()==0){
 					//调整项目范围

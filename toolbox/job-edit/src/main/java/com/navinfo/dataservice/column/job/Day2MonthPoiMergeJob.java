@@ -331,14 +331,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	private void releaseMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
 		QueryRunner run = new QueryRunner();
 		for(int m:meshs){
-			String sql = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM';";
+			String sql = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM'";
 			run.execute(monthConn, sql);
 		}
 	}
 	private void getMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
 		QueryRunner run = new QueryRunner();
 		for(int m:meshs){
-			String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','12233','"+this.getJobInfo().getId()+"');";
+			String sql = "INSERT INTO FM_GEN2_MESHLOCK (MESH_ID,LOCK_STATUS ,LOCK_OWNER,JOB_ID) VALUES ("+ m +", 1,'FM','"+this.getJobInfo().getId()+"')";
 			run.execute(monthConn, sql);
 		}
 	}
@@ -350,9 +350,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		while(rs.next()){
 			gdbMeshs.add(rs.getInt("MESH_ID"));
 		}
-		meshs.retainAll(gdbMeshs);
-		if(meshs!=null&&meshs.size()>0){
-			throw new Exception("以下图幅DMS加锁:"+meshs.toString());
+		List<Integer> retainMeshs = new ArrayList<>(meshs);
+		retainMeshs.retainAll(gdbMeshs);
+		if(retainMeshs!=null&&retainMeshs.size()>0){
+			throw new Exception("以下图幅DMS加锁:"+retainMeshs.toString());
 		}
 	}
 	private List<Integer> grids2meshs(List<Integer> grids) throws Exception {

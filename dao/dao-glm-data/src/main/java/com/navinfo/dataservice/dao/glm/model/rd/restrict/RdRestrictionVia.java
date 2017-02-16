@@ -11,11 +11,12 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 
-public class RdRestrictionVia implements IRow {
+public class RdRestrictionVia implements IRow,IVia {
 
 	private int detailId;
 
@@ -137,10 +138,12 @@ public class RdRestrictionVia implements IRow {
 		this.groupId = groupId;
 	}
 
+	@Override
 	public int getSeqNum() {
 		return seqNum;
 	}
 
+	@Override
 	public void setSeqNum(int seqNum) {
 		this.seqNum = seqNum;
 	}

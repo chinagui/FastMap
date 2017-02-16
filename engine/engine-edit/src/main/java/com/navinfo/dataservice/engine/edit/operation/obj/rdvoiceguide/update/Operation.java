@@ -5,9 +5,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -16,9 +21,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.voiceguide.RdVoiceguideSelector;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -43,7 +45,7 @@ public class Operation implements IOperation {
 
 		msg = update(result);
 
-		return null;
+		return msg;
 
 	}
 
@@ -295,6 +297,10 @@ public class Operation implements IOperation {
 
 					continue;
 				}
+				
+				TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+				TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
 
 				// 与进入线或前一个经过线的连接点
 				int connectionNodePid = 0;
@@ -346,6 +352,7 @@ public class Operation implements IOperation {
 
 						result.insertObject(newVia, ObjStatus.INSERT,
 								detail.parentPKValue());
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 
 				} else {
@@ -365,6 +372,7 @@ public class Operation implements IOperation {
 
 						result.insertObject(newVia, ObjStatus.INSERT,
 								detail.parentPKValue());
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 				}
 
@@ -381,8 +389,15 @@ public class Operation implements IOperation {
 
 						result.insertObject(via, ObjStatus.UPDATE,
 								detail.parentPKValue());
+						
+						nextVias.put(via.getSeqNum(), via);
 					}
 				}
+				
+				String tableNamePid=breakVia.tableName()+breakVia.getDetailId()+breakVia.getGroupId();
+				
+				result.breakVia(tableNamePid, breakVia.getSeqNum(), newVias,
+						nextVias);
 			}
 		}
 	}

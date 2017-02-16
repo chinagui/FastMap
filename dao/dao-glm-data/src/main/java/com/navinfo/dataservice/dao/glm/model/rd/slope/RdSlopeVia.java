@@ -11,6 +11,7 @@ import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -20,7 +21,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
  * @author zhaokk
  *
  */
-public class RdSlopeVia implements IRow {
+public class RdSlopeVia implements IRow ,IVia{
 
 	private int slopePid ;//坡度号码 
 
@@ -193,11 +194,11 @@ public class RdSlopeVia implements IRow {
 	public void setSlopePid(int slopePid) {
 		this.slopePid = slopePid;
 	}
-
+	@Override
 	public int getSeqNum() {
 		return seqNum;
 	}
-
+	@Override
 	public void setSeqNum(int seqNum) {
 		this.seqNum = seqNum;
 	}

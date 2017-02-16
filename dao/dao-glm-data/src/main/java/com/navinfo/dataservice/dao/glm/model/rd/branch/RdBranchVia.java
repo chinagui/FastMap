@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -15,7 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class RdBranchVia implements IRow {
+public class RdBranchVia implements IRow,IVia {
 
 	private int branchPid;
 
@@ -139,11 +140,11 @@ public class RdBranchVia implements IRow {
 	public void setGroupId(int groupId) {
 		this.groupId = groupId;
 	}
-
+	@Override
 	public int getSeqNum() {
 		return seqNum;
 	}
-
+	@Override
 	public void setSeqNum(int seqNum) {
 		this.seqNum = seqNum;
 	}

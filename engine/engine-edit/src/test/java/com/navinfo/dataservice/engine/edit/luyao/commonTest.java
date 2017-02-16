@@ -588,5 +588,17 @@ public class commonTest extends InitApplication {
 		
 		System.out.print(strFormat);
 	}
+	
+	@Test
+	public void testString2() {
+		
+		int i=12;
+		
+		int j=34;
+		String strFormat="测试"+i+j;		
+		
+		
+		System.out.print(strFormat);
+	}
 
 }

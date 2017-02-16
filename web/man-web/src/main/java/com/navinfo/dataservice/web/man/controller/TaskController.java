@@ -119,13 +119,17 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	
+	
 	/*
-	 * 规划管理页面--任务管理--关闭任务
-	 * 关闭按钮：
-	 * 1.选中需要关闭的任务，点击“关闭任务”按钮，后台判断该任务是否可以关闭
-	 * 【关闭原则：判断该city下面的所有block均关闭且所有的月编区域作业子任务均关闭，则可以关闭任务】：
-	 * (1)如果可以关闭，页面弹出提示框
-	 * (2)不可以关闭，页面弹出提示框
+	 * 查询task
+	 * 采集任务:
+	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
+	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
+	 * 日编任务:
+	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 发送消息
 	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView close(HttpServletRequest request){
@@ -136,10 +140,9 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			long userId=tokenObj.getUserId();
-			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			List<Integer> closeTask=TaskService.getInstance().close(JSONArray.toList(taskIds),userId);			
-			String msg="任务批量关闭"+closeTask.size()+"个成功，"+(taskIds.size()-closeTask.size())+"个失败";
-			return new ModelAndView("jsonView", success(msg));
+			int taskId=dataJson.getInt("taskId");
+			String message = TaskService.getInstance().close(taskId,userId);			
+			return new ModelAndView("jsonView", success(message));
 		}catch(Exception e){
 			log.error("任务批量关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

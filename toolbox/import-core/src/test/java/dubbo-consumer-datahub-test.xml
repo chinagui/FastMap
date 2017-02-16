@@ -10,5 +10,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
 	<dubbo:reference id="datalockApi" interface="com.navinfo.dataservice.api.edit.iface.DatalockApi" />
+	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" timeout="5000"/>
 
 </beans>

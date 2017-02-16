@@ -264,6 +264,11 @@ public class InitRegiondb {
 			sqlExec.executeIgnoreError(sqlFile);
 			String metaFile = "/com/navinfo/dataservice/scripts/resources/mv_rel_rdname_meta.sql";
 			sqlExec.execute(metaFile);
+			//日库删除内业作业的行人导航数据
+			if(dbType==1){
+				String delGdFile = "/com/navinfo/dataservice/scripts/resources/temp_delete_poi_gd.sql";
+				sqlExec.execute(delGdFile);
+			}
 			
 			PackageExec packageExec = new PackageExec(conn);
 			String spatialIndexSql = "/com/navinfo/dataservice/scripts/resources/create_spatial_utils_and_rebuild.sql";

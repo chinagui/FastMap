@@ -28,6 +28,9 @@ public class FM14Sum0301 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			//充电桩（230227）不参与检查
+			String kindCode = poi.getKindCode();
+			if(kindCode == null || "230227".equals(kindCode)){return;}
 			//存在IxPoiAddress修改
 			IxPoiAddress ixPoiAddress=poiObj.getCHAddress();
 			//错误数据

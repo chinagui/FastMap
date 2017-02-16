@@ -21,15 +21,15 @@ public class GLM50048 extends baseRule {
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof ZoneFace) {
                 ZoneFace face = (ZoneFace) row;
-                String sql = "SELECT COUNT(1) NUM FROM ZONE_FACE ZF, ZONE_FACE_TOPO ZFT WHERE ZF.FACE_PID = ZFT" + "" +
-                        ".FACE_PID AND ZF.FACE_PID = " + face.pid() + " AND ZF.U_RECORD <> 2 AND ZFT.U_RECORD <> 2 "
-                        + "GROUP BY ZF.FACE_PID";
+                String sql = "SELECT COUNT(1) NUM FROM ZONE_FACE ZF, ZONE_FACE_TOPO ZFT WHERE ZF.FACE_PID = ZFT" + ""
+                        + ".FACE_PID AND ZF.FACE_PID = " + face.pid() + " AND ZF.U_RECORD <> 2 AND ZFT.U_RECORD <> 2 " +
+                        "" + "" + "GROUP BY ZF.FACE_PID";
                 DatabaseOperator getObj = new DatabaseOperator();
                 List<Object> resultList = getObj.exeSelect(this.getConn(), sql);
                 if (!resultList.isEmpty()) {
                     int num = Integer.valueOf(resultList.get(0).toString());
                     if (num < 2)
-                        setCheckResult("", "", 0);
+                        setCheckResult(face.getGeometry(), "[ZONE_FACE," + face.pid() + "]", face.mesh());
                 }
             }
         }

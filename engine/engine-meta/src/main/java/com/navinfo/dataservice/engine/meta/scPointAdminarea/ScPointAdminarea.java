@@ -77,36 +77,37 @@ public class ScPointAdminarea {
 	 * @return List<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public List<Map<String, Object>> searchByErrorName(String name)
+	public List<String> searchByErrorName(String name)
 			throws Exception {
 		Connection conn = null;
 		
 		try{
 			conn = DBConnector.getInstance().getMetaConnection();
 			QueryRunner queryRunner = new QueryRunner();
-			
+			 
 			StringBuilder builder = new StringBuilder();
-			builder.append("SELECT DISTINCT A.ADMINAREACODE,A.WHOLE FROM SC_POINT_ADMINAREA A WHERE");
-			builder.append(" A.PROVINCE_SHORT LIKE '%"+name+"%'");
-			builder.append(" OR A.CITY_SHORT LIKE '%"+name+"%'");
-			builder.append(" OR A.DISTRICT_SHORT LIKE '%"+name+"%'");
+			builder.append("SELECT DISTINCT A.PROVINCE_SHORT SHORT FROM SC_POINT_ADMINAREA A");
+			builder.append(" WHERE A.PROVINCE_SHORT LIKE '%"+name+"%'");
+			builder.append(" UNION");
+			builder.append(" SELECT DISTINCT A.CITY_SHORT SHORT FROM SC_POINT_ADMINAREA A");
+			builder.append(" WHERE A.CITY_SHORT LIKE '%"+name+"%'");
+			builder.append(" UNION");
+			builder.append(" SELECT DISTINCT A.DISTRICT_SHORT SHORT FROM SC_POINT_ADMINAREA A");
+			builder.append(" WHERE A.DISTRICT_SHORT LIKE '%"+name+"%'");
 			Object[] params = {};
 			
-			ResultSetHandler<List<Map<String,Object>>> rsh = new ResultSetHandler<List<Map<String,Object>>>() {
+			ResultSetHandler<List<String>> rsh = new ResultSetHandler<List<String>>() {
 				@Override
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				public List<String> handle(ResultSet rs) throws SQLException {
 					// TODO Auto-generated method stub
-					List<Map<String,Object>> msgs = new ArrayList<Map<String,Object>>();
+					List<String> msgs = new ArrayList<String>();
 					while(rs.next()){
-						Map<String,Object> msg = new HashMap<String, Object>();
-						msg.put("adminAreaCode",rs.getString("ADMINAREACODE"));
-						msg.put("whole",rs.getString("WHOLE"));
-						msgs.add(msg);
+						msgs.add(rs.getString("SHORT"));
 					}
 					return msgs;
 				}
 			};
-			List<Map<String, Object>> query = queryRunner.query(conn, builder.toString(), rsh, params);
+			List<String> query = queryRunner.query(conn, builder.toString(), rsh, params);
 			return query;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

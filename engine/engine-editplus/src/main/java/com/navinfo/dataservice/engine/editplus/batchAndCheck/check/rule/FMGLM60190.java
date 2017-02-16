@@ -35,6 +35,9 @@ public class FMGLM60190 extends BasicCheckRule{
 				if(addTmp.isEng()){
 					MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 					String addFullname = addTmp.getFullname();
+					if (addFullname == null) {
+						continue;
+					}
 					if(addFullname.length() > 50 && metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 						return;

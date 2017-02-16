@@ -649,7 +649,6 @@ public class CheckController extends BaseController {
 		}
 	}
 	
-	
 	/**
 	 * 清检查结果接口
 	 * @param request

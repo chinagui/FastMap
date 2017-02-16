@@ -56,11 +56,13 @@ public class GLM06005 extends baseRule {
 	 */
 	private void checkRdSe(RdSe rdSe) throws Exception {
 		// TODO Auto-generated method stub
-		boolean check = this.check(rdSe.getNodePid());
-
-		if(check){
-			String target = "[RD_SE," + rdSe.getPid() + "]";
-			this.setCheckResult("", target, 0);
+		if(ObjStatus.INSERT.equals(rdSe.status())||ObjStatus.DELETE.equals(rdSe.status())){
+			boolean check = this.check(rdSe.getNodePid());
+			
+			if(check){
+				String target = "[RD_SE," + rdSe.getPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
 		}
 	}
 	

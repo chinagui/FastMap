@@ -55,6 +55,7 @@ public class FM11Win0826 extends BasicCheckRule {
 				if(fullname == null || name == null){return;}
 				if(indoor == 1 && (!fullname.contains(name))){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					return;
 				}
 			}
 		}

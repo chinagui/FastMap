@@ -25,4 +25,17 @@ public class CheckTest extends InitApplication{
 		String msg = t.run();
 	}
 	
+	
+	
+	@Test
+	public void GLM11024() throws Exception {
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":207000053,\"data\":{\"details\":[{\"branchType\":1,\"estabType\":9,\"nameKind\":9,\"rowId\":\"C893EF14A08A4D52A8BB941597DBC296\",\"pid\":210000040,\"objStatus\":\"UPDATE\"}],\"rowId\":\"DCCA46349E9D4372AD2A804F5A75E8BB\",\"pid\":207000053,\"objStatus\":\"UPDATE\"}}";
+		
+		
+		
+		Transaction t = new Transaction(parameter);
+		String msg = t.run();
+	}
+	
+	
 }

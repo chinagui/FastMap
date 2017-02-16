@@ -1337,5 +1337,39 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+		@Test
+	public void run_0216_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":310003405,\"data\":{\"longitude\":116.184167837713,\"latitude\":40.55273596910603},\"type\":\"RDNODE\"}";
+				
+				
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+		
+		@Test
+	public void run_0216_2() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":210003436,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.20255,40.55834],[116.20235100388527,40.55852415747297]]},\"catchInfos\":[{\"nodePid\":204002750,\"longitude\":116.20235100388527,\"latitude\":40.55852415747297}]},\"type\":\"RDLINK\"}";
+				
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+	
+		@Test
+	public void run_0216_3() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.19138615259806,40.560664562764494],[116.19161278009415,40.560811534718106],[116.19173014375765,40.56065583014521],[116.19190514087677,40.560766704912744],[116.1921570815714,40.56064632981665]]},\"catchLinks\":[{\"linkPid\":302003429,\"lon\":116.19138615259806,\"lat\":40.560664562764494},{\"linkPid\":201003429,\"lon\":116.19173014375765,\"lat\":40.56065583014521},{\"linkPid\":310003435,\"lon\":116.1921570815714,\"lat\":40.56064632981665}]},\"dbId\":17}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}	
+		
+	
 	
 }

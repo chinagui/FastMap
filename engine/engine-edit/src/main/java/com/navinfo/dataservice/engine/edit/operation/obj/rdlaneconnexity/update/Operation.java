@@ -7,10 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
@@ -233,9 +235,10 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void caleRdlaneForRdLaneconnexity(Result result) throws Exception {
-		String laneInfo = command.getContent().getString("laneInfo");
-
 		/*
+		 * String laneInfo = command.getContent().getString("laneInfo");
+		 * 
+		 * 
 		 * if (StringUtils.isNotEmpty(laneInfo)) { String lanes =
 		 * laneInfo.replace("[", "").replace("]", ""); List<String> laneList =
 		 * Arrays.asList(lanes.split(","));
@@ -644,6 +647,9 @@ public class Operation implements IOperation {
 					continue;
 				}
 
+				TreeMap<Integer,IVia> newVias=new TreeMap<Integer,IVia>();
+				
+				TreeMap<Integer, IVia> nextVias=new TreeMap<Integer,IVia>();
 				// 与进入线或前一个经过线的连接点
 				int connectionNodePid = 0;
 
@@ -690,6 +696,8 @@ public class Operation implements IOperation {
 						newVia.setSeqNum(breakVia.getSeqNum() + i);
 
 						result.insertObject(newVia, ObjStatus.INSERT, topo.parentPKValue());
+						
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 
 				} else {
@@ -707,6 +715,8 @@ public class Operation implements IOperation {
 						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size() - i);
 
 						result.insertObject(newVia, ObjStatus.INSERT, topo.parentPKValue());
+						
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 				}
 
@@ -720,8 +730,14 @@ public class Operation implements IOperation {
 						via.changedFields().put("seqNum", via.getSeqNum() + newLinks.size() - 1);
 
 						result.insertObject(via, ObjStatus.UPDATE, topo.parentPKValue());
+						
+						nextVias.put(via.getSeqNum(), via);
 					}
 				}
+				
+				String tableNamePid=breakVia.tableName()+breakVia.getTopologyId()+breakVia.getGroupId();
+				
+				result.breakVia( tableNamePid,breakVia.getSeqNum(), newVias,nextVias);
 			}
 		}
 	}

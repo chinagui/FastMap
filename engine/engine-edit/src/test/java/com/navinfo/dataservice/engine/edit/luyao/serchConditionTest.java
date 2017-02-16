@@ -267,6 +267,73 @@ public class serchConditionTest extends InitApplication {
 	
 	
 	@Test
+	public void getBySpecialMap3() {
+
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":19,\"gap\":10,\"types\":[\"rdLinkProperty\"],\"z\":17,\"x\":107844,\"y\":49360}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			List<String> types = new ArrayList<String>();
+
+			if (jsonReq.containsKey("type")) {
+				types.add(jsonReq.getString("type"));
+			}
+			if (jsonReq.containsKey("types")) {
+				JSONArray typeArray = jsonReq.getJSONArray("types");
+
+				for (int i = 0; i < typeArray.size(); i++) {
+					types.add(typeArray.getString(i));
+				}
+			}
+
+			int dbId = jsonReq.getInt("dbId");
+
+			int x = jsonReq.getInt("x");
+
+			int y = jsonReq.getInt("y");
+
+			int z = jsonReq.getInt("z");
+
+			int gap = 0;
+
+			if (jsonReq.containsKey("gap")) {
+				gap = jsonReq.getInt("gap");
+			}
+
+			JSONObject data = null;
+
+			if (z > 9) {
+
+				conn = DBConnector.getInstance().getConnectionById(dbId);
+
+				SpecialMapUtils specialMap = new SpecialMapUtils(conn);
+
+				data = specialMap.searchDataByTileWithGap(types, x, y, z, gap);
+			}
+
+			System.out.println(data);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	
+	
+	@Test
 	public void getTitleWithGap1() {
 		Connection conn = null;
 		try {
@@ -419,10 +486,10 @@ public class serchConditionTest extends InitApplication {
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.RDLINKSPEEDLIMIT);
+			objType.add(ObjType.RDSPEEDLIMIT_DEPENDENT);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 431357,
-					197416, 19, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 431368,
+					197410, 19, 80));
 
 		} catch (Exception e) {
 			e.printStackTrace();

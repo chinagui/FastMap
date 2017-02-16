@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation;
 
 import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -22,9 +24,14 @@ public class OperatorFactory {
 	 * @throws Exception
 	 */
 	public static void recordData(Connection conn, Result result) throws Exception {
+		
+		Set<String> delRowIds = new HashSet<String>();
+
 		for (IRow obj : result.getDelObjects()) {
 
 			getOperator(conn, obj).deleteRow();
+
+			delRowIds.add(obj.rowId());
 		}
 
 		for (IRow obj : result.getAddObjects()) {
@@ -34,6 +41,9 @@ public class OperatorFactory {
 
 		for (IRow obj : result.getUpdateObjects()) {
 
+			if (delRowIds.contains(obj.rowId())) {
+				continue;
+			}
 			getOperator(conn, obj).updateRow();
 		}
 	}

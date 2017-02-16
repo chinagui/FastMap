@@ -294,6 +294,6 @@ public interface MetadataApi {
 	 * @return List<Map<String, Object>>
 	 * @throws Exception
 	 */
-	public List<Map<String, Object>> searchByErrorName(String name) throws Exception;
+	public List<String> searchByErrorName(String name) throws Exception;
 
 }

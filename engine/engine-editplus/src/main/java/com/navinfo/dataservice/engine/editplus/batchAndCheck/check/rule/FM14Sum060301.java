@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -45,24 +48,28 @@ public class FM14Sum060301 extends BasicCheckRule {
 				checkTypeD6.put(entry.getKey(), entry.getValue().get("resultKey"));
 			}
 			Map<String, String> keyResult6=ScPointNameckUtil.matchType(fullname, checkTypeD6);
+			List<String> errorList = new ArrayList<String>();
+			List<String> rightList = new ArrayList<String>();
 			for(String preKey:keyResult6.keySet()){
 				//当查询的错别字在SC_POINT_ADMINAREA中PROVINCE_SHORT，CITY_SHORT，DISTRICT_SHORT中存在，且所在的记录在地址中存在时，不报
 				boolean flag = false;
-				List<Map<String, Object>> adminAreas = metadataApi.searchByErrorName(preKey);
+				List<String> adminAreas = metadataApi.searchByErrorName(preKey);
 				if(adminAreas != null && !adminAreas.isEmpty()){
-					for (Map<String, Object> map : adminAreas) {
-						String adminAreaWhole = (String) map.get("whole");
-						if(adminAreaWhole != null && fullname.contains(adminAreaWhole)){
+					for (String str : adminAreas) {
+						if(!fullname.contains(str)){
 							flag = true;
-							break;
 						}
 					}
 				}
-				if(flag){continue;}
-				if (fullname.contains(preKey)){
-					String log="地址中错别字为“"+preKey+"”,正确字为“"+keyResult6.get(preKey)+"”";
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
+				if(adminAreas == null || adminAreas.isEmpty() || flag){
+					errorList.add(preKey);
+					rightList.add(keyResult6.get(preKey));
 				}
+			}
+			if(errorList.size()>0){
+				String log="地址中存在错别字为“"+StringUtils.join(errorList, ",")+
+						"”,对应的正确字为“"+StringUtils.join(rightList, ",")+"”,请确认正确性";
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
 			}
 		}
 	}

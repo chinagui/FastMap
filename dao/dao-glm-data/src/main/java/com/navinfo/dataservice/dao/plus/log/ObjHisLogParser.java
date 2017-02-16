@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.dao.plus.log;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -9,6 +12,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.utils.RowJsonUtils;
 
 import net.sf.json.JSONObject;
@@ -22,6 +26,27 @@ import net.sf.json.JSONObject;
 public class ObjHisLogParser {
 	private static Logger log = Logger.getLogger(ObjHisLogParser.class);
 
+	/**
+	 * 分析履历，将履历中涉及的变更过的子表集合返回
+	 * @param logs
+	 * @return [IX_POI_NAME,IX_POI_ADDRESS]
+	 */
+	public static Map<String,Set<String>> getChangeTableSet(Map<Long, List<LogDetail>> logs) {
+		Map<String,Set<String>> subtables=new HashMap<String,Set<String>>();
+		if(logs==null || logs.size()==0){return subtables;}
+		for(Long objId:logs.keySet()){
+			List<LogDetail> logList = logs.get(objId);
+			for(LogDetail logTmp:logList){
+				String tableName = logTmp.getTbNm();
+				String obName=logTmp.getObNm();
+				if(!tableName.equals(obName)){
+					if(!subtables.containsKey(obName)){subtables.put(obName, new HashSet<String>());}
+					subtables.get(obName).add(tableName);}
+			}
+		}
+		return subtables;
+	}
+	
 	public static void parse(BasicObj obj,List<LogDetail> logs)throws Exception{
 		if(obj!=null&&logs!=null){
 			String mainTableName = obj.getMainrow().tableName();

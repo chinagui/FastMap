@@ -1431,11 +1431,11 @@ public class ProgramService {
 		return page;
 	}
 		
-	public Page list(int programType, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page list(int type, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			if(programType==4){
+			if(type==4){
 				//情报任务查询列表
 				return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
 			}else{

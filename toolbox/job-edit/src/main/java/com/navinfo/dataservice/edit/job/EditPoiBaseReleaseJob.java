@@ -7,25 +7,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.api.edit.iface.DatalockApi;
 import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
-import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
-import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
@@ -33,7 +43,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
  * 
  * @author zhangxiaoyi
  * 按grid提交时，如检查中报log，则该grid下的POI不能一起提交：poi提交时，按单个poi进行处理-------没有检查错误的提交；有检查错误的不提交。
- *
+ * 粗编poi提交接口
  */
 public class EditPoiBaseReleaseJob extends AbstractJob{
 	protected int lockSeq = -1;// 加锁时得到值
@@ -46,12 +56,52 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 
 	@Override
 	public void execute() throws JobException {
-		EditPoiBaseReleaseJobRequest releaseJobRequest=(EditPoiBaseReleaseJobRequest) request;
+		EditPoiBaseReleaseJobRequest myRequest=(EditPoiBaseReleaseJobRequest) request;
+		Connection conn=null;
 		try{
+			conn=DBConnector.getInstance().getConnectionById(myRequest.getTargetDbId());
 			log.info("check exception1");
 			//1对grids提取数据执行gdb检查
-			log.info("start gdb check");
-			JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
+			log.info("EditPoiBaseReleaseJob:获取要检查的数据pid");
+			//获取要检查的数据pid
+			List<Long> poiPids = getCheckPidList(conn,myRequest);
+			log.info("EditPoiBaseReleaseJob:获取要检查的数据的履历");
+			//获取log
+			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
+			Map<String, Set<String>> tabNames=ObjHisLogParser.getChangeTableSet(logs);
+			log.info("EditPoiBaseReleaseJob:加载检查对象");
+			//获取poi对象			
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, tabNames.get(ObjectName.IX_POI), false,
+					poiPids, false, false);
+			//将poi对象与履历合并起来
+			ObjHisLogParser.parse(objs, logs);
+			log.info("EditPoiBaseReleaseJob:加载同一关系检查对象");
+			//获取poi对象			
+			List<Long> groupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, poiPids);
+			log.info("EditPoiBaseReleaseJob:获取要检查的同一关系数据的履历");
+			//获取log
+			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, poiPids);
+			Map<String, Set<String>> sametabNames=ObjHisLogParser.getChangeTableSet(samelogs);
+			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames.get(ObjectName.IX_SAMEPOI), false,
+					groupIds, false, false);
+			//将poi对象与履历合并起来
+			ObjHisLogParser.parse(sameobjs, samelogs);
+			log.info("EditPoiBaseReleaseJob:执行检查");
+			//构造检查参数，执行检查
+			OperationResult operationResult=new OperationResult();
+			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
+			objsMap.put(ObjectName.IX_POI, objs);
+			objsMap.put(ObjectName.IX_SAMEPOI, sameobjs);
+			operationResult.putAll(objsMap);
+			
+			CheckCommand checkCommand=new CheckCommand();
+			checkCommand.setOperationName("POI_ROW_COMMIT");
+			
+			Check check=new Check(conn, operationResult);
+			check.operate(checkCommand);
+			log.info("end EditPoiBaseReleaseJob");
+			
+			/*JobInfo valJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
 			releaseJobRequest.getSubJobRequest("validation").setAttrValue("grids",releaseJobRequest.getGridIds());
 			AbstractJob valJob = JobCreateStrategy.createAsSubJob(valJobInfo,
 					releaseJobRequest.getSubJobRequest("validation"), this);
@@ -61,8 +111,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 				throw new Exception("执行检查job内部发生"+msg);
 			}
 			int valDbId=valJob.getJobInfo().getResponse().getInt("valDbId");
-			jobInfo.addResponse("val&BatchDbId", valDbId);
-			log.info("end gdb check");
+			jobInfo.addResponse("val&BatchDbId", valDbId);*/
 			//对grids执行批处理
 //			log.info("start gdb batch");
 //			JobInfo batchJobInfo = new JobInfo(jobInfo.getId(), jobInfo.getGuid());
@@ -78,12 +127,15 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //			log.info("end gdb batch");
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(releaseJobRequest);
+			commitPoi(myRequest);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
-		}catch (Exception e){
-			log.error(e.getMessage(), e);
-			throw new JobException(e.getMessage(),e);
+		}catch(Exception e){
+			log.error("PoiRowValidationJob错误", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new JobException(e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -122,6 +174,47 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new LockException("加锁发生错误," + e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * 获取行编检查对象pid
+	 * 1.pids有值，则直接针对改pid进行检查
+	 * 2.pids无值,根据子任务圈查询，待作业/已作业状态的非删除poi列表
+	 * @param conn
+	 * @param myRequest
+	 * @return 
+	 * @throws JobException
+	 */
+	private List<Long> getCheckPidList(Connection conn,
+			EditPoiBaseReleaseJobRequest myRequest) throws JobException {
+		try{
+			ManApi apiService = (ManApi) ApplicationContextUtil
+					.getBean("manApi");
+			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			String sql="SELECT ip.pid"
+					+ "  FROM ix_poi ip, poi_edit_status ps"
+					+ " WHERE ip.pid = ps.pid"
+					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
+					+ "   and ip.u_record!=2"
+					+ "   AND sdo_within_distance(ip.geometry,"
+					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
+					+ "                           'mask=anyinteract') = 'TRUE'";
+			QueryRunner run=new QueryRunner();
+			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){
+
+				@Override
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> pids =new ArrayList<Long>();
+					while (rs.next()) {
+						pids.add(rs.getLong("PID"));						
+					}
+					return pids;
+				}});
+		}catch(Exception e){
+			log.error("行编获取检查数据报错", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new JobException(e);
 		}
 	}
 	

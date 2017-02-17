@@ -8,7 +8,6 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -31,8 +30,11 @@ public class FMYW20018 extends BasicCheckRule {
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
+			IxPoi poi = (IxPoi) poiObj.getMainrow();
+			if (poi.getHisOpType().equals(OperationType.DELETE)) {
+				return;
+			}
 			if(!isCheck(poiObj)){return;}
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode=poi.getKindCode();
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			boolean isImportant=metadataApi.judgeScPointKind(kindCode, poi.getChain());

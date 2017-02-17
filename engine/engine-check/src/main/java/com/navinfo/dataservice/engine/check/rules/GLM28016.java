@@ -278,13 +278,13 @@ public class GLM28016 extends baseRule{
 				resultSet2.close();
 				pstmt2.close();
 				
-//				//如果涉及到的CRFI个数不等于2，报log
-//				if(rdInterPidSet.size()<2){
-//					this.setCheckResult("", "", 0);
-//					return;
-//				}else{
-					//遍历CRFI
-					//构成CRFR的link，有且只有两根不同link落在改CRFR上
+				//如果涉及到的CRFI个数为0，报log
+				if(rdInterPidSet.size()==0){
+					this.setCheckResult("", "", 0);
+					return;
+				}else{
+//					遍历CRFI
+//					构成CRFR的link，有且只有两根不同link落在改CRFR上
 					for(Integer rdInterPid:rdInterPidSet){
 						Set<Integer> linkPidSetTemp = new HashSet<Integer>();
 						for(Map.Entry<Integer, Integer> entry:rdInterNodeMap.entrySet()){
@@ -305,7 +305,7 @@ public class GLM28016 extends baseRule{
 							return;
 						}
 					}
-//				}
+				}
 				
 			}
 		}

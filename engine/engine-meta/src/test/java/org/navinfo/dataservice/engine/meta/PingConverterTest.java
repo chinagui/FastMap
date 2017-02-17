@@ -43,9 +43,12 @@ public class PingConverterTest {
 	public void testConvertPingYin() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String res = py.convertHz("ⅲ期");
+		for (int i=0;i<=10;i++){
+			String res = py.convertHz("１号楼");
+			System.out.println(res);
+		}
 
-		System.out.println(res);
+//		System.out.println(res);
 
 	}
 }

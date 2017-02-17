@@ -505,6 +505,7 @@ public class DeepCoreControl {
 			
 			return applyCount;
 		} catch (Exception e) {
+			DbUtils.rollback(conn);
 			throw e;
 		} finally {
 			DbUtils.commitAndClose(conn);
@@ -525,12 +526,18 @@ public class DeepCoreControl {
 			// 通用
 			rules.add("FM-BAT-20-195");
 			rules.add("FM-BAT-20-196");
+			rules.add("FM-BAT-TEMP-7");
 		}else if ("deepParking".equals(secondWorkItem)){
 			// 停车场
 			rules.add("FM-BAT-20-198");
+			rules.add("FM-BAT-TEMP-8");
+			rules.add("FM-BAT-TEMP-9");
 		}else if ("deepCarrental".equals(secondWorkItem)){
 			// 汽车租赁
 			rules.add("FM-BAT-20-197");
+			rules.add("FM-BAT-TEMP-10");
+			rules.add("FM-BAT-TEMP-11");
+			rules.add("FM-BAT-TEMP-12");
 		}
 			return rules;
 	}

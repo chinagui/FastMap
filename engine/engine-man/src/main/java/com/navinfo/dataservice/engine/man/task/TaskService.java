@@ -30,6 +30,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -1101,8 +1102,10 @@ public class TaskService {
 				//调整日编任务范围
 				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
 				//调整区域子任务范围
-//				TaskOperation.getSubTaskListByType(conn,taskId,4);
-//				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskId, gridIdMap);;
+				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,taskId,4);
+				for(Subtask subtask:subtaskList){
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtask.getSubtaskId(), gridIdMap);;
+				}
 				if(task.getBlockId()==0){
 					//调整项目范围
 					

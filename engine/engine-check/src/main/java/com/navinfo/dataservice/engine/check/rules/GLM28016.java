@@ -300,7 +300,7 @@ public class GLM28016 extends baseRule{
 								}
 							}
 						}
-						if(linkPidSetTemp.size()!=2){
+						if(linkPidSetTemp.size()<2){
 							this.setCheckResult("", "", 0);
 							return;
 						}

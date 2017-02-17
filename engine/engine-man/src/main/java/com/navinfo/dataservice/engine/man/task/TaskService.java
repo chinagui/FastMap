@@ -23,6 +23,7 @@ import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -162,71 +163,71 @@ public class TaskService {
 		return taskId;
 	}
 
-	/**
-	 * 根据情报id创建blockMan，若跨2个block，需要创建各自的blockMan
-	 * @param conn
-	 * @param inforId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlock(Connection conn,String inforId,int userId,int taskId) throws Exception{
-		//查询情报infor
-		//Infor inforObj=InforManService.getInstance().query(inforId);
-		//String inforGeo=inforObj.getGeometry();
-		//查询情报city100002对应的所有block
-		//select block_id,geometry from block where city_id=100002
-		String selectSql="SELECT DISTINCT B.BLOCK_ID,I.INFOR_NAME||'_'||B.BLOCK_NAME BLOCK_NAME"
-				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM,INFOR I"
-				+ " WHERE B.CITY_ID = 100002"
-				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
-				+ "   AND IM.GRID_ID = M.GRID_ID"
-				+ "   AND IM.INFOR_ID = I.INFOR_ID"
-				+ "   AND IM.INFOR_ID='"+inforId+"'";
-		List<Map<String, Object>> blockList=new ArrayList<Map<String, Object>>();
-		try {
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-					while (rs.next()) {
-						Map<String, Object> blockTmp=new HashMap<String, Object>();
-						blockTmp.put("blockId", rs.getInt("BLOCK_ID"));
-						blockTmp.put("blockName", rs.getString("BLOCK_NAME"));
-						list.add(blockTmp);
-					}
-					return list;
-				}
-
-			};
-			blockList= run.query(conn, selectSql, rsHandler);
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
-		}
-		List<Integer> blockIdList=new ArrayList<Integer>();
-		for(Map<String, Object> blockId:blockList){
-			blockIdList.add((Integer) blockId.get("blockId"));
-			createInforBlockMan(conn,(Integer) blockId.get("blockId"),String.valueOf(blockId.get("blockName")),userId,taskId);}
-		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
-	}
-	
-	/**
-	 * 创建情报任务
-	 * @param conn
-	 * @param blockId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlockMan(Connection conn,Integer blockId,String blockName,int userId,int taskId) throws Exception{
-		String sql="insert into block_man (block_man_id,block_id,block_man_name,status,latest,create_user_id,create_date,task_id)"
-				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",'"+blockName+"',2,1,"+userId+",sysdate,"+taskId+")";
-		QueryRunner run = new QueryRunner();
-		run.update(conn,sql);	
-	}
-	
+//	/**
+//	 * 根据情报id创建blockMan，若跨2个block，需要创建各自的blockMan
+//	 * @param conn
+//	 * @param inforId
+//	 * @param userId
+//	 * @param taskId
+//	 * @throws Exception
+//	 */
+//	private void createInforBlock(Connection conn,String inforId,int userId,int taskId) throws Exception{
+//		//查询情报infor
+//		//Infor inforObj=InforManService.getInstance().query(inforId);
+//		//String inforGeo=inforObj.getGeometry();
+//		//查询情报city100002对应的所有block
+//		//select block_id,geometry from block where city_id=100002
+//		String selectSql="SELECT DISTINCT B.BLOCK_ID,I.INFOR_NAME||'_'||B.BLOCK_NAME BLOCK_NAME"
+//				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM,INFOR I"
+//				+ " WHERE B.CITY_ID = 100002"
+//				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
+//				+ "   AND IM.GRID_ID = M.GRID_ID"
+//				+ "   AND IM.INFOR_ID = I.INFOR_ID"
+//				+ "   AND IM.INFOR_ID='"+inforId+"'";
+//		List<Map<String, Object>> blockList=new ArrayList<Map<String, Object>>();
+//		try {
+//			QueryRunner run = new QueryRunner();
+//			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
+//				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+//					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+//					while (rs.next()) {
+//						Map<String, Object> blockTmp=new HashMap<String, Object>();
+//						blockTmp.put("blockId", rs.getInt("BLOCK_ID"));
+//						blockTmp.put("blockName", rs.getString("BLOCK_NAME"));
+//						list.add(blockTmp);
+//					}
+//					return list;
+//				}
+//
+//			};
+//			blockList= run.query(conn, selectSql, rsHandler);
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+//		}
+//		List<Integer> blockIdList=new ArrayList<Integer>();
+//		for(Map<String, Object> blockId:blockList){
+//			blockIdList.add((Integer) blockId.get("blockId"));
+//			createInforBlockMan(conn,(Integer) blockId.get("blockId"),String.valueOf(blockId.get("blockName")),userId,taskId);}
+//		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
+//	}
+//	
+//	/**
+//	 * 创建情报任务
+//	 * @param conn
+//	 * @param blockId
+//	 * @param userId
+//	 * @param taskId
+//	 * @throws Exception
+//	 */
+//	private void createInforBlockMan(Connection conn,Integer blockId,String blockName,int userId,int taskId) throws Exception{
+//		String sql="insert into block_man (block_man_id,block_id,block_man_name,status,latest,create_user_id,create_date,task_id)"
+//				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",'"+blockName+"',2,1,"+userId+",sysdate,"+taskId+")";
+//		QueryRunner run = new QueryRunner();
+//		run.update(conn,sql);	
+//	}
+//	
 //	public String taskPushMsg(long userId,JSONArray taskIds) throws Exception{
 //		Connection conn = null;
 //		try{
@@ -734,25 +735,25 @@ public class TaskService {
 //			}
 //		}
 //	}
-	
-	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
-		//常规未发布
-		Page page = new Page();
-		if(planStatus==1){
-			page=TaskOperation.getCommonUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==2){
-			//常规已发布
-			page=TaskOperation.getCommonPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==3){
-			//常规已完成
-			page=TaskOperation.getCommonOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==4){
-			//常规已关闭
-			page=TaskOperation.getCommonCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}
-		return page;
-	}
-	
+//	
+//	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+//		//常规未发布
+//		Page page = new Page();
+//		if(planStatus==1){
+//			page=TaskOperation.getCommonUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==2){
+//			//常规已发布
+//			page=TaskOperation.getCommonPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==3){
+//			//常规已完成
+//			page=TaskOperation.getCommonOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==4){
+//			//常规已关闭
+//			page=TaskOperation.getCommonCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}
+//		return page;
+//	}
+//	
 //	public Page inforList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 //		//情报未发布
 //		Page page = new Page();
@@ -1080,7 +1081,6 @@ public class TaskService {
 	public String close(int taskId, long userId)throws Exception{
 		Connection conn = null;
 		try{
-			
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
@@ -1097,18 +1097,18 @@ public class TaskService {
 			//调整该任务范围
 			TaskOperation.insertTaskGridMapping(conn, taskId, gridIdMap);
 			
-			//采集任务
+			//如果任务类型为采集
 			if(task.getType() == 0){
 				//调整日编任务范围
 				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
 				//调整区域子任务范围
 				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,taskId,4);
 				for(Subtask subtask:subtaskList){
-					SubtaskOperation.insertSubtaskGridMapping(conn, subtask.getSubtaskId(), gridIdMap);;
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtask.getSubtaskId(), gridIdMap);
 				}
 				if(task.getBlockId()==0){
 					//调整项目范围
-					
+					ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
 				}else{
 					//调整二代任务范围
 					TaskOperation.updateTaskRegion(conn,taskId,4,gridIdMap);
@@ -1117,7 +1117,7 @@ public class TaskService {
 			//日编任务,快速更新项目
 			else if((task.getType()==1)&&(task.getBlockId()==0)){
 				//调整项目范围
-				
+				ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
 			}
 			
 			//发送消息
@@ -1316,7 +1316,7 @@ public class TaskService {
 //			DbUtils.commitAndCloseQuietly(conn);
 //		}
 //	}
-	
+//	
 	public List<Task> queryTaskAll() throws Exception{
 		Connection conn = null;
 		try{

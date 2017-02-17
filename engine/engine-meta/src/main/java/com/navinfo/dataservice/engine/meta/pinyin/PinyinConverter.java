@@ -148,7 +148,7 @@ public class PinyinConverter {
 
 		PinyinConverter py = new PinyinConverter();
 		
-		String res = py.convertHz("北京市");
+		String res = py.convertHz("1号楼");
 		
 		System.out.println(res);
 

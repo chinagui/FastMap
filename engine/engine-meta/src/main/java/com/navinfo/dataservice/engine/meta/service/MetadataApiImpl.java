@@ -558,6 +558,12 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAddrck addrck = new ScPointAddrck();
 		return addrck.getAddrckList(type, hmFlag);
 	}
+	
+	@Override
+	public List<String> queryAdRack(int type) throws Exception {
+		ScPointAddrck addrck = new ScPointAddrck();
+		return addrck.queryAdRack(type);
+	}
 
 	@Override
 	public Map<String, Map<String,String>> getAddrAdminMap() throws Exception {

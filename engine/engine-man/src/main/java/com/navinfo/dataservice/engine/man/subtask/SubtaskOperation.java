@@ -591,7 +591,7 @@ public class SubtaskOperation {
 	 * @param gridIdsToInsert
 	 * @throws Exception 
 	 */
-	private static void insertSubtaskGridMapping(Connection conn, Integer subtaskId,
+	public static void insertSubtaskGridMapping(Connection conn, Integer subtaskId,
 			Map<Integer, Integer> gridIds) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();

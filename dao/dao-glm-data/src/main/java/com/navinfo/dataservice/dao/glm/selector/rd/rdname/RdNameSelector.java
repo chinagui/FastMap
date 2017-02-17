@@ -52,9 +52,10 @@ public class RdNameSelector {
 			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
+//			System.out.println(sql);
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, name + "%");
+			pstmt.setString(1, "%"+ name + "%");
 
 			pstmt.setInt(2, endRow);
 

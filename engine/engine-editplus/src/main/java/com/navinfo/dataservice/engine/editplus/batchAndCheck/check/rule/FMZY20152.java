@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -11,8 +13,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-
-import net.sf.json.JSONObject;
 
 /**
  * 检查条件： 非删除（根据履历判断删除） 检查原则：（开放时间字段：IX_POI_PARKING.OPEN_TIME）
@@ -41,8 +41,24 @@ public class FMZY20152 extends BasicCheckRule {
 		}
 		List<IxPoiParking> parkings = poiObj.getIxPoiParkings();
 		// 调用元数据请求接口
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		JSONObject characterMap = metaApi.getCharacterMap();
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, List<String>> charMap = metadataApi.tyCharacterEgalcharExtGetExtentionTypeMap();
+		List<String> charList = new ArrayList<String>();
+		if (charMap.containsKey("GBK")) {
+			charList.addAll(charMap.get("GBK"));
+		}
+		if (charMap.containsKey("ENG_F_U")) {
+			charList.addAll(charMap.get("ENG_F_U"));
+		}
+		if (charMap.containsKey("ENG_F_L")) {
+			charList.addAll(charMap.get("ENG_F_L"));
+		}
+		if (charMap.containsKey("DIGIT_F")) {
+			charList.addAll(charMap.get("DIGIT_F"));
+		}
+		if (charMap.containsKey("SYMBOL_F")) {
+			charList.addAll(charMap.get("SYMBOL_F"));
+		}
 
 		for (IxPoiParking parking : parkings) {
 			String openTiime = parking.getOpenTiime();
@@ -53,13 +69,7 @@ public class FMZY20152 extends BasicCheckRule {
 			String illegalChar = "";
 			for (char c : openTiime.toCharArray()) {
 				String str = String.valueOf(c);
-				if (characterMap.containsKey(str)) {
-					String type = characterMap.getString(str);
-					if (!type.equals("GBK") && !type.equals("ENG_F_U") && !type.equals("ENG_F_L")
-							&& !type.equals("DIGIT_F") && !type.equals("SYMBOL_F")) {
-						illegalChar += str;
-					}
-				} else if (!characterMap.containsKey(str)) {
+				if (!charList.contains(str)) {
 					illegalChar += str;
 				}
 			}
@@ -69,7 +79,7 @@ public class FMZY20152 extends BasicCheckRule {
 			}
 			
 			if (!openTiime.equals(ExcelReader.h2f(openTiime))) {
-				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), "营业时间还有半角字符");
+				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), "营业时间含有半角字符");
 			}
 
 			// 上面已经做的全半角及非法字符检查，因此下面直接转成半角做格式检查

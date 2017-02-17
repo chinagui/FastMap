@@ -81,7 +81,6 @@ public class GLM28018 extends baseRule{
 		sb.append(" AND RRL.LINK_PID = RL.LINK_PID");
 		sb.append(" AND RRL.U_RECORD <> 2 ");
 		sb.append(" AND RL.U_RECORD <> 2");
-		sb.append(" AND RIN.U_RECORD <> 2");
 		String sql = sb.toString();
 		log.info("RdInter前检查GLM28009:" + sql);
 		

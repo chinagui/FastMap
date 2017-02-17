@@ -19,6 +19,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
@@ -2194,42 +2195,70 @@ public class TaskOperation {
 	 * @param gridIdMap 
 	 * @param taskId：参照任务Id
 	 * @param type:待调整的任务类型
+	 * @throws Exception 
 	 */
-	public static void updateTaskRegion(Connection conn, int taskId, int type, Map<Integer, Integer> gridIdMap) {
-		// TODO Auto-generated method stub
+	public static void updateTaskRegion(Connection conn, int taskId, int type, Map<Integer, Integer> gridIdMap) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT S.SUBTASK_ID FROM SUBTASK S "); 
+			sb.append(" WHERE S.TASK_ID = " + taskId);
+			sb.append(" AND S.TYPE = " + type);
+
+			ResultSetHandler<List<Subtask>> rsh = new ResultSetHandler<List<Subtask>>() {
+				@Override
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> list = new ArrayList<Subtask>();
+					while(rs.next()){
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						list.add(subtask);
+					}
+					return list;
+				}
+			};
+			List<Subtask> list = run.query(conn, sb.toString(), rsh);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
 		
 	}
 
-//	/**
-//	 * @param conn
-//	 * @param taskId
-//	 * @param type
-//	 */
-//	public static void getSubTaskListByType(Connection conn, int taskId, int type) {
-//		try{
-//			QueryRunner run = new QueryRunner();
-//
-//			StringBuilder sb = new StringBuilder();
-//			sb.append("SELECT S.SUBTASK_ID FROM SUBTASK S "); 
-//			sb.append(" WHERE S.TASK_ID = " + taskId);
-//			sb.append(" AND S.TYPE = " + type);
-//
-//			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
-//				@Override
-//				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
-//					Map<Integer, Integer> list = new HashMap<Integer, Integer>();
-//					while(rs.next()){
-//						list.put(rs.getInt("GRID_ID"), 2);
-//					}
-//					return list;
-//				}
-//			};
-//			Map<Integer, Integer> gridList = run.query(conn, sb.toString(), rsh);
-//			return gridList;
-//		}catch(Exception e){
-//			log.error(e.getMessage(), e);
-//			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-//		}
-//	}
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @param type
+	 * @throws Exception 
+	 */
+	public static List<Subtask> getSubTaskListByType(Connection conn, int taskId, int type) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT S.SUBTASK_ID FROM SUBTASK S "); 
+			sb.append(" WHERE S.TASK_ID = " + taskId);
+			sb.append(" AND S.TYPE = " + type);
+
+			ResultSetHandler<List<Subtask>> rsh = new ResultSetHandler<List<Subtask>>() {
+				@Override
+				public List<Subtask> handle(ResultSet rs) throws SQLException {
+					List<Subtask> list = new ArrayList<Subtask>();
+					while(rs.next()){
+						Subtask subtask = new Subtask();
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						list.add(subtask);
+					}
+					return list;
+				}
+			};
+			List<Subtask> list = run.query(conn, sb.toString(), rsh);
+			return list;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 	
 }

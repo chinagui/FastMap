@@ -122,6 +122,7 @@ public class GLM28017 extends baseRule {
 		sb.append(" AND RL.U_RECORD <> 2 ");
 		sb.append(" AND RRL.PID = " + pid );
 		sb.append(" ) ");
+		sb.append(" AND RIN.U_RECORD <> 2");
 		sb.append(" ) ");
 		
 //		sb.append("SELECT COUNT(1) FROM (");

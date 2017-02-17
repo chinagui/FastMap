@@ -24,9 +24,6 @@ public class CiParaAdAdmin {
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		
-		String leve1AdminCode = String.valueOf(adminCode).substring(0, 2) + "0000";
-		adminCode = Long.parseLong(leve1AdminCode);
-
 		try {
 			pstmt = conn.prepareStatement(sql);
 			

@@ -113,7 +113,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			response("确定日落月大区库个数："+regions.size()+"个。",null);
 			
 			
-			List<Integer> filterGrids = new ArrayList<Integer>();
+			
 			List<Integer> grids = new ArrayList<Integer>();
 			//支持精编任务关闭日落月
 			if(specMeshes!=null&&specMeshes.size()>0){
@@ -125,7 +125,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					}
 				}
 				for(Region region:regions){
-					doSync(region,filterGrids,grids, datahubApi, d2mSyncApi);
+					doSync(region,null,grids, datahubApi, d2mSyncApi);
 					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
 				}
 			//支持每天定时日落月	
@@ -148,6 +148,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					Set<Integer> admins = adminMap.get(region.getRegionId());
 					//过去大区库内的关闭图幅并转换成girds
 					List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(admins);
+					List<Integer> filterGrids = new ArrayList<Integer>();
 					for(Mesh4Partition m:meshes){
 						if(m.getDay2monSwitch()==0){
 							int mId = m.getMesh();

@@ -38,4 +38,14 @@ public class PingConverterTest {
 		System.out.println(res[1]);
 
 	}
+	
+	@Test
+	public void testConvertPingYin() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String res = py.convertHz("ⅲ期");
+
+		System.out.println(res);
+
+	}
 }

@@ -16,16 +16,29 @@ public class CiParaIxPoiAddressPlace {
 		this.conn = conn;
 	}
 	
-	public List<String> queryPlace(long adminCode, String addressFull) throws Exception{
+	public List<String> queryPlace(long adminCode, String addressFull, List<String> type12Key) throws Exception{
 		List<String> res = new ArrayList<String>();
 		
-		String sql = "select place from " + addressStreetPlaceTableName +  "  where src=:1 and admin_id=:2 and INSTR(:3, place)>0  and place not in (select pre_key from sc_point_addrck t where t.type=12) order by place_len desc  ";
-
+		StringBuilder sb = new StringBuilder();
+		String sql = "select place from " + addressStreetPlaceTableName +  " where src=:1 and admin_id=:2 and INSTR(:3, place)>0  and place not in (";
+		sb.append(sql);
+		if (type12Key.size() == 0){
+			sb.append("''");
+		}
+		String temp = "";
+		for (String key : type12Key) {
+			sb.append(temp);
+			sb.append("'" + key + "'");
+			temp = ",";
+		}
+		sb.append(") order by place_len desc ");
+		
+		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
 		try {
-			pstmt = conn.prepareStatement(sql);
+			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setString(1, "ix_poi_address");
 			pstmt.setLong(2, adminCode);

@@ -5,9 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1795,6 +1797,43 @@ public class ProgramService {
 					list.add(map);
 				}
 				return list;
+			}
+    	};
+		
+		QueryRunner run=new QueryRunner();
+		return run.query(conn, selectSql, rsHandler);
+	}
+	
+	/**
+	 * 
+	 * @param conn
+	 * @param condition 搜索条件{"programId":[1,2,3]}
+	 * @return List<Integer>  [123,456]
+	 */
+	public Map<Integer,Set<Integer>> queryInforProgramGridById(Connection conn,int programId) throws Exception{
+		
+		String selectSql="SELECT M.GRID_ID, R.DAILY_DB_ID"
+				+ "  FROM PROGRAM_GRID_MAPPING M, GRID G, REGION R"
+				+ " WHERE M.PROGRAM_ID = "+programId
+				+ "   AND M.GRID_ID = G.GRID_ID"
+				+ "   AND G.REGION_ID = R.REGION_ID"
+				+ " UNION"
+				+ " SELECT G.GRID_ID, R.DAILY_DB_ID"
+				+ "  FROM INFOR_GRID_MAPPING I, PROGRAM P, GRID G, REGION R"
+				+ " WHERE I.INFOR_ID = P.INFOR_ID"
+				+ "   AND P.PROGRAM_ID = "+programId
+				+ "   AND I.GRID_ID = G.GRID_ID"
+				+ "   AND G.REGION_ID = R.REGION_ID";
+		
+		ResultSetHandler<Map<Integer,Set<Integer>>> rsHandler = new ResultSetHandler<Map<Integer,Set<Integer>>>(){
+			public Map<Integer,Set<Integer>> handle(ResultSet rs) throws SQLException {
+				Map<Integer,Set<Integer>> map=new HashMap<Integer, Set<Integer>>();
+				while(rs.next()){
+					int dbId = rs.getInt("DAILY_DB_ID");
+					if(!map.containsKey(dbId)){map.put(dbId, new HashSet<Integer>());}
+					map.get(dbId).add(rs.getInt("GRID_ID"));
+				}
+				return map;
 			}
     	};
 		

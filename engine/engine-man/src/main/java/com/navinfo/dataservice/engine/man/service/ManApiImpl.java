@@ -186,6 +186,22 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
 		return GridService.getInstance().queryTaskIdsByGrid(grid);
+	}	
+	/**
+	 * 获取待出品的情报项目list
+	 * 应用场景：定时日出品（一体化）脚本
+	 * @return List<Map<String, Object>>：Map<String, Object> 
+	 * 			key:"produceId":int,
+	 * 				"programId":int,
+	 * 				"gridIds":Map<Integer, Set<Integer>> key:dbId value:grid的集合
+	 * 例如：{"produceId":1,"programId":1,"gridIds":{17:[59567301,59567302],18:[59567801]}}
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, Object>> getProduceProgram() throws Exception {
+		// TODO Auto-generated method stub
+		return ProduceService.getInstance().getProduceProgram();
 	}
+	
 }
 

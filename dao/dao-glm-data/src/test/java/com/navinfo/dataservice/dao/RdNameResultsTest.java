@@ -11,6 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.navicommons.database.Page;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -24,7 +25,7 @@ import net.sf.json.JSONObject;
  */
 public class RdNameResultsTest {
 	
-	@Test
+	//@Test
 	public void checkResultList(){
 		Connection conn =null;
 		try{
@@ -68,4 +69,13 @@ public class RdNameResultsTest {
 	}
 	
 
+	@Test
+	public void rdnameSearch() throws Exception{
+		Connection conn =null;
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1").getConnection();
+		RdNameSelector selector = new RdNameSelector();
+		//JSONObject json = selector.searchByName("八通", 5, 1, 17,conn);
+		//System.out.println(json);
+	}
 }

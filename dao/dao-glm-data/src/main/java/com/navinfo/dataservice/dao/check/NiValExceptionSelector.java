@@ -835,14 +835,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		
 		StringBuilder sql = new StringBuilder(
 				"with q1 as( "
-				+ "select a.md5_code,a.ruleid,a.targets,a.information,a.worker ,a.created from ni_val_exception a where  " 
+				+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status from ni_val_exception a where  " 
 					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
 				+ " union all "
-				+ "select c.md5_code,c.rule_id ruleid,c.targets,c.information,c.worker ,c.create_date created from ck_exception c where "
+				+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status from ck_exception c where "
 					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
 				+ " ), "
 				+ "q2 as ( "
-					+ "select distinct  e.md5_code,e.ruleid,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
+					+ "select distinct  e.md5_code,e.ruleid,e.level_,NVL(to_char(e.targets),'') targets,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.x,e.y,e.created,e.updated,e.qa_worker,e.qa_status "
 						+ " from q1 e "
 						+ " where 1=1 "
 						+ " CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "
@@ -854,7 +854,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		//b.md5_code,b.ruleid,b.pid,b.information,b.worker ,b.created
 		sql.append(" select A.*,B.pids from q2 A ,q3 B where A.md5_code = B.md5_code  and A.pid = "+pid+" order by A.created desc,A.md5_code desc ");
 		
-//		System.out.println("poiCheckResultList:  "+ sql);
+		System.out.println("poiCheckResultList:  "+ sql);
 		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
 
 			@Override
@@ -865,17 +865,27 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 					
 					JSONObject json = new JSONObject();
 					
-					json.put("id",  rs.getString("md5_code"));
+					json.put("id", rs.getString("md5_code"));
 
 					json.put("ruleid", rs.getString("ruleid"));
 
-					json.put("pid", rs.getInt("pid"));
+					//json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
 
 					json.put("information", rs.getString("information"));
-					
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
 					json.put("create_date", rs.getString("created"));
+					json.put("update_date", rs.getString("updated"));
 
 					json.put("worker", rs.getString("worker"));
+					json.put("qa_worker", rs.getString("qa_worker") == null ? "":rs.getString("qa_worker"));
+					json.put("qa_status", rs.getString("qa_status"));
 					
 					JSONArray refFeaturesArr = new JSONArray();
 					int refPoiCount = 0 ;  
@@ -899,7 +909,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 					
 					//查询关联poi根据pid 
 					json.put("refFeatures", refFeaturesArr);
-					json.put("refCount", refPoiCount);
+					//json.put("refCount", refPoiCount);
 					
 					
 					results.add(json);

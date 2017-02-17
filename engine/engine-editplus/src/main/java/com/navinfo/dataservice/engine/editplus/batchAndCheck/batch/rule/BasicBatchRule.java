@@ -5,12 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 
 public abstract class BasicBatchRule {
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	private BatchRuleCommand batchRuleCommand;
 	private BatchRule batchRule;
 	public Map<String,Map<Long, BasicObj>> myReferDataMap=new HashMap<String, Map<Long,BasicObj>>();

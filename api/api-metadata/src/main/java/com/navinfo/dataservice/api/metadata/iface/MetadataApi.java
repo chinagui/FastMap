@@ -296,5 +296,6 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public List<String> searchByErrorName(String name) throws Exception;
+    public List<String> queryAdRack(int type) throws Exception;
 
 }

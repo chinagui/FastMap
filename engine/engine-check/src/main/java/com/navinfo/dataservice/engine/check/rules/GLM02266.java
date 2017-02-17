@@ -133,7 +133,7 @@ public class GLM02266 extends baseRule{
 			//CRFO是否存在满足条件的link
 			if(isRdObjectShouldBeNamed(rdObjectPid)){
 				//CRFO是否只存在一组名称
-				if(checkRdObject(rdObjectPid)){
+				if(getRdObjectNameNum(rdObjectPid)!=1){
 					String target = "[RD_LINK," + linkPid + "]";
 					this.setCheckResult("", target, 0);
 					return;
@@ -149,28 +149,23 @@ public class GLM02266 extends baseRule{
 	 */
 	private List<Integer> getRdObjectPidList(int linkPid) throws SQLException {
 			//该link所在的有landmark的crfo
-			String sql = "SELECT ROI1.PID FROM RD_OBJECT_INTER ROI1, RD_INTER_LINK RIL1,RD_OBJECT_NAME RON1"
+			String sql = "SELECT ROI1.PID FROM RD_OBJECT_INTER ROI1, RD_INTER_LINK RIL1"
 					+ " WHERE RIL1.LINK_PID = " + linkPid
 					+ " AND RIL1.PID = ROI1.INTER_PID"
-					+ " AND RON1.PID = ROI1.PID"
 					+ " AND ROI1.U_RECORD <> 2"
 					+ " AND RIL1.U_RECORD <> 2"
-					+ " AND RON1.U_RECORD <> 2"
 					+ " UNION "
-					+ "SELECT ROR1.PID FROM RD_OBJECT_ROAD ROR1, RD_ROAD_LINK RRL1,RD_OBJECT_NAME RON1"
+					+ "SELECT ROR1.PID FROM RD_OBJECT_ROAD ROR1, RD_ROAD_LINK RRL1"
 					+ " WHERE RRL1.LINK_PID = " + linkPid
 					+ " AND RRL1.PID = ROR1.ROAD_PID"
-					+ " AND RON1.PID = ROR1.PID"
 					+ " AND ROR1.U_RECORD <> 2"
 					+ " AND RRL1.U_RECORD <> 2"
-					+ " AND RON1.U_RECORD <> 2"
 					+ " UNION "
-					+ "SELECT ROL1.PID FROM RD_OBJECT_LINK ROL1,RD_OBJECT_NAME RON1"
+					+ "SELECT ROL1.PID FROM RD_OBJECT_LINK ROL1"
 					+ " WHERE ROL1.LINK_PID = " + linkPid
-					+ " AND RON1.PID = ROL1.PID"
-					+ " AND ROL1.U_RECORD <> 2"
-					+ " AND RON1.U_RECORD <> 2";
+					+ " AND ROL1.U_RECORD <> 2";
 			
+			log.info("RdObject后检查GLM02266:" + sql);
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
 			List<Integer> rdObjectPidList=new ArrayList<Integer>();
@@ -188,13 +183,21 @@ public class GLM02266 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdObjectName(RdObjectName rdObjectName) throws Exception {
+		boolean checkFlg = false;
 		//删除RdObjectName
 		if(rdObjectName.status().equals(ObjStatus.DELETE)){
+			checkFlg = true;
+		}
+		//新增CRFO名称
+		if(rdObjectName.status().equals(ObjStatus.INSERT)){
+			checkFlg = true;
+		}
+		if(checkFlg){
 			//CRFO是否存在满足条件的link
 			boolean flg = isRdObjectShouldBeNamed(rdObjectName.getPid());
 			if(flg){
 				//CRFO是否只存在一组名称
-				if(checkRdObject(rdObjectName.getPid())){
+				if(getRdObjectNameNum(rdObjectName.getPid())!=1){
 					String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
 					this.setCheckResult("", target, 0);
 				}
@@ -207,21 +210,24 @@ public class GLM02266 extends baseRule{
 	 * @throws Exception 
 	 * CRFO是否只存在一组名称
 	 */
-	private boolean checkRdObject(int pid) throws Exception {
+	private int getRdObjectNameNum(int pid) throws Exception {
+		int num = 0;
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT COUNT(1) FROM RD_OBJECT_NAME RON WHERE RON.U_RECORD <> 2  AND RON.PID = " + pid +" GROUP BY RON.NAME_GROUPID");
+		sb.append("SELECT COUNT(1) NUM FROM RD_OBJECT_NAME RON WHERE RON.U_RECORD <> 2  AND RON.PID = " + pid +" GROUP BY RON.NAME_GROUPID");
 		
 		String sql = sb.toString();
 		log.info("RdObject后检查GLM02266:" + sql);
 		
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
+		ResultSet resultSet = pstmt.executeQuery();
 		
-		if(Integer.parseInt(resultList.get(0).toString())!=1){
-			return true;
+		if (resultSet.next()){
+			num = resultSet.getInt("NUM");
 		}
-		return false;
+		resultSet.close();
+		pstmt.close();
+
+		return num;
 		
 	}
 
@@ -277,7 +283,7 @@ public class GLM02266 extends baseRule{
 		sb.append(" AND RRL.U_RECORD <> 2");
 		sb.append(" AND ROR.PID = "  + pid + ")");
 		
-		
+		log.info("RdObject后检查GLM02266:" + sb.toString());
 		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
 		ResultSet resultSet = pstmt.executeQuery();
 

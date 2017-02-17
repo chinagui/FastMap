@@ -3,18 +3,21 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 
 /**
- * 检查条件： 非删除（根据履历判断删除） 检查原则：
- * 1.收费标准（IX_POI_PARKING.TOLL_STD)为5时,停车备注(IX_POI_PARKING.REMARK)应该是“含0，
- * 且不含1、2、3、4、5、6”，否则报log:收费标准为免费，停车场备注不为无条件免费。
- * 
- * @author gaopengrong
+ * @ClassName FMYW20227
+ * @author Han Shaoming
+ * @date 2017年2月13日 下午10:18:28
+ * @Description TODO
+ * 检查条件：    lifecycle！=1
+ * 检查原则：
+ * 1.收费标准（parkings.tollStd)为5,停车场收费备注(parkings.remark)的值必须包含0，则报log
  */
 public class FMYW20227 extends BasicCheckRule {
 
@@ -25,28 +28,35 @@ public class FMYW20227 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		IxPoiObj poiObj = (IxPoiObj) obj;
-		IxPoi poi = (IxPoi) poiObj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
-		List<IxPoiParking> parkings = poiObj.getIxPoiParkings();
-		for (IxPoiParking parking : parkings) {
-			String tollStd = parking.getTollStd();
-
-			if ("5".equals(tollStd)) {
-				String remark = parking.getRemark();
-				if (remark.indexOf("0") < 0) {
-					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-							"收费标准为免费，停车场备注不为无条件免费");
-				} else if (remark.indexOf("1") >= 0 || remark.indexOf("2") >= 0 || remark.indexOf("3") >= 0
-						|| remark.indexOf("4") >= 0 || remark.indexOf("5") >= 0 || remark.indexOf("6") >= 0) {
-					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-							"收费标准为免费，停车场备注不为无条件免费");
+		if(obj.objName().equals(ObjectName.IX_POI)){
+			IxPoiObj poiObj=(IxPoiObj) obj;
+			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			List<IxPoiParking> ixPoiParkings = poiObj.getIxPoiParkings();
+			//错误数据
+			if(ixPoiParkings==null || ixPoiParkings.isEmpty()){return;}
+			boolean flag = false;
+			for (IxPoiParking ixPoiParking : ixPoiParkings) {
+				//收费标准
+				String tollStd = ixPoiParking.getTollStd();
+				if(tollStd == null){return;}
+				List<Integer> tollStds = StringUtils.getIntegerListByStr(tollStd.replaceAll("\\|", ","));
+				if(tollStds.contains(5)){
+					String remark = ixPoiParking.getRemark();
+					if(remark == null){
+						flag = true;
+						break;
+					}else {
+						List<Integer> remarks = StringUtils.getIntegerListByStr(remark.replaceAll("\\|", ","));
+						if(!remarks.contains(0)){
+							flag = true;
+							break;
+						}
+					}
 				}
 			}
-
+			if(flag){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+			}
 		}
-
 	}
 }

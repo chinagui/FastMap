@@ -3,7 +3,11 @@ package com.navinfo.dataservice.impcore;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
@@ -13,7 +17,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
+import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -80,6 +88,51 @@ public class Day2MonPoiLogSelectorTest {
 			DbUtils.commitAndCloseQuietly(dailyConn);	
 		}
 
+	}
+	@Test
+	public void testGetMesh() throws Exception {
+		ManApi manApi = (ManApi)ApplicationContextUtil
+				.getBean("manApi");
+		MetadataApi metaApi = (MetadataApi)ApplicationContextUtil
+				.getBean("metadataApi");
+		
+		
+		//确定需要日落月的大区
+		List<Region> regions = null;
+		regions = manApi.queryRegionList();
+		System.out.println("确定日落月大区库个数："+regions.size()+"个。");
+		//获取region对应的省份
+		List<CpRegionProvince> regionProvs = manApi.listCpRegionProvince();
+		Map<Integer,Set<Integer>> adminMap = new HashMap<Integer,Set<Integer>>();
+		for(CpRegionProvince cp:regionProvs){
+			if(adminMap.containsKey(cp.getRegionId())){
+				adminMap.get(cp.getRegionId()).add(cp.getAdmincode());
+			}else{
+				Set<Integer> codes = new HashSet<Integer>();
+				codes.add(cp.getAdmincode());
+				adminMap.put(cp.getRegionId(), codes);
+			}
+		}
+		//开始分配
+		for(Region region:regions){
+			//获取region包含的省份
+			Set<Integer> admins = adminMap.get(region.getRegionId());
+			//过去大区库内的关闭图幅并转换成girds
+			List<Mesh4Partition> meshes = metaApi.queryMeshes4PartitionByAdmincodes(admins);
+			List<Integer> filterGrids = new ArrayList<Integer>();
+			for(Mesh4Partition m:meshes){
+				if(m.getDay2monSwitch()==0){
+					int mId = m.getMesh();
+					for(int i=0;i<4;i++){
+						for(int j=0;j<4;j++){
+							filterGrids.add(mId*100 + i*10+ j);
+						}
+					}
+				}
+			}
+			System.out.println(filterGrids);
+		}
+		
 	}
 
 }

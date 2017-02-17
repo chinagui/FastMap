@@ -345,7 +345,7 @@ public class DefaultObjImportor extends AbstractOperation{
 							||"audioes".equals(subRowName)){
 						if((attValue==null && (!(attValue instanceof JSONNull)))
 								||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
-								||"photoId".equals(attName)||"rowId".equals(attName)
+								||"fccPid".equals(attName)||"rowId".equals(attName)
 								||"videoId".equals(attName)||"audioId".equals(attName)){
 							log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 							continue;

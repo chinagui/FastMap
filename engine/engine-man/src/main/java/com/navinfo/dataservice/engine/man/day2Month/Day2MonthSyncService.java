@@ -79,7 +79,7 @@ public class Day2MonthSyncService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String sql = "select * from (select sync_id,region_id,sync_time,sync_status,job_id from  fm_day2month_sync where city_Id=? and sync_status=? order by sync_time desc) where rownum=1 ";
+			String sql = "select * from (select sync_id,region_id,sync_time,sync_status,job_id from  fm_day2month_sync where region_Id=? and sync_status=? order by sync_time desc) where rownum=1 ";
 			ResultSetHandler<FmDay2MonSync> rsh = new ResultSetHandler<FmDay2MonSync>(){
 
 				@Override

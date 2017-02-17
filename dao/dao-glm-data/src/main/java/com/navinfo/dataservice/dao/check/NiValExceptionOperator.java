@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -527,7 +528,6 @@ public class NiValExceptionOperator {
 
 		conn.setAutoCommit(false);
 		try {
-			Result result = null;
 
 			if (oldType == 0) {
 				if (type == 3) {
@@ -535,7 +535,7 @@ public class NiValExceptionOperator {
 					this.insertForException(md5, 1);
 				} else {
 					// 转例外
-					this.insertForCkException(md5, type, 1, result);
+					this.insertForCkException(md5, type, 1);
 
 				}
 				// 删除结果信息
@@ -547,7 +547,7 @@ public class NiValExceptionOperator {
 				if (type == 0) {
 					this.insertForException(md5, 0);
 				} else {
-					this.insertForCkException(md5, type, 0, result);
+					this.insertForCkException(md5, type, 0);
 
 				}
 				this.delValExceptionHis(md5);
@@ -556,19 +556,19 @@ public class NiValExceptionOperator {
 			} else {
 				if (type == 0) {
 					// 删除例外信息 0 处理exception信息
-					this.delForCkException(md5, 2, result);
+					this.delForCkException(md5, 2);
 
 				}
 				if (type == 1||type ==2) {
 					// 更新例外信息
-					this.updateForCkException(md5, type, result);
+					this.updateForCkException(md5, type);
 				}
 				if (type == 3) {
 					// 删除例外信息 1处理his 信息
-					this.delForCkException(md5, 3, result);
+					this.delForCkException(md5, 3);
 				}
 			}
-			this.recordLogForCkException(result);
+			
 			conn.commit();
 		} catch (Exception e) {
 			throw e;
@@ -625,7 +625,7 @@ public class NiValExceptionOperator {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void delForCkException(String md5, int tableFlag, Result result)
+	private void delForCkException(String md5, int tableFlag)
 			throws Exception {
 		CkExceptionSelector selector = new CkExceptionSelector(conn);
 		CkException ckexception = selector.loadById(md5, false);
@@ -633,9 +633,10 @@ public class NiValExceptionOperator {
 		// 删除ck_exception 插入到ni_val_exception
 		this.delCkExceptionGrid(md5);
 		this.delCkException(md5);
-		result = new Result();
+		/*Result result = new Result();
 		result.insertObject(ckexception, ObjStatus.DELETE,
 				ckexception.getExceptionId());
+		this.recordLogForCkException(result,OperType.DELETE);*/
 	}
 
 	/***
@@ -648,8 +649,7 @@ public class NiValExceptionOperator {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void insertForCkException(String md5, int type, int tableFlag,
-			Result result) throws Exception {
+	private void insertForCkException(String md5, int type, int tableFlag) throws Exception {
 		NiValExceptionHistory exceptionHis = null;
 		NiValException exception = null;
 		CkException ckexception = new CkException();
@@ -672,9 +672,10 @@ public class NiValExceptionOperator {
 		ckexception.setRowId(UuidUtils.genUuid());
 		this.insertCkException(pid, type, ckexception.rowId(), md5,tableFlag);
 		this.insertCkExceptionGrid(ckexception.rowId(), md5,tableFlag);
-		result = new Result();
+	/*	Result result = new Result();
 		result.insertObject(ckexception, ObjStatus.INSERT,
 				ckexception.getExceptionId());
+		this.recordLogForCkException(result,OperType.CREATE);*/
 	}
 
 	/**
@@ -926,15 +927,16 @@ public class NiValExceptionOperator {
 		}
 	}
 
-	private void updateForCkException(String md5, int type, Result result)
+	private void updateForCkException(String md5, int type)
 			throws Exception {
 		CkExceptionSelector selector = new CkExceptionSelector(conn);
 		CkException ckexception = selector.loadById(md5, false);
 		this.updateCkException(type, md5);
 		ckexception.changedFields().put("status", type);
-		result = new Result();
+		/*Result result = new Result();
 		result.insertObject(ckexception, ObjStatus.UPDATE,
 				ckexception.getExceptionId());
+		this.recordLogForCkException(result,OperType.UPDATE);*/
 
 	}
 
@@ -944,13 +946,12 @@ public class NiValExceptionOperator {
 	 * @param result
 	 * @throws Exception
 	 */
-	private void recordLogForCkException(Result result) throws Exception {
+	private void recordLogForCkException(Result result,OperType operType) throws Exception {
 		if (result != null) {
-			System.out.println("--------------log--------------");
 			LogWriter writer = new LogWriter(conn);
 
 			Command command = new Command();
-
+			command.setOperType(operType);
 			writer.generateLog(command, result);
 
 			writer.recordLog(command, result);

@@ -58,9 +58,9 @@ public class FMBATM0102 extends BasicBatchRule {
 					} else {
 						IxPoiName poiName = (IxPoiName) poiObj.createIxPoiName();
 						poiName.setNameGroupid(br.getNameGroupid());
-						poiName.setLangCode(br.getLangCode());
+						poiName.setLangCode(aliasCHIName.getLangCode());
 						poiName.setNameClass(3);
-						poiName.setNameType(2);
+						poiName.setNameType(1);
 						poiName.setName(aliasCHIName.getName());
 					}
 				}

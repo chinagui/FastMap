@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
@@ -264,6 +266,10 @@ public class Operation implements IOperation {
 			if (oldVia == null) {
 				continue;
 			}
+			
+			TreeMap<Integer,IVia> newVias=new TreeMap<Integer,IVia>();
+			
+			TreeMap<Integer, IVia> nextVias=new TreeMap<Integer,IVia>();
 
 			// 与进入线或前一个经过线的连接点
 			int connectionNodePid = 0;
@@ -313,6 +319,8 @@ public class Operation implements IOperation {
 
 					result.insertObject(newVia, ObjStatus.INSERT,
 							newVia.getPid());
+					
+					newVias.put(newVia.getSeqNum(), newVia);
 				}
 
 			} else {
@@ -330,6 +338,8 @@ public class Operation implements IOperation {
 
 					result.insertObject(newVia, ObjStatus.INSERT,
 							newVia.getPid());
+					
+					newVias.put(newVia.getSeqNum(), newVia);
 				}
 			}
 
@@ -344,8 +354,15 @@ public class Operation implements IOperation {
 							via.getSeqNum() + newLinks.size() - 1);
 
 					result.insertObject(via, ObjStatus.UPDATE, via.getPid());
+					
+					nextVias.put(via.getSeqNum(), via);
 				}
 			}
+			
+			String tableNamePid = oldVia.tableName() + oldVia.getPid()
+					+ oldVia.getGroupId();
+
+			result.breakVia(tableNamePid, oldVia.getSeqNum(), newVias, nextVias);
 		}
 	}
 	

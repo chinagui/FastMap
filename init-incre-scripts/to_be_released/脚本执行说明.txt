@@ -1,4 +1,4 @@
-1. fm_sys/xxx.sql
-	功能：xxxxxx
-	目标库：fm_sys
-	author：xxx
+﻿1. fm_man/init_fmman_db.sql.sql
+	功能：过渡期管理规格升级
+	目标库：fm_man
+	author：张晓毅

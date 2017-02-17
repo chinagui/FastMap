@@ -32,7 +32,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
-import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.scPartitionMeshlist;
+import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.ScPartitionMeshlistSelector;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
 import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
@@ -91,10 +91,11 @@ public class MetadataApiImpl implements MetadataApi {
 	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
 	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
 	 * @throws Exception
+	 * type:1-POI 地址,2-POI 名称及其他
 	 */
 	@Override
-	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception{
-		return ScSensitiveWords.getInstance().scSensitiveWordsMap();
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap(int type) throws Exception{
+		return ScSensitiveWords.getInstance().scSensitiveWordsMap(type);
 	}
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
@@ -569,7 +570,7 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
-	public List<Map<String, Object>> searchByErrorName(String name) throws Exception {
+	public List<String> searchByErrorName(String name) throws Exception {
 		return ScPointAdminarea.getInstance().searchByErrorName(name);
 	}
 
@@ -577,13 +578,15 @@ public class MetadataApiImpl implements MetadataApi {
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> listMeshes4Partition()throws Exception{
-		return scPartitionMeshlist.getInstance().listMeshes4Partition();
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.listMeshes4Partition();
 	}
 	/**
 	 * cp_meshlist,sc_partition_meshlist查询图幅相关
 	 */
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
-		return scPartitionMeshlist.getInstance().queryMeshes4PartitionByAdmincodes(admincodes);
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.queryMeshes4PartitionByAdmincodes(admincodes);
 	}
 
 }

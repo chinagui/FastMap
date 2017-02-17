@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -164,9 +166,14 @@ public class Operation implements IOperation {
             List<RdVariableSpeedVia> insertVias = new ArrayList<>();
             List<RdVariableSpeedVia> updateVias = new ArrayList<>();
             boolean hasFindStartLink = false;
+            
+            RdVariableSpeedVia oldVia=null;
+            
             for (IRow row : viaList) {
                 RdVariableSpeedVia via = (RdVariableSpeedVia) row;
                 if (via.getLinkPid() == oldLink.getPid()) {
+                	
+					oldVia = via;
                     // 删除原始线作为经过线的情况
                     result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
                     int oldSNodePid = oldLink.getsNodePid();
@@ -196,10 +203,30 @@ public class Operation implements IOperation {
                 }
             }
             if (hasFindStartLink) {
+            	
+				TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+				TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
+            	
                 for (RdVariableSpeedVia via : insertVias)
+                {
                     result.insertObject(via, ObjStatus.INSERT, via.getVspeedPid());
+                    
+                    newVias.put(via.getSeqNum(), via);
+                }
                 for (RdVariableSpeedVia via : updateVias)
+                {
                     result.insertObject(via, ObjStatus.UPDATE, via.getVspeedPid());
+                    
+                    nextVias.put(via.getSeqNum(), via);
+                }
+                
+				String tableNamePid = oldVia.tableName()
+						+ oldVia.getVspeedPid();
+
+				result.breakVia(tableNamePid, oldVia.getSeqNum(), newVias,
+						nextVias);
+    			
             } else {
                 RdVariableSpeedVia sourceVia = selector.loadRdVariableSpeedVia(oldLink.pid(), true).get(0);
                 for (IRow row : viaList) {

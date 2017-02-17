@@ -16,7 +16,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
- * @ClassName: GLM01411
+ * @ClassName: GLM01278
  * @author zhangxiaolong
  * @date 2017年2月7日
  * @Description: 单方向的路只能制作单方向的UsageFee，并且UsageFee的通行方向应与Link的通行方向一致，否则报log
@@ -48,7 +48,7 @@ public class GLM01278 extends baseRule {
 			sb.append(
 					" AND RL.DIRECT <> 1 AND RLL.TYPE = 7 AND RL.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND RLL.LIMIT_DIR <> RL.DIRECT   ");
 
-			logger.info("RdLink后检查GLM01411 check1-> SQL:" + sb.toString());
+			logger.info("RdLink后检查GLM01278 check1-> SQL:" + sb.toString());
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();

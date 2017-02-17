@@ -9,14 +9,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RdVariableSpeedIA 
@@ -24,7 +25,7 @@ import net.sf.json.JSONObject;
 * @date 2016年8月15日 下午5:17:19 
 * @Description: TODO
 */
-public class RdVariableSpeedVia implements IRow{
+public class RdVariableSpeedVia implements IRow,IVia{
 
 	private int vspeedPid ;//可变限速号码
 
@@ -190,10 +191,12 @@ public class RdVariableSpeedVia implements IRow{
 		this.linkPid = linkPid;
 	}
 
+	@Override
 	public int getSeqNum() {
 		return seqNum;
 	}
 
+	@Override
 	public void setSeqNum(int seqNum) {
 		this.seqNum = seqNum;
 	}

@@ -33,8 +33,7 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
-import com.navinfo.dataservice.engine.man.inforMan.InforManService;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -517,19 +516,31 @@ public class ProgramService {
 						JSONArray monthlyProgress=new JSONArray();
 						for(Object i:selectParam1){
 							int tmp=(int) i;
-							if(tmp==1||tmp==2||tmp==3){collectProgress.add(tmp);}
-							if(tmp==4||tmp==5||tmp==6){dailyProgress.add(tmp-3);}
-							if(tmp==7||tmp==8||tmp==9){monthlyProgress.add(tmp-6);}
+							if(tmp==1||tmp==2){collectProgress.add(tmp);}
+							if(tmp==3){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" COLLECT_STAT=3";
+							}
+							if(tmp==4||tmp==5){dailyProgress.add(tmp-3);}
+							if(tmp==6){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" daily_STAT=3";
+							}
+							if(tmp==7||tmp==8){monthlyProgress.add(tmp-6);}
+							if(tmp==9){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" monthly_STAT=3";
+							}
 						}
 						if(!collectProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" PROGRAM_LIST.collect_Progress IN ("+collectProgress.join(",")+")";}
+							statusSql+=" (COLLECT_STAT!=3 AND PROGRAM_LIST.collect_Progress IN ("+collectProgress.join(",")+"))";}
 						if(!dailyProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" PROGRAM_LIST.daily_Progress IN ("+dailyProgress.join(",")+")";}
+							statusSql+=" (daily_STAT!=3 AND PROGRAM_LIST.daily_Progress IN ("+dailyProgress.join(",")+"))";}
 						if(!monthlyProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
-							statusSql+=" PROGRAM_LIST.monthly_Progress IN ("+monthlyProgress.join(",")+")";}
+							statusSql+=" (monthly_STAT!=3 AND PROGRAM_LIST.monthly_Progress IN ("+monthlyProgress.join(",")+"))";}
 					}
 				}
 			}
@@ -545,6 +556,9 @@ public class ProgramService {
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
+					+ "       0                   COLLECT_STAT,"
+					+ "       0                   DAILY_STAT,"
+					+ "       0                   MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
 					+ "       F.COLLECT_PERCENT,"
@@ -574,6 +588,20 @@ public class ProgramService {
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+					+ "         WHEN 0 THEN 2"
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END END COLLECT_STAT,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+					+ "         WHEN 0 THEN 2 "
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END"
+					+ "       END DAILY_STAT,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE 1 END) "
+					+ "         WHEN 0 THEN 2"
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END"
+					+ "       END MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
 					+ "       F.COLLECT_PERCENT,"
@@ -584,16 +612,21 @@ public class ProgramService {
 					+ "       F.MONTHLY_PROGRESS,"
 					+ "       F.ROAD_PLAN_TOTAL,"
 					+ "       F.POI_PLAN_TOTAL"
-					+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
+					+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
 					+ " WHERE C.CITY_ID = P.CITY_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+					+ "   AND P.PROGRAM_ID = T.PROGRAM_ID"
 					+ "   AND P.LATEST = 1"
 					+ "   AND P.STATUS = 1"
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
 					+ "           AND T.LATEST = 1"
-					+ "           AND T.STATUS !=0)),"
+					+ "           AND T.STATUS !=0)"
+					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.CITY_NAME,C.CITY_ID,F.PERCENT,F.DIFF_DATE,"
+					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
+					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS,"
+					+ "            F.MONTHLY_PERCENT,F.MONTHLY_PROGRESS,F.ROAD_PLAN_TOTAL,F.POI_PLAN_TOTAL),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
 					+ "    FROM PROGRAM_LIST"
@@ -612,7 +645,7 @@ public class ProgramService {
 				    int total=0;
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();
-						map.put("programID", rs.getInt("PROGRAM_ID"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						if(rs.getInt("TYPE")==1){
 							map.put("cityId", rs.getInt("CITY_ID"));
@@ -636,6 +669,7 @@ public class ProgramService {
 						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 						map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 						map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						total=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -909,7 +943,7 @@ public class ProgramService {
 			    int total=0;
 				while(rs.next()){
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("programID", rs.getInt("PROGRAM_ID"));
+					map.put("programId", rs.getInt("PROGRAM_ID"));
 					map.put("name", rs.getString("NAME"));
 					if(rs.getInt("TYPE")==1){
 						map.put("cityId", rs.getInt("CITY_ID"));
@@ -920,6 +954,7 @@ public class ProgramService {
 					map.put("planStatus", rs.getInt("PLAN_STATUS"));
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
+					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -961,9 +996,17 @@ public class ProgramService {
 						JSONArray collectProgress=new JSONArray();
 						JSONArray dailyProgress=new JSONArray();
 						for(Object i:selectParam1){
-							int tmp=(int) i;
-							if(tmp==1||tmp==2||tmp==3){collectProgress.add(tmp);}
-							if(tmp==4||tmp==5||tmp==6){dailyProgress.add(tmp-3);}
+							int tmp=(int)i;
+							if(tmp==1||tmp==2){collectProgress.add(tmp);}
+							if(tmp==3){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" COLLECT_STAT=3";
+							}
+							if(tmp==4||tmp==5){dailyProgress.add(tmp-3);}
+							if(tmp==6){
+								if(!statusSql.isEmpty()){statusSql+=" or ";}
+								statusSql+=" daily_STAT=3";
+							}
 						}
 						if(!collectProgress.isEmpty()){
 							if(!statusSql.isEmpty()){statusSql+=" or ";}
@@ -986,6 +1029,9 @@ public class ProgramService {
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
+					+ "       0                   COLLECT_STAT,"
+					+ "       0                   DAILY_STAT,"
+					+ "       0                   MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
 					+ "       F.COLLECT_PERCENT,"
@@ -1011,22 +1057,40 @@ public class ProgramService {
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+					+ "         WHEN 0 THEN 2"
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END END COLLECT_STAT,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
+					+ "         WHEN 0 THEN 2 "
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 0 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END"
+					+ "       END DAILY_STAT,"
+					+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE 1 END) "
+					+ "         WHEN 0 THEN 2"
+					+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
+					+ "            WHEN 0 THEN 3 ELSE 2 END"
+					+ "       END MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
 					+ "       F.COLLECT_PERCENT,"
 					+ "       F.COLLECT_PROGRESS,"
 					+ "       F.DAILY_PERCENT,"
 					+ "       F.DAILY_PROGRESS"
-					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
+					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 					+ "   AND P.LATEST = 1"
 					+ "   AND P.STATUS = 1"
 					+ "   AND EXISTS (SELECT 1"
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
 					+ "           AND T.LATEST = 1"
-					+ "           AND T.STATUS = 1)),"
+					+ "           AND T.STATUS = 1)"
+					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
+					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
+					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
 					+ "    FROM PROGRAM_LIST"
@@ -1045,7 +1109,7 @@ public class ProgramService {
 				    int total=0;
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();
-						map.put("programID", rs.getInt("PROGRAM_ID"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
@@ -1061,6 +1125,7 @@ public class ProgramService {
 						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 						map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 						map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						total=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(map);
 					}
@@ -1181,7 +1246,7 @@ public class ProgramService {
 			    int total=0;
 				while(rs.next()){
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("programID", rs.getInt("PROGRAM_ID"));
+					map.put("programId", rs.getInt("PROGRAM_ID"));
 					map.put("name", rs.getString("PROGRAM_NAME"));
 					if(rs.getInt("TYPE")==1){
 						map.put("cityId", rs.getInt("CITY_ID"));
@@ -1197,6 +1262,7 @@ public class ProgramService {
 					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
+					map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1292,7 +1358,7 @@ public class ProgramService {
 	}
 	
 	private static ResultSetHandler<Page> getCloseQuery(final int currentPageNum,final int pageSize){
-		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		final String version=SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 		ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 			public Page handle(ResultSet rs) throws SQLException {
 				List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -1301,7 +1367,7 @@ public class ProgramService {
 			    int total=0;
 				while(rs.next()){
 					Map<String, Object> map = new HashMap<String, Object>();
-					map.put("programID", rs.getInt("PROGRAM_ID"));
+					map.put("programId", rs.getInt("PROGRAM_ID"));
 					map.put("name", rs.getString("PROGRAM_NAME"));
 					if(rs.getInt("TYPE")==1){
 						map.put("cityId", rs.getInt("CITY_ID"));
@@ -1316,6 +1382,7 @@ public class ProgramService {
 					map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
 					map.put("actualStartDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_START_DATE")));
 					map.put("actualEndDate", DateUtils.dateToString(rs.getTimestamp("ACTUAL_END_DATE")));
+					map.put("version", version);
 					total=rs.getInt("TOTAL_RECORD_NUM");
 					list.add(map);
 				}
@@ -1363,11 +1430,11 @@ public class ProgramService {
 		return page;
 	}
 		
-	public Page list(int programType, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page list(int type, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			if(programType==4){
+			if(type==4){
 				//情报任务查询列表
 				return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
 			}else{
@@ -1417,7 +1484,7 @@ public class ProgramService {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> map = new HashMap<String, Object>();
 					while(rs.next()){
-						map.put("programID", rs.getInt("PROGRAM_ID"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
@@ -1437,6 +1504,7 @@ public class ProgramService {
 						map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
 						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
 						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return map;
 					}
 					return map;
@@ -1466,7 +1534,7 @@ public class ProgramService {
 					List<Map<String, Object>> mapList = new ArrayList<Map<String, Object>>();
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();
-						map.put("programID", rs.getInt("PROGRAM_ID"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						mapList.add(map);
 					}
@@ -1492,7 +1560,17 @@ public class ProgramService {
 			//发送消息
 			JSONObject condition=new JSONObject();
 			condition.put("programIds",programIds);
+			JSONArray status=new JSONArray();
+			status.add(2);
+			condition.put("status",status);
 			List<Program> programs = queryProgramTable(conn, condition);
+			List<Integer> inforPrograms=new ArrayList<Integer>();
+			for(Program p:programs){
+				if(p.getType()==4){
+					inforPrograms.add(p.getProgramId());
+				}
+			}
+			splitInforTasks(conn,inforPrograms,userId);
 			/*项目发布1.所有生管角色 新增项目：XXX(项目名称)，请关注*/			
 			String msgTitle="项目发布";
 			List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
@@ -1520,6 +1598,83 @@ public class ProgramService {
 		}
 		return "项目批量发布"+programIds.size()+"个成功，0个失败";
 		
+	}
+	/**
+	 * 情报项目发布时，自动创建两条任务：采集任务和日编任务，均为草稿状态（若情报跨大区，则按照大区拆分成多个任务）
+	 * @param conn
+	 * @param programIds
+	 * @param userId
+	 * @throws Exception
+	 */
+	private void splitInforTasks(Connection conn,List<Integer> programIds,final Long userId)throws Exception{
+		try{
+			if(programIds==null||programIds.size()==0){return;}
+			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID"
+					+ "  FROM PROGRAM P, INFOR_GRID_MAPPING M, GRID G"
+					+ " WHERE P.INFOR_ID = M.INFOR_ID"
+					+ "   AND M.GRID_ID = G.GRID_ID"
+					+ "   AND P.PROGRAM_ID IN "+programIds.toString().replace("[", "(").replace("]", ")")
+					+ " ORDER BY P.PROGRAM_ID, G.REGION_ID";
+			
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> list = new ArrayList<Task>();
+					Map<Integer, Integer> gridMap =new HashMap<Integer, Integer>();
+					int programId=0;
+					int regionId=0;
+					while(rs.next()){
+						int programIdTmp=rs.getInt("PROGRAM_ID");
+						int regionIdTmp=rs.getInt("REGION_ID");
+						if(programId!=programIdTmp||regionId!=regionIdTmp){
+							Task collectTask=new Task();
+							collectTask.setProgramId(programId);
+							collectTask.setRegionId(regionId);
+							collectTask.setGridIds(gridMap);
+							collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
+							collectTask.setType(0);
+							list.add(collectTask);
+							Task dailyTask=new Task();
+							dailyTask.setProgramId(programId);
+							dailyTask.setRegionId(regionId);
+							dailyTask.setGridIds(gridMap);
+							dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
+							dailyTask.setType(1);
+							list.add(dailyTask);
+							gridMap =new HashMap<Integer, Integer>();
+							programId=programIdTmp;
+							regionId=regionIdTmp;
+						}
+						gridMap.put(rs.getInt("GRID_ID"), 1);
+					}
+					if(programId!=0){
+						Task collectTask=new Task();
+						collectTask.setProgramId(programId);
+						collectTask.setRegionId(regionId);
+						collectTask.setGridIds(gridMap);
+						collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
+						collectTask.setType(0);
+						list.add(collectTask);
+						Task dailyTask=new Task();
+						dailyTask.setProgramId(programId);
+						dailyTask.setRegionId(regionId);
+						dailyTask.setGridIds(gridMap);
+						dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
+						dailyTask.setType(1);
+						list.add(dailyTask);
+					}
+					return list;
+				}
+	    	};			
+			QueryRunner run=new QueryRunner();
+			List<Task> list=run.query(conn, selectSql, rsHandler);
+			if(list!=null&&list.size()>0){
+				for(Task t:list){TaskService.getInstance().createWithBean(conn, t);}
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	/*项目创建/编辑/关闭
@@ -1626,7 +1781,7 @@ public class ProgramService {
 			}
 		}
 		
-		String selectSql="SELECT P.PROGRAM_ID, P.NAME FROM PROGRAM P where 1=1 "+conditionSql;
+		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE FROM PROGRAM P where 1=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
 			public List<Program> handle(ResultSet rs) throws SQLException {
@@ -1635,6 +1790,8 @@ public class ProgramService {
 					Program map = new Program();
 					map.setProgramId(rs.getInt("PROGRAM_ID"));
 					map.setName(rs.getString("NAME"));
+					map.setInforId(rs.getString("INFOR_ID"));
+					map.setType(rs.getInt("TYPE"));
 					list.add(map);
 				}
 				return list;

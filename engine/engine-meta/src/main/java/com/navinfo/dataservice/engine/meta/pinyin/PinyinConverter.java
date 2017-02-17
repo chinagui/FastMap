@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 
@@ -135,7 +137,10 @@ public class PinyinConverter {
 			}
 
 		}
-
+		
+		if (StringUtils.isEmpty(result)){
+			return "";
+		}
 		return result;
 	}
 	

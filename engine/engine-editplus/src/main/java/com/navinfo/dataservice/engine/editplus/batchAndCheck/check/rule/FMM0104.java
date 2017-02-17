@@ -32,7 +32,7 @@ public class FMM0104 extends BasicCheckRule {
 			List<IxPoiName> names=poiObj.getOriginAliasENGNameList();
 			for (IxPoiName name:names){
 				//存在IX_POI_NAME新增或者修改履历
-				if(name.getHisOpType().equals(OperationType.INSERT)||(name.getHisOpType().equals(OperationType.UPDATE) && name.hisOldValueContains(IxPoiName.NAME))){
+				if((name.getHisOpType().equals(OperationType.UPDATE) && name.hisOldValueContains(IxPoiName.NAME))){
 					String oldNameStr=(String) name.getHisOldValue(IxPoiName.NAME);
 					String newNameStr=name.getName();
 					if(!newNameStr.equals(oldNameStr)){
@@ -41,6 +41,12 @@ public class FMM0104 extends BasicCheckRule {
 						if(standardAliasENGName!=null){
 							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 						}
+					}
+				} else if (name.getHisOpType().equals(OperationType.INSERT)) {
+					long nameGroupId= name.getNameGroupid();
+					IxPoiName standardAliasENGName=poiObj.getStandardAliasENGName(nameGroupId);
+					if(standardAliasENGName!=null){
+						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 					}
 				}
 			}

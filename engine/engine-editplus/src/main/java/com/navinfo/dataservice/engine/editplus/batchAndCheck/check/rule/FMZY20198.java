@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -12,8 +14,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiCarrental;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-
-import net.sf.json.JSONObject;
 
 /**
  * 
@@ -49,8 +49,24 @@ public class FMZY20198 extends BasicCheckRule {
 		List<IxPoiCarrental> carrentals = poiObj.getIxPoiCarrentals();
 
 		// 调用元数据请求接口
-		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		JSONObject characterMap = metaApi.getCharacterMap();
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		Map<String, List<String>> charMap = metadataApi.tyCharacterEgalcharExtGetExtentionTypeMap();
+		List<String> charList = new ArrayList<String>();
+		if (charMap.containsKey("GBK")) {
+			charList.addAll(charMap.get("GBK"));
+		}
+		if (charMap.containsKey("ENG_F_U")) {
+			charList.addAll(charMap.get("ENG_F_U"));
+		}
+		if (charMap.containsKey("ENG_F_L")) {
+			charList.addAll(charMap.get("ENG_F_L"));
+		}
+		if (charMap.containsKey("DIGIT_F")) {
+			charList.addAll(charMap.get("DIGIT_F"));
+		}
+		if (charMap.containsKey("SYMBOL_F")) {
+			charList.addAll(charMap.get("SYMBOL_F"));
+		}
 
 		for (IxPoiCarrental poiCarrental : carrentals) {
 			String openHour = poiCarrental.getOpenHour();
@@ -62,17 +78,9 @@ public class FMZY20198 extends BasicCheckRule {
 			String illegalChar = "";
 
 			for (char c : openHour.toCharArray()) {
-
-				if (!characterMap.has(String.valueOf(c))) {
+				if (!charList.contains(String.valueOf(c))) {
 					illegalChar += c;
-				} else if (characterMap.has(String.valueOf(c))) {
-					String type = characterMap.getString(String.valueOf(c));
-					if (!type.equals("GBK") && !type.equals("ENG_F_U") && !type.equals("ENG_F_L")
-							&& !type.equals("DIGIT_F") && !type.equals("SYMBOL_F")) {
-						illegalChar += c;
-					}
 				}
-
 			}
 			if (!"".equals(illegalChar)) {
 				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),

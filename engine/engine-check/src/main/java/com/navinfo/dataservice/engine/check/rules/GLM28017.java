@@ -55,7 +55,7 @@ public class GLM28017 extends baseRule {
 				RdRoadLink rdRoadLink = (RdRoadLink) obj;
 				check(rdRoadLink.getPid());
 			}
-			//删除CRFI
+			//新增CRFI
 			else if (obj instanceof RdInter) {
 				RdInter rdInter = (RdInter) obj;
 				//获取与该CRFI相关的RdRoadPidList
@@ -82,6 +82,7 @@ public class GLM28017 extends baseRule {
 		sb.append(" AND RRL.LINK_PID = RL.LINK_PID");
 		sb.append(" AND RRL.U_RECORD <> 2 ");
 		sb.append(" AND RL.U_RECORD <> 2");
+		sb.append(" AND RIN.U_RECORD <> 2");
 		String sql = sb.toString();
 		log.info("RdInter后检查GLM28017:" + sql);
 		

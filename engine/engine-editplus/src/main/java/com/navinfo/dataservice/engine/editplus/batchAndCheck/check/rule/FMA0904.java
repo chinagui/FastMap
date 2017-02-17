@@ -45,7 +45,7 @@ public class FMA0904 extends BasicCheckRule {
 				return;
 			}
 			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<String> addrck = metaApi.getAddrck(9, "M");
+			List<String> addrck = metaApi.getAddrck(9, "D");
 			String error = "";
 			if (addrck.contains(place.substring(place.length()-1))) {
 				error = place.substring(place.length()-1);

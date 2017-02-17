@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -48,18 +49,34 @@ public class FMA0903 extends BasicCheckRule {
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		Map<String, Map<String,String>> addrAdminMap = metadataApi.getAddrAdminMap();
 		List<String> errList = new ArrayList<String>();
-		if (addrAdminMap.containsKey(province)&&addrAdminMap.containsKey(city)&&addrAdminMap.containsKey(county)) {
-			if (addrAdminMap.get(province).get("adminLevel").equals("1")) {
-				errList.add(addrAdminMap.get(province).get("admin_id")+":"+province);
+		if (StringUtils.isEmpty(province)) {
+			if (addrAdminMap.containsKey(province)) {
+				if (!addrAdminMap.get(province).get("adminLevel").equals("1")) {
+					errList.add(addrAdminMap.get(province).get("adminId")+":"+province);
+				}
+			} else {
+				errList.add("省名、市名、区县名在 “地址拆分用行政区划对照表”中找不到；");
 			}
-			if (addrAdminMap.get(city).get("adminLevel").equals("2")) {
-				errList.add(addrAdminMap.get(city).get("admin_id")+":"+city);
+		}
+		
+		if (StringUtils.isEmpty(city)) {
+			if (addrAdminMap.containsKey(city)) {
+				if (!addrAdminMap.get(city).get("adminLevel").equals("2")) {
+					errList.add(addrAdminMap.get(city).get("admin_id")+":"+city);
+				}
+			} else {
+				errList.add("省名、市名、区县名在 “地址拆分用行政区划对照表”中找不到；");
 			}
-			if (addrAdminMap.get(county).get("adminLevel").equals("3")) {
-				errList.add(addrAdminMap.get(county).get("admin_id")+":"+county);
+		}
+		
+		if (StringUtils.isEmpty(county)) {
+			if (addrAdminMap.containsKey(county)) {
+				if (!addrAdminMap.get(county).get("adminLevel").equals("3")) {
+					errList.add(addrAdminMap.get(county).get("admin_id")+":"+county);
+				}
+			} else {
+				errList.add("省名、市名、区县名在 “地址拆分用行政区划对照表”中找不到；");
 			}
-		} else {
-			errList.add("省名、市名、区县名在 “地址拆分用行政区划对照表”中找不到；");
 		}
 		
 		if (errList.size()>0) {

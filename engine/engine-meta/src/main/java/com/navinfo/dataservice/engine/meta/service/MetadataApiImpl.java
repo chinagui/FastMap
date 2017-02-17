@@ -250,6 +250,15 @@ public class MetadataApiImpl implements MetadataApi {
 
 		return result;
 	}
+	
+	@Override
+	public String pyConvertHz(String word) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.convertHz(word);
+
+		return result;
+	}
 
 	@Override
 	public JSONObject getMetadataMap() throws Exception {

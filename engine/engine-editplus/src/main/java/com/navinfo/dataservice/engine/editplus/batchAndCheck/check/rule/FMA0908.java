@@ -90,7 +90,7 @@ public class FMA0908 extends BasicCheckRule {
 			}
 		}
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<String> addrck = metaApi.getAddrck(2, "M");
+		List<String> addrck = metaApi.getAddrck(2, "D");
 		boolean isInclude = false;
 		for (String addck:addrck) {
 			if (floor.indexOf(addck)>=0) {

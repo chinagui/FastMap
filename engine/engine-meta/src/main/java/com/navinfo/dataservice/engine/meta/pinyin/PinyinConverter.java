@@ -76,16 +76,79 @@ public class PinyinConverter {
 		return result;
 	}
 
+	public String convertHz(String word) throws Exception {
+
+		String sql = "select py_utils_word.convert_hz_tone(:1,    null,    null) phonetic from dual";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		String result = "";
+
+		Connection conn = null;
+
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, word);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				result = resultSet.getString("phonetic");
+
+			} else {
+				return "";
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return result;
+	}
+	
 	public static void main(String[] args) throws Exception {
 
 		PinyinConverter py = new PinyinConverter();
 		
-		String[] res = py.convert("北京市");
+		String res = py.convertHz("北京市");
 		
 		System.out.println(res);
 
-		System.out.println(res[0]);
-
-		System.out.println(res[1]);
+//		System.out.println(res[0]);
+//
+//		System.out.println(res[1]);
 	}
 }

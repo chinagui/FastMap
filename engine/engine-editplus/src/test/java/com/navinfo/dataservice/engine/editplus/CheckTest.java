@@ -67,8 +67,9 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 64, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
+		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
@@ -79,7 +80,6 @@ public class CheckTest {
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
 		
-//		IxPoiObj poiObj=(IxPoiObj) obj;
 //		IxPoiAddress chiAddress = poiObj.getCHAddress();
 //		ChangeLog logg1=new ChangeLog();
 //		Map<String, Object> oldValues1=new HashMap<String, Object>();
@@ -89,13 +89,23 @@ public class CheckTest {
 //		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
 //		logList1.add(logg1);
 //		chiAddress.setHisChangeLogs(logList1);
-//		
+		
+		IxPoiName name = poiObj.getOfficeOriginCHName();
+		ChangeLog namelogg=new ChangeLog();
+		Map<String, Object> nameOldValues=new HashMap<String, Object>();
+		nameOldValues.put("NAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+		namelogg.setOldValues(nameOldValues);
+		namelogg.setOpType(OperationType.UPDATE);
+		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
+		nameLog.add(namelogg);
+		name.setHisChangeLogs(nameLog);
+		
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-06-02-01");
+		ruleIdList.add("FM-14Sum-12-02-02");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

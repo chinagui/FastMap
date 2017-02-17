@@ -95,7 +95,7 @@ public class GLM02267 extends baseRule{
 					+ " AND RON1.PID = ROL1.PID"
 					+ " AND ROL1.U_RECORD <> 2"
 					+ " AND RON1.U_RECORD <> 2";
-			
+			log.info("RdObject后检查GLM02267:" + sql);
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
 			List<Integer> rdObjectPidList=new ArrayList<Integer>();
@@ -112,7 +112,7 @@ public class GLM02267 extends baseRule{
 	 * @param pid
 	 * @throws Exception 
 	 */
-	private boolean checkRdObject(int pid) throws Exception {
+	private boolean shouldRdObjectHasName(int pid) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("SELECT COUNT(1) FROM (");
@@ -165,7 +165,7 @@ public class GLM02267 extends baseRule{
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 		//不存在名称类型为“1 立交桥名(连接路)”且属性为“15 匝道”或者名称类型为“2 立交桥名(主路)”的link
-		if(Integer.parseInt(resultList.get(0).toString())==0){
+		if(Integer.parseInt(resultList.get(0).toString())!=0){
 			return true;
 		}
 		
@@ -203,7 +203,7 @@ public class GLM02267 extends baseRule{
 			//所有涉及到的有名字的RdObject
 			List<Integer> rdObjectPidList = getRdObjectPidList(rdLinkForm.getLinkPid());
 			for(Integer rdObjectPid:rdObjectPidList){
-				if(checkRdObject(rdObjectPid)){
+				if(!shouldRdObjectHasName(rdObjectPid)){
 					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
 					this.setCheckResult("", target, 0);
 					return;
@@ -333,7 +333,7 @@ public class GLM02267 extends baseRule{
 			//获取所涉及到的有名字的RdObjectPid
 			List<Integer> rdObjectPidList = getRdObjectPidList(rdLinkName.getLinkPid());
 			for(Integer rdObjectPid:rdObjectPidList){
-				if(checkRdObject(rdObjectPid)){
+				if(!shouldRdObjectHasName(rdObjectPid)){
 					String target = "[RD_LINK," + rdLinkName.getLinkPid() + "]";
 					this.setCheckResult("", target, 0);
 					return;
@@ -350,7 +350,7 @@ public class GLM02267 extends baseRule{
 	private void checkRdObjectName(RdObjectName rdObjectName) throws Exception {
 		//新增RdObjectName
 		if(rdObjectName.status().equals(ObjStatus.INSERT)){
-			if(checkRdObject(rdObjectName.getPid())){
+			if(!shouldRdObjectHasName(rdObjectName.getPid())){
 				String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
 				this.setCheckResult("", target, 0);
 				return;

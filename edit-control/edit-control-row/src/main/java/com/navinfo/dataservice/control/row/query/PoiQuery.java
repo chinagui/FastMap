@@ -126,6 +126,7 @@ public class PoiQuery {
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			resultJson = selector.loadPids(false, pidName, type,
 					subtask.getGeometry(), pageSize, pageNum);
+			logger.debug(resultJson);
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

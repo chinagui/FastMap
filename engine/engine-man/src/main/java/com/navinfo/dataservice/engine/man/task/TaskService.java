@@ -26,6 +26,7 @@ import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -280,22 +281,39 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			List<Integer> cmsTaskList=new ArrayList<Integer>();
+			JSONArray commontaskIds=new JSONArray();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
+					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(task.getTaskId());
+					if(phaseList!=null&&phaseList.size()>0){continue;}
+					createCmsProgress(conn,task.getTaskId(),1);
+					createCmsProgress(conn,task.getTaskId(),2);
+					createCmsProgress(conn,task.getTaskId(),3);
+					createCmsProgress(conn,task.getTaskId(),4);
+					cmsTaskList.add(task.getTaskId());
 				}else{
+					commontaskIds.add(task.getTaskId());
 					updatedTaskList.add(task);
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
 				}
 			}
-			
 			//更新task状态
-			TaskOperation.updateStatus(conn, taskIds);
-			
+			TaskOperation.updateStatus(conn, commontaskIds);			
 			//发布消息
 			taskPushMsg(conn,userId,updatedTaskList);
-			
+			conn.commit();
+			for(Integer taskId:cmsTaskList){
+				List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+				Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+				for(Map<String, Integer> phaseTmp:phaseList){
+					phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+				}
+				day2month(conn, phaseIdMap.get(1));
+				tips2Aumark(conn, phaseIdMap.get(2));
+			}
 			return "task批量发布"+total+"个成功，0个失败";
 //			//给作业组leader发送消息
 //			int total = 0;
@@ -1530,6 +1548,13 @@ public class TaskService {
 				int phasestatus=createCmsTask(conn, phaseStatusMap.get(4));
 				if(phasestatus==0){return;}
 				taskUpdateCmsProgress(conn, phaseStatusMap.get(4), phasestatus);
+				curPhase=4;
+			}
+			if(curPhase==4){
+				//更新task状态
+				JSONArray cmsTaskIdArray=new JSONArray();
+				cmsTaskIdArray.add(phase.getTaskId());
+				TaskOperation.updateStatus(conn, cmsTaskIdArray);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1712,7 +1737,29 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+" WHERE PHASE_ID = "+phaseId ;
+			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+",end_date=sysdate WHERE PHASE_ID = "+phaseId ;
+			run.update(conn, selectSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 创建cmsProgress
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public void createCmsProgress(Connection conn,int taskId,int phase) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "INSERT INTO TASK_CMS_PROGRESS P"
+					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
+					+ "VALUES"
+					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL)" ;
 			run.update(conn, selectSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1731,7 +1778,7 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+" WHERE STATUS IN(0,3) AND PHASE_ID = "+phaseId ;
+			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+",start_date=sysdate WHERE STATUS IN(0,3) AND PHASE_ID = "+phaseId ;
 			return run.update(conn, selectSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.lcface.create;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -386,9 +387,9 @@ public class Operation implements IOperation {
         face.setGeometry(g);
         // 缩放计算面积和周长
         g = GeoTranslator.transform(g, 0.00001, 5);
-        Set<String> meshIds = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-        if (meshIds.size() == 1) {
-            face.setMeshId(Integer.parseInt(meshIds.iterator().next()));
+        String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g.getCentroid()).iterator().next();
+        if (StringUtils.isNotEmpty(meshId)) {
+            face.setMeshId(Integer.parseInt(meshId));
         }
         face.setArea(GeometryUtils.getCalculateArea(g));
         face.setPerimeter(GeometryUtils.getLinkLength(g));

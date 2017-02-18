@@ -292,7 +292,7 @@ public class NiValExceptionSelector {
 		StringBuilder sql = null;
 		if (flag == 0) {
 			sql = new StringBuilder(
-					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+					"select a.md5_code,ruleid,situation,\"LEVEL\" level_,0 state,"
 							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
 							+ "worker,qa_worker,qa_status from ni_val_exception a where exists(select 1 from ni_val_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
@@ -300,21 +300,21 @@ public class NiValExceptionSelector {
 		}
 		if (flag == 1) {
 			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+					"select a.md5_code,rule_id as ruleid,situation,status level_,1 state,"
 							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
 
 		}
 		if (flag == 2) {
 			sql = new StringBuilder(
-					"select a.md5_code,rule_id as ruleid,situation,status level_,"
+					"select a.md5_code,rule_id as ruleid,situation,status level_,2 state,"
 							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
-							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
+							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
-							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,"
+							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
 							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
 							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
@@ -383,6 +383,7 @@ public class NiValExceptionSelector {
 			json.put("situation", rs.getString("situation"));
 
 			json.put("rank", rs.getInt("level_"));
+			json.put("status", rs.getInt("state"));
 
 			json.put("targets", rs.getString("targets"));
 
@@ -743,14 +744,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年2月14日 下午8:04:09 
 	 */
-	public JSONObject poiCheckResults(int pid) throws Exception {
+	/*public JSONObject poiCheckResults(int pid) throws Exception {
 
 		StringBuilder sql = new StringBuilder(
 				" select p.pid,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
 						+ "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
 							+ " from ix_poi p  where   p.pid = "+pid+" ");
 		
-		System.out.println("poiCheckResults:  "+ sql);
+//		System.out.println("poiCheckResults:  "+ sql);
 		
 		return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONObject>(){
 
@@ -821,7 +822,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 			}
 		}
 		);
-	}
+	}*/
 	/**
 	 * @Title: poiCheckResultList
 	 * @Description: 根据 pid 查询  exception
@@ -835,14 +836,14 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 		
 		StringBuilder sql = new StringBuilder(
 				"with q1 as( "
-				+ "select a.md5_code,a.ruleid,a.targets,a.information,a.worker ,a.created from ni_val_exception a where  " 
+				+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status from ni_val_exception a where  " 
 					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
 				+ " union all "
-				+ "select c.md5_code,c.rule_id ruleid,c.targets,c.information,c.worker ,c.create_date created from ck_exception c where "
+				+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status from ck_exception c where "
 					+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
 				+ " ), "
 				+ "q2 as ( "
-					+ "select distinct  e.md5_code,e.ruleid,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.created "
+					+ "select distinct  e.md5_code,e.ruleid,e.level_,NVL(to_char(e.targets),'') targets,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.x,e.y,e.created,e.updated,e.qa_worker,e.qa_status "
 						+ " from q1 e "
 						+ " where 1=1 "
 						+ " CONNECT BY LEVEL <= LENGTH(e.targets) - LENGTH(replace(e.targets, '[IX_POI,', '[IX_POI')) "
@@ -865,17 +866,27 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 					
 					JSONObject json = new JSONObject();
 					
-					json.put("id",  rs.getString("md5_code"));
+					json.put("id", rs.getString("md5_code"));
 
 					json.put("ruleid", rs.getString("ruleid"));
 
-					json.put("pid", rs.getInt("pid"));
+					//json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
 
 					json.put("information", rs.getString("information"));
-					
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y") + ")");
+
 					json.put("create_date", rs.getString("created"));
+					json.put("update_date", rs.getString("updated"));
 
 					json.put("worker", rs.getString("worker"));
+					json.put("qa_worker", rs.getString("qa_worker") == null ? "":rs.getString("qa_worker"));
+					json.put("qa_status", rs.getString("qa_status"));
 					
 					JSONArray refFeaturesArr = new JSONArray();
 					int refPoiCount = 0 ;  
@@ -899,7 +910,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 					
 					//查询关联poi根据pid 
 					json.put("refFeatures", refFeaturesArr);
-					json.put("refCount", refPoiCount);
+					//json.put("refCount", refPoiCount);
 					
 					
 					results.add(json);
@@ -940,7 +951,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 								+ "from ix_poi t ,q2 m where t.pid =m.ref_pid"
 						+ " ");*/
 
-		System.out.println("queryRefFeatures sql :  "+ sql);
+//		System.out.println("queryRefFeatures sql :  "+ sql);
 		try {
 			return new QueryRunner().query(conn, sql.toString(), new ResultSetHandler<JSONArray>(){
 
@@ -979,7 +990,7 @@ public Page listCheckResults(JSONObject params, JSONArray tips, JSONArray ruleCo
 							break;
 						}
 						
-						json.put("lifecycle", lifecycle);
+						json.put("state", lifecycle);
 						
 						json.put("linkPid", rs.getInt("link_pid"));
 						

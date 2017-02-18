@@ -42,7 +42,7 @@ public class PoiRelease {
 			jobReq.put("targetDbId", dbId);
 			jobReq.put("gridIds", gridIds);
 			//get poi all check rules
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			/*conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			String sql = "SELECT WM_CONCAT(RULE_CODE) FROM CK_RULE_COP WHERE SUITE_ID='suite1'";
 			String rules = new QueryRunner().queryForString(conn, sql);
 			JSONArray ckRulesJA = new JSONArray();
@@ -50,7 +50,7 @@ public class PoiRelease {
 				ckRulesJA.addAll(Arrays.asList(rules.split(",")));
 			}
 			
-			jobReq.put("checkRules", ckRulesJA);
+			jobReq.put("checkRules", ckRulesJA);*/
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
 			jobId = apiService.createJob("editPoiBaseRelease", jobReq, userId,taskId,

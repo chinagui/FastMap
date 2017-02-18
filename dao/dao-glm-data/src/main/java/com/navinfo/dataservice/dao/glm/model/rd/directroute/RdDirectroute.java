@@ -35,6 +35,8 @@ public class RdDirectroute implements IObj {
 	private int processFlag=1;// 处理标志
 
 	private int relationshipType=1;// 关系类型
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -130,13 +132,13 @@ public class RdDirectroute implements IObj {
 	@Override
 	public ObjStatus status() {
 		// TODO Auto-generated method stub
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
 		// TODO Auto-generated method stub
-
+		status = os;
 	}
 
 	@Override
@@ -243,7 +245,13 @@ public class RdDirectroute implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		//return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override

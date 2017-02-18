@@ -8,19 +8,26 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.inforMan.InforManService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -142,10 +149,10 @@ public class ProduceService {
 					Iterator keys = conditionJson.keys();
 					while (keys.hasNext()) {
 						String key = (String) keys.next();
-						if ("blockManName".equals(key)) {
-							conditionStr+=" and T.BLOCK_MAN_NAME like '%"+conditionJson.getString(key)+"%'";
+						if ("name".equals(key)) {
+							conditionStr+=" and T.NAME like '%"+conditionJson.getString(key)+"%'";
 						}
-						else if("selectParam".equals(key)){
+						if("selectParam".equals(key)){
 							JSONArray selectParamArr=conditionJson.getJSONArray(key);
 							String statuss = selectParamArr.toString();
 							if(statuss != null && StringUtils.isNotEmpty(statuss)){
@@ -158,72 +165,27 @@ public class ProduceService {
 				long pageStartNum = (currentPageNum - 1) * pageSize + 1;
 				long pageEndNum = currentPageNum * pageSize;
 				conn = DBConnector.getInstance().getManConnection();
-				String sql="WITH GRID_LIST AS"//所有状态为开启的子任务的grid
-						+ " (SELECT M.GRID_ID"
-						+ "    FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
-						+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
-						+ "     AND B.BLOCK_ID = M.BLOCK_ID"
-						+ "     AND S.STATUS = 1"
-						+ "     AND S.TYPE IN (3, 4)"
-						+ "     AND S.STAGE = 1"
-						+ "  UNION ALL"
-						+ "  SELECT MM.GRID_ID"
-						+ "    FROM SUBTASK SS, SUBTASK_GRID_MAPPING MM"
-						+ "   WHERE SS.SUBTASK_ID = MM.SUBTASK_ID"
-						+ "     AND SS.STATUS = 1"
-						+ "     AND SS.TYPE IN (3, 4)"
-						+ "     AND SS.STAGE = 1"
-						+ "  UNION ALL"
-						+ "  SELECT M.GRID_ID"
-						+ "  FROM INFOR I, SUBTASK_GRID_MAPPING M, BLOCK_MAN B"
-						+ " WHERE I.TASK_ID = B.TASK_ID"
-						+ "   AND B.BLOCK_MAN_ID = M.SUBTASK_ID"
-						+ "   AND I.FEEDBACK_TYPE = 0),"
-						+ " PRODUCE_LIST AS"//可出品的子任务列表（未出品过）
-						+ " (SELECT S.BLOCK_MAN_ID,"
-						+ "         B.BLOCK_MAN_NAME,"
-						+ "         S.TYPE,"
-						+ "         B.DAY_PRODUCE_PLAN_START_DATE,"
-						+ "         B.DAY_PRODUCE_PLAN_END_DATE,"
-						+ "         NULL                          CREATE_DATE,"
-						+ "         0                             PRODUCE_ID,"
-						+ "         4                             PRODUCE_STATUS,"
-						+ "         0                             CREATE_USER_ID,"
-						+ "         NULL                          CREATE_USER_NAME,"
-						+ "         S.SUBTASK_ID"
-						+ "    FROM SUBTASK S, BLOCK_MAN B"
-						+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
-						+ "     AND S.TYPE = 4"
-						+ "     AND S.STATUS = 0"
-						+ "     AND NOT EXISTS (SELECT 1"
-						+ "            FROM BLOCK_GRID_MAPPING C, GRID_LIST E"
-						+ "           WHERE B.BLOCK_ID = C.BLOCK_ID"
-						+ "             AND C.GRID_ID = E.GRID_ID)"
-						+ "     AND NOT EXISTS"
-						+ "   (SELECT 1 FROM PRODUCE P WHERE S.SUBTASK_ID = P.SUBTASK_ID)"
-						+ "  UNION ALL"//produce产品列表(成功或失败)
-						+ "  SELECT S.BLOCK_MAN_ID,"
-						+ "         B.BLOCK_MAN_NAME,"
-						+ "         S.TYPE,"
-						+ "         B.DAY_PRODUCE_PLAN_START_DATE,"
-						+ "         B.DAY_PRODUCE_PLAN_END_DATE,"
-						+ "         P.CREATE_DATE,"
-						+ "         P.PRODUCE_ID,"
-						+ "         P.PRODUCE_STATUS,"
-						+ "         P.CREATE_USER_ID,"
-						+ "         I.USER_REAL_NAME CREATE_USER_NAME,"
-						+ "         P.SUBTASK_ID"
-						+ "    FROM PRODUCE P, USER_INFO I, SUBTASK S, BLOCK_MAN B"
-						+ "   WHERE P.CREATE_USER_ID = I.USER_ID"
-						+ "     AND P.SUBTASK_ID = S.SUBTASK_ID"
-						+ "     AND S.BLOCK_MAN_ID = B.BLOCK_MAN_ID)"
+				String sql="WITH PRODUCE_LIST AS"
+						+ " (SELECT P.PRODUCE_ID,"
+						+ "       P.PROGRAM_ID,"
+						+ "       G.NAME,"
+						+ "       G.TYPE,"
+						+ "       G.PRODUCE_PLAN_START_DATE,"
+						+ "       G.PRODUCE_PLAN_END_DATE,"
+						+ "       P.CREATE_DATE,"
+						+ "       NVL(P.PRODUCE_STATUS, 0) PRODUCE_STATUS"
+						+ "  FROM PRODUCE P, PROGRAM G"
+						+ " WHERE P.PROGRAM_ID(+) = G.PROGRAM_ID"
+						+ "   AND G.TYPE = 4"
+						+ "   AND G.STATUS = 0"
+						+ "   AND G.LATEST = 1)"
 						+ "SELECT /*+FIRST_ROWS ORDERED*/"
 						+ " T.*, (SELECT COUNT(1) FROM PRODUCE_LIST) AS TOTAL_RECORD_NUM"
 						+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM PRODUCE_LIST T WHERE ROWNUM <= "+pageEndNum+") T"
 						+ " WHERE T.ROWNUM_ >= "+pageStartNum
 						+ conditionStr
 						+ " ORDER BY T.PRODUCE_STATUS              DESC,"
-						+ "          T.DAY_PRODUCE_PLAN_START_DATE DESC,"
+						+ "          T.PRODUCE_PLAN_START_DATE DESC,"
 						+ "          T.CREATE_DATE                 DESC";
 				log.debug("查询日初评列表sql: "+sql);
 				QueryRunner run=new QueryRunner();
@@ -236,27 +198,24 @@ public class ProduceService {
 							String dayProducePlanStartDate = null ;
 							String dayProducePlanEndDate = null ;
 							String createDate = null ;
-							if(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE").toString())){
-								dayProducePlanStartDate=DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE"), "yyyyMMdd");
+							if(rs.getTimestamp("PRODUCE_PLAN_START_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE").toString())){
+								dayProducePlanStartDate=DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE"), "yyyyMMdd");
 							}
-							if(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE").toString())){
-								dayProducePlanEndDate=DateUtils.dateToString(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE"), "yyyyMMdd");
+							if(rs.getTimestamp("PRODUCE_PLAN_END_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE").toString())){
+								dayProducePlanEndDate=DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE"), "yyyyMMdd");
 							}
 							if(rs.getTimestamp("CREATE_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("CREATE_DATE").toString())){
 								createDate=DateUtils.dateToString(rs.getTimestamp("CREATE_DATE"), "yyyyMMdd");
 							}
 							Map<String,Object> map=new HashMap<String, Object>();
-							map.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
-							map.put("blockManName", rs.getString("BLOCK_MAN_NAME"));
-							map.put("taskType", rs.getInt("TYPE"));
-							map.put("dayProducePlanStartDate", dayProducePlanStartDate);
-							map.put("dayProducePlanEndDate", dayProducePlanEndDate);
-							map.put("createDate", createDate);
 							map.put("produceId", rs.getInt("PRODUCE_ID"));
+							map.put("programId", rs.getInt("PROGRAM_ID"));
+							map.put("name", rs.getString("NAME"));
+							map.put("type", rs.getInt("TYPE"));
+							map.put("producePlanStartDate", dayProducePlanStartDate);
+							map.put("producePlanEndDate", dayProducePlanEndDate);
+							map.put("createDate", createDate);
 							map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
-							map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-							map.put("createUserName", rs.getString("CREATE_USER_NAME"));
-							map.put("subtaskId", rs.getInt("SUBTASK_ID"));
 							
 							//CLOB inforGeo = (CLOB) rs.getClob("PAR");
 							//String inforGeo1 = StringUtil.ClobToString(inforGeo);
@@ -315,6 +274,73 @@ public class ProduceService {
 			};		
 			
 			return run.query(conn, sql,rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 获取待出品的情报项目list
+	 * 应用场景：定时日出品（一体化）脚本
+	 * @return List<Map<String, Object>>：Map<String, Object> 
+	 * 			key:"produceId":int,
+	 * 				"programId":int,
+	 * 				"gridIds":Map<Integer, Set<Integer>> key:dbId value:grid的集合
+	 * 例如：{"produceId":1,"programId":1,"gridIds":{17:[59567301,59567302],18:[59567801]}}
+	 * @throws Exception
+	 */
+	public List<Map<String, Object>> getProduceProgram() throws Exception {
+		final Connection conn=DBConnector.getInstance().getManConnection();
+		try{
+			//对已关闭，但是未创建出品任务的情报项目，创建情报出品记录
+			String sql="INSERT INTO PRODUCE"
+					+ "  (PRODUCE_ID,"
+					+ "   PRODUCE_NAME,"
+					+ "   PRODUCE_TYPE,"
+					+ "   CREATE_USER_ID,"
+					+ "   CREATE_DATE,"
+					+ "   PRODUCE_STATUS,"
+					+ "   PROGRAM_ID)"
+					+ "  SELECT PRODUCE_SEQ.NEXTVAL, P.NAME, 'ALL', 0, SYSDATE, 0, PROGRAM_ID"
+					+ "    FROM PROGRAM P"
+					+ "   WHERE P.STATUS = 0"
+					+ "     AND P.TYPE = 4"
+					+ "     AND NOT EXISTS"
+					+ "   (SELECT 1 FROM PRODUCE PR WHERE P.PROGRAM_ID = PR.PROGRAM_ID)";
+			QueryRunner run=new QueryRunner();
+			run.update(conn, sql);
+			//获取未出品&出品失败的情报出品记录
+			sql="SELECT P.PRODUCE_ID,P.PROGRAM_ID FROM PRODUCE P WHERE P.PRODUCE_STATUS IN (0, 3) AND P.PROGRAM_ID IS NOT NULL";
+			ResultSetHandler<List<Map<String,Object>>> rsHandler=new ResultSetHandler<List<Map<String,Object>>>() {
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException{
+					List<Map<String,Object>> list=new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String,Object> map=new HashMap<String, Object>();
+						map.put("produceId", rs.getInt("PRODUCE_ID"));
+						map.put("programId", rs.getInt("PROGRAM_ID"));
+						list.add(map);
+					}
+					return list;
+				}
+			};		
+			List<Map<String,Object>> produceList=run.query(conn, sql,rsHandler);
+			//补充相关的grid信息
+			for(Map<String,Object> produce:produceList){
+				int programId=(int) produce.get("programId");
+				int produceId=(int) produce.get("produceId");
+				Map<Integer, Set<Integer>> gridIds =ProgramService.getInstance().queryInforProgramGridById(conn, programId);
+				produce.put("gridIds", gridIds);
+				JSONObject paraJson=new JSONObject();
+				paraJson.put("gridIds", gridIds.toString());
+				if(gridIds==null||gridIds.size()==0){continue;}
+				sql="update produce p set parameter='"+paraJson+"' where produce_id="+produceId;
+				run.update(conn, sql);
+			}
+			return produceList;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

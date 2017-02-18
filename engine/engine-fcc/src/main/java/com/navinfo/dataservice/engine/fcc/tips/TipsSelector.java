@@ -18,9 +18,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
-import com.alibaba.dubbo.common.json.JSON;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -29,7 +27,6 @@ import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.geo.computation.GridUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * Tips查询
@@ -468,13 +465,20 @@ public class TipsSelector {
 					m.put("c", deep.getString("name"));
 				}
 				
+				//20170217修改，变更输入：王屯 赵航
+				if(type==2001){
+					JSONObject obj=new JSONObject();
+					obj.put("ln", deep.getInt("ln"));
+					obj.put("kind", deep.getInt("kind"));
+					m.put("e", obj);
+				}
 				
 				//返回差分结果：20160213修改
 				JSONObject tipdiff =null;
 				
 				if(json.containsKey("tipdiff")){
 				    
-				    JSONObject.fromObject(json.getString("tipdiff"));
+					tipdiff=JSONObject.fromObject(json.getString("tipdiff"));
 	                
 	                //坐标转换，需要根据类型转换为屏幕坐标
 	                JSONObject convertGeoDiff=converDiffGeo(type,tipdiff,z, px, py); 
@@ -491,7 +495,7 @@ public class TipsSelector {
 			}
 		} catch (Exception e) {
 			logger.error("渲染报错，数据错误："+e.getMessage()+rowkey);
-			throw e;
+			throw new Exception(e.getMessage()+"rowkey:"+rowkey,e);
 		} finally {
 			try {
 
@@ -517,7 +521,7 @@ public class TipsSelector {
     private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
             double px, double py) {
 
-        if (tipdiff == null)
+        if (tipdiff == null || tipdiff.isEmpty())
             return null;
 
         JSONArray diffArr = tipdiff.getJSONArray("diff_array");
@@ -528,14 +532,14 @@ public class TipsSelector {
 
             JSONObject json = JSONObject.fromObject(object);
 
-            if (json.containsKey("geo")) {
+            if (json.containsKey("geometry")) {
 
                 JSONObject geojson = JSONObject.fromObject(json
-                        .getString("geo"));
+                        .getString("geometry"));
                 // 渲染的坐标都是屏幕坐标
                 Geojson.coord2Pixel(geojson, z, px, py);
                 
-                json.put("geo", geojson);
+                json.put("geometry", geojson);
 
             }
             

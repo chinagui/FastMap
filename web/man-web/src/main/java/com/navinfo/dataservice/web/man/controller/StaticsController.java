@@ -244,6 +244,28 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	//根据groupId获取block详情
+	@RequestMapping(value = "/statics/task/overviewByGroup")
+	public ModelAndView queryTaskOverViewByGroup(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//groupId
+			int groupId = dataJson.getInt("groupId");
+			Map<String,Object> data = StaticsService.getInstance().queryTaskOverViewByGroup(groupId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 
 
 		/**
@@ -302,6 +324,29 @@ public class StaticsController extends BaseController {
 		}
 	}
 	
+	//根据taskId获取block详情
+	@RequestMapping(value = "/statics/task/overviewByProgram")
+	public ModelAndView queryTaskOverviewByProgram(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//taskId
+			int programId = dataJson.getInt("programId");
+			int type = dataJson.getInt("type");
+			Map<String, Object> data = StaticsService.getInstance().queryTaskOverviewByProgram(programId,type);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
 	//根据blockId获取subtask统计概览
 	@RequestMapping(value = "/statics/subtask/overview")
 	public ModelAndView querySubtaskOverView(HttpServletRequest request) {
@@ -314,16 +359,38 @@ public class StaticsController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//blockManId
-			int blockManId = 0;
 			int taskId = 0;
 			//月编
 			if(dataJson.containsKey("taskId")){
 				taskId = dataJson.getInt("taskId");
-			}else{
-				blockManId = dataJson.getInt("blockManId");
 			}
-			Map<String, Object> data = StaticsService.getInstance().querySubtaskOverView(blockManId,taskId);
+			Map<String, Object> data = StaticsService.getInstance().querySubtaskOverView(taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 应用场景：管理/监控_生管角色首页，生管角色-常规/情报项目页；根据项目状态统计不同阶段的个数
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/statics/program/overview")
+	public ModelAndView queryProgramOverView(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//1常规，2多源，3代理店，4情报
+			int type=dataJson.getInt("type");
+			Map<String, Object> data = StaticsService.getInstance().queryProgramOverView(type);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

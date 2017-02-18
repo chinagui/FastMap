@@ -38,7 +38,6 @@ public class RELATING_CHECK_INLINK_OUTLINK_VOICE_KIND_9_10 extends baseRule {
 				this.checkRdVoiceguide(rdVoiceguide);
 			}
 		}
-
 	}
 
 	@Override
@@ -68,10 +67,12 @@ public class RELATING_CHECK_INLINK_OUTLINK_VOICE_KIND_9_10 extends baseRule {
 					linkPids.add(rdVoiceguideDetail.getOutLinkPid());
 					//经过线
 					List<IRow> vias = rdVoiceguideDetail.getVias();
-					for (IRow iRows : vias) {
-						if(iRows instanceof RdVoiceguideVia){
-							RdVoiceguideVia rdVoiceguideVia = (RdVoiceguideVia) iRows;
-							linkPids.add(rdVoiceguideVia.getLinkPid());
+					if(vias != null){
+						for (IRow iRows : vias) {
+							if(iRows instanceof RdVoiceguideVia){
+								RdVoiceguideVia rdVoiceguideVia = (RdVoiceguideVia) iRows;
+								linkPids.add(rdVoiceguideVia.getLinkPid());
+							}
 						}
 					}
 				}

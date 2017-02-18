@@ -52,13 +52,19 @@ public class RdMileagepileSearch implements ISearch {
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select a.pid, a.geometry point_geom, b.geometry link_geom, a.direct, a.mileage_num num from rd_mileagepile a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid = b.link_pid";
-        PreparedStatement pstmt = null; 
+        String sql = "select a.pid, a.geometry    point_geom, b.geometry    link_geom, a.direct, a.mileage_num num " +
+                "from rd_mileagepile a, rd_link b where sdo_relate(a.geometry, sdo_geometry(:1, 8307), " +
+                "'mask=anyinteract') = 'TRUE' and a.u_record != 2 and a.link_pid != 0 and a.link_pid = b.link_pid " +
+                "union all select a.pid, a.geometry    point_geom, null    link_geom, a.direct, a.mileage_num num " +
+                "from rd_mileagepile a where sdo_relate(a.geometry, sdo_geometry(:2, 8307), 'mask=anyinteract') = " +
+                "'TRUE' and a.u_record != 2 and a.link_pid = 0";
+        PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
             pstmt = conn.prepareStatement(sql);
             String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
             pstmt.setString(1, wkt);
+            pstmt.setString(2, wkt);
             resultSet = pstmt.executeQuery();
             double px = MercatorProjection.tileXToPixelX(x);
             double py = MercatorProjection.tileYToPixelY(y);

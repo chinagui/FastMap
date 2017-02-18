@@ -6,12 +6,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -216,8 +218,15 @@ public class Operation implements IOperation {
 			}
 
 		}
+		
+
 
 		for (RdSlope slope : slopes) {
+			
+			TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+			TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
+			
 			RdLink preLink = null;
 			List<RdLink> slinks = new ArrayList<RdLink>();
 			for (RdLink link : newLinks) {
@@ -237,15 +246,34 @@ public class Operation implements IOperation {
 					result.insertObject(slope, ObjStatus.UPDATE, slope.getPid());
 					continue;
 				}
-				this.addRdslopeVia(slope.getPid(), slinks.get(i).getPid(), i,
+				RdSlopeVia newVia=	this.addRdslopeVia(slope.getPid(), slinks.get(i).getPid(), i,
 						result);
+				newVias.put(newVia.getSeqNum(), newVia);
 
 			}
 			// 维护原有的link信息
-			this.caleRdSlopeVia(slope, 0, newLinks.size(), result);
+			nextVias = 	this.caleRdSlopeVia(slope, 0, newLinks.size(), result);
+			
+			if (newVias.size() > 0) {
+				
+				RdSlopeVia newVia=(RdSlopeVia) newVias.firstEntry().getValue();
+				String tableNamePid = newVia.tableName()
+						+ slope.getPid();
+
+				result.breakVia(tableNamePid, 0, newVias, nextVias);
+			}
+
 		}
+		
+
+		
 		// 如果打断的是接续线link
 		for (RdSlopeVia via : rdSlopeVias) {
+			
+			TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+			TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
+			
 			RdLink preLink = selector.loadBySeriesRelationLink(
 					via.getSlopePid(), via.getSeqNum() - 1, true);
 			RdSlope slope = (RdSlope) selector
@@ -263,10 +291,12 @@ public class Operation implements IOperation {
 					via.changedFields().put("linkPid", links.get(i).getPid());
 					result.insertObject(via, ObjStatus.UPDATE,
 							via.getSlopePid());
+					newVias.put(via.getSeqNum(), via);
 					continue;
 				}
-				this.addRdslopeVia(via.getSlopePid(), links.get(i).getPid(),
+				RdSlopeVia newVia=	this.addRdslopeVia(via.getSlopePid(), links.get(i).getPid(),
 						via.getSeqNum() + i, result);
+				newVias.put(newVia.getSeqNum(), newVia);
 			}
 			// 当link.size() == 0 时说明发生了节点分离 根据节点分离原则 分离点之后的接续link全部删除
 			if (links.size() == 0) {
@@ -281,7 +311,14 @@ public class Operation implements IOperation {
 				}
 			}
 			// 维护原有的link信息
-			this.caleRdSlopeVia(slope, via.getSeqNum(), newLinks.size(), result);
+			nextVias = this.caleRdSlopeVia(slope, via.getSeqNum(),
+					newLinks.size(), result);
+			
+			
+			String tableNamePid  = via.tableName()
+					+ via.getSlopePid() ;
+			
+			result.breakVia( tableNamePid,via.getSeqNum(), newVias,nextVias);
 
 		}
 	}
@@ -294,13 +331,14 @@ public class Operation implements IOperation {
 	 * @param seqNum
 	 * @param result
 	 */
-	private void addRdslopeVia(int slopePid, int linkPid, int seqNum,
+	private RdSlopeVia addRdslopeVia(int slopePid, int linkPid, int seqNum,
 			Result result) {
 		RdSlopeVia via = new RdSlopeVia();
 		via.setSlopePid(slopePid);
 		via.setLinkPid(linkPid);
 		via.setSeqNum(seqNum);
 		result.insertObject(via, ObjStatus.INSERT, via.getSlopePid());
+		return via;
 	}
 
 	/***
@@ -311,8 +349,10 @@ public class Operation implements IOperation {
 	 * @param size
 	 * @param result
 	 */
-	private void caleRdSlopeVia(RdSlope slope, int seqNum, int size,
+	private TreeMap<Integer, IVia> caleRdSlopeVia(RdSlope slope, int seqNum, int size,
 			Result result) {
+		
+		TreeMap<Integer, IVia> nextVias=new TreeMap<Integer,IVia>();
 		for (IRow row : slope.getSlopeVias()) {
 			RdSlopeVia rdSlopeVia = (RdSlopeVia) row;
 			if (rdSlopeVia.getSeqNum() > seqNum) {
@@ -320,8 +360,10 @@ public class Operation implements IOperation {
 						rdSlopeVia.getSeqNum() + size - 1);
 				result.insertObject(rdSlopeVia, ObjStatus.UPDATE,
 						rdSlopeVia.getSlopePid());
+				nextVias.put(rdSlopeVia.getSeqNum(), rdSlopeVia);
 			}
 		}
+		return nextVias;
 	}
 
 	/***

@@ -205,43 +205,15 @@ public class GridService {
 			}
 			Clob pidsClob = ConnectionUtil.createClob(conn);
 			pidsClob.setString(1, gridStr);
-			//仅返回可出品状态的grid。判断原则：1.按区域子任务范围出品（已关闭区域子任务）
-			//2.出品条件：
-			//(1)当前任务的区域粗编子任务范围中所有grid涉及的其它日编子任务(排除POI类型子任务)全部关闭，该区域才可以出品，
-			//不支持无子任务范围出品
-			//(2)一级情报已经反馈
-			String sql="WITH GRID_LIST AS"
-					+ " (SELECT M.GRID_ID"
-					+ "    FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
-					+ "   WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
-					+ "     AND B.BLOCK_ID = M.BLOCK_ID"
-					+ "     AND S.STATUS = 1"
-					+ "     AND S.TYPE IN (3, 4)"
-					+ "     AND S.STAGE = 1"
-					+ "  UNION ALL"
-					+ "  SELECT MM.GRID_ID"
-					+ "    FROM SUBTASK SS, SUBTASK_GRID_MAPPING MM"
-					+ "   WHERE SS.SUBTASK_ID = MM.SUBTASK_ID"
-					+ "     AND SS.STATUS = 1"
-					+ "     AND SS.TYPE IN (3, 4)"
-					+ "     AND SS.STAGE = 1"
-					+ "  UNION ALL"
-					+ "  SELECT M.GRID_ID"
-					+ "    FROM INFOR I, SUBTASK_GRID_MAPPING M, BLOCK_MAN B"
-					+ "   WHERE I.TASK_ID = B.TASK_ID"
-					+ "     AND B.BLOCK_MAN_ID = M.SUBTASK_ID"
-					+ "     AND I.FEEDBACK_TYPE = 0)"
-					+ "SELECT DISTINCT M.GRID_ID"
-					+ "  FROM SUBTASK S, BLOCK_GRID_MAPPING M, BLOCK_MAN B"
-					+ " WHERE S.BLOCK_MAN_ID = B.BLOCK_MAN_ID"
-					+ "   AND B.BLOCK_ID = M.BLOCK_ID"
-					+ "   AND S.TYPE = 4"
-					+ "   AND S.STATUS = 0"
+			//返回已出品的快速更新grid列表
+			String sql="SELECT DISTINCT G.GRID_ID"
+					+ "  FROM PROGRAM P, PRODUCE PR, INFOR_GRID_MAPPING G"
+					+ " WHERE P.PROGRAM_ID = PR.PROGRAM_ID"
+					+ "   AND P.INFOR_ID = G.INFOR_ID"
+					+ "   AND PR.PRODUCE_STATUS = 2"
 					+ "   AND EXISTS (SELECT 1"
 					+ "	          FROM TABLE(CLOB_TO_TABLE(?)) GRID_TABLE"
-					+ "	         WHERE M.GRID_ID = GRID_TABLE.COLUMN_VALUE)"
-					+ "   AND NOT EXISTS"
-					+ " (SELECT 1 FROM GRID_LIST G WHERE M.GRID_ID = G.GRID_ID)";
+					+ "	         WHERE G.GRID_ID = GRID_TABLE.COLUMN_VALUE)";
 			
 			return new QueryRunner().query(conn, sql, new ResultSetHandler<List<String>>(){
 				@Override
@@ -349,31 +321,18 @@ public class GridService {
 	}
 
 	/**
-	 * @param blockManId
-	 * @param neighbor 
+	 * @param taskId 
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public List<Integer> listByInforBlockManId(int blockManId, int neighbor) throws ServiceException {
+	public List<Integer> listTaskGrid(int taskId) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 
-			String selectSql = "SELECT DISTINCT I.INFOR_ID, IGM.GRID_ID,BM.BLOCK_ID"
-					+ " FROM BLOCK_MAN          BM,"
-					+ " TASK               T,"
-					+ " INFOR              I,"
-					+ " INFOR_GRID_MAPPING IGM,"
-					+ " BLOCK_GRID_MAPPING BGM"
-					+ " WHERE BM.TASK_ID = T.TASK_ID"
-					+ " AND T.TASK_TYPE = 4"
-					+ " AND T.TASK_ID = I.TASK_ID"
-					+ " AND I.INFOR_ID = IGM.INFOR_ID"
-					+ " AND BGM.GRID_ID = IGM.GRID_ID"
-					+ " AND BGM.BLOCK_ID = BM.BLOCK_ID"
-					+ " AND BM.BLOCK_MAN_ID = " + blockManId;	
+			String selectSql = "SELECT GRID_ID FROM TASK_GRID_MAPPING WHERE TASK_ID="+taskId;
 
 			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
 				public List<Integer> handle(ResultSet rs) throws SQLException {
@@ -386,7 +345,7 @@ public class GridService {
 			};
 			
 			List<Integer> grids = run.query(conn, selectSql,rsHandler);
-			Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
+			/*Set<Integer> gridsWithNeighbor = new HashSet<Integer>();
 			//grid扩圈
 			if(1==neighbor){
 				for(int j=0;j<grids.size();j++)  
@@ -400,10 +359,9 @@ public class GridService {
 			        } 
 				grids.clear();
 				grids.addAll(gridsWithNeighbor);
-			}
+			}*/
 			return grids;
 //			return run.query(conn, selectSql,rsHandler);
-			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -493,4 +451,90 @@ public class GridService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	/**
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
+	 * @throws Exception
+	 */
+	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
+		String sql = "SELECT K.TASK_ID, P.TYPE"
+				+ "  FROM TASK K, PROGRAM P, TASK_GRID_MAPPING M"
+				+ " WHERE K.PROGRAM_ID = P.PROGRAM_ID"
+				+ "   AND K.TASK_ID = M.TASK_ID"
+				+ "   AND K.TYPE = 0"
+				+ "   AND M.GRID_ID = 1"
+				+ " ORDER BY P.TYPE";
+		QueryRunner queryRunner = new QueryRunner();
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			ResultSetHandler<Map<String,Integer>> rsh = new ResultSetHandler<Map<String,Integer>>() {
+
+				@Override
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					if (rs != null) {
+						Map<String,Integer> map = new HashMap<String,Integer>();
+						int quickTaskId=-1;
+						int centreTaskId=-1;
+						while (rs.next()) {
+							int taskId = rs.getInt("TASK_ID");
+							int type=rs.getInt("TYPE");
+							if(type==1){
+								if(centreTaskId==-1){
+									centreTaskId=taskId;
+								}else{
+									centreTaskId=0;
+								}
+							}
+							if(type==4){
+								if(quickTaskId==-1){
+									quickTaskId=taskId;
+								}else{
+									quickTaskId=0;
+								}
+							}
+						}
+						map.put("quickTaskId", quickTaskId);
+						map.put("centreTaskId", centreTaskId);
+						return map;
+					}
+					return null;
+				}
+			};
+			return queryRunner.query(conn, sql, rsh);
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param conn 
+	 * @param blockId 
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getGridListByBlockId(Connection conn, Integer blockId) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+						
+			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;
+			
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> gridIdlist = new ArrayList<Integer>();
+					while (rs.next()) {
+						gridIdlist.add(rs.getInt("GRID_ID"));
+					}
+					return gridIdlist;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
 }

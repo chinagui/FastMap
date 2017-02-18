@@ -83,7 +83,7 @@ public class Process extends AbstractProcess<Command> {
 
         updataRelationObj();
         // 删除行政区划线有关行政区划面具体操作
-        IOperation opAdFace = new OpRefAdFace(this.getCommand(), getConn());
+        IOperation opAdFace = new OpRefZoneFace(this.getCommand(), getConn());
         return opAdFace.run(this.getResult());
     }
 

@@ -17,7 +17,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * 检查条件： *     Lifecycle！=1（删除）
  * 检查原则：
  * （1） 地址（address）修改前存在“号”或“號”，修改后没有“号”或“號”，且修改前地址以“号”或“號”结尾的，报Log1：请确认地址中是否存在“号”；
- * （2） 修改前存在地址但修改后地址为空时，报Log2：请确认地址是否删除正确；
+ * （2） 修改前存在地址但修改后地址为空时，报Log2：请确认地址是否删除正确；(删除)
  * 充电桩（分类为230227）不参与检查。
  * 备注：地址不区分全半角
  */
@@ -53,9 +53,9 @@ public class FM14Sum0301 extends BasicCheckRule {
 					}
 				}
 				//（2） 修改前存在地址但修改后地址为空时
-				if(fullname == null && oldFullname != null){
+				/*if(fullname == null && oldFullname != null){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "请确认地址是否删除正确");
-				}
+				}*/
 			}
 		}
 	}

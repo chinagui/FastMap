@@ -184,6 +184,17 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	/**
+	 * @Title: poiCheckResults
+	 * @Description: poi 检查结果查询接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月17日 上午9:33:45 
+	 */
 	@RequestMapping(value = "/check/poiResults")
 	public ModelAndView poiCheckResults(HttpServletRequest request)
 			throws ServletException, IOException {
@@ -199,7 +210,12 @@ public class CheckController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			NiValExceptionSelector selector = new NiValExceptionSelector(conn);
-			JSONObject data = selector.poiCheckResults(pid);
+			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
+			JSONArray checkResultsArr = selector.poiCheckResultList(pid);
+			data.put("data", checkResultsArr);
+			data.put("total", checkResultsArr.size());
+			
+			
 			logger.info("end check/list");
 			logger.debug(data);
 			return new ModelAndView("jsonView", success(data));

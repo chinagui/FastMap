@@ -5,14 +5,21 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.IVia;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -20,14 +27,12 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -694,51 +699,57 @@ public class Operation implements IOperation {
 				continue;
 			}
 
-			int connectionNodePid = 0;
+			Set<Integer> connectionNodePids = new HashSet<Integer>();			
 
-			if (detail.getVias().size() == 0) {
+			connectionNodePids.add(restriction.getNodePid());
 
-				connectionNodePid = restriction.getNodePid();
+			if (detail.getRelationshipType() == 1) {
+
+				RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
+						this.conn);
+
+				List<Integer> nodePids = crossNodeSelector
+						.getCrossNodePidByNode(restriction.getNodePid());
+
+				connectionNodePids.addAll(nodePids);
 
 			} else {
 
-				RdRestrictionVia lastVia = (RdRestrictionVia) detail.getVias().get(0);
+				List<Integer> linkPids = new ArrayList<Integer>();
 
 				for (IRow rowVia : detail.getVias()) {
 
 					RdRestrictionVia via = (RdRestrictionVia) rowVia;
 
-					if (lastVia.getGroupId() == via.getGroupId() && lastVia.getSeqNum() < via.getSeqNum()) {
-
-						lastVia = via;
-					}
+					linkPids.add(via.getLinkPid());
 				}
 
 				RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(deleteLink.getsNodePid(), false);
+				List<IRow> linkRows = rdLinkSelector.loadByIds(linkPids, true,
+						false);
 
-				connectionNodePid = linkPids.contains(lastVia.getLinkPid()) ? deleteLink.getsNodePid()
-						: deleteLink.geteNodePid();
+				for (IRow linkRow : linkRows) {
+
+					RdLink link = (RdLink) linkRow;
+
+					connectionNodePids.add(link.getsNodePid());
+
+					connectionNodePids.add(link.geteNodePid());
+				}
 			}
-
-			if (connectionNodePid == 0) {
-
-				continue;
-			}
-
 			for (RdLink link : newLinks) {
 
-				if (link.getsNodePid() == connectionNodePid || link.geteNodePid() == connectionNodePid) {
+				if (connectionNodePids.contains(link.getsNodePid())
+						|| connectionNodePids.contains(link.geteNodePid())) {
 
 					detail.changedFields().put("outLinkPid", link.getPid());
 
-					result.insertObject(detail, ObjStatus.UPDATE, restriction.pid());
-
+					result.insertObject(detail, ObjStatus.UPDATE,
+							detail.getRestricPid());
 					break;
 				}
 			}
-
 		}
 	}
 
@@ -787,6 +798,10 @@ public class Operation implements IOperation {
 					continue;
 				}
 
+				TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+				TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
+
 				// 与进入线或前一个经过线的连接点
 				int connectionNodePid = 0;
 
@@ -833,6 +848,8 @@ public class Operation implements IOperation {
 						newVia.setSeqNum(breakVia.getSeqNum() + i);
 
 						result.insertObject(newVia, ObjStatus.INSERT, detail.parentPKValue());
+						
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 
 				} else {
@@ -850,6 +867,8 @@ public class Operation implements IOperation {
 						newVia.setSeqNum(breakVia.getSeqNum() + newLinks.size() - i);
 
 						result.insertObject(newVia, ObjStatus.INSERT, detail.parentPKValue());
+						
+						newVias.put(newVia.getSeqNum(), newVia);
 					}
 				}
 
@@ -863,8 +882,15 @@ public class Operation implements IOperation {
 						via.changedFields().put("seqNum", via.getSeqNum() + newLinks.size() - 1);
 
 						result.insertObject(via, ObjStatus.UPDATE, detail.parentPKValue());
+						
+						nextVias.put(via.getSeqNum(), via);
 					}
 				}
+				
+				String tableNamePid = breakVia.tableName()
+						+ breakVia.getDetailId() + breakVia.getGroupId();
+				
+				result.breakVia( tableNamePid,breakVia.getSeqNum(), newVias,nextVias);
 			}
 		}
 	}

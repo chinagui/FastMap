@@ -53,7 +53,8 @@ public class Operation implements IOperation {
      * @return
      * @throws Exception
      */
-    public String breakSpeedbump(Map<RdNode, List<RdLink>> nodeLinkRelation, Result result, int oldLinkPid, List<RdLink> newLinks) throws Exception {
+    public String breakSpeedbump(Map<RdNode, List<RdLink>> nodeLinkRelation, Result result, int oldLinkPid,
+                                 List<RdLink> newLinks) throws Exception {
         RdSpeedbumpSelector selector = new RdSpeedbumpSelector(this.conn);
         // 查询出将要被影响的减速带信息
         List<RdSpeedbump> speedbumps = selector.loadByLinkPid(oldLinkPid, true);
@@ -68,6 +69,9 @@ public class Operation implements IOperation {
             List<RdSpeedbump> bumps = selector.loadByNodePids(catchIds, true);
             catchIds = new ArrayList<>();
             for (RdSpeedbump bump : bumps) {
+                if (bump.getLinkPid() != oldLinkPid)
+                    continue;
+
                 catchIds.add(bump.pid());
                 result.insertObject(bump, ObjStatus.DELETE, bump.pid());
             }
@@ -106,8 +110,7 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks,
-                           Result result) throws Exception {
+    public void departNode(RdLink link, int nodePid, List<RdLink> rdlinks, Result result) throws Exception {
 
         int linkPid = link.getPid();
 
@@ -127,8 +130,7 @@ public class Operation implements IOperation {
 
             if (speedbump.getNodePid() == nodePid) {
 
-                result.insertObject(speedbump, ObjStatus.DELETE,
-                        speedbump.getPid());
+                result.insertObject(speedbump, ObjStatus.DELETE, speedbump.getPid());
 
             } else if (speedbumpMesh != null) {
 
@@ -141,13 +143,11 @@ public class Operation implements IOperation {
             return;
         }
 
-        int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid()
-                : link.getsNodePid();
+        int connectNode = link.getsNodePid() == nodePid ? link.geteNodePid() : link.getsNodePid();
 
         for (RdLink rdlink : rdlinks) {
 
-            if (rdlink.getsNodePid() != connectNode
-                    && rdlink.geteNodePid() != connectNode) {
+            if (rdlink.getsNodePid() != connectNode && rdlink.geteNodePid() != connectNode) {
 
                 continue;
             }

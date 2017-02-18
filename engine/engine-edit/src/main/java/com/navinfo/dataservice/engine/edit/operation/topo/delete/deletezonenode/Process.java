@@ -150,7 +150,7 @@ public class Process extends AbstractProcess<Command> {
 
         updataRelationObj();
         // 删除ZONE点有关ZONE面具体操作
-        IOperation opAdFace = new OpRefAdFace(this.getCommand(), getConn());
+        IOperation opAdFace = new OpRefZoneFace(this.getCommand(), getConn());
         return opAdFace.run(this.getResult());
     }
 

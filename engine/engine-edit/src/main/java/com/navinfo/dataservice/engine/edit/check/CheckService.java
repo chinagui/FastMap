@@ -42,6 +42,7 @@ public class CheckService {
 	 * @return
 	 * @throws Exception 
 	 */
+	@SuppressWarnings("unchecked")
 	public long checkRun(int subtaskId,long userId,int checkType,JSONObject jsonReq) throws Exception{
 		long jobId=0;
 		
@@ -82,7 +83,11 @@ public class CheckService {
 			//System.out.println("jobId == "+jobId);
 			}
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
-			List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+			List<Integer> grids= new ArrayList<Integer>();
+			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
+				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+			}
+			
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("grids", grids);
 			validationRequestJSON.put("rules", ruleList);

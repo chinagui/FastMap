@@ -70,14 +70,30 @@ public class TaskOperation {
 	/*
 	 * task的status字段，修改成开启
 	 */
-	public static void updateStatus(Connection conn,JSONArray taskIds) throws Exception{
+	public static void updateStatus(Connection conn,List<Integer> taskIds,int status) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateSql="UPDATE TASK SET STATUS=1 WHERE TASK_ID IN ("+taskIds.join(",")+")";
+			String updateSql="UPDATE TASK SET STATUS=" + status +" WHERE TASK_ID IN ("+StringUtils.join(taskIds,",")+")";
+			log.info("updateStatus sql:" + updateSql);
 			run.update(conn,updateSql);			
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
-			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
+	 * task的status字段，修改成开启
+	 */
+	public static void updateStatus(Connection conn,Integer taskId,int status) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateSql="UPDATE TASK SET STATUS=" + status +" WHERE TASK_ID =" + taskId ;
+			log.info("updateStatus sql:" + updateSql);
+			run.update(conn,updateSql);			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	
@@ -2137,8 +2153,9 @@ public class TaskOperation {
 			QueryRunner run = new QueryRunner();
 
 			String updateSql = "UPDATE BLOCK B SET B.PLAN_STATUS = 2"
-					+ " WHERE (SELECT COUNT(1) FROM TASK T WHERE T.BLOCK_ID = B.BLOCK_ID AND T.STATUS <> 0) <> 0";
-
+					+ " WHERE B.BLOCK_ID = " + blockId
+					+ " AND (SELECT COUNT(1) FROM TASK T WHERE T.BLOCK_ID = B.BLOCK_ID AND T.STATUS <> 0) = 0";
+			log.info("closeBlock sql:" + updateSql);
 			run.update(conn, updateSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -2158,10 +2175,11 @@ public class TaskOperation {
 
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT SM.GRID_ID FROM SUBTASK_GRID_MAPPING SM ,SUBTASK S"); 
-			sb.append("WHERE S.SUBTASK_ID = SM.SUBTASK_ID");
-			sb.append("AND SM.TYPE = 2");
-			sb.append("AND S.TASK_ID = " + taskId);
+			sb.append(" WHERE S.SUBTASK_ID = SM.SUBTASK_ID");
+			sb.append(" AND SM.TYPE = 2");
+			sb.append(" AND S.TASK_ID = " + taskId);
 
+			log.info("getAddedGridMap sql:" + sb.toString());
 			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
 				@Override
 				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
@@ -2202,6 +2220,7 @@ public class TaskOperation {
 			sb.append(" AND TT.TYPE = " + type);
 			sb.append(" AND T.TASK_ID = " + taskId);
 
+			log.info("updateTaskRegion sql:" + sb.toString());
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
 				public List<Integer> handle(ResultSet rs) throws SQLException {

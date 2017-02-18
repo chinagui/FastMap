@@ -49,7 +49,7 @@ public class GLM01170 extends baseRule {
 			sb.append(linkPid);
 
 			sb.append(
-					" AND R.U_RECORD != 2 AND F.U_RECORD != 2 AND EXISTS (SELECT 1 FROM RD_LINK_FORM FF WHERE R.LINK_PID = FF.LINK_PID AND F.FORM_OF_WAY <> 1 AND FF.U_RECORD != 2)");
+					" AND R.U_RECORD != 2 AND F.U_RECORD != 2 AND EXISTS (SELECT 1 FROM RD_LINK_FORM FF WHERE R.LINK_PID = FF.LINK_PID AND FF.FORM_OF_WAY <> 1 AND FF.U_RECORD != 2)");
 
 			log.info("RdLink后检查GLM01170 SQL:" + sb.toString());
 

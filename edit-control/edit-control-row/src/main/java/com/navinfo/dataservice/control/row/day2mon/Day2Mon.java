@@ -26,14 +26,14 @@ public class Day2Mon {
 		long jobId = 0;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			String specRegionId = jsonReq.getString("specRegionId");
-			String specMeshes = jsonReq.getString("specMeshes");
-			JSONObject jobReq = new JSONObject();
-			jobReq.element("specRegionId", specRegionId);
-			jobReq.element("specMeshes", specMeshes);
+//			int specRegionId = jsonReq.getInt("specRegionId");
+//			String specMeshes = jsonReq.getString("specMeshes");
+//			JSONObject jobReq = new JSONObject();
+//			jobReq.element("specRegionId", specRegionId);
+//			jobReq.element("specMeshes", specMeshes);
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
-			jobId = apiService.createJob("day2MonSync", jobReq, userId,0,
+			jobId = apiService.createJob("day2MonSync", jsonReq, userId,0,
 					"日落月");
 			return jobId;
 		}catch (Exception e) {

@@ -46,7 +46,7 @@ public class GLM07006 extends baseRule {
 			sb.append(linkPid);
 
 			sb.append(
-					" AND R.u_record！=2 AND F.u_record！=2 AND EXISTS (SELECT 1 FROM RD_TRAFFICSIGNAL T WHERE T.LINK_PID = R.LINK_PID AND T.u_record！=2) ");
+					" AND R.u_record!=2 AND F.u_record!=2 AND EXISTS (SELECT 1 FROM RD_TRAFFICSIGNAL T WHERE T.LINK_PID = R.LINK_PID AND T.u_record!=2) ");
 
 			logger.info("RdLink后检查GLM07006 SQL:" + sb.toString());
 

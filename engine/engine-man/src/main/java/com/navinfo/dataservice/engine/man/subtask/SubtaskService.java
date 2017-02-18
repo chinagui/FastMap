@@ -431,7 +431,8 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
 			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
@@ -439,6 +440,7 @@ public class SubtaskService {
 			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
 	
 			String selectSql = sb.toString();
+			log.info("请求子任务详情SQL："+sb.toString());
 			
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
@@ -454,6 +456,9 @@ public class SubtaskService {
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -473,7 +478,7 @@ public class SubtaskService {
 						}
 						
 						subtask.setTaskId(rs.getInt("TASK_ID"));
-						if (2 == rs.getInt("TASK_TYPE")) {
+						if (2 == rs.getInt("STAGE")) {
 							//月编子任务
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 						} else {
@@ -1500,22 +1505,28 @@ public class SubtaskService {
 			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
 
 			//动态调整子任务范围
-			//日编子任务关闭，调整日编任务本身，调整日编任务
+			//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
 			if(subtask.getStage()==1){
-				EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
-				List<Integer> gridIds = editApi.getGridIdListBySubtaskIdFromLog(subtask.getDbId(),subtask.getSubtaskId());
+				//获取规划外GRID信息
+				Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
+				
 				//调整子任务范围
-				SubtaskOperation.adjustSubtaskRegion(conn,subtask,gridIds);
+				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 				//调整任务范围
-				TaskOperation.adjustTaskRegion(conn,subtask.getTaskId(),gridIds);
+				TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+				//调整区域子任务范围
+				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+				for(Subtask subtaskType4:subtaskList){
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				}
 			}
 			
 			
 			//发送消息
 			try {
 				//查询分配的作业组组长
-				List<Long> groupIdList = null;
-				if(subtask.getExeUserId()!=null&&subtask.getExeUserId()!=0){
+				List<Long> groupIdList = new ArrayList<Long>();
+				if(subtask.getExeUserId()!=0){
 					UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
 					groupIdList.add(Long.valueOf(userGroup.getGroupId()));
 				}else{

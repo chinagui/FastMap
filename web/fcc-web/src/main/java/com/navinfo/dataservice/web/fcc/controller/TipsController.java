@@ -409,6 +409,43 @@ public class TipsController extends BaseController {
 					ResponseUtils.assembleFailResult(e.getMessage()));
 		}
 	}
+	
+	
+	
+	
+	@RequestMapping(value = "/tip/getByRowkeys")
+	public void getByRowkeys(HttpServletRequest request,HttpServletResponse response
+			) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray rowkeyArr = jsonReq.getJSONArray("rowkey");
+			
+			 if (rowkeyArr==null||rowkeyArr.isEmpty()||rowkeyArr.size()==0) {
+                 throw new IllegalArgumentException("参数错误：rowkeys不能为空");
+             }
+
+			TipsSelector selector = new TipsSelector();
+
+			JSONArray data = selector.searchDataByRowkeyArr(rowkeyArr);
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+	}
 
 	
 	@RequestMapping(value = "/tip/getBySpatial")

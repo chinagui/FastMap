@@ -38,7 +38,7 @@ public class FMZY20154 extends BasicCheckRule {
 			String log;
 			for(IxPoiParking parking : parkings){
 				String payment=parking.getPayment(); 
-				if (StringUtils.isNotEmpty(payment) && (payment.indexOf("\\|")<0) && (!defaultList.contains(payment))){
+				if (StringUtils.isNotEmpty(payment) && (payment.indexOf("|")<0) && (!defaultList.contains(payment))){
 	                log="停车场支付方式的值没有'|',且不为空时,值不在{10,11,12,13,14,15}中";
 	                setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),log);
 				}

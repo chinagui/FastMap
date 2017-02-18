@@ -1,9 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -13,8 +12,8 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * GLM01307 单向道路的限速类型为“普通”时，限速来源不能是“方向限速”，否则报log
@@ -30,14 +29,9 @@ public class GLM01307 extends baseRule {
 	private static Logger logger = Logger.getLogger(GLM01307.class);
 
 	/**
-	 * 方向为单方向的link
+	 * 需要检查的对象
 	 */
-	private Map<Integer, RdLink> linkDirectMap = new HashMap<>();
-
-	/**
-	 * 限速类型为普通限速，限速来源为“方向限速”
-	 */
-	private Set<Integer> speedLimitLinkSet = new HashSet<>();
+	private Set<Integer> checkLinkPids = new HashSet<>();
 
 	public GLM01307() {
 	}
@@ -49,14 +43,27 @@ public class GLM01307 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareData(checkCommand);
-		for (Map.Entry<Integer, RdLink> entry : linkDirectMap.entrySet()) {
-			int linkPid = entry.getKey();
-			RdLink rdLink = entry.getValue();
-			if(speedLimitLinkSet.contains(linkPid))
-			{
-				logger.debug("检查类型：postCheck， 检查规则：GLM01307， 检查要素：RDLINK(" + rdLink.pid() + ")");
-				
-				this.setCheckResult(rdLink.getGeometry(), "[RD_LINK," + rdLink.getPid() + "]", rdLink.getMeshId());
+		for (int linkPid : checkLinkPids) {
+			StringBuilder sb = new StringBuilder();
+
+			sb.append(
+					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK_SPEEDLIMIT S, RD_LINK L WHERE S.LINK_PID = L.LINK_PID AND L.DIRECT = 2 AND S.FROM_LIMIT_SRC = 5 AND S.SPEED_TYPE = 0 AND L.LINK_PID =");
+
+			sb.append(linkPid);
+
+			sb.append(
+					" UNION ALL SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK_SPEEDLIMIT S, RD_LINK L WHERE S.LINK_PID = L.LINK_PID AND L.DIRECT = 3 AND S.TO_LIMIT_SRC = 5 AND S.SPEED_TYPE = 0 AND L.LINK_PID =");
+			sb.append(linkPid);
+			
+			logger.info("RdLink后检查GLM01307 SQL:" + sb.toString());
+			
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sb.toString());
+
+			if (!resultList.isEmpty()) {
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
+						(int) resultList.get(2));
 			}
 		}
 	}
@@ -66,7 +73,6 @@ public class GLM01307 extends baseRule {
 	 * @throws Exception 
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
-		AbstractSelector selector = new AbstractSelector(RdLink.class, getConn());
 		for (IRow row : checkCommand.getGlmList()) {
 			if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
 				RdLink rdLink = (RdLink) row;
@@ -75,21 +81,7 @@ public class GLM01307 extends baseRule {
 					direct = (int) rdLink.changedFields().get("direct");
 				}
 				if (direct != 1) {
-					
-					linkDirectMap.put(rdLink.getPid(), rdLink);
-					
-					List<IRow> limits = rdLink.getSpeedlimits();
-					
-					for(IRow limitRow : limits)
-					{
-						RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) limitRow;
-						
-						if(speedlimit.getSpeedType() ==0 && (speedlimit.getFromLimitSrc() == 5 || speedlimit.getToSpeedLimit() == 5))
-						{
-							speedLimitLinkSet.add(rdLink.getPid());
-						}
-						break;
-					}
+					checkLinkPids.add(rdLink.getPid());
 				}
 			} else if (row instanceof RdLinkSpeedlimit) {
 				RdLinkSpeedlimit speedLimit = (RdLinkSpeedlimit) row;
@@ -111,21 +103,12 @@ public class GLM01307 extends baseRule {
 						
 						if(fromSpeedLimitSrc == 5 || toSpeedLimitSrc == 5)
 						{
-							speedLimitLinkSet.add(speedLimit.getLinkPid());
-							if(!linkDirectMap.containsKey(speedLimit.getLinkPid()))
-							{
-								RdLink link = (RdLink) selector.loadById(speedLimit.getLinkPid(), true, true);
-								
-								if(link.getDirect() != 1)
-								{
-									linkDirectMap.put(link.getPid(), link);
-								}
-							}
+							checkLinkPids.add(speedLimit.getLinkPid());
 						}
 					}
 					if(speedLimit.status() == ObjStatus.DELETE)
 					{
-						speedLimitLinkSet.remove(speedLimit.getLinkPid());
+						checkLinkPids.remove(speedLimit.getLinkPid());
 					}
 				}
 			}

@@ -7,9 +7,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.row.query.PoiQuery;
 
 import net.sf.json.JSONObject;
@@ -22,13 +25,14 @@ import net.sf.json.JSONObject;
  */
 public class PoiEditStatusTest {
 
-	/**
-	 * 
-	 */
-	public PoiEditStatusTest() {
-		// TODO Auto-generated constructor stub
+	@Before
+	public void before() {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+				new String[] { "dubbo-consumer-datahub-test.xml" });
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
 	}
-
+	
 	@Test
 	public void test0() throws Exception{
 		Connection conn = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
@@ -62,10 +66,10 @@ public class PoiEditStatusTest {
 	}
 	@Test
 	public void test2() throws Exception{
-		String parameter= "{\"dbId\":17,\"subtaskId\":\"132\",\"type\":1,\"pageNum\":1,\"pageSize\":20000,\"pidName\":\"1235\"}";
+		String parameter= "{\"dbId\":17,\"subtaskId\":\"30\",\"type\":2,\"pageNum\":1,\"pageSize\":100}";
 		PoiQuery aa= new PoiQuery();
 		JSONObject result = aa.getPoiList(parameter);
-
+		System.out.println("SIZE:"+result.size());
 		System.out.println("result");
 	}
 }

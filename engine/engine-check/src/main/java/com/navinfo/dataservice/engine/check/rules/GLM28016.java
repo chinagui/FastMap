@@ -267,7 +267,7 @@ public class GLM28016 extends baseRule{
 				String sql2 = sb2.toString();
 				
 				PreparedStatement pstmt2 = this.getConn().prepareStatement(sql2);	
-				ResultSet resultSet2 = pstmt.executeQuery();
+				ResultSet resultSet2 = pstmt2.executeQuery();
 
 				while (resultSet2.next()){
 					List<Integer> nodes = new ArrayList<Integer>();
@@ -278,17 +278,20 @@ public class GLM28016 extends baseRule{
 				resultSet2.close();
 				pstmt2.close();
 				
-				//如果涉及到的CRFI个数不等于2，报log
-				if(rdInterPidSet.size()!=2){
+				//如果涉及到的CRFI个数为0，报log
+				if(rdInterPidSet.size()==0){
 					this.setCheckResult("", "", 0);
 					return;
 				}else{
-					//遍历两个CRFI
-					//构成CRFR的link，有且只有两根不同link落在改CRFR上
+//					遍历CRFI
+//					构成CRFR的link，有且只有两根不同link落在改CRFR上
 					for(Integer rdInterPid:rdInterPidSet){
 						Set<Integer> linkPidSetTemp = new HashSet<Integer>();
 						for(Map.Entry<Integer, Integer> entry:rdInterNodeMap.entrySet()){
-							if(entry.getValue() == rdInterPid){
+							int a = entry.getValue();
+							int b = rdInterPid;
+							if(a == b){
+//							if(entry.getValue() == rdInterPid){
 								for(Map.Entry<Integer, List<Integer>> entryInner:rdLinks.entrySet()){
 									List<Integer> nodePids = entryInner.getValue();
 									if(nodePids.contains(entry.getKey())){
@@ -297,7 +300,7 @@ public class GLM28016 extends baseRule{
 								}
 							}
 						}
-						if(linkPidSetTemp.size()!=2){
+						if(linkPidSetTemp.size()<2){
 							this.setCheckResult("", "", 0);
 							return;
 						}

@@ -53,29 +53,45 @@ public class FM14Sum060201 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			String fullname = ixPoiAddress.getFullname();
 			if(fullname==null){return;}
-			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap(1);
+			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap();
 			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=1时
 			List<ScSensitiveWordsObj> compareList1 = scSensitiveWordsMap.get(1);
-			List<ScSensitiveWordsObj> wordList1 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList1);	
+			//type:1-POI 地址,2-POI 名称及其他
+			List<ScSensitiveWordsObj> wordList1 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList1,1);	
 			if(wordList1!=null && !wordList1.isEmpty()){
 				List<String> errMsgList1 = new ArrayList<String>();
+				StringBuilder sb = new StringBuilder();
 				for (ScSensitiveWordsObj scSensitiveWordsObj : wordList1) {
-					String str1 = scSensitiveWordsObj.getSensitiveWord()+scSensitiveWordsObj.getSensitiveWord2();
-					errMsgList1.add(str1);
+					if(StringUtils.isNotEmpty(scSensitiveWordsObj.getSensitiveWord())){
+						sb.append(scSensitiveWordsObj.getSensitiveWord());
+					}
+					if(StringUtils.isNotEmpty(scSensitiveWordsObj.getSensitiveWord2())){
+						sb.append(",");
+						sb.append(scSensitiveWordsObj.getSensitiveWord2());
+					}
+					errMsgList1.add(sb.toString());
 				}
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在绝对敏感字，请确认后修改地址或删除地址("+StringUtils.join(errMsgList1, ",")+")");
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在绝对敏感字，请确认后修改地址或删除地址("+StringUtils.join(errMsgList1, ";")+")");
 				return;
 			}
 			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=2时
 			List<ScSensitiveWordsObj> compareList2 = scSensitiveWordsMap.get(2);
-			List<ScSensitiveWordsObj> wordList2 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList2);	
+			//type:1-POI 地址,2-POI 名称及其他
+			List<ScSensitiveWordsObj> wordList2 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList2,1);	
 			if(wordList2!=null && !wordList2.isEmpty()){
 				List<String> errMsgList2 = new ArrayList<String>();
+				StringBuilder sb = new StringBuilder();
 				for (ScSensitiveWordsObj scSensitiveWordsObj : wordList2) {
-					String str2 = scSensitiveWordsObj.getSensitiveWord()+scSensitiveWordsObj.getSensitiveWord2();
-					errMsgList2.add(str2);
+					if(StringUtils.isNotEmpty(scSensitiveWordsObj.getSensitiveWord())){
+						sb.append(scSensitiveWordsObj.getSensitiveWord());
+					}
+					if(StringUtils.isNotEmpty(scSensitiveWordsObj.getSensitiveWord2())){
+						sb.append(",");
+						sb.append(scSensitiveWordsObj.getSensitiveWord2());
+					}
+					errMsgList2.add(sb.toString());
 				}
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在需要确认的敏感字，请确认后修改地址或删除地址("+StringUtils.join(errMsgList2, ",")+")");
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "地址中存在需要确认的敏感字，请确认后修改地址或删除地址("+StringUtils.join(errMsgList2, ";")+")");
 				return;
 			}
 		}

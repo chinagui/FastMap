@@ -91,11 +91,10 @@ public class MetadataApiImpl implements MetadataApi {
 	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
 	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
 	 * @throws Exception
-	 * type:1-POI 地址,2-POI 名称及其他
 	 */
 	@Override
-	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap(int type) throws Exception{
-		return ScSensitiveWords.getInstance().scSensitiveWordsMap(type);
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception{
+		return ScSensitiveWords.getInstance().scSensitiveWordsMap();
 	}
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
@@ -247,6 +246,15 @@ public class MetadataApiImpl implements MetadataApi {
 		PinyinConverter py = new PinyinConverter();
 
 		String[] result = py.convert(word);
+
+		return result;
+	}
+	
+	@Override
+	public String pyConvertHz(String word) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.convertHz(word);
 
 		return result;
 	}
@@ -557,6 +565,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> getAddrck(int type, String hmFlag) throws Exception {
 		ScPointAddrck addrck = new ScPointAddrck();
 		return addrck.getAddrckList(type, hmFlag);
+	}
+	
+	@Override
+	public List<String> queryAdRack(int type) throws Exception {
+		ScPointAddrck addrck = new ScPointAddrck();
+		return addrck.queryAdRack(type);
 	}
 
 	@Override

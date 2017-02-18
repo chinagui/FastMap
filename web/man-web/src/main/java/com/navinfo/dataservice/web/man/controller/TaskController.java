@@ -119,13 +119,17 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	
+	
 	/*
-	 * 规划管理页面--任务管理--关闭任务
-	 * 关闭按钮：
-	 * 1.选中需要关闭的任务，点击“关闭任务”按钮，后台判断该任务是否可以关闭
-	 * 【关闭原则：判断该city下面的所有block均关闭且所有的月编区域作业子任务均关闭，则可以关闭任务】：
-	 * (1)如果可以关闭，页面弹出提示框
-	 * (2)不可以关闭，页面弹出提示框
+	 * 查询task
+	 * 采集任务:
+	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
+	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
+	 * 日编任务:
+	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 发送消息
 	 */
 	@RequestMapping(value = "/task/close")
 	public ModelAndView close(HttpServletRequest request){
@@ -136,10 +140,9 @@ public class TaskController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			long userId=tokenObj.getUserId();
-			JSONArray taskIds=dataJson.getJSONArray("taskIds");
-			List<Integer> closeTask=TaskService.getInstance().close(JSONArray.toList(taskIds),userId);			
-			String msg="任务批量关闭"+closeTask.size()+"个成功，"+(taskIds.size()-closeTask.size())+"个失败";
-			return new ModelAndView("jsonView", success(msg));
+			int taskId=dataJson.getInt("taskId");
+			String message = TaskService.getInstance().close(taskId,userId);			
+			return new ModelAndView("jsonView", success(message));
 		}catch(Exception e){
 			log.error("任务批量关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -322,6 +325,66 @@ public class TaskController extends BaseController {
 			String taskName = paraJson.getString("taskName");
 			List<Map<String,Object>> taskNameList = TaskService.getInstance().queryTaskNameList(userId,taskName);
 			return new ModelAndView("jsonView", success(taskNameList));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * @author 
+	 * @param request：task_id
+	 * @return 进度
+	 */
+	@RequestMapping(value = "/task/cmsProgress")
+	public ModelAndView queryTaskCmsProgress(HttpServletRequest request){
+		try{
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("taskId")){
+				throw new IllegalArgumentException("parameter参数中taskId不能为空。");
+			}
+			int taskId = paraJson.getInt("taskId");
+			List<Map<String, Integer>> result = TaskService.getInstance().queryTaskCmsProgress(taskId);
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			log.error("查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * @author 
+	 * @param request：phase_id
+	 * @return 进度
+	 */
+	@RequestMapping(value = "/task/updateCmsProgress")
+	public ModelAndView taskUpdateCmsProgress(HttpServletRequest request){
+		try{
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(!paraJson.containsKey("phaseId")){
+				throw new IllegalArgumentException("parameter参数中taskId不能为空。");
+			}
+			int phaseId = paraJson.getInt("phaseId");
+			int status = paraJson.getInt("status");
+			TaskService.getInstance().taskUpdateCmsProgress(phaseId,status);
+			return new ModelAndView("jsonView", success());
 		}catch(Exception e){
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

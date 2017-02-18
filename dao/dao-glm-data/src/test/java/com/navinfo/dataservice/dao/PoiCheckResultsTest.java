@@ -43,12 +43,15 @@ public class PoiCheckResultsTest {
 			grids.add("60561202");
 			grids.add("60561203");
 				
-			JSONObject page = null;
+			JSONObject data = new JSONObject();//selector.poiCheckResults(pid);
+			
 				//List<JSONObject> page =null;
 				try {
-					 page =a.poiCheckResults(767);
+					 JSONArray checkResultsArr = a.poiCheckResultList(767);
+						data.put("data", checkResultsArr);
+						data.put("total", checkResultsArr.size());
 					//page =a.list(2, grids, 5, 1);
-					 System.out.println(page);
+					 System.out.println(data);
 					
 					/*JSONArray results = a.queryRefFeatures(1810842);
 					System.out.println(results);*/

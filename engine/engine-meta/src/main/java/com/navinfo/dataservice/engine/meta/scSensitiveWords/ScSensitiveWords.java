@@ -29,9 +29,8 @@ public class ScSensitiveWords {
 	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
 	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
 	 * @throws Exception
-	 * type:1-POI 地址,2-POI 名称及其他
 	 */
-	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap(int subType) throws Exception{
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception{
 		if (sensitiveWordMap==null||sensitiveWordMap.isEmpty()) {
 				synchronized (this) {
 					if (sensitiveWordMap==null||sensitiveWordMap.isEmpty()) {
@@ -48,13 +47,15 @@ public class ScSensitiveWords {
 								while (rs.next()) {
 									String sensitiveWord=rs.getString("sensitive_word");
 									String regexSensitiveWord=rs.getString("sensitive_word");
+									String regexSensitiveWordAddress=rs.getString("sensitive_word");
 									int regexWordType=0;
 									if(regexSensitiveWord!=null&&!regexSensitiveWord.isEmpty()){
 										if(regexSensitiveWord.startsWith("<>")){
 											regexWordType=1;
 											regexSensitiveWord=regexSensitiveWord.replace("<>", "");
 										}
-										regexSensitiveWord=changWord2Re(regexSensitiveWord,subType);
+										regexSensitiveWordAddress=changWord2Re(regexSensitiveWord,1);
+										regexSensitiveWord=changWord2Re(regexSensitiveWord,2);
 									}
 									String sensitiveWord2=rs.getString("sensitive_word2");
 									String regexSensitiveWord2=rs.getString("sensitive_word2");
@@ -64,14 +65,14 @@ public class ScSensitiveWords {
 											regexWordType2=1;
 											regexSensitiveWord2=regexSensitiveWord2.replace("<>", "");
 										}
-										regexSensitiveWord2=changWord2Re(regexSensitiveWord2,subType);
+										regexSensitiveWord2=changWord2Re(regexSensitiveWord2,2);
 									}
 									String kindCode=rs.getString("kind_code");
 									String regexKindCode=rs.getString("kind_code");
-									if(regexKindCode!=null&&!regexKindCode.isEmpty()){regexKindCode=changWord2Re(regexKindCode,subType);}
+									if(regexKindCode!=null&&!regexKindCode.isEmpty()){regexKindCode=changWord2Re(regexKindCode,2);}
 									String adminCode=rs.getString("admincode");
 									String regexAdminCode=rs.getString("admincode");
-									if(regexAdminCode!=null&&!regexAdminCode.isEmpty()){regexAdminCode=changWord2Re(regexAdminCode,subType);}
+									if(regexAdminCode!=null&&!regexAdminCode.isEmpty()){regexAdminCode=changWord2Re(regexAdminCode,2);}
 									int type=rs.getInt("type"); 
 									ScSensitiveWordsObj senWordsObj=new ScSensitiveWordsObj();
 									senWordsObj.setSensitiveWord(sensitiveWord);
@@ -80,6 +81,7 @@ public class ScSensitiveWords {
 									senWordsObj.setAdmincode(adminCode);
 									senWordsObj.setType(type);
 									senWordsObj.setRegexSensitiveWord(regexSensitiveWord);
+									senWordsObj.setRegexSensitiveWordAddress(regexSensitiveWordAddress);
 									senWordsObj.setRegexWordType(regexWordType);
 									senWordsObj.setRegexSensitiveWord2(regexSensitiveWord2);
 									senWordsObj.setRegexWordType2(regexWordType2);

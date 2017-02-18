@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.update;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
@@ -30,6 +32,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboard;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdSignboardName;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
@@ -876,56 +879,58 @@ public class Operation implements IOperation {
 	 */
 	private void breakOutLink(RdBranch branch, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
 
-		int connectionNodePid = 0;
+		Set<Integer> connectionNodePids = new HashSet<Integer>();
+		
+		connectionNodePids.add(branch.getNodePid());
 
-		// 无经过线进入点为连接点；有经过线最后一个经过线与退出线的连接点为连接点
-		if (branch.getVias().size() == 0) {
+		if (branch.getRelationshipType() == 1) {
 
-			connectionNodePid = branch.getNodePid();
+			RdCrossNodeSelector crossNodeSelector = new RdCrossNodeSelector(
+					this.conn);
+
+			List<Integer> nodePids = crossNodeSelector
+					.getCrossNodePidByNode(branch.getNodePid());
+
+			connectionNodePids.addAll(nodePids);
 
 		} else {
 
-			// 任意经过线组的最后一个经过线
-			RdBranchVia lastVia = (RdBranchVia) branch.getVias().get(0);
+			List<Integer> linkPids = new ArrayList<Integer>();
 
 			for (IRow rowVia : branch.getVias()) {
 
 				RdBranchVia via = (RdBranchVia) rowVia;
 
-				if (lastVia.getGroupId() == via.getGroupId() && lastVia.getSeqNum() < via.getSeqNum()) {
-
-					lastVia = via;
-				}
+				linkPids.add(via.getLinkPid());
 			}
 
 			RdLinkSelector rdLinkSelector = new RdLinkSelector(this.conn);
 
-			List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(oldLink.getsNodePid(), false);
+			List<IRow> linkRows = rdLinkSelector.loadByIds(linkPids, true,
+					false);
 
-			if (linkPids.contains(lastVia.getLinkPid())) {
+			for (IRow linkRow : linkRows) {
+				
+				RdLink link = (RdLink) linkRow;
 
-				connectionNodePid = oldLink.getsNodePid();
+				connectionNodePids.add(link.getsNodePid());
 
-			} else {
-
-				connectionNodePid = oldLink.geteNodePid();
+				connectionNodePids.add(link.geteNodePid());
 			}
 		}
-
-		if (connectionNodePid == 0) {
-			return;
-		}
-
+		
 		for (RdLink link : newLinks) {
-			if (connectionNodePid == link.getsNodePid() || connectionNodePid == link.geteNodePid()) {
+			
+			if (connectionNodePids.contains(link.getsNodePid())
+					|| connectionNodePids.contains(link.geteNodePid())) {
 
 				branch.changedFields().put("outLinkPid", link.getPid());
 
 				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+				
 				break;
 			}
 		}
-
 	}
 
 	/**

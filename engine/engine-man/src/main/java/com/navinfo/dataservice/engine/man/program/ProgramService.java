@@ -5,9 +5,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -1802,6 +1804,43 @@ public class ProgramService {
 		return run.query(conn, selectSql, rsHandler);
 	}
 	
+	/**
+	 * 
+	 * @param conn
+	 * @param condition 搜索条件{"programId":[1,2,3]}
+	 * @return List<Integer>  [123,456]
+	 */
+	public Map<Integer,Set<Integer>> queryInforProgramGridById(Connection conn,int programId) throws Exception{
+		
+		String selectSql="SELECT M.GRID_ID, R.DAILY_DB_ID"
+				+ "  FROM PROGRAM_GRID_MAPPING M, GRID G, REGION R"
+				+ " WHERE M.PROGRAM_ID = "+programId
+				+ "   AND M.GRID_ID = G.GRID_ID"
+				+ "   AND G.REGION_ID = R.REGION_ID"
+				+ " UNION"
+				+ " SELECT G.GRID_ID, R.DAILY_DB_ID"
+				+ "  FROM INFOR_GRID_MAPPING I, PROGRAM P, GRID G, REGION R"
+				+ " WHERE I.INFOR_ID = P.INFOR_ID"
+				+ "   AND P.PROGRAM_ID = "+programId
+				+ "   AND I.GRID_ID = G.GRID_ID"
+				+ "   AND G.REGION_ID = R.REGION_ID";
+		
+		ResultSetHandler<Map<Integer,Set<Integer>>> rsHandler = new ResultSetHandler<Map<Integer,Set<Integer>>>(){
+			public Map<Integer,Set<Integer>> handle(ResultSet rs) throws SQLException {
+				Map<Integer,Set<Integer>> map=new HashMap<Integer, Set<Integer>>();
+				while(rs.next()){
+					int dbId = rs.getInt("DAILY_DB_ID");
+					if(!map.containsKey(dbId)){map.put(dbId, new HashSet<Integer>());}
+					map.get(dbId).add(rs.getInt("GRID_ID"));
+				}
+				return map;
+			}
+    	};
+		
+		QueryRunner run=new QueryRunner();
+		return run.query(conn, selectSql, rsHandler);
+	}
+	
 	public void openStatus(Connection conn,JSONArray programIds) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
@@ -1836,5 +1875,37 @@ public class ProgramService {
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+
+	/**
+	 * 调整项目范围
+	 * @param conn
+	 * @param programId
+	 * @param gridIdMap:<gridId,类型>
+	 * @throws Exception 
+	 */
+	public void updateProgramRegion(Connection conn, Integer programId, Map<Integer, Integer> gridIdMap) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "insert into PROGRAM_GRID_MAPPING (PROGRAM_ID, GRID_ID,TYPE) VALUES (?,?,?)";
+			Object[][] inParam = new Object[gridIdMap.size()][];
+			int i = 0;
+			for(Map.Entry<Integer, Integer> entry:gridIdMap.entrySet()){
+				Object[] temp = new Object[3];
+				temp[0] = programId;
+				temp[1] = entry.getKey();
+				temp[2] = entry.getValue();
+				inParam[i] = temp;
+				i++;
+			}
+			log.info("调整项目范围:" + sql);
+			run.batch(conn, sql, inParam);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入失败，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 }

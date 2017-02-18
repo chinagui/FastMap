@@ -23,6 +23,7 @@ import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -30,6 +31,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -115,7 +117,7 @@ public class TaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	private int create(Connection conn, List<Task> taskList) throws Exception {
+	public int create(Connection conn, List<Task> taskList) throws Exception {
 		// TODO Auto-generated method stub
 		int total = 0;
 		for(Task task:taskList){
@@ -139,7 +141,7 @@ public class TaskService {
 			 * 2.如果block没有开启则开启block
 			 */
 			if(bean.getBlockId()!=0){
-				TaskOperation.updateLatest(conn,bean.getBlockId(),bean.getType());
+				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
 				List<Integer> blockList = new ArrayList<Integer>();
 				blockList.add(bean.getBlockId());
 				BlockOperation.openBlockByBlockIdList(conn,blockList);
@@ -161,71 +163,71 @@ public class TaskService {
 		return taskId;
 	}
 
-	/**
-	 * 根据情报id创建blockMan，若跨2个block，需要创建各自的blockMan
-	 * @param conn
-	 * @param inforId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlock(Connection conn,String inforId,int userId,int taskId) throws Exception{
-		//查询情报infor
-		//Infor inforObj=InforManService.getInstance().query(inforId);
-		//String inforGeo=inforObj.getGeometry();
-		//查询情报city100002对应的所有block
-		//select block_id,geometry from block where city_id=100002
-		String selectSql="SELECT DISTINCT B.BLOCK_ID,I.INFOR_NAME||'_'||B.BLOCK_NAME BLOCK_NAME"
-				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM,INFOR I"
-				+ " WHERE B.CITY_ID = 100002"
-				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
-				+ "   AND IM.GRID_ID = M.GRID_ID"
-				+ "   AND IM.INFOR_ID = I.INFOR_ID"
-				+ "   AND IM.INFOR_ID='"+inforId+"'";
-		List<Map<String, Object>> blockList=new ArrayList<Map<String, Object>>();
-		try {
-			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-					while (rs.next()) {
-						Map<String, Object> blockTmp=new HashMap<String, Object>();
-						blockTmp.put("blockId", rs.getInt("BLOCK_ID"));
-						blockTmp.put("blockName", rs.getString("BLOCK_NAME"));
-						list.add(blockTmp);
-					}
-					return list;
-				}
-
-			};
-			blockList= run.query(conn, selectSql, rsHandler);
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
-		}
-		List<Integer> blockIdList=new ArrayList<Integer>();
-		for(Map<String, Object> blockId:blockList){
-			blockIdList.add((Integer) blockId.get("blockId"));
-			createInforBlockMan(conn,(Integer) blockId.get("blockId"),String.valueOf(blockId.get("blockName")),userId,taskId);}
-		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
-	}
-	
-	/**
-	 * 创建情报任务
-	 * @param conn
-	 * @param blockId
-	 * @param userId
-	 * @param taskId
-	 * @throws Exception
-	 */
-	private void createInforBlockMan(Connection conn,Integer blockId,String blockName,int userId,int taskId) throws Exception{
-		String sql="insert into block_man (block_man_id,block_id,block_man_name,status,latest,create_user_id,create_date,task_id)"
-				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",'"+blockName+"',2,1,"+userId+",sysdate,"+taskId+")";
-		QueryRunner run = new QueryRunner();
-		run.update(conn,sql);	
-	}
-	
+//	/**
+//	 * 根据情报id创建blockMan，若跨2个block，需要创建各自的blockMan
+//	 * @param conn
+//	 * @param inforId
+//	 * @param userId
+//	 * @param taskId
+//	 * @throws Exception
+//	 */
+//	private void createInforBlock(Connection conn,String inforId,int userId,int taskId) throws Exception{
+//		//查询情报infor
+//		//Infor inforObj=InforManService.getInstance().query(inforId);
+//		//String inforGeo=inforObj.getGeometry();
+//		//查询情报city100002对应的所有block
+//		//select block_id,geometry from block where city_id=100002
+//		String selectSql="SELECT DISTINCT B.BLOCK_ID,I.INFOR_NAME||'_'||B.BLOCK_NAME BLOCK_NAME"
+//				+ "  FROM BLOCK B, BLOCK_GRID_MAPPING M, INFOR_GRID_MAPPING IM,INFOR I"
+//				+ " WHERE B.CITY_ID = 100002"
+//				+ "   AND B.BLOCK_ID = M.BLOCK_ID"
+//				+ "   AND IM.GRID_ID = M.GRID_ID"
+//				+ "   AND IM.INFOR_ID = I.INFOR_ID"
+//				+ "   AND IM.INFOR_ID='"+inforId+"'";
+//		List<Map<String, Object>> blockList=new ArrayList<Map<String, Object>>();
+//		try {
+//			QueryRunner run = new QueryRunner();
+//			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
+//				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+//					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
+//					while (rs.next()) {
+//						Map<String, Object> blockTmp=new HashMap<String, Object>();
+//						blockTmp.put("blockId", rs.getInt("BLOCK_ID"));
+//						blockTmp.put("blockName", rs.getString("BLOCK_NAME"));
+//						list.add(blockTmp);
+//					}
+//					return list;
+//				}
+//
+//			};
+//			blockList= run.query(conn, selectSql, rsHandler);
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new Exception("查询失败，原因为:" + e.getMessage(), e);
+//		}
+//		List<Integer> blockIdList=new ArrayList<Integer>();
+//		for(Map<String, Object> blockId:blockList){
+//			blockIdList.add((Integer) blockId.get("blockId"));
+//			createInforBlockMan(conn,(Integer) blockId.get("blockId"),String.valueOf(blockId.get("blockName")),userId,taskId);}
+//		BlockOperation.openBlockByBlockIdList(conn, blockIdList);
+//	}
+//	
+//	/**
+//	 * 创建情报任务
+//	 * @param conn
+//	 * @param blockId
+//	 * @param userId
+//	 * @param taskId
+//	 * @throws Exception
+//	 */
+//	private void createInforBlockMan(Connection conn,Integer blockId,String blockName,int userId,int taskId) throws Exception{
+//		String sql="insert into block_man (block_man_id,block_id,block_man_name,status,latest,create_user_id,create_date,task_id)"
+//				+ "values(BLOCK_MAN_SEQ.NEXTVAL,"+blockId+",'"+blockName+"',2,1,"+userId+",sysdate,"+taskId+")";
+//		QueryRunner run = new QueryRunner();
+//		run.update(conn,sql);	
+//	}
+//	
 //	public String taskPushMsg(long userId,JSONArray taskIds) throws Exception{
 //		Connection conn = null;
 //		try{
@@ -279,11 +281,65 @@ public class TaskService {
 			//查询task数据，包含作业组leaderId
 			List<Task> taskList = getTaskListWithLeader(conn,taskIds);
 			
-			//给作业组leader发送消息
+			List<Task> updatedTaskList = new ArrayList<Task>();
+			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			for(Task task:taskList){
+				if(task.getType() == 3){
+					//二代任务发布特殊处理
+				}else{
+					updatedTaskList.add(task);
+					updatedTaskIdList.add(task.getTaskId());
+					total ++;
+				}
+			}
+			
+			//更新task状态
+			TaskOperation.updateStatus(conn, taskIds);
+			
+			//发布消息
+			taskPushMsg(conn,userId,updatedTaskList);
+			
+			return "task批量发布"+total+"个成功，0个失败";
+//			//给作业组leader发送消息
+//			int total = 0;
+//			List<Object[]> msgContentList=new ArrayList<Object[]>();
+//			String msgTitle="task发布";
+//			for (Task task : taskList) {
+//				if(task.getGroupLeader()!=0){
+//					Object[] msgTmp=new Object[4];
+//					msgTmp[0]=task.getGroupLeader();//收信人
+//					msgTmp[1]=msgTitle;//消息头
+//					msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
+//					//关联要素
+//					JSONObject msgParam = new JSONObject();
+//					msgParam.put("relateObject", "TASK");
+//					msgParam.put("relateObjectId", task.getTaskId());
+//					msgTmp[3]=msgParam.toString();//消息对象
+//					msgContentList.add(msgTmp);
+//				}
+//				if(msgContentList.size()>0){
+//					taskPushMsgByMsg(conn,msgContentList,userId);	
+//				}
+//				total++;
+//			}
+//			
+//			return "task批量发布"+total+"个成功，0个失败";
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("task消息发送失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}		
+	}
+	
+	public void taskPushMsg(Connection conn,long userId,List<Task> updatedTaskList) throws Exception{
+		try {
+			//给作业组leader发送消息
 			List<Object[]> msgContentList=new ArrayList<Object[]>();
 			String msgTitle="task发布";
-			for (Task task : taskList) {
+			for (Task task : updatedTaskList) {
 				if(task.getGroupLeader()!=0){
 					Object[] msgTmp=new Object[4];
 					msgTmp[0]=task.getGroupLeader();//收信人
@@ -299,17 +355,10 @@ public class TaskService {
 				if(msgContentList.size()>0){
 					taskPushMsgByMsg(conn,msgContentList,userId);	
 				}
-				total++;
 			}
-			//更新task状态
-			TaskOperation.updateStatus(conn, taskIds);
-			return "task批量发布"+total+"个成功，0个失败";
 		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("task消息发送失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}		
 	}
 	
@@ -686,25 +735,25 @@ public class TaskService {
 //			}
 //		}
 //	}
-	
-	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
-		//常规未发布
-		Page page = new Page();
-		if(planStatus==1){
-			page=TaskOperation.getCommonUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==2){
-			//常规已发布
-			page=TaskOperation.getCommonPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==3){
-			//常规已完成
-			page=TaskOperation.getCommonOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==4){
-			//常规已关闭
-			page=TaskOperation.getCommonCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
-		}
-		return page;
-	}
-	
+//	
+//	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+//		//常规未发布
+//		Page page = new Page();
+//		if(planStatus==1){
+//			page=TaskOperation.getCommonUnPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==2){
+//			//常规已发布
+//			page=TaskOperation.getCommonPushListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==3){
+//			//常规已完成
+//			page=TaskOperation.getCommonOverListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}else if(planStatus==4){
+//			//常规已关闭
+//			page=TaskOperation.getCommonCloseListSnapshot(conn,conditionJson,currentPageNum,pageSize);
+//		}
+//		return page;
+//	}
+//	
 //	public Page inforList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 //		//情报未发布
 //		Page page = new Page();
@@ -1019,121 +1068,87 @@ public class TaskService {
 //		}
 //	}	
 	
-	public List<Integer> close(List<Integer> taskidList, long userId)throws Exception{
+	/*
+	 * 查询task
+	 * 关闭task,相应修改block状态
+	 * 采集任务:
+	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
+	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
+	 * 日编任务:
+	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 发送消息
+	 */
+	public String close(int taskId, long userId)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
+			Task task = queryByTaskId(taskId);
+			//更新任务状态
+			Task taskTemp = new Task();
+			taskTemp.setTaskId(taskId);
+			taskTemp.setStatus(0);
+			TaskOperation.updateTask(conn, taskTemp);
+			//更新block状态：如果所有task都已关闭，则block状态置3
+			TaskOperation.closeBlock(conn,task.getBlockId());
 			
-			String taskIdStr=taskidList.toString().replace("[", "").replace("]", "").replace("\"", "");
-			//判断任务是否可关闭
-			String checkSql="SELECT T.TASK_ID"
-					+ "    FROM TASK T, BLOCK_MAN BM"
-					+ "   WHERE T.TASK_ID = BM.TASK_ID"
-					+ "     AND NOT EXISTS (SELECT 1"
-					+ "            FROM BLOCK_MAN BMM"
-					+ "           WHERE BMM.TASK_ID = T.TASK_ID"
-					+ "             AND BMM.STATUS <> 0)";
-					
-					/*"SELECT T.TASK_ID, '有未关闭的BLOCK，任务无法关闭'"
-					+ "  FROM TASK T, BLOCK B"
-					+ " WHERE T.TASK_ID IN ("+taskIdStr+")"
-					+ "   AND T.CITY_ID = B.CITY_ID"
-					+ "   AND B.PLAN_STATUS <> 2"
-					+ " UNION"
-					+ " SELECT ST.TASK_ID, '有未关闭的月编子任务，任务无法关闭'"
-					+ "  FROM SUBTASK ST"
-					+ " WHERE ST.TASK_ID IN ("+taskIdStr+")"
-					+ "   AND ST.STAGE = 2"
-					+ "   AND ST.STATUS <> 0";*/
-			List<List<String>> checkResult=DbOperation.exeSelectBySql(conn, checkSql, null);
-			JSONArray closeTask=new JSONArray();
-			List<Integer> newTask=new ArrayList<Integer>();
-			//newTask.addAll(taskidList);
-			HashMap<String,String> checkMap=new HashMap<String,String>();
+			//动态调整
+			//获取该任务新增的grid
+			Map<Integer, Integer> gridIdMap = TaskOperation.getAddedGridMap(conn,taskId);
+			//调整该任务范围
+			TaskOperation.insertTaskGridMapping(conn, taskId, gridIdMap);
 			
-			if(checkResult.size()>0){
-				for(int i=0;i<checkResult.size();i++){
-					String taskIdTmp=checkResult.get(i).get(0);
-					newTask.add(Integer.valueOf(taskIdTmp));
-				}		
-			}
-			
-			/*if(checkResult.size()>0){
-				List<Integer> errorTask=new ArrayList<Integer>();
-				for(int i=0;i<checkResult.size();i++){
-					String taskIdTmp=checkResult.get(i).get(0);
-					errorTask.add(Integer.valueOf(taskIdTmp));
-					if(!checkMap.containsKey(taskIdTmp)){checkMap.put(taskIdTmp, "");}
-					checkMap.put(taskIdTmp, checkMap.get(taskIdTmp)+checkResult.get(i).get(1));
+			//如果任务类型为采集
+			if(task.getType() == 0){
+				//调整日编任务范围
+				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
+				//调整区域子任务范围
+				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,taskId,4);
+				for(Subtask subtask:subtaskList){
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtask.getSubtaskId(), gridIdMap);
 				}
-				newTask.removeAll(errorTask);				
-			}*/
-			if(newTask.size()>0){
-				String updateSql="UPDATE TASK SET STATUS=0 "
-						+ "WHERE TASK_ID IN ("+newTask.toString().replace("[", "").
-						replace("]", "").replace("\"", "")+")";
-				DbOperation.exeUpdateOrInsertBySql(conn, updateSql);
-				
-				//关闭对应的city
-				CityOperation.close(conn);
-				
-				//关闭对应的infor
-				InforManOperation.closeByTasks(conn,newTask);
-			
-				try {
-					//发送消息
-					JSONObject condition=new JSONObject();
-					condition.put("taskIds",JSONArray.fromObject(newTask));
-					List<Map<String, Object>> openTasks = TaskOperation.queryTaskTable(conn, condition);
-					/*任务创建/编辑/关闭
-					 *1.所有生管角色
-					 *2.任务包含的block分配的采集作业组组长
-					 *3.任务包含的block分配的日编作业组组长
-					 *4.分配的月编作业组组长
-					 *任务关闭:XXX(任务名称)已关闭，请关注*/			
-					String msgTitle="任务关闭";
-					List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
-					List<Long> groupIdList = new ArrayList<Long>();
-					for(Map<String, Object> task:openTasks){
-						Map<String,Object> map = new HashMap<String, Object>();
-						String msgContent = "任务关闭:"+task.get("taskName")+"已关闭,请关注";
-						map.put("msgContent", msgContent);
-						//关联要素
-						JSONObject msgParam = new JSONObject();
-						msgParam.put("relateObject", "TASK");
-						msgParam.put("relateObjectId", task.get("taskId"));
-						map.put("msgParam", msgParam.toString());						
-						
-						groupIdList.add((Long) task.get("monthEditGroupId"));
-						List<Long> taskGroupIds = new ArrayList<Long>();
-						taskGroupIds.add((Long) task.get("monthEditGroupId"));
-						//查询block分配的采集和日编作业组组长id
-						if(task.get("taskId") != null){
-							Map<String, Object> blockMan = TaskOperation.getBlockManByTaskId(conn, (long) task.get("taskId"), 1);
-							if(blockMan != null){
-								groupIdList.add((Long) blockMan.get("collectGroupId"));
-								groupIdList.add((Long) blockMan.get("dayEditGroupId"));
-								taskGroupIds.add((Long) blockMan.get("collectGroupId"));
-								taskGroupIds.add((Long) blockMan.get("dayEditGroupId"));
-							}
-						}
-						map.put("taskGroupIds", taskGroupIds);
-						msgContentList.add(map);
-					}
-//					if(msgContentList.size()>0){
-//						taskPushMsg(conn,msgTitle,msgContentList, groupIdList, userId);
-//					}
-				} catch (Exception e) {
-					// TODO: handle exception
-					e.printStackTrace();
-					log.error("任务关闭消息发送失败,原因:"+e.getMessage(), e);
+				if(task.getBlockId()==0){
+					//调整项目范围
+					ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
+				}else{
+					//调整二代任务范围
+					TaskOperation.updateTaskRegion(conn,taskId,4,gridIdMap);
 				}
 			}
-	    	return newTask;
+			//日编任务,快速更新项目
+			else if((task.getType()==1)&&(task.getBlockId()==0)){
+				//调整项目范围
+				ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
+			}
+			
+			//发送消息
+			try {
+				List<Object[]> msgContentList=new ArrayList<Object[]>();
+				String msgTitle="task发布";
+				if(task.getGroupLeader()!=0){
+					Object[] msgTmp=new Object[4];
+					msgTmp[0]=task.getGroupLeader();//收信人
+					msgTmp[1]=msgTitle;//消息头
+					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "TASK");
+					msgParam.put("relateObjectId", task.getTaskId());
+					msgTmp[3]=msgParam.toString();//消息对象
+					msgContentList.add(msgTmp);
+				}
+				if(msgContentList.size()>0){
+					taskPushMsgByMsg(conn,msgContentList,userId);	
+				}
+			} catch (Exception e) {
+				// TODO: handle exception
+				e.printStackTrace();
+				log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
+			}
+			return "";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("删除失败，原因为:"+e.getMessage(),e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -1203,6 +1218,8 @@ public class TaskService {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						
+						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
 				}
@@ -1245,8 +1262,8 @@ public class TaskService {
 			map.put("workProperty", task.getWorkProperty());
 			map.put("programId", task.getProgramId());
 			map.put("programType", task.getProgramName());
-			map.put("creatUserId", task.getCreateUserId());
-			map.put("creatUserName", task.getCreateUserName());
+			map.put("createUserId", task.getCreateUserId());
+			map.put("createUserName", task.getCreateUserName());
 			map.put("groupId", task.getGroupId());
 			map.put("groupName", task.getGroupName());
 			map.put("gridIds", task.getGridIds());
@@ -1301,7 +1318,7 @@ public class TaskService {
 //			DbUtils.commitAndCloseQuietly(conn);
 //		}
 //	}
-	
+//	
 	public List<Task> queryTaskAll() throws Exception{
 		Connection conn = null;
 		try{
@@ -1393,6 +1410,166 @@ public class TaskService {
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map<String,Integer>> queryTaskCmsProgress(int taskId) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "SELECT Phase_id，PHASE,STATUS FROM TASK_CMS_PROGRESS WHERE TASK_ID= " + taskId;
+			
+			ResultSetHandler<List<Map<String,Integer>>> rsHandler = new ResultSetHandler<List<Map<String,Integer>>>() {
+				public List<Map<String,Integer>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Integer>> arrayList = new ArrayList<Map<String,Integer>>();
+					while(rs.next()) {
+						Map<String,Integer> map=new HashMap<String, Integer>();
+						map.put("phaseId", rs.getInt("PHASE_ID"));
+						//map.put("taskId", rs.getInt("TASK_ID"));
+						map.put("phase", rs.getInt("PHASE"));
+						map.put("status", rs.getInt("STATUS"));
+						arrayList.add(map);
+					}
+					return arrayList;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public void taskUpdateCmsProgress(int phaseId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//修改本阶段执行状态
+			updateCmsProgressStatus(phaseId, status);
+			//执行失败，则停止后续操作
+			if(status==3){return;}
+			//执行成功，则继续后续步骤
+			//TODO
+			//查询前2个并行阶段是否执行成功
+			List<Map<String, Integer>> list = queryCmsProgreeByOnePhaseId(conn, phaseId);
+			//日落月开关修改
+			boolean isSuccess=closeDay2MonthMesh(phaseId);
+			if(!isSuccess){updateCmsProgressStatus(phaseId, 3);return;}
+			updateCmsProgressStatus(phaseId, 2);
+			//cms任务创建
+			isSuccess=createCmsTask(phaseId);
+			if(!isSuccess){updateCmsProgressStatus(phaseId, 3);return;}
+			updateCmsProgressStatus(phaseId, 2);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**根据阶段自动执行相关步骤
+	 * @param 
+	 * @return 
+	 */
+	public boolean exeCmsProgree(int phaseId,int phase) throws Exception{
+		//TODO
+		return true;
+	}
+	
+	/**根据任务id关闭日落月开关
+	 * @param taskId
+	 * @return 关闭成功，返回true；否则，false
+	 */
+	public boolean closeDay2MonthMesh(int phaseId) throws Exception{
+		//TODO
+		return true;
+	}
+	
+	/**cms任务创建
+	 * 管理库中查询cms任务创建所需参数，然后调用cms任务创建http；http返回成功，则成功；否则失败。
+	 * @param taskId
+	 * @return 关闭成功，返回true；否则，false
+	 */
+	public boolean createCmsTask(int phaseId) throws Exception{
+		//TODO
+		return true;
+	}
+	
+	/**
+	 * 是否继续执行后续cms任务
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map<String, Integer>> queryCmsProgreeByOnePhaseId(Connection conn,int phaseId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "SELECT t2.phase_id,t2.task_id,t2.phase,t2.status"
+					+ "  FROM TASK_CMS_PROGRESS T1, TASK_CMS_PROGRESS T2"
+					+ " WHERE T1.PHASE_ID = "+phaseId
+					+ "   AND T1.TASK_ID = T2.TASK_ID"
+					+ "   AND T2.STATUS != 2" ;
+			ResultSetHandler<List<Map<String, Integer>>> rsHandler = new ResultSetHandler<List<Map<String, Integer>>>() {
+				public List<Map<String, Integer>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Integer>> list=new ArrayList<Map<String, Integer>>();
+					if(rs.next()) {
+						Map<String, Integer> map=new HashMap<String, Integer>();
+						map.put("phaseId", rs.getInt("phase_id"));
+						map.put("taskId", rs.getInt("task_id"));
+						map.put("phase", rs.getInt("phase"));
+						map.put("status", rs.getInt("status"));
+						list.add(map);
+					}
+					return list;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 修改二代编辑任务发布阶段执行状态
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public void updateCmsProgressStatus(int phaseId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+" WHERE PHASE_ID = "+phaseId ;
+			run.update(conn, selectSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	

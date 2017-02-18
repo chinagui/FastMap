@@ -42,6 +42,7 @@ public class CheckService {
 	 * @return
 	 * @throws Exception 
 	 */
+	@SuppressWarnings("unchecked")
 	public long checkRun(int subtaskId,long userId,int checkType,JSONObject jsonReq) throws Exception{
 		long jobId=0;
 		
@@ -81,8 +82,12 @@ public class CheckService {
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
 			//System.out.println("jobId == "+jobId);
 			}
-		}else if(checkType==3 ||checkType ==4){//道路
-			List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
+			List<Integer> grids= new ArrayList<Integer>();
+			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
+				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+			}
+			
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("grids", grids);
 			validationRequestJSON.put("rules", ruleList);
@@ -90,7 +95,7 @@ public class CheckService {
 			jobId=apiService.createJob("gdbValidation", validationRequestJSON, userId,subtaskId, "检查");
 		}//20161214 by zxy,目前行编按需检查规则未实现，不能使用新框架进行检查，暂时行编自定义检查还是通过cop检查执行，
 		//但是相关job接口已ok，检查规则实现后，开放即可
-		else if(checkType ==1){//checkType ==1poi行编
+		else if(checkType ==9){//checkType ==1poi行编
 			JSONObject poiRequestJSON=new JSONObject();
 //			*checkType ==0poi行编 
 //			 * 必传参数：subtaskId,ckRules

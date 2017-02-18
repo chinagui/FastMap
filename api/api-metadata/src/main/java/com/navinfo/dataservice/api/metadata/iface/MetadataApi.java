@@ -40,9 +40,8 @@ public interface MetadataApi {
 	 * select sensitive_word,sensitive_word2,kind_code,admincode,type from SC_SENSITIVE_WORDS
 	 * @return Map<Integer, List<ScSensitiveWordsObj>>:key，type;value:ScSensitiveWordsObj列表
 	 * @throws Exception
-	 * type:1-POI 地址,2-POI 名称及其他
 	 */
-	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap(int type) throws Exception;
+	public Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap() throws Exception;
 	/**
 	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=8
 	 * @return 
@@ -83,6 +82,14 @@ public interface MetadataApi {
 	public String searchKindName(String kindcode) throws Exception;
 	
 	public String[] pyConvert(String word) throws Exception;
+	
+	/**
+	 * 转拼音，不转数字英文字母
+	 * @param word
+	 * @return
+	 * @throws Exception
+	 */
+	public String pyConvertHz(String word) throws Exception;
 	
 	/**
 	 * 根据瓦片渲染TMC_POINT
@@ -296,5 +303,6 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public List<String> searchByErrorName(String name) throws Exception;
+    public List<String> queryAdRack(int type) throws Exception;
 
 }

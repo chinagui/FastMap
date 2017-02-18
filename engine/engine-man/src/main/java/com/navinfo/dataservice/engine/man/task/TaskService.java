@@ -1218,6 +1218,8 @@ public class TaskService {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+						
+						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
 				}

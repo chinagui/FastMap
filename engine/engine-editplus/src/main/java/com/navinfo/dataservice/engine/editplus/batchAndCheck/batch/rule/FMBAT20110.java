@@ -99,7 +99,7 @@ public class FMBAT20110 extends BasicBatchRule {
 		log.debug("adminCode=" + adminCode);
 		if (adminCode == 0) {return;}
 		boolean isChanged = false;
-		//boolean isChanged = true;
+//		boolean isChanged = true;
 		// 存在IX_POI_ADDRESS新增或者修改履历
 		for (IxPoiAddress addr: addresses) {
 			if (addr.getHisOpType().equals(OperationType.INSERT) || addr.getHisOpType().equals(OperationType.UPDATE)){
@@ -222,6 +222,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            		int keyIdx = streetPre.indexOf(place);
 	            		placePre = streetPre.substring(0, keyIdx);
 	            		placePost = streetPre.substring(keyIdx + place.length());
+	            		landMark = placePost;
 	                    log.debug("streetPre="+streetPre);
 	                    log.debug("placePre="+placePre);
 	                    log.debug("streetPost="+streetPost);
@@ -666,8 +667,8 @@ public class FMBAT20110 extends BasicBatchRule {
 	            surfix = specialJson.getString("surfix");
 	            estab = specialJson.getString("estab");
 	            building = specialJson.getString("building");
-	            floor = specialJson.getString("unit");
-	            unit = specialJson.getString("floor");
+	            floor = specialJson.getString("floor");
+	            unit = specialJson.getString("unit");
 	            roomNum = specialJson.getString("roomNum");
 	            addOns = specialJson.getString("addOns");
 	            
@@ -681,7 +682,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            addressWrap.setCityPhonetic(metadataApi.pyConvertHz(city));
 	            // county
 	            addressWrap.setCounty(county);
-	            addressWrap.setCityPhonetic(metadataApi.pyConvertHz(county));
+	            addressWrap.setCountyPhonetic(metadataApi.pyConvertHz(county));
 	            // town
 	            addressWrap.setTown(town);
 	            addressWrap.setTownPhonetic(metadataApi.pyConvertHz(town));
@@ -723,6 +724,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            addressWrap.setUnitPhonetic(metadataApi.pyConvertHz(unit));
 	            // roomNum
 	            addressWrap.setRoom(roomNum);
+	            String roomNumPhe = metadataApi.pyConvertHz(roomNum);
 	            addressWrap.setRoomPhonetic(metadataApi.pyConvertHz(roomNum));
 	            // addOns
 	            addressWrap.setAddons(addOns);

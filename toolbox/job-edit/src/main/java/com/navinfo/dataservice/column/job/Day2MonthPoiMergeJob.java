@@ -228,23 +228,23 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
 			if(0==flushResult.getTotal()){
 				log.info("没有符合条件的履历，不执行日落月，返回");
-				return;
+			}else{
+				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
+				logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
+				LogMoveResult logMoveResult = logMover.move();
+				log.info("开始进行履历分析");
+				OperationResult result = parseLog(logMoveResult, monthConn);
+				log.info("开始进行深度信息打标记");
+				new DeepInfoMarker(result,monthConn).execute();
+				log.info("开始执行前批");
+				new PreBatch(result, monthConn).execute();
+				log.info("开始执行检查");
+				Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
+				new Classifier(checkResult,monthConn).execute();
+				log.info("开始执行后批处理");
+				new PostBatch(result,monthConn).execute();
+				updateLogCommitStatus(dailyConn,tempOpTable);
 			}
-			log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
-			logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
-			LogMoveResult logMoveResult = logMover.move();
-			log.info("开始进行履历分析");
-			OperationResult result = parseLog(logMoveResult, monthConn);
-			log.info("开始进行深度信息打标记");
-			new DeepInfoMarker(result,monthConn).execute();
-			log.info("开始执行前批");
-			new PreBatch(result, monthConn).execute();
-			log.info("开始执行检查");
-			Map<String, Map<Long, Set<String>>> checkResult = new Check(result, monthConn).execute();
-			new Classifier(checkResult,monthConn).execute();
-			log.info("开始执行后批处理");
-			new PostBatch(result,monthConn).execute();
-			updateLogCommitStatus(dailyConn,tempOpTable);
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);

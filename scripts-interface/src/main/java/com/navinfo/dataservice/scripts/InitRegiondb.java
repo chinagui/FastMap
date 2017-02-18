@@ -132,44 +132,47 @@ public class InitRegiondb {
 				installPckUtils(dbDay,1);
 				response.put("region_"+key+"_day_utils", "success");
 				//创建月db
-				JobInfo info3 = new JobInfo(0, "");
-				info3.setType("createDb");
-				JSONObject req3 = new JSONObject();
-				req3.put("dbName", "orcl");
-				req3.put("userName", userNamePrefix+"_m_"+key);
-				req3.put("userPasswd", userNamePrefix+"_m_"+key);
-				req3.put("bizType", "regionRoad");
-				req3.put("descp", "region db");
-				req3.put("gdbVersion", gdbVersion);
-				req3.put("serverType", DbServerType.TYPE_ORACLE);
-				info3.setRequest(req3);
-				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
-				job3.run();
-				if(job3.getJobInfo().getStatus()!=3){
-					String msg = (job3.getException()==null)?"未知错误。":"错误："+job3.getException().getMessage();
-					throw new Exception("创建月库DB过程中job内部发生"+msg);
-				}
-				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
-				response.put("region_"+key+"_month", dbMonth);
-				JobInfo info4 = new JobInfo(0,"");
-				info4.setType("gdbFullCopy");
-				JSONObject req4 = new JSONObject();
-				req4.put("sourceDbId", dbDay);
-				req4.put("targetDbId", dbMonth);
-				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
-				req4.put("gdbVersion", gdbVersion);
-				info4.setRequest(req4);
-				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
-				job4.run();
-				if(job4.getJobInfo().getStatus()!=3){
-					String msg = (job4.getException()==null)?"未知错误。":"错误："+job4.getException().getMessage();
-					throw new Exception("月库导数据过程中job内部发生"+msg);
-				}
-				response.put("region_"+key+"_month_exp", "success");
-				installPckUtils(dbMonth,2);
-				response.put("region_"+key+"_month_utils", "success");
+//				JobInfo info3 = new JobInfo(0, "");
+//				info3.setType("createDb");
+//				JSONObject req3 = new JSONObject();
+//				req3.put("dbName", "orcl");
+//				req3.put("userName", userNamePrefix+"_m_"+key);
+//				req3.put("userPasswd", userNamePrefix+"_m_"+key);
+//				req3.put("bizType", "regionRoad");
+//				req3.put("descp", "region db");
+//				req3.put("gdbVersion", gdbVersion);
+//				req3.put("serverType", DbServerType.TYPE_ORACLE);
+//				info3.setRequest(req3);
+//				AbstractJob job3 = JobCreateStrategy.createAsMethod(info3);
+//				job3.run();
+//				if(job3.getJobInfo().getStatus()!=3){
+//					String msg = (job3.getException()==null)?"未知错误。":"错误："+job3.getException().getMessage();
+//					throw new Exception("创建月库DB过程中job内部发生"+msg);
+//				}
+//				int dbMonth = job3.getJobInfo().getResponse().getInt("outDbId");
+//				response.put("region_"+key+"_month", dbMonth);
+//				JobInfo info4 = new JobInfo(0,"");
+//				info4.setType("gdbFullCopy");
+//				JSONObject req4 = new JSONObject();
+//				req4.put("sourceDbId", dbDay);
+//				req4.put("targetDbId", dbMonth);
+//				req4.put("featureType", GlmTable.FEATURE_TYPE_ALL);
+//				req4.put("gdbVersion", gdbVersion);
+//				info4.setRequest(req4);
+//				AbstractJob job4 = JobCreateStrategy.createAsMethod(info4);
+//				job4.run();
+//				if(job4.getJobInfo().getStatus()!=3){
+//					String msg = (job4.getException()==null)?"未知错误。":"错误："+job4.getException().getMessage();
+//					throw new Exception("月库导数据过程中job内部发生"+msg);
+//				}
+//				response.put("region_"+key+"_month_exp", "success");
+//				installPckUtils(dbMonth,2);
+//				response.put("region_"+key+"_month_utils", "success");
 				//写入dbID
-				insertDbIds(conn,key,dbDay,dbMonth);
+				//过渡期母库作为全部月库
+				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
+//				insertDbIds(conn,key,dbDay,dbMonth);
+				insertDbIds(conn,key,dbDay,nationDb.getDbId());
 				//更新grid表
 				insertGrids(conn,key);
 				//维护情报的block

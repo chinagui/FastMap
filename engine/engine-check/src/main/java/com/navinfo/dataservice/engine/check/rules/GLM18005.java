@@ -2,13 +2,11 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguide;
-import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -33,10 +31,10 @@ public class GLM18005 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
-			//关系类型编辑（语音引导详细信息表）
-			if (row instanceof RdVoiceguideDetail){
-				RdVoiceguideDetail rdVoiceguideDetail = (RdVoiceguideDetail) row;
-				this.checkRdVoiceguideDetail(rdVoiceguideDetail);
+			//新增顺行
+			if (row instanceof RdDirectroute){
+				RdDirectroute rdDirectroute = (RdDirectroute) row;
+				this.checkRdDirectroute(rdDirectroute);
 			}
 			//新增语音引导
 			else if (row instanceof RdVoiceguide){
@@ -67,21 +65,31 @@ public class GLM18005 extends baseRule {
 
 	/**
 	 * @author Han Shaoming
-	 * @param rdVoiceguideDetail
+	 * @param rdDirectroute
 	 * @throws Exception 
 	 */
-	private void checkRdVoiceguideDetail(RdVoiceguideDetail rdVoiceguideDetail) throws Exception {
+	private void checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdVoiceguideDetail.changedFields();
-		if(changedFields != null && changedFields.containsKey("relationshipType")){
-			int relationshipType = Integer.parseInt((String) changedFields.get("relationshipType"));
-			if(relationshipType == 1){
-				boolean check = this.check(rdVoiceguideDetail.getVoiceguidePid());
-				
-				if(check){
-					String target = "[RD_VOICEGUIDE," + rdVoiceguideDetail.getVoiceguidePid() + "]";
-					this.setCheckResult("", target, 0);
-				}
+		if(ObjStatus.INSERT.equals(rdDirectroute.status())){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT RD.PID FROM RD_VOICEGUIDE RV, RD_VOICEGUIDE_DETAIL RVD, RD_DIRECTROUTE RD");
+			sb.append(" WHERE RD.PID = "+rdDirectroute.getPid());
+			//sb.append(" AND RD.RELATIONSHIP_TYPE = 1 AND RVD.RELATIONSHIP_TYPE = 1");
+			sb.append(" AND RV.PID = RVD.VOICEGUIDE_PID");
+			sb.append(" AND RV.IN_LINK_PID = RD.IN_LINK_PID AND RV.NODE_PID = RD.NODE_PID");
+			sb.append(" AND RVD.OUT_LINK_PID = RD.OUT_LINK_PID AND RV.U_RECORD <> 2");
+			sb.append(" AND RVD.U_RECORD <> 2 AND RD.U_RECORD <> 2");
+			String sql = sb.toString();
+			log.info("后检查GLM18005--sql:" + sql);
+			
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(!resultList.isEmpty()){
+				String target = "[RD_DIRECTROUTE," + rdDirectroute.getPid() + "]";
+				this.setCheckResult("", target, 0);
 			}
 		}
 	}

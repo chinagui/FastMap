@@ -67,7 +67,7 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 64, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -90,22 +90,22 @@ public class CheckTest {
 //		logList1.add(logg1);
 //		chiAddress.setHisChangeLogs(logList1);
 		
-//		IxPoiName name = poiObj.getOfficeOriginCHName();
-//		ChangeLog namelogg=new ChangeLog();
-//		Map<String, Object> nameOldValues=new HashMap<String, Object>();
-//		nameOldValues.put("NAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
-//		namelogg.setOldValues(nameOldValues);
-//		namelogg.setOpType(OperationType.UPDATE);
-//		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
-//		nameLog.add(namelogg);
-//		name.setHisChangeLogs(nameLog);
+		IxPoiName name = poiObj.getOfficeOriginCHName();
+		ChangeLog namelogg=new ChangeLog();
+		Map<String, Object> nameOldValues=new HashMap<String, Object>();
+		nameOldValues.put("NAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+		namelogg.setOldValues(nameOldValues);
+		namelogg.setOpType(OperationType.UPDATE);
+		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
+		nameLog.add(namelogg);
+		name.setHisChangeLogs(nameLog);
 		
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-GLM60079-01");
+		ruleIdList.add("FM-YW-20-122");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

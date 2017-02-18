@@ -282,22 +282,26 @@ public class TaskService {
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
+			JSONArray commontaskIds=new JSONArray();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
+					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(task.getTaskId());
+					if(phaseList!=null&&phaseList.size()>0){continue;}
 					createCmsProgress(conn,task.getTaskId(),1);
 					createCmsProgress(conn,task.getTaskId(),2);
 					createCmsProgress(conn,task.getTaskId(),3);
 					createCmsProgress(conn,task.getTaskId(),4);
 					cmsTaskList.add(task.getTaskId());
 				}else{
+					commontaskIds.add(task.getTaskId());
 					updatedTaskList.add(task);
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
 				}
 			}			
 			//更新task状态
-			TaskOperation.updateStatus(conn, taskIds);			
+			TaskOperation.updateStatus(conn, commontaskIds);			
 			//发布消息
 			taskPushMsg(conn,userId,updatedTaskList);
 			conn.commit();
@@ -1544,6 +1548,13 @@ public class TaskService {
 				int phasestatus=createCmsTask(conn, phaseStatusMap.get(4));
 				if(phasestatus==0){return;}
 				taskUpdateCmsProgress(conn, phaseStatusMap.get(4), phasestatus);
+				curPhase=4;
+			}
+			if(curPhase==4){
+				//更新task状态
+				JSONArray cmsTaskIdArray=new JSONArray();
+				cmsTaskIdArray.add(phase.getTaskId());
+				TaskOperation.updateStatus(conn, cmsTaskIdArray);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

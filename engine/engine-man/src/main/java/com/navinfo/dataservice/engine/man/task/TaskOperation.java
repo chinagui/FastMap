@@ -2078,15 +2078,6 @@ public class TaskOperation {
 		}
 	}
 
-	/**
-	 * @param conn
-	 * @param taskId
-	 * @param gridIds
-	 */
-	public static void adjustTaskRegion(Connection conn, Integer taskId, List<Integer> gridIds) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	/**
 	 * @param conn

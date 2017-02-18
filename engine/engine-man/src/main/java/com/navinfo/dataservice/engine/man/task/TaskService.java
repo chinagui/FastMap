@@ -510,7 +510,7 @@ public class TaskService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
+				log.error("task编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 
 			return "任务批量修改"+total+"个成功，0个失败";

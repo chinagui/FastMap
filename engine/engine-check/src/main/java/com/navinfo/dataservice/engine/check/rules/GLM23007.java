@@ -14,7 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * GLM01514 窄道路的车道数等级只能为1
@@ -95,13 +95,13 @@ public class GLM23007 extends baseRule {
 
 			log.info("GLM23007-log1后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"非机动车道摄像头关联LINK不能是交叉口内LINK、航线");
 			}
 		}
 		//公交车道摄像头关联LINK不能是交叉口内LINK、10级路、航线
@@ -124,13 +124,13 @@ public class GLM23007 extends baseRule {
 
 			log.info("GLM23007-log2后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"公交车道摄像头关联LINK不能是交叉口内LINK、10级路、航线");
 			}
 		}
 		//电子眼关联的link不能是交叉口内link，9级路，10级路及航线，请修改
@@ -154,13 +154,13 @@ public class GLM23007 extends baseRule {
 
 			log.info("GLM23007-log3后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"电子眼关联的link不能是交叉口内link，9级路，10级路及航线，请修改");
 			}
 		}
 	}

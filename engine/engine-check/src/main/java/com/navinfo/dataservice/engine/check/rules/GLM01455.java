@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
@@ -45,9 +46,9 @@ public class GLM01455 extends baseRule {
 			sb.append(linkPid);
 
 			sb.append(
-					" AND R.LINK_PID = RCL.LINK_PID AND R.u_record！=2 AND RCL.u_record！=2 AND 50 NOT IN (SELECT RLF.FORM_OF_WAY FROM RD_LINK_FORM RLF WHERE R.LINK_PID = RLF.LINK_PID AND RLF.u_record！=2) AND 36 NOT IN (SELECT RLF.FORM_OF_WAY FROM RD_LINK_FORM RLF WHERE R.LINK_PID = RLF.LINK_PID AND RLF.u_record！=2) ");
+					" AND R.LINK_PID = RCL.LINK_PID AND R.u_record !=2 AND RCL.u_record !=2 AND 50 IN (SELECT RLF.FORM_OF_WAY FROM RD_LINK_FORM RLF WHERE R.LINK_PID = RLF.LINK_PID AND RLF.u_record!=2) AND 36 NOT IN (SELECT RLF.FORM_OF_WAY FROM RD_LINK_FORM RLF WHERE R.LINK_PID = RLF.LINK_PID AND RLF.u_record!=2) ");
 
-			log.info("RdLink后检查GLM01455 SQL:" + sb.toString());
+			logger.info("RdLink后检查GLM01455 SQL:" + sb.toString());
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
@@ -68,8 +69,11 @@ public class GLM01455 extends baseRule {
 		for (IRow row : checkCommand.getGlmList()) {
 			if (row instanceof RdLink) {
 				if (row instanceof RdLinkForm) {
-					RdLinkForm form = (RdLinkForm) row;
-					resultLinkPidSet.add(form.getLinkPid());
+					if(row.status() != ObjStatus.DELETE)
+					{
+						RdLinkForm form = (RdLinkForm) row;
+						resultLinkPidSet.add(form.getLinkPid());
+					}
 				}
 			}
 		}

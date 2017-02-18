@@ -49,15 +49,7 @@ public class GLM01188 extends baseRule {
 			sb.append(nodePid);
 
 			sb.append(
-					" AND N.U_RECORD <> 2 AND M.U_RECORD <> 2 AND ROWNUM = 1 AND EXISTS (SELECT 1 FROM (SELECT MAX(ROWNUM) NUM FROM RD_LINK L WHERE (L.E_NODE_PID =");
-			
-			sb.append(nodePid);
-			
-			sb.append(" OR L.S_NODE_PID = ");
-			
-			sb.append(nodePid);
-			
-			sb.append(" ) AND L.SPECIAL_TRAFFIC = 1 AND L.U_RECORD <> 2) WHERE NUM > 1)");
+					" AND ROWNUM = 1 AND EXISTS(SELECT 1 FROM RD_LINK L WHERE L.E_NODE_PID = N.NODE_PID OR L.S_NODE_PID = N.NODE_PID AND L.SPECIAL_TRAFFIC=1 GROUP BY N.NODE_PID HAVING COUNT(1) > 2)");
 			
 			log.info("RdLink后检查GLM01188 SQL:" + sb.toString());
 

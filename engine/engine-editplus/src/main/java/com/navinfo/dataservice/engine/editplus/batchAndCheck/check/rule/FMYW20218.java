@@ -71,9 +71,12 @@ public class FMYW20218 extends BasicCheckRule {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 						"网址信息格式错误，网址中存在Tab符、回车符或者空格");
 			}
-			if (webSite.substring(7).indexOf("/") >= 0) {
-				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-						"网址信息格式错误，网址中存在多余的“/”");
+			int webindex = webSite.indexOf("http://");
+			if (webindex>=0) {
+				if (webSite.substring(webindex+7).indexOf("/") >= 0) {
+					this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							"网址信息格式错误，网址中存在多余的“/”");
+				}
 			}
 			if (webSite.endsWith("\\")) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),

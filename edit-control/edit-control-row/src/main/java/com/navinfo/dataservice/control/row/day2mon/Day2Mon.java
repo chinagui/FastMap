@@ -26,9 +26,11 @@ public class Day2Mon {
 		long jobId = 0;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			String cityId = jsonReq.getString("cityId");
+			String specRegionId = jsonReq.getString("specRegionId");
+			String specMeshes = jsonReq.getString("specMeshes");
 			JSONObject jobReq = new JSONObject();
-			jobReq.element("cityId", cityId);
+			jobReq.element("specRegionId", specRegionId);
+			jobReq.element("specMeshes", specMeshes);
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
 			jobId = apiService.createJob("day2MonSync", jobReq, userId,0,

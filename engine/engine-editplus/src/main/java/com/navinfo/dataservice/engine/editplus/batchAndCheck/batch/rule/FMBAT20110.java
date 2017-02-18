@@ -37,7 +37,7 @@ import net.sf.json.JSONObject;
  */
 public class FMBAT20110 extends BasicBatchRule {
 
-	private Connection conn;
+	//private Connection conn;
 	
 	private String REGEXP_HOUSE_NUM = "([-~～/／－0-9０-９a-zA-Zａ-ｚＡ-Ｚ零一二三四五六七八九十])+";
 	private String REGEXP_ESTAB = "(大厦|商厦)";
@@ -53,9 +53,11 @@ public class FMBAT20110 extends BasicBatchRule {
 	private List<String> type1Key = new ArrayList<String>();
 	private List<String> type3Key = new ArrayList<String>();
 	
+	// select pre_key from sc_point_addrck t where t.type=11 
+	private List<String> type11Key = new ArrayList<String>();
+	private List<String> type12Key = new ArrayList<String>();
+	
 	public FMBAT20110() throws Exception {
-		
-		this.conn = super.getBatchRuleCommand().getConn();
 		
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		buildingKeys = metadata.queryAdRack(6);
@@ -79,6 +81,8 @@ public class FMBAT20110 extends BasicBatchRule {
 			this.REGEXP_TYPE = "((" + StringUtils.join(type1Key, "|") + ")+|$)";
 		}
 		type3Key = metadata.queryAdRack(3);
+		type11Key = metadata.queryAdRack(11);
+		type12Key = metadata.queryAdRack(12);
 	}
 
 	@Override
@@ -91,10 +95,11 @@ public class FMBAT20110 extends BasicBatchRule {
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		List<IxPoiAddress> addresses = poiObj.getIxPoiAddresses();
 		if (addresses == null || addresses.size() == 0) {return;}
-		long adminCode = getAdminCode(conn, poi.getRegionId());
+		long adminCode = getAdminCode(super.getBatchRuleCommand().getConn(), poi.getRegionId());
 		log.debug("adminCode=" + adminCode);
 		if (adminCode == 0) {return;}
 		boolean isChanged = false;
+//		boolean isChanged = true;
 		// 存在IX_POI_ADDRESS新增或者修改履历
 		for (IxPoiAddress addr: addresses) {
 			if (addr.getHisOpType().equals(OperationType.INSERT) || addr.getHisOpType().equals(OperationType.UPDATE)){
@@ -110,7 +115,7 @@ public class FMBAT20110 extends BasicBatchRule {
 				boolean placeWithkey = false; //存在place关键字
 				boolean streetWithkey=false; //存在道路名关键字
 				String langCode = addressWrap.getLangCode();
-				if (!"CHI".equals(langCode) || !"CHT".equals(langCode)) {continue;}
+				if (!"CHI".equals(langCode) && !"CHT".equals(langCode)) {continue;}
 				String addFull = addressWrap.getFullname();
 				if (StringUtils.isEmpty(addFull)) {continue;}
 	            log.debug("addFull="+addFull);
@@ -206,10 +211,10 @@ public class FMBAT20110 extends BasicBatchRule {
 		        log.debug("开始处理地区小区名.....");
 	            String placePre = ""; //地名/小区名前
 	            String placePost = ""; //地名/小区名后
-	            CiParaIxPoiAddressPlace placeSelector = new CiParaIxPoiAddressPlace(conn);
+	            CiParaIxPoiAddressPlace placeSelector = new CiParaIxPoiAddressPlace(super.getBatchRuleCommand().getConn());
 	            if (StringUtils.isNotEmpty(street) && StringUtils.isNotEmpty(streetPre)){
 	            	log.debug("A类逻辑");
-	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre);
+	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre, type12Key);
 	            	place = matchField(streetPre, placeList);
 	            	log.debug("place="+place);
 	            	if (StringUtils.isNotEmpty(place)){
@@ -217,6 +222,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            		int keyIdx = streetPre.indexOf(place);
 	            		placePre = streetPre.substring(0, keyIdx);
 	            		placePost = streetPre.substring(keyIdx + place.length());
+	            		landMark = placePost;
 	                    log.debug("streetPre="+streetPre);
 	                    log.debug("placePre="+placePre);
 	                    log.debug("streetPost="+streetPost);
@@ -254,7 +260,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            }
 	            if (StringUtils.isEmpty(street) && StringUtils.isNotEmpty(streetPre) && streetWithkey){
 	            	log.debug("B类逻辑");
-	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre);
+	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre, type12Key);
 	            	place = matchField(streetPre,placeList);
 	            	log.debug("place="+place);
 	            	if (StringUtils.isNotEmpty(place)){
@@ -307,7 +313,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            	log.debug("C类逻辑");
 	            	streetPre = addFull;
 	            	log.debug("streetPre="+streetPre);
-	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre);
+	            	List<String> placeList = placeSelector.queryPlace(adminCode, streetPre, type12Key);
 	            	place = matchField(streetPre,placeList);
 	            	log.debug("place="+place);
 	            	if (StringUtils.isNotEmpty(place)){
@@ -354,7 +360,7 @@ public class FMBAT20110 extends BasicBatchRule {
 	            log.debug("placePre="+placePre);
 	            
 	            log.debug("开始处理行政区划.....");
-	            CiParaAdAdmin adAminSelector = new CiParaAdAdmin(conn);
+	            CiParaAdAdmin adAminSelector = new CiParaAdAdmin(super.getBatchRuleCommand().getConn());
 	            List<ArrayList<String>> adAdminList = adAminSelector.queryAdAdmin(adminCode, streetPre);
 	            if (adAdminList.isEmpty()){
 	            	log.debug("在ci_para_ad_admin表中没有找到poi[pid=" + addressWrap.getPoiPid() + ",adminCode="+ adminCode + "]对应的行政区划信息，不执行行政区的拆分");
@@ -661,8 +667,8 @@ public class FMBAT20110 extends BasicBatchRule {
 	            surfix = specialJson.getString("surfix");
 	            estab = specialJson.getString("estab");
 	            building = specialJson.getString("building");
-	            floor = specialJson.getString("unit");
-	            unit = specialJson.getString("floor");
+	            floor = specialJson.getString("floor");
+	            unit = specialJson.getString("unit");
 	            roomNum = specialJson.getString("roomNum");
 	            addOns = specialJson.getString("addOns");
 	            
@@ -670,71 +676,71 @@ public class FMBAT20110 extends BasicBatchRule {
 	            MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 	            // province
 	            addressWrap.setProvince(province);
-	            addressWrap.setProvPhonetic(metadataApi.pyConvert(province)[1]);
+	            addressWrap.setProvPhonetic(metadataApi.pyConvertHz(province));
 	            // city
 	            addressWrap.setCity(city);
-	            addressWrap.setCityPhonetic(metadataApi.pyConvert(city)[1]);
+	            addressWrap.setCityPhonetic(metadataApi.pyConvertHz(city));
 	            // county
 	            addressWrap.setCounty(county);
-	            addressWrap.setCityPhonetic(metadataApi.pyConvert(county)[1]);
+	            addressWrap.setCountyPhonetic(metadataApi.pyConvertHz(county));
 	            // town
 	            addressWrap.setTown(town);
-	            addressWrap.setTownPhonetic(metadataApi.pyConvert(town)[1]);
+	            addressWrap.setTownPhonetic(metadataApi.pyConvertHz(town));
 	            // place
 	            addressWrap.setPlace(place);
-	            addressWrap.setPlacePhonetic(metadataApi.pyConvert(place)[1]);
+	            addressWrap.setPlacePhonetic(metadataApi.pyConvertHz(place));
 	            // street
 	            addressWrap.setStreet(street);
-	            addressWrap.setStreetPhonetic(metadataApi.pyConvert(street)[1]);
+	            addressWrap.setStreetPhonetic(metadataApi.pyConvertHz(street));
 	            // landMark
 	            addressWrap.setLandmark(landMark);
-	            addressWrap.setLandmarkPhonetic(metadataApi.pyConvert(landMark)[1]);
+	            addressWrap.setLandmarkPhonetic(metadataApi.pyConvertHz(landMark));
 	            // prefix
 	            addressWrap.setPrefix(prefix);
-	            addressWrap.setPrefixPhonetic(metadataApi.pyConvert(prefix)[1]);
+	            addressWrap.setPrefixPhonetic(metadataApi.pyConvertHz(prefix));
 	            // houseNum
 	            addressWrap.setHousenum(houseNum);
-	            addressWrap.setHousenumPhonetic(metadataApi.pyConvert(houseNum)[1]);
+	            addressWrap.setHousenumPhonetic(metadataApi.pyConvertHz(houseNum));
 	            // type
 	            addressWrap.setType(type);
-	            addressWrap.setTypePhonetic(metadataApi.pyConvert(type)[1]);
+	            addressWrap.setTypePhonetic(metadataApi.pyConvertHz(type));
 	            // subNum
 	            addressWrap.setSubnum(subNum);
-	            addressWrap.setSubnumPhonetic(metadataApi.pyConvert(subNum)[1]);
+	            addressWrap.setSubnumPhonetic(metadataApi.pyConvertHz(subNum));
 	            // surfix
 	            addressWrap.setSurfix(surfix);
-	            addressWrap.setSurfixPhonetic(metadataApi.pyConvert(surfix)[1]);
+	            addressWrap.setSurfixPhonetic(metadataApi.pyConvertHz(surfix));
 	            // estab
 	            addressWrap.setEstab(estab);
-	            addressWrap.setEstabPhonetic(metadataApi.pyConvert(estab)[1]);
+	            addressWrap.setEstabPhonetic(metadataApi.pyConvertHz(estab));
 	            // building
 	            addressWrap.setBuilding(building);
-	            addressWrap.setBuildingPhonetic(metadataApi.pyConvert(building)[1]);
+	            addressWrap.setBuildingPhonetic(metadataApi.pyConvertHz(building));
 	            // floor
 	            addressWrap.setFloor(floor);
-	            addressWrap.setFloorPhonetic(metadataApi.pyConvert(floor)[1]);
+	            addressWrap.setFloorPhonetic(metadataApi.pyConvertHz(floor));
 	            // unit
 	            addressWrap.setUnit(unit);
-	            addressWrap.setUnitPhonetic(metadataApi.pyConvert(unit)[1]);
+	            addressWrap.setUnitPhonetic(metadataApi.pyConvertHz(unit));
 	            // roomNum
 	            addressWrap.setRoom(roomNum);
-	            addressWrap.setRoomPhonetic(metadataApi.pyConvert(roomNum)[1]);
+	            addressWrap.setRoomPhonetic(metadataApi.pyConvertHz(roomNum));
 	            // addOns
 	            addressWrap.setAddons(addOns);
-	            addressWrap.setAddonsPhonetic(metadataApi.pyConvert(addOns)[1]);
+	            addressWrap.setAddonsPhonetic(metadataApi.pyConvertHz(addOns));
 	            
 			}
 		}
 	}
 	
 	public List<String> queryRdName(long adminCode, String addFull) throws Exception{
-		CiParaRdName  ciParaRdNameSearch = new CiParaRdName(conn);
+		CiParaRdName  ciParaRdNameSearch = new CiParaRdName(super.getBatchRuleCommand().getConn());
 		return ciParaRdNameSearch.queryRdNameInAddress(adminCode, addFull);
 	}
 	
 	public List<String> queryStreetFromIxPoiAddress(long adminCode, String addFull) throws Exception{
-		CiParaIxPoiAddressStreet selector = new CiParaIxPoiAddressStreet(conn);
-		return selector.queryStreet(adminCode, addFull);
+		CiParaIxPoiAddressStreet selector = new CiParaIxPoiAddressStreet(super.getBatchRuleCommand().getConn());
+		return selector.queryStreet(adminCode, addFull, type11Key);
 	}
 	
 	public long getAdminCode(Connection conn, long regionId) throws Exception{
@@ -1000,14 +1006,15 @@ public class FMBAT20110 extends BasicBatchRule {
 //		ArrayList<String> _adminList = new ArrayList<String>(Arrays.asList("Buenos Aires", "Córdoba", "La Plata"));
 //		String _pro = _adminList.get(0);
 //		System.out.println(_pro);
-		String test = "－４５０号";
-		Pattern pat = Pattern.compile("([０-９0-9])+");
-		Matcher mat = pat.matcher(test);
-		if (mat.find()){
-			String num = mat.group();
-			int numIdx = test.indexOf(num);
-			System.out.println(mat.group());
-		}
+//		String test = "－４５０号";
+//		Pattern pat = Pattern.compile("([０-９0-9])+");
+//		Matcher mat = pat.matcher(test);
+//		if (mat.find()){
+//			String num = mat.group();
+//			int numIdx = test.indexOf(num);
+//			System.out.println(mat.group());
+//		}
+		List<String> test = Arrays.asList("1", "2", "3");
 	}
 
 }

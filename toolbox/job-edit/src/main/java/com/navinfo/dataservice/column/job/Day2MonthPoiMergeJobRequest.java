@@ -56,7 +56,7 @@ public class Day2MonthPoiMergeJobRequest extends AbstractJobRequest {
 		return specMeshes;
 	}
 
-	public void setSpecMeshs(List<Integer> specMeshes) {
+	public void setSpecMeshes(List<Integer> specMeshes) {
 		this.specMeshes = specMeshes;
 	}
 

@@ -41,7 +41,7 @@ public class GLM01116 extends baseRule {
                 if (link.changedFields().containsKey("laneClass"))
                     laneClass = Integer.valueOf(link.changedFields().get("laneClass").toString());
 
-                if ((pedestrianLink.contains(link.pid()) || kind == 9 || kind == 11 || kind == 13 || kind == 15) &&
+                if ((pedestrianLink.contains(link.pid()) || kind == 9 || kind == 11 || kind == 13 || kind == 10) &&
                         laneClass != 1) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }

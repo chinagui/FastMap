@@ -44,7 +44,7 @@ public class FMA0907 extends BasicCheckRule {
 			return;
 		}
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		List<String> addrck = metaApi.getAddrck(1, "M");
+		List<String> addrck = metaApi.getAddrck(1, "D");
 		String error = "";
 		if (!addrck.contains(type)) {
 			error = type;

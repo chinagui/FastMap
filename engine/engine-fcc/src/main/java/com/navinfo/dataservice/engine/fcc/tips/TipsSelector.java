@@ -495,7 +495,7 @@ public class TipsSelector {
 			}
 		} catch (Exception e) {
 			logger.error("渲染报错，数据错误："+e.getMessage()+rowkey);
-			throw e;
+			throw new Exception(e.getMessage()+"rowkey:"+rowkey,e);
 		} finally {
 			try {
 

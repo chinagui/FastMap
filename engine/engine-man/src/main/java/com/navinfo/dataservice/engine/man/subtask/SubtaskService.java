@@ -597,7 +597,7 @@ public class SubtaskService {
 						}
 						
 						subtask.put("taskId",rs.getInt("TASK_ID"));
-						if (2 == rs.getInt("TASK_TYPE")) {
+						if (2 == rs.getInt("STAGE")) {
 							//月编子任务
 							subtask.put("dbId",rs.getInt("MONTHLY_DB_ID"));
 						} else {

@@ -724,7 +724,6 @@ public class FMBAT20110 extends BasicBatchRule {
 	            addressWrap.setUnitPhonetic(metadataApi.pyConvertHz(unit));
 	            // roomNum
 	            addressWrap.setRoom(roomNum);
-	            String roomNumPhe = metadataApi.pyConvertHz(roomNum);
 	            addressWrap.setRoomPhonetic(metadataApi.pyConvertHz(roomNum));
 	            // addOns
 	            addressWrap.setAddons(addOns);

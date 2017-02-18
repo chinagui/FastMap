@@ -53,10 +53,11 @@ public class FM14Sum060201 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			String fullname = ixPoiAddress.getFullname();
 			if(fullname==null){return;}
-			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap(1);
+			Map<Integer, List<ScSensitiveWordsObj>> scSensitiveWordsMap = metadataApi.scSensitiveWordsMap();
 			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=1时
 			List<ScSensitiveWordsObj> compareList1 = scSensitiveWordsMap.get(1);
-			List<ScSensitiveWordsObj> wordList1 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList1);	
+			//type:1-POI 地址,2-POI 名称及其他
+			List<ScSensitiveWordsObj> wordList1 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList1,1);	
 			if(wordList1!=null && !wordList1.isEmpty()){
 				List<String> errMsgList1 = new ArrayList<String>();
 				StringBuilder sb = new StringBuilder();
@@ -75,7 +76,8 @@ public class FM14Sum060201 extends BasicCheckRule {
 			}
 			//地址（address）中包含敏感字,SC_SENSITIVE_WORDS表中type=2时
 			List<ScSensitiveWordsObj> compareList2 = scSensitiveWordsMap.get(2);
-			List<ScSensitiveWordsObj> wordList2 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList2);	
+			//type:1-POI 地址,2-POI 名称及其他
+			List<ScSensitiveWordsObj> wordList2 = ScSensitiveWordsUtils.matchSensitiveWords(fullname, poi.getKindCode(), adminMap.get(poi.getRegionId()), compareList2,1);	
 			if(wordList2!=null && !wordList2.isEmpty()){
 				List<String> errMsgList2 = new ArrayList<String>();
 				StringBuilder sb = new StringBuilder();

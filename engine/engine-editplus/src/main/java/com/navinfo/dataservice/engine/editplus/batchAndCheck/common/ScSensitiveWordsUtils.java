@@ -12,8 +12,9 @@ public class ScSensitiveWordsUtils {
 	 * @param name
 	 * @param typeD1
 	 * @return
+	 * type:1-POI 地址,2-POI 名称及其他
 	 */
-	public static List<ScSensitiveWordsObj> matchSensitiveWords(String word,String kind,int admin,List<ScSensitiveWordsObj> compareList){
+	public static List<ScSensitiveWordsObj> matchSensitiveWords(String word,String kind,int admin,List<ScSensitiveWordsObj> compareList,int type){
 		List<ScSensitiveWordsObj> errorWordList=new ArrayList<ScSensitiveWordsObj>();
 		for(ScSensitiveWordsObj sensitiveWordTmp:compareList){
 			String kindTmp=sensitiveWordTmp.getRegexKindCode();
@@ -24,7 +25,13 @@ public class ScSensitiveWordsUtils {
 			if(adminTmp!=null&&!adminTmp.isEmpty()&&!Pattern.matches(adminTmp, String.valueOf(admin))){
 				continue;
 			}
-			String word1Tmp=sensitiveWordTmp.getRegexSensitiveWord();
+			String word1Tmp=null;
+			//type:1-POI 地址,2-POI 名称及其他
+			if(type == 1){
+				word1Tmp=sensitiveWordTmp.getRegexSensitiveWordAddress();
+			}else if(type == 2){
+				word1Tmp=sensitiveWordTmp.getRegexSensitiveWord();
+			}
 			int wordType1Tmp=sensitiveWordTmp.getRegexWordType();
 			if(word1Tmp!=null&&!word1Tmp.isEmpty()&&((wordType1Tmp==0 &&!Pattern.matches(word1Tmp, word))
 					||(wordType1Tmp==1 &&Pattern.matches(word1Tmp, word)))){

@@ -82,7 +82,7 @@ public class FMZY20199 extends BasicCheckRule {
 						illegalChar + "是非法字符 ");
 			}
 
-			if (howToGo.indexOf(" ") >= 0) {
+			if (howToGo.indexOf(" ") >= 0 || howToGo.indexOf("　")>=0) {
 				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), "周边交通线路内容含有空格 ");
 			}
 

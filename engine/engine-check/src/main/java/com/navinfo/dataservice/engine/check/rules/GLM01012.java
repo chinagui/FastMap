@@ -93,7 +93,7 @@ public class GLM01012 extends baseRule {
                     }
                 }
 
-                if (formOfWays.containsValue(43))
+                if (formOfWays.containsValue(33))
                     roundaboutLink.add(link.pid());
             }
         }

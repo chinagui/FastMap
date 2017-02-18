@@ -49,8 +49,8 @@ public class LuLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY,FORM FROM LU_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) index(c)*/ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS, LISTAGG(C.KIND, ',') WITHIN GROUP(ORDER BY B.NODE_PID) KINDS FROM TMP1 B LEFT JOIN LU_LINK A ON (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) AND A.U_RECORD !=2 LEFT JOIN LU_LINK_KIND C ON A.LINK_PID = C.LINK_PID AND C.U_RECORD !=2 GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.GROUP_ID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) SAMNODEPART FROM TMP1 B LEFT JOIN RD_SAMENODE_PART A ON B.NODE_PID = A.NODE_PID AND A.TABLE_NAME = 'LU_NODE' GROUP BY B.NODE_PID, A.GROUP_ID), TMP4 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) AS INTERNODE FROM TMP1 B LEFT JOIN RD_INTER_NODE A ON B.NODE_PID = A.NODE_PID GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, A.FORM, B.LINKPIDS, B.KINDS, C.SAMNODEPART, D.INTERNODE FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.NODE_PID = B.NODE_PID AND B.NODE_PID = C.NODE_PID AND D.NODE_PID = C.NODE_PID";
-
+		String sql = " WITH TMP1 AS (SELECT A.LINK_PID, A.GEOMETRY, A.S_NODE_PID, A.E_NODE_PID FROM LU_LINK A WHERE SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND A.U_RECORD != 2), TMP2 AS /*+ index(P) */ (SELECT P.LINK_PID, S.GROUP_ID SAMELINK_PID FROM RD_SAMELINK_PART P, RD_SAMELINK S, TMP1 L WHERE P.LINK_PID = L.LINK_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :2 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP3 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID S_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.S_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :3 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP4 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID E_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.E_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :4 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP5 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.KIND, ';') WITHIN GROUP(ORDER BY A.LINK_PID) KINDS FROM LU_LINK_KIND A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.SAMELINK_PID, C.S_SAMENODEPID, D.E_SAMENODEPID, E.KINDS FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D, TMP5 E WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+) ";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -59,8 +59,9 @@ public class LuLinkSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, wkt);
-
-			System.out.println(wkt);
+			pstmt.setString(2, "LU_LINK");
+			pstmt.setString(3, "LU_NODE");
+			pstmt.setString(4, "LU_NODE");
 
 			resultSet = pstmt.executeQuery();
 
@@ -69,66 +70,29 @@ public class LuLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				String linkPids = resultSet.getString("linkpids");
+				m.put("a", resultSet.getString("s_node_pid"));
 
-				String kinds = resultSet.getString("kinds");
-
-				Map<String, JSONObject> linkMap = new HashMap<>();
-
-				String linkPidArray[] = linkPids.split(",");
-
-				for (int i = 0; i < linkPids.split(",").length; i++) {
-					String linkPid = linkPidArray[i];
-
-					JSONObject linkJSON = linkMap.get(linkPid);
-
-					if (linkJSON != null) {
-						String kind = linkJSON.getString("kinds");
-						linkJSON.element("kinds", kind +","+kinds.split(",")[i]);
-					} else {
-						linkJSON = new JSONObject();
-
-						linkJSON.put("linkPid", linkPid);
-
-						linkJSON.put("kinds", kinds.split(",")[i]);
-						
-						String samNodePid = resultSet.getString("samNodePart");
-
-						if (samNodePid != null) {
-							linkJSON.put("sameNode", Integer.parseInt(samNodePid));
-						} else {
-							// 0代表没有同一点关系
-							linkJSON.put("sameNode", 0);
-						}
-
-						String interNodePid = resultSet.getString("interNode");
-
-						if (interNodePid != null) {
-							linkJSON.put("interNode", Integer.parseInt(interNodePid));
-						} else {
-							// 0代表没有制作CRFI
-							linkJSON.put("interNode", 0);
-						}
-						linkMap.put(linkPid, linkJSON);
-					}
-				}
-
-				m.put("a", linkMap.values());
+				m.put("b", resultSet.getString("e_node_pid"));
 				
-				//点的形态
-				m.put("b", resultSet.getInt("form"));
+				m.put("c", resultSet.getString("kinds"));
+				
+				m.put("d", resultSet.getInt("samelink_pid"));
+				
+				m.put("e", resultSet.getInt("s_samenodepid"));
+				
+				m.put("f", resultSet.getInt("e_samenodepid"));
 
 				snapshot.setM(m);
 
-				snapshot.setT(16);
+				snapshot.setT(18);
 
-				snapshot.setI(resultSet.getInt("node_pid"));
+				snapshot.setI(resultSet.getInt("link_pid"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				JSONObject jo = Geojson.spatial2Geojson(struct);
 
-				snapshot.setG(geojson.getJSONArray("coordinates"));
+				snapshot.setG(jo.getJSONArray("coordinates"));
 
 				list.add(snapshot);
 			}

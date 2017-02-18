@@ -49,8 +49,8 @@ public class RdCross002 extends baseRule {
 			String sql="select 1 from rd_cross c,rd_cross_node cn "
 					+ " where c.pid=cn.pid "
 					+ " and c.kg_flag=0 "
-					+ " AND C.u_record！=2"
-					+ " AND CN.u_record！=2"
+					+ " AND C.u_record!=2"
+					+ " AND CN.u_record!=2"
 					+ " and cn.node_pid in ("+node+")";
 			DatabaseOperator operator=new DatabaseOperator();
 			List<Object> resutlList=operator.exeSelect(getConn(), sql);
@@ -79,8 +79,8 @@ public class RdCross002 extends baseRule {
 			String sql="select 1 from rd_cross c,rd_cross_node cn "
 					+ " where c.pid=cn.pid "
 					+ " and c.kg_flag=0 "
-					+ " AND C.u_record！=2 "
-					+ " AND CN.u_record！=2 "
+					+ " AND C.u_record!=2 "
+					+ " AND CN.u_record!=2 "
 					+ " and cn.node_pid in ("+crossNodeList.toString().replace("[", "").replace("]", "")+")";
 			DatabaseOperator operator=new DatabaseOperator();
 			List<Object> resutlList=operator.exeSelect(getConn(), sql);

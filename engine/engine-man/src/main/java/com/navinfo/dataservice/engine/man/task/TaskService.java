@@ -7,9 +7,11 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,24 +21,20 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
-import com.navinfo.dataservice.engine.man.city.CityOperation;
-import com.navinfo.dataservice.engine.man.common.DbOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
-import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
@@ -46,7 +44,6 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -284,22 +281,35 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
+					createCmsProgress(conn,task.getTaskId(),1);
+					createCmsProgress(conn,task.getTaskId(),2);
+					createCmsProgress(conn,task.getTaskId(),3);
+					createCmsProgress(conn,task.getTaskId(),4);
+					cmsTaskList.add(task.getTaskId());
 				}else{
 					updatedTaskList.add(task);
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
 				}
-			}
-			
+			}			
 			//更新task状态
-			TaskOperation.updateStatus(conn, taskIds);
-			
+			TaskOperation.updateStatus(conn, taskIds);			
 			//发布消息
 			taskPushMsg(conn,userId,updatedTaskList);
-			
+			conn.commit();
+			for(Integer taskId:cmsTaskList){
+				List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+				Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+				for(Map<String, Integer> phaseTmp:phaseList){
+					phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+				}
+				day2month(conn, phaseIdMap.get(1));
+				tips2Aumark(conn, phaseIdMap.get(2));
+			}
 			return "task批量发布"+total+"个成功，0个失败";
 //			//给作业组leader发送消息
 //			int total = 0;
@@ -510,7 +520,7 @@ public class TaskService {
 			} catch (Exception e) {
 				// TODO: handle exception
 				e.printStackTrace();
-				log.error("block编辑消息发送失败,原因:"+e.getMessage(), e);
+				log.error("task编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 
 			return "任务批量修改"+total+"个成功，0个失败";
@@ -1424,6 +1434,24 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return queryTaskCmsProgress(conn,taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map<String,Integer>> queryTaskCmsProgress(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT Phase_id，PHASE,STATUS FROM TASK_CMS_PROGRESS WHERE TASK_ID= " + taskId;
 			
@@ -1450,7 +1478,7 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+	
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
@@ -1460,25 +1488,87 @@ public class TaskService {
 	 */
 	public void taskUpdateCmsProgress(int phaseId,int status) throws Exception {
 		// TODO Auto-generated method stub
-		Connection conn = null;
+		Connection conn=null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
+			conn= DBConnector.getInstance().getManConnection();
+			taskUpdateCmsProgress(conn, phaseId, status);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public void taskUpdateCmsProgress(Connection conn,int phaseId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		try{
 			//修改本阶段执行状态
-			updateCmsProgressStatus(phaseId, status);
+			updateCmsProgressStatus(conn,phaseId, status);
+			conn.commit();
 			//执行失败，则停止后续操作
 			if(status==3){return;}
 			//执行成功，则继续后续步骤
-			//TODO
+			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
+			//锁表
+			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
 			//查询前2个并行阶段是否执行成功
-			List<Map<String, Integer>> list = queryCmsProgreeByOnePhaseId(conn, phaseId);
-			//日落月开关修改
-			boolean isSuccess=closeDay2MonthMesh(phaseId);
-			if(!isSuccess){updateCmsProgressStatus(phaseId, 3);return;}
-			updateCmsProgressStatus(phaseId, 2);
-			//cms任务创建
-			isSuccess=createCmsTask(phaseId);
-			if(!isSuccess){updateCmsProgressStatus(phaseId, 3);return;}
-			updateCmsProgressStatus(phaseId, 2);
+			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
+			Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+			for(Map<String, Integer> phaseTmp:phaseList){
+				phaseStatusMap.put(phaseTmp.get("phase"),phaseTmp.get("status"));
+				phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+			}
+			int curPhase=phase.getPhase();
+			if(curPhase==1){
+				if(phaseStatusMap.get(2)!=2){return;}
+			}else{//2,3,4
+				for(int i=1;i<curPhase;i++){
+					if(phaseStatusMap.get(i)!=2){return;}
+				}
+			}
+			if(curPhase==1||curPhase==2){//日落月
+				int phasestatus=closeDay2MonthMesh(conn, phaseStatusMap.get(3));
+				if(phasestatus==0){return;}
+				taskUpdateCmsProgress(conn, phaseStatusMap.get(3), phasestatus);
+				curPhase=3;}
+			if(curPhase==3){//cms任务创建
+				int phasestatus=createCmsTask(conn, phaseStatusMap.get(4));
+				if(phasestatus==0){return;}
+				taskUpdateCmsProgress(conn, phaseStatusMap.get(4), phasestatus);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**根据阶段自动执行相关步骤
+	 * @param 
+	 * @return 
+	 */
+	public void exeCmsProgree(int phaseId,int phase) throws Exception{
+		Connection conn=null;
+		try{
+			conn= DBConnector.getInstance().getManConnection();
+			if(phase==1){
+				day2month(conn, phaseId);
+			}else if(phase==2){
+				tips2Aumark(conn, phaseId);
+			}else if(phase==3){
+				closeDay2MonthMesh(conn, phaseId);
+			}else if(phase==4){
+				createCmsTask(conn, phaseId);
+			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1488,32 +1578,101 @@ public class TaskService {
 		}
 	}
 	
-	/**根据阶段自动执行相关步骤
+	/**日落月
 	 * @param 
 	 * @return 
 	 */
-	public boolean exeCmsProgree(int phaseId,int phase) throws Exception{
-		//TODO
-		return true;
+	public int day2month(Connection conn,int phaseId) throws Exception{
+		try{			
+			//阶段状态修改成进行中
+			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
+			conn.commit();
+			if(i==0){return 0;}
+			//创建日落月job
+			
+			return 0;
+		}catch(Exception e){
+			//DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			return 3;
+			//throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**tip转aumark
+	 * @param 
+	 * @return 
+	 */
+	public int tips2Aumark(Connection conn,int phaseId) throws Exception{
+		try{			
+			//阶段状态修改成进行中
+			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
+			conn.commit();
+			if(i==0){return 0;}
+			//tip转aumark
+			
+			return 0;
+		}catch(Exception e){
+			//DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			return 3;
+			//throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	/**根据任务id关闭日落月开关
 	 * @param taskId
-	 * @return 关闭成功，返回true；否则，false
+	 * @return 关闭成功，返回2；失败，返回3；若阶段状态修改成进行中失败，返回0
 	 */
-	public boolean closeDay2MonthMesh(int phaseId) throws Exception{
-		//TODO
-		return true;
+	public int closeDay2MonthMesh(Connection conn,int phaseId) throws Exception{
+		try{			
+			//阶段状态修改成进行中
+			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
+			conn.commit();
+			if(i==0){return 0;}
+			//修改开关
+			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
+			Set<Integer> meshs = phase.getMeshIds();
+			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 1 WHERE MESH IN "
+					+meshs.toString().replace("[", "(").replace("]", "");
+			Connection meta = null;
+			try{
+				meta = DBConnector.getInstance().getMetaConnection();
+				QueryRunner run = new QueryRunner();
+				run.update(meta,updateSql);
+				return 2;
+			}catch(Exception e){
+				//DbUtils.rollbackAndCloseQuietly(meta);
+				log.error(e.getMessage(), e);
+				return 3;
+				//throw new Exception("失败，原因为:"+e.getMessage(),e);
+			}finally {
+				DbUtils.commitAndCloseQuietly(meta);
+			}
+		}catch(Exception e){
+			//DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			return 3;
+			//throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	/**cms任务创建
 	 * 管理库中查询cms任务创建所需参数，然后调用cms任务创建http；http返回成功，则成功；否则失败。
 	 * @param taskId
-	 * @return 关闭成功，返回true；否则，false
+	 * @return 关闭成功，返回2；失败，返回3；若阶段状态修改成进行中失败，返回0
 	 */
-	public boolean createCmsTask(int phaseId) throws Exception{
-		//TODO
-		return true;
+	public int createCmsTask(Connection conn,int phaseId) throws Exception{
+		try{
+			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
+			conn.commit();
+			if(i==0){return 0;}
+			//TODO
+			return 2;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			return 3;
+		}
 	}
 	
 	/**
@@ -1522,26 +1681,31 @@ public class TaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public List<Map<String, Integer>> queryCmsProgreeByOnePhaseId(Connection conn,int phaseId) throws Exception {
+	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT t2.phase_id,t2.task_id,t2.phase,t2.status"
-					+ "  FROM TASK_CMS_PROGRESS T1, TASK_CMS_PROGRESS T2"
-					+ " WHERE T1.PHASE_ID = "+phaseId
-					+ "   AND T1.TASK_ID = T2.TASK_ID"
-					+ "   AND T2.STATUS != 2" ;
-			ResultSetHandler<List<Map<String, Integer>>> rsHandler = new ResultSetHandler<List<Map<String, Integer>>>() {
-				public List<Map<String, Integer>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Integer>> list=new ArrayList<Map<String, Integer>>();
+			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M"
+					+ " WHERE T.PHASE_ID =  "+phaseId;
+			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
+				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
+					TaskCmsProgress progress=new TaskCmsProgress();
 					if(rs.next()) {
-						Map<String, Integer> map=new HashMap<String, Integer>();
-						map.put("phaseId", rs.getInt("phase_id"));
-						map.put("taskId", rs.getInt("task_id"));
-						map.put("phase", rs.getInt("phase"));
-						map.put("status", rs.getInt("status"));
-						list.add(map);
+						progress.setTaskId(rs.getInt("task_id"));
+						progress.setPhaseId(rs.getInt("phase_id"));
+						if(progress.getGridIds()==null){
+							progress.setGridIds(new HashSet<Integer>());
+						}
+						int gridId=rs.getInt("GRID_ID");
+						progress.getGridIds().add(gridId);
+						if(progress.getMeshIds()==null){
+							progress.setMeshIds(new HashSet<Integer>());
+						}
+						String gridStr=String.valueOf(gridId);
+						String mesh=gridStr.substring(0,gridStr.length()-2);
+						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
-					return list;
+					return progress;
 				}
 			};
 			return run.query(conn, selectSql, rsHandler);
@@ -1558,14 +1722,53 @@ public class TaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public void updateCmsProgressStatus(int phaseId,int status) throws Exception {
+	public void updateCmsProgressStatus(Connection conn,int phaseId,int status) throws Exception {
 		// TODO Auto-generated method stub
-		Connection conn = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+" WHERE PHASE_ID = "+phaseId ;
+			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+",end_date=sysdate WHERE PHASE_ID = "+phaseId ;
 			run.update(conn, selectSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 创建cmsProgress
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public void createCmsProgress(Connection conn,int taskId,int phase) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "INSERT INTO TASK_CMS_PROGRESS P"
+					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
+					+ "VALUES"
+					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL)" ;
+			run.update(conn, selectSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 修改二代编辑任务发布阶段执行状态
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	public int updateCmsProgressStatusStart(Connection conn,int phaseId,int status) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+",start_date=sysdate WHERE STATUS IN(0,3) AND PHASE_ID = "+phaseId ;
+			return run.update(conn, selectSql);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

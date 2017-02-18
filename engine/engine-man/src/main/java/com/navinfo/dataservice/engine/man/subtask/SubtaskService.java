@@ -1500,14 +1500,31 @@ public class SubtaskService {
 			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
 
 			//动态调整子任务范围
-			//日编子任务关闭，调整日编任务本身，调整日编任务
+			//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
 			if(subtask.getStage()==1){
 				EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
 				List<Integer> gridIds = editApi.getGridIdListBySubtaskIdFromLog(subtask.getDbId(),subtask.getSubtaskId());
+				///获得需要调整的gridMap
+				Map<Integer,Integer> gridIdsBefore = subtask.getGridIds();
+				Map<Integer,Integer> gridIdsToInsert = null ;
+				for(Integer gridId:gridIds){
+					if(gridIdsBefore.containsKey(gridId)){
+						continue;
+					}else{
+						gridIdsToInsert.put(gridId,2);
+					}
+				}
+				
 				//调整子任务范围
-				SubtaskOperation.adjustSubtaskRegion(conn,subtask,gridIds);
+//				SubtaskOperation.adjustSubtaskRegion(conn,subtask,gridIds);
+				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 				//调整任务范围
-				TaskOperation.adjustTaskRegion(conn,subtask.getTaskId(),gridIds);
+				TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+				//调整区域子任务范围
+				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+				for(Subtask subtaskType4:subtaskList){
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				}
 			}
 			
 			

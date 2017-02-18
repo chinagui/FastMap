@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
@@ -38,30 +39,33 @@ public class GLM21008 extends baseRule {
                         setCheckResult("", "[RD_LINK," + form.getLinkPid() + "]", 0);
                     }
                 }
-            } else if (row instanceof RdSameLinkPart && row.status() != ObjStatus.DELETE) {
-                RdSameLinkPart part = (RdSameLinkPart) row;
-                log.info("GLM21008:[LINK_PID=]" + part.getLinkPid());
+            } else if (row instanceof RdSameLink && row.status() != ObjStatus.DELETE) {
+                RdSameLink sameLink = (RdSameLink) row;
 
-                String tableName = part.getTableName();
-                if ("".equals(tableName) || !"RD_LINK".equals(tableName))
-                    continue;
+                for (IRow r : sameLink.getParts()) {
+                    RdSameLinkPart part = (RdSameLinkPart) r;
 
-                int linkPid = part.getLinkPid();
-                if (part.changedFields().containsKey("linkPid"))
-                    linkPid = Integer.valueOf(part.changedFields().get("linkPid").toString());
+                    String tableName = part.getTableName();
+                    if ("".equals(tableName) || !"RD_LINK".equals(tableName))
+                        continue;
 
-                RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(linkPid, false);
-                List<IRow> forms = link.getForms();
-                boolean flag = false;
-                for (IRow f : forms) {
-                    RdLinkForm ff = (RdLinkForm) f;
-                    log.info("GLM21008:[FORM_OF_WAY=]" + ff.getFormOfWay());
-                    if (ff.getFormOfWay() == 12 || ff.getFormOfWay() == 13) {
-                        flag = true;
+                    int linkPid = part.getLinkPid();
+                    if (part.changedFields().containsKey("linkPid"))
+                        linkPid = Integer.valueOf(part.changedFields().get("linkPid").toString());
+
+                    RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(linkPid, false);
+                    List<IRow> forms = link.getForms();
+                    boolean flag = false;
+                    for (IRow f : forms) {
+                        RdLinkForm ff = (RdLinkForm) f;
+                        // log.info("GLM21008:[FORM_OF_WAY=]" + ff.getFormOfWay());
+                        if (ff.getFormOfWay() == 12 || ff.getFormOfWay() == 13) {
+                            flag = true;
+                        }
                     }
-                }
-                if (flag) {
-                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    if (flag) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    }
                 }
             }
         }

@@ -13,9 +13,8 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * GLM01514 窄道路的车道数等级只能为1
@@ -92,17 +91,17 @@ public class GLM23007 extends baseRule {
 			sb.append(" AND R.u_record!=2 ");
 			sb.append(" AND RE.u_record!=2 ");
 			sb.append(" AND RE.KIND = 13 ");
-			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record！=2)) OR (R.KIND IN (11,13)))");
+			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record!=2)) OR (R.KIND IN (11,13)))");
 
 			log.info("GLM23007-log1后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"非机动车道摄像头关联LINK不能是交叉口内LINK、航线");
 			}
 		}
 		//公交车道摄像头关联LINK不能是交叉口内LINK、10级路、航线
@@ -121,17 +120,17 @@ public class GLM23007 extends baseRule {
 			sb.append(" AND R.u_record!=2 ");
 			sb.append(" AND RE.u_record!=2 ");
 			sb.append(" AND RE.KIND = 15 ");
-			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record！=2)) OR (R.KIND IN (10,11,13)))");
+			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record!=2)) OR (R.KIND IN (10,11,13)))");
 
 			log.info("GLM23007-log2后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"公交车道摄像头关联LINK不能是交叉口内LINK、10级路、航线");
 			}
 		}
 		//电子眼关联的link不能是交叉口内link，9级路，10级路及航线，请修改
@@ -151,17 +150,17 @@ public class GLM23007 extends baseRule {
 			sb.append(" AND R.u_record!=2 ");
 			sb.append(" AND RE.u_record!=2 ");
 			sb.append(" AND RE.KIND NOT IN (13,15) ");
-			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record！=2)) OR (R.KIND IN (9,10,11,13)))");
+			sb.append(" AND ((EXISTS(SELECT 1 FROM RD_LINK_FORM RF WHERE R.LINK_PID = RF.LINK_PID AND RF.FORM_OF_WAY = 50 AND RF.u_record!=2)) OR (R.KIND IN (9,10,11,13)))");
 
 			log.info("GLM23007-log3后检查SQL："+sb.toString());
 			
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
 			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if (resultList.size() > 0) {
+			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"电子眼关联的link不能是交叉口内link，9级路，10级路及航线，请修改");
 			}
 		}
 	}
@@ -171,7 +170,6 @@ public class GLM23007 extends baseRule {
 	 * @throws Exception
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
-		AbstractSelector selector = new AbstractSelector(RdLink.class, getConn());
 		for (IRow row : checkCommand.getGlmList()) {
 			if (row instanceof RdLink) {
 				RdLink rdLink = (RdLink) row;
@@ -186,14 +184,6 @@ public class GLM23007 extends baseRule {
 				} else if (kind == 9) {
 					kindOf9LinkPidSet.add(rdLink.getPid());
 				}
-				for (IRow formRow : rdLink.getForms()) {
-					RdLinkForm form = (RdLinkForm) formRow;
-
-					if (form.getFormOfWay() == 50) {
-						crossLinkKindPidSet.add(form.getLinkPid());
-						break;
-					}
-				}
 			} else if (row instanceof RdLinkForm) {
 				RdLinkForm form = (RdLinkForm) row;
 
@@ -204,18 +194,6 @@ public class GLM23007 extends baseRule {
 				}
 				if (form.status() != ObjStatus.DELETE && formOfWay == 50) {
 					crossLinkKindPidSet.add(form.getLinkPid());
-					RdLink rdLink = (RdLink) selector.loadById(form.getLinkPid(), true, true);
-					int kind = rdLink.getKind();
-					if (kind == 13 || kind == 11) {
-						kind11And13LinkPidSet.add(rdLink.getPid());
-					} else if (kind == 10) {
-						kindOf10LinkPidSet.add(rdLink.getPid());
-					} else if (kind == 9) {
-						kindOf9LinkPidSet.add(rdLink.getPid());
-					}
-				}
-				if (form.status() == ObjStatus.DELETE && formOfWay == 50) {
-					crossLinkKindPidSet.remove(form.getLinkPid());
 				}
 			} else if (row instanceof RdElectroniceye) {
 				RdElectroniceye eye = (RdElectroniceye) row;

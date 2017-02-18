@@ -495,4 +495,29 @@ public class serchConditionTest extends InitApplication {
 			e.printStackTrace();
 		}
 	}
+	
+	@Test
+	public void searchDataBySpatial1() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(17);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDLINK);
+			objType.add(ObjType.ADLINK);
+			objType.add(ObjType.ZONELINK);
+			objType.add(ObjType.LULINK);
+			
+			String box="{\"type\": \"Polygon\", \"coordinates\": [[[116.46367192268372, 40.018593287409104], [116.46367192268372, 40.01922184881776], [116.46531879901886, 40.01922184881776], [116.46531879901886, 40.018593287409104], [116.46367192268372, 40.018593287409104]]]}";
+
+			System.out.println(p.searchDataBySpatial(objType, box));
+			
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }

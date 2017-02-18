@@ -299,7 +299,7 @@ public class TaskService {
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
 				}
-			}			
+			}
 			//更新task状态
 			TaskOperation.updateStatus(conn, commontaskIds);			
 			//发布消息

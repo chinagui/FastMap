@@ -14,6 +14,8 @@ public class ScSensitiveWordsObj implements Serializable{
 	//根据原始数据翻译成正则表达式的形式。regexWordType/regexWordType2：1表示regexSensitiveWord/regexSensitiveWord2是<>，0表示没有<>
 	//主要用于：第二关键字可能会存在“不为XX”的关键字，需要做特殊处理（如：<> %精%）
 	private String regexSensitiveWord;
+	//地址的正则表达式(特殊处理)
+	private String regexSensitiveWordAddress;
 	private int regexWordType;
 	private String regexSensitiveWord2;
 	private int regexWordType2;
@@ -84,5 +86,11 @@ public class ScSensitiveWordsObj implements Serializable{
 	}
 	public void setRegexAdmincode(String regexAdmincode) {
 		this.regexAdmincode = regexAdmincode;
+	}
+	public String getRegexSensitiveWordAddress() {
+		return regexSensitiveWordAddress;
+	}
+	public void setRegexSensitiveWordAddress(String regexSensitiveWordAddress) {
+		this.regexSensitiveWordAddress = regexSensitiveWordAddress;
 	}
 }

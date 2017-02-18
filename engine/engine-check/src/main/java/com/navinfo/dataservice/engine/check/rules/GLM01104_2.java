@@ -7,9 +7,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
- * Created by Crayeres on 2017/2/9.
+ * Created by Crayeres on 2017/2/17.
  */
-public class GLM01470 extends baseRule {
+public class GLM01104_2 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
 
@@ -25,12 +25,14 @@ public class GLM01470 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                int walkFlag = link.getWalkFlag();
-                if (link.changedFields().containsKey("walkFlag"))
-                    walkFlag = Integer.valueOf(link.changedFields().get("walkFlag").toString());
+                if (kind == 9 || kind == 10) {
+                    int laneNum = link.getLaneNum();
+                    if (link.changedFields().containsKey("laneNum"))
+                        laneNum = Integer.valueOf(link.changedFields().get("laneNum").toString());
 
-                if (kind == 10 && walkFlag != 1) {
-                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    if (laneNum != 1) {
+                        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+                    }
                 }
             }
         }

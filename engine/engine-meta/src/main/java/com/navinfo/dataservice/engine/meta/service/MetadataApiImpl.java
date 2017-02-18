@@ -250,6 +250,15 @@ public class MetadataApiImpl implements MetadataApi {
 
 		return result;
 	}
+	
+	@Override
+	public String pyConvertHz(String word) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.convertHz(word);
+
+		return result;
+	}
 
 	@Override
 	public JSONObject getMetadataMap() throws Exception {
@@ -557,6 +566,12 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<String> getAddrck(int type, String hmFlag) throws Exception {
 		ScPointAddrck addrck = new ScPointAddrck();
 		return addrck.getAddrckList(type, hmFlag);
+	}
+	
+	@Override
+	public List<String> queryAdRack(int type) throws Exception {
+		ScPointAddrck addrck = new ScPointAddrck();
+		return addrck.queryAdRack(type);
 	}
 
 	@Override

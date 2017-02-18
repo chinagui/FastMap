@@ -6,10 +6,12 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
+import java.util.Arrays;
+
 /**
- * Created by Crayeres on 2017/2/9.
+ * Created by Crayeres on 2017/2/17.
  */
-public class GLM01470 extends baseRule {
+public class GLM01086 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
 
@@ -25,11 +27,11 @@ public class GLM01470 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                int walkFlag = link.getWalkFlag();
-                if (link.changedFields().containsKey("walkFlag"))
-                    walkFlag = Integer.valueOf(link.changedFields().get("walkFlag").toString());
+                int functionClass = link.getFunctionClass();
+                if (link.changedFields().containsKey("functionClass"))
+                    functionClass = Integer.valueOf(link.changedFields().get("functionClass").toString());
 
-                if (kind == 10 && walkFlag != 1) {
+                if ((kind == 8 || kind == 9 || kind == 10) && functionClass != 5) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }

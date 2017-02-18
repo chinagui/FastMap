@@ -465,6 +465,13 @@ public class TipsSelector {
 					m.put("c", deep.getString("name"));
 				}
 				
+				//20170217修改，变更输入：王屯 赵航
+				if(type==2001){
+					JSONObject obj=new JSONObject();
+					obj.put("ln", deep.getInt("ln"));
+					obj.put("kind", deep.getInt("kind"));
+					m.put("e", obj);
+				}
 				
 				//返回差分结果：20160213修改
 				JSONObject tipdiff =null;
@@ -488,7 +495,7 @@ public class TipsSelector {
 			}
 		} catch (Exception e) {
 			logger.error("渲染报错，数据错误："+e.getMessage()+rowkey);
-			throw e;
+			throw new Exception(e.getMessage()+"rowkey:"+rowkey,e);
 		} finally {
 			try {
 

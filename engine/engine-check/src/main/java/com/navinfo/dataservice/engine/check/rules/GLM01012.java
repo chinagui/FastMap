@@ -18,6 +18,8 @@ import java.util.Map;
  */
 public class GLM01012 extends baseRule {
 
+    private List<Integer> roundaboutLink = new ArrayList<>();
+
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
 
@@ -25,6 +27,8 @@ public class GLM01012 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
+        preparData(checkCommand);
+
         for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof RdLink) {
                 RdLink link = (RdLink) row;
@@ -35,7 +39,7 @@ public class GLM01012 extends baseRule {
                 if (link.changedFields().containsKey("multiDigitized"))
                     multiDigitized = Integer.valueOf(link.changedFields().get("multiDigitized").toString());
 
-                if (multiDigitized == 1) {
+                if (roundaboutLink.contains(link.pid()) || multiDigitized == 1) {
                     int direct = link.getDirect();
                     if (link.changedFields().containsKey("direct"))
                         direct = Integer.valueOf(link.changedFields().get("direct").toString());
@@ -56,6 +60,41 @@ public class GLM01012 extends baseRule {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
+            }
+        }
+    }
+
+    private void preparData(CheckCommand checkCommand) {
+        for (IRow obj : checkCommand.getGlmList()) {
+            if (obj instanceof RdLink) {
+                RdLink link = (RdLink) obj;
+                if (link.status() == ObjStatus.DELETE)
+                    continue;
+
+                Map<String, Integer> formOfWays = new HashMap<>();
+                for (IRow f : link.getForms()) {
+                    RdLinkForm form = (RdLinkForm) f;
+                    formOfWays.put(form.getRowId(), form.getFormOfWay());
+                }
+
+                for (IRow row : checkCommand.getGlmList()) {
+                    if (row instanceof RdLinkForm) {
+                        RdLinkForm form = (RdLinkForm) row;
+                        if (form.getLinkPid() == link.pid()) {
+                            if (form.status() == ObjStatus.DELETE) {
+                                formOfWays.remove(form.getRowId());
+                            } else {
+                                int formOfWay = form.getFormOfWay();
+                                if (form.changedFields().containsKey("formOfWay"))
+                                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
+                                formOfWays.put(form.getRowId(), formOfWay);
+                            }
+                        }
+                    }
+                }
+
+                if (formOfWays.containsValue(43))
+                    roundaboutLink.add(link.pid());
             }
         }
     }

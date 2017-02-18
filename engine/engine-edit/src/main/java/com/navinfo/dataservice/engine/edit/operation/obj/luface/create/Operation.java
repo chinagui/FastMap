@@ -390,7 +390,7 @@ public class Operation implements IOperation {
         face.setGeometry(g);
         // 缩放计算面积和周长
         g = GeoTranslator.transform(g, 0.00001, 5);
-        String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g).iterator().next();
+        String meshId = CompGeometryUtil.geoToMeshesWithoutBreak(g.getCentroid()).iterator().next();
         if (!StringUtils.isEmpty(meshId)) {
             face.setMeshId(Integer.parseInt(meshId));
         }

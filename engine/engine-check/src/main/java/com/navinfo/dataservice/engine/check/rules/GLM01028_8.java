@@ -38,7 +38,7 @@ public class GLM01028_8 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                if (kind == 11 || kind == 15 || pedestrianLink.contains(link.pid())) {
+                if (kind == 11 || kind == 10 || pedestrianLink.contains(link.pid())) {
                     List<RdGate> gates = new RdGateSelector(getConn()).loadByLink(link.pid(), false);
                     if (!gates.isEmpty()) {
                         for (RdGate gate : gates) {

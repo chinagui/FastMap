@@ -7,9 +7,9 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
- * Created by Crayeres on 2017/2/9.
+ * Created by Crayeres on 2017/2/17.
  */
-public class GLM01470 extends baseRule {
+public class GLM01108 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
 
@@ -21,15 +21,19 @@ public class GLM01470 extends baseRule {
             if (row instanceof RdLink && row.status() == ObjStatus.UPDATE) {
                 RdLink link = (RdLink) row;
 
-                int kind = link.getKind();
-                if (link.changedFields().containsKey("kind"))
-                    kind = Integer.valueOf(link.changedFields().get("kind").toString());
+                int laneNum = link.getLaneNum();
+                if (link.changedFields().containsKey("laneNum"))
+                    laneNum = Integer.valueOf(link.changedFields().get("laneNum").toString());
 
-                int walkFlag = link.getWalkFlag();
-                if (link.changedFields().containsKey("walkFlag"))
-                    walkFlag = Integer.valueOf(link.changedFields().get("walkFlag").toString());
+                int laneLeft = link.getLaneLeft();
+                if (link.changedFields().containsKey("laneLeft"))
+                    laneLeft = Integer.valueOf(link.changedFields().get("laneLeft").toString());
 
-                if (kind == 10 && walkFlag != 1) {
+                int laneRight = link.getLaneRight();
+                if (link.changedFields().containsKey("laneRight"))
+                    laneRight = Integer.valueOf(link.changedFields().get("laneRight").toString());
+
+                if (laneNum == 0 && laneLeft == 0 && laneRight == 0) {
                     setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             }

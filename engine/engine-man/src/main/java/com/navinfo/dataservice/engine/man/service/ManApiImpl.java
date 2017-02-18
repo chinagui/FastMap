@@ -38,7 +38,17 @@ import net.sf.json.JSONObject;
  */
 @Service("manApi")
 public class ManApiImpl implements ManApi {
-	
+	/**
+	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
+	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * @param phaseId
+	 * @return
+	 * @throws Exception 
+	 */
+	@Override
+	public void taskUpdateCmsProgress(int phaseId,int status) throws Exception {
+		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status);
+	}	
 	
 	@Override
 	public Region queryByRegionId(Integer regionId) throws Exception {

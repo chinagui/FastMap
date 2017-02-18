@@ -1478,8 +1478,6 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -1540,14 +1538,14 @@ public class TaskService {
 				}
 			}
 			if(curPhase==1||curPhase==2){//日落月
-				int phasestatus=closeDay2MonthMesh(conn, phaseStatusMap.get(3));
+				int phasestatus=closeDay2MonthMesh(conn, phaseIdMap.get(3));
 				if(phasestatus==0){return;}
-				taskUpdateCmsProgress(conn, phaseStatusMap.get(3), phasestatus);
+				taskUpdateCmsProgress(conn, phaseIdMap.get(3), phasestatus);
 				curPhase=3;}
 			if(curPhase==3){//cms任务创建
-				int phasestatus=createCmsTask(conn, phaseStatusMap.get(4));
+				int phasestatus=createCmsTask(conn, phaseIdMap.get(4));
 				if(phasestatus==0){return;}
-				taskUpdateCmsProgress(conn, phaseStatusMap.get(4), phasestatus);
+				taskUpdateCmsProgress(conn, phaseIdMap.get(4), phasestatus);
 				curPhase=4;
 			}
 			if(curPhase==4){
@@ -1571,15 +1569,18 @@ public class TaskService {
 		Connection conn=null;
 		try{
 			conn= DBConnector.getInstance().getManConnection();
+			int status=0;
 			if(phase==1){
-				day2month(conn, phaseId);
+				status =day2month(conn, phaseId);
 			}else if(phase==2){
-				tips2Aumark(conn, phaseId);
+				status =tips2Aumark(conn, phaseId);
 			}else if(phase==3){
-				closeDay2MonthMesh(conn, phaseId);
+				status =closeDay2MonthMesh(conn, phaseId);
 			}else if(phase==4){
-				createCmsTask(conn, phaseId);
+				status =createCmsTask(conn, phaseId);
 			}
+			if(status==0){return;}
+			taskUpdateCmsProgress(conn, phaseId, status);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1645,7 +1646,7 @@ public class TaskService {
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
 			Set<Integer> meshs = phase.getMeshIds();
 			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 1 WHERE MESH IN "
-					+meshs.toString().replace("[", "(").replace("]", "");
+					+meshs.toString().replace("[", "(").replace("]", ")");
 			Connection meta = null;
 			try{
 				meta = DBConnector.getInstance().getMetaConnection();
@@ -1695,7 +1696,7 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID"
+			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase"
 					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M"
 					+ " WHERE T.PHASE_ID =  "+phaseId;
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
@@ -1704,6 +1705,8 @@ public class TaskService {
 					if(rs.next()) {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
+						progress.setPhase(rs.getInt("phase"));
+						
 						if(progress.getGridIds()==null){
 							progress.setGridIds(new HashSet<Integer>());
 						}

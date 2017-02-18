@@ -65,7 +65,7 @@ public class FMGLM6006501 extends BasicCheckRule {
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 					return;
 				}
-				if(!name.endsWith("机场")||!name.endsWith("機場")){
+				if(!nameP.endsWith("机场")&&!nameP.endsWith("機場")){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 					return;
 				}

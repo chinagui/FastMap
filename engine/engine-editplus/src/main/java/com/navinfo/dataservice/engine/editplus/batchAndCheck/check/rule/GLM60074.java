@@ -31,7 +31,7 @@ public class GLM60074 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-			if(kindCode == null || !"170104".equals(kindCode)|| !"170105".equals(kindCode)){return;}
+			if(kindCode == null ||(!"170104".equals(kindCode)&&!"170105".equals(kindCode))){return;}
 			//是否有父
 			if(!parentMap.containsKey(poi.getPid())){return;}
 			Long parentId=parentMap.get(poi.getPid());
@@ -40,7 +40,7 @@ public class GLM60074 extends BasicCheckRule {
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
 			if(kindCodeP == null){return;}
-			if(!"170100".equals(kindCodeP)||!"170101".equals(kindCodeP)||!"170102".equals(kindCodeP)){
+			if(!"170100".equals(kindCodeP)&&!"170101".equals(kindCodeP)&&!"170102".equals(kindCodeP)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;
 			}

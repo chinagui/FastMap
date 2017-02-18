@@ -1260,8 +1260,8 @@ public class TaskService {
 			map.put("workProperty", task.getWorkProperty());
 			map.put("programId", task.getProgramId());
 			map.put("programType", task.getProgramName());
-			map.put("creatUserId", task.getCreateUserId());
-			map.put("creatUserName", task.getCreateUserName());
+			map.put("createUserId", task.getCreateUserId());
+			map.put("createUserName", task.getCreateUserName());
 			map.put("groupId", task.getGroupId());
 			map.put("groupName", task.getGroupName());
 			map.put("gridIds", task.getGridIds());

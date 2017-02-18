@@ -379,7 +379,19 @@ comment on column FM_STAT_OVERVIEW_SUBTASK.stat_time
   is '统计时间';
 comment on column FM_STAT_OVERVIEW_SUBTASK.grid_percent_details
   is 'grid进度详情'; 
-  
+create table PROGRAM_GRID_MAPPING
+(
+  program_id VARCHAR2(50) not null,
+  grid_id    NUMBER(10) not null,
+  type       NUMBER(1) default 1 not null
+);
+-- Add comments to the columns 
+comment on column PROGRAM_GRID_MAPPING.program_id
+  is '项目ID';
+comment on column PROGRAM_GRID_MAPPING.grid_id
+  is 'GRID ID.调整增加的GRID';
+comment on column PROGRAM_GRID_MAPPING.type
+  is '1:规划；2：规划外，调整后的。';  
 exit;
 
 

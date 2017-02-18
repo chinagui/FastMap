@@ -5,6 +5,8 @@ import java.util.List;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObject;
+import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectName;
+import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
@@ -39,7 +41,13 @@ public class Process extends AbstractProcess<Command> {
 		List<IRow> glmList = new ArrayList<IRow>();
 		glmList.addAll(this.getResult().getAddObjects());
 		glmList.addAll(this.getResult().getUpdateObjects());
-		glmList.addAll(this.getResult().getDelObjects());
+//		glmList.addAll(this.getResult().getDelObjects());
+		//有检查项需要查删除的RdInter
+		for(IRow irow:this.getResult().getDelObjects()){
+			if(irow instanceof RdObjectName){
+				glmList.add(irow);
+			}
+		}
 		this.checkCommand.setGlmList(glmList);
 		this.checkEngine.postCheck();
 

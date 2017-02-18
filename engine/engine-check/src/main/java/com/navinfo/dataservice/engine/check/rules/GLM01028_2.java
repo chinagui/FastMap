@@ -30,7 +30,7 @@ public class GLM01028_2 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                if (kind == 11 || kind == 15) {
+                if (kind == 11 || kind == 10) {
                     List<RdSe> rdSes = new RdSeSelector(getConn()).loadRdSesWithLinkPid(link.pid(), false);
                     if (!rdSes.isEmpty()) {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());

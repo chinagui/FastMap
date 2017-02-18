@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,47 +127,121 @@ public class GLM02266 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLink(int linkPid) throws Exception {
+		//rdLink涉及到哪些RdObject
+		List<Integer> rdObjectPidList = getRdObjectPidList(linkPid);
+		for(Integer rdObjectPid:rdObjectPidList){
+			//CRFO是否存在满足条件的link
+			if(isRdObjectShouldBeNamed(rdObjectPid)){
+				//CRFO是否只存在一组名称
+				if(getRdObjectNameNum(rdObjectPid)!=1){
+					String target = "[RD_LINK," + linkPid + "]";
+					this.setCheckResult("", target, 0);
+					return;
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @param linkPid
+	 * @return
+	 * @throws SQLException 
+	 */
+	private List<Integer> getRdObjectPidList(int linkPid) throws SQLException {
+			//该link所在的有landmark的crfo
+			String sql = "SELECT ROI1.PID FROM RD_OBJECT_INTER ROI1, RD_INTER_LINK RIL1"
+					+ " WHERE RIL1.LINK_PID = " + linkPid
+					+ " AND RIL1.PID = ROI1.INTER_PID"
+					+ " AND ROI1.U_RECORD <> 2"
+					+ " AND RIL1.U_RECORD <> 2"
+					+ " UNION "
+					+ "SELECT ROR1.PID FROM RD_OBJECT_ROAD ROR1, RD_ROAD_LINK RRL1"
+					+ " WHERE RRL1.LINK_PID = " + linkPid
+					+ " AND RRL1.PID = ROR1.ROAD_PID"
+					+ " AND ROR1.U_RECORD <> 2"
+					+ " AND RRL1.U_RECORD <> 2"
+					+ " UNION "
+					+ "SELECT ROL1.PID FROM RD_OBJECT_LINK ROL1"
+					+ " WHERE ROL1.LINK_PID = " + linkPid
+					+ " AND ROL1.U_RECORD <> 2";
+			
+			log.info("RdObject后检查GLM02266:" + sql);
+			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+			ResultSet resultSet = pstmt.executeQuery();
+			List<Integer> rdObjectPidList=new ArrayList<Integer>();
+
+			while (resultSet.next()){
+				rdObjectPidList.add(resultSet.getInt("PID"));
+			} 
+			resultSet.close();
+			pstmt.close();
+			return rdObjectPidList;			
+	}
+
+	/**
+	 * @param rdObjectName
+	 * @throws Exception 
+	 */
+	private void checkRdObjectName(RdObjectName rdObjectName) throws Exception {
+		boolean checkFlg = false;
+		//删除RdObjectName
+		if(rdObjectName.status().equals(ObjStatus.DELETE)){
+			checkFlg = true;
+		}
+		//新增CRFO名称
+		if(rdObjectName.status().equals(ObjStatus.INSERT)){
+			checkFlg = true;
+		}
+		if(checkFlg){
+			//CRFO是否存在满足条件的link
+			boolean flg = isRdObjectShouldBeNamed(rdObjectName.getPid());
+			if(flg){
+				//CRFO是否只存在一组名称
+				if(getRdObjectNameNum(rdObjectName.getPid())!=1){
+					String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param pid
+	 * @throws Exception 
+	 * CRFO是否只存在一组名称
+	 */
+	private int getRdObjectNameNum(int pid) throws Exception {
+		int num = 0;
 		StringBuilder sb = new StringBuilder();
-		//该link所在的无landmark或者landMark组不唯一的crfo
-		String innerSql = "(SELECT ROI1.PID FROM RD_OBJECT_INTER ROI1, RD_INTER_LINK RIL1"
-				+ " WHERE RIL1.LINK_PID = " + linkPid
-				+ " AND RIL1.PID = ROI1.INTER_PID"
-				+ " AND ROI1.U_RECORD <> 2"
-				+ " AND RIL1.U_RECORD <> 2"
-				+ " AND NOT EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROI1.PID )"
-				+ " UNION "
-				+ " SELECT ROI1.PID FROM RD_OBJECT_INTER ROI1, RD_INTER_LINK RIL1"
-				+ " WHERE RIL1.LINK_PID = " + linkPid
-				+ " AND RIL1.PID = ROI1.INTER_PID"
-				+ " AND ROI1.U_RECORD <> 2"
-				+ " AND RIL1.U_RECORD <> 2"
-				+ " AND EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1,RD_OBJECT_NAME RON2 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROI1.PID AND RON2.U_RECORD <> 2 AND RON2.PID = ROI1.PID AND RON1.NAME_GROUPID <> RON2.NAME_GROUPID)"
-				+ " UNION "
-				+ " SELECT ROR1.PID FROM RD_OBJECT_ROAD ROR1, RD_ROAD_LINK RRL1"
-				+ " WHERE RRL1.LINK_PID = " + linkPid
-				+ " AND RRL1.PID = ROR1.ROAD_PID"
-				+ " AND ROR1.U_RECORD <> 2"
-				+ " AND RRL1.U_RECORD <> 2"
-				+ " AND NOT EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROR1.PID )"
-				+ " UNION "
-				+ " SELECT ROR1.PID FROM RD_OBJECT_ROAD ROR1, RD_ROAD_LINK RRL1"
-				+ " WHERE RRL1.LINK_PID = " + linkPid
-				+ " AND RRL1.PID = ROR1.ROAD_PID"
-				+ " AND ROR1.U_RECORD <> 2"
-				+ " AND RRL1.U_RECORD <> 2"
-				+ " AND EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1,RD_OBJECT_NAME RON2 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROR1.PID AND RON2.U_RECORD <> 2 AND RON2.PID = ROR1.PID AND RON1.NAME_GROUPID <> RON2.NAME_GROUPID)"
-				+ " UNION "
-				+ " SELECT ROL1.PID FROM RD_OBJECT_LINK ROL1"
-				+ " WHERE ROL1.LINK_PID = " + linkPid
-				+ " AND ROL1.U_RECORD <> 2"
-				+ " AND NOT EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROL1.PID )"
-				+ " UNION "
-				+ " SELECT ROL1.PID FROM RD_OBJECT_LINK ROL1"
-				+ " WHERE ROL1.LINK_PID = " + linkPid
-				+ " AND ROL1.U_RECORD <> 2"
-				+ " AND EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON1,RD_OBJECT_NAME RON2 WHERE RON1.U_RECORD <> 2 AND RON1.PID = ROL1.PID AND RON2.U_RECORD <> 2 AND RON2.PID = ROL1.PID AND RON1.NAME_GROUPID <> RON2.NAME_GROUPID))";
+		sb.append("SELECT COUNT(1) NUM FROM RD_OBJECT_NAME RON WHERE RON.U_RECORD <> 2  AND RON.PID = " + pid +" GROUP BY RON.NAME_GROUPID");
 		
-		sb.append("SELECT COUNT(1) FROM (");
+		String sql = sb.toString();
+		log.info("RdObject后检查GLM02266:" + sql);
+		
+		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		if (resultSet.next()){
+			num = resultSet.getInt("NUM");
+		}
+		resultSet.close();
+		pstmt.close();
+
+		return num;
+		
+	}
+
+	/**
+	 * @param pid
+	 * @return
+	 * @throws SQLException 
+	 * CRFO是否存在满足条件的link
+	 */
+	private boolean isRdObjectShouldBeNamed(int pid) throws SQLException {
+		boolean flg = false;
+		//CRFO是否存在满足条件的link
+		StringBuilder sb = new StringBuilder();
+		
 		sb.append("SELECT N.LINK_PID FROM RD_LINK_FORM F, RD_LINK_NAME N");
 		sb.append(" WHERE N.NAME_TYPE = 1");
 		sb.append(" AND F.FORM_OF_WAY = 15");
@@ -175,17 +252,17 @@ public class GLM02266 extends baseRule{
 		sb.append(" WHERE ROI.INTER_PID = RIL.PID");
 		sb.append(" AND ROI.U_RECORD <> 2");
 		sb.append(" AND RIL.U_RECORD <> 2");
-		sb.append(" AND ROI.PID = " + innerSql);
+		sb.append(" AND ROI.PID = " + pid);
 		sb.append(" UNION");
 		sb.append(" SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL");
 		sb.append(" WHERE ROL.U_RECORD <> 2");
-		sb.append(" AND ROL.PID = " + innerSql);
+		sb.append(" AND ROL.PID = " + pid);
 		sb.append(" UNION");
 		sb.append(" SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR, RD_ROAD_LINK RRL");
 		sb.append(" WHERE ROR.ROAD_PID = RRL.PID");
 		sb.append(" AND ROR.U_RECORD <> 2");
 		sb.append(" AND RRL.U_RECORD <> 2");
-		sb.append(" AND ROR.PID = "  + innerSql + ")");
+		sb.append(" AND ROR.PID = "  + pid + ")");
 		sb.append(" UNION");
 		sb.append(" SELECT N.LINK_PID FROM RD_LINK_NAME N");
 		sb.append(" WHERE N.NAME_TYPE = 2");
@@ -194,99 +271,29 @@ public class GLM02266 extends baseRule{
 		sb.append(" WHERE ROI.INTER_PID = RIL.PID");
 		sb.append(" AND ROI.U_RECORD <> 2");
 		sb.append(" AND RIL.U_RECORD <> 2");
-		sb.append(" AND ROI.PID = " + innerSql);
+		sb.append(" AND ROI.PID = " + pid);
 		sb.append(" UNION");
 		sb.append(" SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL");
 		sb.append(" WHERE ROL.U_RECORD <> 2");
-		sb.append(" AND ROL.PID = " + innerSql);
+		sb.append(" AND ROL.PID = " + pid);
 		sb.append(" UNION");
 		sb.append(" SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR, RD_ROAD_LINK RRL");
 		sb.append(" WHERE ROR.ROAD_PID = RRL.PID");
 		sb.append(" AND ROR.U_RECORD <> 2");
 		sb.append(" AND RRL.U_RECORD <> 2");
-		sb.append(" AND ROR.PID = "  + innerSql + ")");
-		sb.append(")");
+		sb.append(" AND ROR.PID = "  + pid + ")");
 		
-		String sql = sb.toString();
-		log.info("RdObjectName后检查GLM02266:" + sql);
-		
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
-		
-		if(Integer.parseInt(resultList.get(0).toString())!=0){
-			String target = "[RD_LINK," + linkPid + "]";
-			this.setCheckResult("", target, 0);
-		}
-		
-	}
+		log.info("RdObject后检查GLM02266:" + sb.toString());
+		PreparedStatement pstmt = this.getConn().prepareStatement(sb.toString());	
+		ResultSet resultSet = pstmt.executeQuery();
 
-	/**
-	 * @param rdObjectName
-	 * @throws Exception 
-	 */
-	private void checkRdObjectName(RdObjectName rdObjectName) throws Exception {
-		//删除RdObjectName
-		if(rdObjectName.status().equals(ObjStatus.DELETE)){
-			StringBuilder sb = new StringBuilder();
-			//CRFO存在满足条件的link,但是没有name
-			sb.append("SELECT COUNT(1) FROM (");
-			sb.append("SELECT N.LINK_PID FROM RD_LINK_FORM F, RD_LINK_NAME N");
-			sb.append(" WHERE N.NAME_TYPE = 1");
-			sb.append(" AND F.FORM_OF_WAY = 15");
-			sb.append(" AND N.LINK_PID = F.LINK_PID");
-			sb.append(" AND N.U_RECORD <> 2");
-			sb.append(" AND F.U_RECORD <> 2");
-			sb.append(" AND N.LINK_PID IN (SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI, RD_INTER_LINK RIL");
-			sb.append(" WHERE ROI.INTER_PID = RIL.PID");
-			sb.append(" AND ROI.U_RECORD <> 2");
-			sb.append(" AND RIL.U_RECORD <> 2");
-			sb.append(" AND ROI.PID = " + rdObjectName.getPid());
-			sb.append(" UNION");
-			sb.append(" SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL");
-			sb.append(" WHERE ROL.U_RECORD <> 2");
-			sb.append(" AND ROL.PID = " + rdObjectName.getPid());
-			sb.append(" UNION");
-			sb.append(" SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR, RD_ROAD_LINK RRL");
-			sb.append(" WHERE ROR.ROAD_PID = RRL.PID");
-			sb.append(" AND ROR.U_RECORD <> 2");
-			sb.append(" AND RRL.U_RECORD <> 2");
-			sb.append(" AND ROR.PID = "  + rdObjectName.getPid() + ")");
-			sb.append(" UNION");
-			sb.append(" SELECT N.LINK_PID FROM RD_LINK_NAME N");
-			sb.append(" WHERE N.NAME_TYPE = 2");
-			sb.append(" AND N.U_RECORD <> 2");
-			sb.append(" AND N.LINK_PID IN (SELECT RIL.LINK_PID FROM RD_OBJECT_INTER ROI, RD_INTER_LINK RIL");
-			sb.append(" WHERE ROI.INTER_PID = RIL.PID");
-			sb.append(" AND ROI.U_RECORD <> 2");
-			sb.append(" AND RIL.U_RECORD <> 2");
-			sb.append(" AND ROI.PID = " + rdObjectName.getPid());
-			sb.append(" UNION");
-			sb.append(" SELECT ROL.LINK_PID FROM RD_OBJECT_LINK ROL");
-			sb.append(" WHERE ROL.U_RECORD <> 2");
-			sb.append(" AND ROL.PID = " + rdObjectName.getPid());
-			sb.append(" UNION");
-			sb.append(" SELECT RRL.LINK_PID FROM RD_OBJECT_ROAD ROR, RD_ROAD_LINK RRL");
-			sb.append(" WHERE ROR.ROAD_PID = RRL.PID");
-			sb.append(" AND ROR.U_RECORD <> 2");
-			sb.append(" AND RRL.U_RECORD <> 2");
-			sb.append(" AND ROR.PID = "  + rdObjectName.getPid() + ")");
-			sb.append(")T");
-			sb.append(" WHERE 1=1 AND NOT EXISTS (SELECT 1 FROM RD_OBJECT_NAME RON WHERE RON.PID = " + rdObjectName.getPid() + " AND RON.U_RECORD <> 2) ");
-
-			String sql = sb.toString();
-			log.info("RdObjectName后检查GLM02266:" + sql);
-			
-			DatabaseOperator getObj = new DatabaseOperator();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
-			
-			if(Integer.parseInt(resultList.get(0).toString())>0){
-				String target = "[RD_OBJECT," + rdObjectName.getPid() + "]";
-				this.setCheckResult("", target, 0);
-			}
-		}
 		
+		while (resultSet.next()){
+			flg = true;
+		} 
+		resultSet.close();
+		pstmt.close();
+		return flg;
 	}
 
 }

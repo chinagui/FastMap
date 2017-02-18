@@ -30,7 +30,7 @@ public class GLM01028_9 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                if (kind == 11 || kind == 15) {
+                if (kind == 11 || kind == 10) {
                     List<Integer> voiceguides = new RdVoiceguideSelector(getConn()).loadPidByLink(link.pid(), false);
 
                     if (!voiceguides.isEmpty()) {

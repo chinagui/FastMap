@@ -95,7 +95,7 @@ public class ScPointSpecKindcode {
 	}
 	
 	public boolean judgeScPointKind(String kindCode,String chain) throws Exception {
-		String sql = "select 1 from sc_point_spec_kindcode_new t WHERE (poi_kind=:1 and category=1) or (chain=:2 and category=3)";
+		String sql = "select 1 from sc_point_spec_kindcode_new t WHERE ((poi_kind=:1 and category=1) or (chain=:2 and category=3 and poi_kind=:3)) and t.type=8";
 		
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -105,6 +105,7 @@ public class ScPointSpecKindcode {
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, kindCode);
 			pstmt.setString(2, chain);
+			pstmt.setString(3, kindCode);
 			rs = pstmt.executeQuery();
 			if (rs.next()) {
 				return true;

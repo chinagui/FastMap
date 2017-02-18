@@ -45,11 +45,12 @@ public class ScPointNameckTest {
 	@Test
 	public void testScPointNameckTypeD2() {
 		try {
-			Map<Integer, List<ScSensitiveWordsObj>> tt = ScSensitiveWords.getInstance().scSensitiveWordsMap(2);
+			Map<Integer, List<ScSensitiveWordsObj>> tt = ScSensitiveWords.getInstance().scSensitiveWordsMap();
 			List<ScSensitiveWordsObj> list = tt.get(2);
 			for (ScSensitiveWordsObj scSensitiveWordsObj : list) {
 				if(scSensitiveWordsObj.getSensitiveWord().equals("连续三位及三位以上数字")){
 					System.out.println(scSensitiveWordsObj.getRegexSensitiveWord());
+					System.out.println(scSensitiveWordsObj.getRegexSensitiveWordAddress());
 				}
 			}
 		} catch (Exception e) {

@@ -86,13 +86,14 @@ public class LcLinkOperateUtils {
     /*
      * 创建生成一条LCLINK返回
      */
-    public static LcLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result, LcLink sourceLink) throws Exception {
+    public static LcLink getAddLink(Geometry g, int sNodePid, int eNodePid, Result result, LcLink sourceLink) throws
+            Exception {
         LcLink link = new LcLink();
         link.setPid(PidUtil.getInstance().applyLcLinkPid());
         if (sourceLink != null) {
             link.copy(sourceLink);
         }
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
+        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(GeoTranslator.transform(g, 1, 5));
         Iterator<String> it = meshes.iterator();
         List<IRow> meshIRows = new ArrayList<IRow>();
         while (it.hasNext()) {
@@ -149,8 +150,8 @@ public class LcLinkOperateUtils {
     /*
      * 创建一条土地覆盖线对应的端点
      */
-    public static JSONObject createLcNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result)
-            throws Exception {
+    public static JSONObject createLcNodeForLink(Geometry g, int sNodePid, int eNodePid, Result result) throws
+            Exception {
         JSONObject node = new JSONObject();
         if (0 == sNodePid) {
             Coordinate point = g.getCoordinates()[0];
@@ -179,8 +180,8 @@ public class LcLinkOperateUtils {
      * @param geometry 要分割线的几何 sNodePid 起点pid eNodePid 终点pid catchLinks
      * 挂接的线和点的集合 1.生成所有不存在的RDNODE 2.标记挂接的link被打断的点 3.返回线被分割的几何属性和起点和终点的List集合
      */
-    public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid, int eNodePid,
-                                                      JSONArray catchLinks, Result result) throws Exception {
+    public static Map<Geometry, JSONObject> splitLink(Geometry geometry, int sNodePid, int eNodePid, JSONArray
+            catchLinks, Result result) throws Exception {
         Map<Geometry, JSONObject> maps = new HashMap<Geometry, JSONObject>();
         JSONArray coordinates = GeoTranslator.jts2Geojson(geometry).getJSONArray("coordinates");
         JSONObject tmpGeom = new JSONObject();
@@ -194,8 +195,8 @@ public class LcLinkOperateUtils {
 
         int pc = 1;
         // 挂接的第一个点是LINK的几何属性第一个点
-        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon")
-                && tmpCs.getJSONArray(0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
+        if (tmpCs.getJSONArray(0).getDouble(0) == catchLinks.getJSONObject(0).getDouble("lon") && tmpCs.getJSONArray
+                (0).getDouble(1) == catchLinks.getJSONObject(0).getDouble("lat")) {
             p = 1;
         }
         JSONObject se = new JSONObject();
@@ -222,8 +223,8 @@ public class LcLinkOperateUtils {
         while (p < catchLinks.size() && pc < coordinates.size()) {
             tmpCs.add(coordinates.getJSONArray(pc));
 
-            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon")
-                    && coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
+            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon") &&
+                    coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
 
                 tmpGeom.put("coordinates", tmpCs);
                 if (catchLinks.getJSONObject(p).containsKey("nodePid")) {
@@ -292,8 +293,8 @@ public class LcLinkOperateUtils {
     /*
      * 根据移动link端点重新生成link的几何
      */
-    public static Geometry caleLinkGeomertyForMvNode(LcLink link, int nodePid, double lon, double lat)
-            throws JSONException {
+    public static Geometry caleLinkGeomertyForMvNode(LcLink link, int nodePid, double lon, double lat) throws
+            JSONException {
         Geometry geom = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
         Coordinate[] cs = geom.getCoordinates();
         double[][] ps = new double[cs.length][2];
@@ -340,8 +341,8 @@ public class LcLinkOperateUtils {
         }
     }
 
-    public static List<LcLink> getCreateLcLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, LcLink sourceLink)
-            throws Exception {
+    public static List<LcLink> getCreateLcLinksWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result,
+                                                        LcLink sourceLink) throws Exception {
         List<LcLink> links = new ArrayList<LcLink>();
         if (g != null) {
             if (g.getGeometryType() == GeometryTypeName.LINESTRING) {
@@ -395,8 +396,8 @@ public class LcLinkOperateUtils {
     /*
      * 创建土地覆盖线 针对跨图幅创建图廓点不能重复
      */
-    public static LcLink getCalLcLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, LcLink sourceLink)
-            throws Exception {
+    public static LcLink getCalLcLinkWithMesh(Geometry g, Map<Coordinate, Integer> maps, Result result, LcLink
+            sourceLink) throws Exception {
         // 定义创建行政区划线的起始Pid 默认为0
         int sNodePid = 0;
         int eNodePid = 0;

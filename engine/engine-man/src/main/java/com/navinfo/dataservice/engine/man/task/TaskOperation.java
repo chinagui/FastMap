@@ -2245,7 +2245,7 @@ public class TaskOperation {
 			sb.append(" WHERE S.TASK_ID = " + taskId);
 			sb.append(" AND S.TYPE = " + type);
 			sb.append(" AND S.STATUS <> 0 ");
-
+			log.info("getSubTaskListByType SQL："+sb.toString());
 			ResultSetHandler<List<Subtask>> rsh = new ResultSetHandler<List<Subtask>>() {
 				@Override
 				public List<Subtask> handle(ResultSet rs) throws SQLException {

@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -54,8 +55,9 @@ public class RdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp1 as  (select link_pid, direct, kind, s_node_pid,length, e_node_pid,imi_code, geometry     from rd_link    where sdo_relate(geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') =          'TRUE'      and u_record != 2), tmp2 as  (select /*+ index(a) */    a.link_pid, listagg(a.type, ';') within group(order by a.link_pid) limits     from rd_link_limit a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid), tmp3 as  (select /*+ index(a) */    a.link_pid,    listagg(a.form_of_way, ';') within group(order by a.link_pid) forms     from rd_link_form a, tmp1 b    where a.u_record != 2      and a.link_pid = b.link_pid    group by a.link_pid) select a.*, b.limits, c.forms,d.name   from tmp1 a, tmp2 b, tmp3 c, (select /*+ index(b) */            b.link_pid, c.name             from rd_link_name b, rd_name c            where b.name_groupid = c.name_groupid              and b.name_class = 1              and b.seq_num = 1              and c.lang_code = 'CHI'              and b.u_record != 2) d  where a.link_pid = b.link_pid(+)    and a.link_pid = c.link_pid(+)    and a.link_pid = d.link_pid(+)";
-
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, S_NODE_PID, LENGTH, E_NODE_PID, IMI_CODE, GEOMETRY FROM RD_LINK WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP4 AS /*+ index(P) */ (SELECT P.LINK_PID, S.GROUP_ID SAMELINK_PID FROM RD_SAMELINK_PART P, RD_SAMELINK S, TMP1 L WHERE P.LINK_PID = L.LINK_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:2 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP5 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID S_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.S_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:3 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP6 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID E_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.E_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:4 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2) SELECT A.*, B.LIMITS, C.FORMS, D.NAME, E.SAMELINK_PID, F.S_SAMENODEPID, G.E_SAMENODEPID FROM TMP1 A, TMP2 B, TMP3 C, TMP4 E, TMP5 F, TMP6 G, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+) AND A.LINK_PID = F.LINK_PID(+) AND A.LINK_PID = G.LINK_PID(+) ";
+		
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -64,6 +66,9 @@ public class RdLinkSearch implements ISearch {
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, wkt);
+			pstmt.setString(2, "RD_LINK");
+			pstmt.setString(3, "RD_NODE");
+			pstmt.setString(4, "RD_NODE");
 
 			resultSet = pstmt.executeQuery();
 
@@ -87,6 +92,10 @@ public class RdLinkSearch implements ISearch {
 				m.put("h", resultSet.getString("forms"));
 				m.put("j", resultSet.getString("imi_code"));
 				m.put("k", resultSet.getString("length"));
+				
+				m.put("l", resultSet.getInt("samelink_pid"));
+				m.put("m", resultSet.getInt("s_samenodepid"));
+				m.put("n", resultSet.getInt("e_samenodepid"));
 
 				snapshot.setM(m);
 
@@ -106,22 +115,8 @@ public class RdLinkSearch implements ISearch {
 
 			throw new Exception(e);
 		} finally {
-			if (resultSet != null) {
-				try {
-					resultSet.close();
-				} catch (Exception e) {
-
-				}
-			}
-
-			if (pstmt != null) {
-				try {
-					pstmt.close();
-				} catch (Exception e) {
-
-				}
-			}
-
+			DBUtils.closeStatement(pstmt);
+			DBUtils.closeResultSet(resultSet);
 		}
 
 		return list;

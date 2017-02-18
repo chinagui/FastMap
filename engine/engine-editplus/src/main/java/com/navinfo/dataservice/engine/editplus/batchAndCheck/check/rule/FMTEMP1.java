@@ -78,7 +78,7 @@ public class FMTEMP1 extends BasicCheckRule {
 						"简介存在半角字符");
 			}
 
-	        if (briefDesc.indexOf(" ")>=0) {
+	        if (briefDesc.indexOf(" ")>=0||briefDesc.indexOf("　")>=0) {
 				this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 						"简介存在空格");
 			}

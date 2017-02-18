@@ -82,7 +82,7 @@ public class FMZY20238 extends BasicCheckRule {
 						illegalChar + "是非法字符 ");
 			}
 
-			if (address.indexOf(" ") >= 0) {
+			if (address.indexOf(" ") >= 0||address.indexOf("　")>=0) {
 				setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(), "汽车租赁地址描述含有空格");
 			}
 

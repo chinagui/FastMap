@@ -27,16 +27,6 @@ public class GLM01267 extends baseRule {
 	private static Logger logger = Logger.getLogger(GLM01267.class);
 
 	/**
-	 * 包含环岛形态的linkPid
-	 */
-	private Set<Integer> formOf33Set = new HashSet<>();
-	
-	/**
-	 * 限速类型为“普通”，link上的速度限制等级为1，2，3的linkPid
-	 */
-	private Set<Integer> speedLimitLinkPidSet = new HashSet<>();
-	
-	/**
 	 * 最终需要提示log的linkPid集合
 	 */
 	private Set<Integer> resultLinkPidSet = new HashSet<>();
@@ -91,10 +81,10 @@ public class GLM01267 extends baseRule {
 					formOfWay = (int) form.changedFields().get("formOfWay");
 				}
 				if (form.status() != ObjStatus.DELETE && formOfWay == 33) {
-					formOf33Set.add(form.getLinkPid());
+					resultLinkPidSet.add(form.getLinkPid());
 				}
 				if (form.status() == ObjStatus.DELETE && formOfWay == 33) {
-					formOf33Set.remove(form.getLinkPid());
+					resultLinkPidSet.remove(form.getLinkPid());
 				}
 			}
 			else if(row instanceof RdLinkSpeedlimit)
@@ -118,20 +108,16 @@ public class GLM01267 extends baseRule {
 						}
 						if(speedClass == 1 || speedClass == 2 || speedClass == 3)
 						{
-							speedLimitLinkPidSet.add(limit.getLinkPid());
+							resultLinkPidSet.add(limit.getLinkPid());
 						}
 					}
 				}
 				else
 				{
-					speedLimitLinkPidSet.remove(limit.getLinkPid());
+					resultLinkPidSet.remove(limit.getLinkPid());
 				}
 			}
 		}
-		//取交集就是符合log条件的linkpid
-		resultLinkPidSet.addAll(formOf33Set);
-		
-		resultLinkPidSet.addAll(speedLimitLinkPidSet);
 	}
 
 }

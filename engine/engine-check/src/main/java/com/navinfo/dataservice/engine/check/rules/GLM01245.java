@@ -20,10 +20,11 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
  * @ClassName: GLM01245
  * @author zhangxiaolong
  * @date 2017年2月7日
- * @Description: 1) 步行道路种别的Link,限速类型为“普通”时,速度限制必须等于10km/h，否则报log1 2)
- *               非引导道路、步行道路种别的Link的限速类型为“普通”时,限速来源必须是“未调查”，否则报log2。 3）
- *               不具有的SA或PA属性的高速、城市高速的限速类型为“普通”时,限速来源不能是“未调查”，否则报log3 4）
- *               非引导道路种别的Link限速类型为“普通”时,速度限制必须等于1115km/h，否则报log4
+ * @Description: 
+ *  1） 步行道路种别的Link,限速类型为“普通”时,速度限制必须等于10km/h，否则报log1 
+ * 	2）非引导道路、步行道路种别的Link的限速类型为“普通”时,限速来源必须是“未调查”，否则报log2。 
+ *  3）不具有的SA或PA属性的高速、城市高速的限速类型为“普通”时,限速来源不能是“未调查”，否则报log3 
+ *  4）非引导道路种别的Link限速类型为“普通”时,速度限制必须等于1115km/h，否则报log4
  */
 public class GLM01245 extends baseRule {
 

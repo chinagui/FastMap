@@ -282,7 +282,7 @@ public class TaskService {
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
-			JSONArray commontaskIds=new JSONArray();
+			List<Integer> commontaskIds=new ArrayList<Integer>();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
@@ -301,7 +301,7 @@ public class TaskService {
 				}
 			}
 			//更新task状态
-			TaskOperation.updateStatus(conn, commontaskIds);			
+			TaskOperation.updateStatus(conn, commontaskIds,1);			
 			//发布消息
 			taskPushMsg(conn,userId,updatedTaskList);
 			conn.commit();
@@ -1098,10 +1098,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
-			Task taskTemp = new Task();
-			taskTemp.setTaskId(taskId);
-			taskTemp.setStatus(0);
-			TaskOperation.updateTask(conn, taskTemp);
+			TaskOperation.updateStatus(conn, taskId, 1);
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			TaskOperation.closeBlock(conn,task.getBlockId());
 			
@@ -1191,6 +1188,8 @@ public class TaskService {
 			sb.append(" AND T.GROUP_ID = UG.GROUP_ID");
 			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
 			sb.append(" AND T.TASK_ID = " + taskId);
+			
+			log.info("queryByTaskId sql:" + sb.toString());
 			String selectSql= sb.toString();
 
 			ResultSetHandler<Task> rsHandler = new ResultSetHandler<Task>() {
@@ -1550,9 +1549,9 @@ public class TaskService {
 			}
 			if(curPhase==4){
 				//更新task状态
-				JSONArray cmsTaskIdArray=new JSONArray();
+				List<Integer> cmsTaskIdArray=new ArrayList<Integer>();
 				cmsTaskIdArray.add(phase.getTaskId());
-				TaskOperation.updateStatus(conn, cmsTaskIdArray);
+				TaskOperation.updateStatus(conn, cmsTaskIdArray,1);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

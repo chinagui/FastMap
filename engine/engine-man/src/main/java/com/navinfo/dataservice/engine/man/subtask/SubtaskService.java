@@ -1055,12 +1055,20 @@ public class SubtaskService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			
+			StringBuilder sb = new StringBuilder();
 
-			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+			sb.append("SELECT C.ADMIN_ID FROM SUBTASK S,TASK T,BLOCK B,CITY C");
+			sb.append(" WHERE S.TASK_ID = T.TASK_ID");
+			sb.append(" AND T.BLOCK_ID = B.BLOCK_ID");
+			sb.append(" AND B.CITY_ID = C.CITY_ID");
+			sb.append(" AND S.SUBTASK_ID =" + subtaskId);
 
-			selectSql += " union all";
-
-			selectSql += " select c.admin_id from city c, subtask s, task t where c.city_id=t.city_id and s.task_id=t.task_id and s.subtask_id=:2";
+//			String selectSql = "select c.admin_id from block_man bm,block b, city c, subtask s where s.block_man_id=bm.block_man_id and b.block_id = bm.block_id and b.city_id=c.city_id and s.subtask_id=:1";
+//
+//			selectSql += " union all";
+//
+//			selectSql += " select c.admin_id from city c, subtask s, task t where c.city_id=t.city_id and s.task_id=t.task_id and s.subtask_id=:2";
 
 			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
 
@@ -1077,7 +1085,7 @@ public class SubtaskService {
 				}
 			};
 
-			return run.query(conn, selectSql, rsHandler, subtaskId, subtaskId);
+			return run.query(conn, sb.toString(), rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

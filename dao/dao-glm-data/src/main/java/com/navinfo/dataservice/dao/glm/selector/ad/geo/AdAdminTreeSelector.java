@@ -45,7 +45,7 @@ public class AdAdminTreeSelector extends AbstractSelector {
 		
 		if(cityAdadminId == 0)
 		{
-			throw new Exception("根据子任务Id"+subtaskId+"获取admin_id失败");
+			throw new Exception("根据子任务Id:"+subtaskId+" 获取admin_id失败");
 		}
 
 		AdAdmin adAdmin = adAdminSelector.loadByAdminId(cityAdadminId, isLock);

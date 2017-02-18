@@ -107,23 +107,24 @@ public class TipsSelectorTest extends InitApplication {
 		}
 	}
 	
-	
-    //根据瓦片扩圈获取Tips数据
 	@Test
-	public void testSearchDataByTileWithGap() {
-	/*	JSONArray types = new JSONArray();
-		types.add(8001);
-		types.add(8002);
-	//	types.add(1806);
-		//types.add(8001);
-		types.add(1205);
-		types.add(1401);
-		types.add(1110);
-		types.add(1515);
-		types.add(1105);
-		types.add(1806);
-		types.add(1509);
+	public void testQueryByCodeAndGrid(){
+		
+		JSONArray grids = JSONArray
+				.fromObject("[60560301,60560302,60560303,60560304,60560311,60560312,60560313,60560314]");
+	/*	JSONArray grids = JSONArray
+				.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
 		*/
+		
+		//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+		boolean isPre=false;
+		
+		JSONArray stages = new JSONArray();
+		stages.add(0);
+		stages.add(1);
+		stages.add(2);
+		stages.add(3);
+		
 		JSONArray types = new JSONArray();
 		types.add(1501);
 		types.add(1502);
@@ -142,6 +143,65 @@ public class TipsSelectorTest extends InitApplication {
 		types.add(1515);
 		types.add(1516);
 		types.add(1517);
+		
+		int type=1509;
+		
+		
+		
+		try{
+			String wkt = GridUtils.grids2Wkt(grids);
+			List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,isPre);	
+			
+			for (JSONObject jsonObject : tips) {
+				System.out.println("kind:"+jsonObject.getString("s_sourceType")+"-------"+jsonObject.get("id"));
+			}
+			
+			System.out.println("--------------------");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		
+		
+	}
+	
+	
+    //根据瓦片扩圈获取Tips数据
+	@Test
+	public void testSearchDataByTileWithGap() {
+	/*	JSONArray types = new JSONArray();
+		types.add(8001);
+		types.add(8002);
+	//	types.add(1806);
+		//types.add(8001);
+		types.add(1205);
+		types.add(1401);
+		types.add(1110);
+		types.add(1515);
+		types.add(1105);
+		types.add(1806);
+		types.add(1509);
+		*/
+		JSONArray types = new JSONArray();
+	/*	types.add(1501);*/
+		//types.add(1515);
+/*		types.add(1503);
+		types.add(1504);
+		types.add(1505);
+		types.add(1506);
+		types.add(1507);
+		types.add(1508);
+		types.add(1509);
+		types.add(1510);
+		types.add(1511);
+		types.add(1512);
+		types.add(1513);
+		types.add(1514);
+		types.add(1515);
+		types.add(1516);
+		types.add(1517);*/
+		
+	//	types.add(2001);
 
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		
@@ -179,7 +239,10 @@ public class TipsSelectorTest extends InitApplication {
 			//getByTileWithGap?parameter={"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99230}
 			
 			//{"gap":40,"mdFlag":"d","z":17,"x":107898,"y":49599}
-			System.out.println(solrSelector.searchDataByTileWithGap(107898, 49599, 17,
+			//{"gap":40,"mdFlag":"d","z":14,"x":13492,"y":6201}
+			//{"gap":40,"mdFlag":"d","z":16,"x":53973,"y":24807}
+			//{"gap":40,"mdFlag":"d","z":18,"x":215890,"y":99230}
+			System.out.println(solrSelector.searchDataByTileWithGap(215890, 99230, 18,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -752,7 +815,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":2677}";
+				String parameter = "{\"jobId\":1423}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -764,7 +827,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1423"; // 本地测试用
 					
 					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 
@@ -778,6 +841,10 @@ public class TipsSelectorTest extends InitApplication {
 					TipsUpload tipsUploader = new TipsUpload();
 
 					tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+					
+					//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
+					
+					//tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
 					//CollectorImport.importPhoto(photoMap, filePath);
 
@@ -803,7 +870,36 @@ public class TipsSelectorTest extends InitApplication {
 					e.printStackTrace();
 				}
 		 }
+		 
+		 @Test
+		 public void testGetByRowkey(){
+			 TipsSelector selector = new TipsSelector();
+
+			 try {
+				
+				JSONObject data = selector.searchDataByRowkey("11151515030481");
+				System.out.println(data);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
 		
+		 
+		 
+		 @Test
+		 public void testGetByRowkeys(){
+			 TipsSelector selector = new TipsSelector();
+
+			 try {
+				JSONArray data = JSONArray.fromObject("[\"11151515030481\",\"11151515030491\"]");
+				JSONArray resut = selector.searchDataByRowkeyArr(data);
+				System.out.println(resut);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
 
 
 }

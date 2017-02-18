@@ -611,14 +611,14 @@ public class SubtaskService {
 						
 						if(1 == rs.getInt("STATUS")){
 							subtask.put("percent",100);
-//							SubtaskStatInfo stat = new SubtaskStatInfo();
-//							try{	
-//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-//							} catch (Exception e) {
-//								log.warn("subtask query error",e);
-//							}
-//							subtask.setPercent(stat.getPercent());
+							SubtaskStatInfo stat = new SubtaskStatInfo();
+							try{	
+								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							} catch (Exception e) {
+								log.warn("subtask query error",e);
+							}
+							subtask.put("percent",stat.getPercent());
 						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;

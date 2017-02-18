@@ -1,11 +1,13 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,7 +32,9 @@ import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ArrayUtil;
@@ -3002,34 +3006,80 @@ public class SubtaskOperation {
 		
 	}
 
-
-	/**
-	 * 调整子任务范围
-	 * @param conn 
-	 * @param subtask
-	 * @param gridIds
-	 * @throws ServiceException 
-	 */
-	public static void adjustSubtaskRegion(Connection conn, Subtask subtask, List<Integer> gridIds) throws ServiceException {
+	
+	public static List<Geometry> loadPoiGeoBySubtaskFromLog(Subtask subtask)throws Exception{
+		Connection conn=null;
 		try{
-			Map<Integer,Integer> gridIdsBefore = subtask.getGridIds();
-			Map<Integer,Integer> gridIdsToInsert = null ;
-			for(Integer gridId:gridIds){
-				if(gridIdsBefore.containsKey(gridId)){
-					continue;
-				}else{
-					gridIdsToInsert.put(gridId,2);
+			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT I.GEOMETRY");
+			sb.append("  FROM IX_POI I");
+			sb.append(" WHERE I.PID IN (SELECT DISTINCT D.OB_PID");
+			sb.append("                   FROM LOG_OPERATION O, LOG_DETAIL D, LOG_ACTION A");
+			sb.append("                 WHERE A.ACT_ID = O.ACT_ID");
+			sb.append("                   AND O.OP_ID = D.OP_ID");
+			sb.append("                   AND D.OB_NM = 'IX_POI'");
+			sb.append("                  AND A.STK_ID = 30)");
+			
+			ResultSetHandler<List<Geometry>> rsHandler = new ResultSetHandler<List<Geometry>>() {
+				public List<Geometry> handle(ResultSet rs) throws SQLException {
+					List<Geometry> geoList = new ArrayList<Geometry>();
+					while (rs.next()) {
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String wkt = GeoTranslator.struct2Wkt(struct);
+							Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+							geoList.add(geo);
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					return geoList;
 				}
-			}
-			if(gridIdsToInsert!=null&&gridIdsToInsert.size()!=0){
-				insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			}
+			};
+
+			return new QueryRunner().query(conn, sb.toString(), rsHandler);
 		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new ServiceException("子任务范围调整失败，原因为:" + e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
 	}
+	
+	
+//
+//	/**
+//	 * 调整子任务范围
+//	 * @param conn 
+//	 * @param subtask
+//	 * @param gridIds
+//	 * @throws ServiceException 
+//	 */
+//	public static void adjustSubtaskRegion(Connection conn, Subtask subtask, List<Integer> gridIds) throws ServiceException {
+//		try{
+//			Map<Integer,Integer> gridIdsBefore = subtask.getGridIds();
+//			Map<Integer,Integer> gridIdsToInsert = null ;
+//			for(Integer gridId:gridIds){
+//				if(gridIdsBefore.containsKey(gridId)){
+//					continue;
+//				}else{
+//					gridIdsToInsert.put(gridId,2);
+//				}
+//			}
+//			if(gridIdsToInsert!=null&&gridIdsToInsert.size()!=0){
+//				insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+//			}
+//		}catch (Exception e) {
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("子任务范围调整失败，原因为:" + e.getMessage(), e);
+//		}
+//		
+//	}
 
 
 

@@ -132,10 +132,14 @@ public class RdLinkLimitTruck implements IRow {
 			if (!"objStatus".equals(key)) {
 
 				Field f = this.getClass().getDeclaredField(key);
-
 				f.setAccessible(true);
-
-				f.set(this, json.get(key));
+				
+				 if(f.getType() ==Double.TYPE){
+					 f.set(this, json.getDouble(key));
+	                }else{
+	                	f.set(this, json.get(key));
+	                }
+				
 			}
 
 		}
@@ -284,5 +288,25 @@ public class RdLinkLimitTruck implements IRow {
 
 	@Override
 	public void setMesh(int mesh) {
+	}
+	public static void main(String[] args) throws Exception {
+		 	String parameter="{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDLINK\",\"objId\":202001016,\"data\":{\"limitTrucks\":[{\"linkPid\":202001016,\"limitDir\":0,\"timeDomain\":\"\",\"resTrailer\":0,\"resWeigh\":99.9,\"resAxleLoad\":99.9,\"resAxleCount\":0,\"resOut\":2,\"objStatus\":\"INSERT\"}],\"rowId\":\"7FCDC34C681C419086C8B682C87F831F\",\"pid\":202001016,\"objStatus\":\"UPDATE\"}}";
+		
+		 com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+	                .parseObject(parameter);
+	 //{"linkPid":202001016,"limitDir":0,"timeDomain":"","resTrailer":0,"resWeigh":99.9,"resAxleLoad":99.9,"resAxleCount":0,"resOut":2,"objStatus":"INSERT"}
+		
+		
+		 JSONObject json = JsonUtils.fastJson2netJson(fastJson);
+		 JSONObject contents =json.getJSONObject("data");
+		 JSONArray arr = contents.getJSONArray("limitTrucks");
+		  JSONObject content = arr.getJSONObject(0);
+		
+			 RdLinkLimitTruck obj = new RdLinkLimitTruck();
+	         obj.Unserialize(content);
+	         System.out.println(obj.getResAxleLoad());
+	        
+	        
+		
 	}
 }

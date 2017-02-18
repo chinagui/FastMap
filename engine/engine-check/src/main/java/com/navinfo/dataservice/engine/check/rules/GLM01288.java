@@ -48,38 +48,38 @@ public class GLM01288 extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append(
-					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, L.KIND || '级道路没有永久禁止穿行！' AS LOG FROM RD_LINK L WHERE L.LINK_PID = ");
+					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, L.KIND || '级道路没有永久禁止穿行!' AS LOG FROM RD_LINK L WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 			sb.append(
 					" AND L.U_RECORD <> 2 AND L.KIND IN (9, 10) AND NOT EXISTS (SELECT 1 FROM RD_LINK_LIMIT LM WHERE LM.TYPE = 3 AND LM.U_RECORD <> 2 AND LM.TIME_DOMAIN IS NULL AND L.LINK_PID = LM.LINK_PID)   ");
 
 			sb.append(
-					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, L.KIND || '级道路不能制作车辆限制！' AS LOG FROM RD_LINK L WHERE L.LINK_PID = ");
+					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, L.KIND || '级道路不能制作车辆限制!' AS LOG FROM RD_LINK L WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 			sb.append(
 					" AND L.KIND IN (9, 10) AND L.U_RECORD <> 2 AND EXISTS (SELECT 1 FROM RD_LINK_LIMIT LM WHERE LM.TYPE = 2 AND LM.U_RECORD <> 2 AND L.LINK_PID = LM.LINK_PID)  ");
 
 			sb.append(
-					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '步行街道路没有永久禁止穿行！' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
+					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '步行街道路没有永久禁止穿行!' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 
 			sb.append(
 					" AND F.LINK_PID = L.LINK_PID AND L.U_RECORD <> 2 AND F.U_RECORD <> 2 AND F.FORM_OF_WAY = 20 AND NOT EXISTS (SELECT 1 FROM RD_LINK_LIMIT LM WHERE LM.TYPE = 3 AND LM.U_RECORD <> 2 AND LM.TIME_DOMAIN IS NULL AND LM.LINK_PID = F.LINK_PID)  ");
 
 			sb.append(
-					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '步行街道路不能制作车辆限制！' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
+					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '步行街道路不能制作车辆限制!' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 			sb.append(
 					" AND F.LINK_PID = L.LINK_PID AND L.U_RECORD <> 2 AND F.U_RECORD <> 2 AND F.FORM_OF_WAY = 20 AND EXISTS (SELECT 1 FROM RD_LINK_LIMIT LM WHERE LM.TYPE = 2 AND LM.U_RECORD <> 2 AND LM.LINK_PID = F.LINK_PID) ");
 
 			sb.append(
-					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '公交车专用道道路没有永久禁止穿行！' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
+					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '公交车专用道道路没有永久禁止穿行!' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 			sb.append(
 					" AND F.LINK_PID = L.LINK_PID AND L.U_RECORD <> 2 AND F.U_RECORD <> 2 AND F.FORM_OF_WAY = 22 AND NOT EXISTS (SELECT 1 FROM RD_LINK_LIMIT LM WHERE LM.TYPE = 3 AND LM.U_RECORD <> 2 AND LM.TIME_DOMAIN IS NULL AND LM.LINK_PID = F.LINK_PID)  ");
 
 			sb.append(
-					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '公交车专用道道路不能制作车辆限制！' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
+					" UNION ALL  SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID, '公交车专用道道路不能制作车辆限制!' FROM RD_LINK L, RD_LINK_FORM F WHERE L.LINK_PID = ");
 			sb.append(linkPid);
 
 			sb.append(

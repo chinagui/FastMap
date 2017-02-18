@@ -85,7 +85,7 @@ public class CheckService {
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
 			List<Integer> grids= new ArrayList<Integer>();
 			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
-				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+				grids.addAll(subtaskObj.getGridIds().keySet());
 			}
 			
 			JSONObject validationRequestJSON=new JSONObject();

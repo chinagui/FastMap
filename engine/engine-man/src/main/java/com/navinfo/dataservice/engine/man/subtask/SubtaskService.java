@@ -611,14 +611,14 @@ public class SubtaskService {
 						
 						if(1 == rs.getInt("STATUS")){
 							subtask.put("percent",100);
-//							SubtaskStatInfo stat = new SubtaskStatInfo();
-//							try{	
-//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-//							} catch (Exception e) {
-//								log.warn("subtask query error",e);
-//							}
-//							subtask.setPercent(stat.getPercent());
+							SubtaskStatInfo stat = new SubtaskStatInfo();
+							try{	
+								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							} catch (Exception e) {
+								log.warn("subtask query error",e);
+							}
+							subtask.put("percent",stat.getPercent());
 						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;
@@ -626,6 +626,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
+			log.info("queryBySubtaskId sql:" + selectSql);
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1316,38 +1317,38 @@ public class SubtaskService {
 	}
 	
 	
-	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-			final int curPageNum,int snapshot) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			
-//			//获取用户所在组信息
-//			UserInfo userInfo = new UserInfo();
-//			userInfo.setUserId((int)userId);
-//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-//			int groupId = (int) group.get("groupId");
-			
-			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-			return page;
-			
-//			//返回简略信息
-//			if (snapshot==1){
-//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}else{
-//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}		
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+//			final int curPageNum,int snapshot) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+////			//获取用户所在组信息
+////			UserInfo userInfo = new UserInfo();
+////			userInfo.setUserId((int)userId);
+////			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+////			int groupId = (int) group.get("groupId");
+//			
+//			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//			return page;
+//			
+////			//返回简略信息
+////			if (snapshot==1){
+////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}else{
+////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}		
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	/**
 	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
 	 * @param subtaskId
@@ -1403,7 +1404,7 @@ public class SubtaskService {
 					return list;
 				}	    		
 	    	}		;
-
+	    	log.info("queryListReferByWkt sql :" + selectSql);
 	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1435,6 +1436,7 @@ public class SubtaskService {
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
+			log.info("staticWithType swl:" + sql);
 			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
 
 				@Override

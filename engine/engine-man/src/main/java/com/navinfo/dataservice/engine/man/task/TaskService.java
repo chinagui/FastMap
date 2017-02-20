@@ -919,6 +919,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       B.BLOCK_ID,");
+			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
@@ -930,6 +931,7 @@ public class TaskService {
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
 			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
 			sb.append("	                          0             TASK_ID,");
@@ -946,15 +948,44 @@ public class TaskService {
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
 			sb.append("	                          B.BLOCK_ID,");
+			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
+			sb.append("	        	 AND P.TYPE = 1");
 			sb.append("	             AND NOT EXISTS (SELECT 1");
 			sb.append("	                    FROM TASK T");
 			sb.append("	                   WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append("	                     AND T.LATEST = 1)) TASK_LIST");
+			sb.append("	                     AND T.LATEST = 1)");
+			sb.append("	          UNION");
+			sb.append("           SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
+			sb.append("                       T.NAME,");
+			sb.append("                       NVL(T.STATUS, 4) STATUS,");
+			sb.append("                       T.TYPE,");
+			sb.append("                       T.GROUP_ID,");
+			sb.append("                       UG.GROUP_NAME,");
+			sb.append("                       T.PLAN_START_DATE,");
+			sb.append("                       T.PLAN_END_DATE,");
+			sb.append("                       T.ROAD_PLAN_TOTAL,");
+			sb.append("                       T.POI_PLAN_TOTAL,");
+			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
+			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
+			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       0 BLOCK_ID,");
+			sb.append("	                      '' BLOCK_NAME,");
+			sb.append("                       1 PLAN_STATUS,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
+			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
+			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
+			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
+			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND P.TYPE = 4) TASK_LIST");
 			sb.append(" WHERE 1=1 ");
 			sb.append(conditionSql);
 			sb.append(" ORDER BY ORDER_STATUS ASC ,DIFF_DATE DESC, PERCENT DESC");
@@ -979,6 +1010,12 @@ public class TaskService {
 							task.put("taskName","");
 						}else{
 							task.put("taskName", rs.getString("NAME"));
+						}
+						task.put("blockId", rs.getInt("BLOCK_ID"));
+						if(rs.getString("BLOCK_NAME")==null){
+							task.put("blockName","");
+						}else{
+							task.put("blockName", rs.getString("BLOCK_NAME"));
 						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));

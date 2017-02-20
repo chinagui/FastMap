@@ -142,36 +142,25 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 	 * @throws Exception
 	 */
 	public JSONArray getdeepCheckRules(String type) throws Exception{
-		
-		String subCategory = new String();
-		if ("deepDetail".equals(type)){
-			subCategory = "IX_POI_DETAIL";
-		} else if ("deepParking".equals(type)){
-			subCategory = "IX_POI_PARKING";
-		}else if ("deepCarrental".equals(type)) {
-			subCategory = "IX_POI_CARRENTAL";
-		}
-		
+				
 		JSONArray deepCheckRules = new JSONArray();
-		String sql = "select rule_code from ck_rule where SUBCATEGORY = :1";
+		String sql = "select work_item_id from POI_COLUMN_WORKITEM_CONF where first_work_item='poi_deep' and second_work_item=:1 ";
 		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
 		
-		Connection conn = null;
-		
 		try {
 			
-			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			//conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
 			
 			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, subCategory);
+			pstmt.setString(1, type);
 			
 			resultSet = pstmt.executeQuery();
 			
 			while (resultSet.next()) {
-				deepCheckRules.add(resultSet.getString("rule_code"));
+				deepCheckRules.add(resultSet.getString("work_item_id"));
 			}
 			
 			return deepCheckRules;
@@ -180,7 +169,6 @@ public class IxPoiDeepStatusSelector extends AbstractSelector{
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(conn);
 		}
 		
 	}

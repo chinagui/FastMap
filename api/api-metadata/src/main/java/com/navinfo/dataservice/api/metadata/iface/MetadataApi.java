@@ -304,5 +304,13 @@ public interface MetadataApi {
 	 */
 	public List<String> searchByErrorName(String name) throws Exception;
     public List<String> queryAdRack(int type) throws Exception;
+    
+    /**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
 
 }

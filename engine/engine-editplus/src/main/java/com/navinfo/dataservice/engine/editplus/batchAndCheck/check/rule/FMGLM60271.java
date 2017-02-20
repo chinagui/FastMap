@@ -1,0 +1,34 @@
+package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
+
+import java.util.Collection;
+
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+
+/**
+ * @ClassName FMGLM60271
+ * @author Han Shaoming
+ * @date 2017年2月20日 上午11:35:10
+ * @Description TODO
+ * 检查对象：非删除POI对象
+ * 检查原则：当父POI的分类是公司、企业（220100）时，不参与检查
+ * 1、常规POI（除内部POI（ix_poi.indoor=1)外的POI），不能与附表中内部POI的父分类制作父子关系，否则程序报LOG:正常POI与内部POI的父制作父子关系
+ * （parent=2的POI只能是内部POI的父，当kindCode对应的parent=2且子POI是常规POI时，报log）
+ * 2、父POI分类（通过fid关联kindCode）不在附表中时，程序报LOG:父POI的分类不在可以作为父分类的范围内
+ * （parent=0且fid不在SC_POINT_FOCUS.POI_NUM列表中时报log）
+ * 附表见附件中的POI父分类(SC_FM_CONTROL表，parent！=0 或者parent=0 且fid在SC_POINT_FOCUS.POI_NUM列表中且SC_POINT_FOCUS.TYPE=2可为父)
+ */
+public class FMGLM60271 extends BasicCheckRule {
+
+	@Override
+	public void runCheck(BasicObj obj) throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
+		// TODO Auto-generated method stub
+
+	}
+
+}

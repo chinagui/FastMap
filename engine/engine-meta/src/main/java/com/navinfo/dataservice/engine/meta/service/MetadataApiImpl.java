@@ -45,6 +45,7 @@ import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
+import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -601,6 +602,17 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
 		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
 		return scPartitionMeshlist.queryMeshes4PartitionByAdmincodes(admincodes);
+	}
+	
+	/**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String, String> key:KIND_CODE value:KIND_USE
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
+		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -27,18 +28,19 @@ public class CHECK_RDELECTRONICEYE_MESHMOVE extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
-            //获取新建RdBranch信息
+            //获取新建RdElectroniceye信息
             if (obj instanceof RdElectroniceye) {
-                RdElectroniceye rdElectroniceye = (RdElectroniceye) obj;
-                Map<String, Object> changedFields = rdElectroniceye.changedFields();
+                RdElectroniceye eye = (RdElectroniceye) obj;
 
-                int meshId = rdElectroniceye.getMeshId();
+                int meshId = eye.getMeshId();
                 int changeMeshId = meshId;
-
-                if (changedFields.containsKey("geometry")) {
-                    Geometry geometry = GeoTranslator.geojson2Jts((JSONObject) changedFields.get("geometry"),
+                // log.info("CHECK_RDELECTRONICEYE_MESHMOVE:[meshId:" + meshId + "]");
+                if (eye.changedFields().containsKey("geometry")) {
+                    Geometry geometry = GeoTranslator.geojson2Jts((JSONObject) eye.changedFields().get("geometry"),
                             0.00001, 5);
+                    // log.info("CHECK_RDELECTRONICEYE_MESHMOVE:[geometry:" + geometry + "]");
                     String[] meshes = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
+                    // log.info("CHECK_RDELECTRONICEYE_MESHMOVE:[meshes:" + Arrays.toString(meshes) + "]");
                     if (meshes.length == 1) {
                         changeMeshId = Integer.valueOf(meshes[0]);
                     } else {

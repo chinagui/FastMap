@@ -48,7 +48,8 @@ public class FMBATTEMP10 extends BasicBatchRule {
 					JSONObject data = charMap.get(String.valueOf(c));
 					int convert = data.getInt("convert");
 					if (convert == 0) {
-						poiCarrental.setOpenHour(openHour.replace(c, data.getString("jt").toCharArray()[0]));
+						openHour = openHour.replace(c, data.getString("jt").toCharArray()[0]);
+						poiCarrental.setOpenHour(openHour);
 					}
 				}
 			}

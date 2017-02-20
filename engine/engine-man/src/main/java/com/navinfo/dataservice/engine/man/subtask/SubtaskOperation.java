@@ -581,8 +581,9 @@ public class SubtaskOperation {
 		// TODO Auto-generated method stub
 		try{
 			Map<Integer,Integer> gridIds = bean.gridIdMap();
-			
-			insertSubtaskGridMapping(conn,bean.getSubtaskId(),gridIds);
+			if(gridIds!=null&&gridIds.size()!=0){
+				insertSubtaskGridMapping(conn,bean.getSubtaskId(),gridIds);
+			}
 
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

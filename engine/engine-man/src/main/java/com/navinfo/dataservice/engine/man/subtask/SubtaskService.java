@@ -471,7 +471,11 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
+							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+							}
+							subtask.setGridIds(gridIdMap);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

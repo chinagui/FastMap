@@ -182,13 +182,19 @@ public class Subtask implements Serializable  {
 		return gridIds;
 	}
 	public List<Integer> getGridIds(){
-		List<Integer> list = new ArrayList<Integer> ();  
-		list.addAll(gridIds.keySet());
+		List<Integer> list = new ArrayList<Integer> (); 
+		if(gridIds!=null&&gridIds.size()!=0){
+			list.addAll(gridIds.keySet());
+		}
 		return list;
 	}
-	public void setGridIds(Map<Integer,Integer> list) {
-		this.gridIds = list;
+	public void setGridIds(Map<String,Integer> list) {
+		for(Map.Entry<String, Integer> entry:list.entrySet()){
+			this.gridIds.put(Integer.parseInt(entry.getKey()), entry.getValue());
+		}
 	}
+
+
 //	public String getTaskName(){
 //		return taskName;
 //	}

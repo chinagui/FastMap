@@ -1,10 +1,5 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -13,6 +8,11 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /*
  * GLM01204	Link信息	大陆环岛检查	形态	一组含“环岛”属性的link组成的link链上的所有link，道路种别必须相同。	环岛的种别不同
@@ -74,7 +74,7 @@ public class GLM01204 extends baseRule {
 
                 int formOfWay = rdLinkForm.getFormOfWay();
                 if (rdLinkForm.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) rdLinkForm.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(rdLinkForm.changedFields().get("formOfWay").toString());
                 //rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
                 if (formOfWay != 33) {
                     continue;
@@ -107,7 +107,7 @@ public class GLM01204 extends baseRule {
 
         int kind = rdLink.getKind();
         if (rdLink.changedFields().containsKey("kind"))
-            kind = (int) rdLink.changedFields().get("kind");
+            kind = Integer.valueOf(rdLink.changedFields().get("kind").toString());
         Iterator<RdLink> huandaoIterator = huandaoChain.iterator();
         String target = "";
         boolean isError = false;

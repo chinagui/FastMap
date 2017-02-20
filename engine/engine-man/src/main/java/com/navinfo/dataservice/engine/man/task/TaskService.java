@@ -27,6 +27,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -44,6 +45,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -1773,6 +1775,43 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public JSONObject queryWktByTaskId(int taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
+			log.info("queryWktByTaskId sql :" + selectSql);
+			
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray json = new JSONArray(); 				
+					while (rs.next()) {
+						json.add(rs.getInt("GRID_ID"));
+					}
+					return json;
+				}
+			};
+			JSONArray gridIds =  run.query(conn, selectSql,rsHandler);
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			JSONObject json = Geojson.wkt2Geojson(wkt);
+			return json;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

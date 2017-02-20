@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
@@ -20,21 +21,18 @@ public class PermitCheckNodeIsNotInNotsimpleLink extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow nodeRow : checkCommand.getGlmList()) {
-            if (nodeRow instanceof ZoneNode) {
+            if (nodeRow instanceof ZoneNode && nodeRow.status() == ObjStatus.INSERT) {
                 ZoneNode node = (ZoneNode) nodeRow;
-                if (node.status().equals(OperType.CREATE)) {
-                    for (IRow linkRow : checkCommand.getGlmList()) {
-                        if (linkRow instanceof ZoneLink) {
-                            ZoneLink link = (ZoneLink) linkRow;
-                            if (!link.status().equals(OperType.DELETE)) continue;
+                for (IRow linkRow : checkCommand.getGlmList()) {
+                    if (linkRow instanceof ZoneLink && linkRow.status() == ObjStatus.DELETE) {
+                        ZoneLink link = (ZoneLink) linkRow;
 
-                            ZoneFaceSelector selector = new ZoneFaceSelector(getConn());
-                            List<ZoneFace> faces = selector.loadZoneFaceByLinkId(link.pid(), false);
-                            for (ZoneFace face : faces) {
-                                if (!GeometryUtils.getInterPointFromSelf(GeoTranslator.transform(face.getGeometry(),
-                                        0.00001, 5)).isEmpty())
-                                    setCheckResult("", "", 0);
-                            }
+                        ZoneFaceSelector selector = new ZoneFaceSelector(getConn());
+                        List<ZoneFace> faces = selector.loadZoneFaceByLinkId(link.pid(), false);
+                        for (ZoneFace face : faces) {
+                            if (!GeometryUtils.getInterPointFromSelf(GeoTranslator.transform(face.getGeometry(),
+                                    0.00001, 5)).isEmpty())
+                                setCheckResult("", "", 0);
                         }
                     }
                 }

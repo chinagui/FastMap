@@ -1089,7 +1089,7 @@ public class ProgramService {
 					+ "          FROM TASK T"
 					+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
 					+ "           AND T.LATEST = 1"
-					+ "           AND T.STATUS = 1)"
+					+ "           AND T.STATUS !=0)"
 					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
 					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
 					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS),"

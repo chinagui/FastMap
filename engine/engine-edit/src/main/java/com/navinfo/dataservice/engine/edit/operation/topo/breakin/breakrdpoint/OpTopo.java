@@ -154,7 +154,12 @@ public class OpTopo implements IOperation {
 			// 计算长度
 			double length = GeometryUtils.getLinkLength(GeoTranslator
 					.transform(link.getGeometry(), 0.00001, 5));
-			link.setLength(length);
+
+            if (length <= 2) {
+                throw new Exception("道路link长度应大于2米");
+            }
+
+            link.setLength(length);
 			this.command.getNewLinks().add(link);
 
 		}

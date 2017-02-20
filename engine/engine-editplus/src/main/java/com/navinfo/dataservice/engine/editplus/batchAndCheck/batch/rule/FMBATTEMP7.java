@@ -48,7 +48,8 @@ public class FMBATTEMP7 extends BasicBatchRule {
 					JSONObject data = charMap.get(String.valueOf(c));
 					int convert = data.getInt("convert");
 					if (convert == 0) {
-						poiDetail.setBriefDesc(briefDesc.replace(c, data.getString("jt").toCharArray()[0]));
+						briefDesc = briefDesc.replace(c, data.getString("jt").toCharArray()[0]);
+						poiDetail.setBriefDesc(briefDesc);
 					}
 				}
 			}

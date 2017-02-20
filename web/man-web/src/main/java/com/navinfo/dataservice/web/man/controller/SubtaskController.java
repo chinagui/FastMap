@@ -491,66 +491,66 @@ public class SubtaskController extends BaseController {
 
 	
 
-	/**
-	 * @Title: listByGroup
-	 * @Description: 根据作业组获取子任务列表（修改）(第七迭代)
-	 * @param access_token
-	 * @param postData
-	 * @param request 
-	 * @return  SubtaskListResponse (增加返回值:qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2016年11月4日 上午11:30:18 
-	 */
-	//@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
-	@RequestMapping(value = { "/subtask/listByGroup" })
-	public ModelAndView listByGroup(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
-			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
-		try{		
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if(dataJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			
-			int curPageNum= 1;//默认为第一页
-			if(dataJson.containsKey("pageNum")){
-				curPageNum = dataJson.getInt("pageNum");
-			}
-			
-			int pageSize = 30;//默认页容量为20
-			if(dataJson.containsKey("pageSize")){
-				pageSize = dataJson.getInt("pageSize");
-			}
-			
-			int snapshot = 0; 
-			if(dataJson.containsKey("snapshot")){
-				snapshot=dataJson.getInt("snapshot");
-			}
-			
-			JSONObject order =null; 
-			if(dataJson.containsKey("order")){
-				order=dataJson.getJSONObject("order");
-			}
-			
-			JSONObject condition =null; 
-			if(dataJson.containsKey("condition")){
-				condition=dataJson.getJSONObject("condition");
-			}
-			
-			//作业阶段
-			int stage = dataJson.getInt("stage");
-			//作业组
-			int groupId = dataJson.getInt("groupId");
-			
-			Page page = SubtaskService.getInstance().listByGroup(groupId,stage,condition,order,pageSize,curPageNum,snapshot);
-			return new ModelAndView("jsonView", success(page));
-		
-		}catch(Exception e){
-			log.error("查询失败，原因："+e.getMessage(), e);
-			//SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
-			return new ModelAndView("jsonView", exception(e));
-		}
-	}
+//	/**
+//	 * @Title: listByGroup
+//	 * @Description: 根据作业组获取子任务列表（修改）(第七迭代)
+//	 * @param access_token
+//	 * @param postData
+//	 * @param request 
+//	 * @return  SubtaskListResponse (增加返回值:qualitySubtaskId,qualityExeUserId, qualityPlanStartDate, qualityPlanEndDate)
+//	 * @throws 
+//	 * @author zl zhangli5174@navinfo.com
+//	 * @date 2016年11月4日 上午11:30:18 
+//	 */
+//	//@ApiOperation(value = "获取subtask列表", notes = "获取subtask列表")  
+//	@RequestMapping(value = { "/subtask/listByGroup" })
+//	public ModelAndView listByGroup(@ApiParam(required =true, name = "access_token", value="接口调用凭证")@RequestParam( value = "access_token") String access_token
+//			,@ApiParam(required =true, name = "parameter", value="{<br/>\"stage\":1\\\\作业阶段,<br/>\"condition\":1\\\\搜索条件（JSON），均可选，不支持组合。<br/>\t{\"subtaskId\"子任务Id<br/>\"subtaskName\"子任务名称<br/>\"ExeUserId\"作业员<br/>\"blockId\"所属blockId<br/>\"blockName\"所属block名称<br/>\"taskId\"所属任务id<br/>\"taskName\"所属任务名称},<br/>\"order\":\\\\排序条件（JSON），可选，按照时间查询,json中只有一个有效排序条件，不支持组合排序。<br/>\t{<br/>\"subtaskId\":\"desc\",<br/>\"status\":\"desc\",<br/>\"planStartDate\":\"desc\"//降序，asc升序,<br/>\"planEndDate\":\"desc\",<br/>\"blockId\":\"desc\"},<br/>\"pageNum\":1\\\\页码,<br/>\"pageSize\":1\\\\每页条数<br/>}")@RequestParam( value = "parameter") String postData			,HttpServletRequest request){
+//		try{		
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			if(dataJson==null){
+//				throw new IllegalArgumentException("parameter参数不能为空。");
+//			}
+//			
+//			int curPageNum= 1;//默认为第一页
+//			if(dataJson.containsKey("pageNum")){
+//				curPageNum = dataJson.getInt("pageNum");
+//			}
+//			
+//			int pageSize = 30;//默认页容量为20
+//			if(dataJson.containsKey("pageSize")){
+//				pageSize = dataJson.getInt("pageSize");
+//			}
+//			
+//			int snapshot = 0; 
+//			if(dataJson.containsKey("snapshot")){
+//				snapshot=dataJson.getInt("snapshot");
+//			}
+//			
+//			JSONObject order =null; 
+//			if(dataJson.containsKey("order")){
+//				order=dataJson.getJSONObject("order");
+//			}
+//			
+//			JSONObject condition =null; 
+//			if(dataJson.containsKey("condition")){
+//				condition=dataJson.getJSONObject("condition");
+//			}
+//			
+//			//作业阶段
+//			int stage = dataJson.getInt("stage");
+//			//作业组
+//			int groupId = dataJson.getInt("groupId");
+//			
+//			Page page = SubtaskService.getInstance().listByGroup(groupId,stage,condition,order,pageSize,curPageNum,snapshot);
+//			return new ModelAndView("jsonView", success(page));
+//		
+//		}catch(Exception e){
+//			log.error("查询失败，原因："+e.getMessage(), e);
+//			//SubtaskListResponse responseList = new SubtaskListResponse(-1,e.getMessage(),null);
+//			return new ModelAndView("jsonView", exception(e));
+//		}
+//	}
 	/**
 	 * 根据wkt获取不规则子任务圈subtask_refer
 	 * @param request

@@ -91,7 +91,7 @@ public class FMYW20224 extends BasicCheckRule {
 				//5.存在非全角的内容报出
 				String newTollDes = CheckUtil.strB2Q(tollDes);
 				if (!newTollDes.equals(tollDes)) {
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"简介收费信息存在半角字符");
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"收费信息存在半角字符");
 				}
 				//6.收费信息包含“：00”，营业时间（parkings.openTime）为空
 				if (tollDes.contains("：００")) {

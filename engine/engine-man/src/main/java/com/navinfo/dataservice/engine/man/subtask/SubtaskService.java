@@ -215,7 +215,6 @@ public class SubtaskService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-
 			String querySql = "select "
 					+ "s.subtask_id"
 					+ ",s.name"
@@ -232,7 +231,6 @@ public class SubtaskService {
 					+ wkt
 					+ "',8307)"
 					+ ", 0.000005) ='TRUE'";
-
 			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -274,11 +272,8 @@ public class SubtaskService {
 					}
 					return list;
 				}
-
 			};
-
 			return run.query(conn, querySql, rsHandler);
-
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -471,7 +466,11 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
+							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+							}
+							subtask.setGridIds(gridIdMap);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -611,14 +610,14 @@ public class SubtaskService {
 						
 						if(1 == rs.getInt("STATUS")){
 							subtask.put("percent",100);
-//							SubtaskStatInfo stat = new SubtaskStatInfo();
-//							try{	
-//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-//							} catch (Exception e) {
-//								log.warn("subtask query error",e);
-//							}
-//							subtask.setPercent(stat.getPercent());
+							SubtaskStatInfo stat = new SubtaskStatInfo();
+							try{	
+								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							} catch (Exception e) {
+								log.warn("subtask query error",e);
+							}
+							subtask.put("percent",stat.getPercent());
 						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;
@@ -626,6 +625,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
+			log.info("queryBySubtaskId sql:" + selectSql);
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1316,38 +1316,38 @@ public class SubtaskService {
 	}
 	
 	
-	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-			final int curPageNum,int snapshot) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			
-//			//获取用户所在组信息
-//			UserInfo userInfo = new UserInfo();
-//			userInfo.setUserId((int)userId);
-//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-//			int groupId = (int) group.get("groupId");
-			
-			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-			return page;
-			
-//			//返回简略信息
-//			if (snapshot==1){
-//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}else{
-//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}		
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+//			final int curPageNum,int snapshot) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+////			//获取用户所在组信息
+////			UserInfo userInfo = new UserInfo();
+////			userInfo.setUserId((int)userId);
+////			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+////			int groupId = (int) group.get("groupId");
+//			
+//			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//			return page;
+//			
+////			//返回简略信息
+////			if (snapshot==1){
+////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}else{
+////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}		
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	/**
 	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
 	 * @param subtaskId
@@ -1403,7 +1403,7 @@ public class SubtaskService {
 					return list;
 				}	    		
 	    	}		;
-
+	    	log.info("queryListReferByWkt sql :" + selectSql);
 	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1435,6 +1435,7 @@ public class SubtaskService {
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
+			log.info("staticWithType swl:" + sql);
 			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
 
 				@Override
@@ -1458,12 +1459,13 @@ public class SubtaskService {
 						else if(type==2){name+="一体化";}
 						else if(type==3){name+="一体化grid粗编";}
 						else if(type==4){name+="一体化区域粗编";}
-						else if(type==5){name+="多源POI";}
+						else if(type==5){name+="POI粗编";}
 						else if(type==6){name+="代理店";}
 						else if(type==7){name+="POI专项";}
 						else if(type==8){name+="道路grid精编";}
 						else if(type==9){name+="道路grid粗编";}
 						else if(type==10){name+="道路区域专项";}
+						else if(type==11){name+="预处理";}
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);

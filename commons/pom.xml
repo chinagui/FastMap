@@ -53,8 +53,10 @@
 			<artifactId>ezmorph</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>gdal</groupId>
-		  <artifactId>gdal</artifactId>
+		    <groupId>org.gdal</groupId>
+		    <artifactId>gdal</artifactId>
+		    <version>1.11.1</version>
+		   <!--  <version>1.11.2</version> -->
 		</dependency>
 		<dependency>
 			<groupId>com.tencent</groupId>

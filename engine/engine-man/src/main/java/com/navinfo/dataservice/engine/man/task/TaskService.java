@@ -27,23 +27,32 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -300,45 +309,23 @@ public class TaskService {
 					total ++;
 				}
 			}
-			//更新task状态
-			TaskOperation.updateStatus(conn, commontaskIds,1);			
-			//发布消息
-			taskPushMsg(conn,userId,updatedTaskList);
-			conn.commit();
-			for(Integer taskId:cmsTaskList){
-				List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
-				Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
-				for(Map<String, Integer> phaseTmp:phaseList){
-					phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+			if(commontaskIds.size()>0){
+				//更新task状态
+				TaskOperation.updateStatus(conn, commontaskIds,1);			
+				//发布消息
+				taskPushMsg(conn,userId,updatedTaskList);
+				conn.commit();
+				for(Integer taskId:cmsTaskList){
+					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+					for(Map<String, Integer> phaseTmp:phaseList){
+						phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+					}
+					day2month(conn, phaseIdMap.get(1));
+					tips2Aumark(conn, phaseIdMap.get(2));
 				}
-				day2month(conn, phaseIdMap.get(1));
-				tips2Aumark(conn, phaseIdMap.get(2));
 			}
 			return "task批量发布"+total+"个成功，0个失败";
-//			//给作业组leader发送消息
-//			int total = 0;
-//			List<Object[]> msgContentList=new ArrayList<Object[]>();
-//			String msgTitle="task发布";
-//			for (Task task : taskList) {
-//				if(task.getGroupLeader()!=0){
-//					Object[] msgTmp=new Object[4];
-//					msgTmp[0]=task.getGroupLeader();//收信人
-//					msgTmp[1]=msgTitle;//消息头
-//					msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
-//					//关联要素
-//					JSONObject msgParam = new JSONObject();
-//					msgParam.put("relateObject", "TASK");
-//					msgParam.put("relateObjectId", task.getTaskId());
-//					msgTmp[3]=msgParam.toString();//消息对象
-//					msgContentList.add(msgTmp);
-//				}
-//				if(msgContentList.size()>0){
-//					taskPushMsgByMsg(conn,msgContentList,userId);	
-//				}
-//				total++;
-//			}
-//			
-//			return "task批量发布"+total+"个成功，0个失败";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -430,7 +417,7 @@ public class TaskService {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong( msgContent[0].toString()));
 			if(userInfo != null && userInfo.getUserEmail() != null){
 				//判断邮箱格式
 				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
@@ -451,7 +438,7 @@ public class TaskService {
 				pushUserName = (String) userInfo.getUserRealName();
 			}
 			//发送消息到消息队列
-			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong((String) msgContent[0])}, 2, (String)msgContent[3], pushUserName);
+			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong(msgContent[0].toString())}, 2, (String)msgContent[3], pushUserName);
 		}
 	}
 	
@@ -932,6 +919,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       B.BLOCK_ID,");
+			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
@@ -943,6 +931,7 @@ public class TaskService {
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
 			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
 			sb.append("	                          0             TASK_ID,");
@@ -959,15 +948,44 @@ public class TaskService {
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
 			sb.append("	                          B.BLOCK_ID,");
+			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
 			sb.append("	                          0             SUBTASK_NUM");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
+			sb.append("	        	 AND P.TYPE = 1");
 			sb.append("	             AND NOT EXISTS (SELECT 1");
 			sb.append("	                    FROM TASK T");
 			sb.append("	                   WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append("	                     AND T.LATEST = 1)) TASK_LIST");
+			sb.append("	                     AND T.LATEST = 1)");
+			sb.append("	          UNION");
+			sb.append("           SELECT DISTINCT P.PROGRAM_ID,");
+			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
+			sb.append("                       T.NAME,");
+			sb.append("                       NVL(T.STATUS, 4) STATUS,");
+			sb.append("                       T.TYPE,");
+			sb.append("                       T.GROUP_ID,");
+			sb.append("                       UG.GROUP_NAME,");
+			sb.append("                       T.PLAN_START_DATE,");
+			sb.append("                       T.PLAN_END_DATE,");
+			sb.append("                       T.ROAD_PLAN_TOTAL,");
+			sb.append("                       T.POI_PLAN_TOTAL,");
+			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
+			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
+			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       0 BLOCK_ID,");
+			sb.append("	                      '' BLOCK_NAME,");
+			sb.append("                       1 PLAN_STATUS,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
+			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
+			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
+			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
+			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND P.TYPE = 4) TASK_LIST");
 			sb.append(" WHERE 1=1 ");
 			sb.append(conditionSql);
 			sb.append(" ORDER BY ORDER_STATUS ASC ,DIFF_DATE DESC, PERCENT DESC");
@@ -988,7 +1006,17 @@ public class TaskService {
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
 						task.put("taskId", rs.getInt("TASK_ID"));
-						task.put("taskName", rs.getString("NAME"));
+						if(rs.getString("NAME")==null){
+							task.put("taskName","");
+						}else{
+							task.put("taskName", rs.getString("NAME"));
+						}
+						task.put("blockId", rs.getInt("BLOCK_ID"));
+						if(rs.getString("BLOCK_NAME")==null){
+							task.put("blockName","");
+						}else{
+							task.put("blockName", rs.getString("BLOCK_NAME"));
+						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));
 						
@@ -997,19 +1025,22 @@ public class TaskService {
 						task.put("progress", rs.getInt("PROGRESS"));
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
-						task.put("groupName", rs.getString("GROUP_NAME"));
-
+						if(rs.getString("GROUP_NAME")==null){
+							task.put("groupName","");
+						}else{
+							task.put("groupName", rs.getString("GROUP_NAME"));
+						}
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
 						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
 						if(planStartDate != null){
 							task.put("planStartDate", df.format(planStartDate));
-						}else {task.put("planStartDate", null);}
+						}else {task.put("planStartDate", "");}
 						if(planEndDate != null){
 							task.put("planEndDate",df.format(planEndDate));
-						}else{task.put("planEndDate", null);}
+						}else{task.put("planEndDate", "");}
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
-						task.put("poiPlanTotal", rs.getString("POI_PLAN_TOTAL"));
+						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -1019,7 +1050,7 @@ public class TaskService {
 				}
 
 			};
-			
+			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);
@@ -1274,13 +1305,15 @@ public class TaskService {
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
 			map.put("programId", task.getProgramId());
-			map.put("programType", task.getProgramName());
+			map.put("programName", task.getProgramName());
+			map.put("programType", task.getProgramType());
 			map.put("createUserId", task.getCreateUserId());
 			map.put("createUserName", task.getCreateUserName());
 			map.put("groupId", task.getGroupId());
 			map.put("groupName", task.getGroupName());
 			map.put("gridIds", task.getGridIds());
 			map.put("geometry", task.getGeometry());
+			map.put("version", task.getVersion());
 			
 			return map;
 		}catch(Exception e){
@@ -1600,7 +1633,13 @@ public class TaskService {
 			conn.commit();
 			if(i==0){return 0;}
 			//创建日落月job
-			
+			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			//{"specRegionId":1,"specMeshes":[605634,605603]}
+			JSONObject jobDataJson=new JSONObject();
+			jobDataJson.put("specRegionId", phase.getRegionId());
+			jobDataJson.put("specMeshes", phase.getMeshIds());
+			//long jobId=jobApi.createJob("day2MonSync", jobDataJson, "",phase.getTaskId(), "日落月");
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1621,7 +1660,34 @@ public class TaskService {
 			conn.commit();
 			if(i==0){return 0;}
 			//tip转aumark
+			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
+			queryByTaskId(phaseId);
+			JSONObject par=new JSONObject();
+			par.put("gdbid", cmsInfo.get("dbId"));
+			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+					.getBean("datahubApi");
+			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
+			par.put("au_db_ip", auDb.getDbServer().getIp());
+			par.put("au_db_username", auDb.getDbUserName());
+			par.put("au_db_password", auDb.getDbUserPasswd());
+			par.put("au_db_sid",auDb.getDbServer().getSid());
+			par.put("au_db_port",auDb.getDbServer().getPort());
+			par.put("types","");
+			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
+
+			JSONObject taskPar=new JSONObject();
+			taskPar.put("manager_id", cmsInfo.get("collectId"));
+			taskPar.put("imp_task_name", cmsInfo.get("collectName"));
+			taskPar.put("province", cmsInfo.get("provinceName"));
+			taskPar.put("city", cmsInfo.get("cityName"));
+			taskPar.put("district", cmsInfo.get("blockName"));
+			taskPar.put("job_nature", cmsInfo.get("workProperty"));
+			taskPar.put("job_type", cmsInfo.get("workType"));
 			
+			par.put("taskid", taskPar);
+			
+			FccApi fccApi = (FccApi) ApplicationContextUtil
+					.getBean("fccApi");
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1667,6 +1733,63 @@ public class TaskService {
 			//throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	/**
+	 * 
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	private Map<String, Object> getCmsInfo(Connection conn,int phaseId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "SELECT CMST.NAME CMS_NAME,"
+					+ "       CMST.TASK_ID CMS_ID,"
+					+ "       CMST.CREATE_USER_ID,"
+					+ "       T.TASK_ID COLLECT_ID,"
+					+ "       T.NAME COLLECT_NAME,"
+					+ "       P.PHASE_ID,"
+					+ "       R.MONTHLY_DB_ID,"
+					+ "       C.PROVINCE_NAME,"
+					+ "       C.CITY_NAME,"
+					+ "       B.BLOCK_NAME,"
+					+ "       B.WORK_PROPERTY,"
+					+ "       B.WORK_TYPE"
+					+ "  FROM TASK CMST, TASK T, BLOCK B, CITY C, TASK_CMS_PROGRESS P, REGION R"
+					+ " WHERE P.PHASE_ID = "+phaseId
+					+ "   AND CMST.REGION_ID = R.REGION_ID"
+					+ "   AND CMST.PROGRAM_ID = T.PROGRAM_ID"
+					+ "   AND CMST.TASK_ID = P.TASK_ID"
+					+ "   AND T.TYPE = 0"
+					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
+					+ "   AND B.BLOCK_ID = C.CITY_ID";
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> result=new HashMap<String, Object>();
+					if(rs.next()) {
+						result.put("cmsId", rs.getInt("CMS_ID"));
+						result.put("cmsName", rs.getString("CMS_NAME"));
+						result.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						result.put("collectId", rs.getInt("COLLECT_ID"));
+						result.put("collectName", rs.getString("COLLECT_NAME"));
+						result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
+						result.put("phaseId", rs.getInt("PHASE_ID"));
+						result.put("provinceName", rs.getString("PROVINCE_NAME"));
+						result.put("cityName", rs.getString("CITY_NAME"));
+						result.put("blockName", rs.getString("BLOCK_NAME"));
+						result.put("workProperty", rs.getString("WORK_PROPERTY"));
+						result.put("workType", rs.getString("WORK_TYPE"));
+					}
+					return result;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
 	
 	/**cms任务创建
 	 * 管理库中查询cms任务创建所需参数，然后调用cms任务创建http；http返回成功，则成功；否则失败。
@@ -1678,7 +1801,31 @@ public class TaskService {
 			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
 			conn.commit();
 			if(i==0){return 0;}
-			//TODO
+			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
+			queryByTaskId(phaseId);
+			JSONObject par=new JSONObject();
+			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+					.getBean("datahubApi");
+			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
+			par.put("metaIp", auDb.getDbServer().getIp());
+			par.put("metaUserName", auDb.getDbUserName());
+			
+			par.put("fieldDbIp", auDb.getDbServer().getIp());
+			par.put("fieldDbName", auDb.getDbUserName());
+
+			JSONObject taskPar=new JSONObject();
+			taskPar.put("taskName", cmsInfo.get("cmsName"));
+			taskPar.put("fieldTaskId", cmsInfo.get("collectId"));
+			taskPar.put("taskId", cmsInfo.get("cmsId"));
+			taskPar.put("province", cmsInfo.get("provinceName"));
+			taskPar.put("city", cmsInfo.get("cityName"));
+			taskPar.put("town", cmsInfo.get("blockName"));
+			taskPar.put("workType", cmsInfo.get("workProperty"));
+			taskPar.put("area", cmsInfo.get("workType"));
+			taskPar.put("userId", cmsInfo.get("createUserId"));
+			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+			
+			par.put("taskid", taskPar);
 			return 2;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -1695,9 +1842,10 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M"
-					+ " WHERE T.PHASE_ID =  "+phaseId;
+			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS"
+					+ " WHERE T.PHASE_ID =  "+phaseId
+					+ " AND T.TASK_ID =TS.TASK_ID ";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
@@ -1705,6 +1853,7 @@ public class TaskService {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
+						progress.setRegionId(rs.getInt("region_id"));
 						
 						if(progress.getGridIds()==null){
 							progress.setGridIds(new HashSet<Integer>());
@@ -1786,6 +1935,43 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public JSONObject queryWktByTaskId(int taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
+			log.info("queryWktByTaskId sql :" + selectSql);
+			
+			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray json = new JSONArray(); 				
+					while (rs.next()) {
+						json.add(rs.getInt("GRID_ID"));
+					}
+					return json;
+				}
+			};
+			JSONArray gridIds =  run.query(conn, selectSql,rsHandler);
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			JSONObject json = Geojson.wkt2Geojson(wkt);
+			return json;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

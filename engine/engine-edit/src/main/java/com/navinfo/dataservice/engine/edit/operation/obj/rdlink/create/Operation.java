@@ -179,8 +179,8 @@ public class Operation implements IOperation {
             if (link.getUrban() == 1) {
                 for (IRow row : link.getSpeedlimits()) {
                     RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
-                    limit.setFromSpeedLimit(limit.getFromSpeedLimit() + 100);
-                    limit.setToSpeedLimit(limit.getToSpeedLimit() + 100);
+                    limit.setFromSpeedLimit(400);
+                    limit.setToSpeedLimit(400);
                 }
             }
 
@@ -264,8 +264,8 @@ public class Operation implements IOperation {
         if (link.getUrban() == 1) {
             for (IRow row : link.getSpeedlimits()) {
                 RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
-                limit.setFromSpeedLimit(limit.getFromLimitSrc() - 100);
-                limit.setToSpeedLimit(limit.getToLimitSrc() - 100);
+                limit.setFromSpeedLimit(400);
+                limit.setToSpeedLimit(400);
             }
         }
         this.linkList.add(link);

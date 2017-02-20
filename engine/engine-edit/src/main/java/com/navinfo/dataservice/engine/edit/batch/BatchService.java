@@ -77,7 +77,9 @@ public class BatchService {
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
 		int dbId=subtaskObj.getDbId();
-		List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+		List<Integer> grids= subtaskObj.getGridIds();
+
+//		List<Integer> grids= (List<Integer>) subtaskObj.getGridIds().keySet();
 		
 		List<String> ruleList=new ArrayList<String>();
 		

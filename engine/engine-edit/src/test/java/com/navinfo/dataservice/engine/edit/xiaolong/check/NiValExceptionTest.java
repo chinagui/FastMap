@@ -121,7 +121,7 @@ public class NiValExceptionTest extends InitApplication {
 		Connection conn = null;
 		try {
 //{\"subtaskId\":\"353\",\"ckRules\":\"COM20491,CHR70116,CHR70003,GLM60994,COM60038,COM300033,COM20531,CHR63027\",\"checkType\":1}
-			String parameter = "{\"subtaskId\":\"353\",\"ckRules\":\"COM20491,CHR70116,CHR70003,GLM60994,COM60038,COM300033,COM20531,CHR63027\",\"checkType\":1}";
+			String parameter = "{\"subtaskId\":\"245\",\"ckRules\":\"COM20491,CHR70116,CHR70003,GLM60994,COM60038,COM300033,COM20531,CHR63027\",\"checkType\":1}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId=jsonReq.getInt("subtaskId");

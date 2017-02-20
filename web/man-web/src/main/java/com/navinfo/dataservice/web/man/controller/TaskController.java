@@ -421,4 +421,22 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/task/wktByTaskId")
+	public ModelAndView queryWktByBlockId(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+
+			JSONObject geo = TaskService.getInstance().queryWktByTaskId(taskId);
+			return new ModelAndView("jsonView", success(geo));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

@@ -86,14 +86,30 @@ public class FMZY20152 extends BasicCheckRule {
 			openTiime = ExcelReader.f2h(openTiime);
 			String[] openTimeArray = openTiime.split("-");
 			for (int i = 0; i < openTimeArray.length; i++) {
+				String startTime = openTimeArray[i];
+				if (startTime.length()>=5) {
+					startTime = startTime.substring(startTime.length() - 5, startTime.length());
+				} 
+				if (startTime.equals("24:00")) {
+					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							"营业时间开始时间或结束时间错误");
+					break;
+				}
 				if (i + 1 == openTimeArray.length) {
 					break;
 				}
-				String startTime = openTimeArray[i];
-				startTime = startTime.substring(startTime.length() - 5, startTime.length());
 				String endTime = openTimeArray[i + 1];
-				endTime = endTime.substring(0, 5);
-				if (startTime.equals("24:00") || endTime.equals("00:00") || endTime.substring(0, 4).equals("0:00")) {
+				if (endTime.length()>=5) {
+					endTime = endTime.substring(0, 5);
+				} else if (endTime.length()==4) {
+					if (endTime.equals("0:00")) {
+						setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+								"营业时间开始时间或结束时间错误");
+						break;
+					}
+				}
+				
+				if (endTime.equals("00:00")) {
 					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 							"营业时间开始时间或结束时间错误");
 					break;

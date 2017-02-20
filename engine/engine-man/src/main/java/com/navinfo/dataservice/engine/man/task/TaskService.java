@@ -430,7 +430,7 @@ public class TaskService {
 			String mailTitle = null;
 			String mailContent = null;
 			//查询用户详情
-			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong((String) msgContent[0]));
+			UserInfo userInfo = UserInfoOperation.getUserInfoByUserId(conn, Long.parseLong( msgContent[0].toString()));
 			if(userInfo != null && userInfo.getUserEmail() != null){
 				//判断邮箱格式
 				String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
@@ -451,7 +451,7 @@ public class TaskService {
 				pushUserName = (String) userInfo.getUserRealName();
 			}
 			//发送消息到消息队列
-			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong((String) msgContent[0])}, 2, (String)msgContent[3], pushUserName);
+			SysMsgPublisher.publishMsg((String)msgContent[1], (String)msgContent[2], userId, new long[]{Long.parseLong(msgContent[0].toString())}, 2, (String)msgContent[3], pushUserName);
 		}
 	}
 	
@@ -1019,7 +1019,7 @@ public class TaskService {
 				}
 
 			};
-			
+			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);
@@ -1281,6 +1281,7 @@ public class TaskService {
 			map.put("groupName", task.getGroupName());
 			map.put("gridIds", task.getGridIds());
 			map.put("geometry", task.getGeometry());
+			map.put("version", task.getVersion());
 			
 			return map;
 		}catch(Exception e){

@@ -411,6 +411,9 @@ public class Task implements Serializable{
 	 * @return the blockName
 	 */
 	public String getBlockName() {
+		if(blockName==null){
+			return "";
+		}
 		return blockName;
 	}
 
@@ -427,6 +430,9 @@ public class Task implements Serializable{
 	 * @return the programName
 	 */
 	public String getProgramName() {
+		if(programName==null){
+			return "";
+		}
 		return programName;
 	}
 

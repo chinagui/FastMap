@@ -73,8 +73,11 @@ public class RdLinkExporter {
 					+ "(select link_pid,"
 					+ "listagg(type, ',') within group(order by type) types   "
 					+ "from (select a.link_pid, type from rd_link_limit a  "
-						+ "where (type in (0, 4, 5, 6, 10) or (type=2 and vehicle=2147483784)) and a.u_record != 2)  group by link_pid) styleFactors1, "
-						+ "(select link_pid, listagg(lane_type, ',') within group(order by lane_type) lane_types  from rd_lane a "
+						//+ "where (type in (0, 4, 5, 6, 10) or (type=2 and vehicle=2147483784)) and a.u_record != 2)  group by link_pid) styleFactors1, "
+						//**********zl 2017.02.17 增加遗漏条件 "存在TYPE=2且VEHICLE=2147483786（步行者、急救车、配送卡车）且TIME_DOMAIN为空"
+							+ "where (type in (0, 4, 5, 6, 10) or (type=2 and vehicle=2147483784) or (type=2 and VEHICLE=2147483786 and TIME_DOMAIN is null)) and a.u_record != 2)  group by link_pid) styleFactors1, "
+						//***********************
+					+ "(select link_pid, listagg(lane_type, ',') within group(order by lane_type) lane_types  from rd_lane a "
 							+ "where a.u_record != 2 group by link_pid) styleFactors2,"
 						+ "(select link_pid, from_speed_limit, to_speed_limit from rd_link_speedlimit a  where speed_type = 0 and a.u_record != 2) speedlimits, "
 						+ "(select link_pid, listagg(form_of_way, ',') within group(order by form_of_way) forms  from rd_link_form "

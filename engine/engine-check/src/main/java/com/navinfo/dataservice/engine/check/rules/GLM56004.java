@@ -3,8 +3,10 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
@@ -15,6 +17,8 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+
+import net.sf.json.JSONObject;
 
 //GLM56004	修形中产生自相交，要提示立交或打断	修形中产生自相交，要提示立交或打断	
 //1	LC_LINK、RW_LINK、RD_LINK、CMG_BUILDLINK、ADAS_LINK、AD_LINK、ZONE_LINK、LU_LINK	新增link
@@ -40,18 +44,46 @@ public class GLM56004 extends baseRule {
 			case RDLINK:
 				RdLink link = (RdLink) obj;
 				geo = link.getGeometry();
+				if(obj.status() != ObjStatus.DELETE)
+				{
+					if(link.changedFields().containsKey("geometry"))
+					{
+						JSONObject geoStr = (JSONObject) link.changedFields().get("geometry");
+						
+						geo = GeoTranslator.geojson2Jts(geoStr,100000,0);
+					}
+				}
+				
 				tableName = link.tableName();
 				linkPid = link.getPid();
 				break;
 			case RWLINK:
 				RwLink rwLink = (RwLink) obj;
 				geo = rwLink.getGeometry();
+				if(obj.status() != ObjStatus.DELETE)
+				{
+					if(rwLink.changedFields().containsKey("geometry"))
+					{
+						JSONObject geoStr = (JSONObject) rwLink.changedFields().get("geometry");
+						
+						geo = GeoTranslator.geojson2Jts(geoStr,100000,0);
+					}
+				}
 				tableName = rwLink.tableName();
 				linkPid = rwLink.getPid();
 				break;
 			case LCLINK:
 				LcLink lcLink = (LcLink) obj;
 				geo = lcLink.getGeometry();
+				if(obj.status() != ObjStatus.DELETE)
+				{
+					if(lcLink.changedFields().containsKey("geometry"))
+					{
+						JSONObject geoStr = (JSONObject) lcLink.changedFields().get("geometry");
+						
+						geo = GeoTranslator.geojson2Jts(geoStr,100000,0);
+					}
+				}
 				tableName = lcLink.tableName();
 				linkPid = lcLink.getPid();
 				break;

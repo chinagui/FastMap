@@ -394,6 +394,7 @@ comment on column PROGRAM_GRID_MAPPING.grid_id
   is 'GRID ID.调整增加的GRID';
 comment on column PROGRAM_GRID_MAPPING.type
   is '1:规划；2：规划外，调整后的。';  
+alter table block add WORK_TYPE varchar(10);
 exit;
 
 

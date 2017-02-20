@@ -84,9 +84,12 @@ public class CheckService {
 			}
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
 			List<Integer> grids= new ArrayList<Integer>();
-			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
-				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+			if(subtaskObj.getGridIds() != null && subtaskObj.getGridIds().size() >0){
+				 grids= subtaskObj.getGridIds();
 			}
+//			if(subtaskObj.getGridIds().keySet() != null && subtaskObj.getGridIds().keySet().size() >0){
+//				 grids= (List<Integer>) subtaskObj.getGridIds().keySet();
+//			}
 			
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("grids", grids);

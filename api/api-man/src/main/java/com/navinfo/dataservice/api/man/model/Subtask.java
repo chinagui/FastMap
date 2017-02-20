@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -177,8 +178,13 @@ public class Subtask implements Serializable  {
 	public void setDbId(int dbId) {
 		this.dbId = dbId;
 	}
-	public Map<Integer,Integer> getGridIds(){
+	public Map<Integer,Integer> gridIdMap(){
 		return gridIds;
+	}
+	public List<Integer> getGridIds(){
+		List<Integer> list = new ArrayList<Integer> ();  
+		list.addAll(gridIds.keySet());
+		return list;
 	}
 	public void setGridIds(Map<Integer,Integer> list) {
 		this.gridIds = list;

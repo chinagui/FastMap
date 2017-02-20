@@ -580,7 +580,7 @@ public class SubtaskOperation {
 	public static void insertSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
 		// TODO Auto-generated method stub
 		try{
-			Map<Integer,Integer> gridIds = bean.getGridIds();
+			Map<Integer,Integer> gridIds = bean.gridIdMap();
 			
 			insertSubtaskGridMapping(conn,bean.getSubtaskId(),gridIds);
 
@@ -3074,7 +3074,7 @@ public class SubtaskOperation {
 		}
 		
 		///获得需要调整的gridMap
-		Map<Integer,Integer> gridIdsBefore = subtask.getGridIds();
+		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
 		Map<Integer,Integer> gridIdsToInsert = new HashMap<Integer,Integer>() ;
 		for(Integer gridId:gridIdList){
 			if(gridIdsBefore.containsKey(gridId)){

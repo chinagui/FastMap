@@ -127,7 +127,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //			log.info("end gdb batch");
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(myRequest);
+			commitPoi(conn,myRequest);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch(Exception e){
@@ -224,8 +224,8 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
-		Connection conn = null;
+	public void commitPoi(Connection conn,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+		//Connection conn = null;
 		try{
 			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
 			String sql="UPDATE POI_EDIT_STATUS E"
@@ -242,16 +242,17 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "                                   'MASK=ANYINTERACT') = 'TRUE'"
 					+ "           AND P.PID = E.PID)";
 			
-			conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
+			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		
 	    	run.execute(conn, sql);
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw e;
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
 	}
 
 }

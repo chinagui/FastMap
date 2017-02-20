@@ -29,7 +29,15 @@ public class CompPointUtil {
 	 * @return
 	 */
 	public static double cosAngle(DoublePoint point1,DoublePoint point2){
-		return (point1.getX()*point2.getX()+point1.getY()*point2.getY())/(norm(point1)*norm(point2));
+		
+		double cosAngle=(point1.getX()*point2.getX()+point1.getY()*point2.getY())/(norm(point1)*norm(point2));
+		
+		if (cosAngle > 1.0) {
+			cosAngle = 1.0;
+		} else if (cosAngle < -1.0) {
+			cosAngle = -1.0;
+		}
+		return cosAngle;
 	}
 	/**
 	 * 计算坐标（0,0）到两点坐标的向量之间夹角cos值
@@ -37,7 +45,7 @@ public class CompPointUtil {
 	 * @param point2
 	 * @return
 	 */
-	public static double angle(DoublePoint point1,DoublePoint point2){
+	public static double angle(DoublePoint point1,DoublePoint point2){		
 		return Math.acos(cosAngle(point1,point2));
 	}
 	/**

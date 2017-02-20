@@ -316,7 +316,7 @@ public class NiValExceptionSelector {
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
 							+ "  union all  select a.md5_code,ruleid,situation,\"LEVEL\" level_,3 state,"
 							+ "targets,information,a.location.sdo_point.x x,a.location.sdo_point.y y,created,updated,"
-							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_grid_history b,"
+							+ "worker ,qa_worker,qa_status from ni_val_exception_history a where exists(select 1 from ni_val_exception_history_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.md5_code=b.md5_code and b.grid_id =grid_table.COLUMN_VALUE)");
 		}

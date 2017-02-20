@@ -39,10 +39,17 @@ public class TaskCmsProgress {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+	public int getRegionId() {
+		return regionId;
+	}
+	public void setRegionId(int regionId) {
+		this.regionId = regionId;
+	}
 	private int taskId;
 	private int phase;
 	private int status;
 	private int phaseId;
+	private int regionId;
 	private Set<Integer> gridIds;
 	private Set<Integer> meshIds;
 }

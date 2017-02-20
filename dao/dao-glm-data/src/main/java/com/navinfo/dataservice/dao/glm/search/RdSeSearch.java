@@ -14,7 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.se.RdSeSelector;
 
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /**
  * @Title: RdSeSearch.java
@@ -57,7 +56,7 @@ public class RdSeSearch implements ISearch {
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH tmp1 AS ( SELECT a.geometry, a.node_pid FROM rd_node a, rd_se b WHERE sdo_relate(a.geometry, sdo_geometry(:1, 8307), 'mask=anyinteract') = 'TRUE' AND a.NODE_PID = b.NODE_PID and a.u_record != 2) select a.pid, a.in_link_pid, a.out_link_pid, a.node_pid, tmp1.geometry as geometry  from rd_se a, tmp1 WHERE a.node_pid = tmp1.node_pid AND a.u_record != 2";
+		String sql = "WITH TMP1 AS (SELECT SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY) as geometry, A.NODE_PID FROM RD_NODE A, RD_SE B WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2 group by SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY),A.NODE_PID ) SELECT A.PID, A.IN_LINK_PID, A.OUT_LINK_PID, A.NODE_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_SE A, TMP1 WHERE A.NODE_PID = TMP1.NODE_PID AND A.U_RECORD != 2 ";
 
 		PreparedStatement pstmt = null;
 
@@ -91,9 +90,9 @@ public class RdSeSearch implements ISearch {
 
 				snapshot.setI(resultSet.getInt("pid"));
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				String pointWkt = resultSet.getString("geometry");
 
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				JSONObject geojson = Geojson.wkt2Geojson(pointWkt);
 
 				Geojson.point2Pixel(geojson, z, px, py);
 

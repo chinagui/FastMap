@@ -300,45 +300,23 @@ public class TaskService {
 					total ++;
 				}
 			}
-			//更新task状态
-			TaskOperation.updateStatus(conn, commontaskIds,1);			
-			//发布消息
-			taskPushMsg(conn,userId,updatedTaskList);
-			conn.commit();
-			for(Integer taskId:cmsTaskList){
-				List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
-				Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
-				for(Map<String, Integer> phaseTmp:phaseList){
-					phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+			if(commontaskIds.size()>0){
+				//更新task状态
+				TaskOperation.updateStatus(conn, commontaskIds,1);			
+				//发布消息
+				taskPushMsg(conn,userId,updatedTaskList);
+				conn.commit();
+				for(Integer taskId:cmsTaskList){
+					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+					for(Map<String, Integer> phaseTmp:phaseList){
+						phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+					}
+					day2month(conn, phaseIdMap.get(1));
+					tips2Aumark(conn, phaseIdMap.get(2));
 				}
-				day2month(conn, phaseIdMap.get(1));
-				tips2Aumark(conn, phaseIdMap.get(2));
 			}
 			return "task批量发布"+total+"个成功，0个失败";
-//			//给作业组leader发送消息
-//			int total = 0;
-//			List<Object[]> msgContentList=new ArrayList<Object[]>();
-//			String msgTitle="task发布";
-//			for (Task task : taskList) {
-//				if(task.getGroupLeader()!=0){
-//					Object[] msgTmp=new Object[4];
-//					msgTmp[0]=task.getGroupLeader();//收信人
-//					msgTmp[1]=msgTitle;//消息头
-//					msgTmp[2]="新增task:"+task.getName()+",请关注";//消息内容
-//					//关联要素
-//					JSONObject msgParam = new JSONObject();
-//					msgParam.put("relateObject", "TASK");
-//					msgParam.put("relateObjectId", task.getTaskId());
-//					msgTmp[3]=msgParam.toString();//消息对象
-//					msgContentList.add(msgTmp);
-//				}
-//				if(msgContentList.size()>0){
-//					taskPushMsgByMsg(conn,msgContentList,userId);	
-//				}
-//				total++;
-//			}
-//			
-//			return "task批量发布"+total+"个成功，0个失败";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -988,7 +966,11 @@ public class TaskService {
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
 						task.put("taskId", rs.getInt("TASK_ID"));
-						task.put("taskName", rs.getString("NAME"));
+						if(rs.getString("NAME")==null){
+							task.put("taskName","");
+						}else{
+							task.put("taskName", rs.getString("NAME"));
+						}
 						task.put("status", rs.getInt("STATUS"));
 						task.put("type", rs.getInt("TYPE"));
 						
@@ -997,19 +979,22 @@ public class TaskService {
 						task.put("progress", rs.getInt("PROGRESS"));
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
-						task.put("groupName", rs.getString("GROUP_NAME"));
-
+						if(rs.getString("GROUP_NAME")==null){
+							task.put("groupName","");
+						}else{
+							task.put("groupName", rs.getString("GROUP_NAME"));
+						}
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
 						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
 						if(planStartDate != null){
 							task.put("planStartDate", df.format(planStartDate));
-						}else {task.put("planStartDate", null);}
+						}else {task.put("planStartDate", "");}
 						if(planEndDate != null){
 							task.put("planEndDate",df.format(planEndDate));
-						}else{task.put("planEndDate", null);}
+						}else{task.put("planEndDate", "");}
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
-						task.put("poiPlanTotal", rs.getString("POI_PLAN_TOTAL"));
+						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -1274,7 +1259,8 @@ public class TaskService {
 			map.put("blockName", task.getBlockName());
 			map.put("workProperty", task.getWorkProperty());
 			map.put("programId", task.getProgramId());
-			map.put("programType", task.getProgramName());
+			map.put("programName", task.getProgramName());
+			map.put("programType", task.getProgramType());
 			map.put("createUserId", task.getCreateUserId());
 			map.put("createUserName", task.getCreateUserName());
 			map.put("groupId", task.getGroupId());

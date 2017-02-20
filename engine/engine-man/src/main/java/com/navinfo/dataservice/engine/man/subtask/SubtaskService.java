@@ -1464,12 +1464,13 @@ public class SubtaskService {
 						else if(type==2){name+="一体化";}
 						else if(type==3){name+="一体化grid粗编";}
 						else if(type==4){name+="一体化区域粗编";}
-						else if(type==5){name+="多源POI";}
+						else if(type==5){name+="POI粗编";}
 						else if(type==6){name+="代理店";}
 						else if(type==7){name+="POI专项";}
 						else if(type==8){name+="道路grid精编";}
 						else if(type==9){name+="道路grid粗编";}
 						else if(type==10){name+="道路区域专项";}
+						else if(type==11){name+="预处理";}
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);

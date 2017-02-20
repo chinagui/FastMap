@@ -89,9 +89,9 @@ public class RdSlopeSearch implements ISearch {
 
 				snapshot.setI(resultSet.getInt("pid"));
 
-				String linkWkt = resultSet.getString("geometry");
+				String pointWkt = resultSet.getString("geometry");
 
-				JSONObject geojson = Geojson.wkt2Geojson(linkWkt);
+				JSONObject geojson = Geojson.wkt2Geojson(pointWkt);
 
 				Geojson.point2Pixel(geojson, z, px, py);
 

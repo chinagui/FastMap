@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
@@ -21,12 +22,13 @@ public class ShapingCheckLinkRingobreak2 extends baseRule {
             if (row instanceof ZoneLink && row.status() != ObjStatus.DELETE) {
                 ZoneLink link = (ZoneLink) row;
 
-                Geometry geometry = GeoTranslator.transform(link.getGeometry(), 1, 5);
+                Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
                 if (link.changedFields().containsKey("geometry"))
-                    geometry = GeoTranslator.geojson2Jts((JSONObject) link.changedFields().get("geometry"), 1, 5);
+                    geometry = GeoTranslator.geojson2Jts((JSONObject) link.changedFields().get("geometry"), 0.00001, 5);
 
-                log.info("ShapingCheckLinkRingobreak2:[geometry=" + geometry + ",length=" + geometry.getLength() + "]");
-                if (geometry.getLength() <= 2) {
+                double length = GeometryUtils.getLinkLength(geometry);
+                log.info("ShapingCheckLinkRingobreak2:[geometry=" + geometry + ",length=" + length + "]");
+                if (length <= 2) {
                     setCheckResult(link.getGeometry(), "[ZONE_LINK," + link.pid() + "]", link.mesh());
                 }
             }

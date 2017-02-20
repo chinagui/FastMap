@@ -90,22 +90,22 @@ public class CheckTest {
 //		logList1.add(logg1);
 //		chiAddress.setHisChangeLogs(logList1);
 		
-		IxPoiName name = poiObj.getOfficeOriginCHName();
-		ChangeLog namelogg=new ChangeLog();
-		Map<String, Object> nameOldValues=new HashMap<String, Object>();
-		nameOldValues.put("NAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
-		namelogg.setOldValues(nameOldValues);
-		namelogg.setOpType(OperationType.UPDATE);
-		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
-		nameLog.add(namelogg);
-		name.setHisChangeLogs(nameLog);
+//		IxPoiName name = poiObj.getOfficeOriginCHName();
+//		ChangeLog namelogg=new ChangeLog();
+//		Map<String, Object> nameOldValues=new HashMap<String, Object>();
+//		nameOldValues.put("NAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+//		namelogg.setOldValues(nameOldValues);
+//		namelogg.setOpType(OperationType.UPDATE);
+//		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
+//		nameLog.add(namelogg);
+//		name.setHisChangeLogs(nameLog);
 		
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-122");
+		ruleIdList.add("FM-YW-20-054");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

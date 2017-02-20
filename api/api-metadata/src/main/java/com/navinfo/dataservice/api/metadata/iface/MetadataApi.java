@@ -312,5 +312,21 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
+    
+    /**
+     * SC_POINT_FOCUS.TYPE=2
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:POI_NUM value:TYPE
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScPointFocus(String poiNum) throws Exception;
+    
+    /**
+     * SC_FM_CONTROL
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:PARENT
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScFmControl(String kindCode) throws Exception;
 
 }

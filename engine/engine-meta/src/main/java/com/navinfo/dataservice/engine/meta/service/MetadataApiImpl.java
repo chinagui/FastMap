@@ -32,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
 import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.ScPartitionMeshlistSelector;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
@@ -40,6 +41,7 @@ import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFood
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
+import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
@@ -613,6 +615,28 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
 		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
+	}
+	
+	/**
+     * SC_POINT_FOCUS.TYPE=2
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:POI_NUM value:TYPE
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScPointFocus(String poiNum) throws Exception {
+		return ScPointFocus.getInstance().searchScPointFocus(poiNum);
+	}
+	
+	/**
+     * SC_FM_CONTROL
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:PARENT
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScFmControl(String kindCode) throws Exception {
+		return ScFmControl.getInstance().searchScFmControl(kindCode);
 	}
 
 }

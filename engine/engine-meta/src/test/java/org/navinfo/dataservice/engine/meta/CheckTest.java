@@ -11,6 +11,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
+import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 
@@ -33,6 +35,24 @@ public class CheckTest {
 			Map<String, Integer> map = ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(list);
 			for (String key : map.keySet()) {
 				System.out.println("kindCode---"+key+"kindUse"+map.get(key));
+			}
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+
+	}
+	
+	@Test
+	public void test02() {
+		try {
+			Map<String, Integer> map = ScPointFocus.getInstance().searchScPointFocus("0027061004YCJ01269");
+			for (String key : map.keySet()) {
+				System.out.println("kindCode---"+key+"kindUse"+map.get(key));
+			}
+			Map<String, Integer> map1 = ScFmControl.getInstance().searchScFmControl("210204");
+			for (String key : map1.keySet()) {
+				System.out.println("kindCode---"+key+"kindUse"+map1.get(key));
 			}
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));

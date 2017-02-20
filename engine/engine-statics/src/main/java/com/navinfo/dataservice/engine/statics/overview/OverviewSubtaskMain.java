@@ -112,7 +112,7 @@ public class OverviewSubtaskMain {
 		stat.put("statTime", stat_time);
 
 		
-		List<Integer> gridIds = (List<Integer>) subtask.getGridIds().keySet();
+		List<Integer> gridIds = subtask.getGridIds();
 		List<String> gridIdList = new ArrayList<String>();
 		//grid进度详情
 		Map<String,Integer> gridPercentDetailPOI = new HashMap<String,Integer>();

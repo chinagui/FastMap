@@ -31,9 +31,9 @@ public class FMM0103 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiName> names=poiObj.getIxPoiNames();
 			for (IxPoiName name:names){
-				//存在IX_POI_NAME新增或者修改履历
-				if(name.getNameClass()==3&&name.getNameType()==1&&name.getLangCode().equals("ENG")){
-					if(name.getHisOpType().equals(OperationType.INSERT)||(name.getHisOpType().equals(OperationType.UPDATE) && name.hisOldValueContains(IxPoiName.NAME))){
+				//别名标准中文新增或别名标准中文修改
+				if(name.getNameClass()==3&&name.getNameType()==1&&name.getLangCode().equals("CHI")){
+					if(name.getHisOpType().equals(OperationType.UPDATE) && name.hisOldValueContains(IxPoiName.NAME)){
 						String oldNameStr=(String) name.getHisOldValue(IxPoiName.NAME);
 						String newNameStr=name.getName();
 						if(!newNameStr.equals(oldNameStr)){
@@ -42,6 +42,12 @@ public class FMM0103 extends BasicCheckRule {
 							if(originAliasENGName!=null){
 								setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 							}
+						}
+					} else if (name.getHisOpType().equals(OperationType.INSERT)) {
+						long nameGroupId= name.getNameGroupid();
+						IxPoiName originAliasENGName=poiObj.getOriginAliasENGName(nameGroupId);
+						if(originAliasENGName!=null){
+							setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
 						}
 					}
 				}

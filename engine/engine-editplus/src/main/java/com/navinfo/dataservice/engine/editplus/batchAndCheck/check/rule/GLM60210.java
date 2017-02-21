@@ -1,11 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -29,9 +26,9 @@ public class GLM60210 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			long pid = poi.getPid();
-			Set<Long> pids = new HashSet<Long>();
+			List<Long> pids = new ArrayList<Long>();
 			pids.add(pid);
-			List<Map<String, Long>> samePoiGroupIdsByPids = IxPoiSelector.getIxSamePoiGroupIdsByPids(this.getCheckRuleCommand().getConn(), pids);
+			List<Long> samePoiGroupIdsByPids = IxPoiSelector.getIxSamePoiGroupIdsByPids(this.getCheckRuleCommand().getConn(), pids);
 			if(samePoiGroupIdsByPids.size() >1){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;

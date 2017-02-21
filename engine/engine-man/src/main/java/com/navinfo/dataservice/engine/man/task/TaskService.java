@@ -290,11 +290,13 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			int erNum = 0;//二代任务数量
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
+					erNum ++;
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(task.getTaskId());
 					if(phaseList!=null&&phaseList.size()>0){continue;}
 					createCmsProgress(conn,task.getTaskId(),1);
@@ -325,7 +327,10 @@ public class TaskService {
 					tips2Aumark(conn, phaseIdMap.get(2));
 				}
 			}
-			return "task批量发布"+total+"个成功，0个失败";
+			if((erNum!=0)||(total+erNum!=taskIds.size())){
+				return "任务发布：" + total + "个成功，" + (taskIds.size()-total-erNum) + "个失败," + erNum + "个二代编辑任务进行中";
+			}
+			return null;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -380,6 +385,7 @@ public class TaskService {
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
 			String selectSql= sb.toString();
 
+			log.info("getTaskListWithLeader sql:" + selectSql);
 			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>() {
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> taskList = new ArrayList<Task>();

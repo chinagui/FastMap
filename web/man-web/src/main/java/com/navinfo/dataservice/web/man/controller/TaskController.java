@@ -91,10 +91,15 @@ public class TaskController extends BaseController {
 			long userId=tokenObj.getUserId();
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
 			//long userId=2;
-			String msg=TaskService.getInstance().taskPushMsg(userId, taskIds);
-			return new ModelAndView("jsonView", success(msg));
+			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
+			
+			if((message!=null)&&(!message.isEmpty())){
+				return new ModelAndView("jsonView", exception(message));
+			}else{
+				return new ModelAndView("jsonView", success(message));
+			}
 		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
+			log.error("发布失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -144,7 +149,7 @@ public class TaskController extends BaseController {
 			String message = TaskService.getInstance().close(taskId,userId);			
 			return new ModelAndView("jsonView", success(message));
 		}catch(Exception e){
-			log.error("任务批量关闭失败，原因："+e.getMessage(), e);
+			log.error("任务关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}

@@ -1639,7 +1639,7 @@ public class TaskService {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("specRegionId", phase.getRegionId());
 			jobDataJson.put("specMeshes", phase.getMeshIds());
-			//long jobId=jobApi.createJob("day2MonSync", jobDataJson, "",phase.getTaskId(), "日落月");
+			long jobId=jobApi.createJob("day2MonSync", jobDataJson, phase.getCreateUserId(),Long.valueOf(phase.getTaskId()), "日落月");
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1661,7 +1661,6 @@ public class TaskService {
 			if(i==0){return 0;}
 			//tip转aumark
 			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
-			queryByTaskId(phaseId);
 			JSONObject par=new JSONObject();
 			par.put("gdbid", cmsInfo.get("dbId"));
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
@@ -1746,6 +1745,7 @@ public class TaskService {
 			String selectSql = "SELECT CMST.NAME CMS_NAME,"
 					+ "       CMST.TASK_ID CMS_ID,"
 					+ "       CMST.CREATE_USER_ID,"
+					+ "       u.user_nick_name,"
 					+ "       T.TASK_ID COLLECT_ID,"
 					+ "       T.NAME COLLECT_NAME,"
 					+ "       P.PHASE_ID,"
@@ -1755,11 +1755,12 @@ public class TaskService {
 					+ "       B.BLOCK_NAME,"
 					+ "       B.WORK_PROPERTY,"
 					+ "       B.WORK_TYPE"
-					+ "  FROM TASK CMST, TASK T, BLOCK B, CITY C, TASK_CMS_PROGRESS P, REGION R"
+					+ "  FROM TASK CMST, TASK T, BLOCK B, CITY C, TASK_CMS_PROGRESS P, REGION R,user_info u"
 					+ " WHERE P.PHASE_ID = "+phaseId
 					+ "   AND CMST.REGION_ID = R.REGION_ID"
 					+ "   AND CMST.PROGRAM_ID = T.PROGRAM_ID"
 					+ "   AND CMST.TASK_ID = P.TASK_ID"
+					+ "   AND CMST.CREATE_USER_ID = u.user_ID"
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
 					+ "   AND B.BLOCK_ID = C.CITY_ID";
@@ -1770,6 +1771,7 @@ public class TaskService {
 						result.put("cmsId", rs.getInt("CMS_ID"));
 						result.put("cmsName", rs.getString("CMS_NAME"));
 						result.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						result.put("userNickName", rs.getString("user_nick_name"));
 						result.put("collectId", rs.getInt("COLLECT_ID"));
 						result.put("collectName", rs.getString("COLLECT_NAME"));
 						result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
@@ -1802,7 +1804,6 @@ public class TaskService {
 			conn.commit();
 			if(i==0){return 0;}
 			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
-			queryByTaskId(phaseId);
 			JSONObject par=new JSONObject();
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
@@ -1822,7 +1823,7 @@ public class TaskService {
 			taskPar.put("town", cmsInfo.get("blockName"));
 			taskPar.put("workType", cmsInfo.get("workProperty"));
 			taskPar.put("area", cmsInfo.get("workType"));
-			taskPar.put("userId", cmsInfo.get("createUserId"));
+			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 			
 			par.put("taskid", taskPar);
@@ -1842,10 +1843,11 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS"
+			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID,ts.create_user_id,u.user_nick_name"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS,user_info u"
 					+ " WHERE T.PHASE_ID =  "+phaseId
-					+ " AND T.TASK_ID =TS.TASK_ID ";
+					+ " AND T.TASK_ID =TS.TASK_ID "
+					+ " AND Ts.create_user_id =u.user_id ";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
@@ -1853,6 +1855,8 @@ public class TaskService {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
+						progress.setCreateUserId(rs.getInt("create_user_id"));
+						progress.setUserNickName(rs.getString("user_nick_name"));
 						progress.setRegionId(rs.getInt("region_id"));
 						
 						if(progress.getGridIds()==null){

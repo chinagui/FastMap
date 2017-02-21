@@ -1513,7 +1513,10 @@ public class SubtaskService {
 			//查询子任务
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
-			//关闭子任务
+			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
+			if(subtask.getStage()==7){
+				return "POI专项_月编子任务关闭进行中";
+			}
 			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
 
 			//动态调整子任务范围

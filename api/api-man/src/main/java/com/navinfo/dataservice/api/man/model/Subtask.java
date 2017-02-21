@@ -2,6 +2,8 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +41,7 @@ public class Subtask implements Serializable  {
 	private Timestamp planStartDate ;
 	private Timestamp planEndDate;
 	private String descp ;
-	private Map<Integer,Integer> gridIds;
+	private Map<Integer,Integer> gridIds = new HashMap<Integer,Integer>();
 	private Integer dbId ;
 	private Integer groupId;
 //	private String blockManName;
@@ -177,12 +179,32 @@ public class Subtask implements Serializable  {
 	public void setDbId(int dbId) {
 		this.dbId = dbId;
 	}
-	public Map<Integer,Integer> getGridIds(){
+	public Map<Integer,Integer> gridIdMap(){
 		return gridIds;
 	}
+	public List<Integer> getGridIds(){
+		List<Integer> list = new ArrayList<Integer> (); 
+		if(gridIds!=null&&gridIds.size()!=0){
+			list.addAll(gridIds.keySet());
+		}
+		return list;
+	}
 	public void setGridIds(Map<Integer,Integer> list) {
+//		for(Map.Entry<String, Integer> entry:list.entrySet()){
+//			this.gridIds.put(Integer.parseInt(entry.getKey()), entry.getValue());
+//		}
 		this.gridIds = list;
 	}
+	
+	public void setGridIds(JSONObject list) {
+		for(Object gridId:list.keySet()){
+			int k = Integer.parseInt(gridId.toString());
+			int v =Integer.parseInt(list.get(gridId).toString()); 
+			this.gridIds.put(k, v);
+		}
+	}
+
+
 //	public String getTaskName(){
 //		return taskName;
 //	}

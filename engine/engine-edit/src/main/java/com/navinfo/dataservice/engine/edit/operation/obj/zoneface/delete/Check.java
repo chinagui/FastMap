@@ -112,9 +112,9 @@ public class Check {
 				}
 				
 				//GLM01014
-				if (rdLink.getsNodePid() == rdLink.geteNodePid()){
-					check.insertCheckLog("GLM01014", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
-				}
+				//if (rdLink.getsNodePid() == rdLink.geteNodePid()){
+				//	check.insertCheckLog("GLM01014", pointWkt, "[RD_LINK,"+rdLink.getPid()+"]", rdLink.getMeshId(), "TEST");
+				//}
 				
 				//GLM01025
 				double sx,sy,ex,ey;

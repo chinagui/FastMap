@@ -431,7 +431,8 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
 			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
@@ -439,6 +440,7 @@ public class SubtaskService {
 			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
 	
 			String selectSql = sb.toString();
+			log.info("请求子任务详情SQL："+sb.toString());
 			
 
 			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
@@ -454,6 +456,9 @@ public class SubtaskService {
 						subtask.setDescp(rs.getString("DESCP"));
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						
 						//GEOMETRY
 						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -466,14 +471,18 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
+							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+							}
+							subtask.setGridIds(gridIdMap);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						
 						subtask.setTaskId(rs.getInt("TASK_ID"));
-						if (2 == rs.getInt("TASK_TYPE")) {
+						if (2 == rs.getInt("STAGE")) {
 							//月编子任务
 							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
 						} else {
@@ -606,14 +615,14 @@ public class SubtaskService {
 						
 						if(1 == rs.getInt("STATUS")){
 							subtask.put("percent",100);
-//							SubtaskStatInfo stat = new SubtaskStatInfo();
-//							try{	
-//								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
-//								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
-//							} catch (Exception e) {
-//								log.warn("subtask query error",e);
-//							}
-//							subtask.setPercent(stat.getPercent());
+							SubtaskStatInfo stat = new SubtaskStatInfo();
+							try{	
+								StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+								stat = staticApi.getStatBySubtask(rs.getInt("SUBTASK_ID"));
+							} catch (Exception e) {
+								log.warn("subtask query error",e);
+							}
+							subtask.put("percent",stat.getPercent());
 						}
 						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						return subtask;
@@ -621,6 +630,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
+			log.info("queryBySubtaskId sql:" + selectSql);
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1311,38 +1321,38 @@ public class SubtaskService {
 	}
 	
 	
-	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
-			final int curPageNum,int snapshot) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			
-//			//获取用户所在组信息
-//			UserInfo userInfo = new UserInfo();
-//			userInfo.setUserId((int)userId);
-//			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
-//			int groupId = (int) group.get("groupId");
-			
-			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-			return page;
-			
-//			//返回简略信息
-//			if (snapshot==1){
-//				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}else{
-//				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
-//				return page;
-//			}		
-
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	public Page listByGroup(long groupId, int stage, JSONObject conditionJson, JSONObject orderJson, final int pageSize,
+//			final int curPageNum,int snapshot) throws ServiceException {
+//		Connection conn = null;
+//		try {
+//			conn = DBConnector.getInstance().getManConnection();
+//			
+////			//获取用户所在组信息
+////			UserInfo userInfo = new UserInfo();
+////			userInfo.setUserId((int)userId);
+////			Map<Object, Object> group = UserInfoOperation.getUserGroup(conn, userInfo);
+////			int groupId = (int) group.get("groupId");
+//			
+//			Page page = SubtaskOperation.getListByGroup(conn,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+//			return page;
+//			
+////			//返回简略信息
+////			if (snapshot==1){
+////				Page page = SubtaskOperation.getListSnapshot(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}else{
+////				Page page = SubtaskOperation.getList(conn,userId,groupId,stage,conditionJson,orderJson,pageSize,curPageNum);
+////				return page;
+////			}		
+//
+//		} catch (Exception e) {
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+//		} finally {
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	/**
 	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
 	 * @param subtaskId
@@ -1398,7 +1408,7 @@ public class SubtaskService {
 					return list;
 				}	    		
 	    	}		;
-
+	    	log.info("queryListReferByWkt sql :" + selectSql);
 	    	return run.query(conn, selectSql, rsHandler,json.getString("wkt"));
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1430,6 +1440,7 @@ public class SubtaskService {
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
+			log.info("staticWithType swl:" + sql);
 			Map<String, Object> result = run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
 
 				@Override
@@ -1453,12 +1464,13 @@ public class SubtaskService {
 						else if(type==2){name+="一体化";}
 						else if(type==3){name+="一体化grid粗编";}
 						else if(type==4){name+="一体化区域粗编";}
-						else if(type==5){name+="多源POI";}
+						else if(type==5){name+="POI粗编";}
 						else if(type==6){name+="代理店";}
 						else if(type==7){name+="POI专项";}
 						else if(type==8){name+="道路grid精编";}
 						else if(type==9){name+="道路grid粗编";}
 						else if(type==10){name+="道路区域专项";}
+						else if(type==11){name+="预处理";}
 						subResult.put("type", type);
 						subResult.put("stage", stage);
 						subResult.put("name", name);
@@ -1500,22 +1512,28 @@ public class SubtaskService {
 			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
 
 			//动态调整子任务范围
-			//日编子任务关闭，调整日编任务本身，调整日编任务
+			//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
 			if(subtask.getStage()==1){
-				EditApi editApi = (EditApi) ApplicationContextUtil.getBean("editApi");
-				List<Integer> gridIds = editApi.getGridIdListBySubtaskIdFromLog(subtask.getDbId(),subtask.getSubtaskId());
+				//获取规划外GRID信息
+				Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
+				
 				//调整子任务范围
-				SubtaskOperation.adjustSubtaskRegion(conn,subtask,gridIds);
+				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 				//调整任务范围
-				TaskOperation.adjustTaskRegion(conn,subtask.getTaskId(),gridIds);
+				TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+				//调整区域子任务范围
+				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+				for(Subtask subtaskType4:subtaskList){
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				}
 			}
 			
 			
 			//发送消息
 			try {
 				//查询分配的作业组组长
-				List<Long> groupIdList = null;
-				if(subtask.getExeUserId()!=null&&subtask.getExeUserId()!=0){
+				List<Long> groupIdList = new ArrayList<Long>();
+				if(subtask.getExeUserId()!=0){
 					UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
 					groupIdList.add(Long.valueOf(userGroup.getGroupId()));
 				}else{

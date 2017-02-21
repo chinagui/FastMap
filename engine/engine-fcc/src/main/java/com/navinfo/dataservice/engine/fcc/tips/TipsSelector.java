@@ -15,13 +15,21 @@ import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -78,8 +86,8 @@ public class TipsSelector {
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
 			JSONArray types, String mdFlag) throws Exception {
 		JSONArray array = new JSONArray();
-		
-		String rowkey=null;
+
+		String rowkey = null;
 
 		try {
 
@@ -96,7 +104,7 @@ public class TipsSelector {
 				stages.add(1);
 
 				stages.add(2);
-				
+
 				stages.add(5);
 
 			} else if ("m".equals(mdFlag)) {
@@ -106,22 +114,22 @@ public class TipsSelector {
 				stages.add(2);
 
 				stages.add(3);
-				
+
 				stages.add(5);
 			}
-			//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
-			boolean isPre=false;
-			
-			if("f".equals(mdFlag)){
-				isPre=true;
+			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+			boolean isPre = false;
+
+			if ("f".equals(mdFlag)) {
+				isPre = true;
 			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false,isPre);
+					stages, false, isPre);
 
 			for (JSONObject json : snapshots) {
-				
-				rowkey=json.getString("id");
+
+				rowkey = json.getString("id");
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
@@ -143,47 +151,45 @@ public class TipsSelector {
 				// 日编月编状态
 
 				if ("d".equals(mdFlag)) {
-					
-					//如果日编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
-					if(json.getInt("t_dInProc")==1){
-						
+
+					// 如果日编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
+					if (json.getInt("t_dInProc") == 1) {
+
 						m.put("a", 2);
-						
-					}else{
-						
+
+					} else {
+
 						m.put("a", json.getString("t_dStatus"));
 					}
 
-
 				} else if ("m".equals(mdFlag)) {
 
-					//如果月编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
-					if(json.getInt("t_mInProc")==1){
-						
+					// 如果月编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
+					if (json.getInt("t_mInProc") == 1) {
+
 						m.put("a", 2);
-					}else 
-					{
+					} else {
 						m.put("a", json.getString("t_mStatus"));
 					}
 
 				}
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
-				
-				//fc预处理8001要求返回功能等级
-				if(type == 8001){
+
+				// fc预处理8001要求返回功能等级
+				if (type == 8001) {
 					m.put("b", deep.getString("fc"));
-					
-				}else{
+
+				} else {
 					m.put("b", json.getString("t_lifecycle"));
 				}
 
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
-				
-				//8001和8002的的数据，新增guide已经赋值，无需特殊处理了
+
+				// 8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
-				
+
 				// g字段重新赋值的（显示坐标：取Tips的geo）
 				if (type == 1604 || type == 1601 || type == 1602
 						|| type == 1605 || type == 1606 || type == 1607) {
@@ -336,8 +342,7 @@ public class TipsSelector {
 					m.put("e", deep.getString("src"));
 				} else if (type == 1202) {
 					m.put("c", String.valueOf(deep.getInt("num")));
-				}
-				else if (type == 1510 || type == 1514 || type == 1501
+				} else if (type == 1510 || type == 1514 || type == 1501
 						|| type == 1515 || type == 1502 || type == 1503
 						|| type == 1504 || type == 1505 || type == 1506
 						|| type == 1508 || type == 1513 || type == 1512
@@ -355,8 +360,8 @@ public class TipsSelector {
 
 						m.put("e", deep.getString("name"));
 					}
-					//20170207修改，需求来源于：赵航——有个需求是，如果上传的步行街有时间段，我们要渲染不同的图标，现在渲染接口没有时间段这个字段
-					if( type == 1507){
+					// 20170207修改，需求来源于：赵航——有个需求是，如果上传的步行街有时间段，我们要渲染不同的图标，现在渲染接口没有时间段这个字段
+					if (type == 1507) {
 						m.put("f", deep.getString("time"));
 					}
 
@@ -385,7 +390,7 @@ public class TipsSelector {
 								+ "|" + time + "|" + vtName);
 					}
 				} else if (type == 1604 || type == 1601 || type == 1602
-						|| type == 1605 || type == 1606  ) {
+						|| type == 1605 || type == 1606) {
 
 					m.put("c", geojson.getJSONArray("coordinates"));
 
@@ -393,19 +398,18 @@ public class TipsSelector {
 
 						m.put("d", deep.getString("name"));
 					}
-					
 
-				}else if (type ==  8001   ) {
+				} else if (type == 8001) {
 
 					m.put("c", geojson.getJSONArray("coordinates"));
 
 				}
 
-				else if (type == 1801 || type == 1806||  type == 8002) {
-					
-					JSONObject  feebackObj= JSONObject.fromObject(json
+				else if (type == 1801 || type == 1806 || type == 8002) {
+
+					JSONObject feebackObj = JSONObject.fromObject(json
 							.getString("feedback"));
-					
+
 					JSONArray f_array = feebackObj.getJSONArray("f_array");
 
 					JSONArray a = new JSONArray();
@@ -427,9 +431,9 @@ public class TipsSelector {
 								JSONObject o = new JSONObject();
 
 								Geojson.coord2Pixel(geo, z, px, py);
-								
+
 								o.put("t", geo.getString("type"));
-								
+
 								o.put("g", geo.getJSONArray("coordinates"));
 
 								o.put("s", style);
@@ -464,38 +468,61 @@ public class TipsSelector {
 				else if (type == 1704) {
 					m.put("c", deep.getString("name"));
 				}
-				
-				//20170217修改，变更输入：王屯 赵航
-				if(type==2001){
-					JSONObject obj=new JSONObject();
+
+				// 20170217修改，变更输入：王屯 赵航
+				if (type == 2001) {
+					JSONObject obj = new JSONObject();
 					obj.put("ln", deep.getInt("ln"));
 					obj.put("kind", deep.getInt("kind"));
 					m.put("e", obj);
 				}
-				
-				//返回差分结果：20160213修改
-				JSONObject tipdiff =null;
-				
-				if(json.containsKey("tipdiff")){
-				    
-					tipdiff=JSONObject.fromObject(json.getString("tipdiff"));
-	                
-	                //坐标转换，需要根据类型转换为屏幕坐标
-	                JSONObject convertGeoDiff=converDiffGeo(type,tipdiff,z, px, py); 
-	                
-	                if(convertGeoDiff!=null){
-	                    m.put("i", convertGeoDiff);
-	                }
+
+				// 返回差分结果：20160213修改
+				JSONObject tipdiff = null;
+
+				if (json.containsKey("tipdiff")) {
+
+					tipdiff = JSONObject.fromObject(json.getString("tipdiff"));
+
+					// 坐标转换，需要根据类型转换为屏幕坐标
+					JSONObject convertGeoDiff = converDiffGeo(type, tipdiff, z,
+							px, py);
+
+					if (convertGeoDiff != null) {
+						m.put("i", convertGeoDiff);
+					}
 				}
+
+				// 20170220新增：是否有附件、是否有时间段、是否有线编号 （需要判空）--输入：陈清友 王屯
+
+				// 20170220新增：返回退出线的编号和坐标位置
+
+				// 1.是否有照片
+				m.put("k", 0); // 默认：put一个0（有可能有f_array为空的情况），如果有信息，则再put 1。
+
+				hasAttachement(json, m);
+
+				// 2.是否有时间段
+
+				m.put("l", 0); // 默认：put一个0，如果有信息，则再put 1。
+
+				asTimeAndNotNull(type, m, deep);
+
+				// 3.是否有退出线编号
+				m.put("n", 0); // 默认无
+				// 4. 查找线编号
+				// 3.1   4.1 判断是否有线编号同时返回线编号和坐标
+				getOutNumAndGeo(type, z, px, py, m, deep);
 				
+
 				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
 
 			}
 		} catch (Exception e) {
-			logger.error("渲染报错，数据错误："+e.getMessage()+rowkey);
-			throw new Exception(e.getMessage()+"rowkey:"+rowkey,e);
+			logger.error("渲染报错，数据错误：" + e.getMessage() + rowkey);
+			throw new Exception(e.getMessage() + "rowkey:" + rowkey, e);
 		} finally {
 			try {
 
@@ -506,54 +533,463 @@ public class TipsSelector {
 		return array;
 	}
 
-	
 	/**
-     * @Description:tipdiff数据坐标转换，将差分结果中的坐标转换为屏幕坐标
-     * @param type
-     * @param tipdiff
-     * @return
-     * @author:liya
-     * @param py
-     * @param px
-     * @param z
-     * @time:2017-2-13下午1:34:53
-     */
-    private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
-            double px, double py) {
+	 * @Description:TOOD
+	 * @param json
+	 * @param m
+	 * @author: y
+	 * @time:2017-2-20 下午2:53:24
+	 */
+	private void hasAttachement(JSONObject json, JSONObject m) {
+		if (json.containsKey("feedback")) {
 
-        if (tipdiff == null || tipdiff.isEmpty())
-            return null;
+			m.put("k", 0); // 先put一个0（有可能有f_array为空的情况），如果有，则put 1。
 
-        JSONArray diffArr = tipdiff.getJSONArray("diff_array");
-        
-        JSONArray diffArrNew =new JSONArray();
+			JSONObject feedBack = JSONObject.fromObject(json
+					.get("feedback"));
 
-        for (Object object : diffArr) {
+			JSONArray f_array = feedBack.getJSONArray("f_array");
 
-            JSONObject json = JSONObject.fromObject(object);
+			for (Object object : f_array) {
 
-            if (json.containsKey("geometry")) {
+				JSONObject info = JSONObject.fromObject(object);
 
-                JSONObject geojson = JSONObject.fromObject(json
-                        .getString("geometry"));
-                // 渲染的坐标都是屏幕坐标
-                Geojson.coord2Pixel(geojson, z, px, py);
-                
-                json.put("geometry", geojson);
+				if (info.getInt("type") == 1
+						|| info.getInt("type") == 2
+						|| info.getInt("type") == 3) {
 
-            }
-            
-            diffArrNew.add(json);
+					m.put("k", 1);
 
-        }
-        
-        tipdiff.put("diff_array", diffArrNew);
-        
+					break;
+				}
+			}
+		}
+	}
 
-        return tipdiff;
-    }
-	
-	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag) throws Exception {
+	/**
+	 * @Description:TOOD
+	 * @param type
+	 * @param m
+	 * @param deep
+	 * @author: y
+	 * @time:2017-2-20 下午2:52:19
+	 */
+	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
+		// 2.1deep.time(一级属性)
+		if (type == 1304 || type == 1305 || type == 1203
+				|| type == 1514 || type == 1507 || type == 1517
+				|| type == 1515 || type == 1516) {
+
+			if (!StringUtils.isEmpty(deep.getString("time"))) {
+
+				m.put("l", 1);
+			}
+		}
+
+		// 2.2二级属性.不同tips类型不同解析方式
+
+		// [c_array].time
+		else if (1308 == type) {
+
+			JSONArray c_array = deep.getJSONArray("c_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+
+			}
+		}
+
+		// 1310、1204 [ln].time
+
+		else if (1310 == type || 1204 == type) {
+
+			JSONArray c_array = deep.getJSONArray("ln");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+
+			}
+		}
+
+		// 1311 [ln].[o_array].time
+
+		else if (1311 == type) {
+
+			JSONArray c_array = deep.getJSONArray("ln");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject oInfo = JSONObject.fromObject(object2);
+
+					if (StringUtils.isNotEmpty(oInfo.getString("time"))) {
+
+						m.put("l", 1);
+
+						break;
+					}
+				}
+			}
+		}
+
+		// 1111 [d_array].time
+
+		else if (1111 == type) {
+
+			JSONArray c_array = deep.getJSONArray("d_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1105 [w_array].time
+		else if (1105 == type) {
+
+			JSONArray c_array = deep.getJSONArray("w_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1302 [o_array].time
+
+		else if (1302 == type) {
+
+			JSONArray c_array = deep.getJSONArray("o_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1303 [o_array].[c_array].time
+
+		else if (1303 == type) {
+
+			JSONArray c_array = deep.getJSONArray("o_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("c_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject oInfo = JSONObject.fromObject(object2);
+
+					if (StringUtils.isNotEmpty(oInfo.getString("time"))) {
+
+						m.put("l", 1);
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @Description:获取线编号和线编号坐标,同时判断是否有线编号
+	 * @param z
+	 * @param px
+	 * @param py
+	 * @param m
+	 *            ：渲染返回值中的m
+	 * @param deep
+	 * @author: y
+	 * @param py2
+	 * @time:2017-2-20 下午2:02:17
+	 */
+	private void getOutNumAndGeo(int type, int z, double px, double py,
+			JSONObject m, JSONObject deep) {
+
+		JSONArray reusltArr = new JSONArray();
+
+		// 1301 （车信） [o_array].[d_array].[out] num geo
+		if (type == 1301) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray d_array = info.getJSONArray("d_array");
+
+				for (Object object2 : d_array) {
+
+					JSONObject dInfo = JSONObject.fromObject(object2);
+
+					JSONArray outArr = dInfo.getJSONArray("out");
+
+					if (outArr != null && !outArr.isEmpty()) {
+
+						for (Object object3 : outArr) {
+
+							JSONObject obj = assembleOutNumAndGeoResultFromObj(
+									z, px, py, object3);
+
+							reusltArr.add(obj);
+						}
+
+					}
+				}
+			}
+		}
+
+		// 1310（公交车道） [ln].[o_array] num geo
+		else if (type == 1310) {
+
+			JSONArray lnArr = deep.getJSONArray("ln");
+
+			for (Object object : lnArr) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				if (o_array != null && !o_array.isEmpty()) {
+
+					for (Object object3 : o_array) {
+
+						JSONObject obj = assembleOutNumAndGeoResultFromObj(z,
+								px, py, object3);
+
+						reusltArr.add(obj);
+					}
+
+				}
+			}
+		}
+		// 1311（可变导向车道）[ln].[o_array].out  （out是个对象） num geo
+
+		else if (type == 1311) {
+
+			JSONArray lnArr = deep.getJSONArray("ln");
+
+			for (Object object : lnArr) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject dInfo = JSONObject.fromObject(object2);
+
+					JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
+
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+							py, outObj);
+					
+					reusltArr.add(obj);
+
+				}
+			}
+		}
+		// 1407（高速分歧）         [o_array].out  （out是个对象） num geo
+		// 1406(实景图)     [o_array].out  （out是个对象） num geo
+		else if (type == 1407 || type == 1406) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONObject dInfo = JSONObject.fromObject(info);
+
+				JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
+
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+						py, outObj);
+				
+				reusltArr.add(obj);
+
+			}
+		}
+		
+		// 1302（普通交限标记） [o_array].[out] num geo
+		// 1303（卡车交限标记）[o_array].[out] num geo
+		// 1306（路口语音引导）[o_array].[out] num geo
+		else if (type == 1302 || type == 1303 || type == 1306 ) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray ourArr = info.getJSONArray("out");
+
+				for (Object object2 : ourArr) {
+
+					JSONObject outInfo = JSONObject.fromObject(object2);
+
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+							py, outInfo);
+					
+					reusltArr.add(obj);
+
+				}
+			}
+		}
+		
+		// 1102  [f_array].f  (f唯一是对象) num geo
+		
+		else if (type == 1102 ) {
+
+			JSONArray o_array = deep.getJSONArray("f_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONObject dInfo = JSONObject.fromObject(info);
+
+				JSONObject outObj = dInfo.getJSONObject("f"); // 是个对象
+
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+						py, outObj);
+				
+				reusltArr.add(obj);
+
+			}
+		}
+		
+		// ------------公共的
+		if (reusltArr.size() != 0) {
+			m.put("n", 1);  //有线编号
+
+			m.put("f", reusltArr);
+		}
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param z
+	 * @param px
+	 * @param py
+	 * @param reusltArr
+	 * @param object3
+	 * @author: y
+	 * @time:2017-2-20 下午2:06:29
+	 */
+	private JSONObject assembleOutNumAndGeoResultFromObj(int z, double px,
+			double py, Object object3) {
+		JSONObject outInfo = JSONObject.fromObject(object3);
+
+		int num = outInfo.getInt("num");
+
+		JSONObject geo = outInfo.getJSONObject("geo");
+
+		// 渲染的坐标都是屏幕坐标
+		Geojson.coord2Pixel(geo, z, px, py);
+
+		JSONObject obj = new JSONObject();
+
+		obj.put("num", num);
+
+		obj.put("geo", geo);
+
+		return obj;
+	}
+
+	/**
+	 * @Description:tipdiff数据坐标转换，将差分结果中的坐标转换为屏幕坐标
+	 * @param type
+	 * @param tipdiff
+	 * @return
+	 * @author:liya
+	 * @param py
+	 * @param px
+	 * @param z
+	 * @time:2017-2-13下午1:34:53
+	 */
+	private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
+			double px, double py) {
+
+		if (tipdiff == null || tipdiff.isEmpty())
+			return null;
+
+		JSONArray diffArr = tipdiff.getJSONArray("diff_array");
+
+		JSONArray diffArrNew = new JSONArray();
+
+		for (Object object : diffArr) {
+
+			JSONObject json = JSONObject.fromObject(object);
+
+			if (json.containsKey("geometry")) {
+
+				JSONObject geojson = JSONObject.fromObject(json
+						.getString("geometry"));
+				// 渲染的坐标都是屏幕坐标
+				Geojson.coord2Pixel(geojson, z, px, py);
+
+				json.put("geometry", geojson);
+
+			}
+
+			diffArrNew.add(json);
+
+		}
+
+		tipdiff.put("diff_array", diffArrNew);
+
+		return tipdiff;
+	}
+
+	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag)
+			throws Exception {
 		JSONArray array = new JSONArray();
 
 		try {
@@ -588,17 +1024,20 @@ public class TipsSelector {
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 				// g字段重新赋值的（显示坐标：取Tips的geo）
-				if (type == 1601 || type == 1602 || type == 1603 || type == 1604
-						|| type == 1605 || type == 1606 || type == 1607 || type == 1901 || type == 2001) {
+				if (type == 1601 || type == 1602 || type == 1603
+						|| type == 1604 || type == 1605 || type == 1606
+						|| type == 1607 || type == 1901 || type == 2001) {
 
 					JSONObject deepGeo = deep.getJSONObject("geo");
 
 					geometry = deepGeo.toString();
 
-				} else if( type == 1501 || type == 1502 || type == 1503
-						|| type == 1504 || type == 1505 || type == 1506 || type == 1507 || type == 1508
-						|| type == 1509 || type == 1510 || type == 1511 || type == 1512 || type == 1513
-						|| type == 1514	|| type == 1515 || type == 1516 || type == 1517) {
+				} else if (type == 1501 || type == 1502 || type == 1503
+						|| type == 1504 || type == 1505 || type == 1506
+						|| type == 1507 || type == 1508 || type == 1509
+						|| type == 1510 || type == 1511 || type == 1512
+						|| type == 1513 || type == 1514 || type == 1515
+						|| type == 1516 || type == 1517) {
 
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 
@@ -735,8 +1174,7 @@ public class TipsSelector {
 
 		return jsonData;
 	}
-	
-	
+
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
@@ -749,9 +1187,9 @@ public class TipsSelector {
 			throws Exception {
 
 		String wkt = GridUtils.grids2Wkt(grids);
-		return getTipsCountByStageAndWkt(wkt,stages);
+		return getTipsCountByStageAndWkt(wkt, stages);
 	}
-	
+
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
@@ -763,19 +1201,19 @@ public class TipsSelector {
 	public int getTipsCountByStageAndWkt(String wkt, int stages)
 			throws Exception {
 
-		//String wkt = GridUtils.grids2Wkt(grids);
-		
-		JSONArray stageJsonArr=new JSONArray();
-		
+		// String wkt = GridUtils.grids2Wkt(grids);
+
+		JSONArray stageJsonArr = new JSONArray();
+
 		stageJsonArr.add(stages);
-		
+
 		List<JSONObject> tips = conn.queryTipsWeb(wkt, stageJsonArr);
 
-		int total=tips.size();
+		int total = tips.size();
 
 		return total;
 	}
-	
+
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
 	 * 
@@ -784,12 +1222,12 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages, int tdStatus)
-			throws Exception {
+	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages,
+			int tdStatus) throws Exception {
 		String wkt = GridUtils.grids2Wkt(grids);
-		return getTipsCountByStageAndTdStatusAndWkt(wkt,stages,tdStatus);
+		return getTipsCountByStageAndTdStatusAndWkt(wkt, stages, tdStatus);
 	}
-	
+
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
 	 * 
@@ -798,12 +1236,12 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages, int tdStatus)
-			throws Exception {
+	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages,
+			int tdStatus) throws Exception {
 
-		List<JSONObject> tips = conn.queryTips(wkt, stages,tdStatus);
+		List<JSONObject> tips = conn.queryTips(wkt, stages, tdStatus);
 
-		int total=tips.size();
+		int total = tips.size();
 
 		return total;
 	}
@@ -824,15 +1262,15 @@ public class TipsSelector {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
-		
-		//f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
-		boolean isPre=false;
-		
-		if("f".equals(mdFlag)){
-			isPre=true;
+
+		// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+		boolean isPre = false;
+
+		if ("f".equals(mdFlag)) {
+			isPre = true;
 		}
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,isPre);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages, isPre);
 
 		Map<Integer, String> map = null;
 
@@ -851,7 +1289,7 @@ public class TipsSelector {
 						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
 
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
@@ -864,16 +1302,16 @@ public class TipsSelector {
 						|| type == 1105 || type == 1107 || type == 1703
 						|| type == 1404 || type == 1804 || type == 1108
 						|| type == 1112 || type == 1303 || type == 1306
-						|| type == 1410 ) {
+						|| type == 1410) {
 					JSONObject f = deep.getJSONObject("in");
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
 					}
 				} else if (type == 1110 || type == 1106 || type == 1104) {
 					JSONObject f = deep.getJSONObject("out");
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							linkPids.add(Integer.valueOf(f.getString("id")));
 						}
@@ -982,12 +1420,12 @@ public class TipsSelector {
 				// e字段的返回结果，不同类型不同
 				// f
 				if (type == 1201 || type == 1203 || type == 1101
-						|| type == 1109 || type == 1111 || type == 1113 
-						|| type == 1202 || type == 1207 || type == 1208 
-						|| type == 1304 || type == 1305 || type == 1308 
+						|| type == 1109 || type == 1111 || type == 1113
+						|| type == 1202 || type == 1207 || type == 1208
+						|| type == 1304 || type == 1305 || type == 1308
 						|| type == 1311 || type == 1114 || type == 1115) {
 					JSONObject f = deep.getJSONObject("f");
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
 						String name = "无名路";
 
@@ -1038,7 +1476,8 @@ public class TipsSelector {
 								valueStr = valueStr.substring(1);
 							}
 							name += "(" + valueStr + "km/h)";
-						} else if (type == 1101 || type == 1111 || type == 1114 || type == 1115) {
+						} else if (type == 1101 || type == 1111 || type == 1114
+								|| type == 1115) {
 
 							double value = deep.getDouble("value");
 
@@ -1075,7 +1514,7 @@ public class TipsSelector {
 						|| type == 1410 || type == 1104) {
 					JSONObject f = deep.getJSONObject("in");
 
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						if (f.getInt("type") == 1) {
 							int linkPid = Integer.valueOf(f.getString("id"));
 
@@ -1096,7 +1535,7 @@ public class TipsSelector {
 				// out
 				else if (type == 1110 || type == 1106) {
 					JSONObject f = deep.getJSONObject("out");
-					if (f != null && ! f.isNullObject()) {
+					if (f != null && !f.isNullObject()) {
 						String name = "无名路";
 						// type=1 :道路LINK，有名称，则显示道路名称，如果没有，则显示“无名路”
 						if (f.getInt("type") == 1) {
@@ -1203,7 +1642,7 @@ public class TipsSelector {
 				} else if (type == 1704 || type == 1510 || type == 1107
 						|| type == 1507 || type == 1511 || type == 1601
 						|| type == 1602 || type == 1509 || type == 1705
-						|| type == 1607 ) {
+						|| type == 1607) {
 
 					String name = deep.getString("name");
 
@@ -1236,18 +1675,17 @@ public class TipsSelector {
 					m.put("e",
 							deep.getString("rdName") + "("
 									+ deep.getString("num") + ")");
-				}
-				 else if (type == 1501) {
+				} else if (type == 1501) {
 					m.put("e", "上下线分离");
 				} else if (type == 1801) {
 					m.put("e", "立交");
 				} else if (type == 1806) {
 					m.put("e", "草图");
-				}  else if (type == 8002) {
+				} else if (type == 8002) {
 					m.put("e", "接边标识");
 				} else if (type == 8001) {
 					m.put("e", "FC预处理");
-				}else if (type == 1205) {
+				} else if (type == 1205) {
 					m.put("e", "SA");
 				} else if (type == 1206) {
 					m.put("e", "PA");
@@ -1296,7 +1734,8 @@ public class TipsSelector {
 
 		String wkt = GridUtils.grid2Wkt(grid);
 
-		boolean flag = conn.checkTipsMobile(wkt, date,TipsUtils.notExpSourceType);
+		boolean flag = conn.checkTipsMobile(wkt, date,
+				TipsUtils.notExpSourceType);
 
 		if (flag) {
 			return 1;
@@ -1316,7 +1755,8 @@ public class TipsSelector {
 			throws Exception {
 		JSONArray array = new JSONArray();
 
-		List<JSONObject> snapshots = conn.queryTipsWeb(wkt, type, stages,false);
+		List<JSONObject> snapshots = conn
+				.queryTipsWeb(wkt, type, stages, false);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -1326,5 +1766,80 @@ public class TipsSelector {
 		}
 		return array;
 	}
-	
+
+	/**
+	 * @Description:通过rowkey数组返回数据列表
+	 * @param rowkeyArr
+	 *            rowkey数组
+	 * @return
+	 * @author: y
+	 * @throws Exception
+	 * @time:2017-2-18 下午3:34:09
+	 */
+	public JSONArray searchDataByRowkeyArr(JSONArray rowkeyArr)
+			throws Exception {
+
+		JSONArray resultArr = new JSONArray();
+
+		try {
+
+			org.apache.hadoop.hbase.client.Connection hbaseConn = HBaseConnector
+					.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+
+			List<Get> gets = new ArrayList<Get>();
+
+			for (int i = 0; i < rowkeyArr.size(); i++) {
+
+				String rowkey = rowkeyArr.getString(i);
+
+				Get get = new Get(rowkey.getBytes());
+
+				gets.add(get);
+			}
+
+			Result[] results = htab.get(gets);
+
+			for (Result result : results) {
+
+				if (result.isEmpty()) {
+					continue;
+				}
+
+				JSONObject obj = new JSONObject();
+				obj.put("rowkey", new String(result.getRow()));
+				List<Cell> ceList = result.listCells();
+				if (ceList != null && ceList.size() > 0) {
+					for (Cell cell : ceList) {
+						String value = Bytes.toString(cell.getValueArray(),
+								cell.getValueOffset(), cell.getValueLength());
+						String colName = Bytes.toString(
+								cell.getQualifierArray(),
+								cell.getQualifierOffset(),
+								cell.getQualifierLength());
+
+						JSONObject injson = JSONObject.fromObject(value);
+
+						if (colName.equals("feedback")) {
+							obj.put("feedback", injson);
+						} else {
+							obj.putAll(injson);
+						}
+
+					}
+				}
+
+				resultArr.add(obj);
+			}
+
+			htab.close();
+		} catch (Exception e) {
+			throw new Exception("查询tips出错：" + e.getMessage(), e);
+		}
+
+		return resultArr;
+	}
+
 }

@@ -161,6 +161,7 @@ comment on column TASK.poi_plan_total
 
 create table TASK_CMS_PROGRESS
 (
+ phase_id     NUMBER(10),
   task_id     NUMBER(10),
   phase       NUMBER(1) default 1,
   status      NUMBER(1) default 0,
@@ -181,6 +182,7 @@ comment on column TASK_CMS_PROGRESS.start_date
   is '开始时间';
 comment on column TASK_CMS_PROGRESS.end_date
   is '结束时间';
+CREATE SEQUENCE phase_SEQ START WITH 1 MAXVALUE 9999999999;
 alter table SUBTASK drop column block_man_id;
 -- Add comments to the columns 
 comment on column SUBTASK.type
@@ -392,6 +394,7 @@ comment on column PROGRAM_GRID_MAPPING.grid_id
   is 'GRID ID.调整增加的GRID';
 comment on column PROGRAM_GRID_MAPPING.type
   is '1:规划；2：规划外，调整后的。';  
+alter table block add WORK_TYPE varchar(10);
 exit;
 
 

@@ -48,7 +48,8 @@ public class FMBATTEMP8 extends BasicBatchRule {
 					JSONObject data = charMap.get(String.valueOf(c));
 					int convert = data.getInt("convert");
 					if (convert == 0) {
-						parking.setTollDes(tollDes.replace(c, data.getString("jt").toCharArray()[0]));
+						tollDes = tollDes.replace(c, data.getString("jt").toCharArray()[0]);
+						parking.setTollDes(tollDes);
 					}
 				}
 			}

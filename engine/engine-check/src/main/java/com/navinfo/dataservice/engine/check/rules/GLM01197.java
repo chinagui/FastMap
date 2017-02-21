@@ -1,15 +1,15 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.graph.HashSetRdLinkAndPid;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /*
  * GLM01197	Link信息	特殊交通类型检查	形态	同一个特殊交通类型的组成link，道路功能等级必须相同。	特殊交通类型的功能等级不同
@@ -38,14 +38,14 @@ public class GLM01197 extends baseRule {
                 }
 
                 Map<String, Object> changedFields = rdLink.changedFields();
-                if (!changedFields.containsKey("specialTraffic")
-                        && !changedFields.containsKey("functionClass")) {
+                if (!changedFields.containsKey("specialTraffic") && !changedFields.containsKey("functionClass")) {
                     continue;
                 }
 
                 int specialTraffic = rdLink.getSpecialTraffic();
                 if (changedFields.containsKey("specialTraffic"))
-                    specialTraffic = (int) rdLink.changedFields().get("specialTraffic");
+                    specialTraffic = Integer.valueOf(rdLink.changedFields().get("specialTraffic").toString());
+
                 //非特殊交通类型link不查此规则
                 if (specialTraffic == 0) {
                     linkPidList.add(rdLink.getPid());
@@ -65,7 +65,8 @@ public class GLM01197 extends baseRule {
 
         int fc = rdLink.getFunctionClass();
         if (rdLink.changedFields().containsKey("functionClass"))
-            fc = (int) rdLink.changedFields().get("functionClass");
+            fc = Integer.valueOf(rdLink.changedFields().get("functionClass").toString());
+
         Iterator<RdLink> specIterator = specTrafficChain.iterator();
         String target = "";
         boolean isError = false;

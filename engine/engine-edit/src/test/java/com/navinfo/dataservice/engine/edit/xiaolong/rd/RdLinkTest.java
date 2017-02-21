@@ -81,7 +81,7 @@ public class RdLinkTest extends InitApplication {
 
 	@Test
 	public void testDelete() {
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.47078514099121,40.015487369580384],[116.47211551666258,40.01543806815769]]},\"catchLinks\":[{\"linkPid\":736908,\"lon\":116.47078514099121,\"lat\":40.015487369580384}]},\"dbId\":17}";
+		String parameter = "{\"command\":\"REPAIR\",\"objId\":505002101,\"type\":\"RDLINK\",\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.69727,40.21246],[116.69936299324034,40.21223588951336],[116.69883,40.21238],[116.69954,40.21204]]},\"interLinks\":[],\"interNodes\":[]},\"dbId\":267}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

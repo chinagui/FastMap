@@ -593,14 +593,14 @@ public class NiValExceptionOperator {
 		if (tableFlag == 0) {
 			String sqlExpHis = "insert into ni_val_exception select * from ni_val_exception_history a where a.MD5_CODE = ?";
 			this.insertNiValException(md5, sqlExpHis);
-			String sqlExpGridHis = "insert into ni_val_exception_grid select * from ni_val_exception_grid_history a where a.MD5_CODE = ?";
+			String sqlExpGridHis = "insert into ni_val_exception_grid select * from ni_val_exception_history_grid a where a.MD5_CODE = ?";
 			this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 		if (tableFlag == 1) {
 
 			String sqlExp = "insert into ni_val_exception_history select * from ni_val_exception a where a.MD5_CODE = ?";
 			this.insertNiValExceptionHistory(md5, sqlExp);
-			String sqlExpGrid = "insert into ni_val_exception_grid_history select * from ni_val_exception_grid a where a.MD5_CODE = ?";
+			String sqlExpGrid = "insert into ni_val_exception_history_grid select * from ni_val_exception_grid a where a.MD5_CODE = ?";
 			this.insertNiValExceptionHistoryGrid(md5, sqlExpGrid);
 		}
 		if(tableFlag == 2){
@@ -612,7 +612,7 @@ public class NiValExceptionOperator {
 		if(tableFlag == 3){
 			String sqlExpHis = " INSERT INTO ni_val_exception_history (ruleid,task_name,groupid,\"LEVEL\",situation,information,suggestion,location,targets,addition_info,created,updated,mesh_id,scope_flag,province_name,map_scale,extended,task_id,qa_task_id,qa_status,worker,qa_worker,md5_code) SELECT rule_id,task_name,group_id,status, situation, information, suggestion,sdo_util.from_wktgeometry(geometry), targets, addition_info,create_date, update_date, mesh_id, scope_flag, province_name, map_scale, extended, task_id, qa_task_id, qa_status, worker, qa_worker,md5_code from ck_exception a where a.MD5_CODE=:4";
 			this.insertNiValException(md5, sqlExpHis);
-			String sqlExpGridHis = "insert into ni_val_exception_grid_history select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
+			String sqlExpGridHis = "insert into ni_val_exception_history_grid select ce.md5_code,cg.grid_id from ck_exception_grid cg,ck_exception ce where cg.ck_row_id = ce.row_id and  md5_code=?";
 						this.insertNiValExceptionGrid(md5, sqlExpGridHis);
 		}
 	}
@@ -704,7 +704,7 @@ public class NiValExceptionOperator {
 			throws Exception {
 
 		// String sql =
-		// "insert into ni_val_exception_grid select * from ni_val_exception_grid_history a where a.MD5_CODE = ?";
+		// "insert into ni_val_exception_grid select * from ni_val_exception_history_grid a where a.MD5_CODE = ?";
 		try {
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, md5);
@@ -783,7 +783,7 @@ public class NiValExceptionOperator {
         	tableName = "ni_val_exception_grid";
         }
         if(tableFlag == 0){
-        	tableName = "ni_val_exception_grid_history";
+        	tableName = "ni_val_exception_history_grid";
         }
 		String sql = "insert into ck_exception_grid select ?,grid_id from " +tableName+ " where md5_code=?";
 		try {
@@ -867,7 +867,7 @@ public class NiValExceptionOperator {
 	 * @throws Exception
 	 */
 	private void delValExceptionGridHis(String md5) throws Exception {
-		String sql = "delete from ni_val_exception_grid_history where MD5_CODE= ?";
+		String sql = "delete from ni_val_exception_history_grid where MD5_CODE= ?";
 		try {
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, md5);

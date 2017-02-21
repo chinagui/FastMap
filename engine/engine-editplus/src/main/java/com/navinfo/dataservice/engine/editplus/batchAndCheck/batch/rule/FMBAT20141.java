@@ -35,14 +35,14 @@ public class FMBAT20141 extends BasicBatchRule {
 				String newName=name.getName();
 				//批拼音
 				String fullName = ExcelReader.h2f(newName);
-				name.setNamePhonetic(metadataApi.pyConvert(fullName)[1]);
+				name.setNamePhonetic(metadataApi.pyConvertHz(fullName));
 				
 			} else if (name.getHisOpType().equals(OperationType.UPDATE)&&name.hisOldValueContains(IxPoiName.NAME)) {
 				String oldName=(String) name.getHisOldValue(IxPoiName.NAME);
 				String newName=name.getName();
 				if(!newName.equals(oldName)){
 					//批拼音
-					name.setNamePhonetic(metadataApi.pyConvert(newName)[1]);
+					name.setNamePhonetic(metadataApi.pyConvertHz(newName));
 				}
 			}
 		}

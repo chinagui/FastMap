@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.nirobot.business.Tips2AuMarkMRTest;
+/*import com.navinfo.nirobot.business.Tips2AuMarkMRTest;*/
 
 @Service("fccApi")
 public class FccApiImpl implements FccApi{

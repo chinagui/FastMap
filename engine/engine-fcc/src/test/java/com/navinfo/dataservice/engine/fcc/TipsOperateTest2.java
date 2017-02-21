@@ -100,7 +100,7 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"rowkey\":\"0280020a7b590cca364f699b60530825077452\",\"memo\":\"示例备注信息\",\"user\":2,\"stage\":2}";
+		parameter="{\"rowkey\":\"028002d45aa3c1b894410bb741105daa050cd5\",\"memo\":\"示例备注信息\",\"user\":2,\"stage\":2}";
 		
 		if (StringUtils.isEmpty(parameter)) {
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -331,7 +331,7 @@ public class TipsOperateTest2 extends InitApplication{
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submit2Web(grids, user);
+			op.submit2Web(user);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

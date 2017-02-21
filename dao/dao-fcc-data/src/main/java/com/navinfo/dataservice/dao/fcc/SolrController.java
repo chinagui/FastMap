@@ -329,14 +329,13 @@ public class SolrController {
 	
 	/**
 	 * @Description:查询满足条件的tips(预处理用)
-	 * @param wkt
 	 * @return
 	 * @throws SolrServerException
 	 * @throws IOException
 	 * @author: y
 	 * @time:2017-01-09 上午09:17:22
 	 */
-	public List<JSONObject> queryHasNotSubmitPreTipsByWktAndUser(String wkt,int user)
+	public List<JSONObject> queryHasNotSubmitPreTipsByWktAndUser(int user)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 		

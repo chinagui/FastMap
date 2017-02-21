@@ -493,6 +493,28 @@ public class TipsSelector {
 					}
 				}
 
+				// 20170220新增：是否有附件、是否有时间段、是否有线编号 （需要判空）--输入：陈清友 王屯
+
+				// 20170220新增：返回退出线的编号和坐标位置
+
+				// 1.是否有照片
+				m.put("k", 0); // 默认：put一个0（有可能有f_array为空的情况），如果有信息，则再put 1。
+
+				hasAttachement(json, m);
+
+				// 2.是否有时间段
+
+				m.put("l", 0); // 默认：put一个0，如果有信息，则再put 1。
+
+				asTimeAndNotNull(type, m, deep);
+
+				// 3.是否有退出线编号
+				m.put("n", 0); // 默认无
+				// 4. 查找线编号
+				// 3.1   4.1 判断是否有线编号同时返回线编号和坐标
+				getOutNumAndGeo(type, z, px, py, m, deep);
+				
+
 				snapshot.setM(m);
 
 				array.add(snapshot.Serialize(null));
@@ -509,6 +531,416 @@ public class TipsSelector {
 			}
 		}
 		return array;
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param json
+	 * @param m
+	 * @author: y
+	 * @time:2017-2-20 下午2:53:24
+	 */
+	private void hasAttachement(JSONObject json, JSONObject m) {
+		if (json.containsKey("feedback")) {
+
+			m.put("k", 0); // 先put一个0（有可能有f_array为空的情况），如果有，则put 1。
+
+			JSONObject feedBack = JSONObject.fromObject(json
+					.get("feedback"));
+
+			JSONArray f_array = feedBack.getJSONArray("f_array");
+
+			for (Object object : f_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (info.getInt("type") == 1
+						|| info.getInt("type") == 2
+						|| info.getInt("type") == 3) {
+
+					m.put("k", 1);
+
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param type
+	 * @param m
+	 * @param deep
+	 * @author: y
+	 * @time:2017-2-20 下午2:52:19
+	 */
+	private void asTimeAndNotNull(int type, JSONObject m, JSONObject deep) {
+		// 2.1deep.time(一级属性)
+		if (type == 1304 || type == 1305 || type == 1203
+				|| type == 1514 || type == 1507 || type == 1517
+				|| type == 1515 || type == 1516) {
+
+			if (!StringUtils.isEmpty(deep.getString("time"))) {
+
+				m.put("l", 1);
+			}
+		}
+
+		// 2.2二级属性.不同tips类型不同解析方式
+
+		// [c_array].time
+		else if (1308 == type) {
+
+			JSONArray c_array = deep.getJSONArray("c_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+
+			}
+		}
+
+		// 1310、1204 [ln].time
+
+		else if (1310 == type || 1204 == type) {
+
+			JSONArray c_array = deep.getJSONArray("ln");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+
+			}
+		}
+
+		// 1311 [ln].[o_array].time
+
+		else if (1311 == type) {
+
+			JSONArray c_array = deep.getJSONArray("ln");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject oInfo = JSONObject.fromObject(object2);
+
+					if (StringUtils.isNotEmpty(oInfo.getString("time"))) {
+
+						m.put("l", 1);
+
+						break;
+					}
+				}
+			}
+		}
+
+		// 1111 [d_array].time
+
+		else if (1111 == type) {
+
+			JSONArray c_array = deep.getJSONArray("d_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1105 [w_array].time
+		else if (1105 == type) {
+
+			JSONArray c_array = deep.getJSONArray("w_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1302 [o_array].time
+
+		else if (1302 == type) {
+
+			JSONArray c_array = deep.getJSONArray("o_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				if (StringUtils.isNotEmpty(info.getString("time"))) {
+
+					m.put("l", 1);
+
+					break;
+				}
+			}
+		}
+
+		// 1303 [o_array].[c_array].time
+
+		else if (1303 == type) {
+
+			JSONArray c_array = deep.getJSONArray("o_array");
+
+			for (Object object : c_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("c_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject oInfo = JSONObject.fromObject(object2);
+
+					if (StringUtils.isNotEmpty(oInfo.getString("time"))) {
+
+						m.put("l", 1);
+
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * @Description:获取线编号和线编号坐标,同时判断是否有线编号
+	 * @param z
+	 * @param px
+	 * @param py
+	 * @param m
+	 *            ：渲染返回值中的m
+	 * @param deep
+	 * @author: y
+	 * @param py2
+	 * @time:2017-2-20 下午2:02:17
+	 */
+	private void getOutNumAndGeo(int type, int z, double px, double py,
+			JSONObject m, JSONObject deep) {
+
+		JSONArray reusltArr = new JSONArray();
+
+		// 1301 （车信） [o_array].[d_array].[out] num geo
+		if (type == 1301) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray d_array = info.getJSONArray("d_array");
+
+				for (Object object2 : d_array) {
+
+					JSONObject dInfo = JSONObject.fromObject(object2);
+
+					JSONArray outArr = dInfo.getJSONArray("out");
+
+					if (outArr != null && !outArr.isEmpty()) {
+
+						for (Object object3 : outArr) {
+
+							JSONObject obj = assembleOutNumAndGeoResultFromObj(
+									z, px, py, object3);
+
+							reusltArr.add(obj);
+						}
+
+					}
+				}
+			}
+		}
+
+		// 1310（公交车道） [ln].[o_array] num geo
+		else if (type == 1310) {
+
+			JSONArray lnArr = deep.getJSONArray("ln");
+
+			for (Object object : lnArr) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				if (o_array != null && !o_array.isEmpty()) {
+
+					for (Object object3 : o_array) {
+
+						JSONObject obj = assembleOutNumAndGeoResultFromObj(z,
+								px, py, object3);
+
+						reusltArr.add(obj);
+					}
+
+				}
+			}
+		}
+		// 1311（可变导向车道）[ln].[o_array].out  （out是个对象） num geo
+
+		else if (type == 1311) {
+
+			JSONArray lnArr = deep.getJSONArray("ln");
+
+			for (Object object : lnArr) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray o_array = info.getJSONArray("o_array");
+
+				for (Object object2 : o_array) {
+
+					JSONObject dInfo = JSONObject.fromObject(object2);
+
+					JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
+
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+							py, outObj);
+					
+					reusltArr.add(obj);
+
+				}
+			}
+		}
+		// 1407（高速分歧）         [o_array].out  （out是个对象） num geo
+		// 1406(实景图)     [o_array].out  （out是个对象） num geo
+		else if (type == 1407 || type == 1406) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONObject dInfo = JSONObject.fromObject(info);
+
+				JSONObject outObj = dInfo.getJSONObject("out"); // 是个对象
+
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+						py, outObj);
+				
+				reusltArr.add(obj);
+
+			}
+		}
+		
+		// 1302（普通交限标记） [o_array].[out] num geo
+		// 1303（卡车交限标记）[o_array].[out] num geo
+		// 1306（路口语音引导）[o_array].[out] num geo
+		else if (type == 1302 || type == 1303 || type == 1306 ) {
+
+			JSONArray o_array = deep.getJSONArray("o_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONArray ourArr = info.getJSONArray("out");
+
+				for (Object object2 : ourArr) {
+
+					JSONObject outInfo = JSONObject.fromObject(object2);
+
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+							py, outInfo);
+					
+					reusltArr.add(obj);
+
+				}
+			}
+		}
+		
+		// 1102  [f_array].f  (f唯一是对象) num geo
+		
+		else if (type == 1102 ) {
+
+			JSONArray o_array = deep.getJSONArray("f_array");
+
+			for (Object object : o_array) {
+
+				JSONObject info = JSONObject.fromObject(object);
+
+				JSONObject dInfo = JSONObject.fromObject(info);
+
+				JSONObject outObj = dInfo.getJSONObject("f"); // 是个对象
+
+				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
+						py, outObj);
+				
+				reusltArr.add(obj);
+
+			}
+		}
+		
+		// ------------公共的
+		if (reusltArr.size() != 0) {
+			m.put("n", 1);  //有线编号
+
+			m.put("f", reusltArr);
+		}
+	}
+
+	/**
+	 * @Description:TOOD
+	 * @param z
+	 * @param px
+	 * @param py
+	 * @param reusltArr
+	 * @param object3
+	 * @author: y
+	 * @time:2017-2-20 下午2:06:29
+	 */
+	private JSONObject assembleOutNumAndGeoResultFromObj(int z, double px,
+			double py, Object object3) {
+		JSONObject outInfo = JSONObject.fromObject(object3);
+
+		int num = outInfo.getInt("num");
+
+		JSONObject geo = outInfo.getJSONObject("geo");
+
+		// 渲染的坐标都是屏幕坐标
+		Geojson.coord2Pixel(geo, z, px, py);
+
+		JSONObject obj = new JSONObject();
+
+		obj.put("num", num);
+
+		obj.put("geo", geo);
+
+		return obj;
 	}
 
 	/**
@@ -1395,7 +1827,7 @@ public class TipsSelector {
 						} else {
 							obj.putAll(injson);
 						}
-						
+
 					}
 				}
 

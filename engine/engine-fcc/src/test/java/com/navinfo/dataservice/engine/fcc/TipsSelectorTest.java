@@ -201,6 +201,18 @@ public class TipsSelectorTest extends InitApplication {
 		types.add(1516);
 		types.add(1517);*/
 		
+		types.add(1301);
+		types.add(1310);
+		types.add(1311);
+		types.add(1407);
+		types.add(1406);
+		types.add(1302);
+		types.add(1303);
+		types.add(1306);
+		types.add(1102);
+		
+		
+		
 	//	types.add(2001);
 
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
@@ -242,7 +254,9 @@ public class TipsSelectorTest extends InitApplication {
 			//{"gap":40,"mdFlag":"d","z":14,"x":13492,"y":6201}
 			//{"gap":40,"mdFlag":"d","z":16,"x":53973,"y":24807}
 			//{"gap":40,"mdFlag":"d","z":18,"x":215890,"y":99230}
-			System.out.println(solrSelector.searchDataByTileWithGap(215890, 99230, 18,
+			//{"gap":40,"mdFlag":"d","z":17,"x":107943,"y":49615}
+			//{"gap":40,"mdFlag":"d","z":17,"x":107945,"y":49614}
+			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(107945, 49614, 17,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -815,7 +829,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":1423}";
+				String parameter = "{\"jobId\":1374}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -827,7 +841,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1423"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1374"; // 本地测试用
 					
 					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 

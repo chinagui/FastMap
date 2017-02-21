@@ -613,7 +613,7 @@ public class Operation implements IOperation {
                         linkRtic.setRticDir(1);
                     }
                 }
-            } else if (link.getDirect() == 2) {
+            }  else if (sourceLink.getDirect() == 2) {
                 if (upDownFlag == 0) {
                     linkIntRtics.add(linkRtic);
                 } else {
@@ -621,8 +621,8 @@ public class Operation implements IOperation {
                         linkIntRtics.add(linkRtic);
                     }
                 }
-            } else if (link.getDirect() == 3) {
-                if (upDownFlag == 1) {
+            } else if (sourceLink.getDirect() == 3) {
+                if (upDownFlag == 0) {
                     linkIntRtics.add(linkRtic);
                 } else {
                     if (linkRtic.getUpdownFlag() == 0) {

@@ -91,11 +91,7 @@ public class ColumnSaveJob extends AbstractJob {
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
-			// 清理检查结果
-			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
-			deepControl.cleanCheckResult(pidList, conn);
-			
 			OperationResult operationResult=importor.getResult();
 			
 			// 批处理
@@ -123,6 +119,11 @@ public class ColumnSaveJob extends AbstractJob {
 					for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
 						checkList.add(ckRule);
 					}
+					
+					// 清理检查结果
+					log.info("清理检查结果");
+					deepControl.cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+					
 					checkCommand.setRuleIdList(checkList);
 					
 					Check check=new Check(conn,operationResult);

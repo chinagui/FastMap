@@ -1001,10 +1001,10 @@ public class SubtaskOperation {
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
-						List<Integer> gridIds = null;
+						List<Integer> gridIds = new ArrayList<Integer>();
 						try {
 							Map<Integer,Integer> gridIdMap = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							gridIds = (List<Integer>) gridIdMap.keySet();
+							gridIds.addAll(gridIdMap.keySet());
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();

@@ -717,21 +717,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 	
 	/**
 	 * @Description:提交（FC预处理完成，提交给web，提交后web可见）
-	 * @param rowkey
 	 * @param user
-	 * @param memo
 	 * @author: y
 	 * @throws Exception
 	 * @time:2016-11-16 上午11:29:03
 	 */
-	public void submit2Web(JSONArray  grids,int user) throws Exception {
+	public void submit2Web(int user) throws Exception {
 		
 		
 		try{
 			
-			String wkt = GridUtils.grids2Wkt(grids);
+			//String wkt = GridUtils.grids2Wkt(grids);
 			
-			List<JSONObject> snapshots=solr.queryHasNotSubmitPreTipsByWktAndUser(wkt,user);
+			//List<JSONObject> snapshots=solr.queryHasNotSubmitPreTipsByWktAndUser(wkt,user);
+			
+			List<JSONObject> snapshots=solr.queryHasNotSubmitPreTipsByWktAndUser(user);
 			
 			String currentDate=StringUtils.getCurrentTime();
 			

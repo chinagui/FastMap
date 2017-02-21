@@ -35,14 +35,12 @@ public class FMYW20122 extends BasicCheckRule {
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			if(nameStr.length()==1){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "名称只有1个字，请确认");
-				return;
 			}
 			String tmpStr=CheckUtil.strQ2B(nameStr);
 			Pattern p = Pattern.compile("^[0123456789]+$");
 			Matcher m = p.matcher(tmpStr);
 			if(m.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "名称只含有数字，请确认");
-				return;
 			}
 		}
 	}
@@ -55,7 +53,7 @@ public class FMYW20122 extends BasicCheckRule {
 			if(br.getHisOpType().equals(OperationType.UPDATE) && br.hisOldValueContains(IxPoiName.NAME)){
 				String oldName=(String) br.getHisOldValue(IxPoiName.NAME);
 				String newName=br.getName();
-				if(!newName.equals(oldName)){
+				if(newName !=null && !newName.equals(oldName)){
 					return true;
 				}
 			}

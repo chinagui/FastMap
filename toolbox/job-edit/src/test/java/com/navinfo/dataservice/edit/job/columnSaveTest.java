@@ -88,10 +88,10 @@ public class columnSaveTest {
 		Connection conn = null;
 		List<Integer> pidList = new ArrayList<Integer>();
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-		String param = "{\"taskId\":\"84\",\"secondWorkItem\":\"shortName\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"19\",\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"names\":[{\"pid\":0,\"poiPid\":602474,\"nameGroupid\":1,\"langCode\":\"CHI\",\"nameClass\":5,\"nameType\":1,\"name\":\"大夫大夫乐或\",\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474,\"objStatus\":\"UPDATE\"}}]}";
+		String param = "{\"taskId\":\"619\",\"secondWorkItem\":\"aliasOriEngName\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"256\",\"type\":\"IXPOI\",\"objId\":48522178,\"data\":{\"names\":[{\"pid\":0,\"poiPid\":48522178,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":3,\"nameType\":2,\"name\":\"ncrcrncrcjrcgiugiubgiuecm rccmclmlcmreCemc\",\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0E667F4604E050A8C083041544\",\"pid\":48522178,\"objStatus\":\"UPDATE\"}}]}";
 		try {
 			JSONObject paramJson = JSONObject.fromObject(param);
-			int userId = 2;
+			int userId = 4577;
 			int taskId = paramJson.getInt("taskId");
 			JSONArray data = paramJson.getJSONArray("dataList");
 			String secondWorkItem = paramJson.getString("secondWorkItem");

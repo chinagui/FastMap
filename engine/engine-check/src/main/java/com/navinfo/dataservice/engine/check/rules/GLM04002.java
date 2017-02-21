@@ -117,7 +117,8 @@ public class GLM04002 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if((resultList.size()>0)&&(Integer.parseInt(resultList.get(0).toString())!=2)){
-			this.setCheckResult("", "", 0);
+			String target = "[RD_LINK," + rdLink.getPid() + "]";
+			this.setCheckResult("", target, 0);
 		}
 		
 	}

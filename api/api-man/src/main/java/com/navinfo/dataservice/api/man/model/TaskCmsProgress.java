@@ -39,10 +39,31 @@ public class TaskCmsProgress {
 	public void setStatus(int status) {
 		this.status = status;
 	}
+	public int getRegionId() {
+		return regionId;
+	}
+	public void setRegionId(int regionId) {
+		this.regionId = regionId;
+	}
+	public String getUserNickName() {
+		return userNickName;
+	}
+	public void setUserNickName(String userNickName) {
+		this.userNickName = userNickName;
+	}
+	public int getCreateUserId() {
+		return createUserId;
+	}
+	public void setCreateUserId(int createUserId) {
+		this.createUserId = createUserId;
+	}
 	private int taskId;
 	private int phase;
 	private int status;
 	private int phaseId;
+	private int regionId;
+	private int createUserId;
+	private String userNickName;
 	private Set<Integer> gridIds;
 	private Set<Integer> meshIds;
 }

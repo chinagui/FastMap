@@ -55,7 +55,7 @@ public class RdLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, S_NODE_PID, LENGTH, E_NODE_PID, IMI_CODE, GEOMETRY FROM RD_LINK WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP4 AS /*+ index(P) */ (SELECT P.LINK_PID, S.GROUP_ID SAMELINK_PID FROM RD_SAMELINK_PART P, RD_SAMELINK S, TMP1 L WHERE P.LINK_PID = L.LINK_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:2 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP5 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID S_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.S_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:3 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP6 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID E_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.E_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME=:4 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2) SELECT A.*, B.LIMITS, C.FORMS, D.NAME, E.SAMELINK_PID, F.S_SAMENODEPID, G.E_SAMENODEPID FROM TMP1 A, TMP2 B, TMP3 C, TMP4 E, TMP5 F, TMP6 G, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+) AND A.LINK_PID = F.LINK_PID(+) AND A.LINK_PID = G.LINK_PID(+) ";
+		String sql = "WITH TMP1 AS (SELECT A.LINK_PID, A.KIND, A.GEOMETRY, A.S_NODE_PID, A.E_NODE_PID FROM RD_LINK A WHERE SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND A.U_RECORD != 2), TMP2 AS /*+ index(P) */ (SELECT P.LINK_PID, S.GROUP_ID SAMELINK_PID FROM RD_SAMELINK_PART P, RD_SAMELINK S, TMP1 L WHERE P.LINK_PID = L.LINK_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :2 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP3 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID S_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.S_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :3 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP4 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID E_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.E_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :4 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2) SELECT A.*, B.SAMELINK_PID, C.S_SAMENODEPID, D.E_SAMENODEPID FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+)";
 		
 		
 		PreparedStatement pstmt = null;
@@ -77,29 +77,21 @@ public class RdLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("kind"));
+				m.put("a", resultSet.getString("s_node_pid"));
 
-				m.put("b", resultSet.getString("name"));
-
-				m.put("c", resultSet.getString("limits"));
-
-				m.put("d", resultSet.getString("direct"));
-
-				m.put("e", resultSet.getString("s_node_pid"));
-
-				m.put("f", resultSet.getString("e_node_pid"));
-
-				m.put("h", resultSet.getString("forms"));
-				m.put("j", resultSet.getString("imi_code"));
-				m.put("k", resultSet.getString("length"));
+				m.put("b", resultSet.getString("e_node_pid"));
 				
-				m.put("l", resultSet.getInt("samelink_pid"));
-				m.put("m", resultSet.getInt("s_samenodepid"));
-				m.put("n", resultSet.getInt("e_samenodepid"));
+				m.put("c", resultSet.getString("kind"));
+				
+				m.put("d", resultSet.getInt("samelink_pid"));
+				
+				m.put("e", resultSet.getInt("s_samenodepid"));
+				
+				m.put("f", resultSet.getInt("e_samenodepid"));
 
 				snapshot.setM(m);
 
-				snapshot.setT(4);
+				snapshot.setT(12);
 
 				snapshot.setI(resultSet.getInt("link_pid"));
 

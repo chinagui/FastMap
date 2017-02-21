@@ -105,7 +105,7 @@ public class GLM04002 extends baseRule{
 		sb.append(" WHERE (G.NODE_PID = R.S_NODE_PID OR G.NODE_PID = R.E_NODE_PID)");
 		sb.append(" AND R.U_RECORD <> 2");
 		sb.append(" AND G.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID = " + rdLink + ") GATE");
+		sb.append(" AND R.LINK_PID = " + rdLink.getPid() + ") GATE");
 		sb.append(" WHERE (RR.S_NODE_PID = GATE.NODE_PID OR RR.E_NODE_PID = GATE.NODE_PID)");
 		sb.append(" AND RR.U_RECORD <> 2");
 		

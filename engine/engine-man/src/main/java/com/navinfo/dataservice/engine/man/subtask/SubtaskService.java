@@ -471,11 +471,12 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
-							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
-								gridIdMap.put(entry.getKey().toString(), entry.getValue());
-							}
-							subtask.setGridIds(gridIdMap);
+							subtask.setGridIds(gridIds);
+//							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+//								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+//							}
+//							subtask.setGridIds(gridIdMap);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -1207,7 +1208,8 @@ public class SubtaskService {
 				int taskId = dataJson.getInt("taskId");
 				JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
 				if(!gridIds.isEmpty() || gridIds.size()>0){
-					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					JSONObject gridIdMap = new JSONObject();
+//					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
 					for(Object gridId:gridIds.toArray()){
 						gridIdMap.put(gridId.toString(), 1);
 					}
@@ -1219,6 +1221,9 @@ public class SubtaskService {
 			}
 			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+			if(dataJson.containsKey("gridIds")){
+				bean.setGridIds(dataJson.getJSONObject("gridIds"));
+			}
 			bean.setCreateUserId((int)userId);
 			return bean;
 			

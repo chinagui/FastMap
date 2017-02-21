@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdinter.create;
 
+import java.sql.Connection;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
@@ -15,6 +17,15 @@ import net.sf.json.JSONArray;
 public class Operation implements IOperation {
 
 	private Command command;
+	
+	private Connection conn = null;
+
+	public Operation(Command command, Connection conn) {
+
+		this.command = command;
+
+		this.conn = conn;
+	}
 
 	public Operation(Command command) {
 		this.command = command;
@@ -72,6 +83,12 @@ public class Operation implements IOperation {
 		}
 		//判断是否存在组成要素
 		if(CollectionUtils.isNotEmpty(rdInter.getNodes()) || CollectionUtils.isNotEmpty(rdInter.getLinks()))
-		result.insertObject(rdInter, ObjStatus.INSERT, rdInter.getPid());
+		{
+			result.insertObject(rdInter, ObjStatus.INSERT, rdInter.getPid());
+			
+			com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdobject.update.Operation(
+					conn);
+			operation.updateRdObjectForRdInter(rdInter, result);
+		}
 	}
 }

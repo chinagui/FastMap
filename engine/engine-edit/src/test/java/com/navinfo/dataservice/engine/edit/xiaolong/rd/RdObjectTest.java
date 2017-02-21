@@ -52,7 +52,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testAddRdObject() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":19,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":310000003,\"links\":[279667,279668,88653284,208002741],\"roads\":[168599,171110,265604],\"inters\":[245224]}}";
+		String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDINTER\",\"data\":{\"links\":[210003523],\"nodes\":[208002756,305002719]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

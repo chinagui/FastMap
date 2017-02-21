@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -18,17 +17,17 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /**
- * @ClassName GLM60290
+ * @ClassName GLM60291
  * @author Han Shaoming
- * @date 2017年2月21日 下午3:56:02
+ * @date 2017年2月21日 下午6:42:24
  * @Description TODO
- * 检查条件：  非删除POI对象
+ * 检查条件： 非删除POI对象；
  * 检查原则：
- * 对于同一关系中多分类同属性(多义性)(IX_SAMEPOI.Relation_type=1)，且是同一组数据，
- * 如果分类(只有有一个分类)在（SC_POINT_KIND_NEW表的TYPE=5）记录中的POIKIND或R_KIND列表中不存在，这组数据中不包含180400分类的记录，
- * 报出Log：XXXX与XXXX分类之间不可制作同一关系
+ * 同一关系中关系类型为“多分类同属性(多义性)”（RELATION_TYPE=1）的一组POI（如：KIND=1或KIND=2），
+ * 其两方分类必须在SC_POINT_KIND_NEW中TYPE=5的POIKIND和R_KIND中存在，即：KIND=1或KIND=2必须存在于任意同一行的一组
+ * POIKIND或R_KIND中,如果不存在，则报Log：XXXX与XXXX分类之间不可制作同一关系
  */
-public class GLM60290 extends BasicCheckRule {
+public class GLM60291 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
 	
@@ -38,7 +37,7 @@ public class GLM60290 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-			if(kindCode == null || "180400".equals(kindCode)){return;}
+			if(kindCode == null ){return;}
 			//是否有同一关系
 			if(!samePoiMap.containsKey(poi.getPid())){return;}
 			//存在同一关系且IX_SAMEPOI.RELATION_TYPE=1
@@ -49,25 +48,25 @@ public class GLM60290 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null || "180400".equals(kindCode)){return;}
+			if(kindCodeP == null ){return;}
 			//SC_POINT_KIND_NEW表的TYPE=5
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<Map<String, String>> scPointKindNew5List = metadataApi.scPointKindNewChainKind5Map();
-			List<String> keys = new ArrayList<String>();
-			List<String> values = new ArrayList<String>();
+			boolean check = true;
 			for (Map<String, String> scPointKindNew5Map : scPointKindNew5List) {
 				for(Map.Entry<String, String> entry : scPointKindNew5Map.entrySet()){
 					String key = entry.getKey();
-					keys.add(key);
 					String value = entry.getValue();
-					values.add(value);
+					if((kindCode.equals(key)&&kindCodeP.equals(value))||(kindCode.equals(value)&&kindCodeP.equals(key))){
+						check = false;
+					}
 				}
 			}
-			if((!keys.contains(kindCode)&&!values.contains(kindCode))
-					||(!keys.contains(kindCodeP)&&!values.contains(kindCodeP))){
+			if(check){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), kindCode+"与"+kindCodeP+"分类之间不可制作同一关系");
 				return;
 			}
+			
 		}
 	}
 

@@ -80,7 +80,8 @@ public class FMA0405 extends BasicCheckRule {
 					||newKindCode.equals("190203")||newKindCode.equals("190204")||newKindCode.equals("230103")
 					||newKindCode.equals("230111")||newKindCode.equals("230114")||newKindCode.equals("230105")
 					||newKindCode.equals("230126")||newKindCode.equals("230127")||newKindCode.equals("230208")
-					||newKindCode.equals("230128")||newKindCode.equals("190501")||newKindCode.equals("230210")){
+					||newKindCode.equals("230128")||newKindCode.equals("190501")||newKindCode.equals("230210")
+					||newKindCode.equals("190502")){
 				
 				if(newKindCode.equals("150101")){
 					if(!chainList.contains(newCStr)){return;}

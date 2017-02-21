@@ -83,7 +83,12 @@ public class SolrController {
 		
 		doc.addField("s_reliability", json.getInt("s_reliability"));
 		
-		doc.addField("tipdiff", json.getString("tipdiff"));
+		if(json.containsKey("tipdiff")){
+			
+			doc.addField("tipdiff", json.getString("tipdiff"));
+		}
+		
+		//doc.addField("tipdiff", json.getString("tipdiff"));
 
 		client.add(doc);
 
@@ -323,7 +328,7 @@ public class SolrController {
 	
 	
 	/**
-	 * @Description:查询满足条件的tips
+	 * @Description:查询满足条件的tips(预处理用)
 	 * @param wkt
 	 * @return
 	 * @throws SolrServerException
@@ -334,14 +339,15 @@ public class SolrController {
 	public List<JSONObject> queryHasNotSubmitPreTipsByWktAndUser(String wkt,int user)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+		
 
 		StringBuilder builder = new StringBuilder("handler:"+user+" AND t_pStatus:0 AND s_sourceType:8001 ");
 
-		builder.append("AND wkt:\"intersects(");
+		//builder.append("AND wkt:\"intersects(");
 
-		builder.append(wkt);
+		//builder.append(wkt);
 
-		builder.append(")\" ");
+		//builder.append(")\" ");
 
 		SolrQuery query = new SolrQuery();
 

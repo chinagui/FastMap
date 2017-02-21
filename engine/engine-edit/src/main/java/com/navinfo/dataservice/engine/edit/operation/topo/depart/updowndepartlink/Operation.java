@@ -582,10 +582,10 @@ public class Operation implements IOperation {
                     }
                 }
             } else if (sourceLink.getDirect() == 3) {
-                if (upDownFlag == 0) {
+                if (upDownFlag == 1) {
                     linkRtics.add(linkRtic);
                 } else {
-                    if (linkRtic.getUpdownFlag() == 0) {
+                    if (linkRtic.getUpdownFlag() == 1) {
                         linkRtics.add(linkRtic);
                     } else {
                         linkRtic.setUpdownFlag(0);
@@ -613,7 +613,7 @@ public class Operation implements IOperation {
                         linkRtic.setRticDir(1);
                     }
                 }
-            }  else if (sourceLink.getDirect() == 2) {
+            } else if (sourceLink.getDirect() == 2) {
                 if (upDownFlag == 0) {
                     linkIntRtics.add(linkRtic);
                 } else {
@@ -622,10 +622,10 @@ public class Operation implements IOperation {
                     }
                 }
             } else if (sourceLink.getDirect() == 3) {
-                if (upDownFlag == 0) {
+                if (upDownFlag == 1) {
                     linkIntRtics.add(linkRtic);
                 } else {
-                    if (linkRtic.getUpdownFlag() == 0) {
+                    if (linkRtic.getUpdownFlag() == 1) {
                         linkIntRtics.add(linkRtic);
                     } else {
                         linkRtic.setUpdownFlag(0);

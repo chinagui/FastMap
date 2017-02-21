@@ -67,7 +67,7 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 64, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -105,7 +105,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-GLM60079-01");
+		ruleIdList.add("FM-YW-20-054");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

@@ -42,6 +42,7 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
@@ -1522,6 +1523,7 @@ public class TaskService {
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * status 2成功 3失败
 	 * @param phaseId
 	 * @return
 	 * @throws Exception 
@@ -1645,6 +1647,7 @@ public class TaskService {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("specRegionId", phase.getRegionId());
 			jobDataJson.put("specMeshes", phase.getMeshIds());
+			jobDataJson.put("phaseId", phaseId);
 			long jobId=jobApi.createJob("day2MonSync", jobDataJson, phase.getCreateUserId(),Long.valueOf(phase.getTaskId()), "日落月");
 			return 0;
 		}catch(Exception e){
@@ -1671,7 +1674,7 @@ public class TaskService {
 			par.put("gdbid", cmsInfo.get("dbId"));
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
-			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
+			DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
 			par.put("au_db_ip", auDb.getDbServer().getIp());
 			par.put("au_db_username", auDb.getDbUserName());
 			par.put("au_db_password", auDb.getDbUserPasswd());
@@ -1813,10 +1816,11 @@ public class TaskService {
 			JSONObject par=new JSONObject();
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
-			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
-			par.put("metaIp", auDb.getDbServer().getIp());
-			par.put("metaUserName", auDb.getDbUserName());
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			par.put("metaIp", metaDb.getDbServer().getIp());
+			par.put("metaUserName", metaDb.getDbUserName());
 			
+			DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
 			par.put("fieldDbIp", auDb.getDbServer().getIp());
 			par.put("fieldDbName", auDb.getDbUserName());
 
@@ -1833,6 +1837,11 @@ public class TaskService {
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 			
 			par.put("taskid", taskPar);
+			
+			String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
+			Map<String,String> parMap = new HashMap<String,String>();
+			parMap.put("parameter", par.toString());
+			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);			
 			return 2;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

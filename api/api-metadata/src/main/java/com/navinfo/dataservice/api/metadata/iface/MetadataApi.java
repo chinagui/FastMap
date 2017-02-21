@@ -304,5 +304,29 @@ public interface MetadataApi {
 	 */
 	public List<String> searchByErrorName(String name) throws Exception;
     public List<String> queryAdRack(int type) throws Exception;
+    
+    /**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
+    
+    /**
+     * SC_POINT_FOCUS.TYPE=2
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:POI_NUM value:TYPE
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScPointFocus(String poiNum) throws Exception;
+    
+    /**
+     * SC_FM_CONTROL
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:PARENT
+     * @throws Exception
+     */
+    public Map<String, Integer> searchScFmControl(String kindCode) throws Exception;
 
 }

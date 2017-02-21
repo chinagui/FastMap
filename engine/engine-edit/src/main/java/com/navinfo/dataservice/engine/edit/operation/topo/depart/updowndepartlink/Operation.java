@@ -552,21 +552,13 @@ public class Operation implements IOperation {
             return;
         }
 
-        if (sourceLink.getDirect() == 2 || sourceLink.getDirect() == 3) {
-            if (upDownFlag == 0) {
-
-                link.getRtics().clear();
-                link.getIntRtics().clear();
-            }
-            return;
-        }
 
         // 道路:LINK 与 RTIC 关系表（车导客户用）
         List<RdLinkRtic> linkRtics = new ArrayList<RdLinkRtic>();
         List<RdLinkIntRtic> linkIntRtics = new ArrayList<RdLinkIntRtic>();
         for (IRow row : link.getRtics()) {
             RdLinkRtic linkRtic = (RdLinkRtic) row;
-            if (link.getDirect() == 1) {
+            if (sourceLink.getDirect() == 1) {
                 if (upDownFlag == 0) {
                     if (linkRtic.getUpdownFlag() == 0) {
                         linkRtics.add(linkRtic);
@@ -581,15 +573,22 @@ public class Operation implements IOperation {
                         linkRtic.setRticDir(1);
                     }
                 }
-            }
-            if (upDownFlag == 0) {
-                if (link.getDirect() == 2) {
-                    if (linkRtic.getRticDir() == 2) {
+            } else if (sourceLink.getDirect() == 2) {
+                if (upDownFlag == 0) {
+                    linkRtics.add(linkRtic);
+                } else {
+                    if (linkRtic.getUpdownFlag() == 1) {
                         linkRtics.add(linkRtic);
                     }
-                } else if (link.getDirect() == 3) {
-                    if (linkRtic.getRticDir() == 1) {
+                }
+            } else if (sourceLink.getDirect() == 3) {
+                if (upDownFlag == 0) {
+                    linkRtics.add(linkRtic);
+                } else {
+                    if (linkRtic.getUpdownFlag() == 0) {
                         linkRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setUpdownFlag(0);
                     }
                 }
             }
@@ -614,15 +613,22 @@ public class Operation implements IOperation {
                         linkRtic.setRticDir(1);
                     }
                 }
-            }
-            if (upDownFlag == 0) {
-                if (link.getDirect() == 2) {
-                    if (linkRtic.getRticDir() == 2) {
+            } else if (link.getDirect() == 2) {
+                if (upDownFlag == 0) {
+                    linkIntRtics.add(linkRtic);
+                } else {
+                    if (linkRtic.getUpdownFlag() == 1) {
                         linkIntRtics.add(linkRtic);
                     }
-                } else if (link.getDirect() == 3) {
-                    if (linkRtic.getRticDir() == 1) {
+                }
+            } else if (link.getDirect() == 3) {
+                if (upDownFlag == 1) {
+                    linkIntRtics.add(linkRtic);
+                } else {
+                    if (linkRtic.getUpdownFlag() == 0) {
                         linkIntRtics.add(linkRtic);
+                    } else {
+                        linkRtic.setUpdownFlag(0);
                     }
                 }
             }
@@ -1042,11 +1048,14 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     private boolean isRightSide(RdLink startLine, RdLink endLine, RdLink adjacentLine) throws Exception {
-        LineString adjacentLineString = JtsGeometryFactory.createLineString(adjacentLine.getGeometry().getCoordinates());
+        LineString adjacentLineString = JtsGeometryFactory.createLineString(adjacentLine.getGeometry().getCoordinates
+                ());
         if (adjacentLine.getsNodePid() != this.getIntersectPid(startLine, endLine)) {
             adjacentLineString = (LineString) adjacentLineString.reverse();
         }
-        return CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(startLine.getGeometry().getCoordinates()), JtsGeometryFactory.createLineString(endLine.getGeometry().getCoordinates()), adjacentLineString);
+        return CompPolylineUtil.isRightSide(JtsGeometryFactory.createLineString(startLine.getGeometry()
+                .getCoordinates()), JtsGeometryFactory.createLineString(endLine.getGeometry().getCoordinates()),
+                adjacentLineString);
     }
 
     /**
@@ -1057,7 +1066,8 @@ public class Operation implements IOperation {
      * @return
      */
     private int getIntersectPid(RdLink fristLink, RdLink secondLink) {
-        if (fristLink.getsNodePid() == secondLink.getsNodePid() || fristLink.getsNodePid() == secondLink.geteNodePid()) {
+        if (fristLink.getsNodePid() == secondLink.getsNodePid() || fristLink.getsNodePid() == secondLink.geteNodePid
+                ()) {
             return fristLink.getsNodePid();
         } else {
             return fristLink.geteNodePid();
@@ -1073,10 +1083,14 @@ public class Operation implements IOperation {
      * @return
      */
     private Point getIntersectPoint(RdLink fristLink, RdLink secondLink) {
-        if (fristLink.getsNodePid() == secondLink.getsNodePid() || fristLink.getsNodePid() == secondLink.geteNodePid()) {
-            return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[0]);
+        if (fristLink.getsNodePid() == secondLink.getsNodePid() || fristLink.getsNodePid() == secondLink.geteNodePid
+                ()) {
+            return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5)
+                    .getCoordinates()[0]);
         } else {
-            return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()[GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates().length - 1]);
+            return JtsGeometryFactory.createPoint(GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5)
+                    .getCoordinates()[GeoTranslator.transform(fristLink.getGeometry(), 0.00001, 5).getCoordinates()
+                    .length - 1]);
         }
 
     }

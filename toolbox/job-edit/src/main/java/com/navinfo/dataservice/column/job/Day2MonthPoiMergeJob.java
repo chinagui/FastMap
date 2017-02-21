@@ -99,6 +99,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			Day2MonthPoiMergeJobRequest day2MonRequest=(Day2MonthPoiMergeJobRequest) request;
 			int specRegionId = day2MonRequest.getSpecRegionId();
 			List<Integer> specMeshes = day2MonRequest.getSpecMeshes();
+			int phaseId = day2MonRequest.getPhaseId();
 
 			//确定需要日落月的大区
 			List<Region> regions = null;
@@ -125,7 +126,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					}
 				}
 				for(Region region:regions){
-					doSync(region,null,grids, datahubApi, d2mSyncApi);
+					doSync(region,null,grids, datahubApi, d2mSyncApi,manApi,phaseId);
 					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
 				}
 			//支持每天定时日落月	
@@ -159,7 +160,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 							}
 						}
 					}
-					doSync(region,filterGrids,grids,datahubApi, d2mSyncApi);
+					doSync(region,filterGrids,grids,datahubApi, d2mSyncApi,manApi,phaseId);
 					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
 				}
 			}
@@ -175,7 +176,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	}
 
-	private void doSync(Region region,List<Integer> filterGrids,List<Integer> grids,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi)
+	private void doSync(Region region,List<Integer> filterGrids,List<Integer> grids,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi,ManApi manApi,int phaseId)
 			throws Exception{
 		
 		//1. 获取最新的成功同步信息，并记录本次同步信息
@@ -249,12 +250,22 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			log.info("finished:"+region.getRegionId());
+			
+			//更新任务状态
+			if(grids!=null&&grids.size()>0){
+				manApi.taskUpdateCmsProgress(phaseId,2);
+			}
+			
 		}catch(Exception e){
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
+			//更新任务状态
+			if(grids!=null&&grids.size()>0){
+				manApi.taskUpdateCmsProgress(phaseId,3);
+			}
 			if(logMover!=null){
 				log.info("搬移履历回滚");
 				logMover.rollbackMove();

@@ -193,6 +193,12 @@ public class ManApiImpl implements ManApi {
 		JSONObject condition = new JSONObject().element("cityId", cityId);
 		return GridService.getInstance().queryListByCondition(condition);
 	}
+	/**
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
+	 * @throws Exception
+	 */
 	@Override
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
 		return GridService.getInstance().queryTaskIdsByGrid(grid);

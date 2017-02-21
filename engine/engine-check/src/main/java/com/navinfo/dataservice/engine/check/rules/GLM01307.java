@@ -96,9 +96,9 @@ public class GLM01307 extends baseRule {
 						{
 							fromSpeedLimitSrc = (int) speedLimit.changedFields().get("fromLimitSrc");
 						}
-						if(speedLimit.changedFields().containsKey("toSpeedLimitSrc"))
+						if(speedLimit.changedFields().containsKey("toLimitSrc"))
 						{
-							toSpeedLimitSrc = (int) speedLimit.changedFields().get("toSpeedLimitSrc");
+							toSpeedLimitSrc = (int) speedLimit.changedFields().get("toLimitSrc");
 						}
 						
 						if(fromSpeedLimitSrc == 5 || toSpeedLimitSrc == 5)

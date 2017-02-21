@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -20,6 +21,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @date 2016年12月23日
  * @Description: 大门点的挂接link数必须是2
  * 新增link服务端前检查
+ * 移动端点服务端后检查
+ * 分离节点服务端后检查
  */
 public class GLM04002 extends baseRule{
 
@@ -29,7 +32,7 @@ public class GLM04002 extends baseRule{
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow obj : checkCommand.getGlmList()) {
-			// 大门RdGate
+			// RdLink
 			if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
 				checkRdLink(rdLink);
@@ -72,7 +75,50 @@ public class GLM04002 extends baseRule{
 	 */
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
-		// TODO Auto-generated method stub
+		for (IRow obj : checkCommand.getGlmList()) {
+			// 分离节点RdLink
+			if (obj instanceof RdLink) {
+				RdLink rdLink = (RdLink) obj;
+				if(rdLink.status().equals(ObjStatus.UPDATE)){
+					checkRdLinkPost(rdLink);
+				}
+			}
+			//移动端点RdNode
+//			else if (obj instanceof RdNode) {
+//				RdNode rdNode = (RdNode) obj;
+//				if(rdNode.status().equals(ObjStatus.UPDATE)){
+//					checkRdNode(rdNode);
+//				}
+//			}
+		}
+	}
+
+	/**
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLinkPost(RdLink rdLink) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("SELECT COUNT(1) FROM RD_LINK RR,");
+		sb.append(" (SELECT G.PID,G.NODE_PID FROM RD_GATE G ,RD_LINK R");
+		sb.append(" WHERE (G.NODE_PID = R.S_NODE_PID OR G.NODE_PID = R.E_NODE_PID)");
+		sb.append(" AND R.U_RECORD <> 2");
+		sb.append(" AND G.U_RECORD <> 2");
+		sb.append(" AND R.LINK_PID = " + rdLink.getPid() + ") GATE");
+		sb.append(" WHERE (RR.S_NODE_PID = GATE.NODE_PID OR RR.E_NODE_PID = GATE.NODE_PID)");
+		sb.append(" AND RR.U_RECORD <> 2");
+		
+		String sql = sb.toString();
+		log.info("RdLink后检查GLM04002:" + sql);
+
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if((resultList.size()>0)&&(Integer.parseInt(resultList.get(0).toString())!=2)){
+			this.setCheckResult("", "", 0);
+		}
 		
 	}
 

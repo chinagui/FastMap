@@ -118,7 +118,7 @@ public class RdNodeSearch implements ISearch {
 				
 				m.put("kind", resultSet.getInt("kind"));
 				
-				m.put("nodeforms", resultSet.getString("node_forms"));
+				m.put("form", resultSet.getString("node_forms"));
 				
 				snapshot.setM(m);
 

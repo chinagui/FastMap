@@ -53,6 +53,7 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import oracle.net.aso.r;
 import oracle.sql.STRUCT;
 
 /** 
@@ -1221,9 +1222,9 @@ public class TaskService {
 			sb.append("U.USER_ID,U.USER_REAL_NAME,");
 			sb.append("UG.GROUP_ID,UG.GROUP_NAME");
 			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
-			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append(" AND T.PROGRAM_ID = T.PROGRAM_ID");
-			sb.append(" AND T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
+			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
 			sb.append(" AND T.TASK_ID = " + taskId);
 			
@@ -1696,6 +1697,7 @@ public class TaskService {
 			
 			FccApi fccApi = (FccApi) ApplicationContextUtil
 					.getBean("fccApi");
+			fccApi.tips2Aumark(par);
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1772,7 +1774,7 @@ public class TaskService {
 					+ "   AND CMST.CREATE_USER_ID = u.user_ID"
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
-					+ "   AND B.BLOCK_ID = C.CITY_ID";
+					+ "   AND B.CITY_ID = C.CITY_ID";
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result=new HashMap<String, Object>();
@@ -1836,13 +1838,20 @@ public class TaskService {
 			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 			
-			par.put("taskid", taskPar);
+			par.put("taskInfo", taskPar);
 			
 			String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
 			parMap.put("parameter", par.toString());
-			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);			
-			return 2;
+			log.info(par.toString());
+			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
+			//result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
+			JSONObject res=JSONObject.fromObject(result);
+			boolean success=(boolean)res.get("success");
+			if(success){return 2;}
+			else{
+				log.error(res.get("msg"));
+				return 3;}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			return 3;

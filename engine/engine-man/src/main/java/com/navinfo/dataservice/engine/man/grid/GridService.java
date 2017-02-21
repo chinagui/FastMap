@@ -463,7 +463,7 @@ public class GridService {
 				+ " WHERE K.PROGRAM_ID = P.PROGRAM_ID"
 				+ "   AND K.TASK_ID = M.TASK_ID"
 				+ "   AND K.TYPE = 0"
-				+ "   AND M.GRID_ID = 1"
+				+ "   AND M.GRID_ID = " + grid
 				+ " ORDER BY P.TYPE";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
@@ -494,6 +494,12 @@ public class GridService {
 									quickTaskId=0;
 								}
 							}
+						}
+						if(quickTaskId==-1){
+							quickTaskId = 0;
+						}
+						if(centreTaskId==-1){
+							centreTaskId = 0;
 						}
 						map.put("quickTaskId", quickTaskId);
 						map.put("centreTaskId", centreTaskId);

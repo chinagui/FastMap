@@ -10,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.mysql.fabric.xmlrpc.base.Array;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -148,6 +147,42 @@ public class PoiLogDetailStat {
 		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
 				+ "FROM LOG_DETAIL T"
 				+ " WHERE T.OB_NM='"+ObjectName.IX_POI+"'");
+		
+		List<Object> values=new ArrayList<Object>();
+		if(pids!=null && pids.size()>0){
+			if(pids.size()>1000){
+				Clob clob=ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids,","));
+				sb.append(" AND T.OB_PID IN (select to_number(column_value) from table(clob_to_table(?)))");
+				values.add(clob);
+			}else{
+				sb.append(" AND T.OB_PID IN ("+StringUtils.join(pids,",")+")");
+			}}
+		if(values!=null&&values.size()>0){
+			Object[] queryValues=new Object[values.size()];
+			for(int i=0;i<values.size();i++){
+				queryValues[i]=values.get(i);
+			}
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog(),queryValues);
+		}else{
+			return new QueryRunner().query(conn, sb.toString(), new LogDetailRsHandler4ChangeLog());
+		}
+	}
+	
+	/**
+	 * 查询日编履历
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long,List<LogDetail>> loadAllRowLog(Connection conn,Collection<Long> pids) throws Exception {
+		if(pids==null||pids.size()==0)return null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
+				+ " FROM LOG_DETAIL T,LOG_ACTION A,LOG_OPERATION O"
+				+ " WHERE A.ACT_ID=O.ACT_ID AND O.OP_ID=T.OP_ID AND A.SRC_DB=0"
+				+ " AND T.OB_NM='"+ObjectName.IX_POI+"'");
 		
 		List<Object> values=new ArrayList<Object>();
 		if(pids!=null && pids.size()>0){

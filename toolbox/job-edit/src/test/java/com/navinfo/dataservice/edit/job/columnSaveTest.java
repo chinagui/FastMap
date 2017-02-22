@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.edit.job;
 
-import java.lang.reflect.Method;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,13 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.column.job.ColumnCoreOperation;
-import com.navinfo.dataservice.column.job.PoiColumnValidationJobRequest;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
@@ -35,25 +32,23 @@ import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
-import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class columnSaveTest {
@@ -87,6 +82,7 @@ public class columnSaveTest {
 	public void classfiyTest() throws Exception {
 		Connection conn = null;
 		List<Integer> pidList = new ArrayList<Integer>();
+		List<Long> pidListL = new ArrayList<Long>();
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		String param = "{\"taskId\":\"619\",\"secondWorkItem\":\"aliasOriEngName\",\"dataList\":[{\"command\":\"UPDATE\",\"dbId\":\"256\",\"type\":\"IXPOI\",\"objId\":48522178,\"data\":{\"names\":[{\"pid\":0,\"poiPid\":48522178,\"nameGroupid\":1,\"langCode\":\"ENG\",\"nameClass\":3,\"nameType\":2,\"name\":\"ncrcrncrcjrcgiugiubgiuecm rccmclmlcmreCemc\",\"namePhonetic\":\"\",\"rowId\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"3F836D0E667F4604E050A8C083041544\",\"pid\":48522178,\"objStatus\":\"UPDATE\"}}]}";
 		try {
@@ -106,12 +102,14 @@ public class columnSaveTest {
 			EditJson editJson = new EditJson();
 			editJson.addJsonPoi(data);
 			DefaultObjImportorCommand command = new DefaultObjImportorCommand(editJson);
+			importor.setPhysiDelete(true);
 			importor.operate(command);
 			importor.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 			
 			for (int i=0;i<data.size();i++) {
 				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);
+				pidListL.add(data.getJSONObject(i).getLong("objId"));
 			}
 			
 			// 修改poi_column_status表作业项状态
@@ -124,11 +122,24 @@ public class columnSaveTest {
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
-			// 清理检查结果
 			DeepCoreControl deepControl = new DeepCoreControl();
-			deepControl.cleanCheckResult(pidList, conn);
+			OperationResult operationResult = new OperationResult();
 			
-			OperationResult operationResult=importor.getResult();
+			PoiLogDetailStat logDetail = new PoiLogDetailStat();
+			ObjHisLogParser logParser = new ObjHisLogParser();
+			Map<Long,List<LogDetail>> submitLogs = logDetail.loadAllRowLog(conn, pidListL);
+			List<BasicObj> objList = importor.getResult().getAllObjs();
+			List<BasicObj>  newObjList = new ArrayList<BasicObj>();
+			for (BasicObj obj:objList) {
+				IxPoiObj poiObj=(IxPoiObj) obj;
+				IxPoi poi = (IxPoi) poiObj.getMainrow();
+				long pid = poi.getPid();
+				if (submitLogs.containsKey(pid)) {
+					logParser.parse(obj, submitLogs.get(pid));
+				}
+				newObjList.add(obj);
+			}
+			operationResult.putAll(newObjList);
 			
 			// 批处理
 			if (columnOpConf.getSaveExebatch() == 1) {
@@ -153,6 +164,10 @@ public class columnSaveTest {
 					for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
 						checkList.add(ckRule);
 					}
+					
+					// 清理检查结果
+					deepControl.cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+					
 					checkCommand.setRuleIdList(checkList);
 					
 					Check check=new Check(conn,operationResult);

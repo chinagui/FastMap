@@ -96,12 +96,25 @@ public interface ManApi{
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
 	
 	/**
-	 * @param grid 
-	 * @return grid对应的taskId的list
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
 	 * @throws Exception
-	 * author zl 2017.02.09
 	 */
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception;
+	
+	/**
+	 * 获取grid对应的采集taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<Integer,Map<String,Integer>>
+	 *  key：gridId
+	 *  value:
+	 *  	key:"quickTaskId"/"centreTaskId"
+	 *  	value:taskId
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String,Integer>> queryCollectTaskIdsByGridIdList(List<Integer> gridIdList) throws Exception;
+	
 	/**
 	 * 获取待出品的情报项目list
 	 * 应用场景：定时日出品（一体化）脚本

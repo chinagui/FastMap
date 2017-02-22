@@ -1611,22 +1611,36 @@ public class ProgramService {
 	private void splitInforTasks(Connection conn,List<Integer> programIds,final Long userId)throws Exception{
 		try{
 			if(programIds==null||programIds.size()==0){return;}
-			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID"
-					+ "  FROM PROGRAM P, INFOR_GRID_MAPPING M, GRID G"
+			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID,r.region_name"
+					+ "  FROM PROGRAM P, INFOR_GRID_MAPPING M, GRID G,region r"
 					+ " WHERE P.INFOR_ID = M.INFOR_ID"
 					+ "   AND M.GRID_ID = G.GRID_ID"
+					+ "   AND g.region_ID = r.region_ID"
 					+ "   AND P.PROGRAM_ID IN "+programIds.toString().replace("[", "(").replace("]", ")")
 					+ " ORDER BY P.PROGRAM_ID, G.REGION_ID";
-			
+			JSONObject condition=new JSONObject();
+			condition.put("programIds", programIds);
+			List<Program> programs = queryProgramTable(conn, condition);
+			final Map<Integer, Program> programMap=new HashMap<Integer, Program>();
+			for(Program p:programs){
+				programMap.put(p.getProgramId(), p);
+			}
 			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> list = new ArrayList<Task>();
 					Map<Integer, Integer> gridMap =new HashMap<Integer, Integer>();
 					int programId=0;
 					int regionId=0;
+					String regionName="";
 					while(rs.next()){
 						int programIdTmp=rs.getInt("PROGRAM_ID");
 						int regionIdTmp=rs.getInt("REGION_ID");
+						String regionNameTmp=rs.getString("region_name");
+						if(programId==0){
+							programId=programIdTmp;
+							regionId=regionIdTmp;
+							regionName= regionNameTmp;
+						}
 						if(programId!=programIdTmp||regionId!=regionIdTmp){
 							Task collectTask=new Task();
 							collectTask.setProgramId(programId);
@@ -1634,6 +1648,9 @@ public class ProgramService {
 							collectTask.setGridIds(gridMap);
 							collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							collectTask.setType(0);
+							collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
+							collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
+							collectTask.setName(programMap.get(programId).getName() + "_" + regionName);
 							list.add(collectTask);
 							Task dailyTask=new Task();
 							dailyTask.setProgramId(programId);
@@ -1641,10 +1658,14 @@ public class ProgramService {
 							dailyTask.setGridIds(gridMap);
 							dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							dailyTask.setType(1);
+							dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
+							dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
+							dailyTask.setName(programMap.get(programId).getName() + "_" + regionName);
 							list.add(dailyTask);
 							gridMap =new HashMap<Integer, Integer>();
 							programId=programIdTmp;
 							regionId=regionIdTmp;
+							regionName= regionNameTmp;
 						}
 						gridMap.put(rs.getInt("GRID_ID"), 1);
 					}
@@ -1655,6 +1676,9 @@ public class ProgramService {
 						collectTask.setGridIds(gridMap);
 						collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						collectTask.setType(0);
+						collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
+						collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
+						collectTask.setName(programMap.get(programId).getName() + "_" + regionName);
 						list.add(collectTask);
 						Task dailyTask=new Task();
 						dailyTask.setProgramId(programId);
@@ -1662,6 +1686,9 @@ public class ProgramService {
 						dailyTask.setGridIds(gridMap);
 						dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						dailyTask.setType(1);
+						dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
+						dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
+						dailyTask.setName(programMap.get(programId).getName() + "_" + regionName);
 						list.add(dailyTask);
 					}
 					return list;
@@ -1783,7 +1810,9 @@ public class ProgramService {
 			}
 		}
 		
-		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE FROM PROGRAM P where 1=1 "+conditionSql;
+		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
+				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date  "
+				+ "FROM PROGRAM P where 1=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
 			public List<Program> handle(ResultSet rs) throws SQLException {
@@ -1794,6 +1823,10 @@ public class ProgramService {
 					map.setName(rs.getString("NAME"));
 					map.setInforId(rs.getString("INFOR_ID"));
 					map.setType(rs.getInt("TYPE"));
+					map.setCollectPlanStartDate(rs.getTimestamp("collect_plan_start_date"));
+					map.setCollectPlanEndDate(rs.getTimestamp("collect_plan_end_date"));
+					map.setDayEditPlanStartDate(rs.getTimestamp("day_edit_plan_start_date"));
+					map.setDayEditPlanEndDate(rs.getTimestamp("day_edit_plan_end_date"));
 					list.add(map);
 				}
 				return list;

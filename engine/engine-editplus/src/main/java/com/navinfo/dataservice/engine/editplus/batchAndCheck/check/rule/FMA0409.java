@@ -35,13 +35,13 @@ public class FMA0409 extends BasicCheckRule {
 			if(officNameObj==null){return;}
 			String name = officNameObj.getName();
 			if(name ==null||name.isEmpty()){return;}
-			if(name.contains("图书馆")||name.contains("索道")||name.contains("圖書館")){
+			if(name.equals("图书馆")||name.equals("索道")||name.equals("圖書館")){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),null);
 				return;
 			}			
 			String kindCode=poi.getKindCode();
 			if((kindCode.equals("170104")||kindCode.equals("170105"))
-					&&(name.contains("医院")||name.contains("保健院")||name.contains("醫院"))){
+					&&((!name.contains("医院"))&&(!name.contains("保健院"))&&(!name.contains("醫院")))){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(),null);
 				return;
 			}

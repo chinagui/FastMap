@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.map.AbstractMapDecorator;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -463,7 +464,7 @@ public class GridService {
 				+ " WHERE K.PROGRAM_ID = P.PROGRAM_ID"
 				+ "   AND K.TASK_ID = M.TASK_ID"
 				+ "   AND K.TYPE = 0"
-				+ "   AND M.GRID_ID = 1"
+				+ "   AND M.GRID_ID = " + grid
 				+ " ORDER BY P.TYPE";
 		QueryRunner queryRunner = new QueryRunner();
 		Connection conn = null;
@@ -494,6 +495,12 @@ public class GridService {
 									quickTaskId=0;
 								}
 							}
+						}
+						if(quickTaskId==-1){
+							quickTaskId = 0;
+						}
+						if(centreTaskId==-1){
+							centreTaskId = 0;
 						}
 						map.put("quickTaskId", quickTaskId);
 						map.put("centreTaskId", centreTaskId);
@@ -534,6 +541,87 @@ public class GridService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询grid失败:" + e.getMessage(), e);
+		}
+	}
+
+
+
+	/**
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
+	 * @throws SQLException 
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, Integer>> queryCollectTaskIdsByGridIdList(List<Integer> gridIdList) throws SQLException {	
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			String sql = "SELECT M.GRID_ID,K.TASK_ID, P.TYPE"
+					+ "  FROM TASK K, PROGRAM P, TASK_GRID_MAPPING M"
+					+ " WHERE K.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND K.TASK_ID = M.TASK_ID"
+					+ "   AND K.TYPE = 0"
+					+ "   AND M.GRID_ID IN (" + StringUtils.join(gridIdList,",")  + ")"
+					+ " ORDER BY P.TYPE";
+			
+			log.info("queryCollectTaskIdsByGridIdList sql:" + sql);
+			
+			ResultSetHandler<Map<Integer,Map<String, Integer>>> rsh = new ResultSetHandler<Map<Integer,Map<String, Integer>>>() {
+				@Override
+				public Map<Integer,Map<String, Integer>> handle(ResultSet rs) throws SQLException {
+					Set<Integer> gridIdSet = new HashSet<Integer>();
+					Map<Integer,Map<String, Integer>> result = new HashMap<Integer,Map<String, Integer>>();
+					while (rs.next()) {
+						int gridId = rs.getInt("GRID_ID");
+						int taskId = rs.getInt("TASK_ID");
+						int type=rs.getInt("TYPE");
+						if(!gridIdSet.contains(gridId)){
+							Map<String,Integer> map = new HashMap<String,Integer>();
+							map.put("quickTaskId", -1);
+							map.put("centreTaskId", -1);
+							result.put(gridId, map);
+							gridIdSet.add(gridId);
+						}
+						if(type==1){
+							if(result.get(gridId).get("centreTaskId")==-1){
+								result.get(gridId).put("centreTaskId",taskId);
+							}else if(result.get(gridId).get("centreTaskId")>0){
+								result.get(gridId).put("centreTaskId",0);
+							}
+						}
+						if(type==4){
+							if(result.get(gridId).get("quickTaskId")==-1){
+								result.get(gridId).put("quickTaskId",taskId);
+							}else if(result.get(gridId).get("quickTaskId")>0){
+								result.get(gridId).put("quickTaskId",0);
+							}
+						}
+					}
+					for(Map.Entry<Integer, Map<String,Integer>> entry:result.entrySet()){
+						for(Map.Entry<String, Integer> entryInner:entry.getValue().entrySet()){
+							if(entryInner.getValue()==-1){
+								entryInner.setValue(0);
+							}
+						}
+					}
+					return result;
+				}
+			};
+
+			Map<Integer,Map<String, Integer>> result = queryRunner.query(conn, sql, rsh);
+			for(Integer gridId:gridIdList){
+				if(!result.containsKey(gridId)){
+					Map<String,Integer> map = new HashMap<String,Integer>();
+					map.put("quickTaskId", 0);
+					map.put("centreTaskId", 0);
+					result.put(gridId, map);
+				}
+			}
+			return result;
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 

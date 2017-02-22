@@ -1389,6 +1389,48 @@ public class runTest extends InitApplication {
 
 			String msg = t.run();
 		}
+	@Test
+		public void run_0218_2() throws Exception {
+
+			String parameter = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"RDBRANCH\",\"objId\":200000046,\"data\":{\"details\":[{\"names\":[{\"phonetic\":\"Aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"rowId\":\"07576561D94B408D93DA9F9016EE035D\",\"pid\":308000029,\"objStatus\":\"UPDATE\"}],\"rowId\":\"BB9A60444AAC447DA5A02912A9078738\",\"pid\":301000043,\"objStatus\":\"UPDATE\"}],\"rowId\":\"8F2578FCD2324E4AAC9BB27EC4D4DA2E\",\"pid\":200000046,\"objStatus\":\"UPDATE\"}}";
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
+	
+	@Test
+		public void run_0220_1() throws Exception {
+
+			String parameter = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":9,\"sideType\":1,\"sNodePid\":\"354020\",\"data\":{\"linkPids\":[487559]}}";
+			
+			
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
+	
+	@Test
+		public void run_0220_2() throws Exception {
+
+			String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":204003417,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.3280701637268,40.13417569137543],[116.32845,40.13381]]},\"catchInfos\":[{\"nodePid\":306002723,\"longitude\":116.3280701637268,\"latitude\":40.13417569137543}]},\"type\":\"RDLINK\"}";
+			
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
+	
+		
+	@Test
+		public void run_0222_2() throws Exception {
+
+			String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":210003533,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.33617,40.13427],[116.3355964422226,40.134577617232516]]},\"catchInfos\":[{\"nodePid\":306002729,\"longitude\":116.3355964422226,\"latitude\":40.134577617232516}]},\"type\":\"RDLINK\"}";
+			
+			
+			
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
 	
 	
 }

@@ -4,6 +4,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -66,14 +67,26 @@ public class Check {
                     targetLink.geteNodePid() || sourceLink.geteNodePid() == targetLink.getsNodePid() || sourceLink
                     .geteNodePid() == targetLink.geteNodePid())) {
                 checkDistance(viaPids, nodePid);
+                final int node = nodePid;
+                checkNodeBifurcation(new ArrayList<Integer>() {{
+                    add(node);
+                }});
                 return;
             }
             if (direct == 2 && sourceLink.geteNodePid() == targetLink.getsNodePid()) {
                 checkDistance(viaPids, sourceLink.geteNodePid());
+                final int node = sourceLink.geteNodePid();
+                checkNodeBifurcation(new ArrayList<Integer>() {{
+                    add(node);
+                }});
                 return;
             }
             if (direct == 3 && sourceLink.getsNodePid() == targetLink.geteNodePid()) {
                 checkDistance(viaPids, sourceLink.getsNodePid());
+                final int node = sourceLink.getsNodePid();
+                checkNodeBifurcation(new ArrayList<Integer>() {{
+                    add(node);
+                }});
                 return;
             }
         }
@@ -122,18 +135,16 @@ public class Check {
         if (nodePid != 0) {
             if (direct == 1) {
                 if (sourceLink.geteNodePid() == nodePid) {
-                    length += checkForwardDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor,
-                            sCoors, eCoors);
+                    length += checkForwardDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor, sCoors,
+                            eCoors);
                 } else if (sourceLink.getsNodePid() == nodePid) {
-                    length += checkReverseDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor,
-                            sCoors, eCoors);
+                    length += checkReverseDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor, sCoors,
+                            eCoors);
                 }
             } else if (direct == 2) {
-                length += checkForwardDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor,
-                        sCoors, eCoors);
+                length += checkForwardDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor, sCoors, eCoors);
             } else if (direct == 3) {
-                length += checkReverseDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor,
-                        sCoors, eCoors);
+                length += checkReverseDistance(factory, sSubCoors, eSubCoors, sourceCoor, targetCoor, sCoors, eCoors);
             }
         }
 
@@ -181,13 +192,13 @@ public class Check {
                     throw new Exception("通过改点位操作移动电子眼距离超过100m");
                 }
             }
-            checkBifurcation(viaLinks);
+            checkLinkBifurcation(viaLinks);
         }
     }
 
-    private double checkForwardDistance(GeometryFactory factory, List<Coordinate> sSubCoors,
-                                        List<Coordinate> eSubCoors, Coordinate sourceCoor, Coordinate targetCoor,
-                                        Coordinate[] sCoors, Coordinate[] eCoors) throws Exception {
+    private double checkForwardDistance(GeometryFactory factory, List<Coordinate> sSubCoors, List<Coordinate>
+            eSubCoors, Coordinate sourceCoor, Coordinate targetCoor, Coordinate[] sCoors, Coordinate[] eCoors) throws
+            Exception {
         double length = 0;
         boolean flag = false;
         for (int i = 0; i < sCoors.length - 1; i++) {
@@ -200,7 +211,7 @@ public class Check {
             }
         }
         Geometry sSubGeo = factory.createLineString(sSubCoors.toArray(new Coordinate[]{}));
-        length += sSubGeo.getLength();
+        length += GeometryUtils.getLinkLength(sSubGeo);
 
         flag = false;
         for (int i = eCoors.length - 1; i > 0; i--) {
@@ -213,14 +224,14 @@ public class Check {
             }
         }
         Geometry eSubGeo = factory.createLineString(eSubCoors.toArray(new Coordinate[]{}));
-        length += eSubGeo.getLength();
+        length += GeometryUtils.getLinkLength(eSubGeo);
 
         return length;
     }
 
-    private double checkReverseDistance(GeometryFactory factory, List<Coordinate> sSubCoors,
-                                        List<Coordinate> eSubCoors, Coordinate sourceCoor, Coordinate targetCoor,
-                                        Coordinate[] sCoors, Coordinate[] eCoors) throws Exception {
+    private double checkReverseDistance(GeometryFactory factory, List<Coordinate> sSubCoors, List<Coordinate>
+            eSubCoors, Coordinate sourceCoor, Coordinate targetCoor, Coordinate[] sCoors, Coordinate[] eCoors) throws
+            Exception {
         double length = 0;
         boolean flag = false;
         for (int i = 0; i < eCoors.length - 1; i++) {
@@ -233,7 +244,7 @@ public class Check {
             }
         }
         Geometry eSubGeo = factory.createLineString(eSubCoors.toArray(new Coordinate[]{}));
-        length += eSubGeo.getLength();
+        length += GeometryUtils.getLinkLength(eSubGeo);
 
         flag = false;
         for (int i = sCoors.length; i > 0; i--) {
@@ -246,21 +257,25 @@ public class Check {
             }
         }
         Geometry sSubGeo = factory.createLineString(sSubCoors.toArray(new Coordinate[]{}));
-        length += sSubGeo.getLength();
+        length += GeometryUtils.getLinkLength(sSubGeo);
 
         return length;
     }
 
-    private void checkBifurcation(List<RdLink> viaLinks) throws Exception {
+    private void checkLinkBifurcation(List<RdLink> viaLinks) throws Exception {
         Set<Integer> viaNodePids = new HashSet<>();
         for (RdLink link : viaLinks) {
             viaNodePids.add(link.getsNodePid());
             viaNodePids.add(link.geteNodePid());
         }
-        RdNodeSelector selector = new RdNodeSelector(conn);
         ArrayList<Integer> tmpList = new ArrayList<Integer>();
         tmpList.addAll(viaNodePids);
-        Map<Integer, Integer> map = selector.calRdLinkCountOnNodes(tmpList, false);
+        checkNodeBifurcation(tmpList);
+    }
+
+    private void checkNodeBifurcation(List<Integer> viaNodes) throws Exception {
+        RdNodeSelector selector = new RdNodeSelector(conn);
+        Map<Integer, Integer> map = selector.calRdLinkCountOnNodes(viaNodes, false);
         for (Integer count : map.values()) {
             if (count > 2) {
                 throw new Exception("通过改点位操作移动电子眼跨越分岔路口");

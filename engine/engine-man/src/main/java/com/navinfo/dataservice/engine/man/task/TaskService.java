@@ -1216,9 +1216,9 @@ public class TaskService {
 			sb.append("U.USER_ID,U.USER_REAL_NAME,");
 			sb.append("UG.GROUP_ID,UG.GROUP_NAME");
 			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
-			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append(" AND T.PROGRAM_ID = T.PROGRAM_ID");
-			sb.append(" AND T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
+			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
 			sb.append(" AND T.TASK_ID = " + taskId);
 			

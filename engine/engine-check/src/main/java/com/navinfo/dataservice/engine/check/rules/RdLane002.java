@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 /**
  * 车信	html	RDLANE002	后台	
  * 线线车信必须有经过线
@@ -124,7 +126,7 @@ public class RdLane002 extends baseRule {
 		}
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
-			int viaNum = rdLaneTopology.getVias().size();
+			int viaNum = getViaNum(rdLaneTopology.getPid());
 			if(rdLaneTopology.getRelationshipType()==2){
 				for(IRow objInnerLoop : checkCommand.getGlmList()){
 					if(objInnerLoop instanceof RdLaneVia){
@@ -153,6 +155,34 @@ public class RdLane002 extends baseRule {
 			}
 		}
 		
+	}
+
+	/**
+	 * @param pid
+	 * @return
+	 * @throws Exception 
+	 */
+	private int getViaNum(int pid) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT COUNT(1) FROM RD_LANE_TOPOLOGY T ,RD_LANE_VIA V");
+		sb.append(" WHERE T.RELATIONSHIP_TYPE = 1");
+		sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + pid);
+
+		String sql = sb.toString();
+		log.info("前检查RdLane002:" + sql);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(resultList!=null && resultList.size()>0){
+			return Integer.parseInt(resultList.get(0).toString());
+		}
+		return 0;
 	}
 
 	/**

@@ -271,6 +271,10 @@ public class Operation implements IOperation {
 		detail.setBranchType(command.getBranchType());
 
 		detail.setMesh(branch.mesh());
+		//方面分歧默认声音方向为2
+		if(command.getBranchType() == 1){
+			detail.setVoiceDir(2);
+		}
 
 		if (flag) {
 

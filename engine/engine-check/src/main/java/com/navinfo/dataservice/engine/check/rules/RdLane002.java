@@ -1,7 +1,12 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -36,8 +41,59 @@ public class RdLane002 extends baseRule {
 				RdLaneTopology rdLaneTopology = (RdLaneTopology)obj;
 				checkRdLaneTopology(rdLaneTopology,checkCommand);
 			}
+			//修改车信
+			else if(obj instanceof RdLaneVia){
+				RdLaneVia rdLaneVia = (RdLaneVia)obj;
+				checkRdLaneVia(rdLaneVia,checkCommand);
+			}
 		}
 	}
+	/**
+	 * @param rdLaneVia
+	 * @param checkCommand 
+	 * @throws SQLException 
+	 */
+	private void checkRdLaneVia(RdLaneVia rdLaneVia, CheckCommand checkCommand) throws SQLException {
+		if(rdLaneVia.status().equals(ObjStatus.DELETE)){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT COUNT(1) NUM FROM RD_LANE_TOPOLOGY T,RD_LANE_VIA V ");
+			sb.append("WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
+			sb.append("AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+			sb.append("AND T.U_RECORD <> 2");
+			sb.append("AND V.U_RECORD <> 2");
+			sb.append("AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
+
+			String sql = sb.toString();
+			log.info("RdLaneVia前检查RdLane002:" + sql);
+			
+			int num = 0;
+			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+			ResultSet resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()){
+				num = resultSet.getInt("NUM");
+			} 
+			resultSet.close();
+			pstmt.close();
+			
+			if(num==0){
+				for(IRow objInnerLoop : checkCommand.getGlmList()){
+					if(objInnerLoop instanceof RdLaneTopology){
+						RdLaneTopology rdLaneTopology = (RdLaneTopology)objInnerLoop;
+						if(rdLaneTopology.getPid() == rdLaneVia.getTopologyId()){
+							if((!rdLaneTopology.status().equals(ObjStatus.DELETE))&&(rdLaneTopology.getRelationshipType()==2)){
+								this.setCheckResult("", "", 0);
+								return;
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * @param rdLaneTopology
 	 * @param checkCommand 
@@ -62,6 +118,7 @@ public class RdLane002 extends baseRule {
 				}
 				if(viaNum==0){
 					this.setCheckResult("", "", 0);
+					return;
 				}
 			}
 		}
@@ -91,6 +148,7 @@ public class RdLane002 extends baseRule {
 				
 				if(viaNum==0){
 					this.setCheckResult("", "", 0);
+					return;
 				}
 			}
 		}

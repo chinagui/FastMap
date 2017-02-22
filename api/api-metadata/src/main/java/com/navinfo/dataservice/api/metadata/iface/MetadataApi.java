@@ -61,6 +61,12 @@ public interface MetadataApi {
 	 */
 	public List<Map<String, String>> scPointKindNewChainKind6Map() throws Exception;
 	/**
+	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, String>> scPointKindNew5List() throws Exception;
+	/**
 	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
 	 * @return Map<String, List<String>> key:chain value:poikind列表
 	 * @throws Exception

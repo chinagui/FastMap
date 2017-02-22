@@ -127,6 +127,15 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointKindNew.getInstance().scPointKindNewChainKind6Map();
 	}
 	/**
+	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, String>> scPointKindNew5List() throws Exception{
+		return ScPointKindNew.getInstance().scPointKindNew5List();
+	}
+	/**
 	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
 	 * @return Map<String, List<String>> key:chain value:poikind列表
 	 * @throws Exception

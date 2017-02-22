@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
+import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 
@@ -54,6 +55,21 @@ public class CheckTest {
 			for (String key : map1.keySet()) {
 				System.out.println("kindCode---"+key+"kindUse"+map1.get(key));
 			}
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test03() {
+		try {
+			List<Map<String, String>> scPointKindNew5List = ScPointKindNew.getInstance().scPointKindNew5List();
+			System.out.println(scPointKindNew5List.toString());
+			List<Map<String, String>> scPointKindNewChainKind5Map = ScPointKindNew.getInstance().scPointKindNewChainKind5Map();
+			List<Map<String, String>> scPointKindNewChainKind6Map = ScPointKindNew.getInstance().scPointKindNewChainKind6Map();
+			System.out.println(scPointKindNewChainKind5Map.toString());
+			System.out.println(scPointKindNewChainKind6Map.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();

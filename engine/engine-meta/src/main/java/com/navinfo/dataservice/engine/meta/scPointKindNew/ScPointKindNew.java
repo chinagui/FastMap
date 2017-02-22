@@ -20,6 +20,8 @@ public class ScPointKindNew {
 	private List<Map<String, String>> chainKind5Map = new ArrayList<Map<String, String>>();
 
 	private List<Map<String, String>> chainKind6Map = new ArrayList<Map<String, String>>();
+	
+	private List<Map<String, String>> ScPointKind5List = new ArrayList<Map<String, String>>();
 
 	private static class SingletonHolder {
 		private static final ScPointKindNew INSTANCE = new ScPointKindNew();
@@ -153,4 +155,49 @@ public class ScPointKindNew {
 		return chainKind6Map;
 	}
 
+	/**
+	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Map<String, String>> scPointKindNew5List() throws Exception {
+		if (ScPointKind5List == null || ScPointKind5List.isEmpty()) {
+			synchronized (this) {
+				if (ScPointKind5List == null || ScPointKind5List.isEmpty()) {
+					try {
+						String sql = "SELECT POIKIND, POIKIND_CHAIN,R_KIND,R_KIND_CHAIN FROM SC_POINT_KIND_NEW WHERE TYPE=5";
+
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								Map<String,String> map = new HashMap<String,String>();
+								String poiKind = rs.getString("POIKIND");
+								String poiKindChain = rs.getString("POIKIND_CHAIN");
+								String rKind = rs.getString("R_KIND");
+								String rKindChain = rs.getString("R_KIND_CHAIN");
+								map.put("poiKind", poiKind);
+								map.put("poiKindChain", poiKindChain);
+								map.put("rKind", rKind);
+								map.put("rKindChain", rKindChain);
+								ScPointKind5List.add(map);
+							}
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.close(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载SC_POINT_KIND_NEW失败：" + e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return ScPointKind5List;
+	}
 }

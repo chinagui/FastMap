@@ -1,86 +1,83 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode;
 
-import java.sql.Connection;
-
-import java.util.List;
-
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+
+import java.sql.Connection;
+import java.util.List;
+
 public class Process extends AbstractProcess<Command> {
 
-	private Check check = new Check();
+    private Check check = new Check();
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+    }
 
-	public Process(AbstractCommand command, Connection conn) throws Exception {
-		this(command);
-		this.setConn(conn);
-	}
+    public Process(AbstractCommand command, Connection conn) throws Exception {
+        this(command);
+        this.setConn(conn);
+    }
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
+        RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
 
-		RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
+        RdNodeSelector nodeSelector = new RdNodeSelector(this.getConn());
 
-		RdLink link = (RdLink) linkSelector.loadById(this.getCommand()
-				.getLinkPid(), true);
-		List<RdLink> links = linkSelector.loadByNodePidOnlyRdLink(this
-				.getCommand().getNodePid(), true);
-		RdNode node = (RdNode) nodeSelector.loadById(this.getCommand()
-				.getNodePid(), true);
-		this.getCommand().setLinks(links);
-		this.getCommand().setRdLink(link);
-		this.getCommand().setNode(node);
-		return true;
-	}
+        RdLink link = (RdLink) linkSelector.loadById(this.getCommand().getLinkPid(), true);
+        List<RdLink> links = linkSelector.loadByNodePidOnlyRdLink(this.getCommand().getNodePid(), true);
+        RdNode node = (RdNode) nodeSelector.loadById(this.getCommand().getNodePid(), true);
+        this.getCommand().setLinks(links);
+        this.getCommand().setRdLink(link);
+        this.getCommand().setNode(node);
+        return true;
+    }
 
-	@Override
-	public String preCheck() throws Exception {
+    @Override
+    public String preCheck() throws Exception {
+        check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
+        // 分离节点检查CRFI
+        check.checkCRFI(getConn(), getCommand().getNodePid());
+        return super.preCheck();
+    }
 
-		check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
-		return super.preCheck();
-	}
+    @Override
+    public String exeOperation() throws Exception {
+        Operation operation = new Operation(this.getCommand(), this.getConn());
+        String msg = operation.run(this.getResult());
+        return msg;
 
-	@Override
-	public String exeOperation() throws Exception {
-		Operation operation = new Operation(this.getCommand(), this.getConn());
-		String msg = operation.run(this.getResult());
-		return msg;
+    }
 
-	}
+    public String innerRun() throws Exception {
+        String msg;
+        try {
 
-	public String innerRun() throws Exception {
-		String msg;
-		try {
+            this.prepareData();
 
-			this.prepareData();
+            String preCheckMsg = this.preCheck();
 
-			String preCheckMsg = this.preCheck();
+            if (preCheckMsg != null) {
+                throw new Exception(preCheckMsg);
+            }
 
-			if (preCheckMsg != null) {
-				throw new Exception(preCheckMsg);
-			}
+            Operation operation = new Operation(this.getCommand(), this.getConn());
+            msg = operation.run(this.getResult());
 
-			Operation operation = new Operation(this.getCommand(),
-					this.getConn());
-			msg = operation.run(this.getResult());
+            this.postCheck();
+        } catch (Exception e) {
 
-			this.postCheck();
-		} catch (Exception e) {
+            this.getConn().rollback();
 
-			this.getConn().rollback();
-
-			throw e;
-		}
-		return msg;
-	}
+            throw e;
+        }
+        return msg;
+    }
 
 }

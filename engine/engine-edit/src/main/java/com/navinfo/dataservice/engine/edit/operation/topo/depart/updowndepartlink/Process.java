@@ -28,7 +28,7 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public boolean prepareData() throws Exception {
         lockRdLinks();
-        new Check(getCommand(), getConn()).preCheck();
+        //new Check(getCommand(), getConn()).preCheck();
         return true;
     }
 

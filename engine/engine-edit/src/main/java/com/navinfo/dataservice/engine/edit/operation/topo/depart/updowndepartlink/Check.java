@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartlink;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.glm.model.rd.crf.RdObjectInter;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;

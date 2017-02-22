@@ -1,18 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairrdlink;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
@@ -21,8 +17,14 @@ import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Check {
 
@@ -122,6 +124,7 @@ public class Check {
 
     public void checkCRFI(Connection conn, Command command) throws Exception {
         RdInterSelector selector = new RdInterSelector(conn);
+        AbstractSelector nodeFormSelector = new AbstractSelector(RdNodeForm.class, conn);
         for (int i = 0; i < command.getCatchInfos().size(); i++) {
             JSONObject obj = command.getCatchInfos().getJSONObject(i);
             // 分离移动的node
@@ -130,6 +133,14 @@ public class Check {
 
             if (!inters.isEmpty())
                 throwException("此点做了CRFI信息，不允许移动");
+
+            List<IRow> forms = nodeFormSelector.loadRowsByParentId(nodePid, false);
+            for (IRow f : forms) {
+                RdNodeForm form = (RdNodeForm) f;
+                if (form.getFormOfWay() == 3) {
+                    throwException("此点做了CRFI信息，不允许移动");
+                }
+            }
         }
     }
 

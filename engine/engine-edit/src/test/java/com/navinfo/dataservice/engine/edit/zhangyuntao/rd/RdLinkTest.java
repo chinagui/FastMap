@@ -62,10 +62,11 @@ public class RdLinkTest extends InitApplication {
         String parameter = "{\"command\":\"REPAIR\",\"dbId\":42,\"objId\":100008849," +
                 "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083]," +
                 "[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]}," +
-                "" + "" + "\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.44574403762817,39.91689151500802]," +
-                "[116.44597470760347,39.91648007577787]]},\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+                "" + "" + "" + "\"type\":\"RDLINK\"}";
+        parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":206003555," +
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.31002426147461," +
+                "40.123708377030866],[116.30914,40.12379]]},\"catchInfos\":[{\"nodePid\":200002806," +
+                "\"longitude\":116.31002426147461,\"latitude\":40.123708377030866}]},\"type\":\"RDLINK\"}";
         TestUtil.run(parameter);
     }
 
@@ -123,33 +124,33 @@ public class RdLinkTest extends InitApplication {
         // {\"rowId\":[\"F16A0EEA8FB04EC2A1F1F099EBA60392\",\"CBEACA83C9664EB19024F7E8A3B80CBA\"],
         // \"objStatus\":\"DELETE\"}]}}";
         String requester = "{ \"command\": \"UPDATE\", \"dbId\": 17, \"type\": \"RDLINK\", \"linkPids\": [302002756, " +
-                "" + "" + "303002740, 304002735], \"data\": [{ \"kind\": 6, \"pid\": 302002756, \"objStatus\": " +
-                "\"UPDATE\"," + " " + "\"names\": [{ \"rowId\": \"8E19A3597DCB4FE4AB46769F6BAA8766\", \"objStatus\": " +
-                "\"UPDATE\", " + "\"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { \"linkPid\": 302002756, " +
-                "\"rowId\": " + "\"7E0F87B8EDFB469D810A15C5BAF429B4\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", " +
-                "\"seqNum\": 2, " + "\"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, \"code\":" + " " + "0, \"objStatus\": \"DELETE\", \"pid\": 302002756 }, { " +
-                "\"linkPid\": 302002756, \"rowId\": \"\"," + " " + "\"nameGroupid\": 3539279, \"name\": \"１７线街\", " +
-                "\"seqNum\": 2, \"nameClass\": 1, \"inputTime\": " + "\"\", " + "\"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, \"code\": 0, \"objStatus\": \"INSERT\" " + "}] }, { " + "\"kind\": 6, \"pid\": " +
-                "303002740, \"objStatus\": \"UPDATE\", \"names\": [{ \"rowId\": " +
-                "\"037FED0808AA4CAD953EB4543C2B9889\", \"objStatus\": \"UPDATE\", \"nameGroupid\": 307358, " +
-                "\"name\": " + "\"212 City Ave\" }, { \"linkPid\": 303002740, \"rowId\": " +
-                "\"05598049E4924812A0B8A95D409747FB\", " + "\"nameGroupid\": 3539279, \"name\": \"１７线街\", " +
-                "\"seqNum\":" + " 2, \"nameClass\": 1, \"inputTime\": \"\", " + "\"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, " + "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": " + "303002740 }, { " +
-                "\"linkPid\": 303002740, " + "\"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": " + "\"１７线街\", " +
-                "\"seqNum\": 2, \"nameClass\": 1," + " \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, \"code\": 0, " + "\"objStatus\": \"INSERT\" }] }, { \"kind\": 6, \"pid\": " +
-                "304002735, " + "\"objStatus\": \"UPDATE\", " + "\"names\": [{ \"rowId\": " +
-                "\"0682BB237F7645B7B3ABF29EB8AB39B7\", " + "\"objStatus\": \"UPDATE\", " + "\"nameGroupid\": 307358, " +
-                "\"name\": \"212 City Ave\" }, { \"linkPid\": " + "304002735, \"rowId\": " +
-                "\"8C7CBE80D2CC4D239DE09C7CD5AC2BAB\", \"nameGroupid\": 3539279, \"name\": " + "\"１７线街\", " +
-                "\"seqNum\":" + " 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, " +
-                "\"routeAtt\": 0, " + "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": 304002735 }, { \"linkPid\": "
-                + "304002735, " + "\"rowId\": \"\", \"nameGroupid\": 3539279, \"name\": \"１７线街\", \"seqNum\": 2, " +
-                "\"nameClass\": 1," + " \"inputTime\": \"\", \"nameType\": 0, \"srcFlag\": 9, \"routeAtt\": 0, " +
-                "\"code\": " + "0, " + "\"objStatus\": \"INSERT\" }] }] }";
+                "" + "" + "" + "303002740, 304002735], \"data\": [{ \"kind\": 6, \"pid\": 302002756, \"objStatus\": "
+                + "\"UPDATE\"," + " " + "\"names\": [{ \"rowId\": \"8E19A3597DCB4FE4AB46769F6BAA8766\", " +
+                "\"objStatus\": " + "\"UPDATE\", " + "\"nameGroupid\": 307358, \"name\": \"212 City Ave\" }, { " +
+                "\"linkPid\": 302002756, " + "\"rowId\": " + "\"7E0F87B8EDFB469D810A15C5BAF429B4\", \"nameGroupid\": " +
+                "3539279, \"name\": \"１７线街\", " + "\"seqNum\": 2, " + "\"nameClass\": 1, \"inputTime\": \"\", " +
+                "\"nameType\": 0, \"srcFlag\": 9, " + "\"routeAtt\": 0, \"code\":" + " " + "0, \"objStatus\": " +
+                "\"DELETE\", \"pid\": 302002756 }, { " + "\"linkPid\": 302002756, \"rowId\": \"\"," + " " +
+                "\"nameGroupid\": 3539279, \"name\": \"１７线街\", " + "\"seqNum\": 2, \"nameClass\": 1, \"inputTime\": "
+                + "\"\", " + "\"nameType\": 0, \"srcFlag\": 9, " + "\"routeAtt\": 0, \"code\": 0, \"objStatus\": " +
+                "\"INSERT\" " + "}] }, { " + "\"kind\": 6, \"pid\": " + "303002740, \"objStatus\": \"UPDATE\", " +
+                "\"names\": [{ \"rowId\": " + "\"037FED0808AA4CAD953EB4543C2B9889\", \"objStatus\": \"UPDATE\", " +
+                "\"nameGroupid\": 307358, " + "\"name\": " + "\"212 City Ave\" }, { \"linkPid\": 303002740, " +
+                "\"rowId\": " + "\"05598049E4924812A0B8A95D409747FB\", " + "\"nameGroupid\": 3539279, \"name\": " +
+                "\"１７线街\", " + "\"seqNum\":" + " 2, \"nameClass\": 1, \"inputTime\": \"\", " + "\"nameType\": 0, " +
+                "\"srcFlag\": 9, " + "\"routeAtt\": 0, " + "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": " +
+                "303002740 }, { " + "\"linkPid\": 303002740, " + "\"rowId\": \"\", \"nameGroupid\": 3539279, " +
+                "\"name\": " + "\"１７线街\", " + "\"seqNum\": 2, \"nameClass\": 1," + " \"inputTime\": \"\", " +
+                "\"nameType\": 0, \"srcFlag\": 9, " + "\"routeAtt\": 0, \"code\": 0, " + "\"objStatus\": \"INSERT\" " +
+                "}] }, { \"kind\": 6, \"pid\": " + "304002735, " + "\"objStatus\": \"UPDATE\", " + "\"names\": [{ " +
+                "\"rowId\": " + "\"0682BB237F7645B7B3ABF29EB8AB39B7\", " + "\"objStatus\": \"UPDATE\", " +
+                "\"nameGroupid\": 307358, " + "\"name\": \"212 City Ave\" }, { \"linkPid\": " + "304002735, " +
+                "\"rowId\": " + "\"8C7CBE80D2CC4D239DE09C7CD5AC2BAB\", \"nameGroupid\": 3539279, \"name\": " +
+                "\"１７线街\", " + "\"seqNum\":" + " 2, \"nameClass\": 1, \"inputTime\": \"\", \"nameType\": 0, " +
+                "\"srcFlag\": 9, " + "\"routeAtt\": 0, " + "\"code\": 0, \"objStatus\": \"DELETE\", \"pid\": " +
+                "304002735 }, { \"linkPid\": " + "304002735, " + "\"rowId\": \"\", \"nameGroupid\": 3539279, " +
+                "\"name\": \"１７线街\", \"seqNum\": 2, " + "\"nameClass\": 1," + " \"inputTime\": \"\", \"nameType\": 0," +
+                " \"srcFlag\": 9, \"routeAtt\": 0, " + "\"code\": " + "0, " + "\"objStatus\": \"INSERT\" }] }] }";
         requester = "{\"command\":\"BATCH\",\"dbId\":249,\"type\":\"RDLINK\"," +
                 "\"data\":[{\"intRtics\":[{\"linkPid\":490986,\"rowId\":\"DDA3B301E2AE47DBA6B3E75C6282CE05\"," +
                 "\"code\":1,\"rank\":3,\"rticDir\":2,\"updownFlag\":\"1\",\"rangeType\":1,\"objStatus\":\"UPDATE\"},"

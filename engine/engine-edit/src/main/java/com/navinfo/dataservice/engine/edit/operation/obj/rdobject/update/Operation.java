@@ -380,7 +380,7 @@ public class Operation implements IOperation {
 
 			List<IRow> links = rdObject.getLinks();
 
-			// 是否需要将road的link升级
+			// 是否需要将inter的link升级
 			boolean updateRdObject = false;
 
 			for (IRow row : links) {
@@ -405,15 +405,15 @@ public class Operation implements IOperation {
 					interPids.add(interObject.getInterPid());
 				}
 
-				// 传入的road如果之前在crf对象中时不做处理，不在的话加入crf对象的road子表中
+				// 传入的inter如果之前在crf对象中时不做处理，不在的话加入crf对象的inter子表中
 				if (!interPids.contains(inter.getPid())) {
-					RdObjectRoad objRoad = new RdObjectRoad();
+					RdObjectInter objInter = new RdObjectInter();
 
-					objRoad.setPid(rdObject.getPid());
+					objInter.setPid(rdObject.getPid());
 
-					objRoad.setRoadPid(inter.getPid());
+					objInter.setInterPid(inter.getPid());
 
-					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getPid());
+					result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
 				}
 			}
 		}

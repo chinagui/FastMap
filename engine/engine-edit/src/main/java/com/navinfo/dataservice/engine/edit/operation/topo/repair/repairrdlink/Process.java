@@ -13,46 +13,43 @@ import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
-	public Process(AbstractCommand command) throws Exception {
-		super(command);
-	}
+    public Process(AbstractCommand command) throws Exception {
+        super(command);
+    }
 
-	private Check check = new Check();
+    private Check check = new Check();
 
-	@Override
-	public boolean prepareData() throws Exception {
+    @Override
+    public boolean prepareData() throws Exception {
 
-		int linkPid = this.getCommand().getLinkPid();
+        int linkPid = this.getCommand().getLinkPid();
 
-		this.getCommand().setUpdateLink(
-				(RdLink) new RdLinkSelector(this.getConn()).loadById(linkPid,
-						true));
+        this.getCommand().setUpdateLink((RdLink) new RdLinkSelector(this.getConn()).loadById(linkPid, true));
 
-		// 查询需要修行的线上是否存在立交
-		RdGscSelector gscSelector = new RdGscSelector(this.getConn());
+        // 查询需要修行的线上是否存在立交
+        RdGscSelector gscSelector = new RdGscSelector(this.getConn());
 
-		List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(linkPid,
-				"RD_LINK", true);
+        List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
 
-		this.getCommand().setGscList(gscList);
+        this.getCommand().setGscList(gscList);
 
-		return false;
-	}
+        return false;
+    }
 
-	@Override
-	public String preCheck() throws Exception {
-		// check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
+    @Override
+    public String preCheck() throws Exception {
+        // check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
+        check.checkShapePointDistance(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()));
+        // 分离节点检查CRFI
+        check.checkCRFI(getConn(), getCommand());
+        return super.preCheck();
+    }
 
-		check.checkShapePointDistance(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()));
-		return super.preCheck();
-	}
-
-	@Override
-	public String exeOperation() throws Exception {
-		RdGscOperateUtils.checkIsMoveGscPoint(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()),
-				this.getConn(), this.getCommand().getLinkPid(),"RD_LINK");
-		return new Operation(this.getConn(), this.getCommand()).run(this
-				.getResult());
-	}
+    @Override
+    public String exeOperation() throws Exception {
+        RdGscOperateUtils.checkIsMoveGscPoint(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()), this
+                .getConn(), this.getCommand().getLinkPid(), "RD_LINK");
+        return new Operation(this.getConn(), this.getCommand()).run(this.getResult());
+    }
 
 }

@@ -40,8 +40,7 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public List<RdSlope> loadByOutLink(int linkPid, boolean isLock)
-            throws Exception {
+    public List<RdSlope> loadByOutLink(int linkPid, boolean isLock) throws Exception {
 
         List<RdSlope> rows = new ArrayList<RdSlope>();
 
@@ -63,10 +62,8 @@ public class RdSlopeSelector extends AbstractSelector {
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
-                AbstractSelector abSelector = new AbstractSelector(
-                        RdSlope.class, conn);
-                RdSlope slope = (RdSlope) abSelector.loadById(
-                        resultSet.getInt("pid"), false);
+                AbstractSelector abSelector = new AbstractSelector(RdSlope.class, conn);
+                RdSlope slope = (RdSlope) abSelector.loadById(resultSet.getInt("pid"), false);
                 rows.add(slope);
             }
 
@@ -88,8 +85,7 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public List<RdSlope> loadByViaLink(int linkPid, boolean isLock)
-            throws Exception {
+    public List<RdSlope> loadByViaLink(int linkPid, boolean isLock) throws Exception {
 
         List<RdSlope> rows = new ArrayList<RdSlope>();
 
@@ -98,7 +94,8 @@ public class RdSlopeSelector extends AbstractSelector {
         ResultSet resultSet = null;
 
         try {
-            String sql = "SELECT pid, row_id FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
+            String sql = "SELECT pid, row_id FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT " + "" +
+                    "(SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID = :1)";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -111,10 +108,8 @@ public class RdSlopeSelector extends AbstractSelector {
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
-                AbstractSelector abSelector = new AbstractSelector(
-                        RdSlope.class, conn);
-                RdSlope slope = (RdSlope) abSelector.loadById(
-                        resultSet.getInt("pid"), false);
+                AbstractSelector abSelector = new AbstractSelector(RdSlope.class, conn);
+                RdSlope slope = (RdSlope) abSelector.loadById(resultSet.getInt("pid"), false);
                 rows.add(slope);
             }
 
@@ -136,8 +131,7 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public List<RdSlopeVia> loadBySeriesLink(int linkPid, boolean isLock)
-            throws Exception {
+    public List<RdSlopeVia> loadBySeriesLink(int linkPid, boolean isLock) throws Exception {
 
         List<RdSlopeVia> rows = new ArrayList<RdSlopeVia>();
 
@@ -146,7 +140,8 @@ public class RdSlopeSelector extends AbstractSelector {
         ResultSet resultSet = null;
 
         try {
-            String sql = "SELECT link_pid,slope_pid,seq_num,row_id FROM rd_slope_via WHERE link_pid =:1 and u_record !=2";
+            String sql = "SELECT link_pid,slope_pid,seq_num,row_id FROM rd_slope_via WHERE link_pid =:1 and u_record " +
+                    "" + "!=2";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -183,15 +178,16 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public RdLink loadBySeriesRelationLink(int slopePid, int seqNum, boolean isLock)
-            throws Exception {
+    public RdLink loadBySeriesRelationLink(int slopePid, int seqNum, boolean isLock) throws Exception {
 
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
         RdLink link = null;
         try {
-            String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope_via rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.seq_num = :2 and rs.u_record !=2 and rl.u_record !=2";
+            String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope_via rs ,rd_link rl WHERE rs" +
+                    ".link_pid = rl.link_pid and  rs.slope_pid =:1 and rs.seq_num = :2 and rs.u_record !=2 and rl" +
+                    ".u_record !=2";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -227,15 +223,15 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public RdLink loadByOutLinkBySlopePid(int slopePid, boolean isLock)
-            throws Exception {
+    public RdLink loadByOutLinkBySlopePid(int slopePid, boolean isLock) throws Exception {
 
         PreparedStatement pstmt = null;
 
         ResultSet resultSet = null;
         RdLink link = null;
         try {
-            String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope rs ,rd_link rl WHERE rs.link_pid = rl.link_pid and  rs.pid =:1 and rs.u_record !=2 and rl.u_record !=2";
+            String sql = "SELECT rs.link_pid,rl.s_node_pid,rl.e_node_pid FROM rd_slope rs ,rd_link rl WHERE rs" + "" +
+                    ".link_pid = rl.link_pid and  rs.pid =:1 and rs.u_record !=2 and rl.u_record !=2";
 
             if (isLock) {
                 sql += " for update nowait";
@@ -269,8 +265,7 @@ public class RdSlopeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public List<RdSlope> loadByNodePids(Collection<Integer> nodePids, boolean isLock)
-            throws Exception {
+    public List<RdSlope> loadByNodePids(Collection<Integer> nodePids, boolean isLock) throws Exception {
         List<RdSlope> rows = new ArrayList<RdSlope>();
         if (nodePids.isEmpty())
             return rows;
@@ -293,10 +288,10 @@ public class RdSlopeSelector extends AbstractSelector {
             }
             pstmt = conn.prepareStatement(sql);
             resultSet = pstmt.executeQuery();
+            AbstractSelector abSelector = new AbstractSelector(RdSlope.class, conn);
             while (resultSet.next()) {
-                RdSlope rdSlope = new RdSlope();
-                ReflectionAttrUtils.executeResultSet(rdSlope, resultSet);
-                rows.add(rdSlope);
+                RdSlope slope = (RdSlope) abSelector.loadById(resultSet.getInt("pid"), false);
+                rows.add(slope);
             }
             return rows;
         } catch (Exception e) {

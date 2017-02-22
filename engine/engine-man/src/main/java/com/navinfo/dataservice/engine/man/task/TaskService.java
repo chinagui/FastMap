@@ -19,7 +19,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -27,8 +26,6 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
@@ -47,13 +44,11 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -1221,9 +1216,9 @@ public class TaskService {
 			sb.append("U.USER_ID,U.USER_REAL_NAME,");
 			sb.append("UG.GROUP_ID,UG.GROUP_NAME");
 			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
-			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append(" AND T.PROGRAM_ID = T.PROGRAM_ID");
-			sb.append(" AND T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
+			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
 			sb.append(" AND T.TASK_ID = " + taskId);
 			
@@ -1681,6 +1676,7 @@ public class TaskService {
 			par.put("au_db_sid",auDb.getDbServer().getSid());
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
+			par.put("phaseId",phaseId);
 			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
@@ -1689,13 +1685,20 @@ public class TaskService {
 			taskPar.put("province", cmsInfo.get("provinceName"));
 			taskPar.put("city", cmsInfo.get("cityName"));
 			taskPar.put("district", cmsInfo.get("blockName"));
-			taskPar.put("job_nature", cmsInfo.get("workProperty"));
-			taskPar.put("job_type", cmsInfo.get("workType"));
+			Object workProperty=cmsInfo.get("workProperty");
+			if(workProperty==null){workProperty="更新";}
+			taskPar.put("job_nature", workProperty);
+			Object workType=cmsInfo.get("workType");
+			if(workType==null){workType="行人导航";}
+			taskPar.put("job_type", workType);
+			//taskPar.put("job_type", null);
 			
 			par.put("taskid", taskPar);
+			log.info(par);
 			
 			FccApi fccApi = (FccApi) ApplicationContextUtil
 					.getBean("fccApi");
+			fccApi.tips2Aumark(par);
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1772,7 +1775,7 @@ public class TaskService {
 					+ "   AND CMST.CREATE_USER_ID = u.user_ID"
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
-					+ "   AND B.BLOCK_ID = C.CITY_ID";
+					+ "   AND B.CITY_ID = C.CITY_ID";
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result=new HashMap<String, Object>();
@@ -1831,18 +1834,29 @@ public class TaskService {
 			taskPar.put("province", cmsInfo.get("provinceName"));
 			taskPar.put("city", cmsInfo.get("cityName"));
 			taskPar.put("town", cmsInfo.get("blockName"));
-			taskPar.put("workType", cmsInfo.get("workProperty"));
-			taskPar.put("area", cmsInfo.get("workType"));
+			Object workProperty=cmsInfo.get("workProperty");
+			if(workProperty==null){workProperty="更新";}
+			taskPar.put("workType", workProperty);
+			Object workType=cmsInfo.get("workType");
+			if(workType==null){workType="行人导航";}
+			taskPar.put("area",workType);
 			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 			
-			par.put("taskid", taskPar);
+			par.put("taskInfo", taskPar);
 			
 			String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
 			Map<String,String> parMap = new HashMap<String,String>();
 			parMap.put("parameter", par.toString());
-			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);			
-			return 2;
+			log.info(par.toString());
+			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
+			//result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
+			JSONObject res=JSONObject.fromObject(result);
+			boolean success=(boolean)res.get("success");
+			if(success){return 2;}
+			else{
+				log.error(res.get("msg"));
+				return 3;}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			return 3;

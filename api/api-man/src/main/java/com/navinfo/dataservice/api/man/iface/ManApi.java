@@ -96,10 +96,10 @@ public interface ManApi{
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
 	
 	/**
-	 * @param grid 
-	 * @return grid对应的taskId的list
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
 	 * @throws Exception
-	 * author zl 2017.02.09
 	 */
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception;
 	/**

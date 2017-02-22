@@ -136,6 +136,9 @@ public class Check {
     public void checkRdDirectRAndLaneC(Connection conn, Command command) throws Exception {
         RdCrossSelector selector = new RdCrossSelector(conn);
         RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
+        RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
+
+        List<RdLaneConnexity> laneConnexities = null;
         for (int i = 0; i < command.getCatchInfos().size(); i++) {
             JSONObject obj = command.getCatchInfos().getJSONObject(i);
             // 分离移动的node
@@ -150,21 +153,18 @@ public class Check {
                 if (!directroutes.isEmpty())
                     throwException("此点为路口点，不允许移动");
 
-                RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
-                List<RdLaneConnexity> laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid
-                        (), false);
+                laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid(), false);
                 if (!laneConnexities.isEmpty())
                     throwException("此点为路口点，不允许移动");
+            }
 
-
-                laneConnexities = laneConnexitySelector.loadByLink(command.getLinkPid(), 3, false);
-                if (!laneConnexities.isEmpty()) {
-                    List<Integer> linkPids = new RdLinkSelector(conn).loadLinkPidByNodePid(nodePid, false);
-                    for (RdLaneConnexity laneConnexity : laneConnexities) {
-                        for (RdLaneVia via : laneConnexity.viaMap.values()) {
-                            if (linkPids.contains(via.getLinkPid())) {
-                                throwException("此点为车信退出线的进入点，不允许移动");
-                            }
+            laneConnexities = laneConnexitySelector.loadByLink(command.getLinkPid(), 2, false);
+            if (!laneConnexities.isEmpty()) {
+                List<Integer> linkPids = new RdLinkSelector(conn).loadLinkPidByNodePid(nodePid, false);
+                for (RdLaneConnexity laneConnexity : laneConnexities) {
+                    for (RdLaneVia via : laneConnexity.viaMap.values()) {
+                        if (linkPids.contains(via.getLinkPid())) {
+                            throwException("此点为车信退出线的进入点，不允许移动");
                         }
                     }
                 }

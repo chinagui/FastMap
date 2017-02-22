@@ -218,6 +218,15 @@ public class ManApiImpl implements ManApi {
 		// TODO Auto-generated method stub
 		return ProduceService.getInstance().getProduceProgram();
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#queryTaskIdsByGridIdList(java.util.List)
+	 */
+	@Override
+	public Map<Integer,Map<String,Integer>> queryCollectTaskIdsByGridIdList(List<Integer> gridIdList) throws Exception {
+		// TODO Auto-generated method stub
+		return GridService.getInstance().queryCollectTaskIdsByGridIdList(gridIdList);
+	}
 	
 }
 

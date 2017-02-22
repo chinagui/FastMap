@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -98,26 +100,59 @@ public class GLM04002 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdLinkPost(RdLink rdLink) throws Exception {
+		//获取该link上的gate
+		
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("SELECT COUNT(1) FROM RD_LINK RR,");
-		sb.append(" (SELECT G.PID,G.NODE_PID FROM RD_GATE G ,RD_LINK R");
+		sb.append("SELECT G.PID FROM RD_GATE G ,RD_LINK R");
 		sb.append(" WHERE (G.NODE_PID = R.S_NODE_PID OR G.NODE_PID = R.E_NODE_PID)");
 		sb.append(" AND R.U_RECORD <> 2");
 		sb.append(" AND G.U_RECORD <> 2");
-		sb.append(" AND R.LINK_PID = " + rdLink.getPid() + ") GATE");
-		sb.append(" WHERE (RR.S_NODE_PID = GATE.NODE_PID OR RR.E_NODE_PID = GATE.NODE_PID)");
-		sb.append(" AND RR.U_RECORD <> 2");
+		sb.append(" AND R.LINK_PID = " + rdLink.getPid());
 		
 		String sql = sb.toString();
 		log.info("RdLink后检查GLM04002:" + sql);
+		
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+		
+		ResultSet resultSet2 = pstmt.executeQuery();
+		List<Integer> gatePidList=new ArrayList<Integer>();
 
+		while (resultSet2.next()){
+			gatePidList.add(resultSet2.getInt("PID"));
+		} 
+		resultSet2.close();
+		pstmt.close();
+
+		for(Integer gatePid:gatePidList){
+			checkRdGate(gatePid,rdLink.getPid());
+		}	
+	}
+
+	/**
+	 * @param gatePid
+	 * @param linkPid 
+	 * @throws Exception 
+	 */
+	private void checkRdGate(Integer gatePid, int linkPid) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("SELECT COUNT(1) FROM RD_LINK RR,RD_GATE G");		
+		sb.append(" WHERE (RR.S_NODE_PID = GATE.NODE_PID OR RR.E_NODE_PID = GATE.NODE_PID)");
+		sb.append(" AND RR.U_RECORD <> 2");
+		sb.append(" AND G.PID = " + gatePid);
+		sb.append(" AND G.U_RECORD <> 2");
+		
+		String sql = sb.toString();
+		log.info("RdGate后检查GLM04002:" + sql);
+		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if((resultList.size()>0)&&(Integer.parseInt(resultList.get(0).toString())!=2)){
-			this.setCheckResult("", "", 0);
+			String target = "[RD_LINK," + linkPid + "]";
+			this.setCheckResult("", target, 0);
 		}
 		
 	}

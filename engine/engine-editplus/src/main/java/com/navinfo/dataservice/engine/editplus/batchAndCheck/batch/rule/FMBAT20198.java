@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 import java.util.Collection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -36,7 +37,7 @@ public class FMBAT20198 extends BasicBatchRule {
 				for(IxPoiParking parking : parkings)
 				{
 					if (!"00:00-24:00".equals(parking.getOpenTiime())){
-						parking.setOpenTiime("00:00-24:00");
+						parking.setOpenTiime(ExcelReader.h2f("00:00-24:00"));
 					}	
 				}
 			} catch (Exception e) {

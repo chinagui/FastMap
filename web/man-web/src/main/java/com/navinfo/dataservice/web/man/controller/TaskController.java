@@ -463,4 +463,22 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	@RequestMapping(value = "/task/queryCollectTaskIdsByGridIdList")
+	public ModelAndView queryCollectTaskIdsByGridIdList(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			JSONArray gridIds = dataJson.getJSONArray("gridIdList");
+			List<Integer> gridIdList = JSONArray.toList(gridIds);
+
+			Map<Integer,Map<String, Integer>> map = GridService.getInstance().queryCollectTaskIdsByGridIdList(gridIdList);
+			return new ModelAndView("jsonView", success(map));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

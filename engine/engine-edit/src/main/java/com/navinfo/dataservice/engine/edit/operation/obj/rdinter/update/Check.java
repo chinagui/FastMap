@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
@@ -39,7 +40,12 @@ public class Check {
 	public void checkNodeDirect(Connection conn) throws Exception {
 
 		String nodePids = JsonUtils.getStringValueFromJSONArray(this.command.getNodeArray());
-
+		
+		if(StringUtils.isEmpty(nodePids))
+		{
+			return;
+		}
+		
 		RdNodeSelector selector = new RdNodeSelector(conn);
 
 		Map<Integer, String> loadRdNodeWays = selector.loadRdNodeWays(nodePids);

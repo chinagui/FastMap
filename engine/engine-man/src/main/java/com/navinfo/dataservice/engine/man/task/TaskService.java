@@ -1619,6 +1619,7 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			taskUpdateCmsProgress(conn, phaseId, 3);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);

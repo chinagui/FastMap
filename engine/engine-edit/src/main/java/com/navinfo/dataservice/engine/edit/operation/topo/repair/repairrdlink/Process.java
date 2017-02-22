@@ -35,61 +35,60 @@ public class Process extends AbstractProcess<Command> {
 
         List<RdGsc> gscList = gscSelector.loadRdGscLinkByLinkPid(linkPid, "RD_LINK", true);
 
-        this.getCommand().setGscList(gscList);     	
+        this.getCommand().setGscList(gscList);
 
         return false;
     }
 
-	
-	private void parameterCheck() throws Exception {
 
-		DepartCheck departCheck = new DepartCheck(this.getConn());
-		
-		RdLinkSelector rdLinkSelector=new RdLinkSelector(this.getConn());
+    private void parameterCheck() throws Exception {
 
-		if (this.getCommand().getCatchInfos() != null
-				&& this.getCommand().getCatchInfos().size() > 0) {
+        DepartCheck departCheck = new DepartCheck(this.getConn());
 
-			List<Integer> nodePids = new ArrayList<Integer>();
+        RdLinkSelector rdLinkSelector = new RdLinkSelector(this.getConn());
 
-			for (int i = 0; i < this.getCommand().getCatchInfos().size(); i++) {
-				JSONObject obj = this.getCommand().getCatchInfos()
-						.getJSONObject(i);
-				// 分离移动的node
-				nodePids.add(obj.getInt("nodePid"));
-			}
+        if (this.getCommand().getCatchInfos() != null && this.getCommand().getCatchInfos().size() > 0) {
 
-			for (int nodePid : nodePids) {
+            List<Integer> nodePids = new ArrayList<Integer>();
 
-				List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(
-						nodePid, false);
+            for (int i = 0; i < this.getCommand().getCatchInfos().size(); i++) {
+                JSONObject obj = this.getCommand().getCatchInfos().getJSONObject(i);
+                // 分离移动的node
+                nodePids.add(obj.getInt("nodePid"));
+            }
 
-				if (linkPids.size() > 1) {
-					departCheck.checkIsSameNode(nodePid, "RD_NODE");
-				}
-			}
+            for (int nodePid : nodePids) {
 
-			if (nodePids.size() > 0) {
-				departCheck.checkIsVia(this.getCommand().getLinkPid());
-			}
-		}
-	}
-    
+                List<Integer> linkPids = rdLinkSelector.loadLinkPidByNodePid(nodePid, false);
+
+                if (linkPids.size() > 1) {
+                    departCheck.checkIsSameNode(nodePid, "RD_NODE");
+                }
+            }
+
+            if (nodePids.size() > 0) {
+                departCheck.checkIsVia(this.getCommand().getLinkPid());
+            }
+        }
+    }
+
     @Override
     public String preCheck() throws Exception {
-		
+
         // check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
         check.checkShapePointDistance(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()));
         // 分离节点检查CRFI
         check.checkCRFI(getConn(), getCommand());
+        // 分离节点检查顺行
+        check.checkRdDirectRAndLaneC(getConn(), getCommand());
         return super.preCheck();
     }
 
     @Override
     public String exeOperation() throws Exception {
-    
-    	parameterCheck();  
-    	
+
+        parameterCheck();
+
         RdGscOperateUtils.checkIsMoveGscPoint(GeoTranslator.jts2Geojson(this.getCommand().getLinkGeom()), this
                 .getConn(), this.getCommand().getLinkPid(), "RD_LINK");
         return new Operation(this.getConn(), this.getCommand()).run(this.getResult());

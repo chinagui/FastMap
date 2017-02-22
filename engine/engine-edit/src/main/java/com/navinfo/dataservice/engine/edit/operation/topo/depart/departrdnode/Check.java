@@ -9,8 +9,14 @@ import java.util.Set;
 
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
+import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
 public class Check {
@@ -64,10 +70,12 @@ public class Check {
     public void checkIsVia(Connection conn, int linkPid) throws Exception {
         String sql = "SELECT LINK_PID FROM RD_LANE_VIA WHERE LINK_PID = :1 AND ROWNUM = 1 AND U_RECORD != 2 UNION " +
                 "ALL" + " SELECT LINK_PID FROM RD_RESTRICTION_VIA WHERE LINK_PID = :2 AND ROWNUM = 1 AND U_RECORD != " +
-                "" + "2 UNION " + "ALL SELECT LINK_PID FROM RD_VOICEGUIDE_VIA WHERE LINK_PID = :3 AND ROWNUM = 1 AND " +
-                "" + "U_RECORD != 2 " + "UNION ALL SELECT LINK_PID FROM RD_BRANCH_VIA WHERE LINK_PID = :4 AND ROWNUM " +
-                "= 1 " + "AND U_RECORD != 2 " + "UNION ALL SELECT LINK_PID FROM RD_DIRECTROUTE_VIA WHERE LINK_PID = " +
-                ":5 AND " + "ROWNUM = 1 AND U_RECORD !=" + " 2";
+                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "2 UNION " + "ALL SELECT LINK_PID FROM " +
+                "RD_VOICEGUIDE_VIA" + " " + "WHERE " + "LINK_PID" + " = :3" + " AND " + "" + "ROWNUM = 1" + " AND " +
+                "" + "U_RECORD != 2 " + "UNION ALL " + "SELECT LINK_PID " + "FROM " + "RD_BRANCH_VIA " + "WHERE " +
+                "LINK_PID = :4 " + "AND" + " " + "ROWNUM " + "= 1 " + "" + "AND U_RECORD != " + "2 " + "UNION ALL " +
+                "SELECT " + "LINK_PID FROM " + "RD_DIRECTROUTE_VIA " + "WHERE LINK_PID = " + ":5 AND" + " " +
+                "ROWNUM" + " = 1 AND U_RECORD" + " !=" + " 2";
 
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -131,6 +139,26 @@ public class Check {
         List<RdInter> inters = selector.loadInterByNodePid(String.valueOf(nodePid), false);
         if (!inters.isEmpty())
             throwException("此点做了CRFI信息，不允许移动");
+    }
+
+    public void checkRdDirectRAndLaneC(Connection conn, Integer nodePid) throws Exception {
+        RdCrossSelector selector = new RdCrossSelector(conn);
+        RdCross cross = null;
+        try {
+            cross = selector.loadCrossByNodePid(nodePid, false);
+        } catch (Exception e) {
+        }
+        if (null != cross) {
+            RdDirectrouteSelector directrouteSelector = new RdDirectrouteSelector(conn);
+            List<RdDirectroute> directroutes = directrouteSelector.getRestrictionByCrossPid(cross.pid(), false);
+            if (!directroutes.isEmpty())
+                throwException("此点为路口点，不允许移动");
+            RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
+            List<RdLaneConnexity> laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid(),
+                    false);
+            if (!laneConnexities.isEmpty())
+                throwException("此点为路口点，不允许移动");
+        }
     }
 
 }

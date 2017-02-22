@@ -56,6 +56,8 @@ public class Process extends AbstractProcess<Command> {
         check.checkIsVia(this.getConn(), this.getCommand().getLinkPid());
         // 分离节点检查CRFI
         check.checkCRFI(getConn(), getCommand().getNodePid());
+        // 分离节点检查顺行
+        check.checkRdDirectRAndLaneC(getConn(), getCommand().getNodePid());
         return super.preCheck();
     }
 

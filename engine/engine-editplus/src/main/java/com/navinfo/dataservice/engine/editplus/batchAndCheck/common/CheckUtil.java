@@ -552,4 +552,63 @@ public class CheckUtil {
     	}
     }
     
+    /**
+     * 通过poiPid查询RELATION_TYPE字段
+     * @param groupId
+     * @param conn
+     * @return	GROUP_ID
+     * @throws Exception
+     */
+    public static List<Long> getSamePoiGroupIds(Long pid,int relationType ,Connection conn) throws Exception {
+    	String sql = "SELECT DISTINCT S.GROUP_ID,S.RELATION_TYPE FROM IX_SAMEPOI S,IX_SAMEPOI_PART P "
+    			+ "WHERE S.GROUP_ID = P.GROUP_ID AND P.POI_PID=:1 AND S.RELATION_TYPE =:2 "
+    			+ "AND S.U_RECORD <>2 AND P.U_RECORD <>2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> relationTypes = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, pid);
+    		pstmt.setInt(2, relationType);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			relationTypes.add(rs.getLong("GROUP_ID"));
+    		}
+    		return relationTypes;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过groupId查询记录数
+     * @param groupId
+     * @param conn
+     * @return	POI_PID
+     * @throws Exception
+     */
+    public static List<Long> getSamePoiCounts(Long groupId,Connection conn) throws Exception {
+    	String sql = "SELECT DISTINCT P.POI_PID FROM IX_SAMEPOI_PART P WHERE P.GROUP_ID =:1 AND P.U_RECORD <>2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	List<Long> counts = new ArrayList<Long>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		pstmt.setLong(1, groupId);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			counts.add(rs.getLong("POI_PID"));
+    		}
+    		return counts;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
 }

@@ -260,6 +260,7 @@ public class GLM28016 extends baseRule{
 
 				//查出CRFRoad内所有link及端点信息
 				Map<Integer,List<Integer>> rdLinks=new HashMap<Integer,List<Integer>>();
+				Map<Integer,Integer> rdLinkNodePidMap = new HashMap<Integer,Integer>();
 				StringBuilder sb2 = new StringBuilder();
 				
 				sb2.append(" SELECT R.LINK_PID,R.S_NODE_PID,R.E_NODE_PID FROM RD_LINK R WHERE R.U_RECORD <> 2 AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
@@ -271,12 +272,37 @@ public class GLM28016 extends baseRule{
 
 				while (resultSet2.next()){
 					List<Integer> nodes = new ArrayList<Integer>();
-					nodes.add(resultSet2.getInt("S_NODE_PID"));
-					nodes.add(resultSet2.getInt("E_NODE_PID"));
+					int s_node_pid = resultSet2.getInt("S_NODE_PID");
+					int e_node_pid = resultSet2.getInt("E_NODE_PID");
+					nodes.add(s_node_pid);
+					nodes.add(e_node_pid);
+					
+					if(rdLinkNodePidMap.containsKey(s_node_pid)){
+						int num = rdLinkNodePidMap.get(s_node_pid);
+						rdLinkNodePidMap.put(s_node_pid, num+1);
+					}else{
+						rdLinkNodePidMap.put(s_node_pid, 1);
+					}
+					if(rdLinkNodePidMap.containsKey(e_node_pid)){
+						int num = rdLinkNodePidMap.get(e_node_pid);
+						rdLinkNodePidMap.put(e_node_pid, num+1);
+					}else{
+						rdLinkNodePidMap.put(e_node_pid, 1);
+					}
 					rdLinks.put(resultSet2.getInt("LINK_PID"), nodes);
 				} 
 				resultSet2.close();
 				pstmt2.close();
+				
+				//判断CRFRoad是否有单独的点,且该点不落在CRFI中，有则报错
+				for(Map.Entry<Integer, Integer> entry:rdLinkNodePidMap.entrySet()){
+					if(entry.getValue()==1){
+						if(!rdInterNodeMap.keySet().contains(entry.getKey())){
+							this.setCheckResult("", "", 0);
+							return;
+						}
+					}
+				}
 				
 				//如果涉及到的CRFI个数为0，报log
 				if(rdInterPidSet.size()==0){

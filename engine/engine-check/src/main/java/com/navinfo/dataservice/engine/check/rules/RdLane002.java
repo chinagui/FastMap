@@ -126,8 +126,12 @@ public class RdLane002 extends baseRule {
 		}
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
+			int relationshipType = 1;
+			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
+				relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
+			}
 			int viaNum = getViaNum(rdLaneTopology.getPid());
-			if(rdLaneTopology.getRelationshipType()==2){
+			if(relationshipType==2){
 				for(IRow objInnerLoop : checkCommand.getGlmList()){
 					if(objInnerLoop instanceof RdLaneVia){
 						RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;

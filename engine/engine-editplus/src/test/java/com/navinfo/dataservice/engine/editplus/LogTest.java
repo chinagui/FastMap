@@ -33,7 +33,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class LogTest {
 
 	/**
-	 * LKLLLLL
+	 * LKLLLLLmm
 	 */
 	public LogTest() {
 		// TODO Auto-generated constructor stub

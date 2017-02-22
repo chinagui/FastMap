@@ -49,7 +49,7 @@ public class GLM23009 extends baseRule {
 
 			sb.append("SELECT K.GEOMETRY, '[RD_ELECTRONICEYE,' || K.PID || ']' TARGET, K.MESH_ID FROM RD_ELECTRONICEYE K WHERE K.PID =");
 			sb.append(linkPid);
-			sb.append(" AND K.U_RECORD <> 2 AND (K.SPEED_LIMIT <> 0 OR ((K.SPEED_LIMIT > 100 AND K.SPEED_LIMIT < 1200) AND MOD(K.SPEED_LIMIT, 50) = 0)) ");
+			sb.append(" AND K.U_RECORD <> 2 AND K.SPEED_LIMIT <> 0 AND K.SPEED_LIMIT >= 100 AND K.SPEED_LIMIT < 1200 AND MOD(K.SPEED_LIMIT, 50) != 0");
 
 			log.info("GLM23009后检查SQL："+sb.toString());
 			

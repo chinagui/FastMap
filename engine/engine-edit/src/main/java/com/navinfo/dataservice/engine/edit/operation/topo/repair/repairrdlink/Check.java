@@ -12,10 +12,12 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
+import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -147,11 +149,25 @@ public class Check {
                 List<RdDirectroute> directroutes = directrouteSelector.getRestrictionByCrossPid(cross.pid(), false);
                 if (!directroutes.isEmpty())
                     throwException("此点为路口点，不允许移动");
+
                 RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
                 List<RdLaneConnexity> laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid
                         (), false);
                 if (!laneConnexities.isEmpty())
                     throwException("此点为路口点，不允许移动");
+
+
+                laneConnexities = laneConnexitySelector.loadByLink(command.getLinkPid(), 3, false);
+                if (!laneConnexities.isEmpty()) {
+                    List<Integer> linkPids = new RdLinkSelector(conn).loadLinkPidByNodePid(nodePid, false);
+                    for (RdLaneConnexity laneConnexity : laneConnexities) {
+                        for (RdLaneVia via : laneConnexity.viaMap.values()) {
+                            if (linkPids.contains(via.getLinkPid())) {
+                                throwException("此点为车信退出线的进入点，不允许移动");
+                            }
+                        }
+                    }
+                }
             }
         }
     }

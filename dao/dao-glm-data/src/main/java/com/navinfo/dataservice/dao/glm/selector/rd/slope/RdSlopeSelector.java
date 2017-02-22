@@ -302,5 +302,53 @@ public class RdSlopeSelector extends AbstractSelector {
         }
     }
 
+    
+    /***
+    *
+    * 通过道路点查找坡度信息
+    *
+    * @param linkPid
+    * @param isLock
+    * @return
+    * @throws Exception
+    */
+   public List<RdSlope> loadByNode(int nodePid, boolean isLock)
+           throws Exception {
+
+       List<RdSlope> rows = new ArrayList<RdSlope>();
+
+       PreparedStatement pstmt = null;
+
+       ResultSet resultSet = null;
+
+       try {
+           String sql = "SELECT pid, row_id FROM rd_slope WHERE node_pid =:1 and u_record !=2";
+
+           if (isLock) {
+               sql += " for update nowait";
+           }
+
+           pstmt = conn.prepareStatement(sql);
+
+           pstmt.setInt(1, nodePid);
+
+           resultSet = pstmt.executeQuery();
+
+           while (resultSet.next()) {
+               AbstractSelector abSelector = new AbstractSelector(
+                       RdSlope.class, conn);
+               RdSlope slope = (RdSlope) abSelector.loadById(
+                       resultSet.getInt("pid"), false);
+               rows.add(slope);
+           }
+
+           return rows;
+       } catch (Exception e) {
+           throw e;
+       } finally {
+           DbUtils.closeQuietly(resultSet);
+           DbUtils.closeQuietly(pstmt);
+       }
+   }
 
 }

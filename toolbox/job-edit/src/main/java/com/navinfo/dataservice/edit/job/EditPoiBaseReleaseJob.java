@@ -22,6 +22,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -33,6 +34,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckRuleFactory;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
@@ -95,7 +97,16 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			operationResult.putAll(objsMap);
 			
 			CheckCommand checkCommand=new CheckCommand();
-			checkCommand.setOperationName("POI_ROW_COMMIT");
+			checkCommand.setOperationName(getOperationName());
+			
+			// 清理检查结果
+			log.info("清理检查结果");
+			DeepCoreControl deepControl = new DeepCoreControl();
+			List<Integer> pidIntList=new ArrayList<Integer>();
+			for(Long pidTmp:poiPids){
+				pidIntList.add(Integer.valueOf(pidTmp.toString()));
+			}
+			deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
 			
 			Check check=new Check(conn, operationResult);
 			check.operate(checkCommand);
@@ -137,6 +148,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+
+	public String getOperationName() {
+		return "POI_ROW_COMMIT";
 	}
 	
 	

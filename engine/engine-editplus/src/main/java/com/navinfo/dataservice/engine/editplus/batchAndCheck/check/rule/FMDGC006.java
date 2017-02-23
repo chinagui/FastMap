@@ -24,7 +24,7 @@ import com.sun.tools.javac.jvm.Code.Chain;
  * 找到多条记录，且POI的分类（KIND_CODE）和配置表SC_POINT_BRAND_FOODTYPE中CHAIN对应分类都不一致，报log:POI分类不在品牌对应的分类中，请确认。
  * @author zhangxiaoyi
  */
-public class FMPOI004 extends BasicCheckRule {
+public class FMDGC006 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

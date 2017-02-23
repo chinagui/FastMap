@@ -60,11 +60,11 @@ public class RdLane002 extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT COUNT(1) NUM FROM RD_LANE_TOPOLOGY T,RD_LANE_VIA V ");
-			sb.append("WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
-			sb.append("AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
-			sb.append("AND T.U_RECORD <> 2");
-			sb.append("AND V.U_RECORD <> 2");
-			sb.append("AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
+			sb.append(" WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
+			sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+			sb.append(" AND T.U_RECORD <> 2");
+			sb.append(" AND V.U_RECORD <> 2");
+			sb.append(" AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
 
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);

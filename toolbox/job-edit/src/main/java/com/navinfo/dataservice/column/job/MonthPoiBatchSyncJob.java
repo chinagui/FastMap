@@ -98,7 +98,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			log.info("获取poi对应的log信息");
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat
 					.loadByRowEditStatus(conn, pids);
-			log.info("加载poi信息以及对应子表信息");
+			log.info(" 加载poi信息以及对应子表信息");
 			Set<String> tabNames = new HashSet<String>();
 			tabNames.add("IX_POI_NAME");
 			tabNames.add("IX_POI_ADDRESS");

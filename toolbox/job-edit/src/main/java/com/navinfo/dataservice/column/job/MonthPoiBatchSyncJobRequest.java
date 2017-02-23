@@ -7,7 +7,7 @@ import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 /**
  * poi月库管理字段批处理
- * 必传参数： subtaskId
+ * 必传参数：  subtaskId
  * @author 赵凯凯
  */
 public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {

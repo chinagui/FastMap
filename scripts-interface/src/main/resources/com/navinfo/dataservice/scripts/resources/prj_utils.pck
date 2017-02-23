@@ -3,7 +3,7 @@ begin
   (link_pid   INTEGER,s_node_pid INTEGER,e_node_pid INTEGER,direct     INTEGER)
   on commit delete rows';
 
-  execute immediate 'create global temporary table TMP_RESTRICT2(link_pid   INTEGER,s_node_pid INTEGER,e_node_pid INTEGER,direct     INTEGER,via_path   VARCHAR2(250))on commit delete rows';
+  execute immediate 'create global temporary table TMP_RESTRICT2(link_pid   INTEGER,s_node_pid INTEGER,e_node_pid INTEGER,direct     INTEGER,via_path   VARCHAR2(2000))on commit delete rows';
 end;
 /
 
@@ -16,7 +16,7 @@ create or replace package package_utils is
     out_node1     varchar2(50),
     out_node2     varchar2(50),
     relation_type int,
-    via_path      varchar2(250));
+    via_path      varchar2(2000));
 
   type rows_record_restrict is table of record_restrict;
 

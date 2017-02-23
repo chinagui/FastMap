@@ -157,7 +157,7 @@ public class RDLANE005  extends baseRule {
 		sb.append(" AND T.TOPOLOGY_ID = " + pid);
 
 		String sql = sb.toString();
-		log.info("前检查RdLane002:" + sql);
+		log.info("前检查RdLane005:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

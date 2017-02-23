@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -59,7 +60,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         int faceRegionId = zoneFace.getRegionId();
         double type = 0;
         try {
-            type = new AdAdminSelector(conn).loadByAdminId(faceRegionId, false).getAdminType();
+            type = ((AdAdmin) new AdAdminSelector(conn).loadById(faceRegionId, false)).getAdminType();
         } catch (Exception e) {
         }
 
@@ -162,7 +163,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             double type = 0;
             try {
                 if (0 != faceRegionId && faceRegionId != face.getRegionId())
-                    type = new AdAdminSelector(conn).loadByAdminId(faceRegionId, false).getAdminType();
+                    type = ((AdAdmin) new AdAdminSelector(conn).loadById(faceRegionId, false)).getAdminType();
             } catch (Exception e) {
             }
             faceRegionId = face.getRegionId();

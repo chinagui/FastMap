@@ -59,7 +59,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 
 	@Override
 	public void execute() throws JobException {
-		log.info("start MonthPoiBatchSyncJob");
+		log.info(" start MonthPoiBatchSyncJob");
 		MonthPoiBatchSyncJobRequest myRequest = (MonthPoiBatchSyncJobRequest) request;
 		ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 		int taskId = myRequest.getTaskId();

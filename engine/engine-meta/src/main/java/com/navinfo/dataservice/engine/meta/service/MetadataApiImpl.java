@@ -502,6 +502,18 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<Integer,Map<String, String>> key:convert value:Map<String, String> ft:jt
+	 * @throws Exception
+	 */
+	@Override
+	public Map<Integer,Map<String, String>> tyCharacterFjtHzConvertFtMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().tyCharacterFjtHzConvertFtMap();
+	}
+	
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
 	 * @return Map<String, JSONObject> key:jt value:对应其它
 	 * @throws Exception
 	 */

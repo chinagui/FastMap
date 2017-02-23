@@ -163,45 +163,53 @@ public class GLM08004_6  extends baseRule{
 				viaLinkPids.add(rdRestrictionVia.getLinkPid());
 			}
 		}
-		//检查进入线/退出线
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
-		sb.append(" AND RLL.VEHICLE = 2147483790");
-		sb.append(" AND RLL.TIME_DOMAIN IS NULL");
-		sb.append(" AND RLL.U_RECORD <> 2");
-		sb.append(" AND RLL.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
-
-		String sql = sb.toString();
-		log.info("RdRestriction前检查GLM08004_6:" + sql);
-
+		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
+		//检查进入线/退出线
+		if(linkPids.size()!=0){
+			StringBuilder sb = new StringBuilder();
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			sb.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+			sb.append(" AND RLL.VEHICLE = 2147483790");
+			sb.append(" AND RLL.TIME_DOMAIN IS NULL");
+			sb.append(" AND RLL.U_RECORD <> 2");
+			sb.append(" AND RLL.LINK_PID IN (" + StringUtils.join(linkPids.toArray(),",") +")");
+
+			String sql = sb.toString();
+			log.info("RdRestriction前检查GLM08004_6:" + sql);
+
+			
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
 		}
+		
 		//检查经过线
-		StringBuilder sb2 = new StringBuilder();
+		if(viaLinkPids.size()!=0){
+			StringBuilder sb2 = new StringBuilder();
 
-		sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
-		sb2.append(" AND RLL.VEHICLE = 2147483790");
-		sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
-		sb2.append(" AND RLL.U_RECORD <> 2");
-		sb2.append(" AND RLL.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
-		sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
-		sb2.append(" AND RLF.FORM_OF_WAY = 50");
-		sb2.append(" AND RLF.U_RECORD <> 2)");
+			sb2.append("SELECT 1 FROM RD_LINK_LIMIT RLL WHERE RLL.TYPE = 2 ");
+			sb2.append(" AND RLL.VEHICLE = 2147483790");
+			sb2.append(" AND RLL.TIME_DOMAIN IS NULL");
+			sb2.append(" AND RLL.U_RECORD <> 2");
+			sb2.append(" AND RLL.LINK_PID IN (" + StringUtils.join(viaLinkPids.toArray(),",") +")");
+			sb2.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RLL.LINK_PID");
+			sb2.append(" AND RLF.FORM_OF_WAY = 50");
+			sb2.append(" AND RLF.U_RECORD <> 2)");
 
-		String sql2 = sb2.toString();
-		log.info("RdRestriction前检查GLM08004_6:" + sql2);
+			String sql2 = sb2.toString();
+			log.info("RdRestriction前检查GLM08004_6:" + sql2);
 
-		resultList = getObj.exeSelect(this.getConn(), sql2);
+			resultList = getObj.exeSelect(this.getConn(), sql2);
 
-		if(resultList.size()>0){
-			this.setCheckResult("", "", 0);
+			if(resultList.size()>0){
+				this.setCheckResult("", "", 0);
+			}
 		}
+		
 		
 	}
 

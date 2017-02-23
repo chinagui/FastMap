@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.Point;
 import org.apache.commons.collections.CollectionUtils;
@@ -56,15 +57,21 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         }
         // 获取关联face的regionId
         int faceRegionId = zoneFace.getRegionId();
+        double type = 0;
+        try {
+            type = new AdAdminSelector(conn).loadByAdminId(faceRegionId, false).getAdminType();
+        } catch (Exception e) {
+        }
+
         Geometry faceGeometry = shrink(zoneFace.getGeometry());
         // 判断link与zoneFace的关系
         // link在zoneFace内部
         if (isContainOrCover(linkGeometry, faceGeometry)) {
             // 新增或原link没有linkZone子数据时直接添加新的linkZone
             if (null == geometry || link.getZones().isEmpty()) {
-                linkZone = createLinkZone(link, faceRegionId, 0);
+                linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
                 result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
-                linkZone = createLinkZone(link, faceRegionId, 1);
+                linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
                 result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
             } else {
                 int side = 0;
@@ -78,7 +85,8 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                 }
                 if (link.getZones().size() == 1) {
-                    linkZone = createLinkZone(link, faceRegionId, 1 - side);
+                    linkZone = createLinkZoneWithType(link, faceRegionId, 1 - side, type);
+                    linkZone.setType(((RdLinkZone) link.getZones().get(0)).getType());
                     result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
                 }
             }
@@ -95,7 +103,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                 }
                 if (isCreate) {
-                    linkZone = createLinkZone(link, faceRegionId, 1);
+                    linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
                     result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
                 }
             } else {
@@ -109,7 +117,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                     }
                 }
                 if (isCreate) {
-                    linkZone = createLinkZone(link, faceRegionId, 0);
+                    linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
                     result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
                 }
             }
@@ -139,6 +147,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
+
         List<Integer> deleteLinkPids = new ArrayList<>();
         // 修形时对面内新增link赋zone属性
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);
@@ -149,15 +158,22 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
             RdLinkZone linkZone = null;
             // 获取关联face的regionId
-            int faceRegionId = face.getRegionId();
+            int faceRegionId = 0;
+            double type = 0;
+            try {
+                if (0 != faceRegionId && faceRegionId != face.getRegionId())
+                    type = new AdAdminSelector(conn).loadByAdminId(faceRegionId, false).getAdminType();
+            } catch (Exception e) {
+            }
+            faceRegionId = face.getRegionId();
             // 判断link与zoneFace的关系
             // link在zoneFace内部
             if (isContainOrCover(linkGeometry, geometry)) {
                 // 新增或原link没有linkZone子数据时直接添加新的linkZone
                 if (link.getZones().isEmpty()) {
-                    linkZone = createLinkZone(link, faceRegionId, 0);
+                    linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
                     result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
-                    linkZone = createLinkZone(link, faceRegionId, 1);
+                    linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
                     result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
                 } else {
                     int side = 0;
@@ -171,7 +187,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                         }
                     }
                     if (link.getZones().size() == 1) {
-                        linkZone = createLinkZone(link, faceRegionId, 1 - side);
+                        linkZone = createLinkZoneWithType(link, faceRegionId, 1 - side, type);
                         result.insertObject(linkZone, ObjStatus.INSERT, link.pid());
                     }
                 }
@@ -188,7 +204,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                         }
                     }
                     if (isCreate) {
-                        linkZone = createLinkZone(link, faceRegionId, 1);
+                        linkZone = createLinkZoneWithType(link, faceRegionId, 1, type);
                         result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
                     }
                 } else {
@@ -202,7 +218,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
                         }
                     }
                     if (isCreate) {
-                        linkZone = createLinkZone(link, faceRegionId, 0);
+                        linkZone = createLinkZoneWithType(link, faceRegionId, 0, type);
                         result.insertObject(linkZone, ObjStatus.INSERT, linkZone.parentPKValue());
                     }
                 }
@@ -352,6 +368,22 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         ZoneFace zoneFace = faces.get(0);
         return zoneFace;
     }
+
+    // 创建linkZone对象并返回
+    private static RdLinkZone createLinkZoneWithType(RdLink link, int faceRegionId, int side, double type) {
+        RdLinkZone linkZone;
+        linkZone = new RdLinkZone();
+        linkZone.setLinkPid(link.pid());
+        linkZone.setRegionId(faceRegionId);
+        linkZone.setSide(side);
+        if (type == 8) {
+            linkZone.setType(2);
+        } else if (type == 9) {
+            linkZone.setType(1);
+        }
+        return linkZone;
+    }
+
 
     // 创建linkZone对象并返回
     private static RdLinkZone createLinkZone(RdLink link, int faceRegionId, int side) {

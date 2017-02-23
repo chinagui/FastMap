@@ -1,0 +1,105 @@
+/* type=createDb */
+"request":{
+"serverType":"ORACLE",//必须，值域ORACLE/MYSQL/MONGODB
+"bizType":"copVersion",//必须，值域为业务库类型
+"dbName":"",//ORACLE类型库不需要，MONGODB，MYSQL库时指定数据库名时使用，如果为空job会创建一个随机的数据库名
+"userName":"XXX",//MONGODB，MYSQL类型库不需要，ORACLE库指定用户名时使用，如果为空job会创建一个随机的用户名
+"userPasswd":"XXX",//MONGODB，MYSQL类型库不需要，ORACLE库指定用户密码时使用，如果为空job会使用创建的用户名
+"descp":"description",//非必须，数据库用途描述
+"refDbName":"ref_db_name",//非必须，当创建库需要指定和某个已有的MONGODB,MYSQL库在一台服务器上时使用
+"refUserName":"ref_user_name",//非必须，当创建库需要指定和某个已有的ORACLE库在一台服务器上时使用
+"refBizType":"copVersion"////非必须，当创建库需要指定和某个已有的库在一台服务器上时使用
+}
+"response":{
+"exeStatus":3,
+"outDbId":50
+}
+
+/* type=gdbExport */
+"request":{
+"sourceDbId":3,//必须
+"targetDbId":18,//必须
+"condition":"mesh",//必须，暂时只支持mesh
+"conditionParams":["595670","595671"],//必须
+"featureType":"all",//必须，暂时只支持all
+"multiThread4Input":true,//非必须
+"multiThread4Output":true,//非必须
+"dataIntegrity":false//必须，是否带毛边
+}
+"response":{
+"exeStatus":3
+}
+
+/* type=gdbFullCopy */
+"request":{
+"sourceDbId":1,//和"sourceDbInfo"二选一
+"sourceDbInfo":"oracle,ip,port,sid,user name,user passwd",//和"sourceDbId"二选一
+"featureType":"poi",//非必须，值域poi/road/all，当specificTables属性不为空时，可以不指定
+"truncateData":false,//非必须，默认为false
+"targetDbId":19,//和"targetDbInfo"二选一
+"targetDbInfo":"oracle,ip,port,sid,user name,user passwd",//和"targetDbId"二选一
+"multiThread4Output":true,//非必须
+"tableReNames":[{"key":"TABLE_A","value":"TABLE_B_BAK"}],//非必须
+"specificTables":["TABLE_A","TABLE_B"],//非必须，如果不为空，则直接按照指定表进行全表复制
+"excludedTables":["TABLE_C","TABLE_D"]//非必须，如果不为空，则按照featureType加载复制表，然后再过滤
+}
+"response":{
+"exeStatus":3
+}
+
+/* type=diff */
+"request":{
+"leftDbId":1,//必须，变化库
+"rightDbId":2,//必须，基准库
+}
+
+/* type=gdbBatch */
+"request":{
+"grids":[59567101,59567102],
+"rules":[1,2,3],
+"targetDbId":43,
+"batchDbId":0,
+"createBatchDb":{"type":"createDb","request":{"serverType":"ORACLE","bizType":"copVersion","descp":"batch temp db"}},
+"expBatchDb":{"type":"gdbExport","request":{"condition":"mesh","featureType":"all","dataIntegrity":true}},
+"createBakDb":{"type":"createDb","request":{"serverType":"ORACLE","bizType":"copVersion","descp":"batch bak db"}},
+"copyBakDb":{"type":"gdbFullCopy","request":{"featureType":"all"}},
+"diff":{"type":"diff","request":{}},
+"commit":{"type":"gdbImport","request":{}}
+}
+
+/* type = gdbValidation */
+"request":{
+"grids":[59567101,59567102],
+"rules":[1,2,3],
+"targetDbId":43,
+"valDbId":0,
+"createValDb":{"type":"createDb","request":{
+"serverType":"ORACLE",
+"bizType":"copVersion",
+"descp":"validation temp db"}
+},
+"expValDb":{"type":"gdbExport","request":{
+"condition":"mesh",
+"featureType":"all",
+"dataIntegrity":true}
+},
+""
+}
+
+/* type=borrowData */
+"request":{
+"meshes":["595670","595671"],
+"borrowInDbId":1,
+"borrow":{"type":"gdbExport","request":{
+-- "sourceDbId":3,
+"targetDbId":1,//同borrowInDbId
+"condition":"mesh",//非必须，默认为"mesh"
+"conditionParams":["595670","595671"],//同meshes
+"featureType":"all",
+"mode":"delete_copy",
+"dataIntegrity":false}
+}
+}
+
+"response":{
+"exeStatus":3}

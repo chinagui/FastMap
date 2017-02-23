@@ -1,0 +1,13 @@
+{
+"meshes":["595670","595671"],
+"borrowInDbId":1,
+"borrow":{"type":"gdbExport","request":{
+-- "sourceDbId":3,
+"targetDbId":1,//同borrowInDbId
+"condition":"mesh",//非必须，默认为"mesh"
+"conditionParams":["595670","595671"],//同meshes
+"featureType":"all",
+"mode":"delete_copy",
+"dataIntegrity":false}
+}
+}

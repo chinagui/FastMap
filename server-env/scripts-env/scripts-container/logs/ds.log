@@ -1,0 +1,262 @@
+[2016-09-03 10:39:52,525]  INFO     0[main] - ?.?(?) - using logger: com.alibaba.dubbo.common.logger.log4j.Log4jLoggerAdapter
+[2016-09-03 10:39:52,815] DEBUG   290[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.rpc;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class Protocol$Adpative implements com.alibaba.dubbo.rpc.Protocol {
+public com.alibaba.dubbo.rpc.Invoker refer(java.lang.Class arg0, com.alibaba.dubbo.common.URL arg1) throws java.lang.Class {
+if (arg1 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg1;
+String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.Protocol) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.rpc.Protocol extension = (com.alibaba.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.Protocol.class).getExtension(extName);
+return extension.refer(arg0, arg1);
+}
+public void destroy() {throw new UnsupportedOperationException("method public abstract void com.alibaba.dubbo.rpc.Protocol.destroy() of interface com.alibaba.dubbo.rpc.Protocol is not adaptive method!");
+}
+public int getDefaultPort() {throw new UnsupportedOperationException("method public abstract int com.alibaba.dubbo.rpc.Protocol.getDefaultPort() of interface com.alibaba.dubbo.rpc.Protocol is not adaptive method!");
+}
+public com.alibaba.dubbo.rpc.Exporter export(com.alibaba.dubbo.rpc.Invoker arg0) throws com.alibaba.dubbo.rpc.Invoker {
+if (arg0 == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.Invoker argument == null");
+if (arg0.getUrl() == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.Invoker argument getUrl() == null");com.alibaba.dubbo.common.URL url = arg0.getUrl();
+String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.Protocol) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.rpc.Protocol extension = (com.alibaba.dubbo.rpc.Protocol)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.Protocol.class).getExtension(extName);
+return extension.export(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:52,968] DEBUG   443[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.rpc.cluster;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class Cluster$Adpative implements com.alibaba.dubbo.rpc.cluster.Cluster {
+public com.alibaba.dubbo.rpc.Invoker join(com.alibaba.dubbo.rpc.cluster.Directory arg0) throws com.alibaba.dubbo.rpc.cluster.Directory {
+if (arg0 == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.cluster.Directory argument == null");
+if (arg0.getUrl() == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.cluster.Directory argument getUrl() == null");com.alibaba.dubbo.common.URL url = arg0.getUrl();
+String extName = url.getParameter("cluster", "failover");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.cluster.Cluster) name from url(" + url.toString() + ") use keys([cluster])");
+com.alibaba.dubbo.rpc.cluster.Cluster extension = (com.alibaba.dubbo.rpc.cluster.Cluster)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.cluster.Cluster.class).getExtension(extName);
+return extension.join(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:52,993] DEBUG   468[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.rpc;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class ProxyFactory$Adpative implements com.alibaba.dubbo.rpc.ProxyFactory {
+public com.alibaba.dubbo.rpc.Invoker getInvoker(java.lang.Object arg0, java.lang.Class arg1, com.alibaba.dubbo.common.URL arg2) throws java.lang.Object {
+if (arg2 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg2;
+String extName = url.getParameter("proxy", "javassist");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.ProxyFactory) name from url(" + url.toString() + ") use keys([proxy])");
+com.alibaba.dubbo.rpc.ProxyFactory extension = (com.alibaba.dubbo.rpc.ProxyFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.ProxyFactory.class).getExtension(extName);
+return extension.getInvoker(arg0, arg1, arg2);
+}
+public java.lang.Object getProxy(com.alibaba.dubbo.rpc.Invoker arg0) throws com.alibaba.dubbo.rpc.Invoker {
+if (arg0 == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.Invoker argument == null");
+if (arg0.getUrl() == null) throw new IllegalArgumentException("com.alibaba.dubbo.rpc.Invoker argument getUrl() == null");com.alibaba.dubbo.common.URL url = arg0.getUrl();
+String extName = url.getParameter("proxy", "javassist");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.ProxyFactory) name from url(" + url.toString() + ") use keys([proxy])");
+com.alibaba.dubbo.rpc.ProxyFactory extension = (com.alibaba.dubbo.rpc.ProxyFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.ProxyFactory.class).getExtension(extName);
+return extension.getProxy(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,236] DEBUG   711[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.registry;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class RegistryFactory$Adpative implements com.alibaba.dubbo.registry.RegistryFactory {
+public com.alibaba.dubbo.registry.Registry getRegistry(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.registry.RegistryFactory) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.registry.RegistryFactory extension = (com.alibaba.dubbo.registry.RegistryFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.registry.RegistryFactory.class).getExtension(extName);
+return extension.getRegistry(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,252] DEBUG   727[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.remoting.zookeeper;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class ZookeeperTransporter$Adpative implements com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter {
+public com.alibaba.dubbo.remoting.zookeeper.ZookeeperClient connect(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("client", url.getParameter("transporter", "zkclient"));
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter) name from url(" + url.toString() + ") use keys([client, transporter])");
+com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter extension = (com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.remoting.zookeeper.ZookeeperTransporter.class).getExtension(extName);
+return extension.connect(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,288]  INFO   763[main] - AbstractRegistry.loadProperties(232) -  [DUBBO] Load registry store file /root/.dubbo/dubbo-registry-192.168.4.188.cache, data: {com.navinfo.dataservice.api.edit.iface.EditApi=empty://192.168.4.188:21984/com.navinfo.dataservice.api.edit.iface.EditApi?anyhost=true&application=dubbo-app-edit&category=configurators&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.edit.iface.EditApi&methods=applyPid,run&pid=141913&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472462388307, com.navinfo.dataservice.api.job.iface.JobApiService=dubbo://192.168.4.188:20886/com.navinfo.dataservice.api.job.iface.JobApiService?anyhost=true&application=job-api-provider&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApiService&methods=help,createJob&pid=57218&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1466499946069 empty://192.168.4.188/com.navinfo.dataservice.api.job.iface.JobApiService?application=datahub-api-consumer&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApiService&methods=help,createJob&pid=114905&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1466668806238 empty://192.168.4.188/com.navinfo.dataservice.api.job.iface.JobApiService?application=datahub-api-consumer&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApiService&methods=help,createJob&pid=114905&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1466668806238, com.navinfo.dataservice.api.man.iface.=, ticsApi?application=dubbo-app-man&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.statics.iface.StaticsApi&methods=getExpectStatusByCitys,getLatestMonthlyEditStatByGrids,getStatBySubtask,getLatestDailyEditStatByGrids,getExpectStatByBlock,getLatestCollectStatByGrids,getChangeStatByGrids,getExpectStatusByBlocks&pid=21180&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1469769664684=empty://192.168.4.188/com.navinfo.dataservice.api.statics.iface.StaticsApi?application=dubbo-app-man&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.statics.iface.StaticsApi&methods=getExpectStatusByCitys,getLatestMonthlyEditStatByGrids,getStatBySubtask,getLatestDailyEditStatByGrids,getExpectStatByBlock,getLatestCollectStatByGrids,getChangeStatByGrids,getExpectStatusByBlocks&pid=21180&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1469769664684, com.navinfo.dataservice.api.metadata.iface.MetadataApi=empty://192.168.4.188:21987/com.navinfo.dataservice.api.metadata.iface.MetadataApi?anyhost=true&application=dubbo-app-metadata&category=configurators&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.metadata.iface.MetadataApi&methods=getCharacterMap,getChainMap,nameImport,getNavicovpyMap,getEngshortMap,getAdminMap,queryAdminIdByLocation,getKindCodeMap,pyConvert&pid=15466&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472520280648, com.navinfo.dataservice.api.fcc.iface.FccApi=dubbo://192.168.4.188:21891/com.navinfo.dataservice.api.fcc.iface.FccApi?anyhost=true&application=dubbo-app-fcc&dubbo=2.4.9&interface=com.navinfo.dataservice.api.fcc.iface.FccApi&methods=searchDataBySpatial&pid=1481&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472475799439 empty://192.168.4.188/com.navinfo.dataservice.api.fcc.iface.FccApi?application=dubbo-app-metadata&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.fcc.iface.FccApi&methods=searchDataBySpatial&pid=15466&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520280166 empty://192.168.4.188/com.navinfo.dataservice.api.fcc.iface.FccApi?application=dubbo-app-metadata&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.fcc.iface.FccApi&methods=searchDataBySpatial&pid=15466&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520280166, egory=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=29049&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1470798883910=empty://192.168.4.188/com.navinfo.dataservice.api.job.iface.JobApi?application=dubbo-app-edit&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=29049&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1470798883910, com.navinfo.dataservice.api.datahub.iface.DatahubApi=dubbo://192.168.4.188:21881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-datahub&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=94287&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472714534201 empty://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-render&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=15539&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520283951 empty://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-render&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=15539&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520283951, vinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-metadata&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType&pid=143557&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1467970039565=, com.navinfo.dataservice.api.statics.iface.StaticsApi=dubbo://192.168.4.188:21983/com.navinfo.dataservice.api.statics.iface.StaticsApi?anyhost=true&application=dubbo-app-statics&dubbo=2.4.9&interface=com.navinfo.dataservice.api.statics.iface.StaticsApi&methods=getExpectStatusByCitys,getLatestMonthlyEditStatByGrids,getStatBySubtask,getLatestDailyEditStatByGrids,getExpectStatByBlock,getLatestCollectStatByGrids,getChangeStatByGrids,getExpectStatusByBlocks&pid=128885&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472441431282 empty://192.168.4.188/com.navinfo.dataservice.api.statics.iface.StaticsApi?application=dubbo-app-man&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.statics.iface.StaticsApi&methods=getExpectStatusByCitys,getLatestMonthlyEditStatByGrids,getStatBySubtask,getLatestDailyEditStatByGrids,getExpectStatByBlock,getLatestCollectStatByGrids,getChangeStatByGrids,getExpectStatusByBlocks&pid=141227&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472460919644 empty://192.168.4.188/com.navinfo.dataservice.api.statics.iface.StaticsApi?application=dubbo-app-man&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.statics.iface.StaticsApi&methods=getExpectStatusByCitys,getLatestMonthlyEditStatByGrids,getStatBySubtask,getLatestDailyEditStatByGrids,getExpectStatByBlock,getLatestCollectStatByGrids,getChangeStatByGrids,getExpectStatusByBlocks&pid=141227&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472460919644, pplication=dubbo-app-edit&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=33618&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472196213424=, com.navinfo.dataservice.api.man.iface.ManApi=dubbo://192.168.4.188:21989/com.navinfo.dataservice.api.man.iface.ManApi?anyhost=true&application=dubbo-app-man&dubbo=2.4.9&interface=com.navinfo.dataservice.api.man.iface.ManApi&methods=queryByRegionId,queryAdminIdBySubtask,querySpecVersionByType,queryRegionGridMappingOfSubtasks,queryRegionList,listGrids,queryRegionWithGrids,queryRegionByDbId,queryGrid,queryDbIdByAdminId,queryBySubtaskId&pid=142301&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472463157190 empty://192.168.4.188/com.navinfo.dataservice.api.man.iface.ManApi?application=dubbo-app-metadata&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.man.iface.ManApi&methods=queryByRegionId,queryAdminIdBySubtask,querySpecVersionByType,queryRegionGridMappingOfSubtasks,queryRegionList,listGrids,queryRegionWithGrids,queryRegionByDbId,queryGrid,queryDbIdByAdminId,queryBySubtaskId&pid=15466&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520280140 empty://192.168.4.188/com.navinfo.dataservice.api.man.iface.ManApi?application=dubbo-app-metadata&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.man.iface.ManApi&methods=queryByRegionId,queryAdminIdBySubtask,querySpecVersionByType,queryRegionGridMappingOfSubtasks,queryRegionList,listGrids,queryRegionWithGrids,queryRegionByDbId,queryGrid,queryDbIdByAdminId,queryBySubtaskId&pid=15466&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472520280140, com.navinfo.dataservice.api.job.iface.JobApi=dubbo://192.168.4.188:21986/com.navinfo.dataservice.api.job.iface.JobApi?anyhost=true&application=dubbo-app-job&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=128716&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472441431633 empty://192.168.4.188/com.navinfo.dataservice.api.job.iface.JobApi?application=dubbo-app-edit&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=141913&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472462387068 empty://192.168.4.188/com.navinfo.dataservice.api.job.iface.JobApi?application=dubbo-app-edit&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.job.iface.JobApi&methods=help,createJob,getJobByGuid,getJobById&pid=141913&revision=0.0.1-SNAPSHOT&side=consumer&timeout=5000&timestamp=1472462387068, com.navinfo.dataservice.api.edit.iface.DatalockApi=empty://192.168.4.188/com.navinfo.dataservice.api.edit.iface.DatalockApi?application=dubbo-app-jobserver&category=providers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.edit.iface.DatalockApi&methods=unlockGrid,lockGrid&pid=33060&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472195223439 empty://192.168.4.188/com.navinfo.dataservice.api.edit.iface.DatalockApi?application=dubbo-app-jobserver&category=configurators&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.edit.iface.DatalockApi&methods=unlockGrid,lockGrid&pid=33060&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472195223439 empty://192.168.4.188/com.navinfo.dataservice.api.edit.iface.DatalockApi?application=dubbo-app-jobserver&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.edit.iface.DatalockApi&methods=unlockGrid,lockGrid&pid=33060&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472195223439}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,314] DEBUG   789[main] - ZkConnection.connect(63) - Creating new ZookKeeper instance to connect to 192.168.4.188:2681,192.168.4.188:2682,192.168.4.188:2683.
+[2016-09-03 10:39:53,315]  INFO   790[ZkClient-EventThread-10-192.168.4.188:2681,192.168.4.188:2682,192.168.4.188:2683] - ZkEventThread.run(64) - Starting ZkClient event thread.
+[2016-09-03 10:39:53,345] DEBUG   820[main] - ZkClient.connect(874) - Awaiting connection to Zookeeper server
+[2016-09-03 10:39:53,345] DEBUG   820[main] - ZkClient.waitForKeeperState(628) - Waiting for keeper state SyncConnected
+[2016-09-03 10:39:53,709] DEBUG  1184[main-EventThread] - ZkClient.process(351) - Received event: WatchedEvent state:SyncConnected type:None path:null
+[2016-09-03 10:39:53,709]  INFO  1184[main-EventThread] - ZkClient.processStateChanged(449) - zookeeper state changed (SyncConnected)
+[2016-09-03 10:39:53,710] DEBUG  1185[main-EventThread] - ZkClient.process(395) - Leaving process event
+[2016-09-03 10:39:53,710] DEBUG  1185[main] - ZkClient.waitForKeeperState(638) - State is SyncConnected
+[2016-09-03 10:39:53,719] DEBUG  1194[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.rpc.cluster;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class RouterFactory$Adpative implements com.alibaba.dubbo.rpc.cluster.RouterFactory {
+public com.alibaba.dubbo.rpc.cluster.Router getRouter(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getProtocol();
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.cluster.RouterFactory) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.rpc.cluster.RouterFactory extension = (com.alibaba.dubbo.rpc.cluster.RouterFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.cluster.RouterFactory.class).getExtension(extName);
+return extension.getRouter(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,736] DEBUG  1211[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.rpc.cluster;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class ConfiguratorFactory$Adpative implements com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory {
+public com.alibaba.dubbo.rpc.cluster.Configurator getConfigurator(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getProtocol();
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory extension = (com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.rpc.cluster.ConfiguratorFactory.class).getExtension(extName);
+return extension.getConfigurator(arg0);
+}
+}, dubbo version: 2.4.9, current host: 127.0.0.1
+[2016-09-03 10:39:53,747]  INFO  1222[main] - AbstractRegistry.register(302) -  [DUBBO] Register: consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=consumers&check=false&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:53,800]  INFO  1275[main] - AbstractRegistry.subscribe(325) -  [DUBBO] Subscribe: consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=providers,configurators,routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:53,863]  INFO  1338[main] - AbstractRegistry.notify(422) -  [DUBBO] Notify urls for subscribe url consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=providers,configurators,routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, urls: [dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-datahub&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=143649&revision=0.0.1-SNAPSHOT&side=provider&timestamp=1472864437215, override://192.168.31.22:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?category=configurators&disabled=true&dynamic=false&enabled=true, override://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?category=configurators&dynamic=false&enabled=true&weight=200, override://192.168.31.22:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?category=configurators&dynamic=false&enabled=true&weight=0, empty://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073], dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:53,951] DEBUG  1426[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.remoting;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class Transporter$Adpative implements com.alibaba.dubbo.remoting.Transporter {
+public com.alibaba.dubbo.remoting.Server bind(com.alibaba.dubbo.common.URL arg0, com.alibaba.dubbo.remoting.ChannelHandler arg1) throws com.alibaba.dubbo.common.URL {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("server", url.getParameter("transporter", "netty"));
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.remoting.Transporter) name from url(" + url.toString() + ") use keys([server, transporter])");
+com.alibaba.dubbo.remoting.Transporter extension = (com.alibaba.dubbo.remoting.Transporter)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.remoting.Transporter.class).getExtension(extName);
+return extension.bind(arg0, arg1);
+}
+public com.alibaba.dubbo.remoting.Client connect(com.alibaba.dubbo.common.URL arg0, com.alibaba.dubbo.remoting.ChannelHandler arg1) throws com.alibaba.dubbo.common.URL {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("client", url.getParameter("transporter", "netty"));
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.remoting.Transporter) name from url(" + url.toString() + ") use keys([client, transporter])");
+com.alibaba.dubbo.remoting.Transporter extension = (com.alibaba.dubbo.remoting.Transporter)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.remoting.Transporter.class).getExtension(extName);
+return extension.connect(arg0, arg1);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,012] DEBUG  1487[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.remoting;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class Dispather$Adpative implements com.alibaba.dubbo.remoting.Dispather {
+public com.alibaba.dubbo.remoting.ChannelHandler dispath(com.alibaba.dubbo.remoting.ChannelHandler arg0, com.alibaba.dubbo.common.URL arg1) {
+if (arg1 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg1;
+String extName = url.getParameter("dispather", url.getParameter("channel.handler", "all"));
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.remoting.Dispather) name from url(" + url.toString() + ") use keys([dispather, channel.handler])");
+com.alibaba.dubbo.remoting.Dispather extension = (com.alibaba.dubbo.remoting.Dispather)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.remoting.Dispather.class).getExtension(extName);
+return extension.dispath(arg0, arg1);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,031] DEBUG  1506[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.common.threadpool;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class ThreadPool$Adpative implements com.alibaba.dubbo.common.threadpool.ThreadPool {
+public java.util.concurrent.Executor getExecutor(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("threadpool", "fixed");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.common.threadpool.ThreadPool) name from url(" + url.toString() + ") use keys([threadpool])");
+com.alibaba.dubbo.common.threadpool.ThreadPool extension = (com.alibaba.dubbo.common.threadpool.ThreadPool)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.common.threadpool.ThreadPool.class).getExtension(extName);
+return extension.getExecutor(arg0);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,098]  INFO  1573[main] - AbstractClient.connect(287) -  [DUBBO] Successed connect to server /192.168.4.188:20881 from NettyClient 192.168.4.188 using dubbo version 2.4.9, channel is NettyChannel [channel=[id: 0x7069e5f9, /192.168.4.188:13793 => /192.168.4.188:20881]], dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,098]  INFO  1573[main] - AbstractClient.<init>(105) -  [DUBBO] Start NettyClient server188/192.168.4.188 connect to the server /192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,134] DEBUG  1609[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.validation;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class Validation$Adpative implements com.alibaba.dubbo.validation.Validation {
+public com.alibaba.dubbo.validation.Validator getValidator(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("validation", "jvalidation");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.validation.Validation) name from url(" + url.toString() + ") use keys([validation])");
+com.alibaba.dubbo.validation.Validation extension = (com.alibaba.dubbo.validation.Validation)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.validation.Validation.class).getExtension(extName);
+return extension.getValidator(arg0);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,149] DEBUG  1624[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.monitor;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class MonitorFactory$Adpative implements com.alibaba.dubbo.monitor.MonitorFactory {
+public com.alibaba.dubbo.monitor.Monitor getMonitor(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = ( url.getProtocol() == null ? "dubbo" : url.getProtocol() );
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.monitor.MonitorFactory) name from url(" + url.toString() + ") use keys([protocol])");
+com.alibaba.dubbo.monitor.MonitorFactory extension = (com.alibaba.dubbo.monitor.MonitorFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.monitor.MonitorFactory.class).getExtension(extName);
+return extension.getMonitor(arg0);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,162] DEBUG  1637[main] - ExtensionLoader.createAdaptiveExtensionClassCode(915) -  [DUBBO] package com.alibaba.dubbo.cache;
+import com.alibaba.dubbo.common.extension.ExtensionLoader;
+public class CacheFactory$Adpative implements com.alibaba.dubbo.cache.CacheFactory {
+public com.alibaba.dubbo.cache.Cache getCache(com.alibaba.dubbo.common.URL arg0) {
+if (arg0 == null) throw new IllegalArgumentException("url == null");
+com.alibaba.dubbo.common.URL url = arg0;
+String extName = url.getParameter("cache", "lru");
+if(extName == null) throw new IllegalStateException("Fail to get extension(com.alibaba.dubbo.cache.CacheFactory) name from url(" + url.toString() + ") use keys([cache])");
+com.alibaba.dubbo.cache.CacheFactory extension = (com.alibaba.dubbo.cache.CacheFactory)ExtensionLoader.getExtensionLoader(com.alibaba.dubbo.cache.CacheFactory.class).getExtension(extName);
+return extension.getCache(arg0);
+}
+}, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,175] DEBUG  1650[main] - RegistryDirectory.destroyUnusedInvokers(573) -  [DUBBO] destory invoker[dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-scripts&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073] success. , dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:54,180]  INFO  1655[main] - ReferenceConfig.createProxy(425) -  [DUBBO] Refer dubbo service com.navinfo.dataservice.api.datahub.iface.DatahubApi from url zookeeper://192.168.4.188:2681/com.alibaba.dubbo.registry.RegistryService?anyhost=true&application=dubbo-app-scripts&check=false&connected=true&dubbo=2.4.9&inside.invoker.count=1&inside.invokers=dubbo%3A%2F%2F192.168.4.188%3A20881%2Fcom.navinfo.dataservice.api.datahub.iface.DatahubApi%3Fanyhost%3Dtrue%26application%3Ddubbo-app-datahub%26dubbo%3D2.4.9%26interface%3Dcom.navinfo.dataservice.api.datahub.iface.DatahubApi%26methods%3DgetDbById%2CgetSuperDb%2CgetOnlyDbByType%2CgetReuseDb%26pid%3D143649%26revision%3D0.0.1-SNAPSHOT%26side%3Dprovider%26timestamp%3D1472864437215&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073&weight=200, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,844] DEBUG  4319[DubboClientHandler-192.168.4.188:20881-thread-1] - DecodeHandler.decode(60) -  [DUBBO] Decode decodeable message com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,844] DEBUG  4319[DubboClientHandler-192.168.4.188:20881-thread-2] - DecodeHandler.decode(60) -  [DUBBO] Decode decodeable message com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,845] DEBUG  4320[DubboClientHandler-192.168.4.188:20881-thread-3] - DecodeHandler.decode(60) -  [DUBBO] Decode decodeable message com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,846]  WARN  4321[DubboClientHandler-192.168.4.188:20881-thread-2] - DefaultFuture.received(242) -  [DUBBO] The timeout response finally returned at 2016-09-03 10:39:56.845, response Response [id=0, version=null, status=20, event=false, error=null, result=RpcResult [result=DbInfo [dbId=10, dbName=orcl, dbUserName=fm_man_sp5, dbUserPasswd=fm_man_sp5, dbRole=0, tablespaceName=users, bizType=fmMan, gdbVersion=null, dbStatus=2, createTime=null, descp=null, dbServer=DbServer [sid=1, type=ORACLE, ip=192.168.4.131, port=1521,serviceName=orcl, bizType=null, descp=null, identity=192.168.4.131:1521]], exception=null]], channel: /192.168.4.188:13793 -> /192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,846]  WARN  4321[DubboClientHandler-192.168.4.188:20881-thread-3] - DefaultFuture.received(242) -  [DUBBO] The timeout response finally returned at 2016-09-03 10:39:56.846, response Response [id=1, version=null, status=20, event=false, error=null, result=RpcResult [result=DbInfo [dbId=10, dbName=orcl, dbUserName=fm_man_sp5, dbUserPasswd=fm_man_sp5, dbRole=0, tablespaceName=users, bizType=fmMan, gdbVersion=null, dbStatus=2, createTime=null, descp=null, dbServer=DbServer [sid=1, type=ORACLE, ip=192.168.4.131, port=1521,serviceName=orcl, bizType=null, descp=null, identity=192.168.4.131:1521]], exception=null]], channel: /192.168.4.188:13793 -> /192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:56,846]  WARN  4321[main] - FailoverClusterInvoker.doInvoke(79) -  [DUBBO] Although retry the method getOnlyDbByType in the service com.navinfo.dataservice.api.datahub.iface.DatahubApi was successful by the provider 192.168.4.188:20881, but there have been failed providers [192.168.4.188:20881] (1/1) from the registry 192.168.4.188:2681 on the consumer 192.168.4.188 using the dubbo version 2.4.9. Last error is: Invoke remote method timeout. method: getOnlyDbByType, provider: dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-scripts&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073&weight=200, cause: Waiting server-side response timeout by scan timer. start time: 2016-09-03 10:39:55.223, end time: 2016-09-03 10:39:56.246, client elapsed: 0 ms, server elapsed: 1022 ms, timeout: 1000 ms, request: Request [id=1, version=2.0.0, twoway=true, event=false, broken=false, data=RpcInvocation [methodName=getOnlyDbByType, parameterTypes=[class java.lang.String], arguments=[fmMan], attachments={path=com.navinfo.dataservice.api.datahub.iface.DatahubApi, interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi, version=0.0.0}]], channel: /192.168.4.188:13793 -> /192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+com.alibaba.dubbo.rpc.RpcException: Invoke remote method timeout. method: getOnlyDbByType, provider: dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-scripts&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073&weight=200, cause: Waiting server-side response timeout by scan timer. start time: 2016-09-03 10:39:55.223, end time: 2016-09-03 10:39:56.246, client elapsed: 0 ms, server elapsed: 1022 ms, timeout: 1000 ms, request: Request [id=1, version=2.0.0, twoway=true, event=false, broken=false, data=RpcInvocation [methodName=getOnlyDbByType, parameterTypes=[class java.lang.String], arguments=[fmMan], attachments={path=com.navinfo.dataservice.api.datahub.iface.DatahubApi, interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi, version=0.0.0}]], channel: /192.168.4.188:13793 -> /192.168.4.188:20881
+	at com.alibaba.dubbo.rpc.protocol.dubbo.DubboInvoker.doInvoke(DubboInvoker.java:99)
+	at com.alibaba.dubbo.rpc.protocol.AbstractInvoker.invoke(AbstractInvoker.java:144)
+	at com.alibaba.dubbo.rpc.listener.ListenerInvokerWrapper.invoke(ListenerInvokerWrapper.java:74)
+	at com.alibaba.dubbo.rpc.protocol.dubbo.filter.FutureFilter.invoke(FutureFilter.java:53)
+	at com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper$1.invoke(ProtocolFilterWrapper.java:91)
+	at com.alibaba.dubbo.monitor.support.MonitorFilter.invoke(MonitorFilter.java:75)
+	at com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper$1.invoke(ProtocolFilterWrapper.java:91)
+	at com.alibaba.dubbo.rpc.filter.ConsumerContextFilter.invoke(ConsumerContextFilter.java:48)
+	at com.alibaba.dubbo.rpc.protocol.ProtocolFilterWrapper$1.invoke(ProtocolFilterWrapper.java:91)
+	at com.alibaba.dubbo.rpc.protocol.InvokerWrapper.invoke(InvokerWrapper.java:53)
+	at com.alibaba.dubbo.rpc.cluster.support.FailoverClusterInvoker.doInvoke(FailoverClusterInvoker.java:77)
+	at com.alibaba.dubbo.rpc.cluster.support.AbstractClusterInvoker.invoke(AbstractClusterInvoker.java:226)
+	at com.alibaba.dubbo.rpc.cluster.support.wrapper.MockClusterInvoker.invoke(MockClusterInvoker.java:72)
+	at com.alibaba.dubbo.rpc.proxy.InvokerInvocationHandler.invoke(InvokerInvocationHandler.java:52)
+	at com.alibaba.dubbo.common.bytecode.proxy0.getOnlyDbByType(proxy0.java)
+	at com.navinfo.dataservice.bizcommons.datasource.DBConnector.getManConnection(DBConnector.java:45)
+	at com.navinfo.dataservice.scripts.GdbExportScriptsInterface.getProvinceMeshList(GdbExportScriptsInterface.java:29)
+	at com.navinfo.dataservice.scripts.GdbExportScriptsInterface.main(GdbExportScriptsInterface.java:97)
+Caused by: com.alibaba.dubbo.remoting.TimeoutException: Waiting server-side response timeout by scan timer. start time: 2016-09-03 10:39:55.223, end time: 2016-09-03 10:39:56.246, client elapsed: 0 ms, server elapsed: 1022 ms, timeout: 1000 ms, request: Request [id=1, version=2.0.0, twoway=true, event=false, broken=false, data=RpcInvocation [methodName=getOnlyDbByType, parameterTypes=[class java.lang.String], arguments=[fmMan], attachments={path=com.navinfo.dataservice.api.datahub.iface.DatahubApi, interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi, version=0.0.0}]], channel: /192.168.4.188:13793 -> /192.168.4.188:20881
+	at com.alibaba.dubbo.remoting.exchange.support.DefaultFuture.returnFromResponse(DefaultFuture.java:188)
+	at com.alibaba.dubbo.remoting.exchange.support.DefaultFuture.get(DefaultFuture.java:110)
+	at com.alibaba.dubbo.remoting.exchange.support.DefaultFuture.get(DefaultFuture.java:84)
+	at com.alibaba.dubbo.rpc.protocol.dubbo.DubboInvoker.doInvoke(DubboInvoker.java:96)
+	... 17 more
+[2016-09-03 10:39:56,862] DEBUG  4337[main] - DynamicSystemConfig.loadRawConfig(56) - parse file /com/navinfo/dataservice/commons/config/SystemConfig.xml
+[2016-09-03 10:39:56,917] DEBUG  4392[main] - DynamicSystemConfig.loadRawConfig(56) - parse file /SystemConfig.xml
+[2016-09-03 10:39:57,211]  INFO  4686[main] - DriverManagerDataSource.setDriverClassName(133) - Loaded JDBC driver: oracle.jdbc.driver.OracleDriver
+[2016-09-03 10:39:57,212] DEBUG  4687[main] - DriverManagerDataSource.getConnectionFromDriver(142) - Creating new JDBC DriverManager Connection to [jdbc:oracle:thin:@192.168.4.131:1521/orcl]
+[2016-09-03 10:39:57,565]  WARN  5040[main] - DynamicSystemConfig.loadDynamicConfig(110) - 系统未配置app.type类型，已忽略。。。
+[2016-09-03 10:39:57,568] DEBUG  5043[main] - MultiDataSourceFactory.getDataSource(155) - =============================DBINFO==========================
+[2016-09-03 10:39:57,569] DEBUG  5044[main] - MultiDataSourceFactory.getDataSource(156) - url:jdbc:oracle:thin:@192.168.4.131:1521/orcl
+[2016-09-03 10:39:57,569] DEBUG  5044[main] - MultiDataSourceFactory.getDataSource(157) - username:fm_man_sp5
+[2016-09-03 10:39:57,569] DEBUG  5044[main] - MultiDataSourceFactory.getDataSource(158) - password:fm_man_sp5
+[2016-09-03 10:39:58,229] DEBUG  5704[DubboClientHandler-192.168.4.188:20881-thread-3] - DecodeHandler.decode(60) -  [DUBBO] Decode decodeable message com.alibaba.dubbo.rpc.protocol.dubbo.DecodeableRpcResult, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,229] DEBUG  5704[main] - MultiDataSourceFactory.getDataSource(155) - =============================DBINFO==========================
+[2016-09-03 10:39:58,230] DEBUG  5705[main] - MultiDataSourceFactory.getDataSource(156) - url:jdbc:oracle:thin:@192.168.3.115:1521/orcl
+[2016-09-03 10:39:58,230] DEBUG  5705[main] - MultiDataSourceFactory.getDataSource(157) - username:test_prj_db
+[2016-09-03 10:39:58,230] DEBUG  5705[main] - MultiDataSourceFactory.getDataSource(158) - password:test_prj_db
+[2016-09-03 10:39:58,894]  INFO  6369[DubboShutdownHook] - AbstractConfig$1.run(450) -  [DUBBO] Run shutdown hook now., dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,895]  INFO  6370[DubboShutdownHook] - AbstractRegistryFactory.destroyAll(63) -  [DUBBO] Close all registries [zookeeper://192.168.4.188:2681/com.alibaba.dubbo.registry.RegistryService?application=dubbo-app-scripts&backup=192.168.4.188:2682,192.168.4.188:2683&dubbo=2.4.9&interface=com.alibaba.dubbo.registry.RegistryService&pid=145300&timestamp=1472870393226], dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,895]  INFO  6370[DubboShutdownHook] - AbstractRegistry.destroy(485) -  [DUBBO] Destroy registry:zookeeper://192.168.4.188:2681/com.alibaba.dubbo.registry.RegistryService?application=dubbo-app-scripts&backup=192.168.4.188:2682,192.168.4.188:2683&dubbo=2.4.9&interface=com.alibaba.dubbo.registry.RegistryService&pid=145300&timestamp=1472870393226, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,895]  INFO  6370[DubboShutdownHook] - AbstractRegistry.unregister(312) -  [DUBBO] Unregister: consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=consumers&check=false&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,910]  INFO  6385[DubboShutdownHook] - AbstractRegistry.destroy(494) -  [DUBBO] Destroy unregister url consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=consumers&check=false&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,911]  INFO  6386[DubboShutdownHook] - AbstractRegistry.unsubscribe(343) -  [DUBBO] Unsubscribe: consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=providers,configurators,routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,911]  INFO  6386[DubboShutdownHook] - AbstractRegistry.destroy(510) -  [DUBBO] Destroy unsubscribe url consumer://192.168.4.188/com.navinfo.dataservice.api.datahub.iface.DatahubApi?application=dubbo-app-scripts&category=providers,configurators,routers&connected=true&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getOnlyDbByType,getSuperDb,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,912] DEBUG  6387[DubboShutdownHook] - ZkClient.close(915) - Closing ZkClient...
+[2016-09-03 10:39:58,912]  INFO  6387[ZkClient-EventThread-10-192.168.4.188:2681,192.168.4.188:2682,192.168.4.188:2683] - ZkEventThread.run(82) - Terminate ZkClient event thread.
+[2016-09-03 10:39:58,913] DEBUG  6388[DubboShutdownHook] - ZkConnection.close(77) - Closing ZooKeeper connected to 192.168.4.188:2681,192.168.4.188:2682,192.168.4.188:2683
+[2016-09-03 10:39:58,982] DEBUG  6457[DubboShutdownHook] - ZkClient.close(928) - Closing ZkClient...done
+[2016-09-03 10:39:58,983]  INFO  6458[DubboShutdownHook] - DubboProtocol.destroy(407) -  [DUBBO] Close dubbo connect: /192.168.4.188:13793-->/192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,984]  INFO  6459[DubboShutdownHook] - NettyChannel.close(135) -  [DUBBO] Close netty channel [id: 0x7069e5f9, /192.168.4.188:13793 => /192.168.4.188:20881], dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,985]  INFO  6460[DubboSharedHandler-thread-1] - DubboProtocol$1.disconnected(130) -  [DUBBO] disconected from /192.168.4.188:20881,url:dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-scripts&check=false&codec=dubbo&dubbo=2.4.9&heartbeat=60000&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,986]  INFO  6461[DubboShutdownHook] - DubboProtocol.destroy(421) -  [DUBBO] Close dubbo connect: 192.168.4.188:0-->192.168.4.188:20881, dubbo version: 2.4.9, current host: 192.168.4.188
+[2016-09-03 10:39:58,986]  INFO  6461[DubboShutdownHook] - AbstractProtocol.destroy(63) -  [DUBBO] Destroy reference: dubbo://192.168.4.188:20881/com.navinfo.dataservice.api.datahub.iface.DatahubApi?anyhost=true&application=dubbo-app-scripts&check=false&dubbo=2.4.9&interface=com.navinfo.dataservice.api.datahub.iface.DatahubApi&methods=getDbById,getSuperDb,getOnlyDbByType,getReuseDb&pid=145300&revision=0.0.1-SNAPSHOT&side=consumer&timestamp=1472870393073&weight=200, dubbo version: 2.4.9, current host: 192.168.4.188

@@ -19,7 +19,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -27,8 +26,6 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
@@ -42,17 +39,16 @@ import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 /** 
 * @ClassName:  TaskService 
@@ -290,11 +286,13 @@ public class TaskService {
 			List<Task> updatedTaskList = new ArrayList<Task>();
 			List<Integer> updatedTaskIdList = new ArrayList<Integer>();
 			int total = 0;
+			int erNum = 0;//二代任务数量
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
+					erNum ++;
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(task.getTaskId());
 					if(phaseList!=null&&phaseList.size()>0){continue;}
 					createCmsProgress(conn,task.getTaskId(),1);
@@ -325,7 +323,10 @@ public class TaskService {
 					tips2Aumark(conn, phaseIdMap.get(2));
 				}
 			}
-			return "task批量发布"+total+"个成功，0个失败";
+			if((erNum!=0)||(total+erNum!=taskIds.size())){
+				return "任务发布：" + total + "个成功，" + (taskIds.size()-total-erNum) + "个失败," + erNum + "个二代编辑任务进行中";
+			}
+			return null;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -380,6 +381,7 @@ public class TaskService {
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
 			String selectSql= sb.toString();
 
+			log.info("getTaskListWithLeader sql:" + selectSql);
 			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>() {
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> taskList = new ArrayList<Task>();
@@ -1214,9 +1216,9 @@ public class TaskService {
 			sb.append("U.USER_ID,U.USER_REAL_NAME,");
 			sb.append("UG.GROUP_ID,UG.GROUP_NAME");
 			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
-			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append(" AND T.PROGRAM_ID = T.PROGRAM_ID");
-			sb.append(" AND T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
+			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append(" AND T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
 			sb.append(" AND T.TASK_ID = " + taskId);
 			
@@ -1288,16 +1290,33 @@ public class TaskService {
 		try{
 			Task task = queryByTaskId(taskId);
 			
+		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+			
 			Map<String,Object> map = new HashMap<String,Object>();
 			map.put("taskId", task.getTaskId());
 			map.put("name", task.getName());
 			map.put("status", task.getStatus());
 			map.put("descp", task.getDescp());
 			map.put("type", task.getType());
-			map.put("planStartDate", task.getPlanStartDate());
-			map.put("planEndDate", task.getPlanEndDate());
-			map.put("producePlanStartDate", task.getProducePlanStartDate());
-			map.put("producePlanEndDate", task.getProducePlanEndDate());
+			
+			Timestamp planStartDate = task.getPlanStartDate();
+			Timestamp planEndDate = task.getPlanEndDate();
+			if(planStartDate != null){
+				map.put("planStartDate", df.format(planStartDate));
+			}else {map.put("planStartDate", "");}
+			if(planEndDate != null){
+				map.put("planEndDate",df.format(planEndDate));
+			}else{map.put("planEndDate", "");}
+			
+			Timestamp producePlanStartDate = task.getProducePlanStartDate();
+			Timestamp producePlanEndDate = task.getProducePlanEndDate();
+			if(planStartDate != null){
+				map.put("producePlanStartDate", df.format(producePlanStartDate));
+			}else {map.put("producePlanStartDate", "");}
+			if(planEndDate != null){
+				map.put("producePlanEndDate",df.format(producePlanEndDate));
+			}else{map.put("producePlanEndDate", "");}
+
 			map.put("lot", task.getLot());
 			map.put("poiPlanTotal", task.getPoiPlanTotal());
 			map.put("roadPlanTotal", task.getRoadPlanTotal());
@@ -1516,6 +1535,7 @@ public class TaskService {
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
+	 * status 2成功 3失败
 	 * @param phaseId
 	 * @return
 	 * @throws Exception 
@@ -1616,6 +1636,7 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			taskUpdateCmsProgress(conn, phaseId, 3);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
@@ -1639,7 +1660,8 @@ public class TaskService {
 			JSONObject jobDataJson=new JSONObject();
 			jobDataJson.put("specRegionId", phase.getRegionId());
 			jobDataJson.put("specMeshes", phase.getMeshIds());
-			//long jobId=jobApi.createJob("day2MonSync", jobDataJson, "",phase.getTaskId(), "日落月");
+			jobDataJson.put("phaseId", phaseId);
+			long jobId=jobApi.createJob("day2MonSync", jobDataJson, phase.getCreateUserId(),Long.valueOf(phase.getTaskId()), "日落月");
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1661,18 +1683,18 @@ public class TaskService {
 			if(i==0){return 0;}
 			//tip转aumark
 			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
-			queryByTaskId(phaseId);
 			JSONObject par=new JSONObject();
 			par.put("gdbid", cmsInfo.get("dbId"));
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
-			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
+			DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
 			par.put("au_db_ip", auDb.getDbServer().getIp());
 			par.put("au_db_username", auDb.getDbUserName());
 			par.put("au_db_password", auDb.getDbUserPasswd());
 			par.put("au_db_sid",auDb.getDbServer().getSid());
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
+			par.put("phaseId",phaseId);
 			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
@@ -1681,13 +1703,20 @@ public class TaskService {
 			taskPar.put("province", cmsInfo.get("provinceName"));
 			taskPar.put("city", cmsInfo.get("cityName"));
 			taskPar.put("district", cmsInfo.get("blockName"));
-			taskPar.put("job_nature", cmsInfo.get("workProperty"));
-			taskPar.put("job_type", cmsInfo.get("workType"));
+			Object workProperty=cmsInfo.get("workProperty");
+			if(workProperty==null){workProperty="更新";}
+			taskPar.put("job_nature", workProperty);
+			Object workType=cmsInfo.get("workType");
+			if(workType==null){workType="行人导航";}
+			taskPar.put("job_type", workType);
+			//taskPar.put("job_type", null);
 			
 			par.put("taskid", taskPar);
+			log.info(par);
 			
 			FccApi fccApi = (FccApi) ApplicationContextUtil
 					.getBean("fccApi");
+			fccApi.tips2Aumark(par);
 			return 0;
 		}catch(Exception e){
 			//DbUtils.rollbackAndCloseQuietly(conn);
@@ -1746,6 +1775,7 @@ public class TaskService {
 			String selectSql = "SELECT CMST.NAME CMS_NAME,"
 					+ "       CMST.TASK_ID CMS_ID,"
 					+ "       CMST.CREATE_USER_ID,"
+					+ "       u.user_nick_name,"
 					+ "       T.TASK_ID COLLECT_ID,"
 					+ "       T.NAME COLLECT_NAME,"
 					+ "       P.PHASE_ID,"
@@ -1755,14 +1785,15 @@ public class TaskService {
 					+ "       B.BLOCK_NAME,"
 					+ "       B.WORK_PROPERTY,"
 					+ "       B.WORK_TYPE"
-					+ "  FROM TASK CMST, TASK T, BLOCK B, CITY C, TASK_CMS_PROGRESS P, REGION R"
+					+ "  FROM TASK CMST, TASK T, BLOCK B, CITY C, TASK_CMS_PROGRESS P, REGION R,user_info u"
 					+ " WHERE P.PHASE_ID = "+phaseId
 					+ "   AND CMST.REGION_ID = R.REGION_ID"
 					+ "   AND CMST.PROGRAM_ID = T.PROGRAM_ID"
 					+ "   AND CMST.TASK_ID = P.TASK_ID"
+					+ "   AND CMST.CREATE_USER_ID = u.user_ID"
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
-					+ "   AND B.BLOCK_ID = C.CITY_ID";
+					+ "   AND B.CITY_ID = C.CITY_ID";
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result=new HashMap<String, Object>();
@@ -1770,6 +1801,7 @@ public class TaskService {
 						result.put("cmsId", rs.getInt("CMS_ID"));
 						result.put("cmsName", rs.getString("CMS_NAME"));
 						result.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						result.put("userNickName", rs.getString("user_nick_name"));
 						result.put("collectId", rs.getInt("COLLECT_ID"));
 						result.put("collectName", rs.getString("COLLECT_NAME"));
 						result.put("dbId", rs.getInt("MONTHLY_DB_ID"));
@@ -1802,14 +1834,14 @@ public class TaskService {
 			conn.commit();
 			if(i==0){return 0;}
 			Map<String, Object> cmsInfo = getCmsInfo(conn,phaseId);
-			queryByTaskId(phaseId);
 			JSONObject par=new JSONObject();
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
-			DbInfo auDb = datahub.getOnlyDbByType("metaRoad");
-			par.put("metaIp", auDb.getDbServer().getIp());
-			par.put("metaUserName", auDb.getDbUserName());
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			par.put("metaIp", metaDb.getDbServer().getIp());
+			par.put("metaUserName", metaDb.getDbUserName());
 			
+			DbInfo auDb = datahub.getOnlyDbByType("gen2Au");
 			par.put("fieldDbIp", auDb.getDbServer().getIp());
 			par.put("fieldDbName", auDb.getDbUserName());
 
@@ -1820,13 +1852,29 @@ public class TaskService {
 			taskPar.put("province", cmsInfo.get("provinceName"));
 			taskPar.put("city", cmsInfo.get("cityName"));
 			taskPar.put("town", cmsInfo.get("blockName"));
-			taskPar.put("workType", cmsInfo.get("workProperty"));
-			taskPar.put("area", cmsInfo.get("workType"));
-			taskPar.put("userId", cmsInfo.get("createUserId"));
+			Object workProperty=cmsInfo.get("workProperty");
+			if(workProperty==null){workProperty="更新";}
+			taskPar.put("workType", workProperty);
+			Object workType=cmsInfo.get("workType");
+			if(workType==null){workType="行人导航";}
+			taskPar.put("area",workType);
+			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 			
-			par.put("taskid", taskPar);
-			return 2;
+			par.put("taskInfo", taskPar);
+			
+			String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);
+			Map<String,String> parMap = new HashMap<String,String>();
+			parMap.put("parameter", par.toString());
+			log.info(par.toString());
+			String result = ServiceInvokeUtil.invoke(cmsUrl, parMap, 10000);
+			//result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
+			JSONObject res=JSONObject.fromObject(result);
+			boolean success=(boolean)res.get("success");
+			if(success){return 2;}
+			else{
+				log.error(res.get("msg"));
+				return 3;}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			return 3;
@@ -1842,10 +1890,11 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS"
+			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID,ts.create_user_id,u.user_nick_name"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS,user_info u"
 					+ " WHERE T.PHASE_ID =  "+phaseId
-					+ " AND T.TASK_ID =TS.TASK_ID ";
+					+ " AND T.TASK_ID =TS.TASK_ID "
+					+ " AND Ts.create_user_id =u.user_id ";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
@@ -1853,6 +1902,8 @@ public class TaskService {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
+						progress.setCreateUserId(rs.getInt("create_user_id"));
+						progress.setUserNickName(rs.getString("user_nick_name"));
 						progress.setRegionId(rs.getInt("region_id"));
 						
 						if(progress.getGridIds()==null){

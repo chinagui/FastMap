@@ -196,13 +196,13 @@ public class Subtask implements Serializable  {
 		this.gridIds = list;
 	}
 	
-	public void setGridIds(JSONObject list) {
-		for(Object gridId:list.keySet()){
-			int k = Integer.parseInt(gridId.toString());
-			int v =Integer.parseInt(list.get(gridId).toString()); 
-			this.gridIds.put(k, v);
-		}
-	}
+//	public void setGridIds(JSONObject list) {
+//		for(Object gridId:list.keySet()){
+//			int k = Integer.parseInt(gridId.toString());
+//			int v =Integer.parseInt(list.get(gridId).toString()); 
+//			this.gridIds.put(k, v);
+//		}
+//	}
 
 
 //	public String getTaskName(){

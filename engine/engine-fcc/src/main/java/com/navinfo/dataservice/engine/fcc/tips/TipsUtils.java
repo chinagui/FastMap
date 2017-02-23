@@ -1,8 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -158,7 +155,21 @@ public class TipsUtils {
 
 		index.put("s_reliability", 100);
 		
-		index.put("tipdiff", "{}"); //???????
+		 //???????
+		
+		if(json.containsKey("tipdiff")){
+			
+			index.put("tipdiff", json.getJSONObject("tipdiff"));
+			
+		}else{
+			index.put("tipdiff", "{}");
+		}
+		
+		index.put("s_qTaskId", json.getInt("s_qTaskId"));
+		
+		index.put("s_mTaskId", json.getInt("s_mTaskId"));
+		
+		
 
 		return index;
 		
@@ -269,6 +280,10 @@ public class TipsUtils {
 		index.put("s_reliability", s_reliability);
 		
 		index.put("tipdiff", "{}"); //???????
+		
+		index.put("s_qTaskId", 0);
+		
+		index.put("s_mTaskId", 0);
 
 		return index;
 	}

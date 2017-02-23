@@ -104,7 +104,7 @@ public class GLM01267 extends baseRule {
 						
 						if(limit.changedFields().containsKey("speedClass"))
 						{
-							speedClass = limit.getSpeedClass();
+							speedClass = (int) limit.changedFields().get("speedClass");
 						}
 						if(speedClass == 1 || speedClass == 2 || speedClass == 3)
 						{

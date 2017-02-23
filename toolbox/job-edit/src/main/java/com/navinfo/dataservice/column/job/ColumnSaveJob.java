@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +22,12 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.model.poi.deep.PoiColumnOpConf;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiOpConfSelector;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
@@ -41,6 +48,7 @@ public class ColumnSaveJob extends AbstractJob {
 		super(jobInfo);
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void execute() throws JobException {
 		
@@ -49,6 +57,7 @@ public class ColumnSaveJob extends AbstractJob {
 		ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 		
 		List<Integer> pidList = new ArrayList<Integer>();
+		List<Long> pidListL = new ArrayList<Long>();
 		
 		Connection conn = null;
 		try {
@@ -79,6 +88,7 @@ public class ColumnSaveJob extends AbstractJob {
 			for (int i=0;i<data.size();i++) {
 				int pid = data.getJSONObject(i).getInt("objId");
 				pidList.add(pid);
+				pidListL.add(data.getJSONObject(i).getLong("objId"));
 			}
 			
 			// 修改poi_column_status表作业项状态
@@ -91,12 +101,24 @@ public class ColumnSaveJob extends AbstractJob {
 			IxPoiOpConfSelector ixPoiOpConfSelector = new IxPoiOpConfSelector(conn);
 			PoiColumnOpConf columnOpConf = ixPoiOpConfSelector.getDeepOpConf("",secondWorkItem, type);
 			
-			// 清理检查结果
-			log.info("清理检查结果");
 			DeepCoreControl deepControl = new DeepCoreControl();
-			deepControl.cleanCheckResult(pidList, conn);
+			OperationResult operationResult = new OperationResult();
 			
-			OperationResult operationResult=importor.getResult();
+			PoiLogDetailStat logDetail = new PoiLogDetailStat();
+			ObjHisLogParser logParser = new ObjHisLogParser();
+			Map<Long,List<LogDetail>> submitLogs = logDetail.loadAllRowLog(conn, pidListL);
+			List<BasicObj> objList = importor.getResult().getAllObjs();
+			List<BasicObj>  newObjList = new ArrayList<BasicObj>();
+			for (BasicObj obj:objList) {
+				IxPoiObj poiObj=(IxPoiObj) obj;
+				IxPoi poi = (IxPoi) poiObj.getMainrow();
+				long pid = poi.getPid();
+				if (submitLogs.containsKey(pid)) {
+					logParser.parse(obj, submitLogs.get(pid));
+				}
+				newObjList.add(obj);
+			}
+			operationResult.putAll(newObjList);
 			
 			// 批处理
 			log.info("执行批处理");
@@ -123,6 +145,11 @@ public class ColumnSaveJob extends AbstractJob {
 					for (String ckRule:columnOpConf.getSaveCkrules().split(",")) {
 						checkList.add(ckRule);
 					}
+					
+					// 清理检查结果
+					log.info("清理检查结果");
+					deepControl.cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+					
 					checkCommand.setRuleIdList(checkList);
 					
 					Check check=new Check(conn,operationResult);

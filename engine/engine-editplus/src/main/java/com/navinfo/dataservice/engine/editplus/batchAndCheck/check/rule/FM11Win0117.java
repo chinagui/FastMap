@@ -20,7 +20,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.vividsolutions.jts.geom.Geometry;
 /**
  * FM-11Win-01-17
- * 检查条件：Lifecycle=3（新增）且kindcode!={130403,210215,180208,230222,230210}
+ * 检查条件：Lifecycle=3（新增）且kindcode!={130403,210215,180208,230222}
  * 检查原则：
  * 100米内名称（name）和分类、品牌相同的新增设施和其他非删除设施，成对显示，颜色区分新增与删除
  * 当分类={230210、230213,230214}时，需要增加停车场建筑物类型一起判断
@@ -37,12 +37,15 @@ public class FM11Win0117 extends BasicCheckRule {
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
+//			if(poi.getPid()==1988018){
+//				log.info("");
+//			}
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)||!poi.getHisOpType().equals(OperationType.INSERT)){
 				continue;}
 			String kind=poi.getKindCode();
-			if(kind.equals("130403")||kind.equals("210215")||kind.equals("180208")||kind.equals("230222")
-					||kind.equals("230210")){continue;}
+			if(kind.equals("130403")||kind.equals("210215")||kind.equals("180208")||kind.equals("230222"))
+				{continue;}
 			if(kind.equals("230210")||kind.equals("230213")||kind.equals("230214")){pid2.add(poi.getPid());}
 			else{pid1.add(poi.getPid());}
 		}
@@ -62,7 +65,7 @@ public class FM11Win0117 extends BasicCheckRule {
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2"
+					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2, P1.PID PID1"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_NAME    N1,"
@@ -86,6 +89,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
 					+ "  FROM T, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
+					+ "   AND P.PID = T.PID1"
 					+ "   AND P."+pidString;
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
@@ -94,7 +98,7 @@ public class FM11Win0117 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -105,11 +109,11 @@ public class FM11Win0117 extends BasicCheckRule {
 		}
 		//100米内名称（name）和分类、品牌相同的新增设施和其他非删除设施,当分类={230210,230213,230214}时，需要增加停车场建筑物类型一起判断
 		if(pid2!=null&&pid2.size()>0){
-			String pids=pid1.toString().replace("[", "").replace("]", "");
+			String pids=pid2.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
 			List<Clob> values=new ArrayList<Clob>();
 			String pidString="";
-			if(pid1.size()>1000){
+			if(pid2.size()>1000){
 				Clob clob=ConnectionUtil.createClob(conn);
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
@@ -119,23 +123,28 @@ public class FM11Win0117 extends BasicCheckRule {
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2"
+					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2, P1.PID PID1"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
+					+ "         IX_POI_PARKING PK1,"
+					+ "         IX_POI_PARKING PK2,"
 					+ "         IX_POI_NAME    N1,"
 					+ "         IX_POI_NAME    N2"
 					+ "   WHERE P1.KIND_CODE = P2.KIND_CODE"
 					+ "     AND NVL(P1.CHAIN, 0) = NVL(P2.CHAIN, 0)"
 					+ "     AND P1.PID = N1.POI_PID"
+					+ "     AND P1.PID = PK1.POI_PID"
 					+ "     AND N1.NAME_CLASS = 1"
 					+ "     AND N1.NAME_TYPE = 2"
 					+ "     AND N1.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND P2.PID = N2.POI_PID"
+					+ "     AND P2.PID = PK2.POI_PID"
+					+ "     AND NVL(PK1.parking_typE,'null') = NVL(PK2.parking_typE,'null')"
 					+ "     AND N2.NAME_CLASS = 1"
 					+ "     AND N2.NAME_TYPE = 2"
 					+ "     AND N2.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND N1.NAME = N2.NAME"
-					+ "     AND NVL(P1.LABEL,'')=NVL(P2.LABEL,'')"
+					//+ "     AND NVL(P1.LABEL,'')=NVL(P2.LABEL,'')"
 					+ "     AND P2.U_RECORD!=2"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID"
@@ -144,6 +153,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
 					+ "  FROM T, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
+					+ "   AND P.PID = T.PID1"
 					+ "   AND P."+pidString;
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
@@ -152,7 +162,7 @@ public class FM11Win0117 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

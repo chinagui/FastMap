@@ -32,6 +32,7 @@ import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.scEngshortList.ScEngshortList;
+import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
 import com.navinfo.dataservice.engine.meta.scPartitionMeshlist.ScPartitionMeshlistSelector;
 import com.navinfo.dataservice.engine.meta.scPointAddrAdmin.ScPointAddrAdmin;
 import com.navinfo.dataservice.engine.meta.scPointAddrck.ScPointAddrck;
@@ -40,11 +41,13 @@ import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFood
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
+import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
+import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
@@ -104,6 +107,33 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception{
 		return ScPointKindNew.getInstance().scPointKindNewChainKind8Map();
+	}
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, String>> scPointKindNewChainKind5Map() throws Exception{
+		return ScPointKindNew.getInstance().scPointKindNewChainKind5Map();
+	}
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=6
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, String>> scPointKindNewChainKind6Map() throws Exception{
+		return ScPointKindNew.getInstance().scPointKindNewChainKind6Map();
+	}
+	/**
+	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, String>> scPointKindNew5List() throws Exception{
+		return ScPointKindNew.getInstance().scPointKindNew5List();
 	}
 	/**
 	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
@@ -499,6 +529,18 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<Integer,Map<String, String>> key:convert value:Map<String, String> ft:jt
+	 * @throws Exception
+	 */
+	@Override
+	public Map<Integer,Map<String, String>> tyCharacterFjtHzConvertFtMap()
+			throws Exception {
+		return TyCharacterFjtHzCheckSelector.getInstance().tyCharacterFjtHzConvertFtMap();
+	}
+	
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
 	 * @return Map<String, JSONObject> key:jt value:对应其它
 	 * @throws Exception
 	 */
@@ -601,6 +643,39 @@ public class MetadataApiImpl implements MetadataApi {
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception{
 		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
 		return scPartitionMeshlist.queryMeshes4PartitionByAdmincodes(admincodes);
+	}
+	
+	/**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String, String> key:KIND_CODE value:KIND_USE
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
+		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
+	}
+	
+	/**
+     * SC_POINT_FOCUS.TYPE=2
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:POI_NUM value:TYPE
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScPointFocus(String poiNum) throws Exception {
+		return ScPointFocus.getInstance().searchScPointFocus(poiNum);
+	}
+	
+	/**
+     * SC_FM_CONTROL
+     * @author Han Shaoming
+     * @return Map<String, Integer> key:KIND_CODE value:PARENT
+     * @throws Exception
+     */
+	@Override
+	public Map<String, Integer> searchScFmControl(String kindCode) throws Exception {
+		return ScFmControl.getInstance().searchScFmControl(kindCode);
 	}
 
 }

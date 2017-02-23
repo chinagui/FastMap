@@ -63,8 +63,8 @@ public class columnSubmitTest {
 			
 			int taskId = 619;
 			int userId = 4577;
-			String firstWorkItem = "poi_name";
-			String secondWorkItem = "nameUnify";
+			String firstWorkItem = "poi_address";
+			String secondWorkItem = "addrSplit";
 			
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
@@ -132,6 +132,15 @@ public class columnSubmitTest {
 					}
 				}
 				
+				// 获取重分类规则号
+				List<String> classifyRules = new ArrayList<String>();
+				String classifyrules = columnOpConf.getSubmitClassifyrules();
+				if (classifyrules != null) {
+					for (String classifyrule:classifyrules.split(",")) {
+						classifyRules.add(classifyrule);
+					}
+				}
+				
 				// 检查
 				if (columnOpConf.getSubmitExecheck() == 1) {
 					if (columnOpConf.getSubmitCkrules() != null) {
@@ -150,10 +159,18 @@ public class columnSubmitTest {
 						if (errorMap != null) {
 							Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
 							for (long pid:poiMap.keySet()) {
+								// 检查出的规则号
+								Set<String> ckRules = poiMap.get(pid);
 								Iterator <Integer> it = pidList.iterator();
 								while (it.hasNext()) {
 									if (it.next() == pid) {
-										it.remove();
+										for (String ckRule:ckRules) {
+											if (!classifyRules.contains(ckRule)) {
+												it.remove();
+												break;
+											}
+										}
+										break;
 									}
 								}
 							}
@@ -180,14 +197,10 @@ public class columnSubmitTest {
 				}
 				
 				// 清理重分类检查结果
-				List<String> ckRules = new ArrayList<String>();
-				String classifyrules = columnOpConf.getSubmitCkrules();
-				if (classifyrules != null) {
-					for (String classifyrule:classifyrules.split(",")) {
-						ckRules.add(classifyrule);
-					}
-					deepControl.cleanExByCkRule(conn, pidList, ckRules, "IX_POI");
+				if (classifyRules.size()>0) {
+					deepControl.cleanExByCkRule(conn, pidList, classifyRules, "IX_POI");
 				}
+				
 			}
 			
 		} catch (Exception e) {

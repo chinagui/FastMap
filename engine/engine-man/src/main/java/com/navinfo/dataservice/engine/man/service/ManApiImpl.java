@@ -193,6 +193,12 @@ public class ManApiImpl implements ManApi {
 		JSONObject condition = new JSONObject().element("cityId", cityId);
 		return GridService.getInstance().queryListByCondition(condition);
 	}
+	/**
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
+	 * @throws Exception
+	 */
 	@Override
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception {
 		return GridService.getInstance().queryTaskIdsByGrid(grid);
@@ -211,6 +217,15 @@ public class ManApiImpl implements ManApi {
 	public List<Map<String, Object>> getProduceProgram() throws Exception {
 		// TODO Auto-generated method stub
 		return ProduceService.getInstance().getProduceProgram();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#queryTaskIdsByGridIdList(java.util.List)
+	 */
+	@Override
+	public Map<Integer,Map<String,Integer>> queryCollectTaskIdsByGridIdList(List<Integer> gridIdList) throws Exception {
+		// TODO Auto-generated method stub
+		return GridService.getInstance().queryCollectTaskIdsByGridIdList(gridIdList);
 	}
 	
 }

@@ -16,10 +16,16 @@ public class GLM01014 extends baseRule {
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdLink) {
                 RdLink rdLink = (RdLink) obj;
-                logger.debug("检查类型：postCheck， 检查规则：GLM01014， 检查要素：RDLINK(" + rdLink.pid() + "), 触法时机：新增、修改、删除");
+                // logger.debug("检查类型：postCheck， 检查规则：GLM01014， 检查要素：RDLINK(" + rdLink.pid() + "), 触法时机：新增、修改、删除");
                 int sNodePid = rdLink.getsNodePid();
+                if (rdLink.changedFields().containsKey("sNodePid"))
+                    sNodePid = Integer.valueOf(rdLink.changedFields().get("sNodePid").toString());
+
                 int eNodePid = rdLink.geteNodePid();
-                logger.debug("检查参数: S_NODE_PID(" + sNodePid + "), E_NODE_PID(" + eNodePid + ")");
+                if (rdLink.changedFields().containsKey("eNodePid"))
+                    eNodePid = Integer.valueOf(rdLink.changedFields().get("eNodePid").toString());
+
+                // logger.debug("检查参数: S_NODE_PID(" + sNodePid + "), E_NODE_PID(" + eNodePid + ")");
                 if (sNodePid == 0 || eNodePid == 0)
                     continue;
                 if (sNodePid == eNodePid) {

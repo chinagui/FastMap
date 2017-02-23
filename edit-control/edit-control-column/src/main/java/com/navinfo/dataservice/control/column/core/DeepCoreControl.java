@@ -310,11 +310,12 @@ public class DeepCoreControl {
 
             //更新数据状态
             updateDeepStatus(pids, conn, 0,secondWorkItem);
-            //调用清理检查结果方法
-            cleanCheckResult(pids,conn);
-            
+           
     		//获取后检查需要执行规则列表
             List<String> checkList=getCheckRuleList(conn,secondWorkItem);
+            
+            //调用清理检查结果方法
+            cleanExByCkRule(conn, pids, checkList, "IX_POI");
             
     		//执行检查
 			CheckCommand checkCommand=new CheckCommand();		

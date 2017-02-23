@@ -45,9 +45,11 @@ public class Operation {
                     continue;
 
                 // 计算speedlimit几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(speedlimit.getGeometry
+                        (), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
-                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
+                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor
+                            .x, coor.y)));
                     result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
                 }
             }
@@ -63,13 +65,15 @@ public class Operation {
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection
+                        (GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries)));
                 if (GeoTranslator.transform(speedlimit.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), GeoTranslator.transform(linkGeo, 0.00001, 5));
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(limitGeo.getCoordinate(), GeoTranslator
+                            .transform(linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(limitGeo.getCoordinate(), tmpCoor);
                         if (minLength == 0 || length < minLength) {
@@ -80,7 +84,8 @@ public class Operation {
                     }
                 }
                 if (null != minCoor) {
-                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(minCoor.x, minCoor.y)));
+                    speedlimit.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (minCoor.x, minCoor.y)));
                     speedlimit.changedFields().put("linkPid", minLinkPid);
                     result.insertObject(speedlimit, ObjStatus.UPDATE, speedlimit.pid());
                 }
@@ -89,7 +94,23 @@ public class Operation {
     }
 
     // 用于维护上下线分离对点限速的影响
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
+            rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+        if (links.isEmpty())
+            return "";
+
+        int sNodePid = sNode.pid();
+        Map<Integer, Integer> maps = new HashMap<>();
+        for (RdLink link : links) {
+            if (sNodePid == link.getsNodePid()) {
+                maps.put(link.pid(), 2);
+                sNodePid = link.geteNodePid();
+            } else if (sNodePid == link.geteNodePid()) {
+                maps.put(link.pid(), 3);
+                sNodePid = link.getsNodePid();
+            }
+        }
+
         // 查找上下线分离对影响到的点限速
         List<Integer> linkPids = new ArrayList<Integer>();
         linkPids.addAll(leftLinks.keySet());
@@ -116,12 +137,24 @@ public class Operation {
                     List<RdSpeedlimit> rdSpeedlimitList = rdSpeedlimitMap.get(link.getPid());
                     for (RdSpeedlimit rdSpeedlimit : rdSpeedlimitList) {
                         int direct = rdSpeedlimit.getDirect();
-                        if (2 == direct)
-                            // 点限速为顺方向则关联link为右线
-                            updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
-                        else if (3 == direct)
-                            // 点限速为逆方向则关联link为左线
-                            updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
+                        int opDirect = maps.get(rdSpeedlimit.getLinkPid());
+                        if (2 == direct) {
+                            if (opDirect == 2) {
+                                // 点限速为顺方向、分离为逆方向则关联link为右线
+                                updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                            } else if (opDirect == 3) {
+                                // 点限速为顺方向、分离为逆方向则关联link为右线
+                                updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
+                            }
+                        } else if (3 == direct) {
+                            if (opDirect == 2) {
+                                // 点限速为逆方向、分离为顺方向则关联link为左线
+                                updateRdSpeedlimit(leftLink, rdSpeedlimit, result);
+                            } else if (opDirect == 3) {
+                                // 点限速为逆方向、分离为顺方向则关联link为左线
+                                updateRdSpeedlimit(rightLink, rdSpeedlimit, result);
+                            }
+                        }
                     }
                 }
             }
@@ -136,7 +169,8 @@ public class Operation {
 
             Geometry newGeo = null;
             if (sourceLink.changedFields().containsKey("geometry")) {
-                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")),
+                        100000, 5);
             }
             if (null == newGeo || newGeo.isEmpty())
                 continue;
@@ -154,7 +188,8 @@ public class Operation {
     // 更新点限速信息
     private void updateRdSpeedlimit(RdLink link, RdSpeedlimit rdSpeedlimit, Result result) throws Exception {
         // 计算原点限速坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdSpeedlimit.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdSpeedlimit.getGeometry
+                (), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});

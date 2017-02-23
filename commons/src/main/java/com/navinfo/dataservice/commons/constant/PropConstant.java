@@ -87,6 +87,7 @@ public class PropConstant {
 	public static final String dataSourceStatEnable="datasource.sql.stat.enable";
 	
 	public static final String pidServers="pid.connection.string";
+	public static final String cmsUrl="cms.url";
 	
 	public static final String rticServers = "rtic.connection.string";
 	

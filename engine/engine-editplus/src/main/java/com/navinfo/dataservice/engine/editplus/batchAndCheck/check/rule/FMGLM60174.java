@@ -37,6 +37,10 @@ public class FMGLM60174 extends BasicCheckRule {
 						&&nameTmp.getNameClass()==1&&nameTmp.isEng()){
 					String nameStr=nameTmp.getName();
 					if(nameStr==null||nameStr.isEmpty()){continue;}
+					if(nameStr.indexOf("（") > -1 || nameStr.indexOf("）") > -1){
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"英文名称中括号应该都是半角的");
+						return;
+					}
 					String error = CheckUtil.isRightKuohao(nameStr);
 					if(error!=null&&!error.isEmpty()){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),error);

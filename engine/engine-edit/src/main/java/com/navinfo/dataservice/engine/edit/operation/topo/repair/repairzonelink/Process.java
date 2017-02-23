@@ -1,6 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.repair.repairzonelink;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -10,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.parameterCheck.DepartCheck;
 
 /**
  * 修行ZONE线参数操作类
@@ -58,6 +63,8 @@ public class Process extends AbstractProcess<Command> {
 	@Override
 	public String exeOperation() throws Exception {
 
+		parameterCheck();
+		
 		return new Operation(this.getConn(), this.getCommand()).run(this
 				.getResult());
 	}
@@ -88,4 +95,33 @@ public class Process extends AbstractProcess<Command> {
 		return msg;
 	}
 
+	private void parameterCheck() throws Exception {
+
+		DepartCheck departCheck = new DepartCheck(this.getConn());
+		
+		ZoneLinkSelector linkSelector=new ZoneLinkSelector(this.getConn());
+
+		if (this.getCommand().getCatchInfos() != null
+				&& this.getCommand().getCatchInfos().size() > 0) {
+
+			List<Integer> nodePids = new ArrayList<Integer>();
+
+			for (int i = 0; i < this.getCommand().getCatchInfos().size(); i++) {
+				JSONObject obj = this.getCommand().getCatchInfos()
+						.getJSONObject(i);
+				// 分离移动的node
+				nodePids.add(obj.getInt("nodePid"));
+			}
+
+			for (int nodePid : nodePids) {
+
+				List<Integer> linkPids = linkSelector.loadLinkPidByNodePid(
+						nodePid, false);
+
+				if (linkPids.size() > 1) {
+					departCheck.checkIsSameNode(nodePid, "ZONE_NODE");
+				}
+			}
+		}
+	}
 }

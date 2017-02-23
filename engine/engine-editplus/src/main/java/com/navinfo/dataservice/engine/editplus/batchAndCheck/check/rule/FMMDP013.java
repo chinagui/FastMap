@@ -16,15 +16,14 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import net.sf.json.JSONObject;
 
 /**
- * 
  * 检查条件： 非删除（根据履历判断删除） 检查原则：
  * 1.不能有繁体字（TY_CHARACTER_FJT_HZ.CONVERT=0且简介字段包含TY_CHARACTER_FJT_HZ.FT的值）
  * 
- * log1：**是繁体字，对应的简体是**，请确认是否需要简化
+ * log1：**是繁体字，对应的简体是**，请确认是否需要简化 
  * 注：对应的简体：TY_CHARACTER_FJT_HZ.JT的值
- *
+ * 
  */
-public class FMTEMP11 extends BasicCheckRule {
+public class FMMDP013 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -41,12 +40,12 @@ public class FMTEMP11 extends BasicCheckRule {
 		List<IxPoiCarrental> carrentals = poiObj.getIxPoiCarrentals();
 
 		for (IxPoiCarrental poiCarrental : carrentals) {
-			String howToGo = poiCarrental.getHowToGo();
+			String address = poiCarrental.getAddress();
 
-			if (StringUtils.isEmpty(howToGo)) {
+			if (StringUtils.isEmpty(address)) {
 				continue;
 			}
-			for (char c : howToGo.toCharArray()) {
+			for (char c : address.toCharArray()) {
 				if (charMap.containsKey(String.valueOf(c))) {
 					JSONObject data = charMap.get(String.valueOf(c));
 					int convert = data.getInt("convert");

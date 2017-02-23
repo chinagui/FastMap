@@ -14,11 +14,8 @@ import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.search.RdLaneConnexitySearch;
-import com.navinfo.dataservice.dao.glm.search.RdLinkSpeedLimitSearch;
 import com.navinfo.dataservice.dao.glm.search.RdObjectSearch;
 import com.navinfo.dataservice.dao.glm.search.RdSeSearch;
-import com.navinfo.dataservice.dao.glm.search.RdSlopeSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
@@ -55,7 +52,7 @@ public class RdObjectTest extends InitApplication {
 
 	@Test
 	public void testAddRdObject() {
-		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDOBJECT\",\"dbId\":19,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":310000003,\"links\":[279667,279668,88653284,208002741],\"roads\":[168599,171110,265604],\"inters\":[245224]}}";
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDINTER\",\"dbId\":17,\"data\":{\"objStatus\":\"UPDATE\",\"pid\":203000005,\"links\":[],\"nodes\":[]}}";
 		Transaction t = new Transaction(parameter);
 		try {
 			String msg = t.run();

@@ -466,11 +466,12 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
-							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
-								gridIdMap.put(entry.getKey().toString(), entry.getValue());
-							}
-							subtask.setGridIds(gridIdMap);
+							subtask.setGridIds(gridIds);
+//							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+//								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+//							}
+//							subtask.setGridIds(gridIdMap);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -527,12 +528,13 @@ public class SubtaskService {
 			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {
 					if (rs.next()) {
+					    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 						Map<String,Object> subtask = new HashMap<String,Object>();						
 						subtask.put("subtaskId",rs.getInt("SUBTASK_ID"));
 						subtask.put("name",rs.getString("NAME"));
 						subtask.put("type",rs.getInt("TYPE"));
-						subtask.put("planStartDate",rs.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate",rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate",df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate",df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("descp",rs.getString("DESCP"));
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));
@@ -1202,7 +1204,8 @@ public class SubtaskService {
 				int taskId = dataJson.getInt("taskId");
 				JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(taskId);
 				if(!gridIds.isEmpty() || gridIds.size()>0){
-					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+					JSONObject gridIdMap = new JSONObject();
+//					Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
 					for(Object gridId:gridIds.toArray()){
 						gridIdMap.put(gridId.toString(), 1);
 					}
@@ -1214,6 +1217,9 @@ public class SubtaskService {
 			}
 			
 			Subtask bean = (Subtask) JsonOperation.jsonToBean(dataJson,Subtask.class);
+			if(dataJson.containsKey("gridIds")){
+				bean.setGridIds(dataJson.getJSONObject("gridIds"));
+			}
 			bean.setCreateUserId((int)userId);
 			return bean;
 			
@@ -1503,7 +1509,10 @@ public class SubtaskService {
 			//查询子任务
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
-			//关闭子任务
+			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
+			if(subtask.getStage()==7){
+				return "POI专项_月编子任务关闭进行中";
+			}
 			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
 
 			//动态调整子任务范围

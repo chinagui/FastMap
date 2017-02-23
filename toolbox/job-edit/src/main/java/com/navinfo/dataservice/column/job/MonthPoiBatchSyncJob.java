@@ -63,6 +63,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 		MonthPoiBatchSyncJobRequest myRequest = (MonthPoiBatchSyncJobRequest) request;
 		ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 		int taskId = myRequest.getTaskId();
+		long userId = myRequest.getUserId();
 		Connection conn = null;
 		try {
 			log.info("获取任务对应的参数");
@@ -203,7 +204,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
 			this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
 			log.info("关闭任务");
-			apiService.close(taskId);
+			apiService.closeSubtask(taskId,userId);
 		} catch (Exception e) {
 			log.error("MonthPoiBatchSyncJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);

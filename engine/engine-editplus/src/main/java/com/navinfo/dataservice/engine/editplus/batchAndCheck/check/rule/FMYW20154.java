@@ -1,14 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -29,11 +22,7 @@ public class FMYW20154 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String chain=poi.getChain();
 			if(chain==null||chain.isEmpty()){return;}
-			if(!chain.equals("348D")){return;}
-			IxPoiName nameobj = poiObj.getOfficeOriginCHName();
-			if(nameobj==null){return;}
-			String nameStr = nameobj.getName();
-			if(nameStr==null||nameStr.isEmpty()||(!nameStr.contains("特斯拉")&&!nameStr.contains("TESLA"))){
+			if(chain.equals("348D")){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 				return;
 			}

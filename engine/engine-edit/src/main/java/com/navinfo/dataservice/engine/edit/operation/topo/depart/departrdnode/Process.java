@@ -57,7 +57,7 @@ public class Process extends AbstractProcess<Command> {
         // 分离节点检查CRFI
         check.checkCRFI(getConn(), getCommand().getNodePid());
         // 分离节点检查顺行
-        check.checkRdDirectRAndLaneC(getConn(), getCommand().getNodePid());
+        check.checkRdDirectRAndLaneC(getConn(), getCommand().getNodePid(), getCommand().getLinkPid());
         return super.preCheck();
     }
 

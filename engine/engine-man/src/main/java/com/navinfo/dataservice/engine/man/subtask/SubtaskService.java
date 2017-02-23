@@ -1523,6 +1523,7 @@ public class SubtaskService {
 				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
 				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
+				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
 			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
 				return "POI专项_月编子任务关闭进行中";
 			}

@@ -38,7 +38,7 @@ public class FMBAT20197 extends BasicBatchRule {
 		chainWebsite.put("3000", "http://www.izuche.com");
 		chainWebsite.put("3854", "http://www.hnqzw.com.cn");
 		chainWebsite.put("3902", "http://www.cdizu.com");
-		chainWebsite.put("8005", "https://www.hertz.cn");
+		chainWebsite.put("8005", "http://www.hertz.cn");
 		chainWebsite.put("2FAA", "http://www.reocar.com");
 		chainWebsite.put("36AD", "http://www.ezucoo.com");
 		chainWebsite.put("36AE", "http://www.xinshengbo.com");

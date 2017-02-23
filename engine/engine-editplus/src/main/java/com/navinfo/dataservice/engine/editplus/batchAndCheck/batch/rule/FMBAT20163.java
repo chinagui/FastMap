@@ -31,7 +31,7 @@ public class FMBAT20163 extends BasicBatchRule {
 		boolean hasStandardName = false;
 		IxPoiName standardName = null;
 		for (IxPoiName name:names) {
-			if (name.getNameClass()==1 && name.getNameType()==2 && name.getName().length()<=35 && name.getLangCode().equals("ENG")) {
+			if (name.getNameClass()==1 && name.getNameType()==2 && (name.getName()==null || name.getName().length()<=35) && name.getLangCode().equals("ENG")) {
 				hasOfficialName = true;
 			} else if (name.getNameClass()==1 && name.getNameType()==1 && name.getLangCode().equals("ENG")) {
 				if (name.getName()==null || name.getName().isEmpty()) {

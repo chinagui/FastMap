@@ -91,16 +91,29 @@ public class RDLANE004 extends baseRule{
 				}
 			}
 			//获取车信进入线
-			String sql = "SELECT C.IN_LINK_PID FROM RD_LANE_CONNEXITY C WHERE C.U_RECORD <> 2 AND C.PID = " + rdLaneTopology.getConnexityPid();
+			//获取车信进入线,退出线
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT C.IN_LINK_PID,T.OUT_LINK_PID,V.LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
+			sb.append(" WHERE C.PID = T.CONNEXITY_PID");
+			sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+			sb.append(" AND C.U_RECORD <> 2");
+			sb.append(" AND T.U_RECORD <> 2");
+			sb.append(" AND V.U_RECORD <> 2");
+			sb.append(" AND T.TOPOLOGY_ID = " + rdLaneTopology.getPid());
+			String sql = sb.toString();
 			log.info("前检查RdLane004:" + sql);
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
-			
+			int connexityPid = 0;
 			if (resultSet.next()){
+				connexityPid = resultSet.getInt("IN_LINK_PID");
 				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
+				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
+				linkPidList.add(resultSet.getInt("LINK_PID")) ;
 			} 
 			resultSet.close();
 			pstmt.close();
+
 			//检查连通性
 			checkConnexity(rdLaneTopology.getConnexityPid(),linkPidList);
 		}

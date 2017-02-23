@@ -6,12 +6,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
 import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class TyCharacterFjtHzCheckSelector {
 	private Map<String, JSONObject> getFtCharacterMap = new HashMap<String, JSONObject>();
+	private Map<Integer,Map<String, String>> convertFtMap=new HashMap<Integer,Map<String, String>>();
 	
 	private Map<String, JSONObject> getjtCharacterMap = new HashMap<String, JSONObject>();
 	
@@ -97,6 +101,39 @@ public class TyCharacterFjtHzCheckSelector {
 				}
 		}
 		return getjtCharacterMap;
+	}
+	public Map<Integer, Map<String, String>> tyCharacterFjtHzConvertFtMap() throws Exception {
+		if (convertFtMap==null||convertFtMap.isEmpty()) {
+			synchronized (this) {
+				if (convertFtMap==null||convertFtMap.isEmpty()) {
+					try {
+						String sql = "SELECT hz.ft,hz.jt,hz.convert FROM ty_character_fjt_hz hz";
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								int convert=rs.getInt("convert");
+								if(!convertFtMap.containsKey(convert)){
+									convertFtMap.put(convert,new HashMap<String, String>());
+								}
+								convertFtMap.get(convert).put(rs.getString("jt"), rs.getString("ft"));
+							} 
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.commitAndCloseQuietly(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载ty_character_fjt_hz失败："+ e.getMessage(), e);
+					}
+				}
+			}
+	}
+	return convertFtMap;
 	}
 
 }

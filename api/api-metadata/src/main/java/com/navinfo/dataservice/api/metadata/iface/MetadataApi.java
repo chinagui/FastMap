@@ -230,6 +230,14 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<Integer,Map<String, String>> key:convert value:Map<String, String> ft:jt
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, String>> tyCharacterFjtHzConvertFtMap()
+			throws Exception;
 
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。

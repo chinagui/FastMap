@@ -33,7 +33,7 @@ public class RdLaneTest extends InitApplication{
 	@Test
 	public void testLoadRdLaneByCondition()
 	{
-		String parameter = "{\"linkPid\":\"210001313\",\"laneDir\":2}";
+		String parameter = "{\"inLinkPid\":19376966,\"nodePid\":14895966,\"outLinkPid\":19482001,\"type\":\"RDLANECONNEXITY\"}";
 		Connection conn;
 		try {
 			conn = DBConnector.getInstance().getConnectionById(17);
@@ -42,7 +42,7 @@ public class RdLaneTest extends InitApplication{
 
 			SearchProcess p = new SearchProcess(conn);
 
-			System.out.println(p.searchDataByCondition(ObjType.RDLANE, jsonReq2));
+			System.out.println(p.searchDataByCondition(ObjType.RDLANEVIA, jsonReq2));
 
 		} catch (Exception e) {
 			e.printStackTrace();

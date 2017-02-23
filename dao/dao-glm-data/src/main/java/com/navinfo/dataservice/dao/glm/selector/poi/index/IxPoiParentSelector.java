@@ -312,7 +312,7 @@ public class IxPoiParentSelector extends AbstractSelector {
 	 */
 	public int getParentPid(int pid) throws Exception{
 		
-		String sql = "select p.parent_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and c.child_poi_pid=:1";
+		String sql = "select p.parent_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and c.child_poi_pid=:1 and p.u_record !=2";
 		
 		PreparedStatement pstmt = null;
 
@@ -346,7 +346,7 @@ public class IxPoiParentSelector extends AbstractSelector {
 	 */
 	public List<Integer> getChildrenPids(int pid) throws Exception{
 		
-		String sql = "select c.child_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and p.parent_poi_pid=:1";
+		String sql = "select c.child_poi_pid from ix_poi_parent p,ix_poi_children c where p.group_id=c.group_id and p.parent_poi_pid=:1 and c.u_record !=2";
 		
 		PreparedStatement pstmt = null;
 

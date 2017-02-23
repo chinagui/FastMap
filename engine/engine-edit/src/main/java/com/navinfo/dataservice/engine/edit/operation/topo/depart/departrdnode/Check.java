@@ -1,27 +1,26 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.depart.departrdnode;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeForm;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Check {
 
@@ -75,12 +74,13 @@ public class Check {
         String sql = "SELECT LINK_PID FROM RD_LANE_VIA WHERE LINK_PID = :1 AND ROWNUM = 1 AND U_RECORD != 2 UNION " +
                 "ALL" + " SELECT LINK_PID FROM RD_RESTRICTION_VIA WHERE LINK_PID = :2 AND ROWNUM = 1 AND U_RECORD != " +
                 "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
-                "" + "2 " + "UNION " + "ALL " + "SELECT " + "LINK_PID " + "FROM " + "RD_VOICEGUIDE_VIA" + " " +
-                "WHERE " + "LINK_PID" + " " + "= " + ":3" + " " + "AND " + "" + "ROWNUM = 1" + " AND " + "" +
-                "U_RECORD != 2 " + "UNION ALL " + "SELECT " + "LINK_PID " + "FROM " + "RD_BRANCH_VIA " + "WHERE " +
-                "LINK_PID = :4 " + "AND" + " " + "ROWNUM " + "=" + " 1 " + "" + "AND " + "U_RECORD != " + "2 " +
-                "UNION ALL " + "SELECT " + "" + "" + "LINK_PID " + "FROM " + "RD_DIRECTROUTE_VIA " + "WHERE " + "" +
-                "LINK_PID = " + ":5 AND" + " " + "ROWNUM" + " = 1 " + "AND " + "U_RECORD" + " !=" + " 2";
+                "" + "" + "" + "" + "" + "2 " + "UNION " + "ALL " + "SELECT " + "LINK_PID " + "FROM " +
+                "RD_VOICEGUIDE_VIA" + "" + " " + "WHERE " + "LINK_PID" + " " + "= " + ":3" + " " + "AND " + "" +
+                "ROWNUM = 1" + " AND " + "" + "U_RECORD != 2 " + "UNION ALL " + "SELECT " + "LINK_PID " + "FROM " +
+                "RD_BRANCH_VIA " + "WHERE " + "LINK_PID = :4 " + "AND" + " " + "ROWNUM " + "=" + " 1 " + "" + "AND "
+                + "U_RECORD != " + "2 " + "UNION ALL " + "SELECT " + "" + "" + "LINK_PID " + "FROM " +
+                "RD_DIRECTROUTE_VIA " + "WHERE " + "" + "LINK_PID = " + ":5 AND" + " " + "ROWNUM" + " = 1 " + "AND "
+                + "U_RECORD" + " !=" + " 2";
 
         PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -144,11 +144,20 @@ public class Check {
         List<RdInter> inters = selector.loadInterByNodePid(String.valueOf(nodePid), false);
         if (!inters.isEmpty())
             throwException("此点做了CRFI信息，不允许移动");
+        List<IRow> forms = new AbstractSelector(RdNodeForm.class, conn).loadRowsByParentId(nodePid, false);
+        for (IRow f : forms) {
+            RdNodeForm form = (RdNodeForm) f;
+            if (form.getFormOfWay() == 3) {
+                throwException("此点做了CRFI信息，不允许移动");
+            }
+        }
     }
 
     public void checkRdDirectRAndLaneC(Connection conn, Integer nodePid, Integer linkPid) throws Exception {
         RdCrossSelector selector = new RdCrossSelector(conn);
+        RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
         RdCross cross = null;
+        List<RdLaneConnexity> laneConnexities = null;
         try {
             cross = selector.loadCrossByNodePid(nodePid, false);
         } catch (Exception e) {
@@ -159,24 +168,21 @@ public class Check {
             if (!directroutes.isEmpty())
                 throwException("此点为路口点，不允许移动");
 
-            RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
-            List<RdLaneConnexity> laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid(),
-                    false);
+            laneConnexities = laneConnexitySelector.getRdLaneConnexityByCrossPid(cross.pid(), false);
             if (!laneConnexities.isEmpty())
                 throwException("此点为路口点，不允许移动");
-
-            laneConnexities = laneConnexitySelector.loadByLink(linkPid, 3, false);
-            if (!laneConnexities.isEmpty()) {
-                List<Integer> linkPids = new RdLinkSelector(conn).loadLinkPidByNodePid(nodePid, false);
-                for (RdLaneConnexity laneConnexity : laneConnexities) {
-                    for (RdLaneVia via : laneConnexity.viaMap.values()) {
-                        if (linkPids.contains(via.getLinkPid())) {
-                            throwException("此点为车信退出线的进入点，不允许移动");
-                        }
+        }
+        laneConnexities = laneConnexitySelector.loadByLink(linkPid, 2, false);
+        if (!laneConnexities.isEmpty()) {
+            List<Integer> linkPids = new RdLinkSelector(conn).loadLinkPidByNodePid(nodePid, false);
+            for (RdLaneConnexity laneConnexity : laneConnexities) {
+                for (RdLaneVia via : laneConnexity.viaMap.values()) {
+                    if (linkPids.contains(via.getLinkPid())) {
+                        throwException("此点为车信退出线的进入点，不允许移动");
                     }
                 }
             }
         }
-    }
 
+    }
 }

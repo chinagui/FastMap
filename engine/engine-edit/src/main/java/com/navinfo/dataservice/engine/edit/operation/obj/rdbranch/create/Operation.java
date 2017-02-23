@@ -271,7 +271,15 @@ public class Operation implements IOperation {
 		detail.setBranchType(command.getBranchType());
 
 		detail.setMesh(branch.mesh());
-
+		//方面分歧默认声音方向为2
+		if(command.getBranchType() == 1){
+			detail.setVoiceDir(2);
+		}
+		if(command.getBranchType() == 3||command.getBranchType() == 4){
+			detail.setVoiceDir(9);
+			detail.setEstabType(9);
+			detail.setNameKind(9);
+		}
 		if (flag) {
 
 			List<IRow> details = new ArrayList<IRow>();

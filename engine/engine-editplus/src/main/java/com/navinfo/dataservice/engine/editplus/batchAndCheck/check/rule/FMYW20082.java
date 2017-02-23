@@ -37,8 +37,8 @@ public class FMYW20082 extends BasicCheckRule {
 			if (addr == null) {
 				return;
 			}
-			if (addr.getHisOpType().equals(OperationType.INSERT)
-					|| (addr.getHisOpType().equals(OperationType.UPDATE))) {
+			if (!addr.getHisOpType().equals(OperationType.INSERT)
+					&& (!addr.getHisOpType().equals(OperationType.UPDATE))) {
 				return;
 			}
 			if (addr.getFullname() == null || addr.getFullname().isEmpty()) {

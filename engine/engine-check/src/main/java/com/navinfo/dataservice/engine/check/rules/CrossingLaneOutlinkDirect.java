@@ -64,14 +64,14 @@ public class CrossingLaneOutlinkDirect extends baseRule{
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
 			//线线车信不触发
 			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
-				if((int) rdLaneTopology.changedFields().get("relationshipType")==2){
+				if(Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString())==2){
 					return;
 				}
 			}else if(rdLaneTopology.getRelationshipType()==2){
 				return;
 			}
 			if(rdLaneTopology.changedFields().containsKey("outLinkPid")){
-				linkPid = (int) rdLaneTopology.changedFields().get("outLinkPid");
+				linkPid = Integer.parseInt(rdLaneTopology.changedFields().get("outLinkPid").toString());
 			}	
 		}
 		if(linkPid!=0){

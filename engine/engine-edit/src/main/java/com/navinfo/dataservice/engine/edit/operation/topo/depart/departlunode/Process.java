@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.parameterCheck.DepartCheck;
 import com.navinfo.dataservice.engine.edit.operation.topo.depart.departlunode.Operation;
 
 public class Process extends AbstractProcess<Command> {
@@ -44,7 +45,16 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		
+		parameterCheck();
+		
 		return new Operation(this.getCommand(),this.getConn()).run(this.getResult());
+	}
+	
+	private void parameterCheck() throws Exception {
+		DepartCheck departCheck = new DepartCheck(this.getConn());
+
+		departCheck.checkIsSameNode(this.getCommand().getNodePid(), "LU_NODE");
 	}
 
 }

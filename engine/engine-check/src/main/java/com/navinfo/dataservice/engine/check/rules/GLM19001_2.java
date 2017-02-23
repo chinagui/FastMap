@@ -102,14 +102,14 @@ public class GLM19001_2 extends baseRule{
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
 			//路口车信不触发
 			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
-				if((int) rdLaneTopology.changedFields().get("relationshipType")==1){
+				if(Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString())==1){
 					return;
 				}
 			}else if(rdLaneTopology.getRelationshipType()==1){
 				return;
 			}
 			if(rdLaneTopology.changedFields().containsKey("outLinkPid")){
-				linkPid = (int) rdLaneTopology.changedFields().get("outLinkPid");
+				linkPid = Integer.parseInt( rdLaneTopology.changedFields().get("outLinkPid").toString());
 			}	
 		}
 		if(linkPid!=0){

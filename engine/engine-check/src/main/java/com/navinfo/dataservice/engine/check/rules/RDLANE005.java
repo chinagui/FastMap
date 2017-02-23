@@ -52,9 +52,9 @@ public class RDLANE005  extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LANE_TOPOLOGY T ");
-			sb.append("WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
-			sb.append("AND T.RELATIONSHIP_TYPE = 1");
-			sb.append("AND T.U_RECORD <> 2");
+			sb.append(" WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
+			sb.append(" AND T.RELATIONSHIP_TYPE = 1");
+			sb.append(" AND T.U_RECORD <> 2");
 
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);

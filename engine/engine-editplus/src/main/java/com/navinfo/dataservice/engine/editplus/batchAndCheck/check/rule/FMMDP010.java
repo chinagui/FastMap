@@ -21,7 +21,7 @@ import net.sf.json.JSONObject;
  * log1：**是简体字，请确认
  *
  */
-public class FMTEMP10 extends BasicCheckRule {
+public class FMMDP010 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

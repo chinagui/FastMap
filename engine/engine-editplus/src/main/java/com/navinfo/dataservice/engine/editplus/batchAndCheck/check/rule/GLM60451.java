@@ -36,16 +36,13 @@ public class GLM60451 extends BasicCheckRule {
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 					return;
 				}
-				String[] labelList = typeStr.split("\\|");
-				for(String tmp:labelList){
-					if(tmp.equals("0")||tmp.equals("1")||tmp.equals("2")
-							||tmp.equals("3")||tmp.equals("4")){
-						continue;
-					}else{
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-						return;
-					}
-				}				
+				if(typeStr.equals("0")||typeStr.equals("1")||typeStr.equals("2")
+						||typeStr.equals("3")||typeStr.equals("4")){
+					continue;
+				}else{
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+					return;
+				}		
 			}
 		}
 	}

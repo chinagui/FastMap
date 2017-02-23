@@ -35,17 +35,13 @@ public class FMCHR7300101 extends BasicCheckRule {
 			String nameStr = nameObj.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			
-			Map<String, JSONObject> ft = metadataApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
-			for(char item:nameStr.toCharArray()){
-				String str=String.valueOf(item);
-				if(ft.containsKey(str)){
-					JSONObject data= ft.get(str);
-					Object convert= data.get("convert");
-					if(convert.equals(2)){
-						String jt=(String) data.get("jt");
-						String log="“"+str+"”是繁体字，对应的简体字是“"+jt+"”，必须转化";
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
-					}
+			Map<Integer, Map<String, String>> convertFtMap = metadataApi.tyCharacterFjtHzConvertFtMap();
+			Map<String, String> convert2Map = convertFtMap.get(2);
+			for(String ft:convert2Map.keySet()){
+				if(nameStr.contains(ft)){
+					String log="“"+ft+"”是繁体字，对应的简体字是“"+convert2Map.get(ft)+"”，必须转化";
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),log);
+					return;
 				}
 			}
 		}

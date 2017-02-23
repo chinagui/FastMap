@@ -52,9 +52,9 @@ public class RDLANE005  extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("SELECT 1 FROM RD_LANE_TOPOLOGY T ");
-			sb.append("WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
-			sb.append("AND T.RELATIONSHIP_TYPE = 1");
-			sb.append("AND T.U_RECORD <> 2");
+			sb.append(" WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
+			sb.append(" AND T.RELATIONSHIP_TYPE = 1");
+			sb.append(" AND T.U_RECORD <> 2");
 
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);
@@ -150,14 +150,13 @@ public class RDLANE005  extends baseRule {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append("SELECT COUNT(1) FROM RD_LANE_TOPOLOGY T ,RD_LANE_VIA V");
-		sb.append(" WHERE T.RELATIONSHIP_TYPE = 1");
-		sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+		sb.append(" WHERE T.TOPOLOGY_ID = V.TOPOLOGY_ID");
 		sb.append(" AND T.U_RECORD <> 2");
 		sb.append(" AND V.U_RECORD <> 2");
 		sb.append(" AND T.TOPOLOGY_ID = " + pid);
 
 		String sql = sb.toString();
-		log.info("前检查RdLane002:" + sql);
+		log.info("前检查RdLane005:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();

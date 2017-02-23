@@ -63,6 +63,46 @@ public class serchConditionTest extends InitApplication {
 			}
 		}
 	}
+	
+	@Test
+	public void getByCondition4() {
+
+		Connection conn = null;
+
+		try {
+
+			String parameter = "{\"dbId\":17,\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":301003550,\"nodePid\":210002800,\"outLinkPid\":303003504,\"type\":\"RDLANECONNEXITY\"}}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String objType = jsonReq.getString("type");
+
+			int dbId = jsonReq.getInt("dbId");
+
+			JSONObject data = jsonReq.getJSONObject("data");
+
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONArray array = p.searchDataByCondition(ObjType.valueOf(objType),
+					data);
+
+			System.out.println(array);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 
 	@Test
 	public void getBySpecialMap() {

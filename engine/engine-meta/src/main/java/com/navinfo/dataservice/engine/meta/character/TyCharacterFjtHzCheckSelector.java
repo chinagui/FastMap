@@ -120,7 +120,7 @@ public class TyCharacterFjtHzCheckSelector {
 								if(!convertFtMap.containsKey(convert)){
 									convertFtMap.put(convert,new HashMap<String, String>());
 								}
-								convertFtMap.get(convert).put(rs.getString("jt"), rs.getString("ft"));
+								convertFtMap.get(convert).put(rs.getString("ft"), rs.getString("jt"));
 							} 
 						} catch (Exception e) {
 							throw new Exception(e);

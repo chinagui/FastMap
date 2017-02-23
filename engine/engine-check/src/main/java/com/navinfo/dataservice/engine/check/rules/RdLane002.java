@@ -62,14 +62,15 @@ public class RdLane002 extends baseRule {
 			sb.append("SELECT COUNT(1) NUM FROM RD_LANE_TOPOLOGY T,RD_LANE_VIA V ");
 			sb.append(" WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
 			sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+			sb.append(" AND T.RELATIONSHIP_TYPE = 2");
 			sb.append(" AND T.U_RECORD <> 2");
 			sb.append(" AND V.U_RECORD <> 2");
-			sb.append(" AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
+//			sb.append(" AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
 
 			String sql = sb.toString();
 			log.info("RdLaneVia前检查RdLane002:" + sql);
 			
-			int num = 0;
+			int num = 0;//该经过线所在的RdLaneTopology内经过线数量
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
 			
@@ -78,20 +79,49 @@ public class RdLane002 extends baseRule {
 			} 
 			resultSet.close();
 			pstmt.close();
-			
-			if(num==0){
-				for(IRow objInnerLoop : checkCommand.getGlmList()){
-					if(objInnerLoop instanceof RdLaneTopology){
-						RdLaneTopology rdLaneTopology = (RdLaneTopology)objInnerLoop;
-						if(rdLaneTopology.getPid() == rdLaneVia.getTopologyId()){
-							if((!rdLaneTopology.status().equals(ObjStatus.DELETE))&&(rdLaneTopology.getRelationshipType()==2)){
-								this.setCheckResult("", "", 0);
-								return;
+
+			for(IRow objInnerLoop : checkCommand.getGlmList()){
+				if(objInnerLoop instanceof RdLaneTopology){
+					RdLaneTopology rdLaneTopology = (RdLaneTopology)objInnerLoop;
+					if(rdLaneTopology.getPid() == rdLaneVia.getTopologyId()){
+						//删除了就不在考虑范围内了
+						if(rdLaneTopology.status().equals(ObjStatus.DELETE)){
+							return;
+						}
+						//路口车信不在考虑范围内
+						else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
+							if(rdLaneTopology.changedFields().containsKey("relationshipType")){
+								int relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
+								if(relationshipType==1){
+									return;
+								}
 							}
 						}
-
 					}
 				}
+				
+				if(objInnerLoop instanceof RdLaneVia){
+					RdLaneVia via = (RdLaneVia)objInnerLoop;
+					if(via.getTopologyId() == rdLaneVia.getTopologyId()){
+						if(via.status().equals(ObjStatus.DELETE)){
+							num --;
+						}
+						//不知道这种奇葩情况会不会出现，先写上，以备万一
+						else if(via.status().equals(ObjStatus.UPDATE)){
+							if(via.changedFields().containsKey("topologyId")){
+								num --;
+							}
+						}
+						else if(via.status().equals(ObjStatus.INSERT)){
+							num ++;
+						}
+					}
+				}
+			}
+			
+			if(num==0){
+				this.setCheckResult("", "", 0);
+				return;
 			}
 		}
 	}
@@ -141,6 +171,12 @@ public class RdLane002 extends baseRule {
 								viaNum --;
 							}
 							continue;
+						}
+						//不知道这种奇葩情况会不会出现，先写上，以备万一
+						else if(rdLaneVia.status().equals(ObjStatus.UPDATE)){
+							if(rdLaneVia.changedFields().containsKey("topologyId")){
+								viaNum --;
+							}
 						}
 						//新增的经过线
 						if(rdLaneVia.status().equals(ObjStatus.INSERT)){

@@ -46,7 +46,6 @@ public class GLM60289 extends BasicCheckRule {
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;
 			}
-			
 		}
 	}
 

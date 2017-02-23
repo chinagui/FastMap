@@ -1519,7 +1519,7 @@ public class SubtaskService {
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
 			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
-			if(subtask.getStage()==7){
+			if(subtask.getType()==7){
 				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
 				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);

@@ -206,7 +206,7 @@ public class RDLANE004 extends baseRule{
 		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 		ResultSet resultSet = pstmt.executeQuery();
 		Map<Integer,Integer> nodePidList = new HashMap<Integer,Integer>();
-		if (resultSet.next()){
+		while (resultSet.next()){
 			if(nodePidList.containsKey(resultSet.getInt("S_NODE_PID"))){
 				int num = nodePidList.get(resultSet.getInt("S_NODE_PID"));
 				nodePidList.put(resultSet.getInt("S_NODE_PID"), num+1);
@@ -233,7 +233,7 @@ public class RDLANE004 extends baseRule{
 			if(entry.getValue() == 1){
 				num1 ++;
 			}else if(entry.getValue() == 2){
-				num1 ++;
+				num2 ++;
 			}
 		}
 		

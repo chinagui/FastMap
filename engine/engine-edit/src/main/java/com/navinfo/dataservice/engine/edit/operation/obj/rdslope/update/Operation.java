@@ -408,18 +408,31 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 		RdSlopeSelector selector = new RdSlopeSelector(this.conn);
-		// link为退出线的RdSlope
-		List<RdSlope> slopes = selector.loadByOutLink(linkPid, true);
+		
+		//node关联的RdSlope
+		List<RdSlope> slopes = selector.loadByNode(nodePid, true);
+
 		for (RdSlope slope : slopes) {
+
+			result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
+		}
+		
+		
+		// link为退出线的RdSlope
+		slopes = selector.loadByOutLink(linkPid, true);
+
+		for (RdSlope slope : slopes) {
+			
 			if (slope.getNodePid() == nodePid) {
-				result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
-			} else {
-				// 只删除接续link
-				for (IRow row : slope.getSlopeVias()) {
-					result.insertObject(row, ObjStatus.DELETE, slope.getPid());
-				}
+				continue;
+			}
+
+			// 只删除接续link
+			for (IRow row : slope.getSlopeVias()) {
+				result.insertObject(row, ObjStatus.DELETE, slope.getPid());
 			}
 		}
+		
 		// link为接续link的RdSlope
 		slopes = selector.loadByViaLink(linkPid, true);
 		if (slopes.size() == 0) {

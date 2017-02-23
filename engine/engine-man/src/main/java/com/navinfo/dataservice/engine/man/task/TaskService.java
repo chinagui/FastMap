@@ -1290,16 +1290,33 @@ public class TaskService {
 		try{
 			Task task = queryByTaskId(taskId);
 			
+		    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+			
 			Map<String,Object> map = new HashMap<String,Object>();
 			map.put("taskId", task.getTaskId());
 			map.put("name", task.getName());
 			map.put("status", task.getStatus());
 			map.put("descp", task.getDescp());
 			map.put("type", task.getType());
-			map.put("planStartDate", task.getPlanStartDate());
-			map.put("planEndDate", task.getPlanEndDate());
-			map.put("producePlanStartDate", task.getProducePlanStartDate());
-			map.put("producePlanEndDate", task.getProducePlanEndDate());
+			
+			Timestamp planStartDate = task.getPlanStartDate();
+			Timestamp planEndDate = task.getPlanEndDate();
+			if(planStartDate != null){
+				map.put("planStartDate", df.format(planStartDate));
+			}else {map.put("planStartDate", "");}
+			if(planEndDate != null){
+				map.put("planEndDate",df.format(planEndDate));
+			}else{map.put("planEndDate", "");}
+			
+			Timestamp producePlanStartDate = task.getProducePlanStartDate();
+			Timestamp producePlanEndDate = task.getProducePlanEndDate();
+			if(planStartDate != null){
+				map.put("producePlanStartDate", df.format(producePlanStartDate));
+			}else {map.put("producePlanStartDate", "");}
+			if(planEndDate != null){
+				map.put("producePlanEndDate",df.format(producePlanEndDate));
+			}else{map.put("producePlanEndDate", "");}
+
 			map.put("lot", task.getLot());
 			map.put("poiPlanTotal", task.getPoiPlanTotal());
 			map.put("roadPlanTotal", task.getRoadPlanTotal());
@@ -1619,6 +1636,7 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			taskUpdateCmsProgress(conn, phaseId, 3);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);

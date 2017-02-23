@@ -345,7 +345,7 @@ public class DefaultObjImportor extends AbstractOperation{
 							||"audioes".equals(subRowName)){
 						if((attValue==null && (!(attValue instanceof JSONNull)))
 								||StringUtils.isEmpty(attName)||"objStatus".equals(attName)
-								||"fccPid".equals(attName)||"rowId".equals(attName)
+								||"photoId".equals(attName)||"rowId".equals(attName)
 								||"videoId".equals(attName)||"audioId".equals(attName)){
 							log.warn("注意：request的json中存在name或者value为空的属性，已经被忽略。"+attName);
 							continue;
@@ -373,6 +373,10 @@ public class DefaultObjImportor extends AbstractOperation{
 									attValue = Long.valueOf((Integer)attValue);
 									log.info("转换字段:"+attName);
 								}
+							}
+							//IX_POI_PHOTO表FCC库照片号码fccPid转换为pid
+							if("fccPid".equals(attName)){
+								attName = "pid";
 							}
 							String newAttName = this.camelToUnderline(attName);
 							subRow.setAttrByCol(newAttName, attValue);

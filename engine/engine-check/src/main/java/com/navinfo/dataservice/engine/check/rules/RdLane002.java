@@ -1,7 +1,13 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -10,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 /**
  * 车信	html	RDLANE002	后台	
  * 线线车信必须有经过线
@@ -26,18 +33,99 @@ public class RdLane002 extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj : checkCommand.getGlmList()){
-			//create的时候只有主表对象，其中包含的内容涵盖子表内容，可直接用
-			if (obj instanceof RdLaneConnexity){//交限
-				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
-				checkRdLaneConnexity(laneObj);
-			}
+//			//create的时候只有主表对象，其中包含的内容涵盖子表内容，可直接用
+//			if (obj instanceof RdLaneConnexity){//交限
+//				RdLaneConnexity laneObj=(RdLaneConnexity) obj;
+//				checkRdLaneConnexity(laneObj);
+//			}
 			//修改车信
-			else if(obj instanceof RdLaneTopology){
+			if(obj instanceof RdLaneTopology){
 				RdLaneTopology rdLaneTopology = (RdLaneTopology)obj;
 				checkRdLaneTopology(rdLaneTopology,checkCommand);
 			}
+			//修改车信
+			else if(obj instanceof RdLaneVia){
+				RdLaneVia rdLaneVia = (RdLaneVia)obj;
+				checkRdLaneVia(rdLaneVia,checkCommand);
+			}
 		}
 	}
+	/**
+	 * @param rdLaneVia
+	 * @param checkCommand 
+	 * @throws SQLException 
+	 */
+	private void checkRdLaneVia(RdLaneVia rdLaneVia, CheckCommand checkCommand) throws SQLException {
+		if(rdLaneVia.status().equals(ObjStatus.DELETE)){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT COUNT(1) NUM FROM RD_LANE_TOPOLOGY T,RD_LANE_VIA V ");
+			sb.append(" WHERE T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
+			sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+			sb.append(" AND T.RELATIONSHIP_TYPE = 2");
+			sb.append(" AND T.U_RECORD <> 2");
+			sb.append(" AND V.U_RECORD <> 2");
+//			sb.append(" AND V.LINK_PID <> " + rdLaneVia.getLinkPid());
+
+			String sql = sb.toString();
+			log.info("RdLaneVia前检查RdLane002:" + sql);
+			
+			int num = 0;//该经过线所在的RdLaneTopology内经过线数量
+			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+			ResultSet resultSet = pstmt.executeQuery();
+			
+			if (resultSet.next()){
+				num = resultSet.getInt("NUM");
+			} 
+			resultSet.close();
+			pstmt.close();
+
+			for(IRow objInnerLoop : checkCommand.getGlmList()){
+				if(objInnerLoop instanceof RdLaneTopology){
+					RdLaneTopology rdLaneTopology = (RdLaneTopology)objInnerLoop;
+					if(rdLaneTopology.getPid() == rdLaneVia.getTopologyId()){
+						//删除了就不在考虑范围内了
+						if(rdLaneTopology.status().equals(ObjStatus.DELETE)){
+							return;
+						}
+						//路口车信不在考虑范围内
+						else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
+							if(rdLaneTopology.changedFields().containsKey("relationshipType")){
+								int relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
+								if(relationshipType==1){
+									return;
+								}
+							}
+						}
+					}
+				}
+				
+				if(objInnerLoop instanceof RdLaneVia){
+					RdLaneVia via = (RdLaneVia)objInnerLoop;
+					if(via.getTopologyId() == rdLaneVia.getTopologyId()){
+						if(via.status().equals(ObjStatus.DELETE)){
+							num --;
+						}
+						//不知道这种奇葩情况会不会出现，先写上，以备万一
+						else if(via.status().equals(ObjStatus.UPDATE)){
+							if(via.changedFields().containsKey("topologyId")){
+								num --;
+							}
+						}
+						else if(via.status().equals(ObjStatus.INSERT)){
+							num ++;
+						}
+					}
+				}
+			}
+			
+			if(num==0){
+				this.setCheckResult("", "", 0);
+				return;
+			}
+		}
+	}
+
 	/**
 	 * @param rdLaneTopology
 	 * @param checkCommand 
@@ -62,13 +150,18 @@ public class RdLane002 extends baseRule {
 				}
 				if(viaNum==0){
 					this.setCheckResult("", "", 0);
+					return;
 				}
 			}
 		}
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
-			int viaNum = rdLaneTopology.getVias().size();
-			if(rdLaneTopology.getRelationshipType()==2){
+			int relationshipType = 1;
+			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
+				relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
+			}
+			int viaNum = getViaNum(rdLaneTopology.getPid());
+			if(relationshipType==2){
 				for(IRow objInnerLoop : checkCommand.getGlmList()){
 					if(objInnerLoop instanceof RdLaneVia){
 						RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
@@ -78,6 +171,12 @@ public class RdLane002 extends baseRule {
 								viaNum --;
 							}
 							continue;
+						}
+						//不知道这种奇葩情况会不会出现，先写上，以备万一
+						else if(rdLaneVia.status().equals(ObjStatus.UPDATE)){
+							if(rdLaneVia.changedFields().containsKey("topologyId")){
+								viaNum --;
+							}
 						}
 						//新增的经过线
 						if(rdLaneVia.status().equals(ObjStatus.INSERT)){
@@ -91,10 +190,39 @@ public class RdLane002 extends baseRule {
 				
 				if(viaNum==0){
 					this.setCheckResult("", "", 0);
+					return;
 				}
 			}
 		}
 		
+	}
+
+	/**
+	 * @param pid
+	 * @return
+	 * @throws Exception 
+	 */
+	private int getViaNum(int pid) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT COUNT(1) FROM RD_LANE_TOPOLOGY T ,RD_LANE_VIA V");
+		sb.append(" WHERE T.RELATIONSHIP_TYPE = 1");
+		sb.append(" AND T.TOPOLOGY_ID = V.TOPOLOGY_ID");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + pid);
+
+		String sql = sb.toString();
+		log.info("前检查RdLane002:" + sql);
+		
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(resultList!=null && resultList.size()>0){
+			return Integer.parseInt(resultList.get(0).toString());
+		}
+		return 0;
 	}
 
 	/**

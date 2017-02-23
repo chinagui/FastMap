@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
@@ -67,7 +68,7 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
 		buffer.append(" FROM (SELECT /*+ leading(ip,ipn,ps) use_hash(ip,ipn,ps)*/  COUNT (1) OVER (PARTITION BY 1) total,");
-		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ps.status, ps.fresh_verified as freshness_vefication,ipn.name,ip.geometry,ip.collect_time,ip.u_record ");
+		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.geometry,ip.collect_time ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 
@@ -123,17 +124,38 @@ public class IxPoiSelector extends AbstractSelector {
 				// STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				// Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
-				json.put("pid", resultSet.getInt("pid"));
-				json.put("kindCode", resultSet.getString("kind_code"));
+				
 				json.put("poiNum", resultSet.getString("poi_num"));
+				json.put("pid", resultSet.getInt("pid"));
+				json.put("status", logRead.getObjectState(resultSet.getInt("pid"), "IX_POI"));
+				json.put("name", resultSet.getString("name"));
+				json.put("kindCode", resultSet.getString("kind_code"));
+				String flag = "";
+				if (StringUtils.isNotEmpty(resultSet.getString("flag"))){
+					flag = resultSet.getString("flag");
+				}
+				json.put("flag", flag);
+				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
+				json.put("photo", selector.getPoiPhotoTotal(resultSet.getInt("pid")));
+				String poiMemo = "";
+				if (StringUtils.isNotEmpty(resultSet.getString("poi_memo"))){
+					poiMemo = resultSet.getString("poi_memo");
+				}
+				json.put("memo", poiMemo);
+				String collectTime = "";
+				if (StringUtils.isNotEmpty(resultSet.getString("collect_time"))){
+					collectTime = resultSet.getString("collect_time");
+				}
+				json.put("collectTime", collectTime);
 				json.put("freshnessVefication",
 						resultSet.getInt("freshness_vefication"));
-				json.put("name", resultSet.getString("name"));
-				// json.put("geometry", GeoTranslator.jts2Geojson(geometry));
-				json.put("uRecord", resultSet.getInt("u_record"));
-				json.put("status", resultSet.getInt("status"));
-				json.put("collectTime", resultSet.getString("collect_time"));
-				json.put("state", logRead.getObjectState(resultSet.getInt("pid"), "IX_POI"));
+				json.put("errorCount", getcheckErrorTotal(resultSet.getInt("pid"), "IX_POI"));
+				json.put("errorType", "");
+				json.put("auditProblem","");
+				json.put("auditStatus", "");
+//				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
+//				json.put("uRecord", resultSet.getInt("u_record"));
+
 				array.add(json);
 			}
 			result.put("total", total);
@@ -153,7 +175,46 @@ public class IxPoiSelector extends AbstractSelector {
 
 		}
 	}
+	
+	/**
+	 * 获取poi的检查项错误个数
+	 * @param pid
+	 * @param tableName
+	 * @return
+	 * @throws Exception
+	 */
+	public int getcheckErrorTotal(int pid, String tableName) throws Exception {
+		int total = 0;
+		String sql = "select count(n.RULEID) as count from ni_val_exception n,ck_result_object c where n.MD5_CODE=c.MD5_CODE and c.PID = :1 and c.TABLE_NAME = :2 ";
 
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, pid);
+			pstmt.setString(2, tableName);
+			
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				total = resultSet.getInt("count");
+			}
+			
+			return total;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+
+		}
+	}
+	
 	/**
 	 * 安卓端检查是否有可下载的POI
 	 * 

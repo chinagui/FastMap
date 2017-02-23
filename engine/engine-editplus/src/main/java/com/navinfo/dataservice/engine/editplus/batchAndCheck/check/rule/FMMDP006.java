@@ -18,7 +18,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * log1：港澳数据，收费方式不能有值
  * 
  */
-public class FMTEMP6 extends BasicCheckRule {
+public class FMMDP006 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

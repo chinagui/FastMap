@@ -38,7 +38,7 @@ public class FMA040301 extends BasicCheckRule {
 			String nameStr = nameObj.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			String tmpStr=CheckUtil.strQ2B(nameStr);
-			if(tmpStr.contains("$")||tmpStr.contains("￥")||tmpStr.contains("?")){
+			if(tmpStr.contains("$")||tmpStr.contains("￥")||tmpStr.contains("?")||tmpStr.contains("？")){
 				setCheckResult(poi.getGeometry(),poiObj, poi.getMeshId(), null);
 				return;
 			}

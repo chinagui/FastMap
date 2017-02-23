@@ -533,12 +533,13 @@ public class SubtaskService {
 			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {
 					if (rs.next()) {
+					    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 						Map<String,Object> subtask = new HashMap<String,Object>();						
 						subtask.put("subtaskId",rs.getInt("SUBTASK_ID"));
 						subtask.put("name",rs.getString("NAME"));
 						subtask.put("type",rs.getInt("TYPE"));
-						subtask.put("planStartDate",rs.getTimestamp("PLAN_START_DATE"));
-						subtask.put("planEndDate",rs.getTimestamp("PLAN_END_DATE"));
+						subtask.put("planStartDate",df.format(rs.getTimestamp("PLAN_START_DATE")));
+						subtask.put("planEndDate",df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("descp",rs.getString("DESCP"));
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));

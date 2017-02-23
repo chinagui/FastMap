@@ -33,31 +33,28 @@ public class GLM01208 extends baseRule {
         List<Integer> linkPidList = new ArrayList<Integer>();
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdLink) {
-                RdLink rdLink = (RdLink) obj;
+                final RdLink link = (RdLink) obj;
                 //一条环岛link链上的link不重复检查
-                if (linkPidList.contains(rdLink.getPid())) {
+                if (linkPidList.contains(link.getPid())) {
                     continue;
                 }
-                //非环岛link不查此规则
-                List<IRow> forms = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(rdLink.pid(),
-                        false);
-                if (forms.size() == 0) {
-                    linkPidList.add(rdLink.getPid());
-                    continue;
-                }
-                boolean isHuandao = false;
-                for (int i = 0; i < forms.size(); i++) {
-                    RdLinkForm form = (RdLinkForm) forms.get(i);
-                    if (form.getFormOfWay() == 33) {
-                        isHuandao = true;
+                if (link.changedFields().containsKey("direct")) {
+                    int direct = Integer.valueOf(link.changedFields().get("direct").toString());
+                    if (direct != 2 && direct != 3)
+                        continue;
+
+                    // log.info("GLM01208:[update_link]");
+                    List<RdLink> links = new RdLinkSelector(getConn()).loadByNodePids(new ArrayList<Integer>() {{
+                        add(link.getsNodePid());
+                        add(link.geteNodePid());
+                    }}, false);
+                    for (RdLink l : links) {
+                        if (linkPidList.contains(l.pid()) || l.pid() == link.pid())
+                            continue;
+
+                        checkWithRdLink(l, linkPidList);
                     }
                 }
-                if (!isHuandao) {
-                    linkPidList.add(rdLink.getPid());
-                    continue;
-                }
-
-                checkWithRdLink(rdLink, linkPidList);
             } else if (obj instanceof RdLinkForm) {
                 RdLinkForm rdLinkForm = (RdLinkForm) obj;
                 int linkPid = rdLinkForm.getLinkPid();
@@ -68,12 +65,13 @@ public class GLM01208 extends baseRule {
 
                 int formOfWay = rdLinkForm.getFormOfWay();
                 if (rdLinkForm.changedFields().containsKey("formOfWay"))
-                    formOfWay = (int) rdLinkForm.changedFields().get("formOfWay");
+                    formOfWay = Integer.valueOf(rdLinkForm.changedFields().get("formOfWay").toString());
                 //rdlinkform有新增或者修改环岛记录的才进行检查，其他情况的即使原来有环岛link也不需要触发检查
                 if (formOfWay != 33) {
                     continue;
                 }
 
+                // log.info("GLM01208:[update_link_form]");
                 RdLinkSelector rdSelector = new RdLinkSelector(getConn());
                 RdLink rdLink = (RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
 
@@ -100,60 +98,50 @@ public class GLM01208 extends baseRule {
         linkPidList.removeAll(huandaoChain.getRdLinkPidSet());
         linkPidList.addAll(huandaoChain.getRdLinkPidSet());
 
-        String sqlCommon = "WITH T AS"
-                + " (SELECT E_NODE_PID AS NODE_ID"
-                + "    FROM RD_LINK"
-                + "   WHERE LINK_PID IN ( " + huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]",
-                "") + ")"
-                + " AND U_RECORD != 2"
-                + "  UNION"
-                + "  SELECT S_NODE_PID AS NODE_ID FROM RD_LINK WHERE LINK_PID IN ( " + huandaoChain.getRdLinkPidSet()
-                .toString().replace("[", "").replace("]", "") + ")"
-                + " AND U_RECORD != 2)"
-                + " SELECT DISTINCT 1"
-                + "  FROM T, RD_LINK L"
-                + " WHERE L.U_RECORD != 2"
-                + " AND NOT EXISTS (SELECT 1"
-                + "          FROM RD_LINK_FORM F"
-                + "         WHERE L.LINK_PID = F.LINK_PID"
-                + "           AND F.FORM_OF_WAY = 33"
-                + "           AND F.U_RECORD != 2)";
-
+        String sqlCommon = "WITH T AS" + " (SELECT E_NODE_PID AS NODE_ID" + "    FROM RD_LINK" + "   WHERE LINK_PID "
+                + "IN ( " + huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]", "") + ")" + " " +
+                "AND" + " " + "U_RECORD != 2" + "  UNION" + "  SELECT S_NODE_PID AS NODE_ID FROM RD_LINK WHERE " +
+                "LINK_PID IN ( " + "" + huandaoChain.getRdLinkPidSet().toString().replace("[", "").replace("]", "") +
+                ")" + " AND " + "U_RECORD !=" + " 2)" + " SELECT DISTINCT 1" + "  FROM T, RD_LINK L" + " WHERE L" +
+                "" + ".U_RECORD != 2" + " " + "AND NOT EXISTS " + "(SELECT 1" + "          FROM RD_LINK_FORM F" + "  " +
+                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "     " + "" + "  WHERE L.LINK_PID = F" + "" +
+                ".LINK_PID" + "    " + "     " + "" + "" + "  AND" + " F" + ".FORM_OF_WAY " + "= 33" + " " + "       " +
+                "   " + "AND F" + "" + ".U_RECORD != 2)";
+        // log.info("GLM01208:[sqlCommon=" + sqlCommon + "]");
         DatabaseOperator getObj = new DatabaseOperator();
         List<Object> resultList = new ArrayList<Object>();
 
         //环岛挂接link有双方向
-        String sql = sqlCommon
-                + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT IN (0, 1)) OR"
-                + "       (T.NODE_ID = L.S_NODE_PID AND L.DIRECT IN (0, 1)))";
+        String sql = sqlCommon + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT IN (0, 1)) OR" + "       (T.NODE_ID " +
+                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "= L.S_NODE_PID AND L.DIRECT IN" +
+                " (0, " + "1)))";
+        // log.info("GLM01208:[双方向sql=" + sql + "]");
         resultList = getObj.exeSelect(this.getConn(), sql);
         if (resultList.size() > 0) {
             return;
         }
 
         //环岛挂接link没有进入环岛
-        sql = sqlCommon
-                + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT = 2) OR"
-                + " (T.NODE_ID = L.S_NODE_PID AND L.DIRECT = 3))";
+        sql = sqlCommon + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT = 2) OR" + " (T.NODE_ID = L.S_NODE_PID AND " +
+                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "L.DIRECT = 3))";
+        // log.info("GLM01208:[进入sql=" + sql + "]");
         resultList = getObj.exeSelect(this.getConn(), sql);
         if (resultList.size() == 0) {
-            this.setCheckResult(rdLink.getGeometry(),
-                    huandaoChain.getRdLinkPidSet().toString().replace(" ", "").
-                            replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ","),
-                    rdLink.getMeshId(), "环岛接续link均为退出环岛方向");
+            this.setCheckResult(rdLink.getGeometry(), huandaoChain.getRdLinkPidSet().toString().replace(" ", "").
+                    replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ","), rdLink.getMeshId(),
+                    "环岛接续link均为退出环岛方向");
             return;
         }
 
         //环岛挂接link没有退出环岛
-        sql = sqlCommon
-                + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT = 3) OR"
-                + " (T.NODE_ID = L.S_NODE_PID AND L.DIRECT = 2))";
+        sql = sqlCommon + "   AND ((T.NODE_ID = L.E_NODE_PID AND L.DIRECT = 3) OR" + " (T.NODE_ID = L.S_NODE_PID AND " +
+                "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "L.DIRECT = 2))";
+        // log.info("GLM01208:[退出sql=" + sql + "]");
         resultList = getObj.exeSelect(this.getConn(), sql);
         if (resultList.size() == 0) {
-            this.setCheckResult(rdLink.getGeometry(),
-                    huandaoChain.getRdLinkPidSet().toString().replace(" ", "").
-                            replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ","),
-                    rdLink.getMeshId(), "环岛接续link均为进入环岛方向");
+            this.setCheckResult(rdLink.getGeometry(), huandaoChain.getRdLinkPidSet().toString().replace(" ", "").
+                    replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ","), rdLink.getMeshId(),
+                    "环岛接续link均为进入环岛方向");
             return;
         }
     }

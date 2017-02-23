@@ -495,6 +495,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
+			log.info("queryAdminIdBySubtaskS sql:" + sb.toString());
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1096,7 +1097,7 @@ public class SubtaskService {
 					return 0;
 				}
 			};
-
+			log.info("queryAdminIdBySubtask sql:" + sb.toString());
 			return run.query(conn, sb.toString(), rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1805,6 +1806,7 @@ public class SubtaskService {
 
 			};
 			
+			log.info("subtask list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);

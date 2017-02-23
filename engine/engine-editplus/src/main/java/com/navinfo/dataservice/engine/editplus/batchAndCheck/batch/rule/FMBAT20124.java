@@ -29,7 +29,7 @@ public class FMBAT20124 extends BasicBatchRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode= poi.getKindCode();
-			if (kindCode=="230111"||kindCode=="230114"){return;}
+			if (kindCode.equals("230111")||kindCode.equals("230114")){return;}
 			List<IxPoiName> Names= poiObj.getIxPoiNames();
 			for (IxPoiName Name : Names) {
 				if (Name.getNameClass()==8){

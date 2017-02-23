@@ -66,7 +66,6 @@ public class GLM60291 extends BasicCheckRule {
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), kindCode+"与"+kindCodeP+"分类之间不可制作同一关系");
 				return;
 			}
-			
 		}
 	}
 

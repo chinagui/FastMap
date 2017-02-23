@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -67,7 +69,7 @@ public class GLM60293 extends BasicCheckRule {
 			}
 			String sqlStr="WITH T AS" 
 					+"(SELECT P1.PID PID1, P1.GEOMETRY G1,P1.MESH_ID M1,P1.KIND_CODE K1,P1.CHAIN C1,"
-					+"P2.PID PID2,P2.GEOMETRY G2,P2.KIND_CODE K2,P2.CHAIN C2"
+					+" P2.PID PID2,P2.GEOMETRY G2,P2.KIND_CODE K2,P2.CHAIN C2"
 					+"	FROM IX_POI P1,"
 					+"		IX_POI P2,"
 					+"		IX_POI_NAME N1,"
@@ -121,10 +123,10 @@ public class GLM60293 extends BasicCheckRule {
 					+"				AND P2.KIND_CODE = '230215'))"
 					+"		AND P1."+pidString
 					+"		AND P1.PID != P2.PID)" 
-					+"SELECT T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,T.K1,T.C1,PID2,T.K2,T.C2"
-					+"FROM T"
-					+"WHERE SDO_GEOM.SDO_DISTANCE (G1, G2, 0.00000005) < 5"
-					+"AND T .PID1 != T .PID2";
+					+" SELECT T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,T.K1,T.C1,PID2,T.K2,T.C2"
+					+" FROM T"
+					+" WHERE SDO_GEOM.SDO_DISTANCE (G1, G2, 0.00000005) < 5"
+					+" AND T .PID1 != T .PID2";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -149,10 +151,10 @@ public class GLM60293 extends BasicCheckRule {
 					String poiKindChain = map.get("poiKindChain");
 					String rKind = map.get("rKind");
 					String rKindChain = map.get("rKindChain"); 
-					if((kindCode1.equals(poiKind)&&((chain1==null&&poiKindChain ==null)||chain1.equals(poiKindChain))
-							&&kindCode2.equals(rKind)&&((chain2==null&&rKindChain ==null)||chain2.equals(rKindChain)))
-						||(kindCode1.equals(rKind)&&((chain1==null&&rKindChain ==null)||chain1.equals(rKindChain))
-								&&kindCode2.equals(poiKind)&&((chain2==null&&poiKindChain ==null)||chain2.equals(poiKindChain)))){
+					if((kindCode1.equals(poiKind)&&StringUtils.equals(chain1, poiKindChain)
+							&&kindCode2.equals(rKind)&&StringUtils.equals(chain2, rKindChain))
+						||(kindCode1.equals(rKind)&&StringUtils.equals(chain1, rKindChain)
+								&&kindCode2.equals(poiKind)&&StringUtils.equals(chain2, poiKindChain))){
 						flag = true;
 						break;
 					}
@@ -167,7 +169,7 @@ public class GLM60293 extends BasicCheckRule {
 					String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
 					if(!samePoiParentMap.containsKey(pidTmp1)
 							||!samePoiParentMap.get(pidTmp1).equals(pidTmp2)){
-						setCheckResult(geometry, targets, rs.getInt("MESH_ID"),null);
+						setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
 					}
 				}
 			}

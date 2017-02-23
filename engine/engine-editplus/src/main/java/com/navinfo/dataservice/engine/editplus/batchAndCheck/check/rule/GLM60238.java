@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -41,14 +43,17 @@ public class GLM60238 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
 			if(kindCode == null){return;}
+			
+			String name = null;
+			String fullName = null;
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
-			if(ixPoiName == null){return;}
-			String name = ixPoiName.getName();
-			if(name == null){return;}
+			if(ixPoiName != null){
+				name = ixPoiName.getName();
+			}
 			IxPoiAddress ixPoiAddress = poiObj.getCHAddress();
-			if(ixPoiAddress==null){return;}
-			String fullName = ixPoiAddress.getFullname();
-			if(fullName==null){return;}
+			if(ixPoiAddress!=null){
+				fullName = ixPoiAddress.getFullname();
+			}
 			//是否有同一关系
 			if(!samePoiMap.containsKey(poi.getPid())){return;}
 			//存在同一关系且IX_SAMEPOI.RELATION_TYPE=1
@@ -60,14 +65,17 @@ public class GLM60238 extends BasicCheckRule {
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
 			if(kindCodeP == null ){return;}
+			
+			String nameP = null;
+			String fullNameP = null;
 			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
-			if(ixPoiNameP == null){return;}
-			String nameP = ixPoiNameP.getName();
-			if(nameP == null){return;}
+			if(ixPoiNameP != null){
+				nameP = ixPoiNameP.getName();
+			}
 			IxPoiAddress ixPoiAddressP = parentPoiObj.getCHAddress();
-			if(ixPoiAddressP==null){return;}
-			String fullNameP = ixPoiAddressP.getFullname();
-			if(fullNameP==null){return;}
+			if(ixPoiAddressP!=null){
+				fullNameP = ixPoiAddressP.getFullname();
+			}
 			
 			Geometry geometry = poi.getGeometry();
 			Geometry geometryP = parentPoi.getGeometry();
@@ -75,26 +83,25 @@ public class GLM60238 extends BasicCheckRule {
 			Coordinate coordinate = geometry.getCoordinate();
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
-			
+			boolean flag = true;
 			//屏蔽：分类分别为加油站（230215）和加气站（230216），名称不相同，地址、显示坐标相同，不需要报log
 			if(("230215".equals(kindCode)&&"230216".equals(kindCodeP))
 					||("230216".equals(kindCode)&&"230215".equals(kindCodeP))){
-				if(!name.equals(nameP)&&fullName.equals(fullNameP)&&distance < 5){
-					return;
+				if(!StringUtils.equals(name, nameP)&&StringUtils.equals(fullName, fullNameP)&&distance < 5){
+					flag = false;
 				}
 			}
-			if(name.equals(nameP)||fullName.equals(fullNameP)||distance > 5){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
-				return;
+			if(flag){
+				if(!StringUtils.equals(name, nameP)||!StringUtils.equals(fullName, fullNameP)||distance > 5){
+					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
+				}
 			}
 			//制作了此类型的同一关系(满足检查条件)，但是分类+CHAIN相同，报LOG
 			String chain = poi.getChain();
 			String chainP = parentPoi.getChain();
-			if((chain == null && chainP == null)||(kindCode.equals(kindCodeP)&&chain.equals(chainP))){
+			if(StringUtils.equals(chain, chainP)&&StringUtils.equals(kindCode, kindCodeP)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "制作多类别同属性同一关系的POI种别必须不相同");
-				return;
 			}
-			
 		}
 	}
 

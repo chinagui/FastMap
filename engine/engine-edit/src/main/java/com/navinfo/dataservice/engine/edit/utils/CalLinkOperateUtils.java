@@ -143,20 +143,7 @@ public class CalLinkOperateUtils {
                         }
                     }
 
-                }
-                
-                List<Integer> linkpids=new ArrayList<Integer>();
-                
-                linkpids.add(inLinkPid);
-                
-                linkpids.addAll(viaLinks);
-                
-                linkpids.add(outLinkPid);
-                
-                if(!isConnect(linkpids, nodePid))
-                {
-                	throw new Exception("所选进入线、进入点、退出线不连通");
-                }
+                }  
 
                 return viaLinks;
             }
@@ -183,7 +170,14 @@ public class CalLinkOperateUtils {
         return null;
     }
     
-    private boolean isConnect(List<Integer> linkpids,int intersectFlag)  throws Exception 
+ /***
+  * 判断所给有序link是否连通
+  * @param linkpids
+  * @param intersectFlag
+  * @return
+  * @throws Exception
+  */
+    public boolean isConnect(List<Integer> linkpids,int intersectFlag)  throws Exception 
     {
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
 

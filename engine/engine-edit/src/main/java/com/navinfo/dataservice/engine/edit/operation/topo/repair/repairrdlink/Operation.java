@@ -486,7 +486,7 @@ public class Operation implements IOperation {
         com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation variableSpeedOperation =
                 new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.update.Operation(this.conn);
         //variableSpeedOperation.breakLine(command.getNodeLinkRelation(), oldLink, newLinks, result);
-        if (!command.getNodeLinkRelation().isEmpty()) {
+        if (null != command.getNodeLinkRelation() && !command.getNodeLinkRelation().isEmpty()) {
             int nodePid = command.getNodeLinkRelation().keySet().iterator().next().pid();
             variableSpeedOperation.departNode(oldLink, nodePid, null, result);
         }

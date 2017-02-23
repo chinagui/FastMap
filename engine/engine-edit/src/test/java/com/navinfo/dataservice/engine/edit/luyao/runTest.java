@@ -1432,5 +1432,14 @@ public class runTest extends InitApplication {
 			String msg = t.run();
 		}
 	
-	
+	@Test
+		public void run_0223_2() throws Exception {
+
+			String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":304003534,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.33223831653594,40.134224906914206],[116.33292,40.13421]]},\"catchInfos\":[{\"nodePid\":220000075,\"longitude\":116.33223831653594,\"latitude\":40.134224906914206}]},\"type\":\"ZONELINK\"}";
+			
+			
+			Transaction t = new Transaction(parameter);
+
+			String msg = t.run();
+		}
 }

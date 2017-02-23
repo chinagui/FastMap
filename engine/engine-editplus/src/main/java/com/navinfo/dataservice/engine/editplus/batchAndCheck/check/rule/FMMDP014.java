@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -16,14 +15,14 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import net.sf.json.JSONObject;
 
 /**
- * 检查条件： 非删除（根据履历判断删除） 检查原则：
- * 1.不能有繁体字（TY_CHARACTER_FJT_HZ.CONVERT=0且简介字段包含TY_CHARACTER_FJT_HZ.FT的值）
  * 
- * log1：**是繁体字，对应的简体是**，请确认是否需要简化 
- * 注：对应的简体：TY_CHARACTER_FJT_HZ.JT的值
+ * 检查条件： 非删除（根据履历判断删除） 
+ * 检查原则： 1.不能存在简体汉字（简介字段值包含TY_CHARACTER_FJT_HM_CHECK.HZ字段的值）
  * 
+ * log1：**是简体字，请确认
+ *
  */
-public class FMTEMP13 extends BasicCheckRule {
+public class FMMDP014 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -32,10 +31,9 @@ public class FMTEMP13 extends BasicCheckRule {
 		if (poi.getHisOpType().equals(OperationType.DELETE)) {
 			return;
 		}
-
 		// 调用元数据请求接口
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		Map<String, JSONObject> charMap = metaApi.tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap();
+		JSONObject characterMap = metaApi.getTyCharacterFjtHmCheckMap(null,0);
 
 		List<IxPoiCarrental> carrentals = poiObj.getIxPoiCarrentals();
 
@@ -46,13 +44,9 @@ public class FMTEMP13 extends BasicCheckRule {
 				continue;
 			}
 			for (char c : address.toCharArray()) {
-				if (charMap.containsKey(String.valueOf(c))) {
-					JSONObject data = charMap.get(String.valueOf(c));
-					int convert = data.getInt("convert");
-					if (convert == 0) {
-						this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
-								c + "是繁体字，对应的简体是" + data.getString("jt") + "，请确认是否需要简化 ");
-					}
+				if (characterMap.containsKey(String.valueOf(c))) {
+					this.setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							c + "是简体字，请确认");
 				}
 			}
 		}

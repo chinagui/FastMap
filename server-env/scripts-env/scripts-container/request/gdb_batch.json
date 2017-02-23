@@ -1,7 +1,0 @@
-{
-"grids":[59566201,59566202,59566203,59566230],
-"rules":["BATCH_LANE_PARKING_FLAG"],
-"extendCount":1,
-"targetDbId":45,
-"pidDbInfo":"ORACLE,192.168.4.131,1521,orcl,pid_gdb6,pid_gdb6"
-}

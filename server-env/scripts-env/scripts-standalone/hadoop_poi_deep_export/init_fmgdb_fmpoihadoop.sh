@@ -1,1 +1,0 @@
-java -Xms512m -Xmx2000m -jar poi-deep-export.jar $1

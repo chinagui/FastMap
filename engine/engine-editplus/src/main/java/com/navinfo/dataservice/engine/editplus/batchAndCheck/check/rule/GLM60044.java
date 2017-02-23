@@ -68,16 +68,15 @@ public class GLM60044 extends BasicCheckRule {
 					+ " (SELECT PID,"
 					+ "         KIND_CODE,"
 					+ "         A.GEOMETRY,"
-					+ "         A.X_GUIDE,"
-					+ "         A.Y_GUIDE,"
 					+ "         B.NAME,"
 					+ "         NVL(A.CHAIN, '0') CHAIN,"
-					+ "         A.LABEL"
-					+ "    FROM IX_POI A, IX_POI_NAME B"
+					+ "         NVL(P.PARKING_TYPE, '0') PARKING_TYPE"
+					+ "    FROM IX_POI A, IX_POI_NAME B, IX_POI_PARKING P"
 					+ "   WHERE A.PID = B.POI_PID"
 					+ "     AND A.STATE <> 1"
+					+ "     AND A.PID = P.POI_PID(+)"
 					+ "     AND B.NAME_CLASS = 1"
-					+ "     AND B.NAME_TYPE = 1"
+					+ "     AND B.NAME_TYPE = 2"
 					+ "     AND B.LANG_CODE IN ('CHI', 'CHT'))"
 					+ " SELECT T1.PID"
 					+ "  FROM TEMP T1, TEMP T2"
@@ -96,8 +95,8 @@ public class GLM60044 extends BasicCheckRule {
 					+ "   AND T1.NAME = T2.NAME"
 					+ "   AND T1.CHAIN = T2.CHAIN"
 					+ "   AND T1."+pidString
-					+ "   AND ((REGEXP_LIKE(T1.LABEL, '室内|地下') AND REGEXP_LIKE(T2.LABEL, '室外')) OR"
-					+ "       (REGEXP_LIKE(T1.LABEL, '室外') AND REGEXP_LIKE(T2.LABEL, '室内|地下')))";
+					+ "   AND ((T1.PARKING_TYPE = '4' AND T2.PARKING_TYPE = '1') OR"
+					+ "       (T1.PARKING_TYPE = '1' AND T2.PARKING_TYPE = '4'))";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){

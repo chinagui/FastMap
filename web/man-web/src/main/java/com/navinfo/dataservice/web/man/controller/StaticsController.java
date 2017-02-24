@@ -221,7 +221,7 @@ public class StaticsController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-	
+	/*
 	//根据groupId获取block详情
 	@RequestMapping(value = "/statics/block/overviewByGroup")
 	public ModelAndView queryBlockOverViewByGroup(HttpServletRequest request) {
@@ -243,7 +243,7 @@ public class StaticsController extends BaseController {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 	
 	//根据groupId获取block详情
 	@RequestMapping(value = "/statics/task/overviewByGroup")

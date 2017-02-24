@@ -37,7 +37,7 @@ public class DefaultLogFlusher extends LogFlusher {
 			logConn = logSchema.getPoolDataSource().getConnection();
 			tarConn = tarSchema.getPoolDataSource().getConnection();
 			tempFailLogTable = createFailueLogTempTable(logConn);
-			FlushResult result = LogFlushUtil.getInstance().flush(logConn, tarConn, selectLogSql(),this.ignoreError);
+			FlushResult result = LogFlushUtil.getInstance().flush(logConn, tarConn, selectLogSql(),this.ignoreError,null);
 			recordFailLog2Temptable(result,logConn);
 			result.setTempFailLogTable(tempFailLogTable);
 			logConn.commit();

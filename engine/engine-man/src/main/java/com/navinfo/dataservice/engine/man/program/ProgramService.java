@@ -238,7 +238,7 @@ public class ProgramService {
 				setPart+=" MONTH_EDIT_PLAN_END_DATE=to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";setPart+=" , ";}
+				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
 				setPart+=" Produce_Plan_Start_Date =to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
 			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){

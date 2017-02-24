@@ -377,7 +377,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         linkZone.setLinkPid(link.pid());
         linkZone.setRegionId(faceRegionId);
         linkZone.setSide(side);
-        if (type == 8) {
+        if (type == 3) {
+            linkZone.setType(3);
+        } else if (type == 8) {
             linkZone.setType(2);
         } else if (type == 9) {
             linkZone.setType(1);

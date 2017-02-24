@@ -19,7 +19,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * 但该POI的kind_code分类在n条记录的POIKIND中找不到对应值的,报LOG
  * @author zhangxiaoyi
  */
-public class FMPOI005 extends BasicCheckRule {
+public class FMDGC007 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

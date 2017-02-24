@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.check.rules;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -12,10 +14,6 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by Crayeres on 2017/2/8.

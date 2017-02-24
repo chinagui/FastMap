@@ -45,7 +45,6 @@ public class FMYW20033 extends BasicCheckRule {
 						String rightWord=String.valueOf(firstWord.toCharArray()[0]).toUpperCase()+firstWord.substring(1);
 						if(!rightWord.equals(firstWord)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "英文名中虚词“"+firstWord.toLowerCase()+"”首字母应大写");
-							return;
 						}
 					}
 					for(int i=0;i<nameList.length;i++){
@@ -53,7 +52,6 @@ public class FMYW20033 extends BasicCheckRule {
 						String subname=nameList[i];
 						if(wordList.contains(subname.toLowerCase())&&!subname.toLowerCase().equals(subname)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "英文名中虚词“"+subname.toLowerCase()+"”首字母应小写");
-							return;
 						}
 					}
 	            }

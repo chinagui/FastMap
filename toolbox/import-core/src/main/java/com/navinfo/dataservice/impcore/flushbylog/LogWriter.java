@@ -31,14 +31,16 @@ public class LogWriter {
 	private static WKT wktUtil = new WKT();
 	private Connection targetDbConn;
 	private boolean ignoreError;
+	private String type;//日落月：day2MonSync，日出品：fmPoiRoadDailyRelease，其它
 	
 	/**
 	 * @param conn 目标库的连接
 	 * @param ignoreError 是否忽略履历刷新时的错误
 	 */
-	public LogWriter(Connection conn,boolean ignoreError) {
+	public LogWriter(Connection conn,boolean ignoreError,String type) {
 		this.targetDbConn=conn;
 		this.ignoreError = ignoreError;
+		this.type = type;
 		
 	}
 	/**
@@ -46,7 +48,7 @@ public class LogWriter {
 	 * 默认情况下，出现履历执行的错误，不抛异常
 	 */
 	public LogWriter(Connection conn) {
-		this(conn,false);
+		this(conn,false,null);
 	}
 
 	public void write(EditLog editLog,ILogWriteListener listener) throws Exception{
@@ -68,11 +70,27 @@ public class LogWriter {
 			}
 
 		} else if (op_tp == 2) { // 删除
-			listener.preDelete();
-			data=PhysicalDeleteData(editLog);
-			if (data.get("result").equals(0)) {
-				listener.deleteFailed(editLog,data.get("log").toString());
+			if(type.equals("fmPoiRoadDailyRelease")){
+				listener.preDelete();
+				data=deleteData(editLog);
+				//日出品删除数据时，若数据不存在，不认为履历刷库失败
+				if ((data.get("result").equals(0))&&(!data.get("log").toString().equals(""))) {
+					listener.deleteFailed(editLog,data.get("log").toString());
+				}
+			}else if(type.equals("day2MonSync")){
+				listener.preDelete();
+				data=PhysicalDeleteData(editLog);
+				if (data.get("result").equals(0)) {
+					listener.deleteFailed(editLog,data.get("log").toString());
+				}
+			}else{
+				listener.preDelete();
+				data=deleteData(editLog);
+				if (data.get("result").equals(0)) {
+					listener.deleteFailed(editLog,data.get("log").toString());
+				}
 			}
+			
 		}
 	}
 	static final Set includeFiledsSet=new HashSet();

@@ -86,7 +86,6 @@ public class JtsGeometryConvertor {
 		LinearRing shell = JtsGeometryFactory.createLinearRing(coArr);
 		return JtsGeometryFactory.createPolygon(shell, null);
 	}
-	
 	/**
 	 * 
 	 * @param meshid
@@ -104,5 +103,4 @@ public class JtsGeometryConvertor {
 		LinearRing shell = JtsGeometryFactory.createLinearRing(coArr);
 		return JtsGeometryFactory.createPolygon(shell, null);
 	}
-
 }

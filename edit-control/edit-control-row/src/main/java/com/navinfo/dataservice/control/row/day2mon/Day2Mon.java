@@ -43,4 +43,34 @@ public class Day2Mon {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	/**
+	 * 日出品job创建
+	 * @param parameter {"cityId":"2"} cityId为空，则全部city都要落
+	 * @param userId 当前用户id
+	 * @return jobid
+	 * @throws Exception
+	 */
+	public long dailyReleaseSync(String parameter, long userId) throws Exception {
+
+		Connection conn = null;
+		long jobId = 0;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+//			int specRegionId = jsonReq.getInt("specRegionId");
+//			String specMeshes = jsonReq.getString("specMeshes");
+//			JSONObject jobReq = new JSONObject();
+//			jobReq.element("specRegionId", specRegionId);
+//			jobReq.element("specMeshes", specMeshes);
+			JobApi apiService = (JobApi) ApplicationContextUtil
+					.getBean("jobApi");
+			jobId = apiService.createJob("fmPoiRoadDailyRelease", jsonReq, userId,0,
+					"日出品");
+			return jobId;
+		}catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 }

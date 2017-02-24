@@ -41,12 +41,12 @@ public class Operation implements IOperation {
     }
 
     private void relateRegionId(Result result, ZoneFace zoneFace) throws Exception {
-        AdAdmin adAdmin = command.getAdAdmin();
-        if (null != adAdmin) {
-            double type = adAdmin.getAdminType();
-            if (type == 8 || type == 9)
-                ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
-        }
+        //AdAdmin adAdmin = command.getAdAdmin();
+        //if (null != adAdmin) {
+        //    double type = adAdmin.getAdminType();
+        //    if (type == 8 || type == 9)
+        ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
+        //}
     }
 
 }

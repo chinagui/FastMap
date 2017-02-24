@@ -10,6 +10,7 @@ import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,9 @@ public class Operation {
 
     public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
             rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+        if (links.isEmpty())
+            return "";
+
         // logger.info("UPDOWNDEPART:关联维护分叉口提示");
         RdSeSelector selector = new RdSeSelector(conn);
         Integer[] leftLinkPids = leftLinks.keySet().toArray(new Integer[]{});
@@ -49,10 +53,19 @@ public class Operation {
             for (RdSe rdSe : rdSes) {
                 if (nodePids.contains(rdSe.getNodePid()))
                     continue;
+
                 if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[0]).pid());
+                    if (rdSe.getNodePid() == firstLink.getsNodePid()) {
+                        rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[0]).pid());
+                    } else if (rdSe.getNodePid() == firstLink.geteNodePid()) {
+                        rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[0]).pid());
+                    }
                 } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[0]).pid());
+                    if (rdSe.getNodePid() == firstLink.getsNodePid()) {
+                        rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[0]).pid());
+                    } else if (rdSe.getNodePid() == firstLink.geteNodePid()) {
+                        rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[0]).pid());
+                    }
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }
@@ -65,10 +78,19 @@ public class Operation {
             for (RdSe rdSe : rdSes) {
                 if (nodePids.contains(rdSe.getNodePid()))
                     continue;
-                if (firstLink.pid() == rdSe.getInLinkPid()) {
-                    rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
-                } else if (firstLink.pid() == rdSe.getOutLinkPid()) {
-                    rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
+
+                if (endLink.pid() == rdSe.getInLinkPid()) {
+                    if (rdSe.getNodePid() == firstLink.getsNodePid()) {
+                        rdSe.changedFields().put("inLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
+                    } else if (rdSe.getNodePid() == firstLink.geteNodePid()) {
+                        rdSe.changedFields().put("inLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
+                    }
+                } else if (endLink.pid() == rdSe.getOutLinkPid()) {
+                    if (rdSe.getNodePid() == firstLink.getsNodePid()) {
+                        rdSe.changedFields().put("outLinkPid", leftLinks.get(leftLinkPids[length - 1]).pid());
+                    } else if (rdSe.getNodePid() == firstLink.geteNodePid()) {
+                        rdSe.changedFields().put("outLinkPid", rightLinks.get(leftLinkPids[length - 1]).pid());
+                    }
                 }
                 result.insertObject(rdSe, ObjStatus.UPDATE, rdSe.pid());
             }

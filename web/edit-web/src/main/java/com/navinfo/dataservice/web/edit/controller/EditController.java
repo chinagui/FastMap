@@ -488,11 +488,12 @@ public class EditController extends BaseController {
 
 		String parameter = request.getParameter("parameter");
 		AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+		long userId=tokenObj.getUserId();
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
 			Release release = new Release();
-			release.roadRelease(subtaskId);
+			release.roadRelease(subtaskId,userId);
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);

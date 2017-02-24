@@ -45,22 +45,22 @@ public class LogFlushUtil {
 	 * @return 履历刷新的结果
 	 * @throws Exception
 	 */
-	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql) throws Exception {
-		return flush(sourceDbConn,targetDbConn,logQuerySql,false);
+	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql,String type) throws Exception {
+		return flush(sourceDbConn,targetDbConn,logQuerySql,false,type);
 		
 	}
-	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql,boolean ignoreError) throws Exception {
+	public  FlushResult flush(Connection sourceDbConn,Connection targetDbConn,String logQuerySql,boolean ignoreError,String type) throws Exception {
 		LogReader logReader = new LogReader(sourceDbConn,logQuerySql);
-		return flush(logReader,targetDbConn,ignoreError);
+		return flush(logReader,targetDbConn,ignoreError,type);
 		
 	}
 	
-	private  FlushResult flush(LogReader logReader,Connection targetDbConn,boolean ignoreError) throws Exception {
+	private  FlushResult flush(LogReader logReader,Connection targetDbConn,boolean ignoreError,String type) throws Exception {
 		ResultSet rs = logReader.read();
 		try{
 			rs.setFetchSize(1000);
 			FlushResult flushResult =new FlushResult();
-			LogWriter logWriter = new LogWriter(targetDbConn,ignoreError);
+			LogWriter logWriter = new LogWriter(targetDbConn,ignoreError,type);
 			while (rs.next()) {
 				flushResult .addTotal();
 				int opType = rs.getInt("op_tp");

@@ -58,7 +58,7 @@ import net.sf.json.JSONObject;
 */
 
 public class TaskService {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private Logger log = LoggerRepos.getLogger(TaskService.class);
 	private JSONArray newTask;
 	private TaskService(){}
 	private static class SingletonHolder{
@@ -96,6 +96,12 @@ public class TaskService {
 					gridIds.put(gridId, 1);
 				}
 				bean.setGridIds(gridIds);
+				
+				//常规项目根据blockId获取region信息
+				if(bean.getBlockId() != 0){
+					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
+					bean.setRegionId(regionId);
+				}
 				
 				taskList.add(bean);
 			}
@@ -313,6 +319,8 @@ public class TaskService {
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
 				conn.commit();
+			}
+			if(cmsTaskList.size()>0){
 				for(Integer taskId:cmsTaskList){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
@@ -821,7 +829,7 @@ public class TaskService {
 					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				//任务名称模糊查询
-				if ("name".equals(key)) {	
+				if ("taskName".equals(key)) {	
 					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
 				}
 				//筛选条件
@@ -1544,6 +1552,7 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		Connection conn=null;
 		try{
+			log.info("phaseId"+phaseId+"状态修改为"+status);
 			conn= DBConnector.getInstance().getManConnection();
 			taskUpdateCmsProgress(conn, phaseId, status);
 		}catch(Exception e){

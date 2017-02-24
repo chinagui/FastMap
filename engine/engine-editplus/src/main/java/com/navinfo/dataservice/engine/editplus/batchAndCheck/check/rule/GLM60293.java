@@ -93,6 +93,9 @@ public class GLM60293 extends BasicCheckRule {
 					+"	AND N1. NAME = N2. NAME"
 					+"	AND P1."+pidString
 					+"	AND P1.PID != P2.PID"
+					+"	AND P1.U_RECORD <> 2 AND P2.U_RECORD <> 2"
+					+"	AND N1.U_RECORD <> 2 AND N2.U_RECORD <> 2"
+					+"	AND A1.U_RECORD <> 2 AND A2.U_RECORD <> 2"
 					+"	UNION ALL"
 					+"		SELECT P1.PID PID1, P1.GEOMETRY G1,P1.MESH_ID M1,P1.KIND_CODE K1,P1.CHAIN C1,"
 					+"		P2.PID PID2,P2.GEOMETRY G2,P2.KIND_CODE K2,P2.CHAIN C2"
@@ -122,8 +125,11 @@ public class GLM60293 extends BasicCheckRule {
 					+"			)OR (P1.KIND_CODE = '230216'"
 					+"				AND P2.KIND_CODE = '230215'))"
 					+"		AND P1."+pidString
-					+"		AND P1.PID != P2.PID)" 
-					+" SELECT T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,T.K1,T.C1,PID2,T.K2,T.C2"
+					+"		AND P1.PID != P2.PID"
+					+"		AND P1.U_RECORD <> 2 AND P2.U_RECORD <> 2"
+					+"		AND N1.U_RECORD <> 2 AND N2.U_RECORD <> 2"
+					+"		AND A1.U_RECORD <> 2 AND A2.U_RECORD <> 2)"
+					+" SELECT /*+ NO_MERGE(T)*/ T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,T.K1,T.C1,PID2,T.K2,T.C2"
 					+" FROM T"
 					+" WHERE SDO_GEOM.SDO_DISTANCE (G1, G2, 0.00000005) < 5"
 					+" AND T .PID1 != T .PID2";

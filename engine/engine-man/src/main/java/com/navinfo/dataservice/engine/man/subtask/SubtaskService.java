@@ -97,6 +97,16 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
+			}else{
+				int taskId = dataJson.getInt("taskId");
+				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
+				Map<String,Integer> gridIdMap2 = new HashMap<String,Integer>();
+				for(Map.Entry<Integer, Integer> entry:gridIdMap.entrySet()){
+					gridIdMap2.put(entry.getKey().toString(), entry.getValue());
+				}
+				dataJson.put("gridIds",gridIdMap2);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdMap.keySet()));
+				dataJson.put("geometry",wkt);
 			}
 			
 			//质检子任务信息

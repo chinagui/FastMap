@@ -24,15 +24,15 @@ public class OpRefZoneFace implements IOperation {
 
     @Override
     public String run(Result result) throws Exception {
-        AdAdminSelector selector = new AdAdminSelector(conn);
+        //AdAdminSelector selector = new AdAdminSelector(conn);
         for (ZoneFace zoneFace : command.getFaces()) {
-            result.insertObject(zoneFace, ObjStatus.DELETE, zoneFace.getPid());
-            if (zoneFace.getRegionId() == 0)
-                continue;
-            AdAdmin admin = (AdAdmin) selector.loadById(zoneFace.getRegionId(), true);
-            if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9)) {
-                ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
-            }
+            //result.insertObject(zoneFace, ObjStatus.DELETE, zoneFace.getPid());
+            //if (zoneFace.getRegionId() == 0)
+            //    continue;
+            //AdAdmin admin = (AdAdmin) selector.loadById(zoneFace.getRegionId(), true);
+            //if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9)) {
+            ZoneIDBatchUtils.updateZoneID(zoneFace, null, conn, result);
+            //}
         }
         return null;
     }

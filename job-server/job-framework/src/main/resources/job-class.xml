@@ -100,4 +100,8 @@
 		class="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJob"
 	 	request="com.navinfo.dataservice.column.job.Day2MonthPoiMergeJobRequest"
 	/>
+		<type name="fmPoiRoadDailyRelease" 
+		class="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJob"
+	 	request="com.navinfo.dataservice.impcore.release.day.poi.FmPoiRoadDailyReleaseJobRequest"
+	/>
 </mapping>

@@ -95,12 +95,13 @@ public class DefaultLogMover extends LogMover {
 		sb.append(dbLinkName);
 		sb.append(" select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
 		sb.append(tempTable);
-		sb.append(" t))");
-//		if(StringUtils.isNotEmpty(tempFailLogTable)){
-//			sb.append(" WHERE NOT EXISTS(SELECT 1 FROM ");
-//			sb.append(tempFailLogTable);
-//			sb.append(" f WHERE f.row_id=l.row_Id)");
-//		}
+		sb.append(" t");
+		if(StringUtils.isNotEmpty(tempFailLogTable)){
+			sb.append(" where NOT EXISTS(SELECT 1 FROM ");
+			sb.append(tempFailLogTable);
+			sb.append(" f WHERE f.OP_ID=t.OP_ID)");
+		}
+		sb.append(" ))");
 		return sb.toString();
 	}
 	protected String detailSql(){

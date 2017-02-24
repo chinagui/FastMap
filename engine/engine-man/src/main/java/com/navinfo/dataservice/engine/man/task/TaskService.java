@@ -19,6 +19,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -299,12 +300,6 @@ public class TaskService {
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
 					erNum ++;
-					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(task.getTaskId());
-					if(phaseList!=null&&phaseList.size()>0){continue;}
-					createCmsProgress(conn,task.getTaskId(),1);
-					createCmsProgress(conn,task.getTaskId(),2);
-					createCmsProgress(conn,task.getTaskId(),3);
-					createCmsProgress(conn,task.getTaskId(),4);
 					cmsTaskList.add(task.getTaskId());
 				}else{
 					commontaskIds.add(task.getTaskId());
@@ -321,8 +316,15 @@ public class TaskService {
 				conn.commit();
 			}
 			if(cmsTaskList.size()>0){
-				for(Integer taskId:cmsTaskList){
+				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+					if(phaseList!=null&&phaseList.size()>0){continue;}
+					createCmsProgress(conn,taskId,1);
+					createCmsProgress(conn,taskId,2);
+					createCmsProgress(conn,taskId,3);
+					createCmsProgress(conn,taskId,4);
+					phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
 					for(Map<String, Integer> phaseTmp:phaseList){
 						phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));

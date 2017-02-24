@@ -86,4 +86,21 @@ public class JtsGeometryConvertor {
 		LinearRing shell = JtsGeometryFactory.createLinearRing(coArr);
 		return JtsGeometryFactory.createPolygon(shell, null);
 	}
+	/**
+	 * 
+	 * @param meshid
+	 * @return jts polygon
+	 */
+	public static Polygon convert(String meshId) {
+		double[] rect = MeshUtils.mesh2Rect(meshId);
+		Coordinate[] coArr = new Coordinate[5];
+		Coordinate startend = new Coordinate(rect[0],rect[1]);
+		coArr[0]=startend;
+		coArr[1]=new Coordinate(rect[2],rect[1]);
+		coArr[2]=new Coordinate(rect[2],rect[3]);
+		coArr[3]=new Coordinate(rect[0],rect[3]);
+		coArr[4]=startend;
+		LinearRing shell = JtsGeometryFactory.createLinearRing(coArr);
+		return JtsGeometryFactory.createPolygon(shell, null);
+	}
 }

@@ -82,6 +82,9 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N2.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND N1.NAME = N2.NAME"
 					+ "     AND P2.U_RECORD!=2"
+					+ "     AND P1.U_RECORD!=2"
+					+ "     AND N1.U_RECORD!=2"
+					+ "     AND N2.U_RECORD!=2"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID"
 					+ "     )"
@@ -90,6 +93,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "  FROM T, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
 					+ "   AND P.PID = T.PID1"
+					+ "   AND P.U_RECORD!=2"
 					+ "   AND P."+pidString;
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
@@ -146,6 +150,11 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "     AND N1.NAME = N2.NAME"
 					//+ "     AND NVL(P1.LABEL,'')=NVL(P2.LABEL,'')"
 					+ "     AND P2.U_RECORD!=2"
+					+ "     AND P1.U_RECORD!=2"
+					+ "     AND PK2.U_RECORD!=2"
+					+ "     AND PK1.U_RECORD!=2"
+					+ "     AND N1.U_RECORD!=2"
+					+ "     AND N2.U_RECORD!=2"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID"
 					+ "     )"
@@ -154,6 +163,7 @@ public class FM11Win0117 extends BasicCheckRule {
 					+ "  FROM T, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 100"
 					+ "   AND P.PID = T.PID1"
+					+ "   AND P.U_RECORD!=2"
 					+ "   AND P."+pidString;
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){

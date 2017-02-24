@@ -79,6 +79,8 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
 					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T"
 					+ " WHERE P.GROUP_ID = C.GROUP_ID"
+					+ " AND C.U_RECORD!=2"
+					+ " AND P.U_RECORD!=2"
 					+ " AND C.CHILD_POI_PID =T.PID2";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
@@ -125,6 +127,8 @@ public class FM14Sum1115 extends BasicCheckRule {
 					+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
 					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T"
 					+ " WHERE P.GROUP_ID = C.GROUP_ID"
+					+ " AND C.U_RECORD!=2"
+					+ " AND P.U_RECORD!=2"
 					+ " AND P.PARENT_POI_PID =T.PID2";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){

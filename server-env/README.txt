@@ -46,6 +46,7 @@
 	执行前提条件：FM-META库初始化完成。
 6. 大区库日库、月库的Render初始化
     脚本路径：prjrender_rebuild/rebuild_regiongdb_render.sh
+	执行环境：Hadoop主节点，hadoop用户登录执行
 	执行前提条件：FM-SYS库初始化完成。
 /* 作业过程中运维执行 */
 1. POI和TIPS批采集子任务号
@@ -61,3 +62,20 @@
     执行时机：data_flow/
 
 说明：以上脚本目录下如果有README.txt，请一定要确认文件中的说明，如有任何不确定的项，一定要和研发沟通，谢谢！
+
+UPDATE SYS_CONFIG SET CONF_VALUE='/app/fm315/svr/scripts/container/' WHERE CONF_KEY='scripts.dir';
+UPDATE SYS_CONFIG SET CONF_VALUE='DEV_R' WHERE CONF_KEY='render.table.prefix';
+UPDATE SYS_CONFIG SET CONF_VALUE='amqp://fos:fos@192.168.4.130:5672' WHERE CONF_KEY='main.mq.uri';
+
+sys:fm_sys_315@4.131
+meta:metadata_pd_17sum@3.227
+母库&月库：gdb270_17sum_bj@3.227
+man:fm_man_315@4.131
+日库：fm_regiondb_315_d_1@4.61
+
+服务：root@4.130:/app/fm315/svr/
+
+
+问题：
+1. 元数据库：sc_partition_menshlist中增加OPEN_FLAG字段
+2. dropbox配置下载服务，sys_config中修改dropbox配置

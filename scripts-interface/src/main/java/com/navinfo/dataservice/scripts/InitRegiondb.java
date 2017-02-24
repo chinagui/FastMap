@@ -162,11 +162,11 @@ public class InitRegiondb {
 //					throw new Exception("月库导数据过程中job内部发生"+msg);
 //				}
 //				response.put("region_"+key+"_month_exp", "success");
-//				installPckUtils(dbMonth,2);
-//				response.put("region_"+key+"_month_utils", "success");
-				//写入dbID
 				//过渡期母库作为全部月库
 				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
+//				installPckUtils(dbMonth,2);
+				response.put("region_"+key+"_month_utils", "success");
+				//写入dbID
 //				insertDbIds(conn,key,dbDay,dbMonth);
 				insertDbIds(conn,key,dbDay,nationDb.getDbId());
 				//更新grid表
@@ -252,7 +252,10 @@ public class InitRegiondb {
 			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig));
 			//************2016.11.11 zl****************
 			//在元数据库中创建大区库的dblink
-			createRegionDbLinks(db);
+			//过渡期只有日库需要创建
+			if(dbType==1){
+				createRegionDbLinks(db);
+			}
 			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			//修改log_action默认值
@@ -261,8 +264,6 @@ public class InitRegiondb {
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
-			String metaFile = "/com/navinfo/dataservice/scripts/resources/mv_rel_rdname_meta.sql";
-			sqlExec.execute(metaFile);
 			//日库删除内业作业的行人导航数据
 			if(dbType==1){
 				String delGdFile = "/com/navinfo/dataservice/scripts/resources/temp_delete_poi_gd.sql";

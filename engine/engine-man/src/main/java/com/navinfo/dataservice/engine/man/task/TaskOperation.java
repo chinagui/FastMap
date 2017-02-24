@@ -2057,6 +2057,45 @@ public class TaskOperation {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * 判断cms任务是否能发布
+	 * @author Han Shaoming
+	 * @param conn
+	 * @param taskId
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Integer> pushCmsTasks(Connection conn,List<Integer> cmsTaskList) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String querySql="SELECT T.TASK_ID"
+					+ "  FROM TASK T"
+					+ " WHERE T.TASK_ID in "+cmsTaskList.toString().replace("[", "(").replace("]", ")")
+					+ "   AND NOT EXISTS (SELECT 1"
+					+ "          FROM TASK T2"
+					+ "         WHERE T.BLOCK_ID = T2.BLOCK_ID"
+					+ "           AND T2.LATEST = 1"
+					+ "           AND T2.STATUS != 0"
+					+ "           AND T2.TYPE != 3)";	
+			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<Integer> map = new ArrayList<Integer>();
+					while(rs.next()){
+						map.add(rs.getInt("TASK_ID"));
+					}
+					return map;
+				}
+			};
+			List<Integer> taskId = run.query(conn, querySql, rsh);
+			return taskId;			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 
 	/**
 	 * 通过cityId查询task

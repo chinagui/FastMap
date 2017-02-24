@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -111,7 +112,9 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			log.info(" 加载poi信息以及对应子表信息");
 
 			// 将poi对象与履历合并起来
-			ObjHisLogParser.parse(objs, logs);
+			if (!objs.isEmpty()) {
+				ObjHisLogParser.parse(objs, logs);
+			}
 			// 改old_name
 			Collection<Long> namePids = new ArrayList<Long>();
 			// 改old_address
@@ -384,16 +387,13 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	}
 
 	public static void main(String[] args) {
-		List<String> str1 = new ArrayList<String>();
-		str1.add("s1");
-		List<String> str2 = new ArrayList<String>();
-		str2.add("s2");
-		List<String> str3 = new ArrayList<String>();
-		str3.addAll(str1);
-		str3.addAll(str2);
-		System.out.println(str1);
-		System.out.println(str2);
-		System.out.println(str3);
+		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+		for (long pid : objs.keySet()) {
+			System.out.println(pid);
+		}
+		if(objs.isEmpty()){
+			System.out.println("w3243");
+		}
 	}
 
 }

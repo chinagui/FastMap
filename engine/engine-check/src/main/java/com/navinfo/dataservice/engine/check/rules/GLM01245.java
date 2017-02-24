@@ -216,6 +216,7 @@ public class GLM01245 extends baseRule {
 					}
 					if (fromLimitSrc != 9 || toLimitSrc != 9) {
 						check4.add(rdLinkSpeedlimit.getLinkPid());
+						check2.add(rdLinkSpeedlimit.getLinkPid());
 					}
 					if(fromLimitSrc == 9 || toLimitSrc == 9)
 					{

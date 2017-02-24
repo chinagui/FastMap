@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -26,15 +27,12 @@ public class FM14Sum1113 extends BasicCheckRule {
 			if (!kindCode.equals("230126")) {
 				return;
 			}
-			Set<Long> parentPids = new HashSet<Long>();
-			parentPids.add(poi.getPid());
-			List<Long> childrenPids = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(),parentPids);
-			if (childrenPids.size()==0) {
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "机场没有子设施");
+			List<IxPoiChildren> childs = poiObj.getIxPoiChildrens();
+			if(childs==null||childs.size()==0){
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 				return;
 			}
 		}
-
 	}
 
 	@Override

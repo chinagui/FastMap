@@ -31,7 +31,7 @@ public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "monthPoiBatchSync";
+		return "monthPoiBatch";
 	}
 
 	@Override

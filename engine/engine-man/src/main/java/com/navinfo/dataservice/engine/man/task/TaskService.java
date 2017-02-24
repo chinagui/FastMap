@@ -324,7 +324,7 @@ public class TaskService {
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
-				
+				erNum=erNum-pushCmsTask.size();
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}

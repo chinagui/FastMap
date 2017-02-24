@@ -1701,4 +1701,23 @@ public class BlockService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * @param conn
+	 * @param commonBlockIds
+	 * @param i
+	 * @throws Exception 
+	 */
+	public void updateStatus(Connection conn, List<Integer> commonBlockIds, int status) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateSql="UPDATE BLOCK SET PLAN_STATUS=" + status +" WHERE BLOCK_ID IN ("+StringUtils.join(commonBlockIds,",")+")";
+			log.info("updateStatus sql:" + updateSql);
+			run.update(conn,updateSql);			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 }

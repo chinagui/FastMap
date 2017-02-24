@@ -1519,14 +1519,14 @@ public class SubtaskService {
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
 			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
-			if(subtask.getType()==7){
-				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
-				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
-				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
-			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
-				return "POI专项_月编子任务关闭进行中";
-			}
+//			if(subtask.getType()==7){
+//				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+//				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
+//				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
+//				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
+//			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
+//				return "POI专项_月编子任务关闭进行中";
+//			}
 			
 			//修改状态，调整范围，发送消息
 			return closeSubtask(conn,subtask,userId);
@@ -1570,21 +1570,30 @@ public class SubtaskService {
 	public String closeSubtask(Connection conn, Subtask subtask, long userId) throws Exception {
 		//修改子任务状态
 		SubtaskOperation.closeBySubtaskId(conn, subtask.getSubtaskId());
+		log.info("=================closeBySubtaskId==========================");
 
 		//动态调整子任务范围
 		//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
 		if(subtask.getStage()==1){
 			//获取规划外GRID信息
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-			
+			log.info("=================getGridIdMapBySubtaskFromLog==========================");
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			log.info("=================insertSubtaskGridMapping==========================");
+
 			//调整任务范围
 			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+			log.info("=================insertTaskGridMapping==========================");
+
 			//调整区域子任务范围
 			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+			log.info("=================getSubTaskListByType==========================");
+
 			for(Subtask subtaskType4:subtaskList){
 				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				log.info("=================insertSubtaskGridMapping==========================");
+
 			}
 		}
 		
@@ -1600,6 +1609,8 @@ public class SubtaskService {
 				groupIdList.add((long)subtask.getExeGroupId());
 			}
 			Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+			log.info("=================getLeaderIdByGroupId==========================");
+
 			/*采集/日编/月编子任务关闭
 			* 分配的作业员
 			* 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
@@ -1650,10 +1661,12 @@ public class SubtaskService {
 		                }
 					}
 				}
+				log.info("=================sendMessage==========================");
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();
 			log.error("发送失败,原因:"+e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
 
 		return null;

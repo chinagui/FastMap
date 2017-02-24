@@ -1434,7 +1434,9 @@ public class SubtaskOperation {
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			Map<Integer,Integer> gridIds = getGridIdsBySubtaskIdWithConn(conn, subtaskId);
-			return (List<Integer>) gridIds.keySet();
+			List<Integer> result = new ArrayList<Integer>();
+			result.addAll(gridIds.keySet());
+			return result;
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

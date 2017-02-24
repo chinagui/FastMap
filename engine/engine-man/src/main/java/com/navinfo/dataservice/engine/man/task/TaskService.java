@@ -97,6 +97,12 @@ public class TaskService {
 				}
 				bean.setGridIds(gridIds);
 				
+				//常规项目根据blockId获取region信息
+				if(bean.getBlockId() != 0){
+					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
+					bean.setRegionId(regionId);
+				}
+				
 				taskList.add(bean);
 			}
 			

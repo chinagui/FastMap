@@ -168,6 +168,29 @@ public class BlockController extends BaseController {
 		}
 	}
 
+//	/**
+//	 * 查询Block详细信息
+//	 * 
+//	 * @param request
+//	 * @return
+//	 */
+//	@RequestMapping(value = "/block/query")
+//	public ModelAndView query(HttpServletRequest request) {
+//		try {
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			if (dataJson == null) {
+//				throw new IllegalArgumentException("parameter参数不能为空。");
+//			}
+//			
+//			int blockId = dataJson.getInt("blockId");
+//			HashMap data = service.query(dataJson);
+//			return new ModelAndView("jsonView", success(data));
+//		} catch (Exception e) {
+//			log.error("获取明细失败，原因：" + e.getMessage(), e);
+//			return new ModelAndView("jsonView", exception(e));
+//		}
+//	}
+	
 	/**
 	 * 查询Block详细信息
 	 * 
@@ -181,7 +204,9 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			HashMap data = service.query(dataJson);
+			
+			int blockId = dataJson.getInt("blockId");
+			Map<String,Object> data = service.query(blockId);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);

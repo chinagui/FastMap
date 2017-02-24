@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /** 
 * @ClassName: GLM26044
@@ -185,21 +186,20 @@ public class GLM26044 extends baseRule{
 		if(formOfWay == 50){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
-			sb.append(" WHERE RCL.LINK_PID = " + rdLinkForm.getLinkPid());
-			sb.append(" AND RCL.U_RECORD <> 2");
-			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RCL.LINK_PID AND RLF.FORM_OF_WAY = 50 AND RLF.U_RECORD <> 2)");
+			sb.append("SELECT R.GEOMETRY, '[RD_LINK,' || R.LINK_PID || ']' TARGET, R.MESH_ID,'路口内link不含交叉口内link属性' log FROM RD_CROSS_LINK RCL  left join RD_LINK R on rcl.link_pid = r.link_pid WHERE RCL.LINK_PID =");
+			sb.append(rdLinkForm.getLinkPid());
+			sb.append(" and R.u_record !=2 AND RCL.U_RECORD <> 2 AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RCL.LINK_PID AND RLF.FORM_OF_WAY = 50 AND RLF.U_RECORD <> 2)");
 
 			String sql = sb.toString();
 			log.info("RdLinkForm后检查GLM26044:" + sql);
 
-			DatabaseOperator getObj = new DatabaseOperator();
+			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sql);
+			resultList = getObj.exeSelect(this.getConn(), sb.toString());
 
-			if(resultList.size()>0){
-				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-				this.setCheckResult("路口内link不含交叉口内link属性", target, 0,resultList.get(0).toString());
+			if (!resultList.isEmpty()) {
+				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
+						(int) resultList.get(2),"路口内link不含交叉口内link属性");
 			}
 		}
 	}

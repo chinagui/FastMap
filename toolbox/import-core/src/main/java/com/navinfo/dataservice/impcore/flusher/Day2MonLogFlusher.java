@@ -16,15 +16,17 @@ public class Day2MonLogFlusher {
 	private Connection tarConn;
 	private String tempTable;
 	private OracleSchema logSchema;
-	public  Day2MonLogFlusher(OracleSchema logSchema,Connection logConn,Connection tarConn,boolean ignoreError,String logTempTable){
+	private String type;
+	public  Day2MonLogFlusher(OracleSchema logSchema,Connection logConn,Connection tarConn,boolean ignoreError,String logTempTable,String type){
 		this.logConn = logConn;
 		this.tarConn = tarConn;
 		this.tempTable = logTempTable;
 		this.ignoreError=ignoreError;
 		this.logSchema=logSchema;
+		this.type=type;
 	}
 	public FlushResult flush()throws Exception{
-		FlushResult flushResult = LogFlushUtil.getInstance().flush(logConn, tarConn, selectLogSql(),ignoreError);
+		FlushResult flushResult = LogFlushUtil.getInstance().flush(logConn, tarConn, selectLogSql(),ignoreError,type);
 		String failLogTempTable = LogFlusherHelper.createFailueLogTempTable(logSchema.getPoolDataSource().getConnection());
 		flushResult.setTempFailLogTable(failLogTempTable);
 		log.info("将错误日志记录到错误日志temp表中："+failLogTempTable);

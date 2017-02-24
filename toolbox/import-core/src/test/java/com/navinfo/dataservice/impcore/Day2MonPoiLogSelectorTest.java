@@ -74,7 +74,7 @@ public class Day2MonPoiLogSelectorTest {
 			String tempTable = selector.select();
 			System.out.println(tempTable);
 			//测试刷履历
-			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempTable).flush();
+			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempTable,"day2MonSync").flush();
 			if(0==flushResult.getTotal()){
 				return;
 			}

@@ -23,7 +23,10 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserGroup;
@@ -495,6 +498,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
+			log.info("queryAdminIdBySubtaskS sql:" + sb.toString());
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1096,7 +1100,7 @@ public class SubtaskService {
 					return 0;
 				}
 			};
-
+			log.info("queryAdminIdBySubtask sql:" + sb.toString());
 			return run.query(conn, sb.toString(), rsHandler);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1515,97 +1519,18 @@ public class SubtaskService {
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
 			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
-			if(subtask.getStage()==7){
+			if(subtask.getType()==7){
+				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
+				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
+				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
+			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
 				return "POI专项_月编子任务关闭进行中";
 			}
-			SubtaskOperation.closeBySubtaskId(conn, subtaskId);
-
-			//动态调整子任务范围
-			//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
-			if(subtask.getStage()==1){
-				//获取规划外GRID信息
-				Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-				
-				//调整子任务范围
-				SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-				//调整任务范围
-				TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
-				//调整区域子任务范围
-				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
-				for(Subtask subtaskType4:subtaskList){
-					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
-				}
-			}
 			
+			//修改状态，调整范围，发送消息
+			return closeSubtask(conn,subtask,userId);
 			
-			//发送消息
-			try {
-				//查询分配的作业组组长
-				List<Long> groupIdList = new ArrayList<Long>();
-				if(subtask.getExeUserId()!=0){
-					UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
-					groupIdList.add(Long.valueOf(userGroup.getGroupId()));
-				}else{
-					groupIdList.add((long)subtask.getExeGroupId());
-				}
-				Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
-				/*采集/日编/月编子任务关闭
-				* 分配的作业员
-				* 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
-				String msgTitle = "";
-				String msgContent = "";
-				//2web,1手持端消息
-				int pushtype=2;
-				if(subtask.getStage()== 0){
-					pushtype=1;
-					msgTitle = "采集子任务关闭";
-					msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
-				}else if(subtask.getStage()== 1){
-					msgTitle = "日编子任务关闭";
-					msgContent = "日编子任务关闭:" + subtask.getName() + "已关闭,请关注";
-				}else{
-					msgTitle = "月编子任务关闭";
-					msgContent = "月编子任务关闭:" + subtask.getName() + "已关闭,请关注";
-				}
-				//关联要素
-				JSONObject msgParam = new JSONObject();
-				msgParam.put("relateObject", "SUBTASK");
-				msgParam.put("relateObjectId", subtask.getSubtaskId());
-				//查询用户名称
-					
-					if(leaderIdByGroupId !=null && leaderIdByGroupId.size()>0){
-						for(Long groupId:leaderIdByGroupId.keySet()){
-							//发消息
-							UserInfo userInfo = leaderIdByGroupId.get(groupId);
-							Message message = new Message();
-							message.setMsgTitle(msgTitle);
-							message.setMsgContent(msgContent);
-							message.setPushUserId((int)userId);
-							message.setReceiverId(userInfo.getUserId());
-							message.setMsgParam(msgParam.toString());
-							message.setPushUser(userInfo.getUserRealName());
-							
-							MessageService.getInstance().push(message, pushtype);
-							//发邮件
-							//判断邮箱格式
-							String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
-			                Pattern regex = Pattern.compile(check);
-			                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
-			                if(matcher.matches()){
-			            		String toMail = userInfo.getUserEmail();
-			            		String mailTitle = msgTitle;
-			            		String mailContent = msgContent;
-			                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
-			                }
-						}
-					}
-			} catch (Exception e) {
-				// TODO: handle exception
-				e.printStackTrace();
-				log.error("发送失败,原因:"+e.getMessage(), e);
-			}
-	
-			return null;
 
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1614,6 +1539,124 @@ public class SubtaskService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+
+	
+	public void closeSubtask(int subtaskId, long userId) throws ServiceException{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			//查询子任务
+			Subtask subtask = queryBySubtaskIdS(subtaskId);
+			//修改状态，调整范围，发送消息
+			closeSubtask(conn,subtask,userId);
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("关闭失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param conn 
+	 * @param subtask
+	 * @param userId 
+	 * @return
+	 * @throws Exception 
+	 */
+	public String closeSubtask(Connection conn, Subtask subtask, long userId) throws Exception {
+		//修改子任务状态
+		SubtaskOperation.closeBySubtaskId(conn, subtask.getSubtaskId());
+
+		//动态调整子任务范围
+		//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
+		if(subtask.getStage()==1){
+			//获取规划外GRID信息
+			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
+			
+			//调整子任务范围
+			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			//调整任务范围
+			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+			//调整区域子任务范围
+			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+			for(Subtask subtaskType4:subtaskList){
+				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+			}
+		}
+		
+		
+		//发送消息
+		try {
+			//查询分配的作业组组长
+			List<Long> groupIdList = new ArrayList<Long>();
+			if(subtask.getExeUserId()!=0){
+				UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
+				groupIdList.add(Long.valueOf(userGroup.getGroupId()));
+			}else{
+				groupIdList.add((long)subtask.getExeGroupId());
+			}
+			Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+			/*采集/日编/月编子任务关闭
+			* 分配的作业员
+			* 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
+			String msgTitle = "";
+			String msgContent = "";
+			//2web,1手持端消息
+			int pushtype=2;
+			if(subtask.getStage()== 0){
+				pushtype=1;
+				msgTitle = "采集子任务关闭";
+				msgContent = "采集子任务关闭:" + subtask.getName() + "已关闭,请关注";
+			}else if(subtask.getStage()== 1){
+				msgTitle = "日编子任务关闭";
+				msgContent = "日编子任务关闭:" + subtask.getName() + "已关闭,请关注";
+			}else{
+				msgTitle = "月编子任务关闭";
+				msgContent = "月编子任务关闭:" + subtask.getName() + "已关闭,请关注";
+			}
+			//关联要素
+			JSONObject msgParam = new JSONObject();
+			msgParam.put("relateObject", "SUBTASK");
+			msgParam.put("relateObjectId", subtask.getSubtaskId());
+			//查询用户名称
+				
+				if(leaderIdByGroupId !=null && leaderIdByGroupId.size()>0){
+					for(Long groupId:leaderIdByGroupId.keySet()){
+						//发消息
+						UserInfo userInfo = leaderIdByGroupId.get(groupId);
+						Message message = new Message();
+						message.setMsgTitle(msgTitle);
+						message.setMsgContent(msgContent);
+						message.setPushUserId((int)userId);
+						message.setReceiverId(userInfo.getUserId());
+						message.setMsgParam(msgParam.toString());
+						message.setPushUser(userInfo.getUserRealName());
+						
+						MessageService.getInstance().push(message, pushtype);
+						//发邮件
+						//判断邮箱格式
+						String check = "^([a-z0-9A-Z]+[-|_|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
+		                Pattern regex = Pattern.compile(check);
+		                Matcher matcher = regex.matcher((CharSequence) userInfo.getUserEmail());
+		                if(matcher.matches()){
+		            		String toMail = userInfo.getUserEmail();
+		            		String mailTitle = msgTitle;
+		            		String mailContent = msgContent;
+		                	EmailPublisher.publishMsg(toMail, mailTitle, mailContent);
+		                }
+					}
+				}
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.printStackTrace();
+			log.error("发送失败,原因:"+e.getMessage(), e);
+		}
+
+		return null;
 	}
 
 	/**
@@ -1805,6 +1848,7 @@ public class SubtaskService {
 
 			};
 			
+			log.info("subtask list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);

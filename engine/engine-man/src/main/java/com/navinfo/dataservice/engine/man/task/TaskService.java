@@ -58,7 +58,7 @@ import net.sf.json.JSONObject;
 */
 
 public class TaskService {
-	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private Logger log = LoggerRepos.getLogger(TaskService.class);
 	private JSONArray newTask;
 	private TaskService(){}
 	private static class SingletonHolder{
@@ -821,7 +821,7 @@ public class TaskService {
 					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				//任务名称模糊查询
-				if ("name".equals(key)) {	
+				if ("taskName".equals(key)) {	
 					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
 				}
 				//筛选条件
@@ -1544,6 +1544,7 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		Connection conn=null;
 		try{
+			log.info("phaseId"+phaseId+"状态修改为"+status);
 			conn= DBConnector.getInstance().getManConnection();
 			taskUpdateCmsProgress(conn, phaseId, status);
 		}catch(Exception e){

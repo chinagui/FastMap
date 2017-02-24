@@ -226,7 +226,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			}
 			
 			log.info("开始将日库履历刷新到月库,temptable:"+tempOpTable);
-			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable).flush();
+			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
 			if(0==flushResult.getTotal()){
 				log.info("没有符合条件的履历，不执行日落月，返回");
 			}else{

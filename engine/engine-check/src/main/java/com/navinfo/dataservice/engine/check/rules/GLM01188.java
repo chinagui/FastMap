@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
+import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /**
  * GLM01188
@@ -50,20 +51,25 @@ public class GLM01188 extends baseRule {
 			List<Object> linkPidList = new ArrayList<Object>();
 			linkPidList = getObj.exeSelect(this.getConn(), sb.toString());
 			
+			DatabaseOperatorResultWithGeo doR = new DatabaseOperatorResultWithGeo();
+			
 			if(linkPidList.size()>2)
 			{
 				for(Object obj : linkPidList)
 				{
 					int linkPid = Integer.parseInt(String.valueOf(obj));
 					
-					sb.append("SELECT RL.GEOMETRY, '[RL_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID  FROM RD_LINK RL where rl.link_pid=");
+					StringBuilder resultSb = new StringBuilder();
 					
-					sb.append(linkPid);
+					resultSb.append("SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID  FROM RD_LINK RL where rl.link_pid=");
 					
-					log.info("RdLink后检查GLM01188 SQL:" + sb.toString());
+					resultSb.append(linkPid);
+					
+					log.info("RdLink后检查GLM01188 SQL:" + resultSb.toString());
 					
 					List<Object> resultList = new ArrayList<Object>();
-					resultList = getObj.exeSelect(this.getConn(), sb.toString());
+					
+					resultList = doR.exeSelect(this.getConn(), resultSb.toString());
 
 					if (!resultList.isEmpty()) {
 						this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),

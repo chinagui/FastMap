@@ -134,7 +134,7 @@ public class ixpoitest {
 	}
 	@Test
 	public void testSave() throws Exception{
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":19,\"type\":\"IXPOI\",\"objId\":602474,\"data\":{\"parkings\":[{\"tollWay\":\"1234\",\"rowId\":\"659FAC5F4DFD41E8BDE447D1475ED3DB\",\"pid\":206000858,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3AE1FB4C35C492F7E050A8C08304EE4C\",\"pid\":602474}}";
+		String parameter = "{\"type\":\"IXPOI\",\"dbId\":274,\"objId\":4798177,\"secondWorkItem\":\"deepParking\",\"data\":{\"parkings\":[{\"payment\":\"10|12\",\"rowId\":\"3F836CA4DF684604E050A8C083041544\",\"pid\":6018,\"objStatus\":\"UPDATE\"}],\"rowId\":\"3F836D0B82C34604E050A8C083041544\",\"pid\":4798177,\"objStatus\":\"UPDATE\"}}";
 		try {
 			DeepCoreControl deepCore = new DeepCoreControl();
 			JSONObject result = deepCore.save(parameter, 111);

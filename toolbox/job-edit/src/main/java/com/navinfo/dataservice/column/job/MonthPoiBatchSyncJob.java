@@ -77,18 +77,27 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			for (int grid : subtask.getGridIds()) {
 				grids.add(String.valueOf(grid));
 			}
-			log.info("grids=" + grids.toString());
+			log.info("grids=" + grids);
 			log.info("获取任务范围内新增修改的poi信息");
 			Map<Integer, Collection<Long>> map = logReader.getUpdatedObj(
 					"IX_POI", "IX_POI", grids, null);
 			Collection<Long> pids = new ArrayList<Long>();
 			Collection<Long> addPids = map.get(1);
 			Collection<Long> updatePids = map.get(3);
-			pids.addAll(addPids);
-			pids.addAll(updatePids);
-			log.info("新增 poi 信息=" + addPids.toString());
-			log.info("修改poi 信息=" + updatePids.toString());
-
+			log.info("新增 poi 信息=" + addPids);
+			log.info("修改poi 信息=" + updatePids);
+			if (addPids != null && addPids.size() > 0) {
+				pids.addAll(addPids);
+			}
+			if (updatePids != null && updatePids.size() > 0) {
+				pids.addAll(updatePids);
+			}
+			// 获取poi对象信息
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			tabNames.add("IX_POI_ADDRESS");
+			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
+					ObjectName.IX_POI, tabNames, false, pids, true, true);
 			log.info("批管理字段几何标识 外业标识 外业任务编号 数据采集版本");
 			this.updateBatchPoi(addPids, this.getBatchPoiCommonSql(), conn);
 			log.info("批管理字段state 状态");
@@ -98,14 +107,8 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			this.updateBatchPoi(updatePids, this.getStateParaSql(2), conn);
 			log.info("获取poi对应的log信息");
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat
-					.loadByRowEditStatus(conn, pids);
+					.loadByColEditStatus(conn, pids);
 			log.info(" 加载poi信息以及对应子表信息");
-			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_ADDRESS");
-			// 获取poi对象信息
-			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
-					ObjectName.IX_POI, tabNames, false, pids, false, false);
 
 			// 将poi对象与履历合并起来
 			ObjHisLogParser.parse(objs, logs);
@@ -204,7 +207,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			this.updateBatchPoi(metaPids, this.getVerifiedParaSql(3), conn);
 			this.updateBatchPoi(pids, this.getVerifiedParaSql(9), conn);
 			log.info("关闭任务");
-			apiService.closeSubtask(taskId,userId);
+			apiService.closeSubtask(taskId, userId);
 		} catch (Exception e) {
 			log.error("MonthPoiBatchSyncJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -237,8 +240,9 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 				+ "                     AND n.lang_code IN ('CHI', 'CHT')                   \n"
 				+ "                     AND n.name_type = 2                                 \n"
 				+ "                     AND n.poi_pid = p.pid                               \n"
-				+ "                     AND NVL (p.old_name, -1) <> NVL (n.name, -1))      \n"
-				+ "     WHERE p.pid = (select to_number(column_value) from table(clob_to_table(?)))  \n";
+				+ "                     AND NVL (p.old_name, -1) <> NVL (n.name, -1)      \n"
+				+ "                     AND rownum =1)                                        \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))  \n";
 	}
 
 	private String getUpdatePoiOldAddressSql() {
@@ -248,31 +252,32 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 				+ "                FROM ix_poi_address n                                               \n"
 				+ "               WHERE n.lang_code IN ('CHI', 'CHT')                                  \n"
 				+ "                     AND n.poi_pid = p.pid                                          \n"
-				+ "                     AND NVL (p.old_address, -1) <> NVL (n.fullname, -1)),          \n"
-				+ "     WHERE p.pid = (select to_number(column_value) from table(clob_to_table(?)))    \n";
+				+ "                     AND NVL (p.old_address, -1) <> NVL (n.fullname, -1)          \n"
+				+ "                     AND rownum =1)                                                \n"
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))   \n";
 	}
 
 	private String getUpdatePoiOldKindCodeSql() {
 		return "   UPDATE ix_poi p								                                       \n"
 				+ "    SET p.old_kind = p.kind_code                                                    \n"
-				+ "     WHERE p.pid = (select to_number(column_value) from table(clob_to_table(?)))    \n"
-				+ "           AND NVL (p.old_kind, -1) <> NVL (n.kind_code, -1)                        \n";
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?)))    \n"
+				+ "           AND NVL (p.old_kind, -1) <> NVL (p.kind_code, -1)                        \n";
 	}
 
 	private String getUpadeLogForSql(String logName) {
 
 		return "   UPDATE ix_poi p								               \n"
-				+ "    SET    p.log =  DECODE (INSTR (p.LOG, "
+				+ "    SET    p.log =  DECODE (INSTR (p.LOG, '"
 				+ logName
-				+ "),                         \n"
-				+ "                          NULL, ' "
+				+ "'),                                                          \n"
+				+ "                          NULL,  '"
 				+ logName
-				+ "|',                                \n"
-				+ "                           0, p.LOG || ' "
+				+ "|',                                                          \n"
+				+ "                           0, p.LOG ||  '"
 				+ logName
 				+ "|',                         \n"
 				+ "                           p.LOG)                                        \n"
-				+ "     WHERE p.pid (select to_number(column_value) from table(clob_to_table(?))) \n";
+				+ "     WHERE p.pid in  (select to_number(column_value) from table(clob_to_table(?))) \n";
 	}
 
 	/**
@@ -286,18 +291,21 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 		return " UPDATE ix_poi p    \n"
 				+ "   SET p.geo_adjust_flag = 1 ,\n"
 				+ "       p.full_attr_flag = 1 ,  \n"
-				+ "       p.data_version = "
+				+ "       p.data_version = '"
 				+ gdbVersion
-				+ " ,  \n"
-				+ "       p.field_task_id = "
+				+ "' ,  \n"
+				+ "       p.field_task_id = '"
 				+ jobInfo.getTaskId()
-				+ "  \n"
-				+ "     WHERE p.pid (select to_number(column_value) from table(clob_to_table(?))) \n";
+				+ "'  \n"
+				+ "     WHERE p.pid in (select to_number(column_value) from table(clob_to_table(?))) \n";
 	}
 
 	public void updateBatchPoi(Collection<Long> pidList, String sql,
 			Connection conn) throws Exception {
 
+		if (pidList == null || pidList.size() == 0) {
+			return;
+		}
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {

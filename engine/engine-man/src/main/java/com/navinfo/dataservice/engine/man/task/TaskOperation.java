@@ -306,6 +306,11 @@ public class TaskOperation {
 				insertPart+=" GROUP_ID ";
 				valuePart+=bean.getGroupId();
 			};
+			if (bean!=null&&bean.getRegionId()!=null && bean.getRegionId()!=0 && StringUtils.isNotEmpty(bean.getRegionId().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" REGION_ID ";
+				valuePart+=bean.getRegionId();
+			};
 			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" ROAD_PLAN_TOTAL ";

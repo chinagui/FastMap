@@ -824,6 +824,7 @@ public class TaskService {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
+			
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -835,6 +836,17 @@ public class TaskService {
 				}
 				if ("groupId".equals(key)) {
 					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+				}
+				if("planStatus".equals(key)){
+					int planStatus = condition.getInt(key);
+					//未完成：开启1>待分配2
+					if(planStatus==2){
+						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (1,2)";
+					}
+					//已完成：100%(已完成)5>已关闭6
+					else if(planStatus == 3){
+						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (5,6)";
+					}
 				}
 				//任务名称模糊查询
 				if ("taskName".equals(key)) {	
@@ -901,22 +913,23 @@ public class TaskService {
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
 			sb.append("WITH FINAL_TABLE AS ( ");
-			sb.append("SELECT TASK_LIST.*,");
+			sb.append("SELECT TASK_LIST.* FROM (");
+			sb.append("SELECT TASK_LIST1.*,");
 			sb.append("               CASE");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 2) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 2) THEN");
 			sb.append("                  3");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 0) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 0) THEN");
 			sb.append("                  6");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 4) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 4) THEN");
 			sb.append("                  4");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 1) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 1) THEN");
 			sb.append("                  CASE");
-			sb.append("                    WHEN (TASK_LIST.PERCENT = 100) THEN");
-			sb.append("                     5");
+			sb.append("                    WHEN (TASK_LIST1.SUBTASK_NUM = 0) THEN");
+			sb.append("                     2");
 			sb.append("                    ELSE");
 			sb.append("                     CASE");
-			sb.append("                       WHEN (TASK_LIST.SUBTASK_NUM = 0) THEN");
-			sb.append("                        2");
+			sb.append("                       WHEN (TASK_LIST1.SUBTASK_NUM = TASK_LIST1.SUBTASK_NUM_CLOSED) THEN");
+			sb.append("                        5");
 			sb.append("                       ELSE");
 			sb.append("                        1");
 			sb.append("                     END");
@@ -941,8 +954,11 @@ public class TaskService {
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -968,7 +984,8 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
-			sb.append("	                          0             SUBTASK_NUM");
+			sb.append("	                          0             SUBTASK_NUM,");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -997,13 +1014,17 @@ public class TaskService {
 			sb.append("                       1 PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
-			sb.append("	             AND P.TYPE = 4) TASK_LIST");
+			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
+			sb.append("	             ) TASK_LIST");
 			sb.append(" WHERE 1=1 ");
 			sb.append(conditionSql);
 			sb.append(" ORDER BY ORDER_STATUS ASC ,DIFF_DATE DESC, PERCENT DESC");
@@ -1059,6 +1080,7 @@ public class TaskService {
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					

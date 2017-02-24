@@ -361,12 +361,12 @@ public class Operation implements IOperation {
         }
         Geometry faceGeo = GeoTranslator.getPolygonToPoints(c1);
         if (null != face) {
-            if (face.getRegionId() != 0) {
-                AdAdminSelector selector = new AdAdminSelector(conn);
-                AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), false);
-                if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9))
-                    ZoneIDBatchUtils.updateZoneID(face, faceGeo, conn, result);
-            }
+            //if (face.getRegionId() != 0) {
+                //AdAdminSelector selector = new AdAdminSelector(conn);
+                //AdAdmin admin = (AdAdmin) selector.loadById(face.getRegionId(), false);
+                //if (null != admin && (admin.getAdminType() == 8 || admin.getAdminType() == 9))
+                ZoneIDBatchUtils.updateZoneID(face, faceGeo, conn, result);
+            //}
         }
         // 更新面的几何属性
         if (this.updateFlag) {

@@ -39,7 +39,10 @@ public class GLM60142 extends BasicCheckRule {
 				return;
 			}
 			//风味类型表IX_POI_RESTAURANT中字段FOOD_TYPE字段值为空，报LOG
-			String foodStr=restList.get(0).getFoodType();
+			String foodStr = null;
+			if(restList!= null &restList.size()>0){
+				foodStr=restList.get(0).getFoodType();
+			}
 			if(foodStr==null||foodStr.isEmpty()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "风味类型字段值为空值错误");
 				return;

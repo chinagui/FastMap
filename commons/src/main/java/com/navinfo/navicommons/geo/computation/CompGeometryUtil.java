@@ -249,14 +249,14 @@ public class CompGeometryUtil {
 
 				Set<String> meshes = new HashSet<String>();
 
-				Coordinate[] coords = geo.getCoordinates();
-
-				// 计算跟面相交的图幅
-				for (int i = 1; i < coords.length; i++) {
-					CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(
-							coords[i - 1].x, coords[i - 1].y, coords[i].x,
-							coords[i].y));
-				}
+//				Coordinate[] coords = geo.getCoordinates();
+//
+//				// 计算跟面相交的图幅
+//				for (int i = 1; i < coords.length; i++) {
+//					CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(
+//							coords[i - 1].x, coords[i - 1].y, coords[i].x,
+//							coords[i].y));
+//				}
 
 				// 计算被面包含的图幅
 				Geometry mbr = geo.getEnvelope();
@@ -269,13 +269,18 @@ public class CompGeometryUtil {
 				double[] cs = GeometryUtils.getCoordinate(geo);
 
 				for (String mesh : mbrMeshes) {
-					if (meshes.contains(mesh)) {
-						continue;
-					}
-
-					if (MeshUtils.meshInFace(cs, mesh)) {
+//					if (meshes.contains(mesh)) {
+//						continue;
+//					}
+//					if (MeshUtils.meshInFace(cs, mesh)) {
+//						meshes.add(mesh);
+//					}
+					
+					Geometry meshGeo = JtsGeometryConvertor.convert(mesh);
+					if(geo.intersects(meshGeo)){
 						meshes.add(mesh);
 					}
+
 				}
 
 				return meshes.toArray(new String[0]);
@@ -368,37 +373,45 @@ public class CompGeometryUtil {
 				// 最小外包矩形的图幅
 				String[] mbrMeshes = MeshUtils.rect2Meshes(mbrCoords[0].x,
 						mbrCoords[0].y, mbrCoords[2].x, mbrCoords[2].y);
-
-				double[] cs = GeometryUtils.getCoordinate(geo);
-
-				Coordinate[] coords = geo.getCoordinates();
-
-				for (String mesh : mbrMeshes) {
-
-					Set<String> gridIds = CompGridUtil.mesh2Grid(mesh);
-
-					// 图幅是否被面包含
-					if (MeshUtils.meshInFace(cs, mesh)) {
-						grids.addAll(gridIds);
-					} else {
-						
-						//计算被面包含的Grid
-						for(String gridId : gridIds){
-							if(CompGridUtil.gridInFace(cs, gridId)){
-								grids.add(gridId);
-							}
-						}
-						
-						// 计算跟面相交的Grid
-						for (int i = 1; i < coords.length; i++) {
-							double[] line = new double[] { coords[i - 1].x,
-									coords[i - 1].y, coords[i].x, coords[i].y };
-
-							grids.addAll(CompGridUtil.line2Grid(line,
-									mesh));
+				
+				for(String mesh:mbrMeshes){
+					for(String grid:CompGridUtil.mesh2Grid(mesh)){
+						if(geo.intersects(JtsGeometryConvertor.convert(CompGridUtil.grid2Rect(grid)))){
+							grids.add(grid);
 						}
 					}
 				}
+				
+//				double[] cs = GeometryUtils.getCoordinate(geo);
+//
+//				Coordinate[] coords = geo.getCoordinates();
+//
+//				for (String mesh : mbrMeshes) {
+//
+//					Set<String> gridIds = CompGridUtil.mesh2Grid(mesh);
+//
+//					// 图幅是否被面包含
+//					if (MeshUtils.meshInFace(cs, mesh)) {
+//						grids.addAll(gridIds);
+//					} else {
+//						
+//						//计算被面包含的Grid
+//						for(String gridId : gridIds){
+//							if(CompGridUtil.gridInFace(cs, gridId)){
+//								grids.add(gridId);
+//							}
+//						}
+//						
+//						// 计算跟面相交的Grid
+//						for (int i = 1; i < coords.length; i++) {
+//							double[] line = new double[] { coords[i - 1].x,
+//									coords[i - 1].y, coords[i].x, coords[i].y };
+//
+//							grids.addAll(CompGridUtil.line2Grid(line,
+//									mesh));
+//						}
+//					}
+//				}
 			}
 		}
 

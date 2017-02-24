@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.scripts;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.BizType;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -34,7 +32,6 @@ import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.datahub.exception.DataHubException;
 import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.expcore.ExportConfig;
@@ -44,7 +41,6 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.navicommons.database.sql.PackageExec;
 import com.navinfo.navicommons.database.sql.SqlExec;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 
 /**
@@ -166,17 +162,17 @@ public class InitRegiondb {
 //					throw new Exception("月库导数据过程中job内部发生"+msg);
 //				}
 //				response.put("region_"+key+"_month_exp", "success");
-//				installPckUtils(dbMonth,2);
-//				response.put("region_"+key+"_month_utils", "success");
-				//写入dbID
 				//过渡期母库作为全部月库
 				DbInfo nationDb = DbService.getInstance().getOnlyDbByBizType("nationRoad");
+//				installPckUtils(dbMonth,2);
+				response.put("region_"+key+"_month_utils", "success");
+				//写入dbID
 //				insertDbIds(conn,key,dbDay,dbMonth);
 				insertDbIds(conn,key,dbDay,nationDb.getDbId());
 				//更新grid表
 				insertGrids(conn,key);
 				//维护情报的block
-				maintainInfoBlock(conn,key);
+				//maintainInfoBlock(conn,key);
 				conn.commit();
 				response.put("region_"+key+"_man_rows", "success");
 			}
@@ -256,7 +252,10 @@ public class InitRegiondb {
 			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig));
 			//************2016.11.11 zl****************
 			//在元数据库中创建大区库的dblink
-			createRegionDbLinks(db);
+			//过渡期只有日库需要创建
+			if(dbType==1){
+				createRegionDbLinks(db);
+			}
 			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
 			//修改log_action默认值
@@ -265,8 +264,6 @@ public class InitRegiondb {
 			SqlExec sqlExec = new SqlExec(conn);
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/init_edit_tables.sql";
 			sqlExec.executeIgnoreError(sqlFile);
-			String metaFile = "/com/navinfo/dataservice/scripts/resources/mv_rel_rdname_meta.sql";
-			sqlExec.execute(metaFile);
 			//日库删除内业作业的行人导航数据
 			if(dbType==1){
 				String delGdFile = "/com/navinfo/dataservice/scripts/resources/temp_delete_poi_gd.sql";
@@ -347,9 +344,7 @@ public class InitRegiondb {
 	private static void testExeSqlOrPck(){
 		Connection conn = null;
 		try{
-			JobScriptsInterface.initContext();
-			DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
-			DbInfo db = datahub.getDbById(19);
+			DbInfo db = DbService.getInstance().getDbById(19);
 			OracleSchema schema = new OracleSchema(DbConnectConfig.createConnectConfig(db.getConnectParam()));
 			conn = schema.getDriverManagerDataSource().getConnection();
 //			SqlExec sqlExec = new SqlExec(conn);

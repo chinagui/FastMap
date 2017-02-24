@@ -200,7 +200,7 @@ public class ImportOracle {
 			if(type == 1){//读取的是block json
 				oracleTableName = "block";
 				columnStr=" BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,REGION_ID,WORK_PROPERTY,PLAN_STATUS ";
-				System.out.println("columnStr: "+columnStr);
+				//System.out.println("columnStr: "+columnStr);
 				Iterator<Object> it = ja.iterator();
 				Map<String,Block> blockGridMap = new HashMap<>();
  		        while (it.hasNext()) {
@@ -260,10 +260,10 @@ public class ImportOracle {
 				    		}
 	 		        		
 	 		        			columnStrWenHao="block_seq.nextval"+" ,("+city_id+") ,'"+block.getCounty()+"' ,?,"+regionId+",'"+block.getWorkProperty()+"' ,0";
-		 			            System.out.println("columnStrWenHao: "+columnStrWenHao);
+		 			         //   System.out.println("columnStrWenHao: "+columnStrWenHao);
 		 			           String insertCitySql="insert into "+oracleTableName+" ("+columnStr+")"
 		 								+ " values ("+columnStrWenHao+")";
-		 			            System.out.println("insertCitySql : "+insertCitySql);
+		 			         //   System.out.println("insertCitySql : "+insertCitySql);
 		 			            run.update(conn, insertCitySql, struct);
 	 		        		}
 	 		        		
@@ -274,14 +274,14 @@ public class ImportOracle {
  		        	for(String key : blockGridMapNew.keySet()){
  			        	
  			        	String updateGridSql =" update grid set block_id =(select block_id from block where block_name ='"+key+"' and rownum=1) where grid_id in("+blockGridMapNew.get(key)+") " ;
- 			        	System.out.println("updateGridSql: "+updateGridSql);
+ 			        //	System.out.println("updateGridSql: "+updateGridSql);
  			        	run.execute(conn, updateGridSql);	
  			        }
  		        	
  		        }
 			}else{//读取的是city json
 				columnStr=" CITY_ID,CITY_NAME,PROVINCE_NAME,GEOMETRY,REGION_ID,PLAN_STATUS ";
-				System.out.println("columnStr: "+columnStr);
+				//System.out.println("columnStr: "+columnStr);
 				Iterator<Object> it = ja.iterator();
 				Map<String,String> cityGridMap = new HashMap<String,String>();
 				 QueryRunner run=new QueryRunner();
@@ -307,15 +307,15 @@ public class ImportOracle {
 		    		Clob gridsClob = ConnectionUtil.createClob(conn);		       		
 	        		gridsClob.setString(1, gridStr);
 			    	int regionId = 	getRegionIdByGrids(conn,gridsClob);
-			    	System.out.println(regionId);
+			    //	System.out.println(regionId);
 			    	if(regionId != 0){//存在 regionId
 			    		cityGridMap.put(cityVal, gridStr);
 			    		
 			            columnStrWenHao="city_seq.nextval,'"+cityVal+"' ,'"+provinceVal+"' ,? ,"+regionId+", 0 ";
-			            System.out.println("columnStrWenHao: "+columnStrWenHao);
+			        //    System.out.println("columnStrWenHao: "+columnStrWenHao);
 			            String insertCitySql="insert into "+oracleTableName+" ("+columnStr+")"
 								+ " values ("+columnStrWenHao+")";
-			            System.out.println("insertCitySql : "+insertCitySql);
+			         //   System.out.println("insertCitySql : "+insertCitySql);
 			           
 			            run.update(conn, insertCitySql, struct);
 			    	}
@@ -324,7 +324,7 @@ public class ImportOracle {
 		        }
 		        for(String key : cityGridMap.keySet()){
 		        	String updateGridSql =" update grid set city_id =(select city_id from city where city_name ='"+key+"' and rownum=1) where grid_id in("+cityGridMap.get(key)+") " ;
-		        	System.out.println("updateGridSql: "+updateGridSql);
+		        	//System.out.println("updateGridSql: "+updateGridSql);
 		        	run.execute(conn, updateGridSql);	
 		        }
 			}

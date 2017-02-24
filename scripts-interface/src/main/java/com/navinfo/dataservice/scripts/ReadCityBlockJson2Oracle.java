@@ -10,7 +10,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class ReadTab2Oracle {
+public class ReadCityBlockJson2Oracle {
 	
 	public static JSONArray importJson(String fileName,int type) throws Exception {
 		//JSONArray retArr = new JSONArray();
@@ -36,11 +36,13 @@ public class ReadTab2Oracle {
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();
 		//String filePathString="F:\\readjson\\city2meshgeo.txt";
-		//int flag = 0;
+		int flag = 0;
 		//**********************
-		String filePathString="F:\\readjson\\block2gridgeo.txt";
-		int flag = 1;
-//		String filePathString = String.valueOf(args[0]);
+		//String filePathString="F:\\readjson\\block2gridgeo.txt";
+		String filePathString = String.valueOf(args[0]);
+		if(String.valueOf(args[1]) != null && StringUtils.isNotEmpty(String.valueOf(args[1]))){
+			flag = Integer.parseInt(String.valueOf(args[1]));
+		}
 		Connection conn=DBConnector.getInstance().getManConnection();
 		//读取json  flag = 0 cityJson ;flag = 1 blockJson 
 		

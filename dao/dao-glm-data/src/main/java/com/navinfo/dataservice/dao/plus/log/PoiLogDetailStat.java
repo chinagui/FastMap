@@ -116,8 +116,8 @@ public class PoiLogDetailStat {
 		// if(pids==null||pids.size()==0)return null;
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
-				+ "FROM LOG_DETAIL T,LOG_OPERATION LP,POI_COLUMN_STATUS P"
-				+ "WHERE T.OP_ID=LP.OP_ID "
+				+ "FROM LOG_DETAIL T,LOG_OPERATION LP,POI_COLUMN_STATUS P "
+				+ " WHERE T.OP_ID=LP.OP_ID "
 				+ " AND T.OB_NM='"
 				+ ObjectName.IX_POI + "'" + "   AND T.OB_PID=P.PID");
 		sb.append(" AND LP.OP_DT>=P.APPLY_DATE");
@@ -276,5 +276,15 @@ public class PoiLogDetailStat {
 			return new QueryRunner().query(conn, sb.toString(),
 					new LogDetailRsHandler4ChangeLog());
 		}
+	}
+	public static void main(String[] args) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT T.OB_NM,T.OB_PID,T.TB_NM,T.OLD,T.NEW,T.FD_LST,T.OP_TP,T.TB_ROW_ID "
+				+ "FROM LOG_DETAIL T,LOG_OPERATION LP,POI_COLUMN_STATUS P"
+				+ " WHERE T.OP_ID=LP.OP_ID "
+				+ " AND T.OB_NM='"
+				+ ObjectName.IX_POI + "'" + "   AND T.OB_PID=P.PID");
+		sb.append(" AND LP.OP_DT>=P.APPLY_DATE");
+		System.out.println(sb.toString());
 	}
 }

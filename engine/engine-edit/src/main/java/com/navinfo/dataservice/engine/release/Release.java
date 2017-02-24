@@ -15,10 +15,10 @@ public class Release {
 	 * @return
 	 * @throws Exception
 	 */
-	public void roadRelease(int subtaskId) throws Exception {
+	public void roadRelease(int subtaskId,long userId) throws Exception {
 		//任务关闭
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-		manApi.close(subtaskId);
+		manApi.close(subtaskId,userId);
 	}
 
 }

@@ -61,7 +61,13 @@ public interface ManApi{
 	
 	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception;
 	
-	public void close(int subtaskId) throws Exception;
+	//POI月编批状态，改状态，调整范围，发送消息
+	//给编辑端提交接口用
+	public void close(int subtaskId,long userId) throws Exception;
+	
+	//改状态，调整范围，发送消息
+	//给凯凯写的Job调用:POI月编子任务批状态后
+	public void closeSubtask(int subtaskId,long userId) throws Exception;
 	
 	public void updateProduceStatus(int produceId,int status) throws Exception;
 	

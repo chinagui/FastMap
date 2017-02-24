@@ -821,7 +821,7 @@ public class TaskService {
 					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				//任务名称模糊查询
-				if ("name".equals(key)) {	
+				if ("taskName".equals(key)) {	
 					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
 				}
 				//筛选条件

@@ -33,11 +33,11 @@ public class InforManOperation {
 		// TODO Auto-generated constructor stub
 	}
 	
-	public static void updateTask(Connection conn,String inforId,int taskId) throws Exception{
+	/*public static void updateTask(Connection conn,String inforId,int taskId) throws Exception{
 		String sql="update infor set plan_status=1,task_id="+taskId+" where infor_id='"+inforId+"'";
 		QueryRunner run = new QueryRunner();
 		run.update(conn,sql);
-	}
+	}*/
 	
 	public static void updatePlanStatus(Connection conn,String inforId,int planStatus) throws Exception{
 		String sql="update infor set plan_status="+planStatus+" where infor_id='"+inforId+"'";
@@ -45,12 +45,12 @@ public class InforManOperation {
 		run.update(conn,sql);
 	}
 	
-	public static void closeByTasks(Connection conn,List<Integer> taskIds) throws Exception{
+	/*public static void closeByTasks(Connection conn,List<Integer> taskIds) throws Exception{
 		String sql="UPDATE INFOR I SET I.PLAN_STATUS = 2 WHERE I.TASK_ID IN ("+taskIds.toString().replace("[", "").
 						replace("]", "").replace("\"", "")+") AND I.PLAN_STATUS = 1";
 		QueryRunner run = new QueryRunner();
 		run.update(conn,sql);
-	}
+	}*/
 	
 	/*
 	 * 根据sql语句查询inforMan
@@ -90,7 +90,7 @@ public class InforManOperation {
 						map.put("inforLevel",rs.getInt("INFOR_LEVEL"));
 						map.put("planStatus",rs.getInt("PLAN_STATUS"));
 						map.put("inforContent",rs.getString("INFOR_CONTENT"));
-						map.put("taskId",rs.getInt("TASK_ID"));						
+						//map.put("taskId",rs.getInt("TASK_ID"));						
 						map.put("insertTime",rs.getTimestamp("INSERT_TIME"));
 						list.add(map);
 					}

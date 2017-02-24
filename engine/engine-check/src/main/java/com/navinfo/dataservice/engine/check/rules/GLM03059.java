@@ -58,20 +58,27 @@ public class GLM03059 extends baseRule {
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLink.changedFields();
-		if(!changedFields.isEmpty()){
+		if(ObjStatus.UPDATE.equals(rdLink.status())){
 			//Link种别编辑
 			if(changedFields.containsKey("kind")){
 				int kind = (int) changedFields.get("kind");
 				if(kind == 1 || kind == 2){
 					StringBuilder sb = new StringBuilder();
 					
-					sb.append("SELECT DISTINCT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK RS, RD_LINK RE");
-					sb.append(" WHERE RS.LINK_PID = "+rdLink.getPid()+" AND F.FORM_OF_WAY = 15");
-					sb.append(" AND (RS.S_NODE_PID = F.NODE_PID OR RS.E_NODE_PID = F.NODE_PID)");
-					sb.append(" AND (RE.S_NODE_PID = F.NODE_PID OR RE.E_NODE_PID = F.NODE_PID)");
-					sb.append(" AND RS.LINK_PID <> RE.LINK_PID AND F.U_RECORD <> 2 AND RS.U_RECORD <> 2");
-					sb.append(" AND RE.U_RECORD <> 2 AND RE.KIND IN (1, 2)");
-					sb.append(" GROUP BY F.NODE_PID HAVING COUNT(1)=1");
+					sb.append("WITH T AS(SELECT DISTINCT N.NODE_PID,COUNT(1) ");
+					sb.append(" FROM RD_NODE N,RD_NODE_FORM F,RD_LINK RL,RD_LINK RL1");
+					sb.append(" WHERE RL.LINK_PID = "+rdLink.getPid());
+					sb.append(" AND N.NODE_PID = F.NODE_PID AND F.FORM_OF_WAY = 15");
+					sb.append(" AND (RL.S_NODE_PID = N.NODE_PID OR RL.E_NODE_PID = N.NODE_PID)");
+					sb.append(" AND (RL1.S_NODE_PID = F.NODE_PID OR RL1.E_NODE_PID = F.NODE_PID)");
+					sb.append(" AND N.U_RECORD <> 2 AND RL.U_RECORD <> 2 AND F.U_RECORD <>2 AND RL1.U_RECORD <>2");
+					sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1)=2)");
+					sb.append(" SELECT DISTINCT T.NODE_PID FROM RD_LINK RS, RD_LINK RE,T");
+					sb.append(" WHERE (RS.S_NODE_PID = T.NODE_PID OR RS.E_NODE_PID = T.NODE_PID)");
+					sb.append(" AND (RE.S_NODE_PID = T.NODE_PID OR RE.E_NODE_PID = T.NODE_PID)");
+					sb.append(" AND RS.LINK_PID <> RE.LINK_PID");
+					sb.append(" AND RS.U_RECORD <> 2 AND RE.U_RECORD <> 2");
+					sb.append(" AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
 					String sql = sb.toString();
 					log.info("RdLink后检查GLM03059--sql:" + sql);
 					
@@ -106,13 +113,18 @@ public class GLM03059 extends baseRule {
 			for (Integer nodePid : nodePids) {
 				StringBuilder sb = new StringBuilder();
 				
-				sb.append("SELECT DISTINCT F.NODE_PID FROM RD_NODE_FORM F, RD_LINK RS, RD_LINK RE");
-				sb.append(" WHERE F.NODE_PID = "+nodePid+" AND F.FORM_OF_WAY = 15");
-				sb.append(" AND (RS.S_NODE_PID = F.NODE_PID OR RS.E_NODE_PID = F.NODE_PID)");
-				sb.append(" AND (RE.S_NODE_PID = F.NODE_PID OR RE.E_NODE_PID = F.NODE_PID)");
-				sb.append(" AND RS.LINK_PID <> RE.LINK_PID AND F.U_RECORD <> 2 AND RS.U_RECORD <> 2");
-				sb.append(" AND RE.U_RECORD <> 2 AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
-				sb.append(" GROUP BY F.NODE_PID HAVING COUNT(1)=2");
+				sb.append("WITH T AS(SELECT DISTINCT N.NODE_PID FROM RD_NODE N,RD_NODE_FORM F,RD_LINK RL");
+				sb.append(" WHERE N.NODE_PID = "+nodePid);
+				sb.append(" AND N.NODE_PID = F.NODE_PID AND F.FORM_OF_WAY = 15");
+				sb.append(" AND (RL.S_NODE_PID = N.NODE_PID OR RL.E_NODE_PID = N.NODE_PID)");
+				sb.append(" AND N.U_RECORD <> 2 AND RL.U_RECORD <> 2 AND F.U_RECORD <>2");
+				sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1)=2)");
+				sb.append(" SELECT DISTINCT T.NODE_PID FROM RD_LINK RS, RD_LINK RE,T");
+				sb.append(" WHERE (RS.S_NODE_PID = T.NODE_PID OR RS.E_NODE_PID = T.NODE_PID)");
+				sb.append(" AND (RE.S_NODE_PID = T.NODE_PID OR RE.E_NODE_PID = T.NODE_PID)");
+				sb.append(" AND RS.LINK_PID <> RE.LINK_PID");
+				sb.append(" AND RS.U_RECORD <> 2 AND RE.U_RECORD <> 2");
+				sb.append(" AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
 				String sql = sb.toString();
 				log.info("RdLink后检查GLM03059--sql:" + sql);
 				
@@ -154,14 +166,19 @@ public class GLM03059 extends baseRule {
 		}
 		if(checkFlag){
 			StringBuilder sb = new StringBuilder();
-			 
-			sb.append("SELECT DISTINCT N.NODE_PID FROM RD_NODE N,RD_LINK RS, RD_LINK RE");
+			
+			sb.append("WITH T AS(SELECT DISTINCT N.NODE_PID FROM RD_NODE N,RD_NODE_FORM F,RD_LINK RL");
 			sb.append(" WHERE N.NODE_PID = "+rdNodeForm.getNodePid());
-			sb.append(" AND (RS.S_NODE_PID = N.NODE_PID OR RS.E_NODE_PID = N.NODE_PID)");
-			sb.append(" AND (RE.S_NODE_PID = N.NODE_PID OR RE.E_NODE_PID = N.NODE_PID)");
-			sb.append(" AND RS.LINK_PID <> RE.LINK_PID AND N.U_RECORD <> 2 AND RS.U_RECORD <> 2");
-			sb.append(" AND RE.U_RECORD <> 2 AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
-			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1)=2");
+			sb.append(" AND N.NODE_PID = F.NODE_PID");
+			sb.append(" AND (RL.S_NODE_PID = N.NODE_PID OR RL.E_NODE_PID = N.NODE_PID)");
+			sb.append(" AND N.U_RECORD <> 2 AND RL.U_RECORD <> 2 AND F.U_RECORD <>2");
+			sb.append(" GROUP BY N.NODE_PID HAVING COUNT(1)=2)");
+			sb.append(" SELECT DISTINCT T.NODE_PID FROM RD_LINK RS, RD_LINK RE,T");
+			sb.append(" WHERE (RS.S_NODE_PID = T.NODE_PID OR RS.E_NODE_PID = T.NODE_PID)");
+			sb.append(" AND (RE.S_NODE_PID = T.NODE_PID OR RE.E_NODE_PID = T.NODE_PID)");
+			sb.append(" AND RS.LINK_PID <> RE.LINK_PID");
+			sb.append(" AND RS.U_RECORD <> 2 AND RE.U_RECORD <> 2");
+			sb.append(" AND RS.KIND IN (1, 2) AND RE.KIND IN (1, 2)");
 			String sql = sb.toString();
 			log.info("RdNode后检查GLM03059--sql:" + sql);
 			

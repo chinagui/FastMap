@@ -18,7 +18,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  *  满足原则1或者2的数据，报出LOG。
  * @author zhangxiaoyi
  */
-public class FMPOI003 extends BasicCheckRule {
+public class FMDGC005 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

@@ -158,7 +158,7 @@ public class GLM03055 extends baseRule {
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		// TODO Auto-generated method stub
 		Map<String, Object> changedFields = rdLink.changedFields();
-		if(!changedFields.isEmpty()){
+		if(ObjStatus.UPDATE.equals(rdLink.status())){
 			//分离节点,平滑修形
 			Set<Integer> nodePids = new HashSet<Integer>();
 			Integer sNodePid = null;
@@ -180,7 +180,7 @@ public class GLM03055 extends baseRule {
 				
 				sb.append("SELECT DISTINCT RL.LINK_PID FROM RD_LINK RL,RD_LINK_FORM RLF,RD_NODE_FORM RNF");
 				sb.append(" WHERE RNF.NODE_PID ="+nodePid);
-				sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 20");
+				sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 20 AND RNF.FORM_OF_WAY = 15");
 				sb.append(" AND (RNF.NODE_PID = RL.S_NODE_PID OR RNF.NODE_PID = RL.E_NODE_PID)");
 				sb.append(" AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RNF.U_RECORD <> 2");
 				String sql = sb.toString();

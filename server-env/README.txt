@@ -1,13 +1,23 @@
 所有FOS服务端环境初始化全量脚本放在这里，包括：
 /* 环境初始化部分 */
 1. FM-SYS系统库初始化
-    脚本路径：init-fmsys/init_fmsys.sh
-	执行前提条件：无
+	执行前提：无
+    脚本路径：1) scripts/standalone/init-fmsys/init_fmsys.sh
+	          2) scripts/standalone/init-fmsys/init_check_rules.sh
+	配置文件: 1) 修改init_fmsys.conf
+	          2) 修改table_fill_datahub.sql
+			  3) 修改table_fill_sys_config.sql
+	执行环境：脚本环境服务器
+	执行命令：# sh init_fmsys.sh
 2. FM-META元数据库初始化
-    脚本路径：transition_metadb_init/transition_metadb_init.sh
-	执行前提条件：FM-SYS库初始化完成。
+    执行前提：FM-SYS库初始化完成。
+    脚本路径：scripts/standalone/transition_metadb_init/transition_metadb_init.sh
+	配置文件：修改scripts/standalone/transition_metadb_init/transition_metadb_init.conf
+	执行环境：脚本环境服务器
+	执行命令：# sh transition_metadb_init.sh
 3. FM-MAN管理库初始化
-    脚本路径：fmman_init/init_fmman.sh
+    执行前提：FM-META库初始化完成。
+    脚本路径：scripts/standalone/fmman_init/init_fmman.sh
 	执行前提条件：FM-META库初始化完成。
 4. FM-GDB+母库初始化
     脚本路径：transition_fmgdb_init/transition_fmgdb_init.sh
@@ -66,6 +76,8 @@
 UPDATE SYS_CONFIG SET CONF_VALUE='/app/fm315/svr/scripts/container/' WHERE CONF_KEY='scripts.dir';
 UPDATE SYS_CONFIG SET CONF_VALUE='DEV_R' WHERE CONF_KEY='render.table.prefix';
 UPDATE SYS_CONFIG SET CONF_VALUE='amqp://fos:fos@192.168.4.130:5672' WHERE CONF_KEY='main.mq.uri';
+INSERT INTO DB_HUB VALUES (DB_SEQ.NEXTVAL,NULL,'gdb270_dcs_17sum_bj','gdb270_dcs_17sum_bj',0,'GDB_DATA','gen2Au',2,null,2,null,'二代外业成果库');
+
 
 sys:fm_sys_315@4.131
 meta:metadata_pd_17sum@3.227
@@ -79,3 +91,5 @@ man:fm_man_315@4.131
 问题：
 1. 元数据库：sc_partition_menshlist中增加OPEN_FLAG字段
 2. dropbox配置下载服务，sys_config中修改dropbox配置
+3. fcc有增加的sys_config配置
+4. 母库注意空间索引

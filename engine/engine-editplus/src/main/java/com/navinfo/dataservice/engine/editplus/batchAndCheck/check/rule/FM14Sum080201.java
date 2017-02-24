@@ -84,7 +84,10 @@ public class FM14Sum080201 extends BasicCheckRule {
 					+ "     AND A1.FULLNAME = A2.FULLNAME"
 					+ "     AND N1.NAME = N2.NAME"
 					+ "     AND P1."+pidString
-					+ "     AND P1.PID != P2.PID)"
+					+ "     AND P1.PID != P2.PID"
+					+ "		AND P1.U_RECORD <> 2 AND P2.U_RECORD <> 2"
+					+ "		AND N1.U_RECORD <> 2 AND N2.U_RECORD <> 2"
+					+ "		AND A1.U_RECORD <> 2 AND A2.U_RECORD <> 2)"
 					+ " SELECT /*+ NO_MERGE(T)*/"
 					+ " T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,PID2"
 					+ "  FROM T"

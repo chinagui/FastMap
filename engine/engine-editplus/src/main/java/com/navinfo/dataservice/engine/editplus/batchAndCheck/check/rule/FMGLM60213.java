@@ -77,7 +77,7 @@ public class FMGLM60213 extends BasicCheckRule {
 		}
 		parentMap = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
 		Set<String> referSubrow=new HashSet<String>();
-		referSubrow.add("IX_POI_NAME");
+		//referSubrow.add("IX_POI_NAME");
 		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}

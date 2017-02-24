@@ -3,12 +3,20 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @ClassName GLM60237
@@ -26,8 +34,40 @@ public class GLM60237 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
-		// TODO Auto-generated method stub
-
+		if(obj.objName().equals(ObjectName.IX_POI)){
+			IxPoiObj poiObj=(IxPoiObj) obj;
+			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+			if(ixPoiName == null){return;}
+			String name = ixPoiName.getName();
+			if(name == null){return;}
+			//是否有同一关系
+			if(!samePoiMap.containsKey(poi.getPid())){return;}
+			//存在同一关系且IX_SAMEPOI.RELATION_TYPE=1
+			List<Long> samePoiGroupIds = CheckUtil.getSamePoiGroupIds(poi.getPid(), 1, this.getCheckRuleCommand().getConn());
+			if(samePoiGroupIds == null ||samePoiGroupIds.isEmpty()){return;}
+			Long parentId=samePoiMap.get(poi.getPid());
+			BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
+			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
+			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
+			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
+			if(ixPoiNameP == null){return;}
+			String nameP = ixPoiNameP.getName();
+			if(nameP == null){return;}
+			//原始官方中文名称相同
+			if(!nameP.equals(name)){return;}
+			
+			Geometry geometry = poi.getGeometry();
+			Geometry geometryP = parentPoi.getGeometry();
+			//显示坐标点位距离不应超过5米
+			Coordinate coordinate = geometry.getCoordinate();
+			Coordinate coordinateP = geometryP.getCoordinate();
+			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
+			if(distance > 5){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				return;
+			}
+		}
 	}
 
 	@Override

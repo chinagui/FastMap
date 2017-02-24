@@ -22,8 +22,9 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScPointNamec
 /**
  *检查条件：
  *以下条件其中之一满足时，需要进行检查：
- *(1)存在官方原始中文名称IX_POI_NAME新增；
- *(2)存在官方原始中文名称IX_POI_NAME修改或修改分类存在；
+(1)存在官方原始中文名称新增；
+(2)存在官方原始中文名称修改
+(3)存在分类修改；
  *检查原则：
  *如果种别代码为190100、190101、190102、190103、190104、190105、190106、190107、190108、190109、190110、190111、190112、190500、
  *190501、190502、1190301、190200、190201、190202、190203、190204、230103、230111、230114、230105、230126、230127、150101、
@@ -80,7 +81,8 @@ public class FMA0405 extends BasicCheckRule {
 					||newKindCode.equals("190203")||newKindCode.equals("190204")||newKindCode.equals("230103")
 					||newKindCode.equals("230111")||newKindCode.equals("230114")||newKindCode.equals("230105")
 					||newKindCode.equals("230126")||newKindCode.equals("230127")||newKindCode.equals("230208")
-					||newKindCode.equals("230128")||newKindCode.equals("190501")||newKindCode.equals("230210")){
+					||newKindCode.equals("230128")||newKindCode.equals("190501")||newKindCode.equals("230210")
+					||newKindCode.equals("190502")||newKindCode.equals("150101")){
 				
 				if(newKindCode.equals("150101")){
 					if(!chainList.contains(newCStr)){return;}

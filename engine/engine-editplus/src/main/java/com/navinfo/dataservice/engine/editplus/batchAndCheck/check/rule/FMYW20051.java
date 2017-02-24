@@ -56,7 +56,7 @@ public class FMYW20051 extends BasicCheckRule {
 			}
 			//POI_NUM在元数据库SC_POINT_FOCUS.POI_NUM列表且SC_POINT_FOCUS.TYPE=2中不存在
 			String poiNumP = parentPoi.getPoiNum();
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi｀");
+			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
 			if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);

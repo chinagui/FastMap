@@ -21,6 +21,7 @@ import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
+import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.Page;
 
@@ -91,10 +92,15 @@ public class TaskController extends BaseController {
 			long userId=tokenObj.getUserId();
 			JSONArray taskIds=dataJson.getJSONArray("taskIds");
 			//long userId=2;
-			String msg=TaskService.getInstance().taskPushMsg(userId, taskIds);
-			return new ModelAndView("jsonView", success(msg));
+			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
+			
+			if((message!=null)&&(!message.isEmpty())){
+				return new ModelAndView("jsonView", exception(message));
+			}else{
+				return new ModelAndView("jsonView", success(message));
+			}
 		}catch(Exception e){
-			log.error("创建失败，原因："+e.getMessage(), e);
+			log.error("发布失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -144,7 +150,7 @@ public class TaskController extends BaseController {
 			String message = TaskService.getInstance().close(taskId,userId);			
 			return new ModelAndView("jsonView", success(message));
 		}catch(Exception e){
-			log.error("任务批量关闭失败，原因："+e.getMessage(), e);
+			log.error("任务关闭失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
@@ -434,6 +440,42 @@ public class TaskController extends BaseController {
 
 			JSONObject geo = TaskService.getInstance().queryWktByTaskId(taskId);
 			return new ModelAndView("jsonView", success(geo));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/task/queryTaskIdsByGrid")
+	public ModelAndView queryTaskIdsByGrid(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			String gridId = dataJson.getString("gridId");
+
+			Map<String,Integer> map = GridService.getInstance().queryTaskIdsByGrid(gridId);
+			return new ModelAndView("jsonView", success(map));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	@RequestMapping(value = "/task/queryCollectTaskIdsByGridIdList")
+	public ModelAndView queryCollectTaskIdsByGridIdList(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			JSONArray gridIds = dataJson.getJSONArray("gridIdList");
+			List<Integer> gridIdList = JSONArray.toList(gridIds);
+
+			Map<Integer,Map<String, Integer>> map = GridService.getInstance().queryCollectTaskIdsByGridIdList(gridIdList);
+			return new ModelAndView("jsonView", success(map));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

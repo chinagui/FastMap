@@ -25,5 +25,8 @@ public interface FccApi {
 	 * @time:2016-10-25 上午10:57:37
 	 */
 	public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception;
+	
+	
+	public void tips2Aumark(JSONObject parameter) throws Exception;
 
 }

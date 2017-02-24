@@ -325,7 +325,7 @@ public class SubtaskController extends BaseController {
 			}
 		
 		}catch(Exception e){
-			log.error("批量关闭失败，原因："+e.getMessage(), e);
+			log.error("关闭失败，原因："+e.getMessage(), e);
 			//NullResponse result = new NullResponse(-1,e.getMessage(),null);
 			return new ModelAndView("jsonView", exception(e));
 		}

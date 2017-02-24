@@ -28,7 +28,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * log4：简介存在空格
  * 
  */
-public class FMTEMP1 extends BasicCheckRule {
+public class FMMDP001 extends BasicCheckRule {
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

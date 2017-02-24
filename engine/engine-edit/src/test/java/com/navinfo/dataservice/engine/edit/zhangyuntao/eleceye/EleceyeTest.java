@@ -33,25 +33,23 @@ public class EleceyeTest extends InitApplication {
         // String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,
         // 'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
         String requester = "{\"command\":\"CREATE\",\"dbId\":17,\"type\":\"RDELECTRONICEYE\"," +
-				"\"data\":{\"linkPid\":304001064,\"direct\":2,\"longitude\":116.17265,\"latitude\":40.56482}}";
+                "\"data\":{\"linkPid\":304001064,\"direct\":2,\"longitude\":116.17265,\"latitude\":40.56482}}";
         TestUtil.run(requester);
     }
 
     @Test
     public void moveEleceye() {
-        // String requester = "{'dbId':42,'command':'CREATE','type':'RDELECTRONICEYE','data':{'direct':3,
-		// 'longitude':116.50291868782932,'latitude':40.01112911418436,'linkPid':85518434}}";
-        String requester = "{\"command\":\"MOVE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":19," +
-                "\"data\":{\"linkPid\":\"304003203\",\"pid\":\"203000017\",\"latitude\":\"40.046086741889646\"," +
-                "\"longitude\":\"116.50039570281758\"}}";
+        String requester = "{\"command\":\"MOVE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":17," +
+                "\"data\":{\"linkPid\":\"201003497\",\"pid\":\"303000038\",\"latitude\":\"40.12799\"," +
+                "\"longitude\":\"116.30923\"}}";
         TestUtil.run(requester);
     }
 
     @Test
     public void updateEleceye() {
         String requester = "{\"command\":\"UPDATE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":42," +
-				"\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645," +
-				"\"objStatus\":\"UPDATE\"}}";
+                "\"data\":{\"location\":4,\"rowId\":\"3524E60474A46E1AE050A8C08304BA17\",\"pid\":32943645," +
+                "\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(requester);
     }
 

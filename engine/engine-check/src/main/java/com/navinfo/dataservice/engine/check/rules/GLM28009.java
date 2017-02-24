@@ -92,17 +92,18 @@ public class GLM28009 extends baseRule{
 			if(!linkPidSet.isEmpty()){
 				StringBuilder sb = new StringBuilder();
 
-				sb.append("SELECT 1 FROM RD_LINK R");
-				sb.append(" WHERE R.U_RECORD <> 2");
-				sb.append(" AND R.SPECIAL_TRAFFIC = 0 ");
-				sb.append(" AND (R.IMI_CODE = 0 OR R.IMI_CODE = 3)");
-				sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")" );
-				sb.append(" UNION ");
+//				sb.append("SELECT 1 FROM RD_LINK R");
+//				sb.append(" WHERE R.U_RECORD <> 2");
+//				sb.append(" AND R.SPECIAL_TRAFFIC = 0 ");
+//				sb.append(" AND (R.IMI_CODE = 0 OR R.IMI_CODE = 3)");
+//				sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")" );
+//				sb.append(" UNION ");
 				sb.append(" SELECT 1 FROM RD_LINK R");
 				sb.append(" WHERE R.U_RECORD <> 2");
 				sb.append(" AND (R.IMI_CODE = 0 OR R.IMI_CODE = 3)");
 				sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM F WHERE F.LINK_PID = R.LINK_PID AND F.U_RECORD <> 2 AND F.FORM_OF_WAY = 33)");          
 				sb.append(" AND R.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")" );
+				sb.append(" AND R.SPECIAL_TRAFFIC = 0 ");
 
 				String sql = sb.toString();
 				log.info("RdInter前检查GLM28009:" + sql);

@@ -22,7 +22,7 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
-		Operation operation = new Operation(this.getCommand());
+		Operation operation = new Operation(this.getCommand(),this.getConn());
 		String msg = operation.run(this.getResult());
 		return msg;
 	}

@@ -47,6 +47,7 @@ public class RdLaneConnexity implements IObj {
 	
 	public Map<String,RdLaneVia> viaMap = new HashMap<String,RdLaneVia>();
 
+	protected ObjStatus status;
 
 	public RdLaneConnexity() {
 
@@ -146,11 +147,12 @@ public class RdLaneConnexity implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -161,7 +163,13 @@ public class RdLaneConnexity implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
-		return JSONObject.fromObject(this);	
+//		return JSONObject.fromObject(this);	
+		JSONObject json = JSONObject.fromObject(this);
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 //		return JSONObject.fromObject(this,JsonUtils.getStrConfig());
 	}
 

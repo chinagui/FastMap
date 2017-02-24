@@ -822,12 +822,12 @@ public class OpRefRelationObj {
 		com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation operation = new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlane.Operation(
 				conn);
 		// 根据原link的种别判断是否新增还是删除详细车道
-		if (link.getKind() <= 7) {
-			// 新增
-			operation.setKindFlag(1);
-		} else {
+		if (link.getKind() <= 8) {
 			// 删除
 			operation.setKindFlag(2);
+		} else {
+			// 新增
+			operation.setKindFlag(1);
 		}
 
 		operation.setLink(link);

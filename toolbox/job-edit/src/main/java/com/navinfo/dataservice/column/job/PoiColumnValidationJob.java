@@ -140,7 +140,7 @@ public class PoiColumnValidationJob extends AbstractJob {
 			String sql="SELECT DISTINCT P.PID"
 					+ "  FROM POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF C"
 					+ " WHERE P.WORK_ITEM_ID = C.WORK_ITEM_ID"
-					+ "   AND C.CHECK_FLAG IN (1, 2)"
+					+ "   AND C.CHECK_FLAG IN (2,3)"
 					+ "   AND C.FIRST_WORK_ITEM = '"+myRequest.getFirstWorkItem()+"'"
 					+ "   AND P.HANDLER="+jobInfo.getUserId()
 					+ "   AND P.TASK_ID="+jobInfo.getTaskId()

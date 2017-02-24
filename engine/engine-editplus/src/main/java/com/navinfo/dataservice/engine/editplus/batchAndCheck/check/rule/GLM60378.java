@@ -32,6 +32,7 @@ public class GLM60378 extends BasicCheckRule {
 			if(contactList==null||contactList.isEmpty()){return;}
 			Set<String> contactSet=new HashSet<String>();
 			for(IxPoiContact contactObj:contactList){
+				if(contactObj.getContactType()!=1){continue;}
 				String contactStr=contactObj.getContact();
 				if(!contactStr.contains("-")){continue;}
 				contactSet.add(contactStr.split("-")[0]);

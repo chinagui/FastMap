@@ -188,7 +188,7 @@ public class SubtaskOperation {
 					return list;
 				}
 	    	};
-	    	
+	    	log.info("getSubtaskListBySubtaskIdList sql:" + selectSql);
 	    	List<Subtask> subtaskList = run.query(conn, selectSql,rsHandler);
 	    	return subtaskList;
 		}catch(Exception e){
@@ -1001,10 +1001,10 @@ public class SubtaskOperation {
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 						
-						List<Integer> gridIds = null;
+						List<Integer> gridIds = new ArrayList<Integer>();
 						try {
 							Map<Integer,Integer> gridIdMap = getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							gridIds = (List<Integer>) gridIdMap.keySet();
+							gridIds.addAll(gridIdMap.keySet());
 						} catch (Exception e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -1462,6 +1462,7 @@ public class SubtaskOperation {
 					return gridIds;
 				}
 			};
+			log.info("getGridIdsBySubtaskIdWithConn sql:" + selectSql);
 			return run.query(conn, selectSql, rsHandler);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -1512,7 +1513,7 @@ public class SubtaskOperation {
 					return subtaskIds;
 				}
 			};
-
+			log.info("getSubtaskIdsByGridIdWithConn sql:" + selectSql);
 			return run.query(conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -2961,7 +2962,7 @@ public class SubtaskOperation {
 					return referSubtasks;
 				}
 			};
-
+			log.info("getReferSubtasksByGridIds sql:" + selectSql);
 			return run.query(conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

@@ -45,9 +45,11 @@ public class Operation {
                 if (GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
                 // 计算rdElectroniceye几何与移动后link几何最近的点
-                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
+                Coordinate coor = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye
+                        .getGeometry(), 0.00001, 5).getCoordinate(), linkGeo);
                 if (null != coor) {
-                    rdElectroniceye.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(coor.x, coor.y)));
+                    rdElectroniceye.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (coor.x, coor.y)));
                     result.insertObject(rdElectroniceye, ObjStatus.UPDATE, rdElectroniceye.pid());
                 }
             }
@@ -63,13 +65,15 @@ public class Operation {
                 for (RdLink link : newLinks) {
                     geometries.add(link.getGeometry());
                 }
-                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection(GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
+                Geometry nochangeGeo = GeoTranslator.transform(oldLink.getGeometry(), 0.00001, 5).intersection
+                        (GeoTranslator.geojson2Jts(GeometryUtils.connectLinks(geometries), 0.00001, 5));
                 if (GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).intersects(nochangeGeo))
                     continue;
 
                 for (RdLink link : newLinks) {
                     Geometry linkGeo = link.getGeometry();
-                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, GeoTranslator.transform(linkGeo, 0.00001, 5));
+                    Coordinate tmpCoor = GeometryUtils.GetNearestPointOnLine(eyeCoor, GeoTranslator.transform
+                            (linkGeo, 0.00001, 5));
                     if (null != tmpCoor) {
                         double length = GeometryUtils.getDistance(eyeCoor, tmpCoor);
                         if (minLength == 0 || length < minLength) {
@@ -80,7 +84,8 @@ public class Operation {
                     }
                 }
                 if (null != minCoor) {
-                    rdElectroniceye.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts(minCoor.x, minCoor.y)));
+                    rdElectroniceye.changedFields().put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.point2Jts
+                            (minCoor.x, minCoor.y)));
                     rdElectroniceye.changedFields().put("linkPid", minLinkPid);
                     result.insertObject(rdElectroniceye, ObjStatus.UPDATE, rdElectroniceye.pid());
                 }
@@ -99,7 +104,23 @@ public class Operation {
      * @return
      * @throws Exception
      */
-    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+    public String updownDepart(RdNode sNode, List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink>
+            rightLinks, Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+        if (links.isEmpty())
+            return "";
+
+        int sNodePid = sNode.pid();
+        Map<Integer, Integer> maps = new HashMap<>();
+        for (RdLink link : links) {
+            if (sNodePid == link.getsNodePid()) {
+                maps.put(link.pid(), 2);
+                sNodePid = link.geteNodePid();
+            } else if (sNodePid == link.geteNodePid()) {
+                maps.put(link.pid(), 3);
+                sNodePid = link.getsNodePid();
+            }
+        }
+
         // 查找上下线分离对影响到的电子眼
         List<Integer> linkPids = new ArrayList<Integer>();
         linkPids.addAll(leftLinks.keySet());
@@ -126,12 +147,24 @@ public class Operation {
                     List<RdElectroniceye> rdElectroniceyeList = rdElectroniceyeMap.get(link.getPid());
                     for (RdElectroniceye rdElectroniceye : rdElectroniceyeList) {
                         int direct = rdElectroniceye.getDirect();
-                        if (2 == direct)
-                            // 电子眼为顺方向则关联link为右线
-                            updateRdElectroniceye(rightLink, rdElectroniceye, result);
-                        else if (3 == direct)
-                            // 电子眼为逆方向则关联link为左线
-                            updateRdElectroniceye(leftLink, rdElectroniceye, result);
+                        int opDirect = maps.get(rdElectroniceye.getLinkPid());
+                        if (2 == direct) {
+                            if (opDirect == 2) {
+                                // 电子眼为顺方向、分离为逆方向则关联link为右线
+                                updateRdElectroniceye(rightLink, rdElectroniceye, result);
+                            } else if (opDirect == 3) {
+                                // 电子眼为顺方向、分离为逆方向则关联link为右线
+                                updateRdElectroniceye(leftLink, rdElectroniceye, result);
+                            }
+                        } else if (3 == direct) {
+                            if (opDirect == 2) {
+                                // 电子眼为逆方向、分离为顺方向则关联link为左线
+                                updateRdElectroniceye(leftLink, rdElectroniceye, result);
+                            } else if (opDirect == 3) {
+                                // 电子眼为逆方向、分离为顺方向则关联link为左线
+                                updateRdElectroniceye(rightLink, rdElectroniceye, result);
+                            }
+                        }
                     }
                 }
             }
@@ -146,7 +179,8 @@ public class Operation {
 
             Geometry newGeo = null;
             if (sourceLink.changedFields().containsKey("geometry")) {
-                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")), 100000, 5);
+                newGeo = GeoTranslator.geojson2Jts(JSONObject.fromObject(sourceLink.changedFields().get("geometry")),
+                        100000, 5);
             }
             if (null == newGeo || newGeo.isEmpty())
                 continue;
@@ -162,9 +196,11 @@ public class Operation {
     }
 
     // 更新电子眼信息
+
     private void updateRdElectroniceye(RdLink link, RdElectroniceye rdElectroniceye, Result result) throws Exception {
         // 计算原电子眼坐标到分离后link的垂足点
-        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye.getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
+        Coordinate targetPoint = GeometryUtils.GetNearestPointOnLine(GeoTranslator.transform(rdElectroniceye
+                .getGeometry(), 0.00001, 5).getCoordinate(), GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         JSONObject geoPoint = new JSONObject();
         geoPoint.put("type", "Point");
         geoPoint.put("coordinates", new double[]{targetPoint.x, targetPoint.y});

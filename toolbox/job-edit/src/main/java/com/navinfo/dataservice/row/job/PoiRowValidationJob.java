@@ -18,6 +18,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
@@ -29,6 +30,7 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckRuleFactory;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -84,9 +86,20 @@ public class PoiRowValidationJob extends AbstractJob {
 			operationResult.putAll(objsMap);
 			
 			CheckCommand checkCommand=new CheckCommand();
+						
 			if(myRequest.getRules()!=null && myRequest.getRules().size()>0){
 				checkCommand.setRuleIdList(myRequest.getRules());}
 			else{checkCommand.setOperationName(getOperationName());}
+			
+			// 清理检查结果
+			log.info("start 清理检查结果");
+			DeepCoreControl deepControl = new DeepCoreControl();
+			List<Integer> pidIntList=new ArrayList<Integer>();
+			for(Long pidTmp:myRequest.getPids()){
+				pidIntList.add(Integer.valueOf(pidTmp.toString()));
+			}
+			deepControl.cleanExByCkRule(conn, pidIntList, checkCommand.getRuleIdList(), ObjectName.IX_POI);
+			log.info("end 清理检查结果");
 			
 			Check check=new Check(conn, operationResult);
 			check.operate(checkCommand);

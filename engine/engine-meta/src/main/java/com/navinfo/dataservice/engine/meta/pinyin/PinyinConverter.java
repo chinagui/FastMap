@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.meta.pinyin;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Types;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -79,7 +82,10 @@ public class PinyinConverter {
 	}
 
 	public String convertHz(String word) throws Exception {
-
+		CallableStatement cs = null;
+		
+		String initSql = "{call py_utils_word.init_context_param}";
+		
 		String sql = "select py_utils_word.convert_hz_tone(:1,    null,    null) phonetic from dual";
 
 		PreparedStatement pstmt = null;
@@ -94,6 +100,10 @@ public class PinyinConverter {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 
+			cs = conn.prepareCall(initSql);
+			
+			cs.execute();
+			
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, word);
@@ -135,6 +145,7 @@ public class PinyinConverter {
 
 				}
 			}
+			DbUtils.closeQuietly(cs);
 
 		}
 		

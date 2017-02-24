@@ -60,7 +60,7 @@ public class GLM19001_3 extends baseRule{
 		}
 		else if(rdLaneVia.status().equals(ObjStatus.UPDATE)){
 			if(rdLaneVia.changedFields().containsKey("linkPid")){
-				linkPid = (int) rdLaneVia.changedFields().get("linkPid");
+				linkPid = Integer.parseInt( rdLaneVia.changedFields().get("linkPid").toString());
 			}	
 		}
 		if(linkPid!=0){
@@ -98,7 +98,7 @@ public class GLM19001_3 extends baseRule{
 		}
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
 			if(rdLaneTopology.changedFields().containsKey("outLinkPid")){
-				linkPid = (int) rdLaneTopology.changedFields().get("outLinkPid");
+				linkPid = Integer.parseInt(rdLaneTopology.changedFields().get("outLinkPid").toString());
 			}	
 		}
 		if(linkPid!=0){

@@ -49,6 +49,24 @@ public interface MetadataApi {
 	 */
 	public Map<String, List<String>> scPointKindNewChainKind8Map() throws Exception;
 	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, String>> scPointKindNewChainKind5Map() throws Exception;
+	/**
+	 * SELECT R_KIND, POIKIND FROM SC_POINT_KIND_NEW WHERE TYPE=6
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, String>> scPointKindNewChainKind6Map() throws Exception;
+	/**
+	 * SELECT * FROM SC_POINT_KIND_NEW WHERE TYPE=5
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, String>> scPointKindNew5List() throws Exception;
+	/**
 	 * select poikind,chain from SC_POINT_BRAND_FOODTYPE
 	 * @return Map<String, List<String>> key:chain value:poikind列表
 	 * @throws Exception
@@ -212,6 +230,14 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, JSONObject> tyCharacterFjtHzCheckSelectorGetFtExtentionTypeMap() throws Exception;
+	
+	/**
+	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。
+	 * @return Map<Integer,Map<String, String>> key:convert value:Map<String, String> ft:jt
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String, String>> tyCharacterFjtHzConvertFtMap()
+			throws Exception;
 
 	/**
 	 * 返回“TY_CHARACTER_FJT_HZ”表中数据。

@@ -107,7 +107,7 @@ public class ColumnController extends BaseController {
 			throws ServletException, IOException {
 		
 		try {
-			String parameter =URLDecode(request.getParameter("parameter"));
+			String parameter = request.getParameter("parameter");
 			JSONObject dataJson = JSONObject.fromObject(parameter);
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
@@ -146,7 +146,7 @@ public class ColumnController extends BaseController {
 		String parameter = request.getParameter("parameter");
 		
 		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			JSONObject dataJson = JSONObject.fromObject(parameter);
 			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
 			long userId=tokenObj.getUserId();
 			

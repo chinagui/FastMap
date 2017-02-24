@@ -97,6 +97,12 @@ public class TaskService {
 				}
 				bean.setGridIds(gridIds);
 				
+				//常规项目根据blockId获取region信息
+				if(bean.getBlockId() != 0){
+					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
+					bean.setRegionId(regionId);
+				}
+				
 				taskList.add(bean);
 			}
 			
@@ -313,6 +319,8 @@ public class TaskService {
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
 				conn.commit();
+			}
+			if(cmsTaskList.size()>0){
 				for(Integer taskId:cmsTaskList){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();

@@ -319,6 +319,8 @@ public class TaskService {
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
 				conn.commit();
+			}
+			if(cmsTaskList.size()>0){
 				for(Integer taskId:cmsTaskList){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();

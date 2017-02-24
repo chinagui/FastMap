@@ -1,20 +1,18 @@
 package com.navinfo.dataservice.column.job;
 
-import java.util.List;
-
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+
 /**
- * poi月库管理字段批处理
- * 必传参数：  subtaskId
+ * poi月库管理字段批处理 必传参数： subtaskId
+ * 
  * @author 赵凯凯
  */
 public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 
-
 	private int taskId;
-	private long userId;
+	private int userId;
 
 	public int getTaskId() {
 		return taskId;
@@ -27,7 +25,7 @@ public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -51,22 +49,22 @@ public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 	@Override
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	/**
 	 * @return the userId
 	 */
-	public long getUserId() {
+	public int getUserId() {
 		return userId;
 	}
 
 	/**
-	 * @param userId the userId to set
+	 * @param userId
+	 *            the userId to set
 	 */
-	public void setUserId(long userId) {
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
-
 
 }

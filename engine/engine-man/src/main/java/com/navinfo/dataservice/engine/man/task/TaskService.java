@@ -20,6 +20,7 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -295,6 +296,8 @@ public class TaskService {
 			int erNum = 0;//二代任务数量
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
+			List<Integer> commonBlockIds=new ArrayList<Integer>();
+
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
@@ -308,6 +311,7 @@ public class TaskService {
 					cmsTaskList.add(task.getTaskId());
 				}else{
 					commontaskIds.add(task.getTaskId());
+					commonBlockIds.add(task.getBlockId());
 					updatedTaskList.add(task);
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
@@ -315,7 +319,10 @@ public class TaskService {
 			}
 			if(commontaskIds.size()>0){
 				//更新task状态
-				TaskOperation.updateStatus(conn, commontaskIds,1);			
+				TaskOperation.updateStatus(conn, commontaskIds,1);
+				if(commonBlockIds.size() > 0){
+					BlockService.getInstance().updateStatus(conn, commonBlockIds,3);
+				}
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
 				conn.commit();
@@ -381,7 +388,7 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID");
+			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,T.BLOCK_ID");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -399,6 +406,7 @@ public class TaskService {
 						task.setType(rs.getInt("TYPE"));
 						task.setGroupId(rs.getInt("LEADER_ID"));
 						task.setGroupLeader(rs.getInt("LEADER_ID"));
+						task.setBlockId(rs.getInt("BLOCK_ID"));
 						
 						taskList.add(task);
 					}

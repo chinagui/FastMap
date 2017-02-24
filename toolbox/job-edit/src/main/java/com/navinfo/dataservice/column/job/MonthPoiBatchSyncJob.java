@@ -107,7 +107,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			this.updateBatchPoi(updatePids, this.getStateParaSql(2), conn);
 			log.info("获取poi对应的log信息");
 			Map<Long, List<LogDetail>> logs = PoiLogDetailStat
-					.loadByRowEditStatus(conn, pids);
+					.loadByColEditStatus(conn, pids);
 			log.info(" 加载poi信息以及对应子表信息");
 
 			// 将poi对象与履历合并起来

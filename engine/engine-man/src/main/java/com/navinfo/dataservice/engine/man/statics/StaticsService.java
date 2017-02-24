@@ -1530,7 +1530,7 @@ public class StaticsService {
 						+ " SELECT P.PROGRAM_ID,"
 						+ "       C.INFOR_ID,"
 						+ "       C.PLAN_STATUS,"
-						+ "       0                   TASK_STAT,"
+						+ "       2                   TASK_STAT,"
 						+ "       0                   COLLECT_STAT,"
 						+ "       0                   DAILY_STAT,"
 						+ "       0                   MONTHLY_STAT,"

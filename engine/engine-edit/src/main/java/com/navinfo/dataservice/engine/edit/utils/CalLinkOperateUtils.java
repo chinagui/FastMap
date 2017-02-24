@@ -11,6 +11,7 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.AngleCalculator;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.vividsolutions.jts.geom.LineSegment;
@@ -142,7 +143,7 @@ public class CalLinkOperateUtils {
                         }
                     }
 
-                }
+                }  
 
                 return viaLinks;
             }
@@ -167,6 +168,73 @@ public class CalLinkOperateUtils {
         }
 
         return null;
+    }
+    
+ /***
+  * 判断所给有序link是否连通
+  * @param linkpids
+  * @param intersectFlag
+  * @return
+  * @throws Exception
+  */
+    public boolean isConnect(List<Integer> linkpids,int intersectFlag)  throws Exception 
+    {
+		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
+
+		List<IRow> linkRows = linkSelector.loadByIds(linkpids, true, false);
+
+		Map<Integer, RdLink> linkMap = new HashMap<Integer, RdLink>();
+
+		for (IRow linkRow : linkRows) {
+
+			RdLink link = (RdLink) linkRow;
+
+			linkMap.put(link.getPid(), link);
+		}
+
+		if (linkMap.size() != linkpids.size()) {
+			return false;
+		}
+
+		for (int i = 0; i < linkpids.size() - 1; i++) {
+			
+			RdLink preLink = linkMap.get(linkpids.get(i));
+
+			RdLink nextLink = linkMap.get(linkpids.get(i + 1));
+
+			if ((nextLink.getDirect() == 1 || nextLink.getDirect() == 2)
+					&& (nextLink.getsNodePid() == preLink.getsNodePid() || nextLink
+							.getsNodePid() == preLink.geteNodePid())) {
+
+				if (nextLink.getsNodePid() == intersectFlag) {
+
+					intersectFlag = nextLink.geteNodePid();
+
+				} else {
+
+					return false;
+				}
+
+			} else if ((nextLink.getDirect() == 1 || nextLink.getDirect() == 3)
+					&& (nextLink.geteNodePid() == preLink.getsNodePid() || nextLink
+							.geteNodePid() == preLink.geteNodePid())) {
+
+				if (nextLink.geteNodePid() == intersectFlag) {
+
+					intersectFlag = nextLink.getsNodePid();
+
+				} else {
+
+					return false;
+				}
+
+			} else {
+
+				return false;
+			}
+		}
+    	  
+		return true;
     }
 
     /**

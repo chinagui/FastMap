@@ -73,10 +73,11 @@ public class GLM01212 extends baseRule {
                     continue;
                 }
 
+                // log.info("GLM01212:[formOfWay=" + rdLinkForm.getFormOfWay() + "]");
                 RdLinkSelector rdSelector = new RdLinkSelector(getConn());
                 RdLink rdLink = (RdLink) rdSelector.loadByIdOnlyRdLink(linkPid, false);
                 /*
-				//非环岛link不查此规则
+                //非环岛link不查此规则
 				List<IRow> forms=rdLink.getForms();
 				if(forms.size()==0){linkPidList.add(linkPid);continue;}
 				boolean isHuandao=false;
@@ -98,7 +99,7 @@ public class GLM01212 extends baseRule {
 
                 Map<String, Object> changedFields = rdLinkSpeedlimit.changedFields();
                 if (changedFields != null && !changedFields.containsKey("fromSpeedLimit") && !changedFields
-						.containsKey("toSpeedLimit")) {
+                        .containsKey("toSpeedLimit")) {
                     continue;
                 }
 
@@ -140,14 +141,12 @@ public class GLM01212 extends baseRule {
 
         Set<Integer> chainPidSet = huandaoChain.getRdLinkPidSet();
         String pidStr = chainPidSet.toString().replace("[", "").replace("]", "");
-        String sql = "SELECT L.SPEED_TYPE"
-                + "  FROM RD_LINK_SPEEDLIMIT L"
-                + " WHERE L.LINK_PID IN (" + pidStr + ") AND L.U_RECORD != 2 "
-                + " GROUP BY L.SPEED_TYPE"
-                + " HAVING COUNT(DISTINCT DECODE(L.FROM_SPEED_LIMIT, 0, L.TO_SPEED_LIMIT, L.FROM_SPEED_LIMIT)) > 1";
+        // log.info("GLM01212:[pidStr=" + pidStr + "]");
+        String sql = "SELECT COUNT(COUNT(0)) FROM RD_LINK_SPEEDLIMIT L" + " WHERE L.LINK_PID IN (" + pidStr + ")" + "" +
+                "   AND L.U_RECORD != 2 GROUP" + " BY " + "L" + ".SPEED_TYPE, L.FROM_SPEED_LIMIT, L.TO_SPEED_LIMIT";
+        // log.info("GLM01212:[sql=" + sql + "]");
         DatabaseOperator getObj = new DatabaseOperator();
-        List<Object> resultList = new ArrayList<Object>();
-        resultList = getObj.exeSelect(getConn(), sql);
+        List<Object> resultList = getObj.exeSelect(getConn(), sql);
         if (resultList.size() > 0 && Integer.valueOf((String) resultList.get(0)) > 1) {
             String target = chainPidSet.toString().replace(" ", "").
                     replace("[", "[RD_LINK%").replace(",", "];[RD_LINK,").replace("%", ",");

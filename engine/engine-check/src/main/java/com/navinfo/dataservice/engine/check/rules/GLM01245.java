@@ -67,7 +67,7 @@ public class GLM01245 extends baseRule {
 
 			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"10级路的速度限制必须等于1010KM/H");
 			}
 		}
 		
@@ -90,7 +90,7 @@ public class GLM01245 extends baseRule {
 
 			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"9/10级路的限速来源必须是“未调查”");
 			}
 		}
 		
@@ -113,7 +113,7 @@ public class GLM01245 extends baseRule {
 
 			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"高速或城市高速的限速来源必须不是“未调查”");
 			}
 		}
 		
@@ -136,7 +136,7 @@ public class GLM01245 extends baseRule {
 
 			if (!resultList.isEmpty()) {
 				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+						(int) resultList.get(2),"9级路的速度限制必须等于15KM/H");
 			}
 		}
 	}

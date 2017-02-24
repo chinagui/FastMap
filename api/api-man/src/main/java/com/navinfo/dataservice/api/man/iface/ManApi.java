@@ -61,7 +61,13 @@ public interface ManApi{
 	
 	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception;
 	
-	public void close(int subtaskId) throws Exception;
+	//POI月编批状态，改状态，调整范围，发送消息
+	//给编辑端提交接口用
+	public void close(int subtaskId,long userId) throws Exception;
+	
+	//改状态，调整范围，发送消息
+	//给凯凯写的Job调用:POI月编子任务批状态后
+	public void closeSubtask(int subtaskId,long userId) throws Exception;
 	
 	public void updateProduceStatus(int produceId,int status) throws Exception;
 	
@@ -96,12 +102,25 @@ public interface ManApi{
 	public List<Integer> queryGridOfCity(Integer cityId) throws Exception;
 	
 	/**
-	 * @param grid 
-	 * @return grid对应的taskId的list
+	 * 获取grid对应的taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<String,Integer> key："quickTaskId"，"centreTaskId"
 	 * @throws Exception
-	 * author zl 2017.02.09
 	 */
 	public Map<String,Integer> queryTaskIdsByGrid(String grid) throws Exception;
+	
+	/**
+	 * 获取grid对应的采集taskid，若为多个返回0
+	 * @param grid
+	 * @return Map<Integer,Map<String,Integer>>
+	 *  key：gridId
+	 *  value:
+	 *  	key:"quickTaskId"/"centreTaskId"
+	 *  	value:taskId
+	 * @throws Exception
+	 */
+	public Map<Integer,Map<String,Integer>> queryCollectTaskIdsByGridIdList(List<Integer> gridIdList) throws Exception;
+	
 	/**
 	 * 获取待出品的情报项目list
 	 * 应用场景：定时日出品（一体化）脚本

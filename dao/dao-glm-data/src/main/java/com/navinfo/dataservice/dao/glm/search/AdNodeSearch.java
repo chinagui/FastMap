@@ -107,7 +107,7 @@ public class AdNodeSearch implements ISearch {
 					m.put("interNode", 0);
 				}
 				
-				m.put("nodeForm", resultSet.getString("FORM"));
+				m.put("form", resultSet.getString("FORM"));
 				
 				snapshot.setM(m);
 

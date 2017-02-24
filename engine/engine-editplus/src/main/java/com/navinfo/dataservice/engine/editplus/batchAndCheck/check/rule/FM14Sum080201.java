@@ -56,12 +56,11 @@ public class FM14Sum080201 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2"
+					+ " (SELECT P1.PID PID1, P1.GEOMETRY G1,P1.MESH_ID M1,P2.PID PID2,P2.GEOMETRY G2"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_NAME    N1,"
@@ -87,10 +86,10 @@ public class FM14Sum080201 extends BasicCheckRule {
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID)"
 					+ " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
-					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 3"
-					+ "   AND P."+pidString;
+					+ " T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,PID2"
+					+ "  FROM T"
+					+ " WHERE SDO_GEOM.SDO_DISTANCE(G1, G2, 0.00000005) < 3"
+					+ "   AND T.PID1 != T.PID2 ";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -98,7 +97,7 @@ public class FM14Sum080201 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
@@ -118,18 +117,19 @@ public class FM14Sum080201 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString=" PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
 			String sqlStr="WITH T AS"
-					+ " (SELECT P2.PID PID2, P2.GEOMETRY G2"
+					+ " (SELECT P1.PID PID1, P1.GEOMETRY G1,P1.MESH_ID M1,P2.PID PID2,P2.GEOMETRY G2"
 					+ "    FROM IX_POI         P1,"
 					+ "         IX_POI         P2,"
 					+ "         IX_POI_NAME    N1,"
 					+ "         IX_POI_NAME    N2,"
 					+ "         IX_POI_ADDRESS A1,"
-					+ "         IX_POI_ADDRESS A2"
+					+ "         IX_POI_ADDRESS A2,"
+					+ "			IX_POI_PARKING K1,"
+					+ "			IX_POI_PARKING K2"
 					+ "   WHERE P1.KIND_CODE = P2.KIND_CODE"
 					+ "     AND NVL(P1.CHAIN, 0) = NVL(P2.CHAIN, 0)"
 					+ "     AND P1.PID = N1.POI_PID"
@@ -146,14 +146,16 @@ public class FM14Sum080201 extends BasicCheckRule {
 					+ "     AND A2.LANG_CODE IN ('CHI', 'CHT')"
 					+ "     AND A1.FULLNAME = A2.FULLNAME"
 					+ "     AND N1.NAME = N2.NAME"
-					+ "     AND NVL(P1.LABEL,'')=NVL(P2.LABEL,'')"
+					+ "     AND P1.PID = K1.POI_PID"
+					+ "     AND P2.PID = K2.POI_PID"
+					+ "     AND NVL (K1.PARKING_TYPE, '') = NVL (K2.PARKING_TYPE, '')"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID)"
 					+ " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID,P.GEOMETRY,P.MESH_ID, PID2"
-					+ "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, G2, 0.00000005) < 3"
-					+ "   AND P."+pidString;
+					+ " T.PID1 PID,T.G1 GEOMETRY,T.M1 MESH_ID,PID2"
+					+ "  FROM T"
+					+ " WHERE SDO_GEOM.SDO_DISTANCE(G1, G2, 0.00000005) < 3"
+					+ "   AND T.PID1 != T.PID2 ";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -161,7 +163,7 @@ public class FM14Sum080201 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
+			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");

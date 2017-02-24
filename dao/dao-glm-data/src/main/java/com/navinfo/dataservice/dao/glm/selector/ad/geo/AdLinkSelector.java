@@ -79,4 +79,49 @@ public class AdLinkSelector extends AbstractSelector {
 
 	}
 
+	
+	/*
+     * 仅加载LINK的pid
+     */
+    public List<Integer> loadLinkPidByNodePid(int nodePid, boolean isLock) throws Exception {
+
+        List<Integer> links = new ArrayList<Integer>();
+
+        StringBuilder sb = new StringBuilder("select link_pid from AD_LINK where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
+
+        if (isLock) {
+            sb.append(" for update nowait");
+        }
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = conn.prepareStatement(sb.toString());
+
+            pstmt.setInt(1, nodePid);
+
+            pstmt.setInt(2, nodePid);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                int value = resultSet.getInt("link_pid");
+
+                links.add(value);
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return links;
+
+    }
 }

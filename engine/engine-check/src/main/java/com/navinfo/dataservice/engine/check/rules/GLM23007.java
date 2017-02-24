@@ -138,7 +138,7 @@ public class GLM23007 extends baseRule {
 		kindNot13And15LinkPidSet.addAll(kind11And13LinkPidSet);
 		kindNot13And15LinkPidSet.addAll(kindOf10LinkPidSet);
 		kindNot13And15LinkPidSet.addAll(kindOf9LinkPidSet);
-		for (Integer linkPid : kindOf15LinkPidSet) {
+		for (Integer linkPid : kindNot13And15LinkPidSet) {
 			logger.debug("检查类型：postCheck， 检查规则：GLM23007-log3， 检查要素：RDLINK(" + linkPid + ")");
 			
 			StringBuilder sb = new StringBuilder();
@@ -177,12 +177,15 @@ public class GLM23007 extends baseRule {
 				if (rdLink.changedFields().containsKey("kind")) {
 					kind = (int) rdLink.changedFields().get("kind");
 				}
-				if (kind == 13 || kind == 11) {
-					kind11And13LinkPidSet.add(rdLink.getPid());
-				} else if (kind == 10) {
-					kindOf10LinkPidSet.add(rdLink.getPid());
-				} else if (kind == 9) {
-					kindOf9LinkPidSet.add(rdLink.getPid());
+				if(row.status() != ObjStatus.DELETE)
+				{
+					if (kind == 13 || kind == 11) {
+						kind11And13LinkPidSet.add(rdLink.getPid());
+					} else if (kind == 10) {
+						kindOf10LinkPidSet.add(rdLink.getPid());
+					} else if (kind == 9) {
+						kindOf9LinkPidSet.add(rdLink.getPid());
+					}
 				}
 			} else if (row instanceof RdLinkForm) {
 				RdLinkForm form = (RdLinkForm) row;

@@ -78,7 +78,7 @@ public class FMA0410 extends BasicCheckRule {
 			}
 			
 			// ④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”
-			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ|ＮＯ:)+．+.*");
+			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ|ＮＯ：)+．+.*");
 			Matcher m6 = p6.matcher(standardName.getName());
 
 			if (m6.matches()) {

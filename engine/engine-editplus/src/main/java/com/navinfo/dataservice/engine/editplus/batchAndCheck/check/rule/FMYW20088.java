@@ -41,12 +41,12 @@ public class FMYW20088 extends BasicCheckRule {
 					name=name.toLowerCase();
 					if(nameTmp.isOriginName()&&(p1.matcher(name).matches()||p2.matcher(name).matches()
 							||p3.matcher(name).matches())){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方原始英文名单词中含有数字零");
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方原始英文名连续数字中含有欧");
 						return;
 					}
 					if(nameTmp.isStandardName()&&(p1.matcher(name).matches()||p2.matcher(name).matches()
 							||p3.matcher(name).matches())){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方标准化英文名单词中含有数字零");
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方标准化英文名连续数字中含有欧");
 						return;
 					}
 				}

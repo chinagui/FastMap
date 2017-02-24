@@ -1,16 +1,5 @@
 package com.navinfo.dataservice.dao.glm.selector.rd.node;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -20,6 +9,16 @@ import com.navinfo.dataservice.dao.glm.model.rd.node.RdNodeName;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import org.apache.log4j.Logger;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RdNodeSelector extends AbstractSelector {
 
@@ -34,12 +33,21 @@ public class RdNodeSelector extends AbstractSelector {
     }
 
     // 加载盲端节点
-    public List<RdNode> loadEndRdNodeByLinkPid(int linkPid, boolean isLock)
-            throws Exception {
+    public List<RdNode> loadEndRdNodeByLinkPid(int linkPid, boolean isLock) throws Exception {
 
         List<RdNode> nodes = new ArrayList<RdNode>();
 
-        String sql = "with tmp1 as  (select s_node_pid, e_node_pid from rd_link where link_pid = :1), tmp2 as  (select b.link_pid, s_node_pid     from rd_link b    where exists (select null from tmp1 a where a.s_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from rd_link b    where exists (select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b.u_record!=2) , tmp3 as  (select b.link_pid, s_node_pid as e_node_pid     from rd_link b    where exists (select null from tmp1 a where a.e_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from rd_link b    where exists (select null from tmp1 a where a.e_node_pid = b.e_node_pid) and b.u_record!=2), tmp4 as  (select s_node_pid pid from tmp2 group by s_node_pid having count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from tmp5) select *   from rd_node a  where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record!=2";
+        String sql = "with tmp1 as  (select s_node_pid, e_node_pid from rd_link where link_pid = :1), tmp2 as  " +
+                "(select b.link_pid, s_node_pid     from rd_link b    where exists (select null from tmp1 a where a" +
+                ".s_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from " +
+                "rd_link b    where exists (select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b" +
+                ".u_record!=2) , tmp3 as  (select b.link_pid, s_node_pid as e_node_pid     from rd_link b    where " +
+                "exists (select null from tmp1 a where a.e_node_pid = b.s_node_pid) and b.u_record!=2   union all   " +
+                "select b.link_pid, e_node_pid     from rd_link b    where exists (select null from tmp1 a where a" +
+                ".e_node_pid = b.e_node_pid) and b.u_record!=2), tmp4 as  (select s_node_pid pid from tmp2 group by " +
+                "s_node_pid having count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid " +
+                "having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from tmp5) select *   from " +
+                "rd_node a  where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record!=2";
 
         if (isLock) {
             sql += " for update nowait";
@@ -78,12 +86,12 @@ public class RdNodeSelector extends AbstractSelector {
         return nodes;
     }
 
-    public List<RdNode> loadRdNodeByLinkPid(int linkPid, boolean isLock)
-            throws Exception {
+    public List<RdNode> loadRdNodeByLinkPid(int linkPid, boolean isLock) throws Exception {
 
         List<RdNode> nodes = new ArrayList<RdNode>();
 
-        String sql = "select a.* from rd_node a where exists(select null from rd_link b where (b.e_node_pid=a.node_pid or b.s_node_pid=a.node_pid) and b.link_pid=:1)";
+        String sql = "select a.* from rd_node a where exists(select null from rd_link b where (b.e_node_pid=a" +
+                ".node_pid or b.s_node_pid=a.node_pid) and b.link_pid=:1)";
 
         if (isLock) {
             sql += " for update nowait";
@@ -123,8 +131,7 @@ public class RdNodeSelector extends AbstractSelector {
     }
 
 
-    public int loadRdLinkCountOnNode(int nodePid)
-            throws Exception {
+    public int loadRdLinkCountOnNode(int nodePid) throws Exception {
 
         String sql = "select count(1) count from rd_link a where a.s_node_pid=:1 or a.e_node_pid=:2";
 
@@ -163,12 +170,12 @@ public class RdNodeSelector extends AbstractSelector {
      * @return
      * @throws Exception
      */
-    public Map<Integer,String> loadRdNodeWays(String nodePids)
-            throws Exception {
+    public Map<Integer, String> loadRdNodeWays(String nodePids) throws Exception {
 
-        String sql = "SELECT NODE_PID, LISTAGG(FORM_OF_WAY, ',') WITHIN GROUP(ORDER BY NODE_PID) as form FROM RD_NODE_FORM WHERE NODE_PID IN ("+nodePids+") AND U_RECORD != 2 GROUP BY NODE_PID";
+        String sql = "SELECT NODE_PID, LISTAGG(FORM_OF_WAY, ',') WITHIN GROUP(ORDER BY NODE_PID) as form FROM " +
+                "RD_NODE_FORM WHERE NODE_PID IN (" + nodePids + ") AND U_RECORD != 2 GROUP BY NODE_PID";
 
-        Map<Integer,String> nodeFormMap = new HashMap<>();
+        Map<Integer, String> nodeFormMap = new HashMap<>();
 
         PreparedStatement pstmt = null;
 
@@ -180,9 +187,9 @@ public class RdNodeSelector extends AbstractSelector {
             resultSet = pstmt.executeQuery();
 
             while (resultSet.next()) {
-            	int nodePid = resultSet.getInt("node_pid");
-            	String forms = resultSet.getString("form");
-            	nodeFormMap.put(nodePid, forms);
+                int nodePid = resultSet.getInt("node_pid");
+                String forms = resultSet.getString("form");
+                nodeFormMap.put(nodePid, forms);
             }
         } catch (Exception e) {
 
@@ -207,8 +214,7 @@ public class RdNodeSelector extends AbstractSelector {
         // 获取Node对应的关联数据
         node.setMeshes(new AbstractSelector(RdNodeMesh.class, conn).loadRowsByParentId(node.getPid(), isLock));
 
-        List<IRow> names = new AbstractSelector(RdNodeName.class, conn).loadRowsByParentId(node.getPid(),
-                isLock);
+        List<IRow> names = new AbstractSelector(RdNodeName.class, conn).loadRowsByParentId(node.getPid(), isLock);
 
         for (IRow row : names) {
             row.setMesh(node.mesh());
@@ -216,8 +222,7 @@ public class RdNodeSelector extends AbstractSelector {
 
         node.setNames(names);
 
-        List<IRow> forms = new AbstractSelector(RdNodeForm.class, conn).loadRowsByParentId(node.getPid(),
-                isLock);
+        List<IRow> forms = new AbstractSelector(RdNodeForm.class, conn).loadRowsByParentId(node.getPid(), isLock);
 
         for (IRow row : forms) {
             row.setMesh(node.mesh());
@@ -273,13 +278,16 @@ public class RdNodeSelector extends AbstractSelector {
         if (nodePids.isEmpty())
             return result;
         StringBuffer sb = new StringBuffer();
-        sb.append("with tmp1 as (select rl.s_node_pid node_pid,count(rl.s_node_pid) num from rd_link rl where rl.s_node_pid in (");
+        sb.append("with tmp1 as (select rl.s_node_pid node_pid,count(rl.s_node_pid) num from rd_link rl where rl" +
+                ".s_node_pid in (");
         sb.append(StringUtils.getInteStr(nodePids));
-        sb.append(")group by rl.s_node_pid),");
-        sb.append("tmp2 as(select rl.e_node_pid node_pid,count(rl.e_node_pid) num from rd_link rl where rl.e_node_pid in (");
+        sb.append(") and rl.u_record <> 2 group by rl.s_node_pid),");
+        sb.append("tmp2 as(select rl.e_node_pid node_pid,count(rl.e_node_pid) num from rd_link rl where rl.e_node_pid" +
+                " in (");
         sb.append(StringUtils.getInteStr(nodePids));
-        sb.append(")group by rl.e_node_pid) ");
-        sb.append("select tmp1.node_pid node_pid,(tmp1.num + tmp2.num) num from tmp1 ,tmp2 where tmp1.node_pid = tmp2.node_pid ");
+        sb.append(") and rl.u_record <> 2 group by rl.e_node_pid) ");
+        sb.append("select tmp1.node_pid node_pid,(tmp1.num + tmp2.num) num from tmp1 ,tmp2 where tmp1.node_pid = " +
+                "tmp2.node_pid ");
         if (isLock) {
             sb.append("for update nowait");
         }

@@ -608,7 +608,7 @@ public class StaticsOperation {
 					
 					//月编
 					Map<String,Object> monthlyInfo = new HashMap<String,Object>();
-					monthlyInfo.put("totalMonthly", totalMonthly);
+					monthlyInfo.put("total", totalMonthly);
 					monthlyInfo.put("totalMonthly_Type6", totalMonthly_Type6);
 					monthlyInfo.put("totalMonthly_Type7", totalMonthly_Type7);
 					monthlyInfo.put("totalMonthly_Type8", totalMonthly_Type8);

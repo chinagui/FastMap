@@ -517,7 +517,7 @@ public class SearchProcess {
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
 							this.conn, inLinkPid, nodePid, outLinkPid);
-
+					
 					// 计算关系类型
 					int relationShipType = calLinkOperateUtils
 							.getRelationShipType(nodePid, outLinkPid);
@@ -525,6 +525,18 @@ public class SearchProcess {
 					JSONObject obj = new JSONObject();
 
 					obj.put("relationshipType", relationShipType);
+					
+					List<Integer> linkpids = new ArrayList<Integer>();
+
+					linkpids.add(inLinkPid);
+
+					linkpids.addAll(viaList);
+
+					linkpids.add(outLinkPid);
+
+					if (!calLinkOperateUtils.isConnect(linkpids, nodePid)) {
+						obj.put("errInfo", "所选进入线、进入点、退出线不连通");
+					}					
 
 					JSONArray viaArray = new JSONArray();
 

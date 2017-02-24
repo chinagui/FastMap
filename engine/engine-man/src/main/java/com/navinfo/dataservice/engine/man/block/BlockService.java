@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,6 +20,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
+import com.navinfo.dataservice.api.man.model.Program;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -32,6 +36,7 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageOperation;
 import com.navinfo.dataservice.engine.man.message.SendEmail;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userDevice.UserDeviceService;
@@ -41,6 +46,7 @@ import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -1639,4 +1645,60 @@ public class BlockService {
 		}
 	}
 
+	/**
+	 * @param blockId
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Object> query(int blockId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT B.BLOCK_ID,B.BLOCK_NAME,B.WORK_PROPERTY,B.CITY_ID");
+			sb.append(" FROM BLOCK B");
+			sb.append(" WHERE B.BLOCK_ID =" + blockId);
+			
+			log.info("query BLOCK sql:" + sb.toString());
+			String selectSql= sb.toString();
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> map = new HashMap<String, Object>();
+					if (rs.next()) {
+						map.put("blockId", rs.getInt("BLOCK_ID"));
+						map.put("blockName",rs.getString("BLOCK_NAME"));
+						map.put("workProperty",rs.getInt("WORK_PROPERTY"));
+						
+						int cityId = rs.getInt("CITY_ID");
+						
+						Program program;
+						try {
+							program = ProgramService.getInstance().getProgramByCityId(cityId);
+							map.put("programId", program.getProgramId());
+							map.put("programName", program.getName());
+							map.put("programType", program.getType());
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+					}
+					return map;
+				}
+
+			};
+			
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

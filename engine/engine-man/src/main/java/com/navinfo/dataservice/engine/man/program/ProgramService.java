@@ -1941,4 +1941,43 @@ public class ProgramService {
 		}
 		
 	}
+
+	/**
+	 * @param cityId
+	 * @return
+	 * @throws Exception 
+	 */
+	public Program getProgramByCityId(int cityId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT P.PROGRAM_ID,P.NAME,P.TYPE FROM PROGRAM P WHERE P.LATEST = 1 AND P.CITY_ID = " + cityId);
+			String selectSql= sb.toString();
+			log.info("getProgramByCityId sql :" + selectSql);
+
+			ResultSetHandler<Program> rsHandler = new ResultSetHandler<Program>() {
+				public Program handle(ResultSet rs) throws SQLException {
+					Program program = new Program();
+					program.setProgramId(0);
+					program.setName("");
+					program.setType(0);
+					if (rs.next()) {
+						program.setProgramId(rs.getInt("PROGRAM_ID"));
+						program.setName(rs.getString("NAME"));
+						program.setType(rs.getInt("TYPE"));
+					}
+					return program;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

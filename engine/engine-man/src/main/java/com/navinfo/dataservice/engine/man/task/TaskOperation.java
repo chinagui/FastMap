@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -2278,6 +2279,38 @@ public class TaskOperation {
 				}
 			};
 			List<Subtask> list = run.query(conn, sb.toString(), rsh);
+			return list;
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param blockId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static int getRegionIdByBlockId(Integer blockId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT DISTINCT G.REGION_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId); 
+			log.info("getRegionIdByBlockId SQL："+sb.toString());
+			ResultSetHandler<Integer> rsh = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					int regionId = 0;
+					if(rs.next()){
+						regionId = 	rs.getInt("REGION_ID");
+					}
+					return regionId;
+				}
+			};
+			Integer list = run.query(conn, sb.toString(), rsh);
 			return list;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

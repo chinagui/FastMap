@@ -58,11 +58,11 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		Connection conn=DBConnector.getInstance().getManConnection();
 		List<String> columnNameList=new ArrayList<String>();
 		columnNameList.add("ID");
-		List<Map<String, Object>> dataList = LoadAndCreateTab.readTab(filePathString, columnNameList);
+		/*List<Map<String, Object>> dataList = LoadAndCreateTab.readTab(filePathString, columnNameList);
 		for(int i=0;i<dataList.size();i++){
 			Map<String, Object> tmp=dataList.get(i);
 			tmp.put("ID", i+1);
-		}
+		}*/
 		//ImportOracle.writeOracle(conn, "SUBTASK_REFER", dataList);
 		DbUtils.commitAndCloseQuietly(conn);
 		System.out.println("end"); 

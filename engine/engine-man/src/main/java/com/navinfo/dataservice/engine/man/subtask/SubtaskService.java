@@ -1570,21 +1570,30 @@ public class SubtaskService {
 	public String closeSubtask(Connection conn, Subtask subtask, long userId) throws Exception {
 		//修改子任务状态
 		SubtaskOperation.closeBySubtaskId(conn, subtask.getSubtaskId());
+		log.info("=================closeBySubtaskId==========================");
 
 		//动态调整子任务范围
 		//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
 		if(subtask.getStage()==1){
 			//获取规划外GRID信息
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-			
+			log.info("=================getGridIdMapBySubtaskFromLog==========================");
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
+			log.info("=================insertSubtaskGridMapping==========================");
+
 			//调整任务范围
 			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
+			log.info("=================insertTaskGridMapping==========================");
+
 			//调整区域子任务范围
 			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
+			log.info("=================getSubTaskListByType==========================");
+
 			for(Subtask subtaskType4:subtaskList){
 				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				log.info("=================insertSubtaskGridMapping==========================");
+
 			}
 		}
 		
@@ -1600,6 +1609,8 @@ public class SubtaskService {
 				groupIdList.add((long)subtask.getExeGroupId());
 			}
 			Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
+			log.info("=================getLeaderIdByGroupId==========================");
+
 			/*采集/日编/月编子任务关闭
 			* 分配的作业员
 			* 采集/日编/月编子任务关闭：XXX(子任务名称)已关闭，请关注*/
@@ -1650,6 +1661,7 @@ public class SubtaskService {
 		                }
 					}
 				}
+				log.info("=================sendMessage==========================");
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

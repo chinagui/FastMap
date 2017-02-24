@@ -1874,6 +1874,7 @@ public class TaskService {
 	 */
 	public int createCmsTask(Connection conn,int phaseId) throws Exception{
 		try{
+			log.info("start createCmsTask"+phaseId);
 			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
 			conn.commit();
 			if(i==0){return 0;}
@@ -1915,9 +1916,10 @@ public class TaskService {
 			//result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
 			JSONObject res=JSONObject.fromObject(result);
 			boolean success=(boolean)res.get("success");
+			log.info("end createCmsTask"+phaseId);
 			if(success){return 2;}
 			else{
-				log.error(res.get("msg"));
+				log.error("cms error msg"+res.get("msg"));
 				return 3;}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

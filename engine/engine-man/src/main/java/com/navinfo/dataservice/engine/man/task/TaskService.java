@@ -317,6 +317,7 @@ public class TaskService {
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+				
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}
@@ -387,7 +388,7 @@ public class TaskService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID");
 			sb.append(" FROM TASK T,USER_GROUP UG");
-			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
 			String selectSql= sb.toString();
 

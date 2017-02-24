@@ -324,6 +324,7 @@ public class TaskService {
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+				
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}
@@ -331,6 +332,7 @@ public class TaskService {
 					createCmsProgress(conn,taskId,2);
 					createCmsProgress(conn,taskId,3);
 					createCmsProgress(conn,taskId,4);
+					conn.commit();
 					phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
 					for(Map<String, Integer> phaseTmp:phaseList){
@@ -394,7 +396,7 @@ public class TaskService {
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,T.BLOCK_ID");
 			sb.append(" FROM TASK T,USER_GROUP UG");
-			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
 			String selectSql= sb.toString();
 
@@ -1549,7 +1551,7 @@ public class TaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT Phase_id，PHASE,STATUS FROM TASK_CMS_PROGRESS WHERE TASK_ID= " + taskId;
-			
+			log.info(selectSql);
 			ResultSetHandler<List<Map<String,Integer>>> rsHandler = new ResultSetHandler<List<Map<String,Integer>>>() {
 				public List<Map<String,Integer>> handle(ResultSet rs) throws SQLException {
 					List<Map<String,Integer>> arrayList = new ArrayList<Map<String,Integer>>();
@@ -1835,6 +1837,7 @@ public class TaskService {
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
 					+ "   AND B.CITY_ID = C.CITY_ID";
+			log.info(selectSql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result=new HashMap<String, Object>();

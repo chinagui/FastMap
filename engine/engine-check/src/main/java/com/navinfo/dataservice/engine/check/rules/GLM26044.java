@@ -156,49 +156,50 @@ public class GLM26044 extends baseRule{
 	 */
 	private void checkRdLinkForm(RdLinkForm rdLinkForm) throws Exception {
 		//link属性为路口内link或环岛
+		int formOfWay = rdLinkForm.getFormOfWay();
 		if(rdLinkForm.changedFields().containsKey("formOfWay")){
-			int formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
-			if(formOfWay==33){
-				StringBuilder sb = new StringBuilder();
+			formOfWay = Integer.parseInt(rdLinkForm.changedFields().get("formOfWay").toString()) ;
+		}
+		if(formOfWay==33){
+			StringBuilder sb = new StringBuilder();
 
-				sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
-				sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
-				sb.append(" AND RLF.U_RECORD <> 2");
-				sb.append(" AND RCL.U_RECORD <> 2");
-				sb.append(" AND RLF.LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append("SELECT '路口内link属性不能为环岛或特殊交通类型' FROM RD_CROSS_LINK RCL,RD_LINK_FORM RLF");
+			sb.append(" WHERE RCL.LINK_PID = RLF.LINK_PID");
+			sb.append(" AND RLF.U_RECORD <> 2");
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND RLF.LINK_PID = " + rdLinkForm.getLinkPid());
 
-				String sql = sb.toString();
-				log.info("RdLinkForm后检查GLM26044:" + sql);
+			String sql = sb.toString();
+			log.info("RdLinkForm后检查GLM26044:" + sql);
 
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-				if(resultList.size()>0){
-					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-					this.setCheckResult("", target, 0,resultList.get(0).toString());
-				}
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("", target, 0,resultList.get(0).toString());
 			}
-			
-			else if(rdLinkForm.getFormOfWay() == 50){
-				StringBuilder sb = new StringBuilder();
+		}
+		
+		if(formOfWay == 50){
+			StringBuilder sb = new StringBuilder();
 
-				sb.append("SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
-				sb.append(" WHERE RCL.LINK_PID = " + rdLinkForm.getLinkPid());
-				sb.append(" AND RCL.U_RECORD <> 2");
-				sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RCL.LINK_PID AND RLF.FORM_OF_WAY = 50 AND RLF.U_RECORD <> 2)");
+			sb.append("SELECT '路口内link不含交叉口内link属性' FROM RD_CROSS_LINK RCL");
+			sb.append(" WHERE RCL.LINK_PID = " + rdLinkForm.getLinkPid());
+			sb.append(" AND RCL.U_RECORD <> 2");
+			sb.append(" AND NOT EXISTS (SELECT 1 FROM RD_LINK_FORM RLF WHERE RLF.LINK_PID = RCL.LINK_PID AND RLF.FORM_OF_WAY = 50 AND RLF.U_RECORD <> 2)");
 
-				String sql = sb.toString();
-				log.info("RdLinkForm后检查GLM26044:" + sql);
+			String sql = sb.toString();
+			log.info("RdLinkForm后检查GLM26044:" + sql);
 
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
 
-				if(resultList.size()>0){
-					String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
-					this.setCheckResult("", target, 0,resultList.get(0).toString());
-				}
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLinkForm.getLinkPid() + "]";
+				this.setCheckResult("路口内link不含交叉口内link属性", target, 0,resultList.get(0).toString());
 			}
 		}
 	}

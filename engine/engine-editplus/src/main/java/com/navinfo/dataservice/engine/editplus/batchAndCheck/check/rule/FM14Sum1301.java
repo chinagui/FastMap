@@ -55,20 +55,22 @@ public class FM14Sum1301 extends BasicCheckRule {
 						List<Integer> oilTypes = StringUtils.getIntegerListByStr(oilType);
 						String gasType = "3,4,5,7,8,9";
 						List<Integer> gasTypes = StringUtils.getIntegerListByStr(gasType);
-						boolean oilFlag = true;
-						boolean gasFlag = true;
+						boolean oilFlag = false;
+						boolean gasFlag = false;
 						String[] fuelTypes = fuelType.split("\\|");
 						for (String type : fuelTypes) {
 							int typeStr = Integer.valueOf(type);
 							//加油站
-							if(!oilTypes.contains(typeStr)){oilFlag = false;}
+							if((!oilTypes.contains(typeStr)&&"230215".equals(kindCode))
+									||(oilTypes.contains(typeStr)&&!"230215".equals(kindCode)&&!"230216".equals(kindCode))){oilFlag = true;}
 							//加气站
-							if(!gasTypes.contains(typeStr)){gasFlag = false;}
+							if((!gasTypes.contains(typeStr)&&"230216".equals(kindCode))
+									||(gasTypes.contains(typeStr)&&!"230216".equals(kindCode)&&!"230215".equals(kindCode))){gasFlag = true;}
 						}
-						if(oilFlag&&!"230215".equals(kindCode)){
+						if(oilFlag){
 							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "不允许采集加油站深度信息的设施采集了加油站深度信息");
 						}
-						if(gasFlag&&!"230216".equals(kindCode)){
+						if(gasFlag){
 							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "不允许采集加气站深度信息的设施采集了加气站深度信息");
 						}
 					}

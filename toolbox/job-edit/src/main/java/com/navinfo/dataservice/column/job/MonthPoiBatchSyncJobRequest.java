@@ -14,6 +14,7 @@ public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 
 
 	private int taskId;
+	private long userId;
 
 	public int getTaskId() {
 		return taskId;
@@ -51,6 +52,20 @@ public class MonthPoiBatchSyncJobRequest extends AbstractJobRequest {
 	public void validate() throws JobException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 * @return the userId
+	 */
+	public long getUserId() {
+		return userId;
+	}
+
+	/**
+	 * @param userId the userId to set
+	 */
+	public void setUserId(long userId) {
+		this.userId = userId;
 	}
 
 

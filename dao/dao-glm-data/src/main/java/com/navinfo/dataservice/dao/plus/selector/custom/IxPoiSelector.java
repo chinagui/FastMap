@@ -48,24 +48,24 @@ public class IxPoiSelector {
 		if(fids==null|fids.size()==0)return null;
 
 		if(fids.size()>1000){
-			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?))) AND U_RECORD <>2";
 			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(fids, ","));
 			return new QueryRunner().query(conn, sql, new FidPidSelHandler(),clob);
 		}else{
-			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN ('"+StringUtils.join(fids, "','")+"')";
+			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN ('"+StringUtils.join(fids, "','")+"') AND U_RECORD <>2";
 			return new QueryRunner().query(conn,sql,new FidPidSelHandler());
 		}
 	}
 	public static Map<Long,Long> getAdminIdByPids(Connection conn,Collection<Long> pids)throws Exception{
 		if(pids!=null&&pids.size()>0){
 			if(pids.size()>1000){
-				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) AND T.U_RECORD <>2 AND P.U_RECORD <>2";
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, StringUtils.join(pids, ","));
 				return new QueryRunner().query(conn, sql, new PoiAdminIdSelHandler(),clob);
 			}else{
-				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN ("+StringUtils.join(pids, ",")+")";
+				String sql= "SELECT T.PID,P.ADMIN_ID FROM IX_POI T,AD_ADMIN P WHERE T.REGION_ID=P.REGION_ID AND T.PID IN ("+StringUtils.join(pids, ",")+") AND T.U_RECORD <>2 AND P.U_RECORD <>2";
 				return new QueryRunner().query(conn,sql,new PoiAdminIdSelHandler());
 			}
 		}
@@ -86,14 +86,16 @@ public class IxPoiSelector {
 				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
 						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I "
 						+ "WHERE C.GROUP_ID=P.GROUP_ID AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN  "
-						+ "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+						+ "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 ";
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, StringUtils.join(pids, ","));
 				return new QueryRunner().query(conn, sql, new PoiParentFidSelHandler(),clob);
 			}else{
 				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
-						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I WHERE C.GROUP_ID=P.GROUP_ID "
-						+ "AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN ("+StringUtils.join(pids, ",")+")";
+						+ " FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I WHERE C.GROUP_ID=P.GROUP_ID "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 "
+						+ " AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN ("+StringUtils.join(pids, ",")+")";
 				return new QueryRunner().query(conn,sql,new PoiParentFidSelHandler());
 			}
 		}
@@ -108,6 +110,7 @@ public class IxPoiSelector {
 			String sql = "SELECT DISTINCT IPC.CHILD_POI_PID"
 					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
 					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.U_RECORD <>2 AND IPP.U_RECORD <>2 "
 					+ " AND IPP.PARENT_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
 			
 			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {

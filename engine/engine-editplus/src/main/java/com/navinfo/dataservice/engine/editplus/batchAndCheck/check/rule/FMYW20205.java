@@ -31,7 +31,7 @@ public class FMYW20205 extends BasicCheckRule {
 			for (IxPoiChargingplot ixPoiChargingPlot : ixPoiChargingPlots) {
 				String plugType = ixPoiChargingPlot.getPlugType();
 				if(plugType != null){
-					String[] types = plugType.split("|");
+					String[] types = plugType.split("\\|");
 					if(types.length > 4){
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 					}

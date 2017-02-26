@@ -11,6 +11,8 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.commons.util.DoubleUtil;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 /** 
 * @ClassName: CompGridUtil 
@@ -468,4 +470,26 @@ public class CompGridUtil {
 		return true;
 	}
 
+	/**
+	 * grid转wkt
+	 * @param gridId
+	 * @return
+	 * @throws ParseException 
+	 */
+	public static Geometry grids2Jts(Set<String> grids) {
+		if(grids==null)return null;
+		Geometry geometry = null;
+		for(String grid:grids){
+			double[] rect = grid2Rect(grid);
+			Geometry geo = JtsGeometryConvertor.convert(rect);
+			
+			if(geometry == null){
+				geometry = geo;
+			}
+			else{
+				geometry = geometry.union(geo);
+			}
+		}
+		return geometry;
+	}
 }

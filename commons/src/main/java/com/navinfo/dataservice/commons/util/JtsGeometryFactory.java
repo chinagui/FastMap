@@ -13,6 +13,7 @@ import com.vividsolutions.jts.geom.Point;
 import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
+import com.vividsolutions.jts.io.WKTWriter;
 
 /** 
  * 添加一个jts Geometry 的工具类
@@ -25,6 +26,7 @@ import com.vividsolutions.jts.io.WKTReader;
 public class JtsGeometryFactory {
 	private static final GeometryFactory factory = new GeometryFactory();
 	private static final WKTReader reader = new WKTReader( factory );
+	private static final WKTWriter wrt = new WKTWriter();
 	public static MultiPolygon createMultiPolygon(Polygon[] polygons){
 		return factory.createMultiPolygon(polygons);
 	}
@@ -58,5 +60,9 @@ public class JtsGeometryFactory {
 	}
     public static Polygon createPolygon(Coordinate[] coordinates){
     	return factory.createPolygon(coordinates);
+    }
+    public static String writeWKT(Geometry geo){
+    	if(geo==null)return null;
+    	return wrt.write(geo);
     }
 }

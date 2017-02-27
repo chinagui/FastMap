@@ -838,8 +838,9 @@ public class TaskService {
 				if ("type".equals(key)) {
 					conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
 				}
+				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
 				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+					conditionSql+=" AND TASK_LIST.STATUS=1 AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				if("planStatus".equals(key)){
 					int planStatus = condition.getInt(key);

@@ -5,6 +5,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -34,14 +36,19 @@ public class BkFaceExporter {
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
-		String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+//		String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
+		//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据
+		String sql = " select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
+					+ " union all "
+					+ " select a.face_pid,a.geometry,a.mesh_id,a.kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) ";
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
 
 		stmt2.setClob(1, clob);
+		stmt2.setClob(2, clob);
 		
 		ResultSet resultSet = stmt2.executeQuery();
 
@@ -49,12 +56,19 @@ public class BkFaceExporter {
 
 		int count = 0;
 
+		//*******zl 2017.02.21  去重pid 重复的结果******
+		List<Integer> pids = new ArrayList<Integer>();
+		
 		while (resultSet.next()) {
 
 			JSONObject json = enclosingBkFace(resultSet, operateDate);
 
 			int pid = json.getInt("pid");
 
+			if(!pids.contains(pid)){
+				
+				pids.add(pid);
+			
 			prep.setInt(1, pid);
 
 			prep.setString(2, json.getString("geometry"));
@@ -77,6 +91,8 @@ public class BkFaceExporter {
 
 			if (count % 5000 == 0) {
 				sqliteConn.commit();
+			}
+			
 			}
 		}
 

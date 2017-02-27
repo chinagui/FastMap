@@ -71,6 +71,13 @@ public class Operation implements IOperation {
 					String objStatus = conditionObj.getString("objStatus");
 					if (ObjStatus.INSERT.toString().equals(objStatus)) {
 						condition = new RdGateCondition();
+						if(conditionObj.containsKey("validObj")){
+							condition.setValidObj(conditionObj.getInt("validObj"));
+						}
+						if(conditionObj.containsKey("timeDomain")){
+							condition.setTimeDomain(conditionObj.getString("timeDomain"));
+						}
+						
 						condition.setPid(this.command.getPid());
 						result.insertObject(condition, ObjStatus.INSERT, condition.getPid());
 					} else {

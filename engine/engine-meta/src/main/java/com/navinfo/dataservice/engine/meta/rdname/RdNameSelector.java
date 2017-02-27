@@ -233,7 +233,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
-			int flag = 0;//params.getInt("flag");//1是任务查，0是全库查
+			int flag = params.getInt("flag");//1是任务查，0是全库查
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
 			
 			
@@ -326,7 +326,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			System.out.println(sql.toString());
+			System.out.println("rdname/websearch sql : " +sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0) {
@@ -428,22 +428,22 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 	 */
 	private JSONObject result2Json(ResultSet resultSet,Map<String,String> adminMap) throws Exception{
 		JSONObject rdNameObj = new JSONObject();
-		try {
+		try {//String c = a == null ? "" : a;
 			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
 			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
-			rdNameObj.put("langCode", resultSet.getString("LANG_CODE"));
-			rdNameObj.put("name", resultSet.getString("NAME"));
-			rdNameObj.put("type", resultSet.getString("TYPE"));
-			rdNameObj.put("base", resultSet.getString("BASE"));
-			rdNameObj.put("prefix", resultSet.getString("PREFIX"));
-			rdNameObj.put("infix", resultSet.getString("INFIX"));
-			rdNameObj.put("suffix", resultSet.getString("SUFFIX"));
-			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC"));
-			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC"));
-			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC"));
-			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC"));
-			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC"));
-			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC"));
+			rdNameObj.put("langCode", resultSet.getString("LANG_CODE") == null ? "" : resultSet.getString("LANG_CODE"));
+			rdNameObj.put("name", resultSet.getString("NAME")  == null ? "" : resultSet.getString("NAME"));
+			rdNameObj.put("type", resultSet.getString("TYPE")  == null ? "" : resultSet.getString("TYPE"));
+			rdNameObj.put("base", resultSet.getString("BASE")  == null ? "" : resultSet.getString("BASE"));
+			rdNameObj.put("prefix", resultSet.getString("PREFIX")  == null ? "" : resultSet.getString("PREFIX"));
+			rdNameObj.put("infix", resultSet.getString("INFIX")  == null ? "" : resultSet.getString("INFIX"));
+			rdNameObj.put("suffix", resultSet.getString("SUFFIX")  == null ? "" : resultSet.getString("SUFFIX"));
+			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC")  == null ? "" : resultSet.getString("NAME_PHONETIC"));
+			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC")  == null ? "" : resultSet.getString("TYPE_PHONETIC"));
+			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC")  == null ? "" : resultSet.getString("BASE_PHONETIC"));
+			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC")  == null ? "" : resultSet.getString("PREFIX_PHONETIC"));
+			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC")  == null ? "" : resultSet.getString("INFIX_PHONETIC"));
+			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC")  == null ? "" : resultSet.getString("SUFFIX_PHONETIC"));
 			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
 			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
 			
@@ -459,11 +459,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			}
 			
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
-			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE"));
-			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME"));
+			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
+			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
+			rdNameObj.put("tipsId", resultSet.getString("tips_id")  == null ? "" : resultSet.getString("tips_id"));
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
-			rdNameObj.put("memo", resultSet.getString("MEMO"));
+			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
 //			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
 			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){

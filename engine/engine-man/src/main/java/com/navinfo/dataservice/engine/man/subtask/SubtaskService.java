@@ -155,6 +155,7 @@ public class SubtaskService {
 				Subtask dailyBean = createSubtaskBean(userId,dataJson);
 				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
 				dailyBean.setTaskId(taskId);
+				dailyBean.setStage(1);
 				dailyBean.setName(selfRecordName);
 				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);
@@ -162,6 +163,7 @@ public class SubtaskService {
 				//创建质检子任务 subtask	
 				createSubtask(dailyBean);	
 			}
+
 			
 			//根据参数生成subtask bean
 			Subtask bean = createSubtaskBean(userId,dataJson);
@@ -230,7 +232,6 @@ public class SubtaskService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-
 			String querySql = "select "
 					+ "s.subtask_id"
 					+ ",s.name"
@@ -247,7 +248,6 @@ public class SubtaskService {
 					+ wkt
 					+ "',8307)"
 					+ ", 0.000005) ='TRUE'";
-
 			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -289,11 +289,8 @@ public class SubtaskService {
 					}
 					return list;
 				}
-
 			};
-
 			return run.query(conn, querySql, rsHandler);
-
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

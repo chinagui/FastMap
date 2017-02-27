@@ -42,14 +42,17 @@ public class FMBAT20147 extends BasicBatchRule {
 			for (IxPoiName poiName:names) {
 				if (poiName.getNameClass()==1&&poiName.getNameType()==2&&poiName.getLangCode().equals("ENG")) {
 					officialEngName = poiName;
-				}
-				if (poiName.getNameClass()==1&&poiName.getNameType()==1&&poiName.getLangCode().equals("ENG")) {
-					standarEngName = poiName;
+					break;
 				}
 			}
 			if (officialEngName != null) {
-				if (officialEngName.getName().length()>35) {
-					transName(standarEngName,officialEngName.getName(),poiObj,officialEngName);
+				standarEngName = poiObj.getOfficeStandardEngName(officialEngName.getNameGroupid());
+				String officialNameStr = officialEngName.getName();
+				if (officialNameStr == null) {
+					return;
+				}
+				if (officialNameStr.length()>35) {
+					transName(standarEngName,officialNameStr,poiObj,officialEngName);
 				}
 			}
 		}

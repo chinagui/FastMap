@@ -1751,9 +1751,9 @@ public class SubtaskService {
 						}
 					}
 				}
-				if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
+				//if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
 			}
-			
+			if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
 			
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;

@@ -6,6 +6,7 @@ import java.util.List;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
@@ -58,7 +59,7 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				}
 			}
 			
-			if (standardName.isEmpty()) {
+			if (StringUtils.isEmpty(standardName)) {
 				standardName = originalName;
 				IxPoiName newStandardName = new IxPoiName();
 				newStandardName.setNameClass(1);

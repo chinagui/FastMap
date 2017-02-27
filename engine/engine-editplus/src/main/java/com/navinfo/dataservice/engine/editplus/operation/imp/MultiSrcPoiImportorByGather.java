@@ -408,6 +408,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							if(!JSONUtils.isNull(jso.get("priority"))){
 								ixPoiContact.setPriority(jso.getInt("priority"));
 							}
+							if(!JSONUtils.isNull(jso.get("rowId"))){
+								ixPoiContact.setRowId(jso.getString("rowId").toUpperCase());
+							}
 							
 						}
 					}
@@ -483,7 +486,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
 							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId").toUpperCase());
 						}
 						
 					}
@@ -516,6 +519,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					gasStation.setPayment(gasObj.getString("payment"));
 					gasStation.setService(gasObj.getString("service"));
 					gasStation.setOpenHour(gasObj.getString("openHour"));
+					if(gasObj.containsKey("rowId") && !JSONUtils.isNull(gasObj.get("rowId"))){
+						gasStation.setRowId(gasObj.getString("rowId").toUpperCase());
+					}
 				}
 				// 停车场
 				if (!JSONUtils.isNull(jo.get("parkings")) && jo.getJSONObject("parkings").size() > 0) {
@@ -540,6 +546,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					parkings.setHandicapNum(parkingsObj.getInt("handicapNum"));
 					parkings.setMiniNum(parkingsObj.getInt("miniNum"));
 					parkings.setVipNum(parkingsObj.getInt("vipNum"));
+					if(parkingsObj.containsKey("rowId") && !JSONUtils.isNull(parkingsObj.get("rowId"))){
+						parkings.setRowId(parkingsObj.getString("rowId").toUpperCase());
+					}
 				}
 				// 酒店
 				if (!JSONUtils.isNull(jo.get("hotel")) && jo.getJSONObject("hotel").size() > 0) {
@@ -558,6 +567,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					hotel.setParking(hotelObj.getInt("parking"));
 					hotel.setLongDescription(hotelObj.getString("description"));
 					hotel.setOpenHour(hotelObj.getString("openHour"));
+					hotel.setRowId(hotelObj.getString("rowId").toUpperCase());
 				}
 				
 				// 餐馆
@@ -570,6 +580,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					foodtypes.setAvgCost(foodtypesObj.getInt("avgCost"));
 					foodtypes.setParking(foodtypesObj.getInt("parking"));
 					foodtypes.setOpenHour(foodtypesObj.getString("openHour"));
+					if(foodtypesObj.containsKey("rowId") && !JSONUtils.isNull(foodtypesObj.get("rowId"))){
+						foodtypes.setRowId(foodtypesObj.getString("rowId").toUpperCase());
+					}
 				}
 				// 充电站
 				if (!JSONUtils.isNull(jo.get("chargingStation")) && jo.getJSONObject("chargingStation").size() > 0) {
@@ -585,6 +598,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					chargingStation.setParkingFees(chargingStationObj.getInt("parkingFees"));
 					chargingStation.setParkingInfo(chargingStationObj.getString("parkingInfo"));
 					chargingStation.setAvailableState(chargingStationObj.getInt("availableState"));
+					if(chargingStationObj.containsKey("rowId") && !JSONUtils.isNull(chargingStationObj.get("rowId"))){
+						chargingStation.setRowId(chargingStationObj.getString("rowId").toUpperCase());
+					}
 				}
 				
 				// 充电桩
@@ -614,6 +630,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 						chargingPole.setFloor(chargingPoleObj.getInt("floor"));
 						chargingPole.setLocationType(chargingPoleObj.getInt("locationType"));
 						chargingPole.setPayment(chargingPoleObj.getString("payment"));
+						if(chargingPoleObj.containsKey("rowId") && !JSONUtils.isNull(chargingPoleObj.get("rowId"))){
+							chargingPole.setRowId(chargingPoleObj.getString("rowId").toUpperCase());
+						}
 					}
 				}
 
@@ -838,7 +857,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//改酒店
 				//if(!JSONUtils.isNull(jo.get("hotel")) && jo.getJSONObject("hotel").size() > 0){
-				if(jo.containsKey("hotels")){
+				if(jo.containsKey("hotel")){
 					this.usdateIxPoiHotel(poi, jo, pid);
 				}
 				//改餐馆
@@ -920,7 +939,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					JSONObject newChildrenObj = new JSONObject();
 					newChildrenObj.put("childPoiPid", relateChildrenObj.getInt("childPid"));
 					newChildrenObj.put("relationType", relateChildrenObj.getInt("type"));
-					newChildrenObj.put("rowId", relateChildrenObj.getString("rowId"));
+					newChildrenObj.put("rowId", relateChildrenObj.getString("rowId").toUpperCase());
 					int ret;
 					try {
 						ret = getDifferent(oldArray,newChildrenObj);
@@ -938,7 +957,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 								IxPoiChildren newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
 								newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 								newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-								newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+								newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId").toUpperCase());
 							}
 							
 							
@@ -990,7 +1009,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							newIxPoiChildren = poi.createIxPoiChildren(ixPoiParent.getGroupId());
 							newIxPoiChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 							newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
-							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId"));
+							newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId").toUpperCase());
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -1017,26 +1036,65 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		List<IxPoiGasstation> gasList = poi.getIxPoiGasstations();
 		JSONObject gasObj = jo.getJSONObject("gasStation");
 		JSONArray oldArray = new JSONArray();
-		if(gasList != null && gasList.size() > 0){
-		if (gasObj != null && !gasObj.isEmpty()) {
-			for (IxPoiGasstation oldGas : gasList) {
-				JSONObject oldPoiGasObj = ((ISerializable) oldGas).Serialize(null);
-				oldArray.add(oldPoiGasObj);
+		if(gasList != null && gasList.size() > 0){//表里存在数据
+			if (gasObj != null && !gasObj.isEmpty()) {//上传文件中有数据
+				for (IxPoiGasstation oldGas : gasList) {
+					JSONObject oldPoiGasObj = ((ISerializable) oldGas).Serialize(null);
+					oldArray.add(oldPoiGasObj);
+				}
+				JSONObject newGasStation = new JSONObject();
+				newGasStation.put("poiPid", pid);
+				newGasStation.put("serviceProv", gasObj.getString("servicePro"));
+				newGasStation.put("fuelType", gasObj.getString("fuelType"));
+				newGasStation.put("oilType", gasObj.getString("oilType"));
+				newGasStation.put("egType", gasObj.getString("egType"));
+				newGasStation.put("mgType", gasObj.getString("mgType"));
+				newGasStation.put("payment", gasObj.getString("payment"));
+				newGasStation.put("service", gasObj.getString("service"));
+				newGasStation.put("openHour", gasObj.getString("openHour"));
+				newGasStation.put("rowId", gasObj.getString("rowId").toUpperCase());
+				// 差分,区分新增修改
+				int ret = getDifferent(oldArray, newGasStation);
+				if (ret == 0) {//新增
+					IxPoiGasstation newIxPoiGasstation = poi.createIxPoiGasstation();
+					newIxPoiGasstation.setPoiPid(pid);
+					newIxPoiGasstation.setServiceProv(gasObj.getString("servicePro"));
+					newIxPoiGasstation.setFuelType(gasObj.getString("fuelType"));
+					newIxPoiGasstation.setOilType(gasObj.getString("oilType"));
+					newIxPoiGasstation.setEgType(gasObj.getString("egType"));
+					newIxPoiGasstation.setMgType(gasObj.getString("mgType"));
+					newIxPoiGasstation.setPayment(gasObj.getString("payment"));
+					newIxPoiGasstation.setService(gasObj.getString("service"));
+					newIxPoiGasstation.setOpenHour(gasObj.getString("openHour"));
+					newIxPoiGasstation.setRowId(gasObj.getString("rowId").toUpperCase());
+					
+					// 鲜度验证
+					//freshFlag = false;
+				} else if (ret == 1) {//修改
+					for (IxPoiGasstation oldGas : gasList) {
+						if (oldGas.getRowId().equals(gasObj.getString("rowId").toUpperCase())) {
+							oldGas.setPoiPid(pid);
+							oldGas.setServiceProv(gasObj.getString("servicePro"));
+							oldGas.setFuelType(gasObj.getString("fuelType"));
+							oldGas.setOilType(gasObj.getString("oilType"));
+							oldGas.setEgType(gasObj.getString("egType"));
+							oldGas.setMgType(gasObj.getString("mgType"));
+							oldGas.setPayment(gasObj.getString("payment"));
+							oldGas.setService(gasObj.getString("service"));
+							oldGas.setOpenHour(gasObj.getString("openHour"));
+							
+							break;
+						}
+					}
+				}
+			}else{//上传文件里没数据 删除
+				// 删除的数据
+				for (IxPoiGasstation oldGas : gasList) {
+					poi.deleteSubrow(oldGas);
+				}
 			}
-			JSONObject newGasStation = new JSONObject();
-			newGasStation.put("poiPid", pid);
-			newGasStation.put("serviceProv", gasObj.getString("servicePro"));
-			newGasStation.put("fuelType", gasObj.getString("fuelType"));
-			newGasStation.put("oilType", gasObj.getString("oilType"));
-			newGasStation.put("egType", gasObj.getString("egType"));
-			newGasStation.put("mgType", gasObj.getString("mgType"));
-			newGasStation.put("payment", gasObj.getString("payment"));
-			newGasStation.put("service", gasObj.getString("service"));
-			newGasStation.put("openHour", gasObj.getString("openHour"));
-			newGasStation.put("rowId", gasObj.getString("rowId").toUpperCase());
-			// 差分,区分新增修改
-			int ret = getDifferent(oldArray, newGasStation);
-			if (ret == 0) {//新增
+		}else{//表里原本不存在数据
+			if (gasObj != null && !gasObj.isEmpty()) {
 				IxPoiGasstation newIxPoiGasstation = poi.createIxPoiGasstation();
 				newIxPoiGasstation.setPoiPid(pid);
 				newIxPoiGasstation.setServiceProv(gasObj.getString("servicePro"));
@@ -1048,51 +1106,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				newIxPoiGasstation.setService(gasObj.getString("service"));
 				newIxPoiGasstation.setOpenHour(gasObj.getString("openHour"));
 				newIxPoiGasstation.setRowId(gasObj.getString("rowId").toUpperCase());
-				
-				// 鲜度验证
-				//freshFlag = false;
-			} else if (ret == 1) {//修改
-				for (IxPoiGasstation oldGas : gasList) {
-					if (oldGas.getRowId().equals(gasObj.getString("rowId").toUpperCase())) {
-						oldGas.setPoiPid(pid);
-						oldGas.setServiceProv(gasObj.getString("servicePro"));
-						oldGas.setFuelType(gasObj.getString("fuelType"));
-						oldGas.setOilType(gasObj.getString("oilType"));
-						oldGas.setEgType(gasObj.getString("egType"));
-						oldGas.setMgType(gasObj.getString("mgType"));
-						oldGas.setPayment(gasObj.getString("payment"));
-						oldGas.setService(gasObj.getString("service"));
-						oldGas.setOpenHour(gasObj.getString("openHour"));
-						
-						break;
-					}
 				}
-			}
-		}{
-			// 删除的数据
-			for (IxPoiGasstation oldGas : gasList) {
-				poi.deleteSubrow(oldGas);
-			}
-		}
-		
-	}else{
-		if (gasObj != null && !gasObj.isEmpty()) {
-		IxPoiGasstation newIxPoiGasstation = poi.createIxPoiGasstation();
-		newIxPoiGasstation.setPoiPid(pid);
-		newIxPoiGasstation.setServiceProv(gasObj.getString("servicePro"));
-		newIxPoiGasstation.setFuelType(gasObj.getString("fuelType"));
-		newIxPoiGasstation.setOilType(gasObj.getString("oilType"));
-		newIxPoiGasstation.setEgType(gasObj.getString("egType"));
-		newIxPoiGasstation.setMgType(gasObj.getString("mgType"));
-		newIxPoiGasstation.setPayment(gasObj.getString("payment"));
-		newIxPoiGasstation.setService(gasObj.getString("service"));
-		newIxPoiGasstation.setOpenHour(gasObj.getString("openHour"));
-		newIxPoiGasstation.setRowId(gasObj.getString("rowId").toUpperCase());
 		}
 	}
-
-	}
-
 	/**
 	 * @Title: usdateIxPoiParking
 	 * @Description: 解析处理停车场数据
@@ -1109,8 +1125,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		List<IxPoiParking> parkList = poi.getIxPoiParkings();
 		JSONObject parkObj = jo.getJSONObject("parkings");
 		JSONArray oldArray = new JSONArray();
-		if(parkList != null && parkList.size() > 0){
-			if (parkObj != null && !parkObj.isEmpty()) {
+		if(parkList != null && parkList.size() > 0){//表里面存在原始数据
+			if (parkObj != null && !parkObj.isEmpty()) {//上传文件中存在数据
 				for (IxPoiParking oldPark : parkList) {
 					JSONObject oldPoiGasObj = ((ISerializable) oldPark).Serialize(null);
 					oldArray.add(oldPoiGasObj);
@@ -1237,7 +1253,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	private void usdateIxPoiHotel(IxPoiObj poi, JSONObject jo, long pid) throws Exception {
 		//查询的IX_POI_Hotel表
 		List<IxPoiHotel> hotelList = poi.getIxPoiHotels();
-		JSONObject hotelObj = jo.getJSONObject("hotels");
+		JSONObject hotelObj = jo.getJSONObject("hotel");
 		JSONArray oldArray = new JSONArray();
 		if(hotelList != null && hotelList.size() > 0){//数据库存在原始数据
 			
@@ -1572,7 +1588,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 						newIxPoiChargingplot.setFloor(chargingPoleObj.getInt("floor"));
 						newIxPoiChargingplot.setLocationType(chargingPoleObj.getInt("locationType"));
 						newIxPoiChargingplot.setPayment(chargingPoleObj.getString("payment"));
-						newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId"));
+						newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId").toUpperCase());
 						// 鲜度验证
 						//freshFlag = false;
 					} else if (ret == 1) {//修改
@@ -1643,9 +1659,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiChargingplot.setFloor(chargingPoleObj.getInt("floor"));
 					newIxPoiChargingplot.setLocationType(chargingPoleObj.getInt("locationType"));
 					newIxPoiChargingplot.setPayment(chargingPoleObj.getString("payment"));
-					newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId"));
+					newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId").toUpperCase());
+				}
 			}
-		}
 		}
 	}
 	

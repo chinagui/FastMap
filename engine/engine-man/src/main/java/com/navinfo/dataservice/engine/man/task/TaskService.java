@@ -21,6 +21,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
@@ -296,6 +297,8 @@ public class TaskService {
 			int erNum = 0;//二代任务数量
 			List<Integer> cmsTaskList=new ArrayList<Integer>();
 			List<Integer> commontaskIds=new ArrayList<Integer>();
+			List<Integer> commonBlockIds=new ArrayList<Integer>();
+
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
@@ -303,6 +306,7 @@ public class TaskService {
 					cmsTaskList.add(task.getTaskId());
 				}else{
 					commontaskIds.add(task.getTaskId());
+					commonBlockIds.add(task.getBlockId());
 					updatedTaskList.add(task);
 					updatedTaskIdList.add(task.getTaskId());
 					total ++;
@@ -310,13 +314,17 @@ public class TaskService {
 			}
 			if(commontaskIds.size()>0){
 				//更新task状态
-				TaskOperation.updateStatus(conn, commontaskIds,1);			
+				TaskOperation.updateStatus(conn, commontaskIds,1);
+				if(commonBlockIds.size() > 0){
+					BlockService.getInstance().updateStatus(conn, commonBlockIds,3);
+				}
 				//发布消息
 				taskPushMsg(conn,userId,updatedTaskList);
 				conn.commit();
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
+				erNum=erNum-pushCmsTask.size();
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}
@@ -324,6 +332,7 @@ public class TaskService {
 					createCmsProgress(conn,taskId,2);
 					createCmsProgress(conn,taskId,3);
 					createCmsProgress(conn,taskId,4);
+					conn.commit();
 					phaseList = queryTaskCmsProgress(taskId);
 					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
 					for(Map<String, Integer> phaseTmp:phaseList){
@@ -385,9 +394,9 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID");
+			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,T.BLOCK_ID");
 			sb.append(" FROM TASK T,USER_GROUP UG");
-			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID");
+			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
 			String selectSql= sb.toString();
 
@@ -403,6 +412,7 @@ public class TaskService {
 						task.setType(rs.getInt("TYPE"));
 						task.setGroupId(rs.getInt("LEADER_ID"));
 						task.setGroupLeader(rs.getInt("LEADER_ID"));
+						task.setBlockId(rs.getInt("BLOCK_ID"));
 						
 						taskList.add(task);
 					}
@@ -818,6 +828,7 @@ public class TaskService {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
+			
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -829,6 +840,17 @@ public class TaskService {
 				}
 				if ("groupId".equals(key)) {
 					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+				}
+				if("planStatus".equals(key)){
+					int planStatus = condition.getInt(key);
+					//未完成：开启1>待分配2
+					if(planStatus==2){
+						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (1,2)";
+					}
+					//已完成：100%(已完成)5>已关闭6
+					else if(planStatus == 3){
+						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (5,6)";
+					}
 				}
 				//任务名称模糊查询
 				if ("taskName".equals(key)) {	
@@ -895,22 +917,23 @@ public class TaskService {
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
 			sb.append("WITH FINAL_TABLE AS ( ");
-			sb.append("SELECT TASK_LIST.*,");
+			sb.append("SELECT TASK_LIST.* FROM (");
+			sb.append("SELECT TASK_LIST1.*,");
 			sb.append("               CASE");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 2) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 2) THEN");
 			sb.append("                  3");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 0) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 0) THEN");
 			sb.append("                  6");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 4) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 4) THEN");
 			sb.append("                  4");
-			sb.append("                 WHEN (TASK_LIST.STATUS = 1) THEN");
+			sb.append("                 WHEN (TASK_LIST1.STATUS = 1) THEN");
 			sb.append("                  CASE");
-			sb.append("                    WHEN (TASK_LIST.PERCENT = 100) THEN");
-			sb.append("                     5");
+			sb.append("                    WHEN (TASK_LIST1.SUBTASK_NUM = 0) THEN");
+			sb.append("                     2");
 			sb.append("                    ELSE");
 			sb.append("                     CASE");
-			sb.append("                       WHEN (TASK_LIST.SUBTASK_NUM = 0) THEN");
-			sb.append("                        2");
+			sb.append("                       WHEN (TASK_LIST1.SUBTASK_NUM = TASK_LIST1.SUBTASK_NUM_CLOSED) THEN");
+			sb.append("                        5");
 			sb.append("                       ELSE");
 			sb.append("                        1");
 			sb.append("                     END");
@@ -935,8 +958,11 @@ public class TaskService {
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -962,7 +988,8 @@ public class TaskService {
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
-			sb.append("	                          0             SUBTASK_NUM");
+			sb.append("	                          0             SUBTASK_NUM,");
+			sb.append("	                          0             SUBTASK_NUM_CLOSED");
 			sb.append("	            FROM BLOCK B, PROGRAM P");
 			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
 			sb.append("	        	 AND P.LATEST = 1");
@@ -991,13 +1018,17 @@ public class TaskService {
 			sb.append("                       1 PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                       (SELECT COUNT(1)");
+			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 1) SUBTASK_NUM");
+			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
-			sb.append("	             AND P.TYPE = 4) TASK_LIST");
+			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
+			sb.append("	             ) TASK_LIST");
 			sb.append(" WHERE 1=1 ");
 			sb.append(conditionSql);
 			sb.append(" ORDER BY ORDER_STATUS ASC ,DIFF_DATE DESC, PERCENT DESC");
@@ -1053,6 +1084,7 @@ public class TaskService {
 						
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					
@@ -1519,7 +1551,7 @@ public class TaskService {
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT Phase_id，PHASE,STATUS FROM TASK_CMS_PROGRESS WHERE TASK_ID= " + taskId;
-			
+			log.info(selectSql);
 			ResultSetHandler<List<Map<String,Integer>>> rsHandler = new ResultSetHandler<List<Map<String,Integer>>>() {
 				public List<Map<String,Integer>> handle(ResultSet rs) throws SQLException {
 					List<Map<String,Integer>> arrayList = new ArrayList<Map<String,Integer>>();
@@ -1805,6 +1837,7 @@ public class TaskService {
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
 					+ "   AND B.CITY_ID = C.CITY_ID";
+			log.info(selectSql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> result=new HashMap<String, Object>();
@@ -1841,6 +1874,7 @@ public class TaskService {
 	 */
 	public int createCmsTask(Connection conn,int phaseId) throws Exception{
 		try{
+			log.info("start createCmsTask"+phaseId);
 			int i=updateCmsProgressStatusStart(conn,phaseId, 1);
 			conn.commit();
 			if(i==0){return 0;}
@@ -1882,9 +1916,10 @@ public class TaskService {
 			//result="{success:false, msg:\"没有找到用户名为【fm_meta_all_sp6】元数据库版本信息！\"}";
 			JSONObject res=JSONObject.fromObject(result);
 			boolean success=(boolean)res.get("success");
+			log.info("end createCmsTask"+phaseId);
 			if(success){return 2;}
 			else{
-				log.error(res.get("msg"));
+				log.error("cms error msg"+res.get("msg"));
 				return 3;}
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -2027,6 +2062,47 @@ public class TaskService {
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			JSONObject json = Geojson.wkt2Geojson(wkt);
 			return json;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param taskId
+	 * @param i
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public int getTaskIdByTaskIdAndTaskType(Integer taskId, int type) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT T1.TASK_ID FROM TASK T ,TASK T1"
+					+ " WHERE T.BLOCK_ID = T1.BLOCK_ID AND T.LATEST =1"
+					+ " AND T1.LATEST = 1"
+					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.TYPE = " + type
+					+ " AND T.TASK_ID = " + taskId;
+			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int taskId = 0;				
+					if (rs.next()) {
+						taskId = rs.getInt("TASK_ID");
+					}
+					return taskId;
+				}
+			};
+			int result =  run.query(conn, selectSql,rsHandler);
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

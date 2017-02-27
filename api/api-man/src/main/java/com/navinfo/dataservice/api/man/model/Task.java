@@ -43,7 +43,7 @@ public class Task implements Serializable{
 	private Integer poiPlanTotal ;
 	private Integer latest ;
 	private Integer groupLeader =0; 
-	private Integer workProperty ;
+	private String workProperty ;
 	
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;
@@ -464,7 +464,7 @@ public class Task implements Serializable{
 	/**
 	 * @return the workProperty
 	 */
-	public Integer getWorkProperty() {
+	public String getWorkProperty() {
 		return workProperty;
 	}
 
@@ -472,7 +472,7 @@ public class Task implements Serializable{
 	/**
 	 * @param workProperty the workProperty to set
 	 */
-	public void setWorkProperty(Integer workProperty) {
+	public void setWorkProperty(String workProperty) {
 		this.workProperty = workProperty;
 	}
 

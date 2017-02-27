@@ -74,9 +74,9 @@ public class LogWriter {
 				listener.preDelete();
 				data=deleteData(editLog);
 				//日出品删除数据时，若数据不存在，不认为履历刷库失败
-//				if (data.get("result").equals(0)) {
-//					listener.deleteFailed(editLog,data.get("log").toString());
-//				}
+				if ((data.get("result").equals(0))&&(!data.get("log").toString().equals(""))) {
+					listener.deleteFailed(editLog,data.get("log").toString());
+				}
 			}else if(type.equals("day2MonSync")){
 				listener.preDelete();
 				data=PhysicalDeleteData(editLog);
@@ -290,7 +290,7 @@ public class LogWriter {
 	
 						jg.setSRID(8307);
 						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
-							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
+							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getDelegate());
 							pstmt.setObject(tmpPos, s);
 						}else{
 							STRUCT s = JGeometry.store(jg, this.targetDbConn);

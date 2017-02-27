@@ -234,8 +234,19 @@ public class NiValExceptionOperator {
 			int meshId, String log, String worker) throws Exception {
 		insertCheckLog(ruleId, loc, targets, meshId, log, 1, worker);
 	}
-
-	public void insertCheckLog(String ruleId, String loc, String targets,
+	/**
+	 * 
+	 * @param ruleId
+	 * @param loc
+	 * @param targets
+	 * @param meshId
+	 * @param log
+	 * @param logLevel
+	 * @param worker
+	 * @return boolean 检查错误存入数据库，则返回true；否则返回false
+	 * @throws Exception
+	 */
+	public boolean insertCheckLog(String ruleId, String loc, String targets,
 			int meshId, String log, int logLevel, String worker)
 			throws Exception {
 		logg.debug("start insert ni_val:1");
@@ -260,7 +271,7 @@ public class NiValExceptionOperator {
 				log, targets, "null");
 
 		if (StringUtils.isEmpty(md5))
-			return;
+			return false;
 		logg.debug("start insert ni_val:2-2");
 		String sql = "insert into ni_val_exception(MD5_CODE, ruleid, information, location, targets, mesh_id, worker, \"LEVEL\", created, updated )   values     (:2, :3, :4, sdo_geometry(:5, 8307), :6, :7, :8, :9, sysdate, sysdate)";
 		PreparedStatement pstmt = conn.prepareStatement(sql);
@@ -309,7 +320,7 @@ public class NiValExceptionOperator {
 			}
 
 		}
-
+		return true;
 	}
 
 	public void deleteNiValException(String tableName, int pid)

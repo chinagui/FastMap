@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 
@@ -30,9 +31,12 @@ public class GLM01381 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-        preparData(checkCommand);
+        //preparData(checkCommand);
+        log.info("GLM01381:[size=" + checkCommand.getGlmList().size() + "]");
 
         for (IRow row : checkCommand.getGlmList()) {
+            log.info("GLM01381:[name=" + row.getClass().getName().toString() + ",type=" + row.status().toString() +
+                    "]");
             //if (row instanceof RdLink) {
             //    RdLink link = (RdLink) row;
             //
@@ -40,7 +44,7 @@ public class GLM01381 extends baseRule {
             //        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
             //    }
             //} else
-                if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
+            if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
                 RdLinkName name = (RdLinkName) row;
 
                 int nameType = name.getNameType();
@@ -62,21 +66,17 @@ public class GLM01381 extends baseRule {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
-            } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
+            } else if (row instanceof RdLinkForm && row.status() == ObjStatus.DELETE) {
+                log.info("GLM01381:[formOfWay=" + ((RdLinkForm) row).getFormOfWay() + "]");
                 RdLinkForm form = (RdLinkForm) row;
-
-                int formOfWay = form.getFormOfWay();
-                if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
-
-                if (formOfWay == 60) {
+                if (60 == form.getFormOfWay()) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
                     List<IRow> names = link.getNames();
-                    boolean nameFlag = true;
+                    boolean nameFlag = false;
                     for (IRow n : names) {
                         RdLinkName nn = (RdLinkName) n;
                         if (nn.getNameType() == 3) {
-                            nameFlag = false;
+                            nameFlag = true;
                             break;
                         }
                     }

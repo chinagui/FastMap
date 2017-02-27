@@ -7,6 +7,9 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.mileagepile.RdMileagepile;
 import com.navinfo.dataservice.dao.glm.selector.rd.mileagepile.RdMileagepileSelector;
+import com.navinfo.navicommons.geo.GeoUtils;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.sql.Connection;
@@ -52,14 +55,25 @@ public class Operation implements IOperation {
             // 取出被打断线段上的所有里程桩
             List<RdMileagepile> mileagepiles = selector.loadByLinkPid(linkPid, true);
             for (RdMileagepile mileagepile : mileagepiles) {
+                double minLength = -1;
+                int minPid = 0;
                 for (RdLink link : newLinks) {
+                    Geometry point = GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5);
+                    Geometry linkG = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+                    Coordinate pedal = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), linkG);
+                    if (pedal == null) {
+                        continue;
+                    }
+                    double curLength = GeometryUtils.getLinkLength(GeometryUtils.getLineFromPoint(new double[]{point
+                            .getCoordinate().x, point.getCoordinate().y}, new double[]{pedal.x, pedal.y}));
                     // 判断里程桩的坐标存在于哪条新生成的线段上并更新里程桩信息
-                    if (this.isOnTheLine(GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5),
-                            GeoTranslator.transform(link.getGeometry(), 0.00001, 5))) {
-                        mileagepile.changedFields().put("linkPid", link.pid());
-                        result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
+                    if (minLength == -1 || curLength < minLength) {
+                        minLength = curLength;
+                        minPid = link.pid();
                     }
                 }
+                mileagepile.changedFields().put("linkPid", minPid);
+                result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
             }
         } catch (Exception e) {
             e.printStackTrace();

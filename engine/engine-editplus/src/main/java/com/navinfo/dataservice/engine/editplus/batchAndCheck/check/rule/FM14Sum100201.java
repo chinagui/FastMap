@@ -2,11 +2,12 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -30,16 +31,37 @@ public class FM14Sum100201 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-			if(kindCode==null||kindCode.startsWith("11")){return;}
-			List<IxPoiRestaurant> ixPoiRestaurants = poiObj.getIxPoiRestaurants();
-			if(ixPoiRestaurants==null||ixPoiRestaurants.isEmpty()){return;}
+			if(kindCode==null){return;}
+			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+			if(ixPoiName==null){return;}
+			String name = ixPoiName.getName();
+			if(name == null){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			List<String> scPointFoodtypes = metadataApi.scPointFoodtypeKindList();
-			for (IxPoiRestaurant ixPoiRestaurant : ixPoiRestaurants) {
-				String foodType = ixPoiRestaurant.getFoodType();
-				if(!scPointFoodtypes.contains(kindCode)&&foodType!=null){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-					return;
+			List<Map<String, Object>> scPointKindRules = metadataApi.scPointKindRule();
+			for (Map<String, Object> map : scPointKindRules) {
+				String poiKind = (String) map.get("poiKind");
+				String poiKindName = (String) map.get("poiKindName");
+				int type = (int) map.get("type");
+				//1 关键字必须在中间出现
+				if(type == 1){
+					if(!name.startsWith(poiKindName)&&!name.endsWith(poiKindName)&&name.contains(poiKindName)&&!kindCode.equals(poiKind)){
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+						return;
+					}
+				}
+				//2 以关键字结尾
+				if(type == 1){
+					if(name.endsWith(poiKindName)&&!kindCode.equals(poiKind)){
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+						return;
+					}
+				}
+				//3 以关键字开头
+				if(type == 1){
+					if(name.startsWith(poiKindName)&&!kindCode.equals(poiKind)){
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+						return;
+					}
 				}
 			}
 		}

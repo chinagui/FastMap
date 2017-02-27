@@ -67,7 +67,7 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 4612957, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -76,6 +76,7 @@ public class CheckTest {
 //		oldValues.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心");
 //		logg.setOldValues(oldValues);
 		logg.setOpType(OperationType.UPDATE);
+		//logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
@@ -105,7 +106,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-205");
+		ruleIdList.add("FM-14Sum-10-02-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

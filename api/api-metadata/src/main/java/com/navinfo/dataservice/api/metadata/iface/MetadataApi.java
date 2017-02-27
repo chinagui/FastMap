@@ -354,5 +354,19 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScFmControl(String kindCode) throws Exception;
+    
+    /**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(1,2,3)
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, Object>> scPointKindRule() throws Exception;
+	/**
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
+	 * 
+	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointCode2Level(String kindCode) throws Exception;
 
 }

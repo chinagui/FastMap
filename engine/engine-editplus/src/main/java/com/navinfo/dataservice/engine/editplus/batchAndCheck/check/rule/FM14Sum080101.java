@@ -40,8 +40,8 @@ public class FM14Sum080101 extends BasicCheckRule {
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
-			//已删除的数据不检查
-			if(poi.getOpType().equals(OperationType.PRE_DELETED)||!poi.getHisOpType().equals(OperationType.INSERT)){
+			//新增POI
+			if(!poi.getHisOpType().equals(OperationType.INSERT)){
 				continue;}
 			String kind=poi.getKindCode();
 			if(kind.equals("130403")||kind.equals("210215")||kind.equals("180208")||kind.equals("230222")||kind.equals("230227"))

@@ -40,10 +40,12 @@ import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
+import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
+import com.navinfo.dataservice.engine.meta.scPointKindRule.ScPointKindRule;
 import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
@@ -676,6 +678,25 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, Integer> searchScFmControl(String kindCode) throws Exception {
 		return ScFmControl.getInstance().searchScFmControl(kindCode);
+	}
+	/**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(1,2,3)
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, Object>> scPointKindRule() throws Exception{
+		return ScPointKindRule.getInstance().scPointKindRule();
+	}
+	/**
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
+	 * 
+	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointCode2Level(String kindCode) throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2Level(kindCode);
 	}
 
 }

@@ -69,7 +69,7 @@ public class GLM01260 extends baseRule {
 			if (row instanceof RdLink) {
 				RdLink rdLink = (RdLink) row;
 				int functionClass = rdLink.getFunctionClass();
-				if (rdLink.status() != ObjStatus.DELETE && rdLink.changedFields().containsKey("direct")) {
+				if (rdLink.status() != ObjStatus.DELETE && rdLink.changedFields().containsKey("functionClass")) {
 					functionClass = (int) rdLink.changedFields().get("functionClass");
 				}
 				if (functionClass == 4) {

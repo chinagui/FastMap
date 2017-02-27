@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.mileagepile.update;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -53,7 +54,8 @@ public class Operation implements IOperation {
             for (RdMileagepile mileagepile : mileagepiles) {
                 for (RdLink link : newLinks) {
                     // 判断里程桩的坐标存在于哪条新生成的线段上并更新里程桩信息
-                    if (this.isOnTheLine(mileagepile.getGeometry(), link.getGeometry())) {
+                    if (this.isOnTheLine(GeoTranslator.transform(mileagepile.getGeometry(), 0.00001, 5),
+                            GeoTranslator.transform(link.getGeometry(), 0.00001, 5))) {
                         mileagepile.changedFields().put("linkPid", link.pid());
                         result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
                     }

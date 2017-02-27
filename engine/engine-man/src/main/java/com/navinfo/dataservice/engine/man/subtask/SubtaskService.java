@@ -153,6 +153,8 @@ public class SubtaskService {
 			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
 				//根据参数生成日编子任务 subtask dailyBean
 				Subtask dailyBean = createSubtaskBean(userId,dataJson);
+				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
+				dailyBean.setTaskId(taskId);
 				dailyBean.setName(selfRecordName);
 				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);

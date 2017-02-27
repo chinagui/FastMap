@@ -65,7 +65,7 @@ public class GLM01018 extends baseRule {
 						kind = (int) rdLink.changedFields().get("kind");
 					}
 					if (rdLink.changedFields().containsKey("direct")) {
-						direct = (int) rdLink.changedFields().get("laneNum");
+						direct = (int) rdLink.changedFields().get("direct");
 					}
 
 					//未调查方向页面不支持，暂不考虑

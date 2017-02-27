@@ -2072,4 +2072,44 @@ public class TaskService {
 		}
 	}
 	
+	/**
+	 * @param taskId
+	 * @param i
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public int getTaskIdByTaskIdAndTaskType(Integer taskId, int type) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT T1.TASK_ID FROM TASK T ,TASK T1"
+					+ " WHERE T.BLOCK_ID = T1.BLOCK_ID AND T.LATEST =1"
+					+ " AND T1.LATEST = 1"
+					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.TYPE = " + type
+					+ " AND T.TASK_ID = " + taskId;
+			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int taskId = 0;				
+					if (rs.next()) {
+						taskId = rs.getInt("TASK_ID");
+					}
+					return taskId;
+				}
+			};
+			int result =  run.query(conn, selectSql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

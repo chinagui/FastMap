@@ -98,6 +98,17 @@ public class SubtaskService {
 					dataJson.put("geometry",wkt);	
 				}
 			}
+			else{
+				int taskId = dataJson.getInt("taskId");
+				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
+				Map<String,Integer> gridIdMap2 = new HashMap<String,Integer>();
+				for(Map.Entry<Integer, Integer> entry:gridIdMap.entrySet()){
+					gridIdMap2.put(entry.getKey().toString(), entry.getValue());
+				}
+				dataJson.put("gridIds",gridIdMap2);
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdMap.keySet()));
+				dataJson.put("geometry",wkt);
+			}
 			
 			//质检子任务信息
 			int qualityExeUserId = 0;
@@ -143,6 +154,9 @@ public class SubtaskService {
 			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
 				//根据参数生成日编子任务 subtask dailyBean
 				Subtask dailyBean = createSubtaskBean(userId,dataJson);
+				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
+				dailyBean.setTaskId(taskId);
+				dailyBean.setStage(1);
 				dailyBean.setName(selfRecordName);
 				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);
@@ -150,6 +164,7 @@ public class SubtaskService {
 				//创建质检子任务 subtask	
 				createSubtask(dailyBean);	
 			}
+
 			
 			//根据参数生成subtask bean
 			Subtask bean = createSubtaskBean(userId,dataJson);

@@ -71,7 +71,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			List<Long> groupIds = IxPoiSelector.getIxSamePoiGroupIdsByPids(conn, myRequest.getPids());
 			log.info("PoiRowValidationJob:获取要检查的同一关系数据的履历");
 			//获取log
-			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, myRequest.getPids());
+			Map<Long, List<LogDetail>> samelogs = SamepoiLogDetailStat.loadByRowEditStatus(conn, groupIds);
 			Set<String> sametabNames=getChangeTableSet(samelogs);
 			Map<Long, BasicObj> sameobjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_SAMEPOI, sametabNames, false,
 					groupIds, false, false);

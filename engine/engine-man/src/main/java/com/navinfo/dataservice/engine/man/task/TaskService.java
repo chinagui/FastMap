@@ -967,7 +967,7 @@ public class TaskService {
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
-			sb.append("                   AND UG.GROUP_ID = T.GROUP_ID");
+			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");

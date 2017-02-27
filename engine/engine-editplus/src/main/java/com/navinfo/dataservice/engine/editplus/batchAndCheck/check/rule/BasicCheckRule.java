@@ -84,13 +84,13 @@ public abstract class BasicCheckRule {
 	
 	public void setCheckResult(String loc, String targets,int meshId){
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,checkRule.getLog(),checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId) throws Exception{
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,checkRule.getLog(),checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	/**
@@ -103,7 +103,7 @@ public abstract class BasicCheckRule {
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), "", targets,0,log,checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	/**
@@ -118,28 +118,29 @@ public abstract class BasicCheckRule {
 		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		String targets="["+obj.getMainrow().tableName()+","+obj.objPid()+"]";
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), geometry, targets,meshId,log,checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId,String log) throws Exception{
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
-		splitTargets(targets);
+		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	/**
 	 * targets拆分后存入list,主要用于poi精编重分类，目前仅支持poi类。
+	 * 放在check框架最外层处理，以便排除检查例外数据
 	 * @param targets [IX_POI,123];[IX_POI,24]
 	 * {IX_POI:{PID,[RULE1,RULE2]}}
 	 */
-	private void splitTargets(String targets){
+	/*private void splitTargets(String targets){
 		GlmObject glmObject = GlmFactory.getInstance().getObjByType(ObjectName.IX_POI);
 		String mainTableName=glmObject.getMainTable().getName();
 		String value=StringUtils.removeBlankChar(targets);
@@ -155,7 +156,7 @@ public abstract class BasicCheckRule {
 				}
 			}
 		}
-	}
+	}*/
 
 	public CheckRule getCheckRule() {
 		return checkRule;

@@ -46,7 +46,7 @@ public class GLM01278 extends baseRule {
 			sb.append(linkPid);
 
 			sb.append(
-					" AND RL.DIRECT <> 1 AND RLL.TYPE = 7 AND RL.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND RLL.LIMIT_DIR <> RL.DIRECT   ");
+					" AND RL.DIRECT <> 1 AND RLL.TYPE = 6 AND RL.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND RLL.LIMIT_DIR <> RL.DIRECT   ");
 
 			logger.info("RdLink后检查GLM01278 check1-> SQL:" + sb.toString());
 

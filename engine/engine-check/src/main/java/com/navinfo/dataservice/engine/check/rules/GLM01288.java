@@ -105,8 +105,6 @@ public class GLM01288 extends baseRule {
 			sb.append(
 					" AND F.LINK_PID = L.LINK_PID AND L.U_RECORD <> 2 AND F.U_RECORD <> 2 AND LM.U_RECORD <> 2 AND L.LINK_PID = LM.LINK_PID AND F.LINK_PID = LM.LINK_PID AND F.FORM_OF_WAY = 22 AND LM.TYPE = 3 AND LM.TIME_DOMAIN IS NULL AND LM.PROCESS_FLAG <> 2  ");
 
-			sb.append(linkPid);
-
 			log.info("RdLink后检查GLM01288 SQL:" + sb.toString());
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();

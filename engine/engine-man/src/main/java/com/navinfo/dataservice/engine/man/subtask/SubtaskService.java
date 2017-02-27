@@ -1389,7 +1389,7 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID =" + subtaskId;	
 			run.update(conn,updateSql);
-			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID in =" + subtaskId;
+			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID =" + subtaskId;
 			run.update(conn,updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

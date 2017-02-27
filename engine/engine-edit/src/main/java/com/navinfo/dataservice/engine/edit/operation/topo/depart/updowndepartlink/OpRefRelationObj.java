@@ -2,7 +2,12 @@ package com.navinfo.dataservice.engine.edit.operation.topo.depart.updowndepartli
 
 import java.sql.Connection;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.CoordinateList;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class OpRefRelationObj {
 
@@ -161,10 +166,45 @@ public class OpRefRelationObj {
 
     // 维护IxPoi信息
     public String handlerIxPoi(Command command, Result result) throws Exception {
-        com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation operation = new com.navinfo
-                .dataservice.engine.edit.operation.obj.poi.depart.Operation(conn);
-        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping()
-                , result);
+        com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation(conn);
+       
+        
+        if(command.getNodeInnerLinkMap().size()>0)
+        {
+			CoordinateList cList = new CoordinateList();
+
+			for (int linkPid : command.getLinkPids()) {
+				Geometry linkGeo = GeoTranslator.transform(command
+						.getRightLinkMapping().get(linkPid).getGeometry(),
+						0.00001, 5);
+
+				Coordinate[] coordinates = linkGeo.getCoordinates();
+
+				cList.add(coordinates, false);
+			}
+
+			for (int i = command.getLinkPids().size() - 1; i >= 0; i--) {
+				int linkPid = command.getLinkPids().get(i);
+
+				Geometry linkGeo = GeoTranslator.transform(command
+						.getLeftLinkMapping().get(linkPid).getGeometry(),
+						0.00001, 5);
+
+				Coordinate[] coordinates = linkGeo.getCoordinates();
+
+				cList.add(coordinates, false);
+			}
+
+			Geometry spatial =GeoTranslator.getPolygonToPoints(cList
+					.toCoordinateArray()) ;
+		
+			operation.updownDepartInnerPoi(spatial,
+					command.getNodeInnerLinkMap(), command.getNoTargetLinks(),
+					result);
+        }
+        
+        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
+     
     }
 
     // 维护减速带信息

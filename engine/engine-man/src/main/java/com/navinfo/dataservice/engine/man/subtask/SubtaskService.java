@@ -97,8 +97,7 @@ public class SubtaskService {
 					String wkt = GridUtils.grids2Wkt(gridIds);
 					dataJson.put("geometry",wkt);	
 				}
-			}
-			else{
+			}else{
 				int taskId = dataJson.getInt("taskId");
 				Map<Integer,Integer> gridIdMap = TaskService.getInstance().getGridMapByTaskId(taskId);
 				Map<String,Integer> gridIdMap2 = new HashMap<String,Integer>();

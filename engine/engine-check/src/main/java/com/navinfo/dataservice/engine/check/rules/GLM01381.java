@@ -30,7 +30,7 @@ public class GLM01381 extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-        preparData(checkCommand);
+        //preparData(checkCommand);
 
         for (IRow row : checkCommand.getGlmList()) {
             //if (row instanceof RdLink) {
@@ -40,7 +40,7 @@ public class GLM01381 extends baseRule {
             //        setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
             //    }
             //} else
-                if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
+            if (row instanceof RdLinkName && row.status() != ObjStatus.DELETE) {
                 RdLinkName name = (RdLinkName) row;
 
                 int nameType = name.getNameType();
@@ -62,14 +62,10 @@ public class GLM01381 extends baseRule {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
                 }
-            } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
+            } else if (row instanceof RdLinkForm && row.status() == ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;
 
-                int formOfWay = form.getFormOfWay();
-                if (form.changedFields().containsKey("formOfWay"))
-                    formOfWay = Integer.valueOf(form.changedFields().get("formOfWay").toString());
-
-                if (formOfWay == 60) {
+                if (60 == form.getFormOfWay()) {
                     RdLink link = (RdLink) new RdLinkSelector(getConn()).loadById(form.getLinkPid(), false);
                     List<IRow> names = link.getNames();
                     boolean nameFlag = true;

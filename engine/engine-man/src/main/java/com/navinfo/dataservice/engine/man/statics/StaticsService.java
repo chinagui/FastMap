@@ -767,7 +767,8 @@ public class StaticsService {
 					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
 					+ "SELECT * FROM T WHERE T.GROUP_ID = "+groupId;
-			System.out.println("selectSql: "+selectSql);QueryRunner run = new QueryRunner();
+			log.info("selectSql: "+selectSql);
+			QueryRunner run = new QueryRunner();
 
 			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {

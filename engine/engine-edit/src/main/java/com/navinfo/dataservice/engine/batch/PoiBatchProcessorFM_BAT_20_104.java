@@ -36,7 +36,7 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 			String standardName = "";
 			int nameGroupid = 0;
 			String langCode = "";
-			IxPoiName standardPoiName = new IxPoiName();
+			IxPoiName standardPoiName = null;
 			IxPoiName originalPoiName = new IxPoiName();
 			for (IRow temp:names) {
 				IxPoiName name = (IxPoiName) temp;
@@ -58,7 +58,7 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				}
 			}
 			
-			if (standardName.isEmpty()) {
+			if (standardPoiName == null) {
 				standardName = originalName;
 				IxPoiName newStandardName = new IxPoiName();
 				newStandardName.setNameClass(1);
@@ -92,7 +92,7 @@ public class PoiBatchProcessorFM_BAT_20_104 implements IBatch {
 				resultArray.add(nameOriginalJson);
 				result.put("names", resultArray);
 			} else {
-				if (!standardName.equals(originalName)) {
+				if (standardName == null || (!originalName.equals(standardName))) {
 					
 					// 标准，原始转全角
 					originalName = ExcelReader.h2f(originalName);

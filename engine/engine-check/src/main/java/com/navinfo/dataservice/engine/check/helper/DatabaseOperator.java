@@ -31,6 +31,22 @@ public class DatabaseOperator {
 		}
 	
 	/**
+	 * 实现sql中自定义的msg显示
+	 * @param conn
+	 * @param sql
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Object> exeSelectAndMsg(Connection conn,String sql) throws Exception{
+		PreparedStatement pstmt = conn.prepareStatement(sql);		
+		ResultSet resultSet = pstmt.executeQuery();
+		List<Object> resultList=new ArrayList<Object>();
+		resultList=settleResultSetAndLog(resultSet);
+		releaseSource(pstmt,resultSet);
+		return resultList;
+		}
+	
+	/**
 	 * 通过查询SQL直接返回对应的NiValException（loc+targets+meshid）
 	 * @param conn
 	 * @param sql
@@ -63,6 +79,14 @@ public class DatabaseOperator {
 	}
 	
 	public List<Object> settleResultSet(ResultSet resultSet) throws Exception{
+		List<Object> resultList=new ArrayList<Object>();
+		while (resultSet.next()){
+			resultList.add(resultSet.getString(1));
+		} 
+		return resultList;
+	}
+	
+	public List<Object> settleResultSetAndLog(ResultSet resultSet) throws Exception{
 		List<Object> resultList=new ArrayList<Object>();
 		while (resultSet.next()){
 			resultList.add(resultSet.getString(1));

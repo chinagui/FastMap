@@ -153,6 +153,9 @@ public class Check {
         RdLaneConnexitySelector laneConnexitySelector = new RdLaneConnexitySelector(conn);
 
         List<RdLaneConnexity> laneConnexities = null;
+        if (null == command.getCatchInfos())
+            return;
+        
         for (int i = 0; i < command.getCatchInfos().size(); i++) {
             JSONObject obj = command.getCatchInfos().getJSONObject(i);
             // 分离移动的node

@@ -538,7 +538,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,t.name task_name");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -553,6 +553,7 @@ public class SubtaskService {
 						Map<String,Object> subtask = new HashMap<String,Object>();						
 						subtask.put("subtaskId",rs.getInt("SUBTASK_ID"));
 						subtask.put("name",rs.getString("NAME"));
+						subtask.put("taskName",rs.getString("TASK_NAME"));
 						subtask.put("type",rs.getInt("TYPE"));
 						subtask.put("planStartDate",df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate",df.format(rs.getTimestamp("PLAN_END_DATE")));
@@ -642,7 +643,7 @@ public class SubtaskService {
 							}
 							subtask.put("percent",stat.getPercent());
 						}
-						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
 					return null;

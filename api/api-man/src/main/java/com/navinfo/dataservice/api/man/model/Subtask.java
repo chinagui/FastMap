@@ -648,5 +648,3 @@ public class Subtask implements Serializable  {
 		this.referId = referId;
 	}
 }
-
-

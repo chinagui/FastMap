@@ -601,6 +601,17 @@ public class GeoTranslator {
 
 		return point;
 	}
+	
+	/**
+	 * Creates a Point using the given Coordinate; a null Coordinate will create
+	 * an empty Geometry.
+	 */
+	public static Geometry createPoint(Coordinate coordinate) throws JSONException {
+
+		Point point = geoFactory.createPoint(coordinate);
+
+		return point;
+	}
 
 	public static double calAngle(double x11, double y11, double x12,
 			double y12, double x21, double y21, double x22, double y22) {

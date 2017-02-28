@@ -12,6 +12,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import com.vividsolutions.jts.geom.Polygon;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -136,4 +137,110 @@ public class Operation {
         }
         return "";
     }
+
+	public String updownDepartInnerPoi(Geometry spatial,
+			Map<Integer, List<RdLink>> nodeInnerLinkMap,
+			Map<Integer, RdLink> noTargetLinks, Result result) throws Exception{
+		
+		IxPoiSelector selector = new IxPoiSelector(conn);
+		
+		for (RdLink noTargetLink : noTargetLinks.values()) {
+			
+			List<RdLink> innerLinks=new ArrayList<RdLink>();
+			
+			if (nodeInnerLinkMap.containsKey(noTargetLink.getsNodePid())) {
+
+				innerLinks=nodeInnerLinkMap.get(noTargetLink.getsNodePid());
+			}			
+			else if (nodeInnerLinkMap.containsKey(noTargetLink.geteNodePid())) {
+
+				innerLinks=nodeInnerLinkMap.get(noTargetLink.geteNodePid());
+			}
+			
+			if (innerLinks == null || innerLinks.isEmpty()) {
+				continue;
+			}
+			
+			List<IxPoi> pois = selector.loadIxPoiByLinkPid(noTargetLink.getPid(), true);	
+			
+			changedGuidLink(pois, spatial, innerLinks, result);
+		}
+
+		return "";
+	}
+	
+	private void changedGuidLink(List<IxPoi> pois, Geometry spatial,
+			List<RdLink> innerLinks, Result result) throws Exception {
+		
+		if (pois == null || pois.isEmpty()) {
+			return;
+		}
+
+		if (innerLinks == null || innerLinks.isEmpty()) {
+			return;
+		}
+
+		for (IxPoi poi : pois) {
+			
+			Geometry poiGeo = GeoTranslator.transform(poi.getGeometry(),
+					0.00001, 5);
+			
+			// 不在区域内
+			if (!poiGeo.within(spatial)) {
+				
+				continue;
+			}
+			
+			Coordinate poiCoordinate =poiGeo.getCoordinate();
+
+			double minDistanc = Double.MAX_VALUE;
+
+			Coordinate guidCoordinate = null;
+
+			RdLink guidLink = null;
+			
+			Geometry guidLinkGeo =null;
+
+			for (int i = 0; i < innerLinks.size(); i++) {
+
+				RdLink link = innerLinks.get(i);
+
+				Geometry linkGeo = GeoTranslator.transform(link.getGeometry(),
+						0.00001, 5);
+
+				Coordinate guidCoor = GeometryUtils.GetNearestPointOnLine(
+						poiCoordinate, linkGeo);
+
+				double distance = GeometryUtils.getDistance(poiCoordinate,
+						guidCoor);
+
+				if (i == 0 || distance < minDistanc) {
+
+					minDistanc = distance;
+
+					guidCoordinate = guidCoor;
+
+					guidLink = link;
+					
+					guidLinkGeo=linkGeo;
+				}
+			}
+
+			Geometry guidGeo = GeoTranslator.transform(
+					GeoTranslator.createPoint(guidCoordinate), 1, 5);
+		
+			int side = GeometryUtils.calulatPointSideOflink(poiGeo,
+					guidLinkGeo, guidGeo, true);
+			
+			poi.changedFields().put("linkPid", guidLink.getPid());
+			
+			poi.changedFields().put("xGuide", guidGeo.getCoordinate().x);
+			
+			poi.changedFields().put("yGuide", guidGeo.getCoordinate().y);
+			
+			poi.changedFields().put("side", side);
+			
+			result.insertObject(poi, ObjStatus.UPDATE, poi.pid());
+		}
+	}
 }

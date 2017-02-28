@@ -1429,11 +1429,21 @@ public class runTest extends InitApplication {
 	}
 	
 	
-@Test
+	@Test
 	public void run_0223_1() throws Exception {
 
 		String parameter = "{\"command\":\"REPAIR\",\"dbId\":17,\"objId\":320003460,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.32571,40.13285],[116.32612824440002,40.132684853787616],[116.32668,40.13277]]},\"catchInfos\":[]},\"type\":\"RDLINK\"}";
-		
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0224_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":\"8.8\",\"data\":{\"linkPids\":[408000014,510000011]}}";
+
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();

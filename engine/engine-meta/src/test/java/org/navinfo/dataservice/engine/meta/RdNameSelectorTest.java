@@ -35,7 +35,7 @@ public class RdNameSelectorTest {
 	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
+		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"flag\":1,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -48,9 +48,17 @@ public class RdNameSelectorTest {
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+//			
+//			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = new JSONArray();
+			JSONObject jobj = new JSONObject();
+					jobj.put("id", "02190105732d7d9fb74c6e9c66c8269b19d371");
+			JSONObject jobj2 = new JSONObject();
+					jobj2.put("id", "0219010714071FD07048E191F7803BE65EA02B");
+					tips.add(jobj);
+					tips.add(jobj2);
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
@@ -60,4 +68,18 @@ public class RdNameSelectorTest {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void main(String[] args) {
+		
+		
+		String  a = null;
+		String  b = "hhh";
+		a=b;
+		String c = a == null ? "" : a;
+        System.out.println("a:"+c);
+        
+        
+	}
+	
+	
 }

@@ -50,14 +50,14 @@ public class FM14Sum100201 extends BasicCheckRule {
 					}
 				}
 				//2 以关键字结尾
-				if(type == 1){
+				else if(type == 2){
 					if(name.endsWith(poiKindName)&&!kindCode.equals(poiKind)){
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 						return;
 					}
 				}
 				//3 以关键字开头
-				if(type == 1){
+				else if(type == 3){
 					if(name.startsWith(poiKindName)&&!kindCode.equals(poiKind)){
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 						return;

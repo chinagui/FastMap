@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,7 +68,9 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		Set<String> tabNames = new HashSet<String>();
+		tabNames.add("IX_POI_NAME");
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -77,6 +80,7 @@ public class CheckTest {
 //		logg.setOldValues(oldValues);
 		logg.setOpType(OperationType.UPDATE);
 		//logg.setOpType(OperationType.INSERT);
+		//logg.setOpType(OperationType.PRE_DELETED);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		row.setHisChangeLogs(logList);
@@ -106,7 +110,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-10-02-01");
+		ruleIdList.add("FM-14Sum-04-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

@@ -36,7 +36,7 @@ public class FM14Sum0101 extends BasicCheckRule {
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
-			//已删除的数据不检查
+			//已删除的数据检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){
 				pid.add(poi.getPid());
 			}
@@ -58,7 +58,7 @@ public class FM14Sum0101 extends BasicCheckRule {
 
 			String sqlStr="WITH T AS" 
 			+" (SELECT P.PID,P.GEOMETRY,P.MESH_ID FROM IX_POI P"
-			+" WHERE P."+pidString+")"
+			+" WHERE P."+pidString+" AND P.U_RECORD =2)"
 			+" SELECT /*+ NO_MERGE(T)*/ T.PID,T.GEOMETRY,T.MESH_ID FROM T,IX_POI_ICON C"
 			+" WHERE C.POI_PID = T.PID AND C.U_RECORD <>2"
 			+" UNION ALL"

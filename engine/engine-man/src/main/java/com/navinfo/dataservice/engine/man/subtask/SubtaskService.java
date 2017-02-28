@@ -155,6 +155,7 @@ public class SubtaskService {
 				Subtask dailyBean = createSubtaskBean(userId,dataJson);
 				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
 				dailyBean.setTaskId(taskId);
+				dailyBean.setStage(1);
 				dailyBean.setName(selfRecordName);
 				dailyBean.setIsQuality(0);
 				dailyBean.setStatus(2);

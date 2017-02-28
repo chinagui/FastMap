@@ -470,10 +470,11 @@ public class UserInfoService {
 					result.put("groupType", group.get("groupType"));
 					result.put("groupName", group.get("groupName"));
 				}
-//				else{
+				else{
+					result.put("groupId", 0);
 //					result.put("groupType", null);
 //					result.put("groupName", "");
-//				}			
+				}			
 				result.put("deviceId", deviceId);
 				result.put("userId", user_info.getUserId());
 				result.put("userRealName", user_info.getUserRealName());

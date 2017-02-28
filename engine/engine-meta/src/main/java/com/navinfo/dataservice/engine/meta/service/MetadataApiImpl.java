@@ -303,13 +303,32 @@ public class MetadataApiImpl implements MetadataApi {
 			result.put("kindCode", getKindCodeMap(conn));
 			result.put("admin", getAdminMap(conn));
 			result.put("character", getTyCharacterFjtHmCheckMap(conn,0));
-			result.put("navicovpy", getNavicovpyMap(conn));
-			result.put("engshort", getEngshortMap(conn));
 			result.put("kind", getKindMap(conn));
+
+			
+
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+
+	}
+	
+	@Override
+	public JSONObject getMetadataMap2() throws Exception {
+		JSONObject result = new JSONObject();
+		Connection conn = null;
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+
+			result.put("engshort", getEngshortMap(conn));
+			result.put("navicovpy", getNavicovpyMap(conn));
 			result.put("nameUnifyShort", scPointNameckTypeD1_2_3_4_8_11());
 			result.put("chishort", scPointNameckTypeD4_10());
 			result.put("aliasName", scPointNameckTypeD4());
-			
 
 			return result;
 		} catch (Exception e) {

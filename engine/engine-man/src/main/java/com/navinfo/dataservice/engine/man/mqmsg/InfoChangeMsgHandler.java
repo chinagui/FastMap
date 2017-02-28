@@ -43,8 +43,8 @@ import net.sf.json.JSONObject;
  */
 public class InfoChangeMsgHandler implements MsgHandler {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	String sql = "INSERT INTO INFOR(INFOR_ID,INFOR_NAME,GEOMETRY,INFOR_LEVEL,PLAN_STATUS,INFOR_CONTENT) "
-			+ "VALUES (?,?,?,?,0,?)";
+	String sql = "INSERT INTO INFOR(INFOR_ID,INFOR_NAME,GEOMETRY,INFOR_LEVEL,PLAN_STATUS,INFOR_CONTENT,feature_Kind) "
+			+ "VALUES (?,?,?,?,0,?,?)";
 
 	@Override
 	public void handle(String message) {
@@ -72,7 +72,12 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			values.add(dataJson.getString("INFO_NAME"));
 			values.add(c);
 			values.add(dataJson.getString("i_level"));
-			values.add(dataJson.getString("INFO_CONTENT"));
+			String content=dataJson.getString("INFO_CONTENT");
+			if(content.length()>=400){
+				content=content.substring(0, 350);
+			}
+			values.add(content);
+			values.add(dataJson.getString("b_featureKind"));
 			QueryRunner run = new QueryRunner();
 			run.update(conn, sql, values.toArray());
 			
@@ -124,7 +129,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			//关联要素
 			JSONObject msgParam = new JSONObject();
 			msgParam.put("relateObject", "INFOR");
-			msgParam.put("relateObjectId", Long.parseLong(inforId));
+			msgParam.put("relateObjectId", inforId);
 			map.put("msgParam", msgParam.toString());
 			msgContentList.add(map);
 			

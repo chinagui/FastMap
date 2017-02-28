@@ -63,8 +63,14 @@ public class Operation implements IOperation {
 			detail.setRelationshipType(calLinkOperateUtils.getRelationShipType(
 					command.getNodePid(), outLinkPid));
 
-			List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
-					command.getInLinkPid(), command.getNodePid(), outLinkPid);
+			List<Integer> viaLinks = new ArrayList<Integer>();
+			
+			if (detail.getRelationshipType() == 2) {
+
+				viaLinks = calLinkOperateUtils.calViaLinks(conn,
+						command.getInLinkPid(), command.getNodePid(),
+						outLinkPid);
+			}
 
 			int seqNum = 1;
 

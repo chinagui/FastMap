@@ -279,6 +279,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				sql.append("SELECT * ");
 				sql.append(" FROM (SELECT c.*, rownum rn");
 				sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+				sql.append(" ,( select substr(replace(src_resume,'\"',''),instr(replace(src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) tipid from rd_name where src_resume like '%tips%' and name_id = a.name_id) as tipid  ");
 				sql.append(" from rd_name a where 1=1");
 				// 添加过滤器条件
 				Iterator<String> keys = param.keys();
@@ -461,7 +462,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tips_id")  == null ? "" : resultSet.getString("tips_id"));
+			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));

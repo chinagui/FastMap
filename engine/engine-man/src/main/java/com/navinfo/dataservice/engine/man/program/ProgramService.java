@@ -899,6 +899,7 @@ public class ProgramService {
 					+ "         4 TYPE,"
 					+ "         0 STATUS,"
 					+ "         C.INFOR_NAME,"
+					+ "         C.FEATURE_KIND,"
 					+ "         C.PLAN_STATUS"
 					+ "    FROM INFOR C"
 					+ "   WHERE C.PLAN_STATUS = 0"
@@ -909,6 +910,7 @@ public class ProgramService {
 					+ "         P.TYPE,"
 					+ "         P.STATUS,"
 					+ "         C.INFOR_NAME,"
+					+ "         C.FEATURE_KIND,"
 					+ "         C.PLAN_STATUS"
 					+ "    FROM PROGRAM P, INFOR C"
 					+ "   WHERE P.INFOR_ID = C.INFOR_ID"
@@ -952,7 +954,8 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));}
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
 					map.put("planStatus", rs.getInt("PLAN_STATUS"));
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", rs.getInt("STATUS"));
@@ -1027,6 +1030,7 @@ public class ProgramService {
 					+ "       P.TYPE,"
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
+					+ "       C.FEATURE_KIND,"
 					+ "       F.PERCENT,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
@@ -1055,6 +1059,7 @@ public class ProgramService {
 					+ "       P.TYPE,"
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
+					+ "       C.FEATURE_KIND,"
 					+ "       F.PERCENT,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
@@ -1092,7 +1097,7 @@ public class ProgramService {
 					+ "           AND T.STATUS !=0)"
 					+ "   GROUP BY P.PROGRAM_ID,P.NAME,P.TYPE,C.INFOR_NAME,C.INFOR_ID,F.PERCENT,F.DIFF_DATE,"
 					+ "            P.PLAN_START_DATE,P.PLAN_END_DATE,F.ACTUAL_START_DATE,F.ACTUAL_END_DATE,"
-					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS),"
+					+ "            F.COLLECT_PERCENT,F.COLLECT_PROGRESS,F.DAILY_PERCENT,F.DAILY_PROGRESS,C.FEATURE_KIND),"
 					+ "FINAL_TABLE AS"
 					+ " (SELECT DISTINCT *"
 					+ "    FROM PROGRAM_LIST"
@@ -1115,6 +1120,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					
 						map.put("percent", rs.getInt("PERCENT"));
@@ -1199,6 +1205,7 @@ public class ProgramService {
 					+ "                P.TYPE,"
 					+ "                C.INFOR_NAME,"
 					+ "                C.INFOR_ID,"
+					+ "         C.FEATURE_KIND,"
 					+ "                F.PERCENT,"
 					+ "                F.DIFF_DATE,"
 					+ "                P.PLAN_START_DATE,"
@@ -1255,7 +1262,8 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));}
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", 1);					
 					map.put("percent", rs.getInt("PERCENT"));
@@ -1328,6 +1336,7 @@ public class ProgramService {
 					+ "       P.TYPE,"
 					+ "       C.INFOR_NAME,"
 					+ "       C.INFOR_ID,"
+					+ "       C.FEATURE_KIND,"
 					+ "       F.DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
@@ -1376,7 +1385,8 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));}
 					else if(rs.getInt("TYPE")==4){
 						map.put("inforId", rs.getString("INFOR_ID"));
-						map.put("inforName", rs.getString("INFOR_NAME"));}
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));}
 					map.put("type", rs.getInt("TYPE"));
 					map.put("status", 0);				
 					map.put("diffDate", rs.getInt("DIFF_DATE"));
@@ -1464,6 +1474,7 @@ public class ProgramService {
 					+ "         C.CITY_ID,"
 					+ "         I.INFOR_ID,"
 					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
 					+ "         P.CREATE_USER_ID,"
 					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
 					+ "         P.PLAN_START_DATE,"
@@ -1494,6 +1505,7 @@ public class ProgramService {
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));						
 						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
 						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));

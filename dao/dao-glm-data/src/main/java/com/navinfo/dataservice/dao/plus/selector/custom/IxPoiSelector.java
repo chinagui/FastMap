@@ -134,6 +134,33 @@ public class IxPoiSelector {
 		}
 
 	}
+	
+	/**
+	 * 查找一个poi的多级子
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws Exception
+	 */
+	public static List<Long> getAllChildPidsByParentPid(Connection conn,Set<Long> pidList) throws Exception {
+		List<Long> childPids = new ArrayList<Long>();
+		if(pidList.isEmpty()){
+			return childPids;
+		}
+		childPids=getChildrenPidsByParentPid(conn,pidList);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids.addAll(childPids);
+		poiPids.addAll(childPids);
+		poiPids.addAll(pidList);
+		//循环查询直到没有新父被查出来为止
+		while(poiPids.size()!=pidList.size()){
+			pidList.addAll(poiPids);
+			childPids=getChildrenPidsByParentPid(conn,pidList);
+			poiPids.addAll(childPids);
+		}
+		return childPids;
+	}
+	
 	public static Map<Long,Long> getParentPidsByChildrenPids(Connection conn,Set<Long> pidList) throws ServiceException{
 		Map<Long,Long> childPidParentPid = new HashMap<Long,Long>();
 		if(pidList.isEmpty()){

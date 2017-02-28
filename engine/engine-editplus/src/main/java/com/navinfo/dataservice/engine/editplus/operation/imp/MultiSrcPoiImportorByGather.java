@@ -807,7 +807,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//改电话
 				if(!JSONUtils.isNull(jo.get("contacts")) && jo.getJSONArray("contacts").size() > 0){
-					this.usdateContact(poi, jo);
+					this.usdateIxPoiContact(poi, jo,pid);
 				}
 				//改地址
 				if(!JSONUtils.isNull(jo.get("address")) && StringUtils.isNotEmpty(jo.getString("address"))){
@@ -1665,6 +1665,174 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		}
 	}
 	
+	/**
+	 * @Title: usdateIxPoiContact
+	 * @Description: 修改 联系方式
+	 * @param poi
+	 * @param jo
+	 * @param pid
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年2月27日 下午8:34:47 
+	 */
+	private void usdateIxPoiContact(IxPoiObj poi, JSONObject jo, long pid) throws Exception {
+		//查询的IX_POI_Contact表
+		List<IxPoiContact> oldContactList = poi.getIxPoiContacts();
+		JSONArray contactList = jo.getJSONArray("contacts");
+		JSONArray oldArray = new JSONArray();
+		if(oldContactList != null && oldContactList.size() > 0 ){//数据库有原始值
+					
+			if (contactList != null && contactList.size() > 0) {//poi 上传数据中有值
+				for (IxPoiContact oldContact : oldContactList) {
+					JSONObject oldPoiContObj = ((ISerializable) oldContact).Serialize(null);
+					oldArray.add(oldPoiContObj);
+				}
+				
+				List<String> newRowIdList = new ArrayList<String>();
+				for (int k = 0; k < contactList.size(); k++) {
+					JSONObject contactObj = contactList.getJSONObject(k);
+					newRowIdList.add(contactObj.getString("rowId").toUpperCase());
+					//***************
+					String linkman = contactObj.getString("linkman");
+					String linkmanNum = "";
+					if (linkman.indexOf("总机") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("客服") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("预订") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("销售") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("维修") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("其他") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					int contactInt = Integer.parseInt(linkmanNum, 2);
+					//***************
+					JSONObject newContact = new JSONObject();
+					newContact.put("poiPid", pid);
+					newContact.put("contactDepart", contactInt);
+					newContact.put("contact", contactObj.getString("number"));
+					newContact.put("priority", contactObj.getInt("priority"));
+					newContact.put("contactType", contactObj.getInt("type"));
+				
+					newContact.put("rowId", contactObj.getString("rowId").toUpperCase());
+				
+					// 差分,区分新增修改
+					int ret = getDifferent(oldArray, newContact);
+					if (ret == 0) {//新增
+						IxPoiContact newIxPoiContact = poi.createIxPoiContact();
+						newIxPoiContact.setPoiPid(pid);
+						newIxPoiContact.setContact(newContact.getString("contact"));
+						newIxPoiContact.setContactType(newContact.getInt("contactType"));
+						newIxPoiContact.setContactDepart(newContact.getInt("contactDepart"));
+						newIxPoiContact.setPriority(newContact.getInt("priority"));
+						if(newContact.containsKey("rowId") && !JSONUtils.isNull(newContact.get("rowId")) 
+								&& StringUtils.isNotEmpty(newContact.getString("rowId"))){
+							newIxPoiContact.setRowId(newContact.getString("rowId").toUpperCase());
+						}
+						// 鲜度验证
+						//freshFlag = false;
+					} else if (ret == 1) {//修改
+						//long oldPid = 0;
+						for (IxPoiContact oldContact : oldContactList) {
+							if (oldContact.getRowId().equals(newContact.getString("rowId").toUpperCase())) {
+								oldContact.setPoiPid(pid);
+								oldContact.setContact(newContact.getString("contact"));
+								oldContact.setContactType(newContact.getInt("contactType"));
+								oldContact.setContactDepart(newContact.getInt("contactDepart"));
+								oldContact.setPriority(newContact.getInt("priority"));
+								
+								break;
+							}
+						}
+					}
+				}
+				//差分删除
+				for (IxPoiContact oldContact : oldContactList) {
+					if(!newRowIdList.contains(oldContact.getRowId().toUpperCase())){//原poi中存在的子,上传的poi中不存在,则删除此子
+						poi.deleteSubrow(oldContact);
+					}
+				}
+			} else{
+				// 删除的原始数据
+				for (IxPoiContact oldContact : oldContactList) {
+					poi.deleteSubrow(oldContact);
+				}
+			}
+		}else{//数据库中没有原始值,直接新增
+			if (contactList != null && contactList.size() > 0) {
+				for (int k = 0; k < contactList.size(); k++) {
+					JSONObject contactObj = contactList.getJSONObject(k);
+					//****************
+					String linkman = contactObj.getString("linkman");
+					String linkmanNum = "";
+					if (linkman.indexOf("总机") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("客服") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("预订") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("销售") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("维修") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					if (linkman.indexOf("其他") >= 0) {
+						linkmanNum = "1" + linkmanNum;
+					} else {
+						linkmanNum = "0" + linkmanNum;
+					}
+					int contactInt = Integer.parseInt(linkmanNum, 2);
+					
+					//****************
+					IxPoiContact newIxPoiContact = poi.createIxPoiContact();
+					newIxPoiContact.setPoiPid(pid);
+					newIxPoiContact.setContact(contactObj.getString("number"));
+					newIxPoiContact.setContactType(contactObj.getInt("type"));
+					newIxPoiContact.setContactDepart(contactInt);
+					newIxPoiContact.setPriority(contactObj.getInt("priority"));
+					newIxPoiContact.setRowId(contactObj.getString("rowId").toUpperCase());
+				}
+			}
+		}
+	}
+	
+	
+	
 	// 差分,区分新增修改
 		@SuppressWarnings("unchecked")
 		private int getDifferent(JSONArray oldArray, JSONObject newObj) throws Exception {
@@ -1787,7 +1955,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	 * @param jo
 	 * @throws Exception
 	 */
-	public void usdateContact(IxPoiObj poi,JSONObject jo) throws Exception{
+	/*public void usdateContact(IxPoiObj poi,JSONObject jo) throws Exception{
 		//[集合]联系方式
 		String contacts = null;
 		if(!JSONUtils.isNull(jo.get("contacts"))){
@@ -1797,12 +1965,12 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		}
 		//查询IX_POI_RESTAURANT表
 		List<IxPoiContact> ixPoiContacts = poi.getIxPoiContacts();
-		if(!"[]".equals(contacts)){
+		if(!"[]".equals(contacts)){//上传poi有数据
 			JSONArray ja = JSONArray.fromObject(contacts);
 			//保存查询IX_POI_RESTAURANT表
 			List<IxPoiContact> contactList = new ArrayList<IxPoiContact>();
 			//多源中不存在，但是日库中存在的电话逻辑删除
-			if(ixPoiContacts != null && ixPoiContacts.size() > 0){
+			if(ixPoiContacts != null && ixPoiContacts.size() > 0){//数据库中存在原始数据
 				for (IxPoiContact contact : ixPoiContacts) {
 					for (int i=0;i<ja.size();i++) {
 						JSONObject jso = ja.getJSONObject(i);
@@ -1857,7 +2025,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				poi.deleteSubrow(ixPoiContact);
 			}
 		}
-	}
+	}*/
 	
 	/**
 	 * 改名称

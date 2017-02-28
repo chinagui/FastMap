@@ -765,7 +765,7 @@ public class IxPoiSearch implements ISearch {
 			
 			this.CHARACTERMAP = metaData.getJSONObject("character");
 			
-			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			this.NAVICOVPYMAP = metaData2.getJSONObject("navicovpy");
 			
 			this.ENGSHORTMAP = metaData2.getJSONObject("engshort");
 			

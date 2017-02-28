@@ -163,6 +163,7 @@ public class SubtaskService {
 				//创建质检子任务 subtask	
 				createSubtask(dailyBean);	
 			}
+
 			
 			//根据参数生成subtask bean
 			Subtask bean = createSubtaskBean(userId,dataJson);
@@ -231,7 +232,6 @@ public class SubtaskService {
 			// 持久化
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-
 			String querySql = "select "
 					+ "s.subtask_id"
 					+ ",s.name"
@@ -248,7 +248,6 @@ public class SubtaskService {
 					+ wkt
 					+ "',8307)"
 					+ ", 0.000005) ='TRUE'";
-
 			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -290,11 +289,8 @@ public class SubtaskService {
 					}
 					return list;
 				}
-
 			};
-
 			return run.query(conn, querySql, rsHandler);
-
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -539,7 +535,7 @@ public class SubtaskService {
 			
 			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
 			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,t.name task_name");
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
@@ -554,6 +550,7 @@ public class SubtaskService {
 						Map<String,Object> subtask = new HashMap<String,Object>();						
 						subtask.put("subtaskId",rs.getInt("SUBTASK_ID"));
 						subtask.put("name",rs.getString("NAME"));
+						subtask.put("taskName",rs.getString("TASK_NAME"));
 						subtask.put("type",rs.getInt("TYPE"));
 						subtask.put("planStartDate",df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate",df.format(rs.getTimestamp("PLAN_END_DATE")));
@@ -643,7 +640,7 @@ public class SubtaskService {
 							}
 							subtask.put("percent",stat.getPercent());
 						}
-						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("version",SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						return subtask;
 					}
 					return null;
@@ -1389,7 +1386,7 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID =" + subtaskId;	
 			run.update(conn,updateSql);
-			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID in =" + subtaskId;
+			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID =" + subtaskId;
 			run.update(conn,updateSql);
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1752,9 +1749,9 @@ public class SubtaskService {
 						}
 					}
 				}
-				if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
+				//if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
 			}
-			
+			if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
 			
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;

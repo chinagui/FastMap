@@ -47,4 +47,28 @@ public class DatabaseOperatorResultWithGeo extends DatabaseOperator{
 		} 
 		return resultList;
 	}
+	
+	public List<Object> settleResultSetAndLog(ResultSet resultSet) throws Exception{
+		List<Object> resultList=new ArrayList<Object>();
+		if (resultSet.next()){
+			String pointWkt ="";
+			String logMsg = "";
+			try{
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);			
+				Geometry pointGeo=GeoHelper.getPointFromGeo(geometry);
+				pointWkt = GeoTranslator.jts2Wkt(pointGeo, 0.00001, 5);
+				logMsg = resultSet.getString("log");
+			}catch(Exception e){}
+			
+			String targets=resultSet.getString(2);
+			int meshId=resultSet.getInt(3);
+			
+			resultList.add(pointWkt);
+			resultList.add(targets);
+			resultList.add(meshId);
+			resultList.add(logMsg);
+		} 
+		return resultList;
+	}
 }

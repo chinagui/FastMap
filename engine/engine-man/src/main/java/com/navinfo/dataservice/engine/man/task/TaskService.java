@@ -838,8 +838,9 @@ public class TaskService {
 				if ("type".equals(key)) {
 					conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
 				}
+				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
 				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+					conditionSql+=" AND TASK_LIST.STATUS=1 AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				if("planStatus".equals(key)){
 					int planStatus = condition.getInt(key);
@@ -967,7 +968,7 @@ public class TaskService {
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
-			sb.append("                   AND UG.GROUP_ID = T.GROUP_ID");
+			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
@@ -1285,7 +1286,7 @@ public class TaskService {
 						task.setRoadPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setBlockName(rs.getString("BLOCK_NAME"));
-						task.setWorkProperty(rs.getInt("WORK_PROPERTY"));
+						task.setWorkProperty(rs.getString("WORK_PROPERTY"));
 						task.setProgramId(rs.getInt("PROGRAM_ID"));
 						task.setProgramName(rs.getString("PROGRAM_NAME"));
 						task.setProgramType(rs.getInt("PROGRAM_TYPE"));
@@ -2112,5 +2113,4 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
 }

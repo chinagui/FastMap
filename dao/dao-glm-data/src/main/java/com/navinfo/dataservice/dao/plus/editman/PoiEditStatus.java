@@ -242,8 +242,8 @@ public class PoiEditStatus {
 		try{
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE POI_EDIT_STATUS T SET quickTaskId="+quickTaskId);
-			sb.append(",centreTaskId="+centreTaskId);
+			sb.append("UPDATE POI_EDIT_STATUS T SET T.quick_task_id="+quickTaskId);
+			sb.append(",T.centre_task_id="+centreTaskId);
 			
 				sb.append(" WHERE T.PID = "+pid);
 

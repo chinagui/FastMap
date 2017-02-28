@@ -26,9 +26,9 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /**
- * FM-M01-01	中文别名作业	DHM
+ * FM-MG-C0-01	中文别名作业	DHM
  * 检查条件：
- * 新增POI对象、修改POI对象且修改内容为改名称或改分类;
+ * 新增POI对象、修改POI对象且修改内容为改名称或改分类或改等级;
  * 检查原则：
  * (1)POI的官方标准中文名称仅为全英文或仅为全阿拉伯数字或仅为英文和阿拉伯数字的组合时，字母和数字不区分全半角和大小写，不检查；
  * (5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，O，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
@@ -54,7 +54,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 160208文化活动中心,120202住宅楼""直接报log：别名需作业！
  * @author zhangxiaoyi
  */
-public class FMM0101 extends BasicCheckRule {
+public class FMMGC001 extends BasicCheckRule {
 	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
 	private Map<Long, Long> adminMap=new HashMap<Long, Long>();
 	@Override
@@ -235,7 +235,7 @@ public class FMM0101 extends BasicCheckRule {
 	/**
 	 * 以下条件其中之一满足时，需要进行检查：
 	 *  (1)存在IX_POI_NAME新增；
-	 *  (2)存在IX_POI_NAME修改或修改分类存在；
+	 *  (2)存在IX_POI_NAME修改或修改分类存在,或修改等级；
 	 * @param poiObj
 	 * @return true满足检查条件，false不满足检查条件
 	 * @throws Exception 
@@ -246,6 +246,11 @@ public class FMM0101 extends BasicCheckRule {
 			String newKindCode=poi.getKindCode();
 			String oldKindCode=(String) poi.getHisOldValue(IxPoi.KIND_CODE);
 			if(!newKindCode.equals(oldKindCode)){return true;}
+		}
+		if(poi.hisOldValueContains(IxPoi.LEVEL)){
+			String newLevel=poi.getLevel();
+			String oldLevel=(String) poi.getHisOldValue(IxPoi.LEVEL);
+			if(!newLevel.equals(oldLevel)){return true;}
 		}
 		//(1)存在IX_POI_NAME的新增；(2)存在IX_POI_NAME的修改；
 		List<IxPoiName> names = poiObj.getIxPoiNames();

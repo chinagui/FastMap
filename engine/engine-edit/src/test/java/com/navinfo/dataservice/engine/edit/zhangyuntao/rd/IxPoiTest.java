@@ -24,10 +24,10 @@ public class IxPoiTest extends InitApplication {
     @Test
     public void creat() {
         String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":19,\"data\":{\"longitude\":116.47318840026855,\"latitude\":40.01432055968962,\"x_guide\":116.47318840026855,\"y_guide\":40.01422195512273,\"linkPid\":204000506,\"name\":\"测试\",\"kindCode\":\"230227\"}}";
-        parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":19," +
-                "\"data\":{\"longitude\":116.38623118400574,\"latitude\":40.03860991826774," +
-                "\"x_guide\":116.38628165715588,\"y_guide\":40.03846802657173,\"linkPid\":305003426," +
-                "\"name\":\"cccccc\",\"kindCode\":\"210201\"}}";
+        parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":84," +
+                "\"data\":{\"longitude\":116.47620588541031,\"latitude\":40.0136488132571," +
+                "\"x_guide\":116.47608141958843,\"y_guide\":40.013645261848154,\"linkPid\":29833502,\"name\":\"酒店\"," +
+                "\"kindCode\":\"120101\"}}";
         TestUtil.run(parameter);
     }
 

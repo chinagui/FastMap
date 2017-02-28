@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
@@ -17,9 +18,10 @@ public class PermitCheckNotModifyLinkAssamelink extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow nodeRow : checkCommand.getGlmList()) {
-            if (nodeRow instanceof ZoneNode) {
+            if (nodeRow instanceof ZoneNode && checkCommand.getObjType() == ObjType.ZONENODE) {
                 ZoneNode node = (ZoneNode) nodeRow;
-                if (!node.changedFields().containsKey("geometry")) continue;
+                if (!node.changedFields().containsKey("geometry"))
+                    continue;
 
                 RdSameLinkSelector selector = new RdSameLinkSelector(getConn());
                 List<RdSameLink> sameLinks = selector.loadSameLinkByNodeAndTableName(node.pid(), "ZONE_LINK", false);

@@ -36,8 +36,12 @@ public class CheckTest {
 			list.add("230227");
 			list.add("210105");
 			Map<String, Integer> map = ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(list);
+			Map<String, String> kindNameByKindCode = ScPointPoiCodeNew.getInstance().getKindNameByKindCode("230227");
 			for (String key : map.keySet()) {
 				System.out.println("kindCode---"+key+"kindUse"+map.get(key));
+			}
+			for (String key : kindNameByKindCode.keySet()) {
+				System.out.println("kindCode---"+key+"kindUse"+kindNameByKindCode.get(key));
 			}
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));

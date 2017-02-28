@@ -69,7 +69,7 @@ public class CheckTest {
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
-//		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_NAME");
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 26376, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;

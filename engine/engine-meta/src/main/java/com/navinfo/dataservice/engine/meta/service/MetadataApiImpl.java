@@ -650,12 +650,23 @@ public class MetadataApiImpl implements MetadataApi {
 	/**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
-     * @return Map<String, String> key:KIND_CODE value:KIND_USE
+     * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
      * @throws Exception
      */
 	@Override
 	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
 		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
+	}
+	
+	/**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
+     * @throws Exception
+     */
+	@Override
+	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception {
+		return ScPointPoiCodeNew.getInstance().getKindNameByKindCode(kindCode);
 	}
 	
 	/**

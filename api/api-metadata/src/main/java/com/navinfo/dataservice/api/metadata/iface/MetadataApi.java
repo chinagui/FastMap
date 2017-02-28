@@ -340,6 +340,13 @@ public interface MetadataApi {
     public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
     
     /**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
+     * @throws Exception
+     */
+	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception;
+    /**
      * SC_POINT_FOCUS.TYPE=2
      * @author Han Shaoming
      * @return Map<String, Integer> key:POI_NUM value:TYPE

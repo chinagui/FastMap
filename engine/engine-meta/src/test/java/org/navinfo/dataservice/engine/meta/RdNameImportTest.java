@@ -145,7 +145,7 @@ public class RdNameImportTest {
 		System.out.println(data);
 	}
 	
-	@Test
+	//@Test
 	public void teilenName () {
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589343,\"nameGroupid\":40589344,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":0,\"nameGroupid\":11111111,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
@@ -204,10 +204,10 @@ public class RdNameImportTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
-		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'33333张莉测试','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','_initHooksCalled':true},'subtaskId':76,'dbId':17}");
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'11111张莉测试全国','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'全国','_initHooksCalled':true},'subtaskId':76,'dbId':17}");
 		
 		JSONObject data = jsonReq.getJSONObject("data");
 		

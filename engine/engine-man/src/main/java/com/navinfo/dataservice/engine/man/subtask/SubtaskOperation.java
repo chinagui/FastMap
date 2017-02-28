@@ -2527,7 +2527,7 @@ public class SubtaskOperation {
 					}
 				}
 			}
-			if (collectAndDay){conditionSql+=" AND subtask_list.stage IN (0,1)";}
+//			if (collectAndDay){conditionSql+=" AND subtask_list.stage IN (0,1)";}
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;

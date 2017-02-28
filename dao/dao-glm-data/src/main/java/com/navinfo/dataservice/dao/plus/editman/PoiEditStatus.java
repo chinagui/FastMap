@@ -276,7 +276,7 @@ public class PoiEditStatus {
 				pids.add(entry.getValue().objPid());
 			}
 		}
-		int status = 0;//默认为初始化状态
+		int status = 1;//默认为初始化状态
 		//插入poi_edit_status表记录
 		if(pids!=null&&!pids.isEmpty()){
 			insertPoiEditStatus(conn,pids,status);

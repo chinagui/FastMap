@@ -107,7 +107,7 @@ public class RDLANE005  extends baseRule {
 		}
 		//修改联通关系
 		else if(rdLaneTopology.status().equals(ObjStatus.UPDATE)){
-			int relationshipType = 1;
+			int relationshipType = 2;
 			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
 				relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
 			}

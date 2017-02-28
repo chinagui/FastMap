@@ -755,6 +755,8 @@ public class IxPoiSearch implements ISearch {
 			
 			JSONObject metaData = apiService.getMetadataMap();
 			
+			JSONObject metaData2 = apiService.getMetadataMap2();
+			
 			this.CHAINMAP = metaData.getJSONObject("chain");
 			
 			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
@@ -763,15 +765,15 @@ public class IxPoiSearch implements ISearch {
 			
 			this.CHARACTERMAP = metaData.getJSONObject("character");
 			
-			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
+			this.NAVICOVPYMAP = metaData2.getJSONObject("navicovpy");
 			
-			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
+			this.ENGSHORTMAP = metaData2.getJSONObject("engshort");
 			
-			this.NAMEUNIFYSHORT = metaData.getJSONObject("nameUnifyShort");
+			this.NAMEUNIFYSHORT = metaData2.getJSONObject("nameUnifyShort");
 			
-			this.CHISHORT = metaData.getJSONObject("chishort");
+			this.CHISHORT = metaData2.getJSONObject("chishort");
 			
-			this.ALIASNAME = metaData.getJSONObject("aliasName");
+			this.ALIASNAME = metaData2.getJSONObject("aliasName");
 			for (int pid:pids) {
 				
 				IxPoiSelector poiSelector = new IxPoiSelector(conn);

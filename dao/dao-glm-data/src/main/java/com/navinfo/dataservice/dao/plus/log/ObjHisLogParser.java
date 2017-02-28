@@ -29,7 +29,7 @@ public class ObjHisLogParser {
 	/**
 	 * 分析履历，将履历中涉及的变更过的子表集合返回
 	 * @param logs
-	 * @return [IX_POI_NAME,IX_POI_ADDRESS]
+	 * @return key:主对象 value：参考子表集合 {IX_POI:[IX_POI_NAME,IX_POI_ADDRESS]}
 	 */
 	public static Map<String,Set<String>> getChangeTableSet(Map<Long, List<LogDetail>> logs) {
 		Map<String,Set<String>> subtables=new HashMap<String,Set<String>>();

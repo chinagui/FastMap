@@ -181,6 +181,7 @@ public class Operation implements IOperation {
                     RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
                     limit.setFromSpeedLimit(400);
                     limit.setToSpeedLimit(400);
+                    limit.setSpeedClass(6);
                 }
             }
 
@@ -266,6 +267,7 @@ public class Operation implements IOperation {
                 RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
                 limit.setFromSpeedLimit(400);
                 limit.setToSpeedLimit(400);
+                limit.setSpeedClass(6);
             }
         }
         this.linkList.add(link);

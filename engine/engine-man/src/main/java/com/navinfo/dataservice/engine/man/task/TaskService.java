@@ -1735,7 +1735,7 @@ public class TaskService {
 			par.put("au_db_ip", auDb.getDbServer().getIp());
 			par.put("au_db_username", auDb.getDbUserName());
 			par.put("au_db_password", auDb.getDbUserPasswd());
-			par.put("au_db_sid",auDb.getDbServer().getSid());
+			par.put("au_db_sid",auDb.getDbServer().getServiceName());
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
 			par.put("phaseId",phaseId);

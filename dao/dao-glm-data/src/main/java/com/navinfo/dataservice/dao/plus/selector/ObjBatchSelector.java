@@ -298,6 +298,7 @@ public class ObjBatchSelector {
 			sb.append(" AND " + mainTable.getName() + "."+ mainTable.getPkColumn());	
 		}
 		//字段类型
+		System.out.println("mainTable:  "+mainTable+"  colName: "+colName );
 		String colType = mainTable.getColumByName(colName).getType();
 //		Collection<String> colValues2 = new HashSet<String>();
 //		if(colType.equals(GlmColumn.TYPE_VARCHAR)){

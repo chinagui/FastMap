@@ -863,12 +863,24 @@ public class IxPoiObj extends AbstractIxObj {
 	}
 	
 	/**
-	 * 官方原始英文名
+	 * 官方标准英文名
 	 */
 	public IxPoiName getOfficeStandardEngName(){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
 			if(br.isOfficeName()&&br.isStandardName()&&br.isEng()){
+				return br;}
+			}
+		return null;
+	}
+	
+	/**
+	 * 获取同组官方标准英文名
+	 */
+	public IxPoiName getOfficeStandardEngName(long nameGroupId){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.isOfficeName()&&br.isStandardName()&&br.isEng()&&br.getNameGroupid()==nameGroupId){
 				return br;}
 			}
 		return null;

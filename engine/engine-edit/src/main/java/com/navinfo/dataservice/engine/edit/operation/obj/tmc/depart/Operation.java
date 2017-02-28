@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 
 /**
@@ -34,7 +35,7 @@ public class Operation {
 	 *            分离后左线
 	 * @param rightLinks
 	 *            分离后右线
-	 * @param noTargetLinks 
+	 * @param noTargetLinks
 	 * @param result
 	 *            结果集
 	 * @return
@@ -43,8 +44,8 @@ public class Operation {
 	public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks,
 			Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
 		for (RdLink link : links) {
-			updateTmcLocation(link.getTmclocations(), link, leftLinks.get(link.getPid()),
-					rightLinks.get(link.getPid()), result);
+			updateTmcLocation(link.getTmclocations(), link, leftLinks.get(link.getPid()), rightLinks.get(link.getPid()),
+					result);
 		}
 		return "";
 	}
@@ -62,22 +63,29 @@ public class Operation {
 			Result result) {
 		int originLinkPid = originLink.getPid();
 
-		int originDirect = originLink.getDirect();
+		//创建link时已经把子表信息复制到新link中，清空后再操作
+		leftLink.getTmclocations().clear();
+		rightLink.getTmclocations().clear();
 
 		for (IRow row : tmcLocationLinks) {
 			RdTmclocationLink link = (RdTmclocationLink) row;
-			
-			// 找到原link的tmc信息，赋值给分离后的同方向的link
+
+			// 找到原link的tmc信息，赋值给分离后与TMC方向相同的link
 			if (link.getLinkPid() == originLinkPid) {
-				if (leftLink.getDirect() == originDirect) {
-					link.changedFields().put("linkPid", leftLink.getPid());
 
-					result.insertObject(link, ObjStatus.UPDATE, link.getGroupId());
-				} else if (rightLink.getDirect() == originDirect) {
+				// 如果tmc的同行方向为顺方向，自动维护右侧分离线
+				if (link.getDirect() == 1) {
 					link.changedFields().put("linkPid", rightLink.getPid());
-
 					result.insertObject(link, ObjStatus.UPDATE, link.getGroupId());
 				}
+
+				// 如果tmc的同行方向为逆方向，自动维护左侧分离线,方向关系维护为
+				else if (link.getDirect() == 2) {
+					link.changedFields().put("linkPid", leftLink.getPid());
+					link.changedFields().put("direct", 1);
+					result.insertObject(link, ObjStatus.UPDATE, link.getGroupId());
+				}
+
 				break;
 			}
 		}

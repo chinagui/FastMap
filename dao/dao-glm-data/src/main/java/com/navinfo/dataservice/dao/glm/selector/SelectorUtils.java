@@ -275,9 +275,9 @@ public class SelectorUtils {
 		case "IX_POI_NAME_TONE":
 			return "IX_POI";
 		case "IX_SAMEPOI":
-			return "IX_POI";
+			return "IX_SAMEPOI";
 		case "IX_SAMEPOI_PART":
-			return "IX_POI";
+			return "IX_SAMEPOI";
 		case "IX_POI_CHILDREN":
 			return "IX_POI";
 		// 铁路

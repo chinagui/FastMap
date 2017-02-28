@@ -1286,7 +1286,7 @@ public class TaskService {
 						task.setRoadPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setBlockName(rs.getString("BLOCK_NAME"));
-						task.setWorkProperty(rs.getInt("WORK_PROPERTY"));
+						task.setWorkProperty(rs.getString("WORK_PROPERTY"));
 						task.setProgramId(rs.getInt("PROGRAM_ID"));
 						task.setProgramName(rs.getString("PROGRAM_NAME"));
 						task.setProgramType(rs.getInt("PROGRAM_TYPE"));
@@ -2113,5 +2113,4 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
 }

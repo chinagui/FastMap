@@ -121,13 +121,13 @@ public class NiValExceptionTest extends InitApplication {
 		Connection conn = null;
 		try {
 //{\"subtaskId\":\"353\",\"ckRules\":\"COM20491,CHR70116,CHR70003,GLM60994,COM60038,COM300033,COM20531,CHR63027\",\"checkType\":1}
-			String parameter = "{\"subtaskId\":\"353\",\"ckRules\":\"COM20491,CHR70116,CHR70003,GLM60994,COM60038,COM300033,COM20531,CHR63027\",\"checkType\":1}";
+			String parameter = "{\"subtaskId\":\"245\",\"ckRules\":\"CHR73040,CHR74098,CHR73042,CHR73043,CHR73044,CHR73045,CHR74083,CHR74084,CHR74085,CHR74086,CHR74087,CHR74088,CHR74093,CHR74094,CHR74095,CHR74096,CHR74097,CHR73041\",\"checkType\":5}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId=jsonReq.getInt("subtaskId");
 			int checkType=jsonReq.getInt("checkType");	
 			
-			conn = DBConnector.getInstance().getConnectionById(19);
+			//conn = DBConnector.getInstance().getConnectionById(19);
 
 			long jobId=CheckService.getInstance().checkRun(subtaskId,2,checkType,jsonReq);
 			

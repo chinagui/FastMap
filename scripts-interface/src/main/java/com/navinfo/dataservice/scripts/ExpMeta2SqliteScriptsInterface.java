@@ -409,7 +409,8 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(1, resultSet.getInt("kind_code"));
 				prep.setInt(2, Integer.parseInt(resultSet.getString("class_code")+resultSet.getString("sub_class_code")));
 				prep.setString(3, resultSet.getString("kind_name"));
-				prep.setInt(4, Integer.parseInt(resultSet.getString("kind_code").substring(resultSet.getString("kind_code").length()-2)));
+				String code = resultSet.getString("kind_code").substring(resultSet.getString("kind_code").length()-2);
+				prep.setInt(4, Integer.parseInt(code));
 				prep.setString(5, resultSet.getString("kind_code"));
 				prep.setString(6, resultSet.getString("descript"));
 				int region = 0;

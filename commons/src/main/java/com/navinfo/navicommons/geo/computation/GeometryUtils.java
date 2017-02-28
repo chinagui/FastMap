@@ -696,6 +696,37 @@ public class GeometryUtils {
 		}
 		return targetPoint;
 	}
+	
+	
+	/**
+	 * 计算点位在link的位置（side = 1：左侧，side=2：右侧，side = 3：link上）
+	 * 
+	 * @param point
+	 *            需要计算的点位坐标
+	 * @param link
+	 *            link的几何
+	 * @param guideGeo
+	 *            点在线上的垂足点位
+	 * @precision 是否改变精度
+	 * @return 位置信息
+	 * @throws Exception
+	 */
+	public static int calulatPointSideOflink(Geometry point, Geometry link,
+			Geometry guideGeo, boolean precision) throws Exception {
+
+		if (precision) {
+
+			Geometry pointTmp = GeoTranslator.transform(point, 100000, 0);
+
+			Geometry linkTmp = GeoTranslator.transform(link, 100000, 0);
+
+			Geometry guidGeoTmp = GeoTranslator.transform(guideGeo, 100000, 0);
+
+			return calulatPointSideOflink(pointTmp, linkTmp, guidGeoTmp);
+		}
+
+		return calulatPointSideOflink(point, link, guideGeo);
+	}
 
 	/**
 	 * 计算点位在link的位置（side = 1：左侧，side=2：右侧，side = 3：link上）

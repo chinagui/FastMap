@@ -84,24 +84,24 @@ public class GLM01411 extends baseRule {
 						check1.add(limit.getLinkPid());
 					}
 				}
-				else if(row instanceof RdLink)
-				{
-					RdLink rdLink = (RdLink) row;
-					
-					int direct = rdLink.getDirect();
-					if (rdLink.status() != ObjStatus.DELETE) {
-						if(rdLink.changedFields().containsKey("direct"))
-						{
-							direct = (int) rdLink.changedFields().get("direct");
-						}
-						if(direct != 1)
-						{
-							check1.add(rdLink.getPid());
-						}
-					}
-					
-				}
 			} 
+			else if(row instanceof RdLink)
+			{
+				RdLink rdLink = (RdLink) row;
+				
+				int direct = rdLink.getDirect();
+				if (rdLink.status() != ObjStatus.DELETE) {
+					if(rdLink.changedFields().containsKey("direct"))
+					{
+						direct = (int) rdLink.changedFields().get("direct");
+					}
+					if(direct != 1)
+					{
+						check1.add(rdLink.getPid());
+					}
+				}
+				
+			}
 		}
 	}
 

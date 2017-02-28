@@ -16,6 +16,7 @@ import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdGscExporter {
@@ -54,8 +55,41 @@ public class RdGscExporter {
 		int count = 0;
 
 		while (resultSet.next()) {
+			//***********zl 2017.02.22 
+			int seqNum = resultSet.getInt("shp_seq_num");
+			STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-			JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
+			Geometry linkGeo = GeoTranslator.struct2Jts(struct);
+			Coordinate[] coords = linkGeo.getCoordinates();
+			System.out.println("coords.length/2 : "+coords.length/2 +" seqNum: "+seqNum);
+			if(coords.length/2 >= seqNum){
+				JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
+
+				prep.setString(1, json.getString("uuid"));
+
+				prep.setInt(2, json.getInt("gscPid"));
+
+				prep.setString(3, json.getString("geometry"));
+
+				prep.setString(4, json.getString("display_style"));
+
+				prep.setString(5, json.getString("display_text"));
+
+				prep.setString(6, json.getString("meshid"));
+
+				prep.setInt(7, json.getInt("z"));
+
+				prep.executeUpdate();
+
+				count += 1;
+
+				if (count % 5000 == 0) {
+					sqliteConn.commit();
+				}
+			}
+			//****************
+
+			/*JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
 
 			prep.setString(1, json.getString("uuid"));
 
@@ -77,7 +111,7 @@ public class RdGscExporter {
 
 			if (count % 5000 == 0) {
 				sqliteConn.commit();
-			}
+			}*/
 		}
 
 		sqliteConn.commit();

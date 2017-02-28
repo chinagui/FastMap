@@ -6,6 +6,7 @@ import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiFlag;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -53,14 +54,18 @@ public class FMBAT20135 extends BasicBatchRule {
 				if (name.getNameClass()==1 && name.getNameType()==2 && name.getName().length()>35 && name.getLangCode().equals("ENG")) {
 					officialName = name;
 					officialNameStr = name.getName();
-				} else if (name.getNameClass()==1 && name.getNameType()==1 && name.getLangCode().equals("ENG")) {
-					if (name.getName() == null || name.getName().isEmpty()) {
-						standardName = name;
-					} else {
-						hasStandardName = true;
+					if (officialNameStr == null) {
+						return;
 					}
-				}
+					break;
+				} 
 			}
+			
+			standardName = poiObj.getOfficeStandardEngName(officialName.getNameGroupid());
+			if (standardName != null && StringUtils.isNotEmpty(standardName.getName())) {
+				hasStandardName = true;
+			}
+
 			if (!hasStandardName && officialNameStr.length()>35) {
 				transName(standardName,officialNameStr,poiObj,officialName);
 			}

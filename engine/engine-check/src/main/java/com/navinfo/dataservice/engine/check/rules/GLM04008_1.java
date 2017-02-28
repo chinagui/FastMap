@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
@@ -116,15 +117,63 @@ public class GLM04008_1 extends baseRule{
 				RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)obj;
 				checkRdRestrictionDetail(rdRestrictionDetail);
 			}
-			// 大门RdGate
-			else if (obj instanceof RdGate) {
-				RdGate rdGate = (RdGate) obj;
-				checkRdGate(rdGate,checkCommand.getOperType());
-			}	
+//			// 大门RdGate
+//			else if (obj instanceof RdGate) {
+//				RdGate rdGate = (RdGate) obj;
+//				checkRdGate(rdGate,checkCommand.getOperType());
+//			}	
+			else if (obj instanceof RdLink) {
+				RdLink rdLink = (RdLink) obj;
+				checkRdLink(rdLink);
+			}
 		}
 		
 	}
 
+
+	/**
+	 * @param rdLink
+	 * @throws Exception 
+	 */
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		if(rdLink.changedFields().containsKey("direct")){
+			int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString());
+			if(direct==1){
+				StringBuilder sb = new StringBuilder();
+
+				sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+				sb.append(" WHERE R.PID = D.RESTRIC_PID");
+				sb.append(" AND D.TYPE = 1");
+				sb.append(" AND R.IN_LINK_PID = RL1.LINK_PID");
+				sb.append(" AND D.OUT_LINK_PID = RL2.LINK_PID");
+				sb.append(" AND RL1.DIRECT = 1");
+				sb.append(" AND RL2.DIRECT = 1");
+				sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
+				sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
+				sb.append(" AND G.DIR <> 1");
+				sb.append(" AND R.U_RECORD <> 2");
+				sb.append(" AND D.U_RECORD <> 2");
+				sb.append(" AND RL1.U_RECORD <> 2");
+				sb.append(" AND RL2.U_RECORD <> 2");
+				sb.append(" AND G.U_RECORD <> 2");
+				sb.append(" AND ((RL1.LINK_PID = " + rdLink.getPid() + ") OR (RL2.LINK_PID = " + rdLink.getPid() + "))");
+				
+
+				String sql = sb.toString();
+				log.info("RdLink后检查GLM04008_1:" + sql);
+
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+
+				if(resultList.size()>0){
+					String target = "[RD_LINK," + rdLink.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
+			}
+		}
+		
+	}
 
 	/**
 	 * @param rdRestrictionDetail
@@ -182,6 +231,7 @@ public class GLM04008_1 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
+		//新增交限
 		if(rdRestriction.status().equals(ObjStatus.INSERT)){
 			StringBuilder sb = new StringBuilder();
 
@@ -212,6 +262,39 @@ public class GLM04008_1 extends baseRule{
 
 			if(resultList.size()>0){
 				String target = "[RD_RESTRICTION," + rdRestriction.getPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
+		
+		//删除交限
+		else if(rdRestriction.status().equals(ObjStatus.DELETE)){
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT G.PID FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+			sb.append(" WHERE R.PID = D.RESTRIC_PID");
+			sb.append(" AND D.TYPE = 1");
+			sb.append(" AND R.IN_LINK_PID = RL1.LINK_PID");
+			sb.append(" AND D.OUT_LINK_PID = RL2.LINK_PID");
+			sb.append(" AND RL1.DIRECT = 1");
+			sb.append(" AND RL2.DIRECT = 1");
+			sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
+			sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
+			sb.append(" AND G.DIR <> 1");
+			sb.append(" AND RL1.U_RECORD <> 2");
+			sb.append(" AND RL2.U_RECORD <> 2");
+			sb.append(" AND G.U_RECORD <> 2");
+			sb.append(" AND R.PID = " + rdRestriction.getPid());
+			
+
+			String sql = sb.toString();
+			log.info("RdRestriction后检查GLM04008_1:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				String target = "[RD_GATE," + resultList.get(0).toString() + "]";
 				this.setCheckResult("", target, 0);
 			}
 		}

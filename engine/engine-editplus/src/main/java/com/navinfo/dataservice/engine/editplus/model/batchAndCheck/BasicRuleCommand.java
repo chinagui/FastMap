@@ -4,10 +4,15 @@ import java.sql.Connection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 
@@ -58,7 +63,7 @@ public class BasicRuleCommand {
 	 * @throws Exception
 	 */
 	public Map<Long,BasicObj> loadReferObjs(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
-		Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
+		//Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
 		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
 		if(!objType.isEmpty()){
 			Map<Long,BasicObj> allDataTmp=allDatas.get(objType);
@@ -88,11 +93,60 @@ public class BasicRuleCommand {
 				if(!obj.isDeleted()){
 					returnDataTmp.put(objPid,obj);}
 			}
-			returnDatas.put(objType, returnDataTmp);
-			Map<String,Set<String>> selConfig=new HashMap<String,Set<String>>();
+			//returnDatas.put(objType, returnDataTmp);
+			//加载selectByPids的同时已经加载了子表，不需要单独加载
+			/*Map<String,Set<String>> selConfig=new HashMap<String,Set<String>>();
 			selConfig.put(objType, referSubrow);
 			//增量加载需要参考的子表数据
-			ObjChildrenIncreSelector.increSelect(conn,returnDatas, selConfig);
+			ObjChildrenIncreSelector.increSelect(conn,returnDatas, selConfig);*/
+			return returnDataTmp;
+		}
+		return null;
+	}
+	
+	/**
+	 * 根据pid集合加载非删除数据同时加载修改log
+	 * @param objPids 要加载数据的集合
+	 * @param objType 要加载数据的类型，来自ObjectType枚举类
+	 * @param referSubrow 要加载数据的参考用子表，
+	 * @param isLock 是否对加载数据加锁，true 加锁，false 不加
+	 * @return Map<Long,BasicObj> ：key:pid,value:数据对象BasicObj
+	 * @throws Exception
+	 */
+	public Map<Long,BasicObj> loadReferObjsByLog(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
+		//Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
+		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
+		if(!objType.isEmpty()){
+			Map<Long,BasicObj> allDataTmp=allDatas.get(objType);
+			Set<Long> unLoadPid=new HashSet<Long>();
+			for(Long pid:objPids){
+				if(allDataTmp!=null && allDataTmp.containsKey(pid)){
+					BasicObj obj=allDataTmp.get(pid);
+					if(!obj.isDeleted()){
+						returnDataTmp.put(pid, allDataTmp.get(pid));}
+				}else{
+					unLoadPid.add(pid);
+				}
+			}
+			boolean isMainOnly=false;
+			
+			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadAllLog(getConn(), unLoadPid);			
+			Map<String, Set<String>> tabNames=ObjHisLogParser.getChangeTableSet(logs);
+			if(referSubrow==null){
+				referSubrow=new HashSet<String>();
+				referSubrow.addAll(tabNames.get(objType));
+			}
+			if(referSubrow==null||referSubrow.isEmpty()){isMainOnly=true;}
+			Map<Long,BasicObj> unLoadMap=ObjBatchSelector.selectByPids(getConn(), objType, referSubrow, isMainOnly,unLoadPid, isLock, true);
+			//将poi对象与履历合并起来
+			ObjHisLogParser.parse(unLoadMap, logs);
+			
+			for(Long objPid:unLoadMap.keySet()){
+				BasicObj obj=unLoadMap.get(objPid);
+				if(!obj.isDeleted()){
+					returnDataTmp.put(objPid,obj);}
+			}
+			//returnDatas.put(objType, returnDataTmp);
 			return returnDataTmp;
 		}
 		return null;

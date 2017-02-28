@@ -242,8 +242,8 @@ public class PoiEditStatus {
 		try{
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE POI_EDIT_STATUS T SET quickTaskId="+quickTaskId);
-			sb.append(",centreTaskId="+centreTaskId);
+			sb.append("UPDATE POI_EDIT_STATUS T SET T.quick_task_id="+quickTaskId);
+			sb.append(",T.centre_task_id="+centreTaskId);
 			
 				sb.append(" WHERE T.PID = "+pid);
 
@@ -276,7 +276,7 @@ public class PoiEditStatus {
 				pids.add(entry.getValue().objPid());
 			}
 		}
-		int status = 0;//默认为初始化状态
+		int status = 1;//默认为初始化状态
 		//插入poi_edit_status表记录
 		if(pids!=null&&!pids.isEmpty()){
 			insertPoiEditStatus(conn,pids,status);

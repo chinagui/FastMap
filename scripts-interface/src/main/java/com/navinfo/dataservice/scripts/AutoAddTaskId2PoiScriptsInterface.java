@@ -5,115 +5,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import oracle.sql.STRUCT;
 
 public class AutoAddTaskId2PoiScriptsInterface {
 
-	private static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList(String type) throws SQLException {
-	
-		Connection conn = DBConnector.getInstance().getManConnection();
 
-		QueryRunner runner = new QueryRunner();
-		String sql = null;
-		if("month".equals(type)){
-			sql = "select a.region_id,a.monthly_db_id as db_id,c.admincode,c.mesh from region a, cp_region_province b, cp_meshlist@metadb_link c where a.region_id=b.region_id and b.admincode=c.admincode and a.monthly_db_id is not null order by region_id,admincode";
-		}else if("day".equals(type)){
-			sql = "select a.region_id,a.daily_db_id as db_id,c.admincode,c.mesh from region a, cp_region_province b, cp_meshlist@metadb_link c where a.region_id=b.region_id and b.admincode=c.admincode and a.daily_db_id is not null order by region_id,admincode";
-		}
-		ResultSetHandler<Map<Integer, Map<Integer, Set<Integer>>>> rsh = new ResultSetHandler<Map<Integer, Map<Integer, Set<Integer>>>>() {
-
-			@Override
-			public Map<Integer, Map<Integer, Set<Integer>>> handle(ResultSet rs)
-					throws SQLException {
-				if (rs != null) {
-					Map<Integer, Map<Integer, Set<Integer>>> data = new HashMap<Integer, Map<Integer, Set<Integer>>>();
-
-					while (rs.next()) {
-
-						int dbId = rs.getInt("db_id");
-
-						int adminCode = rs.getInt("admincode");
-
-						int mesh = rs.getInt("mesh");
-
-						Map<Integer, Set<Integer>> map = null;
-						if (data.containsKey(dbId)) {
-							map = data.get(dbId);
-						} else {
-							map = new HashMap<Integer, Set<Integer>>();
-						}
-
-						Set<Integer> meshes = null;
-						if (map.containsKey(adminCode)) {
-							meshes = map.get(adminCode);
-						} else {
-							meshes = new HashSet<Integer>();
-						}
-
-						meshes.add(mesh);
-
-						map.put(adminCode, meshes);
-
-						data.put(dbId, map);
-
-					}
-					return data;
-				}
-				return null;
-			}
-		};
-
-		return runner.query(conn, sql, rsh);
-
-	}
-
-/*	
-	Geometry geo = null;
-	geo = (Geometry) poiObj.getMainrow().getAttrByColName("GEOMETRY");
-	//通过 geo 获取 grid 
-	Coordinate[] coordinate = geo.getCoordinates();
-	CompGridUtil gridUtil = new CompGridUtil();
-	String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
-	//调用 manapi 获取 对应的 快线任务id,及中线任务id
-	Integer quickTaskId = 0;
-	Integer centreTaskId = 0;
-	ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-	Map<String,Integer> taskMap = manApi.queryTaskIdsByGrid(grid);
-	if(taskMap != null && taskMap.containsKey("quickTaskId") && taskMap.containsKey("centreTaskId")){
-		quickTaskId = taskMap.get("quickTaskId");
-		centreTaskId = taskMap.get("centreTaskId");
-	}
-	//维护 poi_edit_status 表中 快线及中线任务标识
-	PoiEditStatus.updateTaskIdByPid(conn, poiPid, quickTaskId, centreTaskId);
-	*/
 	
 	/**
 	 * @Title: queryPidsInPoiEditStatus
@@ -178,8 +93,8 @@ public class AutoAddTaskId2PoiScriptsInterface {
 		try{
 			
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE POI_EDIT_STATUS T SET quickTaskId="+quickTaskId);
-			sb.append(",centreTaskId="+centreTaskId);
+			sb.append("UPDATE POI_EDIT_STATUS T SET T.quick_task_id="+quickTaskId);
+			sb.append(",T.centre_task_id="+centreTaskId);
 			
 				sb.append(" WHERE T.PID = "+pid);
 

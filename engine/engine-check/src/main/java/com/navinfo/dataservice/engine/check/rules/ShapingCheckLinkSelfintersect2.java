@@ -16,20 +16,20 @@ import net.sf.json.JSONObject;
 public class ShapingCheckLinkSelfintersect2 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
-        for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof ZoneLink && row.status() != ObjStatus.DELETE) {
-                ZoneLink link = (ZoneLink) row;
-
-                Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
-                if (link.changedFields().containsKey("geometry"))
-                    geometry = GeoTranslator.geojson2Jts((JSONObject) link.changedFields().get("geometry"), 0.00001, 5);
-
-                Geometry geo = GeometryUtils.getInterPointFromSelf(geometry);
-                if (!geo.isEmpty()) {
-                    setCheckResult(link.getGeometry(), "[ZONE_LINK," + link.pid() + "]", link.mesh());
-                }
-            }
-        }
+        //for (IRow row : checkCommand.getGlmList()) {
+        //    if (row instanceof ZoneLink && row.status() != ObjStatus.DELETE) {
+        //        ZoneLink link = (ZoneLink) row;
+        //
+        //        Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+        //        if (link.changedFields().containsKey("geometry"))
+        //            geometry = GeoTranslator.geojson2Jts((JSONObject) link.changedFields().get("geometry"), 0.00001, 5);
+        //
+        //        Geometry geo = GeometryUtils.getInterPointFromSelf(geometry);
+        //        if (!geo.isEmpty()) {
+        //            setCheckResult(link.getGeometry(), "[ZONE_LINK," + link.pid() + "]", link.mesh());
+        //        }
+        //    }
+        //}
     }
 
     @Override

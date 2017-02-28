@@ -37,10 +37,10 @@ public class ZoneTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"ZONEFACE\",\"dbId\":19," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.50106191635132," +
-                "40.06573985143925],[116.50063276290892,40.06528414790053],[116.50161445140839,40.06534572963794]," +
-                "[116.50106191635132,40.06573985143925]]}}}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"ZONEFACE\",\"dbId\":84," +
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.43982172012329," +
+                "39.964967613764365],[116.43920481204988,39.96446601012264],[116.44006311893463,39.96448245620204]," +
+                "[116.43982172012329,39.964967613764365]]}}}";
         TestUtil.run(parameter);
     }
 }

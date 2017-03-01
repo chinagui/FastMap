@@ -1217,6 +1217,84 @@ public class StaticsService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * @param taskId
+	 * @param type 
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryTaskOverviewByCity(int cityId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql ="SELECT COUNT(1) total FROM BLOCK WHERE CITY_ID = "+cityId;
+
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					int total=0;//总量
+					
+					if (rs.next()) {
+						total=rs.getInt("total");
+					}
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put("total", total);
+					map.put("unPush", total);
+					map.put("ongoing", 0);
+					map.put("unClosed", 0);
+					map.put("closed", 0);
+					map.put("collect", 0);
+					map.put("daily", 0);
+					map.put("monthly", 0);
+					map.put("draft", 0);
+					map.put("unplanned", total);
+					Map<String, Integer> ongoingCollectInfo=new HashMap<String, Integer>();
+					ongoingCollectInfo.put("ongoingRegularCollect", 0);
+					ongoingCollectInfo.put("ongoingFinishedCollect", 0);
+					ongoingCollectInfo.put("ongoingUnexpectedCollect", 0);
+					ongoingCollectInfo.put("total", 0);
+					map.put("ongoingCollectInfo", ongoingCollectInfo);
+					Map<String, Integer> ongoingDailyInfo=new HashMap<String, Integer>();
+					ongoingDailyInfo.put("ongoingRegularDaily", 0);
+					ongoingDailyInfo.put("ongoingFinishedDaily", 0);
+					ongoingDailyInfo.put("ongoingUnexpectedDaily", 0);
+					ongoingDailyInfo.put("total", 0);
+					map.put("ongoingDailyInfo", ongoingDailyInfo);
+					Map<String, Integer> ongoingMonthlyInfo=new HashMap<String, Integer>();
+					ongoingMonthlyInfo.put("ongoingRegularMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingFinishedMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingUnexpectedMonthly", 0);
+					ongoingMonthlyInfo.put("total", 0);
+					map.put("ongoingMonthlyInfo", ongoingMonthlyInfo);
+					
+					Map<String, Integer> overdueInfo=new HashMap<String, Integer>();
+					overdueInfo.put("dailyOverdue", 0);
+					overdueInfo.put("collectOverdue", 0);
+					overdueInfo.put("monthlyOverdue", 0);
+					map.put("overdueInfo", overdueInfo);
+					
+					Map<String, Integer> closedInfo=new HashMap<String, Integer>();
+					closedInfo.put("closedOverdue", 0);
+					closedInfo.put("closedAdvanced", 0);
+					closedInfo.put("closedRegular", 0);
+					map.put("closedInfo", closedInfo);
+					return map;
+				}
+	
+			};
+			log.info("taskByCity sql:"+selectSql);
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 //	/**
 //	 * @param taskId

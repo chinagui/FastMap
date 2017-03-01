@@ -5,9 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -17,9 +21,12 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 public class Check {
+
+    private Logger logger = Logger.getLogger(Check.class);
 
     public void checkDupilicateNode(JSONObject geometry) throws Exception {
 
@@ -74,9 +81,11 @@ public class Check {
                 //SHAPING_CHECK_CROSS_RDLINK_RDLINK
 
                 String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and a.u_record!=2 and " +
-                        "" + "" + "" + "" + "" + "b.link_pid != :2 and b.u_record!=2 and b.s_node_pid not in (a" + "" +
-                        ".s_node_pid,a" + ".e_node_pid) " + "and b" + ".e_node_pid not in (a.s_node_pid,a.e_node_pid)" +
-                        "" + " and sdo_relate(b" + ".geometry,a" + ".geometry," + "'mask=anyinteract')='TRUE'";
+                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "b.link_pid != :2 and b" +
+                        ".u_record!=2 " + "and b" + ".s_node_pid " + "not " + "in (a" + "" + ".s_node_pid,a" + "" +
+                        ".e_node_pid) " + "and " + "b" + "" + ".e_node_pid not in (a" + ".s_node_pid,a" + "" +
+                        ".e_node_pid)" + "" + " and sdo_relate" + "(b" + "" + ".geometry,a" + ".geometry," +
+                        "'mask=anyinteract')='TRUE'";
 
                 PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -96,7 +105,8 @@ public class Check {
                 //GLM01015
                 sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link "
                         + "b" + " where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and " +
-                        "" + "" + "" + "a" + ".e_node_pid in (b.s_node_pid,b.e_node_pid) and b.u_record!=2)";
+                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "a" + ".e_node_pid in (b.s_node_pid,b" + "" +
+                        ".e_node_pid) and" + " b" + ".u_record!=2)";
 
                 pstmt = conn.prepareStatement(sql);
 
@@ -275,11 +285,12 @@ public class Check {
         }
     }
 
-    public void checkSelfIntersect(JSONObject geometry) throws Exception {
+    public static void checkSelfIntersect(JSONObject geometry) throws Exception {
         try {
             Geometry linkGeo = GeoTranslator.geojson2Jts(geometry, 1, 5);
-            Geometry geo = GeometryUtils.getInterPointFromSelf(linkGeo);
-            if (null != geo && !geo.isEmpty())
+            List<Point> points = new ArrayList<>();
+            GeoHelper.isSample(linkGeo, points);
+            if (!points.isEmpty())
                 throw new Exception("背景面不能自相交");
         } catch (Exception e) {
         }
@@ -287,7 +298,6 @@ public class Check {
 
     private void releaseSource(Statement stmt, ResultSet resultSet) throws SQLException {
         resultSet.close();
-
         stmt.close();
     }
 }

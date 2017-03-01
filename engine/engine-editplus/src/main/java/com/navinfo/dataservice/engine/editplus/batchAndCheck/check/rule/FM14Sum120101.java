@@ -54,7 +54,11 @@ public class FM14Sum120101 extends BasicCheckRule {
 							&&!api.scPointMinganListPidNameList().contains(pidName))){
 				List<ScSensitiveWordsObj> compareList = api.scSensitiveWordsMap().get(1);
 				//type:1-POI 地址,2-POI 名称及其他
-				List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(nameStr, poi.getKindCode(), Integer.valueOf(adminMap.get(poi.getPid()).toString()), compareList,2);	
+				int admin = 0;
+				if(adminMap.containsKey(poi.getPid())){
+					admin = Integer.valueOf(adminMap.get(poi.getPid()).toString());
+				}
+				List<ScSensitiveWordsObj> wordList = ScSensitiveWordsUtils.matchSensitiveWords(nameStr, poi.getKindCode(), admin, compareList,2);	
 				if(wordList==null||wordList.isEmpty()){return;}
 				List<String> errorlist = new ArrayList<String>();
 				for(ScSensitiveWordsObj errorTmp:wordList){

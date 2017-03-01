@@ -872,29 +872,29 @@ public class TaskService {
 						//1采集正常，2采集异常，3采集完成
 						if(tmp==1){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 ");}
 						if(tmp==2){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0");}
-						if(tmp==3){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=0");}
+						if(tmp==3){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0");}
 						//4日编正常，5日编异常，6日编完成
 						if(tmp==4){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1 ");}
 						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1");}
-						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=1");}
+						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1");}
 						//7月编正常，8月编异常，9月编完成
 						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3) ");}
 						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3)");}
-						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=2");}
+						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2");}
 						//10未规划，11草稿, 12已完成，13已关闭
 						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
 						if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
-						if(tmp==12){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100");}
+						if(tmp==12){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5");}
 						if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
 						//14按时完成，15提前完成，16逾期完成
 						if(tmp==14){
-							progressList.add("TASK_LIST.DIFF_DATE = 0 AND TASK_LIST.PERCENT = 100 ");
+							progressList.add("TASK_LIST.DIFF_DATE = 0");
 						}
 						if(tmp==15){
-							progressList.add("TASK_LIST.DIFF_DATE > 0 AND TASK_LIST.PERCENT = 100 ");
+							progressList.add("TASK_LIST.DIFF_DATE > 0");
 						}
 						if(tmp==16){
-							progressList.add("TASK_LIST.DIFF_DATE < 0 AND TASK_LIST.PERCENT = 100 ");
+							progressList.add("TASK_LIST.DIFF_DATE < 0");
 						}
 						if(tmp==17){
 							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0 ");
@@ -967,11 +967,11 @@ public class TaskService {
 			sb.append("                       B.PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
+			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
@@ -1027,11 +1027,11 @@ public class TaskService {
 			sb.append("                       1 PLAN_STATUS,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID) SUBTASK_NUM,");
+			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
 			sb.append("                       (SELECT COUNT(1)");
 			sb.append("                          FROM SUBTASK ST");
 			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0) SUBTASK_NUM_CLOSED");
+			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");

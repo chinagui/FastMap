@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -290,20 +291,23 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public JSONObject getMetadataMap() throws Exception {
-		JSONObject result = new JSONObject();
+	public MetadataMap getMetadataMap() throws Exception {
+		MetadataMap result = new MetadataMap();
 		Connection conn = null;
 		try {
-
 			conn = DBConnector.getInstance().getMetaConnection();
-
-			result.put("chain", getChainMap(conn));
-			result.put("kindCode", getKindCodeMap(conn));
-			result.put("admin", getAdminMap(conn));
-			result.put("character", getTyCharacterFjtHmCheckMap(conn,0));
-			result.put("kind", getKindMap(conn));
-
 			
+			result.setChain((Map<String,String>) getChainMap(conn));
+			result.setKindCode((Map<String,String>) getKindCodeMap(conn));
+			result.setAdmin((Map<String,String>) getAdminMap(conn));
+			result.setCharacter((Map<String,String>) getTyCharacterFjtHmCheckMap(conn,0));
+			result.setKind((Map<String,String>) getKindMap(conn));
+			
+			result.setEngshort((Map<String,String>) getEngshortMap(conn));
+			result.setNavicovpy((Map<String,List<String>>) getNavicovpyMap(conn));
+			result.setNameUnifyShort(scPointNameckTypeD1_2_3_4_8_11());
+			result.setChishort(scPointNameckTypeD4_10());
+			result.setAliasName(scPointNameckTypeD4());
 
 			return result;
 		} catch (Exception e) {

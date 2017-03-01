@@ -78,8 +78,8 @@ public class CheckTest {
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
-//		logg.setOpType(OperationType.UPDATE);
-		logg.setOpType(OperationType.INSERT);
+		logg.setOpType(OperationType.UPDATE);
+//		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		//row.setOpType(OperationType.PRE_DELETED);
@@ -111,7 +111,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-17-01-01");
+		ruleIdList.add("FM-14Sum-11-09");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

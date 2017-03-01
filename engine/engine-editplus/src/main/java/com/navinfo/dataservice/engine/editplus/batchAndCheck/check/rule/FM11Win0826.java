@@ -44,8 +44,8 @@ public class FM11Win0826 extends BasicCheckRule {
 			//父名称未修改
 			if(!nameObj.getHisOpType().equals(OperationType.UPDATE)
 					||!nameObj.hisOldValueContains(IxPoiName.NAME)){
-				//return;
-				log.info("");
+				return;
+				//log.info("");
 			}
 			for(IxPoiChildren c:childs){
 				//子是否内部poi

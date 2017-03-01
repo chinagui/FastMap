@@ -45,9 +45,10 @@ public class FM11Win0201 extends BasicCheckRule {
 			List<IxPoiChildren> childs = poiObj.getIxPoiChildrens();
 			if(childs==null||childs.size()==0){return;}
 			//父名称未修改
-			if(ixPoiName.getHisOpType().equals(OperationType.UPDATE)
-					&&ixPoiName.hisOldValueContains(IxPoiName.NAME)){
-				log.info("");
+			if(!ixPoiName.getHisOpType().equals(OperationType.UPDATE)
+					||!ixPoiName.hisOldValueContains(IxPoiName.NAME)){
+				//log.info("");
+				return;
 			}
 			for(IxPoiChildren c:childs){
 				boolean check = false;

@@ -176,6 +176,11 @@ public class RdLaneSelector extends AbstractSelector {
 				if (resultSet.isFirst()) {
 					jsonObject = new JSONObject();
 					this.setAttr(resultSet, pids, jsonObject);
+					if (resultSet.isLast()) {
+						jsonObject.put("lanes", array);
+						arrayResult.add(jsonObject);
+					}
+					continue;
 				}
 				// 合并相同link的车道信息
 				if (pids.contains(resultSet.getInt("link_pid"))) {

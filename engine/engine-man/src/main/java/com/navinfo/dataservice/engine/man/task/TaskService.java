@@ -302,7 +302,6 @@ public class TaskService {
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
-					erNum ++;
 					cmsTaskList.add(task.getTaskId());
 				}else{
 					commontaskIds.add(task.getTaskId());
@@ -324,7 +323,7 @@ public class TaskService {
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
-				erNum=erNum-pushCmsTask.size();
+				erNum=pushCmsTask.size();
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}

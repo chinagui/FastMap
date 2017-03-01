@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +45,7 @@ public class CheckTest {
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
-//	
+	
 //	@Test
 //	public void test() {
 //		UploadOperationByGather operation = new UploadOperationByGather((long) 0);
@@ -67,17 +68,22 @@ public class CheckTest {
 		test.init();
 		Connection conn = DBConnector.getInstance().getConnectionById(17);
 		OperationResult operationResult=new OperationResult();
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", null,false, 767, false);
+		Set<String> tabNames = new HashSet<String>();
+		tabNames.add("IX_POI_NAME");
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 64, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
-//		oldValues.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心");
+//		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
-		logg.setOpType(OperationType.UPDATE);
+//		logg.setOpType(OperationType.UPDATE);
+		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
+		//row.setOpType(OperationType.PRE_DELETED);
+//		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
 //		IxPoiAddress chiAddress = poiObj.getCHAddress();
@@ -105,7 +111,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-11-08");
+		ruleIdList.add("FM-14Sum-17-01-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

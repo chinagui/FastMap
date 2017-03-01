@@ -29,7 +29,7 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  *，则子POI报log:网络搜集英文作业！
  * @author gaopengrong
  */
-public class FMM0102 extends BasicCheckRule {
+public class FMMGC002 extends BasicCheckRule {
 	List<Long> childIds = new ArrayList<Long>();
 	
 	@Override

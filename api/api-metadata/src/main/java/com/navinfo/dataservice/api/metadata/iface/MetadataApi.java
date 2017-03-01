@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -95,7 +96,7 @@ public interface MetadataApi {
 	
 	public void nameImport(String name,double longitude, double latitude,String rowkey)throws Exception ;
 	
-	public JSONObject getMetadataMap() throws Exception;
+	public MetadataMap getMetadataMap() throws Exception;
 	
 	public JSONObject getMetadataMap2() throws Exception;
 	
@@ -342,6 +343,13 @@ public interface MetadataApi {
     public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
     
     /**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
+     * @throws Exception
+     */
+	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception;
+    /**
      * SC_POINT_FOCUS.TYPE=2
      * @author Han Shaoming
      * @return Map<String, Integer> key:POI_NUM value:TYPE
@@ -356,5 +364,19 @@ public interface MetadataApi {
      * @throws Exception
      */
     public Map<String, Integer> searchScFmControl(String kindCode) throws Exception;
+    
+    /**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(1,2,3)
+	 * @return 
+	 * @throws Exception
+	 */
+	public List<Map<String, Object>> scPointKindRule() throws Exception;
+	/**
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
+	 * 
+	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointCode2Level(String kindCode) throws Exception;
 
 }

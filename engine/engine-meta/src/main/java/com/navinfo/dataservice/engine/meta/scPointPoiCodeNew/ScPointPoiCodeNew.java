@@ -14,6 +14,10 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class ScPointPoiCodeNew {
+	
+	private Map<String,Integer> kindUser1Map = new HashMap<String,Integer>();
+	
+	private Map<String,String> kindNameMap = new HashMap<String,String>();
 
 	private static class SingletonHolder {
 		private static final ScPointPoiCodeNew INSTANCE = new ScPointPoiCodeNew();
@@ -25,34 +29,76 @@ public class ScPointPoiCodeNew {
 	
 	/**
 	 * SC_POINT_POICODE_NEW
-	 * @author Han Shaoming
+	 * @param kindCode
+	 * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
+	 * @throws Exception
+	 */
+	public Map<String,String> getKindNameByKindCode(String kindCode) throws Exception{
+		if (kindNameMap == null || kindNameMap.isEmpty()) {
+			synchronized (this) {
+				if (kindNameMap == null || kindNameMap.isEmpty()) {
+					try {
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						
+						String sql = "SELECT KIND_CODE,KIND_NAME FROM SC_POINT_POICODE_NEW WHERE KIND_USE = 1 AND KIND_CODE ='"+kindCode+"'";
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								kindNameMap.put(rs.getString("KIND_CODE"), rs.getString("KIND_NAME"));
+							} 
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.close(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载scPointPoiCodeNewList失败："+ e.getMessage(), e);
+					}
+				}
+			}
+		}
+		return kindNameMap;
+	}
+	
+	/**
+	 * SC_POINT_POICODE_NEW
 	 * @param kindCode,kindUse
 	 * @return
 	 * @throws Exception
 	 */
 	public Map<String,Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception{
-		Map<String,Integer> map = new HashMap<String,Integer>();
-		try {
-			PreparedStatement pstmt = null;
-			ResultSet rs = null;
-			Connection conn = null;
-			
-			String sql = "SELECT KIND_CODE,KIND_USE FROM SC_POINT_POICODE_NEW WHERE KIND_USE =1 AND KIND_CODE IN('"+StringUtils.join(kindCodes, "','")+"')";
-			try {
-				conn = DBConnector.getInstance().getMetaConnection();
-				pstmt = conn.prepareStatement(sql);
-				rs = pstmt.executeQuery();
-				while (rs.next()) {
-					map.put(rs.getString("KIND_CODE"), rs.getInt("KIND_USE"));
-				} 
-			} catch (Exception e) {
-				throw new Exception(e);
-			} finally {
-				DbUtils.close(conn);
+		if (kindUser1Map == null || kindUser1Map.isEmpty()) {
+			synchronized (this) {
+				if (kindUser1Map == null || kindUser1Map.isEmpty()) {
+					try {
+						PreparedStatement pstmt = null;
+						ResultSet rs = null;
+						Connection conn = null;
+						
+						String sql = "SELECT KIND_CODE,KIND_USE FROM SC_POINT_POICODE_NEW WHERE KIND_USE =1 AND KIND_CODE IN('"+StringUtils.join(kindCodes, "','")+"')";
+						try {
+							conn = DBConnector.getInstance().getMetaConnection();
+							pstmt = conn.prepareStatement(sql);
+							rs = pstmt.executeQuery();
+							while (rs.next()) {
+								kindUser1Map.put(rs.getString("KIND_CODE"), rs.getInt("KIND_USE"));
+							} 
+						} catch (Exception e) {
+							throw new Exception(e);
+						} finally {
+							DbUtils.close(conn);
+						}
+					} catch (Exception e) {
+						throw new SQLException("加载scPointPoiCodeNewList失败："+ e.getMessage(), e);
+					}
+				}
 			}
-		} catch (Exception e) {
-			throw new SQLException("加载scPointPoiCodeNewList失败："+ e.getMessage(), e);
 		}
-		return map;
+		return kindUser1Map;
 	}
+	
 }

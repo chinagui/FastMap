@@ -38,20 +38,21 @@ public class GLM60142 extends BasicCheckRule {
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "分类在制作风味类型的值域范围内,没有制作风味类型,需要补充风味类型");
 				return;
 			}
-			//风味类型表IX_POI_RESTAURANT中字段FOOD_TYPE字段值为空，报LOG
-			String foodStr = null;
-			if(restList!= null &restList.size()>0){
-				foodStr=restList.get(0).getFoodType();
-			}
-			if(foodStr==null||foodStr.isEmpty()){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "风味类型字段值为空值错误");
-				return;
-			}
-			//在IX_POI表中，如果FOOD_TYPE有值，则KIND_CODE应在“FOOD_TYPE值域表（SC_POINT_FOODTYPE）”
-			//中的POIKIND存在，否则报LOG
-			if(!foods.containsKey(kind)){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "允许制作餐饮风味类型的分类值域检查："+kind+"不可以制作风味类型");
-				return;
+			
+			if(restList!= null &&restList.size()>0){
+				String foodStr=restList.get(0).getFoodType();
+				
+				//风味类型表IX_POI_RESTAURANT中字段FOOD_TYPE字段值为空，报LOG
+				if(foodStr==null||foodStr.isEmpty()){
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "风味类型字段值为空值错误");
+					return;
+				}
+				//在IX_POI表中，如果FOOD_TYPE有值，则KIND_CODE应在“FOOD_TYPE值域表（SC_POINT_FOODTYPE）”
+				//中的POIKIND存在，否则报LOG
+				if(!foods.containsKey(kind)){
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "允许制作餐饮风味类型的分类值域检查："+kind+"不可以制作风味类型");
+					return;
+				}
 			}
 		}
 	}

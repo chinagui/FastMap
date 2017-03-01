@@ -69,7 +69,7 @@ public class GLM26033_1 extends baseRule{
 			sb.append("           AND RCNTMP.LANG_CODE = 'ENG'");
 			sb.append("           AND RCNTMP.U_RECORD <> 2)");
 			sb.append("   AND RCN.PID = " + rdCrossName.getPid());
-			sb.append("UNION");
+			sb.append(" UNION ");
 			sb.append(" SELECT 1 FROM RD_CROSS_NAME RCN");
 			sb.append(" WHERE RCN.LANG_CODE = 'ENG'");
 			sb.append("   AND RCN.U_RECORD <> 2");
@@ -93,7 +93,53 @@ public class GLM26033_1 extends baseRule{
 				this.setCheckResult("", target, 0);
 			}
 		}
+		//路口名称语言代码编辑
+		else if(rdCrossName.status().equals(ObjStatus.UPDATE)){
+			if(rdCrossName.changedFields().containsKey("langCode")){
+				String langCode = rdCrossName.changedFields().get("langCode").toString();
+				if((langCode.equals("CHI"))||(langCode.equals("ENG"))){
+					
+					StringBuilder sb = new StringBuilder();
+					
+					sb.append("SELECT 1 FROM RD_CROSS_NAME RCN");
+					sb.append(" WHERE RCN.LANG_CODE = 'CHI'");
+					sb.append("   AND RCN.U_RECORD <> 2");
+					sb.append("   AND NOT EXISTS (SELECT 1");
+					sb.append("          FROM RD_CROSS_NAME RCNTMP");
+					sb.append("         WHERE RCNTMP.NAME_GROUPID = RCN.NAME_GROUPID");
+					sb.append("           AND RCNTMP.PID = RCN.PID");
+					sb.append("           AND RCNTMP.LANG_CODE = 'ENG'");
+					sb.append("           AND RCNTMP.U_RECORD <> 2)");
+					sb.append("   AND RCN.PID = " + rdCrossName.getPid());
+					sb.append(" UNION ");
+					sb.append(" SELECT 1 FROM RD_CROSS_NAME RCN");
+					sb.append(" WHERE RCN.LANG_CODE = 'ENG'");
+					sb.append("   AND RCN.U_RECORD <> 2");
+					sb.append("   AND NOT EXISTS (SELECT 1");
+					sb.append("          FROM RD_CROSS_NAME RCNTMP");
+					sb.append("         WHERE RCNTMP.NAME_GROUPID = RCN.NAME_GROUPID");
+					sb.append("           AND RCNTMP.PID = RCN.PID");
+					sb.append("           AND RCNTMP.LANG_CODE = 'CHI'");
+					sb.append("           AND RCNTMP.U_RECORD <> 2)");
+					sb.append("   AND RCN.PID = " + rdCrossName.getPid());
+
+					String sql = sb.toString();
+					log.info("RdCrossName后检查GLM26033_1:" + sql);
+
+					DatabaseOperator getObj = new DatabaseOperator();
+					List<Object> resultList = new ArrayList<Object>();
+					resultList = getObj.exeSelect(this.getConn(), sql);
+
+					if(resultList.size()>0){
+						String target = "[RD_CROSS," + rdCrossName.getPid() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
+			}
+		}
 		
 	}
+	
+
 
 }

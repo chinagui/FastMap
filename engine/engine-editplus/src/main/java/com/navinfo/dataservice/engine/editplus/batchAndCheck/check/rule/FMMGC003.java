@@ -16,7 +16,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * 存在别名原始英文名称(name_class=3，name_type=2,lang_code=ENG)，则报log：别名原始名称需作业！
  * @author gaopengrong
  */
-public class FMM0103 extends BasicCheckRule {
+public class FMMGC003 extends BasicCheckRule {
 	
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)

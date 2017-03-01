@@ -17,6 +17,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.vividsolutions.jts.geom.util.GeometryTransformer;
 
+import oracle.spatial.geometry.JGeometry;
 import oracle.sql.CLOB;
 import oracle.sql.STRUCT;
 
@@ -36,6 +37,21 @@ public class ConnectionUtil {
 		}else{
 			return conn.createClob();
 		}
+	}
+	public static STRUCT createSTRUCTFromJGeometry(JGeometry jGeometry,Connection conn)throws SQLException{
+		Object[] oracleDescriptors = null;
+		Connection delegateConn = null;
+		if (conn instanceof MyDriverManagerConnectionWrapper) {
+			delegateConn = ((MyDriverManagerConnectionWrapper) conn).getDelegate();
+			oracleDescriptors = JGeometry.getOracleDescriptors(delegateConn);
+		} else if (conn instanceof MyPoolGuardConnectionWrapper) {
+			delegateConn = ((MyPoolGuardConnectionWrapper) conn).getDelegate();
+			if (delegateConn instanceof MyPoolableConnection) {
+				delegateConn = ((MyPoolableConnection) delegateConn).getDelegate();
+			}
+			oracleDescriptors = JGeometry.getOracleDescriptors(delegateConn);
+		}
+		return JGeometry.store(jGeometry, delegateConn, oracleDescriptors);
 	}
 	
 	public static CLOB getClob(Connection conn,ResultSet rs,String columnName)throws SQLException{

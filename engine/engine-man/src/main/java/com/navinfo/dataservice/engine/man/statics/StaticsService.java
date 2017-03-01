@@ -1113,7 +1113,7 @@ public class StaticsService {
 					int closedRegular=0;//正常完成
 					int closedAdvanced=0;//提前完成
 					
-					if (rs.next()) {
+					while (rs.next()) {
 						total+=1;
 						int planStatus=rs.getInt("PLAN_STATUS");
 						int status=rs.getInt("STATUS");
@@ -1206,7 +1206,7 @@ public class StaticsService {
 				}
 	
 			};
-
+			log.info("taskByProgram sql:"+selectSql);
 			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
@@ -1588,6 +1588,7 @@ public class StaticsService {
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS";
 			}
+			log.info("programOverView sql:"+selectSql);
 			Map<String,Object> result = StaticsOperation.queryProgramOverView(conn,selectSql);
 			return result;
 			

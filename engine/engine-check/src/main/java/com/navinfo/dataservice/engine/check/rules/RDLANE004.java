@@ -105,7 +105,7 @@ public class RDLANE004 extends baseRule{
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
 			int connexityPid = 0;
-			if (resultSet.next()){
+			while (resultSet.next()){
 				connexityPid = resultSet.getInt("IN_LINK_PID");
 				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
 				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
@@ -167,7 +167,7 @@ public class RDLANE004 extends baseRule{
 			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
 			ResultSet resultSet = pstmt.executeQuery();
 			int connexityPid = 0;
-			if (resultSet.next()){
+			while (resultSet.next()){
 				connexityPid = resultSet.getInt("IN_LINK_PID");
 				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
 				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;

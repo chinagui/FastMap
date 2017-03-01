@@ -2453,7 +2453,7 @@ public class SubtaskOperation {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
-			boolean collectAndDay=true;
+			//boolean collectAndDay=true;
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -2462,7 +2462,7 @@ public class SubtaskOperation {
 					conditionSql+=" AND subtask_list.TASK_ID="+condition.getInt(key);
 				}
 				if ("stage".equals(key)) {
-					collectAndDay=false;
+					//collectAndDay=false;
 					conditionSql+=" AND subtask_list.stage ="+condition.getInt(key);}
 				//子任务名称模糊查询
 				if ("subtaskName".equals(key)) {	

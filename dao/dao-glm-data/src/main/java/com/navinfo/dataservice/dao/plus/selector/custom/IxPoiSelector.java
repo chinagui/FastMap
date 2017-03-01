@@ -105,11 +105,6 @@ public class IxPoiSelector {
 			return childPids;
 		}
 		try{
-			String sql = "SELECT DISTINCT IPC.CHILD_POI_PID"
-					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
-					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
-					+ " AND IPP.PARENT_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
-			
 			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
 				public List<Long> handle(ResultSet rs) throws SQLException {
 					List<Long> result = new ArrayList<Long>();
@@ -120,9 +115,21 @@ public class IxPoiSelector {
 					return result;
 				}
 			};
-			
-			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
-			childPids = new QueryRunner().query(conn,sql, rsHandler);
+			String sql="SELECT DISTINCT IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.PARENT_POI_PID IN";
+			if(pidList.size()>1000){
+				sql= sql+" (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPids = new QueryRunner().query(conn,sql, rsHandler,clob);
+			}else{
+				sql = sql+" (" + StringUtils.join(pidList.toArray(),",") + ")";
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPids = new QueryRunner().query(conn,sql, rsHandler);
+			}			
 			return childPids;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -137,13 +144,6 @@ public class IxPoiSelector {
 			return childPidParentPid;
 		}
 		try{
-			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
-					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
-					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
-					+ " AND IPP.U_RECORD != 2"
-					+ " AND IPC.U_RECORD != 2"
-					+ " AND IPC.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ")";
-			
 			ResultSetHandler<Map<Long,Long>> rsHandler = new ResultSetHandler<Map<Long,Long>>() {
 				public Map<Long,Long> handle(ResultSet rs) throws SQLException {
 					Map<Long,Long> result = new HashMap<Long,Long>();
@@ -155,9 +155,23 @@ public class IxPoiSelector {
 					return result;
 				}
 			};
-			
-			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
-			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+			String sql = "SELECT DISTINCT IPP.PARENT_POI_PID,IPC.CHILD_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPP.U_RECORD != 2"
+					+ " AND IPC.U_RECORD != 2"
+					+ " AND IPC.CHILD_POI_PID IN ";
+			if(pidList.size()>1000){
+				sql= sql+" (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob);
+			}else{
+				sql= sql+" (" + StringUtils.join(pidList.toArray(),",") + ")";
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+			}			
 			return childPidParentPid;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -354,9 +368,6 @@ public class IxPoiSelector {
 			return groupIdList;
 		}
 		try{
-			String sql = " select distinct  p.group_id ,p.poi_pid   from ix_samepoi_part p "
-					+ " where p.poi_pid IN (" + StringUtils.join(pidSet.toArray(),",") + ")" 
-					+ " and p.u_record != 2 " ;
 			ResultSetHandler<List<Map<String,Long>>> rsHandler = new ResultSetHandler<List<Map<String,Long>>>() {
 				public List<Map<String,Long>> handle(ResultSet rs) throws SQLException {
 					List<Map<String,Long>> result = new ArrayList<Map<String,Long>>();
@@ -372,9 +383,20 @@ public class IxPoiSelector {
 					return result;
 				}
 			};
-			
-			log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<Map<>>)："+sql);
-			groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			String sql = " select distinct  p.group_id ,p.poi_pid   from ix_samepoi_part p "
+					+ " where p.u_record != 2 " 
+					+ " and p.poi_pid IN " ;
+			if(pidSet.size()>1000){
+				sql= sql+" (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidSet, ","));
+				log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<Map<>>)："+sql);
+				groupIdList = new QueryRunner().query(conn,sql, rsHandler,clob);
+			}else{
+				sql= sql+" (" + StringUtils.join(pidSet.toArray(),",") + ")";
+				log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<Map<>>)："+sql);
+				groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			}
 			return groupIdList;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -388,9 +410,6 @@ public class IxPoiSelector {
 			return groupIdList;
 		}
 		try{
-			String sql = " select distinct  p.group_id    from ix_samepoi_part p "
-					+ " where p.poi_pid IN (" + StringUtils.join(pidList.toArray(),",") + ")" 
-					+ " and p.u_record != 2 " ;
 			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
 				public List<Long> handle(ResultSet rs) throws SQLException {
 					List<Long> result = new ArrayList<Long>();
@@ -402,9 +421,20 @@ public class IxPoiSelector {
 					return result;
 				}
 			};
-			
-			log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<>)："+sql);
-			groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			String sql = " select distinct  p.group_id from ix_samepoi_part p "
+					+ " where p.u_record != 2" 
+					+ " and p.poi_pid IN " ;
+			if(pidList.size()>1000){
+				sql= sql+" (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<>)："+sql);
+				groupIdList = new QueryRunner().query(conn,sql, rsHandler,clob);
+			}else{
+				sql= sql+" (" + StringUtils.join(pidList.toArray(),",") + ")";
+				log.info("getIxSamePoiGroupIdsByPids查询主表(返回 List<>)："+sql);
+				groupIdList = new QueryRunner().query(conn,sql, rsHandler);
+			}
 			return groupIdList;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

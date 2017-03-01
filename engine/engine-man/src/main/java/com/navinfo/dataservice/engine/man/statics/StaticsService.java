@@ -750,6 +750,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS IN (0, 1)"
 					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = F.TASK_ID(+)"
 					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
 					+ "  UNION ALL"
@@ -764,7 +765,7 @@ public class StaticsService {
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS = 1"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID AND S.IS_QUALITY=0)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
 					+ "SELECT * FROM T WHERE T.GROUP_ID = "+groupId;
 			log.info("selectSql: "+selectSql);
@@ -994,7 +995,7 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND NOT EXISTS"
-						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 						+ "  UNION ALL"
 						+ "  SELECT T.TASK_ID,"
 						+ "         T.PROGRAM_ID,"
@@ -1014,6 +1015,7 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND T.TASK_ID = S.TASK_ID"
+						+ "     AND S.IS_QUALITY=0"
 						+ "   GROUP BY T.TASK_ID,"
 						+ "            T.PROGRAM_ID,"
 						+ "            B.BLOCK_ID,"
@@ -1038,7 +1040,7 @@ public class StaticsService {
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 					+ "  UNION ALL"
 					+ "  SELECT T.TASK_ID,"
 					+ "         T.PROGRAM_ID,"
@@ -1056,6 +1058,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = S.TASK_ID"
 					+ "   GROUP BY T.TASK_ID,"
 					+ "            T.PROGRAM_ID,"
@@ -1414,6 +1417,7 @@ public class StaticsService {
 				selectSql = "SELECT S.SUBTASK_ID,S.STAGE,S.TYPE,S.STATUS,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 						+ " FROM SUBTASK S,FM_STAT_OVERVIEW_SUBTASK FSOS"
 						+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID(+)"
+						+ " AND S.IS_QUALITY=0 "
 						+ " AND S.TASK_ID = " + taskId;
 			}
 			

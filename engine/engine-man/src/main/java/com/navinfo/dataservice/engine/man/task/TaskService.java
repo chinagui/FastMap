@@ -858,8 +858,9 @@ public class TaskService {
 					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
 				}
 				//筛选条件
-				//"progress":[1,3] //进度。1采集正常，2采集异常，3日编正常，4日编异常， 5月编正常，6月编异常，7已关闭，8已完成, 9草稿, 11逾期完成，12按时完成，13提前完成
-				//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，14按时完成，15提前完成，16逾期完成
+				//"progress":[1,3] //进度。
+				//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，
+				//14按时完成，15提前完成，16逾期完成,17采集待分配，18日编待分配，19月编待分配
 				if ("progress".equals(key)){
 					JSONArray progress = condition.getJSONArray(key);
 					if(progress.isEmpty()){
@@ -877,8 +878,8 @@ public class TaskService {
 						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1");}
 						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=1");}
 						//7月编正常，8月编异常，9月编完成
-						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=2 ");}
-						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=2");}
+						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3) ");}
+						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3)");}
 						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.PERCENT = 100 AND TASK_LIST.TYPE=2");}
 						//10未规划，11草稿, 12已完成，13已关闭
 						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
@@ -894,6 +895,13 @@ public class TaskService {
 						}
 						if(tmp==16){
 							progressList.add("TASK_LIST.DIFF_DATE < 0 AND TASK_LIST.PERCENT = 100 ");
+						}
+						if(tmp==17){
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0 ");
+						}else if(tmp==18){
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1 ");
+						}else if(tmp==19){
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3) ");
 						}
 
 						if(!progressList.isEmpty()){

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -33,12 +35,19 @@ public class FMGLM60254 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			IxPoiName br=poiObj.getOfficeStandardCHIName();
-			String py=br.getNamePhonetic();
-			if (py==null){setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());}
+			if (br!=null){
+				String py=br.getNamePhonetic();
+				if (StringUtils.isEmpty(py)){
+					setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
+				}
+			}
 			List<IxPoiName> shorNames= poiObj.getShortStandardCHIName();
 			for(IxPoiName shorName:shorNames){
 				String spy=shorName.getNamePhonetic();
-				if (spy==null){setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());return;}
+				if (StringUtils.isEmpty(spy)){
+					setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId());
+					return;
+				}
 			}
 		}
 	}

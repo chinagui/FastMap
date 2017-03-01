@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -45,23 +46,23 @@ public class IxPoiSearch implements ISearch {
 
 	private Connection conn;
 	
-	private JSONObject CHAINMAP;
+	private Map<String,String> CHAINMAP;
 	
-	private JSONObject KINDCODEMAP;
+	private Map<String,String> KINDCODEMAP;
 	
-	private JSONObject ADMINMAP;
+	private Map<String,String> ADMINMAP;
 	
-	private JSONObject CHARACTERMAP;
+	private Map<String,String> CHARACTERMAP;
 	
-	private JSONObject NAVICOVPYMAP;
+	private Map<String,List<String>> NAVICOVPYMAP;
 	
-	private JSONObject ENGSHORTMAP;
+	private Map<String,String> ENGSHORTMAP;
 	
-	private JSONObject NAMEUNIFYSHORT;
+	private Map<String,String> NAMEUNIFYSHORT;
 	
-	private JSONObject CHISHORT;
+	private Map<String,String> CHISHORT;
 	
-	private JSONObject ALIASNAME;
+	private Map<String,String> ALIASNAME;
 
 	public IxPoiSearch(Connection conn) {
 		super();
@@ -220,58 +221,7 @@ public class IxPoiSearch implements ISearch {
 		System.out.println(MercatorProjection.getWktWithGap(107940, 49615, 17, 80));
 	}
 	
-	/**
-	 * 精编作业数据查询
-	 * @param firstWordItem
-	 * @param secondWorkItem
-	 * @param rowIds
-	 * @param type
-	 * @param langCode
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONArray searchColumnPoiByRowId(String firstWordItem,String secondWorkItem,List<String> rowIds,String type,String langCode) throws Exception {
-		
-		JSONArray dataList = new JSONArray();
-		
-		try {
-			
-			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			
-			
-			JSONObject metaData = apiService.getMetadataMap();
-			
-			this.CHAINMAP = metaData.getJSONObject("chain");
-			
-			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
-			
-			this.ADMINMAP =  metaData.getJSONObject("admin");
-			
-			this.CHARACTERMAP = metaData.getJSONObject("character");
-			
-			this.NAVICOVPYMAP = metaData.getJSONObject("navicovpy");
-			
-			this.ENGSHORTMAP = metaData.getJSONObject("engshort");
-			
-			switch (firstWordItem) {
-				case "poi_name":
-					dataList = getPoiNameData(secondWorkItem,rowIds,type,langCode);
-					break;
-				case "poi_address":
-					dataList = getPoiAddressData(secondWorkItem,rowIds,type,langCode);
-					break;
-				case "poi_englishname":
-					dataList = getPoiEngnameData(secondWorkItem,rowIds,type,langCode);
-					break;
-				case "poi_englishaddress":
-					dataList = getPoiEngaddrData(secondWorkItem,rowIds,type,langCode);
-					break;
-			}
-			return dataList;
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+
 	
 	/**
 	 * poi_name作业项查询
@@ -617,7 +567,7 @@ public class IxPoiSearch implements ISearch {
 			
 			for (int i=0;i<name.length();i++) {
 				if (CHARACTERMAP.containsKey(name.substring(i, i+1))) {
-					String correct = CHARACTERMAP.getString(name.substring(i, i+1));
+					String correct = CHARACTERMAP.get(name.substring(i, i+1));
 					if (correct.isEmpty()) {
 						correct = "";
 					} 
@@ -656,7 +606,7 @@ public class IxPoiSearch implements ISearch {
 							if (!addrNameSingle.isEmpty()) {
 								for (int j=0;j<addrNameSingle.length();j++) {
 									if (CHARACTERMAP.containsKey(addrNameSingle.substring(i, i+1))) {
-										String correct = CHARACTERMAP.getString(addrNameSingle.substring(i, i+1));
+										String correct = CHARACTERMAP.get(addrNameSingle.substring(i, i+1));
 										if (correct.isEmpty()) {
 											correct = "";
 										} 
@@ -676,7 +626,7 @@ public class IxPoiSearch implements ISearch {
 							if (!roadNameSingle.isEmpty()) {
 								for (int j=0;j<roadNameSingle.length();j++) {
 									if (CHARACTERMAP.containsKey(roadNameSingle.substring(i, i+1))) {
-										String correct = CHARACTERMAP.getString(roadNameSingle.substring(i, i+1));
+										String correct = CHARACTERMAP.get(roadNameSingle.substring(i, i+1));
 										if (correct.isEmpty()) {
 											correct = "";
 										} 
@@ -711,7 +661,7 @@ public class IxPoiSearch implements ISearch {
 			for (int i=0;i<word.length();i++) {
 				List<String> sigleWordList = new ArrayList<String>();
 				if (NAVICOVPYMAP.containsKey(String.valueOf(word.charAt(i)))) {
-					List<String> sigleWord = (List<String>) NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
+					List<String> sigleWord = NAVICOVPYMAP.get(String.valueOf(word.charAt(i)));
 					if (sigleWord.size()>1) {
 						sigleWordList.add(Integer.toString(i));
 						sigleWordList.add(String.valueOf(word.charAt(i)));
@@ -752,28 +702,25 @@ public class IxPoiSearch implements ISearch {
 			
 			MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			
+			MetadataMap metaData = apiService.getMetadataMap();
 			
-			JSONObject metaData = apiService.getMetadataMap();
+			this.CHAINMAP = metaData.getChain();
 			
-			JSONObject metaData2 = apiService.getMetadataMap2();
+			this.KINDCODEMAP = metaData.getKindCode();
 			
-			this.CHAINMAP = metaData.getJSONObject("chain");
+			this.ADMINMAP =  metaData.getAdmin();
 			
-			this.KINDCODEMAP = metaData.getJSONObject("kindCode");
+			this.CHARACTERMAP = metaData.getCharacter();
 			
-			this.ADMINMAP =  metaData.getJSONObject("admin");
+			this.NAVICOVPYMAP = metaData.getNavicovpy();
 			
-			this.CHARACTERMAP = metaData.getJSONObject("character");
+			this.ENGSHORTMAP = metaData.getEngshort();
 			
-			this.NAVICOVPYMAP = metaData2.getJSONObject("navicovpy");
+			this.NAMEUNIFYSHORT = metaData.getNameUnifyShort();
 			
-			this.ENGSHORTMAP = metaData2.getJSONObject("engshort");
+			this.CHISHORT = metaData.getChishort();
 			
-			this.NAMEUNIFYSHORT = metaData2.getJSONObject("nameUnifyShort");
-			
-			this.CHISHORT = metaData2.getJSONObject("chishort");
-			
-			this.ALIASNAME = metaData2.getJSONObject("aliasName");
+			this.ALIASNAME = metaData.getAliasName();
 			for (int pid:pids) {
 				
 				IxPoiSelector poiSelector = new IxPoiSelector(conn);

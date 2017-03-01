@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -95,7 +96,7 @@ public interface MetadataApi {
 	
 	public void nameImport(String name,double longitude, double latitude,String rowkey)throws Exception ;
 	
-	public JSONObject getMetadataMap() throws Exception;
+	public MetadataMap getMetadataMap() throws Exception;
 	
 	public JSONObject getMetadataMap2() throws Exception;
 	

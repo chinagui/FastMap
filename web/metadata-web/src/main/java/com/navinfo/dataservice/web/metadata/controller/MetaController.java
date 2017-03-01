@@ -708,6 +708,7 @@ public class MetaController extends BaseController {
 
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
+            System.out.println("tips: "+tips);
             JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));

@@ -384,11 +384,15 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (rdName.getAdminId() == 214 && rdName.getNameGroupid() != 0) {
+		if (rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+				&& rdName.getNameGroupid() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
 		if (rdName.getNameId() != null) {
 			sb.append(" AND name_id !="+rdName.getNameId());
+		}
+		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
 		try {
 			
@@ -400,7 +404,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			pstmt.setInt(3, rdName.getAdminId());
 			
-			if (rdName.getAdminId() == 214) {
+			if (rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+					&& rdName.getNameGroupid() != 0) {
 				pstmt.setInt(4, rdName.getNameGroupid());
 			}
 

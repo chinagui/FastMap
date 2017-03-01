@@ -750,6 +750,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS IN (0, 1)"
 					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = F.TASK_ID(+)"
 					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
 					+ "  UNION ALL"
@@ -764,7 +765,7 @@ public class StaticsService {
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS = 1"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID AND S.IS_QUALITY=0)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
 					+ "SELECT * FROM T WHERE T.GROUP_ID = "+groupId;
 			log.info("selectSql: "+selectSql);
@@ -994,7 +995,7 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND NOT EXISTS"
-						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 						+ "  UNION ALL"
 						+ "  SELECT T.TASK_ID,"
 						+ "         T.PROGRAM_ID,"
@@ -1014,6 +1015,7 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND T.TASK_ID = S.TASK_ID"
+						+ "     AND S.IS_QUALITY=0"
 						+ "   GROUP BY T.TASK_ID,"
 						+ "            T.PROGRAM_ID,"
 						+ "            B.BLOCK_ID,"
@@ -1038,7 +1040,7 @@ public class StaticsService {
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 					+ "  UNION ALL"
 					+ "  SELECT T.TASK_ID,"
 					+ "         T.PROGRAM_ID,"
@@ -1056,6 +1058,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = S.TASK_ID"
 					+ "   GROUP BY T.TASK_ID,"
 					+ "            T.PROGRAM_ID,"
@@ -1110,7 +1113,7 @@ public class StaticsService {
 					int closedRegular=0;//正常完成
 					int closedAdvanced=0;//提前完成
 					
-					if (rs.next()) {
+					while (rs.next()) {
 						total+=1;
 						int planStatus=rs.getInt("PLAN_STATUS");
 						int status=rs.getInt("STATUS");
@@ -1203,7 +1206,85 @@ public class StaticsService {
 				}
 	
 			};
+			log.info("taskByProgram sql:"+selectSql);
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @param type 
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryTaskOverviewByCity(int cityId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql ="SELECT COUNT(1) total FROM BLOCK WHERE CITY_ID = "+cityId;
 
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					int total=0;//总量
+					
+					if (rs.next()) {
+						total=rs.getInt("total");
+					}
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put("total", total);
+					map.put("unPush", total);
+					map.put("ongoing", 0);
+					map.put("unClosed", 0);
+					map.put("closed", 0);
+					map.put("collect", 0);
+					map.put("daily", 0);
+					map.put("monthly", 0);
+					map.put("draft", 0);
+					map.put("unplanned", total);
+					Map<String, Integer> ongoingCollectInfo=new HashMap<String, Integer>();
+					ongoingCollectInfo.put("ongoingRegularCollect", 0);
+					ongoingCollectInfo.put("ongoingFinishedCollect", 0);
+					ongoingCollectInfo.put("ongoingUnexpectedCollect", 0);
+					ongoingCollectInfo.put("total", 0);
+					map.put("ongoingCollectInfo", ongoingCollectInfo);
+					Map<String, Integer> ongoingDailyInfo=new HashMap<String, Integer>();
+					ongoingDailyInfo.put("ongoingRegularDaily", 0);
+					ongoingDailyInfo.put("ongoingFinishedDaily", 0);
+					ongoingDailyInfo.put("ongoingUnexpectedDaily", 0);
+					ongoingDailyInfo.put("total", 0);
+					map.put("ongoingDailyInfo", ongoingDailyInfo);
+					Map<String, Integer> ongoingMonthlyInfo=new HashMap<String, Integer>();
+					ongoingMonthlyInfo.put("ongoingRegularMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingFinishedMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingUnexpectedMonthly", 0);
+					ongoingMonthlyInfo.put("total", 0);
+					map.put("ongoingMonthlyInfo", ongoingMonthlyInfo);
+					
+					Map<String, Integer> overdueInfo=new HashMap<String, Integer>();
+					overdueInfo.put("dailyOverdue", 0);
+					overdueInfo.put("collectOverdue", 0);
+					overdueInfo.put("monthlyOverdue", 0);
+					map.put("overdueInfo", overdueInfo);
+					
+					Map<String, Integer> closedInfo=new HashMap<String, Integer>();
+					closedInfo.put("closedOverdue", 0);
+					closedInfo.put("closedAdvanced", 0);
+					closedInfo.put("closedRegular", 0);
+					map.put("closedInfo", closedInfo);
+					return map;
+				}
+	
+			};
+			log.info("taskByCity sql:"+selectSql);
 			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
@@ -1414,6 +1495,7 @@ public class StaticsService {
 				selectSql = "SELECT S.SUBTASK_ID,S.STAGE,S.TYPE,S.STATUS,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
 						+ " FROM SUBTASK S,FM_STAT_OVERVIEW_SUBTASK FSOS"
 						+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID(+)"
+						+ " AND S.IS_QUALITY=0 "
 						+ " AND S.TASK_ID = " + taskId;
 			}
 			
@@ -1584,6 +1666,7 @@ public class StaticsService {
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS";
 			}
+			log.info("programOverView sql:"+selectSql);
 			Map<String,Object> result = StaticsOperation.queryProgramOverView(conn,selectSql);
 			return result;
 			

@@ -5,12 +5,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 
 import net.sf.json.JSONObject;
 
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * @author zhangyt
@@ -38,16 +40,16 @@ public class Check {
     private boolean checkInMetadata(IxPoi poi, IxPoi otherPoi) {
         boolean result = false;
         MetadataApi apiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-        JSONObject metaData = null;
+        MetadataMap metaData = null;
         try {
             metaData = apiService.getMetadataMap();
         } catch (Exception e) {
             logger.error("无法获取元数据库POI的Kind数据", e);
         }
-        JSONObject kind = metaData.getJSONObject("kind");
+        Map<String, String> kind = metaData.getKind();
         for (Object obj : kind.keySet()) {
             String key = obj.toString();
-            String value = kind.getString(key);
+            String value = kind.get(key);
             if (key.equals(poi.getKindCode()) && Arrays.asList(value.split(",")).contains(otherPoi.getKindCode())) {
                 result = true;
                 break;

@@ -55,7 +55,11 @@ public class GLM33006 extends baseRule {
                 if (link.changedFields().containsKey("kind"))
                     kind = Integer.valueOf(link.changedFields().get("kind").toString());
 
-                if (Arrays.asList(new Integer[]{0, 8, 9, 10, 11, 13}).contains(kind)) {
+                int imiCode = link.getImiCode();
+                if (link.changedFields().containsKey("imiCode"))
+                    imiCode = Integer.valueOf(link.changedFields().get("imiCode").toString());
+
+                if (Arrays.asList(new Integer[]{0, 8, 9, 10, 11, 13}).contains(kind) || imiCode == 1 || imiCode == 2) {
                     List<RdVariableSpeed> list1 = new RdVariableSpeedSelector(getConn()).loadRdVariableSpeedByLinkPid
                             (link.pid(), false);
                     List<RdVariableSpeed> list2 = new RdVariableSpeedSelector(getConn())
@@ -64,14 +68,6 @@ public class GLM33006 extends baseRule {
                     if (!list1.isEmpty() || !list2.isEmpty()) {
                         setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                     }
-                }
-
-                int imiCode = link.getImiCode();
-                if (link.changedFields().containsKey("imiCode"))
-                    imiCode = Integer.valueOf(link.changedFields().get("imiCode").toString());
-
-                if (imiCode == 1 || imiCode == 2) {
-                    setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
                 }
             } else if (row instanceof RdLinkForm && row.status() != ObjStatus.DELETE) {
                 RdLinkForm form = (RdLinkForm) row;

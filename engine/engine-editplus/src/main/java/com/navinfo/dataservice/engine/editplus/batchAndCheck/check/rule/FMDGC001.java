@@ -17,7 +17,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 报log：POI分店名称错误，正确写法是“ＮＯ．”
  * @author zhangxiaoyi
  */
-public class FMPOI006 extends BasicCheckRule {
+public class FMDGC001 extends BasicCheckRule {
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){

@@ -43,7 +43,7 @@ public class FM14Sum170101 extends BasicCheckRule {
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
 			String vipFlag = poi.getVipFlag();
 			if(vipFlag != null){
-				String str = vipFlag.replace("\\|", ",");
+				String str = vipFlag.replace('|', ',');
 				List<Integer> vipFlags = StringUtils.getIntegerListByStr(str);
 				if(vipFlags.contains(2)){
 					boolean check = false;

@@ -9,6 +9,7 @@ import java.sql.Types;
 
 import org.apache.commons.dbutils.DbUtils;
 
+import com.mysql.jdbc.StringUtils;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 
 import net.sf.json.JSONArray;
@@ -71,18 +72,19 @@ public class RdNameOperation {
 				+ "U_FIELDS,         \n"
 				+ "SPLIT_FLAG        \n";
 		// web端需要维护city字段 add by wangdongbin
-		if (!rdName.isCity) {
-			insertSql += ") VALUES \n"
-					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?,?,?) \n";
+		if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
+			insertSql +=  ",CITY		\n"
+					+ ") VALUES \n"
+					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?,?,?,?) \n";
 		} else {
-			insertSql += "CITY		\n"
+			insertSql += ",CITY		\n"
 					+ ") VALUES \n"
 					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?) \n";
 		}
 
 		PreparedStatement pstmt = null;
 		try {
-			
+			System.out.println("rd_name: "+insertSql);
 			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
@@ -105,7 +107,7 @@ public class RdNameOperation {
 			pstmt.setString(8, rdName.getInfix());
 			pstmt.setString(9, rdName.getSuffix());
 			// 名称发音，通过名称生成
-			if (rdName.getLangCode().equals("CHI")) {
+			if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
 				pstmt.setString(10, rdName.getName());
 			} else {
 				pstmt.setString(10, rdName.getNamePhonetic());
@@ -140,11 +142,14 @@ public class RdNameOperation {
 			pstmt.setInt(26, rdName.getuRecord());
 			pstmt.setString(27, rdName.getuFields());
 			pstmt.setInt(28, rdName.getSplitFlag());
-			
-			if (rdName.isCity) {
-				pstmt.setString(29, rdName.getCity());
-			}
-
+			pstmt.setString(29, rdName.getCity());
+			System.out.println("rd_name: "+insertSql+" ("+nameId+","+nameGroupid+","+rdName.getLangCode()+","+rdName.getName()
+			+","+rdName.getType()+","+rdName.getBase()+","+rdName.getPrefix()+","+rdName.getInfix()+","+rdName.getSuffix()
+			+","+rdName.getName()+","+rdName.getTypePhonetic()+","+rdName.getBasePhonetic()+","+rdName.getPrefixPhonetic()+","
+			+rdName.getInfixPhonetic()+","+rdName.getSuffixPhonetic()+","+rdName.getSrcFlag()+","+rdName.getRoadType()
+			+","+rdName.getAdminId()+","+rdName.getCodeType()+","+rdName.getVoiceFile()+","+rdName.getSrcResume()+","
+			+rdName.getPaRegionId()+","+rdName.getMemo()+","+rdName.getRouteId()+","+rdName.getProcessFlag()+","
+			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");
 			pstmt.execute();
 
 			rdName.setNameId(nameId);
@@ -187,7 +192,7 @@ public class RdNameOperation {
 			if (rdName.getNameId() == null) {
 				// 新增
 				// 判断是新增中文名还是英文/葡文名
-				if (rdName.getLangCode() == "CHI" || rdName.getLangCode() == "CHT") {
+				if (rdName.getLangCode().equals("CHI") || rdName.getLangCode().equals("CHT")) {
 					// 中文名
 //					rdName.setCity(true);
 					rdName = saveName(rdName);
@@ -260,7 +265,11 @@ public class RdNameOperation {
 		sb.append("PREFIX = ?,");
 		sb.append("INFIX = ?,");
 		sb.append("SUFFIX = ?,");
-		sb.append("NAME_PHONETIC = ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL),");
+		if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
+			sb.append("NAME_PHONETIC = ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL),");
+		}else{
+			sb.append("NAME_PHONETIC = ?,");
+		}
 		sb.append("TYPE_PHONETIC = ?,");
 		sb.append("BASE_PHONETIC = ?,");
 		sb.append("PREFIX_PHONETIC = ?,");
@@ -278,8 +287,8 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?");
-//		sb.append("CITY = ?");
+		sb.append("SPLIT_FLAG = ?,");
+		sb.append(" CITY = ? ");
 		sb.append(" WHERE NAME_ID = ?");
 		
 		PreparedStatement pstmt = null;
@@ -294,7 +303,7 @@ public class RdNameOperation {
 			pstmt.setString(5, rdName.getPrefix());
 			pstmt.setString(6, rdName.getInfix());
 			pstmt.setString(7, rdName.getSuffix());
-			if (rdName.getLangCode().equals("CHI")) {
+			if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
 				pstmt.setString(8, rdName.getName());
 			} else {
 				pstmt.setString(8, rdName.getNamePhonetic());
@@ -328,8 +337,8 @@ public class RdNameOperation {
 			pstmt.setInt(24, 3);
 			pstmt.setString(25, rdName.getuFields());
 			pstmt.setInt(26, rdName.getSplitFlag());
-//			pstmt.setString(27, rdName.getCity());
-			pstmt.setLong(27, rdName.getNameId());
+			pstmt.setString(27, rdName.getCity());
+			pstmt.setLong(28, rdName.getNameId());
 
 			pstmt.execute();
 			

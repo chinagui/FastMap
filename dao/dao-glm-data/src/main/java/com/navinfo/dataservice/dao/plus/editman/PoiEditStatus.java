@@ -2,6 +2,7 @@ package com.navinfo.dataservice.dao.plus.editman;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -18,10 +19,12 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 
 /** 
@@ -280,6 +283,70 @@ public class PoiEditStatus {
 		//插入poi_edit_status表记录
 		if(pids!=null&&!pids.isEmpty()){
 			insertPoiEditStatus(conn,pids,status);
+		}
+	}
+
+	public static void insertOrUpdatePoiEditStatus(Connection conn, OperationResult result)  throws Exception {
+		
+		for(Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
+			IxPoi ixPoi = (IxPoi)entry.getValue().getMainrow();
+			if(entry.getValue().opType().equals(OperationType.INSERT) || entry.getValue().opType().equals(OperationType.DELETE)){
+				//insertOrDelPids.add(entry.getValue().objPid());
+				System.out.println("ixPoi.getRawFields() : "+ ixPoi.getRawFields()+ " ixPoi.getPid(): "+ixPoi.getPid());
+				try {
+					upatePoiStatusForAndroid(conn, 0, ixPoi.getRawFields(),1,ixPoi.getPid());
+				} catch (Exception e) {
+					throw new Exception("poi 上传新增或者删除poi时,维护 poi_edit_status 报错");
+				}
+			}else{//更新
+				System.out.println("ixPoi.isFreshFlag() : "+ixPoi.isFreshFlag()+" ixPoi.getRawFields() : "+ ixPoi.getRawFields()+ " ixPoi.getPid(): "+ixPoi.getPid());
+
+				if(ixPoi.isFreshFlag()){
+					try {
+						upatePoiStatusForAndroid(conn, 1, ixPoi.getRawFields(),1,ixPoi.getPid());
+					} catch (Exception e) {
+						throw new Exception("poi 上传更新poi时,维护 poi_edit_status 及鲜度标识报错");
+					}
+				}else{
+					try {
+						upatePoiStatusForAndroid(conn, 0, ixPoi.getRawFields(),1,ixPoi.getPid());
+					} catch (Exception e) {
+						throw new Exception("poi 上传更新poi时,维护 poi_edit_status 报错");
+					}
+				}
+			}
+		}
+		
+	}
+	/**
+	 * poi操作修改poi状态为待作业
+	 * 
+	 * @param row
+	 * @throws Exception
+	 */
+	public static void upatePoiStatusForAndroid(Connection conn,  int freshFlag, String rawFields,int status,long pid)
+			throws Exception {
+		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
+		sb.append(" USING (SELECT "+status+" as b," + freshFlag + " as c,'" + rawFields
+				+ "' as d," + "sysdate as e,"+ pid + " as f " + "  FROM dual) T2 ");
+		sb.append(" ON ( T1.pid=T2.f) ");
+		sb.append(" WHEN MATCHED THEN ");
+		sb.append(
+				" UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.is_upload = 1,T1.raw_fields = T2.d,T1.upload_date = T2.e ");
+		sb.append(" WHEN NOT MATCHED THEN ");
+		sb.append(
+				//zl 2016.12.08 新增时为 commit_his_status 字段赋默认值 0 
+				" INSERT (T1.status,T1.fresh_verified,T1.is_upload,T1.raw_fields,T1.upload_date,T1.pid,commit_his_status) VALUES(T2.b,T2.c,1,T2.d,T2.e,T2.f,0)");
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			System.out.println("sb.toString(): "+sb.toString());
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			DBUtils.closeStatement(pstmt);
 		}
 	}
 	

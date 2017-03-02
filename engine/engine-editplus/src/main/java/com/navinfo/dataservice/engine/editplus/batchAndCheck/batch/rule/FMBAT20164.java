@@ -26,6 +26,7 @@ public class FMBAT20164 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoiAddress chiAddress = poiObj.getChiAddress();
+		if(chiAddress==null){return;} 
 		
 		//当18个中文字段均为空时，删除所有地址(中文和英葡文均删除)；
 		if(chiAddress.getProvince()==null&&chiAddress.getCity()==null&&chiAddress.getCounty()==null&&
@@ -39,7 +40,6 @@ public class FMBAT20164 extends BasicBatchRule {
 			}
 		}
 		
-		if(chiAddress==null){return;} 
 		long nameGroupId=chiAddress.getNameGroupid();
 		String chiFullname = chiAddress.getFullname();
 		if(chiFullname==null){return;}

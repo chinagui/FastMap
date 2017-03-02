@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -603,6 +605,35 @@ public class CheckUtil {
     			counts.add(rs.getLong("POI_PID"));
     		}
     		return counts;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过linkPid查询rdLink
+     * @param groupId
+     * @param conn
+     * @return	POI_PID
+     * @throws Exception
+     */
+    public static Map<Long,Integer> searchRdLink(Long linkPid,Connection conn) throws Exception {
+    	String sql = "SELECT LINK_PID,KIND FROM RD_LINK RL WHERE RL.LINK_PID = "+linkPid+" AND RL.U_RECORD <>2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	Map<Long,Integer> map = new HashMap<Long,Integer>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			Long pid = rs.getLong("LINK_PID");
+    			int kind = rs.getInt("KIND");
+    			map.put(pid, kind);
+    		}
+    		return map;
     	} catch (Exception e) {
     		throw e;
     	} finally {

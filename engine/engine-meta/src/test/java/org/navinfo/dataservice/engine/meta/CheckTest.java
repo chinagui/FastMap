@@ -12,8 +12,10 @@ import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
+import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
+import com.navinfo.dataservice.engine.meta.scPointKindRule.ScPointKindRule;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 
@@ -34,8 +36,12 @@ public class CheckTest {
 			list.add("230227");
 			list.add("210105");
 			Map<String, Integer> map = ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(list);
+			Map<String, String> kindNameByKindCode = ScPointPoiCodeNew.getInstance().getKindNameByKindCode("230227");
 			for (String key : map.keySet()) {
 				System.out.println("kindCode---"+key+"kindUse"+map.get(key));
+			}
+			for (String key : kindNameByKindCode.keySet()) {
+				System.out.println("kindCode---"+key+"kindUse"+kindNameByKindCode.get(key));
 			}
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
@@ -74,6 +80,28 @@ public class CheckTest {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();
 		}
-
+	}
+	
+	@Test
+	public void test04() {
+		try {
+			List<Map<String, Object>> scPointKindNew5List = ScPointKindRule.getInstance().scPointKindRule();
+			System.out.println(scPointKindNew5List.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test05() {
+		try {
+			String kindCode = "120101";
+			Map<String, String> scPointKindNew5List = ScPointCode2Level.getInstance().scPointCode2Level(kindCode);
+			System.out.println(scPointKindNew5List.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
 	}
 }

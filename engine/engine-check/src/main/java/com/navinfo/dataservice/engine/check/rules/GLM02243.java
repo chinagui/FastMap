@@ -21,6 +21,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 检查原则：Link上不能具有道路名称信息（立交桥名（主路）或立交桥名（连接路）类型的名称除外），否则报err
  * 道路属性编辑	服务端后检查
  * 名称类型编辑	服务端后检查
+ * 新增道路名	服务端后检查
  */
 public class GLM02243 extends baseRule {
 
@@ -100,6 +101,7 @@ public class GLM02243 extends baseRule {
 	 */
 	private void checkRdLinkName(RdLinkName rdLinkName) throws Exception {
 		// TODO Auto-generated method stub
+		//名称类型修改
 		Map<String, Object> changedFields = rdLinkName.changedFields();
 		if(!changedFields.isEmpty()){
 			//名称类型编辑
@@ -122,6 +124,29 @@ public class GLM02243 extends baseRule {
 						String target = "[RD_LINK," + rdLinkName.getLinkPid() + "]";
 						this.setCheckResult("", target, 0);
 					}
+				}
+			}
+		}
+		
+		//新增道路名
+		else if(rdLinkName.status().equals(ObjStatus.INSERT)){
+			int nameType = rdLinkName.getNameType();
+			if(nameType != 1 && nameType != 2){
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append("SELECT F.LINK_PID FROM RD_LINK_FORM F, RD_LINK_NAME LN");
+				sb.append(" WHERE F.LINK_PID ="+rdLinkName.getLinkPid());
+				sb.append(" AND F.FORM_OF_WAY IN (12, 13) AND F.LINK_PID = LN.LINK_PID");
+				sb.append(" AND F.U_RECORD <>2 AND LN.U_RECORD <>2");
+				String sql = sb.toString();
+				log.info("名称类型编辑后检查GLM02243--sql:" + sql);
+
+				DatabaseOperator getObj = new DatabaseOperator();
+				List<Object> resultList = new ArrayList<Object>();
+				resultList = getObj.exeSelect(this.getConn(), sql);
+				if (!resultList.isEmpty()) {
+					String target = "[RD_LINK," + rdLinkName.getLinkPid() + "]";
+					this.setCheckResult("", target, 0);
 				}
 			}
 		}

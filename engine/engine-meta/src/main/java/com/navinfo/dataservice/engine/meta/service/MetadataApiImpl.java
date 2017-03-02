@@ -25,6 +25,7 @@ import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
+import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
@@ -66,6 +67,15 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD
+	 * @return Map<String, String> key:kind_id,value:keyword
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> ciParaKindKeywordMap() throws Exception{
+		return CiParaKindKeyword.getInstance().ciParaKindKeywordMap();
+	}
 	/**
 	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
 	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表

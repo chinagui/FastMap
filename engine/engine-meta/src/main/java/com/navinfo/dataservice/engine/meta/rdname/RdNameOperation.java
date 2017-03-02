@@ -355,6 +355,9 @@ public class RdNameOperation {
 				
 				subPstms.execute();
 			}
+			//同步同组的拆分标志：同组的名称，只要有一个修改，那么同组的 拆分标志就一同修改；
+			syncSplitFlag(rdName);
+			conn.commit();
 			return rdName;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -366,6 +369,19 @@ public class RdNameOperation {
 		}
 	}
 	
+	private void syncSplitFlag(RdName rdName) throws Exception {
+		String sql = "UPDATE rd_name SET split_flag=? WHERE name_groupid=? ";
+		PreparedStatement subPstms = conn.prepareStatement(sql);
+		try{
+			subPstms.setInt(1, rdName.getSplitFlag());
+			subPstms.setLong(2, rdName.getNameGroupid());
+			subPstms.execute();
+		}finally{
+			DbUtils.closeQuietly(subPstms);
+		}
+		
+	}
+
 	/**
 	 * web端拆分接口
 	 * @author wangdongbin

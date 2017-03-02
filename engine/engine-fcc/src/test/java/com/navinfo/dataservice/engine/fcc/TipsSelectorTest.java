@@ -360,8 +360,11 @@ public class TipsSelectorTest extends InitApplication {
 		@Test
 		public void testSearchDataBySpatial() {
 			try {
+				JSONArray stages = new JSONArray();
+				stages.add(1);
+				stages.add(2);
 				JSONArray ja =
-						solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))");
+						solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",1901,stages);
 						//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
 
 				System.out.println(ja.size()+"  "+ja.toString());

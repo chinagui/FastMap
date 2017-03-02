@@ -71,7 +71,7 @@ public class GLM60447 extends BasicCheckRule {
 			if(adminMap.containsKey(pid)){
 				admin = adminMap.get(pid).toString();
 			}
-			if(pidContactMap.get(pid).contains(admin)){return;}
+			if(pidContactMap.get(pid).contains(admin)){continue;}
 			pids.add(pid);
 			adminList.addAll(pidContactMap.get(pid));
 			adminList.add(admin);

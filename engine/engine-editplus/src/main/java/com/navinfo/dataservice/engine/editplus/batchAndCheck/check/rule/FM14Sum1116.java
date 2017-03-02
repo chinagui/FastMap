@@ -3,31 +3,33 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * @ClassName FMYW20051
+ * @ClassName FM14Sum1116
  * @author Han Shaoming
- * @date 2017年2月20日 下午5:12:59
+ * @date 2017年3月2日 上午9:43:53
  * @Description TODO
- * 检查对象：非删除POI对象
+ * 检查条件：非删除POI对象；
  * 检查原则：
- * 当父POI的分类是220100时
- * 1、父POI.vip_flag=2或POI_NUM在元数据库SC_POINT_FOCUS.POI_NUM列表且SC_POINT_FOCUS.TYPE=2中不存在时
- * 报LOG： POI与公司制作了父子关系（当确认父POI是车厂时，点忽略；当确认父POI不是车厂时，请解除父子关系）；
+ * 父POI和子POI分类在（200103\200104\120101\120102）中，100米以内，与父官方原始中文名称相同的设施建立了父子关系，
+ * 则报log：同名大厦和宾馆建立了父子关系！
+ * 备注：log报在子POI上，方便修改
  */
-public class FMYW20051 extends BasicCheckRule {
+public class FM14Sum1116 extends BasicCheckRule {
 
 	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
 	
@@ -36,6 +38,13 @@ public class FMYW20051 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			String kindCode = poi.getKindCode();
+			if(kindCode == null || (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
+					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
+			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+			if(ixPoiName == null){return;}
+			String name = ixPoiName.getName();
+			if(name == null){return;}
 			//是否有父
 			if(!parentMap.containsKey(poi.getPid())){return;}
 			Long parentId=parentMap.get(poi.getPid());
@@ -43,22 +52,18 @@ public class FMYW20051 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null || !"220100".equals(kindCodeP)){return;}
-			String vipFlag = parentPoi.getVipFlag();
-			//父POI.vip_flag=2
-			if(vipFlag != null){
-				String str = vipFlag.replace('|', ',');
-				List<Integer> vipFlags = StringUtils.getIntegerListByStr(str);
-				if(vipFlags.contains(2)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-					return;
-				}
-			}
-			//POI_NUM在元数据库SC_POINT_FOCUS.POI_NUM列表且SC_POINT_FOCUS.TYPE=2中不存在
-			String poiNumP = parentPoi.getPoiNum();
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
-			if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
+			if(kindCodeP == null|| (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
+					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
+			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
+			if(ixPoiNameP == null){return;}
+			String nameP = ixPoiNameP.getName();
+			if(nameP == null){return;}
+			Geometry geometry = poi.getGeometry();
+			Coordinate coordinate = geometry.getCoordinate();
+			Geometry geometryP = parentPoi.getGeometry();
+			Coordinate coordinateP = geometryP.getCoordinate();
+			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
+			if(distance <100&&StringUtils.equals(name, nameP)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;
 			}
@@ -73,7 +78,7 @@ public class FMYW20051 extends BasicCheckRule {
 		}
 		parentMap = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
 		Set<String> referSubrow=new HashSet<String>();
-		//referSubrow.add("IX_POI_NAME");
+		referSubrow.add("IX_POI_NAME");
 		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}

@@ -43,7 +43,7 @@ public class FMYW20285 extends BasicCheckRule {
 			if(ixPoiName != null){
 				name = ixPoiName.getName();
 				if(name != null){
-					if((name.contains("出口")||name.contains("入口"))&&("230127".equals(kindCode)||"230105".equals(kindCode))){
+					if((name.contains("出口")||name.contains("入口"))&&!"230127".equals(kindCode)&&!"230105".equals(kindCode)){
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "名称包含“出口”(“入口”)，分类不是“机场出发到达”（火车站出发到达），请确认");
 					}
 				}

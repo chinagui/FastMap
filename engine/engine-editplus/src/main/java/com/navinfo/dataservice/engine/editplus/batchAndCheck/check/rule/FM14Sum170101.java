@@ -52,17 +52,19 @@ public class FM14Sum170101 extends BasicCheckRule {
 						check = true;
 					}
 					IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+					String name = null;
 					if(ixPoiName != null){
+						name = ixPoiName.getName();
 						if(ixPoiName.getHisOpType().equals(OperationType.UPDATE)
 								&&ixPoiName.hisOldValueContains(IxPoiName.NAME)){
 							check = true;
 						}
 					}
 					if(check){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商**被修改，请确认");
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商:"+name+"被修改，请确认");
 					}
 					if(poi.getOpType().equals(OperationType.PRE_DELETED)){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商**被删除，请确认");
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商:"+name+"被删除，请确认");
 					}
 				}
 			}
@@ -85,7 +87,7 @@ public class FM14Sum170101 extends BasicCheckRule {
 			}else{
 				pidString=" PID IN ("+pids+")";
 			}
-			String sqlStr="SELECT P1.PID,P1.GEOMETRY,P1.MESH_ID,P2.PID PID2"
+			String sqlStr="SELECT P1.PID,P1.GEOMETRY,P1.MESH_ID,N1.NAME,P2.PID PID2"
 					+ " FROM"
 					+ "	IX_POI P1,"
 					+ "	IX_POI P2,"
@@ -118,10 +120,11 @@ public class FM14Sum170101 extends BasicCheckRule {
 			while(rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
+				String name =rs.getString("NAME");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"),"客户厂商**在数据中存在，请确认");
+				setCheckResult(geometry, targets, rs.getInt("MESH_ID"),"客户厂商:"+name+"在数据中存在，请确认");
 			}
 		}
 	}

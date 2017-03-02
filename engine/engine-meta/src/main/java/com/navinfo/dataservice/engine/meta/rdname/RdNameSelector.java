@@ -234,8 +234,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
 			int flag = params.getInt("flag");//1是任务查，0是全库查
+			System.out.println("flag: "+flag);
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
-			
+			System.out.println("searchForWeb :subtaskId: "+subtaskId);
 			
 			StringUtils sUtils = new StringUtils();
 			

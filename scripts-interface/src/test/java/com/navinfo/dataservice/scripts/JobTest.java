@@ -112,7 +112,7 @@ public class JobTest {
 //	    System.out.println(jobId);
 	    try{
 			//执行job
-			int jobId=63;
+			int jobId=667;
 			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 			job.run();

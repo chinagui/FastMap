@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.druid.util.StringUtils;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -54,11 +55,13 @@ public class FMGLM60138 extends BasicCheckRule {
 				Map<String, String> brandDMap = api.scPointChainBrandKeyDMap();
 				//SC_POINT_CHAIN_CODE中TYPE=1
 				List<String> chainList = api.scPointChainCodeList();
-				for(String key:brandDMap.keySet()){
-					if(name.contains(key)){
-						if(chain==null||!chainList.contains(chain)){
-							setCheckResult(poi.getGeometry(),poiObj, poi.getMeshId(), "名称中含有品牌关键字："+key+"，请确认品牌正确性");
-							return;
+				if(chainList.contains(chain)){
+					for(String key:brandDMap.keySet()){
+						if(name.contains(key)){
+							if(!StringUtils.equals(chain, brandDMap.get(key))){
+								setCheckResult(poi.getGeometry(),poiObj, poi.getMeshId(), "名称中含有品牌关键字："+key+"，请确认品牌正确性");
+								return;
+							}
 						}
 					}
 				}

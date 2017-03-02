@@ -207,11 +207,11 @@ public class RDLANE005  extends baseRule {
 
 		sb.append(" SELECT V.LINK_PID FROM RD_LANE_VIA V");
 		sb.append(" WHERE V.U_RECORD <> 2");
-		sb.append(" AND V.TOPOLOGY_ID = 1");
+		sb.append(" AND V.TOPOLOGY_ID = " + pid);
 		sb.append(" MINUS");
 		sb.append(" SELECT RCL.LINK_PID FROM RD_LANE_CONNEXITY RLC,RD_LANE_TOPOLOGY RLT,RD_CROSS_NODE RCN,RD_CROSS_LINK RCL");
 		sb.append(" WHERE RLC.PID = RLT.CONNEXITY_PID");
-		sb.append(" AND RLT.TOPOLOGY_ID = 1");
+		sb.append(" AND RLT.TOPOLOGY_ID = " + pid);
 		sb.append(" AND RLC.NODE_PID = RCN.NODE_PID");
 		sb.append(" AND RCN.PID = RCL.PID");
 		sb.append(" AND RLC.U_RECORD <> 2");

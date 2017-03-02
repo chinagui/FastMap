@@ -69,7 +69,7 @@ public class GLM01455 extends baseRule {
 			innerLinks.add(((RdCrossLink) l).getLinkPid());
 		}
 
-		boolean flag = false;
+		boolean flag = false; 
 
 		for (RdLink l : links) {
 			if (!innerLinks.contains(l.pid())) {

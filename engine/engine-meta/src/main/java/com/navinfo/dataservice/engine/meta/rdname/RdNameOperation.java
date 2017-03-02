@@ -84,7 +84,7 @@ public class RdNameOperation {
 
 		PreparedStatement pstmt = null;
 		try {
-			
+			System.out.println("rd_name: "+insertSql);
 			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
@@ -143,7 +143,13 @@ public class RdNameOperation {
 			pstmt.setString(27, rdName.getuFields());
 			pstmt.setInt(28, rdName.getSplitFlag());
 			pstmt.setString(29, rdName.getCity());
-
+			System.out.println("rd_name: "+insertSql+" ("+nameId+","+nameGroupid+","+rdName.getLangCode()+","+rdName.getName()
+			+","+rdName.getType()+","+rdName.getBase()+","+rdName.getPrefix()+","+rdName.getInfix()+","+rdName.getSuffix()
+			+","+rdName.getName()+","+rdName.getTypePhonetic()+","+rdName.getBasePhonetic()+","+rdName.getPrefixPhonetic()+","
+			+rdName.getInfixPhonetic()+","+rdName.getSuffixPhonetic()+","+rdName.getSrcFlag()+","+rdName.getRoadType()
+			+","+rdName.getAdminId()+","+rdName.getCodeType()+","+rdName.getVoiceFile()+","+rdName.getSrcResume()+","
+			+rdName.getPaRegionId()+","+rdName.getMemo()+","+rdName.getRouteId()+","+rdName.getProcessFlag()+","
+			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");
 			pstmt.execute();
 
 			rdName.setNameId(nameId);
@@ -281,8 +287,8 @@ public class RdNameOperation {
 		sb.append("PROCESS_FLAG = ?,");
 		sb.append("U_RECORD = ?,");
 		sb.append("U_FIELDS = ?,");
-		sb.append("SPLIT_FLAG = ?");
-		sb.append("CITY = ?");
+		sb.append("SPLIT_FLAG = ?,");
+		sb.append(" CITY = ? ");
 		sb.append(" WHERE NAME_ID = ?");
 		
 		PreparedStatement pstmt = null;

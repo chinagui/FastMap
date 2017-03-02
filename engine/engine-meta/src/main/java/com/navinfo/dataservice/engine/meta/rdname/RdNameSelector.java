@@ -384,7 +384,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
 				&& rdName.getNameGroupid() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
@@ -404,7 +404,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			pstmt.setInt(3, rdName.getAdminId());
 			
-			if (rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+			if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
 					&& rdName.getNameGroupid() != 0) {
 				pstmt.setInt(4, rdName.getNameGroupid());
 			}
@@ -467,7 +467,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+//			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));

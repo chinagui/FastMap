@@ -1,14 +1,12 @@
 package com.navinfo.dataservice.control.app;
 
 import java.util.Date;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
-
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class UploadTest {
@@ -21,7 +19,7 @@ public class UploadTest {
 		
 	}
 	
-	@Test
+	//@Test
 	public void test() {
 		UploadOperation operation = new UploadOperation(11L);
 		try {
@@ -36,4 +34,5 @@ public class UploadTest {
 		}
 
 	}
+	
 }

@@ -12,9 +12,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
 
@@ -22,7 +24,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdNameSelector {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 	
 	public RdNameSelector() {
@@ -462,7 +464,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+			try{
+				rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));	
+			}catch(Exception e){
+				//tipsId 不存在
+				log.warn("tipsId没有获取", e);
+			}
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));

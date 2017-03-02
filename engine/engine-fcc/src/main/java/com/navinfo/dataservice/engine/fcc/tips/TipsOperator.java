@@ -300,7 +300,7 @@ public class TipsOperator {
 
 			}
 
-			value.put("t_lifecycle", 2);
+			//value.put("t_lifecycle", 2);  20170302和玉秀确认内业的需改不更新t_lifecycle
 
 			value.put("t_date", date);
 

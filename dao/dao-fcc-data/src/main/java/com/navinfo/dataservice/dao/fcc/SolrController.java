@@ -282,9 +282,9 @@ public class SolrController {
 		if(!isPre){
 			
 			if("".equals(builder.toString())){
-				builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
 			}else{
-				builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
 			}
 		}
 		
@@ -478,9 +478,9 @@ public class SolrController {
 		
 		//取掉fc预处理没有提交的tips
 		if("".equals(builder.toString())){
-			builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+			builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
 		}else{
-			builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+			builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
 		}
 		
 
@@ -723,9 +723,9 @@ public class SolrController {
 		if(!isPre){
 			
 			if("".equals(builder.toString())){
-				builder.append("-(t_pStatus:0 AND s_sourceType:8001)");
+				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
 			}else{
-				builder.append("AND -(t_pStatus:0 AND s_sourceType:8001)");
+				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
 			}
 		}
 		

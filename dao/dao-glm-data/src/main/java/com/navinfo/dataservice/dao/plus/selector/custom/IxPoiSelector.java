@@ -150,7 +150,6 @@ public class IxPoiSelector {
 		childPids=getChildrenPidsByParentPid(conn,pidList);
 		Set<Long> poiPids=new HashSet<Long>();
 		poiPids.addAll(childPids);
-		poiPids.addAll(childPids);
 		poiPids.addAll(pidList);
 		//循环查询直到没有新父被查出来为止
 		while(poiPids.size()!=pidList.size()){
@@ -181,6 +180,82 @@ public class IxPoiSelector {
 						long parentPid = rs.getLong("PARENT_POI_PID");
 						long childPid = rs.getLong("CHILD_POI_PID");
 						result.put(childPid, parentPid);
+					}
+					return result;
+				}
+			};
+			
+			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+			return childPidParentPid;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+
+	}
+	
+	/**
+	 * 查找一个poi的父子家族关系
+	 * a子 b父
+	 * 例如：a->b->c->d a->m->c 
+	 * 输入：a
+	 * 返回：{a:[b,m],b:[c],c:[d],m:[c]}
+	 * a->b->c->d->a
+	 * 输入：a
+	 * 返回：{a:[b],b:[c],c:[d],d:[a]}
+	 * @param conn
+	 * @param pidList
+	 * @return Map<Long, Set<Long>>  key:child value:parent set
+	 * @throws Exception
+	 */
+	public static Map<Long, Long> getAllParentChildByPids(Connection conn,Set<Long> pidList) throws Exception {
+		Map<Long, Long> childPids = new HashMap<Long, Long>();
+		if(pidList.isEmpty()){
+			return childPids;
+		}
+		childPids=getParentChildByPids(conn,pidList);
+		Set<Long> poiPids=new HashSet<Long>();
+		poiPids.addAll(childPids.keySet());
+		poiPids.addAll(childPids.values());
+		//循环查询直到没有新父被查出来为止
+		int beforeNum=poiPids.size();
+		while(poiPids.size()!=beforeNum){
+			beforeNum=poiPids.size();
+			childPids=getParentChildByPids(conn,poiPids);
+			poiPids.addAll(childPids.keySet());
+			poiPids.addAll(childPids.values());
+		}
+		return childPids;
+	}
+	
+	/**
+	 * pidList作为父/子的父，子的集合
+	 * @param conn
+	 * @param pidList
+	 * @return Map<Long, Set<Long>> key:child value:parent set
+	 * @throws ServiceException
+	 */
+	public static Map<Long, Long> getParentChildByPids(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long, Long> childPidParentPid = new HashMap<Long,Long>();
+		if(pidList.isEmpty()){
+			return childPidParentPid;
+		}
+		try{
+			String sql = "SELECT DISTINCT P.PARENT_POI_PID, C.CHILD_POI_PID"
+					+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
+					+ " WHERE P.GROUP_ID = C.GROUP_ID"
+					+ "   AND P.U_RECORD != 2"
+					+ "   AND C.U_RECORD != 2"
+					+ "   AND (P.PARENT_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + ") "
+					+ "      OR C.CHILD_POI_PID IN (" + StringUtils.join(pidList.toArray(),",") + "))";
+			
+			ResultSetHandler<Map<Long, Long>> rsHandler = new ResultSetHandler<Map<Long, Long>>() {
+				public Map<Long, Long> handle(ResultSet rs) throws SQLException {
+					Map<Long, Long> result = new HashMap<Long, Long>();
+					while (rs.next()) {
+						result.put(rs.getLong("CHILD_POI_PID"), rs.getLong("PARENT_POI_PID"));
 					}
 					return result;
 				}

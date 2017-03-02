@@ -54,7 +54,8 @@ public class UploadOperationByGather {
 	private Long userId;
 	
 	protected Logger log = Logger.getLogger(UploadOperationByGather.class);
-	protected Map<String,String> errLog = new HashMap<String,String>();
+//	protected Map<String,String> errLog = new HashMap<String,String>();
+	protected JSONArray errLog = new JSONArray();
 	public UploadOperationByGather(Long userId) {
 	//	this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
 	//	runn = new QueryRunner();
@@ -128,7 +129,9 @@ public class UploadOperationByGather {
 					PoiRelationImportor relImp = new PoiRelationImportor(conn,imp.getResult());
 					relImp.operate(relCmd);
 					relImp.persistChangeLog(OperationSegment.SG_ROW, userId);
-					errLog.putAll(imp.getErrLog());
+					
+				
+					errLog.addAll(imp.getErrLog());
 					log.debug("dbId("+dbId+")转入成功。");
 					//*************zl 2017.02.09 采集成果自动批任务标识**************
 					OperationResult result = imp.getResult();
@@ -143,21 +146,9 @@ public class UploadOperationByGather {
 				}
 			}
 			
-			/*retObj.put("success", poiMap.size()-errLog.size());
-			JSONObject failJson=new JSONObject();
-			failJson.put("count", errLog.size());
-			failJson.put("fids", errLog);*/
 			retObj.put("success", ja.size()-errLog.size());//成功的poi 总数
-			List<JSONObject> errList = new ArrayList<JSONObject>();
-			if(errLog != null && errLog.size() > 0 ){
-				for(String key : errLog.keySet()){
-					JSONObject errObj = new JSONObject();
-					errObj.put("fid", key);
-					errObj.put("reason", errLog.get(key));
-					errList.add(errObj);
-				}
-			}
-			retObj.put("fail", errList);
+			
+			retObj.put("fail", errLog);
 			return retObj;
 		} catch (Exception e) {
 			throw e;
@@ -207,9 +198,10 @@ public class UploadOperationByGather {
 	}
 
 	private String calDbDataMapping( Connection manConn,String grid) throws SQLException {
+		String dbId = "";
 		String manQuery = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=:1";
 		QueryRunner qRunner = new QueryRunner();
-		String dbId = qRunner.queryForString(manConn, manQuery, grid);
+		dbId = qRunner.queryForString(manConn, manQuery, grid);
 		return dbId;
 	}
 	
@@ -234,12 +226,24 @@ public class UploadOperationByGather {
 		for (Object grid :gridDataMapping.keySet()){
 			String  dbId = calDbDataMapping( manConn, grid.toString());
 			log.info("gridId:"+grid+",dbId:"+dbId);
-			if (dbId.isEmpty()) {
-				errLog.put(gridDataMapping.get(grid).toString(), "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");
+			if (dbId == null || dbId.isEmpty()) {
+				 List mapcoll = (List) gridDataMapping.get(grid);
+	             Iterator ii = mapcoll.iterator();  
+	             while(ii.hasNext()){  
+	                JSONObject mailValue = (JSONObject) ii.next();  
+	                //System.out.println(mailValue);  
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", mailValue.get("fid"));
+					errObj.put("reason",  "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");
+					errLog.add(errObj);
+				}
+//				errLog.put(gridDataMapping.get(grid).toString(), "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");
 				continue;
 			}
-			for (Object data: (List)gridDataMapping.get(grid)) {
-				dbDataMapping.put(dbId,data);
+			if((List)gridDataMapping.get(grid) != null && ((List)gridDataMapping.get(grid)).size() > 0){
+				for (Object data: (List)gridDataMapping.get(grid)) {
+					dbDataMapping.put(dbId,data);
+				}
 			}
 			
 		}
@@ -273,7 +277,11 @@ public class UploadOperationByGather {
 						poi.put("updateFlag", 0);
 					} else {
 						if (uRecord == 2) {
-							errLog.put(fid,"数据为修改数据，但库中u_record为2");
+							JSONObject errObj = new JSONObject();
+							errObj.put("fid", fid);
+							errObj.put("reason", "数据为修改数据，但库中u_record为2");
+							errLog.add(errObj);
+//							errLog.put(fid,"数据为修改数据，但库中u_record为2");
 							poi.put("delFlag", 0);
 							poi.put("addFlag", 0);
 							poi.put("updateFlag", 0);
@@ -287,7 +295,11 @@ public class UploadOperationByGather {
 				} else {
 					// 找不到，判断lifecycle是否为1
 					if (lifecycle == 1) {
-						errLog.put(fid,"数据在库中找不到对应数据，但lifecycle为1");
+						JSONObject errObj = new JSONObject();
+						errObj.put("fid", fid);
+						errObj.put("reason", "数据在库中找不到对应数据，但lifecycle为1");
+						errLog.add(errObj);
+//						errLog.put(fid,"数据在库中找不到对应数据，但lifecycle为1");
 						poi.put("delFlag", 0);
 						poi.put("addFlag", 0);
 						poi.put("updateFlag", 0);

@@ -28,6 +28,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 如果交限、语音引导、顺行进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改
  * 新增顺行
  * 新增语音引导
+ * 修改语音引导
  * 新增卡车交限
  * 修改卡车交限
  * 修改交限
@@ -99,6 +100,28 @@ public class GLM26017 extends baseRule {
 					}
 				}
 			}
+		}
+		
+		else if(rdVoiceguideDetail.status().equals(ObjStatus.INSERT)){
+			int outLinkPid = rdVoiceguideDetail.getOutLinkPid();
+			StringBuilder sb = new StringBuilder();
+					 
+			sb.append("SELECT DISTINCT RV.PID FROM RD_VOICEGUIDE RV,RD_LINK RL");
+			sb.append(" WHERE RL.LINK_PID = "+outLinkPid +" AND RV.PID = "+rdVoiceguideDetail.getVoiceguidePid());
+			sb.append(" AND (RV.NODE_PID = RL.S_NODE_PID OR RV.NODE_PID = RL.E_NODE_PID)");
+			sb.append(" AND RV.U_RECORD <>2 AND RL.U_RECORD <>2 AND NOT EXISTS");
+			sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = RV.NODE_PID AND CN.U_RECORD <> 2)");
+			String sql = sb.toString();
+			log.info("修改语音引导前检查GLM26017--sql:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			if (!resultList.isEmpty()) {
+				String target = "[RD_VOICEGUIDE," + rdVoiceguideDetail.getVoiceguidePid() + "]";
+				this.setCheckResult("", target, 0,"如果语音引导进入线和退出线挂接在同一点上，而且这个点未登记路口（不属于任何路口），则不允许制作和修改");
+			}
+
 		}
 	}
 

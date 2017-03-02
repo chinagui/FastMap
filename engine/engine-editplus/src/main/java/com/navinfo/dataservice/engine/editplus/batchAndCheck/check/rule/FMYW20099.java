@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 
 /** 
 * @ClassName: FMYW20099 
@@ -45,7 +46,7 @@ public class FMYW20099 extends BasicCheckRule{
 			}
 			for (IxPoiAddress address: addresses){
 				if (address.isCH()){
-					String splitAddr = address.getChiSplitAddr();
+					String splitAddr = CheckUtil.getMergerAddr(address);
 					if (StringUtils.isEmpty(splitAddr)){return;}
 					if (splitAddr.endsWith("附近") || splitAddr.endsWith("附") || splitAddr.contains("增")){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);

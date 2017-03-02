@@ -302,7 +302,6 @@ public class TaskService {
 			for(Task task:taskList){
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
-					erNum ++;
 					cmsTaskList.add(task.getTaskId());
 				}else{
 					commontaskIds.add(task.getTaskId());
@@ -324,7 +323,7 @@ public class TaskService {
 			}
 			if(cmsTaskList.size()>0){
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
-				erNum=erNum-pushCmsTask.size();
+				erNum=pushCmsTask.size();
 				for(Integer taskId:pushCmsTask){
 					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 					if(phaseList!=null&&phaseList.size()>0){continue;}
@@ -822,12 +821,15 @@ public class TaskService {
 	
 
 	public Page list(JSONObject condition,int curPageNum,int pageSize)throws Exception{
+		if(condition.containsKey("cityId")){
+			return listByCity(condition,curPageNum,pageSize);
+		}
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			//查询条件
 			String conditionSql = "";
-			Iterator<?> conditionKeys = condition.keys();
+			Iterator<?> conditionKeys = condition.keys();		
 			
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
@@ -1094,6 +1096,94 @@ public class TaskService {
 						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
+						totalCount=rs.getInt("TOTAL_RECORD_NUM");
+						list.add(task);
+					}					
+					page.setTotalCount(totalCount);
+					page.setResult(list);
+					return page;
+				}
+
+			};
+			log.info("task list sql:" + sb.toString());
+			Page page= run.query(conn, sb.toString(), rsHandler);
+			page.setPageNum(curPageNum);
+		    page.setPageSize(pageSize);
+		    return page;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询列表失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Page listByCity(JSONObject condition,int curPageNum,int pageSize)throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//查询条件
+			String conditionSql = "";
+			Iterator<?> conditionKeys = condition.keys();
+			
+			while (conditionKeys.hasNext()) {
+				String key = (String) conditionKeys.next();
+				//查询条件
+				if ("cityId".equals(key)) {
+					conditionSql+=" AND B.CITY_ID="+condition.getInt(key);
+				}
+				if ("blockName".equals(key)) {
+					conditionSql+=" AND B.block_name ="+condition.getString(key);
+				}
+			}
+			
+			
+			QueryRunner run = new QueryRunner();
+			long pageStartNum = (curPageNum - 1) * pageSize + 1;
+			long pageEndNum = curPageNum * pageSize;
+			String sb="WITH FINAL_TABLE AS ( SELECT B.BLOCK_ID, B.CITY_ID, B.BLOCK_NAME, B.WORK_PROPERTY"
+					+ "  FROM BLOCK B"
+					+ " WHERE 1=1"
+					+conditionSql +")"
+					+" SELECT /*+FIRST_ROWS ORDERED*/"
+					+" TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
+					+"  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_"
+					+" FROM FINAL_TABLE"
+					+" WHERE ROWNUM <= "+pageEndNum					
+					+ ") TT"
+					+" WHERE TT.ROWNUM_ >= "+pageStartNum;
+
+			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				public Page handle(ResultSet rs) throws SQLException {
+					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
+					Page page = new Page();
+				    int totalCount = 0;
+				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					while (rs.next()) {
+						HashMap<Object,Object> task = new HashMap<Object,Object>();
+						task.put("taskId", 0);
+						task.put("taskName","");
+						
+						task.put("blockId", rs.getInt("BLOCK_ID"));
+						task.put("blockName", rs.getString("BLOCK_NAME"));
+						task.put("workProperty", rs.getString("WORK_PROPERTY"));
+
+						task.put("status", 0);
+						task.put("type", 1);
+						
+						task.put("percent", 0);
+						task.put("diffDate",0);
+						task.put("progress", 0);
+						
+						task.put("groupId",0);
+						task.put("groupName","");
+						
+						task.put("planStartDate", "");
+						task.put("planEndDate", "");
+						task.put("roadPlanTotal", 0);
+						task.put("poiPlanTotal", 0);
+						task.put("orderStatus", 5);
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						list.add(task);
 					}					

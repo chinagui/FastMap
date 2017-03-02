@@ -83,7 +83,8 @@ public abstract class AbstractOperation {
 		deleteObjHandler();
 
 		//新增IX_POI对象向poi_edit_status表中插入记录
-		PoiEditStatus.insertPoiEditStatus(conn,result);
+		//PoiEditStatus.insertPoiEditStatus(conn,result);
+		PoiEditStatus.insertOrUpdatePoiEditStatus(conn,result);
 		//持久化履历
 		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
 		//持久化数据

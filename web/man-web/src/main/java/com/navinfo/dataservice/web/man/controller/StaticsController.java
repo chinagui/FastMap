@@ -337,9 +337,14 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			//taskId
-			int programId = dataJson.getInt("programId");
+			int programId = 0;
+			if(dataJson.containsKey("programId")){programId=dataJson.getInt("programId");}
+			int cityId = 0;
+			if(dataJson.containsKey("cityId")){cityId=dataJson.getInt("cityId");}
 			int type = dataJson.getInt("type");
-			Map<String, Object> data = StaticsService.getInstance().queryTaskOverviewByProgram(programId,type);
+			Map<String, Object> data =new HashMap<String, Object>();
+			if(programId!=0){data=StaticsService.getInstance().queryTaskOverviewByProgram(programId,type);}
+			if(cityId!=0){data = StaticsService.getInstance().queryTaskOverviewByCity(cityId);}
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);

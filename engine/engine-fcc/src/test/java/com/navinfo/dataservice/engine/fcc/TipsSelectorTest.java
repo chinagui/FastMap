@@ -69,7 +69,7 @@ public class TipsSelectorTest extends InitApplication {
 		new ApplicationContextUtil().setApplicationContext(context);*/
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	@Test
+	//@Test
 	public void testGetSnapshot() {
 		
 		
@@ -107,7 +107,7 @@ public class TipsSelectorTest extends InitApplication {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testQueryByCodeAndGrid(){
 		
 		JSONArray grids = JSONArray
@@ -167,7 +167,7 @@ public class TipsSelectorTest extends InitApplication {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	@Test
+	//@Test
 	public void testSearchDataByTileWithGap() {
 	/*	JSONArray types = new JSONArray();
 		types.add(8001);
@@ -267,7 +267,7 @@ public class TipsSelectorTest extends InitApplication {
 	/**
 	 *
 	 */
-	@Test
+	//@Test
 	public void testSearchDataByWkt() {
 		JSONArray types = new JSONArray();
 //		types.add(1202);
@@ -275,7 +275,7 @@ public class TipsSelectorTest extends InitApplication {
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		try {
 			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
-			solrSelector.searchDataByWkt(wkt, types,"d");
+			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d");
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -285,7 +285,7 @@ public class TipsSelectorTest extends InitApplication {
 	/**
 	 *
 	 */
-	@Test
+	//@Test
 	public void testOther() {
 
 		try {
@@ -324,7 +324,7 @@ public class TipsSelectorTest extends InitApplication {
 	}
 	
 	//根据网格获取tips统计
-		@Test
+		//@Test
 		public void testGetStats() {
 		/*	JSONArray grid = JSONArray
 					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
@@ -345,7 +345,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		
 		//根据rowkey获取单个tips的详细信息
-		@Test
+		//@Test
 		public void testSearchDataByRowkey() {
 			try {
 				System.out.println("sorl by rowkey:");
@@ -360,11 +360,14 @@ public class TipsSelectorTest extends InitApplication {
 		@Test
 		public void testSearchDataBySpatial() {
 			try {
+				JSONArray stages = new JSONArray();
+				stages.add(1);
+				stages.add(2);
 				JSONArray ja =
-						solrSelector.searchDataBySpatial("POLYGON ((116.0625 40.14583, 116.09375 40.14583, 116.09375 40.125, 116.09375 40.10417, 116.0625 40.10417, 116.03125 40.10417, 116.03125 40.125, 116.03125 40.14583, 116.0625 40.14583))");
+						solrSelector.searchDataBySpatial("POLYGON ((116.25 39.75, 116.375 39.75, 116.375 39.83333, 116.25 39.83333, 116.25 39.75))",1901,stages);
 						//solrSelector.searchDataBySpatial("POLYGON ((113.70469 26.62879, 119.70818 26.62879, 119.70818 29.62948, 113.70469 29.62948, 113.70469 26.62879))");
 
-				System.out.println(ja.size());
+				System.out.println(ja.size()+"  "+ja.toString());
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -827,7 +830,7 @@ public class TipsSelectorTest extends InitApplication {
 		}
 
 		
-		 @Test
+		// @Test
 			public void testImport() {
 				String parameter = "{\"jobId\":1374}";
 				try {
@@ -885,7 +888,7 @@ public class TipsSelectorTest extends InitApplication {
 				}
 		 }
 		 
-		 @Test
+		// @Test
 		 public void testGetByRowkey(){
 			 TipsSelector selector = new TipsSelector();
 
@@ -901,7 +904,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 
 		 
-		 @Test
+		// @Test
 		 public void testGetByRowkeys(){
 			 TipsSelector selector = new TipsSelector();
 

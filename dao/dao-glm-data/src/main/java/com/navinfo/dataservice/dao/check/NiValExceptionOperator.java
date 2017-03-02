@@ -66,10 +66,10 @@ public class NiValExceptionOperator {
 
 	public void insertCheckLogGrid(String md5, String loc) throws Exception {
 
-		Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
+//		Glm glm = GlmCache.getInstance().getGlm(gdbVersion);
 
-		GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance()
-				.create(gdbVersion);
+//		GlmGridCalculator calculator = GlmGridCalculatorFactory.getInstance()
+//				.create(gdbVersion);
 
 		String insertSql = "INSERT INTO NI_VAL_EXCEPTION_GRID (md5_code,GRID_ID) VALUES (?,?)";
 

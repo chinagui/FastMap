@@ -13,7 +13,7 @@ public class SearchSnapshot implements ISerializable {
 	private int t;
 
 	private int i;
-	
+
 	private JSONArray g;
 
 	private JSONObject m;
@@ -34,36 +34,34 @@ public class SearchSnapshot implements ISerializable {
 		this.m = m;
 	}
 
-	
 	public SearchSnapshot() {
 	}
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		
-		if(objLevel == ObjLevel.BRIEF)
-		{
+
+		if (objLevel == ObjLevel.BRIEF) {
 			JSONObject obj = new JSONObject();
-			
-			obj.put("i", this.getI());
-			
+			if (this.getI() != 0) {
+				obj.put("i", this.getI());
+			}
 			obj.put("t", this.getT());
-			
+
 			obj.put("g", this.getG());
-			
+
 			obj.put("m", this.getM());
-			
+
 			return obj;
-		}
-		else
-		{
-			return JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		} else {
+			return JSONObject.fromObject(this, JsonUtils.getStrConfig());
 		}
 	}
 
 	@Override
 	public boolean Unserialize(JSONObject json) throws Exception {
-		this.setI(json.getInt("i"));
+		if (json.containsKey("i")) {
+			this.setI(json.getInt("i"));
+		}
 		this.setG(json.getJSONArray("g"));
 		this.setT(json.getInt("t"));
 		this.setM(json.getJSONObject("m"));

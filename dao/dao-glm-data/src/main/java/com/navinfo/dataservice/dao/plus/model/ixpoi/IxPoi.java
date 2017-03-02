@@ -54,6 +54,28 @@ public class IxPoi extends AbstractIx {
 	protected int indoor ;
 	protected String vipFlag ;
 	
+	//******zl 2017.03.01***********
+	protected String rawFields ;
+	protected boolean freshFlag= true ;
+	
+
+	public boolean isFreshFlag() {
+		return freshFlag;
+	}
+
+	public void setFreshFlag(boolean freshFlag) {
+		this.freshFlag = freshFlag;
+	}
+
+	public String getRawFields() {
+		return rawFields;
+	}
+
+	public void setRawFields(String rawFields) {
+		this.rawFields = rawFields;
+	}
+
+	//******************************
 	public IxPoi (long objPid){
 		super(objPid);
 	}

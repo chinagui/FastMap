@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.check.CheckService;
+import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.navicommons.database.Page;
 
 import net.sf.json.JSONArray;
@@ -22,6 +23,18 @@ public class NiValExceptionTest extends InitApplication {
 	@Override
 	public void init() {
 		initContext();
+	}
+	
+	@Test
+	public void testGLM01455() throws Exception{
+		String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+		try {
+			String msg = t.run();
+			System.out.println(msg);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}			
 	}
 
 //	@Test

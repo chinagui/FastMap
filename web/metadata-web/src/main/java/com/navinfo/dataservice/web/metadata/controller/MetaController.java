@@ -693,7 +693,7 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             int subtaskId = jsonReq.getInt("subtaskId");
-
+            System.out.println("subtaskId: "+subtaskId);
             ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -705,9 +705,10 @@ public class MetaController extends BaseController {
 //			int dbId = subtask.getDbId();
 
             FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-
+            System.out.println("subtask.getGeometry(): "+subtask.getGeometry());
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
+            System.out.println("tips: "+tips);
             JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));

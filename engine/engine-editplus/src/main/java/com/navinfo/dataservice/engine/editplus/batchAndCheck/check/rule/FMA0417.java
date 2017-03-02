@@ -43,13 +43,11 @@ public class FMA0417 extends BasicCheckRule {
 						&&(nameTmp.getNameClass()==1 ||nameTmp.getNameClass()==5)&&isCheck(nameTmp)){
 					String name=nameTmp.getName();
 					if(name==null){continue;}
-					String[] pyList=metadataApi.pyConvert(name);
+					String py=metadataApi.pyConvertHz(name);
 					boolean isRightPy=false;
-					for(String py:pyList){
-						if(py.equals(nameTmp.getNamePhonetic())){
-							isRightPy=true;
-							break;
-						}
+					if(py.equals(nameTmp.getNamePhonetic())){
+						isRightPy=true;
+						break;
 					}
 					if(!isRightPy){
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);

@@ -71,11 +71,11 @@ public class TipsOperator {
 		JSONObject track = JSONObject.fromObject(new String(result.getValue(
 				"data".getBytes(), "track".getBytes())));
 
-		int lifecycle = track.getInt("t_lifecycle");
+		/*int lifecycle = track.getInt("t_lifecycle");*/
 
-		if (0 == lifecycle) {
+	/*	if (0 == lifecycle) {
 			track.put("t_lifecycle", 2);
-		}
+		}*/
 
 		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
 
@@ -150,9 +150,9 @@ public class TipsOperator {
 
 		solrIndex.put("t_mStatus", tMStatus);
 
-		if (0 == lifecycle) {
+	/*	if (0 == lifecycle) {
 			solrIndex.put("t_lifecycle", 2);
-		}
+		}*/
 
 		solrIndex.put("handler", handler);
 

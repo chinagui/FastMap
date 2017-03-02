@@ -50,14 +50,14 @@ public class FM11Win1803 extends BasicCheckRule {
 			return;
 		}
 		PoiLogDetailStat logDetail = new PoiLogDetailStat();
-		Map<Long,List<LogDetail>> submitLogs = logDetail.loadByRowEditStatus(getCheckRuleCommand().getConn(), childPids);
+		Map<Long,List<LogDetail>> submitLogs = logDetail.loadAllLog(getCheckRuleCommand().getConn(), childPids);
 		for (Long logPid:submitLogs.keySet()) {
 			if (childPids.contains(logPid)) {
 				childPids.remove(logPid);
 			}
 		}
 		List<Long> sameLocPids = new ArrayList<Long>();
-		for (long pid:pidList) {
+		for (long pid:childPids) {
 			BasicObj basicObj=ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", null,false, pid, false);
 			IxPoi childPoi = (IxPoi) basicObj.getMainrow();
 			if (childPoi.getIndoor()==1) {
@@ -67,8 +67,8 @@ public class FM11Win1803 extends BasicCheckRule {
 			}
 		}
 		if (sameLocPids.size()>0) {
-			String err = StringUtils.join(sameLocPids, ",");
-			setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "未点开子POI:"+err+"位置和点开的父不同点");
+//			String err = StringUtils.join(sameLocPids, ",");
+			setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "未点开子POI位置和点开的父不同点");
 			return;
 		}
 

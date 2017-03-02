@@ -188,27 +188,28 @@ public class RdLane002 extends baseRule {
 			if(rdLaneTopology.changedFields().containsKey("relationshipType")){
 				relationshipType = Integer.parseInt(rdLaneTopology.changedFields().get("relationshipType").toString());
 			}
-			//由路口车信修改为线线车信，认为没有非路口内link经过线
-//			int viaNum = getViaNum(rdLaneTopology.getPid());
-			int viaNum = 0;
-			Set<Integer> viaLinkSet = new HashSet<Integer>();
+			//获取车信经过线
+			Set<Integer> viaLinkSet = getViaLinkNotInCross(rdLaneTopology.getPid());
+			int viaNum = viaLinkSet.size();
 			if(relationshipType==2){
 				for(IRow objInnerLoop : checkCommand.getGlmList()){
 					if(objInnerLoop instanceof RdLaneVia){
 						RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
-//						//删除的经过线
-//						if(rdLaneVia.status().equals(ObjStatus.DELETE)){
-//							if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
-//								viaNum --;
-//							}
-//							continue;
-//						}
-//						//不知道这种奇葩情况会不会出现，先写上，以备万一
-//						else if(rdLaneVia.status().equals(ObjStatus.UPDATE)){
-//							if(rdLaneVia.changedFields().containsKey("topologyId")){
-//								viaNum --;
-//							}
-//						}
+						//删除的经过线
+						if(rdLaneVia.status().equals(ObjStatus.DELETE)){
+							if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
+								viaLinkSet.remove(rdLaneVia.getLinkPid());
+								viaNum --;
+							}
+							continue;
+						}
+						//不知道这种奇葩情况会不会出现，先写上，以备万一
+						else if(rdLaneVia.status().equals(ObjStatus.UPDATE)){
+							if(rdLaneVia.changedFields().containsKey("topologyId")){
+								viaLinkSet.remove(rdLaneVia.getLinkPid());
+								viaNum --;
+							}
+						}
 						//新增的经过线
 						if(rdLaneVia.status().equals(ObjStatus.INSERT)){
 							if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
@@ -237,6 +238,43 @@ public class RdLane002 extends baseRule {
 			}
 		}
 		
+	}
+
+	/**
+	 * @param pid
+	 * @return
+	 * @throws SQLException 
+	 */
+	private Set<Integer> getViaLinkNotInCross(int pid) throws SQLException {
+		Set<Integer> viaLinkSet = new HashSet<Integer>();
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(" SELECT V.LINK_PID FROM RD_LANE_VIA V");
+		sb.append(" WHERE V.U_RECORD <> 2");
+		sb.append(" AND V.TOPOLOGY_ID = " + pid);
+		sb.append(" MINUS");
+		sb.append(" SELECT RCL.LINK_PID FROM RD_LANE_CONNEXITY RLC,RD_LANE_TOPOLOGY RLT,RD_CROSS_NODE RCN,RD_CROSS_LINK RCL");
+		sb.append(" WHERE RLC.PID = RLT.CONNEXITY_PID");
+		sb.append(" AND RLT.TOPOLOGY_ID = " + pid);
+		sb.append(" AND RLC.NODE_PID = RCN.NODE_PID");
+		sb.append(" AND RCN.PID = RCL.PID");
+		sb.append(" AND RLC.U_RECORD <> 2");
+		sb.append(" AND RLT.U_RECORD <> 2");
+		sb.append(" AND RCN.U_RECORD <> 2");
+		sb.append(" AND RCL.U_RECORD <> 2");
+		
+		String sql = sb.toString();
+		log.info("RdLaneTopology后检查RDLANE005:" + sql);
+
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+		ResultSet resultSet = pstmt.executeQuery();
+		
+		while (resultSet.next()){
+			viaLinkSet.add(resultSet.getInt("LINK_PID")) ;
+		} 
+		resultSet.close();
+		pstmt.close();
+		return viaLinkSet;
 	}
 
 	/**

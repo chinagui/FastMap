@@ -121,15 +121,15 @@ public class ProgramController extends BaseController {
 			if (dataJson.containsKey("pageSize")){
 				curPageSize = dataJson.getInt("pageSize");
 			}
-			int planStatus = 1;	
-			if(dataJson.containsKey("planStatus")){
-				planStatus=dataJson.getInt("planStatus");
+			int planningStatus = 1;	
+			if(dataJson.containsKey("planningStatus")){
+				planningStatus=dataJson.getInt("planningStatus");
 			}
 			int type = 1;	
 			if(dataJson.containsKey("type")){
 				type=dataJson.getInt("type");
 			}
-			Page data = service.list(type,planStatus,condition,order,curPageNum,curPageSize);
+			Page data = service.list(type,planningStatus,condition,order,curPageNum,curPageSize);
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());

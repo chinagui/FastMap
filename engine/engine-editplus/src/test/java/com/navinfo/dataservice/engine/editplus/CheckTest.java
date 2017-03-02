@@ -111,7 +111,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-031");
+		ruleIdList.add("FM-GLM60154-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

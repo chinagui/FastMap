@@ -149,6 +149,7 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-163");
 		batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		batch.setPhysiDelete(true);
 		persistBatch(batch);
 	}
 	

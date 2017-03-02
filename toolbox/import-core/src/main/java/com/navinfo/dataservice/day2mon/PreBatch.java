@@ -33,6 +33,7 @@ public class PreBatch {
 		
 		log.info("要执行的规则号:"+batchCommand.getRuleIdList().toString());
 		Batch batch=new Batch(conn,opResult);
+		batch.setPhysiDelete(true);
 		batch.operate(batchCommand);
 		batch.persistChangeLog(OperationSegment.SG_COLUMN, 0);//FIXME:修改默认的用户
 		log.info("前批完成");

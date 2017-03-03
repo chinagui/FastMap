@@ -1470,6 +1470,7 @@ public class ProgramService {
 					+ "         P.NAME                       PROGRAM_NAME,"
 					+ "         P.DESCP                      PROGRAM_DESCP,"
 					+ "         P.TYPE,"
+					+ "         P.LOT,"
 					+ "         C.CITY_NAME,"
 					+ "         C.CITY_ID,"
 					+ "         I.INFOR_ID,"
@@ -1501,6 +1502,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
+						map.put("lot", rs.getInt("LOT"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));

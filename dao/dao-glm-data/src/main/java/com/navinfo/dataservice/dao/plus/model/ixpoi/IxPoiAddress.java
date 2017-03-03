@@ -480,25 +480,53 @@ public class IxPoiAddress extends BasicRow {
 	 * @return splitAddStr
 	 */
 	public String getChiSplitAddr() {
-		List<String> splitAddList = new ArrayList<String>();
-		splitAddList.add(this.getAddons());
-        splitAddList.add(this.getRoom());
-        splitAddList.add(this.getFloor());
-        splitAddList.add(this.getUnit());
-        splitAddList.add(this.getBuilding());
-        splitAddList.add(this.getEstab());
-        splitAddList.add(this.getSurfix());
-        splitAddList.add(this.getSubnum());
-        splitAddList.add(this.getType());
-        splitAddList.add(this.getHousenum());
-        splitAddList.add(this.getPrefix());
-        splitAddList.add(this.getLandmark());
-    	splitAddList.add(this.getStreet());
-    	splitAddList.add(this.getPlace());
-    	splitAddList.add(this.getTown());
-        
-        String splitAddStr = splitAddList.toString().replace("[", "").replace("]", "").replaceAll(",","");
-        return splitAddStr;
+		String mergeAddr = "";
+		if (this.getAddons() != null) {
+		    mergeAddr += this.getAddons();
+		}
+		if (this.getRoom() != null) {
+		    mergeAddr += this.getRoom();
+		}
+		if (this.getFloor() != null) {
+		    mergeAddr += this.getFloor();
+		}
+		if (this.getUnit() != null) {
+		    mergeAddr += this.getUnit();
+		}
+		if (this.getBuilding() != null) {
+		    mergeAddr += this.getBuilding();
+		}
+		if (this.getEstab() != null) {
+		    mergeAddr += this.getEstab();
+		}
+		if (this.getSurfix() != null) {
+		    mergeAddr += this.getSurfix();
+		}
+		if (this.getSubnum() != null) {
+		    mergeAddr += this.getSubnum();
+		}
+		if (this.getType() != null) {
+		    mergeAddr += this.getType();
+		}
+		if (this.getHousenum() != null) {
+		    mergeAddr += this.getHousenum();
+		}
+		if (this.getPrefix() != null) {
+		    mergeAddr += this.getPrefix();
+		}
+		if (this.getLandmark() != null) {
+		    mergeAddr += this.getLandmark();
+		}
+		if (this.getStreet() != null) {
+		    mergeAddr += this.getStreet();
+		}
+		if (this.getPlace() != null) {
+		    mergeAddr += this.getPlace();
+		}
+		if (this.getTown() != null) {
+		    mergeAddr += this.getTown();
+		}
+		return mergeAddr;
 	}
 	
 	

@@ -908,7 +908,7 @@ public class TaskService {
 
 						if(!progressList.isEmpty()){
 							String tempSql = StringUtils.join(progressList," OR ");
-							conditionSql = " AND (" + tempSql + ")";
+							conditionSql += " AND (" + tempSql + ")";
 						}
 					}
 				}

@@ -908,7 +908,7 @@ public class TaskService {
 
 						if(!progressList.isEmpty()){
 							String tempSql = StringUtils.join(progressList," OR ");
-							conditionSql = " AND (" + tempSql + ")";
+							conditionSql += " AND (" + tempSql + ")";
 						}
 					}
 				}
@@ -2184,9 +2184,9 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT T1.TASK_ID FROM TASK T ,TASK T1"
-					+ " WHERE T.BLOCK_ID = T1.BLOCK_ID AND T.LATEST =1"
+					+ " WHERE T.LATEST =1"
 					+ " AND T1.LATEST = 1"
-					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.PROGRAM_ID = T.PROGRAM_ID"
 					+ " AND T1.TYPE = " + type
 					+ " AND T.TASK_ID = " + taskId;
 			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);

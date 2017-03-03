@@ -35,8 +35,8 @@ public class CheckTest {
 			List<String> list = new ArrayList<String>();
 			list.add("230227");
 			list.add("210105");
-			Map<String, Integer> map = ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(list);
-			Map<String, String> kindNameByKindCode = ScPointPoiCodeNew.getInstance().getKindNameByKindCode("230227");
+			Map<String, Integer> map = ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew();
+			Map<String, String> kindNameByKindCode = ScPointPoiCodeNew.getInstance().getKindNameByKindCode();
 			for (String key : map.keySet()) {
 				System.out.println("kindCode---"+key+"kindUse"+map.get(key));
 			}
@@ -97,7 +97,7 @@ public class CheckTest {
 	public void test05() {
 		try {
 			String kindCode = "120101";
-			Map<String, String> scPointKindNew5List = ScPointCode2Level.getInstance().scPointCode2Level(kindCode);
+			Map<String, String> scPointKindNew5List = ScPointCode2Level.getInstance().scPointCode2Level();
 			System.out.println(scPointKindNew5List.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));

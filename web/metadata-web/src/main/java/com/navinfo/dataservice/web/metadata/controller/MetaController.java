@@ -4,20 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -57,7 +53,6 @@ import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -693,7 +688,7 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             int subtaskId = jsonReq.getInt("subtaskId");
-
+            System.out.println("subtaskId: "+subtaskId);
             ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -705,9 +700,10 @@ public class MetaController extends BaseController {
 //			int dbId = subtask.getDbId();
 
             FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-
+            System.out.println("subtask.getGeometry(): "+subtask.getGeometry());
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
+            System.out.println("tips: "+tips);
             JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));

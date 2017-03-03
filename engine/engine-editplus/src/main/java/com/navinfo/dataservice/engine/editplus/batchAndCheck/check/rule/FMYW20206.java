@@ -96,17 +96,17 @@ public class FMYW20206 extends BasicCheckRule {
 					}
 					//充电功率
 					String power = ixPoiChargingPlot.getPower();
-					if(power != null && !CheckUtil.isChinese(power)){
+					if(power != null && !CheckUtil.isDigit(power)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电功率只能包含全半角阿拉伯数字");
 					}
 					//充电电压
 					String voltage = ixPoiChargingPlot.getVoltage();
-					if(voltage != null && !CheckUtil.isChinese(voltage)){
+					if(voltage != null && !CheckUtil.isDigit(voltage)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电压只能包含全半角阿拉伯数字");
 					}
 					//充电电流
 					String curent = ixPoiChargingPlot.getCurrent();
-					if(curent != null && !CheckUtil.isChinese(curent)){
+					if(curent != null && !CheckUtil.isDigit(curent)){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "充电桩充电电流只能包含全半角阿拉伯数字");
 					}
 				}

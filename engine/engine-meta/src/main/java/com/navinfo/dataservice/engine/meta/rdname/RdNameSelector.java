@@ -12,17 +12,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.sun.tools.internal.xjc.model.SymbolSpace;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class RdNameSelector {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 	
 	public RdNameSelector() {
@@ -230,12 +233,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
 			
 			JSONObject param =  params.getJSONObject("params");
+			String name = param.getString("name");
+			String nameGroupid = param.getString("nameGroupid");
+			String adminId = param.getString("adminId");
+			System.out.println("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
 			int flag = params.getInt("flag");//1是任务查，0是全库查
+			System.out.println("flag: "+flag);
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
-			
+			System.out.println("searchForWeb :subtaskId: "+subtaskId);
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -245,30 +253,74 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String tmep = "";
 			Clob pidClod = null;
 			if (flag>0) {
-				if (tips.size()>0) {
+//				if (tips.size()>0) {
+				System.out.println(tips.size());
+				if (tips.size()>0 || subtaskId >0) {
 					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
 					sql.append(" from (");
 					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
-					sql.append(" union all  ");
-					sql.append(" SELECT tt.* FROM ");
-					sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
-					sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+					// 添加过滤器条件
+						if (name != null  && StringUtils.isNotEmpty(name)) {
+							sql.append(" and r.name like '%");
+							sql.append(name);
+							sql.append("%'");
+						}
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+							sql.append(" and r.name_groupid ");
+							sql.append("= ");
+							sql.append(nameGroupid);
+							sql.append(" ");
+						}
+						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+							sql.append(" and r.admin_id ");
+							sql.append("= ");
+							sql.append(adminId);
+							sql.append(" ");
+						}
 					
-					sql.append(" where 1=1");
-					
-					for (int i=0;i<tips.size();i++) {
-						JSONObject tipsObj = tips.getJSONObject(i);
-						ids += tmep;
-						tmep = ",";
-						ids +=tipsObj.getString("id");
+					if (tips.size()>0) {
+						sql.append(" union all  ");
+						sql.append(" SELECT tt.* FROM ");
+						sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
+						sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+						
+						sql.append(" where 1=1");
+						
+						// 添加过滤器条件
+						if (name != null  && StringUtils.isNotEmpty(name)) {
+							sql.append(" and tt.name like '%");
+							sql.append(name);
+							sql.append("%'");
+						}
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+							sql.append(" and tt.name_groupid ");
+							sql.append("= ");
+							sql.append(nameGroupid);
+							sql.append(" ");
+						}
+						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+							sql.append(" and tt.admin_id ");
+							sql.append("= ");
+							sql.append(adminId);
+							sql.append(" ");
+						}
+						
+						for (int i=0;i<tips.size();i++) {
+							JSONObject tipsObj = tips.getJSONObject(i);
+							System.out.println(tipsObj.getString("id"));
+							ids += tmep;
+							tmep = ",";
+							ids +=tipsObj.getString("id");
+						}
+						System.out.println(ids);
+						pidClod = ConnectionUtil.createClob(conn);
+						pidClod.setString(1, ids);
+						sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
 					}
-					
-					pidClod = ConnectionUtil.createClob(conn);
-					pidClod.setString(1, ids);
-					sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))) a ");
+					sql.append(" ) a ");
 					
 				} else {
 					result.put("total", 0);
@@ -289,7 +341,21 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						sql.append(" and a.name like '%");
 						sql.append(param.getString(key));
 						sql.append("%'");
-					} else {
+					} else if(key.equals("nameGroupid") && (!param.getString(key).isEmpty())){
+						String columnName = sUtils.toColumnName(key);
+						sql.append(" and a.");
+						sql.append(columnName);
+						sql.append("= ");
+						sql.append(param.getString(key));
+						sql.append(" ");
+					}else if(key.equals("adminId") && (!param.getString(key).isEmpty())){
+						String columnName = sUtils.toColumnName(key);
+						sql.append(" and a.");
+						sql.append(columnName);
+						sql.append("= ");
+						sql.append(param.getString(key));
+						sql.append(" ");
+					}else {
 						String columnName = sUtils.toColumnName(key);
 						if (!param.getString(key).isEmpty()) {
 							sql.append(" and a.");
@@ -330,7 +396,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			System.out.println("rdname/websearch sql : " +sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
-			if (flag>0) {
+			if (flag>0 && tips.size()>0) {
 				pstmt.setClob(1, pidClod);
 				pstmt.setInt(2, endRow);
 				pstmt.setInt(3, startRow);
@@ -349,7 +415,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				data.add(result2Json(resultSet, adminMap));
+				data.add(result2JsonByTaskOrTips(resultSet, adminMap));
+//				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -384,11 +451,15 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (214==rdName.getAdminId() && rdName.getNameGroupid()!=null&&0!=rdName.getNameGroupid()) {
+		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+				&& rdName.getNameGroupid() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
 		if (rdName.getNameId() != null) {
 			sb.append(" AND name_id !="+rdName.getNameId());
+		}
+		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
 		try {
 			
@@ -400,7 +471,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			pstmt.setInt(3, rdName.getAdminId());
 			
-			if (rdName.getAdminId() == 214&&rdName.getNameGroupid()!=null&&0!=rdName.getNameGroupid()) {
+			if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+					&& rdName.getNameGroupid() != 0) {
 				pstmt.setInt(4, rdName.getNameGroupid());
 			}
 
@@ -418,6 +490,68 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * @Title: result2JsonByTaskOrTips
+	 * @Description: 根据tips 和 task 查询返回的查询结果
+	 * @param resultSet
+	 * @param adminMap
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年3月2日 下午2:16:25 
+	 */
+	private JSONObject result2JsonByTaskOrTips(ResultSet resultSet,Map<String,String> adminMap) throws Exception{
+		JSONObject rdNameObj = new JSONObject();
+		try {//String c = a == null ? "" : a;
+			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
+			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("langCode", resultSet.getString("LANG_CODE") == null ? "" : resultSet.getString("LANG_CODE"));
+			rdNameObj.put("name", resultSet.getString("NAME")  == null ? "" : resultSet.getString("NAME"));
+			rdNameObj.put("type", resultSet.getString("TYPE")  == null ? "" : resultSet.getString("TYPE"));
+			rdNameObj.put("base", resultSet.getString("BASE")  == null ? "" : resultSet.getString("BASE"));
+			rdNameObj.put("prefix", resultSet.getString("PREFIX")  == null ? "" : resultSet.getString("PREFIX"));
+			rdNameObj.put("infix", resultSet.getString("INFIX")  == null ? "" : resultSet.getString("INFIX"));
+			rdNameObj.put("suffix", resultSet.getString("SUFFIX")  == null ? "" : resultSet.getString("SUFFIX"));
+			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC")  == null ? "" : resultSet.getString("NAME_PHONETIC"));
+			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC")  == null ? "" : resultSet.getString("TYPE_PHONETIC"));
+			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC")  == null ? "" : resultSet.getString("BASE_PHONETIC"));
+			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC")  == null ? "" : resultSet.getString("PREFIX_PHONETIC"));
+			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC")  == null ? "" : resultSet.getString("INFIX_PHONETIC"));
+			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC")  == null ? "" : resultSet.getString("SUFFIX_PHONETIC"));
+			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
+			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
+			
+			int adminId = resultSet.getInt("ADMIN_ID");
+			rdNameObj.put("adminId", adminId);
+			if (!adminMap.isEmpty()) {
+				if (adminMap.containsKey(String.valueOf(adminId))) {
+					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+				} else {
+					rdNameObj.put("adminName","");
+				}
+			}
+			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
+			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
+			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
+			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
+			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
+			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
+			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
+//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
+				rdNameObj.put("city", resultSet.getString("CITY"));
+			}else{
+				rdNameObj.put("city", "");
+			}
+			
+			return rdNameObj;
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 	
@@ -462,12 +596,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+			try{
+				rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));	
+			}catch(Exception e){
+				//tipsId 不存在
+				log.warn("tipsId没有获取", e);
+			}
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
-//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
 			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
 				rdNameObj.put("city", resultSet.getString("CITY"));
 			}else{

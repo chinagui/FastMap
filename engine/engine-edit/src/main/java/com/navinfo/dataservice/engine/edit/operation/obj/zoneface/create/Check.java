@@ -85,14 +85,14 @@ public class Check {
                 String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and a.u_record!=2 and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
                         + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
-                        "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and" + " " +
-                        "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and" + " "
+                        + "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" + "" + "" +
                         ".s_node_pid " + "not " + "in" + " " + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" + "" +
-                        "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" + "" + "" +
                         ".e_node_pid not in" + " " + "" + "" + "" + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" +
                         "" + "" + "" + "" + "" + ".e_node_pid)" + "" + "" + "" + " and " + "sdo_relate" + "" + "(b" +
-                        "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + ".geometry," + "'mask=anyinteract')" +
-                        "='TRUE'";
+                        "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + ".geometry," + "'mask=anyinteract')"
+                        + "='TRUE'";
 
                 PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -114,8 +114,9 @@ public class Check {
                         + "b" + " where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
                         + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
-                        "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + ".s_node_pid,"
-                        + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + ".u_record!=2)";
+                        "" + "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + "" +
+                        ".s_node_pid," + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + "" +
+                        ".u_record!=2)";
 
                 pstmt = conn.prepareStatement(sql);
 
@@ -305,6 +306,8 @@ public class Check {
                 subCoor = new Coordinate[]{coordinates[j], coordinates[j + 1]};
                 Geometry tmpLink = factory.createLineString(subCoor);
                 Geometry result = link.intersection(tmpLink);
+                if (result.isEmpty())
+                    continue;
                 if (result instanceof Point) {
                     if (GeoHelper.isPointEquals(factory.createPoint(coordinates[j]), (Point) result))
                         continue;

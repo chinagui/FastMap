@@ -1,5 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.sql.Clob;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,12 +12,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import oracle.sql.STRUCT;
+
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.vividsolutions.jts.geom.Geometry;
 /**
  * GLM60236
  * 检查条件：非删除POI且存在父子关系
@@ -26,6 +37,94 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  */
 public class GLM60236 extends BasicCheckRule {
 	Map<Long, Long> parentMap = new HashMap<Long, Long>();
+	
+	public void run()throws Exception{
+		Map<Long, BasicObj> rows=getRowList();
+		loadReferDatas(rows.values());
+		Set<Long> pidList=new HashSet<Long>();
+		for(Long key:rows.keySet()){
+			BasicObj obj=rows.get(key);
+			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
+				pidList.add(obj.objPid());
+				try{
+					runCheck(obj);
+				}catch(Exception e){
+					log.warn(e.getMessage(),e);
+				}
+			}
+		}
+		if(pidList==null||pidList.size()==0){return;}
+		String pids=pidList.toString().replace("[", "").replace("]", "");
+		Connection conn = this.getCheckRuleCommand().getConn();
+		List<Clob> values=new ArrayList<Clob>();
+		String pidString="";
+		if(pidList.size()>1000){
+			Clob clob=ConnectionUtil.createClob(conn);
+			clob.setString(1, pids);
+			pidString=" IN (select to_number(column_value) from table(clob_to_table(?)))";
+			values.add(clob);
+			values.add(clob);
+		}else{
+			pidString=" IN ("+pids+")";
+		}
+		String sqlStr="SELECT C1.GROUP_ID       G1,"
+				+ "       C1.CHILD_POI_PID  C,"
+				+ "       P1.PARENT_POI_PID P1,"
+				+ "       P2.GROUP_ID       G2,"
+				+ "       P2.PARENT_POI_PID P2"
+				+ "  FROM IX_POI_CHILDREN C1,"
+				+ "       IX_POI_PARENT   P1,"
+				+ "       IX_POI_CHILDREN C2,"
+				+ "       IX_POI_PARENT   P2,"
+				+ "       IX_POI          P"
+				+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
+				+ "   AND C2.GROUP_ID = P2.GROUP_ID"
+				+ "   AND P.PID = C1.CHILD_POI_PID"
+				+ "   AND P1.PARENT_POI_PID > P2.PARENT_POI_PID"
+				+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
+				+ "   AND P.U_RECORD != 2"
+				+ "   AND C1.U_RECORD != 2"
+				+ "   AND C2.U_RECORD != 2"
+				+ "   AND P1.U_RECORD != 2"
+				+ "   AND P2.U_RECORD != 2"
+				+ "   AND C1.CHILD_POI_PID "+pidString
+				+ " UNION"
+				+ " SELECT C1.GROUP_ID       G1,"
+				+ "       C1.CHILD_POI_PID  C,"
+				+ "       P1.PARENT_POI_PID P1,"
+				+ "       P2.GROUP_ID       G2,"
+				+ "       P2.PARENT_POI_PID P2"
+				+ "  FROM IX_POI_CHILDREN C1,"
+				+ "       IX_POI_PARENT   P1,"
+				+ "       IX_POI_CHILDREN C2,"
+				+ "       IX_POI_PARENT   P2,"
+				+ "       IX_POI          P"
+				+ " WHERE C1.GROUP_ID = P1.GROUP_ID"
+				+ "   AND C2.GROUP_ID = P2.GROUP_ID"
+				+ "   AND P.PID = C1.CHILD_POI_PID"
+				+ "   AND P1.PARENT_POI_PID != P2.PARENT_POI_PID"
+				+ "   AND C1.CHILD_POI_PID = C2.CHILD_POI_PID"
+				+ "   AND P.U_RECORD != 2"
+				+ "   AND C1.U_RECORD != 2"
+				+ "   AND C2.U_RECORD != 2"
+				+ "   AND P1.U_RECORD != 2"
+				+ "   AND P2.U_RECORD != 2"
+				+ "   AND P1.PARENT_POI_PID "+pidString;
+		PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
+		if(values!=null&&values.size()>0){
+			for(int i=0;i<values.size();i++){
+				pstmt.setClob(i+1,values.get(i));
+			}
+		}			
+		ResultSet rs = pstmt.executeQuery();
+		while (rs.next()) {
+			Long pidTmp1=rs.getLong("C");
+			Long pidTmp2=rs.getLong("P1");
+			Long pidTmp3=rs.getLong("P2");
+			String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
+			setCheckResult("", targets, 0,"POI存在一子多父");
+		}
+	}
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -52,140 +151,6 @@ public class GLM60236 extends BasicCheckRule {
 			}
 		}
 	}
-			//重复检查
-//			//父找子，先找到叶子子
-//			List<IxPoiChildren> childs = poiObj.getIxPoiChildrens();
-//			if(childs==null||childs.size()==0){
-//				//没有子，只能找父
-//				//无父无子 不检查
-//				if(!parentMap.containsKey(pid)){return;}
-//				Set<Long> oldParentSet=new HashSet<Long>();
-//				Set<Long> newParentSet=parentMap.get(pid);
-//				int oldtotal=oldParentSet.size();
-//				int newtotal=newParentSet.size();
-//				whileNum=0;
-//				while(true){
-//					//一般父子关系层次会在6层以内，增加判断，防止代码错误导致的死循环
-//					if(whileNum>6){return;}
-//					else{whileNum++;}
-//					oldParentSet.addAll(newParentSet);
-//					//旧父包含新父，说明重复，相同的子，通过不同父子关系树能找到相同父
-//					if(oldParentSet.size()<oldtotal+newtotal){
-//						for(Long pid2:oldParentSet){targets=targets+";[IX_POI,"+pid2+"]";}
-//						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在父子关系重复");
-//						return;
-//					}
-//					newParentSet=new HashSet<Long>();
-//					Set<Long> tmpParentSet=newParentSet;
-//					for(Long tmp:tmpParentSet){
-//						if(parentMap.containsKey(tmp)){newParentSet.addAll(parentMap.get(tmp));}
-//					}
-//					oldtotal=oldParentSet.size();
-//					newtotal=newParentSet.size();
-//					//没有新的父，即所有路径的父子关系均找到，查询结束
-//					if(newtotal==0){return;}
-//				}
-//			}else if(!parentMap.containsKey(pid)){//有子无父
-//				Set<Long> oldChildSet=new HashSet<Long>();
-//				Set<Long> newChildSet=new HashSet<Long>();
-//				for(IxPoiChildren c:childs){newChildSet.add(c.getChildPoiPid());}
-//				int oldtotal=oldChildSet.size();
-//				int newtotal=newChildSet.size();
-//				whileNum=0;
-//				while(true){
-//					//一般父子关系层次会在6层以内，增加判断，防止代码错误导致的死循环
-//					if(whileNum>6){return;}
-//					else{whileNum++;}
-//					oldChildSet.addAll(newChildSet);
-//					//旧子包含新子，说明重复，相同的父，通过不同父子关系树能找到相同子
-//					if(oldChildSet.size()<oldtotal+newtotal){
-//						for(Long pid2:oldChildSet){targets=targets+";[IX_POI,"+pid2+"]";}
-//						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在父子关系重复");
-//						return;
-//					}
-//					newChildSet=new HashSet<Long>();
-//					Set<Long> tmpChildSet=newChildSet;
-//					for(Long tmp:tmpChildSet){
-//						BasicObj basicObj=referObjs.get(tmp);
-//						if(basicObj.isDeleted()){continue;}
-//						IxPoiObj cpoiObj=(IxPoiObj) basicObj;
-//						List<IxPoiChildren> cChilds = cpoiObj.getIxPoiChildrens();
-//						if(cChilds==null||cChilds.size()==0){continue;}
-//						for(IxPoiChildren c:cChilds){newChildSet.add(c.getChildPoiPid());}
-//					}
-//					oldtotal=oldChildSet.size();
-//					newtotal=newChildSet.size();
-//					//没有新的子，即所有路径的父子关系均找到，查询结束
-//					if(newtotal==0){return;}
-//				}
-//			}else{//有父有子
-//				//先找到叶子子，即没有子只有父的集合
-//				Set<Long> oldChildSet=new HashSet<Long>();
-//				Set<Long> newChildSet=new HashSet<Long>();
-//				Set<Long> overChildSet=new HashSet<Long>();
-//				for(IxPoiChildren c:childs){newChildSet.add(c.getChildPoiPid());}
-//				int oldtotal=oldChildSet.size();
-//				int newtotal=newChildSet.size();
-//				whileNum=0;
-//				while(true){
-//					//一般父子关系层次会在6层以内，增加判断，防止代码错误导致的死循环
-//					if(whileNum>6){return;}
-//					else{whileNum++;}
-//					oldChildSet.addAll(newChildSet);
-//					//旧子包含新子，说明重复，相同的父，通过不同父子关系树能找到相同子
-//					if(oldChildSet.size()<oldtotal+newtotal){
-//						for(Long pid2:oldChildSet){targets=targets+";[IX_POI,"+pid2+"]";}
-//						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在父子关系重复");
-//						return;
-//					}
-//					newChildSet=new HashSet<Long>();
-//					Set<Long> tmpChildSet=newChildSet;
-//					for(Long tmp:tmpChildSet){
-//						BasicObj basicObj=referObjs.get(tmp);
-//						if(basicObj.isDeleted()){continue;}
-//						IxPoiObj cpoiObj=(IxPoiObj) basicObj;
-//						List<IxPoiChildren> cChilds = cpoiObj.getIxPoiChildrens();
-//						//没有子，说明是叶子子
-//						if(cChilds==null||cChilds.size()==0){overChildSet.add(cpoiObj.objPid());continue;}
-//						for(IxPoiChildren c:cChilds){newChildSet.add(c.getChildPoiPid());}
-//					}
-//					oldtotal=oldChildSet.size();
-//					newtotal=newChildSet.size();
-//					//没有新的子，即所有路径的父子关系均找到，所有叶子子均获取到，退出循环
-//					if(newtotal==0){break;}
-//				}
-//				//以所有叶子子分别为起点，查是否重复
-//				for(Long cPid:overChildSet){
-//					//没有子，只能找父
-//					//无父无子 不检查
-//					targets="[IX_POI,"+cPid+"]";
-//					Set<Long> oldParentSet=new HashSet<Long>();
-//					Set<Long> newParentSet=parentMap.get(cPid);
-//					int oldtotal2=oldParentSet.size();
-//					int newtotal2=newParentSet.size();
-//					whileNum=0;
-//					while(true){
-//						//一般父子关系层次会在6层以内，增加判断，防止代码错误导致的死循环
-//						if(whileNum>6){return;}
-//						else{whileNum++;}
-//						oldParentSet.addAll(newParentSet);
-//						//旧父包含新父，说明重复，相同的子，通过不同父子关系树能找到相同父
-//						if(oldParentSet.size()<oldtotal2+newtotal2){
-//							for(Long pid2:oldParentSet){targets=targets+";[IX_POI,"+pid2+"]";}
-//							setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在父子关系重复");
-//							return;
-//						}
-//						newParentSet=new HashSet<Long>();
-//						Set<Long> tmpParentSet=newParentSet;
-//						for(Long tmp:tmpParentSet){
-//							if(parentMap.containsKey(tmp)){newParentSet.addAll(parentMap.get(tmp));}
-//						}
-//						oldtotal2=oldParentSet.size();
-//						newtotal2=newParentSet.size();
-//						//没有新的父，即所有路径的父子关系均找到，查询结束
-//						if(newtotal2==0){return;}
-//					}
-//				}
     
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)

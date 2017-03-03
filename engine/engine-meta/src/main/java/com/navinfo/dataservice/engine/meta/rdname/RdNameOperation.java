@@ -192,7 +192,7 @@ public class RdNameOperation {
 			if (rdName.getNameId() == null) {
 				// 新增
 				// 判断是新增中文名还是英文/葡文名
-				if (rdName.getLangCode().equals("CHI") || rdName.getLangCode().equals("CHT")) {
+				if ("CHI".equals(rdName.getLangCode()) ||"CHT".equals(rdName.getLangCode() )  ) {
 					// 中文名
 //					rdName.setCity(true);
 					rdName = saveName(rdName);

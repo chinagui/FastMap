@@ -47,34 +47,55 @@ public class GLM01455 extends baseRule {
 		}
 	}
 
-	private void checkCrossNode(RdLinkSelector linkSelector, RdLink link, int sNodePid) throws Exception {
+	// 所在路口的nodes
+	private List<Integer> getCrossNode(int nodePid) throws Exception {
+
+		List<Integer> nodes = new ArrayList<>();
+
 		RdCrossSelector crossSelector = new RdCrossSelector(getConn());
 		RdCross cross = null;
 		try {
-			cross = crossSelector.loadCrossByNodePid(sNodePid, false);
+			cross = crossSelector.loadCrossByNodePid(nodePid, false);
 		} catch (Exception e) {
-			return;
+			return nodes;
 		}
 
-		// 路口Nodes
-		List<Integer> nodes = new ArrayList<>();
 		for (IRow n : cross.getNodes()) {
 			nodes.add(((RdCrossNode) n).getNodePid());
 		}
-		List<RdLink> links = linkSelector.loadByNodePids(nodes, false);
 
-		// 路口内Links<交叉口内link>
+		return nodes;
+	}
+
+	// 交叉口内links
+	private List<Integer> getInnerLink(List<RdLink> links) throws Exception {
+
 		List<Integer> innerLinks = new ArrayList<>();
-		for (IRow l : cross.getLinks()) {
-			innerLinks.add(((RdCrossLink) l).getLinkPid());
+
+		for (RdLink link : links) {
+			List<IRow> linkForm = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(link.pid(),
+					false);
+			link.setForms(linkForm);
+
+			for (IRow linkform : linkForm) {
+				RdLinkForm form = (RdLinkForm) linkform;
+
+				if (form.getFormOfWay() == 50) {
+					innerLinks.add(link.getOriginLinkPid());
+					break;
+				}
+			}
 		}
 
-		boolean flag = false; 
+		return innerLinks;
+	}
+
+	private boolean isPoiRoadExceptInner(List<RdLink> links, List<Integer> innerLinks) throws Exception {
+		boolean flag = false;
 
 		for (RdLink l : links) {
 			if (!innerLinks.contains(l.pid())) {
-				List<IRow> forms = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(l.pid(), false);
-				l.setForms(forms);
+				List<IRow> forms = l.getForms();
 
 				boolean formFlag = false;
 				for (IRow f : forms) {
@@ -91,29 +112,43 @@ public class GLM01455 extends baseRule {
 			}
 		}
 
+		return flag;
+	}
+
+	private void checkCrossNode(RdLinkSelector linkSelector, RdLink link, int sNodePid) throws Exception {
+
+		List<Integer> nodes = getCrossNode(sNodePid);
+
+		List<RdLink> links = linkSelector.loadByNodePids(nodes, false);
+
+		List<Integer> innerLinks = getInnerLink(links);
+
+		boolean flag = isPoiRoadExceptInner(links, innerLinks);
+
+		if (true == flag) {
+			return;
+		}
+		
 		// 除交叉口内link外，其余link均为poi连接路
-		if (!flag) {
-			for (RdLink innerLink : links) {
-				if (innerLinks.contains(innerLink.pid())) {
-					List<IRow> forms = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(innerLink.pid(), false);
-					flag = true;
+		for (RdLink innerLink : links) {
+			if (innerLinks.contains(innerLink.pid())) {
+				List<IRow> forms = innerLink.getForms();
+				flag = true;
 
-					for (IRow linkform : forms) {
-						RdLinkForm ff = (RdLinkForm) linkform;
+				for (IRow linkform : forms) {
+					RdLinkForm ff = (RdLinkForm) linkform;
 
-						if (ff.getFormOfWay() == 36) {
-							flag = false;
-							break;
-						}
-					}
-					if (flag) {
-						setCheckResult(innerLink.getGeometry(), "[RD_LINK," + innerLink.pid() + "]",
-
-								innerLink.mesh());
+					if (ff.getFormOfWay() == 36) {
+						flag = false;
 						break;
 					}
 				}
+				if (flag) {
+					setCheckResult(innerLink.getGeometry(), "[RD_LINK," + innerLink.pid() + "]",innerLink.mesh());
+					break;
+				}
 			}
 		}
+
 	}
 }

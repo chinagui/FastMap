@@ -49,48 +49,43 @@ public class GLM60282 extends BasicCheckRule {
 					//a.电话号码不包含“-”；
 					if(!contactStr.contains("-")){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "普通固话不包含“-”");
-						return;
 					}
-					//b.包含“-”，但“-”后数字第一位为0或1；
-					String[] contacts = contactStr.split("-");
-					if(contacts[1]!=null&&!contacts[1].isEmpty()
-							&&(contacts[1].startsWith("1")||contacts[1].startsWith("0"))){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "普通固话“-”后不能为0或1");
-						return;
+					if(contactStr.contains("-")){
+						//b.包含“-”，但“-”后数字第一位为0或1；
+						String[] contacts = contactStr.split("-");
+						if(contacts[1]!=null&&!contacts[1].isEmpty()
+								&&(contacts[1].startsWith("1")||contacts[1].startsWith("0"))){
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "普通固话“-”后不能为0或1");
+						}
+						//f.电话区号相同，电话位数不同，报log
+						if(contactMap.containsKey(contacts[0])&&contactMap.get(contacts[0])!=contactStr.length()){
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "电话位数错误");
+							return;
+						}
+						contactMap.put(contacts[0], contactStr.length());
 					}
 					//c.存在数字（-,0，1，2，3，4，5，6，7，8，9）以外的，报log；
-					Pattern p = Pattern.compile("^[0-9]+$");
-					if(!p.matcher(contacts[1]).matches()||!p.matcher(contacts[0]).matches()){
+					Pattern p = Pattern.compile("^[0-9\\-]+$");
+					if(!p.matcher(contactStr).matches()){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "电话存在非法字符");
-						return;
 					}
 					//d.电话位数必须为12位或者13位，否则报log
 					if(contactStr.length()!=12&&contactStr.length()!=13){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "普通电话长度不足位错误");
-						return;
 					}					
 					//e.电话区号第1位必须为0，否则报log
-					if(!contacts[0].substring(0, 1).equals("0")){
+					if(!contactStr.substring(0, 1).equals("0")){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "普通电话区号第1位不为0错误");
-						return;
 					}
-					//f.电话区号相同，电话位数不同，报log
-					if(contactMap.containsKey(contacts[0])&&contactMap.get(contacts[0])!=contactStr.length()){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "电话位数错误");
-						return;
-					}
-					contactMap.put(contacts[0], contactStr.length());
 				}else if(type==2){//移动电话
 					//a.必须以1开头，必须11位数，否则报出
 					if(!contactStr.startsWith("1")||contactStr.length()!=11){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "移动电话必须以“1”开头");
-						return;
 					}
 					//b.存在数字（0，1，2，3，4，5，6，7，8，9）以外的，报log；
 					Pattern p = Pattern.compile("^[0-9]+$");
 					if(!p.matcher(contactStr).matches()){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "电话存在非法字符");
-						return;
 					}
 				}
 			}

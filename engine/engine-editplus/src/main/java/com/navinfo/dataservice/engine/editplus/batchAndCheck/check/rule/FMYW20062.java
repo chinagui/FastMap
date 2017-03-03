@@ -64,6 +64,11 @@ public class FMYW20062 extends BasicCheckRule {
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}
+				//混合括号嵌套判断
+				errorMsg=CheckUtil.isDoubleKuohao(fullname);
+				if(errorMsg!=null){
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
+				}
 			}
 		}
 	}

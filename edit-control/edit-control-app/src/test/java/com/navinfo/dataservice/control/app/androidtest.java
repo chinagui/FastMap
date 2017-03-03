@@ -30,9 +30,21 @@ public class androidtest {
 		JSONArray gridDateList = new JSONArray();
 		JSONObject grid = new JSONObject();
 		grid.put("grid", "595643");//60562422//60562203//60560233
-
 		grid.put("date", "");
 		gridDateList.add(grid);
+		
+		
+		JSONObject grid1 = new JSONObject();
+		grid1.put("grid", "60562422");//60562422//60562203//60560233
+		grid1.put("date", "");
+		gridDateList.add(grid1);
+
+		
+		JSONObject grid2 = new JSONObject();
+		grid2.put("grid", "60562203");//60562422//60562203//60560233
+		grid2.put("date", "");
+		gridDateList.add(grid2);
+		
 		try {
 			Map<String,String> gridDateMap = new HashMap<String,String>();
 			
@@ -42,7 +54,7 @@ public class androidtest {
 			}
 			
 			PoiDownloadOperation operation = new PoiDownloadOperation();
-			operation.export2Txt(gridDateMap, "f://poidownload", "poi003.txt");
+			operation.export2Txt(gridDateMap, "f://poidownload", "poi005.txt");
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
 //			download.export(gridList, "f://poidownload", "poi.txt");

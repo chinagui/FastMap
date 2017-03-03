@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,10 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+
+import com.ctc.wstx.util.DataUtil;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -51,7 +55,9 @@ import net.sf.json.util.JSONUtils;
  */
 public class MultiSrcPoiImportorByGather extends AbstractOperation {
 
-	protected Map<String,String> errLog = new HashMap<String,String>();
+//	protected Map<String,String> errLog = new HashMap<String,String>();
+	
+	protected JSONArray errLog = new JSONArray();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
 	//protected List<PoiRelation> samePoiRel = new ArrayList<PoiRelation>();
@@ -64,7 +70,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		super(conn,preResult);
 	}
 
-	public Map<String, String> getErrLog() {
+	public JSONArray getErrLog() {
 		return errLog;
 	}
 
@@ -124,7 +130,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				ixPoiObjList.add(poiObj);
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
-				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
+				JSONObject errObj = new JSONObject();
+				errObj.put("fid", jo.getString("fid"));
+				errObj.put("reason", StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
+				errLog.add(errObj);
+//				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
 			}
 		}
 		return ixPoiObjList;
@@ -154,7 +164,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			log.info("采集端上传修改json数据"+jo.getValue().toString());
 			BasicObj obj = objs.get(jo.getKey());
 			if(obj==null){
-				errLog.put(jo.getKey(), "库中没有查到相应的数据");
+				JSONObject errObj = new JSONObject();
+				errObj.put("fid", jo.getKey());
+				errObj.put("reason", "库中没有查到相应的数据");
+				errLog.add(errObj);
+//				errLog.put(jo.getKey(), "库中没有查到相应的数据");
 			}else{
 				try{
 					IxPoiObj ixPoiObj = (IxPoiObj)obj;
@@ -166,7 +180,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", jo.getKey());
+					errObj.put("reason", StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
+					errLog.add(errObj);
+//					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"修改执行出现空指针错误":e.getMessage());
 				}
 			}
 		}
@@ -193,7 +211,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			log.info("采集端上传删除json数据"+jo.getValue().toString());
 			BasicObj obj = objs.get(jo.getKey());
 			if(obj==null){
-				errLog.put(jo.getKey(), "没有查到相应的数据");
+				JSONObject errObj = new JSONObject();
+				errObj.put("fid", jo.getKey());
+				errObj.put("reason", "没有查到相应的数据");
+				errLog.add(errObj);
+//				errLog.put(jo.getKey(), "没有查到相应的数据");
 			}else{
 				try{
 					IxPoiObj ixPoiObj = (IxPoiObj)obj;
@@ -205,7 +227,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
-					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
+					JSONObject errObj = new JSONObject();
+					errObj.put("fid", jo.getKey());
+					errObj.put("reason", StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
+					errLog.add(errObj);
+//					errLog.put(jo.getKey(), StringUtils.isEmpty(e.getMessage())?"删除执行出现空指针错误":e.getMessage());
 				}
 			}
 		}
@@ -230,6 +256,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//*************zl 2016.12.20*******************
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
+				
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
@@ -247,6 +274,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//**********zl 2017.2.8  补增********
 				ixPoi.setKindCode(jo.getString("kindCode"));
 				ixPoi.setOpen24h(jo.getInt("open24H"));
+				//**********zl 2017.03.01补增*******
+				ixPoi.setRawFields(jo.getString("rawFields"));
 				// meshid非0时原值转出；为0时根据几何计算；
 				int meshId = jo.getInt("meshid");
 				if (meshId == 0) {
@@ -664,16 +693,25 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				long pid = ixPoi.getPid();
+				
 				//************zl 2016.12.20********
 				//改分类
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
 					String kind = jo.getString("kindCode");
+					//鲜度验证
+					if(!kind.equals(ixPoi.getKindCode())){
+						ixPoi.setFreshFlag(false);
+					}
 					ixPoi.setKindCode(kind);
 				}
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
-				//JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
+				;
+				//鲜度验证
+				if(!jo.getString("geometry").equals(geometry.toText())){
+					ixPoi.setFreshFlag(false);
+				}
+				
 				ixPoi.setGeometry(geometry);
 				if (jo.getJSONObject("guide").size() > 0) {
 					ixPoi.setXGuide(jo.getJSONObject("guide").getDouble("longitude"));
@@ -684,13 +722,33 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					ixPoi.setYGuide(0);
 					ixPoi.setLinkPid(0);
 				}
+				//鲜度验证
+				if(jo.getString("chain") != null && StringUtils.isNotEmpty(jo.getString("chain")) 
+						&& !jo.getString("chain").equals(ixPoi.getChain())){
+					ixPoi.setFreshFlag(false);
+				}
+				//鲜度验证
+				if(jo.getInt("open24H") != ixPoi.getOpen24h()){
+					ixPoi.setFreshFlag(false);
+				}
 				ixPoi.setChain(jo.getString("chain"));
 				ixPoi.setOpen24h(jo.getInt("open24H"));
+				//**********zl 2017.03.01补增*******
+				ixPoi.setRawFields(jo.getString("rawFields"));
 				// meshid非0时原值转出；为0时根据几何计算；
 				int meshId = jo.getInt("meshid");
 				if (meshId == 0) {
 					String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
 					meshId = Integer.parseInt(meshIds[0]);
+				}
+				//鲜度验证
+				if(meshId != ixPoi.getMeshId()){
+					ixPoi.setFreshFlag(false);
+				}
+				//鲜度验证
+				if(jo.getString("postCode") != null  && StringUtils.isNotEmpty(jo.getString("postCode"))  
+						&& !jo.getString("postCode").equals(ixPoi.getPostCode())){
+					ixPoi.setFreshFlag(false);
 				}
 				ixPoi.setMeshId(meshId);
 				ixPoi.setPostCode(jo.getString("postCode"));
@@ -757,8 +815,16 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				} else {
 					ixPoi.setIndoor(0);
 				}
-				
+				//鲜度验证
+				if(jo.getString("vipFlag") != null  && StringUtils.isNotEmpty(jo.getString("vipFlag")) 
+						&& !jo.getString("vipFlag").equals(ixPoi.getVipFlag())){
+					ixPoi.setFreshFlag(false);
+				}
 				ixPoi.setVipFlag(jo.getString("vipFlag"));
+				//鲜度验证
+				if(jo.getInt("truck") != ixPoi.getTruckFlag()){
+					ixPoi.setFreshFlag(false);
+				}
 				// 新增卡车标识20160927
 				ixPoi.setTruckFlag(jo.getInt("truck"));
 				
@@ -792,6 +858,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 								}
 								ixPoiPhoto.setPoiPid(ixPoi.getPid());
 								ixPoiPhoto.setTag(photo.getInt("tag"));
+								// 鲜度验证
+								//ixPoi.setFreshFlag(false);
+								
 							}else if (type == 3) {
 								poiMemo = photo.getString("content");
 							}
@@ -908,6 +977,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			try {
 				ixPoiParent = poi.createIxPoiParent();
 				ixPoiParent.setParentPoiPid(pid);
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -959,7 +1031,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 								newIxPoiChildren.setRelationType(relateChildrenObj.getInt("type"));
 								newIxPoiChildren.setRowId(relateChildrenObj.getString("rowId").toUpperCase());
 							}
-							
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							
 						} else if (ret == 1) {//修改
 							for (IxPoiChildren oldChildren : oldChildrenpoiList) {
@@ -967,6 +1041,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 									oldChildren.setChildPoiPid(relateChildrenObj.getInt("childPid"));
 									oldChildren.setGroupId(ixPoiParent.getGroupId());
 									oldChildren.setRelationType(relateChildrenObj.getInt("type"));
+									// 鲜度验证
+									IxPoi ixPoi= (IxPoi)poi.getMainrow();
+									ixPoi.setFreshFlag(false);
 									break;
 								}
 							}
@@ -980,6 +1057,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				for (IxPoiChildren oldChildren : oldChildrenpoiList) {
 					if(!newRowIdList.contains(oldChildren.getRowId().toUpperCase())){//原poi中存在的子,上传的poi中不存在,则删除此子
 						poi.deleteSubrow(oldChildren);
+						// 鲜度验证
+						IxPoi ixPoi= (IxPoi)poi.getMainrow();
+						ixPoi.setFreshFlag(false);
 					}
 				}
 				
@@ -1069,7 +1149,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiGasstation.setRowId(gasObj.getString("rowId").toUpperCase());
 					
 					// 鲜度验证
-					//freshFlag = false;
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				} else if (ret == 1) {//修改
 					for (IxPoiGasstation oldGas : gasList) {
 						if (oldGas.getRowId().equals(gasObj.getString("rowId").toUpperCase())) {
@@ -1082,7 +1163,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							oldGas.setPayment(gasObj.getString("payment"));
 							oldGas.setService(gasObj.getString("service"));
 							oldGas.setOpenHour(gasObj.getString("openHour"));
-							
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							break;
 						}
 					}
@@ -1091,6 +1174,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				// 删除的数据
 				for (IxPoiGasstation oldGas : gasList) {
 					poi.deleteSubrow(oldGas);
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				}
 			}
 		}else{//表里原本不存在数据
@@ -1106,6 +1192,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				newIxPoiGasstation.setService(gasObj.getString("service"));
 				newIxPoiGasstation.setOpenHour(gasObj.getString("openHour"));
 				newIxPoiGasstation.setRowId(gasObj.getString("rowId").toUpperCase());
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 				}
 		}
 	}
@@ -1176,6 +1265,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiParking.setMiniNum(parkObj.getInt("miniNum"));
 					newIxPoiParking.setVipNum(parkObj.getInt("vipNum"));
 					newIxPoiParking.setRowId(parkObj.getString("rowId").toUpperCase());
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 					
 				} else if (ret == 1) {//修改
 					
@@ -1200,6 +1292,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							oldpark.setHandicapNum(parkObj.getInt("handicapNum"));
 							oldpark.setMiniNum(parkObj.getInt("miniNum"));
 							oldpark.setVipNum(parkObj.getInt("vipNum"));
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							
 							break;
 						}
@@ -1209,6 +1304,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				// 删除的数据
 				for (IxPoiParking oldpark : parkList) {
 					poi.deleteSubrow(oldpark);
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				}
 			}
 		}else{
@@ -1234,6 +1332,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				newIxPoiParking.setMiniNum(parkObj.getInt("miniNum"));
 				newIxPoiParking.setVipNum(parkObj.getInt("vipNum"));
 				newIxPoiParking.setRowId(parkObj.getString("rowId").toUpperCase());
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}
 	}
@@ -1295,6 +1396,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiHotel.setLongDescription(hotelObj.getString("description"));
 					newIxPoiHotel.setOpenHour(hotelObj.getString("openHour"));
 					newIxPoiHotel.setRowId(hotelObj.getString("rowId").toUpperCase());
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				} else if (ret == 1) {//修改
 					for (IxPoiHotel oldhotel : hotelList) {
 						if (oldhotel.getRowId().equals(hotelObj.getString("rowId").toUpperCase())) {
@@ -1311,6 +1415,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							oldhotel.setParking(hotelObj.getInt("parking"));
 							oldhotel.setLongDescription(hotelObj.getString("description"));
 							oldhotel.setOpenHour(hotelObj.getString("openHour"));
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							break;
 						}
 					}
@@ -1319,6 +1426,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				// 删除的数据
 				for (IxPoiHotel oldhotel : hotelList) {
 					poi.deleteSubrow(oldhotel);
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				}
 			}
 	}else{
@@ -1338,7 +1448,11 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			newIxPoiHotel.setLongDescription(hotelObj.getString("description"));
 			newIxPoiHotel.setOpenHour(hotelObj.getString("openHour"));
 			newIxPoiHotel.setRowId(hotelObj.getString("rowId").toUpperCase());
+			// 鲜度验证
+			IxPoi ixPoi= (IxPoi)poi.getMainrow();
+			ixPoi.setFreshFlag(false);
 		}
+		
 	}
 }
 	
@@ -1385,7 +1499,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiRestaurant.setOpenHour(foodtypesObj.getString("openHour"));
 					newIxPoiRestaurant.setRowId(foodtypesObj.getString("rowId").toUpperCase());
 					// 鲜度验证
-					//freshFlag = false;
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				} else if (ret == 1) {//修改
 					for (IxPoiRestaurant oldfoodtype : foodtypeList) {
 						if (oldfoodtype.getRowId().equals(foodtypesObj.getString("rowId").toUpperCase())) {
@@ -1395,6 +1510,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							oldfoodtype.setAvgCost(foodtypesObj.getInt("avgCost"));
 							oldfoodtype.setParking(foodtypesObj.getInt("parking"));
 							oldfoodtype.setOpenHour(foodtypesObj.getString("openHour"));
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							break;
 						}
 					}
@@ -1403,6 +1521,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				// 删除的数据
 				for (IxPoiRestaurant oldfoodtype : foodtypeList) {
 					poi.deleteSubrow(oldfoodtype);
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				}
 			}
 		}else{
@@ -1415,6 +1536,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				newIxPoiRestaurant.setParking(foodtypesObj.getInt("parking"));
 				newIxPoiRestaurant.setOpenHour(foodtypesObj.getString("openHour"));
 				newIxPoiRestaurant.setRowId(foodtypesObj.getString("rowId").toUpperCase());
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}
 	}
@@ -1469,6 +1593,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiChargingstation.setParkingInfo(chargingStationObj.getString("parkingInfo"));
 					newIxPoiChargingstation.setAvailableState(chargingStationObj.getInt("availableState"));
 					newIxPoiChargingstation.setRowId(chargingStationObj.getString("rowId").toUpperCase());
+					// 鲜度验证
+					IxPoi ixPoi= (IxPoi)poi.getMainrow();
+					ixPoi.setFreshFlag(false);
 				} else if (ret == 1) {//修改
 					for (IxPoiChargingstation oldChargingstation : chargingStationList) {
 						if (oldChargingstation.getRowId().equals(chargingStationObj.getString("rowId").toUpperCase())) {
@@ -1482,6 +1609,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							oldChargingstation.setParkingFees(chargingStationObj.getInt("parkingFees"));
 							oldChargingstation.setParkingInfo(chargingStationObj.getString("parkingInfo"));
 							oldChargingstation.setAvailableState(chargingStationObj.getInt("availableState"));
+							// 鲜度验证
+							IxPoi ixPoi= (IxPoi)poi.getMainrow();
+							ixPoi.setFreshFlag(false);
 							break;
 						}
 					}
@@ -1506,6 +1636,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				newIxPoiChargingstation.setParkingInfo(chargingStationObj.getString("parkingInfo"));
 				newIxPoiChargingstation.setAvailableState(chargingStationObj.getInt("availableState"));
 				newIxPoiChargingstation.setRowId(chargingStationObj.getString("rowId").toUpperCase());
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}
 	}
@@ -1590,7 +1723,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 						newIxPoiChargingplot.setPayment(chargingPoleObj.getString("payment"));
 						newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId").toUpperCase());
 						// 鲜度验证
-						//freshFlag = false;
+						IxPoi ixPoi= (IxPoi)poi.getMainrow();
+						ixPoi.setFreshFlag(false);
 					} else if (ret == 1) {//修改
 						//long oldPid = 0;
 						for (IxPoiChargingplot oldChargingplot : oldchargingplotList) {
@@ -1616,6 +1750,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 								oldChargingplot.setFloor(chargingPoleObj.getInt("floor"));
 								oldChargingplot.setLocationType(chargingPoleObj.getInt("locationType"));
 								oldChargingplot.setPayment(chargingPoleObj.getString("payment"));
+								// 鲜度验证
+								IxPoi ixPoi= (IxPoi)poi.getMainrow();
+								ixPoi.setFreshFlag(false);
 								break;
 							}
 						}
@@ -1625,6 +1762,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				for (IxPoiChargingplot oldChargingplot : oldchargingplotList) {
 					if(!newRowIdList.contains(oldChargingplot.getRowId().toUpperCase())){//原poi中存在的子,上传的poi中不存在,则删除此子
 						poi.deleteSubrow(oldChargingplot);
+						// 鲜度验证
+						IxPoi ixPoi= (IxPoi)poi.getMainrow();
+						ixPoi.setFreshFlag(false);
 					}
 				}
 			} else{
@@ -1661,6 +1801,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiChargingplot.setPayment(chargingPoleObj.getString("payment"));
 					newIxPoiChargingplot.setRowId(chargingPoleObj.getString("rowId").toUpperCase());
 				}
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}
 	}
@@ -1751,7 +1894,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 							newIxPoiContact.setRowId(newContact.getString("rowId").toUpperCase());
 						}
 						// 鲜度验证
-						//freshFlag = false;
+						IxPoi ixPoi= (IxPoi)poi.getMainrow();
+						ixPoi.setFreshFlag(false);
 					} else if (ret == 1) {//修改
 						//long oldPid = 0;
 						for (IxPoiContact oldContact : oldContactList) {
@@ -1761,7 +1905,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 								oldContact.setContactType(newContact.getInt("contactType"));
 								oldContact.setContactDepart(newContact.getInt("contactDepart"));
 								oldContact.setPriority(newContact.getInt("priority"));
-								
+								// 鲜度验证
+								IxPoi ixPoi= (IxPoi)poi.getMainrow();
+								ixPoi.setFreshFlag(false);
 								break;
 							}
 						}
@@ -1771,6 +1917,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				for (IxPoiContact oldContact : oldContactList) {
 					if(!newRowIdList.contains(oldContact.getRowId().toUpperCase())){//原poi中存在的子,上传的poi中不存在,则删除此子
 						poi.deleteSubrow(oldContact);
+						// 鲜度验证
+						IxPoi ixPoi= (IxPoi)poi.getMainrow();
+						ixPoi.setFreshFlag(false);
 					}
 				}
 			} else{
@@ -1827,6 +1976,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newIxPoiContact.setPriority(contactObj.getInt("priority"));
 					newIxPoiContact.setRowId(contactObj.getString("rowId").toUpperCase());
 				}
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}
 	}
@@ -2068,6 +2220,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				ixPoiName.setNameClass(1);
 				ixPoiName.setNameType(2);
 				ixPoiName.setLangCode(langCode);
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 			
 		}
@@ -2093,15 +2248,24 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		if(StringUtils.isNotEmpty(foodType)){
 			if(ixPoiRestaurants != null && ixPoiRestaurants.size()>0){
 				ixPoiRestaurants.get(0).setFoodType(foodType);
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}else{
 				//IX_POI_RESTAURANT表
 				IxPoiRestaurant ixPoiRestaurant = poi.createIxPoiRestaurant();
 				ixPoiRestaurant.setFoodType(foodType);
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}else{
 			//逻辑删除日库中所有风味类型记录
 			IxPoiRestaurant ixPoiRestaurant = ixPoiRestaurants.get(0);
 			poi.deleteSubrow(ixPoiRestaurant);
+			// 鲜度验证
+			IxPoi ixPoi= (IxPoi)poi.getMainrow();
+			ixPoi.setFreshFlag(false);
 		}
 	}
 
@@ -2175,9 +2339,20 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		Map<String,Long> exists = IxPoiSelector.getPidByFids(conn,addPois.keySet());
 		if(exists==null)return;
 		for(String fid:exists.keySet()){
-			errLog.put(fid, "fid库中已存在");
+			JSONObject errObj = new JSONObject();
+			errObj.put("fid", fid);
+			errObj.put("reason",  "fid库中已存在");
+			errLog.add(errObj);
+//			errLog.put(fid, "fid库中已存在");
 			addPois.remove(fid);
 		}
+	}
+	
+	
+	public static void main(String[] args) {
+		//采集时间  zl 2017.3.3 
+		
+		System.out.println(DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT));
 	}
 	
 }

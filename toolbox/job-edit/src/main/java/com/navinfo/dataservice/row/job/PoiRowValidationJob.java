@@ -151,7 +151,7 @@ public class PoiRowValidationJob extends AbstractJob {
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
 					+ "   AND ps.work_type = 1 AND ps.status in (1,2)"
-					+ "   and ip.u_record!=2"
+					//+ "   and ip.u_record!=2"
 					+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
 					+ "                           'mask=anyinteract') = 'TRUE'";

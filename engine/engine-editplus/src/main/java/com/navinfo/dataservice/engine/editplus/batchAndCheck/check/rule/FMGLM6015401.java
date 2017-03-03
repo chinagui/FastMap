@@ -57,6 +57,12 @@ public class FMGLM6015401 extends BasicCheckRule {
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
 				return;
 			}
+			//混合括号嵌套判断
+			errorMsg=CheckUtil.isDoubleKuohao(name);
+			if(errorMsg!=null){
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				return;
+			}
 		}
 	}
 

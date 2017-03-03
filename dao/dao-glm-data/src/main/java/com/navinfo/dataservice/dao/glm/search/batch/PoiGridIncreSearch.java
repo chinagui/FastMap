@@ -61,8 +61,19 @@ public class PoiGridIncreSearch {
 		Map<Long,IxPoi> results = new HashMap<Long,IxPoi>();//key:pid,value:obj
 		Connection manConn = null;
 		try {
+			
 			manConn = DBConnector.getInstance().getManConnection();
-			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in ("+StringUtils.join(gridDateMap.keySet(), ",")+")";
+			//*********zl 将grids 放入clob 查询**
+			
+			Clob gridClob = ConnectionUtil.createClob(manConn);
+			
+			gridClob.setString(1, StringUtils.join(gridDateMap.keySet(), ","));
+			
+			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in (select column_value from table(clob_to_table(?))) ";
+			System.out.println(sql);
+			//*********************************
+//			String sql = "SELECT g.grid_id,r.daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id in ("+StringUtils.join(gridDateMap.keySet(), ",")+")";
+			System.out.println(sql);
 			Map<Integer,Collection<String>> dbGridMap = new QueryRunner().query(manConn, sql, new ResultSetHandler<Map<Integer,Collection<String>>>(){
 
 				@Override

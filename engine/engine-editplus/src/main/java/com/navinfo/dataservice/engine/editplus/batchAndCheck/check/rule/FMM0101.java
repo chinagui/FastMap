@@ -54,7 +54,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 160208文化活动中心,120202住宅楼""直接报log：别名需作业！
  * @author zhangxiaoyi
  */
-public class FMMGC001 extends BasicCheckRule {
+public class FMM0101 extends BasicCheckRule {
 	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
 	private Map<Long, Long> adminMap=new HashMap<Long, Long>();
 	@Override

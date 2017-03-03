@@ -1,19 +1,14 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
-import com.navicop.navinfo.check.dms.NaviCopCheckEntry;
+import com.navicop.navinfo.check.dms.FmNaviCopCheckEntry;
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import org.apache.commons.lang.StringUtils;
 import java.util.Random;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
 
 /**
  * @ClassName: BatchCoreJob
@@ -36,7 +31,7 @@ public class CheckCoreJob extends AbstractJob {
         int timeOut = req.getTimeOut();
         String checkRuleIds = StringUtils.join(req.getRuleIds(), ",");
         String checkResult = "";
-        NaviCopCheckEntry checkMgr = new NaviCopCheckEntry();
+        FmNaviCopCheckEntry checkMgr = new FmNaviCopCheckEntry();
         try {
         	System.out.println("元数据库:" + checkParams.getCheckUserName()+"  "+ checkParams.getCheckPasswd()+" "+checkParams.getCheckHost());
         	System.out.println("kdb: "+  checkParams.getKdbUserName()+"  "+checkParams.getKdbPasswd()+"  "+ checkParams.getKdbHost());

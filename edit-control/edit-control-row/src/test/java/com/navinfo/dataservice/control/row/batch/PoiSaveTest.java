@@ -44,7 +44,7 @@ public class PoiSaveTest {
 	@Test
 	public void testGetPoiList() throws Exception
 	{
-		String parameter = "{\"dbId\":17,\"subtaskId\":\"61\",\"type\":2,\"pageNum\":1,\"pageSize\":20,\"pidName\":\"\",\"pid\":0}";
+		String parameter = "{\"dbId\":18,\"subtaskId\":\"4\",\"type\":2,\"pageNum\":1,\"pageSize\":20,\"pidName\":\"\",\"pid\":0}";
 		PoiQuery query = new PoiQuery();
 		query.getPoiList(parameter);
 	}

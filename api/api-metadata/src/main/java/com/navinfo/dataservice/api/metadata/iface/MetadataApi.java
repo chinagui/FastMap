@@ -346,7 +346,7 @@ public interface MetadataApi {
      * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
      * @throws Exception
      */
-    public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception;
+    public Map<String, Integer> searchScPointPoiCodeNew() throws Exception;
     
     /**
      * sc_point_poicode_new.KIND_USE= 1
@@ -354,7 +354,7 @@ public interface MetadataApi {
      * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
      * @throws Exception
      */
-	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception;
+	public Map<String, String> getKindNameByKindCode() throws Exception;
     /**
      * SC_POINT_FOCUS.TYPE=2
      * @author Han Shaoming

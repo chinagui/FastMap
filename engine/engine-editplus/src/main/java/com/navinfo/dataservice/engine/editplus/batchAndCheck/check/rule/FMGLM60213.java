@@ -1,10 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,10 +47,7 @@ public class FMGLM60213 extends BasicCheckRule {
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
 			if(kindCodeP == null ){return;}
-			List<String> kindCodes = new ArrayList<String>();
-			kindCodes.add(kindCode);
-			kindCodes.add(kindCodeP);
-			Map<String, Integer> map = metadataApi.searchScPointPoiCodeNew(kindCodes);
+			Map<String, Integer> map = metadataApi.searchScPointPoiCodeNew();
 			//sc_point_poicode_new.KIND_USE='1'
 			if(!map.containsKey(kindCode) || !map.containsKey(kindCodeP)){return;}
 			

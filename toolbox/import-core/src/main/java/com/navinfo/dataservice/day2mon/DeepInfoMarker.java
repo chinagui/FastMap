@@ -145,8 +145,8 @@ public class DeepInfoMarker {
 		// 无照片，但是有修改parking履历的抓取
 		if(CollectionUtils.isNotEmpty(poiParkings)){
 			for (IxPoiParking parking : poiParkings) {
-				if (parking.getHisOpType().equals(OperationType.UPDATE)
-						&& parking.hisOldValueContains(IxPoiParking.PARKING_ID)) {
+				if (parking.getHisOpType().equals(OperationType.INSERT)||(parking.getHisOpType().equals(OperationType.UPDATE)
+						&& parking.hisOldValueContains(IxPoiParking.PARKING_ID))) {
 					return true;
 				}
 			}

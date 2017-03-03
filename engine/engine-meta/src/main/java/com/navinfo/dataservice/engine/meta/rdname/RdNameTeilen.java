@@ -344,7 +344,6 @@ public class RdNameTeilen {
 			log.info("engBaseName: "+engBaseName);
 		}
 		if(chiRdName.getRoadType() == 3){//道路类型为铁路或地铁
-			
 			String str = engBaseName.replaceAll("Ditie", "").replaceAll("Qinggui", "");
 			if(Character.isLowerCase(str.charAt(0))){//首字母大写
 	           str = (new StringBuilder()).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1)).toString();

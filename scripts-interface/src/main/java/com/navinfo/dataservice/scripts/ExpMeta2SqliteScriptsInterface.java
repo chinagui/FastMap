@@ -118,7 +118,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		//1.充电站品牌表：
 		sqliteList.add("CREATE TABLE SC_POINT_CHARGING_CHAIN (chain_name text,chain_code text,hm_flag text,memo text)");
 		//2.小分类业务逻辑控制表  //kind_id integer,
-		sqliteList.add("CREATE TABLE CI_PARA_CONTROL (id integer PRIMARY KEY,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs integer,add_cs integer,disp_onlink integer)");
+		sqliteList.add("CREATE TABLE CI_PARA_CONTROL (id integer PRIMARY KEY,kind_code text,kind_change integer,parent integer,parent_level integer,important integer,name_keyword text,level text,eng_permit integer,agent integer,region integer,tenant integer,extend integer,extend_photo integer,photo integer,internal integer,chain integer,tel_cs REAL,add_cs REAL,disp_onlink integer)");
 		//3.FOODTYPE值域表
 		sqliteList.add("CREATE TABLE CI_PARA_FOOD (id integer PRIMARY KEY,kind_code text,food_name text,food_code integer,foodtype integer)");
 		//4.POI Icon表
@@ -243,8 +243,8 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(14, resultSet.getInt("photo"));
 				prep.setInt(15, resultSet.getInt("internal"));
 				prep.setInt(16, resultSet.getInt("chain"));
-				prep.setInt(17, resultSet.getInt("tel_cs"));
-				prep.setInt(18, resultSet.getInt("add_cs"));
+				prep.setDouble(17, resultSet.getDouble("tel_cs"));
+				prep.setDouble(18, resultSet.getDouble("add_cs"));
 				prep.setInt(19, resultSet.getInt("disp_onlink"));
 				
 				prep.executeUpdate();
@@ -336,15 +336,15 @@ public class ExpMeta2SqliteScriptsInterface {
 		//id ,idcode,name_in_nav,type 
 		String insertSql = "insert into CI_PARA_ICON(id ,idcode,name_in_nav,type) values(?,?,?,?)";
 		String selectSql = "select distinct pid, poi_num, name, 1 type from ix_poi p, ix_poi_name n, cmg_building_poi b "
-				+ "	 where p.pid = n.poi_pid and b.poi_pid = p.pid "
+				+ "	 where p.pid = n.poi_pid and b.poi_pid = p.pid and (n.lang_code ='CHI' or n.lang_code ='CHT') AND n.name_class =1 and n.name_type =1 "
 				+ " and not exists (select 1 from ix_poi_icon i1 where i1.poi_pid = p.pid) "
 				+ " UNION all "
 				+ "select distinct pid, poi_num, name, 2 type from ix_poi p, ix_poi_name n, ix_poi_icon i "
-				+ " where p.pid = n.poi_pid  and i.poi_pid = p.pid  "
+				+ " where p.pid = n.poi_pid  and i.poi_pid = p.pid  and (n.lang_code ='CHI' or n.lang_code ='CHT') AND n.name_class =1 and n.name_type =1 "
 				+ " and not exists (select 1 from cmg_building_poi b1 where b1.poi_pid = p.pid) "
 				+ "  union all "
 				+" select distinct pid, poi_num, name, 3 type from ix_poi p, ix_poi_name n, ix_poi_icon i, cmg_building_poi b "
-				+"  where p.pid = n.poi_pid and i.poi_pid = p.pid and b.poi_pid = p.pid " ;
+				+"  where p.pid = n.poi_pid and i.poi_pid = p.pid and b.poi_pid = p.pid  and (n.lang_code ='CHI' or n.lang_code ='CHT') AND n.name_class =1 and n.name_type =1 " ;
 				
 		Statement pstmt = null;
 		ResultSet resultSet = null;

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -9,10 +10,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang.StringUtils;
+
+import com.ctc.wstx.util.DataUtil;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -252,6 +256,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//*************zl 2016.12.20*******************
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
+				
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
 				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
@@ -688,16 +693,25 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				long pid = ixPoi.getPid();
+				
 				//************zl 2016.12.20********
 				//改分类
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
 					String kind = jo.getString("kindCode");
+					//鲜度验证
+					if(!kind.equals(ixPoi.getKindCode())){
+						ixPoi.setFreshFlag(false);
+					}
 					ixPoi.setKindCode(kind);
 				}
 				// geometry按SDO_GEOMETRY格式原值转出
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-				//ixPoi.setGeometry(GeoTranslator.transform(geometry, 100000, 5));
-				//JSONObject geometryObj = GeoTranslator.jts2Geojson(geometry);
+				;
+				//鲜度验证
+				if(!jo.getString("geometry").equals(geometry.toText())){
+					ixPoi.setFreshFlag(false);
+				}
+				
 				ixPoi.setGeometry(geometry);
 				if (jo.getJSONObject("guide").size() > 0) {
 					ixPoi.setXGuide(jo.getJSONObject("guide").getDouble("longitude"));
@@ -708,6 +722,15 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					ixPoi.setYGuide(0);
 					ixPoi.setLinkPid(0);
 				}
+				//鲜度验证
+				if(jo.getString("chain") != null && StringUtils.isNotEmpty(jo.getString("chain")) 
+						&& !jo.getString("chain").equals(ixPoi.getChain())){
+					ixPoi.setFreshFlag(false);
+				}
+				//鲜度验证
+				if(jo.getInt("open24H") != ixPoi.getOpen24h()){
+					ixPoi.setFreshFlag(false);
+				}
 				ixPoi.setChain(jo.getString("chain"));
 				ixPoi.setOpen24h(jo.getInt("open24H"));
 				//**********zl 2017.03.01补增*******
@@ -717,6 +740,15 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if (meshId == 0) {
 					String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
 					meshId = Integer.parseInt(meshIds[0]);
+				}
+				//鲜度验证
+				if(meshId != ixPoi.getMeshId()){
+					ixPoi.setFreshFlag(false);
+				}
+				//鲜度验证
+				if(jo.getString("postCode") != null  && StringUtils.isNotEmpty(jo.getString("postCode"))  
+						&& !jo.getString("postCode").equals(ixPoi.getPostCode())){
+					ixPoi.setFreshFlag(false);
 				}
 				ixPoi.setMeshId(meshId);
 				ixPoi.setPostCode(jo.getString("postCode"));
@@ -783,8 +815,16 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				} else {
 					ixPoi.setIndoor(0);
 				}
-				
+				//鲜度验证
+				if(jo.getString("vipFlag") != null  && StringUtils.isNotEmpty(jo.getString("vipFlag")) 
+						&& !jo.getString("vipFlag").equals(ixPoi.getVipFlag())){
+					ixPoi.setFreshFlag(false);
+				}
 				ixPoi.setVipFlag(jo.getString("vipFlag"));
+				//鲜度验证
+				if(jo.getInt("truck") != ixPoi.getTruckFlag()){
+					ixPoi.setFreshFlag(false);
+				}
 				// 新增卡车标识20160927
 				ixPoi.setTruckFlag(jo.getInt("truck"));
 				
@@ -2306,6 +2346,13 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 //			errLog.put(fid, "fid库中已存在");
 			addPois.remove(fid);
 		}
+	}
+	
+	
+	public static void main(String[] args) {
+		//采集时间  zl 2017.3.3 
+		
+		System.out.println(DateUtils.dateToString(new Date(), DateUtils.DATE_COMPACTED_FORMAT));
 	}
 	
 }

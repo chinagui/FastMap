@@ -17,6 +17,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
+import com.sun.tools.internal.xjc.model.SymbolSpace;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -230,6 +231,10 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
 			
 			JSONObject param =  params.getJSONObject("params");
+			String name = param.getString("name");
+			String nameGroupid = param.getString("nameGroupid");
+			String adminId = param.getString("adminId");
+			System.out.println("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
@@ -246,30 +251,74 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String tmep = "";
 			Clob pidClod = null;
 			if (flag>0) {
-				if (tips.size()>0) {
+//				if (tips.size()>0) {
+				System.out.println(tips.size());
+				if (tips.size()>0 || subtaskId >0) {
 					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
 					sql.append(" FROM (SELECT c.*, rownum rn");
 					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
 					sql.append(" from (");
 					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
-					sql.append(" union all  ");
-					sql.append(" SELECT tt.* FROM ");
-					sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
-					sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+					// 添加过滤器条件
+						if (name != null  && StringUtils.isNotEmpty(name)) {
+							sql.append(" and r.name like '%");
+							sql.append(name);
+							sql.append("%'");
+						}
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+							sql.append(" and r.name_groupid ");
+							sql.append("= ");
+							sql.append(nameGroupid);
+							sql.append(" ");
+						}
+						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+							sql.append(" and r.admin_id ");
+							sql.append("= ");
+							sql.append(adminId);
+							sql.append(" ");
+						}
 					
-					sql.append(" where 1=1");
-					
-					for (int i=0;i<tips.size();i++) {
-						JSONObject tipsObj = tips.getJSONObject(i);
-						ids += tmep;
-						tmep = ",";
-						ids +=tipsObj.getString("id");
+					if (tips.size()>0) {
+						sql.append(" union all  ");
+						sql.append(" SELECT tt.* FROM ");
+						sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
+						sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+						
+						sql.append(" where 1=1");
+						
+						// 添加过滤器条件
+						if (name != null  && StringUtils.isNotEmpty(name)) {
+							sql.append(" and tt.name like '%");
+							sql.append(name);
+							sql.append("%'");
+						}
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+							sql.append(" and tt.name_groupid ");
+							sql.append("= ");
+							sql.append(nameGroupid);
+							sql.append(" ");
+						}
+						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+							sql.append(" and tt.admin_id ");
+							sql.append("= ");
+							sql.append(adminId);
+							sql.append(" ");
+						}
+						
+						for (int i=0;i<tips.size();i++) {
+							JSONObject tipsObj = tips.getJSONObject(i);
+							System.out.println(tipsObj.getString("id"));
+							ids += tmep;
+							tmep = ",";
+							ids +=tipsObj.getString("id");
+						}
+						System.out.println(ids);
+						pidClod = ConnectionUtil.createClob(conn);
+						pidClod.setString(1, ids);
+						sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
 					}
-					
-					pidClod = ConnectionUtil.createClob(conn);
-					pidClod.setString(1, ids);
-					sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))) a ");
+					sql.append(" ) a ");
 					
 				} else {
 					result.put("total", 0);
@@ -290,7 +339,21 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						sql.append(" and a.name like '%");
 						sql.append(param.getString(key));
 						sql.append("%'");
-					} else {
+					} else if(key.equals("nameGroupid") && (!param.getString(key).isEmpty())){
+						String columnName = sUtils.toColumnName(key);
+						sql.append(" and a.");
+						sql.append(columnName);
+						sql.append("= ");
+						sql.append(param.getString(key));
+						sql.append(" ");
+					}else if(key.equals("adminId") && (!param.getString(key).isEmpty())){
+						String columnName = sUtils.toColumnName(key);
+						sql.append(" and a.");
+						sql.append(columnName);
+						sql.append("= ");
+						sql.append(param.getString(key));
+						sql.append(" ");
+					}else {
 						String columnName = sUtils.toColumnName(key);
 						if (!param.getString(key).isEmpty()) {
 							sql.append(" and a.");
@@ -331,7 +394,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			System.out.println("rdname/websearch sql : " +sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
-			if (flag>0) {
+			if (flag>0 && tips.size()>0) {
 				pstmt.setClob(1, pidClod);
 				pstmt.setInt(2, endRow);
 				pstmt.setInt(3, startRow);

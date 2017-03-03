@@ -25,7 +25,7 @@ import net.sf.json.JSONObject;
  */
 public class RdNameResultsTest {
 	
-	//@Test
+	@Test
 	public void checkResultList(){
 		Connection conn =null;
 		try{
@@ -69,7 +69,7 @@ public class RdNameResultsTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void rdnameSearch() throws Exception{
 		Connection conn =null;
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(

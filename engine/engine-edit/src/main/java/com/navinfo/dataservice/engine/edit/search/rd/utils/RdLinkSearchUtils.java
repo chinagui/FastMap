@@ -194,11 +194,8 @@ public class RdLinkSearchUtils {
 			}
 		}
 
-		int nextNodePid = nodePid == link.getsNodePid() ? link.geteNodePid()
-				: link.getsNodePid();
-
 		List<RdVariableSpeed> variableSpeeds = variableSpeedSelector
-				.loadRdVariableSpeedByParam(link.getPid(), nextNodePid, null,
+				.loadRdVariableSpeedByParam(null, nodePid, link.getPid(),
 						true);
 
 		if (variableSpeeds.size() > 0) {

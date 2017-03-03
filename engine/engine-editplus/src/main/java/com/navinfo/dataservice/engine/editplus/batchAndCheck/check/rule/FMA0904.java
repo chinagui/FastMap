@@ -52,6 +52,7 @@ public class FMA0904 extends BasicCheckRule {
 				if (place.endsWith(addr)) {
 					isRight = true;
 					error = addr;
+					break;
 				}
 			}
 			if (isRight) {

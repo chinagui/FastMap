@@ -51,6 +51,7 @@ public class FMA0905 extends BasicCheckRule {
 			for (String addr : addrck) {
 				if (town.endsWith(addr)) {
 					isRight = true;
+					break;
 				}
 			}
 

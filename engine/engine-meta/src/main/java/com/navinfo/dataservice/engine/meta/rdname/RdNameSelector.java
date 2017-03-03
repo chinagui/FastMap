@@ -482,6 +482,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			if (resultSet.next()) {
 				resultObj = result2Json(resultSet,new HashMap<String,String>());
+				
 			}
 			
 			return resultObj;
@@ -596,12 +597,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			try{
+			/*try{
 				rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));	
 			}catch(Exception e){
 				//tipsId 不存在
 				log.warn("tipsId没有获取", e);
-			}
+			}*/
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));

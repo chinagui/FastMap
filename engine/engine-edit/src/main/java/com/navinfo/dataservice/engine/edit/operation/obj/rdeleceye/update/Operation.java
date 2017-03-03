@@ -3,12 +3,15 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.update;
 import java.sql.Connection;
 import java.util.List;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONObject;
@@ -54,13 +57,25 @@ public class Operation implements IOperation {
             // 取出被打断线段上的所有电子眼
             List<RdElectroniceye> eleceyes = selector.loadListByRdLinkId(oldLinkPid, true);
             for (RdElectroniceye eleceye : eleceyes) {
+                double minLength = -1;
+                int minPid = 0;
                 for (RdLink link : newLinks) {
+                    Geometry point = GeoTranslator.transform(eleceye.getGeometry(), 0.00001, 5);
+                    Geometry linkG = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+                    Coordinate pedal = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), linkG);
+                    if (pedal == null) {
+                        continue;
+                    }
+                    double curLength = GeometryUtils.getLinkLength(GeometryUtils.getLineFromPoint(new double[]{point
+                            .getCoordinate().x, point.getCoordinate().y}, new double[]{pedal.x, pedal.y}));
                     // 判断电子眼的坐标存在于哪条新生成的线段上并更新电子眼信息
-                    if (this.isOnTheLine(eleceye.getGeometry(), link.getGeometry())) {
-                        eleceye.changedFields().put("linkPid", link.pid());
-                        result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+                    if (minLength == -1 || curLength < minLength) {
+                        minLength = curLength;
+                        minPid = link.pid();
                     }
                 }
+                eleceye.changedFields().put("linkPid", minPid);
+                result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
             }
         } catch (Exception e) {
             e.printStackTrace();

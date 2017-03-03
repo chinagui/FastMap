@@ -147,6 +147,7 @@ public class PoiRowValidationJob extends AbstractJob {
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			//行编有针对删除数据进行的检查，此处要把删除数据也加载出来
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"

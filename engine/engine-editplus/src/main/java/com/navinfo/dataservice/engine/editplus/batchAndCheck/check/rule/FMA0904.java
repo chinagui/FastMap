@@ -47,10 +47,15 @@ public class FMA0904 extends BasicCheckRule {
 			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<String> addrck = metaApi.getAddrck(9, "D");
 			String error = "";
-			if (addrck.contains(place.substring(place.length()-1))) {
-				error = place.substring(place.length()-1);
+			boolean isRight = false;
+			for (String addr:addrck) {
+				if (place.endsWith(addr)) {
+					isRight = true;
+					error = addr;
+					break;
+				}
 			}
-			if (!error.isEmpty()) {
+			if (isRight) {
 				setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"地名小区名检查：地名小区名字段不允许以"+error+"关键字结尾；");
 			}
 		}

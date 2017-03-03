@@ -16,6 +16,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.man.iface.Day2MonthSyncApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
@@ -40,14 +41,23 @@ public class Day2MonPoiLogSelectorTest {
 	}
 	@Test
 	public void testSelect() throws Exception {
+		ManApi manApi = (ManApi)ApplicationContextUtil
+				.getBean("manApi");
+		Region r = manApi.queryByRegionId(1013);
+		Day2MonthSyncApi d2mSyncApi = (Day2MonthSyncApi)ApplicationContextUtil
+				.getBean("day2MonthSyncApi");
+		
+		//1. 获取最新的成功同步信息，并记录本次同步信息
+		FmDay2MonSync lastSyncInfo = d2mSyncApi.queryLastedSyncInfo(1013);	
+		
 		DatahubApi datahubApi = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 		int cityId = 17;
 		DbInfo dailyDbInfo = datahubApi.getDbById(cityId);
 		OracleSchema schema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(dailyDbInfo .getConnectParam()));
 		Day2MonPoiLogSelector selector = new Day2MonPoiLogSelector(schema );
-		ManApi manApi = (ManApi)ApplicationContextUtil
-				.getBean("manApi");
+//		ManApi manApi = (ManApi)ApplicationContextUtil
+//				.getBean("manApi");
 		selector.setGrids(manApi.queryGridOfCity(cityId));
 		selector.setStopTime(new Date());
 		String tempTable = selector.select();

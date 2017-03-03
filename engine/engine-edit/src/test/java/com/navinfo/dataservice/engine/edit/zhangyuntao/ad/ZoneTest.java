@@ -30,7 +30,7 @@ public class ZoneTest extends InitApplication {
 
     @Test
     public void breakL() {
-        String parameter = "{\"command\":\"CREATE\",\"dbId\":17,\"objId\":302000561," +
+        String parameter = "{\"command\":\"CREATE\",\"dbId\":84,\"objId\":302000561," +
                 "\"data\":{\"longitude\":116.61131470075341,\"latitude\":40.25247994052458},\"type\":\"ZONENODE\"}";
         TestUtil.run(parameter);
     }
@@ -38,9 +38,9 @@ public class ZoneTest extends InitApplication {
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"type\":\"ZONEFACE\",\"dbId\":84," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49827644228934," +
-                "39.945107260370996],[116.4981034398079,39.94490779489178],[116.4986452460289,39.94483993536939]," +
-                "[116.49847492575644,39.9451093167131],[116.49827644228934,39.945107260370996]]}}}";
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49999037384987," +
+                "39.855576290998286],[116.50000780820847,39.85557732051358],[116.50000378489493,39.855572172936874]," +
+                "[116.49999037384987,39.855576290998286]]}}}";
         TestUtil.run(parameter);
     }
 }

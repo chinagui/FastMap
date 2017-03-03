@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.hgwg.update;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.hgwg.RdHgwgLimitSelector;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 
@@ -54,13 +57,25 @@ public class Operation implements IOperation {
             // 取出被打断线段上的所有限高限重
             List<RdHgwgLimit> hgwgLimits = selector.loadByLinkPid(linkPid, true);
             for (RdHgwgLimit hgwgLimit : hgwgLimits) {
+                double minLength = -1;
+                int minPid = 0;
                 for (RdLink link : newLinks) {
+                    Geometry point = GeoTranslator.transform(hgwgLimit.getGeometry(), 0.00001, 5);
+                    Geometry linkG = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+                    Coordinate pedal = GeometryUtils.getLinkPedalPointOnLine(point.getCoordinate(), linkG);
+                    if (pedal == null) {
+                        continue;
+                    }
+                    double curLength = GeometryUtils.getLinkLength(GeometryUtils.getLineFromPoint(new double[]{point
+                            .getCoordinate().x, point.getCoordinate().y}, new double[]{pedal.x, pedal.y}));
                     // 判断限高限重的坐标存在于哪条新生成的线段上并更新限高限重信息
-                    if (this.isOnTheLine(hgwgLimit.getGeometry(), link.getGeometry())) {
-                        hgwgLimit.changedFields().put("linkPid", link.pid());
-                        result.insertObject(hgwgLimit, ObjStatus.UPDATE, hgwgLimit.pid());
+                    if (minLength == -1 || curLength < minLength) {
+                        minLength = curLength;
+                        minPid = link.pid();
                     }
                 }
+                hgwgLimit.changedFields().put("linkPid", minPid);
+                result.insertObject(hgwgLimit, ObjStatus.UPDATE, hgwgLimit.pid());
             }
         } catch (Exception e) {
             e.printStackTrace();

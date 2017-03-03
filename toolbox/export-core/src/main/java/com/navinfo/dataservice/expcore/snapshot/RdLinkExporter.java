@@ -474,7 +474,8 @@ public class RdLinkExporter {
 		if (count == 0) {
 			style = 255;
 		}
-		
+		System.out.println("style: "+style);
+		System.out.println("count: "+count);
 		return style;
 	}
 }

@@ -1061,6 +1061,9 @@ public class ExpMeta2SqliteScriptsInterface {
 				metaSqliteFile.delete();
 			}
 			export2SqliteByNames(dir+"/metadata");
+			
+			System.out.println("Over.");
+			System.exit(0);
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();

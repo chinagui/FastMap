@@ -1696,7 +1696,7 @@ public class SubtaskService {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
-			boolean collectAndDay=true;
+			//boolean collectAndDay=true;
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -1704,14 +1704,14 @@ public class SubtaskService {
 					conditionSql+=" AND SUBTASK_LIST.TASK_ID="+condition.getInt(key);
 				}
 				if ("stage".equals(key)) {
-					collectAndDay=false;
+					//collectAndDay=false;
 					conditionSql+=" AND SUBTASK_LIST.STAGE ="+condition.getInt(key);}
 				//子任务名称模糊查询
 				if ("subtaskName".equals(key)) {	
 					conditionSql+=" AND SUBTASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
 				}
 				//筛选条件
-				//"progress":[1,3] //进度。1采集正常，2采集异常，3日编正常，4日编异常， 5月编正常，6月编异常，7已关闭，8已完成, 9草稿, 11逾期完成，12按时完成，13提前完成
+				//"progress":[1,3] //进度。1采集/日编/月编正常，2采集/日编/月编异常，7已关闭，8已完成, 9草稿, 11逾期完成，12按时完成，13提前完成
 				if ("progress".equals(key)){
 					JSONArray progress = condition.getJSONArray(key);
 					if(progress.isEmpty()){
@@ -1720,27 +1720,27 @@ public class SubtaskService {
 					List<String> progressList = new ArrayList<String>();
 					for(Object i:progress){
 						int tmp=(int) i;
-						if(tmp==1){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=0 AND SUBTASK_LIST.STATUS=1 ");}
-						if(tmp==2){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=0 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==1){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==2){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1 ");}
 						
-						if(tmp==3){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=1 AND SUBTASK_LIST.STATUS=1 ");}
-						if(tmp==4){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=1 AND SUBTASK_LIST.STATUS=1 ");}
-						
-						if(tmp==5){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=2 AND SUBTASK_LIST.STATUS=1 ");}
-						if(tmp==6){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=2 AND SUBTASK_LIST.STATUS=1 ");}
+//						if(tmp==3){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1 ");}
+//						if(tmp==4){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1 ");}
+//						
+//						if(tmp==5){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1 ");}
+//						if(tmp==6){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1 ");}
 						
 						if(tmp==7){progressList.add(" SUBTASK_LIST.STATUS = 0");}
-						if(tmp==8){progressList.add(" SUBTASK_LIST.STATUS = 1 AND SUBTASK_LIST.PERCENT = 100 ");}
+						if(tmp==8){progressList.add(" SUBTASK_LIST.STATUS = 1 ");}
 						if(tmp==9){progressList.add(" SUBTASK_LIST.STATUS = 2 ");}
 						
 						if(tmp==11){
-							progressList.add("SUBTASK_LIST.DIFF_DATE < 0 AND SUBTASK_LIST.PERCENT = 100 ");
+							progressList.add("SUBTASK_LIST.DIFF_DATE < 0 ");
 						}
 						if(tmp==12){
-							progressList.add("SUBTASK_LIST.DIFF_DATE = 0 AND SUBTASK_LIST.PERCENT = 100 ");
+							progressList.add("SUBTASK_LIST.DIFF_DATE = 0 ");
 						}
 						if(tmp==13){
-							progressList.add("SUBTASK_LIST.DIFF_DATE > 0 AND SUBTASK_LIST.PERCENT = 100 ");
+							progressList.add("SUBTASK_LIST.DIFF_DATE > 0 ");
 						}
 	
 						if(!progressList.isEmpty()){

@@ -48,6 +48,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
      */
     public static void updateZoneID(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
         Geometry linkGeometry = geometry == null ? shrink(link.getGeometry()) : shrink(geometry);
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (linkGeometry.getCoordinates().length > 200)
+            return;
         RdLinkZone linkZone = null;
         // 获取与link相关的ZoneFace
         ZoneFace zoneFace = loadZoneFace(conn, linkGeometry);
@@ -137,6 +140,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
      * @throws Exception
      */
     public static void updateZoneID(ZoneFace face, Geometry geometry, Connection conn, Result result) throws Exception {
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (face.getGeometry().getCoordinates().length > 200)
+            return;
         RdLinkSelector selector = new RdLinkSelector(conn);
         Geometry faceGeometry = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
         // 删除时将面内link的zone清空
@@ -148,7 +154,9 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             }
             return;
         }
-
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (geometry.getCoordinates().length > 200)
+            return;
         List<Integer> deleteLinkPids = new ArrayList<>();
         // 修形时对面内新增link赋zone属性
         geometry = GeoTranslator.transform(geometry, 0.00001, 5);

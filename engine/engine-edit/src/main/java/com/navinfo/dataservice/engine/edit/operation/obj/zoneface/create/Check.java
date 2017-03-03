@@ -84,13 +84,15 @@ public class Check {
 
                 String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and a.u_record!=2 and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
-                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "b" + ".link_pid " + "!= " +
-                        ":2 " + "and" + " " + "b" + "" + "" + ".u_record!=2 " + "" + "and " + "b" + "" + "" + "" +
-                        ".s_node_pid " + "not " + "in" + " (a" + "" + "" + ".s_node_pid," + "a" + "" + "" + "" + "" +
-                        ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + ".e_node_pid not in" + " " + "" + "" +
-                        "(a" + "" + "" + ".s_node_pid," + "a" + "" + "" + "" + "" + ".e_node_pid)" + "" + " and " +
-                        "sdo_relate" + "" + "(b" + "" + "" + "" + ".geometry,a" + "" + "" + ".geometry," +
-                        "'mask=anyinteract')='TRUE'";
+                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and" + " " +
+                        "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" + "" +
+                        ".s_node_pid " + "not " + "in" + " " + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" + "" +
+                        "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" + "" +
+                        ".e_node_pid not in" + " " + "" + "" + "" + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" +
+                        "" + "" + "" + "" + "" + ".e_node_pid)" + "" + "" + "" + " and " + "sdo_relate" + "" + "(b" +
+                        "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + ".geometry," + "'mask=anyinteract')" +
+                        "='TRUE'";
 
                 PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -111,9 +113,9 @@ public class Check {
                 sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link "
                         + "b" + " where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
-                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "a" + "" + ".e_node_pid" + " in " +
-                        "(b" + "" + ".s_node_pid," + "b" + "" + "" + ".e_node_pid) " + "and" + " b" + "" + "" + "" +
-                        ".u_record!=2)";
+                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + ".s_node_pid,"
+                        + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + ".u_record!=2)";
 
                 pstmt = conn.prepareStatement(sql);
 
@@ -296,16 +298,20 @@ public class Check {
         GeometryFactory factory = new GeometryFactory();
         Geometry linkGeo = GeoTranslator.geojson2Jts(geometry, 1, 5);
         Coordinate[] coordinates = linkGeo.getCoordinates();
-        for (int i = 0; i < coordinates.length; i++) {
+        for (int i = 0; i < coordinates.length - 2; i++) {
             Coordinate[] subCoor = new Coordinate[]{coordinates[i], coordinates[i + 1]};
             Geometry link = factory.createLineString(subCoor);
-            for (int j = i + 1; j < coordinates.length; j++) {
+            for (int j = i + 1; j < coordinates.length - 1; j++) {
                 subCoor = new Coordinate[]{coordinates[j], coordinates[j + 1]};
                 Geometry tmpLink = factory.createLineString(subCoor);
                 Geometry result = link.intersection(tmpLink);
-                if (result instanceof Point && GeoHelper.isPointEquals(factory.createPoint(coordinates[j]), (Point)
-                        result))
-                    continue;
+                if (result instanceof Point) {
+                    if (GeoHelper.isPointEquals(factory.createPoint(coordinates[j]), (Point) result))
+                        continue;
+                    if (j == coordinates.length - 2 && GeoHelper.isPointEquals(factory.createPoint(coordinates[j +
+                            1]), (Point) result))
+                        continue;
+                }
                 throw new Exception("背景面不能自相交");
             }
         }

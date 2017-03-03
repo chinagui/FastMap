@@ -340,11 +340,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			throws Exception, SQLException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException,
 			IllegalAccessException, InstantiationException, OperationResultException {
 		Map<Long, List<LogDetail>> logStatInfo = PoiLogDetailStat.loadByOperation(monthConn, logMoveResult.getLogOperationTempTable());
-		Set<String> tabNames = new HashSet<String>();
-		tabNames.add("IX_POI_NAME");
-		tabNames.add("IX_POI_ADDRESS");
+//		Set<String> tabNames = new HashSet<String>();
+//		tabNames.add("IX_POI_NAME");
+//		tabNames.add("IX_POI_ADDRESS");
+//		tabNames.add("IX_POI_PARKING");
 		OperationResult result = new OperationResult();
-		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", tabNames,false, logStatInfo.keySet(), true, true);
+		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", null,false, logStatInfo.keySet(), true, true);
 		ObjHisLogParser.parse(objs,logStatInfo);
 		result.putAll(objs.values());
 		return result;

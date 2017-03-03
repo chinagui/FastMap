@@ -36,7 +36,7 @@ public class FM14Win0102 extends BasicCheckRule {
 			String name = ixPoiName.getName();
 			if(name == null){return;}
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-			Map<String, String> kindNameMap = metadataApi.getKindNameByKindCode(kindCode);
+			Map<String, String> kindNameMap = metadataApi.getKindNameByKindCode();
 			if(kindNameMap.containsKey(kindCode)){
 				String kindName = kindNameMap.get(kindCode);
 				if(StringUtils.equals(name, kindName)){

@@ -92,7 +92,7 @@ public class GlmCache {
 				log.warn("错误来源:从管理库中未读取到模型版本为"+gdbVerison+"的表配置信息。");
 			}else{
 				StringBuilder tableSql = new StringBuilder();
-				tableSql.append("SELECT T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE,C.COLUMN_ID FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
+				tableSql.append("SELECT /*+ rule */ T.TABLE_NAME, C.COLUMN_NAME, C.DATA_TYPE,C.COLUMN_ID FROM USER_TABLES T, USER_TAB_COLUMNS C WHERE T.TABLE_NAME = C.TABLE_NAME");
 				tableSql.append(" AND T.TABLE_NAME IN ('");
 				tableSql.append(StringUtils.join(names.keySet(),"','"));
 				tableSql.append("') ORDER BY T.TABLE_NAME,C.COLUMN_ID");

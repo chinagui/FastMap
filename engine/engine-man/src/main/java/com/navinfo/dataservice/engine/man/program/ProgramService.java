@@ -639,6 +639,7 @@ public class ProgramService {
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
 					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
+			log.info("program list:"+selectSql);
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();

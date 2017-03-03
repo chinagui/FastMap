@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneConnexity;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.tollgate.RdTollgate;
@@ -143,6 +144,26 @@ public class RELATING_CHECK_NOSAME_LINE_LINE_RELATION extends baseRule {
 			// 交限RdRestriction
 			else if (obj instanceof RdRestriction) {
 				RdRestriction rdRestriction = (RdRestriction) obj;
+				//不查卡车交限
+				if((rdRestriction.getDetails()!=null)&&(rdRestriction.getDetails().size()>0)){
+					List<IRow> rdRestrictionDetailList = rdRestriction.getDetails();
+					for(IRow iRow:rdRestrictionDetailList){
+						if(iRow instanceof RdRestrictionDetail){
+							RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)iRow;
+							if((rdRestrictionDetail.getConditions()!=null)&&(rdRestrictionDetail.getConditions().size()>0)){
+								List<IRow> rdRestrictionConditionList = rdRestrictionDetail.getConditions();
+								for(IRow iiRow:rdRestrictionConditionList){
+									if(iiRow instanceof RdRestrictionCondition){
+										RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition)iiRow;
+										if(rdRestrictionCondition.getVehicle()==4){
+											return;
+										}
+									}
+								}
+							}
+						}					
+					}
+				}
 				boolean result = checkRdRestriction(rdRestriction,
 						checkCommand.getOperType());
 				if (!result) {

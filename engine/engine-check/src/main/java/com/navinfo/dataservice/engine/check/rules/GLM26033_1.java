@@ -97,7 +97,7 @@ public class GLM26033_1 extends baseRule{
 		else if(rdCrossName.status().equals(ObjStatus.UPDATE)){
 			if(rdCrossName.changedFields().containsKey("langCode")){
 				String langCode = rdCrossName.changedFields().get("langCode").toString();
-				if((langCode.equals("CHI"))||(langCode.equals("ENG"))){
+//				if((langCode.equals("CHI"))||(langCode.equals("ENG"))){
 					
 					StringBuilder sb = new StringBuilder();
 					
@@ -134,7 +134,7 @@ public class GLM26033_1 extends baseRule{
 						String target = "[RD_CROSS," + rdCrossName.getPid() + "]";
 						this.setCheckResult("", target, 0);
 					}
-				}
+//				}
 			}
 		}
 		

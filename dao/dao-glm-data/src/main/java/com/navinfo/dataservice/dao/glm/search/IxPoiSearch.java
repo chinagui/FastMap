@@ -1134,7 +1134,7 @@ public class IxPoiSearch implements ISearch {
 	 */
 	private JSONObject getEngNameBeforBatch(String firstWordItem,String secondWorkItem,IxPoi poi,JSONObject dataObj) throws Exception {
 		LogReader logReader = new LogReader(conn);
-		JSONArray results = new JSONArray();
+		JSONObject result = new JSONObject();
 		List<IRow> nRows = poi.getNames();
 		String oldOriginalEngName="",newOriginalEngName="",oldStandardEngName="",newStandardEngName="";
 		try{
@@ -1143,9 +1143,8 @@ public class IxPoiSearch implements ISearch {
 				//官方原始英文改前改后
 				if (name.getLangCode().equals("ENG") && name.getNameType() == 2 && name.getNameClass()== 1){
 					String rowId = name.getRowId();
-					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
-					if (results.size()>0){
-						JSONObject result =(JSONObject) results.get(0);
+					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
+					if (!result.isEmpty()){
 						oldOriginalEngName=result.getString("old");
 						newOriginalEngName=result.getString("new");
 					}
@@ -1153,9 +1152,8 @@ public class IxPoiSearch implements ISearch {
 				//官方标准化英文改前改后
 				if (name.getLangCode().equals("ENG") && name.getNameType() == 1 && name.getNameClass()== 1){
 					String rowId = name.getRowId();
-					results=logReader.getHisByOperate("Day2MonthPreBatch","IX_POI_NAME",rowId);
-					if (results.size()>0){
-						JSONObject result =(JSONObject) results.get(0);
+					result=logReader.getHisByOperate("FM-BAT-20-147","IX_POI_NAME",rowId);
+					if (!result.isEmpty()){
 						oldStandardEngName=result.getString("old");
 						newStandardEngName=result.getString("new");
 					}

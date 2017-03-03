@@ -733,14 +733,14 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointKindRule.getInstance().scPointKindRule();
 	}
 	/**
-	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL
 	 * 
 	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
 	 * @throws Exception
 	 */
 	@Override
-	public Map<String, String> scPointCode2Level(String kindCode) throws Exception{
-		return ScPointCode2Level.getInstance().scPointCode2Level(kindCode);
+	public Map<String, String> scPointCode2Level() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 
 }

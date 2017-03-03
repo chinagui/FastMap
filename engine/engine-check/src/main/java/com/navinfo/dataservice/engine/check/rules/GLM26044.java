@@ -90,7 +90,7 @@ public class GLM26044 extends baseRule{
 			sb.append(" AND RLF.FORM_OF_WAY = 33");
 			sb.append(" AND RLF.U_RECORD <> 2");
 			sb.append(" AND RCL.U_RECORD <> 2");
-			sb.append(" AND RCL.PID = " + rdCrossLink.getLinkPid());
+			sb.append(" AND RCL.LINK_PID = " + rdCrossLink.getLinkPid());
 
 			String sql = sb.toString();
 			log.info("RdCrossLink后检查GLM26044:" + sql);

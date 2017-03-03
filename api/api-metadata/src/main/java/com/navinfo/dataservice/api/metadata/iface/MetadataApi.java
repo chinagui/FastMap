@@ -383,6 +383,6 @@ public interface MetadataApi {
 	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
 	 * @throws Exception
 	 */
-	public Map<String, String> scPointCode2Level(String kindCode) throws Exception;
+	public Map<String, String> scPointCode2Level() throws Exception;
 
 }

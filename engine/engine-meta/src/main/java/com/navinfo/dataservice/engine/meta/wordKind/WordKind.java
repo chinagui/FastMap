@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class WordKind {
@@ -32,7 +33,11 @@ public class WordKind {
 			while (rs.next()) {
 				JSONObject temp = new JSONObject();
 				temp.put("type", rs.getInt("type"));
-				temp.put("chain", rs.getString("chain"));
+				if (rs.getString("chain") == null) {
+					temp.put("chain", JSONNull.getInstance());
+				} else {
+					temp.put("chain", rs.getString("chain"));
+				}
 				temp.put("flag", rs.getString("flag"));
 				temp.put("word", rs.getString("word"));
 				String kind = rs.getString("kind_code");

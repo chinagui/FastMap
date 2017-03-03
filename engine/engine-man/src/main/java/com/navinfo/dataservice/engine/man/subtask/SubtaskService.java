@@ -1720,14 +1720,14 @@ public class SubtaskService {
 					List<String> progressList = new ArrayList<String>();
 					for(Object i:progress){
 						int tmp=(int) i;
-						if(tmp==1){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=0 ");}
-						if(tmp==2){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=0");}
+						if(tmp==1){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=0 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==2){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=0 AND SUBTASK_LIST.STATUS=1 ");}
 						
-						if(tmp==3){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=1");}
-						if(tmp==4){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=1");}
+						if(tmp==3){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=1 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==4){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=1 AND SUBTASK_LIST.STATUS=1 ");}
 						
-						if(tmp==5){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=2");}
-						if(tmp==6){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=2");}
+						if(tmp==5){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STAGE=2 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==6){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STAGE=2 AND SUBTASK_LIST.STATUS=1 ");}
 						
 						if(tmp==7){progressList.add(" SUBTASK_LIST.STATUS = 0");}
 						if(tmp==8){progressList.add(" SUBTASK_LIST.STATUS = 1 AND SUBTASK_LIST.PERCENT = 100 ");}

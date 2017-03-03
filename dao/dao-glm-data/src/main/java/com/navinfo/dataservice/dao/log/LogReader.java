@@ -412,20 +412,20 @@ public class LogReader {
 	 * @return 
 	 * @throws Exception
 	 */
-	public JSONArray getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
+	public JSONObject getHisByOperate(String opCmd,String tbTb,String rowId) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" SELECT ld.old,ld.new");
+		sb.append(" select * from (SELECT ld.old,ld.new");
 		sb.append(" FROM LOG_ACTION LA, LOG_OPERATION LO, LOG_DETAIL LD");
 		sb.append(" WHERE LA.ACT_ID = LO.ACT_ID");
 		sb.append(" AND LO.OP_ID = LD.OP_ID");
 		sb.append(" AND LA.OP_CMD = ?");
 		sb.append(" AND LD.TB_NM = ?");
 		sb.append(" AND LD.TB_ROW_ID = ?");
-		sb.append(" ORDER BY LO.OP_SEQ DESC");
+		sb.append(" ORDER BY LO.OP_SEQ DESC) where rownum=1");
 
 		PreparedStatement pstmt = null;
-		JSONArray results = new JSONArray();
 		ResultSet resultSet = null;
+		JSONObject result = new JSONObject();
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 
@@ -434,13 +434,11 @@ public class LogReader {
 			pstmt.setString(3, rowId);
 			
 			resultSet = pstmt.executeQuery();
-			while (resultSet.next()) {
-				JSONObject result = new JSONObject();
+			if(resultSet.next()){
 				result.put( "old", resultSet.getString("old"));
 				result.put( "new", resultSet.getString("new"));
-				results.add(result);
-			} 
-			return results;
+			}
+			return result;
 		} catch (Exception e) {
 
 			throw e;

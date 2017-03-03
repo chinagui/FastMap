@@ -327,8 +327,14 @@ public class PoiEditStatus {
 	public static void upatePoiStatusForAndroid(Connection conn,  int freshFlag, String rawFields,int status,long pid)
 			throws Exception {
 		StringBuilder sb = new StringBuilder(" MERGE INTO poi_edit_status T1 ");
-		sb.append(" USING (SELECT "+status+" as b," + freshFlag + " as c,'" + rawFields
-				+ "' as d," + "sysdate as e,"+ pid + " as f " + "  FROM dual) T2 ");
+		sb.append(" USING (SELECT "+status+" as b," + freshFlag + " as c,");
+		if(rawFields != null && StringUtils.isNotEmpty(rawFields)){
+			sb.append("'" + rawFields+ "' as d,");
+		}else{
+			sb.append("null as d,");
+		}
+		
+		sb.append( "sysdate as e,"+ pid + " as f " + "  FROM dual) T2 ");
 		sb.append(" ON ( T1.pid=T2.f) ");
 		sb.append(" WHEN MATCHED THEN ");
 		sb.append(

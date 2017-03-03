@@ -420,25 +420,25 @@ public class RdLinkExporter {
 			count+=1;
 		}
 
-		if (formList.contains(22)) {
+		/*if (formList.contains(22)) {
 			style = 14;
 			count+=1;
-		}
+		}*/
 
-		if (formList.contains(24)) {
+		/*if (formList.contains(24)) {
 			
 			style = 14;
 			count+=1;
-		}
+		}*/
 
-		if (formList.contains(30)) {
+		/*if (formList.contains(30)) {
 			style = 14;
 			count+=1;
-		}
+		}*/
 
-		if (formList.contains(34)) {
+		/*if (formList.contains(34)) {
 			return 12;
-		}
+		}*/
 
 		List<Integer> styleList = new ArrayList<>();
 		for (int i = 0; i < styleFactors.size(); i++) {

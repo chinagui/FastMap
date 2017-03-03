@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.impcore.release.day.poi;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -467,8 +471,16 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		}
 	}
 	
-	private void callReleaseTransApi() {
-		// TODO 待实现；
+	private void callReleaseTransApi() throws IOException {
+		try { 
+			URL url = new URL("http://192.168.3.151:8089/smap/conv/day/launch");
+			URLConnection connection = url.openConnection();
+			connection.setConnectTimeout(3);
+			connection.connect();
+			//connection.getInputStream();
+		 } catch (Exception e) {
+			 log.debug("调用出品转换接口报错:"+e.getMessage());
+	     } 
 	}
 	
 }

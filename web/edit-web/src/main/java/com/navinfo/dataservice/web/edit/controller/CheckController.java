@@ -164,12 +164,14 @@ public class CheckController extends BaseController {
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			System.out.println("listRdnResult tips: "+tips);
 			logger.debug("获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
+			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
 			logger.debug("获取规则号"+ruleCodes);
 			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
-			logger.info("end check/list");
+			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());
 			return new ModelAndView("jsonView", success(page));

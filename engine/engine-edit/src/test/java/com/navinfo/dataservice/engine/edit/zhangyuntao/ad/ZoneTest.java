@@ -15,8 +15,8 @@ public class ZoneTest extends InitApplication {
 
     @Test
     public void move() {
-        String paramenter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":208000047," +
-                "\"data\":{\"longitude\":116.875079870224,\"latitude\":40.419205785712236},\"type\":\"ZONENODE\"}";
+        String paramenter = "{\"command\":\"MOVE\",\"objId\":402000045,\"type\":\"RDNODE\"," +
+                "\"data\":{\"longitude\":117.88847208023073,\"latitude\":39.3721027171239},\"dbId\":84}";
         //paramenter = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":208000047,
         // \"data\":{\"longitude\":116.87521398067473,\"latitude\":40.41819701924083},\"type\":\"ZONENODE\"}";
         TestUtil.run(paramenter);
@@ -38,9 +38,9 @@ public class ZoneTest extends InitApplication {
     @Test
     public void create() {
         String parameter = "{\"command\":\"CREATE\",\"type\":\"ZONEFACE\",\"dbId\":84," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.48312330245972," +
-                "39.94966293471222],[116.48246884346007,39.94844565039495],[116.4836597442627,39.948519675059835]," +
-                "[116.48312330245972,39.94966293471222]]}}}";
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49827644228934," +
+                "39.945107260370996],[116.4981034398079,39.94490779489178],[116.4986452460289,39.94483993536939]," +
+                "[116.49847492575644,39.9451093167131],[116.49827644228934,39.945107260370996]]}}}";
         TestUtil.run(parameter);
     }
 }

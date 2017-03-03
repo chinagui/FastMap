@@ -1145,8 +1145,12 @@ public class IxPoiSearch implements ISearch {
 					String rowId = name.getRowId();
 					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
-						oldOriginalEngName=result.getString("old");
-						newOriginalEngName=result.getString("new");
+						if(!result.getString("old").isEmpty()){
+							oldOriginalEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
+						}
+						if(!result.getString("new").isEmpty()){
+							newOriginalEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+						}
 					}
 				}
 				//官方标准化英文改前改后
@@ -1154,8 +1158,13 @@ public class IxPoiSearch implements ISearch {
 					String rowId = name.getRowId();
 					result=logReader.getHisByOperate("FM-BAT-20-147","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
-						oldStandardEngName=result.getString("old");
-						newStandardEngName=result.getString("new");
+						
+						if(!result.getString("old").isEmpty()){
+							oldStandardEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
+						}
+						if(!result.getString("new").isEmpty()){
+							newStandardEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+						}
 					}
 				}
 			}

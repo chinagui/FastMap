@@ -11,6 +11,8 @@ import java.util.List;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
 
@@ -81,11 +83,16 @@ public class Check {
                 //SHAPING_CHECK_CROSS_RDLINK_RDLINK
 
                 String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and a.u_record!=2 and " +
-                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "b.link_pid != :2 and b" +
-                        ".u_record!=2 " + "and b" + ".s_node_pid " + "not " + "in (a" + "" + ".s_node_pid,a" + "" +
-                        ".e_node_pid) " + "and " + "b" + "" + ".e_node_pid not in (a" + ".s_node_pid,a" + "" +
-                        ".e_node_pid)" + "" + " and sdo_relate" + "(b" + "" + ".geometry,a" + ".geometry," +
-                        "'mask=anyinteract')='TRUE'";
+                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
+                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and" + " " +
+                        "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" + "" +
+                        ".s_node_pid " + "not " + "in" + " " + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" + "" +
+                        "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" + "" +
+                        ".e_node_pid not in" + " " + "" + "" + "" + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" +
+                        "" + "" + "" + "" + "" + ".e_node_pid)" + "" + "" + "" + " and " + "sdo_relate" + "" + "(b" +
+                        "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + ".geometry," + "'mask=anyinteract')" +
+                        "='TRUE'";
 
                 PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -105,8 +112,10 @@ public class Check {
                 //GLM01015
                 sql = "select a.link_pid from rd_link a where a.link_pid = :1 and  exists (select null from rd_link "
                         + "b" + " where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and " +
-                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "a" + ".e_node_pid in (b.s_node_pid,b" + "" +
-                        ".e_node_pid) and" + " b" + ".u_record!=2)";
+                        "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
+                        + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
+                        "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + ".s_node_pid,"
+                        + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + ".u_record!=2)";
 
                 pstmt = conn.prepareStatement(sql);
 
@@ -286,13 +295,25 @@ public class Check {
     }
 
     public static void checkSelfIntersect(JSONObject geometry) throws Exception {
-        try {
-            Geometry linkGeo = GeoTranslator.geojson2Jts(geometry, 1, 5);
-            List<Point> points = new ArrayList<>();
-            GeoHelper.isSample(linkGeo, points);
-            if (!points.isEmpty())
+        GeometryFactory factory = new GeometryFactory();
+        Geometry linkGeo = GeoTranslator.geojson2Jts(geometry, 1, 5);
+        Coordinate[] coordinates = linkGeo.getCoordinates();
+        for (int i = 0; i < coordinates.length - 2; i++) {
+            Coordinate[] subCoor = new Coordinate[]{coordinates[i], coordinates[i + 1]};
+            Geometry link = factory.createLineString(subCoor);
+            for (int j = i + 1; j < coordinates.length - 1; j++) {
+                subCoor = new Coordinate[]{coordinates[j], coordinates[j + 1]};
+                Geometry tmpLink = factory.createLineString(subCoor);
+                Geometry result = link.intersection(tmpLink);
+                if (result instanceof Point) {
+                    if (GeoHelper.isPointEquals(factory.createPoint(coordinates[j]), (Point) result))
+                        continue;
+                    if (j == coordinates.length - 2 && GeoHelper.isPointEquals(factory.createPoint(coordinates[j +
+                            1]), (Point) result))
+                        continue;
+                }
                 throw new Exception("背景面不能自相交");
-        } catch (Exception e) {
+            }
         }
     }
 

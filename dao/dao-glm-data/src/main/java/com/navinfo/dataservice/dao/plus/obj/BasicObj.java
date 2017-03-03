@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.diff.ObjectDiffConfig;
+import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
+import com.navinfo.dataservice.dao.plus.glm.GlmRef;
+import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
@@ -266,14 +269,43 @@ public abstract class BasicObj {
 			sqlList.add(mainsql);
 		}
 		//subrow
+		//先放一级子表sql;再放二级子表sql
+		//一级子表
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
 			for(BasicRow subrow:entry.getValue()){
+				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
+				GlmRef glmRef = glmTable.getObjRef();
+				if(!glmRef.isRefMain()){
+					continue;
+				}
 				RunnableSQL sql = subrow.generateSql(physiDelete);
 				if(sql!=null){
 					sqlList.add(sql);
 				}	
 			}
 		}
+		//二级子表
+		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+			for(BasicRow subrow:entry.getValue()){
+				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
+				GlmRef glmRef = glmTable.getObjRef();
+				if(glmRef.isRefMain()){
+					continue;
+				}
+				RunnableSQL sql = subrow.generateSql(physiDelete);
+				if(sql!=null){
+					sqlList.add(sql);
+				}	
+			}
+		}
+//		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+//			for(BasicRow subrow:entry.getValue()){
+//				RunnableSQL sql = subrow.generateSql(physiDelete);
+//				if(sql!=null){
+//					sqlList.add(sql);
+//				}	
+//			}
+//		}
 		return sqlList;
 	}
 	

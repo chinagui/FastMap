@@ -70,7 +70,7 @@ public class CheckTest {
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 64, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -78,8 +78,8 @@ public class CheckTest {
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
-		logg.setOpType(OperationType.UPDATE);
-//		logg.setOpType(OperationType.INSERT);
+//		logg.setOpType(OperationType.UPDATE);
+		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		//row.setOpType(OperationType.PRE_DELETED);
@@ -111,7 +111,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-11-09");
+		ruleIdList.add("FM-14Win-01-02");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

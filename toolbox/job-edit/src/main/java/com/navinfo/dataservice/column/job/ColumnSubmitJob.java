@@ -134,6 +134,7 @@ public class ColumnSubmitJob extends AbstractJob {
 						}
 						Batch batch=new Batch(conn,operationResult);
 						batch.operate(batchCommand);
+						batch.setPhysiDelete(true);
 						batch.persistChangeLog(OperationSegment.SG_COLUMN, userId);
 					}
 				}

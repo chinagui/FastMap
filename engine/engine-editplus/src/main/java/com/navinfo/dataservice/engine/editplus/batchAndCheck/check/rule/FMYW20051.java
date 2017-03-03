@@ -47,7 +47,7 @@ public class FMYW20051 extends BasicCheckRule {
 			String vipFlag = parentPoi.getVipFlag();
 			//父POI.vip_flag=2
 			if(vipFlag != null){
-				String str = vipFlag.replace("\\|", ",");
+				String str = vipFlag.replace('|', ',');
 				List<Integer> vipFlags = StringUtils.getIntegerListByStr(str);
 				if(vipFlags.contains(2)){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);

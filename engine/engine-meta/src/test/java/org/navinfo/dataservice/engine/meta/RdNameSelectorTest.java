@@ -33,10 +33,10 @@ public class RdNameSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	//@Test
+	@Test
 	public void testGetRdName()
 	{
-		String parameter = "{'subtaskId':76,'pageNum':1,'pageSize':20,'flag':1,'sortby':'','params':{'name':'张陆铁路','nameGroupid':null,'adminId':'110000'}}";//
+		String parameter = "{'subtaskId':76,'pageNum':1,'pageSize':20,'flag':1,'sortby':'','params':{'name':'','nameGroupid':null,'adminId':''}}";//
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -86,7 +86,7 @@ public class RdNameSelectorTest {
         
 	}
 	
-	@Test
+	//@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
 		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'Ｚ８８８','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");

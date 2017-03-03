@@ -263,18 +263,18 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 					sql.append(" from (");
 					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
 					// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name)) {
+						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
 							sql.append(" and r.name like '%");
 							sql.append(name);
 							sql.append("%'");
 						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
 							sql.append(" and r.name_groupid ");
 							sql.append("= ");
 							sql.append(nameGroupid);
 							sql.append(" ");
 						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
 							sql.append(" and r.admin_id ");
 							sql.append("= ");
 							sql.append(adminId);
@@ -290,18 +290,18 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						sql.append(" where 1=1");
 						
 						// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name)) {
+						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
 							sql.append(" and tt.name like '%");
 							sql.append(name);
 							sql.append("%'");
 						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid)){
+						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
 							sql.append(" and tt.name_groupid ");
 							sql.append("= ");
 							sql.append(nameGroupid);
 							sql.append(" ");
 						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId)){
+						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
 							sql.append(" and tt.admin_id ");
 							sql.append("= ");
 							sql.append(adminId);

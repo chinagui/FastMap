@@ -17,7 +17,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * 
  * @author gaopengrong
  */
-public class FMMGC004 extends BasicCheckRule {
+public class FMM0104 extends BasicCheckRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {

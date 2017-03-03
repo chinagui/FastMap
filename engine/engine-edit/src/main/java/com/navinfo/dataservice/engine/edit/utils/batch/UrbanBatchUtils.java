@@ -44,6 +44,9 @@ public class UrbanBatchUtils extends BaseBatchUtils {
     public static void updateUrban(RdLink link, Geometry geometry, Connection conn, Result result) throws Exception {
         // 将link几何缩小100000倍，根据link几何查找与之相关的BUA面
         Geometry linkGeometry = null == geometry ? shrink(link.getGeometry()) : shrink(geometry);
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (linkGeometry.getCoordinates().length > 200)
+            return;
         List<LuFace> faces = new LuFaceSelector(conn).loadRelateFaceByGeometry(linkGeometry);
         // 如关联面数量为空或大于一暂不做处理
         if (faces.isEmpty() || faces.size() > 1) {
@@ -90,6 +93,9 @@ public class UrbanBatchUtils extends BaseBatchUtils {
      */
     public static void updateUrban(Geometry faceGeometry, Geometry geometry, Connection conn, Result result) throws
             Exception {
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (faceGeometry.getCoordinates().length > 200)
+            return;
         RdLinkSelector selector = new RdLinkSelector(conn);
         // 删除面时,原面内Link的Urban赋0
         if (null == geometry) {
@@ -100,6 +106,9 @@ public class UrbanBatchUtils extends BaseBatchUtils {
             }
             return;
         }
+        // TODO 临时方案不处理长度大于4000的几何图形，后期以存储过程代替
+        if (geometry.getCoordinates().length > 200)
+            return;
         List<RdLink> links = null;
         Map<Integer, RdLink> maps = new HashMap<>();
         // 修形面时,原几何内link的Urban赋0

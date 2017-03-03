@@ -140,25 +140,25 @@ public class GLM04008_1 extends baseRule{
 			int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString());
 			if(direct==1){
 				StringBuilder sb = new StringBuilder();
-
-				sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
-				sb.append(" WHERE R.PID = D.RESTRIC_PID");
-				sb.append(" AND D.TYPE = 1");
-				sb.append(" AND R.IN_LINK_PID = RL1.LINK_PID");
-				sb.append(" AND D.OUT_LINK_PID = RL2.LINK_PID");
-				sb.append(" AND RL1.DIRECT = 1");
-				sb.append(" AND RL2.DIRECT = 1");
-				sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
-				sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
-				sb.append(" AND G.DIR <> 1");
-				sb.append(" AND R.U_RECORD <> 2");
-				sb.append(" AND D.U_RECORD <> 2");
-				sb.append(" AND RL1.U_RECORD <> 2");
-				sb.append(" AND RL2.U_RECORD <> 2");
-				sb.append(" AND G.U_RECORD <> 2");
+				sb.append("SELECT  DISTINCT 1 FROM RD_LINK RL1, RD_LINK RL2");
+				sb.append(" WHERE RL1.DIRECT = 1");
+				sb.append("   AND RL2.DIRECT = 1");
+				sb.append("   AND RL1.U_RECORD <> 2");
+				sb.append("   AND RL2.U_RECORD <> 2");
 				sb.append(" AND ((RL1.LINK_PID = " + rdLink.getPid() + ") OR (RL2.LINK_PID = " + rdLink.getPid() + "))");
+				sb.append("   AND NOT EXISTS");
+				sb.append(" (SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_GATE G");
+				sb.append("         WHERE R.PID = D.RESTRIC_PID");
+				sb.append("           AND D.TYPE = 1");
+				sb.append("           AND R.IN_LINK_PID = RL1.LINK_PID");
+				sb.append("           AND D.OUT_LINK_PID = RL2.LINK_PID");
+				sb.append("           AND G.IN_LINK_PID = D.OUT_LINK_PID");
+				sb.append("           AND G.OUT_LINK_PID = R.IN_LINK_PID");
+				sb.append("           AND R.U_RECORD <> 2");
+				sb.append("           AND D.U_RECORD <> 2");
+				sb.append("           AND G.DIR <> 1");
+				sb.append("           AND G.U_RECORD <> 2)");
 				
-
 				String sql = sb.toString();
 				log.info("RdLink后检查GLM04008_1:" + sql);
 
@@ -231,26 +231,28 @@ public class GLM04008_1 extends baseRule{
 	 * @throws Exception 
 	 */
 	private void checkRdRestriction(RdRestriction rdRestriction, OperType operType) throws Exception {
-		//新增交限
+		//新增交限:新增交限非永久交限，相反方向有单向大门
 		if(rdRestriction.status().equals(ObjStatus.INSERT)){
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D, RD_LINK RL1, RD_LINK RL2, RD_GATE G");
-			sb.append(" WHERE R.PID = D.RESTRIC_PID");
-			sb.append(" AND D.TYPE = 1");
-			sb.append(" AND R.IN_LINK_PID = RL1.LINK_PID");
-			sb.append(" AND D.OUT_LINK_PID = RL2.LINK_PID");
-			sb.append(" AND RL1.DIRECT = 1");
+			sb.append("SELECT 1 FROM RD_LINK RL1, RD_LINK RL2, RD_GATE G");
+			sb.append(" WHERE RL1.DIRECT = 1");
 			sb.append(" AND RL2.DIRECT = 1");
-			sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
-			sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
-			sb.append(" AND G.DIR <> 1");
-			sb.append(" AND R.U_RECORD <> 2");
-			sb.append(" AND D.U_RECORD <> 2");
+			sb.append(" AND G.IN_LINK_PID = RL1.LINK_PID");
+			sb.append(" AND G.OUT_LINK_PID = RL2.LINK_PID");
+			sb.append(" AND G.DIR = 1");
 			sb.append(" AND RL1.U_RECORD <> 2");
 			sb.append(" AND RL2.U_RECORD <> 2");
 			sb.append(" AND G.U_RECORD <> 2");
-			sb.append(" AND R.PID = " + rdRestriction.getPid());
+			
+			sb.append("   AND NOT EXISTS");
+			sb.append(" (SELECT 1 FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL D");
+			sb.append("         WHERE R.PID = D.RESTRIC_PID");
+			sb.append("           AND D.TYPE = 1");
+			sb.append("           AND G.IN_LINK_PID = D.OUT_LINK_PID");
+			sb.append("           AND G.OUT_LINK_PID = R.IN_LINK_PID");
+			sb.append("           AND R.U_RECORD <> 2");
+			sb.append("           AND D.U_RECORD <> 2)");
 			
 
 			String sql = sb.toString();
@@ -279,10 +281,11 @@ public class GLM04008_1 extends baseRule{
 			sb.append(" AND RL2.DIRECT = 1");
 			sb.append(" AND G.IN_LINK_PID = D.OUT_LINK_PID");
 			sb.append(" AND G.OUT_LINK_PID = R.IN_LINK_PID");
-			sb.append(" AND G.DIR <> 1");
+			sb.append(" AND G.DIR = 1");
 			sb.append(" AND RL1.U_RECORD <> 2");
 			sb.append(" AND RL2.U_RECORD <> 2");
 			sb.append(" AND G.U_RECORD <> 2");
+			
 			sb.append(" AND R.PID = " + rdRestriction.getPid());
 			
 

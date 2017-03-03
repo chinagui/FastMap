@@ -40,7 +40,7 @@ public class FMGLM6007901 extends BasicCheckRule {
 			if(ixPoiName == null){return;}
 			String name = ixPoiName.getName();
 			if(name == null){return;}
-			if(name.endsWith("机场")||name.endsWith("機場")){
+			if(name.contains("机场")||name.contains("機場")){
 				//是否有父
 				if(!parentMap.containsKey(poi.getPid())){
 					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);

@@ -236,8 +236,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
 			int flag = params.getInt("flag");//1是任务查，0是全库查
+			System.out.println("flag: "+flag);
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
-			
+			System.out.println("searchForWeb :subtaskId: "+subtaskId);
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -351,7 +352,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				data.add(result2Json(resultSet, adminMap));
+				data.add(result2JsonByTaskOrTips(resultSet, adminMap));
+//				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -386,11 +388,15 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (214==rdName.getAdminId() && rdName.getNameGroupid()!=null&&0!=rdName.getNameGroupid()) {
+		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+				&& rdName.getNameGroupid() != 0) {
 			sb.append(" AND name_groupid=:4");
 		}
 		if (rdName.getNameId() != null) {
 			sb.append(" AND name_id !="+rdName.getNameId());
+		}
+		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
 		try {
 			
@@ -402,7 +408,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			pstmt.setInt(3, rdName.getAdminId());
 			
-			if (rdName.getAdminId() == 214&&rdName.getNameGroupid()!=null&&0!=rdName.getNameGroupid()) {
+			if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
+					&& rdName.getNameGroupid() != 0) {
 				pstmt.setInt(4, rdName.getNameGroupid());
 			}
 
@@ -420,6 +427,68 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+		}
+	}
+
+	/**
+	 * @Title: result2JsonByTaskOrTips
+	 * @Description: 根据tips 和 task 查询返回的查询结果
+	 * @param resultSet
+	 * @param adminMap
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年3月2日 下午2:16:25 
+	 */
+	private JSONObject result2JsonByTaskOrTips(ResultSet resultSet,Map<String,String> adminMap) throws Exception{
+		JSONObject rdNameObj = new JSONObject();
+		try {//String c = a == null ? "" : a;
+			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
+			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
+			rdNameObj.put("langCode", resultSet.getString("LANG_CODE") == null ? "" : resultSet.getString("LANG_CODE"));
+			rdNameObj.put("name", resultSet.getString("NAME")  == null ? "" : resultSet.getString("NAME"));
+			rdNameObj.put("type", resultSet.getString("TYPE")  == null ? "" : resultSet.getString("TYPE"));
+			rdNameObj.put("base", resultSet.getString("BASE")  == null ? "" : resultSet.getString("BASE"));
+			rdNameObj.put("prefix", resultSet.getString("PREFIX")  == null ? "" : resultSet.getString("PREFIX"));
+			rdNameObj.put("infix", resultSet.getString("INFIX")  == null ? "" : resultSet.getString("INFIX"));
+			rdNameObj.put("suffix", resultSet.getString("SUFFIX")  == null ? "" : resultSet.getString("SUFFIX"));
+			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC")  == null ? "" : resultSet.getString("NAME_PHONETIC"));
+			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC")  == null ? "" : resultSet.getString("TYPE_PHONETIC"));
+			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC")  == null ? "" : resultSet.getString("BASE_PHONETIC"));
+			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC")  == null ? "" : resultSet.getString("PREFIX_PHONETIC"));
+			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC")  == null ? "" : resultSet.getString("INFIX_PHONETIC"));
+			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC")  == null ? "" : resultSet.getString("SUFFIX_PHONETIC"));
+			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
+			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
+			
+			int adminId = resultSet.getInt("ADMIN_ID");
+			rdNameObj.put("adminId", adminId);
+			if (!adminMap.isEmpty()) {
+				if (adminMap.containsKey(String.valueOf(adminId))) {
+					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+				} else {
+					rdNameObj.put("adminName","");
+				}
+			}
+			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
+			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
+			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
+			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
+			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
+			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
+			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
+//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
+				rdNameObj.put("city", resultSet.getString("CITY"));
+			}else{
+				rdNameObj.put("city", "");
+			}
+			
+			return rdNameObj;
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 	
@@ -474,7 +543,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
 			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
-//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
+			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
 			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
 				rdNameObj.put("city", resultSet.getString("CITY"));
 			}else{

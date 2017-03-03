@@ -76,7 +76,7 @@ public class GLM01197 extends baseRule {
                 target = target + ";";
             }
             target = target + "[RD_LINK," + linkObj.getPid() + "]";
-            if (fc != linkObj.getFunctionClass()) {
+            if (linkObj.pid() != rdLink.pid() && fc != linkObj.getFunctionClass()) {
                 isError = true;
             }
         }

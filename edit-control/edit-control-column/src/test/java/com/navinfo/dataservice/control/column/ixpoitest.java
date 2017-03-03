@@ -163,10 +163,11 @@ public class ixpoitest {
 	}
 	@Test
 	public void testColumnQuery() throws Exception{
-		String parameter = "{\"taskId\":\"84\",\"firstWorkItem\":\"poi_englishname\",\"secondWorkItem\":\"netEngName\",\"status\":2}";
+		String parameter = "{\"taskId\":\"10\",\"firstWorkItem\":\"poi_name\",\"secondWorkItem\":\"nameUnify\",\"status\":1}";
 		try {
 			JSONObject param = JSONObject.fromObject(parameter);
-			long userId =2;
+			//long userId =2;
+			long userId =4577;
 			ColumnCoreControl columnCore = new ColumnCoreControl();
 			JSONObject result = columnCore.columnQuery(userId,param);
 			System.out.println(result);

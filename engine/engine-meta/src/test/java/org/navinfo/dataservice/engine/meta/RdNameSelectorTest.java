@@ -11,6 +11,7 @@ import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 
 import net.sf.json.JSONArray;
@@ -32,7 +33,7 @@ public class RdNameSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	@Test
+	//@Test
 	public void testGetRdName()
 	{
 		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"flag\":1,\"sortby\":\"\",\"params\":{\"name\":\"\",\"adminId\":\"\"}}";
@@ -79,6 +80,23 @@ public class RdNameSelectorTest {
         System.out.println("a:"+c);
         
         
+	}
+	
+	@Test
+	public void saveRdName(){
+		RdNameImportor a = new RdNameImportor();
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'嘿嘿嘿嘿','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':null,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
+		
+		JSONObject data = jsonReq.getJSONObject("data");
+		
+		int subtaskId = jsonReq.getInt("subtaskId");
+		try {
+			JSONObject jobj =a.importRdNameFromWeb(data, subtaskId);
+			System.out.println(jobj);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	

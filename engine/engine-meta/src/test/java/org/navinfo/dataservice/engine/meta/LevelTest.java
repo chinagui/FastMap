@@ -25,15 +25,10 @@ public class LevelTest {
         try {
         	
             Connection conn = null;
-            JSONObject jsonReq = new JSONObject();
-            jsonReq.put("dbId", 19);
-            jsonReq.put("pid", 308);
-            jsonReq.put("poi_num", "0335100531LS100266");
-            jsonReq.put("kindCode", "200200");
-            jsonReq.put("chainCode", "");
-            jsonReq.put("name", "自行车租赁点");
-            jsonReq.put("rating", 0);
-            jsonReq.put("level", "B2");
+
+            
+            String parameter = "{\"dbId\":19,\"pid\":4656744,\"poi_num\":\"0010110510LW502182\",\"kindCode\":\"130403\",\"chainCode\":null,\"name\":\"报刊亭\",\"rating\":0,\"level\":\"C\"}";
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             conn = DBConnector.getInstance().getMetaConnection();
             LevelSelector selector = new LevelSelector(conn);

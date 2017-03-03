@@ -1,11 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import java.util.Map;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -25,10 +24,17 @@ public class FM14Sum0402 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String kind=poi.getKindCode();
-			if(kind==null||kind.isEmpty()){return;}
-			if(kind.equals("120101")||kind.equals("230210")||kind.equals("230213")||kind.equals("230214")){return;}
-			
+			String kindCode = poi.getKindCode();
+			if(kindCode==null||"120101".equals(kindCode)||"230210".equals(kindCode)
+					||"230213".equals(kindCode)||"230214".equals(kindCode)){return;}
+			String level = poi.getLevel();
+			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String, String> scPointCode2LevelMap = metadataApi.scPointCode2Level();
+			String scPointCode2Level = scPointCode2LevelMap.get(kindCode);
+			if(!"C".equals(scPointCode2Level)&&"C".equals(level)){
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				return;
+			}
 		}
 	}
     

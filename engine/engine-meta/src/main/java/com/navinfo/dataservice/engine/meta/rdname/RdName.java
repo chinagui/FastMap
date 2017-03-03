@@ -20,7 +20,7 @@ public class RdName {
 	protected Integer nameId;
 
 	/* 主键 */
-	protected Integer nameGroupid;
+	protected Integer nameGroupid=0;
 
 	// 语言代码
 	protected String langCode;

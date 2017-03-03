@@ -745,11 +745,12 @@ public class StaticsService {
 					+ "              ELSE 2 END"
 					+ "         END TASK_STAT,"
 					+ "         0 UNASSIGNED,"
-					+ "         F.DIFF_DATE,"
-					+ "         F.PROGRESS"
+					+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS IN (0, 1)"
 					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = F.TASK_ID(+)"
 					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
 					+ "  UNION ALL"
@@ -759,12 +760,12 @@ public class StaticsService {
 					+ "         T.GROUP_ID,"
 					+ "         2           TASK_STAT,"
 					+ "         1           UNASSIGNED,"
-					+ "         F.DIFF_DATE,"
-					+ "         F.PROGRESS"
+					+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS = 1"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID AND S.IS_QUALITY=0)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
 					+ "SELECT * FROM T WHERE T.GROUP_ID = "+groupId;
 			log.info("selectSql: "+selectSql);
@@ -976,7 +977,7 @@ public class StaticsService {
 						+ "         0             TYPE,"
 						+ "         0             STATUS,"
 						+ "         0             DIFF_DATE,"
-						+ "         0             PROGRESS"
+						+ "         1             PROGRESS"
 						+ "    FROM BLOCK B, PROGRAM P"
 						+ "   WHERE B.PLAN_STATUS = 0"
 						+ "     AND B.CITY_ID = P.CITY_ID"
@@ -988,13 +989,13 @@ public class StaticsService {
 						+ "         2 TASK_STAT,"
 						+ "         T.TYPE,"
 						+ "         T.STATUS,"
-						+ "         F.DIFF_DATE,"
-						+ "         F.PROGRESS"
+						+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "         NVL(F.PROGRESS,1) PROGRESS"
 						+ "    FROM TASK T, BLOCK B, FM_STAT_OVERVIEW_TASK F"
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND NOT EXISTS"
-						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 						+ "  UNION ALL"
 						+ "  SELECT T.TASK_ID,"
 						+ "         T.PROGRAM_ID,"
@@ -1008,12 +1009,13 @@ public class StaticsService {
 						+ "         END TASK_STAT,"
 						+ "         T.TYPE,"
 						+ "         T.STATUS,"
-						+ "         F.DIFF_DATE,"
-						+ "         F.PROGRESS"
+						+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "         NVL(F.PROGRESS,1) PROGRESS"
 						+ "    FROM TASK T, BLOCK B, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND T.TASK_ID = S.TASK_ID"
+						+ "     AND S.IS_QUALITY=0"
 						+ "   GROUP BY T.TASK_ID,"
 						+ "            T.PROGRAM_ID,"
 						+ "            B.BLOCK_ID,"
@@ -1032,13 +1034,13 @@ public class StaticsService {
 					+ "         2 TASK_STAT,"
 					+ "         T.TYPE,"
 					+ "         T.STATUS,"
-					+ "         F.DIFF_DATE,"
-					+ "         F.PROGRESS"
+					+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
 					+ "     AND NOT EXISTS"
-					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID)"
+					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 					+ "  UNION ALL"
 					+ "  SELECT T.TASK_ID,"
 					+ "         T.PROGRAM_ID,"
@@ -1051,11 +1053,12 @@ public class StaticsService {
 					+ "         END TASK_STAT,"
 					+ "         T.TYPE,"
 					+ "         T.STATUS,"
-					+ "         F.DIFF_DATE,"
-					+ "         F.PROGRESS"
+					+ "         NVL(F.DIFF_DATE,0) DIFF_DATE,"
+					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
+					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = S.TASK_ID"
 					+ "   GROUP BY T.TASK_ID,"
 					+ "            T.PROGRAM_ID,"
@@ -1110,7 +1113,7 @@ public class StaticsService {
 					int closedRegular=0;//正常完成
 					int closedAdvanced=0;//提前完成
 					
-					if (rs.next()) {
+					while (rs.next()) {
 						total+=1;
 						int planStatus=rs.getInt("PLAN_STATUS");
 						int status=rs.getInt("STATUS");
@@ -1203,7 +1206,85 @@ public class StaticsService {
 				}
 	
 			};
+			log.info("taskByProgram sql:"+selectSql);
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @param type 
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> queryTaskOverviewByCity(int cityId) throws ServiceException {
+		// TODO Auto-generated method stub
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql ="SELECT COUNT(1) total FROM BLOCK WHERE CITY_ID = "+cityId;
 
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>() {
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					int total=0;//总量
+					
+					if (rs.next()) {
+						total=rs.getInt("total");
+					}
+					Map<String, Object> map=new HashMap<String, Object>();
+					map.put("total", total);
+					map.put("unPush", total);
+					map.put("ongoing", 0);
+					map.put("unClosed", 0);
+					map.put("closed", 0);
+					map.put("collect", 0);
+					map.put("daily", 0);
+					map.put("monthly", 0);
+					map.put("draft", 0);
+					map.put("unplanned", total);
+					Map<String, Integer> ongoingCollectInfo=new HashMap<String, Integer>();
+					ongoingCollectInfo.put("ongoingRegularCollect", 0);
+					ongoingCollectInfo.put("ongoingFinishedCollect", 0);
+					ongoingCollectInfo.put("ongoingUnexpectedCollect", 0);
+					ongoingCollectInfo.put("total", 0);
+					map.put("ongoingCollectInfo", ongoingCollectInfo);
+					Map<String, Integer> ongoingDailyInfo=new HashMap<String, Integer>();
+					ongoingDailyInfo.put("ongoingRegularDaily", 0);
+					ongoingDailyInfo.put("ongoingFinishedDaily", 0);
+					ongoingDailyInfo.put("ongoingUnexpectedDaily", 0);
+					ongoingDailyInfo.put("total", 0);
+					map.put("ongoingDailyInfo", ongoingDailyInfo);
+					Map<String, Integer> ongoingMonthlyInfo=new HashMap<String, Integer>();
+					ongoingMonthlyInfo.put("ongoingRegularMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingFinishedMonthly", 0);
+					ongoingMonthlyInfo.put("ongoingUnexpectedMonthly", 0);
+					ongoingMonthlyInfo.put("total", 0);
+					map.put("ongoingMonthlyInfo", ongoingMonthlyInfo);
+					
+					Map<String, Integer> overdueInfo=new HashMap<String, Integer>();
+					overdueInfo.put("dailyOverdue", 0);
+					overdueInfo.put("collectOverdue", 0);
+					overdueInfo.put("monthlyOverdue", 0);
+					map.put("overdueInfo", overdueInfo);
+					
+					Map<String, Integer> closedInfo=new HashMap<String, Integer>();
+					closedInfo.put("closedOverdue", 0);
+					closedInfo.put("closedAdvanced", 0);
+					closedInfo.put("closedRegular", 0);
+					map.put("closedInfo", closedInfo);
+					return map;
+				}
+	
+			};
+			log.info("taskByCity sql:"+selectSql);
 			return run.query(conn, selectSql,rsHandler);
 			
 		} catch (Exception e) {
@@ -1411,9 +1492,10 @@ public class StaticsService {
 			String selectSql = "";
 			
 			if(0 != taskId){
-				selectSql = "SELECT S.SUBTASK_ID,S.STAGE,S.TYPE,S.STATUS,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS"
+				selectSql = "SELECT S.SUBTASK_ID,S.STAGE,S.TYPE,S.STATUS,FSOS.PERCENT,NVL(FSOS.DIFF_DATE,0) DIFF_DATE,NVL(FSOS.PROGRESS,1) PROGRESS"
 						+ " FROM SUBTASK S,FM_STAT_OVERVIEW_SUBTASK FSOS"
 						+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID(+)"
+						+ " AND S.IS_QUALITY=0 "
 						+ " AND S.TASK_ID = " + taskId;
 			}
 			
@@ -1449,9 +1531,9 @@ public class StaticsService {
 						+ "       0                   DAILY_STAT,"
 						+ "       0                   MONTHLY_STAT,"
 						+ "       0 DIFF_DATE,"
-						+ "       0             COLLECT_PROGRESS,"
-						+ "       0             DAILY_PROGRESS,"
-						+ "       0             MONTHLY_PROGRESS"
+						+ "       1             COLLECT_PROGRESS,"
+						+ "       1             DAILY_PROGRESS,"
+						+ "       1             MONTHLY_PROGRESS"
 						+ "  FROM CITY C"
 						+ " WHERE C.PLAN_STATUS IN (0, 1)"
 						+ " UNION ALL"
@@ -1463,10 +1545,10 @@ public class StaticsService {
 						+ "       0                   COLLECT_STAT,"
 						+ "       0                   DAILY_STAT,"
 						+ "       0                   MONTHLY_STAT,"
-						+ "       F.DIFF_DATE,"
-						+ "       F.COLLECT_PROGRESS,"
-						+ "       F.DAILY_PROGRESS,"
-						+ "       F.MONTHLY_PROGRESS"
+						+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+						+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+						+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS"
 						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1500,17 +1582,18 @@ public class StaticsService {
 						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
 						+ "            WHEN 0 THEN 3 ELSE 2 END"
 						+ "       END MONTHLY_STAT,"
-						+ "       0 DIFF_DATE,"
-						+ "       0 COLLECT_PROGRESS,"
-						+ "       0 DAILY_PROGRESS,"
-						+ "       0 MONTHLY_PROGRESS"
+						+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+						+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+						+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS"
 						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F，TASK T"
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
-						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS";
+						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
+						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}else if(4==type){
 				//情报
 				selectSql = "SELECT 0             PROGRAM_ID,"
@@ -1521,9 +1604,9 @@ public class StaticsService {
 						+ "       0                   DAILY_STAT,"
 						+ "       0                   MONTHLY_STAT,"
 						+ "       0 DIFF_DATE,"
-						+ "       0             COLLECT_PROGRESS,"
-						+ "       0             DAILY_PROGRESS,"
-						+ "       0             MONTHLY_PROGRESS"
+						+ "       1             COLLECT_PROGRESS,"
+						+ "       1             DAILY_PROGRESS,"
+						+ "       1             MONTHLY_PROGRESS"
 						+ "  FROM INFOR C"
 						+ " WHERE C.PLAN_STATUS IN (0, 1)"
 						+ " UNION ALL"
@@ -1535,10 +1618,10 @@ public class StaticsService {
 						+ "       0                   COLLECT_STAT,"
 						+ "       0                   DAILY_STAT,"
 						+ "       0                   MONTHLY_STAT,"
-						+ "       F.DIFF_DATE,"
-						+ "       F.COLLECT_PROGRESS,"
-						+ "       F.DAILY_PROGRESS,"
-						+ "       F.MONTHLY_PROGRESS"
+						+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+						+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+						+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS"
 						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1572,18 +1655,20 @@ public class StaticsService {
 						+ "         ELSE CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 0 THEN 0 ELSE T.STATUS END)"
 						+ "            WHEN 0 THEN 3 ELSE 2 END"
 						+ "       END MONTHLY_STAT,"
-						+ "       0 DIFF_DATE,"
-						+ "       0 COLLECT_PROGRESS,"
-						+ "       0 DAILY_PROGRESS,"
-						+ "       0 MONTHLY_PROGRESS"
+						+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
+						+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+						+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+						+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS"
 						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F，TASK T"
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
-						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS";
+						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
+						+ "F.COLLECT_PROGRESS,F.DAILY_PROGRESS,F.MONTHLY_PROGRESS";
 			}
+			log.info("programOverView sql:"+selectSql);
 			Map<String,Object> result = StaticsOperation.queryProgramOverView(conn,selectSql);
 			return result;
 			

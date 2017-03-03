@@ -12,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.oracle.MyPoolGuardConnectionWrapper;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -289,14 +290,7 @@ public class LogWriter {
 								.getBytes());
 	
 						jg.setSRID(8307);
-						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
-							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
-							pstmt.setObject(tmpPos, s);
-						}else{
-							STRUCT s = JGeometry.store(jg, this.targetDbConn);
-							pstmt.setObject(tmpPos, s);
-						}
-						
+						pstmt.setObject(tmpPos, ConnectionUtil.createSTRUCTFromJGeometry(jg, targetDbConn));
 	
 						
 					}
@@ -435,14 +429,7 @@ public class LogWriter {
 								.getBytes());
 	
 						jg.setSRID(8307);
-	
-						if (this.targetDbConn instanceof MyPoolGuardConnectionWrapper){
-							STRUCT s = JGeometry.store(jg, ((MyPoolGuardConnectionWrapper)this.targetDbConn).getInnermostDelegate());
-							pstmt.setObject(tmpPos, s);
-						}else{
-							STRUCT s = JGeometry.store(jg, this.targetDbConn);
-							pstmt.setObject(tmpPos, s);
-						}
+						pstmt.setObject(tmpPos, ConnectionUtil.createSTRUCTFromJGeometry(jg, targetDbConn));
 					}
 				}
 

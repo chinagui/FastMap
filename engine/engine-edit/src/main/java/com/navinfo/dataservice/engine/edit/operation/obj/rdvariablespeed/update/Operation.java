@@ -71,13 +71,14 @@ public class Operation implements IOperation {
 
         for (IRow row : variableSpeed.getVias()) {
             RdVariableSpeedVia via = (RdVariableSpeedVia) row;
-            if (subObj == null) {
-                result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
-            } else if (!subObj.contains(via.getLinkPid())) {
-                result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
-            } else {
-                subObj.remove((Integer) via.getLinkPid());
-            }
+            //if (subObj == null) {
+            //    result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
+            //} else if (!subObj.contains(via.getLinkPid())) {
+            //    result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
+            //} else {
+            //    subObj.remove((Integer) via.getLinkPid());
+            //}
+            result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
         }
         for (int i = 0; i < subObj.size(); i++) {
 
@@ -86,6 +87,8 @@ public class Operation implements IOperation {
             via.setLinkPid(subObj.getInt(i));
 
             via.setVspeedPid(variableSpeed.getPid());
+
+            via.setSeqNum(i + 1);
 
             result.insertObject(via, ObjStatus.INSERT, via.getVspeedPid());
         }
@@ -100,7 +103,8 @@ public class Operation implements IOperation {
      * @param result   结果集
      * @throws Exception
      */
-    public void breakLine(Map<RdNode, List<RdLink>> nodeLinkRelation, RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+    public void breakLine(Map<RdNode, List<RdLink>> nodeLinkRelation, RdLink oldLink, List<RdLink> newLinks, Result
+            result) throws Exception {
 
         int oldLinkPid = oldLink.getPid();
 
@@ -159,21 +163,22 @@ public class Operation implements IOperation {
      * @param newLinks
      * @param result
      */
-    private void hanldBreakViaLink(RdLink oldLink, List<RdVariableSpeed> rdVariableViaSpeedList, List<RdLink> newLinks, Result result) throws Exception {
+    private void hanldBreakViaLink(RdLink oldLink, List<RdVariableSpeed> rdVariableViaSpeedList, List<RdLink>
+            newLinks, Result result) throws Exception {
         RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
         for (RdVariableSpeed rdVariableSpeed : rdVariableViaSpeedList) {
             List<IRow> viaList = rdVariableSpeed.getVias();
             List<RdVariableSpeedVia> insertVias = new ArrayList<>();
             List<RdVariableSpeedVia> updateVias = new ArrayList<>();
             boolean hasFindStartLink = false;
-            
-            RdVariableSpeedVia oldVia=null;
-            
+
+            RdVariableSpeedVia oldVia = null;
+
             for (IRow row : viaList) {
                 RdVariableSpeedVia via = (RdVariableSpeedVia) row;
                 if (via.getLinkPid() == oldLink.getPid()) {
-                	
-					oldVia = via;
+
+                    oldVia = via;
                     // 删除原始线作为经过线的情况
                     result.insertObject(via, ObjStatus.DELETE, via.getVspeedPid());
                     int oldSNodePid = oldLink.getsNodePid();
@@ -203,30 +208,26 @@ public class Operation implements IOperation {
                 }
             }
             if (hasFindStartLink) {
-            	
-				TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
 
-				TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
-            	
-                for (RdVariableSpeedVia via : insertVias)
-                {
+                TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
+
+                TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
+
+                for (RdVariableSpeedVia via : insertVias) {
                     result.insertObject(via, ObjStatus.INSERT, via.getVspeedPid());
-                    
+
                     newVias.put(via.getSeqNum(), via);
                 }
-                for (RdVariableSpeedVia via : updateVias)
-                {
+                for (RdVariableSpeedVia via : updateVias) {
                     result.insertObject(via, ObjStatus.UPDATE, via.getVspeedPid());
-                    
+
                     nextVias.put(via.getSeqNum(), via);
                 }
-                
-				String tableNamePid = oldVia.tableName()
-						+ oldVia.getVspeedPid();
 
-				result.breakVia(tableNamePid, oldVia.getSeqNum(), newVias,
-						nextVias);
-    			
+                String tableNamePid = oldVia.tableName() + oldVia.getVspeedPid();
+
+                result.breakVia(tableNamePid, oldVia.getSeqNum(), newVias, nextVias);
+
             } else {
                 RdVariableSpeedVia sourceVia = selector.loadRdVariableSpeedVia(oldLink.pid(), true).get(0);
                 for (IRow row : viaList) {

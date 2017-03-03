@@ -7,13 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  * FM-A07-14	机场及机场子简称长度检查	DHM
@@ -41,14 +40,26 @@ public class FMA0714 extends BasicCheckRule {
 				return;
 			}
 			Long pid=poi.getPid();
+			Set<Long> pidList = new HashSet<Long>();
+			pidList.add(pid);
+			List<Long> childPids = IxPoiSelector.getChildrenPidsByParentPid(getCheckRuleCommand().getConn(), pidList);
+			
 			//获取一级父pid
 			Long parentPid=getFirstParentPid(pid);
-			if(parentPid==null){return;}
+			if (parentPid==null) {
+				if (childPids.size()>0) {
+					parentPid = pid;
+				} else {
+					return;
+				}
+			}
+			
 			//数据必须存在父子关系，且对应的第一级父分类为“230126”
 			//获取一级父poi
-			Map<Long, BasicObj> poiMap = myReferDataMap.get(ObjectName.IX_POI);
-			if(!poiMap.containsKey(parentPid)){return;}
-			IxPoiObj parentObj = (IxPoiObj) poiMap.get(parentPid);
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_NAME");
+			BasicObj basicObj=ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", tabNames,false, parentPid, false);
+			IxPoiObj parentObj = (IxPoiObj) basicObj;
 			IxPoi parentPoi=(IxPoi) parentObj.getMainrow();
 			if(!parentPoi.getKindCode().equals("230126")){return;}
 			//NAME_CLASS为“5（简称）”且NAME大于15个字符长度时，需要报出。
@@ -78,10 +89,6 @@ public class FMA0714 extends BasicCheckRule {
 			pidList.add(obj.objPid());
 		}
 		parentMap = IxPoiSelector.getAllParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
-		Set<String> referSubrow=new HashSet<String>();
-		referSubrow.add("IX_POI_NAME");
-		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
-		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}
 
 }

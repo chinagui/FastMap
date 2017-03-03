@@ -106,12 +106,13 @@ public class PoiSave {
                 Integer parentPoiPid = 0;
                 if (OperType.CREATE == operType || OperType.UPDATE == operType) {
                     parentPoiPid = json.getInt("parentPid");
-                    // 一个父子关系家族中，最多允许3级父子关系存在，大于3级以上，不可制作父子关系,
-                    // 判断制作父子关系是否超过三级
-	                boolean errorFlag = ParentChildReletion3level(conn, childPoiPid, parentPoiPid);
-	                if (!errorFlag){
-	                	throw new Exception("父子关系大于3级以上，不可制作父子关系！");
-	                }
+                    // 去掉父子关系超3级限制 zpp 2017.03.01
+//                    // 一个父子关系家族中，最多允许3级父子关系存在，大于3级以上，不可制作父子关系,
+//                    // 判断制作父子关系是否超过三级
+//	                boolean errorFlag = ParentChildReletion3level(conn, childPoiPid, parentPoiPid);
+//	                if (!errorFlag){
+//	                	throw new Exception("父子关系大于3级以上，不可制作父子关系！");
+//	                }
                 } else if (OperType.DELETE == operType) {
                     IxPoiParentSelector selector = new IxPoiParentSelector(conn);
                     List<IRow> parents = selector.loadParentRowsByChildrenId(childPoiPid, true);

@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -282,7 +284,61 @@ public class CheckUtil {
                 tmpRIndex=rindex;
             }else{tmpRIndex=rindex;}
         }
+        
         return null;
+    }
+    
+    /**
+     * 若存在括号，则
+     *   不允许混合嵌套
+     *   例如:博泰嘉华(酒{店}忘)
+     * @param word
+     * @return String 若括号符合规则，则返回null；否则返回字符串
+     */
+    public static String isDoubleKuohao(String word){
+    	String wordB=strQ2B(word);
+    	//混合括号嵌套判断
+        boolean check = true;
+		if(wordB.contains("(")&&wordB.contains(")")){
+			int l = wordB.indexOf("(");
+			int r = wordB.indexOf(")");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("[")&&wordB.contains("]")){
+			int l = wordB.indexOf("[");
+			int r = wordB.indexOf("]");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("(")&&subWord.contains(")"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("{")&&wordB.contains("}")){
+			int l = wordB.indexOf("{");
+			int r = wordB.indexOf("}");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("(")&&subWord.contains(")"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("《")&&wordB.contains("》")){
+			int l = wordB.indexOf("《");
+			int r = wordB.indexOf("》");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("(")&&subWord.contains(")"))){
+				check = true;
+			}
+		}
+		if(check){
+			return "不能出现括号嵌套括号情况";
+		}
+		return null;
     }
     
     /**
@@ -603,6 +659,35 @@ public class CheckUtil {
     			counts.add(rs.getLong("POI_PID"));
     		}
     		return counts;
+    	} catch (Exception e) {
+    		throw e;
+    	} finally {
+    		DbUtils.close(rs);
+    		DbUtils.close(pstmt);
+    	}
+    }
+    
+    /**
+     * 通过linkPid查询rdLink
+     * @param groupId
+     * @param conn
+     * @return	POI_PID
+     * @throws Exception
+     */
+    public static Map<Long,Integer> searchRdLink(Long linkPid,Connection conn) throws Exception {
+    	String sql = "SELECT LINK_PID,KIND FROM RD_LINK RL WHERE RL.LINK_PID = "+linkPid+" AND RL.U_RECORD <>2";
+    	PreparedStatement pstmt = null;
+    	ResultSet rs = null;
+    	Map<Long,Integer> map = new HashMap<Long,Integer>();
+    	try {
+    		pstmt = conn.prepareStatement(sql);
+    		rs = pstmt.executeQuery();
+    		while (rs.next()) {
+    			Long pid = rs.getLong("LINK_PID");
+    			int kind = rs.getInt("KIND");
+    			map.put(pid, kind);
+    		}
+    		return map;
     	} catch (Exception e) {
     		throw e;
     	} finally {

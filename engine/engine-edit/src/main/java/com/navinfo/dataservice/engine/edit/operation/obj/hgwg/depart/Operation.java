@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.obj.hgwg.depart;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.hgwg.RdHgwgLimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
@@ -119,39 +120,59 @@ public class Operation {
         linkPids.addAll(leftLinks.keySet());
         RdHgwgLimitSelector rdHgwgLimitSelector = new RdHgwgLimitSelector(conn);
         List<RdHgwgLimit> hgwgLimits = rdHgwgLimitSelector.loadByLinkPids(linkPids, true);
+
+        int sNodePid = sNode.pid();
+        Map<Integer, Integer> maps = new HashMap<>();
+        for (RdLink link : links) {
+            if (sNodePid == link.getsNodePid()) {
+                maps.put(link.pid(), 2);
+                sNodePid = link.geteNodePid();
+            } else if (sNodePid == link.geteNodePid()) {
+                maps.put(link.pid(), 3);
+                sNodePid = link.getsNodePid();
+            }
+        }
         // 限高限重数量为零则不需要维护
         if (hgwgLimits.size() != 0) {
-//            // 构建RdLinkPid-限高限重的对应集合
-//            Map<Integer, List<RdHgwgLimit>> rdHgwgLimitMap = new HashMap<Integer, List<RdHgwgLimit>>();
-//            for (RdHgwgLimit hgwgLimit : hgwgLimits) {
-//                List<RdHgwgLimit> list = rdHgwgLimitMap.get(hgwgLimit.getLinkPid());
-//                if (null != list) {
-//                    list.add(hgwgLimit);
-//                } else {
-//                    list = new ArrayList<>();
-//                    list.add(hgwgLimit);
-//                    rdHgwgLimitMap.put(hgwgLimit.getLinkPid(), list);
-//                }
-//            }
-//            for (RdLink link : links) {
-//                RdLink leftLink = leftLinks.get(link.pid());
-//                RdLink rightLink = rightLinks.get(link.pid());
-//                if (rdHgwgLimitMap.containsKey(link.getPid())) {
-//                    List<RdHgwgLimit> rdHgwgLimitList = rdHgwgLimitMap.get(link.getPid());
-//                    for (RdHgwgLimit hgwgLimit : rdHgwgLimitList) {
-//                        int direct = hgwgLimit.getDirect();
-//                        if (2 == direct)
-//                            // 限高限重为顺方向则关联link为右线
-//                            updateRdHgwgLimit(rightLink, hgwgLimit, result);
-//                        else if (0 == direct || 3 == direct)
-//                            // 限高限重为逆方向则关联link为左线
-//                            updateRdHgwgLimit(leftLink, hgwgLimit, result);
-//                    }
-//                }
-//            }
+            // 构建RdLinkPid-限高限重的对应集合
+            Map<Integer, List<RdHgwgLimit>> rdHgwgMap = new HashMap<>();
             for (RdHgwgLimit hgwg : hgwgLimits) {
-                hgwg.changedFields.put("linkPid", 0);
-                result.insertObject(hgwg, ObjStatus.UPDATE, hgwg.pid());
+                List<RdHgwgLimit> list = rdHgwgMap.get(hgwg.getLinkPid());
+                if (null != list) {
+                    list.add(hgwg);
+                } else {
+                    list = new ArrayList<>();
+                    list.add(hgwg);
+                    rdHgwgMap.put(hgwg.getLinkPid(), list);
+                }
+            }
+            for (RdLink link : links) {
+                RdLink leftLink = leftLinks.get(link.pid());
+                RdLink rightLink = rightLinks.get(link.pid());
+                if (rdHgwgMap.containsKey(link.getPid())) {
+                    List<RdHgwgLimit> rdHgwgList = rdHgwgMap.get(link.getPid());
+                    for (RdHgwgLimit rdHgwgLimit : rdHgwgList) {
+                        int direct = rdHgwgLimit.getDirect();
+                        int opDirect = maps.get(rdHgwgLimit.getLinkPid());
+                        if (2 == direct) {
+                            if (opDirect == 2) {
+                                // 限高限重为顺方向、分离为逆方向则关联link为右线
+                                updateRdHgwgLimit(rightLink, rdHgwgLimit, result);
+                            } else if (opDirect == 3) {
+                                // 限高限重为顺方向、分离为逆方向则关联link为右线
+                                updateRdHgwgLimit(leftLink, rdHgwgLimit, result);
+                            }
+                        } else if (3 == direct) {
+                            if (opDirect == 2) {
+                                // 限高限重为逆方向、分离为顺方向则关联link为左线
+                                updateRdHgwgLimit(leftLink, rdHgwgLimit, result);
+                            } else if (opDirect == 3) {
+                                // 限高限重为逆方向、分离为顺方向则关联link为左线
+                                updateRdHgwgLimit(rightLink, rdHgwgLimit, result);
+                            }
+                        }
+                    }
+                }
             }
         }
         // 维护非目标Link的信息

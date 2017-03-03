@@ -67,10 +67,14 @@ public class GLM60447 extends BasicCheckRule {
 		List<Long> pids=new ArrayList<Long>();
 		Set<String> adminList=new HashSet<String>();
 		for(Long pid:pidList){
-			if(pidContactMap.get(pid).contains(adminMap.get(pid).toString())){return;}
+			String admin = null;
+			if(adminMap.containsKey(pid)){
+				admin = adminMap.get(pid).toString();
+			}
+			if(pidContactMap.get(pid).contains(admin)){continue;}
 			pids.add(pid);
 			adminList.addAll(pidContactMap.get(pid));
-			adminList.add(adminMap.get(pid).toString());
+			adminList.add(admin);
 		}
 		if(adminList==null||adminList.size()==0){
 			return;
@@ -94,9 +98,13 @@ public class GLM60447 extends BasicCheckRule {
 			adminLinkMap.get(admin).add(linkPid);
 		}
 		for(Long pid:pids){
+			String adminId = null;
+			if(adminMap.containsKey(pid)){
+				adminId = adminMap.get(pid).toString();
+			}
 			Set<Long> selfLink=new HashSet<Long>();
-			if(!adminLinkMap.containsKey(adminMap.get(pid).toString())){continue;}
-			selfLink.addAll(adminLinkMap.get(adminMap.get(pid).toString()));
+			if(!adminLinkMap.containsKey(adminId)){continue;}
+			selfLink.addAll(adminLinkMap.get(adminId));
 			
 			Set<Long> rightLink=new HashSet<Long>();
 			for(String admin:pidContactMap.get(pid)){

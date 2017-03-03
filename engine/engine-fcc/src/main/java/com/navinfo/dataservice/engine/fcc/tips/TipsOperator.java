@@ -71,11 +71,11 @@ public class TipsOperator {
 		JSONObject track = JSONObject.fromObject(new String(result.getValue(
 				"data".getBytes(), "track".getBytes())));
 
-		int lifecycle = track.getInt("t_lifecycle");
+		/*int lifecycle = track.getInt("t_lifecycle");*/
 
-		if (0 == lifecycle) {
+	/*	if (0 == lifecycle) {
 			track.put("t_lifecycle", 2);
-		}
+		}*/
 
 		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
 
@@ -150,9 +150,9 @@ public class TipsOperator {
 
 		solrIndex.put("t_mStatus", tMStatus);
 
-		if (0 == lifecycle) {
+	/*	if (0 == lifecycle) {
 			solrIndex.put("t_lifecycle", 2);
-		}
+		}*/
 
 		solrIndex.put("handler", handler);
 
@@ -300,7 +300,7 @@ public class TipsOperator {
 
 			}
 
-			value.put("t_lifecycle", 2);
+			//value.put("t_lifecycle", 2);  20170302和玉秀确认内业的需改不更新t_lifecycle
 
 			value.put("t_date", date);
 

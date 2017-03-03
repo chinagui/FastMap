@@ -20,6 +20,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
  * 2）主名称（name）为长度为1时，报log2；
  * log1：名称只含有数字，请确认；
  * log2：名称只有1个字，请确认；
+ * 3)官方原始中文名称中包含三个及三个以上“Ｓ”（不区分大小写）时，报log：名称存在疑问，请确认
  * @author zhangxiaoyi
  */
 public class FMYW20122 extends BasicCheckRule {
@@ -41,6 +42,12 @@ public class FMYW20122 extends BasicCheckRule {
 			Matcher m = p.matcher(tmpStr);
 			if(m.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "名称只含有数字，请确认");
+			}
+			
+			Pattern pattern = Pattern.compile(".*[Ss]{3,}.*");
+			Matcher matcher = pattern.matcher(tmpStr);
+			if(matcher.matches()){
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "名称存在疑问，请确认");
 			}
 		}
 	}

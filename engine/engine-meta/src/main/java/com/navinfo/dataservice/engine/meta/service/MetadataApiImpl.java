@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
+import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
@@ -24,6 +25,7 @@ import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExt;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterEgalcharExtCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHmCheckSelector;
 import com.navinfo.dataservice.engine.meta.character.TyCharacterFjtHzCheckSelector;
+import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
@@ -40,10 +42,12 @@ import com.navinfo.dataservice.engine.meta.scPointAdminarea.ScPointAdminarea;
 import com.navinfo.dataservice.engine.meta.scPointBrandFoodtype.ScPointBrandFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointChainBrandKey.ScPointChainBrandKey;
 import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
+import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointEngKeyWords.ScPointEngKeyWords;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
 import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
+import com.navinfo.dataservice.engine.meta.scPointKindRule.ScPointKindRule;
 import com.navinfo.dataservice.engine.meta.scPointMinganList.ScPointMinganList;
 import com.navinfo.dataservice.engine.meta.scPointNameck.ScPointNameck;
 import com.navinfo.dataservice.engine.meta.scPointNominganList.ScPointNominganList;
@@ -63,6 +67,15 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	/**
+	 * SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD
+	 * @return Map<String, String> key:kind_id,value:keyword
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> ciParaKindKeywordMap() throws Exception{
+		return CiParaKindKeyword.getInstance().ciParaKindKeywordMap();
+	}
 	/**
 	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
 	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
@@ -290,20 +303,23 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public JSONObject getMetadataMap() throws Exception {
-		JSONObject result = new JSONObject();
+	public MetadataMap getMetadataMap() throws Exception {
+		MetadataMap result = new MetadataMap();
 		Connection conn = null;
 		try {
-
 			conn = DBConnector.getInstance().getMetaConnection();
-
-			result.put("chain", getChainMap(conn));
-			result.put("kindCode", getKindCodeMap(conn));
-			result.put("admin", getAdminMap(conn));
-			result.put("character", getTyCharacterFjtHmCheckMap(conn,0));
-			result.put("kind", getKindMap(conn));
-
 			
+			result.setChain((Map<String,String>) getChainMap(conn));
+			result.setKindCode((Map<String,String>) getKindCodeMap(conn));
+			result.setAdmin((Map<String,String>) getAdminMap(conn));
+			result.setCharacter((Map<String,String>) getTyCharacterFjtHmCheckMap(conn,0));
+			result.setKind((Map<String,String>) getKindMap(conn));
+			
+			result.setEngshort((Map<String,String>) getEngshortMap(conn));
+			result.setNavicovpy((Map<String,List<String>>) getNavicovpyMap(conn));
+			result.setNameUnifyShort(scPointNameckTypeD1_2_3_4_8_11());
+			result.setChishort(scPointNameckTypeD4_10());
+			result.setAliasName(scPointNameckTypeD4());
 
 			return result;
 		} catch (Exception e) {
@@ -667,12 +683,23 @@ public class MetadataApiImpl implements MetadataApi {
 	/**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
-     * @return Map<String, String> key:KIND_CODE value:KIND_USE
+     * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
      * @throws Exception
      */
 	@Override
 	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
 		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
+	}
+	
+	/**
+     * sc_point_poicode_new.KIND_USE= 1
+     * @author Han Shaoming
+     * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
+     * @throws Exception
+     */
+	@Override
+	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception {
+		return ScPointPoiCodeNew.getInstance().getKindNameByKindCode(kindCode);
 	}
 	
 	/**
@@ -695,6 +722,25 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, Integer> searchScFmControl(String kindCode) throws Exception {
 		return ScFmControl.getInstance().searchScFmControl(kindCode);
+	}
+	/**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(1,2,3)
+	 * @return 
+	 * @throws Exception
+	 */
+	@Override
+	public List<Map<String, Object>> scPointKindRule() throws Exception{
+		return ScPointKindRule.getInstance().scPointKindRule();
+	}
+	/**
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL
+	 * 
+	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, String> scPointCode2Level() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 
 }

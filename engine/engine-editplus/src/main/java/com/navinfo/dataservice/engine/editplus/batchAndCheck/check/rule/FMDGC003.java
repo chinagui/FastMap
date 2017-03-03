@@ -19,7 +19,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * ①POI分类一览表中“大陆港澳分类说明”包含D；
  * @author zhangxiaoyi
  */
-public class FMPOI001 extends BasicCheckRule {
+public class FMDGC003 extends BasicCheckRule {
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {

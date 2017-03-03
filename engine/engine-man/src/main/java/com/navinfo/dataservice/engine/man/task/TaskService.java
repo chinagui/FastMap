@@ -857,7 +857,8 @@ public class TaskService {
 				}
 				//任务名称模糊查询
 				if ("taskName".equals(key)) {	
-					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
+					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
+							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
 				}
 				//筛选条件
 				//"progress":[1,3] //进度。

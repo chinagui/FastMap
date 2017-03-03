@@ -44,8 +44,11 @@ public class FmPoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector
 	 */
 	@Override
 	protected int selectLog(Connection conn) throws Exception{
-		return super.selectLog(conn)+allLogOperation(conn);
-		
+		if(this.getGrids()!=null&&this.getGrids().size()>0){
+			return super.selectLog(conn)+allLogOperation(conn);
+		}else{
+			return allLogOperation(conn);
+		}
 	}
 	
 	/**

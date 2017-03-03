@@ -36,8 +36,9 @@ public class FMBAT20198 extends BasicBatchRule {
 				//模型定义一个poi只有一个parking子表
 				for(IxPoiParking parking : parkings)
 				{
-					if (!"00:00-24:00".equals(parking.getOpenTiime())){
-						parking.setOpenTiime(ExcelReader.h2f("00:00-24:00"));
+					String timeDur = ExcelReader.h2f("00:00-24:00");
+					if (!timeDur.equals(parking.getOpenTiime())){
+						parking.setOpenTiime(timeDur);
 					}	
 				}
 			} catch (Exception e) {

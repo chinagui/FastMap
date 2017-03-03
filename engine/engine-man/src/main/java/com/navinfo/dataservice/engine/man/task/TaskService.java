@@ -857,7 +857,8 @@ public class TaskService {
 				}
 				//任务名称模糊查询
 				if ("taskName".equals(key)) {	
-					conditionSql+=" AND TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'";
+					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
+							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
 				}
 				//筛选条件
 				//"progress":[1,3] //进度。
@@ -872,16 +873,16 @@ public class TaskService {
 					for(Object i:progress){
 						int tmp=(int) i;
 						//1采集正常，2采集异常，3采集完成
-						if(tmp==1){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 ");}
-						if(tmp==2){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0");}
+						if(tmp==1){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1 ");}
+						if(tmp==2){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1 ");}
 						if(tmp==3){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0");}
 						//4日编正常，5日编异常，6日编完成
-						if(tmp==4){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1 ");}
-						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1");}
+						if(tmp==4){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1 ");}
+						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1 ");}
 						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1");}
 						//7月编正常，8月编异常，9月编完成
-						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3) ");}
-						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3)");}
+						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1 ");}
+						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1 ");}
 						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2");}
 						//10未规划，11草稿, 12已完成，13已关闭
 						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
@@ -899,11 +900,11 @@ public class TaskService {
 							progressList.add("TASK_LIST.DIFF_DATE < 0");
 						}
 						if(tmp==17){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0 ");
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1 ");
 						}else if(tmp==18){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1 ");
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1 ");
 						}else if(tmp==19){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3) ");
+							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1 ");
 						}
 
 						if(!progressList.isEmpty()){
@@ -2184,9 +2185,9 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT T1.TASK_ID FROM TASK T ,TASK T1"
-					+ " WHERE T.BLOCK_ID = T1.BLOCK_ID AND T.LATEST =1"
+					+ " WHERE T.LATEST =1"
 					+ " AND T1.LATEST = 1"
-					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.PROGRAM_ID = T.PROGRAM_ID"
 					+ " AND T1.TYPE = " + type
 					+ " AND T.TASK_ID = " + taskId;
 			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);

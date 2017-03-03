@@ -35,10 +35,22 @@ public class GLM60089 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Map<String, String>> foods = metadataApi.scPointFoodtypeFoodTypes();
 			Map<String, String> foodMap=foods.get(kind);
-			String foodType = restList.get(0).getFoodType();
-			if(!foodMap.containsKey(foodType)){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "110200分类的POI对应的FOOD_TYPE为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
-				return;
+			for (IxPoiRestaurant ixPoiRestaurant : restList) {
+				String foodType = ixPoiRestaurant.getFoodType();
+				if(foodType == null){
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "110200分类的POI对应的FOOD_TYPE为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+					return;
+				}
+				else if(foodType!= null){
+					String[] foodTypes = foodType.split("\\|");
+					for (String str : foodTypes) {
+						if(!foodMap.containsKey(str)){
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "110200分类的POI对应的FOOD_TYPE为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+							return;
+						}
+					}
+				}
+				
 			}
 		}
 	}

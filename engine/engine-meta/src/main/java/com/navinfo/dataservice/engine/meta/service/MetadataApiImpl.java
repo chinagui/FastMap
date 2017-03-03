@@ -687,8 +687,8 @@ public class MetadataApiImpl implements MetadataApi {
      * @throws Exception
      */
 	@Override
-	public Map<String, Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception {
-		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew(kindCodes);
+	public Map<String, Integer> searchScPointPoiCodeNew() throws Exception {
+		return ScPointPoiCodeNew.getInstance().searchScPointPoiCodeNew();
 	}
 	
 	/**
@@ -698,8 +698,8 @@ public class MetadataApiImpl implements MetadataApi {
      * @throws Exception
      */
 	@Override
-	public Map<String, String> getKindNameByKindCode(String kindCode) throws Exception {
-		return ScPointPoiCodeNew.getInstance().getKindNameByKindCode(kindCode);
+	public Map<String, String> getKindNameByKindCode() throws Exception {
+		return ScPointPoiCodeNew.getInstance().getKindNameByKindCode();
 	}
 	
 	/**

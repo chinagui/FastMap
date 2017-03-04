@@ -163,7 +163,7 @@ public class RdNameImportTest {
 		// 2号线 
 		// 轻轨2号线		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82376,\"nameGroupid\":82376,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		// 地铁亦庄线 
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":405000004,\"nameGroupid\":503000004,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":503000007,\"nameGroupid\":400000005,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {

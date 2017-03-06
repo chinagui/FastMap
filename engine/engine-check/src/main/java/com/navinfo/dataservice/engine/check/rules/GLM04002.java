@@ -158,7 +158,7 @@ public class GLM04002 extends baseRule{
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("SELECT COUNT(1) FROM RD_LINK RR,RD_GATE G");		
-		sb.append(" WHERE (RR.S_NODE_PID = GATE.NODE_PID OR RR.E_NODE_PID = GATE.NODE_PID)");
+		sb.append(" WHERE (RR.S_NODE_PID = G.NODE_PID OR RR.E_NODE_PID = G.NODE_PID)");
 		sb.append(" AND RR.U_RECORD <> 2");
 		sb.append(" AND G.PID = " + gatePid);
 		sb.append(" AND G.U_RECORD <> 2");

@@ -194,7 +194,7 @@ public class ImportCityBlockByJson {
 					}else{
 						Block4Imp newBlock = new Block4Imp();
 						newBlock.setCityName(cityName);
-						String blockName =cityName+blockJson.getString("name")+blockJson.getString("county");
+						String blockName =blockJson.getString("province")+cityName+blockJson.getString("county")+blockJson.getString("job1")+blockJson.getString("job2");
 						newBlock.setBlockName(blockName);
 						newBlock.setWrokProperty(blockJson.getString("workProperty"));
 						Set<String> grids = new HashSet<String>();

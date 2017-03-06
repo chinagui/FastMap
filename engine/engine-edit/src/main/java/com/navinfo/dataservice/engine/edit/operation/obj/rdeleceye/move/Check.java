@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by chaixin on 2017/1/11 0011.
+ * Created by Creayeres on 2017/1/11 0011.
  */
 public class Check {
 
@@ -63,15 +63,25 @@ public class Check {
             checkDistance(viaPids, 0);
             return;
         } else {
-            if (direct == 1 && (sourceLink.getsNodePid() == targetLink.getsNodePid() || sourceLink.getsNodePid() ==
-                    targetLink.geteNodePid() || sourceLink.geteNodePid() == targetLink.getsNodePid() || sourceLink
-                    .geteNodePid() == targetLink.geteNodePid())) {
-                checkDistance(viaPids, nodePid);
-                final int node = nodePid;
-                checkNodeBifurcation(new ArrayList<Integer>() {{
-                    add(node);
-                }});
-                return;
+            if (direct == 1) {
+                if (sourceLink.getsNodePid() == targetLink.getsNodePid() || sourceLink.getsNodePid() == targetLink
+                        .geteNodePid()) {
+                    final int pid = sourceLink.getsNodePid();
+                    checkDistance(viaPids, pid);
+                    checkNodeBifurcation(new ArrayList<Integer>() {{
+                        add(pid);
+                    }});
+                    return;
+                } else if (sourceLink.geteNodePid() == targetLink.getsNodePid() || sourceLink.geteNodePid() ==
+                        targetLink.geteNodePid()) {
+                    final int pid = sourceLink.geteNodePid();
+                    checkDistance(viaPids, pid);
+                    checkNodeBifurcation(new ArrayList<Integer>() {{
+                        add(pid);
+                    }});
+                    return;
+                }
+
             }
             if (direct == 2 && sourceLink.geteNodePid() == targetLink.getsNodePid()) {
                 checkDistance(viaPids, sourceLink.geteNodePid());
@@ -247,7 +257,7 @@ public class Check {
         length += GeometryUtils.getLinkLength(eSubGeo);
 
         flag = false;
-        for (int i = sCoors.length; i > 0; i--) {
+        for (int i = sCoors.length - 1; i > 0; i--) {
             if (!flag && GeoTranslator.isIntersection(sCoors[i], sCoors[i - 1], sourceCoor)) {
                 sSubCoors.add(sourceCoor);
                 flag = true;

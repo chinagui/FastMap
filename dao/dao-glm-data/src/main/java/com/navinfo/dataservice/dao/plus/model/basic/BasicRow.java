@@ -217,7 +217,9 @@ public abstract class BasicRow{
 		RunnableSQL sql = new RunnableSQL();
 		StringBuilder sb = new StringBuilder();
 		String tbName = tableName();
+		System.out.println("tbName  :"+tbName);
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
+		System.out.println("tbName2  :"+tbName);
 		List<String> columnName = new ArrayList<String>();
 		List<String> columnPlaceholder = new ArrayList<String>();
 		List<Object> columnValues = new ArrayList<Object>();
@@ -257,9 +259,11 @@ public abstract class BasicRow{
 				sb.append("DELETE FROM  "+ tbName);
 				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
 			}else{
+				
 				//更新U_RECORD字段为2
 				sb.append("UPDATE "+ tbName + " SET U_RECORD = ?,U_DATE=SYSDATE");
 				sb.append(" WHERE ROW_ID = HEXTORAW('" + getRowId() + "')");
+				System.out.println("sb.toString()  :"+sb.toString());
 				columnValues.add(2);
 			}
 		}

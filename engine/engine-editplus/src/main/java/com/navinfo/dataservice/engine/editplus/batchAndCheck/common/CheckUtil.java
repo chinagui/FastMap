@@ -298,7 +298,7 @@ public class CheckUtil {
     public static String isDoubleKuohao(String word){
     	String wordB=strQ2B(word);
     	//混合括号嵌套判断
-        boolean check = true;
+        boolean check = false;
 		if(wordB.contains("(")&&wordB.contains(")")){
 			int l = wordB.indexOf("(");
 			int r = wordB.indexOf(")");

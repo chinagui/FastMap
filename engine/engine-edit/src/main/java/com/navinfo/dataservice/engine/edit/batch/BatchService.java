@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -86,7 +87,11 @@ public class BatchService {
 		if (!batchRules.isEmpty()) {
 			String[] rules = batchRules.split(";");
 			for (String rule:rules) {
-				ruleList.add(rule);
+				if(StringUtils.isNotEmpty(rule)&&rule.contains("BATCH_SPEED_CLASS")&&(!rule.contains(":"))){
+					ruleList.add(rule+":P_ASSIGN_WAY=>1");
+				}else{
+					ruleList.add(rule);
+				}
 			}
 		} else {
 			//TODO 根据checkType获取 规则 号 

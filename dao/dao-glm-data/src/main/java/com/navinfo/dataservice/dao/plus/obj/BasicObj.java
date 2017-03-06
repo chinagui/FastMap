@@ -272,9 +272,19 @@ public abstract class BasicObj {
 		//先放一级子表sql;再放二级子表sql
 		//一级子表
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+			System.out.println("entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
+			//****zl 2017.03.04 修改********
+			if(entry.getKey().equals("IX_POI")){
+				continue;
+			}
+			//*****************************
 			for(BasicRow subrow:entry.getValue()){
 				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
+				System.out.println("glmTable: "+ glmTable);
 				GlmRef glmRef = glmTable.getObjRef();
+				System.out.println(glmRef);
+				System.out.println(glmRef.isRefMain());
+				
 				if(!glmRef.isRefMain()){
 					continue;
 				}
@@ -286,6 +296,12 @@ public abstract class BasicObj {
 		}
 		//二级子表
 		for(Entry<String, List<BasicRow>> entry:subrows.entrySet()){
+			System.out.println("二级子表 entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
+			//****zl 2017.03.04 修改********
+			if(entry.getKey().equals("IX_POI")){
+				continue;
+			}
+			//*****************************
 			for(BasicRow subrow:entry.getValue()){
 				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
 				GlmRef glmRef = glmTable.getObjRef();

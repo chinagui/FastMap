@@ -400,7 +400,11 @@ public class RdNameTeilen {
 		// ROUTE_ID赋值为默认值
 		/*if (engRdName.getRouteId() == null)
 			engRdName.setRouteId(RdName.DEFAULT_NUM_VALUE);*/
-
+		//*****zl 2017.3.3 增加英文道路名 的 src_resum**
+		engRdName.setSrcResume(chiRdName.getSrcResume());
+		
+		//**********************
+		
 		// 判断如果以前有英文名，则只有英文名来源字段为数字1时才进行更新，否则不改
 		//5)	在对中文记录进行拆分时，根据道路名组对英文进行同步拆分。注意：对英文中名称来源字段为“未定义”、“按规则翻译”的数据进行维护，其他类型不维护。
 		if (engRdName.getNameId() != null && engRdName.getNameId() != 0

@@ -3,6 +3,8 @@ package com.navinfo.dataservice.impcore.deepinfo;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -36,15 +38,24 @@ public class HotelImporter {
 		
 		hot.setRating(JsonUtils.getInt(hotObj, "rating"));
 		
-		hot.setCheckinTime(JsonUtils.getString(hotObj, "checkInTime"));
-		
-		hot.setCheckoutTime(JsonUtils.getString(hotObj,"checkOutTime"));
+		String inTime = JsonUtils.getString(hotObj, "checkInTime");
+		if(StringUtils.isEmpty(inTime)){
+			hot.setCheckinTime("14:00");
+		}else{
+			hot.setCheckinTime(inTime);
+		}
+		String outTime = JsonUtils.getString(hotObj,"checkOutTime");
+		if(StringUtils.isEmpty(outTime)){
+			hot.setCheckoutTime("12:00");
+		}else{
+			hot.setCheckoutTime(outTime);
+		}
 		
 		hot.setRoomCount(JsonUtils.getInt(hotObj, "roomCount"));
 		
 		hot.setRoomType(JsonUtils.getString(hotObj, "roomType"));
 		
-		hot.setRoomPrice(JsonUtils.getString(hotObj, "roomPric"));
+		hot.setRoomPrice(JsonUtils.getString(hotObj, "roomPrice"));
 		
 		hot.setBreakfast(JsonUtils.getInt(hotObj, "breakfast"));
 		

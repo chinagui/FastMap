@@ -16,12 +16,13 @@ public class loadTab2OracleTest {
 	public static void main(String[] args) throws Exception{
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();
-		//String filePathString="D:/temp/block_tab2json/tt.TAB";
-		String filePathString = String.valueOf(args[0]);
+		String filePathString="F:\\Fm_Projects_Doc\\道路第八迭代\\blocks\\data\\resources\\grid\\10725.tab";
+//		String filePathString = String.valueOf(args[0]);
 		Connection conn=DBConnector.getInstance().getManConnection();
 		List<String> columnNameList=new ArrayList<String>();
-		columnNameList.add("ID");
+		columnNameList.add("NAME");
 		List<Map<String, Object>> dataList = LoadTab.readTab(filePathString, columnNameList);
+		
 		for(int i=0;i<dataList.size();i++){
 			Map<String, Object> tmp=dataList.get(i);
 			tmp.put("ID", i+1);

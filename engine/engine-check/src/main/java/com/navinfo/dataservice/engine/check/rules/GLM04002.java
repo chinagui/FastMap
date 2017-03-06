@@ -33,13 +33,13 @@ public class GLM04002 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-		for (IRow obj : checkCommand.getGlmList()) {
-			// RdLink
-			if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				checkRdLink(rdLink);
-			}	
-		}
+//		for (IRow obj : checkCommand.getGlmList()) {
+//			// RdLink
+//			if (obj instanceof RdLink) {
+//				RdLink rdLink = (RdLink) obj;
+//				checkRdLink(rdLink);
+//			}	
+//		}
 		
 	}
 
@@ -49,15 +49,22 @@ public class GLM04002 extends baseRule{
 	 */
 	private void checkRdLink(RdLink rdLink) throws Exception {
 		//新增link(rowId为空，修改map为空)
-		if(rdLink.rowId()==null&&rdLink.changedFields().isEmpty()){
+//		if(rdLink.rowId()==null&&rdLink.changedFields().isEmpty()){
+		if(rdLink.status().equals(ObjStatus.INSERT)){
 			Set<Integer> nodePids = new HashSet<Integer>();
 			nodePids.add(rdLink.geteNodePid());
 			nodePids.add(rdLink.getsNodePid());
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT 1 FROM RD_GATE G");
+			sb.append("SELECT COUNT(1)");
+			sb.append("  FROM RD_GATE G, RD_LINK R");
 			sb.append(" WHERE G.NODE_PID IN (" + StringUtils.join(nodePids.toArray(),",") + ")");
-			sb.append(" AND G.U_RECORD <> 2");
+			sb.append("   AND G.U_RECORD <> 2");
+			sb.append("   AND (R.S_NODE_PID = G.NODE_PID OR R.E_NODE_PID = G.NODE_PID)");
+			sb.append("   AND R.U_RECORD <> 2");
+//			sb.append("SELECT 1 FROM RD_GATE G");
+//			sb.append(" WHERE G.NODE_PID IN (" + StringUtils.join(nodePids.toArray(),",") + ")");
+//			sb.append(" AND G.U_RECORD <> 2");
 			
 			String sql = sb.toString();
 			log.info("RdLink前检查GLM04002:" + sql);
@@ -67,7 +74,10 @@ public class GLM04002 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if(resultList.size()>0){
-				this.setCheckResult("", "", 0);
+				if(Integer.parseInt(resultList.get(0).toString())!=2){
+					String target = "[RD_LINK," + rdLink.getPid() + "]";
+					this.setCheckResult("", target, 0);
+				}
 			}
 		}
 	}
@@ -92,6 +102,14 @@ public class GLM04002 extends baseRule{
 //					checkRdNode(rdNode);
 //				}
 //			}
+			
+			else if (obj instanceof RdLink) {
+				RdLink rdLink = (RdLink) obj;
+				if(rdLink.status().equals(ObjStatus.INSERT)){
+					checkRdLinkPost(rdLink);
+				}
+//				checkRdLink(rdLink);
+			}
 		}
 	}
 

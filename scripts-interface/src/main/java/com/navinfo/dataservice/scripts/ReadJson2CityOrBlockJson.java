@@ -75,7 +75,7 @@ public class ReadJson2CityOrBlockJson {
 	public static void main(String[] args) throws Exception{
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();//F:\tabfile
-		String filePathString="F:\\readjson\\newblock.txt";
+		String filePathString="F:\\readjson\\20170306block.txt";
 		importJson( filePathString);
 		System.out.println("end"); 
 		System.exit(0);

@@ -70,11 +70,27 @@ public class RdNameOperation {
 		if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
 			insertSql +=  ",CITY		\n"
 					+ ") VALUES \n"
-					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?,?,?,?) \n";
+					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ";
+				if(rdName.getRoadType().equals(1)){//高速公路,生成语音
+					insertSql +="(select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual )"
+							
+					+ ",?, ?, ?, ?, ?, ?,?,?,?) \n";
+				}else{
+					insertSql +="?"
+							
+					+ ",?, ?, ?, ?, ?, ?,?,?,?) \n";
+				}	
 		} else {
 			insertSql += ",CITY		\n"
 					+ ") VALUES \n"
-					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?)";
+					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ";
+					if(rdName.getRoadType().equals(1)){//高速公路,生成语音
+						insertSql +="(select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual )"
+								
+						+ ",?, ?, ?, ?, ?, ?,?,?,?) \n";
+					}else{
+						insertSql +="?,?, ?, ?, ?, ?, ?,?,?,?) \n";
+					}	
 		}
 
         
@@ -417,7 +433,12 @@ public class RdNameOperation {
 		sb.append("ROAD_TYPE = ?,");
 		sb.append("ADMIN_ID = ?,");
 		sb.append("CODE_TYPE = ?,");
-		sb.append("VOICE_FILE = ?,");
+		if(rdName.getRoadType().equals(1)){//高速公路,生成语音
+			sb.append("VOICE_FILE = (select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual ),");
+		}else{
+			sb.append("VOICE_FILE = ?,");
+		}	
+		
 		sb.append("SRC_RESUME = ?,");
 		sb.append("PA_REGION_ID = ?,");
 		sb.append("MEMO = ?,");

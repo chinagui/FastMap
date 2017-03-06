@@ -16,6 +16,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 /**
+ * FM-11Win-08-22
  * 检查条件： Lifecycle！=1（删除） 检查原则： 加油站（分类为230215）、加气站（230216）
  * 同点的设施需要与加油站建立父子关系，否则报Log:与加油站同点的POI未与加油站建立父子关系
  * 
@@ -58,14 +59,25 @@ public class FM11Win0822 extends BasicCheckRule {
 			} else {
 				pidString = " PID IN (" + pids + ")";
 			}
-			String sqlStr = "WITH T AS" + " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE" + "    FROM IX_POI P1"
-					+ "   WHERE P1.U_RECORD != 2" + "     AND P1." + pidString + ")" + " SELECT /*+ NO_MERGE(T)*/"
-					+ " P.PID, T.PID2" + "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, T.G2, 0.00000005) < 3"
-					+ "   AND P.KIND_CODE IN ('230215', '230216')" + "   AND P.U_RECORD != 2" + " MINUS"
-					+ " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T" + " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ " AND C.U_RECORD!=2" + " AND P.U_RECORD!=2" + " AND C.CHILD_POI_PID =T.PID2";
+			String sqlStr = "SELECT /*+ PARALLEL(P)*/"
+					+ "					 P.PID, P1.PID"
+					+ "					  FROM IX_POI P1, IX_POI P"
+					+ "					 WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
+					+ "					   AND P.KIND_CODE IN ('230215', '230216')"
+					+ "					   AND P1. "+pidString
+					+ "					   AND P.U_RECORD != 2"
+					+ "					MINUS"
+					+ "					SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+					+ "					  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
+					+ "					 WHERE P.GROUP_ID = C.GROUP_ID"
+					+ "					   AND C.U_RECORD != 2"
+					+ "					   AND P.U_RECORD != 2"
+					+ "					MINUS"
+					+ "					SELECT C.CHILD_POI_PID, P.PARENT_POI_PID"
+					+ "					  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
+					+ "					 WHERE P.GROUP_ID = C.GROUP_ID"
+					+ "					   AND C.U_RECORD != 2"
+					+ "					   AND P.U_RECORD != 2";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
 			;
 			if (values != null && values.size() > 0) {
@@ -95,13 +107,26 @@ public class FM11Win0822 extends BasicCheckRule {
 			} else {
 				pidString = " PID IN (" + pids + ")";
 			}
-			String sqlStr = "WITH T AS" + " (SELECT P1.PID PID2, P1.GEOMETRY G2, P1.KIND_CODE" + "    FROM IX_POI P1"
-					+ "   WHERE P1.U_RECORD != 2" + "     AND P1." + pidString + ")" + " SELECT /*+ NO_MERGE(T)*/"
-					+ "  T.PID2,P.PID" + "  FROM T, IX_POI P"
-					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, T.G2, 0.00000005) < 3" + "   AND P.U_RECORD != 2"
-					+ " MINUS" + " SELECT /*+ NO_MERGE(T)*/P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P,T" + " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ " AND C.U_RECORD!=2" + " AND P.U_RECORD!=2" + " AND P.PARENT_POI_PID =T.PID2";
+			//同一点获取速度较慢，
+			String sqlStr = "SELECT /*+PARALLEL(P)*/"
+					+ " P.PID, P1.PID"
+					+ "  FROM IX_POI P1, IX_POI P"
+					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
+					+ "   AND P1.PID != P.PID"
+					+ "   AND P1."+pidString
+					+ "   AND P.U_RECORD != 2"
+					+ " MINUS"
+					+ " SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
+					+ " WHERE P.GROUP_ID = C.GROUP_ID"
+					+ "   AND C.U_RECORD != 2"
+					+ "   AND P.U_RECORD != 2"
+					+ " MINUS"
+					+ " SELECT C.CHILD_POI_PID，P.PARENT_POI_PID"
+					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
+					+ " WHERE P.GROUP_ID = C.GROUP_ID"
+					+ "   AND C.U_RECORD != 2"
+					+ "   AND P.U_RECORD != 2";
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
 			;
 			if (values != null && values.size() > 0) {

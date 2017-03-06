@@ -110,11 +110,6 @@ public class RdWarninginfoSearch implements ISearch {
 									.getString("TYPE_CODE"));
 					array.add(info);
 
-					if (resultSet.isLast()) {
-						jsonObject.put("info", array);
-						snapshot.setM(jsonObject);
-						list.add(snapshot);
-					}
 				} else {
 					jsonObject.put("info", array);
 					snapshot.setM(jsonObject);
@@ -125,11 +120,11 @@ public class RdWarninginfoSearch implements ISearch {
 					this.setAttr(resultSet, snapshot, jsonObject, nodePid,
 							linkPid, z, px, py, list, array, map);
 
-					if (resultSet.isLast()) {
-						jsonObject.put("info", array);
-						snapshot.setM(jsonObject);
-						list.add(snapshot);
-					}
+				}
+				if (resultSet.isLast()) {
+					jsonObject.put("info", array);
+					snapshot.setM(jsonObject);
+					list.add(snapshot);
 				}
 
 			}

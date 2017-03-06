@@ -38,7 +38,6 @@ public class FMBAT20177 extends BasicBatchRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isBatch(poiObj)){return;}
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiName> names=poiObj.getAliasCHIName();
 			if(names.size()==0){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
@@ -83,7 +82,7 @@ public class FMBAT20177 extends BasicBatchRule {
 	 */
 	private boolean isBatch(IxPoiObj poiObj){
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		if((!poi.getOpType().equals(OperationType.INSERT))&&(!poiObj.isChanged())){return false;}
+		if((!poi.getOpType().equals(OperationType.INSERT))&&(!poi.getOpType().equals(OperationType.UPDATE))){return false;}
 		List<IxPoiName> names = poiObj.getIxPoiNames();
 		boolean existAlias = false;
 		boolean isAliasNameChange = false;
@@ -106,11 +105,11 @@ public class FMBAT20177 extends BasicBatchRule {
 		//(1)POI对象新增且存在中文别名：
 		if(poi.getOpType().equals(OperationType.INSERT)&&existAlias){return true;}
 		//(2)POI对象修改且中文别名修改；
-		if(poi.isChanged()&&isAliasNameChange){return true;}
+		if(poi.getOpType().equals(OperationType.UPDATE)&&isAliasNameChange){return true;}
 		//(3)POI对象修改且改分类且存在中文别名：
 		if(poi.hisOldValueContains(IxPoi.KIND_CODE)&&existAlias){return true;}
 		//(4)POI对象修改且存在中文别名且未变更且不存在别名英文；
-		if(existAlias==true&&isAliasNameChange==false){return true;}
+		if(poi.getOpType().equals(OperationType.UPDATE)&&existAlias&&!isAliasNameChange&&!existAliasEng){return true;}
 		return false;
 	}
 

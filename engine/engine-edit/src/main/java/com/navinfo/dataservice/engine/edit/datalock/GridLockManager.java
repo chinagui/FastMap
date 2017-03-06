@@ -164,40 +164,40 @@ public class GridLockManager{
 			if(lockType==FmEditLock.TYPE_BORROW){
 				sqlBuf = new StringBuffer();
 				
-				sqlBuf.append("UPDATE "+gridLockDbName+" SET HANDLE_REGION_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET HANDLE_REGION_ID=?,LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,JOB_ID=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND HANDLE_REGION_ID <> ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);
 				log.debug(sqlBuf);
 				if(size>1000){
-					updateCount=run.update(conn, sqlBuf.toString(), regionId,lockType,lockSeq,clobGrids,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(), regionId,lockType,lockSeq,jobId,clobGrids,regionId);
 				}else{
-					updateCount=run.update(conn, sqlBuf.toString(), regionId,lockType,lockSeq,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(), regionId,lockType,lockSeq,jobId,regionId);
 				}
 				
 			}else if(lockType==FmEditLock.TYPE_GIVE_BACK){
 				sqlBuf=new StringBuffer();
-				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,JOB_ID=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND REGION_ID <> ? AND HANDLE_REGION_ID = ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);
 				log.debug(sqlBuf);
 				if(size>1000){
-					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobGrids,regionId,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,jobId,clobGrids,regionId,regionId);
 				}else{
-					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,regionId,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,jobId,regionId,regionId);
 				}
 			}else{
 				sqlBuf=new StringBuffer();
-				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+gridLockDbName+" SET LOCK_STATUS=1,LOCK_TYPE=?,LOCK_SEQ=?,JOB_ID=?,LOCK_TIME=SYSDATE WHERE");
 				sqlBuf.append(gridInClause);
 				sqlBuf.append(" AND HANDLE_REGION_ID = ? AND LOCK_STATUS=0");
 				sqlBuf.append(lockObjClause);
 				log.debug(sqlBuf);
 				if(size>1000){
-					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,clobGrids,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,jobId,clobGrids,regionId);
 				}else{
-					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,regionId);
+					updateCount=run.update(conn, sqlBuf.toString(),lockType,lockSeq,jobId,regionId);
 				}
 			}
 			if(updateCount!=gridModSize){
@@ -232,7 +232,7 @@ public class GridLockManager{
 			//解锁时，归还例外
 			String sql = "UPDATE "+getGridLockDbName(dbType)+" "
 					+ " SET HANDLE_REGION_ID = (case  when LOCK_TYPE=5 then REGION_ID else handle_region_id end),"
-					+ " LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE" 
+					+ " LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,JOB_ID=NULL,LOCK_TIME=SYSDATE" 
 					+ " WHERE LOCK_SEQ=?";
 			this.log.debug(sql);
 			int updateCount = run.update(conn,sql ,lockSeq);
@@ -281,9 +281,9 @@ public class GridLockManager{
 			int gridModSize=getGridModSize(size,lockObject);//由于每个grid存在lockobject为poi和road两条数据，所以对于
 			String lockObjClause = getLockObjectClause(lockObject);
 			if(lockType==FmEditLock.TYPE_GIVE_BACK){
-				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET HANDLE_REGION_ID=REGION_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET HANDLE_REGION_ID=REGION_ID,LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,JOB_ID=NULL,LOCK_TIME=SYSDATE WHERE");
 			}else{
-				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,LOCK_TIME=SYSDATE WHERE");
+				sqlBuf.append("UPDATE "+getGridLockDbName(dbType)+" SET LOCK_STATUS=0,LOCK_TYPE=NULL,LOCK_SEQ=NULL,JOB_ID=NULL,LOCK_TIME=SYSDATE WHERE");
 			}
 			sqlBuf.append(gridInClause);
 			sqlBuf.append(" AND LOCK_STATUS=1 AND LOCK_TYPE=? AND HANDLE_REGION_ID=?");
@@ -324,7 +324,7 @@ public class GridLockManager{
 		gris.addAll(Arrays.asList(gridArr));
 		//r.getRegionId(), FmEditLock.LOCK_OBJ_POI, req.getGridIds(), FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,
 		//dbType,jobInfo.getId()
-		GridLockManager.getInstance().lock(1, FmEditLock.LOCK_OBJ_POI,gris ,FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,"DAY",0);
+		GridLockManager.getInstance().lock(1, FmEditLock.LOCK_OBJ_POI,gris ,FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,"DAY",261);
 		System.exit(0);
 	}
 	private class GridLockResultSetHandler4QueryLock implements ResultSetHandler<Set<Integer>>{

@@ -13,6 +13,7 @@ import java.util.Set;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -22,7 +23,7 @@ import com.navinfo.navicommons.database.sql.DBUtils;
  * @author luyao
  * @ClassName: GLM13002
  * @date 2016年12月27日
- * @Description: 收费站    word	GLM13034	后台
+ * @Description: 收费站    
  * 检查对象:RD_LINK
  * 检查原则：关系型收费站主点的挂接link数必须是2
  */
@@ -43,12 +44,21 @@ public class GLM13002 extends baseRule {
 
 
         Map<Integer, Set<Integer>> nodeLinkMap = new HashMap<Integer, Set<Integer>>();
+        
+        Set<Integer> delLinks=new HashSet<Integer>();
 
         for (IRow obj : checkCommand.getGlmList()) {
 
-            if (obj instanceof RdLink) {
+			if (obj instanceof RdLink) {
+				
+		           RdLink link = (RdLink) obj;
 
-                RdLink link = (RdLink) obj;
+				if (obj.status() == ObjStatus.DELETE) {
+					
+					delLinks.add(link.getPid());
+					
+					continue;
+				} 
 
                 int sNodePid = link.getsNodePid();
 
@@ -79,11 +89,11 @@ public class GLM13002 extends baseRule {
             return;
         }
 
-        preCheck(nodeLinkMap);
+        preCheck(nodeLinkMap, delLinks);
     }
 
-    private void preCheck(Map<Integer, Set<Integer>> nodeLinkMap)
-            throws Exception {
+	private void preCheck(Map<Integer, Set<Integer>> nodeLinkMap,
+			Set<Integer> delLinks) throws Exception {
 
         List<Integer> nodePids = new ArrayList<Integer>();
 
@@ -108,10 +118,10 @@ public class GLM13002 extends baseRule {
             inClause = " IN ( " + ids + " ) ";
         }
 
-        String sql = "SELECT LINK_PID,N.NODE_PID FROM RD_LINK T, RD_NODE N WHERE N.NODE_PID IN (SELECT T.NODE_PID " +
+        String sql = "SELECT LINK_PID,N.NODE_PID FROM RD_LINK L, RD_NODE N WHERE N.NODE_PID IN (SELECT T.NODE_PID " +
                 "FROM RD_TOLLGATE T WHERE T.U_RECORD <> 2 AND T.NODE_PID  "
                 + inClause
-                + " ) AND (T.S_NODE_PID = N.NODE_PID OR T.E_NODE_PID = N.NODE_PID)";
+                + " ) AND (L.S_NODE_PID = N.NODE_PID OR L.E_NODE_PID = N.NODE_PID) AND L.U_RECORD <> 2 AND N.U_RECORD <> 2";
 
         PreparedStatement pstmt = null;
 
@@ -132,6 +142,11 @@ public class GLM13002 extends baseRule {
                 int nodePid = resultSet.getInt("NODE_PID");
 
                 int linkPid = resultSet.getInt("LINK_PID");
+                
+                if(delLinks.contains(linkPid))
+                {
+                	continue;
+                }
 
                 if (nodeLinkMap.containsKey(nodePid)) {
 

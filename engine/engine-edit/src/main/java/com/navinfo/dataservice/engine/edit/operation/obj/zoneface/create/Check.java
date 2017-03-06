@@ -85,14 +85,14 @@ public class Check {
                 String sql = "select a.link_pid from rd_link a,rd_link b where a.link_pid = :1 and a.u_record!=2 and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
                         + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
-                        "" + "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and" + " "
-                        + "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" + "" + "" +
-                        ".s_node_pid " + "not " + "in" + " " + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" + "" +
-                        "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" + "" + "" +
-                        ".e_node_pid not in" + " " + "" + "" + "" + "" + "(a" + "" + "" + "" + ".s_node_pid," + "a" +
-                        "" + "" + "" + "" + "" + ".e_node_pid)" + "" + "" + "" + " and " + "sdo_relate" + "" + "(b" +
-                        "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + ".geometry," + "'mask=anyinteract')"
-                        + "='TRUE'";
+                        "" + "" + "" + "" + "" + "" + "" + "" + "b" + "" + ".link_pid" + " " + "!= " + ":2 " + "and"
+                        + " " + "b" + "" + "" + "" + "" + ".u_record!=2 " + "" + "and" + " " + "b" + "" + "" + "" +
+                        "" + "" + ".s_node_pid " + "not " + "in" + " " + "" + "(a" + "" + "" + "" + ".s_node_pid," +
+                        "a" + "" + "" + "" + "" + "" + ".e_node_pid) " + "" + "" + "and " + "b" + "" + "" + "" + "" +
+                        "" + "" + ".e_node_pid not in" + " " + "" + "" + "" + "" + "(a" + "" + "" + "" + "" +
+                        ".s_node_pid," + "a" + "" + "" + "" + "" + "" + ".e_node_pid)" + "" + "" + "" + " and " +
+                        "sdo_relate" + "" + "(b" + "" + "" + "" + "" + "" + ".geometry,a" + "" + "" + "" + "" +
+                        ".geometry," + "'mask=anyinteract')" + "='TRUE'";
 
                 PreparedStatement pstmt = conn.prepareStatement(sql);
 
@@ -114,9 +114,9 @@ public class Check {
                         + "b" + " where a.link_pid != b.link_pid and a.s_node_pid in (b.s_node_pid,b.e_node_pid) and " +
                         "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + ""
                         + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" +
-                        "" + "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + "" +
-                        ".s_node_pid," + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + "" +
-                        ".u_record!=2)";
+                        "" + "" + "" + "" + "" + "" + "a" + "" + "" + ".e_node_pid" + " in" + " " + "(b" + "" + "" +
+                        ".s_node_pid," + "b" + "" + "" + "" + ".e_node_pid)" + " " + "and" + " b" + "" + "" + "" + ""
+                        + ".u_record!=2)";
 
                 pstmt = conn.prepareStatement(sql);
 
@@ -296,6 +296,9 @@ public class Check {
     }
 
     public static void checkSelfIntersect(JSONObject geometry) throws Exception {
+        if (null == geometry || geometry.isEmpty())
+            return;
+
         GeometryFactory factory = new GeometryFactory();
         Geometry linkGeo = GeoTranslator.geojson2Jts(geometry, 1, 5);
         Coordinate[] coordinates = linkGeo.getCoordinates();

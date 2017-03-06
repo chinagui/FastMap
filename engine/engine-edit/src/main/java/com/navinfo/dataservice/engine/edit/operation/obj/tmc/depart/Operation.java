@@ -85,8 +85,6 @@ public class Operation {
 					link.changedFields().put("direct", 1);
 					result.insertObject(link, ObjStatus.UPDATE, link.getGroupId());
 				}
-
-				break;
 			}
 		}
 	}

@@ -132,6 +132,9 @@ public abstract class AbstractOperation {
 					//对象全部子表
 					Set<String> selConfig = new HashSet<String>();
 					for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objName()).getTables().entrySet()){
+						if(entry.getKey().equals(obj.getMainrow().tableName())){
+							continue;
+						}
 						selConfig.add(entry.getKey());
 					}
 					selConfigs.put(obj.objName(), selConfig);

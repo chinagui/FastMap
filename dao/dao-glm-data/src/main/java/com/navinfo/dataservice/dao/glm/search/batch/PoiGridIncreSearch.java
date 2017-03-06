@@ -91,7 +91,7 @@ public class PoiGridIncreSearch {
 					return map;
 				}
 				
-			});
+			},gridClob);
 			for(Integer dbId:dbGridMap.keySet()){
 				logger.debug("starting load ixpoi from dbId:"+dbId);
 				Map<String,String> subMap = new HashMap<String,String>();

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by chaixin on 2017/1/11 0011.
+ * Created by Creayeres on 2017/1/11 0011.
  */
 public class Check {
 
@@ -64,16 +64,16 @@ public class Check {
             return;
         } else {
             if (direct == 1) {
-                if (sourceLink.getsNodePid() == targetLink.getsNodePid() || sourceLink.getsNodePid() == targetLink
-                        .geteNodePid()) {
+                if ((sourceLink.getsNodePid() == targetLink.getsNodePid() && targetLink.getDirect() != 3) ||
+                        (sourceLink.getsNodePid() == targetLink.geteNodePid() && targetLink.getDirect() != 2)) {
                     final int pid = sourceLink.getsNodePid();
                     checkDistance(viaPids, pid);
                     checkNodeBifurcation(new ArrayList<Integer>() {{
                         add(pid);
                     }});
                     return;
-                } else if (sourceLink.geteNodePid() == targetLink.getsNodePid() || sourceLink.geteNodePid() ==
-                        targetLink.geteNodePid()) {
+                } else if ((sourceLink.geteNodePid() == targetLink.getsNodePid() && targetLink.getDirect() != 3) ||
+                        (sourceLink.geteNodePid() == targetLink.geteNodePid() && targetLink.getDirect() != 2)) {
                     final int pid = sourceLink.geteNodePid();
                     checkDistance(viaPids, pid);
                     checkNodeBifurcation(new ArrayList<Integer>() {{
@@ -81,7 +81,6 @@ public class Check {
                     }});
                     return;
                 }
-
             }
             if (direct == 2 && sourceLink.geteNodePid() == targetLink.getsNodePid()) {
                 checkDistance(viaPids, sourceLink.geteNodePid());

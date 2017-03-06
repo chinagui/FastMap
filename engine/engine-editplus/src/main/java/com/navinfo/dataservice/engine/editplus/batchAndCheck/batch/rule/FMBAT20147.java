@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.util.StringUtils;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -90,7 +92,9 @@ public class FMBAT20147 extends BasicBatchRule {
 				poiName.setNameType(1);
 				poiName.setName(officialNameStr);
 			} else {
-				standardName.setName(officialNameStr);
+				if (StringUtils.isEmpty(standardName.getName())) {
+					standardName.setName(officialNameStr);
+				}
 			}
 		}
 	}

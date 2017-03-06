@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.GeohashUtils;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -16,9 +17,11 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcNodeSelector;
+import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -122,6 +125,7 @@ public class Operation implements IOperation {
                 maps.put(g.getCoordinates()[g.getCoordinates().length - 1], (int) map.get(g).get("e"));
                 Iterator<String> it = meshes.iterator();
                 List<String> geoList = new ArrayList<>();
+                List<Geometry> createdGeos = new ArrayList<>();
                 while (it.hasNext()) {
                     String meshIdStr = it.next();
                     Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, GeoTranslator.transform(MeshUtils.mesh2Jts
@@ -132,7 +136,19 @@ public class Operation implements IOperation {
                             Geometry subGeo = geomInter.getGeometryN(i);
                             if (subGeo instanceof LineString) {
                                 subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, 5);
-                                LcLinkOperateUtils.createLcLinkWithMesh(subGeo, maps, result);
+                                boolean flag = true;
+                                for (Geometry geo : createdGeos) {
+                                    String forward = subGeo.toString();
+                                    String reverse = subGeo.reverse().toString();
+                                    if (geo.toString().equals(forward) || geo.toString().equals(reverse)) {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                                if (flag) {
+                                    createdGeos.add(subGeo);
+                                    LcLinkOperateUtils.createLcLinkWithMesh(subGeo, maps, result);
+                                }
                             }
                         }
                     } else {

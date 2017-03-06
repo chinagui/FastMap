@@ -207,12 +207,13 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			//行编提交由针对删除数据的检查，此处要全部加载
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
 					+ " WHERE ip.pid = ps.pid"
 					+ "   AND ps.status =2"
 					+ "   AND ps.FRESH_VERIFIED=0"
-					+ "   and ip.u_record!=2"
+					//+ "   and ip.u_record!=2"
 					+ "   AND sdo_within_distance(ip.geometry,"
 					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
 					+ "                           'mask=anyinteract') = 'TRUE'";

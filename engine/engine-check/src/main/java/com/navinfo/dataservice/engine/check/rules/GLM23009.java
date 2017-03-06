@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
+import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
@@ -41,26 +42,22 @@ public class GLM23009 extends baseRule {
 
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
+		
 		prepareData(checkCommand);
+
 		for (Integer linkPid : checkPidSet) {
-			logger.debug("检查类型：postCheck， 检查规则：GLM23007-log1， 检查要素：RDLINK(" + linkPid + ")");
+			logger.debug("检查类型：postCheck， 检查规则：GLM23009-log1， 检查要素：RD_ELECTRONICEYE(" + linkPid.toString() + ")");
+
+			RdElectroniceyeSelector electronicSelector=new RdElectroniceyeSelector(getConn());
+			RdElectroniceye elecEye= (RdElectroniceye)electronicSelector.loadById(linkPid, false);
 			
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("SELECT K.GEOMETRY, '[RD_ELECTRONICEYE,' || K.PID || ']' TARGET, K.MESH_ID FROM RD_ELECTRONICEYE K WHERE K.PID =");
-			sb.append(linkPid);
-			sb.append(" AND K.U_RECORD <> 2 AND K.SPEED_LIMIT <> 0 AND K.SPEED_LIMIT >= 100 AND K.SPEED_LIMIT < 1200 AND MOD(K.SPEED_LIMIT, 50) != 0");
-
-			log.info("GLM23009后检查SQL："+sb.toString());
-			
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sb.toString());
-
-			if (!resultList.isEmpty()) {
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+			if (elecEye.getSpeedLimit() == 0 || (elecEye.getSpeedLimit() >= 100 && elecEye.getSpeedLimit() <= 1200
+					&& (elecEye.getSpeedLimit() % 50 == 0))) {
+				continue;
 			}
+			this.setCheckResult(elecEye.getGeometry(), "[RD_ELECTRONICEYE," + elecEye.getPid() + "]",
+					elecEye.getMeshId());
+
 		}
 	}
 
@@ -70,10 +67,10 @@ public class GLM23009 extends baseRule {
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
-				if (row instanceof RdElectroniceye && row.status() == ObjStatus.UPDATE) {
+			if (row instanceof RdElectroniceye && row.status() == ObjStatus.UPDATE) {
 				RdElectroniceye eye = (RdElectroniceye) row;
-				if(eye.changedFields().containsKey("speedLimit"))
-				{
+
+				if (eye.changedFields().containsKey("speedLimit")) {
 					checkPidSet.add(eye.getPid());
 				}
 			}

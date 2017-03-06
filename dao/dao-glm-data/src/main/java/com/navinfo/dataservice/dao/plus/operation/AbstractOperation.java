@@ -83,7 +83,8 @@ public abstract class AbstractOperation {
 		deleteObjHandler();
 
 		//新增IX_POI对象向poi_edit_status表中插入记录
-		PoiEditStatus.insertPoiEditStatus(conn,result);
+		//PoiEditStatus.insertPoiEditStatus(conn,result);
+		PoiEditStatus.insertOrUpdatePoiEditStatus(conn,result);
 		//持久化履历
 		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
 		//持久化数据
@@ -131,6 +132,9 @@ public abstract class AbstractOperation {
 					//对象全部子表
 					Set<String> selConfig = new HashSet<String>();
 					for(Map.Entry<String, GlmTable> entry:GlmFactory.getInstance().getObjByType(obj.objName()).getTables().entrySet()){
+						if(entry.getKey().equals(obj.getMainrow().tableName())){
+							continue;
+						}
 						selConfig.add(entry.getKey());
 					}
 					selConfigs.put(obj.objName(), selConfig);

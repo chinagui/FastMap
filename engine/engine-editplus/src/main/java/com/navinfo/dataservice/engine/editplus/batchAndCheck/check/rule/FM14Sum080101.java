@@ -83,7 +83,7 @@ public class FM14Sum080101 extends BasicCheckRule {
 					+ "     AND P2.U_RECORD IN(1,2)"
 					+ "     AND P1.U_RECORD!=2"
 					+ "     AND N1.U_RECORD!=2"
-					+ "     AND N2.U_RECORD!=2"
+					+ "     AND N2.U_RECORD IN(1,2)"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID"
 					+ "     )"
@@ -149,10 +149,10 @@ public class FM14Sum080101 extends BasicCheckRule {
 					//+ "     AND NVL(P1.LABEL,'')=NVL(P2.LABEL,'')"
 					+ "     AND P2.U_RECORD IN(1,2)"
 					+ "     AND P1.U_RECORD!=2"
-					+ "     AND PK2.U_RECORD!=2"
+					+ "     AND PK2.U_RECORD IN(1,2)"
 					+ "     AND PK1.U_RECORD!=2"
 					+ "     AND N1.U_RECORD!=2"
-					+ "     AND N2.U_RECORD!=2"
+					+ "     AND N2.U_RECORD IN(1,2)"
 					+ "     AND P1."+pidString
 					+ "     AND P1.PID != P2.PID"
 					+ "     )"

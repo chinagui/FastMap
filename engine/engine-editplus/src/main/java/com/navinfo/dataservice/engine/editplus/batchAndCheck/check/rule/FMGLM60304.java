@@ -42,7 +42,7 @@ public class FMGLM60304 extends BasicCheckRule {
 				IxPoiObj parentObj = (IxPoiObj) poiMap.get(parentPid);
 				IxPoi parentPoi=(IxPoi) parentObj.getMainrow();
 				if(parentPoi.getKindCode().equals("230126")){
-					IxPoiName poiName= poiObj.getOfficeStandardCHName();
+					IxPoiName poiName= poiObj.getStandardShortName();
 					String poiNameStr=poiName.getName();
 					IxPoiName parentPoiName= parentObj.getOfficeStandardCHName();
 					String parentPoiNameStr=parentPoiName.getName();

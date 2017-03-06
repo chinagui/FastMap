@@ -38,6 +38,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
@@ -244,7 +245,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				new Classifier(checkResult,monthConn).execute();
 				log.info("开始执行后批处理");
 				new PostBatch(result,monthConn).execute();
+				log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
+				updateField(result, monthConn);
+				
 				updateLogCommitStatus(dailyConn,tempOpTable);
+				
 			}
 			log.info("修改同步信息为成功");
 			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.SUCCESS.getValue());
@@ -286,6 +291,44 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 		
 	}
+	
+	protected void updateField(OperationResult opResult,Connection conn) throws Exception {
+		List<Integer> pids=new ArrayList<Integer>();
+		for(BasicObj Obj:opResult.getAllObjs()){
+			BasicRow poi=Obj.getMainrow();
+			Integer pid=(int) poi.getObjPid();
+			pids.add(pid);
+		}
+		if(pids==null||pids.size()<=0){return;}
+		
+		List<Object> values = new ArrayList<Object> ();
+		SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,pids," IP.PID  ");
+		values.addAll(inClause.getValues());
+
+		log.info("开始所有记录更新MESH_ID_5K、ROAD_FLAG");
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE IX_POI IP  SET IP.MESH_ID_5K = NAVI_GEOM.GET5KMAPNUMBER1(ip.GEOMETRY, ip.MESH_ID),IP.ROAD_FLAG  = '0'\r\n");
+		sb .append(" WHERE "+ inClause.getSql());
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		log.info("MESH_ID_5K、ROAD_FLAG:"+sqlClause);
+		int count = sqlClause.update(conn);
+
+		log.info("开始更新PMESH_ID");
+		StringBuilder sb1 = new StringBuilder();
+		sb1.append("MERGE INTO IX_POI P\r\n" + 
+				" USING (SELECT IP.PID, R.MESH_ID\r\n" + 
+				"          FROM IX_POI IP, RD_LINK R\r\n" + 
+				"        WHERE IP.LINK_PID = R.LINK_PID\r\n" + 
+				"          AND IP.PMESH_ID IS NULL\r\n" + 
+				"          AND R.MESH_ID IS NOT NULL\r\n");
+		sb1 .append(" AND "+ inClause.getSql());
+		sb1.append(") T ON (P.PID = T.PID)\r\n" +
+					"WHEN MATCHED THEN\r\n" +
+					"  UPDATE SET P.PMESH_ID = T.MESH_ID\r\n");
+		SqlClause sqlClause1 = new SqlClause(sb1.toString(),values);
+		log.info("PMESH_ID:"+sqlClause1);
+		int count1 = sqlClause1.update(conn);
+	}
 
 	protected void updateLogCommitStatus(Connection dailyConn,String tempTable) throws Exception {
 		QueryRunner run = new QueryRunner();
@@ -300,6 +343,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
+		tabNames.add("IX_POI_PARKING");
+		tabNames.add("IX_POI_PHOTO");
+		tabNames.add("IX_POI_CARRENTAL");
+		tabNames.add("IX_POI_HOTEL");
 		OperationResult result = new OperationResult();
 		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", tabNames,false, logStatInfo.keySet(), true, true);
 		ObjHisLogParser.parse(objs,logStatInfo);

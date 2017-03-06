@@ -555,7 +555,7 @@ public class ProgramService {
 					+ "       C.CITY_NAME,"
 					+ "       C.CITY_ID,"
 					+ "       F.PERCENT,"
-					+ "       F.DIFF_DATE,"
+					+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
 					+ "       0                   COLLECT_STAT,"
@@ -563,12 +563,12 @@ public class ProgramService {
 					+ "       0                   MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
-					+ "       F.COLLECT_PERCENT,"
-					+ "       F.COLLECT_PROGRESS,"
-					+ "       F.DAILY_PERCENT,"
-					+ "       F.DAILY_PROGRESS,"
-					+ "       F.MONTHLY_PERCENT,"
-					+ "       F.MONTHLY_PROGRESS,"
+					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
+					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       NVL(F.MONTHLY_PERCENT,0) MONTHLY_PERCENT,"
+					+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS,"
 					+ "       F.ROAD_PLAN_TOTAL,"
 					+ "       F.POI_PLAN_TOTAL"
 					+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
@@ -587,7 +587,7 @@ public class ProgramService {
 					+ "       C.CITY_NAME,"
 					+ "       C.CITY_ID,"
 					+ "       F.PERCENT,"
-					+ "       F.DIFF_DATE,"
+					+ "       NVL(F.DIFF_DATE,0) DIFF_DATE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
 					+ "       CASE SUM(CASE T.TYPE WHEN 1 THEN 0 WHEN 2 THEN 0 WHEN 3 THEN 0 ELSE 1 END)"
@@ -606,12 +606,12 @@ public class ProgramService {
 					+ "       END MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
-					+ "       F.COLLECT_PERCENT,"
-					+ "       F.COLLECT_PROGRESS,"
-					+ "       F.DAILY_PERCENT,"
-					+ "       F.DAILY_PROGRESS,"
-					+ "       F.MONTHLY_PERCENT,"
-					+ "       F.MONTHLY_PROGRESS,"
+					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
+					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS,"
+					+ "       NVL(F.MONTHLY_PERCENT,0) MONTHLY_PERCENT,"
+					+ "       NVL(F.MONTHLY_PROGRESS,1) MONTHLY_PROGRESS,"
 					+ "       F.ROAD_PLAN_TOTAL,"
 					+ "       F.POI_PLAN_TOTAL"
 					+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
@@ -639,6 +639,7 @@ public class ProgramService {
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
 					+ " WHERE TT.ROWNUM_ >= "+pageStartNum;
+			log.info("program list:"+selectSql);
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -1040,10 +1041,10 @@ public class ProgramService {
 					+ "       0                   MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
-					+ "       F.COLLECT_PERCENT,"
-					+ "       F.COLLECT_PROGRESS,"
-					+ "       F.DAILY_PERCENT,"
-					+ "       F.DAILY_PROGRESS"
+					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
+					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1080,10 +1081,10 @@ public class ProgramService {
 					+ "       END MONTHLY_STAT,"
 					+ "       F.ACTUAL_START_DATE,"
 					+ "       F.ACTUAL_END_DATE,"
-					+ "       F.COLLECT_PERCENT,"
-					+ "       F.COLLECT_PROGRESS,"
-					+ "       F.DAILY_PERCENT,"
-					+ "       F.DAILY_PROGRESS"
+					+ "       NVL(F.COLLECT_PERCENT,0) COLLECT_PERCENT,"
+					+ "       NVL(F.COLLECT_PROGRESS,1) COLLECT_PROGRESS,"
+					+ "       NVL(F.DAILY_PERCENT,0) DAILY_PERCENT,"
+					+ "       NVL(F.DAILY_PROGRESS,1) DAILY_PROGRESS"
 					+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F,TASK T"
 					+ " WHERE C.INFOR_ID = P.INFOR_ID"
 					+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
@@ -1406,52 +1407,52 @@ public class ProgramService {
     	return rsHandler;
 	}
 	
-	public Page commonList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page commonList(Connection conn,int planningStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		//常规未发布
 		Page page = new Page();
-		if(planStatus==1){
+		if(planningStatus==1){
 			page=commonUnPushList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==2){
+		}else if(planningStatus==2){
 			//常规已发布
 			page=commonPushList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==3){
+		}else if(planningStatus==3){
 			//常规已完成
 			page=commonOverList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==4){
+		}else if(planningStatus==4){
 			//常规已关闭
 			page=commonCloseList(conn,conditionJson,currentPageNum,pageSize);
 		}
 		return page;
 	}
 	
-	public Page inforList(Connection conn,int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page inforList(Connection conn,int planningStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		//情报未发布
 		Page page = new Page();
-		if(planStatus==1){
+		if(planningStatus==1){
 			page=inforUnPushList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==2){
+		}else if(planningStatus==2){
 			//情报已发布
 			page=inforPushList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==3){
+		}else if(planningStatus==3){
 			//情报已完成
 			page=inforOverList(conn,conditionJson,currentPageNum,pageSize);
-		}else if(planStatus==4){
+		}else if(planningStatus==4){
 			//情报已关闭
 			page=inforCloseList(conn,conditionJson,currentPageNum,pageSize);
 		}
 		return page;
 	}
 		
-	public Page list(int type, int planStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
+	public Page list(int type, int planningStatus, JSONObject conditionJson,JSONObject orderJson,int currentPageNum,int pageSize)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			if(type==4){
 				//情报任务查询列表
-				return this.inforList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+				return this.inforList(conn,planningStatus, conditionJson, orderJson, currentPageNum, pageSize);
 			}else{
 				//常规任务查询列表
-				return this.commonList(conn,planStatus, conditionJson, orderJson, currentPageNum, pageSize);
+				return this.commonList(conn,planningStatus, conditionJson, orderJson, currentPageNum, pageSize);
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1470,6 +1471,7 @@ public class ProgramService {
 					+ "         P.NAME                       PROGRAM_NAME,"
 					+ "         P.DESCP                      PROGRAM_DESCP,"
 					+ "         P.TYPE,"
+					+ "         P.LOT,"
 					+ "         C.CITY_NAME,"
 					+ "         C.CITY_ID,"
 					+ "         I.INFOR_ID,"
@@ -1501,6 +1503,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
+						map.put("lot", rs.getInt("LOT"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));

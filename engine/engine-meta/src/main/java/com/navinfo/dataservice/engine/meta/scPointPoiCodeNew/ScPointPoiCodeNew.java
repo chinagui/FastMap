@@ -5,12 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 public class ScPointPoiCodeNew {
@@ -33,7 +30,7 @@ public class ScPointPoiCodeNew {
 	 * @return Map<String,String> key:KIND_CODE,value:KIND_NAME
 	 * @throws Exception
 	 */
-	public Map<String,String> getKindNameByKindCode(String kindCode) throws Exception{
+	public Map<String,String> getKindNameByKindCode() throws Exception{
 		if (kindNameMap == null || kindNameMap.isEmpty()) {
 			synchronized (this) {
 				if (kindNameMap == null || kindNameMap.isEmpty()) {
@@ -42,7 +39,7 @@ public class ScPointPoiCodeNew {
 						ResultSet rs = null;
 						Connection conn = null;
 						
-						String sql = "SELECT KIND_CODE,KIND_NAME FROM SC_POINT_POICODE_NEW WHERE KIND_USE = 1 AND KIND_CODE ='"+kindCode+"'";
+						String sql = "SELECT KIND_CODE,KIND_NAME FROM SC_POINT_POICODE_NEW ";
 						try {
 							conn = DBConnector.getInstance().getMetaConnection();
 							pstmt = conn.prepareStatement(sql);
@@ -70,7 +67,7 @@ public class ScPointPoiCodeNew {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String,Integer> searchScPointPoiCodeNew(List<String> kindCodes) throws Exception{
+	public Map<String,Integer> searchScPointPoiCodeNew() throws Exception{
 		if (kindUser1Map == null || kindUser1Map.isEmpty()) {
 			synchronized (this) {
 				if (kindUser1Map == null || kindUser1Map.isEmpty()) {
@@ -79,7 +76,7 @@ public class ScPointPoiCodeNew {
 						ResultSet rs = null;
 						Connection conn = null;
 						
-						String sql = "SELECT KIND_CODE,KIND_USE FROM SC_POINT_POICODE_NEW WHERE KIND_USE =1 AND KIND_CODE IN('"+StringUtils.join(kindCodes, "','")+"')";
+						String sql = "SELECT KIND_CODE,KIND_USE FROM SC_POINT_POICODE_NEW WHERE KIND_USE =1 ";
 						try {
 							conn = DBConnector.getInstance().getMetaConnection();
 							pstmt = conn.prepareStatement(sql);

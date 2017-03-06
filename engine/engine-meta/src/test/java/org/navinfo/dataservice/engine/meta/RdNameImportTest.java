@@ -95,7 +95,7 @@ public class RdNameImportTest {
 	}
 	
 	
-//	@Test
+	//@Test
 	public void testGetRdName()
 	{
 		String parameter = "{\"subtaskId\":76,\"pageNum\":1,\"pageSize\":20,\"sortby\":\"\",\"flag\":1,\"params\":{\"name\":\"\",\"nameGroupid\":\"\",\"adminId\":\"\"}}";
@@ -145,7 +145,7 @@ public class RdNameImportTest {
 		System.out.println(data);
 	}
 	
-	//@Test
+	@Test
 	public void teilenName () {
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589343,\"nameGroupid\":40589344,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":0,\"nameGroupid\":11111111,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
@@ -163,7 +163,7 @@ public class RdNameImportTest {
 		// 2号线 
 		// 轻轨2号线		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82376,\"nameGroupid\":82376,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		// 地铁亦庄线 
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82362,\"nameGroupid\":82362,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":503000007,\"nameGroupid\":400000005,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
 		
 		Connection conn = null;
 		try {
@@ -204,10 +204,10 @@ public class RdNameImportTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
-		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'11111张莉测试全国','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'全国','_initHooksCalled':true},'subtaskId':76,'dbId':17}");
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'哈哈哈哈哈','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
 		
 		JSONObject data = jsonReq.getJSONObject("data");
 		

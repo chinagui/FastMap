@@ -63,7 +63,7 @@ public class CheckUtil {
 		}
 		int spaceIndex = word.indexOf(' ');
 		if (spaceIndex > 0 && spaceIndex<word.length()-1) {
-			String beforeWord=word.substring(0, spaceIndex-1);
+			String beforeWord=word.substring(0, spaceIndex);
 			String afterWord=word.substring(spaceIndex+1);
 			if (isLetter(beforeWord) && isChinese(afterWord)) {
 				return word + ",空格前是英文，空格后中文";
@@ -109,7 +109,7 @@ public class CheckUtil {
 	}
 	
 	public static boolean isChinese(String str){
-		Pattern p1 = Pattern.compile("[\u4e00-\u9fa5]");
+		Pattern p1 = Pattern.compile("^[\u4E00-\u9FA5]+$");
 		Matcher m1 = p1.matcher(str);
 		if (m1.matches()) {
 			return true;
@@ -127,7 +127,7 @@ public class CheckUtil {
 	}
 
     public static boolean isLetter(String str){
-    	Pattern p1 = Pattern.compile("[a-zA-Z]{1}");
+    	Pattern p1 = Pattern.compile("^[a-zA-Z]+$");
 		Matcher m1 = p1.matcher(str);
 		if (m1.matches()) {
 			return true;
@@ -284,7 +284,61 @@ public class CheckUtil {
                 tmpRIndex=rindex;
             }else{tmpRIndex=rindex;}
         }
+        
         return null;
+    }
+    
+    /**
+     * 若存在括号，则
+     *   不允许混合嵌套
+     *   例如:博泰嘉华(酒{店}忘)
+     * @param word
+     * @return String 若括号符合规则，则返回null；否则返回字符串
+     */
+    public static String isDoubleKuohao(String word){
+    	String wordB=strQ2B(word);
+    	//混合括号嵌套判断
+        boolean check = false;
+		if(wordB.contains("(")&&wordB.contains(")")){
+			int l = wordB.indexOf("(");
+			int r = wordB.indexOf(")");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("[")&&wordB.contains("]")){
+			int l = wordB.indexOf("[");
+			int r = wordB.indexOf("]");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("(")&&subWord.contains(")"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("{")&&wordB.contains("}")){
+			int l = wordB.indexOf("{");
+			int r = wordB.indexOf("}");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("(")&&subWord.contains(")"))
+					||(subWord.contains("《")&&subWord.contains("》"))){
+				check = true;
+			}
+		}
+		if(wordB.contains("《")&&wordB.contains("》")){
+			int l = wordB.indexOf("《");
+			int r = wordB.indexOf("》");
+			String subWord = wordB.substring(l+1, r);
+			if((subWord.contains("[")&&subWord.contains("]"))||(subWord.contains("{")&&subWord.contains("}"))
+					||(subWord.contains("(")&&subWord.contains(")"))){
+				check = true;
+			}
+		}
+		if(check){
+			return "不能出现括号嵌套括号情况";
+		}
+		return null;
     }
     
     /**

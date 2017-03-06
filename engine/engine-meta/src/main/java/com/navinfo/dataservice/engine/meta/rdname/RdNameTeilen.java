@@ -56,6 +56,10 @@ public class RdNameTeilen {
 //		Connection subconn = null;
 		boolean isMetaConn=true;
 		try {
+			if("ENG".equals(langCode)){
+				teilenEngNameNew(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
+				return ;
+			}
 //			if (conn == null) {
 //				subconn = DBConnector.getInstance().getMetaConnection();
 //				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
@@ -81,9 +85,7 @@ public class RdNameTeilen {
 				//	teilenEngName(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
 					teilenEngNameNew(conn,String.valueOf(nameGroupId), String.valueOf(nameId),roadType);
 				}
-				String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
-				pst=conn.prepareStatement(updateSql);
-				pst.execute(updateSql);
+				pst = recordRdNameTailenLog(nameGroupId);
 //			}
 			
 			
@@ -97,6 +99,14 @@ public class RdNameTeilen {
 //			}
 			
 		}
+	}
+
+	private PreparedStatement recordRdNameTailenLog(Integer nameGroupId) throws SQLException {
+		PreparedStatement pst;
+		String updateSql = "update rd_name set U_FIELDS = to_char(sysdate,'YYYY-MM-DD HH24:MI:SS'),split_flag=2 where NAME_GROUPID = " +  nameGroupId;
+		pst=conn.prepareStatement(updateSql);
+		pst.execute(updateSql);
+		return pst;
 	}
 	
 	
@@ -273,7 +283,7 @@ public class RdNameTeilen {
 			} ,nameGruopId);
 		
 		// 根据名称ID，取中文名
-		String sqlForChi = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'CHI' AND N.NAME_ID = ?";
+		String sqlForChi = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'CHI' AND N.NAME_GROUPID = ?";
 		List<RdName> listName=runner.query(conn, sqlForChi, new ResultSetHandler<List<RdName>>(){
 			@Override
 			public List<RdName> handle(ResultSet rs) throws SQLException{
@@ -283,7 +293,7 @@ public class RdNameTeilen {
 				}
 				return rdNameList;
 			}
-		} ,nameId);
+		} ,nameGruopId);
 
 		RdName engRdName = new RdName();
 		RdName chiRdName = new RdName();
@@ -344,7 +354,6 @@ public class RdNameTeilen {
 			log.info("engBaseName: "+engBaseName);
 		}
 		if(chiRdName.getRoadType() == 3){//道路类型为铁路或地铁
-			
 			String str = engBaseName.replaceAll("Ditie", "").replaceAll("Qinggui", "");
 			if(Character.isLowerCase(str.charAt(0))){//首字母大写
 	           str = (new StringBuilder()).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1)).toString();
@@ -391,7 +400,11 @@ public class RdNameTeilen {
 		// ROUTE_ID赋值为默认值
 		/*if (engRdName.getRouteId() == null)
 			engRdName.setRouteId(RdName.DEFAULT_NUM_VALUE);*/
-
+		//*****zl 2017.3.3 增加英文道路名 的 src_resum**
+		engRdName.setSrcResume(chiRdName.getSrcResume());
+		
+		//**********************
+		
 		// 判断如果以前有英文名，则只有英文名来源字段为数字1时才进行更新，否则不改
 		//5)	在对中文记录进行拆分时，根据道路名组对英文进行同步拆分。注意：对英文中名称来源字段为“未定义”、“按规则翻译”的数据进行维护，其他类型不维护。
 		if (engRdName.getNameId() != null && engRdName.getNameId() != 0

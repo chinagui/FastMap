@@ -58,12 +58,9 @@ public class FMA0916 extends BasicCheckRule {
 	private void checkPhonetic(String addrStr,String phonetic,String colName,List<String> errList) throws Exception {
 		if (StringUtils.isEmpty(addrStr)) {return;}
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		String[] phonetics = metadataApi.pyConvert(addrStr);
-		List<String> phoneticList = new ArrayList<String>();
-		for (int i=0;i<phonetics.length;i++) {
-			phoneticList.add(phonetics[i]);
-		}
-		if (!phoneticList.contains(phonetic)) {
+		String phonetics = metadataApi.pyConvertHz(addrStr);
+		
+		if (!phonetics.equals(phonetic)) {
 			errList.add("检查地址与地址拼音不匹配检查："+colName+"与"+phonetic+"不匹配");
 		}
 	}

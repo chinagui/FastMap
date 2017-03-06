@@ -25,17 +25,17 @@ public class ScPointCode2Level {
 	}
 	
 	/**
-	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
+	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL
 	 * 
 	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL
 	 * @throws Exception
 	 */
-	public Map<String, String> scPointCode2Level(String kindCode) throws Exception {
+	public Map<String, String> scPointCode2Level() throws Exception {
 		if (kindCodeMap == null || kindCodeMap.isEmpty()) {
 			synchronized (this) {
 				if (kindCodeMap == null || kindCodeMap.isEmpty()) {
 					try {
-						String sql = "SELECT DISTINCT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='"+kindCode+"'";
+						String sql = "SELECT DISTINCT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL";
 
 						PreparedStatement pstmt = null;
 						ResultSet rs = null;

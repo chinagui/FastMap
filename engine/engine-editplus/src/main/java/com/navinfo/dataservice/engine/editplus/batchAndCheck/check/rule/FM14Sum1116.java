@@ -6,9 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -18,16 +19,17 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 /**
- * @ClassName FMGLM60213
+ * @ClassName FM14Sum1116
  * @author Han Shaoming
- * @date 2017年2月18日 下午5:17:56
+ * @date 2017年3月2日 上午9:43:53
  * @Description TODO
- * 检查条件：非删除POI对象
+ * 检查条件：非删除POI对象；
  * 检查原则：
- * 外业采集的分类：sc_point_poicode_new.KIND_USE='1'；父POI与其子POI之间的（显示坐标）距离不能大于2000m，
- * 否则以子POI为单位报log：父子关系距离不能大于2000米。
+ * 父POI和子POI分类在（200103\200104\120101\120102）中，100米以内，与父官方原始中文名称相同的设施建立了父子关系，
+ * 则报log：同名大厦和宾馆建立了父子关系！
+ * 备注：log报在子POI上，方便修改
  */
-public class FMGLM60213 extends BasicCheckRule {
+public class FM14Sum1116 extends BasicCheckRule {
 
 	private Map<Long, Long> parentMap=new HashMap<Long, Long>();
 	
@@ -37,8 +39,12 @@ public class FMGLM60213 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
-			if(kindCode == null){return;}
-			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			if(kindCode == null || (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
+					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
+			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
+			if(ixPoiName == null){return;}
+			String name = ixPoiName.getName();
+			if(name == null){return;}
 			//是否有父
 			if(!parentMap.containsKey(poi.getPid())){return;}
 			Long parentId=parentMap.get(poi.getPid());
@@ -46,18 +52,18 @@ public class FMGLM60213 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null ){return;}
-			Map<String, Integer> map = metadataApi.searchScPointPoiCodeNew();
-			//sc_point_poicode_new.KIND_USE='1'
-			if(!map.containsKey(kindCode) || !map.containsKey(kindCodeP)){return;}
-			
+			if(kindCodeP == null|| (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
+					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
+			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
+			if(ixPoiNameP == null){return;}
+			String nameP = ixPoiNameP.getName();
+			if(nameP == null){return;}
 			Geometry geometry = poi.getGeometry();
-			Geometry geometryP = parentPoi.getGeometry();
-			//父子关系距离不能大于2000米
 			Coordinate coordinate = geometry.getCoordinate();
+			Geometry geometryP = parentPoi.getGeometry();
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
-			if(distance > 2000){
+			if(distance <100&&StringUtils.equals(name, nameP)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;
 			}
@@ -72,7 +78,7 @@ public class FMGLM60213 extends BasicCheckRule {
 		}
 		parentMap = IxPoiSelector.getParentPidsByChildrenPids(getCheckRuleCommand().getConn(), pidList);
 		Set<String> referSubrow=new HashSet<String>();
-		//referSubrow.add("IX_POI_NAME");
+		referSubrow.add("IX_POI_NAME");
 		Map<Long, BasicObj> referObjs = getCheckRuleCommand().loadReferObjs(parentMap.values(), ObjectName.IX_POI, referSubrow, false);
 		myReferDataMap.put(ObjectName.IX_POI, referObjs);
 	}

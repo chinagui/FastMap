@@ -498,7 +498,7 @@ public class TaskService {
 			if(!json2.isEmpty()){
 				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
 				for(Task task2:taskList){
-					if((task2.getType()==2)||(task2.getType()==3)){
+					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);

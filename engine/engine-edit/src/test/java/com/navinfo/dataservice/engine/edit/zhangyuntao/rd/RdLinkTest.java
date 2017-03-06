@@ -110,8 +110,8 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
                 "\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":6.6," +
-                "\"data\":{\"linkPids\":[420000010]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":16.6," +
+                "\"data\":{\"linkPids\":[410000081, 507000083]}}";
         TestUtil.run(parameter);
     }
 

@@ -7,7 +7,7 @@ import org.junit.Test;
 /**
  * Created by chaixin on 2016/11/22 0022.
  */
-public class TestAdAdmin extends InitApplication{
+public class TestAdAdmin extends InitApplication {
     @Override
     public void init() {
         super.initContext();
@@ -15,14 +15,15 @@ public class TestAdAdmin extends InitApplication{
 
 
     @Test
-    public void delete(){
+    public void delete() {
         String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"ADNODE\",\"objId\":203846}";
         TestUtil.run(parameter);
     }
 
     @Test
-    public void move(){
-        String requester = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":203846,\"data\":{\"longitude\":117.875,\"latitude\":38.919244228244274},\"type\":\"ADNODE\"}";
+    public void move() {
+        String requester = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":203846,\"data\":{\"longitude\":117.875," +
+                "\"latitude\":38.919244228244274},\"type\":\"ADNODE\"}";
         TestUtil.run(requester);
     }
 }

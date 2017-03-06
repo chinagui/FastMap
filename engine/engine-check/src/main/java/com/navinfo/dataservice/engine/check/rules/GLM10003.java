@@ -106,9 +106,9 @@ public class GLM10003 extends baseRule {
 								rdLink.getPid(), false);
 						for (RdSlope slope : slopes) {
 							if (direct == 2 || direct == 3) {
-								if ((slope.getNodePid() == rdLink.getsNodePid() || direct == 3)
+								if ((slope.getNodePid() == rdLink.getsNodePid()&& direct == 3)
 										|| (slope.getNodePid() == rdLink
-												.geteNodePid() || direct == 2)) {
+												.geteNodePid() &&direct == 2)) {
 									this.setCheckResult("", "", 0);
 									return;
 								}

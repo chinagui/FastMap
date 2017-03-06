@@ -93,6 +93,8 @@ public class GLM04002 extends baseRule{
 				RdLink rdLink = (RdLink) obj;
 				if(rdLink.status().equals(ObjStatus.UPDATE)){
 					checkRdLinkPost(rdLink);
+				}else if(rdLink.status().equals(ObjStatus.INSERT)){
+					checkRdLinkPost(rdLink);
 				}
 			}
 			//移动端点RdNode
@@ -102,14 +104,14 @@ public class GLM04002 extends baseRule{
 //					checkRdNode(rdNode);
 //				}
 //			}
-			
-			else if (obj instanceof RdLink) {
-				RdLink rdLink = (RdLink) obj;
-				if(rdLink.status().equals(ObjStatus.INSERT)){
-					checkRdLinkPost(rdLink);
-				}
-//				checkRdLink(rdLink);
-			}
+//		
+//			else if (obj instanceof RdLink) {
+//				RdLink rdLink = (RdLink) obj;
+//				if(rdLink.status().equals(ObjStatus.INSERT)){
+//					checkRdLinkPost(rdLink);
+//				}
+////				checkRdLink(rdLink);
+//			}
 		}
 	}
 

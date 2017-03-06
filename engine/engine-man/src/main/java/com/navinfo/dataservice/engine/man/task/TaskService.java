@@ -322,24 +322,26 @@ public class TaskService {
 				conn.commit();
 			}
 			if(cmsTaskList.size()>0){
+				//获取可发布的cms任务
 				List<Integer> pushCmsTask = TaskOperation.pushCmsTasks(conn, cmsTaskList);
 				erNum=pushCmsTask.size();
-				for(Integer taskId:pushCmsTask){
-					List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
-					if(phaseList!=null&&phaseList.size()>0){continue;}
-					createCmsProgress(conn,taskId,1);
-					createCmsProgress(conn,taskId,2);
-					createCmsProgress(conn,taskId,3);
-					createCmsProgress(conn,taskId,4);
-					conn.commit();
-					phaseList = queryTaskCmsProgress(taskId);
-					Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
-					for(Map<String, Integer> phaseTmp:phaseList){
-						phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
-					}
-					day2month(conn, phaseIdMap.get(1));
-					tips2Aumark(conn, phaseIdMap.get(2));
-				}
+				if(pushCmsTask!=null&&pushCmsTask.size()>0){
+					for(Integer taskId:pushCmsTask){
+						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
+						if(phaseList!=null&&phaseList.size()>0){continue;}
+						createCmsProgress(conn,taskId,1);
+						createCmsProgress(conn,taskId,2);
+						createCmsProgress(conn,taskId,3);
+						createCmsProgress(conn,taskId,4);
+						conn.commit();
+						phaseList = queryTaskCmsProgress(taskId);
+						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
+						for(Map<String, Integer> phaseTmp:phaseList){
+							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
+						}
+						day2month(conn, phaseIdMap.get(1));
+						tips2Aumark(conn, phaseIdMap.get(2));
+					}}
 			}
 			if((erNum!=0)||(total+erNum!=taskIds.size())){
 				return "任务发布：" + total + "个成功，" + (taskIds.size()-total-erNum) + "个失败," + erNum + "个二代编辑任务进行中";
@@ -496,7 +498,7 @@ public class TaskService {
 			if(!json2.isEmpty()){
 				List<Task> taskList = getLatestTaskListByBlockId(task1.getBlockId());
 				for(Task task2:taskList){
-					if((task2.getType()==2)||(task2.getType()==3)){
+					if((task2.getType()==1)||(task2.getType()==2)||(task2.getType()==3)){
 						Task taskTemp = (Task) JsonOperation.jsonToBean(json2,Task.class);
 						taskTemp.setTaskId(task2.getTaskId());
 						TaskOperation.updateTask(conn, taskTemp);

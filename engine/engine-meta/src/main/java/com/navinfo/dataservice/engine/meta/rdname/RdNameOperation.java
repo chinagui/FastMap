@@ -134,7 +134,14 @@ public class RdNameOperation {
 			pstmt.setInt(17, rdName.getRoadType());
 			pstmt.setInt(18, rdName.getAdminId());
 			pstmt.setInt(19, rdName.getCodeType());
-			pstmt.setString(20, rdName.getVoiceFile());
+			if(rdName.getRoadType().equals(1)){
+				pstmt.setString(20, rdName.getName());
+			}else if(rdName.getRoadType().equals(3)){
+				pstmt.setString(20, "");
+			}else{
+				pstmt.setString(20, rdName.getVoiceFile());
+			}
+			
 			pstmt.setString(21, rdName.getSrcResume());
 			
 			if(rdName.getPaRegionId()!=null){
@@ -476,7 +483,14 @@ public class RdNameOperation {
 			pstmt.setInt(15, rdName.getRoadType());
 			pstmt.setInt(16, rdName.getAdminId());
 			pstmt.setInt(17, rdName.getCodeType());
-			pstmt.setString(18, rdName.getVoiceFile());
+			if(rdName.getRoadType().equals(1)){
+				pstmt.setString(18, rdName.getName());
+			}else if(rdName.getRoadType().equals(3)){
+				pstmt.setString(18, "");
+			}else{
+				pstmt.setString(18, rdName.getVoiceFile());
+			}
+			
 			pstmt.setString(19, rdName.getSrcResume());
 			
 			if(rdName.getPaRegionId()!=null){

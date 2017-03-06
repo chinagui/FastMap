@@ -83,9 +83,10 @@ public class FM14Sum121001 extends BasicCheckRule {
 				+ "   WHERE N.NAME_CLASS = 1"
 				+ "     AND N.NAME_TYPE = 2"
 				+ "     AND N.LANG_CODE IN ('CHI', 'CHT')"
-				+ "     AND INSTR(N.NAME, 'ＡＴＭ') = 0"
+				+ "     AND INSTR(N.NAME, 'ＡＴＭ') = 0 AND INSTR(N.NAME, 'ATM') = 0 "
 				+ "     AND N.POI_PID = P.PID"
-				+ "     AND P.REGION_ID = A.REGION_ID)"
+				+ "     AND P.REGION_ID = A.REGION_ID "
+				+ "		AND N.U_RECORD <>2 AND P.U_RECORD <>2 AND A.U_RECORD <>2)"
 				+ " SELECT T1.NAME, T1.PID,T1.GEOMETRY, T1.MESH_ID,T1.KIND_CODE, T2.NAME COMPARE_NAME, T2.PID COMPARE_PID"
 				+ "  FROM T T1, T T2"
 				+ " WHERE T1.KIND_CODE = T2.KIND_CODE"
@@ -169,12 +170,18 @@ public class FM14Sum121001 extends BasicCheckRule {
 			}
 		}
 		if(errorList==null||errorList.size()==0){return;}
+		//过滤相同pid
+		Set<Long> filterPid = new HashSet<Long>();
 		for(Long pid1:errorList.keySet()){
 			String targets="[IX_POI,"+pid1+"]";
 			for(Long pid2:errorList.get(pid1)){
 				targets=targets+";[IX_POI,"+pid2+"]";
 			}
-			setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"分类为"+kindMap.get(pid1)+"，存在名称相同设施，名称为"+nameMap.get(pid1));
+			if(!filterPid.contains(pid1)){
+				setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"分类为"+kindMap.get(pid1)+"，存在名称相同设施，名称为"+nameMap.get(pid1));
+			}
+			filterPid.add(pid1);
+			filterPid.addAll(errorList.get(pid1));
 		}
 	}
 	

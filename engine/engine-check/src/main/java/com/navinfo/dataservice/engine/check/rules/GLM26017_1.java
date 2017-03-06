@@ -8,7 +8,6 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneTopology;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.dao.glm.model.rd.voiceguide.RdVoiceguideDetail;
@@ -27,18 +26,6 @@ public class GLM26017_1 extends baseRule {
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
-		for(IRow row:checkCommand.getGlmList()){
-			//关系类型编辑（语音引导详细信息表）
-			if(row instanceof RdVoiceguideDetail){
-				RdVoiceguideDetail rdVoiceguideDetail = (RdVoiceguideDetail)row;
-				checkRdVoiceguideDetail(rdVoiceguideDetail);
-			}
-			//关系类型编辑（顺行表）
-			else if(row instanceof RdDirectroute){
-				RdDirectroute rdDirectroute = (RdDirectroute)row;
-				checkRdDirectroute(rdDirectroute);
-			}
-		}
 	}
 
 	
@@ -57,11 +44,6 @@ public class GLM26017_1 extends baseRule {
 				RdVoiceguideDetail rdVoiceguideDetail = (RdVoiceguideDetail)row;
 				checkRdVoiceguideDetail(rdVoiceguideDetail);
 			}
-			//关系类型编辑（顺行表）
-			else if(row instanceof RdDirectroute){
-				RdDirectroute rdDirectroute = (RdDirectroute)row;
-				checkRdDirectroute(rdDirectroute);
-			} 
 			//交限关系类型
 			else if(row instanceof RdRestrictionDetail){
 				RdRestrictionDetail rdDirectroute = (RdRestrictionDetail)row;
@@ -136,38 +118,38 @@ public class GLM26017_1 extends baseRule {
 		}
 	}
 
-	/**
-	 * @author Han Shaoming
-	 * @param rdDirectroute
-	 * @throws Exception 
-	 */
-	private void checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
-		// TODO Auto-generated method stub
-		Map<String, Object> changedFields = rdDirectroute.changedFields();
-		if(changedFields != null && changedFields.containsKey("relationshipType")){
-			int relationshipType = (int) changedFields.get("relationshipType");
-			if(relationshipType == 1){
-				StringBuilder sb = new StringBuilder();
-				
-				sb.append("SELECT D.PID FROM RD_DIRECTROUTE D");
-				sb.append(" WHERE D.U_RECORD <> 2");
-				sb.append(" AND D.PID="+rdDirectroute.getPid()+" AND NOT EXISTS");
-				sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = D.NODE_PID AND CN.U_RECORD <> 2)");
-				
-				String sql = sb.toString();
-				log.info("RdDirectroute检查GLM26017_1--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_DIRECTROUTE," + rdDirectroute.getPid() + "]";
-					this.setCheckResult("", target, 0,"关系类型为“路口”的顺行关系信息，应制作到登记了路口的点上");
-				}
-			}
-		}
-	}
+//	/**
+//	 * @author Han Shaoming
+//	 * @param rdDirectroute
+//	 * @throws Exception 
+//	 */
+//	private void checkRdDirectroute(RdDirectroute rdDirectroute) throws Exception {
+//		// TODO Auto-generated method stub
+//		Map<String, Object> changedFields = rdDirectroute.changedFields();
+//		if(changedFields != null && changedFields.containsKey("relationshipType")){
+//			int relationshipType = (int) changedFields.get("relationshipType");
+//			if(relationshipType == 1){
+//				StringBuilder sb = new StringBuilder();
+//				
+//				sb.append("SELECT D.PID FROM RD_DIRECTROUTE D");
+//				sb.append(" WHERE D.U_RECORD <> 2");
+//				sb.append(" AND D.PID="+rdDirectroute.getPid()+" AND NOT EXISTS");
+//				sb.append(" (SELECT 1 FROM RD_CROSS_NODE CN WHERE CN.NODE_PID = D.NODE_PID AND CN.U_RECORD <> 2)");
+//				
+//				String sql = sb.toString();
+//				log.info("RdDirectroute检查GLM26017_1--sql:" + sql);
+//				
+//				DatabaseOperator getObj = new DatabaseOperator();
+//				List<Object> resultList = new ArrayList<Object>();
+//				resultList = getObj.exeSelect(this.getConn(), sql);
+//				
+//				if(!resultList.isEmpty()){
+//					String target = "[RD_DIRECTROUTE," + rdDirectroute.getPid() + "]";
+//					this.setCheckResult("", target, 0,"关系类型为“路口”的顺行关系信息，应制作到登记了路口的点上");
+//				}
+//			}
+//		}
+//	}
 	
 	/**
 	 * @author Han Shaoming

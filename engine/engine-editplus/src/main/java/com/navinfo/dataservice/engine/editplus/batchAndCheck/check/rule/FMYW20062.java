@@ -48,15 +48,15 @@ public class FMYW20062 extends BasicCheckRule {
 						||(fullname.contains("｛")&&fullname.contains("}"))){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中存在一边是半角一边是全角的括号");
 				}
-				String errorMsg=CheckUtil.isRightKuohao(fullname,"（","）");
+				String errorMsg=CheckUtil.isRightKuohao(fullname,"(",")");
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}
-				errorMsg=CheckUtil.isRightKuohao(fullname,"［","］");
+				errorMsg=CheckUtil.isRightKuohao(fullname,"[","[");
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}
-				errorMsg=CheckUtil.isRightKuohao(fullname,"｛","｝");
+				errorMsg=CheckUtil.isRightKuohao(fullname,"{","}");
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}

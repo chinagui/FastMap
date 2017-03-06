@@ -49,7 +49,7 @@ public class GLM60290 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null || "180400".equals(kindCode)){return;}
+			if(kindCodeP == null || "180400".equals(kindCodeP)){return;}
 			//SC_POINT_KIND_NEW表的TYPE=5
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<Map<String, String>> scPointKindNew5List = metadataApi.scPointKindNewChainKind5Map();

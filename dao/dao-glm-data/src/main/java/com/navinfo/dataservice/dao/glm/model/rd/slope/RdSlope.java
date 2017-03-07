@@ -20,262 +20,262 @@ import net.sf.json.JsonConfig;
 
 /***
  * 坡度模型
- * 
+ *
  * @author zhaokk
- * 
+ *
  */
 public class RdSlope implements IObj {
 
-	private String rowId;
+    private String rowId;
 
-	private int pid;// 坡度号码 
+    private int pid;// 坡度号码
 
-	private int nodePid;// NODE 号码
+    private int nodePid;// NODE 号码
 
-	private int linkPid;//LINK 号码
+    private int linkPid;//LINK 号码
 
-	private int type = 1; // 坡度类型 0 未调查1 水平2 上坡 3 下坡
+    private int type = 1; // 坡度类型 0 未调查1 水平2 上坡 3 下坡
 
-	private int angle = 0;// 坡度角度
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
-	public Map<String, RdSlopeVia> rdSlopeMap = new HashMap<String, RdSlopeVia>();
-	private List<IRow> slopeVias = new ArrayList<IRow>();
+    private int angle = 0;// 坡度角度
+    private Map<String, Object> changedFields = new HashMap<String, Object>();
+    public Map<String, RdSlopeVia> rdSlopeMap = new HashMap<String, RdSlopeVia>();
+    private List<IRow> slopeVias = new ArrayList<IRow>();
 
-	public List<IRow> getSlopeVias() {
-		return slopeVias;
-	}
+    protected ObjStatus status;
 
-	public void setSlopeVias(List<IRow> slopeVias) {
-		this.slopeVias = slopeVias;
-	}
+    public List<IRow> getSlopeVias() {
+        return slopeVias;
+    }
 
-	public int getPid() {
-		return pid;
-	}
+    public void setSlopeVias(List<IRow> slopeVias) {
+        this.slopeVias = slopeVias;
+    }
 
-	public void setPid(int nodePid) {
-		this.pid = nodePid;
-	}
+    public int getPid() {
+        return pid;
+    }
 
-	@Override
-	public String tableName() {
+    public void setPid(int nodePid) {
+        this.pid = nodePid;
+    }
 
-		return "rd_slope";
-	}
+    @Override
+    public String tableName() {
 
-	@Override
-	public ObjStatus status() {
+        return "rd_slope";
+    }
 
-		return null;
-	}
+    @Override
+    public ObjStatus status() {
+        return status;
+    }
 
-	@Override
-	public void setStatus(ObjStatus os) {
+    @Override
+    public void setStatus(ObjStatus os) {
+        status = os;
+    }
 
-	}
+    @Override
+    public ObjType objType() {
 
-	@Override
-	public ObjType objType() {
+        return ObjType.RDSLOPE;
+    }
 
-		return ObjType.RDSLOPE;
-	}
+    @Override
+    public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
-	@Override
-	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
 
-		JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        JSONObject json = JSONObject.fromObject(this, jsonConfig);
 
-		JSONObject json = JSONObject.fromObject(this, jsonConfig);
+        return json;
+    }
 
-		return json;
-	}
+    @Override
+    public boolean Unserialize(JSONObject json) throws Exception {
 
-	@Override
-	public boolean Unserialize(JSONObject json) throws Exception {
+        return true;
+    }
 
-		return true;
-	}
+    @Override
+    public List<IRow> relatedRows() {
 
-	@Override
-	public List<IRow> relatedRows() {
+        return null;
+    }
 
-		return null;
-	}
+    @Override
+    public void copy(IRow row) {
 
-	@Override
-	public void copy(IRow row) {
+    }
 
-	}
+    @Override
+    public Map<String, Object> changedFields() {
 
-	@Override
-	public Map<String, Object> changedFields() {
+        return changedFields;
+    }
 
-		return changedFields;
-	}
+    @Override
+    public int pid() {
 
-	@Override
-	public int pid() {
+        return this.getPid();
+    }
 
-		return this.getPid();
-	}
+    @Override
+    public String parentPKName() {
 
-	@Override
-	public String parentPKName() {
+        return "pid";
+    }
 
-		return "pid";
-	}
+    @Override
+    public int parentPKValue() {
 
-	@Override
-	public int parentPKValue() {
+        return this.getPid();
+    }
 
-		return this.getPid();
-	}
+    @Override
+    public List<List<IRow>> children() {
 
-	@Override
-	public List<List<IRow>> children() {
+        List<List<IRow>> children = new ArrayList<List<IRow>>();
+        children.add(this.getSlopeVias());
+        return children;
+    }
 
-		List<List<IRow>> children = new ArrayList<List<IRow>>();
-		children.add(this.getSlopeVias());
-		return children;
-	}
+    @Override
+    public String parentTableName() {
 
-	@Override
-	public String parentTableName() {
+        return "rd_slope";
+    }
 
-		return "rd_slope";
-	}
+    @Override
+    public String rowId() {
 
-	@Override
-	public String rowId() {
+        return rowId;
+    }
 
-		return rowId;
-	}
+    @Override
+    public void setRowId(String rowId) {
 
-	@Override
-	public void setRowId(String rowId) {
+        this.rowId = rowId;
+    }
 
-		this.rowId = rowId;
-	}
+    @Override
+    public boolean fillChangeFields(JSONObject json) throws Exception {
 
-	@Override
-	public boolean fillChangeFields(JSONObject json) throws Exception {
+        @SuppressWarnings("rawtypes") Iterator keys = json.keys();
 
-		@SuppressWarnings("rawtypes")
-		Iterator keys = json.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
 
-		while (keys.hasNext()) {
-			String key = (String) keys.next();
+            if (json.get(key) instanceof JSONArray) {
+                continue;
+            } else {
+                if (!"objStatus".equals(key)) {
 
-			if (json.get(key) instanceof JSONArray) {
-				continue;
-			} else {
-				if (!"objStatus".equals(key)) {
+                    Field field = this.getClass().getDeclaredField(key);
 
-					Field field = this.getClass().getDeclaredField(key);
+                    field.setAccessible(true);
 
-					field.setAccessible(true);
+                    Object objValue = field.get(this);
 
-					Object objValue = field.get(this);
+                    String oldValue = null;
 
-					String oldValue = null;
+                    if (objValue == null) {
+                        oldValue = "null";
+                    } else {
+                        oldValue = String.valueOf(objValue);
+                    }
 
-					if (objValue == null) {
-						oldValue = "null";
-					} else {
-						oldValue = String.valueOf(objValue);
-					}
+                    String newValue = json.getString(key);
 
-					String newValue = json.getString(key);
+                    if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
 
-					if (!newValue.equals(oldValue)) {
-						Object value = json.get(key);
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
+                        } else {
+                            changedFields.put(key, value);
+                        }
 
-						if (value instanceof String) {
-							changedFields.put(key, newValue.replace("'", "''"));
-						} else {
-							changedFields.put(key, value);
-						}
+                    }
 
-					}
+                }
+            }
+        }
 
-				}
-			}
-		}
+        if (changedFields.size() > 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		if (changedFields.size() > 0) {
-			return true;
-		} else {
-			return false;
-		}
-	}
+    public int getNodePid() {
+        return nodePid;
+    }
 
-	public int getNodePid() {
-		return nodePid;
-	}
+    public void setNodePid(int nodePid) {
+        this.nodePid = nodePid;
+    }
 
-	public void setNodePid(int nodePid) {
-		this.nodePid = nodePid;
-	}
+    public int getLinkPid() {
+        return linkPid;
+    }
 
-	public int getLinkPid() {
-		return linkPid;
-	}
+    public void setLinkPid(int linkPid) {
+        this.linkPid = linkPid;
+    }
 
-	public void setLinkPid(int linkPid) {
-		this.linkPid = linkPid;
-	}
+    public int getType() {
+        return type;
+    }
 
-	public int getType() {
-		return type;
-	}
+    public void setType(int type) {
+        this.type = type;
+    }
 
-	public void setType(int type) {
-		this.type = type;
-	}
+    public int getAngle() {
+        return angle;
+    }
 
-	public int getAngle() {
-		return angle;
-	}
+    public void setAngle(int angle) {
+        this.angle = angle;
+    }
 
-	public void setAngle(int angle) {
-		this.angle = angle;
-	}
+    public String getRowId() {
+        return rowId;
+    }
 
-	public String getRowId() {
-		return rowId;
-	}
+    @Override
+    public int mesh() {
+        return 0;
+    }
 
-	@Override
-	public int mesh() {
-		return 0;
-	}
+    @Override
+    public void setMesh(int mesh) {
+    }
 
-	@Override
-	public void setMesh(int mesh) {
-	}
+    @Override
+    public String primaryKey() {
+        return "pid";
+    }
 
-	@Override
-	public String primaryKey() {
-		return "pid";
-	}
+    /* (non-Javadoc)
+     * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
+     */
+    @Override
+    public Map<Class<? extends IRow>, List<IRow>> childList() {
+        Map<Class<? extends IRow>, List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
+        childList.put(RdSlopeVia.class, slopeVias);
+        return childList;
+    }
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
-	 */
-	@Override
-	public Map<Class<? extends IRow>, List<IRow>> childList() {
-		Map<Class<? extends IRow>,List<IRow>> childList = new HashMap<Class<? extends IRow>, List<IRow>>();
-		childList.put(RdSlopeVia.class, slopeVias);
-		return childList;
-	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
-	 */
-	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
-		Map<Class<? extends IRow>,Map<String,?>> childMap = new HashMap<Class<? extends IRow>,Map<String,?>>();
-		childMap.put(RdSlopeVia.class, rdSlopeMap);
-		return childMap;
-	}
+    /* (non-Javadoc)
+     * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
+     */
+    @Override
+    public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+        Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
+        childMap.put(RdSlopeVia.class, rdSlopeMap);
+        return childMap;
+    }
 }

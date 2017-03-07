@@ -46,8 +46,8 @@ public class ManApiImpl implements ManApi {
 	 * @throws Exception 
 	 */
 	@Override
-	public void taskUpdateCmsProgress(int phaseId,int status) throws Exception {
-		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status);
+	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
+		TaskService.getInstance().taskUpdateCmsProgress(phaseId, status,message);
 	}	
 	
 	@Override

@@ -165,6 +165,8 @@ public class LogTest {
 			
 			BasicObj objNew = ObjFactory.getInstance().create("IX_POI");
 			
+			System.out.println("PID:"+objNew.objPid());
+			
 			List<BasicObj> basicObjs = new ArrayList<BasicObj>();
 			basicObjs.add(objNew);
 			Geometry geo = JtsGeometryFactory.read("LINESTRING(129.789321823 34.18782666,129.34455656 34.898776)");

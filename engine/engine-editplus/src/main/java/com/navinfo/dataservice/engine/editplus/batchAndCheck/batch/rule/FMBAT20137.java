@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
@@ -75,7 +74,7 @@ public class FMBAT20137 extends BasicBatchRule {
 			//品牌chain不能是9005和9006
 			if(newKindCode.equals("150101")){
 				String chain=poi.getChain();
-				if(chain!=null &&!chain.equals("9005")&&!chain.equals("9006")){
+				if(chain==null  || (!chain.equals("9005")&&!chain.equals("9006"))){
 					IxPoiName br=poiObj.getOfficeStandardCHName();
 					if(br==null){return;}
 					String name=br.getName();

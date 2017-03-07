@@ -71,6 +71,7 @@ public class CheckTest {
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
+//		tabNames.add("IX_POI_GASSTATION");
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
@@ -79,8 +80,8 @@ public class CheckTest {
 //		Map<String, Object> oldValues=new HashMap<String, Object>();
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
-//		logg.setOpType(OperationType.UPDATE);
-		logg.setOpType(OperationType.INSERT);
+		logg.setOpType(OperationType.UPDATE);
+//		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
 		//row.setOpType(OperationType.PRE_DELETED);
@@ -106,6 +107,7 @@ public class CheckTest {
 //		List<ChangeLog> nameLog=new ArrayList<ChangeLog>();
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
+		
 		Set<Long> pids = new HashSet<Long>();
 		pids.add(64L);
 		pids.add(8165144L);

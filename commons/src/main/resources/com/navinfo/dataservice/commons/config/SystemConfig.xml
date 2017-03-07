@@ -1,5 +1,4 @@
-﻿﻿<configMap>
-
+﻿<configMap>
 	<!--sys datasource -->
 	<SYS.server.type>ORACLE</SYS.server.type>
 	<SYS.jdbc.driverClassName>oracle.jdbc.driver.OracleDriver</SYS.jdbc.driverClassName>

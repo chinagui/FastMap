@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +81,7 @@ public class FMYW20031 extends BasicCheckRule {
 					+ "			AND P1.PID = C1.POI_PID"
 					+ "			AND P2.PID = C2.POI_PID"
 					+ "			AND C1.CONTACT = C2.CONTACT"
+					+ "     AND C1.CONTACT_TYPE = C2.CONTACT_TYPE"
 					+ "		AND P1.U_RECORD!=2"
 					+ "		AND P2.U_RECORD!=2"
 					+ "		AND N1.U_RECORD!=2"
@@ -103,12 +105,17 @@ public class FMYW20031 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
+			Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
+			Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
+				int meshId = rs.getInt("MESH_ID");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
+				geoMap.put(pidTmp1, geometry);
+				meshMap.put(pidTmp1, meshId);
 				//查询父子关系
 				Set<Long> pidList=new HashSet<Long>();
 				pidList.add(pidTmp1);
@@ -116,11 +123,12 @@ public class FMYW20031 extends BasicCheckRule {
 				Map<Long, Long> parentMap = IxPoiSelector.getParentPidsByChildrenPids(this.getCheckRuleCommand().getConn(), pidList);
 				boolean flag = false;
 				//无父子关系
-				if(!parentMap.containsKey(pidTmp1)&&!parentMap.containsKey(pidTmp1)){
+				if(!(parentMap.containsKey(pidTmp1)&&parentMap.get(pidTmp1)==pidTmp2)
+						&&!(parentMap.containsKey(pidTmp2)&&parentMap.get(pidTmp2)==pidTmp1)){
 					flag = true;
 				}
 				//有相同的父
-				if(parentMap.containsKey(pidTmp1)&&parentMap.containsKey(pidTmp1)){
+				if(parentMap.containsKey(pidTmp1)&&parentMap.containsKey(pidTmp2)){
 					Long pidP1 = parentMap.get(pidTmp1);
 					Long pidP2 = parentMap.get(pidTmp2);
 					if(pidP1 ==pidP2){
@@ -128,8 +136,22 @@ public class FMYW20031 extends BasicCheckRule {
 					}
 				}
 				if(flag){
-					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+					if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+					errorList.get(pidTmp1).add(pidTmp2);
 				}
+			}
+			//过滤相同pid
+			Set<Long> filterPid = new HashSet<Long>();
+			for(Long pid1:errorList.keySet()){
+				String targets="[IX_POI,"+pid1+"]";
+				for(Long pid2:errorList.get(pid1)){
+					targets=targets+";[IX_POI,"+pid2+"]";
+				}
+				if(!(filterPid.contains(pid1)&&filterPid.containsAll(errorList.get(pid1)))){
+					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1));
+				}
+				filterPid.add(pid1);
+				filterPid.addAll(errorList.get(pid1));
 			}
 		}
 	}

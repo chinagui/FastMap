@@ -324,7 +324,7 @@ public class GridLockManager{
 		gris.addAll(Arrays.asList(gridArr));
 		//r.getRegionId(), FmEditLock.LOCK_OBJ_POI, req.getGridIds(), FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,
 		//dbType,jobInfo.getId()
-		GridLockManager.getInstance().lock(1, FmEditLock.LOCK_OBJ_POI,gris ,FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,"DAY",0);
+		GridLockManager.getInstance().lock(1, FmEditLock.LOCK_OBJ_POI,gris ,FmEditLock.TYPE_EDIT_POI_BASE_RELEASE,"DAY",261);
 		System.exit(0);
 	}
 	private class GridLockResultSetHandler4QueryLock implements ResultSetHandler<Set<Integer>>{

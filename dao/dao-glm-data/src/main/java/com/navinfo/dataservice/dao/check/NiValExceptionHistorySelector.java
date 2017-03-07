@@ -1,11 +1,11 @@
 package com.navinfo.dataservice.dao.check;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-
 
 public class NiValExceptionHistorySelector {
 
@@ -15,7 +15,8 @@ public class NiValExceptionHistorySelector {
 		this.conn = conn;
 	}
 
-	public NiValExceptionHistory loadById(String id, boolean isLock) throws Exception {
+	public NiValExceptionHistory loadById(String id, boolean isLock)
+			throws Exception {
 
 		NiValExceptionHistory exception = new NiValExceptionHistory();
 
@@ -54,10 +55,11 @@ public class NiValExceptionHistorySelector {
 				exception.setInformation(resultSet.getString("information"));
 
 				exception.setSuggestion(resultSet.getString("suggestion"));
+				if (resultSet.getObject("location") != null) {
+					STRUCT struct = (STRUCT) resultSet.getObject("location");
 
-				STRUCT struct = (STRUCT) resultSet.getObject("location");
-
-				exception.setLocation(GeoTranslator.struct2Jts(struct));
+					exception.setLocation(GeoTranslator.struct2Jts(struct));
+				}
 
 				exception.setTargets(resultSet.getString("targets"));
 

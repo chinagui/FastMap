@@ -258,7 +258,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			
 			//更新任务状态
 			if(grids!=null&&grids.size()>0){
-				manApi.taskUpdateCmsProgress(phaseId,2);
+				manApi.taskUpdateCmsProgress(phaseId,2,null);
 			}
 			
 		}catch(Exception e){
@@ -269,7 +269,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			d2mSyncApi.updateSyncInfo(curSyncInfo);
 			//更新任务状态
 			if(grids!=null&&grids.size()>0){
-				manApi.taskUpdateCmsProgress(phaseId,3);
+				manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
 			}
 			if(logMover!=null){
 				log.info("搬移履历回滚");

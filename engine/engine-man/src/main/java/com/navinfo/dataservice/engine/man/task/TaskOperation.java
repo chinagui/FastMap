@@ -2082,7 +2082,7 @@ public class TaskOperation {
 					+ "         WHERE T.BLOCK_ID = T2.BLOCK_ID"
 					+ "           AND T2.LATEST = 1"
 					+ "           AND T2.STATUS != 0"
-					+ "           AND T2.TYPE != 3)";	
+					+ "           AND T2.TYPE in (0, 1))";	
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
 				public List<Integer> handle(ResultSet rs) throws SQLException {

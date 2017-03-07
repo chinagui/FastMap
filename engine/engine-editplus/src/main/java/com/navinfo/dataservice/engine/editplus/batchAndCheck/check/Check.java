@@ -117,7 +117,7 @@ public class Check extends AbstractOperation{
 		try{
 			return CheckRuleLoader.getInstance().loadByRuleId(ruleId);
 		}catch(Exception e){
-			log.info("加载检查规则失败,ruleId:"+ruleId+",errorMsg:"+e.getMessage());
+			log.warn("加载检查规则失败,ruleId:"+ruleId+",errorMsg:"+e.getMessage(),e);
 			return null;
 		}
 		

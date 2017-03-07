@@ -267,14 +267,6 @@ public class RdNameImportor {
 	}
 	
 	/**
-	 * web端保存rdName
-	 * @author wangdongbin
-	 * @param subtaskId 
-	 * @param rdName
-	 * @return
-	 * @throws Exception
-	 */
-	/**
 	 * @Title: importRdNameFromWeb
 	 * @Description: 增加参数 subtaskId
 	 * @param params
@@ -296,7 +288,7 @@ public class RdNameImportor {
 			RdNameSelector selector = new RdNameSelector(conn);
 			
 			RdName rdName = Json2Obj(params);
-			System.out.println(rdName.getAdminName() +" : "+rdName.getAdminId());
+			log.debug("rdName:"+rdName);
 			// 判断是否存在重复name
 			JSONObject rdNameExists = selector.checkRdNameExists(rdName);
 			

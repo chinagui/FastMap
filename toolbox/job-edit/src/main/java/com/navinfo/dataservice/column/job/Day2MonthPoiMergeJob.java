@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
@@ -300,8 +301,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	protected void updateField(OperationResult opResult,Connection conn) throws Exception {
 		List<Integer> pids=new ArrayList<Integer>();
 		for(BasicObj Obj:opResult.getAllObjs()){
-			BasicRow poi=Obj.getMainrow();
-			Integer pid=(int) poi.getObjPid();
+			IxPoi ixPoi = (IxPoi) Obj.getMainrow();
+			Integer pid=(int) ixPoi.getPid();
 			pids.add(pid);
 		}
 		if(pids==null||pids.size()<=0){return;}

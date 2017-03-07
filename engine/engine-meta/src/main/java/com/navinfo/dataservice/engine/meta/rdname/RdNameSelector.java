@@ -465,7 +465,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 ){//如果行政区划为全国
+		if (rdName.getAdminId() != null && rdName.getAdminId().equals(214)){//如果行政区划为全国
 			if(nameGroupid !=null && nameGroupid != 0) {//如果nameGroupId不为空,继续查数据库
 				sb.append(" AND name_groupid=:4");
 			}else{//满足 “行政区划”为“全国” 并且 NAME_GROUPID不同 条件,则不查重
@@ -473,7 +473,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			}
 		}
 		if (rdName.getNameId() != null) {
-			sb.append(" AND name_id !="+rdName.getNameId());
+			sb.append(" AND name_id ="+rdName.getNameId());
 		}
 		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
 			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
@@ -495,15 +495,17 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 
 			resultSet = pstmt.executeQuery();
 			
-			
 			if (resultSet.next()) {
 				resultObj = result2Json(resultSet,new HashMap<String,String>());
+				if(resultObj.get("nameGroupid") != null){
+					Integer newNameGroupId = resultObj.getInt("nameGroupid");//获取查询出来的nameGroupid
+		 			if(rdName.getAdminId() != null && rdName.getAdminId() == 214 && newNameGroupId != null && newNameGroupId != 0 
+		 					&& !newNameGroupId.equals(nameGroupid)){//在 行政区划为全国的情况下 如果查询数据库返回的nameGroupid 存在且与上传的nameGroupid不同,怎不查重
+		 				return new JSONObject();
+		 			}
+				}
+					
 			}
-			Integer newNameGroupId = resultObj.getInt("nameGroupid");//获取查询出来的nameGroupid
- 			if(newNameGroupId != null && newNameGroupId != 0 
- 					&& !newNameGroupId.equals(nameGroupid)){//如果查询数据库返回的nameGroupid 存在且与上传的nameGroupid不同,怎不查重
- 				return new JSONObject();
- 			}
 			
 			return resultObj;
 		} catch (Exception e) {
@@ -724,6 +726,92 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		}
 		
 		//return null;
+	}
+
+	/**
+	 * @Title: searchRdNameFix
+	 * @Description: 获取道路名 前 后 中 缀
+	 * @param langCode
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年3月7日 上午9:31:03 
+	 */
+	public JSONObject searchRdNameFix(String langCode) throws Exception {
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		Connection conn = null;
+		
+		try {
+			JSONObject result = new JSONObject();
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			//StringUtils sUtils = new StringUtils();
+			
+			StringBuilder sql = new StringBuilder();
+			
+			/*select i.name,i.englishName,i.Lang_code,2 type from sc_roadname_infix i
+			-- where i.lang_code = '' 
+			union all 
+			select s.name,s.englishName,s.Lang_code,1 type from sc_roadname_suffix s -- where s.lang_code = '' ; 
+			*/
+			String thislangCode = "CHI";
+			if(langCode != null && StringUtils.isNotEmpty(langCode) && (langCode.equals("CHI") || langCode.equals("CHT"))){
+				thislangCode = langCode;
+			}
+			//添加根据子任务id直接查询的sql 
+			sql.append("select i.name,i.englishName,i.lang_code,2 type from sc_roadname_infix i  where i.lang_code = '"+thislangCode+"' ");
+			sql.append(" union all  ");
+			sql.append(" select s.name,s.englishName,s.Lang_code,1 type from sc_roadname_suffix s  where s.lang_code = '"+thislangCode+"' ");
+					
+			
+			System.out.println("rdname/searchFix sql : " +sql.toString());
+			pstmt = conn.prepareStatement(sql.toString());
+			resultSet = pstmt.executeQuery();
+			
+			JSONArray suffixArry = new JSONArray();
+			JSONArray infixArry = new JSONArray();
+			while (resultSet.next()) {
+				String name = resultSet.getString("name");
+				String englishName = resultSet.getString("englishName");
+				String lang_code = resultSet.getString("lang_code");
+				int type = resultSet.getInt("type");
+				
+				if(!langCode.equals("CHI") && !langCode.equals("CHT")){//英文或者葡文
+					JSONObject rdNameFixObj = new JSONObject();
+					rdNameFixObj.put("id", englishName);
+					rdNameFixObj.put("lable", englishName);
+					//rdNameFixObj.put("langCode", langCode);
+					if(type == 1){//前后缀
+						suffixArry.add(rdNameFixObj);
+					}else{//中缀
+						infixArry.add(rdNameFixObj);
+					}
+				}else{
+					JSONObject rdNameFixObj = new JSONObject();
+					rdNameFixObj.put("id", name);
+					rdNameFixObj.put("lable", name);
+					//rdNameFixObj.put("langCode", langCode);
+					if(type == 1){//前后缀
+						suffixArry.add(rdNameFixObj);
+					}else{//中缀
+						infixArry.add(rdNameFixObj);
+					}
+				}
+			}
+			result.put("suffix", suffixArry);
+			result.put("infix", infixArry);
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
 	}
 
 	

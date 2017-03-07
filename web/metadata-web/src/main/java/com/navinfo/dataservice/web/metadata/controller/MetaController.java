@@ -1218,5 +1218,29 @@ public class MetaController extends BaseController {
 	        DbUtils.closeQuietly(conn);
 	    }
     }
+    
+    @RequestMapping(value = "/rdname/searchFix")
+    public ModelAndView searchRdNameFix(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            RdNameSelector selector = new RdNameSelector();
+
+            String langCode = jsonReq.getString("langCode");
+            System.out.println("langCode: "+langCode);
+           
+            JSONObject data = selector.searchRdNameFix(langCode);
+
+            return new ModelAndView("jsonView", success(data));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
 }

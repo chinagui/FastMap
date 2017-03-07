@@ -11,6 +11,7 @@ import net.sf.json.JsonConfig;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -359,8 +360,11 @@ public class NiValException implements IObj {
 		this.setSuggestion(ckException.getSuggestion());
 
 		try {
-			this.setLocation(GeoTranslator.wkt2Geometry(ckException
-					.getGeometry()));
+			if (StringUtils.isNotEmpty(ckException.getGeometry())) {
+				this.setLocation(GeoTranslator.wkt2Geometry(ckException
+						.getGeometry()));
+			}
+
 		} catch (Exception e) {
 			logger.error(e.getMessage());
 		}

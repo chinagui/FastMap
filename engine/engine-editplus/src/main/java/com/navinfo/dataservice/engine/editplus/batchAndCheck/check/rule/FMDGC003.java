@@ -28,13 +28,13 @@ public class FMDGC003 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kind=poi.getKindCode();
 			if(kind==null||kind.isEmpty()){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),null);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"分类为空，请确认");
 				return;
 			}else{
 				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				List<String> kindDlist = metadataApi.getKindCodeDList();
 				if(!kindDlist.contains(kind)){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),null);
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"分类绝对错误：“"+kind+"”不在分类一览表中（绝对错误）");
 					return;
 				}
 			}

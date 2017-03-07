@@ -39,7 +39,7 @@ public class FMBAT20135 extends BasicBatchRule {
 		boolean isFlag = false;
 		if (flags != null) {
 			for (IxPoiFlag flag:flags) {
-				if (flag.getFlagCode().equals("002000080000") || flag.equals("002000090000")) {
+				if (flag.getFlagCode().equals("002000080000") || flag.getFlagCode().equals("002000090000")) {
 					isFlag = true;
 					break;
 				}

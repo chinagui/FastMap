@@ -16,8 +16,8 @@ public class loadTab2OracleTest {
 	public static void main(String[] args) throws Exception{
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();
-		String filePathString="F:\\Fm_Projects_Doc\\道路第八迭代\\blocks\\data\\resources\\grid\\10725.tab";
-//		String filePathString = String.valueOf(args[0]);
+//		String filePathString="F:\\Fm_Projects_Doc\\道路第八迭代\\blocks\\data\\resources\\grid\\10725.tab";
+		String filePathString = String.valueOf(args[0]);
 		Connection conn=DBConnector.getInstance().getManConnection();
 		List<String> columnNameList=new ArrayList<String>();
 		columnNameList.add("NAME");

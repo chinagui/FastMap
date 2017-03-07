@@ -39,9 +39,9 @@ public class EleceyeTest extends InitApplication {
 
     @Test
     public void moveEleceye() {
-        String requester = "{\"command\":\"MOVE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":17," +
-                "\"data\":{\"linkPid\":\"201003497\",\"pid\":\"303000038\",\"latitude\":\"40.12799\"," +
-                "\"longitude\":\"116.30923\"}}";
+        String requester = "{\"command\":\"MOVE\",\"type\":\"RDELECTRONICEYE\",\"dbId\":84," +
+                "\"data\":{\"linkPid\":\"520000050\",\"pid\":\"507000001\",\"latitude\":\"39.212241728303205\"," +
+                "\"longitude\":\"117.62435340826664\"}}";
         TestUtil.run(requester);
     }
 

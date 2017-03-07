@@ -38,11 +38,12 @@ public class LcLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"data\":{\"eNodePid\":306000089," +
-                "\"sNodePid\":310000082,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.49999976158142,"
-                + "39.93725055412644],[116.49999976158142,39.937550813896]]},\"catchLinks\":[{\"nodePid\":310000082,"
-                + "\"seqNum\":0,\"lon\":116.49999976158142,\"lat\":39.93725055412644},{\"nodePid\":306000089," +
-                "\"seqNum\":1,\"lon\":116.49999976158142,\"lat\":39.937550813896}]},\"dbId\":17}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"LCLINK\",\"data\":{\"eNodePid\":505000004," +
+                "\"sNodePid\":509000002,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[117.62499868869781," +
+                "39.21154048454516],[117.62500002980232,39.21138150041295],[117.62499868869781,39.21130044954033]]}," +
+                "\"catchLinks\":[{\"nodePid\":509000002,\"seqNum\":0,\"lon\":117.62499868869781," +
+                "\"lat\":39.21154048454516},{\"nodePid\":505000004,\"seqNum\":2,\"lon\":117.62499868869781," +
+                "\"lat\":39.21130044954033}]},\"dbId\":84}";
         TestUtil.run(parameter);
     }
 

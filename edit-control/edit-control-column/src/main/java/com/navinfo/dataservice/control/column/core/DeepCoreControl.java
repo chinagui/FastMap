@@ -8,7 +8,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -25,6 +29,9 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiDeepStatusSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
@@ -345,6 +352,7 @@ public class DeepCoreControl {
      * @throws Exception
      * @Gaopr POI深度信息作业提交
      */
+	@SuppressWarnings("static-access")
 	public JSONObject release(String parameter, long userId) throws Exception {
 		
 		List<Integer> pidList = new ArrayList<Integer>();
@@ -362,21 +370,76 @@ public class DeepCoreControl {
             //Subtask subtask = apiService.queryBySubtaskId(subtaskId);
             conn = DBConnector.getInstance().getConnectionById(dbId);  
 			
+    		//获取后检查需要执行规则列表
+			List<String> checkList=getCheckRuleList(conn,secondWorkItem);
+			//调用清理检查结果方法
+			cleanExByCkRule(conn, pidList, checkList, "IX_POI");
+            
 			// 查询可提交数据
             IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
+			
+			OperationResult operationResult=new OperationResult();
+			
+			List<Long> pids = new ArrayList<Long>();
+			for (int pid:pidList) {
+				pids.add((long)pid);
+			}
+			
+			PoiLogDetailStat logDetail = new PoiLogDetailStat();
+			Map<Long,List<LogDetail>> submitLogs = logDetail.loadByColEditStatus(conn, pids, userId, subtaskId, "poi_deep", secondWorkItem);
+			List<BasicObj> objList = new ArrayList<BasicObj>();
+			ObjHisLogParser logParser = new ObjHisLogParser();
+			Set<String> tabNames = new HashSet<String>();
+			tabNames.add("IX_POI_DETAIL");
+			tabNames.add("IX_POI_CONTACT");
+			tabNames.add("IX_POI_BUSINESSTIME");
+			tabNames.add("IX_POI_PARKING");
+			tabNames.add("IX_POI_CARRENTAL");
+			for (int pid:pidList) {
+				BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, pid, false);
+				if (submitLogs.containsKey(new Long((long)pid))) {
+					logParser.parse(obj, submitLogs.get(new Long((long)pid)));
+				}
+				objList.add(obj);
+			}
+			
+			operationResult.putAll(objList);
+			CheckCommand checkCommand=new CheckCommand();
+			checkCommand.setRuleIdList(checkList);
+			Check check=new Check(conn,operationResult);
+			check.operate(checkCommand);
+			
+			// pidList替换为无检查错误的pidList
+			Map<String, Map<Long, Set<String>>> errorMap = check.getErrorPidMap();
+			if (errorMap != null) {
+				Map<Long, Set<String>> poiMap = errorMap.get("IX_POI");
+				for (long pid:poiMap.keySet()) {
+					Iterator <Integer> it = pidList.iterator();
+					while (it.hasNext()) {
+						if (it.next() == pid) {
+							it.remove();
+							break;
+						}
+					}
+				}
+			}
+			
 			sucReleaseTotal = pidList.size();
 			
 			// 修改poi_deep_status表作业项状态
 			updateDeepStatus(pidList, conn, 1,secondWorkItem);
+			
 			result.put("sucReleaseTotal", sucReleaseTotal);
             return result;
         } catch (DataNotChangeException e) {
             DbUtils.rollback(conn);
+            System.out.println(e);
             logger.error(e.getMessage(), e);
             throw e;
         } catch (Exception e) {
             DbUtils.rollback(conn);
+            System.out.println(e);
             logger.error(e.getMessage(), e);
             throw e;
         } finally {

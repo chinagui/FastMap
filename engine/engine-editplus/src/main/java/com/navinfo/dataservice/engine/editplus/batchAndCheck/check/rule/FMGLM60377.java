@@ -55,7 +55,7 @@ public class FMGLM60377 extends BasicCheckRule {
 						}
 					}
 					String street = addr.getStreet();
-					if(!(town==null||town.isEmpty())){
+					if(!(street==null||street.isEmpty())){
 						if(CheckUtil.matchAdminName(street,region,conn)){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "四级地址中存在前三级地址"+street);
 						}

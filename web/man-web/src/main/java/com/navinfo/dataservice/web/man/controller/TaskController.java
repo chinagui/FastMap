@@ -94,11 +94,11 @@ public class TaskController extends BaseController {
 			//long userId=2;
 			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
 			
-			if((message!=null)&&(!message.isEmpty())){
-				return new ModelAndView("jsonView", exception(message));
-			}else{
-				return new ModelAndView("jsonView", success(message));
-			}
+//			if((message!=null)&&(!message.isEmpty())){
+//				return new ModelAndView("jsonView", exception(message));
+//			}else{
+			return new ModelAndView("jsonView", success(message));
+			//}
 		}catch(Exception e){
 			log.error("发布失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

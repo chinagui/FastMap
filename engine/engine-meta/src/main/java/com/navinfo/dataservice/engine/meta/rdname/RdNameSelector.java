@@ -71,12 +71,13 @@ public class RdNameSelector {
 
 			pstmt = conn.prepareStatement(sql);
 
+			System.out.println("rdname search :"+sql);
 			pstmt.setString(1, name + "%");
 
 			pstmt.setInt(2, endRow);
 
 			pstmt.setInt(3, startRow);
-
+			System.out.println("rdname search :"+sql +" 参数: "+name+" "+endRow+" "+startRow);
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -233,9 +234,19 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
 			
 			JSONObject param =  params.getJSONObject("params");
-			String name = param.getString("name");
-			String nameGroupid = param.getString("nameGroupid");
-			String adminId = param.getString("adminId");
+			String name = "" ;
+			if(param.containsKey("name") && param.getString("name") != null){
+				name = param.getString("name");
+			}
+			String nameGroupid = "";
+			if(param.containsKey("nameGroupid") && param.getString("nameGroupid") != null){
+				nameGroupid = param.getString("nameGroupid");
+			}	
+			String adminId = "";
+			if(param.containsKey("adminId") && param.getString("adminId") != null){
+				adminId = param.getString("adminId");
+			}
+			
 			System.out.println("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
@@ -443,6 +454,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 
 		ResultSet resultSet = null;
 
+		JSONObject resultObj = new JSONObject();
+		Integer nameGroupid  = rdName.getNameGroupid();
+		
 		// 检查是否存在同一行政区划、同一道路类型（默认是未区分）的相同的道路名数据
 		//（对于“行政区划”为“全国”时，不判断是否重名，即允许重复名称记录存在，但NAME_GROUPID不同；）
 		StringBuilder sb = new StringBuilder();
@@ -451,9 +465,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		sb.append(" AND road_type=:2");
 		sb.append(" AND admin_id=:3");
 		// “行政区划”为“全国”
-		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 && rdName.getNameGroupid() !=null 
-				&& rdName.getNameGroupid() != 0) {
-			sb.append(" AND name_groupid=:4");
+		if (rdName.getAdminId() != null && rdName.getAdminId() == 214 ){//如果行政区划为全国
+			if(nameGroupid !=null && nameGroupid != 0) {//如果nameGroupId不为空,继续查数据库
+				sb.append(" AND name_groupid=:4");
+			}else{//满足 “行政区划”为“全国” 并且 NAME_GROUPID不同 条件,则不查重
+				return resultObj;
+			}
 		}
 		if (rdName.getNameId() != null) {
 			sb.append(" AND name_id !="+rdName.getNameId());
@@ -478,12 +495,15 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 
 			resultSet = pstmt.executeQuery();
 			
-			JSONObject resultObj = new JSONObject();
 			
 			if (resultSet.next()) {
 				resultObj = result2Json(resultSet,new HashMap<String,String>());
-				
 			}
+			Integer newNameGroupId = resultObj.getInt("nameGroupid");//获取查询出来的nameGroupid
+ 			if(newNameGroupId != null && newNameGroupId != 0 
+ 					&& !newNameGroupId.equals(nameGroupid)){//如果查询数据库返回的nameGroupid 存在且与上传的nameGroupid不同,怎不查重
+ 				return new JSONObject();
+ 			}
 			
 			return resultObj;
 		} catch (Exception e) {

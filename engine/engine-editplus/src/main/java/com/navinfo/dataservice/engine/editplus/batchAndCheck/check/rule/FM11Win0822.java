@@ -55,7 +55,6 @@ public class FM11Win0822 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			} else {
 				pidString = " PID IN (" + pids + ")";
 			}
@@ -78,8 +77,9 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ "					 WHERE P.GROUP_ID = C.GROUP_ID"
 					+ "					   AND C.U_RECORD != 2"
 					+ "					   AND P.U_RECORD != 2";
+			log.info("FM-11Win-08-22 sql1:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
-			;
+			
 			if (values != null && values.size() > 0) {
 				for (int i = 0; i < values.size(); i++) {
 					pstmt.setClob(i + 1, values.get(i));
@@ -102,7 +102,6 @@ public class FM11Win0822 extends BasicCheckRule {
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, pids);
 				pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
-				values.add(clob);
 				values.add(clob);
 			} else {
 				pidString = " PID IN (" + pids + ")";
@@ -127,8 +126,9 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ " WHERE P.GROUP_ID = C.GROUP_ID"
 					+ "   AND C.U_RECORD != 2"
 					+ "   AND P.U_RECORD != 2";
+			log.info("FM-11Win-08-22 sql2:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
-			;
+			
 			if (values != null && values.size() > 0) {
 				for (int i = 0; i < values.size(); i++) {
 					pstmt.setClob(i + 1, values.get(i));

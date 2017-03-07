@@ -192,4 +192,50 @@ public class PhotoController extends BaseController {
 			return new ModelAndView("jsonView",fail(e.getMessage()));
 		}
 	}
+	
+	/**
+	 * poi日编手动旋转照片功能
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/photo/rotatePhoto")
+	public ModelAndView rotatePhoto(HttpServletRequest request) throws ServletException, IOException {
+		
+		String parameter = request.getParameter("parameter");
+		logger.debug("日编手动旋转照片");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			logger.debug("parameter="+jsonReq);
+			
+			JSONObject result = new JSONObject();
+			int flag = jsonReq.getInt("flag");//0:负向旋转90度，1：正向旋转90度
+			int rotateAngle = 0;
+			if(flag==1){rotateAngle=90;}else{rotateAngle=270;}
+			String fccPid = jsonReq.getString("fccPid");
+			
+			PhotoGetter getter = new PhotoGetter();
+
+			//获取照片
+			byte[]bytes = getter.getPhotoByRowkey(fccPid, "origin");
+			//旋转照片
+			byte[] photo=FileUtils.makeRotateViewImage(bytes,rotateAngle); 
+			//上传照片
+			HBaseController hbaseController = new HBaseController();
+			InputStream newIn = new ByteInputStream(photo, photo.length);
+			//调用hadoop方法传输文件流，获取photo_id
+			hbaseController.updatePhoto(fccPid,newIn);
+			
+			result.put("message", "旋转成功");
+
+			
+			return new ModelAndView("jsonView", success(result));
+			
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			
+			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
 }

@@ -26,7 +26,7 @@ public interface ManApi{
 	 * @return
 	 * @throws Exception 
 	 */
-	public void taskUpdateCmsProgress(int phaseId,int status) throws Exception;
+	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception;
 	
 	public Region queryByRegionId(Integer regionId) throws Exception ;
 	

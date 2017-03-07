@@ -1,4 +1,4 @@
-﻿<configMap>
+﻿﻿<configMap>
 
 	<!--sys datasource -->
 	<SYS.server.type>ORACLE</SYS.server.type>
@@ -7,8 +7,8 @@
 	<SYS.dataSource.validationQuery>select 1 from dual</SYS.dataSource.validationQuery>
 	<!-- <SYS.jdbc.username>fm_sys_test </SYS.jdbc.username>
 	<SYS.jdbc.password>fm_sys_test</SYS.jdbc.password> -->
-	<SYS.jdbc.username>fm_sys_sp6 </SYS.jdbc.username>
-	<SYS.jdbc.password>fm_sys_sp6</SYS.jdbc.password>
+	<SYS.jdbc.username>fm_sys_315 </SYS.jdbc.username>
+	<SYS.jdbc.password>fm_sys_315</SYS.jdbc.password>
 	<SYS.dataSource.initialSize>2</SYS.dataSource.initialSize>
 	<SYS.dataSource.maxActive>25</SYS.dataSource.maxActive>
 	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>

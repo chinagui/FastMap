@@ -41,8 +41,7 @@ public class FmRoadDailyReleaseLogSelector extends DeafultDailyReleaseLogSelecto
 				"  FROM LOG_OPERATION P, LOG_DETAIL L, LOG_DETAIL_GRID T,LOG_DAY_RELEASE R\r\n" + 
 				" WHERE P.OP_ID = L.OP_ID\r\n" + 
 				"   AND L.ROW_ID = T.LOG_ROW_ID\r\n" + 
-				"   AND P.OP_ID = R.OP_ID\r\n" +
-				"	AND EXISTS (SELECT 1 FROM POI_EDIT_STATUS E WHERE E.PID=L.OB_PID)\r\n"); 
+				"   AND P.OP_ID = R.OP_ID\r\n"); 
 		sb.append(" AND R.REL_ALL_STA=0");
 		if (this.stopTime!=null){
 			String stopTimeSqlFormat = DateUtils.dateToString(stopTime, DateUtils.DATE_COMPACTED_FORMAT);
@@ -53,6 +52,8 @@ public class FmRoadDailyReleaseLogSelector extends DeafultDailyReleaseLogSelecto
 			if (inClause!=null)
 				sb .append(" AND "+ inClause.getSql());
 			values.addAll(inClause.getValues());
+		}else{
+			sb .append(" AND T.GRID_ID in (null) ");
 		}
 		String gdbVesion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		List<String> tableNames = GlmCache.getInstance().getGlm(gdbVesion).getEditTableNames(GlmTable.FEATURE_TYPE_ROAD);

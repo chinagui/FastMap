@@ -352,8 +352,13 @@ public class RdNameImportor {
 					continue;
 				}
 			}
+			//判断 当道路名为英文是不转全角
+			if(rdName.getLangCode().equals("ENG")){
+				rdName.setName(rdName.getName());
+			}else{
+				rdName.setName(ExcelReader.h2f(rdName.getName()));
+			}
 			
-			rdName.setName(ExcelReader.h2f(rdName.getName()));
 			
 			return rdName;
 		} catch (Exception e) {

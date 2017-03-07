@@ -55,7 +55,7 @@ public class FMBAT20164 extends BasicBatchRule {
 		}
 		
 		if(porAddress!=null){
-			engFullname = porAddress.getFullname();
+			porFullname = porAddress.getFullname();
 		}
 		
 		//当中文地址fullname不为空，英文地址fullname为空时，删除英文地址组；

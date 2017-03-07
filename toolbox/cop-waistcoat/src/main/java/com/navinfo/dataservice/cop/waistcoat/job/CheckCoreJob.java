@@ -35,7 +35,8 @@ public class CheckCoreJob extends AbstractJob {
         try {
         	System.out.println("元数据库:" + checkParams.getCheckUserName()+"  "+ checkParams.getCheckPasswd()+" "+checkParams.getCheckHost());
         	System.out.println("kdb: "+  checkParams.getKdbUserName()+"  "+checkParams.getKdbPasswd()+"  "+ checkParams.getKdbHost());
-            String taskName = getRandomString(32);
+        	String taskName = jobInfo.getGuid();
+        	//String taskName = getRandomString(32);
             System.out.println("TaskName:" + taskName);
             checkResult = checkMgr.prepareCheck(taskName, checkParams.getCheckUserName(), checkParams.getCheckPasswd(),
                     checkParams.getCheckHost(), checkParams.getCheckPort(), checkParams.getCheckSid(), checkParams.getKdbUserName(),

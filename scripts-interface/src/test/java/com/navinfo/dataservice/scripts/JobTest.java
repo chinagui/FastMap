@@ -109,7 +109,7 @@ public class JobTest {
 //		metaValidationRequestJSON.put("ruleIds", ruleList);
 //		metaValidationRequestJSON.put("timeOut", 600);
 //	    int jobId=(int) apiService.createJob("checkCore", metaValidationRequestJSON, 3,0, "元数据库检查");
-//	    System.out.println(jobId);
+//	    System.out.println(jobId);286
 	    try{
 			//执行job
 			int jobId=286;

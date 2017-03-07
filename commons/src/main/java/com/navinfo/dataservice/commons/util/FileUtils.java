@@ -263,6 +263,39 @@ public class FileUtils {
 
 		return bos.getBytes();
 	}
+	
+	
+	/**
+	 * 旋转照片
+	 * 
+	 * @param srcImageFile
+	 * @return
+	 * @throws Exception
+	 */
+	public static byte[] makeRotateViewImage(byte[] bytes,int rotateAngle) throws Exception {
+
+		JPEGImageEncoder encoder = null;
+		BufferedImage tagImage = null;
+		Image srcImage = null;
+		// 旋转照片
+		ByteInputStream bis = new ByteInputStream(bytes, bytes.length);
+		srcImage = RotateImageUtils.rotateImage(ImageIO.read(bis),rotateAngle);
+		
+		int srcWidth = srcImage.getWidth(null);// 原图片宽度
+		int srcHeight = srcImage.getHeight(null);// 原图片高度
+		
+		tagImage = new BufferedImage(srcWidth, srcWidth,
+				BufferedImage.TYPE_INT_RGB);
+		tagImage.getGraphics().drawImage(srcImage, 0, 0, srcWidth, srcWidth,
+				null);
+
+		ByteOutputStream bos = new ByteOutputStream();
+
+		encoder = JPEGCodec.createJPEGEncoder(bos);
+		encoder.encode(tagImage);
+
+		return bos.getBytes();
+	}
 
 	public static void main(String[] args) throws Exception {
 		System.out.println(new Date());

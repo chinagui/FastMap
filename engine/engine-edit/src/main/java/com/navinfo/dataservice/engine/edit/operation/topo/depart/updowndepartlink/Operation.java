@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
@@ -288,23 +289,22 @@ public class Operation implements IOperation {
         innerLink.setGeometry(JtsGeometryFactory.createLineString(coordinates));
 
         List<RdLink> links = RdLinkOperateUtils.addRdLink(sNode, eNode, innerLink, innerLink, result);
-      
-		if (!this.command.getNodeInnerLinkMap().containsKey(sNode.getPid())) {
-			this.command.getNodeInnerLinkMap().put(sNode.getPid(),
-					new ArrayList<RdLink>());
-		}
-		if (!this.command.getNodeInnerLinkMap().containsKey(eNode.getPid())) {
-			this.command.getNodeInnerLinkMap().put(eNode.getPid(),
-					new ArrayList<RdLink>());
-		}
-		this.command.getNodeInnerLinkMap().get(sNode.getPid()).addAll(links);
-		this.command.getNodeInnerLinkMap().get(eNode.getPid()).addAll(links);		
-        
+
+        if (!this.command.getNodeInnerLinkMap().containsKey(sNode.getPid())) {
+            this.command.getNodeInnerLinkMap().put(sNode.getPid(), new ArrayList<RdLink>());
+        }
+        if (!this.command.getNodeInnerLinkMap().containsKey(eNode.getPid())) {
+            this.command.getNodeInnerLinkMap().put(eNode.getPid(), new ArrayList<RdLink>());
+        }
+        this.command.getNodeInnerLinkMap().get(sNode.getPid()).addAll(links);
+        this.command.getNodeInnerLinkMap().get(eNode.getPid()).addAll(links);
+
         for (RdLink link : links) {
             link.setDirect(direct);
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
+            UrbanBatchUtils.updateUrban(link, null, conn, result);
             if (link.changedFields().containsKey("leftRegionId")) {
                 link.setLeftRegionId(Integer.valueOf(link.changedFields().get("leftRegionId").toString()));
             }

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -69,11 +70,11 @@ import net.sf.json.JSONObject;
 public class MetadataApiImpl implements MetadataApi {
 	/**
 	 * SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD
-	 * @return Map<String, String> key:kind_id,value:keyword
+	 * @return Map<String, List<String>> key:kind_id,value:keyword
 	 * @throws Exception
 	 */
 	@Override
-	public Map<String, String> ciParaKindKeywordMap() throws Exception{
+	public Map<String, List<String>> ciParaKindKeywordMap() throws Exception{
 		return CiParaKindKeyword.getInstance().ciParaKindKeywordMap();
 	}
 	/**

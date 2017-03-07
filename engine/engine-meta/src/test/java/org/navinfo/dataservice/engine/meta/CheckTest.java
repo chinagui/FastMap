@@ -11,6 +11,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
+import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
 import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
@@ -98,6 +99,17 @@ public class CheckTest {
 		try {
 			String kindCode = "120101";
 			Map<String, String> scPointKindNew5List = ScPointCode2Level.getInstance().scPointCode2Level();
+			System.out.println(scPointKindNew5List.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void test06() {
+		try {
+			Map<String, List<String>> scPointKindNew5List = CiParaKindKeyword.getInstance().ciParaKindKeywordMap();
 			System.out.println(scPointKindNew5List.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));

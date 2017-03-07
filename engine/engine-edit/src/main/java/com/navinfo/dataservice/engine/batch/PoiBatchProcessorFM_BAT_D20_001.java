@@ -34,23 +34,33 @@ public class PoiBatchProcessorFM_BAT_D20_001 implements IBatch {
 				String oilType = gasstation.getOilType();
 				String egType = gasstation.getEgType();
 				String mgType = gasstation.getMgType();
-				String fuelType = "";
+				String fuelType = gasstation.getFuelType();
 				
 				if (StringUtils.isNotEmpty(oilType)) {
-					fuelType = "1";
+					if (StringUtils.isEmpty(fuelType)) {
+						fuelType = "1";
+					} else {
+						if (fuelType.indexOf("1")<0) {
+							fuelType += "|1";
+						}
+					}
 				}
 				if (StringUtils.isNotEmpty(egType)) {
-					if (fuelType.length()>0) {
-						fuelType += "|6";
-					} else {
+					if (StringUtils.isEmpty(fuelType)) {
 						fuelType = "6";
+					} else {
+						if (fuelType.indexOf("6")<0) {
+							fuelType += "|6";
+						}
 					}
 				}
 				if (StringUtils.isNotEmpty(mgType)) {
-					if (fuelType.length()>0) {
-						fuelType += "|2";
-					} else {
+					if (StringUtils.isEmpty(fuelType)) {
 						fuelType = "2";
+					} else {
+						if (fuelType.indexOf("2")<0) {
+							fuelType += "|2";
+						}
 					}
 				}
 				

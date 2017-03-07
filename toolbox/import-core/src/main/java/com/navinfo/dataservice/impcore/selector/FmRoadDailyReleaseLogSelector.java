@@ -52,6 +52,8 @@ public class FmRoadDailyReleaseLogSelector extends DeafultDailyReleaseLogSelecto
 			if (inClause!=null)
 				sb .append(" AND "+ inClause.getSql());
 			values.addAll(inClause.getValues());
+		}else{
+			sb .append(" AND T.GRID_ID in (null) ");
 		}
 		String gdbVesion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
 		List<String> tableNames = GlmCache.getInstance().getGlm(gdbVesion).getEditTableNames(GlmTable.FEATURE_TYPE_ROAD);

@@ -53,9 +53,14 @@ public class Operation implements IOperation {
 				.getRelationShipType(command.getNodePid(),
 						command.getOutLinkPid()));
 
-		List<Integer> viaLinks = calLinkOperateUtils.calViaLinks(conn,
-				command.getInLinkPid(), command.getNodePid(),
-				command.getOutLinkPid());
+		List<Integer> viaLinks = new ArrayList<Integer>();
+
+		if (directroute.getRelationshipType() == 2) {
+
+			viaLinks = calLinkOperateUtils.calViaLinks(conn,
+					command.getInLinkPid(), command.getNodePid(),
+					command.getOutLinkPid());
+		}
 
 		int seqNum = 1;
 

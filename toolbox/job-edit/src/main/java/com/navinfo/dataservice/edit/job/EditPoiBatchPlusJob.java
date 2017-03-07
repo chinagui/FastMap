@@ -68,6 +68,7 @@ public class EditPoiBatchPlusJob extends AbstractJob{
 			operationResult.putAll(objs.values());
 			Batch batch=new Batch(conn,operationResult);
 			batch.operate(batchCommand);
+			batch.setPhysiDelete(true);
 			batch.persistChangeLog(OperationSegment.SG_COLUMN, jobInfo.getUserId());
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

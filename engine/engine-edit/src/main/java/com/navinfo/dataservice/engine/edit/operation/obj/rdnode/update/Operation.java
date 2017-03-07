@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -62,6 +61,7 @@ public class Operation implements IOperation {
 
                     List<IRow> nodeMeshes = new AbstractSelector(RdNodeMesh.class, conn).loadRowsByParentId(rdnode
                             .pid(), false);
+                    rdnode.getMeshes().clear();
                     int count = 0;
                     for (IRow row : nodeMeshes) {
                         RdNodeMesh mesh = (RdNodeMesh) row;
@@ -80,9 +80,11 @@ public class Operation implements IOperation {
                         result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
                         count++;
                     }
+
+                    rdnode.getForms().clear();
+                    List<IRow> forms = new AbstractSelector(RdNodeForm.class, conn).loadRowsByParentId(rdnode.pid(),
+                            false);
                     if (count >= 2) {
-                        List<IRow> forms = new AbstractSelector(RdLinkForm.class, conn).loadRowsByParentId(rdnode.pid
-                                (), false);
                         boolean flag = true;
                         for (IRow f : forms) {
                             RdNodeForm form = (RdNodeForm) f;
@@ -98,6 +100,19 @@ public class Operation implements IOperation {
                             form.setNodePid(rdnode.pid());
                             form.setFormOfWay(2);
                             result.insertObject(form, ObjStatus.INSERT, form.parentPKValue());
+                        }
+                    } else {
+                        for (IRow f : forms) {
+                            RdNodeForm form = (RdNodeForm) f;
+                            if (form.getFormOfWay() == 2) {
+                                result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
+                                if (forms.size() == 1) {
+                                    RdNodeForm ff = new RdNodeForm();
+                                    ff.setFormOfWay(1);
+                                    ff.setNodePid(rdnode.pid());
+                                    result.insertObject(ff, ObjStatus.INSERT, ff.parentPKValue());
+                                }
+                            }
                         }
                     }
                 }

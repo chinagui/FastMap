@@ -11,6 +11,10 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
+/**
+ * 一体化元数据库和二代合库后，原CI_PARA_KIND_KEYWORD不再增加，改使用SC_POINT_KIND_RULE
+ * 
+ */
 public class CiParaKindKeyword {
 	
 	private Map<String, String> ciParaKindKeywordMap= new HashMap<String, String>();
@@ -32,8 +36,9 @@ public class CiParaKindKeyword {
 				synchronized (this) {
 					if (ciParaKindKeywordMap==null||ciParaKindKeywordMap.isEmpty()) {
 						try {
-							String sql = "SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD";
-								
+//							String sql = "SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD";
+							String sql = "SELECT POI_KIND AS KIND_ID,POI_KIND_NAME AS KEYWORD FROM SC_POINT_KIND_RULE WHERE CHECK_RULE IN (2, 3)";
+							
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;
 							Connection conn = null;

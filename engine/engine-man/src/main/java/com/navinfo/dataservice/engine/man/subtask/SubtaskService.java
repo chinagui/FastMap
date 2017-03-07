@@ -1696,6 +1696,7 @@ public class SubtaskService {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();
+			List<String> progressList = new ArrayList<String>();
 			//boolean collectAndDay=true;
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
@@ -1717,11 +1718,10 @@ public class SubtaskService {
 					if(progress.isEmpty()){
 						continue;
 					}
-					List<String> progressList = new ArrayList<String>();
 					for(Object i:progress){
 						int tmp=(int) i;
-						if(tmp==1||tmp==3||tmp==5){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1 ");}
-						if(tmp==2||tmp==4||tmp==6){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1 ");}
+						if(tmp==1||tmp==3||tmp==5){progressList.add(" (SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1) ");}
+						if(tmp==2||tmp==4||tmp==6){progressList.add(" (SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1) ");}
 						
 //						if(tmp==3){progressList.add(" SUBTASK_LIST.PROGRESS = 1 AND SUBTASK_LIST.STATUS=1 ");}
 //						if(tmp==4){progressList.add(" SUBTASK_LIST.PROGRESS = 2 AND SUBTASK_LIST.STATUS=1 ");}
@@ -1742,17 +1742,15 @@ public class SubtaskService {
 						if(tmp==13){
 							progressList.add("SUBTASK_LIST.DIFF_DATE > 0 ");
 						}
-	
-						if(!progressList.isEmpty()){
-							String tempSql = StringUtils.join(progressList," OR ");
-							conditionSql += " AND (" + tempSql + ")";
-						}
 					}
 				}
 				//if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
 			}
 //			if (collectAndDay){conditionSql+=" AND SUBTASK_LIST.STAGE IN (0,1)";}
-			
+			if(!progressList.isEmpty()){
+				String tempSql = StringUtils.join(progressList," OR ");
+				conditionSql += " AND (" + tempSql + ")";
+			}
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;

@@ -265,12 +265,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
-			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
-			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			//更新任务状态
-			if(grids!=null&&grids.size()>0){
-				manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
+			try{
+				curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
+				d2mSyncApi.updateSyncInfo(curSyncInfo);
+				//更新任务状态
+				if(grids!=null&&grids.size()>0){
+					manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
+				}
+			}catch(Exception ee){
+				log.info("回滚任务状态报错："+ee.getMessage());
 			}
+			
 			if(logMover!=null){
 				log.info("搬移履历回滚");
 				logMover.rollbackMove();

@@ -110,10 +110,7 @@ public class NiValExceptionSelector {
 
 				exception.setMd5Code(resultSet.getString("md5_code"));
 
-			} else {
-
-				throw new DataNotFoundException("数据不存在");
-			}
+			} 
 		} catch (Exception e) {
 
 			throw e;

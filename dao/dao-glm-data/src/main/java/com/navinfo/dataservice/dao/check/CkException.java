@@ -7,6 +7,7 @@ import java.util.Map;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -402,55 +403,56 @@ public class CkException implements IObj {
 	public void copy(IRow row) {
 
 	}
-	
-	public void copy(NiValException exception){
-		
+
+	public void copy(NiValException exception) {
+
 		this.setRuleId(exception.getRuleid());
-		
+
 		this.setTaskName(exception.getTaskName());
-		
+
 		this.setGroupId(exception.getGroupid());
-		
+
 		this.setRank(exception.getLevel());
-		
+
 		this.setSituation(exception.getSituation());
-		
+
 		this.setInformation(exception.getInformation());
-		
+
 		this.setSuggestion(exception.getSuggestion());
-		
-		this.setGeometry(GeoTranslator.jts2Wkt(exception.getLocation()));
-		
+		if (exception.getLocation() != null) {
+			this.setGeometry(GeoTranslator.jts2Wkt(exception.getLocation()));
+		}
+
 		this.setTargets(exception.getTargets());
-		
+
 		this.setAdditionInfo(exception.getAdditionInfo());
-		
+
 		this.setCreateDate(exception.getCreated());
-		
+
 		this.setUpdateDate(exception.getUpdated());
-		
+
 		this.setMeshId(exception.getMeshId());
-		
+
 		this.setScopeFlag(exception.getScopeFlag());
-		
+
 		this.setProvinceName(exception.getProvinceName());
-		
+
 		this.setMapScale(exception.getMapScale());
-		
+
 		this.setReserved(exception.getReserved());
-		
+
 		this.setExtended(exception.getExtended());
-		
+
 		this.setTaskId(exception.getTaskId());
-		
+
 		this.setQaTaskId(exception.getQaTaskId());
-		
+
 		this.setQaStatus(exception.getQaStatus());
-		
+
 		this.setWorker(exception.getWorker());
-		
+
 		this.setQaWorker(exception.getQaWorker());
-	
+
 		this.setRowId(exception.rowId());
 	}
 
@@ -514,7 +516,9 @@ public class CkException implements IObj {
 		return "exception_id";
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IRow#childMap()
 	 */
 	@Override
@@ -523,11 +527,13 @@ public class CkException implements IObj {
 		return null;
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.navinfo.dataservice.dao.glm.iface.IObj#childMap()
 	 */
 	@Override
-	public Map<Class<? extends IRow>,Map<String,?>> childMap() {
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
 		// TODO Auto-generated method stub
 		return null;
 	}

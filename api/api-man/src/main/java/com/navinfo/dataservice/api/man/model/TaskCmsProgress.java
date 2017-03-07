@@ -57,6 +57,12 @@ public class TaskCmsProgress {
 	public void setCreateUserId(int createUserId) {
 		this.createUserId = createUserId;
 	}
+	public String getMessage() {
+		return message;
+	}
+	public void setMessage(String message) {
+		this.message = message;
+	}
 	private int taskId;
 	private int phase;
 	private int status;
@@ -66,4 +72,5 @@ public class TaskCmsProgress {
 	private String userNickName;
 	private Set<Integer> gridIds;
 	private Set<Integer> meshIds;
+	private String message;
 }

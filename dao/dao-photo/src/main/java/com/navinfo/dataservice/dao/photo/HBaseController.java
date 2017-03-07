@@ -199,6 +199,35 @@ public class HBaseController {
 		return rowkey;
 	}
 	
+	public void updatePhoto(String rowkey, InputStream in) throws Exception{
+		
+		int count = in.available();
+		
+		byte[] bytes = new byte[(int) count];
+
+		in.read(bytes);
+		
+		byte[] sbytes = FileUtils.makeSmallImage(bytes);
+		
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));
+		try{
+			Put put = new Put(rowkey.getBytes());
+			
+			put.addColumn("data".getBytes(), "origin".getBytes(), bytes);
+			
+			put.addColumn("data".getBytes(), "thumbnail".getBytes(), sbytes);
+			
+			htab.put(put);
+		}finally{
+			if (htab!=null){
+				htab.close();
+			}
+		}
+		
+	}
+	
 	public List<Map<String, Object>> getPhotosByRowkey(JSONArray rowkeys) throws Exception{
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 		Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.photoTab));

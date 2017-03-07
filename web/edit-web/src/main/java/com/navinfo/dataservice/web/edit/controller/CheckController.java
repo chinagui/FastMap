@@ -9,13 +9,14 @@ import java.util.List;
 import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -185,8 +186,8 @@ public class CheckController extends BaseController {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	/*@RequestMapping(value = "/check/listRdnResult")
-	public ModelAndView listCheckResults(HttpServletRequest request)
+	@RequestMapping(value = "/check/listRdnResultByJobId")
+	public ModelAndView listCheckResultsByJobId(HttpServletRequest request)
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
@@ -196,6 +197,17 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			int subtaskId = jsonReq.getInt("subtaskId");
 			Integer type = jsonReq.getInt("type");
+			Integer jobId = jsonReq.getInt("jobId");
+			String jobUuid = "";
+			if(jobId != null && jobId >0){
+				//根据jobId 查询jobUuid 
+				JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				JobInfo jobInfo = jobApiService.getJobById(jobId);
+				jobUuid = jobInfo.getGuid();
+			}else{
+				
+			}
+			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -211,10 +223,10 @@ public class CheckController extends BaseController {
 			System.out.println("listRdnResult tips: "+tips);
 			logger.debug("获取子任务范围内的tips: "+tips);
 			//获取规则号
-			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
-			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
-			logger.debug("获取规则号"+ruleCodes);
-			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
+			//JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
+//			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
+//			logger.debug("获取规则号"+ruleCodes);
+			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,tips);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());
@@ -228,7 +240,7 @@ public class CheckController extends BaseController {
 		} finally {
 			DbUtils.closeQuietly(conn);
 		}
-	}*/
+	}
 	
 	/**
 	 * @Title: poiCheckResults

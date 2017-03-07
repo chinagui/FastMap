@@ -199,13 +199,14 @@ public class CheckController extends BaseController {
 			Integer type = jsonReq.getInt("type");
 			Integer jobId = jsonReq.getInt("jobId");
 			String jobUuid = "";
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			if(jobId != null && jobId >0){
 				//根据jobId 查询jobUuid 
-				JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				
 				JobInfo jobInfo = jobApiService.getJobById(jobId);
 				jobUuid = jobInfo.getGuid();
 			}else{
-				
+				JobInfo jobInfo = jobApiService.getJobById(jobId);
 			}
 			
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");

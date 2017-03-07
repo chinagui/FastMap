@@ -75,10 +75,13 @@ public class RdNameTeilen {
 //				pst=subconn.prepareStatement(updateSql);
 //				pst.execute(updateSql);
 //			} else {
+			if(!roadType.equals(3)){//道路类型为铁路时 不拆分
 				String spName = "{call NAVI_RD_NAME_SPLITE.RD_NAME_SPLIT_UPDATE(?)}";
 				cstmt = conn.prepareCall(spName);
 				cstmt.setString(1, String.valueOf(nameId));
 				cstmt.executeUpdate();
+			}
+				
 				
 				// 拆分时处理英文名称：拆分完简体中文后，根据组号，来拆分英文名,大陆的拆分英文，港澳的不拆分英文
 				if (SIMPLE_CHINESE.equals(langCode)) {
@@ -349,16 +352,36 @@ public class RdNameTeilen {
 		}
 		String engBaseName = "";
 		String engName = "";
-		if (chiRdName.getBasePhonetic() != null && StringUtils.isNotEmpty(chiRdName.getBasePhonetic())) {//如果基本名发音不为空
+		if (chiRdName.getBasePhonetic() != null && StringUtils.isNotEmpty(chiRdName.getBasePhonetic()) && chiRdName.getRoadType() != 3) {//如果基本名发音不为空
 			engBaseName = getBaseEng(conn,chiRdName.getNameId(),chiRdName.getBase(),chiRdName.getBasePhonetic(),chiRdName.getType(),chiRdName.getLangCode());
 			log.info("engBaseName: "+engBaseName);
+		}else{
+			if(chiRdName.getRoadType() == 3){
+				String newName = chiRdName.getName();
+				String newNamePhonetic = chiRdName.getNamePhonetic();
+				if(chiRdName.getName().contains("铁路")){
+					newName = newName.replaceAll("铁路", "Railway");
+					newNamePhonetic = newNamePhonetic.replaceAll("Tie Lu", "Railway");
+				}
+				if(newName.endsWith("线")){
+					newName = newName.replaceAll("线", "Line");
+					newNamePhonetic = newNamePhonetic.replaceAll("Xian", "Line");
+				}
+				engBaseName = getBaseEng(conn,chiRdName.getNameId(),newName,newNamePhonetic,chiRdName.getType(),chiRdName.getLangCode());
+				log.info("engBaseName: "+engBaseName);
+			}
+			
 		}
 		if(chiRdName.getRoadType() == 3){//道路类型为铁路或地铁
 			String str = engBaseName.replaceAll("Ditie", "").replaceAll("Qinggui", "");
 			if(Character.isLowerCase(str.charAt(0))){//首字母大写
 	           str = (new StringBuilder()).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1)).toString();
 			}
-	        if(str.contains("No.") && chiRdName.getBasePhonetic().contains("Hao")){
+	        if(str.contains("No.") && chiRdName.getNamePhonetic().contains("Hao")){
+	        	if(str.endsWith("Line")){
+	        		String[] Strs1 = str.split("Line");
+	        		str = Strs1[0];
+	        	}
 				String[] Strs = str.split("No.");
 				// 地铁/轻轨+数字(1~9，〇，一..十，百，千)+号+线 ：翻译为：Line+空格+对应阿拉伯数字(0~9)
 				// 数字(1~9，〇，一..十，百，千)+号+线  翻译为 Line+空格+对应阿拉伯数字(0~9)  8号线  翻译为  Line 8
@@ -368,7 +391,8 @@ public class RdNameTeilen {
 			}else{
 				// 如果英文名的类型是*，则不应该放入到名称中
 				 engName = engPrefix + " " + str + " " + engInfix + " "
-						+ (engType == "*" ? "" : engType) + " " + engSuffix;
+//						+ (engType == "*" ? "" : engType) + " "
+						 + engSuffix;
 			}
 		}else{
 			// 如果英文名的类型是*，则不应该放入到名称中
@@ -465,4 +489,11 @@ public class RdNameTeilen {
 		return returnValue;
 	}
 	
+	public static void main(String[] args) {
+		String str = "No.1 Line";
+		
+		String[] Strs1 = str.split("Line");
+		str = Strs1[0];
+		System.out.println(str);
+	}
 }

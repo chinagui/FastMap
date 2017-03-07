@@ -50,7 +50,7 @@ public class Process extends AbstractProcess<Command> {
 				throw new Exception(preCheckMsg);
 			}
 
-			IOperation operation = new Operation(this.getCommand(), this.rdnode);
+			IOperation operation = new Operation(this.getCommand(), this.rdnode, getConn());
 
 			msg = operation.run(this.getResult());
 

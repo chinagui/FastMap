@@ -9,17 +9,21 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryRelationUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Polygon;
 import net.sf.json.JSONObject;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -93,20 +97,76 @@ public class Operation {
 
         List<Geometry> linkGeos = new ArrayList<>();
         for (RdLink link : leftLinks.values()) {
-            linkGeos.add(GeoTranslator.transform(link.getGeometry(), 0.0001, 5));
+            linkGeos.add(GeoTranslator.transform(link.getGeometry(), 0.00001, 5));
         }
         List<RdLink> tmpLinks = new ArrayList<>(rightLinks.values());
         for (int i = tmpLinks.size() - 1; i >= 0; i--) {
-            linkGeos.add(GeoTranslator.transform(tmpLinks.get(i).getGeometry(), 0.0001, 5));
+            linkGeos.add(GeoTranslator.transform(tmpLinks.get(i).getGeometry(), 0.00001, 5));
         }
-        Geometry polygon = GeoTranslator.getCalLineToPython(linkGeos);
+
+        GeometryFactory factory = new GeometryFactory();
+        Geometry polygon = factory.createPolygon(sortGeometry(linkGeos));
+        RdLinkSelector linkSelector = new RdLinkSelector(conn);
         for (AdAdmin admin : rows) {
             Geometry adminGeo = GeoTranslator.transform(admin.getGeometry(), 0.00001, 5);
+            Coordinate adminCoor = adminGeo.getCoordinate();
             if (polygon.contains(adminGeo)) {
-                //admin.getLinkPid()
+                final RdLink refLink = (RdLink) linkSelector.loadById(admin.getLinkPid(), false);
+                List<RdLink> refLinks = linkSelector.loadByNodePids(new ArrayList<Integer>() {{
+                    add(refLink.getsNodePid());
+                    add(refLink.geteNodePid());
+                }}, false);
+                
+                double minLength = -1;
+                int minPid = 0;
+                for (RdLink link : refLinks) {
+                    if (!leftLinks.containsKey(link.pid()))
+                        continue;
+                    int pid = link.pid();
+
+                    Coordinate pedal = GeometryUtils.GetNearestPointOnLine(adminCoor, GeoTranslator.transform
+                            (leftLinks.get(pid).getGeometry(), 0.00001, 5));
+                    double length = GeometryUtils.getDistance(adminCoor, pedal);
+                    if (-1 == minLength || length < minLength) {
+                        minLength = length;
+                        minPid = leftLinks.get(pid).pid();
+                    }
+
+                    pedal = GeometryUtils.GetNearestPointOnLine(adminCoor, GeoTranslator.transform(rightLinks.get
+                            (pid).getGeometry(), 0.00001, 5));
+                    length = GeometryUtils.getDistance(adminCoor, pedal);
+                    if (length < minLength) {
+                        minLength = length;
+                        minPid = rightLinks.get(pid).pid();
+                    }
+                }
+                admin.changedFields().put("linkPid", minPid);
+                result.insertObject(admin, ObjStatus.UPDATE, admin.pid());
             }
         }
         return "";
     }
 
+    private Coordinate[] sortGeometry(List<Geometry> geometries) {
+        List<Coordinate> coors = new ArrayList<>();
+        int length = geometries.size();
+
+        Coordinate endCoor = null;
+        for (int i = 0; i < length; i++) {
+            Iterator<Geometry> iterator = geometries.iterator();
+            while (iterator.hasNext()) {
+                Geometry geo = iterator.next();
+                Coordinate sCoor = geo.getCoordinates()[0];
+                if (null == endCoor || (endCoor.x == sCoor.x && endCoor.y == sCoor.y)) {
+                    for (Coordinate coor : geo.getCoordinates()) {
+                        coors.add(coor);
+                        endCoor = coor;
+                    }
+                    //iterator.remove();
+                    break;
+                }
+            }
+        }
+        return coors.toArray(new Coordinate[]{});
+    }
 }

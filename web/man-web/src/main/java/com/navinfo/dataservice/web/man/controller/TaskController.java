@@ -94,11 +94,11 @@ public class TaskController extends BaseController {
 			//long userId=2;
 			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
 			
-			if((message!=null)&&(!message.isEmpty())){
-				return new ModelAndView("jsonView", exception(message));
-			}else{
-				return new ModelAndView("jsonView", success(message));
-			}
+//			if((message!=null)&&(!message.isEmpty())){
+//				return new ModelAndView("jsonView", exception(message));
+//			}else{
+			return new ModelAndView("jsonView", success(message));
+			//}
 		}catch(Exception e){
 			log.error("发布失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -373,7 +373,7 @@ public class TaskController extends BaseController {
 	 * @param request：phase_id
 	 * @return 进度
 	 */
-	@RequestMapping(value = "/task/updateCmsProgress")
+	/*@RequestMapping(value = "/task/updateCmsProgress")
 	public ModelAndView taskUpdateCmsProgress(HttpServletRequest request){
 		try{
 			String parameter = request.getParameter("parameter");
@@ -395,7 +395,7 @@ public class TaskController extends BaseController {
 			log.error("查询失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
 		}
-	}
+	}*/
 	
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度

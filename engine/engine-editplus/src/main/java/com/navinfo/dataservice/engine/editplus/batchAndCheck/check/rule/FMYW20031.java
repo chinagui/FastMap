@@ -103,6 +103,8 @@ public class FMYW20031 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			//过滤相同pid
+			Set<Long> filterPid = new HashSet<Long>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
@@ -116,20 +118,23 @@ public class FMYW20031 extends BasicCheckRule {
 				Map<Long, Long> parentMap = IxPoiSelector.getParentPidsByChildrenPids(this.getCheckRuleCommand().getConn(), pidList);
 				boolean flag = false;
 				//无父子关系
-				if(!parentMap.containsKey(pidTmp1)&&!parentMap.containsKey(pidTmp1)){
+				if(!(parentMap.containsKey(pidTmp1)&&parentMap.get(pidTmp1)==pidTmp2)
+						&&!(parentMap.containsKey(pidTmp2)&&parentMap.get(pidTmp2)==pidTmp1)){
 					flag = true;
 				}
 				//有相同的父
-				if(parentMap.containsKey(pidTmp1)&&parentMap.containsKey(pidTmp1)){
+				if(parentMap.containsKey(pidTmp1)&&parentMap.containsKey(pidTmp2)){
 					Long pidP1 = parentMap.get(pidTmp1);
 					Long pidP2 = parentMap.get(pidTmp2);
 					if(pidP1 ==pidP2){
 						flag = true;
 					}
 				}
-				if(flag){
+				if(flag&&!filterPid.contains(pidTmp1)){
 					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
 				}
+				filterPid.add(pidTmp1);
+				filterPid.add(pidTmp2);
 			}
 		}
 	}

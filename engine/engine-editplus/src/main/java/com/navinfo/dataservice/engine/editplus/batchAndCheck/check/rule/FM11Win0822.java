@@ -86,7 +86,7 @@ public class FM11Win0822 extends BasicCheckRule {
 			Connection conn = this.getCheckRuleCommand().getConn();
 			List<Clob> values = new ArrayList<Clob>();
 			String pidString = "";
-			if (pidParent.size() > 1000) {
+			if (pidParent.size() < 10) {
 				Clob clob = ConnectionUtil.createClob(conn);
 				clob.setString(1, pids);
 				pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";

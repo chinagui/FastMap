@@ -339,8 +339,10 @@ public class TaskService {
 						for(Map<String, Integer> phaseTmp:phaseList){
 							phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
 						}
-						day2month(conn, phaseIdMap.get(1));
-						tips2Aumark(conn, phaseIdMap.get(2));
+						TaskCmsProgress returnProgress=day2month(conn, phaseIdMap.get(1));
+						updateCmsProgressStatus(conn, phaseIdMap.get(1), returnProgress.getStatus(), returnProgress.getMessage());
+						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
+						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
 					}}
 			}
 			if((erNum!=0)||(total+erNum!=taskIds.size())){
@@ -832,7 +834,7 @@ public class TaskService {
 			//查询条件
 			String conditionSql = "";
 			Iterator<?> conditionKeys = condition.keys();		
-			
+			List<String> progressList = new ArrayList<String>();
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
@@ -871,25 +873,25 @@ public class TaskService {
 					if(progress.isEmpty()){
 						continue;
 					}
-					List<String> progressList = new ArrayList<String>();
+					
 					for(Object i:progress){
 						int tmp=(int) i;
 						//1采集正常，2采集异常，3采集完成
-						if(tmp==1){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1 ");}
-						if(tmp==2){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1 ");}
-						if(tmp==3){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0");}
+						if(tmp==1){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
+						if(tmp==2){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
+						if(tmp==3){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0)");}
 						//4日编正常，5日编异常，6日编完成
-						if(tmp==4){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1 ");}
-						if(tmp==5){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1 ");}
-						if(tmp==6){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1");}
+						if(tmp==4){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");}
+						if(tmp==5){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1) ");}
+						if(tmp==6){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1)");}
 						//7月编正常，8月编异常，9月编完成
-						if(tmp==7){progressList.add(" TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1 ");}
-						if(tmp==8){progressList.add(" TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1 ");}
-						if(tmp==9){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2");}
+						if(tmp==7){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");}
+						if(tmp==8){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1) ");}
+						if(tmp==9){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2)");}
 						//10未规划，11草稿, 12已完成，13已关闭
 						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
 						if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
-						if(tmp==12){progressList.add(" TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5");}
+						if(tmp==12){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5)");}
 						if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
 						//14按时完成，15提前完成，16逾期完成
 						if(tmp==14){
@@ -902,22 +904,20 @@ public class TaskService {
 							progressList.add("TASK_LIST.DIFF_DATE < 0");
 						}
 						if(tmp==17){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1 ");
+							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1) ");
 						}else if(tmp==18){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1 ");
+							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");
 						}else if(tmp==19){
-							progressList.add("TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1 ");
-						}
-
-						if(!progressList.isEmpty()){
-							String tempSql = StringUtils.join(progressList," OR ");
-							conditionSql += " AND (" + tempSql + ")";
+							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");
 						}
 					}
 				}
 			}
 			
-			
+			if(!progressList.isEmpty()){
+				String tempSql = StringUtils.join(progressList," OR ");
+				conditionSql += " AND (" + tempSql + ")";
+			}
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;
@@ -1137,7 +1137,7 @@ public class TaskService {
 					conditionSql+=" AND B.CITY_ID="+condition.getInt(key);
 				}
 				if ("blockName".equals(key)) {
-					conditionSql+=" AND B.block_name ="+condition.getString(key);
+					conditionSql+=" AND B.block_name like '%"+condition.getString(key)+"%'";
 				}
 			}
 			
@@ -1866,7 +1866,7 @@ public class TaskService {
 			//taskPar.put("job_type", null);
 			
 			par.put("taskid", taskPar);
-			log.info(par);
+			log.info("tips2Aumark:"+par);
 			
 			FccApi fccApi = (FccApi) ApplicationContextUtil
 					.getBean("fccApi");

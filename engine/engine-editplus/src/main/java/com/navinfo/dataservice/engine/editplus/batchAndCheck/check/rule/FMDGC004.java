@@ -9,7 +9,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
- * FM_POI_002
+ * FM-D-GC-004
  * 检查原则：
  * 1、若POI官方原始中文名中包含机场(或機場)且包含出发（或出發）字样
  * (注：排除以门或門结尾的名称，例如：XX机场XX出发XX)，但分类不是230127(机场出发/到达)；
@@ -35,25 +35,25 @@ public class FMDGC004 extends BasicCheckRule {
 			String nameStr = name.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			//若POI官方原始中文名中包含机场(或機場)且包含出发（或出發）字样(注：排除以门或門结尾的名称，例如：XX机场XX出发XX)
-			Pattern p1 = Pattern.compile(".+(机场|機場).+(出发|出發).+");
+			Pattern p1 = Pattern.compile(".*(机场|機場).*(出发|出發).*");
 			Matcher m1 = p1.matcher(nameStr);
-			Pattern p2 = Pattern.compile(".+(机场|機場).+(出发|出發).*(门|門)$");
+			Pattern p2 = Pattern.compile(".*(机场|機場).*(出发|出發).*(门|門)$");
 			Matcher m2 = p2.matcher(nameStr);
 			if(m1.matches()&&!m2.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 				return;
 			}
 			//若POI官方原始中文名中包含机场(或機場)且包含到达（或到達）字样(注：排除以门或門结尾的名称，例如：XX机场XX到达XX)
-			p1 = Pattern.compile(".+(机场|機場).+(到达|到達).+");
+			p1 = Pattern.compile(".*(机场|機場).*(到达|到達).*");
 			m1 = p1.matcher(nameStr);
-			p2 = Pattern.compile(".+(机场|機場).+(到达|到達).*(门|門)$");
+			p2 = Pattern.compile(".*(机场|機場).*(到达|到達).*(门|門)$");
 			m2 = p2.matcher(nameStr);
 			if(m1.matches()&&!m2.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 				return;
 			}
 			//若POI官方原始中文名中包含机场(或機場)且以贵宾厅或贵宾室或贵宾区结尾，例如：XX机场XX贵宾厅
-			p1 = Pattern.compile(".+(机场|機場).+(贵宾厅|贵宾室|贵宾区)$");
+			p1 = Pattern.compile(".*(机场|機場).*(贵宾厅|贵宾室|贵宾区)$");
 			m1 = p1.matcher(nameStr);
 			if(m1.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);

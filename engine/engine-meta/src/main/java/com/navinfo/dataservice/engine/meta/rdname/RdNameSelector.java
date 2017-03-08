@@ -783,7 +783,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				if(!langCode.equals("CHI") && !langCode.equals("CHT")){//英文或者葡文
 					JSONObject rdNameFixObj = new JSONObject();
 					rdNameFixObj.put("id", englishName);
-					rdNameFixObj.put("lable", englishName);
+					rdNameFixObj.put("label", englishName);
 					//rdNameFixObj.put("langCode", langCode);
 					if(type == 1){//前后缀
 						suffixArry.add(rdNameFixObj);
@@ -793,7 +793,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				}else{
 					JSONObject rdNameFixObj = new JSONObject();
 					rdNameFixObj.put("id", name);
-					rdNameFixObj.put("lable", name);
+					rdNameFixObj.put("label", name);
 					//rdNameFixObj.put("langCode", langCode);
 					if(type == 1){//前后缀
 						suffixArry.add(rdNameFixObj);

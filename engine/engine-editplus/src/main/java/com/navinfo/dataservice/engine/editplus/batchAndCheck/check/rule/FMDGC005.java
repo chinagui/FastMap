@@ -9,7 +9,7 @@ import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 /**
- * FM_POI_003
+ * FM-D-GC-005
  * 检查原则：
  * 1、若POI官方原始中文名中包含机场(或機場)、包含出发（或出發）且以门(或門)结尾，
  * 例如：XX机场XX出发XX门，但分类不是230128(机场出发/到达门)；
@@ -33,14 +33,14 @@ public class FMDGC005 extends BasicCheckRule {
 			String nameStr = name.getName();
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			//若POI官方原始中文名中包含机场(或機場)、包含出发（或出發）且以门(或門)结尾，例如：XX机场XX出发XX门
-			Pattern p2 = Pattern.compile(".+(机场|機場).+(出发|出發).+(门|門)$");
+			Pattern p2 = Pattern.compile(".*(机场|機場).*(出发|出發).*(门|門)$");
 			Matcher m2 = p2.matcher(nameStr);
 			if(m2.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 				return;
 			}
 			//若POI官方原始中文名中包含机场(或機場)、包含到达（或到達）且以门(或門)结尾，例如：XX机场XX出发XX门
-			p2 = Pattern.compile(".+(机场|機場).+(到达|到達).+(门|門)$");
+			p2 = Pattern.compile(".*(机场|機場).*(到达|到達).*(门|門)$");
 			m2 = p2.matcher(nameStr);
 			if(m2.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);

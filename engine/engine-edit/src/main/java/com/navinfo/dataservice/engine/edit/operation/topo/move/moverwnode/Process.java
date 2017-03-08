@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -67,6 +68,9 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public String exeOperation() throws Exception {
+		
+		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
+				this.getCommand().getUpdateNode());
 		return new Operation(this.getCommand(), this.getConn()).run(this
 				.getResult());
 	}

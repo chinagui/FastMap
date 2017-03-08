@@ -91,12 +91,15 @@ public class RdNameSelector {
 				String nameStr = resultSet.getString("name");
 
 				String province = resultSet.getString("province");
+				int roadType = resultSet.getInt("road_type");
 
 				JSONObject json = new JSONObject();
 
 				json.put("nameId", nameId);
 
 				json.put("name", nameStr);
+				
+				json.put("roadType", roadType);
 
 				json.put("province", province);
 
@@ -230,9 +233,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			conn = DBConnector.getInstance().getMetaConnection();
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
-					
+			System.out.println(scPointAdminArea);		
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
-			
+			System.out.println(adminMap);	
 			JSONObject param =  params.getJSONObject("params");
 			String name = "" ;
 			if(param.containsKey("name") && param.getString("name") != null){
@@ -551,9 +554,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int adminId = resultSet.getInt("ADMIN_ID");
 			rdNameObj.put("adminId", adminId);
 			if (!adminMap.isEmpty()) {
+				System.out.println("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
 				if (adminMap.containsKey(String.valueOf(adminId))) {
 					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+					System.out.println("String.valueOf(adminId)): "+String.valueOf(adminId));
 				} else {
+					System.out.println("空");
 					rdNameObj.put("adminName","");
 				}
 			}

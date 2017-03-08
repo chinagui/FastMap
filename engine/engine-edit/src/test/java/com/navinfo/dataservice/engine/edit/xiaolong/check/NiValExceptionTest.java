@@ -108,17 +108,17 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 
-//	@Test
+	@Test
 	public void testAddStatus() throws Exception {
 		Connection conn = null;
 		try {
 
-			String id = "6e51ce1f85289caba4b557f33a1da62a";
-			int oldType = 2;
+			String id = "93d0826e5fb9783622acae2fbfb1dd42";
+			int oldType = 0;
 
-			int type = 0;
+			int type = 1;
 
-			conn = DBConnector.getInstance().getConnectionById(19);
+			conn = DBConnector.getInstance().getConnectionById(84);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 

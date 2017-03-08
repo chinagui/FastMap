@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
@@ -265,12 +266,17 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
-			curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
-			d2mSyncApi.updateSyncInfo(curSyncInfo);
-			//更新任务状态
-			if(grids!=null&&grids.size()>0){
-				manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
+			try{
+				curSyncInfo.setSyncStatus(FmDay2MonSync.SyncStatusEnum.FAIL.getValue());
+				d2mSyncApi.updateSyncInfo(curSyncInfo);
+				//更新任务状态
+				if(grids!=null&&grids.size()>0){
+					manApi.taskUpdateCmsProgress(phaseId,3,"日落月脚本错误："+e.getMessage());
+				}
+			}catch(Exception ee){
+				log.info("回滚任务状态报错："+ee.getMessage());
 			}
+			
 			if(logMover!=null){
 				log.info("搬移履历回滚");
 				logMover.rollbackMove();
@@ -295,8 +301,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	protected void updateField(OperationResult opResult,Connection conn) throws Exception {
 		List<Integer> pids=new ArrayList<Integer>();
 		for(BasicObj Obj:opResult.getAllObjs()){
-			BasicRow poi=Obj.getMainrow();
-			Integer pid=(int) poi.getObjPid();
+			IxPoi ixPoi = (IxPoi) Obj.getMainrow();
+			Integer pid=(int) ixPoi.getPid();
 			pids.add(pid);
 		}
 		if(pids==null||pids.size()<=0){return;}

@@ -155,4 +155,24 @@ public class JobService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	public JobInfo getLatestJob()throws ServiceException{
+		/*Connection conn = null;
+		JobInfo jobInfo = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.RESULT_MSG,T.JOB_GUID,T.USER_ID,T.DESCP"
+					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS,T.TASK_ID FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
+			jobInfo = run.query(conn, jobInfoSql, new FullHandler(), jobId);
+			return jobInfo;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}*/
+		return null;
+	}
 }

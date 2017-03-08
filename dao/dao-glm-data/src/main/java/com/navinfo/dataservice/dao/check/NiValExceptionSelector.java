@@ -9,20 +9,14 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildrenForAndroid;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -116,10 +110,7 @@ public class NiValExceptionSelector {
 
 				exception.setMd5Code(resultSet.getString("md5_code"));
 
-			} else {
-
-				throw new DataNotFoundException("数据不存在");
-			}
+			} 
 		} catch (Exception e) {
 
 			throw e;
@@ -1011,5 +1002,109 @@ public class NiValExceptionSelector {
 			return null;
 			// e.printStackTrace();
 		}
+	}
+
+	public Page listCheckResultsByJobId(JSONObject params, JSONArray tips) throws Exception {
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		int subtaskId = params.getInt("subtaskId");// 获取subtaskid
+		Integer jobId = params.getInt("jobId");// 获取jobId
+		
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		StringBuilder sql = new StringBuilder();
+		// 获取ids
+		String ids = "";
+		String tmep = "";
+		for (int i = 0; i < tips.size(); i++) {
+			JSONObject tipsObj = tips.getJSONObject(i);
+			ids += tmep;
+			tmep = ",";
+			ids += tipsObj.getString("id");
+		}
+
+		// sql.append(" select * from ( ");
+		sql.append("with ");
+		// **********************
+		// 获取子任务范围内的所有 rdName 的nameId
+		sql.append("q1 as ( ");
+		sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"
+				+ subtaskId + "' ");
+		sql.append(" union all ");
+		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
+		sql.append(" where 1=1 ");
+		// ********zl 2016.12.12 新增判断tips 是否有值****************
+		if (ids != null && StringUtils.isNotEmpty(ids)) {
+			sql.append(" and tt.tipid in (select column_value from table(clob_to_table('"
+					+ ids + "'))) ");
+		}
+		sql.append(" ) rd ),");
+		// **********************
+
+		sql.append("q3 as ( ");
+		sql.append("select distinct b.eid from q2 b ,q1 c where b.nameid = c.name_id  ");
+		sql.append(" ), ");
+		// **********************
+		sql.append("q4 as ( ");
+		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d ,q3 e where d.val_exception_id = e.eid ");
+		sql.append(") ");
+		// ************************
+		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q4) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q4 T ");
+		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
+				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		sql.append(" order by created desc,md5_code desc ");
+		System.out.println("listCheckResults sql:  " + sql.toString());
+
+		QueryRunner run = new QueryRunner();
+
+		// ****************************************
+		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while (rs.next()) {
+					if (total == 0) {
+						total = rs.getInt("TOTAL_RECORD_NUM_");
+					}
+
+					JSONObject json = new JSONObject();
+
+					json.put("id", rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
+									+ ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		};
+
+		Page p = run.query(conn, sql.toString(), rsHandler3);
+		return p;
 	}
 }

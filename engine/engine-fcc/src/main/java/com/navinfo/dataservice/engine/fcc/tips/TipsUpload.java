@@ -191,9 +191,10 @@ public class TipsUpload {
 					.getBean("metaApi");
 			JSONArray names = deep.getJSONArray("n_array");
 			for (Object name : names) {
-				if (name != null && StringUtils.isNotEmpty(name.toString())) {
+				//修改 20170308，道路名去除空格，否则转英文报错
+				if (name != null && StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
-						metaApi.nameImport(name.toString(), longitude,
+						metaApi.nameImport(name.toString().trim(), longitude,
 								latitude, rowkey);
 					} catch (Exception e) {
 						// reasons.add(newReasonObject(rowkey,
@@ -857,8 +858,8 @@ public class TipsUpload {
 	 * @throws Exception
 	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
 	 * @time:2017-2-13上午9:20:52
-	 */
-	/*private void tipsDiff() throws Exception {
+	 *//*
+	private void tipsDiff() throws Exception {
 		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
 		SolrBulkUpdater solrConn = null;

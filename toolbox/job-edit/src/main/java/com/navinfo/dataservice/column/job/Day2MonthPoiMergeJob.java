@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationResultException;
@@ -300,8 +301,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	protected void updateField(OperationResult opResult,Connection conn) throws Exception {
 		List<Integer> pids=new ArrayList<Integer>();
 		for(BasicObj Obj:opResult.getAllObjs()){
-			BasicRow poi=Obj.getMainrow();
-			Integer pid=(int) poi.getObjPid();
+			IxPoi ixPoi = (IxPoi) Obj.getMainrow();
+			Integer pid=(int) ixPoi.getPid();
 			pids.add(pid);
 		}
 		if(pids==null||pids.size()<=0){return;}
@@ -324,8 +325,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				" USING (SELECT IP.PID, R.MESH_ID\r\n" + 
 				"          FROM IX_POI IP, RD_LINK R\r\n" + 
 				"        WHERE IP.LINK_PID = R.LINK_PID\r\n" + 
-				"          AND IP.PMESH_ID IS NULL\r\n" + 
-				"          AND R.MESH_ID IS NOT NULL\r\n");
+				"          AND IP.PMESH_ID=0 \r\n" + 
+				"          AND R.MESH_ID<>0 \r\n");
 		sb1 .append(" AND "+ inClause.getSql());
 		sb1.append(") T ON (P.PID = T.PID)\r\n" +
 					"WHEN MATCHED THEN\r\n" +

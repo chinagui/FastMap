@@ -1,14 +1,13 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
@@ -19,8 +18,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.ScSensitiveWordsUtils;
-import com.navinfo.navicommons.database.QueryRunner;
 
 /**
  * @ClassName FM14Sum060201
@@ -38,7 +37,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  */
 public class FM14Sum060201 extends BasicCheckRule {
 
-	private Map<Long, Integer> adminMap=new HashMap<Long, Integer>();
+	private Map<Long, Long> adminMap=new HashMap<Long, Long>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -103,27 +102,11 @@ public class FM14Sum060201 extends BasicCheckRule {
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		List<Long> regionIdList=new ArrayList<Long>();
+		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
-			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			regionIdList.add(poi.getRegionId());
+			pidList.add(obj.objPid());
 		}
-		String sql = "SELECT REGION_ID, ADMIN_ID FROM AD_ADMIN"
-				+ " WHERE REGION_ID IN (" + StringUtils.join(regionIdList.toArray(),",") + ")";
-		
-		ResultSetHandler<Map<Long,Integer>> rsHandler = new ResultSetHandler<Map<Long,Integer>>() {
-			public Map<Long,Integer> handle(ResultSet rs) throws SQLException {
-				Map<Long,Integer> result = new HashMap<Long,Integer>();
-				while (rs.next()) {
-					int admin = rs.getInt("ADMIN_ID");
-					long region = rs.getLong("REGION_ID");
-					result.put(region, admin);
-				}
-				return result;
-			}
-		};
-		adminMap = new QueryRunner().query(getCheckRuleCommand().getConn(),sql, rsHandler);
+		adminMap = IxPoiSelector.getAdminIdByPids(getCheckRuleCommand().getConn(),pidList);
 	}
 
 }

@@ -379,6 +379,13 @@ public interface MetadataApi {
 	 */
 	public List<Map<String, Object>> scPointKindRule() throws Exception;
 	/**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(5)
+	 * 
+	 * @return Map<String, String> key:POI_KIND;value:POI_KIND_NAME
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointKindRule5() throws Exception;
+	/**
 	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
 	 * 
 	 * @returnList Map<String, List<String>> key:KIND_CODE,value:NEW_POI_LEVEL

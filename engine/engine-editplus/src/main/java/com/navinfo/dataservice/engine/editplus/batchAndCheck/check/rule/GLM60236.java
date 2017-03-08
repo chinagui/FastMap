@@ -37,6 +37,8 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class GLM60236 extends BasicCheckRule {
 	Map<Long, Long> parentMap = new HashMap<Long, Long>();
+	//检查结果去重用
+	Set<Long> dupPid=new HashSet<Long>();
 	
 	public void run()throws Exception{
 		Map<Long, BasicObj> rows=getRowList();
@@ -117,12 +119,17 @@ public class GLM60236 extends BasicCheckRule {
 			}
 		}			
 		ResultSet rs = pstmt.executeQuery();
+		//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+		Set<Long> dupPid=new HashSet<Long>();
 		while (rs.next()) {
 			Long pidTmp1=rs.getLong("C");
 			Long pidTmp2=rs.getLong("P1");
 			Long pidTmp3=rs.getLong("P2");
-			String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
-			setCheckResult("", targets, 0,"POI存在一子多父");
+			if(!dupPid.contains(pidTmp1)||!dupPid.contains(pidTmp2)||!dupPid.contains(pidTmp3)){
+				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp3+"]";
+				setCheckResult("", targets, 0,"POI存在一子多父");
+				dupPid.add(pidTmp1);dupPid.add(pidTmp2);dupPid.add(pidTmp3);
+			}
 		}
 	}
 	
@@ -136,17 +143,27 @@ public class GLM60236 extends BasicCheckRule {
 			int whileNum=0;
 			Set<Long> parentPids=new HashSet<Long>();
 			Long pPid=pid;
+			//因为一子多父为错误数据，此处不单独考虑一子多父，默认均为一子一父
 			while(parentMap.containsKey(pPid)){
 				//一般父子关系层次会在6层以内，增加判断，防止代码错误导致的死循环
 				if(whileNum>6){return;}
 				else{whileNum++;}
 				pPid=parentMap.get(pPid);
 				parentPids.add(pPid);
+				//递归向上查找父，并将找到的父poi集合放到parentPids中，若某次查到的pid在集合parentPids中，说明出现循环；否则将pid加入parentPids
 				if(parentPids.contains(pid)){
-					String targets=parentPids.toString().replace("[", "(").replace(",", "];[IX_POI,").replace("(", "[IX_POI,");
-					log.info(targets);
-					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在循环建立父子关系");
-					return;
+					//判断是否已经报过error了
+					boolean isError=false;
+					for(Long tmp:parentPids){
+						if(!dupPid.contains(tmp)){isError=true;dupPid.add(tmp);}
+					}
+					//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+					if(isError){
+						String targets=parentPids.toString().replace("[", "(").replace(",", "];[IX_POI,").replace("(", "[IX_POI,");
+						log.info(targets);
+						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在循环建立父子关系");
+						return;
+					}
 				}
 			}
 		}

@@ -53,7 +53,7 @@ import net.sf.json.util.JSONUtils;
  * @date 2016年11月17日
  * @Description: MultiSrcPoiImportorByGather.java
  */
-public class MultiSrcPoiImportorByGather extends AbstractOperation {
+public class CollectorUploadOperation extends AbstractOperation {
 
 //	protected Map<String,String> errLog = new HashMap<String,String>();
 	
@@ -66,7 +66,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		return sourceTypes;
 	}
 
-	public MultiSrcPoiImportorByGather(Connection conn,OperationResult preResult) {
+	public CollectorUploadOperation(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
 	}
 
@@ -81,7 +81,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		// 获取当前做业季
-		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增

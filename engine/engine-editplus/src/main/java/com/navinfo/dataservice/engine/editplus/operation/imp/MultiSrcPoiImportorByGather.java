@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -678,7 +679,8 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	}
 
 	
-	private static boolean stringEquals(String a,String b){
+	private  boolean stringEquals(String a,String b){
+		log.info("newValue="+a+",oldValue="+b);
 		return com.navinfo.dataservice.commons.util.StringUtils.equals(a, b);
 	}
 	/**
@@ -701,7 +703,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				StringBuilder outDoorLog = new StringBuilder("");//
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
-				ixPoi.setFreshFlag(true);//默认是鲜度验证；
 				long pid = ixPoi.getPid();
 				
 				//改分类
@@ -710,7 +711,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					newKindCode=jo.getString("kindCode");
 					//鲜度验证
 					if(!stringEquals(newKindCode,ixPoi.getKindCode())){
-						ixPoi.setFreshFlag(false);//修改了类型，则为非鲜度验证
+						ixPoi.setFreshFlag(false);
 						fieldState.append("改种别代码|") ;
 						ixPoi.setKindCode(newKindCode);
 						ixPoi.setOldKind(newKindCode);
@@ -721,20 +722,24 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				//移动点位
 				Geometry geometry = new WKTReader().read(jo.getString("geometry"));// geometry按SDO_GEOMETRY格式原值转出
 				if(!ixPoi.getGeometry().toText().equals(geometry.toText())){
-					ixPoi.setFreshFlag(false);//几何点位发生变化，非鲜度验证；
 					ixPoi.setGeometry(geometry);
 					outDoorLog .append("改RELATION|");
+					ixPoi.setFreshFlag(false);
 				}				
 				//变更引导坐标
 				if (jo.getJSONObject("guide").size() > 0) {
 					double newXGuide = jo.getJSONObject("guide").getDouble("longitude");
+					newXGuide = DoubleUtil.keepSpecDecimal(newXGuide);
 					if(!new BigDecimal(ixPoi.getXGuide()).equals(new BigDecimal(newXGuide))){
 						ixPoi.setXGuide(newXGuide);
+						log.info("引导点位发生变更，非鲜度验证:oldXGuid"+ixPoi.getXGuide()+",newXGuid:"+newXGuide);
 						ixPoi.setFreshFlag(false);//引导点位发生变更，非鲜度验证
 					}
 					double newYGguid = jo.getJSONObject("guide").getDouble("latitude");
+					newYGguid = DoubleUtil.keepSpecDecimal(newYGguid);
 					if(!new BigDecimal(ixPoi.getYGuide()).equals(new BigDecimal(newYGguid))){
 						ixPoi.setYGuide(newYGguid);
+						log.info("引导点位发生变更，非鲜度验证:getYGuide"+ixPoi.getYGuide()+",newYGguid:"+newYGguid);
 						ixPoi.setFreshFlag(false);//引导点位发生变更，非鲜度验证
 					}
 					int newLinkPid = jo.getJSONObject("guide").getInt("linkPid");
@@ -843,7 +848,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//重要poi标记
 				String newVipFlag = jo.getString("vipFlag");
-				if( stringEquals(newVipFlag,ixPoi.getVipFlag())){
+				if( !stringEquals(newVipFlag,ixPoi.getVipFlag())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setVipFlag(newVipFlag);
 				}
@@ -962,7 +967,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if(jo.containsKey("chargingPole")){
 					this.usdateIxPoiChargingPlot(poi, jo, pid);
 				}
-				//*********************************
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");

@@ -184,7 +184,7 @@ public class CheckController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			DbUtils.closeQuietly(conn);
-		}
+		}  
 	}
 	@RequestMapping(value = "/check/listRdnResultByJobId")
 	public ModelAndView listCheckResultsByJobId(HttpServletRequest request)

@@ -51,7 +51,7 @@ public class IxPoi extends AbstractIx {
 	protected int truckFlag ;
 	protected String level ;
 	protected String sportsVenue ;
-	protected int indoor ;
+	protected int indoor=0 ;
 	protected String vipFlag ;
 	
 	//******zl 2017.03.01***********

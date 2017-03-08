@@ -130,45 +130,82 @@ public class FM14Sum121001 extends BasicCheckRule {
 				errorList.get(pid1).add(pid2);
 				continue;
 			}
-			boolean name1ok=false;
-			boolean name2ok=false;
-			if(nameSet.contains(name1)){
-				if(preNameMap.containsKey(name1)){preName1=preNameMap.get(name1);}
-				name1ok=true;
-			}
-			if(nameSet.contains(name2)){
-				if(preNameMap.containsKey(name2)){preName2=preNameMap.get(name2);}
-				name2ok=true;
-			}
-			
+
+			Set<String> name1PreKeySet = new HashSet<String>();
+			Set<String> name2PreKeySet = new HashSet<String>();
+			name1PreKeySet.add(name1);
+			name2PreKeySet.add(name2);
 			//官方原始中文名称与配置表SC_POINT_NAMECK中TYPE=1的关键词进行匹配，包含RESULT_KEY中关键字的需要还原成PRE_KEY中的全称				
 			for(ScPointNameckObj obj:typeD1List){
-				if(name1ok&&name2ok){break;}
-				if(!name1ok&&name1.contains(obj.getResultKey())){
-					name1ok=true;
+				if(name1.contains(obj.getResultKey())){
 					//preKey包含resulteKey,name包含preKey，那么name不需要进行替换
 					if(!(obj.getPreKey().contains(obj.getResultKey())&&name1.contains(obj.getPreKey()))){
-						preName1=preName1.replace(obj.getResultKey(), obj.getPreKey());
-						preNameMap.put(name1, preName1);
+						preName1=name1.replace(obj.getResultKey(), obj.getPreKey());
+						name1PreKeySet.add(preName1);
 					}
 				}
-				if(!name2ok&&name2.contains(obj.getResultKey())){
-					name2ok=true;
+				if(name2.contains(obj.getResultKey())){
 					//preKey包含resulteKey,name包含preKey，那么name不需要进行替换
 					if(!(obj.getPreKey().contains(obj.getResultKey())&&name2.contains(obj.getPreKey()))){
-						preName2=preName2.replace(obj.getResultKey(), obj.getPreKey());
-						preNameMap.put(name2, preName2);
+						preName2=name2.replace(obj.getResultKey(), obj.getPreKey());
+						name2PreKeySet.add(preName1);
 					}
 				}				
 			}
-			nameSet.add(name1);
-			nameSet.add(name2);
-			if(preName1.equals(preName2)){
-				if(!errorList.containsKey(pid1)){errorList.put(pid1, new HashSet<Long>());}
-				errorList.get(pid1).add(pid2);
-				continue;
+			
+			for(String name1PreKey:name1PreKeySet){
+				if(name2PreKeySet.contains(name1PreKey)){
+					if(!errorList.containsKey(pid1)){
+						errorList.put(pid1, new HashSet<Long>());
+					}
+					errorList.get(pid1).add(pid2);
+					continue;
+				}
 			}
+			
+			
+//			boolean name1ok=false;
+//			boolean name2ok=false;
+//			if(nameSet.contains(name1)){
+//				if(preNameMap.containsKey(name1)){preName1=preNameMap.get(name1);}
+//				name1ok=true;
+//			}
+//			if(nameSet.contains(name2)){
+//				if(preNameMap.containsKey(name2)){preName2=preNameMap.get(name2);}
+//				name2ok=true;
+//			}
+//			
+//			//官方原始中文名称与配置表SC_POINT_NAMECK中TYPE=1的关键词进行匹配，包含RESULT_KEY中关键字的需要还原成PRE_KEY中的全称				
+//			for(ScPointNameckObj obj:typeD1List){
+//				if(name1ok&&name2ok){break;}
+//				if(!name1ok&&name1.contains(obj.getResultKey())){
+//					name1ok=true;
+//					//preKey包含resulteKey,name包含preKey，那么name不需要进行替换
+//					if(!(obj.getPreKey().contains(obj.getResultKey())&&name1.contains(obj.getPreKey()))){
+//						preName1=preName1.replace(obj.getResultKey(), obj.getPreKey());
+//						preNameMap.put(name1, preName1);
+//					}
+//				}
+//				if(!name2ok&&name2.contains(obj.getResultKey())){
+//					name2ok=true;
+//					//preKey包含resulteKey,name包含preKey，那么name不需要进行替换
+//					if(!(obj.getPreKey().contains(obj.getResultKey())&&name2.contains(obj.getPreKey()))){
+//						preName2=preName2.replace(obj.getResultKey(), obj.getPreKey());
+//						preNameMap.put(name2, preName2);
+//					}
+//				}				
+//			}
+//			nameSet.add(name1);
+//			nameSet.add(name2);
+//			if(preName1.equals(preName2)){
+//				if(!errorList.containsKey(pid1)){errorList.put(pid1, new HashSet<Long>());}
+//				errorList.get(pid1).add(pid2);
+//				continue;
+//			}
 		}
+		
+		
+		
 		if(errorList==null||errorList.size()==0){return;}
 		//过滤相同pid
 		Set<Long> filterPid = new HashSet<Long>();

@@ -18,6 +18,7 @@ import oracle.sql.BLOB;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
 
+import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
@@ -218,8 +219,11 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
-				+ date + "','yyyymmddhh24miss')";
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+		if(StringUtils.isNotEmpty(date)){
+			sql+=" and update_time > to_date('"
+							+ date + "','yyyymmddhh24miss')";
+		}
 		
 		exportImage2Sqlite(sqliteConn, sql);
 

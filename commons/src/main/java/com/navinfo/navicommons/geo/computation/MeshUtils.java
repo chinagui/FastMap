@@ -25,12 +25,15 @@ import net.sf.json.JSONArray;
 public abstract class MeshUtils {
 
 	public static void main(String[] args) throws Exception {
-		Set<String> meshes = new HashSet<String>();
-		meshes.add("595671");
-		meshes.add("595672");
-		meshes.add("595661");
-		Geometry geo = meshes2Jts(meshes);
-		System.out.println("GEOMEYRY:"+JtsGeometryFactory.writeWKT(geo));
+//		Set<String> meshes = new HashSet<String>();
+//		meshes.add("595671");
+//		meshes.add("595672");
+//		meshes.add("595661");
+//		Geometry geo = meshes2Jts(meshes);
+//		System.out.println("GEOMEYRY:"+JtsGeometryFactory.writeWKT(geo));
+		for(double d:mesh2Rect("595675")){
+			System.out.println(String.valueOf(d));
+		}
 //		System.out.println(""+second2Decimal(300.0));
 //		String[] results = point2Meshes(116.74963, 39.0);
 //		Set<String> results = getNeighborMeshSet("605602",2);

@@ -481,6 +481,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
 			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
+		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
+		}
+		if (rdName.getBase() != null && StringUtils.isNotEmpty(rdName.getBase())) {
+			sb.append(" AND BASE ='"+rdName.getBase()+"'");
+		}
 		try {
 			
 			pstmt = conn.prepareStatement(sb.toString());

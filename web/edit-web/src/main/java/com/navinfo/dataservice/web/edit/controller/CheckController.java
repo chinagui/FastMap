@@ -238,7 +238,7 @@ public class CheckController extends BaseController {
 			//JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
 //			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
 //			logger.debug("获取规则号"+ruleCodes);
-			Page page = null;//niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
+			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());

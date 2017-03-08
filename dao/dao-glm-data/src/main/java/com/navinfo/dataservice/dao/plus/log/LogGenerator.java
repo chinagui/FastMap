@@ -275,15 +275,10 @@ public class LogGenerator {
 		perstmtLogDetail.setString(5, subrow.getGeoType());//几何参考对象名
 		perstmtLogDetail.setLong(6, subrow.getGeoPid());//几何参考对象pid
 		perstmtLogDetail.setString(7, subrow.tableName());
-		if(subrow.getOpType().equals(OperationType.UPDATE)){
-			perstmtLogDetail.setString(8,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
-			perstmtLogDetail.setString(9,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
-			perstmtLogDetail.setString(10,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
-		}else{
-			perstmtLogDetail.setString(8,null);
-			perstmtLogDetail.setString(9,null);
-			perstmtLogDetail.setString(10,null);
-		}
+
+		perstmtLogDetail.setString(8,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
+		perstmtLogDetail.setString(9,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
+		perstmtLogDetail.setString(10,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
 
 		if(subrow.getOpType().equals(OperationType.DELETE)){
 			perstmtLogDetail.setInt(11, 2);

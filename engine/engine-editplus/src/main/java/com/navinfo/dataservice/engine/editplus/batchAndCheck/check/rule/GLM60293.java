@@ -143,6 +143,8 @@ public class GLM60293 extends BasicCheckRule {
 			//SC_POINT_KIND_NEW中TYPE=5
 			MetadataApi metadataApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			List<Map<String, String>> scPointKindNew5List = metadataApi.scPointKindNew5List();
+			//过滤相同pid
+			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
@@ -175,7 +177,11 @@ public class GLM60293 extends BasicCheckRule {
 					String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
 					if(!samePoiParentMap.containsKey(pidTmp1)
 							||!samePoiParentMap.get(pidTmp1).equals(pidTmp2)){
-						setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+						if(!filterPid.contains(targets)){
+							setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+						}
+						filterPid.add(targets);
+						filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 					}
 				}
 			}

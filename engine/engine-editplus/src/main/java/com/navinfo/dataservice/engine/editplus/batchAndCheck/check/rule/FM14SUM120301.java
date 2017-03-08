@@ -46,9 +46,9 @@ public class FM14SUM120301 extends BasicCheckRule {
 				String log="";
 				for(String key:result.keySet()){
 					if(!log.isEmpty()){log+=",";}
-					log+="“"+key+"”应为“"+result.get(key)+"”";
+					log+="“"+key+"”对应的正确字为“"+result.get(key)+"”";
 				}
-				log="名称错别字："+log;
+				log="名称中存在错别字："+log;
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), log);
 				return;
 			}

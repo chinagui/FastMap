@@ -111,6 +111,7 @@ public class CheckTest {
 		Set<Long> pids = new HashSet<Long>();
 		pids.add(64L);
 		pids.add(8165144L);
+		pids.add(8165145L);
 		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
 		for (Long key : rows.keySet()) {
 			BasicObj obj1 = rows.get(key);
@@ -123,7 +124,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-031");
+		ruleIdList.add("FM-14Sum-06-02-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

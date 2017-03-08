@@ -83,10 +83,10 @@ public class CheckTest {
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
 //		logg.setOpType(OperationType.UPDATE);
-		logg.setOpType(OperationType.INSERT);
+//		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		//row.setOpType(OperationType.PRE_DELETED);
+		row.setOpType(OperationType.PRE_DELETED);
 //		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
@@ -110,23 +110,23 @@ public class CheckTest {
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
 		
-		Set<Long> pids = new HashSet<Long>();
-		pids.add(64L);
-		pids.add(8165144L);
-		pids.add(8165145L);
-		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
-		for (Long key : rows.keySet()) {
-			BasicObj obj1 = rows.get(key);
-			IxPoi row1=(IxPoi) obj1.getMainrow();
-			row1.setHisChangeLogs(logList);
-			operationResult.putObj(obj1);
-		}
+//		Set<Long> pids = new HashSet<Long>();
+//		pids.add(64L);
+//		pids.add(8165144L);
+//		pids.add(8165145L);
+//		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
+//		for (Long key : rows.keySet()) {
+//			BasicObj obj1 = rows.get(key);
+//			IxPoi row1=(IxPoi) obj1.getMainrow();
+//			row1.setHisChangeLogs(logList);
+//			operationResult.putObj(obj1);
+//		}
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-12-10-01");
+		ruleIdList.add("FM-14Sum-17-01-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

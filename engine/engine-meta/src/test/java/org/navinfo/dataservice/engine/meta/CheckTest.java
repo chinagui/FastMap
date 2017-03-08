@@ -116,4 +116,14 @@ public class CheckTest {
 			e.printStackTrace();
 		}
 	}
+	@Test
+	public void test07() {
+		try {
+			Map<String, String> scPointKindNew5List = ScPointKindRule.getInstance().scPointKindRule5();
+			System.out.println(scPointKindNew5List.toString());
+		} catch (Exception e) {
+			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
+			e.printStackTrace();
+		}
+	}
 }

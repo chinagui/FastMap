@@ -18,9 +18,9 @@ public class ScPointNameckUtil {
 		List<ScPointNameckObj> matchResult=new ArrayList<ScPointNameckObj>();
 		for(ScPointNameckObj obj:typeD1){
 			if(name.contains(obj.getPreKey())){
-				if(!obj.getResultKey().contains(obj.getPreKey())){
+				if (!name.contains(obj.getResultKey())||!obj.getResultKey().contains(obj.getPreKey())) {
 					matchResult.add(obj);
-				}
+				} 
 			}
 		}
 		//matchResult.put("国家人口和计划生育委员会", "人口计生委");

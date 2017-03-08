@@ -1,22 +1,18 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.solr.common.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  * 检查条件：
  * (1)非重要分类的POI数据：即不满足条件a也不满足条件b即为非重要分类。
@@ -61,8 +57,7 @@ public class FMBATM0105 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
-			IxPoi mainPoi=(IxPoi) poiObj.getMainrow();
-			if(isBatch(poiObj)){
+			if(!isBatch(poiObj)){
 				IxPoiAddress chiAddr=poiObj.getCHIAddress();
 				IxPoiAddress engAddr=poiObj.getENGAddress(chiAddr.getNameGroupid());
 				String fullName=convertAddr(poiObj,chiAddr);
@@ -117,7 +112,7 @@ public class FMBATM0105 extends BasicBatchRule {
 		Map<String, String> typeMap1 = metadataApi.scPointEngKeyWordsType1();
 		if (StringUtils.isEmpty(addr.getType())){
 			return false;
-		}else if(!typeMap1.containsKey(addr.getType())){
+		}else if(typeMap1.containsKey(addr.getType())){
 			return false;
 		}
 		

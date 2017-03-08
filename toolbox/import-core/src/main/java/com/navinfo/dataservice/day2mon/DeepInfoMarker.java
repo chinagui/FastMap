@@ -212,7 +212,7 @@ public class DeepInfoMarker {
 			// 2.其他城市，admin_code的前四位匹配
 			if(StringUtils.isNotEmpty(adminCode)){
 				if ((!adminCodeList.contains(adminCode.substring(0, 2)))
-						|| (!adminCodeList.contains(adminCode.substring(0, 4)))) {
+						&& (!adminCodeList.contains(adminCode.substring(0, 4)))) {
 					return false;
 				}
 			}

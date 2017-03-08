@@ -40,6 +40,8 @@ public class FM14Sum120901 extends BasicCheckRule {
 			
 			MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, List<String>> kindMap = api.ciParaKindKeywordMap();
+			
+			Map<String, String> kindNameByKindCode = api.getKindNameByKindCode();
 			if(!kindMap.containsKey(kindCode)){return;}
 			List<String> keyWords = kindMap.get(kindCode);
 			boolean check = true;
@@ -47,10 +49,11 @@ public class FM14Sum120901 extends BasicCheckRule {
 				for (String keyWord : keyWords) {
 					if(name.contains(keyWord)){
 						check = false;
+						break;
 					}
 				}
 				if(check){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "分类:"+kindCode+",正确关键字:"+keyWords.toString());
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "指定分类必须包含指定关键字:分类:"+kindNameByKindCode.get(kindCode)+",正确关键字:"+keyWords.toString());
 					return;
 				}
 			}

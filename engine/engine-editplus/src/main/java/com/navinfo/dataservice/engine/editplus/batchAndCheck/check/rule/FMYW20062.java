@@ -52,7 +52,7 @@ public class FMYW20062 extends BasicCheckRule {
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}
-				errorMsg=CheckUtil.isRightKuohao(fullname,"[","[");
+				errorMsg=CheckUtil.isRightKuohao(fullname,"[","]");
 				if(errorMsg!=null){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "中文地址中"+errorMsg);
 				}

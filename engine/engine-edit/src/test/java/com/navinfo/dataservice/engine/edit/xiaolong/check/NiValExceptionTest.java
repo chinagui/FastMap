@@ -25,7 +25,7 @@ public class NiValExceptionTest extends InitApplication {
 		initContext();
 	}
 	
-	@Test
+	//@Test
 	public void testGLM01455() throws Exception{
 		String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
@@ -108,7 +108,7 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testAddStatus() throws Exception {
 		Connection conn = null;
 		try {

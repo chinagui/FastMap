@@ -14,6 +14,8 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.JsonObject;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -198,17 +200,25 @@ public class CheckController extends BaseController {
 			int subtaskId = jsonReq.getInt("subtaskId");
 			Integer type = jsonReq.getInt("type");
 			Integer jobId = jsonReq.getInt("jobId");
+			System.out.println("jobId : "+jobId);
 			String jobUuid = "";
+			System.out.println("jobUuid : "+jobUuid);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			if(jobId != null && jobId >0){
 				//根据jobId 查询jobUuid 
-				
 				JobInfo jobInfo = jobApiService.getJobById(jobId);
 				jobUuid = jobInfo.getGuid();
+				System.out.println(1);
 			}else{
-				JobInfo jobInfo = jobApiService.getJobById(jobId);
+				JSONObject jobObj = jobApiService.getLatestJob(subtaskId);
+				if(jobObj != null && jobObj.size() >0){
+					jobUuid= jobObj.getString("jobGuid");
+					jobId = jobObj.getInt("jobId");
+				}
+				System.out.println(2);
 			}
-			
+			System.out.println("jobId 2: "+jobId);
+			System.out.println("jobUuid 2: "+jobUuid);
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -219,6 +229,7 @@ public class CheckController extends BaseController {
 			}
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			System.out.println("apiFcc : "+apiFcc);
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
 			System.out.println("listRdnResult tips: "+tips);
@@ -227,7 +238,7 @@ public class CheckController extends BaseController {
 			//JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
 //			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
 //			logger.debug("获取规则号"+ruleCodes);
-			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,tips);
+			Page page = null;//niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());

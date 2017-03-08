@@ -18,6 +18,8 @@ import com.navinfo.dataservice.bizcommons.glm.GlmTable;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
+import net.sf.json.JSONObject;
+
 /** 
 * @ClassName: JobServiceTest 
 * @author Xiao Xiaowen 
@@ -33,7 +35,7 @@ public class JobServiceTest {
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
-	@Test
+	//@Test
 	public void hello_001(){
 		try{
 			System.out.println(JobService.getInstance().hello());
@@ -41,7 +43,7 @@ public class JobServiceTest {
 			e.printStackTrace();
 		}
 	}
-	@Test
+	//@Test
 	public void hello_002(){
 		try{
 			List<Integer> list = new ArrayList<Integer>();
@@ -55,7 +57,7 @@ public class JobServiceTest {
 			e.printStackTrace();
 		}
 	}
-	@Test
+	//@Test
 	public void hello_003(){
 		Glm glm = GlmCache.getInstance().getGlm("250+");
 		Map<String,GlmTable> tables = glm.getEditTables();
@@ -70,4 +72,14 @@ public class JobServiceTest {
 		System.out.println(StringUtils.join(tableNames,","));
 		System.out.println("Over.");
 	}
+	@Test
+		public void testSearch(){
+			try{
+				JSONObject obj = JobService.getInstance().getLatestJob(6);
+				System.out.println(obj);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+	
 }

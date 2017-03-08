@@ -38,6 +38,15 @@ public class JobApiImpl implements JobApi{
 			throw new Exception(e.getMessage(),e);
 		}
 	}
+	public JSONObject getLatestJob(int subtaskId)throws Exception{
+		try{
+			return JobService.getInstance().getLatestJob(subtaskId);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new Exception(e.getMessage(),e);
+		}
+	}
+	
 	public JobInfo getJobByGuid(String jobGuid)throws Exception{
 		try{
 			return JobService.getInstance().getJobByGuid(jobGuid);

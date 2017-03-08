@@ -33,15 +33,6 @@ public class MultiTableTest {
 
 	}
 
-	@Test
-	public void test_CI_PARA_KIND_KEYWORD() {
-		try {
-			//Map<String, String> map= CiParaKindKeyword.getInstance().ciParaKindKeywordMap();
-			//System.out.println(StringUtils.join(map.keySet(), ","));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
+	
 	
 }

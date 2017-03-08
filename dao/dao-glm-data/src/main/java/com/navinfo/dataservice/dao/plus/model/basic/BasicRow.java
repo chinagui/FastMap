@@ -442,6 +442,18 @@ public abstract class BasicRow{
 	public boolean checkValue(String colName,Object oldValue,Object newValue){
 		if(oldValue==null&&newValue==null)return false;
 		if(oldValue!=null&&oldValue.equals(newValue))return false;
+		if(oldValue!=null){
+			if(oldValue.equals(newValue)){
+				return false;
+			}
+			if(oldValue instanceof String 
+					&&StringUtils.isEmpty(String.valueOf(oldValue))
+					&&StringUtils.isEmpty(String.valueOf(newValue))
+					){
+				return false;
+			}
+		}
+		
 		if(opType.equals(OperationType.UPDATE)){//update的row才需要记录old值
 			if(oldValues==null){
 				oldValues = new HashMap<String,Object>();

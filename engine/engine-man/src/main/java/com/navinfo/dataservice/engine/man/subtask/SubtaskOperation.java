@@ -1110,7 +1110,7 @@ public class SubtaskOperation {
 			String sql = "select pes.status, count(1) finishNum"
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.pid = pes.pid"
-					//+ " and pes.status = 1"
+					+ " and pes.status ！= 0"
 					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
 							+ "group by pes.status ";
 			//POI待作业

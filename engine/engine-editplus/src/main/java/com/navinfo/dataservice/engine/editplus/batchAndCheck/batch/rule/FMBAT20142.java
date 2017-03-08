@@ -32,7 +32,7 @@ public class FMBAT20142 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoiAddress chiAddress = poiObj.getChiAddress();
 		if(chiAddress==null){return;} 
-		if(!chiAddress.getHisOpType().equals(OperationType.UPDATE)){return;}
+		if(!chiAddress.getHisOpType().equals(OperationType.UPDATE) && !chiAddress.getHisOpType().equals(OperationType.INSERT)){return;}
 		
 		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 

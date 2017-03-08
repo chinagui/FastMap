@@ -108,7 +108,7 @@ public class DefaultLogMover extends LogMover {
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO log_action@");
 		sb.append(dbLinkName);
-		sb.append("tt USING (select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
+		sb.append(" tt USING (select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
 		sb.append(tempTable);
 		sb.append(" t");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){

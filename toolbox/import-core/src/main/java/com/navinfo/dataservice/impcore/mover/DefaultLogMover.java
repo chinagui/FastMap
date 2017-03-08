@@ -89,11 +89,26 @@ public class DefaultLogMover extends LogMover {
 		sb.append(tempTable);
 		return sb.toString();
 	}
+//	protected String actionSql(){
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("insert into log_action@");
+//		sb.append(dbLinkName);
+//		sb.append(" select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
+//		sb.append(tempTable);
+//		sb.append(" t");
+//		if(StringUtils.isNotEmpty(tempFailLogTable)){
+//			sb.append(" where NOT EXISTS(SELECT 1 FROM ");
+//			sb.append(tempFailLogTable);
+//			sb.append(" f WHERE f.OP_ID=t.OP_ID)");
+//		}
+//		sb.append(" ))");
+//		return sb.toString();
+//	}
 	protected String actionSql(){
 		StringBuilder sb = new StringBuilder();
-		sb.append("insert into log_action@");
+		sb.append("MERGE INTO log_action@");
 		sb.append(dbLinkName);
-		sb.append(" select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
+		sb.append("tt USING (select la.* from log_action la where la.act_id in (select distinct lp.act_id from log_operation lp where lp.op_id in (select t.op_id from ");
 		sb.append(tempTable);
 		sb.append(" t");
 		if(StringUtils.isNotEmpty(tempFailLogTable)){
@@ -101,7 +116,11 @@ public class DefaultLogMover extends LogMover {
 			sb.append(tempFailLogTable);
 			sb.append(" f WHERE f.OP_ID=t.OP_ID)");
 		}
-		sb.append(" ))");
+		sb.append(" )) ) TP");
+		sb.append(" ON (TP.ACT_ID = TT.ACT_ID)");
+		sb.append(" WHEN NOT MATCHED THEN INSERT");
+		sb.append(" (ACT_ID, US_ID, OP_CMD, SRC_DB, STK_ID) VALUES");
+		sb.append(" (TP.ACT_ID, TP.US_ID, TP.OP_CMD, TP.SRC_DB, TP.STK_ID)");
 		return sb.toString();
 	}
 	protected String detailSql(){

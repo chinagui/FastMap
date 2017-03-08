@@ -553,16 +553,21 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			
 			int adminId = resultSet.getInt("ADMIN_ID");
 			rdNameObj.put("adminId", adminId);
-			if (!adminMap.isEmpty()) {
-				System.out.println("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
-				if (adminMap.containsKey(String.valueOf(adminId))) {
-					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
-					System.out.println("String.valueOf(adminId)): "+String.valueOf(adminId));
-				} else {
-					System.out.println("空");
-					rdNameObj.put("adminName","");
+			if(adminId == 214){
+				rdNameObj.put("adminName","全国");
+			}else{
+				if (!adminMap.isEmpty()) {
+					System.out.println("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
+					if (adminMap.containsKey(String.valueOf(adminId))) {
+						rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+						System.out.println("String.valueOf(adminId)): "+String.valueOf(adminId));
+					} else {
+						System.out.println("空");
+						rdNameObj.put("adminName","");
+					}
 				}
 			}
+			
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));

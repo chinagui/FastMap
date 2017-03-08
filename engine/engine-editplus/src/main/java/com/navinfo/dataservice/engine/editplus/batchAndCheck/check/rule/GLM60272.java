@@ -28,6 +28,8 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 public class GLM60272 extends BasicCheckRule {
 	
 	private Map<Long,Long> samePoiPid = new HashMap<Long,Long>();
+	
+	private Set<String> filterPid = new HashSet<String>();
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -58,8 +60,11 @@ public class GLM60272 extends BasicCheckRule {
 			allPids.add(parentPid);
 		}
 		allPids.addAll(childPids);
-		if (allPids.contains(samePoiPid.get(poi.getPid()))) {
+		String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+samePoiPid.get(poi.getPid())+"]";
+		if (allPids.contains(samePoiPid.get(poi.getPid()))&&!filterPid.contains(targets)) {
 			setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+			filterPid.add(targets);
+			filterPid.add("[IX_POI,"+samePoiPid.get(poi.getPid())+"];[IX_POI,"+poi.getPid()+"]");
 			return;
 		}
 	}

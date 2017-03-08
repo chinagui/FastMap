@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,13 +83,18 @@ public class FMYW20288 extends BasicCheckRule {
 				}
 			}
 			ResultSet rs = pstmt.executeQuery();
+			Map<Long, Set<Long>> errorList1=new HashMap<Long, Set<Long>>();
+			Map<Long, Set<Long>> errorList2=new HashMap<Long, Set<Long>>();
+			Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
+			Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
 				int meshId = rs.getInt("MESH_ID");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
-				String targets = "[IX_POI," + pidTmp1 + "];[IX_POI," + pidTmp2 + "]";
+				geoMap.put(pidTmp1, geometry);
+				meshMap.put(pidTmp1, meshId);
 				Set<Long> pidList = new HashSet<Long>();
 				pidList.add(pidTmp1);
 				pidList.add(pidTmp2);
@@ -104,7 +110,8 @@ public class FMYW20288 extends BasicCheckRule {
 				IxPoiObj poiObj2 = (IxPoiObj) obj2;
 				IxPoiAddress address2 = poiObj2.getCHAddress();
 				if ((address1 == null && address2 != null) || (address1 != null && address2 == null)) {
-					setCheckResult(geometry, targets, meshId,"不存在地址，请确认");
+					if(!errorList1.containsKey(pidTmp1)){errorList1.put(pidTmp1, new HashSet<Long>());}
+					errorList1.get(pidTmp1).add(pidTmp2);
 				}
 				if (address1 != null && address2 != null) {
 					String fullName1 = address1.getFullname();
@@ -113,17 +120,44 @@ public class FMYW20288 extends BasicCheckRule {
 						String digit11 = this.getDigit(fullName1, "路");
 						String digit21 = this.getDigit(fullName2, "路");
 						if(digit11!=null&&digit21!=null&&!StringUtils.equals(digit11, digit21)){
-							setCheckResult(geometry, targets, meshId,"地址中“路”(道)后面的数字不一致，请确认");
+							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
+							errorList2.get(pidTmp1).add(pidTmp2);
 						}
 					}
 					if(fullName1.contains("道")&&fullName2.contains("道")){
 						String digit12 = this.getDigit(fullName1, "道");
 						String digit22 = this.getDigit(fullName2, "道");
 						if(digit12!=null&&digit22!=null&&!StringUtils.equals(digit12, digit22)){
-							setCheckResult(geometry, targets, meshId,"地址中“路”(道)后面的数字不一致，请确认");
+							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
+							errorList2.get(pidTmp1).add(pidTmp2);
 						}
 					}
 				}
+			}
+			//过滤相同pid
+			Set<Long> filterPid1 = new HashSet<Long>();
+			for(Long pid1:errorList1.keySet()){
+				String targets="[IX_POI,"+pid1+"]";
+				for(Long pid2:errorList1.get(pid1)){
+					targets=targets+";[IX_POI,"+pid2+"]";
+				}
+				if(!(filterPid1.contains(pid1)&&filterPid1.containsAll(errorList1.get(pid1)))){
+					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"不存在地址，请确认");
+				}
+				filterPid1.add(pid1);
+				filterPid1.addAll(errorList1.get(pid1));
+			}
+			Set<Long> filterPid2 = new HashSet<Long>();
+			for(Long pid1:errorList2.keySet()){
+				String targets="[IX_POI,"+pid1+"]";
+				for(Long pid2:errorList2.get(pid1)){
+					targets=targets+";[IX_POI,"+pid2+"]";
+				}
+				if(!(filterPid2.contains(pid1)&&filterPid2.containsAll(errorList2.get(pid1)))){
+					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"地址中“路”(道)后面的数字不一致，请确认");
+				}
+				filterPid2.add(pid1);
+				filterPid2.addAll(errorList2.get(pid1));
 			}
 		}
 	}

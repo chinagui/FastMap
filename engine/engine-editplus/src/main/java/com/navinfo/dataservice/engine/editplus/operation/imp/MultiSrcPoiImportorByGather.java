@@ -2353,7 +2353,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "MultiSrcPoiImportorByGather";
+		return "CollectorUpload";
 	}
 	
 	private void filterAddedPoi(Map<String, JSONObject> addPois)throws Exception{

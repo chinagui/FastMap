@@ -325,8 +325,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				" USING (SELECT IP.PID, R.MESH_ID\r\n" + 
 				"          FROM IX_POI IP, RD_LINK R\r\n" + 
 				"        WHERE IP.LINK_PID = R.LINK_PID\r\n" + 
-				"          AND IP.PMESH_ID IS NULL\r\n" + 
-				"          AND R.MESH_ID IS NOT NULL\r\n");
+				"          AND IP.PMESH_ID=0 \r\n" + 
+				"          AND R.MESH_ID<>0 \r\n");
 		sb1 .append(" AND "+ inClause.getSql());
 		sb1.append(") T ON (P.PID = T.PID)\r\n" +
 					"WHEN MATCHED THEN\r\n" +

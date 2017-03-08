@@ -179,6 +179,9 @@ public class TipsSelector {
 				// fc预处理8001要求返回功能等级
 				if (type == 8001) {
 					m.put("b", deep.getString("fc"));
+					JSONObject geo=JSONObject.fromObject(deep.get("geo"));
+					Geojson.coord2Pixel(geo, z, px, py);
+					m.put("c", geo.getJSONArray("coordinates"));
 
 				} else {
 					m.put("b", json.getString("t_lifecycle"));
@@ -398,10 +401,6 @@ public class TipsSelector {
 
 						m.put("d", deep.getString("name"));
 					}
-
-				} else if (type == 8001) {
-
-					m.put("c", geojson.getJSONArray("coordinates"));
 
 				}
 

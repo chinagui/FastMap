@@ -678,7 +678,9 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	}
 
 	
-
+	private static boolean stringEquals(String a,String b){
+		return com.navinfo.dataservice.commons.util.StringUtils.equals(a, b);
+	}
 	/**
 	 * @Title: importUpdateByJson
 	 * @Description: 更新数据的数据解析
@@ -707,7 +709,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
 					newKindCode=jo.getString("kindCode");
 					//鲜度验证
-					if(!StringUtils.equals(newKindCode,ixPoi.getKindCode())){
+					if(!stringEquals(newKindCode,ixPoi.getKindCode())){
 						ixPoi.setFreshFlag(false);//修改了类型，则为非鲜度验证
 						fieldState.append("改种别代码|") ;
 						ixPoi.setKindCode(newKindCode);
@@ -748,7 +750,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//变更chain
 				String newChain = jo.getString("chain");
-				if(!StringUtils.equals(newChain,ixPoi.getChain())){
+				if(!stringEquals(newChain,ixPoi.getChain())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setChain(newChain);
 					fieldState.append("改连锁品牌|");
@@ -772,7 +774,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//改postCode
 				String newPostCode = jo.getString("postCode");
-				if(!StringUtils.equals(newPostCode,ixPoi.getPostCode())){
+				if(!stringEquals(newPostCode,ixPoi.getPostCode())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setPostCode(newPostCode);
 				}
@@ -792,7 +794,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//改名称
 				String outdoorName = jo.getString("name");
-				if(!StringUtils.equals(outdoorName,ixPoi.getOldName())){
+				if(!stringEquals(outdoorName,ixPoi.getOldName())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setOldName(outdoorName);
 					outDoorLog.append("改名称|");
@@ -800,7 +802,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//改地址
 				String outDoorAddress = jo.getString("address");
-				if(!StringUtils.equals(outDoorAddress,ixPoi.getOldAddress())){
+				if(!stringEquals(outDoorAddress,ixPoi.getOldAddress())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setOldAddress(outDoorAddress);
 					outDoorLog.append("改地址|");
@@ -812,7 +814,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				ixPoi.setCollectTime(jo.getString("t_operateDate"));
 				//改level
 				String newLevel = jo.getString("level");
-				if(!StringUtils.equals(newLevel,ixPoi.getLevel())){
+				if(!stringEquals(newLevel,ixPoi.getLevel())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setLevel(newLevel);
 					outDoorLog.append("改POI_LEVEL|");
@@ -841,7 +843,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				}
 				//重要poi标记
 				String newVipFlag = jo.getString("vipFlag");
-				if( StringUtils.equals(newVipFlag,ixPoi.getVipFlag())){
+				if( stringEquals(newVipFlag,ixPoi.getVipFlag())){
 					ixPoi.setFreshFlag(false);
 					ixPoi.setVipFlag(newVipFlag);
 				}

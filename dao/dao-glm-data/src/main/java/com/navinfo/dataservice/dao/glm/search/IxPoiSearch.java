@@ -14,6 +14,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -1146,10 +1147,16 @@ public class IxPoiSearch implements ISearch {
 					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
 						if(!result.getString("old").isEmpty()){
-							oldOriginalEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
+							String oldOriEngName = JSONObject.fromObject(result.getString("old")).getString("NAME");
+							if (StringUtils.isNotEmpty(oldOriEngName)){
+								oldOriginalEngName = oldOriEngName;
+							}
 						}
 						if(!result.getString("new").isEmpty()){
-							newOriginalEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+							String newOriEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+							if (StringUtils.isNotEmpty(newOriEngName)){
+								newOriginalEngName = newOriEngName;
+							}
 						}
 					}
 				}
@@ -1160,10 +1167,16 @@ public class IxPoiSearch implements ISearch {
 					if (!result.isEmpty()){
 						
 						if(!result.getString("old").isEmpty()){
-							oldStandardEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
+							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
+							if (StringUtils.isNotEmpty(oldStdEngName)){
+								oldStandardEngName = oldStdEngName;
+							}
 						}
 						if(!result.getString("new").isEmpty()){
-							newStandardEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
+							if (StringUtils.isNotEmpty(newStdEngName)){
+								newStandardEngName = newStdEngName;
+							}
 						}
 					}
 				}

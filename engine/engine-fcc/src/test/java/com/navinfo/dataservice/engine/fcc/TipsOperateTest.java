@@ -20,8 +20,10 @@ import org.apache.hadoop.hbase.client.Table;
 import org.junit.Test;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
@@ -44,7 +46,7 @@ public class TipsOperateTest {
 		TipsOperator operate = new TipsOperator();
 
 		try {
-			operate.update("0215015ffa9224d4034f38995b6e8a173d9a55", 0, null,
+			operate.update("021901b0ad67e145be477bb1d2202181edfc84", 0, null,
 					"m");
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -100,7 +102,8 @@ public class TipsOperateTest {
 		
 		try{
 
-		 String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
+		// String parameter="{\"mdFlag\":\"d\",\"handler\":02922,\"data\":[{\"rowkey\":\"1115023838453\",\"status\":1},{\"rowkey\":\"1115024070073\",\"status\":1}]}";
+		 String parameter=" {\"mdFlag\":\"d\",\"handler\":\"2922\",\"data\":[{\"rowkey\":\"0280019713755270f140bc92bed694cd4f5663\",\"status\":1}]}";
 		 if (StringUtils.isEmpty(parameter)) {
              throw new IllegalArgumentException("parameter参数不能为空。");
          }
@@ -232,5 +235,6 @@ public class TipsOperateTest {
 		}
 
 	}
+
 
 }

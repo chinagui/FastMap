@@ -33,6 +33,7 @@ public class GLM60142 extends BasicCheckRule {
 			List<IxPoiRestaurant> restList = poiObj.getIxPoiRestaurants();
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Map<String, String>> foods = metadataApi.scPointFoodtypeFoodTypes();
+			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
 			//KIND_CODE在“FOOD_TYPE值域表（SC_POINT_FOODTYPE）”中的POIKIND存在,但PID没有在IX_POI_RESTAURANT中,报LOG
 			if((restList==null||restList.isEmpty())&&foods.containsKey(kind)){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "分类在制作风味类型的值域范围内,没有制作风味类型,需要补充风味类型");
@@ -50,7 +51,7 @@ public class GLM60142 extends BasicCheckRule {
 				//在IX_POI表中，如果FOOD_TYPE有值，则KIND_CODE应在“FOOD_TYPE值域表（SC_POINT_FOODTYPE）”
 				//中的POIKIND存在，否则报LOG
 				if(!foods.containsKey(kind)){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "允许制作餐饮风味类型的分类值域检查："+kind+"不可以制作风味类型");
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "允许制作餐饮风味类型的分类值域检查："+kindNameByKindCode.get(kind)+"不可以制作风味类型");
 					return;
 				}
 			}

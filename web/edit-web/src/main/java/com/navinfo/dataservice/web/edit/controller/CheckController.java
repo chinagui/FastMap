@@ -9,13 +9,16 @@ import java.util.List;
 import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
+import com.google.gson.JsonObject;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -171,6 +174,71 @@ public class CheckController extends BaseController {
 			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
 			logger.debug("获取规则号"+ruleCodes);
 			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
+			logger.info("end check/listRdnResult");
+			logger.debug(page.getResult());
+			logger.debug(page.getTotalCount());
+			return new ModelAndView("jsonView", success(page));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}  
+	}
+	@RequestMapping(value = "/check/listRdnResultByJobId")
+	public ModelAndView listCheckResultsByJobId(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int subtaskId = jsonReq.getInt("subtaskId");
+			Integer type = jsonReq.getInt("type");
+			Integer jobId = jsonReq.getInt("jobId");
+			System.out.println("jobId : "+jobId);
+			String jobUuid = "";
+			System.out.println("jobUuid : "+jobUuid);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			if(jobId != null && jobId >0){
+				//根据jobId 查询jobUuid 
+				JobInfo jobInfo = jobApiService.getJobById(jobId);
+				jobUuid = jobInfo.getGuid();
+				System.out.println(1);
+			}else{
+				JSONObject jobObj = jobApiService.getLatestJob(subtaskId);
+				if(jobObj != null && jobObj.size() >0){
+					jobUuid= jobObj.getString("jobGuid");
+					jobId = jobObj.getInt("jobId");
+				}
+				System.out.println(2);
+			}
+			System.out.println("jobId 2: "+jobId);
+			System.out.println("jobUuid 2: "+jobUuid);
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			conn = DBConnector.getInstance().getMetaConnection();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			
+			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			System.out.println("apiFcc : "+apiFcc);
+			//获取子任务范围内的tips
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			System.out.println("listRdnResult tips: "+tips);
+			logger.debug("获取子任务范围内的tips: "+tips);
+			//获取规则号
+			//JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
+//			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
+//			logger.debug("获取规则号"+ruleCodes);
+			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());

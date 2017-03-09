@@ -818,10 +818,12 @@ public class IxPoiObj extends AbstractIxObj {
 	 */
 	public IxPoiName getOfficeOriginCHName(){
 		List<IxPoiName> subRows=getIxPoiNames();
-		for(IxPoiName br:subRows){
-			if(br.getNameClass()==1&&br.getNameType()==2&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
-				return br;}
+		if(subRows != null){
+			for(IxPoiName br:subRows){
+				if(br.getNameClass()==1&&br.getNameType()==2&&(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT"))){
+					return br;}
 			}
+		}
 		return null;
 	}
 	
@@ -1060,7 +1062,7 @@ public class IxPoiObj extends AbstractIxObj {
 		for(IxPoiAddress br:subRows){
 			if(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT")){
 				return br;}
-			}
+		}
 		return null;
 	}
 	

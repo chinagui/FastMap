@@ -1442,10 +1442,34 @@ public class runTest extends InitApplication {
 	@Test
 	public void run_0224_1() throws Exception {
 
-		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":\"8.8\",\"data\":{\"linkPids\":[408000014,510000011]}}";
-
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.4366191625595,39.95853180087665],[116.43663548992161,39.9586567080045]]},\"catchLinks\":[{\"linkPid\":501000053,\"lon\":116.43663548992161,\"lat\":39.9586567080045}]},\"dbId\":84}";
+		
+		
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_00306_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":509000060,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.43648639321329,39.95854413650709],[116.43645957112312,39.95865001724366]]},\"catchLinks\":[{\"nodePid\":509000060,\"seqNum\":1}]},\"dbId\":84}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00306_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.43657222390175,39.95855338822849],[116.43657353334267,39.958656507844964]]},\"catchLinks\":[{\"linkPid\":401000075,\"lon\":116.43657353334267,\"lat\":39.958656507844964}]},\"dbId\":84}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
 }

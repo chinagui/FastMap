@@ -39,20 +39,26 @@ public class GLM60143 extends BasicCheckRule {
 			if(!map.containsKey(kindChainStr)){return;}
 			String food = map.get(kindChainStr);
 			List<IxPoiRestaurant> restList = poiObj.getIxPoiRestaurants();
+			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
+			Map<String, String> chainNameMap = metadataApi.getChainNameMap();
+			Map<String, String> foodtypeNameMap = metadataApi.getFoodtypeNameMap();
+			String kindName = kindNameByKindCode.get(kind);
+			String chainName = chainNameMap.get(chain);
+			String foodtypeName = foodtypeNameMap.get(food);
 			if(restList==null||restList.isEmpty()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), 
-					"分类为"+kind+"连锁品牌为"+chain+"的POI对应的风味类型应为"+food);
+					"分类为"+kindName+"连锁品牌为"+chainName+"的POI对应的风味类型应为"+foodtypeName);
 				return;}
 			for(IxPoiRestaurant res:restList){
 				String foodtype=res.getFoodType();
 				if(foodtype==null||foodtype.isEmpty()){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), 
-							"分类为"+kind+"连锁品牌为"+chain+"的POI对应的风味类型应为"+food);
+							"分类为"+kindName+"连锁品牌为"+chainName+"的POI对应的风味类型应为"+foodtypeName);
 					return;
 				}
 				if(!foodtype.equals(food)){
 					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), 
-							"分类为"+kind+"连锁品牌为"+chain+"的POI对应的风味类型应为"+food);
+							"分类为"+kindName+"连锁品牌为"+chainName+"的POI对应的风味类型应为"+foodtypeName);
 					return;
 				}
 			}

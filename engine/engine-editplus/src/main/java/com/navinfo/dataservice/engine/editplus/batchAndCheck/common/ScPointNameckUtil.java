@@ -9,7 +9,7 @@ import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 
 public class ScPointNameckUtil {
 	/**
-	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。若preKey包含resultKey则跳过（批处理规则FM-BAT-20-137需求）
+	 * 需要按照顺序进行key值替换名称，所以用list，按照key长度存放。若resultKey包含preKey则跳过（批处理规则FM-BAT-20-137需求）
 	 * @param name
 	 * @param typeD1
 	 * @return
@@ -18,9 +18,9 @@ public class ScPointNameckUtil {
 		List<ScPointNameckObj> matchResult=new ArrayList<ScPointNameckObj>();
 		for(ScPointNameckObj obj:typeD1){
 			if(name.contains(obj.getPreKey())){
-				if(!obj.getPreKey().contains(obj.getResultKey())){
+				if (!name.contains(obj.getResultKey())||!obj.getResultKey().contains(obj.getPreKey())) {
 					matchResult.add(obj);
-				}
+				} 
 			}
 		}
 		//matchResult.put("国家人口和计划生育委员会", "人口计生委");

@@ -39,6 +39,7 @@ public class FM14Sum1116 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kindCode = poi.getKindCode();
+			
 			if(kindCode == null || (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
 					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
@@ -52,8 +53,12 @@ public class FM14Sum1116 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			String kindCodeP = parentPoi.getKindCode();
-			if(kindCodeP == null|| (!"200103".equals(kindCode)&&!"200104".equals(kindCode)
-					&&!"120101".equals(kindCode)&&!"120102".equals(kindCode))){return;}
+
+			if(kindCodeP == null|| ((!"200103".equals(kindCodeP))&&(!"200104".equals(kindCodeP))
+					&&(!"120101".equals(kindCodeP))&&(!"120102".equals(kindCodeP)))){
+				return;
+			}
+			
 			IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
 			if(ixPoiNameP == null){return;}
 			String nameP = ixPoiNameP.getName();

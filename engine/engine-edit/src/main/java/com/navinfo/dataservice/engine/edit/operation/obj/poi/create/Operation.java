@@ -129,4 +129,9 @@ public class Operation implements IOperation {
         return org.apache.commons.lang.StringUtils.leftPad(userId.concat(date), 20, "0");
 
     }
+    public static void main(String[] args) {
+    	 String date = StringUtils.getCurrentTime();
+         String userId ="2";
+       System.out.println(org.apache.commons.lang.StringUtils.leftPad(userId.concat(date), 20, "0"));
+	}
 }

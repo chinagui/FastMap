@@ -267,14 +267,6 @@ public class RdNameImportor {
 	}
 	
 	/**
-	 * web端保存rdName
-	 * @author wangdongbin
-	 * @param subtaskId 
-	 * @param rdName
-	 * @return
-	 * @throws Exception
-	 */
-	/**
 	 * @Title: importRdNameFromWeb
 	 * @Description: 增加参数 subtaskId
 	 * @param params
@@ -296,7 +288,7 @@ public class RdNameImportor {
 			RdNameSelector selector = new RdNameSelector(conn);
 			
 			RdName rdName = Json2Obj(params);
-			System.out.println(rdName.getAdminName() +" : "+rdName.getAdminId());
+			log.debug("rdName:"+rdName);
 			// 判断是否存在重复name
 			JSONObject rdNameExists = selector.checkRdNameExists(rdName);
 			
@@ -360,8 +352,13 @@ public class RdNameImportor {
 					continue;
 				}
 			}
+			//判断 当道路名为英文是不转全角
+			if(rdName.getLangCode().equals("ENG")){
+				rdName.setName(rdName.getName());
+			}else{
+				rdName.setName(ExcelReader.h2f(rdName.getName()));
+			}
 			
-			rdName.setName(ExcelReader.h2f(rdName.getName()));
 			
 			return rdName;
 		} catch (Exception e) {

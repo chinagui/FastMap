@@ -25,7 +25,7 @@ public class NiValExceptionTest extends InitApplication {
 		initContext();
 	}
 	
-	@Test
+	//@Test
 	public void testGLM01455() throws Exception{
 		String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
@@ -108,17 +108,17 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 
-//	@Test
+	//@Test
 	public void testAddStatus() throws Exception {
 		Connection conn = null;
 		try {
 
-			String id = "6e51ce1f85289caba4b557f33a1da62a";
-			int oldType = 2;
+			String id = "93d0826e5fb9783622acae2fbfb1dd42";
+			int oldType = 0;
 
-			int type = 0;
+			int type = 1;
 
-			conn = DBConnector.getInstance().getConnectionById(19);
+			conn = DBConnector.getInstance().getConnectionById(84);
 
 			NiValExceptionOperator selector = new NiValExceptionOperator(conn);
 

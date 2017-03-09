@@ -61,11 +61,9 @@ public class FM14Sum1301 extends BasicCheckRule {
 						for (String type : fuelTypes) {
 							int typeStr = Integer.valueOf(type);
 							//加油站
-							if((!oilTypes.contains(typeStr)&&"230215".equals(kindCode))
-									||(oilTypes.contains(typeStr)&&!"230215".equals(kindCode)&&!"230216".equals(kindCode))){oilFlag = true;}
+							if(oilTypes.contains(typeStr)&&!"230215".equals(kindCode)){oilFlag = true;}
 							//加气站
-							if((!gasTypes.contains(typeStr)&&"230216".equals(kindCode))
-									||(gasTypes.contains(typeStr)&&!"230216".equals(kindCode)&&!"230215".equals(kindCode))){gasFlag = true;}
+							if(gasTypes.contains(typeStr)&&!"230216".equals(kindCode)){gasFlag = true;}
 						}
 						if(oilFlag){
 							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "不允许采集加油站深度信息的设施采集了加油站深度信息");

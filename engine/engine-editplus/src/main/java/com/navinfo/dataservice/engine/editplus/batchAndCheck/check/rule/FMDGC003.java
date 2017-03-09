@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -28,13 +30,14 @@ public class FMDGC003 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String kind=poi.getKindCode();
 			if(kind==null||kind.isEmpty()){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),null);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"分类为空，请确认");
 				return;
 			}else{
 				MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 				List<String> kindDlist = metadataApi.getKindCodeDList();
+				Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
 				if(!kindDlist.contains(kind)){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),null);
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"分类绝对错误：“"+kindNameByKindCode.get(kind)+"”不在分类一览表中（绝对错误）");
 					return;
 				}
 			}

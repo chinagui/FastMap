@@ -690,7 +690,7 @@ public class MetaController extends BaseController {
             int subtaskId = jsonReq.getInt("subtaskId");
             System.out.println("subtaskId: "+subtaskId);
             ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-
+            System.out.println("apiService: "+apiService);
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
             if (subtask == null) {
@@ -701,6 +701,7 @@ public class MetaController extends BaseController {
 
             FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
             System.out.println("subtask.getGeometry(): "+subtask.getGeometry());
+            System.out.println("apiFcc: "+apiFcc);
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
             System.out.println("tips: "+tips);
@@ -1217,6 +1218,30 @@ public class MetaController extends BaseController {
 	    } finally {
 	        DbUtils.closeQuietly(conn);
 	    }
+    }
+    
+    @RequestMapping(value = "/rdname/searchFix")
+    public ModelAndView searchRdNameFix(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            RdNameSelector selector = new RdNameSelector();
+
+            String langCode = jsonReq.getString("langCode");
+            System.out.println("langCode: "+langCode);
+           
+            JSONObject data = selector.searchRdNameFix(langCode);
+
+            return new ModelAndView("jsonView", success(data));
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
     }
 
 }

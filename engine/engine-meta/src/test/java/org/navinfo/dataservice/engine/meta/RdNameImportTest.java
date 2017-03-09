@@ -154,16 +154,23 @@ public class RdNameImportTest {
 		//三一二国道 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":2763,\"nameGroupid\":2763,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":264491,\"nameGroupid\":264491,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
-		//地铁13 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82374,\"nameGroupid\":82374,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
-		//轨道交通１号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
-		//地铁八通线String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82363,\"nameGroupid\":82363,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁13 号线 
+//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82374,\"nameGroupid\":82374,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//轨道交通１号线 
+//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40611226,\"nameGroupid\":40611227,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//地铁八通线
+//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82363,\"nameGroupid\":82363,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//测试地铁八通线308000022
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":308000022,\"nameGroupid\":206000021,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//地铁11 号线 String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82372,\"nameGroupid\":82372,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		// 2号线 
 		// 轻轨2号线		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":82376,\"nameGroupid\":82376,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		// 地铁亦庄线 
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":503000007,\"nameGroupid\":400000005,\"langCode\":\"CHI\",\"roadType\":1}],\"flag\":1,\"subtaskId\":208}";
+//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40588337,\"nameGroupid\":40588338,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		//火龙沟线
+//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589341,\"nameGroupid\":40589342,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+	
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":308000029,\"nameGroupid\":304000029,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":76}";
 		
 		Connection conn = null;
 		try {

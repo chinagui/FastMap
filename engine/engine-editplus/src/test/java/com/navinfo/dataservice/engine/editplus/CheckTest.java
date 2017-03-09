@@ -23,6 +23,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
@@ -70,7 +71,10 @@ public class CheckTest {
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 8165144, false);
+		tabNames.add("IX_POI_ADDRESS");
+//		tabNames.add("IX_POI_CHARGINGSTATION");
+//		tabNames.add("IX_POI_GASSTATION");
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -82,7 +86,7 @@ public class CheckTest {
 		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		//row.setOpType(OperationType.PRE_DELETED);
+//		row.setOpType(OperationType.PRE_DELETED);
 //		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
@@ -106,12 +110,23 @@ public class CheckTest {
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
 		
+//		Set<Long> pids = new HashSet<Long>();
+//		pids.add(64L);
+//		pids.add(8165144L);
+//		pids.add(8165145L);
+//		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
+//		for (Long key : rows.keySet()) {
+//			BasicObj obj1 = rows.get(key);
+//			IxPoi row1=(IxPoi) obj1.getMainrow();
+//			row1.setHisChangeLogs(logList);
+//			operationResult.putObj(obj1);
+//		}
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("GLM60316");
+		ruleIdList.add("GLM60143");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

@@ -42,10 +42,7 @@ public class FMGLM6007901 extends BasicCheckRule {
 			if(name == null){return;}
 			if(name.contains("机场")||name.contains("機場")){
 				//是否有父
-				if(!parentMap.containsKey(poi.getPid())){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-					return;
-				}
+				if(!parentMap.containsKey(poi.getPid())){return;}
 				Long parentId=parentMap.get(poi.getPid());
 				BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 				IxPoiObj parentPoiObj = (IxPoiObj) parentObj;

@@ -191,9 +191,10 @@ public class TipsUpload {
 					.getBean("metaApi");
 			JSONArray names = deep.getJSONArray("n_array");
 			for (Object name : names) {
-				if (name != null && StringUtils.isNotEmpty(name.toString())) {
+				//修改 20170308，道路名去除空格，否则转英文报错
+				if (name != null && StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
-						metaApi.nameImport(name.toString(), longitude,
+						metaApi.nameImport(name.toString().trim(), longitude,
 								latitude, rowkey);
 					} catch (Exception e) {
 						// reasons.add(newReasonObject(rowkey,
@@ -346,6 +347,8 @@ public class TipsUpload {
 				json.put("t_dInProc", 0);
 
 				json.put("t_mInProc", 0);
+				
+				json.put("t_fStatus", 0);
 				
 				//20170223添加：增加快线、中线任务号
 
@@ -668,7 +671,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"));
+				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -807,7 +810,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"));
+				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -853,12 +856,12 @@ public class TipsUpload {
 		return put;
 	}
 
-	/* *//**
+	 /**
 	 * @throws Exception
 	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
 	 * @time:2017-2-13上午9:20:52
 	 */
-	/*private void tipsDiff() throws Exception {
+/*	private void tipsDiff() throws Exception {
 		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
 		SolrBulkUpdater solrConn = null;

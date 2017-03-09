@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -36,7 +39,7 @@ public class FMA0917 extends BasicCheckRule {
 		}
 		MetadataApi metaApi = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		List<String> charList = metaApi.halfCharList();
-		String errorStr = "";
+		List<String> errorStr = new ArrayList<String>();
 		for (IxPoiAddress addr:addresses) {
 			if (!addr.isCH()) {
 				continue;
@@ -46,12 +49,12 @@ public class FMA0917 extends BasicCheckRule {
 			for (int i=0;i<mergeAddrPhonetic.length();i++) {
 				char character = mergeAddrPhonetic.charAt(i);
 				if (!charList.contains(String.valueOf(character))){
-					errorStr = errorStr+","+character;
+					errorStr.add(String.valueOf(character));
 				}
 			}
 		}
-		if (errorStr.length()>0) {
-			String error = "地址拼音中含有非法字符“"+errorStr+"”。";
+		if (errorStr.size()>0) {
+			String error = "地址拼音中含有非法字符“"+StringUtils.join(errorStr, ",")+"”。";
 			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),error);
 		}
 		

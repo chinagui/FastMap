@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -45,6 +48,7 @@ public class FM11Win0822 extends BasicCheckRule {
 				pidChildren.add(poi.getPid());
 			}
 		}
+		Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 		if (pidChildren != null && pidChildren.size() > 0) {
 			String pids = pidChildren.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
@@ -55,12 +59,11 @@ public class FM11Win0822 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			} else {
 				pidString = " PID IN (" + pids + ")";
 			}
 			String sqlStr = "SELECT /*+ PARALLEL(P)*/"
-					+ "					 P.PID, P1.PID"
+					+ "					 P1.PID PID, P.PID PID2"
 					+ "					  FROM IX_POI P1, IX_POI P"
 					+ "					 WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "					   AND P.KIND_CODE IN ('230215', '230216')"
@@ -80,7 +83,7 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ "					   AND P.U_RECORD != 2";
 			log.info("FM-11Win-08-22 sql1:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
-			;
+			
 			if (values != null && values.size() > 0) {
 				for (int i = 0; i < values.size(); i++) {
 					pstmt.setClob(i + 1, values.get(i));
@@ -90,9 +93,10 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
-				String targets = "[IX_POI," + pidTmp1 + "];[IX_POI," + pidTmp2 + "]";
-				setCheckResult("", targets, 0);
+				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+				errorList.get(pidTmp1).add(pidTmp2);
 			}
+			
 		}
 		if (pidParent != null && pidParent.size() > 0) {
 			String pids = pidParent.toString().replace("[", "").replace("]", "");
@@ -104,13 +108,12 @@ public class FM11Win0822 extends BasicCheckRule {
 				clob.setString(1, pids);
 				pidString = " PID IN (select to_number(column_value) from table(clob_to_table(?)))";
 				values.add(clob);
-				values.add(clob);
 			} else {
 				pidString = " PID IN (" + pids + ")";
 			}
 			//同一点获取速度较慢，
 			String sqlStr = "SELECT /*+PARALLEL(P)*/"
-					+ " P.PID, P1.PID"
+					+ " P1.PID PID, P.PID PID2"
 					+ "  FROM IX_POI P1, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "   AND P1.PID != P.PID"
@@ -130,7 +133,7 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ "   AND P.U_RECORD != 2";
 			log.info("FM-11Win-08-22 sql2:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
-			;
+			
 			if (values != null && values.size() > 0) {
 				for (int i = 0; i < values.size(); i++) {
 					pstmt.setClob(i + 1, values.get(i));
@@ -140,9 +143,22 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
-				String targets = "[IX_POI," + pidTmp2 + "];[IX_POI," + pidTmp1 + "]";
+				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+				errorList.get(pidTmp1).add(pidTmp2);
+			}
+		}
+		//过滤相同pid
+		Set<Long> filterPid = new HashSet<Long>();
+		for(Long pid1:errorList.keySet()){
+			String targets="[IX_POI,"+pid1+"]";
+			for(Long pid2:errorList.get(pid1)){
+				targets=targets+";[IX_POI,"+pid2+"]";
+			}
+			if(!(filterPid.contains(pid1)&&filterPid.containsAll(errorList.get(pid1)))){
 				setCheckResult("", targets, 0);
 			}
+			filterPid.add(pid1);
+			filterPid.addAll(errorList.get(pid1));
 		}
 	}
 

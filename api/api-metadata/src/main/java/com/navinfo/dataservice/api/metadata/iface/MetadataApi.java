@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,11 +21,23 @@ import net.sf.json.JSONObject;
  */
 public interface MetadataApi {
 	/**
-	 * SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD
-	 * @return Map<String, String> key:kind_id,value:keyword
+	 * SELECT FOODTYPE,FOODTYPENAME FROM SC_POINT_FOODTYPE
+	 * @return  Map<String, String> key：foodtype value:FOODTYPENAME
 	 * @throws Exception
 	 */
-	public Map<String, String> ciParaKindKeywordMap() throws Exception;
+	public Map<String, String> getFoodtypeNameMap() throws Exception;
+	/**
+	 * SELECT DISTINCT CHAIN_CODE,CHAIN_NAME FROM SC_POINT_CHAIN_CODE
+	 * @return	Map<String,String> key:CHAIN_CODE,value:CHAIN_NAME
+	 * @throws Exception
+	 */
+	public Map<String,String> getChainNameMap() throws Exception;
+	/**
+	 * SELECT KIND_ID, KEYWORD FROM CI_PARA_KIND_KEYWORD
+	 * @return Map<String, List<String>> key:kind_id,value:keyword
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> ciParaKindKeywordMap() throws Exception;
 	/**
 	 * SELECT ADMINAREACODE, AREACODE FROM SC_POINT_ADMINAREA
 	 * @return Map<String, List<String>> :key,AREACODE电话区号;value,ADMINAREACODE列表，对应的行政区划号列表
@@ -377,6 +390,13 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> scPointKindRule() throws Exception;
+	/**
+	 * SELECT POI_KIND,POI_KIND_NAME,TYPE FROM SC_POINT_KIND_RULE WHERE TYPE IN(5)
+	 * 
+	 * @return Map<String, String> key:POI_KIND;value:POI_KIND_NAME
+	 * @throws Exception
+	 */
+	public Map<String, String> scPointKindRule5() throws Exception;
 	/**
 	 * SELECT KIND_CODE,NEW_POI_LEVEL FROM SC_POINT_CODE2LEVEL WHERE KIND_CODE ='110302'
 	 * 

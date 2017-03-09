@@ -34,33 +34,33 @@ public class FMGLM6015401 extends BasicCheckRule {
 			if((name.contains("(")&&name.contains("）"))||(name.contains("（")&&name.contains(")"))
 					||(name.contains("[")&&name.contains("］"))||(name.contains("［")&&name.contains("]"))
 					||(name.contains("{")&&name.contains("｝"))||(name.contains("｛")&&name.contains("}"))){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中存在半角括号");
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中存在一边是半角一边是全角的括号");
 				return;
 			}
 			String errorMsg=CheckUtil.isRightKuohao(name,"(",")");
 			if(errorMsg!=null){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中"+errorMsg);
 				return;
 			}
 			errorMsg=CheckUtil.isRightKuohao(name,"[","]");
 			if(errorMsg!=null){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中"+errorMsg);
 				return;
 			}
 			errorMsg=CheckUtil.isRightKuohao(name,"{","}");
 			if(errorMsg!=null){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中"+errorMsg);
 				return;
 			}
 			errorMsg=CheckUtil.isRightKuohao(name,"《","》");
 			if(errorMsg!=null){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中"+errorMsg);
 				return;
 			}
 			//混合括号嵌套判断
 			errorMsg=CheckUtil.isDoubleKuohao(name);
 			if(errorMsg!=null){
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), errorMsg);
+				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "POI中文名称中"+errorMsg);
 				return;
 			}
 		}

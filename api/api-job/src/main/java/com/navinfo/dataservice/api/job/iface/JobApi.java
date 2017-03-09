@@ -13,6 +13,7 @@ import net.sf.json.JSONObject;
 public interface JobApi {
 	long createJob(String jobType,JSONObject request,long userId,long taskId,String descp)throws Exception;
 	JobInfo getJobById(long jobId)throws Exception;
+	JSONObject getLatestJob(int subtaskId)throws Exception;
 	JobInfo getJobByGuid(String jobGuid)throws Exception;
 	String help();
 }

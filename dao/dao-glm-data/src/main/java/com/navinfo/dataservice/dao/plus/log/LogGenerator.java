@@ -28,10 +28,12 @@ import com.vividsolutions.jts.geom.Geometry;
 public class LogGenerator {
 	String insertLogActionSql = "INSERT INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD,SRC_DB,STK_ID) VALUES (?,?,?,?,?)";
 	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSDATE,LOG_OP_SEQ.NEXTVAL)";
+	String insertLogDayReleaseSql = "INSERT INTO LOG_DAY_RELEASE (OP_ID) VALUES (?)";
 	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";
 	PreparedStatement perstmtLogAction = null;
 	PreparedStatement perstmtLogOperation = null;
+	PreparedStatement perstmtLogDayRelase = null;
 	PreparedStatement perstmtLogDetail = null;
 	PreparedStatement perstmtLogDetailGrid = null;
 	
@@ -44,6 +46,7 @@ public class LogGenerator {
 		}finally{
 			DbUtils.closeQuietly(perstmtLogAction);
 			DbUtils.closeQuietly(perstmtLogOperation);
+			DbUtils.closeQuietly(perstmtLogDayRelase);
 			DbUtils.closeQuietly(perstmtLogDetail);
 			DbUtils.closeQuietly(perstmtLogDetailGrid);
 		}
@@ -70,6 +73,9 @@ public class LogGenerator {
 		}
 		if(perstmtLogOperation!=null){
 			perstmtLogOperation.executeBatch();
+		}
+		if(perstmtLogDayRelase!=null){
+			perstmtLogDayRelase.executeBatch();
 		}
 		if(perstmtLogDetail!=null){
 			perstmtLogDetail.executeBatch();
@@ -111,21 +117,27 @@ public class LogGenerator {
 					if(geoChangeOpId==null){
 						if(perstmtLogOperation==null){
 							perstmtLogOperation = conn.prepareStatement(insertLogOperationSql);
+							perstmtLogDayRelase = conn.prepareStatement(insertLogDayReleaseSql);
 						}
 						geoChangeOpId=UuidUtils.genUuid();
 					}
 					perstmtLogOperation.setString(1, geoChangeOpId);
 					perstmtLogOperation.setString(2, actId);
 					perstmtLogOperation.addBatch();
+					perstmtLogDayRelase.setString(1, geoChangeOpId);
+					perstmtLogDayRelase.addBatch();
 					opId = geoChangeOpId;
 				}else{
 					if(perstmtLogOperation==null){
 						perstmtLogOperation = conn.prepareStatement(insertLogOperationSql);
+						perstmtLogDayRelase = conn.prepareStatement(insertLogDayReleaseSql);
 					}
 					opId = UuidUtils.genUuid();
 					perstmtLogOperation.setString(1, opId);
 					perstmtLogOperation.setString(2, actId);
 					perstmtLogOperation.addBatch();
+					perstmtLogDayRelase.setString(1, opId);
+					perstmtLogDayRelase.addBatch();
 				}
 
 				//"FEATURE";
@@ -263,15 +275,10 @@ public class LogGenerator {
 		perstmtLogDetail.setString(5, subrow.getGeoType());//几何参考对象名
 		perstmtLogDetail.setLong(6, subrow.getGeoPid());//几何参考对象pid
 		perstmtLogDetail.setString(7, subrow.tableName());
-		if(subrow.getOpType().equals(OperationType.UPDATE)){
-			perstmtLogDetail.setString(8,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
-			perstmtLogDetail.setString(9,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
-			perstmtLogDetail.setString(10,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
-		}else{
-			perstmtLogDetail.setString(8,null);
-			perstmtLogDetail.setString(9,null);
-			perstmtLogDetail.setString(10,null);
-		}
+
+		perstmtLogDetail.setString(8,(subrow.getOldValueJson()==null?null:subrow.getOldValueJson().toString()));
+		perstmtLogDetail.setString(9,(subrow.getNewValueJson()==null?null:subrow.getNewValueJson().toString()));
+		perstmtLogDetail.setString(10,(subrow.getChangedColumns()==null?null:subrow.getChangedColumns().toString()));
 
 		if(subrow.getOpType().equals(OperationType.DELETE)){
 			perstmtLogDetail.setInt(11, 2);

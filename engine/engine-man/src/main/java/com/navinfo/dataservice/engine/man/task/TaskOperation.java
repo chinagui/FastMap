@@ -2322,7 +2322,8 @@ public class TaskOperation {
 					return list;
 				}
 			};
-			List<Subtask> list = run.query(conn, sb.toString(), rsh);
+			List<Subtask> list = new ArrayList<Subtask>();
+			list = run.query(conn, sb.toString(), rsh);
 			return list;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

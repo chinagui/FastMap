@@ -81,6 +81,26 @@ public class ProduceController extends BaseController {
 	}
 	
 	/**
+	 * @Title: list
+	 * @Description: (修改)日出品管理--列表(第七迭代)
+	 * @param request
+	 * @return  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午2:25:47 
+	 */
+	@RequestMapping(value = "/produce/statics")
+	public ModelAndView statics(HttpServletRequest request){
+		try{
+			Page data=ProduceService.getInstance().list(null, 1, 20);
+			return new ModelAndView("jsonView", success(data.getTotalCount()));
+		}catch(Exception e){
+			log.error("日出品失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
 	 * 日出品管理--列表
 	 * @param request
 	 * @return

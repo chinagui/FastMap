@@ -30,6 +30,8 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -62,6 +64,7 @@ import com.navinfo.dataservice.impcore.statusModifier.PoiReleaseDailyLogStatusMo
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 
 import net.sf.json.JSONObject;
 
@@ -473,11 +476,10 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	
 	private void callReleaseTransApi() throws IOException {
 		try { 
-			URL url = new URL("http://192.168.3.151:8089/smap/conv/day/launch");
-			URLConnection connection = url.openConnection();
-			connection.setConnectTimeout(3);
-			connection.connect();
-			//connection.getInputStream();
+			ServiceInvokeUtil http =new ServiceInvokeUtil();
+			String msUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.productConvert);
+			String json=http.invoke(msUrl,null,10);
+			log.info("调用出品转换接口:"+json);
 		 } catch (Exception e) {
 			 log.debug("调用出品转换接口报错:"+e.getMessage());
 	     } 

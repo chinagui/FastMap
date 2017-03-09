@@ -6,8 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -64,7 +66,7 @@ public class FM14Sum170101 extends BasicCheckRule {
 						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商:"+name+"被修改，请确认");
 					}
 					if(poi.getOpType().equals(OperationType.PRE_DELETED)){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商:"+name+"被删除，请确认");
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "客户厂商:"+poi.getPid()+"被删除，请确认");
 					}
 				}
 			}
@@ -117,6 +119,8 @@ public class FM14Sum170101 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			//过滤相同pid
+			Set<String> filterPid = new HashSet<String>();
 			while(rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
@@ -124,7 +128,11 @@ public class FM14Sum170101 extends BasicCheckRule {
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"),"客户厂商:"+name+"在数据中存在，请确认");
+				if(!filterPid.contains(targets)){
+					setCheckResult(geometry, targets, rs.getInt("MESH_ID"),"客户厂商:"+name+"在数据中存在，请确认");
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 	}

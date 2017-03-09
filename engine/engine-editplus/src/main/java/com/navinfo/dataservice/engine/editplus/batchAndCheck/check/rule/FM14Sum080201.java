@@ -6,8 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import oracle.sql.STRUCT;
 
@@ -100,13 +102,19 @@ public class FM14Sum080201 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			//过滤相同pid
+			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				if(!filterPid.contains(targets)){
+					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 		//同点的设施，名称（name）、地址（address）、分类和品牌相同,当分类={230210,230213,230214}时，需要增加停车场建筑物类型一起判断
@@ -166,13 +174,19 @@ public class FM14Sum080201 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			//过滤相同pid
+			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
 				Long pidTmp2=rs.getLong("PID2");
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				if(!filterPid.contains(targets)){
+					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 	}

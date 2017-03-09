@@ -35,6 +35,8 @@ import com.vividsolutions.jts.geom.Geometry;
 public class GLM60238 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
+	private Set<String> filterPid1 = new HashSet<String>();
+	private Set<String> filterPid2 = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -93,14 +95,24 @@ public class GLM60238 extends BasicCheckRule {
 			}
 			if(flag){
 				if(!StringUtils.equals(name, nameP)||!StringUtils.equals(fullName, fullNameP)||distance > 5){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
+					String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+					if(!filterPid1.contains(targets)){
+						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "制作多类别同属性同一关系的POI名称、地址、显示坐标应完全相同(5米范围内)");
+					}
+					filterPid1.add(targets);
+					filterPid1.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 				}
 			}
 			//制作了此类型的同一关系(满足检查条件)，但是分类+CHAIN相同，报LOG
 			String chain = poi.getChain();
 			String chainP = parentPoi.getChain();
 			if(StringUtils.equals(chain, chainP)&&StringUtils.equals(kindCode, kindCodeP)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "制作多类别同属性同一关系的POI种别必须不相同");
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				if(!filterPid2.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "制作多类别同属性同一关系的POI种别必须不相同");
+				}
+				filterPid2.add(targets);
+				filterPid2.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 			}
 		}
 	}

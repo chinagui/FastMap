@@ -65,7 +65,7 @@ public class RdNameSelectorTest {
 					tips.add(jobj);
 					tips.add(jobj2);*/
 			
-			JSONObject data = selector.searchForWeb(jsonReq,tips);
+			JSONObject data = selector.searchByName("京", 20, 1);//selector.searchForWeb(jsonReq,tips);
 			
 			System.out.println(data);
 
@@ -73,6 +73,24 @@ public class RdNameSelectorTest {
 			e.printStackTrace();
 		}
 	}
+	
+	//@Test
+	public void testGetRdNameByNameId()
+	{
+
+		try {
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			JSONObject data = selector.searchForWebByNameId("264491");//selector.searchForWeb(jsonReq,tips);
+			
+			System.out.println(data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	
 	public static void main(String[] args) {
 		
@@ -89,7 +107,7 @@ public class RdNameSelectorTest {
 	@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
-		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':403000005,'nameGroupid':304000029,'langCode':'ENG','name':'Yangliu Expy','type':'*','base':'Yangliu Expy','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':1,'roadType':3,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'\"task\":76','paRegionId':null,'splitFlag':0,'memo':'','routeId':null,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':null,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':403000005,'nameGroupid':304000029,'langCode':'ENG','name':'Yangliu Expy','type':'*','base':'Yangliu Expy','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':2,'roadType':3,'adminId':214,'codeType':1,'voiceFile':'','srcResume':'\"task\":76','paRegionId':null,'splitFlag':0,'memo':'','routeId':null,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':null,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
 				//"{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'杨柳高速公路','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'ENG','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':3,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
 		
 		JSONObject data = jsonReq.getJSONObject("data");

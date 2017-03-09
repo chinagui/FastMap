@@ -311,7 +311,7 @@ public class TipsOperateTest2 extends InitApplication{
 		
 	//	http://192.168.4.188:8000/service/fcc/tip/submitPre/?access_token=00000002IXTSI12VB09E09592F3300CCB65D2A3A59DCB7D0&parameter={"grids":[60560303],"user":123}
 		
-		String parameter="{\"grids\":[60560303],\"user\":123}";
+		String parameter="{\"grids\":[60560303],\"user\":11111}";
 		
 		try {
 			if (StringUtils.isEmpty(parameter)) {
@@ -320,18 +320,20 @@ public class TipsOperateTest2 extends InitApplication{
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			JSONArray grids = jsonReq.getJSONArray("grids");
+		/*	JSONArray grids = jsonReq.getJSONArray("grids");
 
 
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
+            }*/
 
 			int user = jsonReq.getInt("user");
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
 			op.submit2Web(user);
+			
+			System.out.println("提交成功");
 		}catch (Exception e) {
 			e.printStackTrace();
 		}

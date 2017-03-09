@@ -109,7 +109,7 @@ public class CheckCodeKind extends baseRule {
 				
 				sb.append(" SELECT 1 FROM RD_LINK R,RD_LINK_NAME N  ");
 				sb.append(" WHERE R.LINK_PID = N.LINK_PID           ");
-				sb.append(" AND R.KIND IN (1,2)                     ");
+				sb.append(" AND R.KIND IN (1,2,3)                     ");
 				sb.append(" AND N.CODE <> 1                         ");
 				sb.append(" AND R.LINK_PID = " + rdLink.getPid());
 				sb.append(" AND R.U_RECORD <> 2                     ");
@@ -117,7 +117,7 @@ public class CheckCodeKind extends baseRule {
 				sb.append(" UNION                                   ");
 				sb.append(" SELECT 1 FROM RD_LINK R,RD_LINK_NAME N  ");
 				sb.append(" WHERE R.LINK_PID = N.LINK_PID           ");
-				sb.append(" AND R.KIND NOT IN (1,2)                 ");
+				sb.append(" AND R.KIND NOT IN (1,2,3)                 ");
 				sb.append(" AND N.CODE <> 0                         ");
 				sb.append(" AND R.LINK_PID = " + rdLink.getPid());
 				sb.append(" AND R.U_RECORD <> 2                     ");

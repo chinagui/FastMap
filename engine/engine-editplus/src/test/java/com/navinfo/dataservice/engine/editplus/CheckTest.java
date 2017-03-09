@@ -110,23 +110,23 @@ public class CheckTest {
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
 		
-//		Set<Long> pids = new HashSet<Long>();
-//		pids.add(64L);
-//		pids.add(8165144L);
-//		pids.add(8165145L);
-//		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
-//		for (Long key : rows.keySet()) {
-//			BasicObj obj1 = rows.get(key);
-//			IxPoi row1=(IxPoi) obj1.getMainrow();
-//			row1.setHisChangeLogs(logList);
-//			operationResult.putObj(obj1);
-//		}
+		Set<Long> pids = new HashSet<Long>();
+		pids.add(64L);
+		pids.add(8165144L);
+		pids.add(8165145L);
+		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
+		for (Long key : rows.keySet()) {
+			BasicObj obj1 = rows.get(key);
+			IxPoi row1=(IxPoi) obj1.getMainrow();
+			row1.setHisChangeLogs(logList);
+			operationResult.putObj(obj1);
+		}
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("GLM60143");
+		ruleIdList.add("GLM60292");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

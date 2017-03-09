@@ -27,6 +27,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 public class GLM60288 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
+	private Set<String> filterPid = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -48,7 +49,12 @@ public class GLM60288 extends BasicCheckRule {
 			if(kindCodeP == null ){return;}
 			
 			if(kindCode.equals(kindCodeP)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				if(!filterPid.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 				return;
 			}
 			

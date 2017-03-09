@@ -72,6 +72,7 @@ public class CheckTest {
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
+//		tabNames.add("IX_POI_CHARGINGSTATION");
 //		tabNames.add("IX_POI_GASSTATION");
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
@@ -82,22 +83,22 @@ public class CheckTest {
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
 //		logg.setOpType(OperationType.UPDATE);
-		logg.setOpType(OperationType.INSERT);
+//		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		//row.setOpType(OperationType.PRE_DELETED);
+		row.setOpType(OperationType.PRE_DELETED);
 //		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
-		IxPoiAddress chiAddress = poiObj.getCHAddress();
-		ChangeLog logg1=new ChangeLog();
-		Map<String, Object> oldValues1=new HashMap<String, Object>();
-		oldValues1.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
-		logg1.setOldValues(oldValues1);
-		logg1.setOpType(OperationType.UPDATE);
-		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
-		logList1.add(logg1);
-		chiAddress.setHisChangeLogs(logList1);
+//		IxPoiAddress chiAddress = poiObj.getCHAddress();
+//		ChangeLog logg1=new ChangeLog();
+//		Map<String, Object> oldValues1=new HashMap<String, Object>();
+//		oldValues1.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+//		logg1.setOldValues(oldValues1);
+//		logg1.setOpType(OperationType.UPDATE);
+//		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
+//		logList1.add(logg1);
+//		chiAddress.setHisChangeLogs(logList1);
 		
 //		IxPoiName name = poiObj.getOfficeOriginCHName();
 //		ChangeLog namelogg=new ChangeLog();
@@ -125,7 +126,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-124");
+		ruleIdList.add("FM-14Sum-17-01-01");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

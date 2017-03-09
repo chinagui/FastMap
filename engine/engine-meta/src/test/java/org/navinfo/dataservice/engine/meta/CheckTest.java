@@ -13,8 +13,10 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.scFmControl.ScFmControl;
+import com.navinfo.dataservice.engine.meta.scPointChainCode.ScPointChainCode;
 import com.navinfo.dataservice.engine.meta.scPointCode2Level.ScPointCode2Level;
 import com.navinfo.dataservice.engine.meta.scPointFocus.ScPointFocus;
+import com.navinfo.dataservice.engine.meta.scPointFoodtype.ScPointFoodtype;
 import com.navinfo.dataservice.engine.meta.scPointKindNew.ScPointKindNew;
 import com.navinfo.dataservice.engine.meta.scPointKindRule.ScPointKindRule;
 import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
@@ -120,7 +122,11 @@ public class CheckTest {
 	public void test07() {
 		try {
 			Map<String, String> scPointKindNew5List = ScPointKindRule.getInstance().scPointKindRule5();
+			Map<String, String> chainNameMap = ScPointChainCode.getInstance().getChainNameMap();
+			Map<String, String> foodtypeNameMap = ScPointFoodtype.getInstance().getFoodtypeNameMap();
 			System.out.println(scPointKindNew5List.toString());
+			System.out.println(chainNameMap.toString());
+			System.out.println(foodtypeNameMap.toString());
 		} catch (Exception e) {
 			System.out.println(ResponseUtils.assembleFailResult(e.getMessage()));
 			e.printStackTrace();

@@ -373,7 +373,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	
 	private void dealFmAndDMSLock(OracleSchema monthDbSchema,List<Integer> meshs) throws Exception {
 		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
-		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE FGM.MESH_ID = 0 FOR UPDATE";
+		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE LOCK_OWNER='GLOBAL' FOR UPDATE";
 		Statement sourceStmt = monthConn.createStatement();
 		try{
 			ResultSet rs = sourceStmt.executeQuery(sql);

@@ -114,10 +114,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			int t_pStatus = 0;
 			int t_dInProc = 0;
 			int t_mInProc = 0;  
+			int t_fStatus=0;
+			int s_qTaskId=0;
+			int s_mTaskId=0;
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, currentDate,currentDate, t_cStatus, t_dStatus,
-					t_mStatus, t_inMeth,t_pStatus,t_dInProc,t_mInProc);
+					t_mStatus, t_inMeth,t_pStatus,t_dInProc,t_mInProc,t_fStatus);
 
 			// source
 			int s_sourceCode = 14;
@@ -170,7 +173,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate{
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc);
+					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc,s_qTaskId,s_mTaskId,t_fStatus);
 
 			solr.addTips(solrIndex);
 

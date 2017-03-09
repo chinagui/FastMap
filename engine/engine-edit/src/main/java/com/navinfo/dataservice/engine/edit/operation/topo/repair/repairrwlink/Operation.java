@@ -93,7 +93,7 @@ public class Operation implements IOperation {
 				}
 
 				RwNode preNode = (RwNode) nodeSelector.loadById(nodePid, true,
-						true);
+						false);
 				// 分离node挂接的link
 				List<RwLink> links = linkSelector.loadByNodePid(nodePid, true);
 

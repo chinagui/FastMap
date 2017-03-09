@@ -620,6 +620,48 @@ public class SubtaskOperation {
 		}
 		
 	}
+	
+	/**
+	 * web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
+	 * @param conn
+	 * @param subtaskId
+	 * @param gridIdsToInsert
+	 * @throws Exception 
+	 */
+	public static void checkSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String sql = "SELECT G.GRID_ID"
+					+ "  FROM SUBTASK_GRID_MAPPING G, SUBTASK S, TASK T"
+					+ " WHERE G.SUBTASK_ID = "+bean.getSubtaskId()
+					+ "   AND G.SUBTASK_ID = S.SUBTASK_ID"
+					+ "   AND S.TASK_ID = T.TASK_ID"
+					+ "   AND T.BLOCK_ID != 0"
+					+ " MINUS"
+					+ " SELECT GRID_ID FROM TASK_GRID_MAPPING WHERE TASK_ID = "+bean.getTaskId();
+			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
+				public List<Long> handle(ResultSet rs) throws SQLException {
+					List<Long> grids=new ArrayList<Long>();
+					while (rs.next()) {
+						grids.add(rs.getLong("GRID_ID"));
+					}
+					return grids;
+				}
+
+			};
+			log.info("checkSubtaskGridMapping-sql:"+sql);
+			List<Long> grids= run.query(conn, sql, rsHandler);
+			if(grids==null||grids.size()==0){return;}
+			//存在block外的grid，需删除
+			sql="DELETE FROM SUBTASK_GRID_MAPPING WHERE GRID_ID IN "+grids.toString().replace("[", "(").replace("]", ")");
+			run.execute(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 
 
 //	/**

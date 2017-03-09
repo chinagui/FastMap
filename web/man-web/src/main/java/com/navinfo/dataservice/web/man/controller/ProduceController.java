@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -74,6 +75,30 @@ public class ProduceController extends BaseController {
 			resultMap.put("result", data.getResult());
 			resultMap.put("totalCount", data.getTotalCount());
 			return new ModelAndView("jsonView", success(resultMap));
+		}catch(Exception e){
+			log.error("日出品失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * @Title: list
+	 * @Description: (修改)日出品管理--列表(第七迭代)
+	 * @param request
+	 * @return  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月3日 下午2:25:47 
+	 */
+	@RequestMapping(value = "/produce/statics")
+	public ModelAndView statics(HttpServletRequest request){
+		try{
+			JSONObject condition = new JSONObject();
+			JSONArray selectParam=new JSONArray();
+			selectParam.add(4);
+			condition.put("selectParam", selectParam);
+			Page data=ProduceService.getInstance().list(condition, 1, 20);
+			return new ModelAndView("jsonView", success(data.getTotalCount()));
 		}catch(Exception e){
 			log.error("日出品失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

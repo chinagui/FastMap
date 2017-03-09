@@ -31,7 +31,7 @@ public class FMYW20054 extends BasicCheckRule {
 			if(nameStr==null||nameStr.isEmpty()){return;}
 			String tmpStr=CheckUtil.strQ2B(nameStr);
 			//Pattern p = Pattern.compile(".*[()\\[\\\\]`{}\"《》、.°ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ\\=]{1,}.*");
-			Pattern p = Pattern.compile("^[()\\[\\]`\\\\{}\"《》、。°ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ=]+$");
+			Pattern p = Pattern.compile("^[()\\[\\]`\\\\{}\"“”《》、。°ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫ=]+$");
 			Matcher m = p.matcher(tmpStr);
 			if(m.matches()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);

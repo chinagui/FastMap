@@ -204,7 +204,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 //			}
 		}
 		
-		
+		Map<String, String> kindNameByKindCode = api.getKindNameByKindCode();
 		
 		if(errorList==null||errorList.size()==0){return;}
 		//过滤相同pid
@@ -215,7 +215,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 				targets=targets+";[IX_POI,"+pid2+"]";
 			}
 			if(!(filterPid.contains(pid1)&&filterPid.containsAll(errorList.get(pid1)))){
-				setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"分类为"+kindMap.get(pid1)+"，存在名称相同设施，名称为"+nameMap.get(pid1));
+				setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"分类为"+kindNameByKindCode.get(kindMap.get(pid1))+"，存在名称相同设施，名称为"+nameMap.get(pid1));
 			}
 			filterPid.add(pid1);
 			filterPid.addAll(errorList.get(pid1));

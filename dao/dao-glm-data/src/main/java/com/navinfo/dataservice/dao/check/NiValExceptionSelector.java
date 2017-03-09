@@ -293,7 +293,7 @@ public class NiValExceptionSelector {
 		if (flag == 1) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,1 state,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x) x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
 							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 1 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)");
@@ -302,7 +302,7 @@ public class NiValExceptionSelector {
 		if (flag == 2) {
 			sql = new StringBuilder(
 					"select a.md5_code,rule_id as ruleid,situation,status level_,2 state,"
-							+ "targets,information,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y y,create_date as created,update_date as updated,"
+							+ "targets,information,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.x )x,decode(a.geometry,null,0.0,(sdo_util.from_wktgeometry(a.geometry)).sdo_point.y )y,create_date as created,update_date as updated,"
 							+ "worker,qa_worker,qa_status from ck_exception a where a.status = 2 and  exists(select 1 from ck_exception_grid b,"
 							+ "(select to_number(COLUMN_VALUE) COLUMN_VALUE from table(clob_to_table(?))) grid_table "
 							+ "where a.row_id=b.ck_row_id and b.grid_id =grid_table.COLUMN_VALUE)"
@@ -734,73 +734,7 @@ public class NiValExceptionSelector {
 		return ruleList;
 	}
 
-	/**
-	 * @Title: poiCheckResults
-	 * @Description: poi 检查结果
-	 * @param pid
-	 * @return
-	 * @throws Exception
-	 *             JSONObject
-	 * @throws
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年2月14日 下午8:04:09
-	 */
-	/*
-	 * public JSONObject poiCheckResults(int pid) throws Exception {
-	 * 
-	 * StringBuilder sql = new StringBuilder(
-	 * " select p.pid,p.\"LEVEL\" level_ ,p.row_id ,p.geometry,p.link_pid,p.x_guide,p.y_guide,p.poi_num fid,p.kind_code, "
-	 * +
-	 * "(select n.name from ix_poi_name n where p.pid = n.poi_pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
-	 * + " from ix_poi p  where   p.pid = "+pid+" ");
-	 * 
-	 * // System.out.println("poiCheckResults:  "+ sql);
-	 * 
-	 * return new QueryRunner().query(conn, sql.toString(), new
-	 * ResultSetHandler<JSONObject>(){
-	 * 
-	 * @Override public JSONObject handle(ResultSet rs) throws SQLException {
-	 * 
-	 * JSONObject resultsJson = new JSONObject(); JSONArray results = new
-	 * JSONArray(); while(rs.next()){
-	 * 
-	 * JSONObject json = new JSONObject();
-	 * 
-	 * json.put("name", rs.getString("name"));
-	 * 
-	 * json.put("rank", rs.getInt("level_"));
-	 * 
-	 * json.put("pid", rs.getInt("pid"));
-	 * 
-	 * json.put("linkPid", rs.getInt("link_pid"));
-	 * 
-	 * json.put("fid", rs.getString("fid"));
-	 * 
-	 * json.put("kindCode", rs.getString("kind_code"));
-	 * 
-	 * STRUCT struct = (STRUCT) rs.getObject("geometry"); GeoTranslator trans =
-	 * null; String geometryStr = null; Geometry geometry = null; try { geometry
-	 * = GeoTranslator.struct2Jts(struct); trans = new GeoTranslator();
-	 * geometryStr= trans.jts2Wkt(geometry,1,5); } catch (Exception e) {
-	 * System.out.println("查询结果获取Geometry失败"); e.printStackTrace(); }
-	 * 
-	 * json.put("geometry",geometryStr);
-	 * 
-	 * json.put("rowId",rs.getString("row_id")); //*****************************
-	 * JSONArray checkResults = new JSONArray(); int total = 0 ; //查询此poi的
-	 * exception信息 if(rs.getInt("pid") != 0){ try {
-	 * if(poiCheckResultList(rs.getInt("pid")) != null){ checkResults =
-	 * poiCheckResultList(rs.getInt("pid")); } } catch (Exception e) {
-	 * System.out.println("查询关联poi信息失败"); e.printStackTrace(); } if(checkResults
-	 * != null && checkResults.size() > 0){ total = checkResults.size(); } }
-	 * json.put("checkResults", checkResults); json.put("total", total);
-	 * 
-	 * 
-	 * //********************************
-	 * 
-	 * results.add(json); } resultsJson.put("data", results); return
-	 * resultsJson; } } ); }
-	 */
+
 	/**
 	 * @Title: poiCheckResultList
 	 * @Description: 根据 pid 查询 exception
@@ -815,10 +749,14 @@ public class NiValExceptionSelector {
 		StringBuilder sql = new StringBuilder(
 				"with q1 as( "
 						+ "select a.md5_code,a.ruleid,a.\"LEVEL\" level_,a.targets,a.information,a.worker ,a.created,a.location.sdo_point.x x,a.location.sdo_point.y y,a.updated,a.qa_worker,a.qa_status from ni_val_exception a where  "
-						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE) "
+						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=a.MD5_CODE "
+						+ " and o.pid="+pid+"  "
+						+ ") "
 						+ " union all "
 						+ "select c.md5_code,c.rule_id ruleid,c.status level_,c.targets,c.information,c.worker ,c.create_date created,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.x x,(sdo_util.from_wktgeometry(c.geometry)).sdo_point.y y,c.update_date as updated,c.qa_worker,c.qa_status from ck_exception c where "
-						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE) "
+						+ " EXISTS ( SELECT 1 FROM CK_RESULT_OBJECT O WHERE (O.table_name like 'IX_POI\\_%' ESCAPE '\\' OR O.table_name ='IX_POI')  AND O.MD5_CODE=c.MD5_CODE "
+						+ " and o.pid="+pid+" "
+						+ ")  "
 						+ " ), "
 						+ "q2 as ( "
 						+ "select distinct  e.md5_code,e.ruleid,e.level_,NVL(to_char(e.targets),'') targets,nvl(to_number(to_char(replace(REGEXP_SUBSTR(e.targets,'(\\[IX_POI,[0-9]+)', 1, LEVEL, 'i'),'[IX_POI,',''))),0)  pid,e.information,e.worker ,e.x,e.y,e.created,e.updated,e.qa_worker,e.qa_status "
@@ -1004,11 +942,10 @@ public class NiValExceptionSelector {
 		}
 	}
 
-	public Page listCheckResultsByJobId(JSONObject params, JSONArray tips) throws Exception {
+	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
+			JSONArray tips) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
-		int subtaskId = params.getInt("subtaskId");// 获取subtaskid
-		Integer jobId = params.getInt("jobId");// 获取jobId
 		
 		long pageStartNum = (pageNum - 1) * pageSize + 1;
 		long pageEndNum = pageNum * pageSize;
@@ -1022,13 +959,12 @@ public class NiValExceptionSelector {
 			tmep = ",";
 			ids += tipsObj.getString("id");
 		}
-
-		// sql.append(" select * from ( ");
+		
 		sql.append("with ");
 		// **********************
 		// 获取子任务范围内的所有 rdName 的nameId
 		sql.append("q1 as ( ");
-		sql.append("select rd.name_id from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"
+		sql.append("select '[NAME_ID,'||rd.name_id||']' nameId from ( SELECT null tipid,r.* from rd_name r  where r.src_resume = '\"task\":"
 				+ subtaskId + "' ");
 		sql.append(" union all ");
 		sql.append(" SELECT tt.*  FROM ( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.*  from rd_name t  where t.src_resume like '%tips%' ) tt ");
@@ -1040,27 +976,26 @@ public class NiValExceptionSelector {
 		}
 		sql.append(" ) rd ),");
 		// **********************
-
-		sql.append("q3 as ( ");
-		sql.append("select distinct b.eid from q2 b ,q1 c where b.nameid = c.name_id  ");
-		sql.append(" ), ");
-		// **********************
-		sql.append("q4 as ( ");
+		sql.append("q2 as ( ");
 		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
 				+ "NVL(to_char(d.addition_info),'') targets,"
 				+ "NVL(d.information,'') information, "
 				+ "NVL(d.location.sdo_point.x,0) x, "
 				+ "NVL(d.location.sdo_point.y,0) y,"
 				+ "d.created,NVL(d.worker,'') worker  "
-				+ "from ni_val_exception d ,q3 e where d.val_exception_id = e.eid ");
+				+ "from ni_val_exception d  where d.task_name = '"+jobUuid+"' ");
+		sql.append("), ");
+		sql.append("q3 as ( ");
+		sql.append(" select e.* from q1 n ,q2 e where   e.targets like '%'||n.nameId||'%'  ");
 		sql.append(") ");
+		
 		// ************************
-		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q4) AS TOTAL_RECORD_NUM_  "
-				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q4 T ");
+		sql.append(" SELECT "+jobId+" jobId,A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
 		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
 				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
-		sql.append(" order by created desc,md5_code desc ");
-		System.out.println("listCheckResults sql:  " + sql.toString());
+		//sql.append(" order by created desc,md5_code desc ");
+		System.out.println("listCheckResultsByJobId sql:  " + sql.toString());
 
 		QueryRunner run = new QueryRunner();
 
@@ -1077,6 +1012,8 @@ public class NiValExceptionSelector {
 
 					JSONObject json = new JSONObject();
 
+					json.put("jobId", rs.getInt("jobId"));
+					
 					json.put("id", rs.getString("md5_code"));
 
 					json.put("ruleid", rs.getString("ruleid"));

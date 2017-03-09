@@ -37,10 +37,12 @@ public class GLM60138 extends BasicCheckRule {
 			String chain=poi.getChain();
 			MetadataApi api=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, String> brandDMap = api.scPointChainBrandKeyDMap();
+			Map<String, String> chainNameMap = api.getChainNameMap();
 			for(String key:brandDMap.keySet()){
 				if(nameStr.contains(key)){
 					if(chain==null||!chain.equals(brandDMap.get(key))){
-						setCheckResult(poi.getGeometry(),poiObj, poi.getMeshId(), "品牌关键字："+key+"，chain值："+brandDMap.get(key));
+						String chainName = chainNameMap.get(brandDMap.get(key));
+						setCheckResult(poi.getGeometry(),poiObj, poi.getMeshId(), "品牌关键字："+key+"，chain值："+chainName);
 					}
 					return;
 				}

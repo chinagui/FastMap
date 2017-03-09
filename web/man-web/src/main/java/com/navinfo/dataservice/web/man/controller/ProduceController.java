@@ -10,6 +10,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -92,7 +93,11 @@ public class ProduceController extends BaseController {
 	@RequestMapping(value = "/produce/statics")
 	public ModelAndView statics(HttpServletRequest request){
 		try{
-			Page data=ProduceService.getInstance().list(null, 1, 20);
+			JSONObject condition = new JSONObject();
+			JSONArray selectParam=new JSONArray();
+			selectParam.add(4);
+			condition.put("selectParam", selectParam);
+			Page data=ProduceService.getInstance().list(condition, 1, 20);
 			return new ModelAndView("jsonView", success(data.getTotalCount()));
 		}catch(Exception e){
 			log.error("日出品失败，原因："+e.getMessage(), e);

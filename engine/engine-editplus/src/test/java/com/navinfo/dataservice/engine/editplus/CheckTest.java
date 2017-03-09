@@ -83,10 +83,10 @@ public class CheckTest {
 //		oldValues.put("KIND_CODE", "230126");
 //		logg.setOldValues(oldValues);
 //		logg.setOpType(OperationType.UPDATE);
-//		logg.setOpType(OperationType.INSERT);
+		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		row.setOpType(OperationType.PRE_DELETED);
+//		row.setOpType(OperationType.PRE_DELETED);
 //		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
@@ -126,7 +126,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-17-01-01");
+		ruleIdList.add("GLM60143");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

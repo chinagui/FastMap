@@ -107,11 +107,18 @@ public class TipsSelectorTest extends InitApplication {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void testQueryByCodeAndGrid(){
 		
+//		JSONArray grids = JSONArray
+//				.fromObject("[60560301,60560302,60560303,60560304,60560311,60560312,60560313,60560314]");
+	/*	JSONArray grids = JSONArray
+				.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
+		*/
+		
+		
 		JSONArray grids = JSONArray
-				.fromObject("[60560301,60560302,60560303,60560304,60560311,60560312,60560313,60560314]");
+				.fromObject("[60565710]");
 	/*	JSONArray grids = JSONArray
 				.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
 		*/
@@ -167,7 +174,7 @@ public class TipsSelectorTest extends InitApplication {
 	
 	
     //根据瓦片扩圈获取Tips数据
-	//@Test
+	@Test
 	public void testSearchDataByTileWithGap() {
 	/*	JSONArray types = new JSONArray();
 		types.add(8001);
@@ -201,7 +208,7 @@ public class TipsSelectorTest extends InitApplication {
 		types.add(1516);
 		types.add(1517);*/
 		
-		types.add(1301);
+	/*	types.add(1301);
 		types.add(1310);
 		types.add(1311);
 		types.add(1407);
@@ -209,7 +216,9 @@ public class TipsSelectorTest extends InitApplication {
 		types.add(1302);
 		types.add(1303);
 		types.add(1306);
-		types.add(1102);
+		types.add(1102);*/
+		
+		types.add(8001);
 		
 		
 		
@@ -256,7 +265,9 @@ public class TipsSelectorTest extends InitApplication {
 			//{"gap":40,"mdFlag":"d","z":18,"x":215890,"y":99230}
 			//{"gap":40,"mdFlag":"d","z":17,"x":107943,"y":49615}
 			//{"gap":40,"mdFlag":"d","z":17,"x":107945,"y":49614}
-			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(107945, 49614, 17,
+			
+			//{"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99228}
+			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(215889, 99228, 18,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -830,9 +841,9 @@ public class TipsSelectorTest extends InitApplication {
 		}
 
 		
-		// @Test
+		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":1374}";
+				String parameter = "{\"jobId\":2677}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -844,7 +855,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1374"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1423"; // 本地测试用
 					
 					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 

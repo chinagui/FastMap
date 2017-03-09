@@ -27,8 +27,10 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.engine.audio.AudioController;
 import com.navinfo.dataservice.engine.audio.AudioImport;
+import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.photo.HBaseController;
 import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
@@ -58,13 +60,15 @@ public class TipsExportTest extends InitApplication{
 	@Test
 	public void tesDownload() {
 		try {
-			String  parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"20161030174626\"},{\"grid\":59567511,\"date\":\"20161030174626\"},{\"grid\":59567501,\"date\":\"20161030174626\"}]}";
+		//	String  parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"20161030174626\"},{\"grid\":59567511,\"date\":\"20161030174626\"},{\"grid\":59567501,\"date\":\"20161030174626\"}]}";
+			
+			String  parameter="{\"condition\":[{\"grid\":60560303,\"date\":\"\"}]}";
 			//parameter="{\"condition\":[{\"grid\":59567502,\"date\":\"\"},{\"grid\":59567511,\"date\":\"\"},{\"grid\":59567501,\"date\":\"\"}]}";
 			
 			//parameter="{\"condition\":[{\"grid\":59565721,\"date\":\"20161103090651\"},{\"grid\":59565623,\"date\":\"20161103090651\"},{\"grid\":59565632,\"date\":\"20161103090651\"},{\"grid\":59566700,\"date\":\"20161103090651\"},{\"grid\":59565731,\"date\":\"20161103090651\"},{\"grid\":59565633,\"date\":\"20161103090651\"},{\"grid\":59565720,\"date\":\"20161103090651\"},{\"grid\":59566701,\"date\":\"20161103090651\"},{\"grid\":59565622,\"date\":\"20161103090651\"},{\"grid\":59565730,\"date\":\"20161103090651\"},{\"grid\":59566602,\"date\":\"20161103090651\"},{\"grid\":59566603,\"date\":\"20161103090651\"}]}";
 			
 			//parameter="{\"condition\":[{\"grid\":60562531,\"date\":\"\"},{\"grid\":60562530,\"date\":\"\"},{\"grid\":60562510,\"date\":\"\"},{\"grid\":60562502,\"date\":\"\"},{\"grid\":60562512,\"date\":\"\"},{\"grid\":60562520,\"date\":\"\"},{\"grid\":60562503,\"date\":\"\"},{\"grid\":60562533,\"date\":\"\"},{\"grid\":60562511,\"date\":\"\"},{\"grid\":60562501,\"date\":\"\"},{\"grid\":60562500,\"date\":\"\"},{\"grid\":60562532,\"date\":\"\"},{\"grid\":60562522,\"date\":\"\"},{\"grid\":60562513,\"date\":\"\"},{\"grid\":60562523,\"date\":\"\"},{\"grid\":60562521,\"date\":\"\"}]}";
-
+/*
 			
 			//parameter="{\"condition\":[{\"grid\":60561722,\"date\":\"20161121154107\"}]}";
 			
@@ -94,7 +98,11 @@ public class TipsExportTest extends InitApplication{
 			
 			//parameter="{\"condition\":[{\"grid\":60561201,\"date\":\"\"}]}";
 			parameter="{\"condition\":[{\"grid\":59566213,\"date\":\"\"},{\"grid\":59566200,\"date\":\"\"},{\"grid\":59566223,\"date\":\"\"},{\"grid\":59566222,\"date\":\"\"},{\"grid\":59566230,\"date\":\"\"},{\"grid\":59566231,\"date\":\"\"},{\"grid\":59566220,\"date\":\"\"},{\"grid\":59566210,\"date\":\"\"},{\"grid\":59566211,\"date\":\"\"},{\"grid\":59566212,\"date\":\"\"},{\"grid\":59566203,\"date\":\"\"},{\"grid\":59566202,\"date\":\"\"},{\"grid\":59566201,\"date\":\"\"},{\"grid\":59566221,\"date\":\"\"},{\"grid\":59566232,\"date\":\"\"},{\"grid\":59566233,\"date\":\"\"}]}";
+			*/
 			
+			parameter="{\"condition\":[{\"grid\":59567233,\"date\":\"\"},{\"grid\":59567330,\"date\":\"\"},{\"grid\":59567331,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560203,\"date\":\"\"},{\"grid\":60560213,\"date\":\"\"},{\"grid\":60560300,\"date\":\"\"},{\"grid\":60560301,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":60560310,\"date\":\"\"},{\"grid\":60560311,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"}]}";
+			
+			parameter="{\"condition\":[{\"grid\":59567430,\"date\":\"\"},{\"grid\":60560303,\"date\":\"\"},{\"grid\":59567333,\"date\":\"\"},{\"grid\":59567323,\"date\":\"\"},{\"grid\":59567332,\"date\":\"\"},{\"grid\":59567322,\"date\":\"\"},{\"grid\":60560400,\"date\":\"\"},{\"grid\":60560302,\"date\":\"\"}]}";
 			String uuid = UuidUtils.genUuid();
 			
 			JSONObject jsonReq=JSONObject.fromObject(parameter);
@@ -114,6 +122,32 @@ public class TipsExportTest extends InitApplication{
 			Set<String> images = new HashSet<String>();
 
 			int expCount=op.export(condition, filePath, "tips.txt", images);
+			
+			
+			//2.模式图下载： 1406和1401需要导出模式图
+			if(images.size()>0){
+			
+				PatternImageExporter exporter = new PatternImageExporter();
+				
+				exporter.export2SqliteByNames(filePath, images);
+			}
+
+			String zipFileName = uuid + ".zip";
+
+			String zipFullName = filePath+"/" + zipFileName;
+			
+			String day = StringUtils.getCurrentDay();
+            //3.打zip包
+			ZipUtils.zipFile(filePath, zipFullName);
+			
+			String serverUrl =  SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.serverUrl);
+			
+			String downloadUrlPath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.downloadUrlPathTips);
+            //4.返回的url
+			String url = serverUrl + downloadUrlPath +File.separator+ day + "/"
+					+ zipFileName;
 			
 			System.out.println("导出成功:"+filePath);
 			

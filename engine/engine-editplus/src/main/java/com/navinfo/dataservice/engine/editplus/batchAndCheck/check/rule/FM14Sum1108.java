@@ -169,9 +169,13 @@ public class FM14Sum1108 extends BasicCheckRule {
 						continue;}
 					boolean haskind=false;
 					for(IxPoiChildren c:cs){
-						IxPoi cObj = (IxPoi)refers.get(c.getChildPoiPid()).getMainrow();
-						if(cObj.getKindCode().equals(kindCode)){
-							haskind=true;break;
+						BasicObj basicObj = refers.get(c.getChildPoiPid());
+						if(basicObj != null){
+							//IxPoi cObj = (IxPoi)refers.get(c.getChildPoiPid()).getMainrow();
+							IxPoi cObj = (IxPoi)basicObj.getMainrow();
+							if(cObj.getKindCode().equals(kindCode)){
+								haskind=true;break;
+							}
 						}
 					}
 					if(!haskind){errorPids.add(p);}

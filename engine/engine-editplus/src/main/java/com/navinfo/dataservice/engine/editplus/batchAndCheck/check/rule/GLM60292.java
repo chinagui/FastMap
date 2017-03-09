@@ -63,9 +63,10 @@ public class GLM60292 extends BasicCheckRule {
 					values.add(value);
 				}
 			}
+			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
 			if((keys.contains(kindCode)&&values.contains(kindCodeP))
 					||(keys.contains(kindCodeP)&&values.contains(kindCode))){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), kindCode+"不是指定分类，无法制作同一关系");
+				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), kindNameByKindCode.get(kindCode)+"不是指定分类，无法制作同一关系");
 				return;
 			}
 		}

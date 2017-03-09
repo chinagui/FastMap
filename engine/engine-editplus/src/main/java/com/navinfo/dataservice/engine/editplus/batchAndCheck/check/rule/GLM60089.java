@@ -38,14 +38,14 @@ public class GLM60089 extends BasicCheckRule {
 			for (IxPoiRestaurant ixPoiRestaurant : restList) {
 				String foodType = ixPoiRestaurant.getFoodType();
 				if(foodType == null){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "110200分类的POI对应的FOOD_TYPE为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
 					return;
 				}
 				else if(foodType!= null){
 					String[] foodTypes = foodType.split("\\|");
 					for (String str : foodTypes) {
 						if(!foodMap.containsKey(str)){
-							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "110200分类的POI对应的FOOD_TYPE为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
 							return;
 						}
 					}

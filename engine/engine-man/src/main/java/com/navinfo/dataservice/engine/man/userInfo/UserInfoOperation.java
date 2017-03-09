@@ -582,7 +582,7 @@ public class UserInfoOperation {
 					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
 					+ " AND UG.PARENT_GROUP_ID IS NULL"
 					+ " AND GUM.USER_ID = " + userId;
-					
+			log.info("getUserGroupByUserId:" + querySql);		
 			ResultSetHandler<UserGroup> rsHandler = new ResultSetHandler<UserGroup>() {
 				public UserGroup handle(ResultSet rs) throws SQLException {
 					UserGroup group = new UserGroup(); 
@@ -615,7 +615,7 @@ public class UserInfoOperation {
 	 */
 	public static Map<Long, UserInfo> getLeaderIdByGroupId(Connection conn, List<Long> groupIdList) throws Exception {
 		// TODO Auto-generated method stub
-		Map<Long, UserInfo> leaderIdList = null;
+		Map<Long, UserInfo> leaderIdList = new HashMap<Long, UserInfo>();
 		try{
 			// 查询用户所在组组长id
 			if(groupIdList !=null && groupIdList.size()>0){

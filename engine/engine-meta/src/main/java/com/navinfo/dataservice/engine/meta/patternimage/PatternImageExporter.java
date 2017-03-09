@@ -11,14 +11,10 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
-
-import net.sf.json.JSONArray;
 import oracle.sql.BLOB;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
-
-import com.alibaba.dubbo.common.utils.StringUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 

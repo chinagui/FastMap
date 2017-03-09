@@ -92,6 +92,8 @@ public class SolrController {
 		
 		doc.addField("s_mTaskId", json.getInt("s_mTaskId"));
 		
+		doc.addField("t_fStatus", json.getInt("t_fStatus"));
+		
 		//doc.addField("tipdiff", json.getString("tipdiff"));
 
 		client.add(doc);

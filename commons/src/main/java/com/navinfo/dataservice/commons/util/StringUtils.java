@@ -285,6 +285,9 @@ public class StringUtils {
 		}
 		return str.substring(0, len)+"......";
 	}
+	public static boolean equals(String a,String b){
+		return org.apache.commons.lang.StringUtils.isEmpty(a)&&org.apache.commons.lang.StringUtils.isEmpty(b)?true:org.apache.commons.lang.StringUtils.equals(a, b);
+	}
 
 	public static void main(String[] args) {
 		System.out.println(removeSpeLetter("a<a>"));

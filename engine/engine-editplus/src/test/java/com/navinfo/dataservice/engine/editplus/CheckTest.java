@@ -72,6 +72,7 @@ public class CheckTest {
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
+//		tabNames.add("IX_POI_CHARGINGSTATION");
 //		tabNames.add("IX_POI_GASSTATION");
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
@@ -85,19 +86,19 @@ public class CheckTest {
 		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
 		logList.add(logg);
-		//row.setOpType(OperationType.PRE_DELETED);
+//		row.setOpType(OperationType.PRE_DELETED);
 //		row.setOpType(OperationType.INSERT);
 		row.setHisChangeLogs(logList);
 		
-		IxPoiAddress chiAddress = poiObj.getCHAddress();
-		ChangeLog logg1=new ChangeLog();
-		Map<String, Object> oldValues1=new HashMap<String, Object>();
-		oldValues1.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
-		logg1.setOldValues(oldValues1);
-		logg1.setOpType(OperationType.UPDATE);
-		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
-		logList1.add(logg1);
-		chiAddress.setHisChangeLogs(logList1);
+//		IxPoiAddress chiAddress = poiObj.getCHAddress();
+//		ChangeLog logg1=new ChangeLog();
+//		Map<String, Object> oldValues1=new HashMap<String, Object>();
+//		oldValues1.put("FULLNAME", "四川省凉山彝族自治州会理县Ｇ１０８大运摩托附近北京银行培训中心號");
+//		logg1.setOldValues(oldValues1);
+//		logg1.setOpType(OperationType.UPDATE);
+//		List<ChangeLog> logList1=new ArrayList<ChangeLog>();
+//		logList1.add(logg1);
+//		chiAddress.setHisChangeLogs(logList1);
 		
 //		IxPoiName name = poiObj.getOfficeOriginCHName();
 //		ChangeLog namelogg=new ChangeLog();
@@ -109,23 +110,23 @@ public class CheckTest {
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
 		
-//		Set<Long> pids = new HashSet<Long>();
-//		pids.add(64L);
-//		pids.add(8165144L);
-//		pids.add(8165145L);
-//		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
-//		for (Long key : rows.keySet()) {
-//			BasicObj obj1 = rows.get(key);
-//			IxPoi row1=(IxPoi) obj1.getMainrow();
-//			row1.setHisChangeLogs(logList);
-//			operationResult.putObj(obj1);
-//		}
+		Set<Long> pids = new HashSet<Long>();
+		pids.add(64L);
+		pids.add(8165144L);
+		pids.add(8165145L);
+		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
+		for (Long key : rows.keySet()) {
+			BasicObj obj1 = rows.get(key);
+			IxPoi row1=(IxPoi) obj1.getMainrow();
+			row1.setHisChangeLogs(logList);
+			operationResult.putObj(obj1);
+		}
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-124");
+		ruleIdList.add("GLM60316");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

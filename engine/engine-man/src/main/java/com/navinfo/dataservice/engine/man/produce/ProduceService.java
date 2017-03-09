@@ -156,7 +156,7 @@ public class ProduceService {
 							JSONArray selectParamArr=conditionJson.getJSONArray(key);
 							String statuss = selectParamArr.toString();
 							if(statuss != null && StringUtils.isNotEmpty(statuss)){
-								conditionStr+=" and T.PRODUCE_STATUS in "
+								conditionStr+=" and T.ORDER_STATUS in "
 											+statuss.replace("[", "(").replace("]", ")");
 							}								
 						}
@@ -173,7 +173,9 @@ public class ProduceService {
 						+ "       G.PRODUCE_PLAN_START_DATE,"
 						+ "       G.PRODUCE_PLAN_END_DATE,"
 						+ "       P.CREATE_DATE,"
-						+ "       NVL(P.PRODUCE_STATUS, 0) PRODUCE_STATUS"
+						+ "       NVL(P.PRODUCE_STATUS, 0) PRODUCE_STATUS,"
+						+ "       CASE NVL(P.PRODUCE_STATUS, 0)"
+						+ "            WHEN 0 THEN 4 ELSE NVL(P.PRODUCE_STATUS, 0) END ORDER_STATUS"
 						+ "  FROM PRODUCE P, PROGRAM G"
 						+ " WHERE P.PROGRAM_ID(+) = G.PROGRAM_ID"
 						+ "   AND G.TYPE = 4"
@@ -184,7 +186,7 @@ public class ProduceService {
 						+ "  FROM (SELECT T.*, ROWNUM AS ROWNUM_ FROM PRODUCE_LIST T WHERE ROWNUM <= "+pageEndNum+") T"
 						+ " WHERE T.ROWNUM_ >= "+pageStartNum
 						+ conditionStr
-						+ " ORDER BY T.PRODUCE_STATUS              DESC,"
+						+ " ORDER BY T.ORDER_STATUS              DESC,"
 						+ "          T.PRODUCE_PLAN_START_DATE DESC,"
 						+ "          T.CREATE_DATE                 DESC";
 				log.debug("查询日初评列表sql: "+sql);

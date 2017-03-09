@@ -43,21 +43,21 @@ public class GLM60140 extends BasicCheckRule {
 			for(IxPoiRestaurant res:restList){
 				String foodtype=res.getFoodType();
 				if(foodtype==null||foodtype.isEmpty()){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "FOODTYE值不在值域中");
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "风味类型值不在值域中");
 					return;
 				}
 				String[] foodList = foodtype.split("\\|");
 				for(int i=0;i<foodList.length;i++){
 					String foodTmp=foodList[i];
 					if(!food110102s.keySet().contains(foodTmp)){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"FOODTYE值不在值域中");
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"风味类型值不在值域中");
 						return;}
 					types+=food110102s.get(foodTmp);
 					if(i%2!=1){continue;}
 					Pattern P = Pattern.compile("^B+A$");
 					Matcher m = P.matcher(types);
 					if(!m.matches()){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"FOODTYPE不满足组合形式：形式风味|地方风味");
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"风味类型不满足组合形式：形式风味|地方风味");
 						return;
 					}
 				}

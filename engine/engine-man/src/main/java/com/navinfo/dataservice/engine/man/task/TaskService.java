@@ -860,7 +860,7 @@ public class TaskService {
 					}
 				}
 				//任务名称模糊查询
-				if ("taskName".equals(key)) {	
+				if ("name".equals(key)) {	
 					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
 							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
 				}
@@ -1136,7 +1136,7 @@ public class TaskService {
 				if ("cityId".equals(key)) {
 					conditionSql+=" AND B.CITY_ID="+condition.getInt(key);
 				}
-				if ("blockName".equals(key)) {
+				if ("name".equals(key)) {
 					conditionSql+=" AND B.block_name like '%"+condition.getString(key)+"%'";
 				}
 			}
@@ -1275,7 +1275,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
-			TaskOperation.updateStatus(conn, taskId, 1);
+			TaskOperation.updateStatus(conn, taskId, 0);
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			TaskOperation.closeBlock(conn,task.getBlockId());
 			

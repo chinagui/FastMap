@@ -91,7 +91,7 @@ public class Operation implements IOperation {
                     lat = point.getY();
                 }
 
-                ZoneNode preNode = (ZoneNode) nodeSelector.loadById(nodePid, true, true);
+                ZoneNode preNode = (ZoneNode) nodeSelector.loadById(nodePid, true, false);
                 // 分离node挂接的link
                 List<ZoneLink> links = linkSelector.loadByNodePid(nodePid, true);
 

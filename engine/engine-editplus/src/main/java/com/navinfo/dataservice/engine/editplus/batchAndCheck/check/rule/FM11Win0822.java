@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -45,6 +48,7 @@ public class FM11Win0822 extends BasicCheckRule {
 				pidChildren.add(poi.getPid());
 			}
 		}
+		Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 		if (pidChildren != null && pidChildren.size() > 0) {
 			String pids = pidChildren.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
@@ -59,7 +63,7 @@ public class FM11Win0822 extends BasicCheckRule {
 				pidString = " PID IN (" + pids + ")";
 			}
 			String sqlStr = "SELECT /*+ PARALLEL(P)*/"
-					+ "					 P.PID, P1.PID"
+					+ "					 P1.PID PID, P.PID PID2"
 					+ "					  FROM IX_POI P1, IX_POI P"
 					+ "					 WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "					   AND P.KIND_CODE IN ('230215', '230216')"
@@ -89,9 +93,10 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
-				String targets = "[IX_POI," + pidTmp1 + "];[IX_POI," + pidTmp2 + "]";
-				setCheckResult("", targets, 0);
+				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+				errorList.get(pidTmp1).add(pidTmp2);
 			}
+			
 		}
 		if (pidParent != null && pidParent.size() > 0) {
 			String pids = pidParent.toString().replace("[", "").replace("]", "");
@@ -108,7 +113,7 @@ public class FM11Win0822 extends BasicCheckRule {
 			}
 			//同一点获取速度较慢，
 			String sqlStr = "SELECT /*+PARALLEL(P)*/"
-					+ " P.PID, P1.PID"
+					+ " P1.PID PID, P.PID PID2"
 					+ "  FROM IX_POI P1, IX_POI P"
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "   AND P1.PID != P.PID"
@@ -138,9 +143,22 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
-				String targets = "[IX_POI," + pidTmp2 + "];[IX_POI," + pidTmp1 + "]";
+				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+				errorList.get(pidTmp1).add(pidTmp2);
+			}
+		}
+		//过滤相同pid
+		Set<Long> filterPid = new HashSet<Long>();
+		for(Long pid1:errorList.keySet()){
+			String targets="[IX_POI,"+pid1+"]";
+			for(Long pid2:errorList.get(pid1)){
+				targets=targets+";[IX_POI,"+pid2+"]";
+			}
+			if(!(filterPid.contains(pid1)&&filterPid.containsAll(errorList.get(pid1)))){
 				setCheckResult("", targets, 0);
 			}
+			filterPid.add(pid1);
+			filterPid.addAll(errorList.get(pid1));
 		}
 	}
 

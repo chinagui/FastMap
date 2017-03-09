@@ -18,6 +18,7 @@ public class ScPointFoodtype {
 	private List<String> kinds= new ArrayList<String>();
 	private Map<String, Map<String, String>> foodTypes= new HashMap<String, Map<String,String>>();
 	private Map<String, String> drinkMap=new HashMap<String, String>();
+	private Map<String, String> foodtypeNameMap=new HashMap<String, String>();
 
 	private static class SingletonHolder {
 		private static final ScPointFoodtype INSTANCE = new ScPointFoodtype();
@@ -140,5 +141,42 @@ public class ScPointFoodtype {
 				}
 			}
 			return drinkMap;
+	}
+	
+	/**
+	 * SELECT FOODTYPE,FOODTYPENAME FROM SC_POINT_FOODTYPE
+	 * @return  Map<String, String> key：foodtype value:FOODTYPENAME
+	 * @throws Exception
+	 */
+	public Map<String, String> getFoodtypeNameMap() throws Exception{
+		if (foodtypeNameMap==null||foodtypeNameMap.isEmpty()) {
+				synchronized (this) {
+					if (foodtypeNameMap==null||foodtypeNameMap.isEmpty()) {
+						try {
+							String sql = "SELECT FOODTYPE,FOODTYPENAME FROM SC_POINT_FOODTYPE";								
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									foodtypeNameMap.put(rs.getString("FOODTYPE"),rs.getString("FOODTYPENAME"));
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.close(conn);
+								DbUtils.close(rs);
+								DbUtils.close(pstmt);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载SC_POINT_FOODTYPE失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return foodtypeNameMap;
 	}
 }

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Date;
@@ -17,6 +18,7 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -53,7 +55,7 @@ import net.sf.json.util.JSONUtils;
  * @date 2016年11月17日
  * @Description: MultiSrcPoiImportorByGather.java
  */
-public class MultiSrcPoiImportorByGather extends AbstractOperation {
+public class CollectorUploadOperation extends AbstractOperation {
 
 //	protected Map<String,String> errLog = new HashMap<String,String>();
 	
@@ -66,7 +68,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		return sourceTypes;
 	}
 
-	public MultiSrcPoiImportorByGather(Connection conn,OperationResult preResult) {
+	public CollectorUploadOperation(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
 	}
 
@@ -81,7 +83,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		// 获取当前做业季
-		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增
@@ -363,7 +365,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					ixPoiName.setName(name);
 					ixPoiName.setNameClass(1);
 					ixPoiName.setNameType(2);
-					ixPoiName.setLangCode("CHI");
+					ixPoiName.setLangCode(getLangCode());
 				}
 				
 				//地址
@@ -374,7 +376,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 						IxPoiAddress ixPoiAddress = poi.createIxPoiAddress();
 						ixPoiAddress.setPoiPid(ixPoi.getPid());
 						ixPoiAddress.setFullname(address);
-						ixPoiAddress.setLangCode("CHI");
+						ixPoiAddress.setLangCode(getLangCode());
 					}
 				}
 				//[集合]联系方式
@@ -480,11 +482,13 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if(!JSONUtils.isNull(jo.get("parentFid")) && StringUtils.isNotEmpty(jo.getString("parentFid"))){
 					fatherson = jo.getString("parentFid");
 				}
+				//如果当前poi作为子，则要判断是否设置了父或者取消了父；
 				PoiRelation pr = new PoiRelation();
 				pr.setFatherFid(fatherson);
 				pr.setPid(ixPoi.getPid());
 				pr.setPoiRelationType(PoiRelationType.FATHER_AND_SON);
 				parentPid.add(pr);
+				
 				
 				//********************************
 				if (!JSONUtils.isNull(jo.get("relateChildren")) && jo.getJSONArray("relateChildren").size() > 0) {//上传的poi 存在 子poi
@@ -674,11 +678,16 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		return false;
 	}
 
+	
+	private  boolean stringEquals(String a,String b){
+		log.info("newValue="+a+",oldValue="+b);
+		return com.navinfo.dataservice.commons.util.StringUtils.equals(a, b);
+	}
 	/**
 	 * @Title: importUpdateByJson
 	 * @Description: 更新数据的数据解析
-	 * @param poi
-	 * @param jo
+	 * @param poi 数据库中的旧的poi
+	 * @param jo 客户端传过来的新的poi
 	 * @param version
 	 * @return
 	 * @throws ImportException
@@ -690,50 +699,74 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 	public boolean importUpdateByJson(IxPoiObj poi,JSONObject jo, String version) throws ImportException, Exception {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
+				StringBuilder fieldState = new StringBuilder("");//外业变更log字段
+				StringBuilder outDoorLog = new StringBuilder("");//
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				long pid = ixPoi.getPid();
 				
-				//************zl 2016.12.20********
 				//改分类
+				String newKindCode = null;
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
-					String kind = jo.getString("kindCode");
+					newKindCode=jo.getString("kindCode");
 					//鲜度验证
-					if(!kind.equals(ixPoi.getKindCode())){
+					if(!stringEquals(newKindCode,ixPoi.getKindCode())){
 						ixPoi.setFreshFlag(false);
+						fieldState.append("改种别代码|") ;
+						ixPoi.setKindCode(newKindCode);
+						ixPoi.setOldKind(newKindCode);
+						outDoorLog.append("改分类|");
 					}
-					ixPoi.setKindCode(kind);
+					
 				}
-				// geometry按SDO_GEOMETRY格式原值转出
-				Geometry geometry = new WKTReader().read(jo.getString("geometry"));
-				;
-				//鲜度验证
-				if(!jo.getString("geometry").equals(geometry.toText())){
+				//移动点位
+				Geometry geometry = new WKTReader().read(jo.getString("geometry"));// geometry按SDO_GEOMETRY格式原值转出
+				if(!ixPoi.getGeometry().toText().equals(geometry.toText())){
+					ixPoi.setGeometry(geometry);
+					outDoorLog .append("改RELATION|");
 					ixPoi.setFreshFlag(false);
-				}
-				
-				ixPoi.setGeometry(geometry);
+				}				
+				//变更引导坐标
 				if (jo.getJSONObject("guide").size() > 0) {
-					ixPoi.setXGuide(jo.getJSONObject("guide").getDouble("longitude"));
-					ixPoi.setYGuide(jo.getJSONObject("guide").getDouble("latitude"));
-					ixPoi.setLinkPid(jo.getJSONObject("guide").getInt("linkPid"));
+					double newXGuide = jo.getJSONObject("guide").getDouble("longitude");
+					newXGuide = DoubleUtil.keepSpecDecimal(newXGuide);
+					if(!new BigDecimal(ixPoi.getXGuide()).equals(new BigDecimal(newXGuide))){
+						ixPoi.setXGuide(newXGuide);
+						log.info("引导点位发生变更，非鲜度验证:oldXGuid"+ixPoi.getXGuide()+",newXGuid:"+newXGuide);
+						ixPoi.setFreshFlag(false);//引导点位发生变更，非鲜度验证
+					}
+					double newYGguid = jo.getJSONObject("guide").getDouble("latitude");
+					newYGguid = DoubleUtil.keepSpecDecimal(newYGguid);
+					if(!new BigDecimal(ixPoi.getYGuide()).equals(new BigDecimal(newYGguid))){
+						ixPoi.setYGuide(newYGguid);
+						log.info("引导点位发生变更，非鲜度验证:getYGuide"+ixPoi.getYGuide()+",newYGguid:"+newYGguid);
+						ixPoi.setFreshFlag(false);//引导点位发生变更，非鲜度验证
+					}
+					int newLinkPid = jo.getJSONObject("guide").getInt("linkPid");
+					if(newLinkPid!=ixPoi.getLinkPid()){
+						ixPoi.setLinkPid(newLinkPid);
+						ixPoi.setFreshFlag(false);//引导link发生变更，非鲜度验证
+					}
+					
 				} else {
 					ixPoi.setXGuide(0);
 					ixPoi.setYGuide(0);
 					ixPoi.setLinkPid(0);
 				}
-				//鲜度验证
-				if(jo.getString("chain") != null && StringUtils.isNotEmpty(jo.getString("chain")) 
-						&& !jo.getString("chain").equals(ixPoi.getChain())){
+				//变更chain
+				String newChain = jo.getString("chain");
+				if(!stringEquals(newChain,ixPoi.getChain())){
 					ixPoi.setFreshFlag(false);
+					ixPoi.setChain(newChain);
+					fieldState.append("改连锁品牌|");
 				}
-				//鲜度验证
-				if(jo.getInt("open24H") != ixPoi.getOpen24h()){
+				//open_24h
+				int newOpen24h = jo.getInt("open24H");
+				if(newOpen24h != ixPoi.getOpen24h()){
 					ixPoi.setFreshFlag(false);
+					ixPoi.setOpen24h(newOpen24h);
 				}
-				ixPoi.setChain(jo.getString("chain"));
-				ixPoi.setOpen24h(jo.getInt("open24H"));
-				//**********zl 2017.03.01补增*******
+				//rawFields
 				ixPoi.setRawFields(jo.getString("rawFields"));
 				// meshid非0时原值转出；为0时根据几何计算；
 				int meshId = jo.getInt("meshid");
@@ -741,153 +774,143 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 					String[] meshIds = MeshUtils.point2Meshes(geometry.getCoordinate().x, geometry.getCoordinate().y);
 					meshId = Integer.parseInt(meshIds[0]);
 				}
-				//鲜度验证
 				if(meshId != ixPoi.getMeshId()){
 					ixPoi.setFreshFlag(false);
 				}
-				//鲜度验证
-				if(jo.getString("postCode") != null  && StringUtils.isNotEmpty(jo.getString("postCode"))  
-						&& !jo.getString("postCode").equals(ixPoi.getPostCode())){
+				//改postCode
+				String newPostCode = jo.getString("postCode");
+				if(!stringEquals(newPostCode,ixPoi.getPostCode())){
 					ixPoi.setFreshFlag(false);
+					ixPoi.setPostCode(newPostCode);
 				}
-				ixPoi.setMeshId(meshId);
-				ixPoi.setPostCode(jo.getString("postCode"));
-				// 如果KIND_CODE有修改，则追加“改种别代码”；
-				// 如果CHAIN有修改，则追加“改连锁品牌”；
 				// 如果IX_POI_HOTEL.RATING有修改,则追加“改酒店星级”；
-				String fieldState = "";
-				if (!jo.getString("kindCode").isEmpty()) {
-					fieldState += "改种别代码|";
-				}
-				if (!jo.getString("chain").isEmpty()) {
-					fieldState += "改连锁品牌|";
-				}
 				if (jo.has("hotel")) {
-
 					JSONObject hotel = jo.getJSONObject("hotel");
-
 					if (!hotel.isNullObject() && hotel.has("rating")) {
-						fieldState += "改酒店星级|";
+						fieldState.append("改酒店星级|");
 					}
 				}
+				//设置field state
 				if (fieldState.length() > 0) {
-					fieldState = fieldState.substring(0, fieldState.length() - 1);
+					//去掉最后一个“|”
+					ixPoi.setFieldState(fieldState.toString().substring(0, fieldState.length() - 1));
+				}else{
+					ixPoi.setFieldState(null);
 				}
-				ixPoi.setFieldState(fieldState);
-				ixPoi.setOldName(jo.getString("name"));
-				ixPoi.setOldAddress(jo.getString("address"));
-				ixPoi.setOldKind(jo.getString("kindCode"));
+				//改名称
+				String outdoorName = jo.getString("name");
+				if(!stringEquals(outdoorName,ixPoi.getOldName())){
+					ixPoi.setFreshFlag(false);
+					ixPoi.setOldName(outdoorName);
+					outDoorLog.append("改名称|");
+					this.usdateName(poi, jo, getLangCode());
+				}
+				//改地址
+				String outDoorAddress = jo.getString("address");
+				if(!stringEquals(outDoorAddress,ixPoi.getOldAddress())){
+					ixPoi.setFreshFlag(false);
+					ixPoi.setOldAddress(outDoorAddress);
+					outDoorLog.append("改地址|");
+					this.usdateAddress(poi, jo, getLangCode());
+				}
+				
 				ixPoi.setPoiNum(jo.getString("fid"));
 				ixPoi.setDataVersion(version);
 				ixPoi.setCollectTime(jo.getString("t_operateDate"));
-				ixPoi.setLevel(jo.getString("level"));
-				
-				String outDoorLog = "";
-				if (!ixPoi.getOldName().isEmpty()) {
-					outDoorLog += "改名称|";
+				//改level
+				String newLevel = jo.getString("level");
+				if(!stringEquals(newLevel,ixPoi.getLevel())){
+					ixPoi.setFreshFlag(false);
+					ixPoi.setLevel(newLevel);
+					outDoorLog.append("改POI_LEVEL|");
 				}
-				if (!ixPoi.getOldAddress().isEmpty()) {
-					outDoorLog += "改地址|";
-				}
-				if (!ixPoi.getOldKind().isEmpty()) {
-					outDoorLog += "改分类|";
-				}
-				if (!ixPoi.getLevel().isEmpty()) {
-					outDoorLog += "改POI_LEVEL|";
-				}
-				if (!ixPoi.getGeometry().isEmpty()) {
-					outDoorLog += "改RELATION|";
-				}
+				//设置log
 				if (outDoorLog.length() > 0) {
-					outDoorLog = outDoorLog.substring(0, outDoorLog.length() - 1);
+					ixPoi.setLog(outDoorLog.toString().substring(0, outDoorLog.length() - 1));
+				}else{
+					ixPoi.setLog(null);
 				}
-				ixPoi.setLog(outDoorLog);
 				ixPoi.setSportsVenue(jo.getString("sportsVenues"));
-				
+				//设置室内标记
 				JSONObject indoor = jo.getJSONObject("indoor");
 				if (!indoor.isNullObject() && indoor.has("type")) {
 					if (indoor.getInt("type") == 3) {
-						ixPoi.setIndoor(1);
-					} else {
-						ixPoi.setIndoor(0);
+						if(1!=ixPoi.getIndoor()){
+							ixPoi.setFreshFlag(false);
+							ixPoi.setIndoor(1);
+						}
+					}else{
+						if(0!=ixPoi.getIndoor()){
+							ixPoi.setFreshFlag(false);
+							ixPoi.setIndoor(0);
+						}
 					}
-					
-				} else {
-					ixPoi.setIndoor(0);
 				}
-				//鲜度验证
-				if(jo.getString("vipFlag") != null  && StringUtils.isNotEmpty(jo.getString("vipFlag")) 
-						&& !jo.getString("vipFlag").equals(ixPoi.getVipFlag())){
+				//重要poi标记
+				String newVipFlag = jo.getString("vipFlag");
+				if( !stringEquals(newVipFlag,ixPoi.getVipFlag())){
 					ixPoi.setFreshFlag(false);
+					ixPoi.setVipFlag(newVipFlag);
 				}
-				ixPoi.setVipFlag(jo.getString("vipFlag"));
-				//鲜度验证
+				
+				//卡车标记
 				if(jo.getInt("truck") != ixPoi.getTruckFlag()){
 					ixPoi.setFreshFlag(false);
+					ixPoi.setTruckFlag(jo.getInt("truck"));
 				}
-				// 新增卡车标识20160927
-				ixPoi.setTruckFlag(jo.getInt("truck"));
-				
 				// 照片
 				if(jo.getJSONArray("attachments").size() > 0){
-				// 新增POI_MEMO录入20160927
-				String poiMemo = "";
-				
-				// 照片
-				List<IxPoiPhoto> ixPoiPhotosOld = poi.getIxPoiPhotos();
-				List<Long> photoIdList = new ArrayList<Long>();
-				if(ixPoiPhotosOld != null && ixPoiPhotosOld.size() > 0){
-					for (IxPoiPhoto ixPoiPhotoOld : ixPoiPhotosOld) {
-						photoIdList.add(ixPoiPhotoOld.getPhotoId());
-					}
-				}
-				if(!JSONUtils.isNull(jo.get("attachments"))){
-					String phones = jo.getString("attachments");
-					if(!"[]".equals(phones)){
-						JSONArray ja = JSONArray.fromObject(phones);
-						for (int i=0;i<ja.size();i++) {
-							JSONObject photo = ja.getJSONObject(i);
-							//IX_POI_PHOTO表
-							int type = photo.getInt("type");
-							if(type == 1) {
-								String fccpid = photo.getString("id");
-								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
-								if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
-									//Long photoIdl = Long.parseLong(fccpid);
-									ixPoiPhoto.setPid(fccpid);
-								}
-								ixPoiPhoto.setPoiPid(ixPoi.getPid());
-								ixPoiPhoto.setTag(photo.getInt("tag"));
-								// 鲜度验证
-								//ixPoi.setFreshFlag(false);
-								
-							}else if (type == 3) {
-								poiMemo = photo.getString("content");
-							}
+					// 新增POI_MEMO录入20160927
+					String poiMemo = "";
+					// 照片
+					List<IxPoiPhoto> ixPoiPhotosOld = poi.getIxPoiPhotos();
+					List<Long> photoIdList = new ArrayList<Long>();
+					if(ixPoiPhotosOld != null && ixPoiPhotosOld.size() > 0){
+						for (IxPoiPhoto ixPoiPhotoOld : ixPoiPhotosOld) {
+							photoIdList.add(ixPoiPhotoOld.getPhotoId());
 						}
-						ixPoi.setPoiMemo(poiMemo);
 					}
-					
+					if(!JSONUtils.isNull(jo.get("attachments"))){
+						String phones = jo.getString("attachments");
+						if(!"[]".equals(phones)){
+							JSONArray ja = JSONArray.fromObject(phones);
+							for (int i=0;i<ja.size();i++) {
+								JSONObject photo = ja.getJSONObject(i);
+								//IX_POI_PHOTO表
+								int type = photo.getInt("type");
+								if(type == 1) {
+									String fccpid = photo.getString("id");
+									IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
+									if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
+										//Long photoIdl = Long.parseLong(fccpid);
+										ixPoiPhoto.setPid(fccpid);
+									}
+									ixPoiPhoto.setPoiPid(ixPoi.getPid());
+									ixPoiPhoto.setTag(photo.getInt("tag"));
+									// 鲜度验证
+									//ixPoi.setFreshFlag(false);
+									
+								}else if (type == 3) {
+									poiMemo = photo.getString("content");
+								}
+							}
+							ixPoi.setPoiMemo(poiMemo);
+						}
+						
+					}
 				}
-				}
-				//改名称
-				if(!JSONUtils.isNull(jo.get("name")) && StringUtils.isNotEmpty(jo.getString("name"))){
-					this.usdateName(poi, jo, "CHI");
-				}
+				log.info(ixPoi.getPid()+",isFreshFlag:"+ixPoi.isFreshFlag());
 				//改电话
 				if(!JSONUtils.isNull(jo.get("contacts")) && jo.getJSONArray("contacts").size() > 0){
 					this.usdateIxPoiContact(poi, jo,pid);
-				}
-				//改地址
-				if(!JSONUtils.isNull(jo.get("address")) && StringUtils.isNotEmpty(jo.getString("address"))){
-					this.usdateAddress(poi, jo, "CHI");
 				}
 				
 				// 父子关系
 				//1.处理父
 				String fatherson = null;
 				if(!JSONUtils.isNull(jo.get("parentFid")) && StringUtils.isNotEmpty((String) jo.get("parentFid"))){
-					fatherson = jo.getString("parentFid");
+					String oldParentFid = jo.getString("parentFid");
+					fatherson = oldParentFid;
 				}
 				PoiRelation pr = new PoiRelation();
 				pr.setFatherFid(fatherson);
@@ -944,7 +967,6 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if(jo.containsKey("chargingPole")){
 					this.usdateIxPoiChargingPlot(poi, jo, pid);
 				}
-				//*********************************
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -952,7 +974,12 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 		}
 		return false;
 	}
+
+	private String getLangCode() {
+		return "CHI";////FIXME:为什么这里是CHI。CHT呢？默认返回简体中文; 港澳的后续在增加逻辑吧。
+	}
 	
+
 	/**
 	 * @Title: usdateChildren
 	 * @Description: 解析处理 子 IxPoiChildren 的数据
@@ -2074,7 +2101,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 				if(ixPoiAddresses !=  null && ixPoiAddresses.size() > 0){
 					for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
 						//多源address不为空，赋值给IX_POI_ADDRESS.FULLNAME(中文地址)
-						if("CHI".equals(ixPoiAddress.getLangCode())){
+						if(getLangCode().equals(ixPoiAddress.getLangCode())){
 							ixPoiAddress.setFullname(address);
 							flag = false;
 						}else if("CHT".equals(ixPoiAddress.getLangCode())){
@@ -2202,7 +2229,7 @@ public class MultiSrcPoiImportorByGather extends AbstractOperation {
 			for (IxPoiName ixPoiName : ixPoiNames) {
 				if(ixPoiName.getNameClass()==1 &&
 						ixPoiName.getNameType()==2 &&
-						"CHI".equals(ixPoiName.getLangCode())){
+						getLangCode().equals(ixPoiName.getLangCode())){
 					ixPoiName.setName(name);
 					flag = false;
 				}else if(ixPoiName.getNameClass()==1 &&

@@ -32,6 +32,8 @@ public class GLM60237 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
 	
+	private Set<String> filterPid = new HashSet<String>();
+	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
@@ -64,7 +66,12 @@ public class GLM60237 extends BasicCheckRule {
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
 			if(distance > 5){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				if(!filterPid.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 				return;
 			}
 		}

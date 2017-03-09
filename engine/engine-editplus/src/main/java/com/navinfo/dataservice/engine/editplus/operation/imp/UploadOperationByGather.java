@@ -117,7 +117,7 @@ public class UploadOperationByGather {
 					conn=DBConnector.getInstance().getConnectionById(dbId);
 					//导入数据
 					MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
-					MultiSrcPoiImportorByGather imp = new MultiSrcPoiImportorByGather(conn,null);
+					CollectorUploadOperation imp = new CollectorUploadOperation(conn,null);
 					imp.operate(cmd);
 					
 					imp.persistChangeLog(OperationSegment.SG_ROW, userId);//userid 未写

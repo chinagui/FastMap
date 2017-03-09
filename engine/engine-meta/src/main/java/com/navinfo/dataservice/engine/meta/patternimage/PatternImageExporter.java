@@ -11,13 +11,10 @@ import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
-
-import net.sf.json.JSONArray;
 import oracle.sql.BLOB;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
@@ -218,8 +215,11 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where b_type in ('2D','3D') and update_time > to_date('"
-				+ date + "','yyyymmddhh24miss')";
+		String sql = "select * from sc_model_match_g where b_type in ('2D','3D')";
+		if(StringUtils.isNotEmpty(date)){
+			sql+=" and update_time > to_date('"
+							+ date + "','yyyymmddhh24miss')";
+		}
 		
 		exportImage2Sqlite(sqliteConn, sql);
 

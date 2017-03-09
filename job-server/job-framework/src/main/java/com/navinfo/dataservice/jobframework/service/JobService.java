@@ -155,24 +155,36 @@ public class JobService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public JobInfo getLatestJob()throws ServiceException{
-		/*Connection conn = null;
-		JobInfo jobInfo = null;
+	public JSONObject getLatestJob(int subtaskId)throws ServiceException{
+		Connection conn = null;
+		JSONObject jobObj = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "SELECT T.JOB_ID,T.JOB_TYPE,T.CREATE_TIME,T.BEGIN_TIME,T.END_TIME,T.STEP_COUNT,T.STATUS,T.JOB_REQUEST,T.JOB_RESPONSE,T.RESULT_MSG,T.JOB_GUID,T.USER_ID,T.DESCP"
-					+ ",S.STEP_SEQ,S.STEP_MSG,S.BEGIN_TIME,S.END_TIME,S.STATUS AS STEP_STATUS,T.TASK_ID FROM JOB_INFO T,JOB_STEP S WHERE T.JOB_ID=S.JOB_ID(+) AND T.JOB_ID=? ORDER BY S.STEP_SEQ";
-			jobInfo = run.query(conn, jobInfoSql, new FullHandler(), jobId);
-			return jobInfo;
+			String jobInfoSql = "select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and rownum <=1 order by j.end_time desc";
+			System.out.println(jobInfoSql);
+			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
+				
+				@Override
+				public JSONObject handle(ResultSet rs) throws SQLException {
+					JSONObject jobObjInfo = new JSONObject();
+					if(rs.next()){
+						jobObjInfo.put("jobId", rs.getInt("job_id"));
+						jobObjInfo.put("jobGuid", rs.getString("job_guid"));
+					}
+					return jobObjInfo;
+				}
+				
+			});
+			return jobObj;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
-		}*/
-		return null;
+		}
+		//return jobObj;
 	}
 }

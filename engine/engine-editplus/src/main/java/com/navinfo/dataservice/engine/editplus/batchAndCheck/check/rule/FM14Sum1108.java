@@ -132,7 +132,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 				}				
 			}
 			if(poiList==null||poiList.size()==0){return;}
-			
+			log.info("FM-14Sum-11-08:批量加载推荐父");
 			//加载推荐父
 			Set<Long> referParentPids=new HashSet<Long>();
 			for(Set<Long> ps:poiMap.values()){
@@ -142,6 +142,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			referSubrow.add("IX_POI_CHILDREN");
 			Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(referParentPids, ObjectName.IX_POI, referSubrow, false);
 			//加载子
+			log.info("FM-14Sum-11-08:批量加载推荐父对应的子");
 			Set<Long> referChildPids=new HashSet<Long>();
 			for(Long parent:referParentPids){
 				if(!result.containsKey(parent)){continue;}
@@ -151,11 +152,15 @@ public class FM14Sum1108 extends BasicCheckRule {
 					referChildPids.add(c.getChildPoiPid());
 				}
 			}
+			Map<Long, BasicObj> resultcMap=new HashMap<Long, BasicObj>();
 			if(referChildPids!=null&&referChildPids.size()>0){
-				getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
+				resultcMap=getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
+				if(resultcMap!=null&&resultcMap.size()>0){
+					result.putAll(resultcMap);
+				}
 			}
 			//判断推荐的父poi是否有与当前poi分类相同的子，没有则报log
-			Map<Long, BasicObj> refers = getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
+			//Map<Long, BasicObj> refers = getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
 			for (Long pidC : poiList.keySet()) {
 				String kindCode = (String) poiList.get(pidC).get("kindCode");
 				Geometry geometry = (Geometry) poiList.get(pidC).get("geometry");
@@ -169,7 +174,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 						continue;}
 					boolean haskind=false;
 					for(IxPoiChildren c:cs){
-						IxPoi cObj = (IxPoi)refers.get(c.getChildPoiPid()).getMainrow();
+						IxPoi cObj = (IxPoi)result.get(c.getChildPoiPid()).getMainrow();
 						if(cObj.getKindCode().equals(kindCode)){
 							haskind=true;break;
 						}

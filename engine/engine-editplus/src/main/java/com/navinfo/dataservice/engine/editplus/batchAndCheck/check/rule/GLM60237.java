@@ -31,7 +31,7 @@ import com.vividsolutions.jts.geom.Geometry;
 public class GLM60237 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
-	
+	//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
 	private Set<String> filterPid = new HashSet<String>();
 	
 	@Override

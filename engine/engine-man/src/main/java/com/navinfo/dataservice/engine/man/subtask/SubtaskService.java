@@ -1587,24 +1587,28 @@ public class SubtaskService {
 		if(subtask.getStage()==1){
 			//获取规划外GRID信息
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-			log.info("=================getGridIdMapBySubtaskFromLog==========================");
+//			log.info("=================getGridIdMapBySubtaskFromLog==========================");
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-			log.info("=================insertSubtaskGridMapping==========================");
+//			log.info("=================insertSubtaskGridMapping==========================");
 
 			//调整任务范围
 			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
-			log.info("=================insertTaskGridMapping==========================");
+//			log.info("=================insertTaskGridMapping==========================");
 
 			//调整区域子任务范围
 			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
-			log.info("=================getSubTaskListByType==========================");
+//			log.info("=================getSubTaskListByType==========================");
 
-			for(Subtask subtaskType4:subtaskList){
-				SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
-				log.info("=================insertSubtaskGridMapping==========================");
-
+//			log.info("=================subtaskList==========================" + subtaskList);
+//			log.info("=================gridIdsToInsert==========================" + gridIdsToInsert);
+			if(subtaskList.size()!=0){
+				for(Subtask subtaskType4:subtaskList){
+//					log.info("=================insertSubtaskGridMapping==========================");
+					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
+				}
 			}
+			
 		}
 		
 		
@@ -1614,12 +1618,14 @@ public class SubtaskService {
 			List<Long> groupIdList = new ArrayList<Long>();
 			if(subtask.getExeUserId()!=0){
 				UserGroup userGroup = UserInfoOperation.getUserGroupByUserId(conn, subtask.getExeUserId());
-				groupIdList.add(Long.valueOf(userGroup.getGroupId()));
+				if(userGroup.getGroupId()!=null){
+					groupIdList.add(Long.valueOf(userGroup.getGroupId()));
+				}
 			}else{
 				groupIdList.add((long)subtask.getExeGroupId());
 			}
 			Map<Long, UserInfo> leaderIdByGroupId = UserInfoOperation.getLeaderIdByGroupId(conn, groupIdList);
-			log.info("=================getLeaderIdByGroupId==========================");
+//			log.info("=================getLeaderIdByGroupId==========================");
 
 			/*采集/日编/月编子任务关闭
 			* 分配的作业员
@@ -1671,7 +1677,7 @@ public class SubtaskService {
 		                }
 					}
 				}
-				log.info("=================sendMessage==========================");
+//				log.info("=================sendMessage==========================");
 		} catch (Exception e) {
 			// TODO: handle exception
 			e.printStackTrace();

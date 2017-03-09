@@ -92,7 +92,7 @@ public class Operation implements IOperation {
 				}
 
 				LcNode preNode = (LcNode) nodeSelector.loadById(nodePid, true,
-						true);
+						false);
 				// 分离node挂接的link
 				List<LcLink> links = linkSelector.loadByNodePid(nodePid, true);
 

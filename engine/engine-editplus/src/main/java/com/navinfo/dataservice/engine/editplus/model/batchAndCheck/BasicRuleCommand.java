@@ -63,7 +63,7 @@ public class BasicRuleCommand {
 	 * @throws Exception
 	 */
 	public Map<Long,BasicObj> loadReferObjs(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
-		//Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
+		Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
 		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
 		if(!objType.isEmpty()){
 			Map<Long,BasicObj> allDataTmp=allDatas.get(objType);
@@ -93,12 +93,14 @@ public class BasicRuleCommand {
 				if(!obj.isDeleted()){
 					returnDataTmp.put(objPid,obj);}
 			}
-			//returnDatas.put(objType, returnDataTmp);
-			//加载selectByPids的同时已经加载了子表，不需要单独加载
-			/*Map<String,Set<String>> selConfig=new HashMap<String,Set<String>>();
-			selConfig.put(objType, referSubrow);
-			//增量加载需要参考的子表数据
-			ObjChildrenIncreSelector.increSelect(conn,returnDatas, selConfig);*/
+			if(referSubrow!=null&&!referSubrow.isEmpty()){
+				returnDatas.put(objType, returnDataTmp);
+				//加载selectByPids的同时已经加载了子表，但是有些不是此次加载的，需要二次加载下子表
+				Map<String,Set<String>> selConfig=new HashMap<String,Set<String>>();
+				selConfig.put(objType, referSubrow);
+				//增量加载需要参考的子表数据
+				ObjChildrenIncreSelector.increSelect(conn,returnDatas, selConfig);
+			}
 			return returnDataTmp;
 		}
 		return null;
@@ -114,7 +116,7 @@ public class BasicRuleCommand {
 	 * @throws Exception
 	 */
 	public Map<Long,BasicObj> loadReferObjsByLog(Collection<Long> objPids,String objType,Set<String> referSubrow,boolean isLock) throws Exception{
-		//Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
+		Map<String,Map<Long,BasicObj>> returnDatas=new HashMap<String,Map<Long,BasicObj>>();
 		Map<Long,BasicObj> returnDataTmp=new HashMap<Long, BasicObj>();
 		if(!objType.isEmpty()){
 			Map<Long,BasicObj> allDataTmp=allDatas.get(objType);
@@ -146,7 +148,14 @@ public class BasicRuleCommand {
 				if(!obj.isDeleted()){
 					returnDataTmp.put(objPid,obj);}
 			}
-			//returnDatas.put(objType, returnDataTmp);
+			if(referSubrow!=null&&!referSubrow.isEmpty()){
+				returnDatas.put(objType, returnDataTmp);
+				//加载selectByPids的同时已经加载了子表，但是有些不是此次加载的，需要二次加载下子表
+				Map<String,Set<String>> selConfig=new HashMap<String,Set<String>>();
+				selConfig.put(objType, referSubrow);
+				//增量加载需要参考的子表数据
+				ObjChildrenIncreSelector.increSelect(conn,returnDatas, selConfig);
+			}
 			return returnDataTmp;
 		}
 		return null;

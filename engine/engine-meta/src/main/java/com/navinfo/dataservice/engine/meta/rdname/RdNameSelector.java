@@ -63,7 +63,7 @@ public class RdNameSelector {
 				return result;
 			}
 
-			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
+			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid, a.road_type    ,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 
 			int startRow = (pageNum-1) * pageSize+1;
 
@@ -72,7 +72,7 @@ public class RdNameSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			System.out.println("rdname search :"+sql);
-			pstmt.setString(1, name + "%");
+			pstmt.setString(1, "%"+name + "%");
 
 			pstmt.setInt(2, endRow);
 

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -34,18 +35,24 @@ public class GLM60089 extends BasicCheckRule {
 			if(restList==null||restList.isEmpty()){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Map<String, String>> foods = metadataApi.scPointFoodtypeFoodTypes();
+			Map<String, String> foodtypeNameMap = metadataApi.getFoodtypeNameMap();
 			Map<String, String> foodMap=foods.get(kind);
+			List<String> foodTypeName = new ArrayList<String>();
+			for(String foodtype : foodMap.keySet()){
+				String name = foodtypeNameMap.get(foodtype);
+				foodTypeName.add(name);
+			}
 			for (IxPoiRestaurant ixPoiRestaurant : restList) {
 				String foodType = ixPoiRestaurant.getFoodType();
 				if(foodType == null){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为:"+foodTypeName.toString().replace("[", "").replace("]", ""));
 					return;
 				}
 				else if(foodType!= null){
 					String[] foodTypes = foodType.split("\\|");
 					for (String str : foodTypes) {
 						if(!foodMap.containsKey(str)){
-							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为"+foodMap.keySet().toString().replace("[", "").replace("]", ""));
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "快餐风味类型检查：快餐分类的POI对应的风味类型为:"+foodTypeName.toString().replace("[", "").replace("]", ""));
 							return;
 						}
 					}

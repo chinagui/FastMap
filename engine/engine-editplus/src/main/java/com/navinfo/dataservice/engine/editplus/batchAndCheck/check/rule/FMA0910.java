@@ -43,7 +43,7 @@ public class FMA0910 extends BasicCheckRule {
 					|| StringUtils.isNotEmpty(address.getType()) || StringUtils.isNotEmpty(address.getSubnum())
 					|| StringUtils.isNotEmpty(address.getSurfix()) || StringUtils.isNotEmpty(address.getEstab())
 					|| StringUtils.isNotEmpty(address.getBuilding()) || StringUtils.isNotEmpty(address.getFloor())
-					|| StringUtils.isNotEmpty(address.getUnit())) {
+					|| StringUtils.isNotEmpty(address.getUnit()) || StringUtils.isNotEmpty(address.getRoom())) {
 				errList.add("标志物有内容，则门楼地址（拼起来：前缀、门牌号、类型、子号、后缀、附属设施名、楼栋号、楼号、楼层号、房间号）应该为空。");
 			}
 		}

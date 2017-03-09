@@ -207,6 +207,8 @@ public class SubtaskService {
 			// 插入SUBTASK_GRID_MAPPING
 			if(bean.getGridIds() != null){
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
+				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
 			}
 			
 			//消息发布

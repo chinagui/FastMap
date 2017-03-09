@@ -690,7 +690,7 @@ public class MetaController extends BaseController {
             int subtaskId = jsonReq.getInt("subtaskId");
             System.out.println("subtaskId: "+subtaskId);
             ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-
+            System.out.println("apiService: "+apiService);
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
             if (subtask == null) {
@@ -701,6 +701,7 @@ public class MetaController extends BaseController {
 
             FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
             System.out.println("subtask.getGeometry(): "+subtask.getGeometry());
+            System.out.println("apiFcc: "+apiFcc);
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
             System.out.println("tips: "+tips);

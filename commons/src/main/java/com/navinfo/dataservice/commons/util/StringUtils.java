@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.commons.util;
 
+import com.navinfo.navicommons.database.sql.StringUtil;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,283 +15,290 @@ import java.util.regex.Pattern;
  */
 public class StringUtils {
 
-	public static String PlaceHolder = "$$$";
+    public static String PlaceHolder = "$$$";
 
-	public static boolean toBoolean(String flag) {
-		boolean view = false;
-		if (org.apache.commons.lang.StringUtils.isNotBlank(flag)) {
-			if (flag.toLowerCase().equals("true") || flag.equals("1")) {
-				view = true;
-			}
-		}
-		return view;
-	}
+    public static boolean toBoolean(String flag) {
+        boolean view = false;
+        if (org.apache.commons.lang.StringUtils.isNotBlank(flag)) {
+            if (flag.toLowerCase().equals("true") || flag.equals("1")) {
+                view = true;
+            }
+        }
+        return view;
+    }
 
-	/**
-	 * 类的属性名转为数据库的列名 在大写字母前加下划线，并把大写转小写
-	 * 
-	 * @param fieldName
-	 *            属性名
-	 * @return 列名
-	 */
-	public static String toColumnName(String fieldName) {
-		if (fieldName.equals("fccPid")) {
-			return "pid";
-		}
-		if (fieldName.equals("open24h")) {
-			return "open_24h";
-		}
-		if (fieldName.equals("level")) {
-			return "\"LEVEL\"";
-		}
-		if(fieldName.equals("phone400")){
-			return "phone_400";
-		}
-		if(fieldName.equals("current")){
-			return "\"CURRENT\"";
-		}
-		if(fieldName.equals("mode")){
-			return "\"MODE\"";
-		}
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < fieldName.length(); i++) {
-			char c = fieldName.charAt(i);
-			if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
-				sb.append("_" + c);
-			} else {
-				sb.append(c);
-			}
-		}
+    /**
+     * 类的属性名转为数据库的列名 在大写字母前加下划线，并把大写转小写
+     *
+     * @param fieldName 属性名
+     * @return 列名
+     */
+    public static String toColumnName(String fieldName) {
+        if (fieldName.equals("fccPid")) {
+            return "pid";
+        }
+        if (fieldName.equals("open24h")) {
+            return "open_24h";
+        }
+        if (fieldName.equals("level")) {
+            return "\"LEVEL\"";
+        }
+        if (fieldName.equals("phone400")) {
+            return "phone_400";
+        }
+        if (fieldName.equals("current")) {
+            return "\"CURRENT\"";
+        }
+        if (fieldName.equals("mode")) {
+            return "\"MODE\"";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fieldName.length(); i++) {
+            char c = fieldName.charAt(i);
+            if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                sb.append("_" + c);
+            } else {
+                sb.append(c);
+            }
+        }
 
-		return sb.toString().toLowerCase();
-	}
+        return sb.toString().toLowerCase();
+    }
 
-	/**
-	 * 判断字符串是否相等
-	 * 
-	 * @param str1
-	 *            字符串1
-	 * @param str2
-	 *            字符串2
-	 * @return True 相等
-	 */
-	public static boolean isStringSame(String str1, String str2) {
-		boolean flag = false;
+    /**
+     * 判断字符串是否相等
+     *
+     * @param str1 字符串1
+     * @param str2 字符串2
+     * @return True 相等
+     */
+    public static boolean isStringSame(String str1, String str2) {
+        boolean flag = false;
 
-		if (str1 != null && str2 != null && str1.equals(str2)) {
-			flag = true;
-		} else if (str1 == null && str2 == null) {
-			flag = true;
-		}
+        if (str1 != null && str2 != null && str1.equals(str2)) {
+            flag = true;
+        } else if (str1 == null && str2 == null) {
+            flag = true;
+        }
 
-		return flag;
-	}
+        return flag;
+    }
 
-	/**
-	 * 获取当前时间，格式 "yyyyMMddHHmmss"
-	 * 
-	 * @return 时间字符串
-	 */
-	public static String getCurrentTime() {
-		Date date = new Date();
+    /**
+     * 获取当前时间，格式 "yyyyMMddHHmmss"
+     *
+     * @return 时间字符串
+     */
+    public static String getCurrentTime() {
+        Date date = new Date();
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
 
-		return sdf.format(date);
-	}
+        return sdf.format(date);
+    }
 
-	/**
-	 * 获取当前天，格式 "yyyyMMdd"
-	 * 
-	 * @return 时间字符串
-	 */
-	public static String getCurrentDay() {
-		Date date = new Date();
+    /**
+     * 获取当前天，格式 "yyyyMMdd"
+     *
+     * @return 时间字符串
+     */
+    public static String getCurrentDay() {
+        Date date = new Date();
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
 
-		return sdf.format(date);
-	}
+        return sdf.format(date);
+    }
 
-	public static String removeSpeLetter(String str)
-	{
-		if(str.contains("<"))
-		{
-			int index = str.indexOf("<");
-			
-			str = str.substring(0,index)+str.substring(index+3);
-			
-			removeSpeLetter(str);
-		}
-		else
-		{
-			return str;
-		}
-		
-		return str;
-	}
-	
-	/**
-	 * 移除字符串中的空字符，包括空格、制表符、换行、回车换行。
-	 * 
-	 * @param src
-	 * @return
-	 */
-	public static String removeBlankChar(String src) {
-		if (src != null) {
-			String dest = "";
-			Pattern p = Pattern.compile("\\s*|\t|\r|\n|\r\n");
-			Matcher m = p.matcher(src);
-			dest = m.replaceAll("");
-			return dest;
-		}
-		return null;
-	}
+    public static String removeSpeLetter(String str) {
+        if (str.contains("<")) {
+            int index = str.indexOf("<");
 
-	/**
-	 * 替换source中的${}值
-	 *
-	 * @param source
-	 * @param pro
-	 * @return
-	 */
-	public static String expandVariables(String source, Map<String, String> pro, String pre, String post) {
-		String result = "";
-		if (source == null) {
-			return null;
-		}
-		int fIndex = source.indexOf(pre);
+            str = str.substring(0, index) + str.substring(index + 3);
 
-		if (fIndex == -1) {
-			return source;
-		}
+            removeSpeLetter(str);
+        } else {
+            return str;
+        }
 
-		StringBuffer sb = new StringBuffer(source);
+        return str;
+    }
 
-		while (fIndex > -1) {
-			int lIndex = sb.indexOf(post);
+    /**
+     * 移除字符串中的空字符，包括空格、制表符、换行、回车换行。
+     *
+     * @param src
+     * @return
+     */
+    public static String removeBlankChar(String src) {
+        if (src != null) {
+            String dest = "";
+            Pattern p = Pattern.compile("\\s*|\t|\r|\n|\r\n");
+            Matcher m = p.matcher(src);
+            dest = m.replaceAll("");
+            return dest;
+        }
+        return null;
+    }
 
-			int start = fIndex + pre.length();
+    /**
+     * 替换source中的${}值
+     *
+     * @param source
+     * @param pro
+     * @return
+     */
+    public static String expandVariables(String source, Map<String, String> pro, String pre, String post) {
+        String result = "";
+        if (source == null) {
+            return null;
+        }
+        int fIndex = source.indexOf(pre);
 
-			if (fIndex == 0) {
-				String varName = sb.substring(start, start + lIndex - pre.length());
-				String varValue = (String) pro.get(varName) == null ? "\"" + varName + " not fount\""
-						: (String) pro.get(varName);
-				sb.replace(fIndex, fIndex + lIndex + 1, varValue);
-			} else {
-				String varName = sb.substring(start, lIndex);
-				String varValue = (String) pro.get(varName) == null ? "\"" + varName + " not fount\""
-						: (String) pro.get(varName);
-				sb.replace(fIndex, lIndex + 1, varValue);
-				/*
-				 * if(varName.equals("expTaskId")){
+        if (fIndex == -1) {
+            return source;
+        }
+
+        StringBuffer sb = new StringBuffer(source);
+
+        while (fIndex > -1) {
+            int lIndex = sb.indexOf(post);
+
+            int start = fIndex + pre.length();
+
+            if (fIndex == 0) {
+                String varName = sb.substring(start, start + lIndex - pre.length());
+                String varValue = (String) pro.get(varName) == null ? "\"" + varName + " not fount\"" : (String) pro
+                        .get(varName);
+                sb.replace(fIndex, fIndex + lIndex + 1, varValue);
+            } else {
+                String varName = sb.substring(start, lIndex);
+                String varValue = (String) pro.get(varName) == null ? "\"" + varName + " not fount\"" : (String) pro
+                        .get(varName);
+                sb.replace(fIndex, lIndex + 1, varValue);
+                /*
+                 * if(varName.equals("expTaskId")){
 				 * System.out.println(varValue); }
 				 */
-			}
+            }
 
-			fIndex = sb.indexOf(pre);
-		}
+            fIndex = sb.indexOf(pre);
+        }
 
-		result = sb.toString();
+        result = sb.toString();
 
-		return result;
-	}
+        return result;
+    }
 
-	public static String expandVariables(String source, Map<String, String> pro) {
-		return expandVariables(source, pro, "${", "}");
-	}
+    public static String expandVariables(String source, Map<String, String> pro) {
+        return expandVariables(source, pro, "${", "}");
+    }
 
-	/**
-	 * int list 转string
-	 * @param integers 
-	 * @return
-	 */
-	public static String getInteStr(List<Integer> integers) {
-		if (integers != null && integers.size() > 0) {
-			return integers.toString().replace("[", "").replace("]", "");
-		}
-		return "";
+    /**
+     * int list 转string
+     *
+     * @param integers
+     * @return
+     */
+    public static String getInteStr(List<Integer> integers) {
+        if (integers != null && integers.size() > 0) {
+            return integers.toString().replace("[", "").replace("]", "");
+        }
+        return "";
 
-	}
+    }
 
-	/**
-	 * 将逗号分割的int字符串转为对应的list
-	 * 
-	 * @param str
-	 *            需要转为list的字符串："1,2,3"
-	 * @return
-	 */
-	public static List<Integer> getIntegerListByStr(String str) {
-		if (StringUtils.isNotEmpty(str)) {
-			List<Integer> list = new ArrayList<Integer>();
-			for (String tmp : str.split(",")) {
-				list.add(Integer.parseInt(tmp));
-			}
-			return list;
-		}
-		return null;
-	}
-	public static boolean isNumeric(String str){
-	    for(int i=str.length();--i>=0;){
-	       int chr=str.charAt(i);
-	       if(chr<48 || chr>57)
-	          return false;
-	    }
-	    return true;
-	 }
-	public static String laneSpeedValue2KM(String laneSpeedValue) {
+    /**
+     * 将逗号分割的int字符串转为对应的list
+     *
+     * @param str 需要转为list的字符串："1,2,3"
+     * @return
+     */
+    public static List<Integer> getIntegerListByStr(String str) {
+        if (StringUtils.isNotEmpty(str)) {
+            List<Integer> list = new ArrayList<Integer>();
+            for (String tmp : str.split(",")) {
+                list.add(Integer.parseInt(tmp));
+            }
+            return list;
+        }
+        return null;
+    }
 
-		String[] values = laneSpeedValue.split("\\|");
+    public static boolean isNumeric(String str) {
+        for (int i = str.length(); --i >= 0; ) {
+            int chr = str.charAt(i);
+            if (chr < 48 || chr > 57)
+                return false;
+        }
+        return true;
+    }
 
-		StringBuilder sb = new StringBuilder();
+    public static String laneSpeedValue2KM(String laneSpeedValue) {
+        if (StringUtils.isEmpty(laneSpeedValue)) {
+            return "0";
+        }
 
-		for (int i = 0; i < values.length; i++) {
-			if (i != 0) {
-				sb.append("|");
-			}
+        String[] values = laneSpeedValue.split("\\|");
 
-			sb.append(Integer.valueOf(values[i]) / 10);
-		}
+        StringBuilder sb = new StringBuilder();
 
-		return sb.toString();
-	}
+        for (int i = 0; i < values.length; i++) {
+            if (i != 0) {
+                sb.append("|");
+            }
+            if (StringUtils.isEmpty(values[i]))
+                sb.append(0);
+            else
+                sb.append(Integer.valueOf(values[i]) / 10);
+        }
 
-	public static String laneSpeedValue2M(String laneSpeedValue) {
+        return sb.toString();
+    }
 
-		String[] values = laneSpeedValue.split("\\|");
+    public static String laneSpeedValue2M(String laneSpeedValue) {
+        if (StringUtils.isEmpty(laneSpeedValue)) {
+            return "0";
+        }
 
-		StringBuilder sb = new StringBuilder();
+        String[] values = laneSpeedValue.split("\\|");
 
-		for (int i = 0; i < values.length; i++) {
-			if (i != 0) {
-				sb.append("|");
-			}
+        StringBuilder sb = new StringBuilder();
 
-			sb.append(Integer.valueOf(values[i]) * 10);
-		}
+        for (int i = 0; i < values.length; i++) {
+            if (i != 0) {
+                sb.append("|");
+            }
+            if (StringUtils.isEmpty(values[i]))
+                sb.append(0);
+            else
+                sb.append(Integer.valueOf(values[i]) * 10);
+        }
 
-		return sb.toString();
-	}
+        return sb.toString();
+    }
 
-	public static boolean isNotEmpty(String str) {
-		return org.apache.commons.lang.StringUtils.isNotEmpty(str);
-	}
+    public static boolean isNotEmpty(String str) {
+        return org.apache.commons.lang.StringUtils.isNotEmpty(str);
+    }
 
-	public static boolean isEmpty(String str) {
-		return org.apache.commons.lang.StringUtils.isEmpty(str);
-	}
-	
-	public static String cutSpecLength(String str,int len){
-		if(str==null||str.length()<=len){
-			return str;
-		}
-		return str.substring(0, len)+"......";
-	}
-	public static boolean equals(String a,String b){
-		return org.apache.commons.lang.StringUtils.isEmpty(a)&&org.apache.commons.lang.StringUtils.isEmpty(b)?true:org.apache.commons.lang.StringUtils.equals(a, b);
-	}
+    public static boolean isEmpty(String str) {
+        return org.apache.commons.lang.StringUtils.isEmpty(str);
+    }
 
-	public static void main(String[] args) {
-		System.out.println(removeSpeLetter("a<a>"));
-	}
+    public static String cutSpecLength(String str, int len) {
+        if (str == null || str.length() <= len) {
+            return str;
+        }
+        return str.substring(0, len) + "......";
+    }
+
+    public static boolean equals(String a, String b) {
+        return org.apache.commons.lang.StringUtils.isEmpty(a) && org.apache.commons.lang.StringUtils.isEmpty(b) ?
+                true : org.apache.commons.lang.StringUtils.equals(a, b);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(laneSpeedValue2KM("100|100"));
+    }
 }

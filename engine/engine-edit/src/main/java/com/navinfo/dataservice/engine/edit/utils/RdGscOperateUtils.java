@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -18,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
+import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -31,9 +35,6 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class RdGscOperateUtils {
 	public static JSONArray calCoordinateByNotSelfInter(JSONObject geojson, Geometry gscGeo) throws Exception {
@@ -572,6 +573,9 @@ public class RdGscOperateUtils {
 		case RWNODE:
 			nodeGeo = ((RwNode) nodeObj).getGeometry();
 			break;
+		case LCNODE:
+			nodeGeo = ((LcNode) nodeObj).getGeometry();
+			break;
 		default:
 			break;
 		}
@@ -592,7 +596,7 @@ public class RdGscOperateUtils {
 	}
 
 	/**
-	 * 判断移动的形状点是否是立交点位
+	 * PERMIT_ERASE_GSC_NODE：判断移动的形状点是否是立交点位
 	 * 
 	 */
 	public static void checkIsMoveGscPoint(JSONObject linkGeo, Connection conn, int linkPid, String tableName)
@@ -607,7 +611,7 @@ public class RdGscOperateUtils {
 		boolean flag = isMoveGscLink(geo, rdGscList);
 
 		if (flag) {
-			throw new Exception("不允许去除有立交关系的形状点");
+			throw new Exception("不允许去除或修改有立交关系的形状点");
 		}
 	}
 

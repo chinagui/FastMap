@@ -487,6 +487,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		if (rdName.getBase() != null && StringUtils.isNotEmpty(rdName.getBase())) {
 			sb.append(" AND BASE ='"+rdName.getBase()+"'");
 		}
+		if (rdName.getSrcFlag() != null && rdName.getSrcFlag() > 0) {
+			sb.append(" AND SRC_FLAG ="+rdName.getSrcFlag()+" ");
+		}
+		if (rdName.getCodeType() != null && rdName.getCodeType() > 0) {
+			sb.append(" AND CODE_TYPE ="+rdName.getCodeType()+" ");
+		}
 		try {
 			
 			pstmt = conn.prepareStatement(sb.toString());

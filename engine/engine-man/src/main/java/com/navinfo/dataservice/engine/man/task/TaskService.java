@@ -1275,7 +1275,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
-			TaskOperation.updateStatus(conn, taskId, 1);
+			TaskOperation.updateStatus(conn, taskId, 0);
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			TaskOperation.closeBlock(conn,task.getBlockId());
 			
@@ -1900,7 +1900,7 @@ public class TaskService {
 			//修改开关
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
 			Set<Integer> meshs = phase.getMeshIds();
-			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 1 WHERE MESH IN "
+			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 0 WHERE MESH IN "
 					+meshs.toString().replace("[", "(").replace("]", ")");
 			Connection meta = null;
 			try{

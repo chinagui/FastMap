@@ -93,7 +93,7 @@ public class Operation implements IOperation {
                     lat = point.getY();
                 }
 
-                AdNode preNode = (AdNode) nodeSelector.loadById(nodePid, true, true);
+                AdNode preNode = (AdNode) nodeSelector.loadById(nodePid, true, false);
                 // 分离node挂接的link
                 List<AdLink> links = linkSelector.loadByNodePid(nodePid, true);
 

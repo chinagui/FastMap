@@ -31,6 +31,7 @@ import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 public class GLM60292 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
+	private Set<String> filterPid = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -66,7 +67,12 @@ public class GLM60292 extends BasicCheckRule {
 			Map<String, String> kindNameByKindCode = metadataApi.getKindNameByKindCode();
 			if((keys.contains(kindCode)&&values.contains(kindCodeP))
 					||(keys.contains(kindCodeP)&&values.contains(kindCode))){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), kindNameByKindCode.get(kindCode)+"不是指定分类，无法制作同一关系");
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				if(!filterPid.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), kindNameByKindCode.get(kindCode)+"不是指定分类，无法制作同一关系");
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 				return;
 			}
 		}

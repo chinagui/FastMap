@@ -28,7 +28,9 @@ public class SendEmailMsgHandler implements MsgHandler {
 			String mailContent = jo.getString("mailContent");
 			//发送邮件
 			if(toMail != null){
+				log.info("start push mail:"+toMail+","+mailTitle+","+mailContent);
 				SendEmail.sendEmail(toMail, mailTitle, mailContent);
+				log.info("end push mail:"+toMail+","+mailTitle+","+mailContent);
 			}
 		} catch (Exception e) {
 			// TODO: handle exception

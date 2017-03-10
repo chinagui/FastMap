@@ -28,511 +28,500 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
- * 
- * @ClassName: Operation
  * @author Zhang Xiaolong
+ * @ClassName: Operation
  * @date 2016年7月20日 下午7:39:27
  * @Description: TODO
  */
 public class Operation implements IOperation {
 
-	private Command command;
-
-	private RdObject rdObject;
+    private Command command;
 
-	private Connection conn;
-
-	public Operation(Command command) {
-		this.command = command;
-		this.rdObject = this.command.getRdObject();
-	}
-
-	public Operation(Connection conn) {
-		this.conn = conn;
-	}
-
-	@Override
-	public String run(Result result) throws Exception {
-
-		JSONObject content = command.getContent();
-		
-		//移动landmark
-		if(content.containsKey("geometry"))
-		{
-			JSONObject geojson = new JSONObject();
-			
-			geojson.put("type", "Point");
-
-	        geojson.put("coordinates", new double[]{command.getLongitude(), command.getLatitude()});
-	        
-	        rdObject.changedFields().put("geometry",geojson);
-	        
-	        result.insertObject(rdObject, ObjStatus.UPDATE, rdObject.getPid());
-		}
-
-		// 不编辑主表信息
+    private RdObject rdObject;
 
-		// inter子表
-		if (content.containsKey("inters")) {
-			updateObjectInter(result);
-		}
+    private Connection conn;
 
-		// road 子表
-		if (content.containsKey("roads")) {
-			updateObjectRoad(result);
-		}
+    public Operation(Command command) {
+        this.command = command;
+        this.rdObject = this.command.getRdObject();
+    }
 
-		// link子表
-		if (content.containsKey("links")) {
-			updateObjectLink(result);
-		}
+    public Operation(Connection conn) {
+        this.conn = conn;
+    }
 
-		// name子表
-		if (content.containsKey("names")) {
-			updateObjectName(result);
-		}
+    @Override
+    public String run(Result result) throws Exception {
 
-		result.setPrimaryPid(rdObject.parentPKValue());
+        JSONObject content = command.getContent();
 
-		return null;
-	}
+        //移动landmark
+        if (content.containsKey("geometry")) {
+            JSONObject geojson = new JSONObject();
 
-	/**
-	 * 跟新rd_object_inter子表
-	 * 
-	 * @param result
-	 * @throws Exception
-	 */
-	private void updateObjectInter(Result result) throws Exception {
-		JSONArray subObj = this.command.getInterArray();
+            geojson.put("type", "Point");
 
-		for (IRow inter : rdObject.getInters()) {
-			RdObjectInter objectInter = (RdObjectInter) inter;
-			if (subObj == null) {
-				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
-			} else if (!subObj.contains(objectInter.getInterPid())) {
-				result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
-			} else {
-				subObj.remove((Integer) objectInter.getInterPid());
-			}
-		}
+            geojson.put("coordinates", new double[]{round(command.getLongitude()), round(command.getLatitude())});
 
-		List<Integer> pidList = new ArrayList<>();
+            rdObject.changedFields().put("geometry", geojson);
 
-		for (int i = 0; i < subObj.size(); i++) {
+            result.insertObject(rdObject, ObjStatus.UPDATE, rdObject.getPid());
+        }
 
-			int interPid = subObj.getInt(i);
+        // 不编辑主表信息
 
-			if (!pidList.contains(interPid)) {
-				RdObjectInter rdObjectInter = new RdObjectInter();
+        // inter子表
+        if (content.containsKey("inters")) {
+            updateObjectInter(result);
+        }
 
-				rdObjectInter.setInterPid(interPid);
+        // road 子表
+        if (content.containsKey("roads")) {
+            updateObjectRoad(result);
+        }
 
-				rdObjectInter.setPid(rdObject.getPid());
+        // link子表
+        if (content.containsKey("links")) {
+            updateObjectLink(result);
+        }
 
-				result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getPid());
+        // name子表
+        if (content.containsKey("names")) {
+            updateObjectName(result);
+        }
 
-				pidList.add(interPid);
-			}
-		}
+        result.setPrimaryPid(rdObject.parentPKValue());
 
-	}
+        return null;
+    }
 
-	/**
-	 * 跟新rd_object_road子表
-	 * 
-	 * @param result
-	 * @throws Exception
-	 */
-	private void updateObjectRoad(Result result) throws Exception {
-		JSONArray subObj = this.command.getRoadArray();
+    private double round(double itude) {
+        return Math.round(itude * 100000) * 0.00001;
+    }
 
-		for (IRow road : rdObject.getRoads()) {
-			RdObjectRoad objectRoad = (RdObjectRoad) road;
+    /**
+     * 跟新rd_object_inter子表
+     *
+     * @param result
+     * @throws Exception
+     */
+    private void updateObjectInter(Result result) throws Exception {
+        JSONArray subObj = this.command.getInterArray();
 
-			if (subObj == null) {
-				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
-			} else if (!subObj.contains(objectRoad.getRoadPid())) {
-				result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
-			} else {
-				subObj.remove((Integer) objectRoad.getRoadPid());
-			}
-		}
+        for (IRow inter : rdObject.getInters()) {
+            RdObjectInter objectInter = (RdObjectInter) inter;
+            if (subObj == null) {
+                result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
+            } else if (!subObj.contains(objectInter.getInterPid())) {
+                result.insertObject(objectInter, ObjStatus.DELETE, objectInter.getPid());
+            } else {
+                subObj.remove((Integer) objectInter.getInterPid());
+            }
+        }
 
-		List<Integer> pidList = new ArrayList<>();
+        List<Integer> pidList = new ArrayList<>();
 
-		for (int i = 0; i < subObj.size(); i++) {
+        for (int i = 0; i < subObj.size(); i++) {
 
-			int roadPid = subObj.getInt(i);
+            int interPid = subObj.getInt(i);
 
-			if (!pidList.contains(roadPid)) {
-				RdObjectRoad rdObjectRoad = new RdObjectRoad();
+            if (!pidList.contains(interPid)) {
+                RdObjectInter rdObjectInter = new RdObjectInter();
 
-				rdObjectRoad.setRoadPid(subObj.getInt(i));
+                rdObjectInter.setInterPid(interPid);
 
-				rdObjectRoad.setPid(rdObject.getPid());
+                rdObjectInter.setPid(rdObject.getPid());
 
-				result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getPid());
+                result.insertObject(rdObjectInter, ObjStatus.INSERT, rdObjectInter.getPid());
 
-				pidList.add(roadPid);
-			}
-		}
+                pidList.add(interPid);
+            }
+        }
 
-	}
+    }
 
-	/**
-	 * 更新link子表
-	 * 
-	 * @param result
-	 * @throws Exception
-	 */
-	private void updateObjectLink(Result result) throws Exception {
-		JSONArray subObj = this.command.getLinkArray();
+    /**
+     * 跟新rd_object_road子表
+     *
+     * @param result
+     * @throws Exception
+     */
+    private void updateObjectRoad(Result result) throws Exception {
+        JSONArray subObj = this.command.getRoadArray();
 
-		if (subObj == null) {
-			throw new Exception("link参数不对");
-		}
+        for (IRow road : rdObject.getRoads()) {
+            RdObjectRoad objectRoad = (RdObjectRoad) road;
 
-		for (IRow link : rdObject.getLinks()) {
+            if (subObj == null) {
+                result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
+            } else if (!subObj.contains(objectRoad.getRoadPid())) {
+                result.insertObject(objectRoad, ObjStatus.DELETE, objectRoad.getPid());
+            } else {
+                subObj.remove((Integer) objectRoad.getRoadPid());
+            }
+        }
 
-			RdObjectLink objLink = (RdObjectLink) link;
+        List<Integer> pidList = new ArrayList<>();
 
-			if (!subObj.contains(objLink.getLinkPid())) {
-				result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
-			} else {
-				subObj.remove((Integer) objLink.getLinkPid());
-			}
-		}
+        for (int i = 0; i < subObj.size(); i++) {
 
-		List<Integer> pidList = new ArrayList<>();
+            int roadPid = subObj.getInt(i);
 
-		for (int i = 0; i < subObj.size(); i++) {
+            if (!pidList.contains(roadPid)) {
+                RdObjectRoad rdObjectRoad = new RdObjectRoad();
 
-			int linkPid = subObj.getInt(i);
+                rdObjectRoad.setRoadPid(subObj.getInt(i));
 
-			if (!pidList.contains(linkPid)) {
-				RdObjectLink objLink = new RdObjectLink();
+                rdObjectRoad.setPid(rdObject.getPid());
 
-				objLink.setLinkPid(subObj.getInt(i));
+                result.insertObject(rdObjectRoad, ObjStatus.INSERT, rdObjectRoad.getPid());
 
-				objLink.setPid(rdObject.getPid());
+                pidList.add(roadPid);
+            }
+        }
 
-				result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
+    }
 
-				pidList.add(linkPid);
-			}
-		}
-	}
+    /**
+     * 更新link子表
+     *
+     * @param result
+     * @throws Exception
+     */
+    private void updateObjectLink(Result result) throws Exception {
+        JSONArray subObj = this.command.getLinkArray();
 
-	/**
-	 * 更新link子表
-	 * 
-	 * @param result
-	 * @throws Exception
-	 */
-	private void updateObjectName(Result result) throws Exception {
-		JSONArray names = this.command.getNameArray();
+        if (subObj == null) {
+            throw new Exception("link参数不对");
+        }
 
-		for (int i = 0; i < names.size(); i++) {
+        for (IRow link : rdObject.getLinks()) {
 
-			JSONObject nameJson = names.getJSONObject(i);
+            RdObjectLink objLink = (RdObjectLink) link;
 
-			if (nameJson.containsKey("objStatus")) {
+            if (!subObj.contains(objLink.getLinkPid())) {
+                result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+            } else {
+                subObj.remove((Integer) objLink.getLinkPid());
+            }
+        }
 
-				if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
+        List<Integer> pidList = new ArrayList<>();
 
-					RdObjectName name = rdObject.nameMap.get(nameJson.getString("rowId"));
+        for (int i = 0; i < subObj.size(); i++) {
 
-					if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
-						result.insertObject(name, ObjStatus.DELETE, rdObject.pid());
+            int linkPid = subObj.getInt(i);
 
-					} else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
+            if (!pidList.contains(linkPid)) {
+                RdObjectLink objLink = new RdObjectLink();
 
-						boolean isChanged = name.fillChangeFields(nameJson);
+                objLink.setLinkPid(subObj.getInt(i));
 
-						if (isChanged) {
-							result.insertObject(name, ObjStatus.UPDATE, rdObject.pid());
-						}
-					}
-				} else {
-					RdObjectName name = new RdObjectName();
+                objLink.setPid(rdObject.getPid());
 
-					name.Unserialize(nameJson);
+                result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
 
-					name.setPid(rdObject.getPid());
+                pidList.add(linkPid);
+            }
+        }
+    }
 
-					name.setNameId(PidUtil.getInstance().applyAdAdminNamePid());
+    /**
+     * 更新link子表
+     *
+     * @param result
+     * @throws Exception
+     */
+    private void updateObjectName(Result result) throws Exception {
+        JSONArray names = this.command.getNameArray();
 
-					result.insertObject(name, ObjStatus.INSERT, name.getPid());
+        for (int i = 0; i < names.size(); i++) {
 
-				}
-			}
+            JSONObject nameJson = names.getJSONObject(i);
 
-		}
-	}
+            if (nameJson.containsKey("objStatus")) {
 
-	/**
-	 * 根据road更新CRF对象：如果属于对象的link制作成了CRF
-	 * Road，则需要讲CRF对象link子表数据删除，CRF对象road子表新增一条数据
-	 * 
-	 * @param road
-	 *            road对象
-	 * @param result
-	 *            结果集
-	 * @throws Exception
-	 */
-	public void updateRdObjectForRdRoad(RdRoad road, Result result) throws Exception {
-		List<IRow> roadLinks = road.getLinks();
+                if (!ObjStatus.INSERT.toString().equals(nameJson.getString("objStatus"))) {
 
-		List<Integer> linkPidList = new ArrayList<>();
+                    RdObjectName name = rdObject.nameMap.get(nameJson.getString("rowId"));
 
-		for (IRow row : roadLinks) {
-			RdRoadLink roadLink = (RdRoadLink) row;
+                    if (ObjStatus.DELETE.toString().equals(nameJson.getString("objStatus"))) {
+                        result.insertObject(name, ObjStatus.DELETE, rdObject.pid());
 
-			linkPidList.add(roadLink.getLinkPid());
-		}
+                    } else if (ObjStatus.UPDATE.toString().equals(nameJson.getString("objStatus"))) {
 
-		RdObjectSelector selector = new RdObjectSelector(conn);
+                        boolean isChanged = name.fillChangeFields(nameJson);
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
-				ObjType.RDLINK, true);
+                        if (isChanged) {
+                            result.insertObject(name, ObjStatus.UPDATE, rdObject.pid());
+                        }
+                    }
+                } else {
+                    RdObjectName name = new RdObjectName();
 
-		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
-			String tmpPids = entry.getKey();
+                    name.Unserialize(nameJson);
 
-			List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
+                    name.setPid(rdObject.getPid());
 
-			RdObject rdObject = entry.getValue();
+                    name.setNameId(PidUtil.getInstance().applyAdAdminNamePid());
 
-			List<IRow> links = rdObject.getLinks();
+                    result.insertObject(name, ObjStatus.INSERT, name.getPid());
 
-			// 是否需要将road的link升级
-			boolean updateRdObject = false;
+                }
+            }
 
-			for (IRow row : links) {
-				RdObjectLink objLink = (RdObjectLink) row;
+        }
+    }
 
-				for (Integer tmpPid : tmpPidList) {
-					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
-						updateRdObject = true;
-					}
-				}
-			}
+    /**
+     * 根据road更新CRF对象：如果属于对象的link制作成了CRF
+     * Road，则需要讲CRF对象link子表数据删除，CRF对象road子表新增一条数据
+     *
+     * @param road   road对象
+     * @param result 结果集
+     * @throws Exception
+     */
+    public void updateRdObjectForRdRoad(RdRoad road, Result result) throws Exception {
+        List<IRow> roadLinks = road.getLinks();
 
-			if (updateRdObject) {
-				List<IRow> roads = rdObject.getRoads();
+        List<Integer> linkPidList = new ArrayList<>();
 
-				List<Integer> roadPids = new ArrayList<>();
+        for (IRow row : roadLinks) {
+            RdRoadLink roadLink = (RdRoadLink) row;
 
-				for (IRow row : roads) {
-					RdObjectRoad roadObject = (RdObjectRoad) row;
+            linkPidList.add(roadLink.getLinkPid());
+        }
 
-					roadPids.add(roadObject.getRoadPid());
-				}
+        RdObjectSelector selector = new RdObjectSelector(conn);
 
-				// 传入的road如果之前在crf对象中时不做处理，不在的话加入crf对象的road子表中
-				if (!roadPids.contains(road.getPid())) {
-					RdObjectRoad objRoad = new RdObjectRoad();
+        Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+                ObjType.RDLINK, true);
 
-					objRoad.setPid(rdObject.getPid());
+        for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
+            String tmpPids = entry.getKey();
 
-					objRoad.setRoadPid(road.getPid());
+            List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
 
-					result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getPid());
-				}
-			}
-		}
-	}
+            RdObject rdObject = entry.getValue();
 
-	/**
-	 * 根据inter更新CRF对象：如果属于对象的link制作成了CRF
-	 * inter，则需要讲CRF对象link子表数据删除，CRF对象inter子表新增一条数据
-	 * 
-	 * @param inter
-	 *            inter对象
-	 * @param result
-	 *            结果集
-	 * @throws Exception
-	 */
-	public void updateRdObjectForRdInter(RdInter inter, Result result) throws Exception {
-		List<IRow> interLinks = inter.getLinks();
+            List<IRow> links = rdObject.getLinks();
 
-		List<Integer> linkPidList = new ArrayList<>();
+            // 是否需要将road的link升级
+            boolean updateRdObject = false;
 
-		for (IRow row : interLinks) {
-			RdInterLink interLink = (RdInterLink) row;
+            for (IRow row : links) {
+                RdObjectLink objLink = (RdObjectLink) row;
 
-			linkPidList.add(interLink.getLinkPid());
-		}
+                for (Integer tmpPid : tmpPidList) {
+                    if (objLink.getLinkPid() == tmpPid) {
+                        result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+                        updateRdObject = true;
+                    }
+                }
+            }
 
-		RdObjectSelector selector = new RdObjectSelector(conn);
+            if (updateRdObject) {
+                List<IRow> roads = rdObject.getRoads();
 
-		Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
-				ObjType.RDLINK, true);
+                List<Integer> roadPids = new ArrayList<>();
 
-		for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
-			String tmpPids = entry.getKey();
+                for (IRow row : roads) {
+                    RdObjectRoad roadObject = (RdObjectRoad) row;
 
-			List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
+                    roadPids.add(roadObject.getRoadPid());
+                }
 
-			RdObject rdObject = entry.getValue();
+                // 传入的road如果之前在crf对象中时不做处理，不在的话加入crf对象的road子表中
+                if (!roadPids.contains(road.getPid())) {
+                    RdObjectRoad objRoad = new RdObjectRoad();
 
-			List<IRow> links = rdObject.getLinks();
+                    objRoad.setPid(rdObject.getPid());
 
-			// 是否需要将inter的link升级
-			boolean updateRdObject = false;
+                    objRoad.setRoadPid(road.getPid());
 
-			for (IRow row : links) {
-				RdObjectLink objLink = (RdObjectLink) row;
+                    result.insertObject(objRoad, ObjStatus.INSERT, objRoad.getPid());
+                }
+            }
+        }
+    }
 
-				for (Integer tmpPid : tmpPidList) {
-					if (objLink.getLinkPid() == tmpPid) {
-						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
-						updateRdObject = true;
-					}
-				}
-			}
+    /**
+     * 根据inter更新CRF对象：如果属于对象的link制作成了CRF
+     * inter，则需要讲CRF对象link子表数据删除，CRF对象inter子表新增一条数据
+     *
+     * @param inter  inter对象
+     * @param result 结果集
+     * @throws Exception
+     */
+    public void updateRdObjectForRdInter(RdInter inter, Result result) throws Exception {
+        List<IRow> interLinks = inter.getLinks();
 
-			if (updateRdObject) {
-				List<IRow> inters = rdObject.getInters();
+        List<Integer> linkPidList = new ArrayList<>();
 
-				List<Integer> interPids = new ArrayList<>();
+        for (IRow row : interLinks) {
+            RdInterLink interLink = (RdInterLink) row;
 
-				for (IRow row : inters) {
-					RdObjectInter interObject = (RdObjectInter) row;
+            linkPidList.add(interLink.getLinkPid());
+        }
 
-					interPids.add(interObject.getInterPid());
-				}
+        RdObjectSelector selector = new RdObjectSelector(conn);
 
-				// 传入的inter如果之前在crf对象中时不做处理，不在的话加入crf对象的inter子表中
-				if (!interPids.contains(inter.getPid())) {
-					RdObjectInter objInter = new RdObjectInter();
+        Map<String, RdObject> rdObjectMap = selector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+                ObjType.RDLINK, true);
 
-					objInter.setPid(rdObject.getPid());
+        for (Map.Entry<String, RdObject> entry : rdObjectMap.entrySet()) {
+            String tmpPids = entry.getKey();
 
-					objInter.setInterPid(inter.getPid());
+            List<Integer> tmpPidList = StringUtils.getIntegerListByStr(tmpPids);
 
-					result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
-				}
-			}
-		}
-	}
+            RdObject rdObject = entry.getValue();
 
-	/**
-	 * 打断link维护CRF对象组成link关系
-	 * 
-	 * @param oldLink
-	 *            旧link对象
-	 * @param newLinks
-	 *            打断后新的link对象
-	 * @param result
-	 *            结果集
-	 * @throws Exception
-	 */
-	public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
-		RdObjectSelector selector = new RdObjectSelector(conn);
+            List<IRow> links = rdObject.getLinks();
 
-		String linkPid = String.valueOf(oldLink.getPid());
+            // 是否需要将inter的link升级
+            boolean updateRdObject = false;
 
-		Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
+            for (IRow row : links) {
+                RdObjectLink objLink = (RdObjectLink) row;
 
-		RdObject rdObject = rdObjMap.get(linkPid);
+                for (Integer tmpPid : tmpPidList) {
+                    if (objLink.getLinkPid() == tmpPid) {
+                        result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+                        updateRdObject = true;
+                    }
+                }
+            }
 
-		// CRF对象不为null,需要维护rd_object_link,将新的links加入该表
-		if (rdObject != null) {
-			List<IRow> links = rdObject.getLinks();
+            if (updateRdObject) {
+                List<IRow> inters = rdObject.getInters();
 
-			for (IRow row : links) {
-				RdObjectLink objLink = (RdObjectLink) row;
+                List<Integer> interPids = new ArrayList<>();
 
-				if (objLink.getLinkPid() == oldLink.getPid()) {
-					result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
-				}
-			}
+                for (IRow row : inters) {
+                    RdObjectInter interObject = (RdObjectInter) row;
 
-			for (RdLink link : newLinks) {
-				RdObjectLink objLink = new RdObjectLink();
+                    interPids.add(interObject.getInterPid());
+                }
 
-				objLink.setLinkPid(link.getPid());
+                // 传入的inter如果之前在crf对象中时不做处理，不在的话加入crf对象的inter子表中
+                if (!interPids.contains(inter.getPid())) {
+                    RdObjectInter objInter = new RdObjectInter();
 
-				objLink.setPid(rdObject.getPid());
+                    objInter.setPid(rdObject.getPid());
 
-				result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
-			}
-		}
-	}
+                    objInter.setInterPid(inter.getPid());
 
-	/**
-	 * 如果给CRF Inter中增加link，但是该link属于某一CRFO，则编辑之后，该CRF Inter属于该CRFO
-	 * 
-	 * @param linkPidList
-	 *            新加入inter的linkpid集合
-	 * @param rdInter
-	 *            CRFI对象
-	 * @throws Exception
-	 */
-	public void updateRdObject(Result result, List<Integer> linkPidList, RdInter rdInter) throws Exception {
-		RdObjectSelector rdObjectSelector = new RdObjectSelector(conn);
+                    result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
+                }
+            }
+        }
+    }
 
-		Map<String, RdObject> objMap = rdObjectSelector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
-				ObjType.RDLINK, true);
+    /**
+     * 打断link维护CRF对象组成link关系
+     *
+     * @param oldLink  旧link对象
+     * @param newLinks 打断后新的link对象
+     * @param result   结果集
+     * @throws Exception
+     */
+    public void breakRdObjectLink(RdLink oldLink, List<RdLink> newLinks, Result result) throws Exception {
+        RdObjectSelector selector = new RdObjectSelector(conn);
 
-		if (objMap.size() > 1) {
-			throw new Exception("所选的LINK不能属于不同的CRFO");
-		} else if (objMap.size() == 1) {
-			String objKeys = objMap.entrySet().iterator().next().getKey();
+        String linkPid = String.valueOf(oldLink.getPid());
 
-			RdObject object = objMap.entrySet().iterator().next().getValue();
+        Map<String, RdObject> rdObjMap = selector.loadRdObjectByPidAndType(linkPid, ObjType.RDLINK, true);
 
-			List<IRow> interList = object.getInters();
+        RdObject rdObject = rdObjMap.get(linkPid);
 
-			boolean isObjInter = false;
+        // CRF对象不为null,需要维护rd_object_link,将新的links加入该表
+        if (rdObject != null) {
+            List<IRow> links = rdObject.getLinks();
 
-			for (IRow row : interList) {
-				RdObjectInter objInter = (RdObjectInter) row;
+            for (IRow row : links) {
+                RdObjectLink objLink = (RdObjectLink) row;
 
-				if (objInter.getInterPid() == rdInter.getPid()) {
-					isObjInter = true;
+                if (objLink.getLinkPid() == oldLink.getPid()) {
+                    result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+                }
+            }
 
-					break;
-				}
-			}
-			
-			List<IRow> objLinks = object.getLinks();
-			
-			String linkPids[] = objKeys.split(",");
-			
-			for(int i = 0;i<linkPids.length;i++)
-			{
-				int linkPid = Integer.parseInt(linkPids[i]);
-				
-				//删除原来的rdobjlink关系，该关系移入rdobjinter关系中
-				for(IRow row : objLinks)
-				{
-					RdObjectLink objLink = (RdObjectLink) row;
-					
-					if(objLink.getLinkPid() == linkPid)
-					{
-						result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
-						
-						break;
-					}
-				}
-				
-			}
-			
-			//如果inter原来属于CRFO，则objInter关系不变，不属于的，需要把inter加入objinter关系中
-			if(!isObjInter)
-			{
-				RdObjectInter objInter = new RdObjectInter();
-				
-				objInter.setPid(object.getPid());
-				
-				objInter.setInterPid(rdInter.getPid());
-				
-				result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
-			}
-		}
-	}
+            for (RdLink link : newLinks) {
+                RdObjectLink objLink = new RdObjectLink();
+
+                objLink.setLinkPid(link.getPid());
+
+                objLink.setPid(rdObject.getPid());
+
+                result.insertObject(objLink, ObjStatus.INSERT, objLink.getPid());
+            }
+        }
+    }
+
+    /**
+     * 如果给CRF Inter中增加link，但是该link属于某一CRFO，则编辑之后，该CRF Inter属于该CRFO
+     *
+     * @param linkPidList 新加入inter的linkpid集合
+     * @param rdInter     CRFI对象
+     * @throws Exception
+     */
+    public void updateRdObject(Result result, List<Integer> linkPidList, RdInter rdInter) throws Exception {
+        RdObjectSelector rdObjectSelector = new RdObjectSelector(conn);
+
+        Map<String, RdObject> objMap = rdObjectSelector.loadRdObjectByPidAndType(StringUtils.getInteStr(linkPidList),
+                ObjType.RDLINK, true);
+
+        if (objMap.size() > 1) {
+            throw new Exception("所选的LINK不能属于不同的CRFO");
+        } else if (objMap.size() == 1) {
+            String objKeys = objMap.entrySet().iterator().next().getKey();
+
+            RdObject object = objMap.entrySet().iterator().next().getValue();
+
+            List<IRow> interList = object.getInters();
+
+            boolean isObjInter = false;
+
+            for (IRow row : interList) {
+                RdObjectInter objInter = (RdObjectInter) row;
+
+                if (objInter.getInterPid() == rdInter.getPid()) {
+                    isObjInter = true;
+
+                    break;
+                }
+            }
+
+            List<IRow> objLinks = object.getLinks();
+
+            String linkPids[] = objKeys.split(",");
+
+            for (int i = 0; i < linkPids.length; i++) {
+                int linkPid = Integer.parseInt(linkPids[i]);
+
+                //删除原来的rdobjlink关系，该关系移入rdobjinter关系中
+                for (IRow row : objLinks) {
+                    RdObjectLink objLink = (RdObjectLink) row;
+
+                    if (objLink.getLinkPid() == linkPid) {
+                        result.insertObject(objLink, ObjStatus.DELETE, objLink.getPid());
+
+                        break;
+                    }
+                }
+
+            }
+
+            //如果inter原来属于CRFO，则objInter关系不变，不属于的，需要把inter加入objinter关系中
+            if (!isObjInter) {
+                RdObjectInter objInter = new RdObjectInter();
+
+                objInter.setPid(object.getPid());
+
+                objInter.setInterPid(rdInter.getPid());
+
+                result.insertObject(objInter, ObjStatus.INSERT, objInter.getPid());
+            }
+        }
+    }
 }

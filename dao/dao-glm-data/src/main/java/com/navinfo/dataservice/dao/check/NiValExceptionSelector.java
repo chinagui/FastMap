@@ -821,10 +821,16 @@ public class NiValExceptionSelector {
 											&& StringUtils.isNotEmpty(pidStr)) {
 										int refPid = Integer.parseInt(pidStr
 												.replaceAll(" ", ""));
-										if (refPid != rs.getInt("pid")) {
+										System.out.println("refPid : "+refPid);
+										System.out.println("rs.getInt(pid) : "+rs.getInt("pid"));
+										
+										if (refPid != rs.getInt("pid") && rs.getInt("pid") != 0) {
 											// 存在关联poi
-											refFeaturesArr = queryRefFeatures(refPid);
-											refPoiCount += 1;
+											JSONArray refFeatures = queryRefFeatures(refPid);
+											if(refFeatures != null && refFeatures.size() >0){
+												refFeaturesArr.addAll(refFeatures);
+												refPoiCount += 1;
+											}
 										}
 
 									}
@@ -847,31 +853,18 @@ public class NiValExceptionSelector {
 	 * @Description: 根据pid 获取关联poi的数据
 	 * @param pid
 	 * @return JSONArray
+	 * @throws SQLException 
 	 * @throws
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年2月14日 下午8:02:27
 	 */
 	@SuppressWarnings("unchecked")
-	public JSONArray queryRefFeatures(int pid) {
+	public JSONArray queryRefFeatures(int pid) throws SQLException {
 		StringBuilder sql = new StringBuilder(
 				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
 						+ "from ix_poi t  where t.pid =" + pid + " ");
-		/*
-		 * " with q1 as( " +
-		 * "select z.child_poi_pid ref_pid,2 ref_type from ix_poi_parent f ,ix_poi_children z  where f.group_id = z.group_id and f.parent_poi_pid = "
-		 * +pid+"  " + " union all  " +
-		 * " select f.parent_poi_pid ref_pid,1 ref_type from ix_poi_parent f ,ix_poi_children z where f.group_id = z.group_id and z.child_poi_pid ="
-		 * +pid+" " + " union all " +
-		 * "	select (select pp.poi_pid  from ix_samepoi_part pp where pp.group_id = p.group_id and pp.poi_pid != p.poi_pid)  ref_pid   ,3 ref_type "
-		 * +
-		 * " from ix_samepoi s , ix_samepoi_part p where s.group_id = p.group_id  and s.u_record != 2 and p.u_record != 2  and p.poi_pid = "
-		 * +pid+" " + ")," + "q2 as( " +
-		 * " select distinct q.ref_pid ,q.ref_type  from q1 q" + ") " +
-		 * " select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name,m.ref_type "
-		 * + "from ix_poi t ,q2 m where t.pid =m.ref_pid" + " ");
-		 */
-
-		// System.out.println("queryRefFeatures sql :  "+ sql);
+		System.out.println("queryRefFeatures : "+sql);
+		
 		try {
 			return new QueryRunner().query(conn, sql.toString(),
 					new ResultSetHandler<JSONArray>() {
@@ -890,7 +883,7 @@ public class NiValExceptionSelector {
 
 								json.put("fid", rs.getString("fid"));
 
-								json.put("level", rs.getInt("level_"));
+								json.put("level", rs.getString("level_"));
 
 								json.put("pid", rs.getInt("pid"));
 
@@ -937,8 +930,7 @@ public class NiValExceptionSelector {
 						}
 					});
 		} catch (SQLException e) {
-			return null;
-			// e.printStackTrace();
+			throw e;
 		}
 	}
 

@@ -93,6 +93,12 @@ public class RdNameSelector {
 				String province = resultSet.getString("province");
 				int roadType = resultSet.getInt("road_type");
 
+				//*******zl 2017.3.10 315临时代码里处理province获取省份简称
+				if(province != null && StringUtils.isNotEmpty(province)){
+					province = getShortProvince(province);
+				}
+				//**************************************************
+				
 				JSONObject json = new JSONObject();
 
 				json.put("nameId", nameId);
@@ -141,6 +147,20 @@ public class RdNameSelector {
 			}
 		}
 
+	}
+
+	private String getShortProvince(String province) {
+		String shortProvince = "";
+		if(province.contains("内蒙古")){
+			shortProvince = "内蒙古";
+		}else if(province.contains("黑龙江")){
+			shortProvince = "黑龙江";
+		}else if(province.contains("中国")){
+			shortProvince = "全国";
+		}else{
+			shortProvince = province.substring(0, 2);
+		}
+		return shortProvince;
 	}
 
 	/**
@@ -204,7 +224,7 @@ public class RdNameSelector {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		
 		RdNameSelector selector = new RdNameSelector();
 
 		System.out.println(selector.searchByName("", 10, 1));
@@ -476,9 +496,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			}
 		}
 		if (rdName.getNameId() != null) {
-			sb.append(" AND name_id ="+rdName.getNameId());
+			sb.append(" AND name_id !="+rdName.getNameId());
 		}
-		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+		/*if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
 			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
 		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
@@ -493,6 +513,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		if (rdName.getCodeType() != null && rdName.getCodeType() > 0) {
 			sb.append(" AND CODE_TYPE ="+rdName.getCodeType()+" ");
 		}
+		if (rdName.getVoiceFile() != null && StringUtils.isNotEmpty(rdName.getVoiceFile())) {
+			sb.append(" AND VOICE_FILE ="+rdName.getVoiceFile()+" ");
+		}*/
 		try {
 			
 			pstmt = conn.prepareStatement(sb.toString());
@@ -837,5 +860,4 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		}
 	}
 
-	
 }

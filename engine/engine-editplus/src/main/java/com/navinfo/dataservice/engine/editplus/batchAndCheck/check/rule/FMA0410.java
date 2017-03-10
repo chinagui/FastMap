@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.util.ExcelReader;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -47,23 +48,26 @@ public class FMA0410 extends BasicCheckRule {
 		}
 		
 		if (isChanged && standardName!=null) {
+			// 不区分全半角，将名称转为全角进行判断
+			String nameStrF = ExcelReader.h2f(standardName.getName());
+			
 			// ① 名称以“第+【数字】+分店|店|家|号店（號店）|连锁店（連鎖店）|店”结尾。
 	        // 举例：第１０１店、北京第十五分店、第１０１连锁店
 			Pattern p1 = Pattern.compile(".*第[a-zA-Zａ-ｚＡ-Ｚ]+(分店|店|家|号店|號店|连锁店|連鎖店)$");
-			Matcher m1 = p1.matcher(standardName.getName());
+			Matcher m1 = p1.matcher(nameStrF);
 			
 			Pattern p2 = Pattern.compile(".*第[零一二三四五六七八九十0-9０-９a-zA-Zａ-ｚＡ-Ｚ]+(分店|店|家|号店|號店|连锁店|連鎖店)$");
-			Matcher m2 = p2.matcher(standardName.getName());
+			Matcher m2 = p2.matcher(nameStrF);
 			if (!m1.matches() && m2.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 			}
 			
 			// ② 名称以“【数字】+分店|店|连锁店（連鎖店）”结尾；
 			Pattern p3 = Pattern.compile("[^零一二三四五六七八九十0-9０-９a-zA-Zａ-ｚＡ-Ｚ]*[a-zA-Zａ-ｚＡ-Ｚ]+(分店|店|连锁店|連鎖店)$");
-			Matcher m3 = p3.matcher(standardName.getName());
+			Matcher m3 = p3.matcher(nameStrF);
 			
 			Pattern p4 = Pattern.compile(".*[零一二三四五六七八九十0-9０-９a-zA-Zａ-ｚＡ-Ｚ]+(分店|店|连锁店|連鎖店)$");
-			Matcher m4 = p4.matcher(standardName.getName());
+			Matcher m4 = p4.matcher(nameStrF);
 			if (!m3.matches() && m4.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 			}
@@ -71,7 +75,7 @@ public class FMA0410 extends BasicCheckRule {
 			// ③ 名称以“ＮＯ．【数字（可有汉字或全角符号）】+店|分店|号店（號店）|门店（門店）|店”结尾；
 	        // 举例：ＮＯ．３３１店
 			Pattern p5 = Pattern.compile(".*(ＮＯ．)+.*[零一二三四五六七八九十0-9０-９a-zA-Zａ-ｚＡ-Ｚ]+.*(店|分店|号店|號店|门店|門店)$");
-			Matcher m5 = p5.matcher(standardName.getName());
+			Matcher m5 = p5.matcher(nameStrF);
 
 			if (m5.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
@@ -79,7 +83,7 @@ public class FMA0410 extends BasicCheckRule {
 			
 			// ④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”
 			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ|ＮＯ：)+．+.*");
-			Matcher m6 = p6.matcher(standardName.getName());
+			Matcher m6 = p6.matcher(nameStrF);
 
 			if (m6.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);

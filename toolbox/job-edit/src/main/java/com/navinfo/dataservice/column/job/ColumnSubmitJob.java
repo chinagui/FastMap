@@ -110,7 +110,7 @@ public class ColumnSubmitJob extends AbstractJob {
 				Set<String> tabNames = new HashSet<String>();
 				tabNames.add("IX_POI_NAME");
 				tabNames.add("IX_POI_ADDRESS");
-				tabNames.add("IX_POI_FLAG");
+				tabNames.add("IX_POI_NAME_FLAG");
 				for (int pid:pidList) {
 					BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, pid, false);
 					if (submitLogs.containsKey(new Long((long)pid))) {

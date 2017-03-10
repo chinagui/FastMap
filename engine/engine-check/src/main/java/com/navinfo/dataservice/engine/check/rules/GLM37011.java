@@ -18,11 +18,12 @@ public class GLM37011 extends baseRule {
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdMileagepile) {
-                RdMileagepile mileagepile = new RdMileagepile();
-                mileagepile.copy(obj);
-                mileagepile.Unserialize(JSONObject.fromObject(obj.changedFields()));
+                RdMileagepile mileagepile = (RdMileagepile) obj;
 
                 String roadNum = mileagepile.getRoadNum();
+                if (mileagepile.changedFields().containsKey("roadNum"))
+                    roadNum = (String) mileagepile.changedFields().get("roadNum");
+
                 boolean hasLetter = false;
                 boolean hasDigit = false;
                 for (Character c : roadNum.toCharArray()) {
@@ -31,12 +32,14 @@ public class GLM37011 extends baseRule {
                     } else if (Character.isDigit(c)) {
                         hasDigit = true;
                     } else {
-                        setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]", mileagepile.getMeshId());
+                        setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
+                                mileagepile.getMeshId());
                         break;
                     }
                 }
                 if (!hasLetter || !hasDigit)
-                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]", mileagepile.getMeshId());
+                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
+                            mileagepile.getMeshId());
             }
         }
     }

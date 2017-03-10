@@ -213,7 +213,14 @@ public class GLM02266 extends baseRule{
 	private int getRdObjectNameNum(int pid) throws Exception {
 		int num = 0;
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT COUNT(1) NUM FROM RD_OBJECT_NAME RON WHERE RON.U_RECORD <> 2  AND RON.PID = " + pid +" GROUP BY RON.NAME_GROUPID");
+		sb.append("SELECT COUNT(1) NUM");
+		sb.append("  FROM (SELECT DISTINCT RON.NAME_GROUPID NUM");
+		sb.append("          FROM RD_OBJECT_NAME RON");
+		sb.append("         WHERE RON.U_RECORD <> 2");
+		sb.append("           AND RON.PID = " + pid);
+		sb.append("         GROUP BY RON.NAME_GROUPID)");
+
+//		sb.append("SELECT COUNT(1) NUM FROM RD_OBJECT_NAME RON WHERE RON.U_RECORD <> 2  AND RON.PID = " + pid +" GROUP BY RON.NAME_GROUPID");
 		
 		String sql = sb.toString();
 		log.info("RdObject后检查GLM02266:" + sql);

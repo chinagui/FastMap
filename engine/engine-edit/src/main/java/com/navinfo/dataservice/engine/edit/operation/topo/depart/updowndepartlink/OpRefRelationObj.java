@@ -166,45 +166,41 @@ public class OpRefRelationObj {
 
     // 维护IxPoi信息
     public String handlerIxPoi(Command command, Result result) throws Exception {
-        com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation(conn);
-       
-        
-        if(command.getNodeInnerLinkMap().size()>0)
-        {
-			CoordinateList cList = new CoordinateList();
+        com.navinfo.dataservice.engine.edit.operation.obj.poi.depart.Operation operation = new com.navinfo
+                .dataservice.engine.edit.operation.obj.poi.depart.Operation(conn);
 
-			for (int linkPid : command.getLinkPids()) {
-				Geometry linkGeo = GeoTranslator.transform(command
-						.getRightLinkMapping().get(linkPid).getGeometry(),
-						0.00001, 5);
 
-				Coordinate[] coordinates = linkGeo.getCoordinates();
+        if (command.getNodeInnerLinkMap().size() > 0) {
+            CoordinateList cList = new CoordinateList();
 
-				cList.add(coordinates, false);
-			}
+            for (int linkPid : command.getLinkPids()) {
+                Geometry linkGeo = GeoTranslator.transform(command.getRightLinkMapping().get(linkPid).getGeometry(),
+                        0.00001, 5);
 
-			for (int i = command.getLinkPids().size() - 1; i >= 0; i--) {
-				int linkPid = command.getLinkPids().get(i);
+                Coordinate[] coordinates = linkGeo.getCoordinates();
 
-				Geometry linkGeo = GeoTranslator.transform(command
-						.getLeftLinkMapping().get(linkPid).getGeometry(),
-						0.00001, 5);
+                cList.add(coordinates, false);
+            }
 
-				Coordinate[] coordinates = linkGeo.getCoordinates();
+            for (int i = command.getLinkPids().size() - 1; i >= 0; i--) {
+                int linkPid = command.getLinkPids().get(i);
 
-				cList.add(coordinates, false);
-			}
+                Geometry linkGeo = GeoTranslator.transform(command.getLeftLinkMapping().get(linkPid).getGeometry(),
+                        0.00001, 5);
 
-			Geometry spatial =GeoTranslator.getPolygonToPoints(cList
-					.toCoordinateArray()) ;
-		
-			operation.updownDepartInnerPoi(spatial,
-					command.getNodeInnerLinkMap(), command.getNoTargetLinks(),
-					result);
+                Coordinate[] coordinates = linkGeo.getCoordinates();
+
+                cList.add(coordinates, false);
+            }
+
+            Geometry spatial = GeoTranslator.getPolygonToPoints(cList.toCoordinateArray());
+
+            operation.updownDepartInnerPoi(spatial, command.getNodeInnerLinkMap(), command.getNoTargetLinks(), result);
         }
-        
-        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping(), result);
-     
+
+        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping()
+                , result);
+
     }
 
     // 维护减速带信息
@@ -252,7 +248,7 @@ public class OpRefRelationObj {
         com.navinfo.dataservice.engine.edit.operation.obj.adadmin.depart.Operation operation = new com.navinfo
                 .dataservice.engine.edit.operation.obj.adadmin.depart.Operation(conn);
         return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping()
-                , command.getNoTargetLinks(), result);
+                , command.getNoTargetLinks(), command.getNodeInnerLinkMap(), result);
     }
 
     // 维护大门信息

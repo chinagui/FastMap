@@ -1471,5 +1471,35 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_00308_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.43621951341628,39.966109570623715],[116.43618461460889,39.96623225672083],[116.43618732690811,39.96629047293043]]},\"catchLinks\":[{\"linkPid\":510000101,\"lon\":116.43618461460889,\"lat\":39.96623225672083}]},\"dbId\":84}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00309_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDBRANCH\",\"objId\":408000003,\"data\":{\"details\":[{\"patternCode\":\"8e000003\",\"voiceDir\":\"\",\"arrowCode\":\"1e000003\",\"names\":[{\"pid\":0,\"seqNum\":1,\"nameGroupid\":1,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"voiceFile\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"F134A36415BA42F8BCBE6302D036AE62\",\"pid\":500000001,\"objStatus\":\"UPDATE\"}],\"rowId\":\"55CCC61FC34544E2BD1D3B61DCA740ED\",\"pid\":408000003,\"objStatus\":\"UPDATE\"}}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00310_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"dbId\":84,\"data\":{\"nodePid\":507000096,\"inLinkPid\":409000129,\"restricType\":0,\"infos\":[{\"arrow\":2}]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
 	
 }

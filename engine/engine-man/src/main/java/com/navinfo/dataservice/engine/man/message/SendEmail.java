@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.man.message;
 import javax.mail.MessagingException;
 
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.email.SendEmailUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
@@ -15,12 +18,12 @@ public class SendEmail {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 		// 设置服务器
-		private static  String VALUE_SMTP = "smtp.163.com"; //这里用的163 邮箱的,也可以换别的邮箱的
+		//private static  String VALUE_SMTP = "smtp.163.com"; //这里用的163 邮箱的,也可以换别的邮箱的
 		// 发件人用户名、密码
 		//private static String SEND_EMAil = "xxxxxxx@163.com";//必填项 
 		//private static String SEND_PWD = "*****";//必填项
-		private static String SEND_EMAil = "swtxtest@163.com";//必填项 
-		private static String SEND_PWD = "swtx123456";//必填项
+		//private static String SEND_EMAil = "swtxtest@163.com";//必填项 
+		//private static String SEND_PWD = "swtx123456";//必填项
 	
 	/**
 	 * @Title: sendEmail
@@ -34,6 +37,9 @@ public class SendEmail {
 	 */
 	public static void sendEmail(String toMail,String mailTitle,String mailContent){
 		try {
+			String VALUE_SMTP=SystemConfigFactory.getSystemConfig().getValue(PropConstant.valueSmtp);
+			String SEND_EMAil=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendEmail);
+			String SEND_PWD=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendPwd);
 			SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_EMAil, SEND_PWD, toMail, mailTitle, mailContent);
 		} catch (MessagingException e) {
 			e.printStackTrace();

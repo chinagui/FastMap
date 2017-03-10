@@ -49,7 +49,8 @@ public class Operation {
      * @throws Exception
      */
     public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks,
-                               Map<Integer, RdLink> noTargetLinks, Result result) throws Exception {
+                               Map<Integer, RdLink> noTargetLinks, Map<Integer, List<RdLink>> nodeInnerLinks, Result
+                                       result) throws Exception {
         AdAdminSelector selector = new AdAdminSelector(conn);
         for (RdLink link : links) {
             RdLink leftLink = leftLinks.get(link.pid());
@@ -112,13 +113,34 @@ public class Operation {
             Coordinate adminCoor = adminGeo.getCoordinate();
             if (polygon.contains(adminGeo)) {
                 final RdLink refLink = (RdLink) linkSelector.loadById(admin.getLinkPid(), false);
+                List<RdLink> innerLinks = new ArrayList<>();
+                if (null != nodeInnerLinks.get(refLink.getsNodePid()))
+                    innerLinks.addAll(nodeInnerLinks.get(refLink.getsNodePid()));
+                if (null != nodeInnerLinks.get(refLink.geteNodePid()))
+                    innerLinks.addAll(nodeInnerLinks.get(refLink.geteNodePid()));
+
+                double minLength = -1;
+                int minPid = 0;
+                if (!innerLinks.isEmpty()) {
+                    for (RdLink link : innerLinks) {
+                        Coordinate pedal = GeometryUtils.GetNearestPointOnLine(adminCoor, GeoTranslator.transform
+                                (link.getGeometry(), 0.00001, 5));
+                        double length = GeometryUtils.getDistance(adminCoor, pedal);
+                        if (-1 == minLength || length < minLength) {
+                            minLength = length;
+                            minPid = link.pid();
+                        }
+                    }
+                    admin.changedFields().put("linkPid", minPid);
+                    result.insertObject(admin, ObjStatus.UPDATE, admin.pid());
+                    continue;
+                }
+
                 List<RdLink> refLinks = linkSelector.loadByNodePids(new ArrayList<Integer>() {{
                     add(refLink.getsNodePid());
                     add(refLink.geteNodePid());
                 }}, false);
-                
-                double minLength = -1;
-                int minPid = 0;
+
                 for (RdLink link : refLinks) {
                     if (!leftLinks.containsKey(link.pid()))
                         continue;
@@ -157,13 +179,33 @@ public class Operation {
             while (iterator.hasNext()) {
                 Geometry geo = iterator.next();
                 Coordinate sCoor = geo.getCoordinates()[0];
-                if (null == endCoor || (endCoor.x == sCoor.x && endCoor.y == sCoor.y)) {
+                Coordinate eCoor = geo.getCoordinates()[geo.getCoordinates().length - 1];
+                if (endCoor == null) {
                     for (Coordinate coor : geo.getCoordinates()) {
                         coors.add(coor);
                         endCoor = coor;
                     }
-                    //iterator.remove();
+                    iterator.remove();
                     break;
+                } else {
+                    if (sCoor.x == endCoor.x && sCoor.y == endCoor.y) {
+                        for (Coordinate coor : geo.getCoordinates()) {
+                            if (coor.x == endCoor.x && coor.y == endCoor.y)
+                                continue;
+                            coors.add(coor);
+                            endCoor = coor;
+                        }
+                        iterator.remove();
+                        break;
+                    } else if (eCoor.x == endCoor.x && eCoor.y == endCoor.y) {
+                        for (int index = geo.getCoordinates().length - 2; index >= 0; index--) {
+                            Coordinate coor = geo.getCoordinates()[index];
+                            coors.add(coor);
+                            endCoor = coor;
+                        }
+                        iterator.remove();
+                        break;
+                    }
                 }
             }
         }

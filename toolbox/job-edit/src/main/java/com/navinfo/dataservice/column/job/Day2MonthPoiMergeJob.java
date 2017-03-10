@@ -370,15 +370,18 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		info.setSyncTime(syncTimeStamp);
 		return info;
 	}
-	
+	//加锁的扩圈都放在DMS，DMS查和写都扩圈，所以FM查和写都不用扩圈
 	private void dealFmAndDMSLock(OracleSchema monthDbSchema,List<Integer> meshs) throws Exception {
 		Connection monthConn = monthDbSchema.getPoolDataSource().getConnection();
-		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE LOCK_OWNER='GLOBAL' FOR UPDATE";
+		//获取锁
+		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE  LOCK_OWNER='GLOBAL' FOR UPDATE";
 		Statement sourceStmt = monthConn.createStatement();
 		try{
 			ResultSet rs = sourceStmt.executeQuery(sql);
+			String sqlMeshAll = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE FGM.MESH_ID = 0 ";
+			ResultSet rss = sourceStmt.executeQuery(sqlMeshAll);
 			int lockStatus=0;
-			while(rs.next()){lockStatus=rs.getInt("LOCK_STATUS");}
+			while(rss.next()){lockStatus=rss.getInt("LOCK_STATUS");}
 			if(lockStatus==1){throw new Exception("DMS全库加锁");}
 			log.info("判断是否有图幅锁");
 			hasLock(monthConn,meshs);
@@ -394,11 +397,25 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 	}
 	private void releaseMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
-		QueryRunner run = new QueryRunner();
-		for(int m:meshs){
-			String sql = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM'";
-			run.execute(monthConn, sql);
+		//获取锁
+		String sql = "SELECT FGM.LOCK_STATUS FROM FM_GEN2_MESHLOCK FGM WHERE  LOCK_OWNER='GLOBAL' FOR UPDATE";
+		Statement sourceStmt = monthConn.createStatement();
+		try{
+			ResultSet rs = sourceStmt.executeQuery(sql);//获取锁
+			QueryRunner run = new QueryRunner();
+			for(int m:meshs){
+				String sqlD = "DELETE FROM FM_GEN2_MESHLOCK WHERE MESH_ID="+ m +" AND LOCK_STATUS=1 AND LOCK_OWNER='FM'";
+				run.execute(monthConn, sqlD);
+			}
+		}catch(Exception e){
+			if(monthConn!=null)monthConn.rollback();
+			log.info("加锁图幅回滚");
+			throw e;
+			}
+		finally{
+			DbUtils.commitAndCloseQuietly(monthConn);
 		}
+		
 	}
 	private void getMeshLock(Connection monthConn,List<Integer> meshs) throws Exception {
 		QueryRunner run = new QueryRunner();
@@ -409,7 +426,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 	private void hasLock(Connection monthConn,List<Integer> meshs) throws Exception {
 		Statement sourceStmt = monthConn.createStatement();
-		String sql = "SELECT FGM.MESH_ID FROM FM_GEN2_MESHLOCK FGM WHERE FGM.LOCK_OWNER='GDB' AND FGM.LOCK_STATUS=1 ";
+		String sql = "SELECT FGM.MESH_ID FROM FM_GEN2_MESHLOCK FGM WHERE FGM.LOCK_OWNER='GEN2' AND FGM.LOCK_STATUS=1 ";
 		ResultSet rs = sourceStmt.executeQuery(sql);
 		List<Integer> gdbMeshs = new ArrayList<Integer>();
 		while(rs.next()){

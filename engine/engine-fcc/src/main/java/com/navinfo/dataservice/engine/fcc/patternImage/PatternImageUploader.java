@@ -37,9 +37,9 @@ public class PatternImageUploader {
 				"URL_FILE,"+
 				"MEMO,"+
 				"FILE_CONTENT,"+
-				"FILE_TYPE,"+
+			/*	"FILE_TYPE,"+*/
 				"UPDATE_TIME"+
-				") values (?,?,?,?,?,?,?,?,?,?,?,?,sysdate,?,?,?,?,?,sysdate)";
+				") values (?,?,?,?,?,?,?,?,?,?,?,?,sysdate,?,?,?,?,sysdate)";
 		
 
 		PreparedStatement pstmt = null;
@@ -93,8 +93,8 @@ public class PatternImageUploader {
 
 				pstmt.setBlob(16, stream); 
 
-				pstmt.setInt(17, 0); //FILE_TYPE
-
+			/*	pstmt.setInt(17, 0); //FILE_TYPE  201170310 该字段确认模型中删除
+*/
 				pstmt.executeUpdate();
 
 				counter++;

@@ -192,8 +192,8 @@ public class CrossingLaneOutlinkDirect extends baseRule{
 				sb2.append("   AND T.U_RECORD <> 2");
 				sb2.append("   AND R.U_RECORD <> 2");
 				sb2.append("   AND C.U_RECORD <> 2");
-				sb2.append("UNION");
-				sb2.append("SELECT 1");
+				sb2.append(" UNION ");
+				sb2.append(" SELECT 1");
 				sb2.append("  FROM RD_LINK R, RD_LANE_TOPOLOGY T, RD_CROSS_NODE C");
 				sb2.append(" WHERE R.LINK_PID =  " + rdLink.getPid());
 				sb2.append("   AND T.OUT_LINK_PID = R.LINK_PID");

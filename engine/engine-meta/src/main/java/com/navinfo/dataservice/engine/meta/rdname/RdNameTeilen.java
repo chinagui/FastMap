@@ -426,9 +426,6 @@ public class RdNameTeilen {
 			engRdName.setRouteId(RdName.DEFAULT_NUM_VALUE);*/
 		//*****zl 2017.3.3 增加英文道路名 的 src_resum**
 		engRdName.setSrcResume(chiRdName.getSrcResume());
-		if(chiRdName.getVoiceFile() != null && StringUtils.isNotEmpty(chiRdName.getVoiceFile())){
-			engRdName.setVoiceFile(chiRdName.getVoiceFile());
-		}
 		
 		//**********************
 		

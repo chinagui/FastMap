@@ -148,7 +148,7 @@ public class FM14Sum121001 extends BasicCheckRule {
 					//preKey包含resulteKey,name包含preKey，那么name不需要进行替换
 					if(!(obj.getPreKey().contains(obj.getResultKey())&&name2.contains(obj.getPreKey()))){
 						preName2=name2.replace(obj.getResultKey(), obj.getPreKey());
-						name2PreKeySet.add(preName1);
+						name2PreKeySet.add(preName2);
 					}
 				}				
 			}

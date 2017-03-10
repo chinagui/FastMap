@@ -31,7 +31,9 @@ public class FM14Sum1105 extends BasicCheckRule {
 			if (parentIds == null || !parentIds.containsKey(poi.getPid())) {
 				return;
 			}
-			setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "分类为“230111”的POI不能为子");
+			Long parentId = parentIds.get(poi.getPid());
+			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+			setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "地铁不能为子");
 		}
 
 	}

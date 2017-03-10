@@ -353,6 +353,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		tabNames.add("IX_POI_PHOTO");
 		tabNames.add("IX_POI_CARRENTAL");
 		tabNames.add("IX_POI_HOTEL");
+		tabNames.add("IX_POI_NAME_FLAG");
 		OperationResult result = new OperationResult();
 		Map<Long,BasicObj> objs =  ObjBatchSelector.selectByPids(monthConn, "IX_POI", tabNames,false, logStatInfo.keySet(), true, true);
 		ObjHisLogParser.parse(objs,logStatInfo);

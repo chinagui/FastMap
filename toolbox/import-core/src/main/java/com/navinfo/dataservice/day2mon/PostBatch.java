@@ -22,6 +22,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
@@ -61,10 +63,12 @@ public class PostBatch {
 	// 处理sourceFlag
 	private void detealSourceFlag() throws Exception {
 		OperationResult operationResult=new OperationResult();
-		operationResult.putAll(changeSourceFlag("FM-YW-20-013","002000010000"));
-		operationResult.putAll(changeSourceFlag("FM-YW-20-012","002000010000"));
-		operationResult.putAll(changeSourceFlag("FM-YW-20-014","002000060000"));
-		operationResult.putAll(changeSourceFlag("FM-YW-20-017","002000090000"));
+		operationResult.putAll(changeSourceFlag("FM-YW-20-013","110020010000"));
+		operationResult.putAll(changeSourceFlag("FM-YW-20-012","110020010000"));
+		operationResult.putAll(changeSourceFlag("FM-YW-20-014","110020060000"));
+		operationResult.putAll(changeSourceFlag("FM-YW-20-017","110020090000"));
+		PostBatchOperation postBatchOp = new PostBatchOperation(conn, operationResult);
+		postBatchOp.persistChangeLog(OperationSegment.SG_COLUMN, 0);
 	}
 	
 	private List<BasicObj> changeSourceFlag(String workItem,String sourceFlag) throws Exception {
@@ -75,6 +79,7 @@ public class PostBatch {
 			List<BasicObj> allObjs = opResult.getAllObjs();
 			for (BasicObj obj:allObjs) {
 				IxPoi ixPoi = (IxPoi) obj.getMainrow();
+				
 				if (ixPoi.getPid() == pid) {
 					List<BasicRow> nameList = obj.getSubrows().get("IX_POI_NAME");
 					Long nameId = 0l;
@@ -91,9 +96,24 @@ public class PostBatch {
 						for (BasicRow flag:flagList) {
 							IxPoiNameFlag poiFlag = (IxPoiNameFlag) flag;
 							if (poiFlag.getNameId() == nameId) {
-								poiFlag.setFlagCode(sourceFlag);
+								String flagCode = poiFlag.getFlagCode();
+								if ("FM-YW-20-014".equals(workItem)){
+									if ("110020070000".equals(flagCode) || "110020080000".equals(flagCode) || "110020090000".equals(flagCode)){
+										poiFlag.setFlagCode(sourceFlag);
+									}
+								} else if ("FM-YW-20-017".equals(workItem)){
+									if (StringUtils.isEmpty(flagCode)){
+										poiFlag.setFlagCode(sourceFlag);
+									}
+								} else {
+									poiFlag.setFlagCode(sourceFlag);
+								}
 							}
 						}
+					} else {
+						IxPoiObj poiObj=(IxPoiObj) obj;
+						IxPoiNameFlag poiFlag = poiObj.createIxPoiNameFlag(nameId);
+						poiFlag.setFlagCode(sourceFlag);
 					}
 					
 					objList.add(obj);
@@ -126,6 +146,8 @@ public class PostBatch {
 		batchCommand.setRuleId("FM-BAT-20-115");
 		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
+		batch.setPhysiDelete(true);
+		persistBatch(batch);
 		// 执行检查项FM-YW-20-052
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> checkList=new ArrayList<String>();

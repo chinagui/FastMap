@@ -8,8 +8,8 @@
 	<SYS.jdbc.password>fm_sys_test</SYS.jdbc.password> -->
 	<!-- <SYS.jdbc.username>fm_sys_test_315</SYS.jdbc.username>
 	<SYS.jdbc.password>fm_sys_test_315</SYS.jdbc.password> -->
-	<SYS.jdbc.username>fm_sys_test_315 </SYS.jdbc.username>
-	<SYS.jdbc.password>fm_sys_test_315</SYS.jdbc.password>
+	<SYS.jdbc.username>fm_sys_315 </SYS.jdbc.username>
+	<SYS.jdbc.password>fm_sys_315</SYS.jdbc.password>
 	<SYS.dataSource.initialSize>2</SYS.dataSource.initialSize>
 	<SYS.dataSource.maxActive>25</SYS.dataSource.maxActive>
 	<SYS.dataSource.maxIdle>10</SYS.dataSource.maxIdle>

@@ -1606,7 +1606,7 @@ public class TaskService {
 			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					ArrayList<String> arrayList = new ArrayList<String>();
-					if(rs.next()) {
+					while(rs.next()) {
 						arrayList.add(rs.getString("GRID_ID"));
 					}
 					return JSONArray.fromObject(arrayList);
@@ -1717,7 +1717,6 @@ public class TaskService {
 			if(status==3){return;}
 			//执行成功，则继续后续步骤
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
-			//锁表
 			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
 			//查询前2个并行阶段是否执行成功
 			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();

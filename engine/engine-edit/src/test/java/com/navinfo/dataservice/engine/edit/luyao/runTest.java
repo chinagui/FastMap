@@ -1492,4 +1492,14 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_00310_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDRESTRICTION\",\"dbId\":84,\"data\":{\"nodePid\":507000096,\"inLinkPid\":409000129,\"restricType\":0,\"infos\":[{\"arrow\":2}]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

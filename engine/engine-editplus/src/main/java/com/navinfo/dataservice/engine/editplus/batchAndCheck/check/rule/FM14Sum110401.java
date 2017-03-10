@@ -46,7 +46,8 @@ public class FM14Sum110401 extends BasicCheckRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentobj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (parentPoi.getKindCode().equals("170101") || parentPoi.getKindCode().equals("170102")) {
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentPid+"]";
+				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(),
 						"分类为综合医院（170101）,专科医院（170102）的设施名字中不包含“门”，但与综合医院,专科医院的设施建立了父子关系。");
 				return;
 			}

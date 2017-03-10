@@ -44,6 +44,9 @@ public class Process extends AbstractProcess<Command> {
 		String msg;
 		try {
 			this.prepareData();
+			
+			RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
+					this.getCommand().getUpdateNode());
 
 			IOperation operation = new Operation(this.getCommand(),
 					this.getConn());

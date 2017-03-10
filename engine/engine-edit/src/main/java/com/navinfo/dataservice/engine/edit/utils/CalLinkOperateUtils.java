@@ -366,7 +366,22 @@ public class CalLinkOperateUtils {
 		List<Integer> linkPids = new ArrayList<>();
 
 		try {
-			linkPids = selector.loadLinkPidByNodePid(nodePid, true);
+			List<RdLink> rdLinks = selector.loadByNodePidOnlyRdLink(nodePid,
+					true);
+
+			for (RdLink link : rdLinks) {
+				if (link.getDirect() == 1) {
+					linkPids.add(link.getPid());
+				} else if (link.getDirect() == 2
+						&& link.getsNodePid() == nodePid) {
+					linkPids.add(link.getPid());
+				} else if (link.getDirect() == 3
+						&& link.geteNodePid() == nodePid) {
+					linkPids.add(link.getPid());
+				}
+			}
+
+			// linkPids = selector.loadLinkPidByNodePid(nodePid, true);
 
 			if (CollectionUtils.isNotEmpty(linkPids)) {
 				// 剔除进入线，防止进入线和退出线是一条线

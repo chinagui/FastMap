@@ -159,7 +159,7 @@ public class GLM60236 extends BasicCheckRule {
 					}
 					//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
 					if(isError){
-						String targets=parentPids.toString().replace("[", "(").replace(",", "];[IX_POI,").replace("(", "[IX_POI,");
+						String targets=parentPids.toString().replace("[", "(").replace(",", "];[IX_POI,").replace("(", "[IX_POI,").replace(" ", "");
 						log.info(targets);
 						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(),"POI存在循环建立父子关系");
 						return;

@@ -62,14 +62,11 @@ public class GLM15008 extends baseRule {
 			}
 			//点限速限速类型
 			if(changedFields.containsKey("speedType")){
-				int speedType = (int) changedFields.get("speedType");
-				if(speedType != 3){
-					boolean check = this.check(rdSpeedlimit.getPid());
-					
-					if(check){
-						String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
-						this.setCheckResult("", target, 0);
-					}
+				boolean check = this.check(rdSpeedlimit.getPid());
+				
+				if(check){
+					String target = "[RD_SPEEDLIMIT," + rdSpeedlimit.getPid() + "]";
+					this.setCheckResult("", target, 0);
 				}
 			}
 		}

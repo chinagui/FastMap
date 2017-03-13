@@ -387,7 +387,7 @@ insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WOR
 values ('114', 'poi_deep', 'deepParking', 'FM-ZY-20-155', 1, 2);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, TYPE, CHECK_FLAG)
-values ('115', 'poi_deep', 'deepParking', 'FM-YW-20-225', 1, 2);
+values ('115', 'poi_deep', 'deepParking', 'FM-YW-20-225', 1, 0);
 
 insert into poi_column_workitem_conf (ID, FIRST_WORK_ITEM, SECOND_WORK_ITEM, WORK_ITEM_ID, TYPE, CHECK_FLAG)
 values ('116', 'poi_deep', 'deepCarrental', 'FM-ZY-20-198', 1, 2);

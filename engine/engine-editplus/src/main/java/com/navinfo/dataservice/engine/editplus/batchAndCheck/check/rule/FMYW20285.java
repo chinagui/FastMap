@@ -76,7 +76,9 @@ public class FMYW20285 extends BasicCheckRule {
 						}
 					}
 					if(check){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "子POI官方原始中文名称中不包含父POI官方原始中文名称");
+						Long parentId=parentMap.get(poi.getPid());
+						String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "子POI官方原始中文名称中不包含父POI官方原始中文名称");
 					}
 				}
 			}

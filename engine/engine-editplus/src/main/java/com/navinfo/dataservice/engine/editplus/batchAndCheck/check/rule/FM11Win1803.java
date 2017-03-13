@@ -58,7 +58,7 @@ public class FM11Win1803 extends BasicCheckRule {
 		}
 		List<Long> sameLocPids = new ArrayList<Long>();
 		for (long pid:childPids) {
-			BasicObj basicObj=ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", null,false, pid, false);
+			BasicObj basicObj=ObjSelector.selectByPid(getCheckRuleCommand().getConn(), "IX_POI", null,true, pid, false);
 			IxPoi childPoi = (IxPoi) basicObj.getMainrow();
 			if (childPoi.getIndoor()==1) {
 				if (!childPoi.getGeometry().equals(poi.getGeometry())) {

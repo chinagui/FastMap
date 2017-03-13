@@ -42,7 +42,8 @@ public class GLM60257 extends BasicCheckRule {
 			String kindCodeP = parentPoi.getKindCode();
 			if(kindCodeP == null){return;}
 			if("170100".equals(kindCodeP)||"170101".equals(kindCodeP)||"170102".equals(kindCodeP)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 				return;
 			}
 		}

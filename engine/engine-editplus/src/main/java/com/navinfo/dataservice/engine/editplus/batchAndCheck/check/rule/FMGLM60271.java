@@ -47,8 +47,9 @@ public class FMGLM60271 extends BasicCheckRule {
 			if(kindCodeP == null ||"220100".equals(kindCodeP)){return;}
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Integer> searchScFmControl = metadataApi.searchScFmControl(kindCodeP);
+			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 			if(searchScFmControl == null || searchScFmControl.isEmpty()){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
 			}
 			//子poi内部标识
 			int indoor = poi.getIndoor();
@@ -56,13 +57,13 @@ public class FMGLM60271 extends BasicCheckRule {
 				if(searchScFmControl.containsKey(kindCodeP)){
 					int parent = searchScFmControl.get(kindCodeP);
 					if(parent == 2 && indoor==0){
-						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "正常POI与内部POI的父制作父子关系");
+						setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "正常POI与内部POI的父制作父子关系");
 					}
 					else if(parent == 0){
 						String poiNumP = parentPoi.getPoiNum();
 						Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
 						if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
-							setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
+							setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "父POI的分类不在可以作为父分类的范围内");
 						}
 					}
 				}

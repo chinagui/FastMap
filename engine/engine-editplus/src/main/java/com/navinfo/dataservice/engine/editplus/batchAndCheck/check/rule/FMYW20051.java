@@ -45,12 +45,13 @@ public class FMYW20051 extends BasicCheckRule {
 			String kindCodeP = parentPoi.getKindCode();
 			if(kindCodeP == null || !"220100".equals(kindCodeP)){return;}
 			String vipFlag = parentPoi.getVipFlag();
+			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 			//父POI.vip_flag=2
 			if(vipFlag != null){
 				String str = vipFlag.replace('|', ',');
 				List<Integer> vipFlags = StringUtils.getIntegerListByStr(str);
 				if(vipFlags.contains(2)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 			}
@@ -59,7 +60,7 @@ public class FMYW20051 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, Integer> searchScPointFocus = metadataApi.searchScPointFocus(poiNumP);
 			if(searchScPointFocus==null || !searchScPointFocus.containsKey(poiNumP)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 				return;
 			}
 		}

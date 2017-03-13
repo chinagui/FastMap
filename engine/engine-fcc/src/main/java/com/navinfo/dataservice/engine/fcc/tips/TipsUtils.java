@@ -34,12 +34,13 @@ public class TipsUtils {
 	 * @param t_cStatus
 	 * @param t_dStatus
 	 * @param t_mStatus
+	 * @param t_fStatus 
 	 * @return
 	 */
 	public static JSONObject generateTrackJson(int lifecycle,int stage, int handler,
 			int command, JSONArray oldTrackInfo, String t_operateDate,
 			String currentDate, int t_cStatus, int t_dStatus, int t_mStatus,
-			int t_inMeth, int t_pStatus, int t_dInProc, int t_mInProc) {
+			int t_inMeth, int t_pStatus, int t_dInProc, int t_mInProc, int t_fStatus) {
 
 		JSONObject jsonTrack = new JSONObject();
 
@@ -169,8 +170,9 @@ public class TipsUtils {
 		
 		index.put("s_mTaskId", json.getInt("s_mTaskId"));
 		
+		index.put("t_fStatus", json.getInt("t_fStatus"));
 		
-
+		
 		return index;
 		
 	}
@@ -206,7 +208,7 @@ public class TipsUtils {
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
 			JSONObject feedbackObj, int s_reliability,int t_inMeth,
-			int t_pStatus,int t_dInProc,int t_mInProc) throws Exception {
+			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus) throws Exception {
 		JSONObject index = new JSONObject();
 
 		index.put("id", rowkey);
@@ -281,9 +283,12 @@ public class TipsUtils {
 		
 		index.put("tipdiff", "{}"); //???????
 		
-		index.put("s_qTaskId", 0);
+		index.put("s_qTaskId", s_qTaskId);
 		
-		index.put("s_mTaskId", 0);
+		index.put("s_mTaskId", s_mTaskId);
+		
+		index.put("t_fStatus", t_fStatus);
+		
 
 		return index;
 	}

@@ -52,8 +52,9 @@ public class FMGLM60078 extends BasicCheckRule {
 				IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 				String kindCodeP = parentPoi.getKindCode();
 				if(kindCodeP == null ){return;}
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 				if(!"180304".equals(kindCodeP)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "公园门只能作为公园的子");
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "公园门只能作为公园的子");
 					return;
 				}
 				IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
@@ -61,7 +62,7 @@ public class FMGLM60078 extends BasicCheckRule {
 				String nameP = ixPoiNameP.getName();
 				if(nameP == null){return;}
 				if(!name.startsWith(nameP)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "公园门名称未以父POI名称开头");
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "公园门名称未以父POI名称开头");
 					return;
 				}
 			}

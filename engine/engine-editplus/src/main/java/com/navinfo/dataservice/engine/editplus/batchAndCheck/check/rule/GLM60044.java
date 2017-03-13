@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import oracle.sql.STRUCT;
 
@@ -17,6 +20,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.vividsolutions.jts.geom.Geometry;
 /**
  * GLM60044
  * 检查条件：以下条件其中之一满足时，需要进行检查：
@@ -31,14 +35,17 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * @author zhangxiaoyi
  */
 public class GLM60044 extends BasicCheckRule {
-	
 	public void run() throws Exception {
+		Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
+		Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
 		Map<Long, BasicObj> rows=getRowList();
 		List<Long> pid=new ArrayList<Long>();
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi =(IxPoi) poiObj.getMainrow();
+			Geometry geometry = poi.getGeometry();
+			int meshId = poi.getMeshId();
 			//已删除的数据不检查
 			if(poi.getOpType().equals(OperationType.PRE_DELETED)){continue;}
 			String kind=poi.getKindCode();
@@ -48,6 +55,8 @@ public class GLM60044 extends BasicCheckRule {
 					||kind.equals("230119")||kind.equals("180208")||kind.equals("230227"))
 				{continue;}
 			pid.add(poi.getPid());
+			geoMap.put(poi.getPid(), geometry);
+			meshMap.put(poi.getPid(), meshId);
 		}
 		//同点的设施，名称（name）、地址（address）、分类和品牌相同
 		if(pid!=null&&pid.size()>0){
@@ -70,18 +79,19 @@ public class GLM60044 extends BasicCheckRule {
 					+ "         A.GEOMETRY,"
 					+ "         B.NAME,"
 					+ "         NVL(A.CHAIN, '0') CHAIN,"
-					+ "         NVL(P.PARKING_TYPE, '0') PARKING_TYPE"
+					+ "         NVL(P.PARKING_TYPE, '0') PARKING_TYPE,"
+					+ "			P.U_RECORD"
 					+ "    FROM IX_POI A, IX_POI_NAME B, IX_POI_PARKING P"
 					+ "   WHERE A.PID = B.POI_PID"
-					+ "     AND A.STATE <> 1"
+					//+ "     AND A.STATE <> 1"
 					+ "     AND A.PID = P.POI_PID(+)"
 					+ "     AND B.NAME_CLASS = 1"
 					+ "     AND B.NAME_TYPE = 2"
 					+ "     AND A.U_RECORD!=2"
 					+ "     AND B.U_RECORD!=2"
-					+ "     AND P.U_RECORD!=2"
+					//+ "     AND P.U_RECORD!=2"
 					+ "     AND B.LANG_CODE IN ('CHI', 'CHT'))"
-					+ " SELECT T1.PID"
+					+ " SELECT T1.PID,T2.PID PID2"
 					+ "  FROM TEMP T1, TEMP T2"
 					+ " WHERE T1.KIND_CODE = T2.KIND_CODE"
 					+ "   AND T1.GEOMETRY.SDO_POINT.X = T2.GEOMETRY.SDO_POINT.X"
@@ -91,7 +101,7 @@ public class GLM60044 extends BasicCheckRule {
 					+ "   AND T1."+pidString
 					+ "   AND T1.PID <> T2.PID"
 					+ " MINUS"
-					+ " SELECT T1.PID"
+					+ " SELECT T1.PID,T2.PID PID2"
 					+ "  FROM TEMP T1, TEMP T2"
 					+ " WHERE T1.KIND_CODE = '230210'"
 					+ "   AND T2.KIND_CODE = '230210'"
@@ -99,7 +109,8 @@ public class GLM60044 extends BasicCheckRule {
 					+ "   AND T1.CHAIN = T2.CHAIN"
 					+ "   AND T1."+pidString
 					+ "   AND ((T1.PARKING_TYPE = '4' AND T2.PARKING_TYPE = '1') OR"
-					+ "       (T1.PARKING_TYPE = '1' AND T2.PARKING_TYPE = '4'))";
+					+ "       (T1.PARKING_TYPE = '1' AND T2.PARKING_TYPE = '4'))"
+					+ "   AND T1.U_RECORD <>2 AND T2.U_RECORD <>2";
 			PreparedStatement pstmt=conn.prepareStatement(sqlStr);;
 			if(values!=null&&values.size()>0){
 				for(int i=0;i<values.size();i++){
@@ -107,10 +118,27 @@ public class GLM60044 extends BasicCheckRule {
 				}
 			}
 			ResultSet rs = pstmt.executeQuery();
-			if (rs.next()) {
+			Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
+			while(rs.next()) {
 				Long pidTmp1=rs.getLong("PID");
-				String targets="[IX_POI,"+pidTmp1+"]";
-				setCheckResult("", targets, 0);
+				Long pidTmp2=rs.getLong("PID2");
+				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
+				errorList.get(pidTmp1).add(pidTmp2);
+			}
+			
+			if(errorList==null||errorList.size()==0){return;}
+			//过滤相同pid
+			Set<Long> filterPid = new HashSet<Long>();
+			for(Long pid1:errorList.keySet()){
+				String targets="[IX_POI,"+pid1+"]";
+				for(Long pid2:errorList.get(pid1)){
+					targets=targets+";[IX_POI,"+pid2+"]";
+				}
+				if(!(filterPid.contains(pid1)&&filterPid.containsAll(errorList.get(pid1)))){
+					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"PID为"+pid1+","+errorList.get(pid1).toString().replace("[", "").replace("]", "")+"的POI对象的原始中文名称、分类、显示坐标、品牌完全相同，请确认");
+				}
+				filterPid.add(pid1);
+				filterPid.addAll(errorList.get(pid1));
 			}
 		}
 	}

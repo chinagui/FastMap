@@ -58,7 +58,8 @@ public class FMGLM60213 extends BasicCheckRule {
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
 			if(distance > 2000){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 				return;
 			}
 		}

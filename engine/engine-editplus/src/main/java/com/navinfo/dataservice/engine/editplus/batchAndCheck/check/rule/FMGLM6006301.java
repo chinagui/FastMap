@@ -40,8 +40,10 @@ public class FMGLM6006301 extends BasicCheckRule {
 			if(name.endsWith("机场")||name.endsWith("機場")){
 				//是否有父
 				if(parentMap.containsKey(poi.getPid())){
+					Long parentId=parentMap.get(poi.getPid());
+					String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 					//为子
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 			}

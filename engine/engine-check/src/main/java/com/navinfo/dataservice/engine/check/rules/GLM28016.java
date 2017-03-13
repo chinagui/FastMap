@@ -305,7 +305,7 @@ public class GLM28016 extends baseRule{
 				}
 				
 				//如果涉及到的CRFI个数为0，报log
-				if(rdInterPidSet.size()==0){
+				if(rdInterPidSet.size()!=2){
 					this.setCheckResult("", "", 0);
 					return;
 				}else{

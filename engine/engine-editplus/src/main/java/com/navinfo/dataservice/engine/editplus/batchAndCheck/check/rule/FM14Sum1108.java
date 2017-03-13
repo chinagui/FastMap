@@ -98,6 +98,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			Map<Long,Set<Long>> poiMap = new HashMap<Long,Set<Long>>();
 			//key:子pid,value:顶级kindcode
 			Map<Long,String> kindMap = new HashMap<Long,String>();
+			
 			while (rs.next()) {
 				Map<String,Object> map = new HashMap<String,Object>();
 				Long pidTmp=rs.getLong("PID");
@@ -132,7 +133,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 				}				
 			}
 			if(poiList==null||poiList.size()==0){return;}
-			
+			log.info("FM-14Sum-11-08:批量加载推荐父");
 			//加载推荐父
 			Set<Long> referParentPids=new HashSet<Long>();
 			for(Set<Long> ps:poiMap.values()){
@@ -142,6 +143,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 			referSubrow.add("IX_POI_CHILDREN");
 			Map<Long, BasicObj> result = getCheckRuleCommand().loadReferObjs(referParentPids, ObjectName.IX_POI, referSubrow, false);
 			//加载子
+			log.info("FM-14Sum-11-08:批量加载推荐父对应的子");
 			Set<Long> referChildPids=new HashSet<Long>();
 			for(Long parent:referParentPids){
 				if(!result.containsKey(parent)){continue;}
@@ -151,11 +153,17 @@ public class FM14Sum1108 extends BasicCheckRule {
 					referChildPids.add(c.getChildPoiPid());
 				}
 			}
+			Map<Long, BasicObj> resultcMap=new HashMap<Long, BasicObj>();
 			if(referChildPids!=null&&referChildPids.size()>0){
-				getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
+				resultcMap=getCheckRuleCommand().loadReferObjs(referChildPids, ObjectName.IX_POI, null, false);
+				if(resultcMap!=null&&resultcMap.size()>0){
+					result.putAll(resultcMap);
+				}
 			}
 			//判断推荐的父poi是否有与当前poi分类相同的子，没有则报log
-			Map<Long, BasicObj> refers = getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
+			//Map<Long, BasicObj> refers = getCheckRuleCommand().getReferDatas().get(ObjectName.IX_POI);
+			//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+			Set<Long> filterPid = new HashSet<Long>();
 			for (Long pidC : poiList.keySet()) {
 				String kindCode = (String) poiList.get(pidC).get("kindCode");
 				Geometry geometry = (Geometry) poiList.get(pidC).get("geometry");
@@ -169,7 +177,7 @@ public class FM14Sum1108 extends BasicCheckRule {
 						continue;}
 					boolean haskind=false;
 					for(IxPoiChildren c:cs){
-						IxPoi cObj = (IxPoi)refers.get(c.getChildPoiPid()).getMainrow();
+						IxPoi cObj = (IxPoi)result.get(c.getChildPoiPid()).getMainrow();
 						if(cObj.getKindCode().equals(kindCode)){
 							haskind=true;break;
 						}
@@ -180,13 +188,17 @@ public class FM14Sum1108 extends BasicCheckRule {
 				String target="[IX_POI,"+pidC+"]";
 				for(Long tmp:errorPids){
 					target=target+";[IX_POI,"+tmp+"]";}
-				if ("200103".equals(kindMap.get(pidC))) {
-					setCheckResult(geometry, target, meshId,"与父分类（200103大厦）的设施同点，却没有建立父子关系");
-				} else if ("200104".equals(kindMap.get(pidC))) {
-					setCheckResult(geometry, target, meshId,"与父分类（200104商务中心）的设施同点，却没有建立父子关系");
-				} else if ("120101".equals(kindMap.get(pidC))) {
-					setCheckResult(geometry, target, meshId,"与父分类（120101星级酒店）的设施同点，却没有建立父子关系");
+				if(!(filterPid.contains(pidC)&&filterPid.containsAll(errorPids))){
+					if ("200103".equals(kindMap.get(pidC))) {
+						setCheckResult(geometry, target, meshId,"与父分类（200103大厦）的设施同点，却没有建立父子关系");
+					} else if ("200104".equals(kindMap.get(pidC))) {
+						setCheckResult(geometry, target, meshId,"与父分类（200104商务中心）的设施同点，却没有建立父子关系");
+					} else if ("120101".equals(kindMap.get(pidC))) {
+						setCheckResult(geometry, target, meshId,"与父分类（120101星级酒店）的设施同点，却没有建立父子关系");
+					}
 				}
+				filterPid.add(pidC);
+				filterPid.addAll(errorPids);
 			}
 		}
 	}

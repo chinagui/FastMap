@@ -73,7 +73,7 @@ public class GLM01455 extends baseRule {
 		List<Integer> innerLinks = new ArrayList<>();
 
 		for (RdLink link : links) {
-			List<IRow> linkForm = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(link.pid(),
+			List<IRow> linkForm = new AbstractSelector(RdLinkForm.class, getConn()).loadRowsByParentId(link.getPid(),
 					false);
 			link.setForms(linkForm);
 
@@ -81,7 +81,7 @@ public class GLM01455 extends baseRule {
 				RdLinkForm form = (RdLinkForm) linkform;
 
 				if (form.getFormOfWay() == 50) {
-					innerLinks.add(link.getOriginLinkPid());
+					innerLinks.add(link.getPid());
 					break;
 				}
 			}

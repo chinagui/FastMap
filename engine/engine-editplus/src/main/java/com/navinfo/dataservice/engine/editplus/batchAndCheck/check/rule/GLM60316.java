@@ -6,8 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -82,7 +85,7 @@ public class GLM60316 extends BasicCheckRule {
 					+" 	AND C1.U_RECORD <> 2"
 					+" 	AND C2.U_RECORD <> 2"
 					+" 	AND P1.POI_"+pidString+") "
-					+" SELECT	/*+ NO_MERGE(T)*/	T.PID1"
+					+" SELECT	/*+ NO_MERGE(T)*/	T.PID1 ,T.PID2"
 					+" FROM T"
 					+" WHERE"
 					+" 	NOT EXISTS (SELECT 1"
@@ -102,12 +105,20 @@ public class GLM60316 extends BasicCheckRule {
 				}
 			}			
 			ResultSet rs = pstmt.executeQuery();
+			//过滤相同pid
+			Set<String> filterPid = new HashSet<String>();
 			while (rs.next()) {
 				Long pidTmp1=rs.getLong("PID1");
+				Long pidTmp2=rs.getLong("PID2");
 				BasicObj obj=rows.get(pidTmp1);
 				IxPoiObj poiObj=(IxPoiObj) obj;
 				IxPoi poi =(IxPoi) poiObj.getMainrow();
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
+				if(!filterPid.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 	}

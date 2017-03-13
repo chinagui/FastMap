@@ -97,4 +97,9 @@ public class PropConstant {
 	
 	public static final String multisrcDaySyncUrl="multisrc.day.sync.url";
 	public static final String seasonVersion="SEASON.VERSION";
+	public static final String productConvert="product.convert";
+	
+	public static final String valueSmtp="VALUE_SMTP";
+	public static final String sendEmail="SEND_EMAil";
+	public static final String sendPwd="SEND_PWD";
 }

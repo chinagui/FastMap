@@ -123,8 +123,8 @@ public class FMYW20031 extends BasicCheckRule {
 				Map<Long, Long> parentMap = IxPoiSelector.getParentPidsByChildrenPids(this.getCheckRuleCommand().getConn(), pidList);
 				boolean flag = false;
 				//无父子关系
-				if(!(parentMap.containsKey(pidTmp1)&&parentMap.get(pidTmp1)==pidTmp2)
-						&&!(parentMap.containsKey(pidTmp2)&&parentMap.get(pidTmp2)==pidTmp1)){
+				if(!(parentMap.containsKey(pidTmp1)&&(parentMap.get(pidTmp1).equals(pidTmp2)))
+						&&!(parentMap.containsKey(pidTmp2)&&(parentMap.get(pidTmp2).equals(pidTmp1)))){
 					flag = true;
 				}
 				//有相同的父

@@ -72,7 +72,7 @@ public class RdNameOperation {
 					+ ") VALUES \n"
 					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ";
 				if(rdName.getRoadType().equals(1)){//高速公路,生成语音
-					insertSql +="(select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual )"
+					insertSql +="(select py_utils_word.convert_rd_name_voice(?,null,null,null) voicefile  from dual )"
 							
 					+ ",?, ?, ?, ?, ?, ?,?,?,?) \n";
 				}else{
@@ -85,7 +85,7 @@ public class RdNameOperation {
 					+ ") VALUES \n"
 					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ";
 					if(rdName.getRoadType().equals(1)){//高速公路,生成语音
-						insertSql +="(select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual )"
+						insertSql +="(select py_utils_word.convert_rd_name_voice(?,null,null,null) voicefile  from dual )"
 								
 						+ ",?, ?, ?, ?, ?, ?,?,?,?) \n";
 					}else{
@@ -134,14 +134,16 @@ public class RdNameOperation {
 			pstmt.setInt(17, rdName.getRoadType());
 			pstmt.setInt(18, rdName.getAdminId());
 			pstmt.setInt(19, rdName.getCodeType());
-			if(rdName.getRoadType().equals(1)){
+			//********ZL 2017.3.10*********
+			if(rdName.getRoadType().equals(1) ){//如果是高速类型自动生成名称语音
 				pstmt.setString(20, rdName.getName());
-			}else if(rdName.getRoadType().equals(3)){
-				pstmt.setString(20, "");
-			}else{
+			} else{
 				pstmt.setString(20, rdName.getVoiceFile());
 			}
-			
+			if(rdName.getRoadType().equals(3) || rdName.getLangCode().equals("ENG") || rdName.getLangCode().equals("POR") ){
+				pstmt.setString(20, "");
+			}
+			//*******************
 			pstmt.setString(21, rdName.getSrcResume());
 			
 			if(rdName.getPaRegionId()!=null){
@@ -441,7 +443,7 @@ public class RdNameOperation {
 		sb.append("ADMIN_ID = ?,");
 		sb.append("CODE_TYPE = ?,");
 		if(rdName.getRoadType().equals(1)){//高速公路,生成语音
-			sb.append("VOICE_FILE = (select py_utils_word.conv_to_english_mode_voicefile(?,null,null,null) voicefile  from dual ),");
+			sb.append("VOICE_FILE = (select py_utils_word.convert_rd_name_voice(?,null,null,null) voicefile  from dual ),");
 		}else{
 			sb.append("VOICE_FILE = ?,");
 		}	
@@ -483,13 +485,26 @@ public class RdNameOperation {
 			pstmt.setInt(15, rdName.getRoadType());
 			pstmt.setInt(16, rdName.getAdminId());
 			pstmt.setInt(17, rdName.getCodeType());
-			if(rdName.getRoadType().equals(1)){
+			
+			//********ZL 2017.3.10*********
+			if(rdName.getRoadType().equals(1) ){//如果是高速类型自动生成名称语音
+				pstmt.setString(18, rdName.getName());
+			} else{
+				pstmt.setString(18, rdName.getVoiceFile());
+			}
+			if(rdName.getRoadType().equals(3) || rdName.getLangCode().equals("ENG") || rdName.getLangCode().equals("POR") ){
+				pstmt.setString(18, "");
+			}
+			//*******************
+			
+			
+			/*if(rdName.getRoadType().equals(1)){
 				pstmt.setString(18, rdName.getName());
 			}else if(rdName.getRoadType().equals(3)){
 				pstmt.setString(18, "");
 			}else{
 				pstmt.setString(18, rdName.getVoiceFile());
-			}
+			}*/
 			
 			pstmt.setString(19, rdName.getSrcResume());
 			

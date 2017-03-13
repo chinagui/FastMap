@@ -49,7 +49,7 @@ public class FMBATM0106 extends BasicBatchRule {
 					if (aliasOriNameStr == null) {
 						return;
 					}
-					standarEngName = poiObj.getOfficeStandardEngName(aliasOriEngName.getNameGroupid());
+					standarEngName = poiObj.getStandardAliasENGName(aliasOriEngName.getNameGroupid());
 					if (aliasOriNameStr.length()>35) {
 						transName(standarEngName,aliasOriNameStr,poiObj,aliasOriEngName,engshortList);
 					}

@@ -5,7 +5,6 @@ package org.navinfo.dataservice.engine.meta;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,8 +12,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.imageio.ImageIO;
-import javax.imageio.stream.ImageInputStream;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +20,6 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.patternimage.PatternImageExporter;
 //import com.navinfo.dataservice.engine.meta.patternimage.PatternImageImporter;
-import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
 import net.sf.json.JSONObject;
 
 /** 
@@ -112,11 +108,11 @@ public class SvgTest {
 
             int pageNum = jsonReq.getInt("pageNum");
 
-            SvgImageSelector selector = new SvgImageSelector();
+           // SvgImageSelector selector = new SvgImageSelector();
 
-            JSONObject data = selector.searchByName(name, pageSize, pageNum);
+          //  JSONObject data = selector.searchByName(name, pageSize, pageNum);
             
-            System.out.println(data);
+          //  System.out.println(data);
             
         } catch (Exception e) {
         	e.printStackTrace();

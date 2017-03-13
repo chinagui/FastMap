@@ -42,33 +42,31 @@ public class FMGLM6007901 extends BasicCheckRule {
 			if(name == null){return;}
 			if(name.contains("机场")||name.contains("機場")){
 				//是否有父
-				if(!parentMap.containsKey(poi.getPid())){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-					return;
-				}
+				if(!parentMap.containsKey(poi.getPid())){return;}
 				Long parentId=parentMap.get(poi.getPid());
 				BasicObj parentObj = myReferDataMap.get(ObjectName.IX_POI).get(parentId);
 				IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 				IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 				String kindCodeP = parentPoi.getKindCode();
 				if(kindCodeP == null ){return;}
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 				if(!"230126".equals(kindCodeP)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
 				if(ixPoiNameP == null){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				String nameP = ixPoiNameP.getName();
 				if(nameP == null){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				if(!nameP.endsWith("机场")&&!nameP.endsWith("機場")&&!nameP.endsWith("航站楼")
 						&&!nameP.endsWith("航站樓")&&!nameP.endsWith("候机楼")&&!nameP.endsWith("候機樓")){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 			}

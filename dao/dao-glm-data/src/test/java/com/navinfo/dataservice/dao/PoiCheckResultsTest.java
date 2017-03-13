@@ -27,7 +27,7 @@ public class PoiCheckResultsTest {
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_sp6_d_1", "fm_regiondb_sp6_d_1").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_315_d_1", "fm_regiondb_315_d_1").getConnection();
 
 			NiValExceptionSelector a = new NiValExceptionSelector(conn);
 			Set<String> grids = new HashSet<String>();
@@ -47,7 +47,7 @@ public class PoiCheckResultsTest {
 			
 				//List<JSONObject> page =null;
 				try {
-					 JSONArray checkResultsArr = a.poiCheckResultList(767);
+					 JSONArray checkResultsArr = a.poiCheckResultList(507000006);
 						data.put("data", checkResultsArr);
 						data.put("total", checkResultsArr.size());
 					//page =a.list(2, grids, 5, 1);

@@ -51,22 +51,23 @@ public class FMGLM6006501 extends BasicCheckRule {
 				IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 				String kindCodeP = parentPoi.getKindCode();
 				if(kindCodeP == null ){return;}
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
 				if(!"230126".equals(kindCodeP)){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				IxPoiName ixPoiNameP = parentPoiObj.getOfficeOriginCHName();
 				if(ixPoiNameP == null){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				String nameP = ixPoiNameP.getName();
 				if(nameP == null){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 				if(!nameP.endsWith("机场")&&!nameP.endsWith("機場")){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 			}

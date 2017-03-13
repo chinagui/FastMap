@@ -31,6 +31,8 @@ import com.vividsolutions.jts.geom.Geometry;
 public class GLM60237 extends BasicCheckRule {
 
 	private Map<Long, Long> samePoiMap=new HashMap<Long, Long>();
+	//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+	private Set<String> filterPid = new HashSet<String>();
 	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -64,7 +66,12 @@ public class GLM60237 extends BasicCheckRule {
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
 			if(distance > 5){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				if(!filterPid.contains(targets)){
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+parentId+"];[IX_POI,"+poi.getPid()+"]");
 				return;
 			}
 		}

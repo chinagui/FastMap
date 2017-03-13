@@ -82,7 +82,7 @@ public class Operation implements IOperation {
                     lat = point.getY();
                 }
 
-                LuNode preNode = (LuNode) nodeSelector.loadById(nodePid, true, true);
+                LuNode preNode = (LuNode) nodeSelector.loadById(nodePid, true, false);
                 // 分离node挂接的link
                 List<LuLink> links = linkSelector.loadByNodePid(nodePid, true);
 

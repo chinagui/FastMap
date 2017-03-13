@@ -18,13 +18,17 @@ public class GLM37017 extends baseRule {
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow obj : checkCommand.getGlmList()) {
             if (obj instanceof RdMileagepile) {
-                RdMileagepile mileagepile = new RdMileagepile();
-                mileagepile.copy(obj);
-                mileagepile.Unserialize(JSONObject.fromObject(obj.changedFields()));
+                RdMileagepile mileagepile = (RdMileagepile) obj;
 
                 String roadNum = mileagepile.getRoadNum();
-                if (roadNum.length() == 0) {
-                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]", mileagepile.getMeshId());
+                //log.info("GLM37017:[roadNum=" + roadNum + "]");
+                if (mileagepile.changedFields().containsKey("roadNum"))
+                    roadNum = String.valueOf(mileagepile.changedFields().get("roadNum").toString());
+                //log.info("GLM37017:[roadNum=" + roadNum + "]");
+
+                if (null == roadNum || roadNum.length() == 0) {
+                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
+                            mileagepile.getMeshId());
                 }
             }
         }

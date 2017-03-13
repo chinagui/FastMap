@@ -846,7 +846,7 @@ public class TaskService {
 				}
 				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
 				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.STATUS=1 AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+					conditionSql+=" AND TASK_LIST.STATUS in (0,1) AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				if("planStatus".equals(key)){
 					int planStatus = condition.getInt(key);
@@ -860,7 +860,7 @@ public class TaskService {
 					}
 				}
 				//任务名称模糊查询
-				if ("taskName".equals(key)) {	
+				if ("name".equals(key)) {	
 					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
 							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
 				}
@@ -1136,7 +1136,7 @@ public class TaskService {
 				if ("cityId".equals(key)) {
 					conditionSql+=" AND B.CITY_ID="+condition.getInt(key);
 				}
-				if ("blockName".equals(key)) {
+				if ("name".equals(key)) {
 					conditionSql+=" AND B.block_name like '%"+condition.getString(key)+"%'";
 				}
 			}
@@ -1275,7 +1275,7 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
-			TaskOperation.updateStatus(conn, taskId, 1);
+			TaskOperation.updateStatus(conn, taskId, 0);
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			TaskOperation.closeBlock(conn,task.getBlockId());
 			
@@ -1454,10 +1454,10 @@ public class TaskService {
 			
 			Timestamp producePlanStartDate = task.getProducePlanStartDate();
 			Timestamp producePlanEndDate = task.getProducePlanEndDate();
-			if(planStartDate != null){
+			if(producePlanStartDate != null){
 				map.put("producePlanStartDate", df.format(producePlanStartDate));
 			}else {map.put("producePlanStartDate", "");}
-			if(planEndDate != null){
+			if(producePlanEndDate != null){
 				map.put("producePlanEndDate",df.format(producePlanEndDate));
 			}else{map.put("producePlanEndDate", "");}
 
@@ -1606,7 +1606,7 @@ public class TaskService {
 			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					ArrayList<String> arrayList = new ArrayList<String>();
-					if(rs.next()) {
+					while(rs.next()) {
 						arrayList.add(rs.getString("GRID_ID"));
 					}
 					return JSONArray.fromObject(arrayList);
@@ -1717,7 +1717,6 @@ public class TaskService {
 			if(status==3){return;}
 			//执行成功，则继续后续步骤
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
-			//锁表
 			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
 			//查询前2个并行阶段是否执行成功
 			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
@@ -1779,7 +1778,9 @@ public class TaskService {
 			}else if(phase==4){
 				returnProgress =createCmsTask(conn, phaseId);
 			}
-			if(returnProgress.getStatus()==0){return;}
+			if(returnProgress.getStatus()==0){
+				updateCmsProgressStatus(conn, phaseId, returnProgress.getStatus(), returnProgress.getMessage());
+				return;}
 			taskUpdateCmsProgress(conn, phaseId, returnProgress.getStatus(),returnProgress.getMessage());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1900,7 +1901,7 @@ public class TaskService {
 			//修改开关
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
 			Set<Integer> meshs = phase.getMeshIds();
-			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 1 WHERE MESH IN "
+			String updateSql="UPDATE SC_PARTITION_MESHLIST SET OPEN_FLAG = 0 WHERE MESH IN "
 					+meshs.toString().replace("[", "(").replace("]", ")");
 			Connection meta = null;
 			try{
@@ -2079,15 +2080,22 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID,ts.create_user_id,u.user_nick_name"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS,user_info u"
-					+ " WHERE T.PHASE_ID =  "+phaseId
-					+ " AND T.TASK_ID =TS.TASK_ID "
-					+ " AND Ts.create_user_id =u.user_id ";
+			String selectSql = "SELECT T.PHASE_ID,"
+					+ "       T.TASK_ID,"
+					+ "       M.GRID_ID,"
+					+ "       T.PHASE,"
+					+ "       TS.REGION_ID,"
+					+ "       TS.CREATE_USER_ID,"
+					+ "       U.USER_NICK_NAME"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+					+ " WHERE T.PHASE_ID = "+phaseId
+					+ "   AND T.TASK_ID = TS.TASK_ID"
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.TASK_ID = M.TASK_ID ";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
-					if(rs.next()) {
+					while(rs.next()) {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));

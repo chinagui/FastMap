@@ -63,7 +63,7 @@ public class RdNameSelector {
 				return result;
 			}
 
-			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
+			String sql = "SELECT *   FROM (SELECT c.*, rownum rn           FROM (select  count(1) over(partition by 1) total,        a.name_groupid, a.road_type    ,        a.name,        b.province   from rd_name a, cp_provincelist b  where a.name like :1    and a.admin_id = b.admincode) c          WHERE rownum <= :2)  WHERE rn >= :3";
 
 			int startRow = (pageNum-1) * pageSize+1;
 
@@ -72,7 +72,7 @@ public class RdNameSelector {
 			pstmt = conn.prepareStatement(sql);
 
 			System.out.println("rdname search :"+sql);
-			pstmt.setString(1, name + "%");
+			pstmt.setString(1, "%"+name + "%");
 
 			pstmt.setInt(2, endRow);
 
@@ -93,6 +93,12 @@ public class RdNameSelector {
 				String province = resultSet.getString("province");
 				int roadType = resultSet.getInt("road_type");
 
+				//*******zl 2017.3.10 315临时代码里处理province获取省份简称
+				if(province != null && StringUtils.isNotEmpty(province)){
+					province = getShortProvince(province);
+				}
+				//**************************************************
+				
 				JSONObject json = new JSONObject();
 
 				json.put("nameId", nameId);
@@ -141,6 +147,20 @@ public class RdNameSelector {
 			}
 		}
 
+	}
+
+	private String getShortProvince(String province) {
+		String shortProvince = "";
+		if(province.contains("内蒙古")){
+			shortProvince = "内蒙古";
+		}else if(province.contains("黑龙江")){
+			shortProvince = "黑龙江";
+		}else if(province.contains("中国")){
+			shortProvince = "全国";
+		}else{
+			shortProvince = province.substring(0, 2);
+		}
+		return shortProvince;
 	}
 
 	/**
@@ -204,7 +224,7 @@ public class RdNameSelector {
 	}
 
 	public static void main(String[] args) throws Exception {
-
+		
 		RdNameSelector selector = new RdNameSelector();
 
 		System.out.println(selector.searchByName("", 10, 1));
@@ -476,11 +496,26 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			}
 		}
 		if (rdName.getNameId() != null) {
-			sb.append(" AND name_id ="+rdName.getNameId());
+			sb.append(" AND name_id !="+rdName.getNameId());
+		}
+		/*if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
+			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
 		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
 			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
 		}
+		if (rdName.getBase() != null && StringUtils.isNotEmpty(rdName.getBase())) {
+			sb.append(" AND BASE ='"+rdName.getBase()+"'");
+		}
+		if (rdName.getSrcFlag() != null && rdName.getSrcFlag() > 0) {
+			sb.append(" AND SRC_FLAG ="+rdName.getSrcFlag()+" ");
+		}
+		if (rdName.getCodeType() != null && rdName.getCodeType() > 0) {
+			sb.append(" AND CODE_TYPE ="+rdName.getCodeType()+" ");
+		}
+		if (rdName.getVoiceFile() != null && StringUtils.isNotEmpty(rdName.getVoiceFile())) {
+			sb.append(" AND VOICE_FILE ="+rdName.getVoiceFile()+" ");
+		}*/
 		try {
 			
 			pstmt = conn.prepareStatement(sb.toString());
@@ -825,5 +860,4 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		}
 	}
 
-	
 }

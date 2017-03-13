@@ -68,7 +68,11 @@ public class FM11Win1803 extends BasicCheckRule {
 		}
 		if (sameLocPids.size()>0) {
 //			String err = StringUtils.join(sameLocPids, ",");
-			setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), "未点开子POI位置和点开的父不同点");
+			String targets="[IX_POI,"+poi.getPid()+"]";
+			for(Long pid2:sameLocPids){
+				targets=targets+";[IX_POI,"+pid2+"]";
+			}
+			setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), "未点开子POI位置和点开的父不同点");
 			return;
 		}
 

@@ -80,16 +80,19 @@ public class FMBATM0105 extends BasicBatchRule {
 	 */
 	private boolean isBatch(IxPoiObj poiObj) throws Exception{
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		//满足(1)非重要分类的POI数据
-		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
-			return true;
-		}
+		
 		//满足(2)POI对象新增中文地址或修改中文地址的POI数据
 		IxPoiAddress addr=poiObj.getChiAddress();
 		if (addr==null){
 			return false;
 		}
+				
+		//满足(1)非重要分类的POI数据
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
+			return true;
+		}
+		
 		if ((addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
 			return true;
 		}

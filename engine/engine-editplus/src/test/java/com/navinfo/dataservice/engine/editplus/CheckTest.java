@@ -79,9 +79,10 @@ public class CheckTest {
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
-//		Map<String, Object> oldValues=new HashMap<String, Object>();
+		Map<String, Object> oldValues=new HashMap<String, Object>();
 //		oldValues.put("KIND_CODE", "230126");
-//		logg.setOldValues(oldValues);
+		oldValues.put("GEOMETRY", "");
+		logg.setOldValues(oldValues);
 //		logg.setOpType(OperationType.UPDATE);
 		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
@@ -115,6 +116,8 @@ public class CheckTest {
 		pids.add(8165144L);
 		pids.add(8165145L);
 		pids.add(4696166L);
+		pids.add(74850060L);
+		pids.add(64133244L);
 		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
 		for (Long key : rows.keySet()) {
 			BasicObj obj1 = rows.get(key);
@@ -127,7 +130,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-287");
+		ruleIdList.add("FM-YW-20-285");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

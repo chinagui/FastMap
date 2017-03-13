@@ -48,8 +48,14 @@ public class FM14Sum1111 extends BasicCheckRule {
 					break;
 				}
 			}
+			Set<Long> pidsC = new HashSet<Long>();
+			pidsC.addAll(childrenPids);
 			if (!hasOtherChild) {
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "服务区子POI只有加油站");
+				String targets="[IX_POI,"+poi.getPid()+"]";
+				for(Long pid2:pidsC){
+					targets=targets+";[IX_POI,"+pid2+"]";
+				}
+				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "服务区子POI只有加油站");
 				return;
 			}
 		}

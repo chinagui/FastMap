@@ -846,7 +846,7 @@ public class TaskService {
 				}
 				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
 				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.STATUS=1 AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
+					conditionSql+=" AND TASK_LIST.STATUS in (0,1) AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
 				}
 				if("planStatus".equals(key)){
 					int planStatus = condition.getInt(key);
@@ -1454,10 +1454,10 @@ public class TaskService {
 			
 			Timestamp producePlanStartDate = task.getProducePlanStartDate();
 			Timestamp producePlanEndDate = task.getProducePlanEndDate();
-			if(planStartDate != null){
+			if(producePlanStartDate != null){
 				map.put("producePlanStartDate", df.format(producePlanStartDate));
 			}else {map.put("producePlanStartDate", "");}
-			if(planEndDate != null){
+			if(producePlanEndDate != null){
 				map.put("producePlanEndDate",df.format(producePlanEndDate));
 			}else{map.put("producePlanEndDate", "");}
 
@@ -1606,7 +1606,7 @@ public class TaskService {
 			ResultSetHandler<JSONArray> rsHandler = new ResultSetHandler<JSONArray>() {
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					ArrayList<String> arrayList = new ArrayList<String>();
-					if(rs.next()) {
+					while(rs.next()) {
 						arrayList.add(rs.getString("GRID_ID"));
 					}
 					return JSONArray.fromObject(arrayList);
@@ -1717,7 +1717,6 @@ public class TaskService {
 			if(status==3){return;}
 			//执行成功，则继续后续步骤
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
-			//锁表
 			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
 			//查询前2个并行阶段是否执行成功
 			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
@@ -2079,15 +2078,22 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
-			String selectSql = "SELECT T.PHASE_ID,T.TASK_ID, M.GRID_ID,t.phase,TS.REGION_ID,ts.create_user_id,u.user_nick_name"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M,task tS,user_info u"
-					+ " WHERE T.PHASE_ID =  "+phaseId
-					+ " AND T.TASK_ID =TS.TASK_ID "
-					+ " AND Ts.create_user_id =u.user_id ";
+			String selectSql = "SELECT T.PHASE_ID,"
+					+ "       T.TASK_ID,"
+					+ "       M.GRID_ID,"
+					+ "       T.PHASE,"
+					+ "       TS.REGION_ID,"
+					+ "       TS.CREATE_USER_ID,"
+					+ "       U.USER_NICK_NAME"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+					+ " WHERE T.PHASE_ID = "+phaseId
+					+ "   AND T.TASK_ID = TS.TASK_ID"
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.TASK_ID = M.TASK_ID ";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
-					if(rs.next()) {
+					while(rs.next()) {
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));

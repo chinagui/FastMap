@@ -1146,13 +1146,13 @@ public class IxPoiSearch implements ISearch {
 					String rowId = name.getRowId();
 					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
-						if(!result.getString("old").isEmpty()){
+						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
 							String oldOriEngName = JSONObject.fromObject(result.getString("old")).getString("NAME");
 							if (StringUtils.isNotEmpty(oldOriEngName)){
 								oldOriginalEngName = oldOriEngName;
 							}
 						}
-						if(!result.getString("new").isEmpty()){
+						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
 							String newOriEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
 							if (StringUtils.isNotEmpty(newOriEngName)){
 								newOriginalEngName = newOriEngName;
@@ -1166,13 +1166,13 @@ public class IxPoiSearch implements ISearch {
 					result=logReader.getHisByOperate("FM-BAT-20-147","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
 						
-						if(!result.getString("old").isEmpty()){
+						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
 							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
 							if (StringUtils.isNotEmpty(oldStdEngName)){
 								oldStandardEngName = oldStdEngName;
 							}
 						}
-						if(!result.getString("new").isEmpty()){
+						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
 							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
 							if (StringUtils.isNotEmpty(newStdEngName)){
 								newStandardEngName = newStdEngName;

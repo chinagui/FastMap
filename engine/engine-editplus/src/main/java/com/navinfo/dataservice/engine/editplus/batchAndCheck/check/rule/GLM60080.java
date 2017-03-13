@@ -41,7 +41,9 @@ public class GLM60080 extends BasicCheckRule {
 			String name = ixPoiName.getName();
 			if(name == null){return;}
 			if("停车场".equals(name)||"停車場".equals(name)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				Long parentId=parentMap.get(poi.getPid());
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 				return;
 			}
 		}

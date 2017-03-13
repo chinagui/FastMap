@@ -68,7 +68,7 @@ public class DMLExecThreadHandler extends ThreadHandler {
 					run.update(conn, execSql, args);
 					conn.commit();
 				} catch (SQLException e) {
-					log.error(e);
+					log.error(e.getMessage(), e);
 					conn.rollback();
 					throw e;
 				} finally {

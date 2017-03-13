@@ -41,13 +41,14 @@ public class FM14Sum1114 extends BasicCheckRule {
 					parentPid, false);
 			IxPoiObj parentPoiObj = (IxPoiObj) parentobj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
+			String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentPid+"]";
 			if (poi.getKindCode().equals("230215")) {
 				if (parentPoi.getKindCode().equals("230216")) {
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"加油站与加气站做了父子关系");
+					setCheckResult(poi.getGeometry(), targets, poi.getMeshId(),"加油站与加气站做了父子关系");
 				}
 			} else if (poi.getKindCode().equals("230216")) {
 				if (parentPoi.getKindCode().equals("230215")) {
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"加油站与加气站做了父子关系");
+					setCheckResult(poi.getGeometry(), targets, poi.getMeshId(),"加油站与加气站做了父子关系");
 				}
 			}
 		}

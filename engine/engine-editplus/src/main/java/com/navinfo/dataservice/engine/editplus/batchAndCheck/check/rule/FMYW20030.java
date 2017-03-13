@@ -49,7 +49,8 @@ public class FMYW20030 extends BasicCheckRule {
 						if(cPoi.getOpType().equals(OperationType.PRE_DELETED)){
 							continue;}
 						if(!cPoi.getKindCode().equals("230218")){
-							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "停车场的子POI不是电动汽车充电站");
+							String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+cPoi.getPid()+"]";
+							setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "停车场的子POI不是电动汽车充电站");
 							return;
 						}
 					}					
@@ -63,7 +64,8 @@ public class FMYW20030 extends BasicCheckRule {
 			IxPoiObj parentPoiObj =(IxPoiObj) myReferDataMap.get(ObjectName.IX_POI).get(parentPid);
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (parentPoi.getKindCode().equals("230210") || parentPoi.getKindCode().equals("230213") || parentPoi.getKindCode().equals("230214")) {
-				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "非电动汽车充电站分类的父POI不能是停车场");
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentPid+"]";
+				setCheckResult(poi.getGeometry(), targets, poi.getMeshId(), "非电动汽车充电站分类的父POI不能是停车场");
 				return;
 			}
 		}

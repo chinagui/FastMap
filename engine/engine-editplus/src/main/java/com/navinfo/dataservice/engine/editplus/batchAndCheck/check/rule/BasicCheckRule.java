@@ -123,12 +123,14 @@ public abstract class BasicCheckRule {
 	}
 	
 	public void setCheckResult(String loc, String targets,int meshId,String log){
+		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
 		//splitTargets(targets);
 		this.checkResultList.add(checkResult);
 	}
 	
 	public void setCheckResult(Geometry loc, String targets,int meshId,String log) throws Exception{
+		if(log==null || log.isEmpty()){log=this.checkRule.getLog();}
 		NiValException checkResult=new NiValException(checkRule.getRuleId(), loc, targets, meshId,log,checkRule.getRuleLevel());
 		//splitTargets(targets);
 		this.checkResultList.add(checkResult);

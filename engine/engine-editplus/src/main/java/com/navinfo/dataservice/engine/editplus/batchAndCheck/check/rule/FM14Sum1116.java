@@ -69,7 +69,8 @@ public class FM14Sum1116 extends BasicCheckRule {
 			Coordinate coordinateP = geometryP.getCoordinate();
 			double distance = GeometryUtils.getDistance(coordinate, coordinateP);
 			if(distance <100&&StringUtils.equals(name, nameP)){
-				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+				String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 				return;
 			}
 		}

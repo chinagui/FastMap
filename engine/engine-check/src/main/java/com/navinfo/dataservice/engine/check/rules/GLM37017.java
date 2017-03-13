@@ -21,10 +21,12 @@ public class GLM37017 extends baseRule {
                 RdMileagepile mileagepile = (RdMileagepile) obj;
 
                 String roadNum = mileagepile.getRoadNum();
+                //log.info("GLM37017:[roadNum=" + roadNum + "]");
                 if (mileagepile.changedFields().containsKey("roadNum"))
-                    roadNum = (String) mileagepile.changedFields().get("roadNum");
+                    roadNum = String.valueOf(mileagepile.changedFields().get("roadNum").toString());
+                //log.info("GLM37017:[roadNum=" + roadNum + "]");
 
-                if (roadNum.length() == 0) {
+                if (null == roadNum || roadNum.length() == 0) {
                     setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
                             mileagepile.getMeshId());
                 }

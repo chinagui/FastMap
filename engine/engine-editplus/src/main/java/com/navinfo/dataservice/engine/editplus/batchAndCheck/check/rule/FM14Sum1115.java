@@ -50,6 +50,9 @@ public class FM14Sum1115 extends BasicCheckRule {
 			if(kind.equals("230215")||kind.equals("230216"))
 				{pidParent.add(poi.getPid());}
 		}
+		//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+		Set<String> filterPid = new HashSet<String>();
+		
 		if(pidChildren!=null&&pidChildren.size()>0){
 			String pids=pidChildren.toString().replace("[", "").replace("]", "");
 			Connection conn = this.getCheckRuleCommand().getConn();
@@ -95,7 +98,11 @@ public class FM14Sum1115 extends BasicCheckRule {
 				//STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				//Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult("", targets, 0);
+				if(!filterPid.contains(targets)){
+					setCheckResult("", targets, 0);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 		if(pidParent!=null&&pidParent.size()>0){
@@ -143,7 +150,11 @@ public class FM14Sum1115 extends BasicCheckRule {
 				//STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				//Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]";
-				setCheckResult("", targets, 0);
+				if(!filterPid.contains(targets)){
+					setCheckResult("", targets, 0);
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]");
 			}
 		}
 	}

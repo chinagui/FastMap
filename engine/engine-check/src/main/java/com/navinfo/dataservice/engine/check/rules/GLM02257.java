@@ -20,7 +20,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResult;
  * 道路形态含有“隧道”属性，满足以下条件：
  * 1、官方名中只有一个名称包含“隧道”，则该名称的名称类型必须为“隧道”，否则报log1；
  * 2、官方名中有多个名称包含“隧道”，则报log2；
- * 3、所有官方名中不包含“隧道”，且没有一个名称与隧道串两端挂接的link的官方名都不相同，则报log3；
+ * (暂时不查)3、所有官方名中不包含“隧道”，且没有一个名称与隧道串两端挂接的link的官方名都不相同，则报log3；
  * 4、所有官方名中不包含“隧道”，只有一个名称与隧道串两端挂接的link的官方名都不相同，则该名称的名称类型必须为“隧道”，否则报log1；
  * 5、所有官方名中不包含“隧道”，有多个名称与隧道串两端挂接的link的官方名都不相同，则报log2；
  * 6、官方名称中如果有多个隧道类型的，报log4。
@@ -209,15 +209,15 @@ public class GLM02257 extends baseRule {
 		sb.append(" UNION");
 		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || S.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '隧道link上有多个隧道名' AS LOG FROM S_NAME_NUM S WHERE S.NUM > 1");
-		sb.append(" UNION");
-		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RLF.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-		sb.append(" '隧道link上没有隧道名' AS LOG");
-		sb.append(" FROM RD_LINK_FORM RLF, RD_LINK_NAME RLN, RD_NAME N");
-		sb.append(" WHERE RLF.LINK_PID = "+pid+" AND RLF.LINK_PID = RLN.LINK_PID AND RLF.FORM_OF_WAY = 31");
-		sb.append(" AND RLN.NAME_GROUPID = N.NAME_GROUPID");
-		sb.append(" AND RLN.NAME_CLASS = 1 AND N.LANG_CODE IN ('CHI', 'CHT') AND N.NAME NOT LIKE '%隧道%'");
-		sb.append(" AND RLF.U_RECORD <>2 AND RLN.U_RECORD <>2 AND N.U_RECORD <>2");
-		sb.append(" AND EXISTS(SELECT 1 FROM ALINK_NAME WHERE RLN.NAME_GROUPID = ALINK_NAME.NAME_GROUPID)");
+//		sb.append(" UNION");
+//		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RLF.LINK_PID || ']' TARGET,0 AS MESH_ID,");
+//		sb.append(" '隧道link上没有隧道名' AS LOG");
+//		sb.append(" FROM RD_LINK_FORM RLF, RD_LINK_NAME RLN, RD_NAME N");
+//		sb.append(" WHERE RLF.LINK_PID = "+pid+" AND RLF.LINK_PID = RLN.LINK_PID AND RLF.FORM_OF_WAY = 31");
+//		sb.append(" AND RLN.NAME_GROUPID = N.NAME_GROUPID");
+//		sb.append(" AND RLN.NAME_CLASS = 1 AND N.LANG_CODE IN ('CHI', 'CHT') AND N.NAME NOT LIKE '%隧道%'");
+//		sb.append(" AND RLF.U_RECORD <>2 AND RLN.U_RECORD <>2 AND N.U_RECORD <>2");
+//		sb.append(" AND EXISTS(SELECT 1 FROM ALINK_NAME WHERE RLN.NAME_GROUPID = ALINK_NAME.NAME_GROUPID)");
 		sb.append(" UNION");
 		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || S.LINK_PID || ']' TARGET,0 AS MESH_ID,");
 		sb.append(" '隧道link上的隧道名称类型错误' AS LOG FROM N_S_NAME S, N_S_NAME_NUM SN WHERE SN.NUM = 1");

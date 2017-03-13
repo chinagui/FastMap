@@ -57,7 +57,8 @@ public class GLM60084 extends BasicCheckRule {
 				Coordinate coordinateP = geometryP.getCoordinate();
 				double distance = GeometryUtils.getDistance(coordinate, coordinateP);
 				if("120101".equals(kindCodeP) && distance<3){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+					String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+parentId+"]";
+					setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
 					return;
 				}
 			}

@@ -1454,10 +1454,10 @@ public class TaskService {
 			
 			Timestamp producePlanStartDate = task.getProducePlanStartDate();
 			Timestamp producePlanEndDate = task.getProducePlanEndDate();
-			if(planStartDate != null){
+			if(producePlanStartDate != null){
 				map.put("producePlanStartDate", df.format(producePlanStartDate));
 			}else {map.put("producePlanStartDate", "");}
-			if(planEndDate != null){
+			if(producePlanEndDate != null){
 				map.put("producePlanEndDate",df.format(producePlanEndDate));
 			}else{map.put("producePlanEndDate", "");}
 

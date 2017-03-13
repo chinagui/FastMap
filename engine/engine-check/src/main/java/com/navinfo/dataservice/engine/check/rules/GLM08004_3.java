@@ -49,7 +49,7 @@ public class GLM08004_3 extends baseRule {
 		boolean checkFlg = false;
 		//进不去出不来的link
 		if(rdLinkLimit.status().equals(ObjStatus.INSERT)){
-			if((rdLinkLimit.getType()==2)&&(rdLinkLimit.getVehicle()==2147484040L)&&(rdLinkLimit.getTimeDomain().isEmpty())){
+			if((rdLinkLimit.getType()==2)&&(rdLinkLimit.getVehicle()==2147483786L)&&(!rdLinkLimit.getTimeDomain().isEmpty())){
 				checkFlg = true;
 			}
 		}
@@ -80,10 +80,13 @@ public class GLM08004_3 extends baseRule {
 					timeDomain = null;
 				}
 			}else{
-				timeDomain = null;
+				timeDomain = rdLinkLimit.getTimeDomain();
+				if(timeDomain==null||timeDomain.isEmpty()){
+					timeDomain = null;
+				}
 			}
 			
-			if((type==2)&&(vehicle==2147484040L)&&(timeDomain==null)){
+			if((type==2)&&(vehicle==2147483786L)&&(timeDomain!=null)){
 				checkFlg = true;
 			}
 		}

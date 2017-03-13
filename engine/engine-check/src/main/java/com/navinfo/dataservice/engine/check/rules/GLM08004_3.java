@@ -80,7 +80,10 @@ public class GLM08004_3 extends baseRule {
 					timeDomain = null;
 				}
 			}else{
-				timeDomain = null;
+				timeDomain = rdLinkLimit.getTimeDomain();
+				if(timeDomain==null||timeDomain.isEmpty()){
+					timeDomain = null;
+				}
 			}
 			
 			if((type==2)&&(vehicle==2147483786L)&&(timeDomain!=null)){

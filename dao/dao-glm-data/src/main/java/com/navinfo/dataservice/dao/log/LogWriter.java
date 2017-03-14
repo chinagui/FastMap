@@ -523,7 +523,7 @@ public class LogWriter {
 
                 String column = en.getKey();
                 logger.info("column:" + column);
-                String tableColumn = StringUtils.toColumnName(column).toUpperCase();
+                String tableColumn = StringUtils.toColumnNameLog(column).toUpperCase();
 
                 // 如果是IX_POI，并且不是作业字段，那么不写入fd_list
                 if ("IX_POI".equals(upperCaseTbName) && ArrayUtils.contains(poiExcludeColumns, tableColumn)) {
@@ -794,7 +794,7 @@ public class LogWriter {
                 } else if ("geometry".equals(key)) {
 
                     if (row.objType() == ObjType.CKEXCEPTION) {
-                        json.put(StringUtils.toColumnName(key).toUpperCase(), rowJson.get(key));
+                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), rowJson.get(key));
                     } else {
                         if (StringUtils.isNotEmpty(rowJson.getString("geometry"))) {
                             json.put("geometry".toUpperCase(), Geojson.geojson2Wkt(rowJson.getString("geometry")));
@@ -806,9 +806,9 @@ public class LogWriter {
 
                     if (value instanceof String) {
                         String v = ((String) value).replaceAll("\\[", "&lt").replaceAll("\\]", "&rt");
-                        json.put(StringUtils.toColumnName(key).toUpperCase(), v.replace("'", "''"));
+                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), v.replace("'", "''"));
                     } else {
-                        json.put(StringUtils.toColumnName(key).toUpperCase(), value);
+                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), value);
                     }
 
                 }

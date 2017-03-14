@@ -272,6 +272,9 @@ public class DefaultObjImportor extends AbstractOperation{
 							if("Long".equalsIgnoreCase(field.getType().getName())){
 								attValue = Long.valueOf((Integer)attValue);
 								log.info("转换字段:"+attName);
+							}else if("Double".equalsIgnoreCase(field.getType().getName())){
+								attValue = Double.valueOf((Integer)attValue);
+								log.info("转换字段:"+attName);
 							}
 						}
 						String newAttName = this.camelToUnderline(attName);
@@ -372,6 +375,9 @@ public class DefaultObjImportor extends AbstractOperation{
 								if("Long".equalsIgnoreCase(field.getType().getName())){
 									attValue = Long.valueOf((Integer)attValue);
 									log.info("转换字段:"+attName);
+								}else if("Double".equalsIgnoreCase(field.getType().getName())){
+									attValue = Double.valueOf((Integer)attValue);
+									log.info("转换字段:"+attName);
 								}
 							}
 							//IX_POI_PHOTO表FCC库照片号码fccPid转换为pid
@@ -467,6 +473,9 @@ public class DefaultObjImportor extends AbstractOperation{
 								Field field = this.getFieldByName(subRow.getClass(), attName);
 								if("Long".equalsIgnoreCase(field.getType().getName())){
 									attValue = Long.valueOf((Integer)attValue);
+									log.info("转换字段:"+attName);
+								}else if("Double".equalsIgnoreCase(field.getType().getName())){
+									attValue = Double.valueOf((Integer)attValue);
 									log.info("转换字段:"+attName);
 								}
 							}

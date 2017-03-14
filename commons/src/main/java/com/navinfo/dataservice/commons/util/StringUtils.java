@@ -64,6 +64,36 @@ public class StringUtils {
 
         return sb.toString().toLowerCase();
     }
+    
+
+    /**
+     * 类的属性名转为数据库的列名 在大写字母前加下划线，并把大写转小写
+     *
+     * @param fieldName 属性名
+     * @return 列名
+     */
+    public static String toColumnNameLog(String fieldName) {
+        if (fieldName.equals("fccPid")) {
+            return "pid";
+        }
+        if (fieldName.equals("open24h")) {
+            return "open_24h";
+        }
+        if (fieldName.equals("phone400")) {
+            return "phone_400";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fieldName.length(); i++) {
+            char c = fieldName.charAt(i);
+            if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                sb.append("_" + c);
+            } else {
+                sb.append(c);
+            }
+        }
+
+        return sb.toString().toLowerCase();
+    }
 
     /**
      * 判断字符串是否相等

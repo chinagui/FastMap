@@ -61,8 +61,10 @@ public class GLM60272 extends BasicCheckRule {
 		}
 		allPids.addAll(childPids);
 		String targets = "[IX_POI,"+poi.getPid()+"];[IX_POI,"+samePoiPid.get(poi.getPid())+"]";
-		if (allPids.contains(samePoiPid.get(poi.getPid()))&&!filterPid.contains(targets)) {
-			setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+		if (allPids.contains(samePoiPid.get(poi.getPid()))) {
+			if(!filterPid.contains(targets)){
+				setCheckResult(poi.getGeometry(), targets,poi.getMeshId(), null);
+			}
 			filterPid.add(targets);
 			filterPid.add("[IX_POI,"+samePoiPid.get(poi.getPid())+"];[IX_POI,"+poi.getPid()+"]");
 			return;

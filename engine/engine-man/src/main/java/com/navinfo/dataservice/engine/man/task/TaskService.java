@@ -2150,6 +2150,7 @@ public class TaskService {
 			if(message==null||message.isEmpty()){
 				run.update(conn, selectSql);}
 			else{run.update(conn, selectSql,message);}
+			log.info("phaseId:"+phaseId+",status:"+status+",message:"+message);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

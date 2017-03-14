@@ -89,7 +89,7 @@ public class ColumnSubmitJob extends AbstractJob {
 			for (String second:secondWorkList) {
 				log.info("当前提交二级项:"+second);
 				// 查询可提交数据
-				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
+				pidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, taskId,userId);
 				log.info("查询可提交数据pdis:"+pidList);
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();

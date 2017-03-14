@@ -31,7 +31,7 @@ public abstract class MeshUtils {
 //		meshes.add("595661");
 //		Geometry geo = meshes2Jts(meshes);
 //		System.out.println("GEOMEYRY:"+JtsGeometryFactory.writeWKT(geo));
-		for(double d:mesh2Rect("595675")){
+		for(String d:point2Meshes(116.37475,39.8854)){
 			System.out.println(String.valueOf(d));
 		}
 //		System.out.println(""+second2Decimal(300.0));

@@ -162,7 +162,7 @@ public class JobService {
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and rownum <=1 order by j.end_time desc";
+			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
 			System.out.println(jobInfoSql);
 			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
 				

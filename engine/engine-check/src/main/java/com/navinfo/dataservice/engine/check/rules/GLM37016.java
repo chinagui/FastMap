@@ -20,13 +20,13 @@ public class GLM37016 extends baseRule {
                 RdMileagepile mileagepile = (RdMileagepile) obj;
 
                 String roadName = mileagepile.getRoadName();
-                if(mileagepile.changedFields().containsKey("roadName"))
+                if (mileagepile.changedFields().containsKey("roadName"))
                     roadName = (String) mileagepile.changedFields().get("roadName");
 
                 String regex = "[0-9a-zA-Z|]{1}";
-                roadName = roadName.replaceAll(regex, "");
-                if (roadName.length() == 0) {
-                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]", mileagepile.getMeshId());
+                if (null == roadName || roadName.replaceAll(regex, "").length() == 0) {
+                    setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
+                            mileagepile.getMeshId());
                 }
             }
         }

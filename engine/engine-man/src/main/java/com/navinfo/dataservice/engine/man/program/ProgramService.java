@@ -470,7 +470,7 @@ public class ProgramService {
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.CITY_NAME DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PLAN_STATUS DESC,PROGRAM_LIST.CITY_NAME DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -922,7 +922,7 @@ public class ProgramService {
 					+ "    FROM PROGRAM_LIST"
 					+ "   WHERE 1 = 1"
 					+ conditionSql
-					+ "   ORDER BY PROGRAM_LIST.INFOR_NAME DESC)"
+					+ "   ORDER BY PROGRAM_LIST.PLAN_STATUS DESC,PROGRAM_LIST.INFOR_NAME DESC)"
 					+ " SELECT /*+FIRST_ROWS ORDERED*/"
 					+ " TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
 					+ "  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_ FROM FINAL_TABLE  WHERE ROWNUM <= "+pageEndNum+") TT"
@@ -1646,15 +1646,15 @@ public class ProgramService {
 					Map<Integer, Integer> gridMap =new HashMap<Integer, Integer>();
 					int programId=0;
 					int regionId=0;
-					String regionName="";
+					//String regionName="";
 					while(rs.next()){
 						int programIdTmp=rs.getInt("PROGRAM_ID");
 						int regionIdTmp=rs.getInt("REGION_ID");
-						String regionNameTmp=rs.getString("region_name");
+						//String regionNameTmp=rs.getString("region_name");
 						if(programId==0){
 							programId=programIdTmp;
 							regionId=regionIdTmp;
-							regionName= regionNameTmp;
+							//regionName= regionNameTmp;
 						}
 						if(programId!=programIdTmp||regionId!=regionIdTmp){
 							Task collectTask=new Task();
@@ -1665,7 +1665,7 @@ public class ProgramService {
 							collectTask.setType(0);
 							collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
 							collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-							collectTask.setName(programMap.get(programId).getName() + "_" + regionName);
+							collectTask.setName(programMap.get(programId).getName() + regionId);
 							list.add(collectTask);
 							Task dailyTask=new Task();
 							dailyTask.setProgramId(programId);
@@ -1675,12 +1675,12 @@ public class ProgramService {
 							dailyTask.setType(1);
 							dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
 							dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-							dailyTask.setName(programMap.get(programId).getName() + "_" + regionName);
+							dailyTask.setName(programMap.get(programId).getName() +regionId);
 							list.add(dailyTask);
 							gridMap =new HashMap<Integer, Integer>();
 							programId=programIdTmp;
 							regionId=regionIdTmp;
-							regionName= regionNameTmp;
+							//regionName= regionNameTmp;
 						}
 						gridMap.put(rs.getInt("GRID_ID"), 1);
 					}
@@ -1693,7 +1693,7 @@ public class ProgramService {
 						collectTask.setType(0);
 						collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
 						collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-						collectTask.setName(programMap.get(programId).getName() + "_" + regionName);
+						collectTask.setName(programMap.get(programId).getName() + regionId);
 						list.add(collectTask);
 						Task dailyTask=new Task();
 						dailyTask.setProgramId(programId);
@@ -1703,7 +1703,7 @@ public class ProgramService {
 						dailyTask.setType(1);
 						dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
 						dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-						dailyTask.setName(programMap.get(programId).getName() + "_" + regionName);
+						dailyTask.setName(programMap.get(programId).getName() + regionId);
 						list.add(dailyTask);
 					}
 					return list;

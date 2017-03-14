@@ -358,7 +358,11 @@ public class ProgramService {
 			run.update(conn,updateSql);
 			updateSql = "UPDATE CITY"
 					+ "   SET PLAN_STATUS = 2"
-					+ " WHERE CITY_ID IN (SELECT CITY_ID FROM PROGRAM WHERE PROGRAM_ID = 0)";
+					+ " WHERE CITY_ID IN (SELECT CITY_ID FROM PROGRAM WHERE PROGRAM_ID = "+programId+")";
+			run.update(conn,updateSql);
+			updateSql = "UPDATE INFOR"
+					+ "   SET PLAN_STATUS = 2"
+					+ " WHERE INFOR_ID IN (SELECT INFOR_ID FROM PROGRAM WHERE PROGRAM_ID = "+programId+")";
 			run.update(conn,updateSql);
 			
 			try {

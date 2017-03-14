@@ -515,6 +515,7 @@ public class Operation implements IOperation {
 						}
 
 						newRdGsclLink.setShpSeqNum(seqNum);
+						newRdGsclLink.setZlevel(rdGscLink.getZlevel());
 						
 						newRdGsclLink.setTableName(rdGscLink.getTableName());
 

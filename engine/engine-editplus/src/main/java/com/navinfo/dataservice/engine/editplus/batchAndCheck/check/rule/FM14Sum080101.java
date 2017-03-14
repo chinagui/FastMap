@@ -6,8 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -49,6 +51,10 @@ public class FM14Sum080101 extends BasicCheckRule {
 			if(kind.equals("230210")||kind.equals("230213")||kind.equals("230214")){pid2.add(poi.getPid());}
 			else{pid1.add(poi.getPid());}
 		}
+		
+		//去重用，若targets重复（不判断顺序，只要pid相同即可），则不重复报。否则报出
+		Set<String> filterPid = new HashSet<String>();
+		
 		//100米内名称（name）和分类相同的新增设施和删除设施
 		if(pid1!=null&&pid1.size()>0){
 			String pids=pid1.toString().replace("[", "").replace("]", "");
@@ -107,7 +113,11 @@ public class FM14Sum080101 extends BasicCheckRule {
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				if(!filterPid.contains(targets)){
+					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 		//100米内名称（name）和分类相同的新增设施和其他非删除设施,当分类={230210,230213,230214}时，需要增加停车场建筑物类型一起判断
@@ -176,7 +186,11 @@ public class FM14Sum080101 extends BasicCheckRule {
 				STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 				Geometry geometry = GeoTranslator.struct2Jts(struct, 100000, 0);
 				String targets="[IX_POI,"+pidTmp1+"];[IX_POI,"+pidTmp2+"]";
-				setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				if(!filterPid.contains(targets)){
+					setCheckResult(geometry, targets, rs.getInt("MESH_ID"));
+				}
+				filterPid.add(targets);
+				filterPid.add("[IX_POI,"+pidTmp2+"];[IX_POI,"+pidTmp1+"]");
 			}
 		}
 	}

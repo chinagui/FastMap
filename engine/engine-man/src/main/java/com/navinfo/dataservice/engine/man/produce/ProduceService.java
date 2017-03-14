@@ -166,8 +166,8 @@ public class ProduceService {
 				long pageEndNum = currentPageNum * pageSize;
 				conn = DBConnector.getInstance().getManConnection();
 				String sql="WITH PRODUCE_LIST AS"
-						+ " (SELECT P.PRODUCE_ID,"
-						+ "       P.PROGRAM_ID,"
+						+ " (SELECT NVL(P.PRODUCE_ID,0) PRODUCE_ID,"
+						+ "       G.PROGRAM_ID,"
 						+ "       G.NAME,"
 						+ "       G.TYPE,"
 						+ "       G.PRODUCE_PLAN_START_DATE,"
@@ -200,10 +200,10 @@ public class ProduceService {
 							String dayProducePlanStartDate = null ;
 							String dayProducePlanEndDate = null ;
 							String createDate = null ;
-							if(rs.getTimestamp("PRODUCE_PLAN_START_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_START_DATE").toString())){
+							if(rs.getTimestamp("PRODUCE_PLAN_START_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("PRODUCE_PLAN_START_DATE").toString())){
 								dayProducePlanStartDate=DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE"), "yyyyMMdd");
 							}
-							if(rs.getTimestamp("PRODUCE_PLAN_END_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("DAY_PRODUCE_PLAN_END_DATE").toString())){
+							if(rs.getTimestamp("PRODUCE_PLAN_END_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("PRODUCE_PLAN_END_DATE").toString())){
 								dayProducePlanEndDate=DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE"), "yyyyMMdd");
 							}
 							if(rs.getTimestamp("CREATE_DATE") != null && StringUtils.isNotEmpty(rs.getTimestamp("CREATE_DATE").toString())){

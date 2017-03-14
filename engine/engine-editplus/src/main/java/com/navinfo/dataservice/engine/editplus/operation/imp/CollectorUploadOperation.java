@@ -830,7 +830,11 @@ public class CollectorUploadOperation extends AbstractOperation {
 				}else{
 					ixPoi.setLog(null);
 				}
-				ixPoi.setSportsVenue(jo.getString("sportsVenues"));
+				String newSportsVenues = jo.getString("sportsVenues");
+				if(!stringEquals(newSportsVenues,ixPoi.getSportsVenue())){
+					ixPoi.setFreshFlag(false);
+					ixPoi.setSportsVenue(newSportsVenues);
+				}
 				//设置室内标记
 				JSONObject indoor = jo.getJSONObject("indoor");
 				if (!indoor.isNullObject() && indoor.has("type")) {

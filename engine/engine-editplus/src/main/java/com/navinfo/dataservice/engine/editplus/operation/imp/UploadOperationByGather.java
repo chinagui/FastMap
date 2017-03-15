@@ -39,6 +39,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.engine.editplus.convert.DefaultObjConvertor;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ThreadExecuteException;
@@ -139,7 +140,7 @@ public class UploadOperationByGather {
 					OperationResult result = imp.getResult();
 					poiAutoBatchTaskId(result,conn);
 					//*************zl 2017.03.14 采集成果批处理**************
-					/*runBatchPoi(result,dbId);*/
+					runBatchPoi(result,dbId);
 					
 					
 				}catch(Exception e){
@@ -164,9 +165,31 @@ public class UploadOperationByGather {
 		}
 	}
 	
-	private void runBatchPoi(OperationResult result, Integer dbId) {
-		List<BasicObj> ixPoiObjs =  result.getAllObjs();
-		//apiService.runBatch(dataObj);
+	/**
+	 * @Title: runBatchPoi
+	 * @Description: 对上传的poi进行批处理
+	 * @param result
+	 * @param dbId
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年3月15日 上午9:07:21 
+	 */
+	private void runBatchPoi(OperationResult result, Integer dbId) throws Exception {
+		Map<Long,BasicObj> mapObj =result.getObjsMapByType(ObjectName.IX_POI);
+		List<BasicObj> ixPoiObjs = (List<BasicObj>) mapObj.values();
+//		List<BasicObj> ixPoiObjs =  result.getAllObjs();
+		DefaultObjConvertor objToJson =new DefaultObjConvertor();
+		JSONArray poiJsonArr = objToJson.objConvertorJson(ixPoiObjs);
+		if(poiJsonArr != null && poiJsonArr.size() > 0){
+			for(Object poiObj : poiJsonArr){
+				JSONObject poiJsonObj = (JSONObject) poiObj;
+				poiJsonObj.put("dbId", dbId);
+				poiJsonObj.put("type", "IXPOIUPLOAD");
+				
+				apiService.runBatch(poiJsonObj);
+			}
+		}
 		
 	}
 

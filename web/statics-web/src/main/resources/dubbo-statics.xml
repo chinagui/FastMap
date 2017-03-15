@@ -5,6 +5,6 @@
 	http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
 
 	<dubbo:service interface="com.navinfo.dataservice.api.statics.iface.StaticsApi" ref="staticsApi" />
-	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" timeout="5000"/>
-	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" timeout="5000"/>
+	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
+	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
 </beans>

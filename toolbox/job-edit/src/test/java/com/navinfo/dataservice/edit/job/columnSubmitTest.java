@@ -61,10 +61,10 @@ public class columnSubmitTest {
 		try {
 //			ColumnSubmitJobRequest columnSubmitJobRequest = (ColumnSubmitJobRequest) this.request;
 			
-			int taskId = 619;
-			int userId = 4577;
-			String firstWorkItem = "poi_address";
-			String secondWorkItem = "addrSplit";
+			int taskId = 9;
+			int userId = 2;
+			String firstWorkItem = "poi_name";
+			String secondWorkItem = "nameUnify";
 			
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
@@ -87,7 +87,7 @@ public class columnSubmitTest {
 			
 			for (String second:secondWorkList) {
 				// 查询可提交数据
-				pidList = ixPoiDeepStatusSelector.getRowIdForSubmit(firstWorkItem, second, taskId);
+				pidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, taskId,userId);
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();
 				deepControl.cleanCheckResult(pidList, conn);

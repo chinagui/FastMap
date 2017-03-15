@@ -600,7 +600,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	}
 
 	/**
-	 * 查询该任务下可提交数据的rowId
+	 * 查询该任务下可提交数据的Pid
 	 * 
 	 * @param firstWorkItem
 	 * @param secondWorkItem
@@ -608,11 +608,11 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId) throws Exception {
+public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId,int userId) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT s.pid FROM poi_column_status s,poi_column_workitem_conf w WHERE s.work_item_id=w.work_item_id");
-		
+		sb.append(" AND s.handler=" + userId + " AND s.task_id=" + taskId);
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -626,7 +626,7 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 			} else if (!firstWorkItem.isEmpty()) {
 				sb.append(" AND s.first_work_status=2 AND w.first_work_item='" + firstWorkItem + "'");
 			}
-
+			
 			pstmt = conn.prepareStatement(sb.toString());
 
 			resultSet = pstmt.executeQuery();
@@ -1063,10 +1063,6 @@ public List<Integer> getRowIdForSubmit(String firstWorkItem,String secondWorkIte
 		sb.append(" WHERE CF.SECOND_WORK_ITEM = ?)");
 		sb.append(" AND S.HANDLER = ?");
 		sb.append(" AND S.SECOND_WORK_STATUS = ?");
-		sb.append(" AND NOT EXISTS (SELECT C.PID");
-		sb.append(" FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C");
-		sb.append(" WHERE N.MD5_CODE = C.MD5_CODE");
-		sb.append(" AND C.PID = s.PID)");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

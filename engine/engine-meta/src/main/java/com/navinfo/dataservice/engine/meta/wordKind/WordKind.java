@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.apache.commons.dbutils.DbUtils;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import net.sf.json.JSONArray;
@@ -77,6 +79,10 @@ public class WordKind {
 			return null;
 		} catch (Exception e) {
 			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

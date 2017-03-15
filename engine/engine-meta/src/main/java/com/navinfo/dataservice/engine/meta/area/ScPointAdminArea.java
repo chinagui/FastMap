@@ -283,7 +283,7 @@ public class ScPointAdminArea {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
-			DbUtils.commitAndCloseQuietly(metaConn);
+			DbUtils.closeQuietly(metaConn);
 		}
 	}
 	

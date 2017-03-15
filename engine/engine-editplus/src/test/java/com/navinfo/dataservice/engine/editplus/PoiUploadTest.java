@@ -25,7 +25,7 @@ public class PoiUploadTest {
 	@Before
 	public void init(){
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] {"dubbo-editplus.xml" }); 
+                new String[] {"dubbo-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

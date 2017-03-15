@@ -62,9 +62,10 @@ public class BatchProcess {
 			//List<String> batchList = getRowRules();
 			
 			for (String batch:batchList) {
-				IBatch obj = (IBatch) Class.forName(batch).newInstance();
-				logger.info("开始执行批处理："+obj.getClass().getName());
-				JSONObject data = obj.run(poi,conn,json,editApiImpl);
+				IBatch batchProcess = (IBatch) Class.forName(batch).newInstance();
+				String batchName = batchProcess.getClass().getName();
+				logger.info("开始执行批处理："+batchName);
+				JSONObject data = batchProcess.run(poi,conn,json,editApiImpl);
 				if (data.size()>0) {
 					data.put("pid", poi.getPid());
 					data.put("rowId", poi.getRowId());
@@ -74,7 +75,7 @@ public class BatchProcess {
 					poiObj.put("command", "BATCH");
 					poiObj.put("dbId", json.getInt("dbId"));
 					poiObj.put("isLock", false);
-					
+					logger.info("开始执行save："+batchName);
 					editApiImpl.runPoi(poiObj);
 					
 				}

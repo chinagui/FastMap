@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+
 import org.apache.log4j.Logger;
 
 import com.alibaba.druid.support.logging.Log;
@@ -83,8 +84,10 @@ public class WordKind {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);;
 			throw e;
-		}finally {
-			DbUtils.close(conn);
+		} finally {
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(conn);
 		}
 	}
 	

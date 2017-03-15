@@ -449,7 +449,7 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(17);
 			Set<Long> pids = new HashSet<Long>();
-			pids.add(219L);
+			pids.add(14656088L);
 //			pids.add(292L);
 //			pids.add(364L);
 //			pids.add(1023L);

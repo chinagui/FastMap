@@ -177,16 +177,18 @@ public class UploadOperationByGather {
 	 */
 	private void runBatchPoi(OperationResult result, Integer dbId) throws Exception {
 		Map<Long,BasicObj> mapObj =result.getObjsMapByType(ObjectName.IX_POI);
-		List<BasicObj> ixPoiObjs = (List<BasicObj>) mapObj.values();
+		List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
+		ixPoiObjs.addAll(mapObj.values());
 //		List<BasicObj> ixPoiObjs =  result.getAllObjs();
 		DefaultObjConvertor objToJson =new DefaultObjConvertor();
 		JSONArray poiJsonArr = objToJson.objConvertorJson(ixPoiObjs);
+		System.out.println("poiJsonArr.size(): "+poiJsonArr.size());
 		if(poiJsonArr != null && poiJsonArr.size() > 0){
 			for(Object poiObj : poiJsonArr){
 				JSONObject poiJsonObj = (JSONObject) poiObj;
 				poiJsonObj.put("dbId", dbId);
 				poiJsonObj.put("type", "IXPOIUPLOAD");
-				
+				System.out.println("poiJsonObj : "+poiJsonObj);
 				apiService.runBatch(poiJsonObj);
 			}
 		}
@@ -205,6 +207,9 @@ public class UploadOperationByGather {
 	 */
 	private void poiAutoBatchTaskId(OperationResult result, Connection conn) throws Exception {
 		if(result != null){
+			System.out.println(result.getObjsMapByType(ObjectName.IX_POI));
+			System.out.println(result.getObjsMapByType(ObjectName.IX_POI).entrySet());
+			
 			for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 				long poiPid = poiEntry.getKey();
 				IxPoiObj poiObj = (IxPoiObj) poiEntry.getValue();

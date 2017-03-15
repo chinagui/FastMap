@@ -439,7 +439,7 @@ public class NiValExceptionOperator {
 
 				ckexception.setRowId(UuidUtils.genUuid());
 
-				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
+				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, nvl(mesh_id,0), scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
 
 				pstmt = conn.prepareStatement(sql);
 

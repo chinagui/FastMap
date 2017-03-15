@@ -20,6 +20,8 @@ import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -49,7 +51,7 @@ import net.sf.json.JSONObject;
 
 public class UploadOperationByGather {
 	
-	//private EditApi apiService;
+	private EditApi apiService;
 	//private QueryRunner runn;
 	private Long userId;
 	
@@ -121,8 +123,7 @@ public class UploadOperationByGather {
 					imp.operate(cmd);
 					
 					imp.persistChangeLog(OperationSegment.SG_ROW, userId);//userid 未写
-					//数据打多源标识
-					//PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
+					
 					//导入父子关系
 					PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 					relCmd.setPoiRels(imp.getParentPid());
@@ -133,9 +134,13 @@ public class UploadOperationByGather {
 				
 					errLog.addAll(imp.getErrLog());
 					log.debug("dbId("+dbId+")转入成功。");
+					
 					//*************zl 2017.02.09 采集成果自动批任务标识**************
 					OperationResult result = imp.getResult();
 					poiAutoBatchTaskId(result,conn);
+					//*************zl 2017.03.14 采集成果批处理**************
+					/*runBatchPoi(result,dbId);*/
+					
 					
 				}catch(Exception e){
 					DbUtils.rollbackAndCloseQuietly(conn);
@@ -159,8 +164,12 @@ public class UploadOperationByGather {
 		}
 	}
 	
-	
-	
+	private void runBatchPoi(OperationResult result, Integer dbId) {
+		List<BasicObj> ixPoiObjs =  result.getAllObjs();
+		//apiService.runBatch(dataObj);
+		
+	}
+
 	/**
 	 * @Title: poiAutoBatchTaskId
 	 * @Description: 采集成果自动批 任务标识

@@ -53,9 +53,9 @@ public class Workitem {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(conn);
+			DbUtils.close(resultSet);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
 
 		}
 	}

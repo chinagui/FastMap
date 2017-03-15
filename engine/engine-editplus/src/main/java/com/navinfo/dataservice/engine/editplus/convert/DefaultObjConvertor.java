@@ -34,7 +34,8 @@ public class DefaultObjConvertor {
 			JSONObject jso = new JSONObject();
 			// 主表
 			BasicRow mainrow = basicObj.getMainrow();
-			jso.put("command", changeOpType(mainrow.getOpType()));
+			System.out.println(mainrow.getHisOpType());
+			jso.put("command", changeOpType(mainrow.getHisOpType()));
 			// 获取主表类型
 			//String objName = basicObj.objName();
 			//String objType = getObjType(objName);
@@ -67,7 +68,7 @@ public class DefaultObjConvertor {
 				Geometry geometry = ixPoi.getGeometry();
 				mainJso.put("geometry", geometry.toText());
 			}
-			mainJso.put("objStatus", changeOpType(mainrow.getOpType()));
+			mainJso.put("objStatus", changeOpType(mainrow.getHisOpType()));
 			// 子表
 			Map<String, List<BasicRow>> subrows = basicObj.getSubrows();
 			JsonConfig subRowConfig = new JsonConfig();
@@ -97,7 +98,7 @@ public class DefaultObjConvertor {
 				JSONArray nameJa = new JSONArray();
 				for (BasicRow nameRow : nameList) {
 					JSONObject nameJs = JSONObject.fromObject(nameRow, subRowConfig);
-					nameJs.put("objStatus", changeOpType(nameRow.getOpType()));
+					nameJs.put("objStatus", changeOpType(nameRow.getHisOpType()));
 					// 修改主键名称
 					nameJs.put("pid", nameJs.get("nameId"));
 					nameJs.remove("nameId");
@@ -107,7 +108,7 @@ public class DefaultObjConvertor {
 						JSONArray nameFlagJa = new JSONArray();
 						for (BasicRow nameFlagRow : nameFlagList) {
 							JSONObject nameFlagJs = JSONObject.fromObject(nameFlagRow, subRowConfig);
-							nameFlagJs.put("objStatus", changeOpType(nameFlagRow.getOpType()));
+							nameFlagJs.put("objStatus", changeOpType(nameFlagRow.getHisOpType()));
 							nameFlagJa.add(nameFlagJs);
 						}
 
@@ -118,7 +119,7 @@ public class DefaultObjConvertor {
 						JSONArray nameToneJa = new JSONArray();
 						for (BasicRow nameToneRow : nameFlagList) {
 							JSONObject nameToneJs = JSONObject.fromObject(nameToneRow, subRowConfig);
-							nameToneJs.put("objStatus", changeOpType(nameToneRow.getOpType()));
+							nameToneJs.put("objStatus", changeOpType(nameToneRow.getHisOpType()));
 							nameToneJa.add(nameToneJs);
 						}
 						nameJs.put("nameTones", nameToneJa);
@@ -132,14 +133,14 @@ public class DefaultObjConvertor {
 				JSONArray parentJa = new JSONArray();
 				for (BasicRow parentRow : parentList) {
 					JSONObject parentJs = JSONObject.fromObject(parentRow, subRowConfig);
-					parentJs.put("objStatus", changeOpType(parentRow.getOpType()));
+					parentJs.put("objStatus", changeOpType(parentRow.getHisOpType()));
 					// 处理三级子表
 					List<BasicRow> childrenList = subrows.get("IX_POI_CHILDREN");
 					if (childrenList != null && !childrenList.isEmpty()) {
 						JSONArray childrenJa = new JSONArray();
 						for (BasicRow childrenRow : childrenList) {
 							JSONObject childrenJs = JSONObject.fromObject(childrenRow, subRowConfig);
-							childrenJs.put("objStatus", changeOpType(childrenRow.getOpType()));
+							childrenJs.put("objStatus", changeOpType(childrenRow.getHisOpType()));
 							childrenJa.add(childrenJs);
 						}
 						parentJs.put("children", childrenJa);
@@ -160,7 +161,7 @@ public class DefaultObjConvertor {
 					JSONArray subrowJa = new JSONArray();
 					for (BasicRow subrowRow : subrowList) {
 						JSONObject subrowJs = JSONObject.fromObject(subrowRow, subRowConfig);
-						subrowJs.put("objStatus", changeOpType(subrowRow.getOpType()));
+						subrowJs.put("objStatus", changeOpType(subrowRow.getHisOpType()));
 						// 修改主键名称
 						String name = getSubRowPKName(key);
 						if(name != null){
@@ -223,12 +224,14 @@ public class DefaultObjConvertor {
 	 * @return
 	 * @throws Exception
 	 */
-	private OperationType changeOpType(OperationType type) throws Exception {
-		OperationType opType = null;
+	private String changeOpType(OperationType type) throws Exception {
+		String opType = null;
 		if (OperationType.PRE_DELETED.equals(type)) {
-			opType = OperationType.DELETE;
+			opType = "DELETE";
+		}else if(OperationType.INSERT.equals(type)){
+			opType = "CREATE";
 		} else {
-			opType = type;
+			opType = type.toString();
 		}
 		return opType;
 	}

@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.io.FileInputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -15,30 +14,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Map.Entry;
-
 import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
-import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.engine.editplus.convert.DefaultObjConvertor;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
@@ -52,7 +44,7 @@ import net.sf.json.JSONObject;
 
 public class UploadOperationByGather {
 	
-	private EditApi apiService;
+	private EditApi apiService ;
 	//private QueryRunner runn;
 	private Long userId;
 	
@@ -60,7 +52,9 @@ public class UploadOperationByGather {
 //	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected JSONArray errLog = new JSONArray();
 	public UploadOperationByGather(Long userId) {
-	//	this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+		System.out.println("ApplicationContextUtil.containsBean('editApi'): "+ApplicationContextUtil.containsBean("editApi"));
+		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+		System.out.println("apiService: "+apiService);
 	//	runn = new QueryRunner();
 		this.userId = userId;
 	}
@@ -111,11 +105,13 @@ public class UploadOperationByGather {
 			manConn = DBConnector.getInstance().getManConnection();
 			Map<Integer,UploadPois> poiMap =  distribute(manConn,ja);
 			
+			
 			// 执行转数据
 			for(Map.Entry<Integer, UploadPois> entry:poiMap.entrySet()){
 				Integer dbId = entry.getKey();
 				UploadPois pois = entry.getValue();
 				Connection conn=null;
+				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
 				try{
 					conn=DBConnector.getInstance().getConnectionById(dbId);
 					//导入数据
@@ -140,8 +136,11 @@ public class UploadOperationByGather {
 					OperationResult result = imp.getResult();
 					poiAutoBatchTaskId(result,conn);
 					//*************zl 2017.03.14 采集成果批处理**************
-					runBatchPoi(result,dbId);
-					
+//					runBatchPoi(result,dbId);
+					Map<Long,BasicObj> mapObj =result.getObjsMapByType(ObjectName.IX_POI);
+					if(mapObj.values() != null && mapObj.values().size() > 0){
+						ixPoiObjs.addAll(mapObj.values());
+					}
 					
 				}catch(Exception e){
 					DbUtils.rollbackAndCloseQuietly(conn);
@@ -149,7 +148,11 @@ public class UploadOperationByGather {
 					throw new ThreadExecuteException("");
 				}finally{
 					DbUtils.commitAndCloseQuietly(conn);
+					System.out.println("3.....");
 				}
+//				System.out.println("runBatchPoi begin1.....");
+//				runBatchPoi(ixPoiObjs,dbId);
+//				System.out.println("runBatchPoi end2.....");
 			}
 			
 			retObj.put("success", ja.size()-errLog.size());//成功的poi 总数
@@ -164,7 +167,6 @@ public class UploadOperationByGather {
 			log.info("total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
 		}
 	}
-	
 	/**
 	 * @Title: runBatchPoi
 	 * @Description: 对上传的poi进行批处理
@@ -175,11 +177,7 @@ public class UploadOperationByGather {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年3月15日 上午9:07:21 
 	 */
-	private void runBatchPoi(OperationResult result, Integer dbId) throws Exception {
-		Map<Long,BasicObj> mapObj =result.getObjsMapByType(ObjectName.IX_POI);
-		List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
-		ixPoiObjs.addAll(mapObj.values());
-//		List<BasicObj> ixPoiObjs =  result.getAllObjs();
+	private void runBatchPoi(List<BasicObj> ixPoiObjs, Integer dbId) throws Exception {
 		DefaultObjConvertor objToJson =new DefaultObjConvertor();
 		JSONArray poiJsonArr = objToJson.objConvertorJson(ixPoiObjs);
 		System.out.println("poiJsonArr.size(): "+poiJsonArr.size());
@@ -189,6 +187,7 @@ public class UploadOperationByGather {
 				poiJsonObj.put("dbId", dbId);
 				poiJsonObj.put("type", "IXPOIUPLOAD");
 				System.out.println("poiJsonObj : "+poiJsonObj);
+				System.out.println("apiService: "+apiService);
 				apiService.runBatch(poiJsonObj);
 			}
 		}
@@ -209,28 +208,30 @@ public class UploadOperationByGather {
 		if(result != null){
 			System.out.println(result.getObjsMapByType(ObjectName.IX_POI));
 			System.out.println(result.getObjsMapByType(ObjectName.IX_POI).entrySet());
-			
-			for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
-				long poiPid = poiEntry.getKey();
-				IxPoiObj poiObj = (IxPoiObj) poiEntry.getValue();
-				Geometry geo = null;
-				geo = (Geometry) poiObj.getMainrow().getAttrByColName("GEOMETRY");
-				//通过 geo 获取 grid 
-				Coordinate[] coordinate = geo.getCoordinates();
-				CompGridUtil gridUtil = new CompGridUtil();
-				String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
-				//调用 manapi 获取 对应的 快线任务id,及中线任务id
-				Integer quickTaskId = 0;
-				Integer centreTaskId = 0;
-				ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-				Map<String,Integer> taskMap = manApi.queryTaskIdsByGrid(grid);
-				if(taskMap != null && taskMap.containsKey("quickTaskId") && taskMap.containsKey("centreTaskId")){
-					quickTaskId = taskMap.get("quickTaskId");
-					centreTaskId = taskMap.get("centreTaskId");
+			if(result.getObjsMapByType(ObjectName.IX_POI).entrySet() != null && result.getObjsMapByType(ObjectName.IX_POI).entrySet().size() >0){
+				for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
+					long poiPid = poiEntry.getKey();
+					IxPoiObj poiObj = (IxPoiObj) poiEntry.getValue();
+					Geometry geo = null;
+					geo = (Geometry) poiObj.getMainrow().getAttrByColName("GEOMETRY");
+					//通过 geo 获取 grid 
+					Coordinate[] coordinate = geo.getCoordinates();
+					CompGridUtil gridUtil = new CompGridUtil();
+					String grid = gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0];
+					//调用 manapi 获取 对应的 快线任务id,及中线任务id
+					Integer quickTaskId = 0;
+					Integer centreTaskId = 0;
+					ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+					Map<String,Integer> taskMap = manApi.queryTaskIdsByGrid(grid);
+					if(taskMap != null && taskMap.containsKey("quickTaskId") && taskMap.containsKey("centreTaskId")){
+						quickTaskId = taskMap.get("quickTaskId");
+						centreTaskId = taskMap.get("centreTaskId");
+					}
+					//维护 poi_edit_status 表中 快线及中线任务标识
+					PoiEditStatus.updateTaskIdByPid(conn, poiPid, quickTaskId, centreTaskId);
 				}
-				//维护 poi_edit_status 表中 快线及中线任务标识
-				PoiEditStatus.updateTaskIdByPid(conn, poiPid, quickTaskId, centreTaskId);
 			}
+			
 		}
 	}
 

@@ -137,6 +137,7 @@ public class PinyinConverter {
 
 				}
 			}
+			DbUtils.closeQuietly(cs);
 
 			if (conn != null) {
 				try {
@@ -145,7 +146,7 @@ public class PinyinConverter {
 
 				}
 			}
-			DbUtils.closeQuietly(cs);
+			
 
 		}
 		

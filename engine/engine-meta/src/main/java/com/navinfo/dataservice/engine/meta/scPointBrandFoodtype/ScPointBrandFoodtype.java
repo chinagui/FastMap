@@ -49,9 +49,7 @@ public class ScPointBrandFoodtype {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scPointFoodtypeKindBrandMap失败："+ e.getMessage(), e);

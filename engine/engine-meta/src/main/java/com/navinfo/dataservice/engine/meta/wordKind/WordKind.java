@@ -5,15 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class WordKind {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static class SingletonHolder {
 		private static final WordKind INSTANCE = new WordKind();
 	}
@@ -77,8 +79,13 @@ public class WordKind {
 			}
 			
 			return null;
-		}finally{
-			DbUtils.closeQuietly(conn, pstmt, rs);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);;
+			throw e;
+		} finally {
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
 		}
 	}
 	

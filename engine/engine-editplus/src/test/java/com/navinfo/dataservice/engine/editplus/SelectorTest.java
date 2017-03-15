@@ -450,10 +450,10 @@ public class SelectorTest {
 			conn = DBConnector.getInstance().getConnectionById(17);
 			Set<Long> pids = new HashSet<Long>();
 			pids.add(219L);
-			pids.add(292L);
-			pids.add(364L);
-			pids.add(1023L);
-			pids.add(159L);
+//			pids.add(292L);
+//			pids.add(364L);
+//			pids.add(1023L);
+//			pids.add(159L);
 			Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, true);
 			DefaultObjConvertor df = new DefaultObjConvertor();
 			JSONArray json = df.objConvertorJson(rows.values());

@@ -28,7 +28,6 @@ import net.sf.json.util.PropertyFilter;
  */
 public class DefaultObjConvertor {
 
-	@SuppressWarnings("static-access")
 	public JSONArray objConvertorJson(Collection<BasicObj> objs) throws Exception {
 		JSONArray json = new JSONArray();
 		for (BasicObj basicObj : objs) {
@@ -47,7 +46,10 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null || fieldName.equals("geometry") ) {
+					if (fieldValue == null||fieldName.equals("geometry")||fieldName.equals("geoPid")
+							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
+							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
+							||fieldName.equals("freshFlag")||fieldName.equals("changed") ) {
 						return true;
 					}
 					return false;
@@ -58,7 +60,6 @@ public class DefaultObjConvertor {
 				IxPoi  ixPoi = (IxPoi) mainrow;
 				Geometry geometry = ixPoi.getGeometry();
 				mainJso.put("geometry", geometry.toText());
-				geometry.toText();
 			}
 			mainJso.put("objStatus", changeOpType(mainrow.getHisOpType()));
 			// 子表
@@ -69,7 +70,10 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null || fieldName.equals("geometry")) {
+					if (fieldValue == null || fieldName.equals("geometry")||fieldName.equals("geoPid")
+							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
+							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
+							||fieldName.equals("freshFlag")||fieldName.equals("changed")) {
 						return true;
 					}else{
 						return false;
@@ -82,17 +86,17 @@ public class DefaultObjConvertor {
 				JSONArray nameJa = new JSONArray();
 				for (BasicRow nameRow : nameList) {
 					JSONObject nameJs = JSONObject.fromObject(nameRow, subRowConfig);
-					nameJs.put("objStatus", changeOpType(nameRow.getHisOpType()));
+					nameJs.put("objStatus", changeOpType(nameRow.getOpType()));
 					// 修改主键名称
+					nameJs.put("pid", nameJs.get("nameId"));
 					nameJs.remove("nameId");
-					nameJs.put("pid", nameRow.getObjPid());
 					// 处理三级子表
 					List<BasicRow> nameFlagList = subrows.get("IX_POI_NAME_FLAG");
 					if (nameFlagList != null && !nameFlagList.isEmpty()) {
 						JSONArray nameFlagJa = new JSONArray();
 						for (BasicRow nameFlagRow : nameFlagList) {
 							JSONObject nameFlagJs = JSONObject.fromObject(nameFlagRow, subRowConfig);
-							nameFlagJs.put("objStatus", changeOpType(nameFlagRow.getHisOpType()));
+							nameFlagJs.put("objStatus", changeOpType(nameFlagRow.getOpType()));
 							nameFlagJa.add(nameFlagJs);
 						}
 
@@ -103,7 +107,7 @@ public class DefaultObjConvertor {
 						JSONArray nameToneJa = new JSONArray();
 						for (BasicRow nameToneRow : nameFlagList) {
 							JSONObject nameToneJs = JSONObject.fromObject(nameToneRow, subRowConfig);
-							nameToneJs.put("objStatus", changeOpType(nameToneRow.getHisOpType()));
+							nameToneJs.put("objStatus", changeOpType(nameToneRow.getOpType()));
 							nameToneJa.add(nameToneJs);
 						}
 						nameJs.put("nameTones", nameToneJa);
@@ -117,14 +121,14 @@ public class DefaultObjConvertor {
 				JSONArray parentJa = new JSONArray();
 				for (BasicRow parentRow : parentList) {
 					JSONObject parentJs = JSONObject.fromObject(parentRow, subRowConfig);
-					parentJs.put("objStatus", changeOpType(parentRow.getHisOpType()));
+					parentJs.put("objStatus", changeOpType(parentRow.getOpType()));
 					// 处理三级子表
 					List<BasicRow> childrenList = subrows.get("IX_POI_CHILDREN");
 					if (childrenList != null && !childrenList.isEmpty()) {
 						JSONArray childrenJa = new JSONArray();
 						for (BasicRow childrenRow : childrenList) {
 							JSONObject childrenJs = JSONObject.fromObject(childrenRow, subRowConfig);
-							childrenJs.put("objStatus", changeOpType(childrenRow.getHisOpType()));
+							childrenJs.put("objStatus", changeOpType(childrenRow.getOpType()));
 							childrenJa.add(childrenJs);
 						}
 						parentJs.put("children", childrenJa);
@@ -145,12 +149,12 @@ public class DefaultObjConvertor {
 					JSONArray subrowJa = new JSONArray();
 					for (BasicRow subrowRow : subrowList) {
 						JSONObject subrowJs = JSONObject.fromObject(subrowRow, subRowConfig);
-						subrowJs.put("objStatus", changeOpType(subrowRow.getHisOpType()));
+						subrowJs.put("objStatus", changeOpType(subrowRow.getOpType()));
 						// 修改主键名称
 						String name = getSubRowPKName(key);
 						if(name != null){
+							subrowJs.put("pid", subrowJs.get(name));
 							subrowJs.remove(name);
-							subrowJs.put("pid", subrowRow.getObjPid());
 						}
 						if("IX_POI_PHOTO".equals(key)){
 							IxPoiPhoto ixPoiPhoto = (IxPoiPhoto) subrowRow;
@@ -160,9 +164,9 @@ public class DefaultObjConvertor {
 						if("IX_POI_ICON".equals(key)){
 							IxPoiIcon  ixPoiIcon = (IxPoiIcon) subrowRow;
 							Geometry geometry = (Geometry) ixPoiIcon.getGeometry();
-							mainJso.put("geometry", geometry.toText());
-							geometry.toText();
+							subrowJs.put("geometry", geometry.toText());
 						}
+						subrowJa.add(subrowJs);
 					}
 					mainJso.put(getColumnBySubRowName(key), subrowJa);
 				}

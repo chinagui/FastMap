@@ -46,14 +46,19 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null||fieldValue instanceof Boolean ||fieldName.equals("geometry")||fieldName.equals("geoPid")
-							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
-							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
-							||fieldName.equals("freshFlag")||fieldName.equals("changed")||fieldName.equals("oldValues")
-							||fieldName.equals("hisChangeLogs")) {
+					if (fieldValue == null||fieldValue instanceof Boolean||fieldName.equals("geometry")
+							||fieldName.equals("geoPid")||fieldName.equals("geoType")||fieldName.equals("hisOpType")
+							||fieldName.equals("objPid")||fieldName.equals("objType")||fieldName.equals("opType")
+							||fieldName.equals("rawFields")||fieldName.equals("freshFlag")||fieldName.equals("changed")
+							||fieldName.equals("oldValues")||fieldName.equals("oldValueJson")
+							||fieldName.equals("changedColumns")||fieldName.equals("newValueJson")
+							||fieldName.equals("chiSplitAddr")) {
 						return true;
+					}else if(fieldValue instanceof String||fieldValue instanceof Integer||fieldValue instanceof Long
+							||fieldValue instanceof Double){
+						return false;
 					}
-					return false;
+					return true;
 				}
 			});
 			JSONObject mainJso = JSONObject.fromObject(mainrow, mainConfig);
@@ -71,14 +76,19 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null||fieldValue instanceof Boolean||fieldName.equals("geometry")||fieldName.equals("geoPid")
-							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
-							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
-							||fieldName.equals("freshFlag")||fieldName.equals("changed")||fieldName.equals("oldValues")
-							||fieldName.equals("hisOldValue")) {
+					if (fieldValue == null||fieldValue instanceof Boolean||fieldName.equals("geometry")
+							||fieldName.equals("geoPid")||fieldName.equals("geoType")||fieldName.equals("hisOpType")
+							||fieldName.equals("objPid")||fieldName.equals("objType")||fieldName.equals("opType")
+							||fieldName.equals("rawFields")||fieldName.equals("freshFlag")||fieldName.equals("changed")
+							||fieldName.equals("oldValues")||fieldName.equals("oldValueJson")
+							||fieldName.equals("changedColumns")||fieldName.equals("newValueJson")
+							||fieldName.equals("chiSplitAddr")) {
 						return true;
+					}else if(fieldValue instanceof String||fieldValue instanceof Integer||fieldValue instanceof Long
+							||fieldValue instanceof Double){
+						return false;
 					}
-					return false;
+					return true;
 				}
 			});
 			// 先处理有三级子表的二级子表

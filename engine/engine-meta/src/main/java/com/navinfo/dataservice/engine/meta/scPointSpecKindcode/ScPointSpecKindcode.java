@@ -45,10 +45,8 @@ public class ScPointSpecKindcode {
 								while (rs.next()) {
 									typeMap8.put(rs.getString("POI_KIND"), rs.getString("CHAIN"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);
@@ -80,10 +78,8 @@ public class ScPointSpecKindcode {
 									ratings.add(rs.getString("RATING"));
 									typeMap14.put(rs.getString("POI_KIND"),ratings);					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);
@@ -111,12 +107,8 @@ public class ScPointSpecKindcode {
 				return true;
 			}
 			return false;
-		} catch (Exception e) {
-			throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 	}
 	
@@ -143,10 +135,8 @@ public class ScPointSpecKindcode {
 									tmpKindcodeNewObj.setTopcity(rs.getInt("TOPCITY"));
 									typeMap2.put(rs.getString("POI_KIND"), tmpKindcodeNewObj);					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);

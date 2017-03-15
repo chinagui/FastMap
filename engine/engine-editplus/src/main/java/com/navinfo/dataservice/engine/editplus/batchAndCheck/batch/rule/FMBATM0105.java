@@ -3,10 +3,9 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 import java.util.Collection;
 import java.util.Map;
 
-import org.apache.solr.common.StringUtils;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
@@ -80,16 +79,19 @@ public class FMBATM0105 extends BasicBatchRule {
 	 */
 	private boolean isBatch(IxPoiObj poiObj) throws Exception{
 		IxPoi poi=(IxPoi) poiObj.getMainrow();
-		//满足(1)非重要分类的POI数据
-		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
-			return true;
-		}
+		
 		//满足(2)POI对象新增中文地址或修改中文地址的POI数据
 		IxPoiAddress addr=poiObj.getChiAddress();
 		if (addr==null){
 			return false;
 		}
+				
+		//满足(1)非重要分类的POI数据
+		MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+		if (!metadataApi.judgeScPointKind(poi.getKindCode(), poi.getChain())){
+			return true;
+		}
+		
 		if ((addr.getHisOpType().equals(OperationType.INSERT)||addr.getHisOpType().equals(OperationType.UPDATE))){
 			return true;
 		}
@@ -118,7 +120,10 @@ public class FMBATM0105 extends BasicBatchRule {
 		Map<String, String> typeMap1 = metadataApi.scPointEngKeyWordsType1();
 		String strType=typeMap1.get(chiAddr.getType());
 		//门牌号翻译
-		String strHouseNum=metadataApi.convFull2Half(chiAddr.getHousenum());	
+		String strHouseNum= "";
+		if (!StringUtils.isEmpty(chiAddr.getHousenum())) {
+			strHouseNum=metadataApi.convFull2Half(chiAddr.getHousenum());	
+		}
 		//街巷名翻译
 		//通过IX_POI_ADDRESS.STREET与道路名RD_NAME表中LANG_CODE='CHI'(港澳数据为CHT)对应的name进行关联
 		String strStreet= poiObj.getRdEngName(getBatchRuleCommand().getConn(), chiAddr.getNameGroupid(),chiAddr.getPoiPid());

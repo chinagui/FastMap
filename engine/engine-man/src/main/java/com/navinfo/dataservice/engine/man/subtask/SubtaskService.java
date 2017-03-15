@@ -1783,6 +1783,7 @@ public class SubtaskService {
 			sb.append(" S.NAME,");
 			sb.append(" S.TYPE,");
 			sb.append(" S.STATUS,");
+			sb.append(" S.EXE_USER_ID,");
 			sb.append(" U.USER_REAL_NAME AS EXECUTER,");
 			sb.append(" UG.GROUP_NAME AS GROUP_EXECUTER,");
 			sb.append(" NVL(FSOS.PERCENT, 0) PERCENT,");
@@ -1845,8 +1846,9 @@ public class SubtaskService {
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
+						int userid=rs.getInt("EXE_USER_ID");
 						String executer=rs.getString("EXECUTER");
-						if(executer==null||executer.isEmpty()){
+						if(userid==0){
 							executer=rs.getString("GROUP_EXECUTER");
 						}
 						subtask.put("executer", executer);

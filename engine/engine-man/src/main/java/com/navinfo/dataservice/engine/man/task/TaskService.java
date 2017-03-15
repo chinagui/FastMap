@@ -1778,7 +1778,9 @@ public class TaskService {
 			}else if(phase==4){
 				returnProgress =createCmsTask(conn, phaseId);
 			}
-			if(returnProgress.getStatus()==0){return;}
+			if(returnProgress.getStatus()==0){
+				updateCmsProgressStatus(conn, phaseId, returnProgress.getStatus(), returnProgress.getMessage());
+				return;}
 			taskUpdateCmsProgress(conn, phaseId, returnProgress.getStatus(),returnProgress.getMessage());
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -2148,6 +2150,7 @@ public class TaskService {
 			if(message==null||message.isEmpty()){
 				run.update(conn, selectSql);}
 			else{run.update(conn, selectSql,message);}
+			log.info("phaseId:"+phaseId+",status:"+status+",message:"+message);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

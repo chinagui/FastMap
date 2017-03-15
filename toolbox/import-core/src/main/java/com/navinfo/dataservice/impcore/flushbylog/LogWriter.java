@@ -278,7 +278,12 @@ public class LogWriter {
 						}
 					}
 					else{
-						pstmt.setObject(tmpPos, valObj);
+						//临时处理办法
+						if(valObj==null||(valObj instanceof net.sf.json.JSONNull)){
+							pstmt.setObject(tmpPos, "");
+						}else{
+							pstmt.setObject(tmpPos, valObj);
+						}
 					}
 				} else {
 					
@@ -346,7 +351,9 @@ public class LogWriter {
 				||"log".equalsIgnoreCase(filed)
 				||"label".equalsIgnoreCase(filed)
 				||"tag".equalsIgnoreCase(filed)
-				||"type".equalsIgnoreCase(filed);
+				||"type".equalsIgnoreCase(filed)
+				||"current".equalsIgnoreCase(filed)
+				||"mode".equalsIgnoreCase(filed);
 	}
 
 	private JSONObject updateData(EditLog editLog) throws Exception {
@@ -418,7 +425,13 @@ public class LogWriter {
 
 				if (!"geometry".equalsIgnoreCase(keyName)) {
 
-					pstmt.setObject(tmpPos, valObj);
+					//临时处理办法
+					if(valObj==null||(valObj instanceof net.sf.json.JSONNull)){
+						pstmt.setObject(tmpPos, "");
+					}else{
+						pstmt.setObject(tmpPos, valObj);
+					}
+//					pstmt.setObject(tmpPos, valObj);
 				} else {
 					
 					if(tableName.equalsIgnoreCase("ck_exception")){
@@ -501,6 +514,12 @@ public class LogWriter {
 			DbUtils.closeQuietly(pstmt);
 		}
 
+	}
+	public static void main(String[] args) {
+		JSONObject json = JSONObject.fromObject("{\"key1\":null}");
+		for(Object key:json.keySet()){
+			System.out.println("key:"+key+",class:"+json.get(key).getClass().getName());
+		}
 	}
 }
 

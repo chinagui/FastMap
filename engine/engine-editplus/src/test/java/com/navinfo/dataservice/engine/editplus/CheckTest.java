@@ -79,10 +79,10 @@ public class CheckTest {
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
 		ChangeLog logg=new ChangeLog();
-		Map<String, Object> oldValues=new HashMap<String, Object>();
+//		Map<String, Object> oldValues=new HashMap<String, Object>();
 //		oldValues.put("KIND_CODE", "230126");
-		oldValues.put("GEOMETRY", "");
-		logg.setOldValues(oldValues);
+//		oldValues.put("GEOMETRY", "");
+//		logg.setOldValues(oldValues);
 //		logg.setOpType(OperationType.UPDATE);
 		logg.setOpType(OperationType.INSERT);
 		List<ChangeLog> logList=new ArrayList<ChangeLog>();
@@ -130,7 +130,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-285");
+		ruleIdList.add("GLM60272");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

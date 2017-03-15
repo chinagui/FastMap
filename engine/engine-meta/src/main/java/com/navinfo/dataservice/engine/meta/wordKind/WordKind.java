@@ -5,10 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
-
 import org.apache.log4j.Logger;
 
-import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 
@@ -85,9 +83,9 @@ public class WordKind {
 			log.error(e.getMessage(), e);;
 			throw e;
 		} finally {
-			DbUtils.closeQuietly(pstmt);
-			DbUtils.closeQuietly(rs);
-			DbUtils.closeQuietly(conn);
+			DbUtils.close(rs);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
 		}
 	}
 	

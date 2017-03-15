@@ -39,10 +39,8 @@ public class ScPointEngKeyWords {
 								while (rs.next()) {
 									typeMap1.put(rs.getString("CHIKEYWORDS"), rs.getString("ENGKEYWORDS"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_ENGKEYWORDS失败："+ e.getMessage(), e);

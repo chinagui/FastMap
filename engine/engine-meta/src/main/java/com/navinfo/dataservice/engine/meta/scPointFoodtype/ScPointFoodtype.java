@@ -48,12 +48,8 @@ public class ScPointFoodtype {
 								while (rs.next()) {
 									kinds.add(rs.getString("poiKind"));			
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_FOODTYPE失败："+ e.getMessage(), e);
@@ -93,9 +89,7 @@ public class ScPointFoodtype {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_FOODTYPE失败："+ e.getMessage(), e);
@@ -130,9 +124,7 @@ public class ScPointFoodtype {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_FOODTYPE失败："+ e.getMessage(), e);

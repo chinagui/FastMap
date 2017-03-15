@@ -65,12 +65,8 @@ public class ScPointAddrAdmin {
 									tempMap.put("adminLevel", rs.getString("admin_level"));
 									addrAdminMap.put(rs.getString("admin_name"), tempMap);					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
-								DbUtils.close(rs);
-								DbUtils.close(pstmt);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);

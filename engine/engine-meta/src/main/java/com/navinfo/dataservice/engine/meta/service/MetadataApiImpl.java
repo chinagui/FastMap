@@ -265,17 +265,17 @@ public class MetadataApiImpl implements MetadataApi {
 
 	}
 
-	public JSONObject getChainMap(Connection conn) throws Exception {
+	private JSONObject getChainMap(Connection conn) throws Exception {
 		ChainSelector chainSelector = new ChainSelector(conn);
 		return chainSelector.getChainMap();
 	}
 
-	public JSONObject getKindCodeMap(Connection conn) throws Exception {
+	private JSONObject getKindCodeMap(Connection conn) throws Exception {
 		KindCodeSelector kindCodeSelector = new KindCodeSelector(conn);
 		return kindCodeSelector.getKindCodeMap();
 	}
 
-	public JSONObject getAdminMap(Connection conn) throws Exception {
+	private JSONObject getAdminMap(Connection conn) throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
 	}
@@ -286,17 +286,17 @@ public class MetadataApiImpl implements MetadataApi {
 		return tyCharacterFjtHmCheckSelector.getCharacterMap(type);
 	}
 
-	public JSONObject getNavicovpyMap(Connection conn) throws Exception {
+	private JSONObject getNavicovpyMap(Connection conn) throws Exception {
 		PinyinConvertSelector pinyinConvertSelector = new PinyinConvertSelector(conn);
 		return pinyinConvertSelector.getNavicovpyMap();
 	}
 
-	public JSONObject getEngshortMap(Connection conn) throws Exception {
+	private JSONObject getEngshortMap(Connection conn) throws Exception {
 		ScEngshortSelector scEngshortSelector = new ScEngshortSelector(conn);
 		return scEngshortSelector.getEngShortMap();
 	}
 
-	public JSONObject getKindMap(Connection conn) throws Exception {
+	private JSONObject getKindMap(Connection conn) throws Exception {
 		KindSelector selector = new KindSelector(conn);
 		return selector.getKinkMap();
 	}

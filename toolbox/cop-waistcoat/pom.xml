@@ -50,9 +50,9 @@
 		<version>1.1</version>
 	</dependency>
 	<dependency>
-		<groupId>com.navicop.navinfo.check</groupId>
-		<artifactId>navicop_dms_entry</artifactId>
-		<version>1.1</version>
+	  <groupId>com.navicop.navinfo.check</groupId>
+	  <artifactId>navicop_dms_entry</artifactId>
+	  <version>1.1</version>
 	</dependency>
 	<dependency>
 		<groupId>com.navicop.navinfo.check</groupId>

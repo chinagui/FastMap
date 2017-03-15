@@ -56,6 +56,7 @@ public class Workitem {
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(conn);
+
 		}
 	}
 

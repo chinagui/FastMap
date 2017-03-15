@@ -372,12 +372,13 @@ public class DeepCoreControl {
 			
     		//获取后检查需要执行规则列表
 			List<String> checkList=getCheckRuleList(conn,secondWorkItem);
-			//调用清理检查结果方法
-			cleanExByCkRule(conn, pidList, checkList, "IX_POI");
             
 			// 查询可提交数据
             IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 			pidList = ixPoiColumnStatusSelector.getpidsForRelease(subtaskId,2,userId, secondWorkItem);
+			
+			//调用清理检查结果方法
+			cleanExByCkRule(conn, pidList, checkList, "IX_POI");
 			
 			OperationResult operationResult=new OperationResult();
 			

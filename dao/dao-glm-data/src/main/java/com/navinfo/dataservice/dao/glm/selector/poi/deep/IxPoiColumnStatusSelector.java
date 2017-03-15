@@ -1063,10 +1063,6 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		sb.append(" WHERE CF.SECOND_WORK_ITEM = ?)");
 		sb.append(" AND S.HANDLER = ?");
 		sb.append(" AND S.SECOND_WORK_STATUS = ?");
-		sb.append(" AND NOT EXISTS (SELECT C.PID");
-		sb.append(" FROM NI_VAL_EXCEPTION N, CK_RESULT_OBJECT C");
-		sb.append(" WHERE N.MD5_CODE = C.MD5_CODE");
-		sb.append(" AND C.PID = s.PID)");
 		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;

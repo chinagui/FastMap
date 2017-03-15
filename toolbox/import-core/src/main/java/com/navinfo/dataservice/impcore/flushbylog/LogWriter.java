@@ -279,7 +279,7 @@ public class LogWriter {
 					}
 					else{
 						//临时处理办法
-						if(valObj==null){
+						if(valObj==null||(valObj instanceof net.sf.json.JSONNull)){
 							pstmt.setObject(tmpPos, "");
 						}else{
 							pstmt.setObject(tmpPos, valObj);
@@ -426,7 +426,7 @@ public class LogWriter {
 				if (!"geometry".equalsIgnoreCase(keyName)) {
 
 					//临时处理办法
-					if(valObj==null){
+					if(valObj==null||(valObj instanceof net.sf.json.JSONNull)){
 						pstmt.setObject(tmpPos, "");
 					}else{
 						pstmt.setObject(tmpPos, valObj);
@@ -516,8 +516,10 @@ public class LogWriter {
 
 	}
 	public static void main(String[] args) {
-		JSONObject json = new JSONObject();
-
+		JSONObject json = JSONObject.fromObject("{\"key1\":null}");
+		for(Object key:json.keySet()){
+			System.out.println("key:"+key+",class:"+json.get(key).getClass().getName());
+		}
 	}
 }
 

@@ -28,11 +28,13 @@ import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjChildrenIncreSelector;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.convert.DefaultObjConvertor;
 import com.navinfo.dataservice.engine.editplus.convert.MultiSrcPoiConvertor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -441,5 +443,25 @@ public class SelectorTest {
 		}
 	}
 
+	@Test
+	public void test16(){
+		try{
+			Connection conn = null;
+			conn = DBConnector.getInstance().getConnectionById(17);
+			Set<Long> pids = new HashSet<Long>();
+			pids.add(204000038L);
+//			pids.add(292L);
+//			pids.add(364L);
+//			pids.add(1023L);
+//			pids.add(159L);
+			Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, pids, false, true);
+			DefaultObjConvertor df = new DefaultObjConvertor();
+			JSONArray json = df.objConvertorJson(rows.values());
+			System.out.println(json);
+		}catch(Exception e){
+			System.out.println("Oops, something wrong...");
+			e.printStackTrace();
+		}
+	}
 	
 }

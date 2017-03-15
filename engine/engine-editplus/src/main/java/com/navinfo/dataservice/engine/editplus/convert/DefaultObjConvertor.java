@@ -34,11 +34,11 @@ public class DefaultObjConvertor {
 			JSONObject jso = new JSONObject();
 			// 主表
 			BasicRow mainrow = basicObj.getMainrow();
-			jso.put("command", changeOpType(mainrow.getHisOpType()));
+			jso.put("command", changeOpType(mainrow.getOpType()));
 			// 获取主表类型
-			String objName = basicObj.objName();
-			String objType = getObjType(objName);
-			jso.put("type", objType);
+			//String objName = basicObj.objName();
+			//String objType = getObjType(objName);
+			//jso.put("type", objType);
 			jso.put("objId", basicObj.objPid());
 			JsonConfig mainConfig = new JsonConfig();
 			// 过滤属性值为空的
@@ -46,10 +46,11 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null||fieldName.equals("geometry")||fieldName.equals("geoPid")
+					if (fieldValue == null||fieldValue instanceof Boolean ||fieldName.equals("geometry")||fieldName.equals("geoPid")
 							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
 							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
-							||fieldName.equals("freshFlag")||fieldName.equals("changed") ) {
+							||fieldName.equals("freshFlag")||fieldName.equals("changed")||fieldName.equals("oldValues")
+							||fieldName.equals("hisChangeLogs")) {
 						return true;
 					}
 					return false;
@@ -61,7 +62,7 @@ public class DefaultObjConvertor {
 				Geometry geometry = ixPoi.getGeometry();
 				mainJso.put("geometry", geometry.toText());
 			}
-			mainJso.put("objStatus", changeOpType(mainrow.getHisOpType()));
+			mainJso.put("objStatus", changeOpType(mainrow.getOpType()));
 			// 子表
 			Map<String, List<BasicRow>> subrows = basicObj.getSubrows();
 			JsonConfig subRowConfig = new JsonConfig();
@@ -70,14 +71,14 @@ public class DefaultObjConvertor {
 				@Override
 				public boolean apply(Object object, String fieldName, Object fieldValue) {
 					// TODO Auto-generated method stub
-					if (fieldValue == null || fieldName.equals("geometry")||fieldName.equals("geoPid")
+					if (fieldValue == null||fieldValue instanceof Boolean||fieldName.equals("geometry")||fieldName.equals("geoPid")
 							||fieldName.equals("geoType")||fieldName.equals("hisOpType")||fieldName.equals("objPid")
 							||fieldName.equals("objType")||fieldName.equals("opType")||fieldName.equals("rawFields")
-							||fieldName.equals("freshFlag")||fieldName.equals("changed")) {
+							||fieldName.equals("freshFlag")||fieldName.equals("changed")||fieldName.equals("oldValues")
+							||fieldName.equals("hisOldValue")) {
 						return true;
-					}else{
-						return false;
 					}
+					return false;
 				}
 			});
 			// 先处理有三级子表的二级子表
@@ -184,26 +185,26 @@ public class DefaultObjConvertor {
 	 * @return
 	 * @throws Exception
 	 */
-	private String getObjType(String type) throws Exception {
-		// 添加所需的子表
-		String objType = null;
-		if (ObjectName.IX_POI.equals(type)) {
-			objType = "IXPOI";
-		} else if (ObjectName.IX_SAMEPOI.equals(type)) {
-			objType = "IXSAMEPOI";
-		} else if (ObjectName.IX_HAMLET.equals(type)) {
-			objType = "IXHAMLET";
-		} else if (ObjectName.AD_FACE.equals(type)) {
-			objType = "ADFACE";
-		} else if (ObjectName.AD_LINK.equals(type)) {
-			objType = "ADLINK";
-		} else if (ObjectName.AD_NODE.equals(type)) {
-			objType = "ADNODE";
-		} else {
-			throw new Exception("未找到相应的主表类型");
-		}
-		return objType;
-	}
+//	private String getObjType(String type) throws Exception {
+//		// 添加所需的子表
+//		String objType = null;
+//		if (ObjectName.IX_POI.equals(type)) {
+//			objType = "IXPOI";
+//		} else if (ObjectName.IX_SAMEPOI.equals(type)) {
+//			objType = "IXSAMEPOI";
+//		} else if (ObjectName.IX_HAMLET.equals(type)) {
+//			objType = "IXHAMLET";
+//		} else if (ObjectName.AD_FACE.equals(type)) {
+//			objType = "ADFACE";
+//		} else if (ObjectName.AD_LINK.equals(type)) {
+//			objType = "ADLINK";
+//		} else if (ObjectName.AD_NODE.equals(type)) {
+//			objType = "ADNODE";
+//		} else {
+//			throw new Exception("未找到相应的主表类型");
+//		}
+//		return objType;
+//	}
 
 	/**
 	 * 修改状态字段

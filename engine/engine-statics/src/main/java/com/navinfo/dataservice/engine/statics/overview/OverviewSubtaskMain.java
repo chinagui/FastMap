@@ -293,7 +293,7 @@ public class OverviewSubtaskMain {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		
 		stat.put("subtaskId", subtask.getSubtaskId());
-//		stat.put("blockManId", subtask.getBlockManId());
+		stat.put("taskId", subtask.getTaskId());
 		stat.put("status", subtask.getStatus());
 		stat.put("planStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("planEndDate", df.format(subtask.getPlanEndDate()));

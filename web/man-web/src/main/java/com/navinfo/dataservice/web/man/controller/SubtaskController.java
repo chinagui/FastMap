@@ -177,10 +177,10 @@ public class SubtaskController extends BaseController {
 				platForm = dataJson.getInt("platForm");
 				dataJson.remove("platForm");
 			}
-
-            Subtask bean = (Subtask)JSONObject.toBean(dataJson, Subtask.class);
-            if(bean.getExeUserId()==null ||bean.getExeUserId()==0){bean.setExeUserId((int)tokenObj.getUserId());}
-            Page page = SubtaskService.getInstance().listByUserPage(bean,snapshot,platForm,pageSize,curPageNum);
+			if(!dataJson.containsKey("exeUserId")||dataJson.getInt("exeUserId")==0){
+				dataJson.put("exeUserId", (int)tokenObj.getUserId());
+			}
+            Page page = SubtaskService.getInstance().listByUserPage(dataJson,snapshot,platForm,pageSize,curPageNum);
             
 			return new ModelAndView("jsonView",success(page));
             

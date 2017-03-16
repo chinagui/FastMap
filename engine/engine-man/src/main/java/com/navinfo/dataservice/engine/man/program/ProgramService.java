@@ -310,7 +310,12 @@ public class ProgramService {
 	private List<Long> getTaskGroupByProgramId(Connection conn,
 			long programId, int i) throws Exception {
 		QueryRunner run = new QueryRunner();
-		String querySql="SELECT GROUP_ID FROM TASK T WHERE T.STATUS= ? AND T.PROGRAM_ID = ? and T.LATEST=1";
+		String querySql="SELECT DISTINCT GROUP_ID"
+				+ "  FROM TASK T"
+				+ " WHERE T.STATUS = ?"
+				+ "   AND T.PROGRAM_ID = ?"
+				+ "   AND T.LATEST = 1"
+				+ "   AND T.GROUP_ID != 0";
 		Object[] params = {i,programId};		
 		ResultSetHandler<List<Long>> rsh = new ResultSetHandler<List<Long>>() {
 			@Override
@@ -1756,8 +1761,12 @@ public class ProgramService {
 				String msgParam = (String) map.get("msgParam");
 				List<Long> groupIds=(List<Long>) map.get("groupIds");
 				for(Long groupId:groupIds){
-					SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
-							2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+					try{
+						SysMsgPublisher.publishMsg(msgTitle, msgContent, pushUser,new long[]{Long.valueOf(leaderIdByGroupId.get(groupId).getUserId())},
+								2, msgParam,leaderIdByGroupId.get(groupId).getUserRealName());
+					}catch (Exception e) {
+						log.warn("项目推送消息错误，groupId="+groupId, e);
+					}
 				}
 			}
 		}

@@ -211,6 +211,8 @@ public class TaskOperation {
 						map.setTaskId(rs.getInt("TASK_ID"));
 						map.setProgramId(rs.getInt("PROGRAM_ID"));
 						map.setGroupId(rs.getInt("GROUP_ID"));
+						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));
+						map.setRoadPlanTotal((rs.getInt("ROAD_PLAN_TOTAL")));
 //						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.statics.overview;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +21,6 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
-import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -139,7 +137,6 @@ public class OverviewTaskMain {
 			List<Task> taskAll = manApi.queryTaskAll();
 			for (Task task : taskAll) {
 				int status = task.getStatus();
-				System.out.println(status);
 				//任务开启
 				if(status == 1){
 					Document doc = getTaskStat(task);
@@ -201,22 +198,24 @@ public class OverviewTaskMain {
 	 * 处理任务数据
 	 */
 	public Document getTaskStat(Task task){
-		long taskId = 0;
+		Integer taskId = null;
 		long progress = 1;
 		long percent = 0;
 		
-		long programId = 0;
-		long status = 0;
-		long groupId = 0;
-		long type = 0;
+		Integer programId = null;
+		Integer status = null;
+		Integer groupId = null;
+		Integer type = null;
+		Integer poiPlanTotal = null;
+		Integer roadPlanTotal = null;
 		
 		String planStartDate = null;
 		String planEndDate = null;
-		long planDate = 0;
+		Integer planDate = null;
 		
 		String actualStartDate = null;
 		String actualEndDate = null;
-		long diffDate = 0;
+		Integer diffDate = null;
 		Document doc = null;
 		try {
 			doc = new Document();
@@ -232,10 +231,19 @@ public class OverviewTaskMain {
 			groupId = task.getGroupId();
 			//任务类型
 			type = task.getType();
+			//任务poi计划量
+			poiPlanTotal = task.getPoiPlanTotal();
+			//任务road计划量
+			roadPlanTotal = task.getRoadPlanTotal();
+
 			//计划开始时间
-			planStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			if(task.getPlanStartDate() != null){
+				planStartDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanStartDate());
+			}
 			//计划结束时间
-			planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
+			if(task.getPlanEndDate() != null){
+				planEndDate = new SimpleDateFormat("yyyyMMdd").format(task.getPlanEndDate());
+			}
 			//计划天数
 			if(task.getPlanStartDate() != null && task.getPlanEndDate() != null){
 			planDate = StatUtil.daysOfTwo(task.getPlanStartDate(), task.getPlanEndDate());
@@ -247,8 +255,8 @@ public class OverviewTaskMain {
 			//实际结束时间
 			//距离计划结束时间天数
 			String systemDate = new SimpleDateFormat("yyyyMMdd").format(new Date());
-			if(systemDate !=null && planStartDate != null){
-				diffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(planStartDate));
+			if(systemDate !=null && planEndDate != null){
+				diffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(planEndDate));
 			}
 			//任务完成度
 			percent = (long)subtaskStatList.get("percent");
@@ -262,8 +270,8 @@ public class OverviewTaskMain {
 			doc.put("type", type);
 			doc.put("progress", progress);
 			doc.put("percent", percent);
-			doc.put("poiPlanTotal", subtaskStatList.get("poiPlanTotal"));
-			doc.put("roadPlanTotal", subtaskStatList.get("roadPlanTotal"));
+			doc.put("poiPlanTotal", poiPlanTotal);
+			doc.put("roadPlanTotal", roadPlanTotal);
 			
 			doc.put("planStartDate", planStartDate);
 			doc.put("planEndDate", planEndDate);

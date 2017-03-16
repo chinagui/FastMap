@@ -107,7 +107,7 @@ public class OverviewSubtaskMain {
 		stat.put("planDate", StatUtil.daysOfTwo(subtask.getPlanStartDate(), subtask.getPlanEndDate()));
 		stat.put("actualStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("actualEndDate", df.format(subtask.getPlanEndDate()));
-		stat.put("diffDate", StatUtil.daysOfTwo(df.parse(stat_date),subtask.getPlanStartDate()));
+		stat.put("diffDate", StatUtil.daysOfTwo(subtask.getPlanEndDate(),df.parse(stat_date)));
 		stat.put("statDate", stat_date);
 		stat.put("statTime", stat_time);
 
@@ -300,7 +300,7 @@ public class OverviewSubtaskMain {
 		stat.put("planDate", StatUtil.daysOfTwo(subtask.getPlanStartDate(), subtask.getPlanEndDate()));
 		stat.put("actualStartDate", df.format(subtask.getPlanStartDate()));
 		stat.put("actualEndDate", df.format(subtask.getPlanEndDate()));
-		stat.put("diffDate", StatUtil.daysOfTwo(df.parse(stat_date),subtask.getPlanStartDate()));
+		stat.put("diffDate", StatUtil.daysOfTwo(subtask.getPlanEndDate(),df.parse(stat_date)));
 		stat.put("statDate", stat_date);
 		stat.put("statTime", stat_time);
 		

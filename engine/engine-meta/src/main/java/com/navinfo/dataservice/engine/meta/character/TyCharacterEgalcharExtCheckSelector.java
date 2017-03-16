@@ -47,9 +47,7 @@ public class TyCharacterEgalcharExtCheckSelector {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-			DbUtils.closeQuietly(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 	}
 	
@@ -75,9 +73,7 @@ public class TyCharacterEgalcharExtCheckSelector {
 		} catch(Exception e) {
 			throw e;
 		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-			DBUtils.closeConnection(conn);
+			DbUtils.closeQuietly(conn, pstmt, resultSet);
 		}
 	}
 

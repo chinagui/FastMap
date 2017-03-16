@@ -218,12 +218,11 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			
 			log.info("开始获取日编库履历");
 			String tempOpTable="";
-			if(filterGrids!=null&&filterGrids.size()>0){
-				logSelector = new Day2MonPoiLogByFilterGridsSelector(dailyDbSchema,syncTimeStamp,filterGrids);
-				tempOpTable = logSelector.select();
-			}
 			if(grids!=null&&grids.size()>0){
 				logSelector = new Day2MonPoiLogSelector(dailyDbSchema,syncTimeStamp,grids);
+				tempOpTable = logSelector.select();
+			}else{
+				logSelector = new Day2MonPoiLogByFilterGridsSelector(dailyDbSchema,syncTimeStamp,filterGrids);
 				tempOpTable = logSelector.select();
 			}
 			

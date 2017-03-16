@@ -52,7 +52,7 @@ public class ScPointChainCode {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_POINT_CHAIN_CODE失败："+ e.getMessage(), e);

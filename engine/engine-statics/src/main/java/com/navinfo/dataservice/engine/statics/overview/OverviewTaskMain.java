@@ -138,13 +138,15 @@ public class OverviewTaskMain {
 		try {
 			List<Task> taskAll = manApi.queryTaskAll();
 			for (Task task : taskAll) {
+				int status = task.getStatus();
+				System.out.println(status);
 				//任务开启
-				if(task.getStatus() == 1){
+				if(status == 1){
 					Document doc = getTaskStat(task);
 					taskStatList.add(doc);
 				}
 				//任务关闭
-				if(task.getStatus() == 0){
+				if(status == 0){
 					//查询task统计表
 					Map<String, Object> taskStat = manApi.queryTaskStatByTaskId(task.getTaskId());
 					if(taskStat != null && taskStat.size() > 0 && taskStat.get("actualEndDate") != null){

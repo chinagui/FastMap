@@ -22,7 +22,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
  * 功能描述:邮件发送公共方法
  */
 public class SendEmailUtil {
-	
+	private static Logger log = LoggerRepos.getLogger(SendEmailUtil.class);
 	/**
 	 * @Title: sendEmail
 	 * @Description: TODO
@@ -55,7 +55,7 @@ public class SendEmailUtil {
 		Transport transport =  null;
 		try {
 			// 发件人
-			InternetAddress from = new InternetAddress(user);
+			InternetAddress from = new InternetAddress(fromMail);
 			message.setFrom(from);
 			// 收件人
 			InternetAddress to = new InternetAddress(toMail);
@@ -68,6 +68,7 @@ public class SendEmailUtil {
 			message.saveChanges();
 			transport = s.getTransport("smtp");
 			// smtp验证，就是你用来发邮件的邮箱用户名密码
+			//log.info(valueSmtp+";"+user+";"+password+";");
 			transport.connect(valueSmtp, user, password);
 			// 发送
 			transport.sendMessage(message, message.getAllRecipients());

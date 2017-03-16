@@ -835,7 +835,7 @@ public class SubtaskOperation {
 			
 			String groupSql="";
 			if(dataJson.containsKey("exeGroupId")&&!dataJson.getJSONArray("exeGroupId").isEmpty()){
-				groupSql=" OR T.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
+				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
 			sb.append("select st.SUBTASK_ID ,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
@@ -973,7 +973,7 @@ public class SubtaskOperation {
 			
 			String groupSql="";
 			if(dataJson.containsKey("exeGroupId")&&!dataJson.getJSONArray("exeGroupId").isEmpty()){
-				groupSql=" OR T.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
+				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 			
 			sb.append("SELECT ST.SUBTASK_ID");

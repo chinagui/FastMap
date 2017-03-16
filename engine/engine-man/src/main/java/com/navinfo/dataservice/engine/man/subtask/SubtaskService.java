@@ -1125,7 +1125,7 @@ public class SubtaskService {
 	}
 
 	/**
-	 * @param bean
+	 * @param dataJson
 	 * @param snapshot
 	 * @param platForm
 	 * @param pageSize
@@ -1133,26 +1133,25 @@ public class SubtaskService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public Page listByUserPage(Subtask bean, int snapshot, int platForm, int pageSize, int curPageNum) throws ServiceException {
+	public Page listByUserPage(JSONObject dataJson, int snapshot, int platForm, int pageSize, int curPageNum) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			int exeUserId=dataJson.getInt("exeUserId");
 			
 			//获取用户所在组
-			UserInfo userInfo = new UserInfo();
-			userInfo.setUserId(bean.getExeUserId());
-			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
-			if(!userGroup.isEmpty()){
-				bean.setExeGroupId((int)userGroup.get("groupId"));
+			List<Integer> userGroup = UserInfoOperation.getUserGroup(conn, exeUserId);
+			if(userGroup!=null&&!userGroup.isEmpty()){
+				dataJson.put("exeGroupId", userGroup);
 			}
 			
 			Page page = new Page();
 			//snapshot=1不返回geometry和gridIds
 			if(snapshot==1){
-				page = SubtaskOperation.getListByUserSnapshotPage(conn, bean,curPageNum,pageSize,platForm);
+				page = SubtaskOperation.getListByUserSnapshotPage(conn, dataJson,curPageNum,pageSize,platForm);
 			}else{
-				page = SubtaskOperation.getListByUserPage(conn, bean,curPageNum,pageSize,platForm);		
+				page = SubtaskOperation.getListByUserPage(conn, dataJson,curPageNum,pageSize,platForm);		
 			}
 			
 			return page;
@@ -1447,16 +1446,14 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			//获取用户所在组
-			UserInfo userInfo = new UserInfo();
-			userInfo.setUserId((int)userId);
-			Map<Object,Object> userGroup = UserInfoOperation.getUserGroup(conn, userInfo);
-			int userGroupId=0;
-			if(!userGroup.isEmpty()){
-				userGroupId = (int)userGroup.get("groupId");
+			List<Integer> userGroup = UserInfoOperation.getUserGroup(conn, (int)userId);
+			String groupSql="";
+			if(userGroup!=null&&!userGroup.isEmpty()){
+				groupSql=" OR T.EXE_GROUP_ID in "+userGroup.toString().replace("[", "(").replace("]", ")");
 			}
 			String sql="SELECT T.STAGE, T.TYPE, COUNT(1) TYPE_COUNT"
 					+ "  FROM SUBTASK T"
-					+ " WHERE (T.EXE_USER_ID = "+userId+" OR T.EXE_GROUP_ID = "+userGroupId+")"
+					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
 					+ "   AND T.STATUS = 1"
 					+ "   AND T.STAGE != 0"
 					+ " GROUP BY T.STAGE, T.TYPE"

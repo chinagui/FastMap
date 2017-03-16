@@ -277,6 +277,7 @@ public class UserInfoOperation {
 			String querySql = "select r.role_id,r.role_name"
 					+ " from role r,role_user_mapping rum"
 					+ " where rum.user_id = " + userInfo.getUserId()
+					+ " and r.role_id in (3,4,5,6)"
 					+ " and rum.role_id = r.role_id ";
 					
 			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {
@@ -530,21 +531,53 @@ public class UserInfoOperation {
 	}
 	
 	/**
+	 * 返回用户的所有组
 	 * @param conn
 	 * @param user_info
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Map<Object, Object> getUserGroup(Connection conn, UserInfo userInfo) throws Exception {
+	public static List<Integer> getUserGroup(Connection conn,int userId) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 			// 查询用户组信息
-			String querySql = "SELECT UG.GROUP_ID,UG.GROUP_NAME,UG.GROUP_TYPE"
-					+ " FROM USER_GROUP UG,GROUP_USER_MAPPING GUM"
-					+ " WHERE UG.GROUP_ID = GUM.GROUP_ID"
-					+ " AND UG.PARENT_GROUP_ID IS NULL"
-					+ " AND GUM.USER_ID = " + userInfo.getUserId();
+			String querySql = "SELECT GUM.GROUP_ID"
+					+ " FROM GROUP_USER_MAPPING GUM"
+					+ " WHERE GUM.USER_ID = " + userId;
+					
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> group = new ArrayList<Integer>(); 
+					while (rs.next()) {
+						group.add(rs.getInt("GROUP_ID"));
+					}
+					return group;
+				}
+			};
+
+			return run.query(conn, querySql, rsHandler);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("插入userDevice，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 一个用户只可能对应一个组的组长
+	 * @param conn
+	 * @param user_info
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<Object, Object> getUserLeaderGroup(Connection conn, UserInfo userInfo) throws Exception {
+		// TODO Auto-generated method stub
+		try{
+			QueryRunner run = new QueryRunner();
+			// 查询用户组信息
+			String querySql = "SELECT UG.GROUP_ID, UG.GROUP_NAME, UG.GROUP_TYPE"
+					+ "  FROM USER_GROUP UG"
+					+ " WHERE LEADER_ID = " + userInfo.getUserId();
 					
 			ResultSetHandler<Map<Object, Object>> rsHandler = new ResultSetHandler<Map<Object, Object>>() {
 				public Map<Object, Object> handle(ResultSet rs) throws SQLException {

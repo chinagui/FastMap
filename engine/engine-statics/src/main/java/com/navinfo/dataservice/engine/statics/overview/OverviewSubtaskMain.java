@@ -355,7 +355,7 @@ public class OverviewSubtaskMain {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201610221340");
+		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201703161013");
 		overviewSubtaskStat.runStat();
 	}
 }

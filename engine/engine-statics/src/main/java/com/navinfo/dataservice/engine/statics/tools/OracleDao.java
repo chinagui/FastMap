@@ -244,7 +244,7 @@ public class OracleDao {
 			conn = DBConnector.getInstance().getManConnection();
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
-			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.BLOCK_MAN_ID"
+			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
 					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
@@ -297,7 +297,7 @@ public class OracleDao {
 			String sql = "SELECT FSOS.SUBTASK_ID,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,FSOS.STAT_DATE,FSOS.STATUS"
 					+ ",FSOS.TOTAL_POI,FSOS.FINISHED_POI,FSOS.TOTAL_ROAD,FSOS.FINISHED_ROAD,FSOS.PERCENT_POI,FSOS.PERCENT_ROAD"
 					+ ",FSOS.PLAN_START_DATE,FSOS.PLAN_END_DATE,FSOS.ACTUAL_START_DATE,FSOS.ACTUAL_END_DATE"
-					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.BLOCK_MAN_ID"
+					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE FSOS.STATUS = 0";
 			
@@ -308,7 +308,7 @@ public class OracleDao {
 					while(rs.next()){
 						Document subtask = new Document();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+//						subtask.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
 						subtask.put("percent", rs.getInt("PERCENT"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
 						subtask.put("progress", rs.getInt("PROGRESS"));

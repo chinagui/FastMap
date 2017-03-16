@@ -1528,14 +1528,14 @@ public class SubtaskService {
 			Subtask subtask = queryBySubtaskIdS(subtaskId);
 			
 			//关闭子任务,如果为采集子任务,需要起job给数据批subtaskId
-//			if(subtask.getType()==7){
-//				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-//				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
-//				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
-//				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
-//			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
-//				return "POI专项_月编子任务关闭进行中";
-//			}
+			if(subtask.getType()==7){
+				JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+				JSONObject MonthPoiBatchSyncJobRequestJSON=new JSONObject();
+				MonthPoiBatchSyncJobRequestJSON.put("taskId", subtaskId);
+				MonthPoiBatchSyncJobRequestJSON.put("userId",userId);
+			    int jobId=(int) apiService.createJob("monthPoiBatch", MonthPoiBatchSyncJobRequestJSON, 0,0, "poi月库管理字段批处理");
+				return "POI专项_月编子任务关闭进行中";
+			}
 			
 			//修改状态，调整范围，发送消息
 			return closeSubtask(conn,subtask,userId);

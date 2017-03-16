@@ -250,6 +250,7 @@ public class OracleDao {
 					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
 					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
+					+ " AND S.STATUS IN (0, 1)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"

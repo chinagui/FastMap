@@ -6,6 +6,6 @@
 
 	<dubbo:service interface="com.navinfo.dataservice.api.job.iface.JobApi" ref="jobApi" />
 	
-	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" timeout="5000"/>
+	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	
 </beans>

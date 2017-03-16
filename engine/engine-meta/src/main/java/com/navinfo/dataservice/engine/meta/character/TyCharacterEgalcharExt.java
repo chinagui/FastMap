@@ -60,10 +60,8 @@ public class TyCharacterEgalcharExt {
 									chars.add(rs.getString("CHARACTER"));
 								} 
 								extentionTypeMap.put(beforeExtentionType, chars);
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载extentionTypeMap失败："+ e.getMessage(), e);
@@ -113,10 +111,8 @@ public class TyCharacterEgalcharExt {
 							while (rs.next()) {
 								halfCharList.add(rs.getString("CHARACTER"));
 							} 
-						} catch (Exception e) {
-							throw new Exception(e);
 						} finally {
-							DbUtils.commitAndCloseQuietly(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载halfCharList失败："+ e.getMessage(), e);

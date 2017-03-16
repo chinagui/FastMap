@@ -51,10 +51,8 @@ public class TyCharacterFjtHzCheckSelector {
 									data.put("ftorder",rs.getInt("ftorder"));
 									getFtCharacterMap.put(rs.getString("ft"), data);
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载ty_character_fjt_hz失败："+ e.getMessage(), e);
@@ -89,10 +87,8 @@ public class TyCharacterFjtHzCheckSelector {
 									data.put("ftorder",rs.getInt("ftorder"));
 									getFtCharacterMap.put(rs.getString("jt"), data);
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载ty_character_fjt_hz失败："+ e.getMessage(), e);
@@ -122,10 +118,8 @@ public class TyCharacterFjtHzCheckSelector {
 								}
 								convertFtMap.get(convert).put(rs.getString("ft"), rs.getString("jt"));
 							} 
-						} catch (Exception e) {
-							throw new Exception(e);
 						} finally {
-							DbUtils.commitAndCloseQuietly(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载ty_character_fjt_hz失败："+ e.getMessage(), e);

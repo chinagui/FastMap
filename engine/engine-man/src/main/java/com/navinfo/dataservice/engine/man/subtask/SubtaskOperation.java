@@ -1,13 +1,11 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -26,18 +24,12 @@ import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
-import com.navinfo.dataservice.api.statics.iface.StaticsApi;
-import com.navinfo.dataservice.api.statics.model.GridStatInfo;
-import com.navinfo.dataservice.api.statics.model.SubtaskStatInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ArrayUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
@@ -828,27 +820,32 @@ public class SubtaskOperation {
 
 	/**
 	 * @param conn
-	 * @param bean
+	 * @param dataJson
 	 * @param curPageNum
 	 * @param pageSize
 	 * @param platForm 
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Page getListByUserSnapshotPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize, int platForm) throws Exception {
+	public static Page getListByUserSnapshotPage(Connection conn, JSONObject dataJson, final int curPageNum, final int pageSize, int platForm) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 			StringBuilder sb = new StringBuilder();
 			
+			String groupSql="";
+			if(dataJson.containsKey("exeGroupId")&&!dataJson.getJSONArray("exeGroupId").isEmpty()){
+				groupSql=" OR T.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
+			}
+						
 			sb.append("select st.SUBTASK_ID ,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
 			sb.append(" from subtask st,task t,region r");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
-			sb.append(" and (st.EXE_USER_ID = " + bean.getExeUserId() + " or st.EXE_GROUP_ID = " + bean.getExeGroupId() + ")");
+			sb.append(" and (st.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql + ")");
 
-			if (bean.getStage() != null) {
-				sb.append(" and st.STAGE = "+ bean.getStage());
+			if (dataJson.containsKey("stage")){
+				sb.append(" and st.STAGE = "+ dataJson.getInt("stage"));
 			}else{
 				if(0 == platForm){
 					//采集端
@@ -859,12 +856,12 @@ public class SubtaskOperation {
 				}
 			}
 
-			if (bean.getType() != null) {
-				sb.append(" and st.TYPE = "+ bean.getType());
+			if (dataJson.containsKey("type")) {
+				sb.append(" and st.TYPE = "+ dataJson.getInt("type"));
 			}
 
-			if (bean.getStatus() != null) {
-				sb.append(" and st.status = "+ bean.getStatus());
+			if (dataJson.containsKey("status")) {
+				sb.append(" and st.status = "+ dataJson.getInt("status"));
 			}
 
 
@@ -894,7 +891,7 @@ public class SubtaskOperation {
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
 						//版本信息
-						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
 						if (1 == rs.getInt("STAGE")) {
 							subtask.put("dbId", rs.getInt("DAILY_DB_ID"));
@@ -960,19 +957,24 @@ public class SubtaskOperation {
 	
 	/**
 	 * @param conn
-	 * @param bean
+	 * @param dataJson
 	 * @param curPageNum
 	 * @param pageSize
 	 * @param platForm 
 	 * @return
 	 * @throws Exception 
 	 */
-	public static Page getListByUserPage(Connection conn, Subtask bean, final int curPageNum, final int pageSize, int platForm) throws Exception {
+	public static Page getListByUserPage(Connection conn, JSONObject dataJson, final int curPageNum, final int pageSize, int platForm) throws Exception {
 		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 			
 			StringBuilder sb = new StringBuilder();
+			
+			String groupSql="";
+			if(dataJson.containsKey("exeGroupId")&&!dataJson.getJSONArray("exeGroupId").isEmpty()){
+				groupSql=" OR T.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
+			}
 			
 			sb.append("SELECT ST.SUBTASK_ID");
 			sb.append(" ,ST.NAME");
@@ -992,10 +994,10 @@ public class SubtaskOperation {
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
 			sb.append(" AND ST.REFER_ID = RR.ID(+)");
-			sb.append(" AND (ST.EXE_USER_ID = " + bean.getExeUserId() + " OR ST.EXE_GROUP_ID = " + bean.getExeGroupId() + ")");
+			sb.append(" AND (ST.EXE_USER_ID = " + dataJson.getInt("exeUserId") + groupSql+ ")");
 			
-			if (bean.getStage() != null) {
-				sb.append(" AND ST.STAGE = " + bean.getStage());
+			if (dataJson.containsKey("stage")) {
+				sb.append(" AND ST.STAGE = " + dataJson.getInt("stage"));
 			}else{
 				if(0 == platForm){//采集端
 					sb.append(" AND ST.STAGE = 0");
@@ -1004,12 +1006,12 @@ public class SubtaskOperation {
 				}
 			}
 
-			if (bean.getType() != null) {
-				sb.append(" AND T.TYPE = "+ bean.getType());
+			if (dataJson.containsKey("type")) {
+				sb.append(" AND T.TYPE = "+ dataJson.getInt("type"));
 			}
 
-			if (bean.getStatus() != null) {
-				sb.append(" AND ST.STATUS = "+ bean.getStatus());
+			if (dataJson.containsKey("status")) {
+				sb.append(" AND ST.STATUS = "+ dataJson.getInt("status"));
 			}else{
 				if(0 == platForm){//采集端
 					sb.append(" AND ST.STATUS IN (0,1)");
@@ -1041,7 +1043,7 @@ public class SubtaskOperation {
 						subtask.put("status", rs.getInt("STATUS"));
 						
 						//版本信息
-						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
+						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
 						List<Integer> gridIds = new ArrayList<Integer>();
 						try {

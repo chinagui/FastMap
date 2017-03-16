@@ -830,7 +830,11 @@ public class CollectorUploadOperation extends AbstractOperation {
 				}else{
 					ixPoi.setLog(null);
 				}
-				ixPoi.setSportsVenue(jo.getString("sportsVenues"));
+				String newSportsVenues = jo.getString("sportsVenues");
+				if(!stringEquals(newSportsVenues,ixPoi.getSportsVenue())){
+					ixPoi.setFreshFlag(false);
+					ixPoi.setSportsVenue(newSportsVenues);
+				}
 				//设置室内标记
 				JSONObject indoor = jo.getJSONObject("indoor");
 				if (!indoor.isNullObject() && indoor.has("type")) {
@@ -1515,7 +1519,10 @@ public class CollectorUploadOperation extends AbstractOperation {
 				newFoodtype.put("openHour", foodtypesObj.getString("openHour"));
 				newFoodtype.put("rowId", foodtypesObj.getString("rowId").toUpperCase());
 				// 差分,区分新增修改
+				log.info("usdateIxPoiFoodtypes.oldArray:"+oldArray);
+				log.info("usdateIxPoiFoodtypes.newFoodtype:"+newFoodtype);
 				int ret = getDifferent(oldArray, newFoodtype);
+				log.info("usdateIxPoiFoodtypes.getDifferent:"+ret);
 				if (ret == 0) {//新增
 					IxPoiRestaurant newIxPoiRestaurant = poi.createIxPoiRestaurant();
 					newIxPoiRestaurant.setPoiPid(pid);
@@ -1908,6 +1915,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 					newContact.put("rowId", contactObj.getString("rowId").toUpperCase());
 				
 					// 差分,区分新增修改
+					log.info("newContact:"+newContact);
 					int ret = getDifferent(oldArray, newContact);
 					if (ret == 0) {//新增
 						IxPoiContact newIxPoiContact = poi.createIxPoiContact();

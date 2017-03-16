@@ -40,10 +40,8 @@ public class ScEngshortList {
 								while (rs.next()) {
 									engshortMap.put(rs.getString("full_name"), rs.getString("short_name"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.close(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);

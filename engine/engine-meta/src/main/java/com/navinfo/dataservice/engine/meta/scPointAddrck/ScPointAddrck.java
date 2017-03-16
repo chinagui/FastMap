@@ -32,9 +32,7 @@ public class ScPointAddrck {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 		
 	}
@@ -64,9 +62,7 @@ public class ScPointAddrck {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			DbUtils.close(rs);
-			DbUtils.close(pstmt);
-			DbUtils.close(conn);
+			DbUtils.closeQuietly(conn, pstmt, rs);
 		}
 		
 	}

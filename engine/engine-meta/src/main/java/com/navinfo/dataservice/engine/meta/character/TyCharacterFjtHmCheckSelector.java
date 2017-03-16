@@ -50,13 +50,13 @@ public class TyCharacterFjtHmCheckSelector {
 		} catch (Exception e) {
 			throw e;
 		} finally {
-			if (connFlag) {
-				DBUtils.closeConnection(conn);
-			}
 			
 			DBUtils.closeResultSet(resultSet);
 
 			DBUtils.closeStatement(pstmt);
+			if (connFlag) {
+				DBUtils.closeConnection(conn);
+			}
 		}
 	}
 

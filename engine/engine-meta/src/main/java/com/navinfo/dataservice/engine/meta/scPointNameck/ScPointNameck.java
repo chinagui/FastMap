@@ -71,10 +71,8 @@ public class ScPointNameck {
 									obj.setType(1);
 									typeD1.add(obj);
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -103,10 +101,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD10.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -135,10 +131,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD3.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -172,10 +166,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD4.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -204,10 +196,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD5.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -236,10 +226,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD7.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -268,10 +256,8 @@ public class ScPointNameck {
 							while (rs.next()) {
 								type9.add(rs.getString("PRE_KEY"));					
 							} 
-						} catch (Exception e) {
-							throw new Exception(e);
 						} finally {
-							DbUtils.commitAndCloseQuietly(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -336,10 +322,8 @@ public class ScPointNameck {
 								tempMap.put("adminArea", rs.getString("ADMINAREA"));
 								typeD6.put(rs.getString("PRE_KEY"), tempMap);
 							}
-						} catch (Exception e) {
-							throw new Exception(e);
 						} finally {
-							DbUtils.commitAndCloseQuietly(conn);
+							DbUtils.closeQuietly(conn, pstmt, rs);
 						}
 					} catch (Exception e) {
 						throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -368,10 +352,8 @@ public class ScPointNameck {
 								while (rs.next()) {
 									typeD1_2_3_4_8_11.put(rs.getString("PRE_KEY"), rs.getString("RESULT_KEY"));					
 								} 
-							} catch (Exception e) {
-								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);
@@ -403,7 +385,7 @@ public class ScPointNameck {
 							} catch (Exception e) {
 								throw new Exception(e);
 							} finally {
-								DbUtils.commitAndCloseQuietly(conn);
+								DbUtils.closeQuietly(conn, pstmt, rs);
 							}
 						} catch (Exception e) {
 							throw new SQLException("加载scpointNameck失败："+ e.getMessage(), e);

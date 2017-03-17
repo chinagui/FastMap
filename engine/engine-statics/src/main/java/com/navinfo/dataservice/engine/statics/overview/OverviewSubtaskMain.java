@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.statics.overview;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -74,9 +75,10 @@ public class OverviewSubtaskMain {
 		if (flag_subtask) {
 			md.createCollection(col_name_subtask);
 			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("subtaskId", 1));
+			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("taskId", 1));
 			md.getCollection(col_name_subtask).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_subtask + " ok");
-			log.info("-- -- create mongo index on " + col_name_subtask + "(subtaskId，statDe) ok");
+			log.info("-- -- create mongo index on " + col_name_subtask + "(subtaskId，taskId,statDate) ok");
 		}
 
 		// 删除当天重复统计数据
@@ -355,7 +357,8 @@ public class OverviewSubtaskMain {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201703161013");
+//		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", "201703161013");
+		OverviewSubtaskMain overviewSubtaskStat = new OverviewSubtaskMain("fm_stat", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 		overviewSubtaskStat.runStat();
 	}
 }

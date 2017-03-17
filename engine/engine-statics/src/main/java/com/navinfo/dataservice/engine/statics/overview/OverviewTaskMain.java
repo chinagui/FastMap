@@ -68,9 +68,10 @@ public class OverviewTaskMain {
 			//创建collection集合
 			md.createCollection(col_name_task);
 			md.getCollection(col_name_task).createIndex(new BasicDBObject("taskId", 1));
+			md.getCollection(col_name_task).createIndex(new BasicDBObject("groupId", 1));
 			md.getCollection(col_name_task).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_task + " ok");
-			log.info("-- -- create mongo index on " + col_name_task + "(taskId，statDate) ok");
+			log.info("-- -- create mongo index on " + col_name_task + "(taskId,groupId,statDate) ok");
 		}
 			// 删除当天重复统计数据
 			BasicDBObject query = new BasicDBObject();
@@ -91,8 +92,8 @@ public class OverviewTaskMain {
 		MongoCursor<Document> iterator = findIterable.iterator();
 		Map<String,Object> subtaskStat = new HashMap<String,Object>();
 		//处理数据
-		long progress = 1;
-		long percent = 0;
+		int progress = 1;
+		int percent = 0;
 		//集合
 		List<Long> progressList = new ArrayList<Long>();
 		int count = 0;
@@ -199,8 +200,8 @@ public class OverviewTaskMain {
 	 */
 	public Document getTaskStat(Task task){
 		Integer taskId = null;
-		long progress = 1;
-		long percent = 0;
+		int progress = 1;
+		int percent = 0;
 		
 		Integer programId = null;
 		Integer status = null;
@@ -259,9 +260,9 @@ public class OverviewTaskMain {
 				diffDate = StatUtil.daysOfTwo(new SimpleDateFormat("yyyyMMdd").parse(systemDate), new SimpleDateFormat("yyyyMMdd").parse(planEndDate));
 			}
 			//任务完成度
-			percent = (long)subtaskStatList.get("percent");
+			percent = (int)subtaskStatList.get("percent");
 			//进度
-			progress = (long) subtaskStatList.get("progress");
+			progress = (int) subtaskStatList.get("progress");
 			//处理统计数据
 			doc.put("taskId", taskId);
 			doc.put("programId", programId);

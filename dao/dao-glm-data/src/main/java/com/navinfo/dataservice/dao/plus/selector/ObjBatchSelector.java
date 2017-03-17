@@ -36,7 +36,7 @@ import com.vividsolutions.jts.geom.Polygon;
  */
 public class ObjBatchSelector {
 
-	private static final Logger logger = Logger.getLogger(ObjSelector.class);
+	private static final Logger logger = Logger.getLogger(ObjBatchSelector.class);
 	/**
 	 * 
 	 * @param conn

@@ -39,14 +39,16 @@ public class SendEmail {
 		try {
 			String VALUE_SMTP=SystemConfigFactory.getSystemConfig().getValue(PropConstant.valueSmtp);
 			String SEND_EMAil=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendEmail);
+			String SEND_USER=SEND_EMAil;//SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendUser);
 			String SEND_PWD=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendPwd);
-			SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_EMAil, SEND_PWD, toMail, mailTitle, mailContent);
+			//SEND_EMAil="fastmap";
+			SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_USER, SEND_PWD, toMail, mailTitle, mailContent);
 		} catch (MessagingException e) {
 			e.printStackTrace();
 		}
 	}
 	
 	public static void main(String[] args) {
-		sendEmail("zhangli5174@navinfo.com","邮件主题","邮件内容3333333333");
+		sendEmail("zhangxiaoyi@navinfo.com","邮件主题","邮件内容3333333333");
 	}
 }

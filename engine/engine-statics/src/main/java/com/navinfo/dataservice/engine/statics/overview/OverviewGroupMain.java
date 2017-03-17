@@ -71,10 +71,10 @@ public class OverviewGroupMain {
 
 		if (flag_group) {
 			md.createCollection(col_name_group);
-			md.getCollection(col_name_group).createIndex(new BasicDBObject("group_id", 1));
+			md.getCollection(col_name_group).createIndex(new BasicDBObject("groupId", 1));
 			md.getCollection(col_name_group).createIndex(new BasicDBObject("statDate", 1));
 			log.info("-- -- create mongo collection " + col_name_group + " ok");
-			log.info("-- -- create mongo index on " + col_name_group + "(group_id，statDate) ok");
+			log.info("-- -- create mongo index on " + col_name_group + "(groupId，statDate) ok");
 		}
 
 		// 删除当天重复统计数据
@@ -118,17 +118,17 @@ public class OverviewGroupMain {
 	 * 查询mongo中task统计数据
 	 * @throws ServiceException 
 	 */
-	public Map<Long,List<Map<String,Object>>> getTaskStat() throws ServiceException{
+	public Map<Integer,List<Map<String,Object>>> getTaskStat() throws ServiceException{
 		MongoDao mongoDao = new MongoDao(db_name);
 		BasicDBObject filter = new BasicDBObject("statDate", statDate);
 		FindIterable<Document> findIterable = mongoDao.find(col_name_task, filter).sort(Sorts.descending("groupId","statDate"));
 		MongoCursor<Document> iterator = findIterable.iterator();
-		Map<Long,List<Map<String,Object>>> taskStatMap = new HashMap<Long,List<Map<String,Object>>>();
+		Map<Integer,List<Map<String,Object>>> taskStatMap = new HashMap<Integer,List<Map<String,Object>>>();
 		//处理数据
-		long groupId = 0;
-		long percent = 0;//进度百分比
-		long poiPlanTotal = 0;//所有任务poi计划量汇总
-		long roadPlanTotal = 0;//所有任务road计划量汇总
+		int groupId = 0;
+		int percent = 0;//进度百分比
+		int poiPlanTotal = 0;//所有任务poi计划量汇总
+		int roadPlanTotal = 0;//所有任务road计划量汇总
 		int status = -1;
 		
 		String planStartDate = null;
@@ -142,10 +142,10 @@ public class OverviewGroupMain {
 			//获取task统计数据
 			JSONObject json = JSONObject.fromObject(iterator.next());
 			if(json != null){
-				groupId = json.getLong("groupId");
-				poiPlanTotal = json.getLong("poiPlanTotal");
-				roadPlanTotal = json.getLong("roadPlanTotal");
-				percent = json.getLong("percent");
+				groupId = json.getInt("groupId");
+				poiPlanTotal = json.getInt("poiPlanTotal");
+				roadPlanTotal = json.getInt("roadPlanTotal");
+				percent = json.getInt("percent");
 				status = json.getInt("status");
 				planStartDate = json.getString("planStartDate");
 				planEndDate = json.getString("planEndDate");
@@ -173,9 +173,9 @@ public class OverviewGroupMain {
 	 * 处理统计数据
 	 */
 	public Document getGroupStat(List<Map<String,Object>> taskStatList){
-		long percent = 0;//进度百分比
-		long poiPlanTotal = 0;//所有任务poi计划量汇总
-		long roadPlanTotal = 0;//所有任务road计划量汇总
+		int percent = 0;//进度百分比
+		int poiPlanTotal = 0;//所有任务poi计划量汇总
+		int roadPlanTotal = 0;//所有任务road计划量汇总
 		int status = 0;
 		
 		String planStartDate = null;
@@ -198,9 +198,9 @@ public class OverviewGroupMain {
 		try {
 			if(taskStatList != null && taskStatList.size()>0){
 				for (Map<String, Object> taskStat : taskStatList) {
-					poiPlanTotal += (long)taskStat.get("poiPlanTotal");
-					roadPlanTotal += (long)taskStat.get("roadPlanTotal");
-					percent += (long)taskStat.get("collectPercent");
+					poiPlanTotal += (int)taskStat.get("poiPlanTotal");
+					roadPlanTotal += (int)taskStat.get("roadPlanTotal");
+					percent += (int)taskStat.get("percent");
 					
 					statusList.add((int)taskStat.get("status"));
 					if(!"null".equalsIgnoreCase((String) taskStat.get("planStartDate"))){
@@ -210,7 +210,7 @@ public class OverviewGroupMain {
 						planEndDateList.add((String) taskStat.get("planEndDate"));
 					}
 					if(!"null".equalsIgnoreCase((String) taskStat.get("actualStartDate"))){
-						actualStartDateList.add((String) taskStat.get("collectActualStartDate"));
+						actualStartDateList.add((String) taskStat.get("actualStartDate"));
 					}
 					if(!"null".equalsIgnoreCase((String) taskStat.get("actualEndDate"))){
 						actualEndDateList.add((String) taskStat.get("actualEndDate"));
@@ -294,9 +294,9 @@ public class OverviewGroupMain {
 		List<Document> groupStatList = new ArrayList<Document>();
 		try {
 			//查询task统计数据
-			Map<Long, List<Map<String, Object>>> taskStatMap = getTaskStat();
+			Map<Integer, List<Map<String, Object>>> taskStatMap = getTaskStat();
 			if(taskStatMap != null && !taskStatMap.isEmpty()){
-				for(Long key :taskStatMap.keySet()){
+				for(int key :taskStatMap.keySet()){
 					List<Map<String, Object>> taskStatList = taskStatMap.get(key);
 					Document doc = getGroupStat(taskStatList);
 					doc.put("groupId", key);
@@ -387,7 +387,7 @@ public class OverviewGroupMain {
 				new String[] { "dubbo-consumer-datahub-test.xml"});
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
-		OverviewTaskMain overviewSubtaskStat = new OverviewTaskMain("fm_stat", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+		OverviewGroupMain overviewSubtaskStat = new OverviewGroupMain("fm_stat", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 //		OverviewGroupMain overviewSubtaskStat = new OverviewGroupMain("fm_stat", "201610240956");
 		overviewSubtaskStat.runStat();
 		

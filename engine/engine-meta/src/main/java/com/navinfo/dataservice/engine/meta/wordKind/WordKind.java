@@ -65,7 +65,7 @@ public class WordKind {
 				} else if (type == 3 || type == 7) {
 					JSONObject noneChain = new JSONObject();
 					for (int i=0;i<typeChainList.size();i++) {
-						if (typeChainList.getJSONObject(i).getString("chain") == null || typeChainList.getJSONObject(i).getString("chain").isEmpty()) {
+						if (typeChainList.getJSONObject(i).getString("chain").equals("null") || typeChainList.getJSONObject(i).getString("chain").isEmpty()) {
 							noneChain = typeChainList.getJSONObject(i);
 						}
 						if (chain != null && typeChainList.getJSONObject(i).getString("chain").equals(chain)) {

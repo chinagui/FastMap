@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -11,6 +13,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiIcon;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
@@ -28,14 +31,22 @@ import net.sf.json.util.PropertyFilter;
  */
 public class DefaultObjConvertor {
 
+	protected Logger log = Logger.getLogger(DefaultObjConvertor.class);
 	public JSONArray objConvertorJson(Collection<BasicObj> objs) throws Exception {
 		JSONArray json = new JSONArray();
 		for (BasicObj basicObj : objs) {
+			
+			
 			JSONObject jso = new JSONObject();
 			// 主表
 			BasicRow mainrow = basicObj.getMainrow();
-			System.out.println(mainrow.getHisOpType());
-			jso.put("command", changeOpType(mainrow.getHisOpType()));
+			String mainrowType = changeOpType(mainrow.getHisOpType());
+			log.info("mainrowType: "+mainrowType);
+			if(mainrowType != null && (mainrowType.equals("INITIALIZE") || mainrowType.equals("INSERT_DELETE"))){
+				continue;
+			}
+			
+			jso.put("command", mainrowType);
 			// 获取主表类型
 			//String objName = basicObj.objName();
 			//String objType = getObjType(objName);
@@ -68,7 +79,7 @@ public class DefaultObjConvertor {
 				Geometry geometry = ixPoi.getGeometry();
 				mainJso.put("geometry", geometry.toText());
 			}
-			mainJso.put("objStatus", changeOpType(mainrow.getHisOpType()));
+			mainJso.put("objStatus", mainrowType);
 			// 子表
 			Map<String, List<BasicRow>> subrows = basicObj.getSubrows();
 			JsonConfig subRowConfig = new JsonConfig();
@@ -97,8 +108,13 @@ public class DefaultObjConvertor {
 			if (nameList != null && !nameList.isEmpty()) {
 				JSONArray nameJa = new JSONArray();
 				for (BasicRow nameRow : nameList) {
+					String nameRowType = changeOpType(nameRow.getHisOpType());
+					log.info("nameRowType: "+nameRowType);
+					if(nameRowType != null && (nameRowType.equals("INITIALIZE") || nameRowType.equals("INSERT_DELETE"))){
+						continue;
+					}
 					JSONObject nameJs = JSONObject.fromObject(nameRow, subRowConfig);
-					nameJs.put("objStatus", changeOpType(nameRow.getHisOpType()));
+					nameJs.put("objStatus", nameRowType);
 					// 修改主键名称
 					nameJs.put("pid", nameJs.get("nameId"));
 					nameJs.remove("nameId");
@@ -107,8 +123,13 @@ public class DefaultObjConvertor {
 					if (nameFlagList != null && !nameFlagList.isEmpty()) {
 						JSONArray nameFlagJa = new JSONArray();
 						for (BasicRow nameFlagRow : nameFlagList) {
+							String nameFlagRowType = changeOpType(nameFlagRow.getHisOpType());
+							log.info("nameFlagRowType: "+nameFlagRowType);
+							if(nameFlagRowType != null && (nameFlagRowType.equals("INITIALIZE") || nameFlagRowType.equals("INSERT_DELETE"))){
+								continue;
+							}
 							JSONObject nameFlagJs = JSONObject.fromObject(nameFlagRow, subRowConfig);
-							nameFlagJs.put("objStatus", changeOpType(nameFlagRow.getHisOpType()));
+							nameFlagJs.put("objStatus", nameFlagRowType);
 							nameFlagJa.add(nameFlagJs);
 						}
 
@@ -118,8 +139,13 @@ public class DefaultObjConvertor {
 					if (nameToneList != null && !nameToneList.isEmpty()) {
 						JSONArray nameToneJa = new JSONArray();
 						for (BasicRow nameToneRow : nameFlagList) {
+							String nameToneRowType = changeOpType(nameToneRow.getHisOpType());
+							log.info("nameToneRowType: "+nameToneRowType);
+							if(nameToneRowType != null && (nameToneRowType.equals("INITIALIZE") || nameToneRowType.equals("INSERT_DELETE"))){
+								continue;
+							}
 							JSONObject nameToneJs = JSONObject.fromObject(nameToneRow, subRowConfig);
-							nameToneJs.put("objStatus", changeOpType(nameToneRow.getHisOpType()));
+							nameToneJs.put("objStatus", nameToneRowType);
 							nameToneJa.add(nameToneJs);
 						}
 						nameJs.put("nameTones", nameToneJa);
@@ -132,15 +158,25 @@ public class DefaultObjConvertor {
 			if (parentList != null && !parentList.isEmpty()) {
 				JSONArray parentJa = new JSONArray();
 				for (BasicRow parentRow : parentList) {
+					String parentRowType = changeOpType(parentRow.getHisOpType());
+					log.info("parentRowType: "+parentRowType);
+					if(parentRowType != null && (parentRowType.equals("INITIALIZE") || parentRowType.equals("INSERT_DELETE"))){
+						continue;
+					}
 					JSONObject parentJs = JSONObject.fromObject(parentRow, subRowConfig);
-					parentJs.put("objStatus", changeOpType(parentRow.getHisOpType()));
+					parentJs.put("objStatus", parentRowType);
 					// 处理三级子表
 					List<BasicRow> childrenList = subrows.get("IX_POI_CHILDREN");
 					if (childrenList != null && !childrenList.isEmpty()) {
 						JSONArray childrenJa = new JSONArray();
 						for (BasicRow childrenRow : childrenList) {
+							String childrenRowType = changeOpType(childrenRow.getHisOpType());
+							log.info("childrenRowType: "+childrenRowType);
+							if(childrenRowType != null && (childrenRowType.equals("INITIALIZE") || childrenRowType.equals("INSERT_DELETE"))){
+								continue;
+							}
 							JSONObject childrenJs = JSONObject.fromObject(childrenRow, subRowConfig);
-							childrenJs.put("objStatus", changeOpType(childrenRow.getHisOpType()));
+							childrenJs.put("objStatus", childrenRowType);
 							childrenJa.add(childrenJs);
 						}
 						parentJs.put("children", childrenJa);
@@ -160,8 +196,13 @@ public class DefaultObjConvertor {
 				if (subrowList != null && !subrowList.isEmpty()) {
 					JSONArray subrowJa = new JSONArray();
 					for (BasicRow subrowRow : subrowList) {
+						String subrowRowType = changeOpType(subrowRow.getHisOpType());
+						log.info("subrowRowType: "+subrowRowType);
+						if(subrowRowType != null && (subrowRowType.equals("INITIALIZE") || subrowRowType.equals("INSERT_DELETE"))){
+							continue;
+						}
 						JSONObject subrowJs = JSONObject.fromObject(subrowRow, subRowConfig);
-						subrowJs.put("objStatus", changeOpType(subrowRow.getHisOpType()));
+						subrowJs.put("objStatus", subrowRowType);
 						// 修改主键名称
 						String name = getSubRowPKName(key);
 						if(name != null){

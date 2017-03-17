@@ -69,7 +69,7 @@ public class GLM01395 extends baseRule {
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
-			if (row instanceof RdSpeedlimit) {
+			if (row instanceof RdLinkSpeedlimit) {
 				RdLinkSpeedlimit speedlimit = (RdLinkSpeedlimit) row;
 
 				int fromSpeedLimit = speedlimit.getFromSpeedLimit();

@@ -76,6 +76,7 @@ public class FMYW20288 extends BasicCheckRule {
 					+ "	AND P1. " + pidString
 					+ " AND P1.U_RECORD <>2 AND P2.U_RECORD <>2	" 
 					+ " AND P1.PID <> P2.PID";
+			log.info("FM-YW-20-288 sql:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
 			if (values != null && values.size() > 0) {
 				for (int i = 0; i < values.size(); i++) {
@@ -101,11 +102,9 @@ public class FMYW20288 extends BasicCheckRule {
 				Set<String> referSubrow = new HashSet<String>();
 				referSubrow.add("IX_POI_ADDRESS");
 				Map<Long, BasicObj> referObjs = ObjBatchSelector.selectByPids(conn, ObjectName.IX_POI, referSubrow, false, pidList, false, true);
-
 				BasicObj obj1 = referObjs.get(pidTmp1);
 				IxPoiObj poiObj1 = (IxPoiObj) obj1;
 				IxPoiAddress address1 = poiObj1.getCHAddress();
-
 				BasicObj obj2 = referObjs.get(pidTmp2);
 				IxPoiObj poiObj2 = (IxPoiObj) obj2;
 				IxPoiAddress address2 = poiObj2.getCHAddress();
@@ -184,14 +183,14 @@ public class FMYW20288 extends BasicCheckRule {
 				if(!param.contains(key)){break;}
 				int index = param.indexOf(key);
 				if(index<param.length()-1){
-					String str = param.substring(index+1,index+2);
+					String str = param.substring(index+1,index+2);					
 					if(CheckUtil.isDigit(str)){
 						sub = param.substring(index+1);
 						break;
 					}else{
 						param = param.substring(index+1);
 					}
-				}
+				}else{break;}
 				i=index;
 			}
 			if (sub != null) {

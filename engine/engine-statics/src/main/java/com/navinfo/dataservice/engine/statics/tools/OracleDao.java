@@ -20,9 +20,11 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
+import com.navinfo.dataservice.engine.statics.overview.FmStatOverviewProgram;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.StringUtil;
 import com.navinfo.navicommons.exception.ServiceException;
+
 import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
@@ -244,7 +246,7 @@ public class OracleDao {
 			conn = DBConnector.getInstance().getManConnection();
 			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
-			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.BLOCK_MAN_ID"
+			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
 					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
@@ -269,7 +271,7 @@ public class OracleDao {
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-//						subtask.setBlockManId(rs.getInt("BLOCK_MAN_ID"));
+						subtask.setTaskId(rs.getInt("TASK_ID"));
 						
 						list.add(subtask);		
 					}
@@ -297,7 +299,7 @@ public class OracleDao {
 			String sql = "SELECT FSOS.SUBTASK_ID,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,FSOS.STAT_DATE,FSOS.STATUS"
 					+ ",FSOS.TOTAL_POI,FSOS.FINISHED_POI,FSOS.TOTAL_ROAD,FSOS.FINISHED_ROAD,FSOS.PERCENT_POI,FSOS.PERCENT_ROAD"
 					+ ",FSOS.PLAN_START_DATE,FSOS.PLAN_END_DATE,FSOS.ACTUAL_START_DATE,FSOS.ACTUAL_END_DATE"
-					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.BLOCK_MAN_ID"
+					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.TASK_ID"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE FSOS.STATUS = 0";
 			
@@ -308,7 +310,7 @@ public class OracleDao {
 					while(rs.next()){
 						Document subtask = new Document();
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						subtask.put("blockManId", rs.getInt("BLOCK_MAN_ID"));
+						subtask.put("taskId", rs.getInt("TASK_ID"));
 						subtask.put("percent", rs.getInt("PERCENT"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
 						subtask.put("progress", rs.getInt("PROGRESS"));
@@ -422,6 +424,174 @@ public class OracleDao {
 //						subtask.setGridIds(gridIds);
 						
 						list.add(blockManMap);
+						
+					}
+					return list;
+				}
+			});
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: getProgramListWithStat
+	 * @Description: 获取Program集合  根据 status latest
+	 * @return
+	 * @throws ServiceException 
+	 * @throws 
+	 * @date 2016年10月20日 下午4:17:58 
+	 */
+	public static List<FmStatOverviewProgram> getProgramListWithStat() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String sql = "SELECT P.PROGRAM_ID,"
+					+ "       P.STATUS,"
+					+ "       P.PLAN_START_DATE,"
+					+ "       P.PLAN_END_DATE,"
+					+ "       P.COLLECT_PLAN_START_DATE,"
+					+ "       P.COLLECT_PLAN_END_DATE,"
+					+ "       P.DAY_EDIT_PLAN_START_DATE,"
+					+ "       P.DAY_EDIT_PLAN_END_DATE,"
+					+ "       P.MONTH_EDIT_PLAN_START_DATE,"
+					+ "       P.MONTH_EDIT_PLAN_END_DATE,"
+					+ "       F.PERCENT,"
+					+ "       F.DIFF_DATE,"
+					+ "       F.PROGRESS,"
+					+ "       NVL(F.STATUS, 9) OLD_STATUS,"
+					+ "       F.COLLECT_PROGRESS,"
+					+ "       F.COLLECT_PERCENT,"
+					+ "       F.DAILY_PROGRESS,"
+					+ "       F.DAILY_PERCENT,"
+					+ "       F.MONTHLY_PROGRESS,"
+					+ "       F.MONTHLY_PERCENT,"
+					+ "       F.ACTUAL_END_DATE,"
+					+ "       F.COLLECT_ACTUAL_END_DATE,"
+					+ "       F.COLLECT_DIFF_DATE,"
+					+ "       F.DAILY_ACTUAL_END_DATE,"
+					+ "       F.DAILY_DIFF_DATE,"
+					+ "       F.POI_PLAN_TOTAL,"
+					+ "       F.ROAD_PLAN_TOTAL,"
+					+ "       F.MONTHLY_ACTUAL_END_DATE,"
+					+ "       F.MONTHLY_DIFF_DATE,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN T.PERCENT ELSE 0 END) NEW_COLLECT_SUM,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN 1 ELSE 0 END) NEW_COLLECT_COUNT,"
+					+ "       SUM(CASE T.TYPE WHEN 2 THEN NVL(T.PROGRESS, 1) - 1 ELSE 0 END) NEW_COLLECT_PROGRESS,"
+					+ "       SUM(CASE T.TYPE WHEN 1 THEN T.PERCENT ELSE 0 END) NEW_DAILY_SUM,"
+					+ "       SUM(CASE T.TYPE WHEN 1 THEN 1 ELSE 0 END) NEW_DAILY_COUNT,"
+					+ "       SUM(CASE T.TYPE WHEN 2 THEN NVL(T.PROGRESS, 1) - 1 ELSE 0 END) NEW_DAILY_PROGRESS,"
+					+ "       SUM(CASE T.TYPE WHEN 2 THEN T.PERCENT ELSE 0 END) NEW_MONTHLY_SUM,"
+					+ "       SUM(CASE T.TYPE WHEN 2 THEN 1 ELSE 0 END) NEW_MONTHLY_COUNT,"
+					+ "       SUM(CASE T.TYPE WHEN 2 THEN NVL(T.PROGRESS, 1) - 1 ELSE 0 END) NEW_MONTHLY_PROGRESS"
+					+ "  FROM PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F, FM_STAT_OVERVIEW_TASK T"
+					+ " WHERE P.PROGRAM_ID = F.PROGRAM_ID(+)"
+					+ "   AND P.PROGRAM_ID = T.PROGRAM_ID(+)"
+					+ "   AND P.LATEST = 1"
+					+ "   AND P.STATUS IN (0, 1)"
+					+ " GROUP BY P.PROGRAM_ID,"
+					+ "          P.STATUS,"
+					+ "          P.PLAN_START_DATE,"
+					+ "          P.PLAN_END_DATE,"
+					+ "          P.COLLECT_PLAN_START_DATE,"
+					+ "          P.COLLECT_PLAN_END_DATE,"
+					+ "          P.DAY_EDIT_PLAN_START_DATE,"
+					+ "          P.DAY_EDIT_PLAN_END_DATE,"
+					+ "          P.MONTH_EDIT_PLAN_START_DATE,"
+					+ "          P.MONTH_EDIT_PLAN_END_DATE,"
+					+ "          F.PERCENT,"
+					+ "          F.DIFF_DATE,"
+					+ "          F.PROGRESS,"
+					+ "          NVL(F.STATUS, 9),"
+					+ "          F.COLLECT_PROGRESS,"
+					+ "          F.COLLECT_PERCENT,"
+					+ "          F.DAILY_PROGRESS,"
+					+ "          F.DAILY_PERCENT,"
+					+ "          F.MONTHLY_PROGRESS,"
+					+ "          F.MONTHLY_PERCENT,"
+					+ "          F.ACTUAL_END_DATE,"
+					+ "          F.COLLECT_ACTUAL_END_DATE,"
+					+ "          F.COLLECT_DIFF_DATE,"
+					+ "          F.DAILY_ACTUAL_END_DATE,"
+					+ "          F.DAILY_DIFF_DATE,"
+					+ "          F.POI_PLAN_TOTAL,"
+					+ "          F.ROAD_PLAN_TOTAL,"
+					+ "          F.MONTHLY_ACTUAL_END_DATE,"
+					+ "          F.MONTHLY_DIFF_DATE";
+			return run.query(conn, sql, new ResultSetHandler<List<FmStatOverviewProgram>>() {
+
+				@Override
+				public List<FmStatOverviewProgram> handle(ResultSet rs) throws SQLException {
+					List<FmStatOverviewProgram> list = new ArrayList<FmStatOverviewProgram>();
+					//ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+					while (rs.next()) {
+						FmStatOverviewProgram program=new FmStatOverviewProgram();
+						program.setProgram_id(rs.getInt("PROGRAM_ID"));
+						program.setStatus(rs.getInt("STATUS"));
+						program.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						program.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						program.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						program.setCollectPlanEndDate(rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						program.setDailyPlanStartDate(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						program.setDailyPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						program.setMonthlyPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+						program.setMonthlyPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+						program.setActualStartDate(program.getPlanStartDate());
+						program.setCollectActualStartDate(program.getCollectPlanStartDate());
+						program.setDailyActualStartDate(program.getDailyPlanStartDate());
+						program.setMonthlyActualStartDate(program.getMonthlyPlanStartDate());
+						program.setCollectProgress(rs.getInt("COLLECT_PROGRESS"));
+						program.setCollectPercent(rs.getInt("COLLECT_PERCENT"));
+						program.setDailyProgress(rs.getInt("DAILY_PROGRESS"));
+						program.setDailyPercent(rs.getInt("DAILY_PERCENT"));
+						program.setMonthlyProgress(rs.getInt("MONTHLY_PROGRESS"));
+						program.setMonthlyPercent(rs.getInt("MONTHLY_PERCENT"));
+						program.setActualEndDate(rs.getTimestamp("ACTUAL_END_DATE"));
+						program.setCollectActualEndDate(rs.getTimestamp("COLLECT_ACTUAL_END_DATE"));
+						program.setDailyActualEndDate(rs.getTimestamp("DAILY_ACTUAL_END_DATE"));
+						program.setMonthlyActualEndDate(rs.getTimestamp("MONTHLY_ACTUAL_END_DATE"));
+						program.setPoiPlanTotal(rs.getInt("POI_PLAN_TOTAL"));
+						program.setPoiPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
+						
+						int oldStatus=rs.getInt("OLD_STATUS");
+						if(oldStatus==9||oldStatus==1){//之前没有统计数据/之前统计的信息中项目处于开启状态,需要重新计算采日月的进度
+							
+						}
+						Map<String,Object> blockManMap = new HashMap<String,Object>();
+
+						blockManMap.put("blockManId",rs.getInt("BLOCK_MAN_ID"));
+						blockManMap.put("status",rs.getInt("STATUS"));
+						blockManMap.put("collectGroupId",rs.getInt("COLLECT_GROUP_ID"));
+						blockManMap.put("dailyGroupId",rs.getInt("DAY_EDIT_GROUP_ID"));
+						
+						blockManMap.put("collectPlanStartDate",rs.getTimestamp("COLLECT_PLAN_START_DATE"));
+						blockManMap.put("collectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
+						
+						blockManMap.put("dailyPlanStartDate",rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
+						blockManMap.put("dailyPlanEndDate",rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
+						blockManMap.put("taskId",rs.getInt("TASK_ID"));
+						blockManMap.put("roadPlanTotal",rs.getInt("ROAD_PLAN_TOTAL"));
+						blockManMap.put("poiPlanTotal",rs.getInt("POI_PLAN_TOTAL"));
+						
+						blockManMap.put("fStatus",rs.getInt("F_STATUS"));
+						blockManMap.put("fCollectActualEndDate",rs.getTimestamp("F_COLLECT_ACTUAL_END_DATE"));
+						blockManMap.put("fDailyActualEndDate",rs.getTimestamp("F_DAILY_ACTUAL_END_DATE"));
+//						List<Integer> gridIds = null;
+//						try {
+//							gridIds = api.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+//						} catch (Exception e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						subtask.setGridIds(gridIds);
+						
+						list.add(program);
 						
 					}
 					return list;

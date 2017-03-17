@@ -429,7 +429,7 @@ public class UserInfoService {
 			Map<Object,Object> role = UserInfoOperation.getUserRole(conn, user_info);
 			
 			//查询用户组信息
-			Map<Object,Object> group = UserInfoOperation.getUserGroup(conn, user_info);
+			Map<Object,Object> group = UserInfoOperation.getUserLeaderGroup(conn, user_info);
 			
 			//userDevice，如果存在该用户该device记录，获取device_id；如果不存在，添加该用户该device记录，
 			int deviceId = 0;

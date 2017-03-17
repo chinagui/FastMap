@@ -2557,6 +2557,8 @@ public class StaticsService {
 			sb.append("       T.TYPE,");
 			sb.append("       T.PLAN_START_DATE,");
 			sb.append("       T.PLAN_END_DATE,");
+			sb.append("       FT.ACTUAL_START_DATE,");
+			sb.append("       FT.ACTUAL_END_DATE,");
 			sb.append("       FT.PERCENT,");
 			sb.append("       FT.DIFF_DATE,");
 			sb.append("       FT.PLAN_DATE,");

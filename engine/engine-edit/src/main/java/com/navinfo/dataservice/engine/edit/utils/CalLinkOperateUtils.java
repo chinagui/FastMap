@@ -40,7 +40,7 @@ public class CalLinkOperateUtils {
     public int getRelationShipType(int nodePid, int outLinkPid)
             throws Exception {
     	
-        String sql = "with c1 as (select node_pid from rd_cross_node a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid=:1 and B.U_RECORD !=2))  select count(1) count from rd_link c where c.link_pid=:2 and (c.s_node_pid=:3 or c.e_node_pid=:4 or exists(select null from c1 where c.s_node_pid=c1.node_pid or c.e_node_pid=c1.node_pid))and C.U_RECORD !=2";
+        String sql = "WITH c1 AS (SELECT node_pid FROM rd_cross_node a WHERE EXISTS (SELECT null FROM rd_cross_node b WHERE a.pid=b.pid AND b.node_pid=:1 AND b.U_RECORD !=2) AND a.U_RECORD !=2) SELECT count(1) count FROM rd_link c WHERE c.link_pid=:2 AND (c.s_node_pid=:3 OR c.e_node_pid=:4 OR EXISTS(SELECT null FROM c1 WHERE c.s_node_pid=c1.node_pid OR c.e_node_pid=c1.node_pid)) AND c.U_RECORD !=2";
 
         PreparedStatement pstmt = null;
 

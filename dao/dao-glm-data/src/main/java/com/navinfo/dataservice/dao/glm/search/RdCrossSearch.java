@@ -57,7 +57,7 @@ public class RdCrossSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT distinct b.pid FROM RD_NODE a,RD_CROSS_NODE b WHERE SDO_RELATE(a.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.NODE_PID = b.NODE_PID AND a.U_RECORD != 2 and b.U_RECORD !=2) SELECT /*+ index(b) */ a.PID, LISTAGG(A.NODE_PID, ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B.GEOMETRY), ',') WITHIN GROUP(ORDER BY A.NODE_PID) WKTS, LISTAGG(A.IS_MAIN, ',') WITHIN GROUP(ORDER BY A.NODE_PID) IS_MAINS FROM RD_CROSS_NODE A,tmp1,rd_node b WHERE a.pid = tmp1.pid and a.NODE_PID = b.node_pid and b.U_RECORD !=2 GROUP BY A.PID  ";
+		String sql = "WITH TMP1 AS (SELECT distinct b.pid FROM RD_NODE a,RD_CROSS_NODE b WHERE SDO_RELATE(a.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' and a.NODE_PID = b.NODE_PID AND a.U_RECORD != 2 and b.U_RECORD !=2) SELECT /*+ index(b) */ a.PID, LISTAGG(A.NODE_PID, ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B.GEOMETRY), ',') WITHIN GROUP(ORDER BY A.NODE_PID) WKTS, LISTAGG(A.IS_MAIN, ',') WITHIN GROUP(ORDER BY A.NODE_PID) IS_MAINS FROM RD_CROSS_NODE A,tmp1,rd_node b WHERE a.pid = tmp1.pid and a.NODE_PID = b.node_pid and b.U_RECORD !=2 and a.u_record <> 2 GROUP BY A.PID  ";
 
 		PreparedStatement pstmt = null;
 

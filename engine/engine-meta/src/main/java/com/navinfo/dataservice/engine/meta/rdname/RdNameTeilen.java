@@ -399,7 +399,6 @@ public class RdNameTeilen {
 			 engName = engPrefix + " " + engBaseName + " " + engInfix + " "
 					+ (engType == "*" ? "" : engType) + " " + engSuffix;
 		}
-		//System.out.println("engName: "+engName);
 		log.info("engName: "+engName);
 		// 处理掉前后的空格，把多个空格连在一起的替换成单个空格,注意：这里不会为空了，不用判断为空的情况
 		engName = engName.trim();

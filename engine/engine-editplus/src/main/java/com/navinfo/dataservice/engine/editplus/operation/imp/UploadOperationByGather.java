@@ -210,8 +210,6 @@ public class UploadOperationByGather {
 	 */
 	private void poiAutoBatchTaskId(OperationResult result, Connection conn) throws Exception {
 		if(result != null){
-			System.out.println(result.getObjsMapByType(ObjectName.IX_POI));
-			System.out.println(result.getObjsMapByType(ObjectName.IX_POI).entrySet());
 			if(result.getObjsMapByType(ObjectName.IX_POI).entrySet() != null && result.getObjsMapByType(ObjectName.IX_POI).entrySet().size() >0){
 				for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 					long poiPid = poiEntry.getKey();
@@ -273,7 +271,6 @@ public class UploadOperationByGather {
 	             Iterator ii = mapcoll.iterator();  
 	             while(ii.hasNext()){  
 	                JSONObject mailValue = (JSONObject) ii.next();  
-	                //System.out.println(mailValue);  
 					JSONObject errObj = new JSONObject();
 					errObj.put("fid", mailValue.get("fid"));
 					errObj.put("reason",  "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");

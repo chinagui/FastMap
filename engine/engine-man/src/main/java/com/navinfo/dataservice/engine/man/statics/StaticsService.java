@@ -1915,34 +1915,23 @@ public class StaticsService {
 				//处理数据
 				while(rs.next()){
 					map.put("taskId", rs.getLong("TASK_ID"));
+					map.put("programId", rs.getLong("PROGRAM_ID"));
 					map.put("progress", rs.getLong("PROGRESS"));
 					map.put("percent", rs.getLong("PERCENT"));
-					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
-					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("status", rs.getLong("STATUS"));
 					map.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
 					map.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+					map.put("diffDate", rs.getLong("DIFF_DATE"));
+					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
+					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("statDate", rs.getTimestamp("STAT_DATE"));
+					map.put("statTime", rs.getTimestamp("STAT_TIME"));
 					map.put("planDate", rs.getLong("PLAN_DATE"));
 					map.put("actualStartDate", rs.getTimestamp("ACTUAL_START_DATE"));
 					map.put("actualEndDate", rs.getTimestamp("ACTUAL_END_DATE"));
-					map.put("diffDate", rs.getLong("DIFF_DATE"));
-					map.put("collectProgress", rs.getLong("COLLECT_PROGRESS"));
-					map.put("collectPercent", rs.getLong("COLLECT_PERCENT"));
-					map.put("collectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-					map.put("collectPlanEndDate", rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-					map.put("collectPlanDate", rs.getLong("COLLECT_PLAN_DATE"));
-					map.put("collectActualStartDate", rs.getTimestamp("COLLECT_ACTUAL_START_DATE"));
-					map.put("collectActualEndDate", rs.getTimestamp("COLLECT_ACTUAL_END_DATE"));
-					map.put("collectDiffDate", rs.getLong("COLLECT_DIFF_DATE"));
-					map.put("dailyProgress", rs.getLong("DAILY_PROGRESS"));
-					map.put("dailyPercent", rs.getLong("DAILY_PERCENT"));
-					map.put("dailyPlanStartDate", rs.getTimestamp("DAILY_PLAN_START_DATE"));
-					map.put("dailyPlanEndDate", rs.getTimestamp("DAILY_PLAN_END_DATE"));
-					map.put("dailyPlanDate", rs.getLong("DAILY_PLAN_DATE"));
-					map.put("dailyActualStartDate", rs.getTimestamp("DAILY_ACTUAL_START_DATE"));
-					map.put("dailyActualEndDate", rs.getTimestamp("DAILY_ACTUAL_END_DATE"));
-					map.put("dailyDiffDate", rs.getLong("DAILY_DIFF_DATE"));
-					map.put("statDate", rs.getTimestamp("STAT_DATE"));
-					map.put("statTime", rs.getTimestamp("STAT_TIME"));
+					map.put("groupId", rs.getLong("GROUP_ID"));
+					map.put("type", rs.getLong("TYPE"));
+					
 				}
 				return map;
 			}

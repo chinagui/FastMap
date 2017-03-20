@@ -209,10 +209,14 @@ public class TaskOperation {
 					while(rs.next()){
 						Task map = new Task();
 						map.setTaskId(rs.getInt("TASK_ID"));
+						map.setProgramId(rs.getInt("PROGRAM_ID"));
+						map.setGroupId(rs.getInt("GROUP_ID"));
+						map.setPoiPlanTotal((rs.getInt("POI_PLAN_TOTAL")));
+						map.setRoadPlanTotal((rs.getInt("ROAD_PLAN_TOTAL")));
 //						map.setCityId(rs.getInt("CITY_ID"));
 						map.setCreateUserId(rs.getInt("CREATE_USER_ID"));
 						map.setCreateDate(rs.getTimestamp("CREATE_DATE"));
-//						map.setTaskStatus(rs.getInt("STATUS"));
+						map.setStatus(rs.getInt("STATUS"));
 //						map.setTaskName(rs.getString("NAME"));
 //						map.setTaskDescp(rs.getString("DESCP"));
 						map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
@@ -222,7 +226,7 @@ public class TaskOperation {
 						map.setLatest(rs.getInt("LATEST"));
 //						map.setMonthProducePlanStartDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_START_DATE"));
 //						map.setMonthProducePlanEndDate(rs.getTimestamp("MONTH_PRODUCE_PLAN_END_DATE"));
-//						map.setTaskType(rs.getInt("TASK_TYPE"));
+						map.setType(rs.getInt("TYPE"));
 						//map.setMonthEditGroupId(rs.getInt("MONTH_EDIT_GROUP_ID"));
 						//map.setCityName(rs.getString("CITY_NAME"));
 						//map.setCreateUserName(rs.getString("USER_REAL_NAME"));

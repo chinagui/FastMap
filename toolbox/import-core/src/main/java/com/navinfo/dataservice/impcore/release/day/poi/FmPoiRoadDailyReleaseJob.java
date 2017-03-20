@@ -304,15 +304,15 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					logMovers.add(logMover);
 					logMover.move();
 				}
-				//更新poi状态
-				LogStatusModifier logStatusModifierP = createLogStatusModifier("POI",dailyDbSchema,tempP);
-				logStatusModifierP.execute();
-				log.info("完成P库出品状态更新（poi）");
-				
 				//更新状态	
 				LogStatusModifier logStatusModifierPP = createLogStatusModifier("ROAD",dailyDbSchema,tempP);
 				logStatusModifierPP.execute();
 				log.info("完成P+R库出品状态更新（poi）");
+				
+				//更新poi状态
+				LogStatusModifier logStatusModifierP = createLogStatusModifier("POI",dailyDbSchema,tempP);
+				logStatusModifierP.execute();
+				log.info("完成P库出品状态更新（poi）");
 				
 				//更新状态	
 				LogStatusModifier logStatusModifierPR = createLogStatusModifier("ROAD",dailyDbSchema,tempR);

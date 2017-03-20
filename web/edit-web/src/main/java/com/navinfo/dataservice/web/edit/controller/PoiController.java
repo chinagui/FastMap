@@ -99,7 +99,7 @@ public class PoiController extends BaseController{
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
-			
+			logger.info("/poi/base/upload jobId : "+ jobId);
 			Long userId = tokenObj.getUserId();
 			
 			String filePath = unzipByJobId(jobId,userId);

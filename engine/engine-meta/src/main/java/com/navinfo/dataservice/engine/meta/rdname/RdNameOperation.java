@@ -31,7 +31,17 @@ public class RdNameOperation {
 		this.conn = conn;
 	}
 
-	public RdName saveName(RdName rdName) throws Exception {
+/**
+ * @Title: saveName
+ * @Description: 新增道路名
+ * @param rdName
+ * @return
+ * @throws Exception  RdName
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2017年3月20日 上午9:59:11 
+ */
+public RdName saveName(RdName rdName) throws Exception {
 		
 		String initSql = "BEGIN PY_UTILS_WORD.C_CONVERT_NUMBER:= 0;END;";
 		ProcedureBase procedureBase = new ProcedureBase(conn);
@@ -96,7 +106,6 @@ public class RdNameOperation {
         
 		PreparedStatement pstmt = null;
 		try {
-			System.out.println("rd_name: "+insertSql);
 			pstmt = conn.prepareStatement(insertSql);
 
 			Integer nameId = rdName.getNameId();
@@ -164,13 +173,13 @@ public class RdNameOperation {
 			pstmt.setString(27, rdName.getuFields());
 			pstmt.setInt(28, rdName.getSplitFlag());
 			pstmt.setString(29, rdName.getCity());
-			System.out.println("rd_name: "+insertSql+" ("+nameId+","+nameGroupid+","+rdName.getLangCode()+","+rdName.getName()
+			/*System.out.println("rd_name: "+insertSql+" ("+nameId+","+nameGroupid+","+rdName.getLangCode()+","+rdName.getName()
 			+","+rdName.getType()+","+rdName.getBase()+","+rdName.getPrefix()+","+rdName.getInfix()+","+rdName.getSuffix()
 			+","+rdName.getName()+","+rdName.getTypePhonetic()+","+rdName.getBasePhonetic()+","+rdName.getPrefixPhonetic()+","
 			+rdName.getInfixPhonetic()+","+rdName.getSuffixPhonetic()+","+rdName.getSrcFlag()+","+rdName.getRoadType()
 			+","+rdName.getAdminId()+","+rdName.getCodeType()+","+rdName.getVoiceFile()+","+rdName.getSrcResume()+","
 			+rdName.getPaRegionId()+","+rdName.getMemo()+","+rdName.getRouteId()+","+rdName.getProcessFlag()+","
-			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");
+			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");*/
 			pstmt.execute();
 
 			rdName.setNameId(nameId);
@@ -187,145 +196,7 @@ public class RdNameOperation {
 			//conn由调用者关闭
 		}
 
-	}
-	/**
-	 * @Description:新增一条道路名
-	 * @param name
-	 * @param langCode
-	 * @param adminId
-	 * @param srcResume
-	 * @throws Exception
-	 * @author: y
-	 * @time:2016-6-28 下午5:03:18
-	 */
-	
-	/*public RdName saveName(RdName rdName) throws Exception {
-
-		String insertSql = "	  Insert Into RD_NAME( \n"
-				+ "NAME_ID,									\n"
-				+ "NAME_GROUPID,     \n"
-				+ "LANG_CODE,        \n"
-				+ "NAME,             \n"
-				+ "TYPE,             \n"
-				+ "BASE,             \n"
-				+ "PREFIX,           \n"
-				+ "INFIX,            \n"
-				+ "SUFFIX,           \n"
-				+ "NAME_PHONETIC,    \n"
-				+ "TYPE_PHONETIC,    \n"
-				+ "BASE_PHONETIC,    \n"
-				+ "PREFIX_PHONETIC,  \n"
-				+ "INFIX_PHONETIC,   \n"
-				+ "SUFFIX_PHONETIC,  \n"
-				+ "SRC_FLAG,         \n"
-				+ "ROAD_TYPE,        \n"
-				+ "ADMIN_ID,         \n"
-				+ "CODE_TYPE,        \n"
-				+ "VOICE_FILE,       \n"
-				+ "SRC_RESUME,       \n"
-				+ "PA_REGION_ID,     \n"
-				+ "MEMO,             \n"
-				+ "ROUTE_ID,         \n"
-				+ "PROCESS_FLAG,     \n"
-				+ "U_RECORD,         \n"
-				+ "U_FIELDS,         \n"
-				+ "SPLIT_FLAG        \n";
-		// web端需要维护city字段 add by wangdongbin
-		if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
-			insertSql +=  ",CITY		\n"
-					+ ") VALUES \n"
-					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ( SELECT PY_UTILS_WORD.CONVERT_HZ_TONE(?, NULL, NULL) PHONETIC FROM DUAL), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?,?,?,?) \n";
-		} else {
-			insertSql += ",CITY		\n"
-					+ ") VALUES \n"
-					+ "	 (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?) \n";
-		}
-
-		PreparedStatement pstmt = null;
-		try {
-			System.out.println("rd_name: "+insertSql);
-			pstmt = conn.prepareStatement(insertSql);
-
-			Integer nameId = rdName.getNameId();
-			Integer nameGroupid = rdName.getNameGroupid();
-			
-			if (rdName.getNameId() == null) {
-				nameId = applyPid();
-			}
-			if (rdName.getNameGroupid() == null) {
-				nameGroupid = applyPid();
-			}
-
-			pstmt.setLong(1, nameId);
-			pstmt.setLong(2, nameGroupid);
-			pstmt.setString(3, rdName.getLangCode());
-			pstmt.setString(4, rdName.getName());
-			pstmt.setString(5, rdName.getType());
-			pstmt.setString(6, rdName.getBase());
-			pstmt.setString(7, rdName.getPrefix());
-			pstmt.setString(8, rdName.getInfix());
-			pstmt.setString(9, rdName.getSuffix());
-			// 名称发音，通过名称生成
-			if (rdName.getLangCode().equals("CHI") && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))) {
-				pstmt.setString(10, rdName.getName());
-			} else {
-				pstmt.setString(10, rdName.getNamePhonetic());
-			}
-			
-			pstmt.setString(11, rdName.getTypePhonetic());
-			pstmt.setString(12, rdName.getBasePhonetic());
-			pstmt.setString(13, rdName.getPrefixPhonetic());
-			pstmt.setString(14, rdName.getInfixPhonetic());
-			pstmt.setString(15, rdName.getSuffixPhonetic());
-			pstmt.setInt(16, rdName.getSrcFlag());
-			pstmt.setInt(17, rdName.getRoadType());
-			pstmt.setInt(18, rdName.getAdminId());
-			pstmt.setInt(19, rdName.getCodeType());
-			pstmt.setString(20, rdName.getVoiceFile());
-			pstmt.setString(21, rdName.getSrcResume());
-			
-			if(rdName.getPaRegionId()!=null){
-				pstmt.setInt(22, rdName.getPaRegionId());	
-			}else{
-				pstmt.setNull(22, Types.INTEGER);
-			}
-			
-			pstmt.setString(23, rdName.getMemo());
-			
-			if(rdName.getRouteId()!=null){
-				pstmt.setInt(24, rdName.getRouteId());	
-			}else{
-				pstmt.setNull(24, Types.INTEGER);
-			}
-			pstmt.setInt(25, rdName.getProcessFlag());
-			pstmt.setInt(26, rdName.getuRecord());
-			pstmt.setString(27, rdName.getuFields());
-			pstmt.setInt(28, rdName.getSplitFlag());
-			pstmt.setString(29, rdName.getCity());
-			System.out.println("rd_name: "+insertSql+" ("+nameId+","+nameGroupid+","+rdName.getLangCode()+","+rdName.getName()
-			+","+rdName.getType()+","+rdName.getBase()+","+rdName.getPrefix()+","+rdName.getInfix()+","+rdName.getSuffix()
-			+","+rdName.getName()+","+rdName.getTypePhonetic()+","+rdName.getBasePhonetic()+","+rdName.getPrefixPhonetic()+","
-			+rdName.getInfixPhonetic()+","+rdName.getSuffixPhonetic()+","+rdName.getSrcFlag()+","+rdName.getRoadType()
-			+","+rdName.getAdminId()+","+rdName.getCodeType()+","+rdName.getVoiceFile()+","+rdName.getSrcResume()+","
-			+rdName.getPaRegionId()+","+rdName.getMemo()+","+rdName.getRouteId()+","+rdName.getProcessFlag()+","
-			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");
-			pstmt.execute();
-
-			rdName.setNameId(nameId);
-			rdName.setNameGroupid(nameGroupid);
-			return rdName;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			if (conn != null) {
-				DbUtils.rollback(conn);
-			}
-			throw new Exception("新增道路名出错：" + e.getMessage(), e);
-		} finally {
-			DbUtils.close(pstmt);
-			//conn由调用者关闭
-		}
-
-	}*/
+}
 
 	/**
 	 * @Description:申请pid
@@ -496,15 +367,6 @@ public class RdNameOperation {
 				pstmt.setString(18, "");
 			}
 			//*******************
-			
-			
-			/*if(rdName.getRoadType().equals(1)){
-				pstmt.setString(18, rdName.getName());
-			}else if(rdName.getRoadType().equals(3)){
-				pstmt.setString(18, "");
-			}else{
-				pstmt.setString(18, rdName.getVoiceFile());
-			}*/
 			
 			pstmt.setString(19, rdName.getSrcResume());
 			

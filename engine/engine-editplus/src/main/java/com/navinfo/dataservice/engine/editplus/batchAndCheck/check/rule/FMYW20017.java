@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -66,7 +67,7 @@ public class FMYW20017 extends BasicCheckRule {
 			//存在KIND_CODE或CHAIN修改且修改前后在word_kind表中对应的词库不一样；
 			String newWordKind=metadataApi.wordKind(newKindCode, newChain);
 			String oldWordKind=metadataApi.wordKind(oldKindCode, oldChain);
-			if(newWordKind!=null&&!newWordKind.equals(oldWordKind)){
+			if((newWordKind!=null&&!newWordKind.equals(oldWordKind)) || (StringUtils.isEmpty(newWordKind) && StringUtils.isNotEmpty(oldWordKind))){
 				return true;
 			}
 		}

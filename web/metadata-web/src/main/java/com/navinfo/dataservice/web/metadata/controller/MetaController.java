@@ -688,9 +688,8 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             int subtaskId = jsonReq.getInt("subtaskId");
-            System.out.println("subtaskId: "+subtaskId);
+            logger.info("subtaskId: "+subtaskId);
             ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-            System.out.println("apiService: "+apiService);
             Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
             if (subtask == null) {
@@ -700,11 +699,9 @@ public class MetaController extends BaseController {
 //			int dbId = subtask.getDbId();
 
             FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-            System.out.println("subtask.getGeometry(): "+subtask.getGeometry());
-            System.out.println("apiFcc: "+apiFcc);
             JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
 
-            System.out.println("tips: "+tips);
+            logger.info("tips: "+tips);
             JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));
@@ -816,12 +813,10 @@ public class MetaController extends BaseController {
 
             selector.udateResultStatusById(valExceptionId, qaStatus);
 
-            //return new ModelAndView("jsonView", success(result));
         } catch (Exception e) {
 
             logger.error(e.getMessage(), e);
 
-            //return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
 
@@ -848,8 +843,6 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
 
             int flag = jsonReq.getInt("flag");
-
-//			int dbId = jsonReq.getInt("dbId");
 
             conn = DBConnector.getInstance().getMetaConnection();
 
@@ -1230,7 +1223,7 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             String langCode = jsonReq.getString("langCode");
-            System.out.println("langCode: "+langCode);
+            logger.info("langCode: "+langCode);
            
             JSONObject data = selector.searchRdNameFix(langCode);
 

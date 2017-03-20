@@ -247,12 +247,11 @@ public class ProduceService {
 					+ "       P.PRODUCE_NAME,"
 					+ "       P.PRODUCE_TYPE,"
 					+ "       P.PRODUCE_STATUS,"
-					+ "       P.CREATE_USER_ID,"
-					+ "       I.USER_REAL_NAME CREATE_USER_NAME,"
-					+ "       P.CREATE_DATE,P.parameter PAR"
-					+ "  FROM PRODUCE P, USER_INFO I"
-					+ " WHERE P.CREATE_USER_ID = I.USER_ID"
-					+ "  and p.produce_id="+produceId;
+					+ "       P.CREATE_DATE,"
+					+ "       PM.INFOR_ID"
+					+ "  FROM PRODUCE P, PROGRAM PM"
+					+ " WHERE P.PROGRAM_ID = PM.PROGRAM_ID"
+					+ "   AND P.PRODUCE_ID ="+produceId;
 			QueryRunner run=new QueryRunner();
 			ResultSetHandler<Map<String,Object>> rsHandler=new ResultSetHandler<Map<String,Object>>() {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException{
@@ -262,20 +261,19 @@ public class ProduceService {
 						map.put("produceName", rs.getString("PRODUCE_NAME"));
 						map.put("produceType", rs.getString("PRODUCE_TYPE"));
 						map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
-						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
-						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
 						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
-						CLOB inforGeo = ConnectionUtil.getClob(conn, rs,"PAR");
-						String inforGeo1 = StringUtil.ClobToString(inforGeo);
-						map.put("parameter",JSONObject.fromObject(inforGeo1));
-						//map.put("parameter",rs.getString("PAR"));
+						map.put("inforId", rs.getString("INFOR_ID"));
 						return map;
 					}
 					return null;
 				}
 			};		
 			
-			return run.query(conn, sql,rsHandler);
+			Map<String,Object> produceMap=run.query(conn, sql,rsHandler);
+			if(produceMap!=null&&produceMap.containsKey("inforId")){
+				produceMap.put("grids", InforManService.getInstance().getProgramGridsByInfor(conn,(String)produceMap.get("inforId")));
+			}
+			return produceMap;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

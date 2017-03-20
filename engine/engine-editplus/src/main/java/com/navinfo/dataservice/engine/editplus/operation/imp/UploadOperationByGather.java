@@ -52,9 +52,9 @@ public class UploadOperationByGather {
 //	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected JSONArray errLog = new JSONArray();
 	public UploadOperationByGather(Long userId) {
-		System.out.println("ApplicationContextUtil.containsBean('editApi'): "+ApplicationContextUtil.containsBean("editApi"));
+		log.info("ApplicationContextUtil.containsBean('editApi'): "+ApplicationContextUtil.containsBean("editApi"));
 		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
-		System.out.println("apiService: "+apiService);
+		log.info("apiService: "+apiService);
 	//	runn = new QueryRunner();
 		this.userId = userId;
 	}
@@ -148,11 +148,16 @@ public class UploadOperationByGather {
 					throw new ThreadExecuteException("");
 				}finally{
 					DbUtils.commitAndCloseQuietly(conn);
-					System.out.println("3.....");
+					log.info("3.....");
 				}
-//				System.out.println("runBatchPoi begin1.....");
-//				runBatchPoi(ixPoiObjs,dbId);
-//				System.out.println("runBatchPoi end2.....");
+				try{
+					log.info("runBatchPoi begin1.....");
+					runBatchPoi(ixPoiObjs,dbId);
+					log.info("runBatchPoi end2.....");
+				}catch(Exception e){
+					log.error(e.getMessage(),e);
+//					throw new ThreadExecuteException("");
+				}
 			}
 			
 			retObj.put("success", ja.size()-errLog.size());//成功的poi 总数
@@ -180,14 +185,13 @@ public class UploadOperationByGather {
 	private void runBatchPoi(List<BasicObj> ixPoiObjs, Integer dbId) throws Exception {
 		DefaultObjConvertor objToJson =new DefaultObjConvertor();
 		JSONArray poiJsonArr = objToJson.objConvertorJson(ixPoiObjs);
-		System.out.println("poiJsonArr.size(): "+poiJsonArr.size());
+		log.info("poiJsonArr.size(): "+poiJsonArr.size());
 		if(poiJsonArr != null && poiJsonArr.size() > 0){
 			for(Object poiObj : poiJsonArr){
 				JSONObject poiJsonObj = (JSONObject) poiObj;
 				poiJsonObj.put("dbId", dbId);
 				poiJsonObj.put("type", "IXPOIUPLOAD");
-				System.out.println("poiJsonObj : "+poiJsonObj);
-				System.out.println("apiService: "+apiService);
+				log.info("poiJsonObj : "+poiJsonObj);
 				apiService.runBatch(poiJsonObj);
 			}
 		}
@@ -206,8 +210,6 @@ public class UploadOperationByGather {
 	 */
 	private void poiAutoBatchTaskId(OperationResult result, Connection conn) throws Exception {
 		if(result != null){
-			System.out.println(result.getObjsMapByType(ObjectName.IX_POI));
-			System.out.println(result.getObjsMapByType(ObjectName.IX_POI).entrySet());
 			if(result.getObjsMapByType(ObjectName.IX_POI).entrySet() != null && result.getObjsMapByType(ObjectName.IX_POI).entrySet().size() >0){
 				for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 					long poiPid = poiEntry.getKey();
@@ -269,7 +271,6 @@ public class UploadOperationByGather {
 	             Iterator ii = mapcoll.iterator();  
 	             while(ii.hasNext()){  
 	                JSONObject mailValue = (JSONObject) ii.next();  
-	                //System.out.println(mailValue);  
 					JSONObject errObj = new JSONObject();
 					errObj.put("fid", mailValue.get("fid"));
 					errObj.put("reason",  "通过poi坐标计算出来的grid："+grid+",无法查询得到对应的大区库");

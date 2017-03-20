@@ -249,7 +249,7 @@ public class ProduceService {
 					+ "       P.PRODUCE_STATUS,"
 					+ "       P.CREATE_DATE,"
 					+ "       PM.INFOR_ID"
-					+ "  FROM PRODUCE P, PROGRAM PM"
+					+ "  FROM PRODUCE P,  PROGRAM PM"
 					+ " WHERE P.PROGRAM_ID = PM.PROGRAM_ID"
 					+ "   AND P.PRODUCE_ID ="+produceId;
 			QueryRunner run=new QueryRunner();

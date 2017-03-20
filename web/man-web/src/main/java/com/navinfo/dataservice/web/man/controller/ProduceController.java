@@ -115,8 +115,8 @@ public class ProduceController extends BaseController {
 		try{
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 
-			int produceId = dataJson.getInt("produceId");
-			Map<String, Object> data=ProduceService.getInstance().query(produceId);
+			int programId = dataJson.getInt("programId");
+			Map<String, Object> data=ProduceService.getInstance().query(programId);
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("日出品失败，原因："+e.getMessage(), e);

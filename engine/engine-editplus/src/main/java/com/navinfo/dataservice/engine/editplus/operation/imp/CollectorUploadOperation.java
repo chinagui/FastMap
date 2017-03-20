@@ -461,10 +461,13 @@ public class CollectorUploadOperation extends AbstractOperation {
 							//IX_POI_PHOTO表
 							int type = photo.getInt("type");
 							if(type == 1) {
-								String fccpid = photo.getString("id");
+								String fccpid = photo.getString("id").toUpperCase();
 								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 								if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
 									ixPoiPhoto.setPid(fccpid);
+									//*********zl 2017.03.17******
+									ixPoiPhoto.setRowId(fccpid);
+									//****************************
 								}
 								ixPoiPhoto.setPoiPid(ixPoi.getPid());
 								ixPoiPhoto.setTag(photo.getInt("tag"));
@@ -868,10 +871,10 @@ public class CollectorUploadOperation extends AbstractOperation {
 					String poiMemo = "";
 					// 照片
 					List<IxPoiPhoto> ixPoiPhotosOld = poi.getIxPoiPhotos();
-					List<Long> photoIdList = new ArrayList<Long>();
+					List<String> oldPidList = new ArrayList<String>();
 					if(ixPoiPhotosOld != null && ixPoiPhotosOld.size() > 0){
 						for (IxPoiPhoto ixPoiPhotoOld : ixPoiPhotosOld) {
-							photoIdList.add(ixPoiPhotoOld.getPhotoId());
+							oldPidList.add(ixPoiPhotoOld.getPid());
 						}
 					}
 					if(!JSONUtils.isNull(jo.get("attachments"))){
@@ -883,17 +886,21 @@ public class CollectorUploadOperation extends AbstractOperation {
 								//IX_POI_PHOTO表
 								int type = photo.getInt("type");
 								if(type == 1) {
-									String fccpid = photo.getString("id");
-									IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
-									if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
-										//Long photoIdl = Long.parseLong(fccpid);
-										ixPoiPhoto.setPid(fccpid);
+									String fccpid = photo.getString("id").toUpperCase();
+									if (!oldPidList.contains(fccpid)) {//数据库中已经存在,则不上传
+										IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
+										if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
+											//Long photoIdl = Long.parseLong(fccpid);
+											ixPoiPhoto.setPid(fccpid);
+											//*********zl 2017.03.17******
+											ixPoiPhoto.setRowId(fccpid);
+											//****************************
+										}
+										ixPoiPhoto.setPoiPid(ixPoi.getPid());
+										ixPoiPhoto.setTag(photo.getInt("tag"));
+										// 鲜度验证
+										//ixPoi.setFreshFlag(false);
 									}
-									ixPoiPhoto.setPoiPid(ixPoi.getPid());
-									ixPoiPhoto.setTag(photo.getInt("tag"));
-									// 鲜度验证
-									//ixPoi.setFreshFlag(false);
-									
 								}else if (type == 3) {
 									poiMemo = photo.getString("content");
 								}

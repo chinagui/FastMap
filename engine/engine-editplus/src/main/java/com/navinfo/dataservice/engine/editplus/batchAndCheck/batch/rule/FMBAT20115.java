@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
@@ -60,7 +61,7 @@ public class FMBAT20115 extends BasicBatchRule {
 				newChain = poi.getChain();
 			}
 			String wordOld = metadata.wordKind(newKindCode,newChain);
-			if (!wordNew.equals(wordOld)) {
+			if ((StringUtils.isEmpty(wordNew) && StringUtils.isNotEmpty(wordOld)) || (StringUtils.isNotEmpty(wordNew) && !wordNew.equals(wordOld))) {
 				isChanged = true;
 			}
 		}

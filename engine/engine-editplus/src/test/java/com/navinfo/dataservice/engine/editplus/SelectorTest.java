@@ -61,7 +61,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test0(){
 		try{
 			Connection conn = null;
@@ -97,7 +97,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test1(){
 		try{
 			Connection conn = null;
@@ -117,7 +117,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test2(){
 		try{
 			Connection conn = null;
@@ -165,7 +165,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test3(){
 		try{
 			Connection conn = null;
@@ -183,7 +183,7 @@ public class SelectorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void test4(){
 		try{
 			Connection conn = null;
@@ -232,7 +232,7 @@ public class SelectorTest {
 	}
 
 
-	@Test
+	//@Test
 	public void test10(){
 		try{
 			Connection conn = null;
@@ -263,7 +263,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test11(){
 		try{
 			Connection conn = null;
@@ -285,7 +285,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test12(){
 		try{
 			Connection conn = null;
@@ -317,7 +317,7 @@ public class SelectorTest {
 	}
 	
 
-	@Test
+	//@Test
 	public void test13(){
 		try{
 			Connection conn = null;
@@ -349,7 +349,7 @@ public class SelectorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void test14(){
 		try{
 			Connection conn = null;
@@ -374,7 +374,7 @@ public class SelectorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void test15(){
 		try{
 			Connection conn = null;
@@ -419,7 +419,7 @@ public class SelectorTest {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testtest(){
 		try{
 			Connection conn = null;

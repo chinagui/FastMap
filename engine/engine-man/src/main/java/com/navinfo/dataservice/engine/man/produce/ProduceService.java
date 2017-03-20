@@ -240,28 +240,17 @@ public class ProduceService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public Map<String,Object> query(int produceId) throws Exception {
+	public Map<String,Object> query(int programId) throws Exception {
 		final Connection conn=DBConnector.getInstance().getManConnection();
 		try{
-			String sql="SELECT P.PRODUCE_ID,"
-					+ "       P.PRODUCE_NAME,"
-					+ "       P.PRODUCE_TYPE,"
-					+ "       P.PRODUCE_STATUS,"
-					+ "       P.CREATE_DATE,"
-					+ "       PM.INFOR_ID"
-					+ "  FROM PRODUCE P,  PROGRAM PM"
-					+ " WHERE P.PROGRAM_ID = PM.PROGRAM_ID"
-					+ "   AND P.PRODUCE_ID ="+produceId;
+			String sql="SELECT P.INFOR_ID"
+					+ "  FROM PROGRAM P"
+					+ " WHERE P.program_id ="+programId;
 			QueryRunner run=new QueryRunner();
 			ResultSetHandler<Map<String,Object>> rsHandler=new ResultSetHandler<Map<String,Object>>() {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException{
 					while(rs.next()){
 						Map<String,Object> map=new HashMap<String, Object>();
-						map.put("produceId", rs.getInt("PRODUCE_ID"));
-						map.put("produceName", rs.getString("PRODUCE_NAME"));
-						map.put("produceType", rs.getString("PRODUCE_TYPE"));
-						map.put("produceStatus", rs.getInt("PRODUCE_STATUS"));
-						map.put("createDate", DateUtils.dateToString(rs.getTimestamp("CREATE_DATE")));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						return map;
 					}

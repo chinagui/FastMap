@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.statics.tools;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +12,8 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -19,7 +22,6 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.engine.statics.overview.FmStatOverviewProgram;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.StringUtil;
@@ -29,6 +31,7 @@ import net.sf.json.JSONObject;
 import oracle.sql.CLOB;
 
 public class OracleDao {
+	private static Logger log = LogManager.getLogger(OracleDao.class);
 	/**
 	 * 根据 日大区库的 db_id
 	 */
@@ -250,6 +253,7 @@ public class OracleDao {
 					+ " FROM SUBTASK S"
 					+ " WHERE S.STAGE IN (0, 1)"
 					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
+					+ " AND S.STATUS IN (0, 1)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
@@ -261,7 +265,6 @@ public class OracleDao {
 				@Override
 				public List<Subtask> handle(ResultSet rs) throws SQLException {
 					List<Subtask> list = new ArrayList<Subtask>();
-					ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 					while (rs.next()) {
 						Subtask subtask = new Subtask();
 
@@ -454,6 +457,7 @@ public class OracleDao {
 			
 			String sql = "SELECT P.PROGRAM_ID,"
 					+ "       P.STATUS,"
+					+ "       P.TYPE,"
 					+ "       P.PLAN_START_DATE,"
 					+ "       P.PLAN_END_DATE,"
 					+ "       P.COLLECT_PLAN_START_DATE,"
@@ -481,6 +485,8 @@ public class OracleDao {
 					+ "       F.ROAD_PLAN_TOTAL,"
 					+ "       F.MONTHLY_ACTUAL_END_DATE,"
 					+ "       F.MONTHLY_DIFF_DATE,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN POI_PLAN_TOTAL ELSE 0 END) NEW_POI_PLAN_TOTAL,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN ROAD_PLAN_TOTAL ELSE 0 END) NEW_ROAD_PLAN_TOTAL,"
 					+ "       SUM(CASE T.TYPE WHEN 0 THEN T.PERCENT ELSE 0 END) NEW_COLLECT_SUM,"
 					+ "       SUM(CASE T.TYPE WHEN 0 THEN 1 ELSE 0 END) NEW_COLLECT_COUNT,"
 					+ "       SUM(CASE T.TYPE WHEN 2 THEN NVL(T.PROGRESS, 1) - 1 ELSE 0 END) NEW_COLLECT_PROGRESS,"
@@ -497,6 +503,7 @@ public class OracleDao {
 					+ "   AND P.STATUS IN (0, 1)"
 					+ " GROUP BY P.PROGRAM_ID,"
 					+ "          P.STATUS,"
+					+ "          P.TYPE,"
 					+ "          P.PLAN_START_DATE,"
 					+ "          P.PLAN_END_DATE,"
 					+ "          P.COLLECT_PLAN_START_DATE,"
@@ -524,6 +531,7 @@ public class OracleDao {
 					+ "          F.ROAD_PLAN_TOTAL,"
 					+ "          F.MONTHLY_ACTUAL_END_DATE,"
 					+ "          F.MONTHLY_DIFF_DATE";
+			log.info("getProgramListWithStat sql:"+sql);
 			return run.query(conn, sql, new ResultSetHandler<List<FmStatOverviewProgram>>() {
 
 				@Override
@@ -532,8 +540,9 @@ public class OracleDao {
 					//ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
 					while (rs.next()) {
 						FmStatOverviewProgram program=new FmStatOverviewProgram();
-						program.setProgram_id(rs.getInt("PROGRAM_ID"));
+						program.setProgramId(rs.getInt("PROGRAM_ID"));
 						program.setStatus(rs.getInt("STATUS"));
+						program.setType(rs.getInt("TYPE"));
 						program.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						program.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						program.setCollectPlanStartDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"));
@@ -542,10 +551,6 @@ public class OracleDao {
 						program.setDailyPlanEndDate(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
 						program.setMonthlyPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
 						program.setMonthlyPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
-						program.setActualStartDate(program.getPlanStartDate());
-						program.setCollectActualStartDate(program.getCollectPlanStartDate());
-						program.setDailyActualStartDate(program.getDailyPlanStartDate());
-						program.setMonthlyActualStartDate(program.getMonthlyPlanStartDate());
 						program.setCollectProgress(rs.getInt("COLLECT_PROGRESS"));
 						program.setCollectPercent(rs.getInt("COLLECT_PERCENT"));
 						program.setDailyProgress(rs.getInt("DAILY_PROGRESS"));
@@ -560,39 +565,39 @@ public class OracleDao {
 						program.setPoiPlanTotal(rs.getInt("ROAD_PLAN_TOTAL"));
 						
 						int oldStatus=rs.getInt("OLD_STATUS");
-						if(oldStatus==9||oldStatus==1){//之前没有统计数据/之前统计的信息中项目处于开启状态,需要重新计算采日月的进度
+						if(oldStatus==9||oldStatus==1||program.getStatus()==1){
+							//之前没有统计数据/之前统计的信息中项目处于开启状态/现在项目处于开启状态,需要重新计算采日月的进度
+							int collectPercentSum=rs.getInt("NEW_COLLECT_SUM");
+							int collectCount=rs.getInt("NEW_COLLECT_COUNT");
+							int collectProgress=rs.getInt("NEW_COLLECT_PROGRESS");
+							program.setCollectProgress(collectProgress);
+							if(collectCount==0){program.setCollectPercent(0);}
+							else{program.setCollectPercent(collectPercentSum/collectCount);}
 							
-						}
-						Map<String,Object> blockManMap = new HashMap<String,Object>();
-
-						blockManMap.put("blockManId",rs.getInt("BLOCK_MAN_ID"));
-						blockManMap.put("status",rs.getInt("STATUS"));
-						blockManMap.put("collectGroupId",rs.getInt("COLLECT_GROUP_ID"));
-						blockManMap.put("dailyGroupId",rs.getInt("DAY_EDIT_GROUP_ID"));
-						
-						blockManMap.put("collectPlanStartDate",rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-						blockManMap.put("collectPlanEndDate",rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-						
-						blockManMap.put("dailyPlanStartDate",rs.getTimestamp("DAY_EDIT_PLAN_START_DATE"));
-						blockManMap.put("dailyPlanEndDate",rs.getTimestamp("DAY_EDIT_PLAN_END_DATE"));
-						blockManMap.put("taskId",rs.getInt("TASK_ID"));
-						blockManMap.put("roadPlanTotal",rs.getInt("ROAD_PLAN_TOTAL"));
-						blockManMap.put("poiPlanTotal",rs.getInt("POI_PLAN_TOTAL"));
-						
-						blockManMap.put("fStatus",rs.getInt("F_STATUS"));
-						blockManMap.put("fCollectActualEndDate",rs.getTimestamp("F_COLLECT_ACTUAL_END_DATE"));
-						blockManMap.put("fDailyActualEndDate",rs.getTimestamp("F_DAILY_ACTUAL_END_DATE"));
-//						List<Integer> gridIds = null;
-//						try {
-//							gridIds = api.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-//						} catch (Exception e) {
-//							// TODO Auto-generated catch block
-//							e.printStackTrace();
-//						}
-//						subtask.setGridIds(gridIds);
-						
-						list.add(program);
-						
+							int dailyPercentSum=rs.getInt("NEW_DAILY_SUM");
+							int dailyCount=rs.getInt("NEW_DAILY_COUNT");
+							int dailyProgress=rs.getInt("NEW_DAILY_PROGRESS");
+							program.setDailyProgress(dailyProgress);
+							if(dailyCount==0){program.setDailyPercent(0);}
+							else{program.setDailyPercent(dailyPercentSum/dailyCount);}
+							
+							int monthlyPercentSum=rs.getInt("NEW_MONTHLY_SUM");
+							int monthlyCount=rs.getInt("NEW_MONTHLY_COUNT");
+							int monthlyProgress=rs.getInt("NEW_MONTHLY_PROGRESS");
+							program.setMonthlyProgress(monthlyProgress);
+							if(monthlyCount==0){program.setMonthlyPercent(0);}
+							else{program.setMonthlyPercent(monthlyPercentSum/monthlyCount);}
+							
+							program.setPoiPlanTotal(rs.getInt("NEW_POI_PLAN_TOTAL"));
+							program.setPoiPlanTotal(rs.getInt("NEW_ROAD_PLAN_TOTAL"));	
+							if(program.getStatus()==0){//已关闭项目
+								program.setActualEndDate(new Timestamp(System.currentTimeMillis()));
+								program.setCollectActualEndDate(new Timestamp(System.currentTimeMillis()));
+								program.setDailyActualEndDate(new Timestamp(System.currentTimeMillis()));
+								program.setMonthlyActualEndDate(new Timestamp(System.currentTimeMillis()));
+							}
+						}												
+						list.add(program);						
 					}
 					return list;
 				}

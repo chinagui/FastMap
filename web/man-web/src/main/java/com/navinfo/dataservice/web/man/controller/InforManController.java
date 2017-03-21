@@ -166,11 +166,11 @@ public class InforManController extends BaseController {
 	
 	/**
 	 * 情报管理--查看及编辑情报信息
-	 * 
+	 * 结构变更，删除
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/inforMan/queryByTaskId")
+	/*@RequestMapping(value = "/inforMan/queryByTaskId")
 	public ModelAndView queryByTaskId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -189,7 +189,7 @@ public class InforManController extends BaseController {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 
 	/**
 	 * 情报管理--查看及编辑情报信息

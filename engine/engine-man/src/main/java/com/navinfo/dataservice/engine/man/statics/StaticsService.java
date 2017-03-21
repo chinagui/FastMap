@@ -6,7 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -750,6 +754,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS IN (0, 1)"
 					+ "     AND T.TASK_ID = S.TASK_ID"
+					+ "   AND T.LATEST = 1"
 					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = F.TASK_ID(+)"
 					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
@@ -764,6 +769,7 @@ public class StaticsService {
 					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS = 1"
+					+ "   AND T.LATEST = 1"
 					+ "     AND NOT EXISTS"
 					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID AND S.IS_QUALITY=0)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
@@ -981,6 +987,7 @@ public class StaticsService {
 						+ "    FROM BLOCK B, PROGRAM P"
 						+ "   WHERE B.PLAN_STATUS = 0"
 						+ "     AND B.CITY_ID = P.CITY_ID"
+						+ "   AND P.LATEST = 1"
 						+ "  UNION ALL"
 						+ "  SELECT T.TASK_ID,"
 						+ "         T.PROGRAM_ID,"
@@ -994,6 +1001,7 @@ public class StaticsService {
 						+ "    FROM TASK T, BLOCK B, FM_STAT_OVERVIEW_TASK F"
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
+						+ "   AND T.LATEST = 1"
 						+ "     AND NOT EXISTS"
 						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 						+ "  UNION ALL"
@@ -1015,6 +1023,7 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND T.TASK_ID = S.TASK_ID"
+						+ "   AND T.LATEST = 1"
 						+ "     AND S.IS_QUALITY=0"
 						+ "   GROUP BY T.TASK_ID,"
 						+ "            T.PROGRAM_ID,"
@@ -1039,6 +1048,7 @@ public class StaticsService {
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
+					+ "   AND T.LATEST = 1"
 					+ "     AND NOT EXISTS"
 					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 					+ "  UNION ALL"
@@ -1058,6 +1068,7 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
+					+ "   AND T.LATEST = 1"
 					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = S.TASK_ID"
 					+ "   GROUP BY T.TASK_ID,"
@@ -1553,6 +1564,7 @@ public class StaticsService {
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS = 1"
+						+ "   AND P.LATEST = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
 						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
@@ -1590,6 +1602,7 @@ public class StaticsService {
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS in (0,1)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
@@ -1626,6 +1639,7 @@ public class StaticsService {
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS = 1"
+						+ "   AND P.LATEST = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
 						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
@@ -1664,6 +1678,7 @@ public class StaticsService {
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS in (1,0)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
@@ -1900,34 +1915,23 @@ public class StaticsService {
 				//处理数据
 				while(rs.next()){
 					map.put("taskId", rs.getLong("TASK_ID"));
+					map.put("programId", rs.getLong("PROGRAM_ID"));
 					map.put("progress", rs.getLong("PROGRESS"));
 					map.put("percent", rs.getLong("PERCENT"));
-					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
-					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("status", rs.getLong("STATUS"));
 					map.put("planStartDate", rs.getTimestamp("PLAN_START_DATE"));
 					map.put("planEndDate", rs.getTimestamp("PLAN_END_DATE"));
+					map.put("diffDate", rs.getLong("DIFF_DATE"));
+					map.put("poiPlanTotal", rs.getLong("POI_PLAN_TOTAL"));
+					map.put("roadPlanTotal", rs.getLong("ROAD_PLAN_TOTAL"));
+					map.put("statDate", rs.getTimestamp("STAT_DATE"));
+					map.put("statTime", rs.getTimestamp("STAT_TIME"));
 					map.put("planDate", rs.getLong("PLAN_DATE"));
 					map.put("actualStartDate", rs.getTimestamp("ACTUAL_START_DATE"));
 					map.put("actualEndDate", rs.getTimestamp("ACTUAL_END_DATE"));
-					map.put("diffDate", rs.getLong("DIFF_DATE"));
-					map.put("collectProgress", rs.getLong("COLLECT_PROGRESS"));
-					map.put("collectPercent", rs.getLong("COLLECT_PERCENT"));
-					map.put("collectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE"));
-					map.put("collectPlanEndDate", rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-					map.put("collectPlanDate", rs.getLong("COLLECT_PLAN_DATE"));
-					map.put("collectActualStartDate", rs.getTimestamp("COLLECT_ACTUAL_START_DATE"));
-					map.put("collectActualEndDate", rs.getTimestamp("COLLECT_ACTUAL_END_DATE"));
-					map.put("collectDiffDate", rs.getLong("COLLECT_DIFF_DATE"));
-					map.put("dailyProgress", rs.getLong("DAILY_PROGRESS"));
-					map.put("dailyPercent", rs.getLong("DAILY_PERCENT"));
-					map.put("dailyPlanStartDate", rs.getTimestamp("DAILY_PLAN_START_DATE"));
-					map.put("dailyPlanEndDate", rs.getTimestamp("DAILY_PLAN_END_DATE"));
-					map.put("dailyPlanDate", rs.getLong("DAILY_PLAN_DATE"));
-					map.put("dailyActualStartDate", rs.getTimestamp("DAILY_ACTUAL_START_DATE"));
-					map.put("dailyActualEndDate", rs.getTimestamp("DAILY_ACTUAL_END_DATE"));
-					map.put("dailyDiffDate", rs.getLong("DAILY_DIFF_DATE"));
-					map.put("statDate", rs.getTimestamp("STAT_DATE"));
-					map.put("statTime", rs.getTimestamp("STAT_TIME"));
+					map.put("groupId", rs.getLong("GROUP_ID"));
+					map.put("type", rs.getLong("TYPE"));
+					
 				}
 				return map;
 			}
@@ -2056,5 +2060,735 @@ public class StaticsService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * @return 
+	 * fm_stat_overview
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> overview() throws ServiceException {
+		Connection conn = null;
+		Map<String,Object> overView = new HashMap<String,Object>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+ 
+			sb.append(" SELECT O.COLLECT_PERCENT,");
+			sb.append("   O.COLLECT_PLAN_START_DATE,");
+			sb.append("   O.COLLECT_PLAN_END_DATE,");
+			sb.append("   O.COLLECT_PLAN_DATE,");
+			sb.append("   O.COLLECT_ACTUAL_START_DATE,");
+			sb.append("   O.COLLECT_ACTUAL_END_DATE,");
+			sb.append("   O.COLLECT_DIFF_DATE,");
+			sb.append("   O.DAILY_PERCENT,");
+			sb.append("   O.DAILY_PLAN_START_DATE,");
+			sb.append("   O.DAILY_PLAN_END_DATE,");
+			sb.append("   O.DAILY_PLAN_DATE,");
+			sb.append("   O.DAILY_ACTUAL_START_DATE,");
+			sb.append("   O.DAILY_ACTUAL_END_DATE,");
+			sb.append("   O.DAILY_DIFF_DATE,");
+			sb.append("   O.MONTHLY_PERCENT,");
+			sb.append("   O.MONTHLY_PLAN_START_DATE,");
+			sb.append("   O.MONTHLY_PLAN_END_DATE,");
+			sb.append("   O.MONTHLY_PLAN_DATE,");
+			sb.append("   O.MONTHLY_ACTUAL_START_DATE,");
+			sb.append("   O.MONTHLY_ACTUAL_END_DATE,");
+			sb.append("   O.MONTHLY_DIFF_DATE,");
+			sb.append("   O.POI_PLAN_TOTAL,");
+			sb.append("   O.ROAD_PLAN_TOTAL");
+			sb.append(" FROM FM_STAT_OVERVIEW O");
+			sb.append(" ORDER BY O.STAT_TIME DESC");
+
+			String sql = sb.toString();
+
+			overView = queryRunner.query(conn, sql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> overView = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						overView.put("collectPercent", rs.getInt("COLLECT_PERCENT"));
+						overView.put("collectPlanDate", rs.getInt("COLLECT_PLAN_DATE"));
+						overView.put("collectDiffDate", rs.getInt("COLLECT_DIFF_DATE"));
+						overView.put("collectActualDate", rs.getInt("COLLECT_PLAN_DATE") - rs.getInt("COLLECT_DIFF_DATE"));
+						Timestamp collectPlanStartDate = rs.getTimestamp("COLLECT_PLAN_START_DATE");
+						Timestamp collectPlanEndDate = rs.getTimestamp("COLLECT_PLAN_END_DATE");
+						Timestamp collectActualStartDate = rs.getTimestamp("COLLECT_ACTUAL_START_DATE");
+						Timestamp collectActualEndDate = rs.getTimestamp("COLLECT_ACTUAL_END_DATE");
+						if(collectPlanStartDate != null){
+							overView.put("collectPlanStartDate", df.format(collectPlanStartDate));
+						}else{
+							overView.put("collectPlanStartDate", null);
+						}
+						if(collectPlanEndDate != null){
+							overView.put("collectPlanEndDate", df.format(collectPlanEndDate));
+						}else{
+							overView.put("collectPlanEndDate", null);
+						}
+						if(collectActualStartDate != null){
+							overView.put("collectActualStartDate", df.format(collectActualStartDate));
+						}else{
+							overView.put("collectActualStartDate", collectPlanStartDate);
+						}
+						if(collectActualEndDate != null){
+							overView.put("collectActualEndDate", df.format(collectActualEndDate));
+						}else{
+							overView.put("collectActualEndDate", collectPlanEndDate);
+						}
+
+						overView.put("dailyPercent", rs.getInt("DAILY_PERCENT"));
+						overView.put("dailyPlanDate", rs.getInt("DAILY_PLAN_DATE"));
+						overView.put("dailyDiffDate", rs.getInt("DAILY_DIFF_DATE")); 
+						overView.put("dailyActualDate", rs.getInt("DAILY_PLAN_DATE") - rs.getInt("DAILY_DIFF_DATE"));
+						Timestamp dailyPlanStartDate = rs.getTimestamp("DAILY_PLAN_START_DATE");
+						Timestamp dailyPlanEndDate = rs.getTimestamp("DAILY_PLAN_END_DATE");
+						Timestamp dailyActualStartDate = rs.getTimestamp("DAILY_ACTUAL_START_DATE");
+						Timestamp dailytActualEndDate = rs.getTimestamp("DAILY_ACTUAL_END_DATE");
+						if(dailyPlanStartDate != null){
+							overView.put("dailyPlanStartDate", df.format(dailyPlanStartDate));
+						}else{
+							overView.put("dailyPlanStartDate", null);
+						}
+						if(dailyPlanEndDate != null){
+							overView.put("dailyPlanEndDate", df.format(dailyPlanEndDate));
+						}else{
+							overView.put("dailyPlanEndDate", null);
+						}
+						if(dailyActualStartDate != null){
+							overView.put("dailyActualStartDate", df.format(dailyActualStartDate));
+						}else{
+							overView.put("dailyActualStartDate", dailyPlanStartDate);
+						}
+						if(dailytActualEndDate != null){
+							overView.put("dailytActualEndDate", df.format(dailytActualEndDate));
+						}else{
+							overView.put("dailytActualEndDate", dailyPlanEndDate);
+						}
+						
+						overView.put("monthlyPercent", rs.getInt("MONTHLY_PERCENT")); 
+						overView.put("monthlyPlanDate", rs.getInt("MONTHLY_PLAN_DATE"));
+						overView.put("monthlyDiffDate", rs.getInt("MONTHLY_DIFF_DATE")); 
+						overView.put("monthlyActualDate", rs.getInt("MONTHLY_PLAN_DATE") - rs.getInt("MONTHLY_DIFF_DATE"));
+						Timestamp monthlyPlanStartDate = rs.getTimestamp("MONTHLY_PLAN_START_DATE");
+						Timestamp monthlyPlanEndDate = rs.getTimestamp("MONTHLY_PLAN_END_DATE");
+						Timestamp monthlyActualStartDate = rs.getTimestamp("MONTHLY_ACTUAL_START_DATE");
+						Timestamp monthlyActualEndDate = rs.getTimestamp("MONTHLY_ACTUAL_END_DATE");
+						if(monthlyPlanStartDate != null){
+							overView.put("monthlyPlanStartDate", df.format(monthlyPlanStartDate));
+						}else{
+							overView.put("monthlyPlanStartDate", null);
+						}
+						if(monthlyPlanEndDate != null){
+							overView.put("monthlyPlanEndDate", df.format(monthlyPlanEndDate));
+						}else{
+							overView.put("monthlyPlanEndDate", null);
+						}
+						if(monthlyActualStartDate != null){
+							overView.put("monthlyActualStartDate", df.format(monthlyActualStartDate));
+						}else{
+							overView.put("monthlyActualStartDate", monthlyPlanStartDate);
+						}
+						if(monthlyActualEndDate != null){
+							overView.put("monthlyActualEndDate", df.format(monthlyActualEndDate));
+						}else{
+							overView.put("monthlyActualEndDate", monthlyPlanEndDate);
+						}
+
+						overView.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						overView.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+					}
+					else{
+						overView.put("collectPercent", 0);
+						overView.put("collectPlanDate", 0);
+						overView.put("collectDiffDate", 0);
+						overView.put("collectActualDate", 0);
+						overView.put("collectPlanStartDate", null);
+						overView.put("collectPlanEndDate", null);
+						overView.put("collectActualStartDate", null);							
+						overView.put("collectActualEndDate", null);
+
+						overView.put("dailyPercent", 0);
+						overView.put("dailyPlanDate", 0);
+						overView.put("dailyDiffDate", 0); 
+						overView.put("dailyActualDate", 0);
+						overView.put("dailyPlanStartDate", null);
+						overView.put("dailyPlanEndDate", null);
+						overView.put("dailyActualStartDate", null);							
+						overView.put("dailyActualEndDate", null);
+						
+						overView.put("monthlyPercent", 0);
+						overView.put("monthlyPlanDate", 0);
+						overView.put("monthlyDiffDate", 0); 
+						overView.put("monthlyActualDate", 0);
+						overView.put("monthlyPlanStartDate", null);
+						overView.put("monthlyPlanEndDate", null);
+						overView.put("monthlyActualStartDate", null);							
+						overView.put("monthlyActualEndDate", null);
+						
+						overView.put("poiPlanTotal", 0);
+						overView.put("roadPlanTotal", 0);
+
+					}
+					return overView;
+				}
+				
+			});		
+			return overView;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询概览失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param groupId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> groupOverview(int groupId) throws ServiceException {
+		Connection conn = null;
+		Map<String,Object> overView = new HashMap<String,Object>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("SELECT G.GROUP_ID,");
+			sb.append("       G.PERCENT,");
+			sb.append("       G.PLAN_START_DATE,");
+			sb.append("       G.PLAN_END_DATE,");
+			sb.append("       G.PLAN_DATE,");
+			sb.append("       G.DIFF_DATE,");
+			sb.append("       G.ACTUAL_START_DATE,");
+			sb.append("       G.ACTUAL_END_DATE,");
+			sb.append("       G.POI_PLAN_TOTAL,");
+			sb.append("       G.ROAD_PLAN_TOTAL");
+			sb.append("  FROM FM_STAT_OVERVIEW_GROUP G");
+			sb.append(" WHERE G.GROUP_ID = " + groupId);
+			sb.append(" ORDER BY G.STAT_TIME DESC");
+			
+			String sql = sb.toString();
+
+			overView = queryRunner.query(conn, sql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> overView = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						overView.put("percent", rs.getInt("PERCENT"));
+						overView.put("planDate", rs.getInt("PLAN_DATE"));
+						overView.put("diffDate", rs.getInt("DIFF_DATE"));
+						overView.put("actualDate", rs.getInt("PLAN_DATE") - rs.getInt("DIFF_DATE"));
+						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
+						Timestamp actualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
+						Timestamp actualEndDate = rs.getTimestamp("ACTUAL_END_DATE");
+						if(planStartDate != null){
+							overView.put("planStartDate", df.format(planStartDate));
+						}else{
+							overView.put("planStartDate", null);
+						}
+						if(planEndDate != null){
+							overView.put("planEndDate", df.format(planEndDate));
+						}else{
+							overView.put("planEndDate", null);
+						}
+						if(actualStartDate != null){
+							overView.put("actualStartDate", df.format(actualStartDate));
+						}else{
+							overView.put("actualStartDate", null);
+						}
+						if(actualEndDate != null){
+							overView.put("actualEndDate", df.format(actualEndDate));
+						}else{
+							overView.put("actualEndDate", null);
+						}
+
+						overView.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						overView.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+					}
+					else{
+						overView.put("percent", 0);
+						overView.put("planDate", 0);
+						overView.put("diffDate", 0);
+						overView.put("actualDate", 0);
+						overView.put("planStartDate", null);
+						overView.put("planEndDate", null);
+						overView.put("actualStartDate", null);
+						overView.put("actualEndDate", null);
+						overView.put("poiPlanTotal", 0);
+						overView.put("roadPlanTotal", 0);
+
+					}
+					return overView;
+				}
+			});		
+			return overView;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询作业组概览失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param programId
+	 * @return
+	 * 根据programId获取统计概览
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> programOverViewDetail(int programId) throws ServiceException {
+		Connection conn = null;
+		Map<String,Object> overView = new HashMap<String,Object>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT O.COLLECT_PERCENT,");
+			sb.append("   O.COLLECT_PLAN_START_DATE,");
+			sb.append("   O.COLLECT_PLAN_END_DATE,");
+			sb.append("   O.COLLECT_PLAN_DATE,");
+			sb.append("   O.COLLECT_ACTUAL_START_DATE,");
+			sb.append("   O.COLLECT_ACTUAL_END_DATE,");
+			sb.append("   O.COLLECT_DIFF_DATE,");
+			sb.append("   O.DAILY_PERCENT,");
+			sb.append("   O.DAILY_PLAN_START_DATE,");
+			sb.append("   O.DAILY_PLAN_END_DATE,");
+			sb.append("   O.DAILY_PLAN_DATE,");
+			sb.append("   O.DAILY_ACTUAL_START_DATE,");
+			sb.append("   O.DAILY_ACTUAL_END_DATE,");
+			sb.append("   O.DAILY_DIFF_DATE,");
+			sb.append("   O.MONTHLY_PERCENT,");
+			sb.append("   O.MONTHLY_PLAN_START_DATE,");
+			sb.append("   O.MONTHLY_PLAN_END_DATE,");
+			sb.append("   O.MONTHLY_PLAN_DATE,");
+			sb.append("   O.MONTHLY_ACTUAL_START_DATE,");
+			sb.append("   O.MONTHLY_ACTUAL_END_DATE,");
+			sb.append("   O.MONTHLY_DIFF_DATE,");
+			sb.append("   O.POI_PLAN_TOTAL,");
+			sb.append("   O.ROAD_PLAN_TOTAL,");
+			sb.append("   O.PERCENT,");
+			sb.append("   O.PLAN_START_DATE,");
+			sb.append("   O.PLAN_END_DATE,");
+			sb.append("   O.PLAN_DATE,");
+			sb.append("   O.DIFF_DATE,");
+			sb.append("   O.ACTUAL_START_DATE,");
+			sb.append("   O.ACTUAL_END_DATE");
+			sb.append(" FROM FM_STAT_OVERVIEW O");
+			sb.append(" WHERE O.PROGRAM_ID = " + programId);
+			sb.append(" ORDER BY O.STAT_TIME DESC");
+
+			String sql = sb.toString();
+
+			overView = queryRunner.query(conn, sql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> overView = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						overView.put("percent", rs.getInt("PERCENT")); 
+						overView.put("planDate", rs.getInt("PLAN_DATE"));
+						overView.put("diffDate", rs.getInt("DIFF_DATE")); 
+						overView.put("actualDate", rs.getInt("PLAN_DATE") - rs.getInt("DIFF_DATE"));
+						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
+						Timestamp pctualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
+						Timestamp pctualEndDate = rs.getTimestamp("ACTUAL_END_DATE");
+						if(planStartDate != null){
+							overView.put("planStartDate", df.format(planStartDate));
+						}else{
+							overView.put("planStartDate", null);
+						}
+						if(planEndDate != null){
+							overView.put("planEndDate", df.format(planEndDate));
+						}else{
+							overView.put("planEndDate", null);
+						}
+						if(pctualStartDate != null){
+							overView.put("pctualStartDate", df.format(pctualStartDate));
+						}else{
+							overView.put("pctualStartDate", null);
+						}
+						if(pctualEndDate != null){
+							overView.put("pctualEndDate", df.format(pctualEndDate));
+						}else{
+							overView.put("pctualEndDate", null);
+						}
+						
+						overView.put("collectPercent", rs.getInt("COLLECT_PERCENT"));
+						overView.put("collectPlanDate", rs.getInt("COLLECT_PLAN_DATE"));
+						overView.put("collectDiffDate", rs.getInt("COLLECT_DIFF_DATE"));
+						overView.put("collectActualDate", rs.getInt("COLLECT_PLAN_DATE") - rs.getInt("COLLECT_DIFF_DATE"));
+						Timestamp collectPlanStartDate = rs.getTimestamp("COLLECT_PLAN_START_DATE");
+						Timestamp collectPlanEndDate = rs.getTimestamp("COLLECT_PLAN_END_DATE");
+						Timestamp collectActualStartDate = rs.getTimestamp("COLLECT_ACTUAL_START_DATE");
+						Timestamp collectActualEndDate = rs.getTimestamp("COLLECT_ACTUAL_END_DATE");
+						if(collectPlanStartDate != null){
+							overView.put("collectPlanStartDate", df.format(collectPlanStartDate));
+						}else{
+							overView.put("collectPlanStartDate", null);
+						}
+						if(collectPlanEndDate != null){
+							overView.put("collectPlanEndDate", df.format(collectPlanEndDate));
+						}else{
+							overView.put("collectPlanEndDate", null);
+						}
+						if(collectActualStartDate != null){
+							overView.put("collectActualStartDate", df.format(collectActualStartDate));
+						}else{
+							overView.put("collectActualStartDate", null);
+						}
+						if(collectActualEndDate != null){
+							overView.put("collectActualEndDate", df.format(collectActualEndDate));
+						}else{
+							overView.put("collectActualEndDate", null);
+						}
+						
+						overView.put("dailyPercent", rs.getInt("DAILY_PERCENT"));
+						overView.put("dailyPlanDate", rs.getInt("DAILY_PLAN_DATE"));
+						overView.put("dailyDiffDate", rs.getInt("DAILY_DIFF_DATE")); 
+						overView.put("dailyActualDate", rs.getInt("DAILY_PLAN_DATE") - rs.getInt("DAILY_DIFF_DATE"));
+						Timestamp dailyPlanStartDate = rs.getTimestamp("DAILY_PLAN_START_DATE");
+						Timestamp dailyPlanEndDate = rs.getTimestamp("DAILY_PLAN_END_DATE");
+						Timestamp dailyActualStartDate = rs.getTimestamp("DAILY_ACTUAL_START_DATE");
+						Timestamp dailytActualEndDate = rs.getTimestamp("DAILY_ACTUAL_END_DATE");
+						if(dailyPlanStartDate != null){
+							overView.put("dailyPlanStartDate", df.format(dailyPlanStartDate));
+						}else{
+							overView.put("dailyPlanStartDate", null);
+						}
+						if(dailyPlanEndDate != null){
+							overView.put("dailyPlanEndDate", df.format(dailyPlanEndDate));
+						}else{
+							overView.put("dailyPlanEndDate", null);
+						}
+						if(dailyActualStartDate != null){
+							overView.put("dailyActualStartDate", df.format(dailyActualStartDate));
+						}else{
+							overView.put("dailyActualStartDate", null);
+						}
+						if(dailytActualEndDate != null){
+							overView.put("dailytActualEndDate", df.format(dailytActualEndDate));
+						}else{
+							overView.put("dailytActualEndDate", null);
+						}
+						
+						overView.put("monthlyPercent", rs.getInt("MONTHLY_PERCENT")); 
+						overView.put("monthlyPlanDate", rs.getInt("MONTHLY_PLAN_DATE"));
+						overView.put("monthlyDiffDate", rs.getInt("MONTHLY_DIFF_DATE")); 
+						overView.put("monthlyActualDate", rs.getInt("MONTHLY_PLAN_DATE") - rs.getInt("MONTHLY_DIFF_DATE"));
+						Timestamp monthlyPlanStartDate = rs.getTimestamp("MONTHLY_PLAN_START_DATE");
+						Timestamp monthlyPlanEndDate = rs.getTimestamp("MONTHLY_PLAN_END_DATE");
+						Timestamp monthlyActualStartDate = rs.getTimestamp("MONTHLY_ACTUAL_START_DATE");
+						Timestamp monthlyActualEndDate = rs.getTimestamp("MONTHLY_ACTUAL_END_DATE");
+						if(monthlyPlanStartDate != null){
+							overView.put("monthlyPlanStartDate", df.format(monthlyPlanStartDate));
+						}else{
+							overView.put("monthlyPlanStartDate", null);
+						}
+						if(monthlyPlanEndDate != null){
+							overView.put("monthlyPlanEndDate", df.format(monthlyPlanEndDate));
+						}else{
+							overView.put("monthlyPlanEndDate", null);
+						}
+						if(monthlyActualStartDate != null){
+							overView.put("monthlyActualStartDate", df.format(monthlyActualStartDate));
+						}else{
+							overView.put("monthlyActualStartDate", null);
+						}
+						if(monthlyActualEndDate != null){
+							overView.put("monthlyActualEndDate", df.format(monthlyActualEndDate));
+						}else{
+							overView.put("monthlyActualEndDate", null);
+						}
+
+						overView.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						overView.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+					}
+					return overView;
+				}
+			});		
+			return overView;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询项目进展详情失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param programId
+	 * @param endDate 
+	 * @param startDate 
+	 * @return
+	 */
+	public Map<String, Object> programOverviewExpect(int programId, String startDate, String endDate) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> taskOverviewDetail(int taskId) throws ServiceException {
+		Connection conn = null;
+		Map<String,Object> overView = new HashMap<String,Object>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT T.TASK_ID,");
+			sb.append("       T.TYPE,");
+			sb.append("       T.PLAN_START_DATE,");
+			sb.append("       T.PLAN_END_DATE,");
+			sb.append("       FT.ACTUAL_START_DATE,");
+			sb.append("       FT.ACTUAL_END_DATE,");
+			sb.append("       FT.PERCENT,");
+			sb.append("       FT.DIFF_DATE,");
+			sb.append("       FT.PLAN_DATE,");
+			sb.append("       FT.POI_PLAN_TOTAL,");
+			sb.append("       FT.ROAD_PLAN_TOTAL");
+			sb.append("  FROM FM_STAT_OVERVIEW_TASK FT, TASK T");
+			sb.append(" WHERE FT.TASK_ID(+) = T.TASK_ID");
+			sb.append("   AND T.TASK_ID = " + taskId);
+
+			String sql = sb.toString();
+
+			overView = queryRunner.query(conn, sql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> overView = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						overView.put("taskId", rs.getInt("TASK_ID")); 
+						overView.put("type", rs.getInt("TYPE")); 
+						overView.put("percent", rs.getInt("PERCENT")); 
+						
+						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
+						Timestamp actualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
+						Timestamp actualEndDate = rs.getTimestamp("ACTUAL_END_DATE");
+						if(planStartDate != null){
+							overView.put("planStartDate", df.format(planStartDate));
+						}else{
+							overView.put("planStartDate", null);
+						}
+						if(planEndDate != null){
+							overView.put("planEndDate", df.format(planEndDate));
+						}else{
+							overView.put("planEndDate", null);
+						}
+						if(actualStartDate != null){
+							overView.put("actualStartDate", df.format(actualStartDate));
+						}else{
+							overView.put("actualStartDate", planStartDate);
+						}
+						if(actualEndDate != null){
+							overView.put("actualEndDate", df.format(actualEndDate));
+						}else{
+							overView.put("actualEndDate", planEndDate);
+						}
+						
+						int planDate = rs.getInt("PLAN_DATE");
+						int diffDate = rs.getInt("DIFF_DATE");
+						//如果计划时间为0，则计算计划时间与距离计划结束时间天数，此种情况一般是还没有任务统计信息
+						if((planDate==0)&&(planStartDate != null)&&(planEndDate != null)){
+							planDate = daysOfTwo(planEndDate,planStartDate);
+							diffDate = daysOfTwo(planEndDate,new Date());;
+						}
+						overView.put("planDate", planDate);
+						overView.put("diffDate", diffDate); 
+						overView.put("actualDate", planDate - diffDate);
+						
+						overView.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
+						overView.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
+
+					}
+					else{
+						overView.put("taskId", 0); 
+						overView.put("type", 0); 
+						overView.put("percent", 0); 
+						overView.put("planStartDate", null);
+						overView.put("planEndDate", null);
+						overView.put("actualStartDate", null);
+						overView.put("actualEndDate", null);
+						overView.put("planDate", 0);
+						overView.put("diffDate", 0); 
+						overView.put("actualDate", 0);
+						
+						overView.put("poiPlanTotal", 0);
+						overView.put("roadPlanTotal", 0);
+
+					}
+					return overView;
+				}
+			});		
+			return overView;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询任务进展详情失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public Map<String, Object> taskOverviewExpect(int taskId, String startDate, String endDate) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Object> subtaskOverviewDetail(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		Map<String,Object> overView = new HashMap<String,Object>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner queryRunner = new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT ST.SUBTASK_ID,");
+			sb.append("       ST.STAGE,");
+			sb.append("       ST.TYPE,");
+			sb.append("       S.PERCENT,");
+			sb.append("       S.DIFF_DATE,");
+			sb.append("       S.PLAN_DATE,");
+			sb.append("       ST.PLAN_START_DATE,");
+			sb.append("       ST.PLAN_END_DATE,");
+			sb.append("       S.ACTUAL_START_DATE,");
+			sb.append("       S.ACTUAL_END_DATE");
+			sb.append("  FROM FM_STAT_OVERVIEW_SUBTASK S, SUBTASK ST");
+			sb.append(" WHERE S.SUBTASK_ID(+) = ST.SUBTASK_ID");
+			sb.append("   AND ST.SUBTASK_ID = " + subtaskId);
+
+			String sql = sb.toString();
+
+			overView = queryRunner.query(conn, sql, new ResultSetHandler<Map<String,Object>>() {
+
+				@Override
+				public Map<String,Object> handle(ResultSet rs) throws SQLException {
+					Map<String,Object> overView = new HashMap<String,Object>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					if (rs.next()) {
+						overView.put("subtaskId", rs.getInt("SUBTASK_ID")); 
+						overView.put("stage", rs.getInt("STAGE")); 
+						overView.put("type", rs.getInt("TYPE")); 
+						overView.put("percent", rs.getInt("PERCENT")); 
+						
+						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
+						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
+						Timestamp actualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
+						Timestamp actualEndDate = rs.getTimestamp("ACTUAL_END_DATE");
+						if(planStartDate != null){
+							overView.put("planStartDate", df.format(planStartDate));
+						}else{
+							overView.put("planStartDate", null);
+						}
+						if(planEndDate != null){
+							overView.put("planEndDate", df.format(planEndDate));
+						}else{
+							overView.put("planEndDate", null);
+						}
+						if(actualStartDate != null){
+							overView.put("actualStartDate", df.format(actualStartDate));
+						}else{
+							overView.put("actualStartDate", planStartDate);
+						}
+						if(actualEndDate != null){
+							overView.put("actualEndDate", df.format(actualEndDate));
+						}else{
+							overView.put("actualEndDate", planEndDate);
+						}
+						
+						int planDate = rs.getInt("PLAN_DATE");
+						int diffDate = rs.getInt("DIFF_DATE");
+						//如果计划时间为0，则计算计划时间与距离计划结束时间天数，此种情况一般是还没有子任务统计信息
+						if((planDate==0)&&(planStartDate != null)&&(planEndDate != null)){
+							planDate = daysOfTwo(planEndDate,planStartDate);
+							diffDate = daysOfTwo(planEndDate,new Date());;
+						}
+						overView.put("planDate", planDate);
+						overView.put("diffDate", diffDate); 
+						overView.put("actualDate", planDate - diffDate);
+
+					}
+					else{
+						overView.put("subtaskId", 0); 
+						overView.put("stage", 0); 
+						overView.put("type", 0); 
+						overView.put("percent", 0); 
+						overView.put("planStartDate", null);
+						overView.put("planEndDate", null);
+						overView.put("actualStartDate", null);
+						overView.put("actualEndDate", null);
+
+						overView.put("planDate", 0);
+						overView.put("diffDate", 0); 
+						overView.put("actualDate", 0);
+					}
+					return overView;
+				}
+			});		
+			return overView;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询子任务进展详情失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param subtaskId
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	public Map<String, Object> subtaskOverviewExpect(int subtaskId, String startDate, String endDate) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public static int daysOfTwo(Date fDate, Date oDate) {
+
+	       Calendar aCalendar = Calendar.getInstance();
+
+	       aCalendar.setTime(fDate);
+	       int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
+
+	       aCalendar.setTime(oDate);
+	       int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
+
+	       return day2 - day1;
+
+	    }
 
 }

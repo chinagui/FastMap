@@ -20,12 +20,12 @@ public class StatUtil {
 	       Calendar aCalendar = Calendar.getInstance();
 
 	       aCalendar.setTime(fDate);
-	       int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
+	       long day1 = aCalendar.getTimeInMillis();
 
 	       aCalendar.setTime(oDate);
-	       int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
+	       long day2 = aCalendar.getTimeInMillis();
 
-	       return day2 - day1;
+	       return Integer.parseInt(String.valueOf((day2 - day1)/(24*60*60*1000)));
 
 	    }
 

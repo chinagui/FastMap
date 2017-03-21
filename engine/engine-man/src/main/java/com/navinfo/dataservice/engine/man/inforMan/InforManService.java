@@ -1,12 +1,16 @@
 package com.navinfo.dataservice.engine.man.inforMan;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -179,18 +183,46 @@ public class InforManService {
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			String selectSql = "select * from infor where INFOR_ID='" + inforId + "'";
-			List<HashMap<String,Object>> list = InforManOperation.selectTaskBySql2(conn, selectSql, null);
-			if (list.size() > 0) {
-				return list.get(0);
-			} else {
-				return null;
-			}
+			HashMap<String,Object> list = InforManOperation.selectTaskBySql2(conn, selectSql);
+			list.put("grids", getProgramGridsByInfor(conn,inforId));
+			return list;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询明细失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<Integer, Integer> getProgramGridsByInfor(Connection conn,String inforId)throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sqlString="SELECT GRID_ID,1 type"
+					+ "  FROM INFOR_GRID_MAPPING"
+					+ " WHERE INFOR_ID = '"+inforId+"'"
+					+ " UNION"
+					+ " SELECT M.GRID_ID, M.TYPE"
+					+ "  FROM PROGRAM_GRID_MAPPING M, PROGRAM P"
+					+ " WHERE M.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.INFOR_ID = '"+inforId+"'";
+			log.info("getProgramGridsByInfor sql:" + sqlString);
+			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
+				@Override
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> list = new HashMap<Integer, Integer>();
+					while(rs.next()){
+						list.put(rs.getInt("GRID_ID"), rs.getInt("type"));
+					}
+					return list;
+				}
+			};
+			Map<Integer, Integer> gridList = run.query(conn, sqlString, rsh);
+			return gridList;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询明细失败，原因为:" + e.getMessage(), e);
 		}
 	}
 
@@ -272,7 +304,7 @@ public class InforManService {
 		}
 	}
 
-	public HashMap<String, Object> queryByTaskId(int taskId) throws Exception {
+	/*public HashMap<String, Object> queryByTaskId(int taskId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -290,6 +322,6 @@ public class InforManService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-	}
+	}*/
 
 }

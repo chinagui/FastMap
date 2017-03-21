@@ -247,12 +247,11 @@ public class OracleDao {
 			QueryRunner run = new QueryRunner();
 
 			conn = DBConnector.getInstance().getManConnection();
-			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
+			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务，月编（poi专项）
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
 					+ " FROM SUBTASK S"
-					+ " WHERE S.STAGE IN (0, 1)"
-					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
+					+ " WHERE S.TYPE IN (0, 1, 2, 3, 4,5,7)"
 					+ " AND S.STATUS IN (0, 1)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"

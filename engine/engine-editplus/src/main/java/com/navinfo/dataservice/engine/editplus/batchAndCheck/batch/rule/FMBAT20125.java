@@ -131,15 +131,13 @@ public class FMBAT20125 extends BasicBatchRule {
 		} else {
 			houseNumTypeSubNum = metadata.convertEng(keyAhead(subnum,metadata.queryAdRack(1))+type+houseNum);
 		}
-		if (!houseNumTypeSubNum.endsWith(" ")) {
-			houseNumTypeSubNum += " ";
-		}
 		String prefix =  metadata.convertEng(chiAddress.getPrefix());
 		String landMark = metadata.convertEng(chiAddress.getLandmark());
 		String street = metadata.convertEng(chiAddress.getStreet());
 		String place = metadata.convertEng(chiAddress.getPlace());
 		String town = metadata.convertEng(chiAddress.getTown());
-		return addOns+roomNum+floor+unit+building+estab+surfix+houseNumTypeSubNum+prefix+landMark+street+place+town;
+		return addOns + " " + roomNum + " " + floor + " " + unit + " " + building + " " + estab + " " + surfix + " " + houseNumTypeSubNum + " " + prefix 
+				+ " " + landMark + " " + street + " " + place + " " + town;
 	}
 	
 	private String keyAhead(String word,List<String> keyArr) {
@@ -157,7 +155,9 @@ public class FMBAT20125 extends BasicBatchRule {
 				indexWord = keyWord;
 			}
 		}
-		word = indexWord + word.substring(0, keyIndex);
+		if (StringUtils.isNotEmpty(indexWord)) {
+			word = indexWord + word.substring(0, keyIndex);
+		}
 		return word;
 	}
 	

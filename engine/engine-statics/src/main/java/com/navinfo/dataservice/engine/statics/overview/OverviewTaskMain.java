@@ -307,7 +307,7 @@ public class OverviewTaskMain {
 			md.insertMany(col_name_task, taskList);
 			
 			log.info("-- end stat:" + col_name_task);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -5,6 +5,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -12,7 +15,9 @@ import org.bson.Document;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoDatabase;
+import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectStat;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
+import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
@@ -22,6 +27,7 @@ public class RoadCollectMain {
 	public static final String col_name_grid = "fm_stat_collect_road_grid";
 	public static final String col_name_block = "fm_stat_collect_road_block";
 	public static final String col_name_city = "fm_stat_collect_road_city";
+	private static CountDownLatch countDownLatch = null;
 
 	private String db_name;
 	private String stat_date;
@@ -110,120 +116,6 @@ public class RoadCollectMain {
 	}
 
 	/**
-	 * 构建 grid 数据
-	 * 
-	 * @return List<Document>
-	 */
-	public List<Document> build_grid() {
-		List<Document> json_list = new ArrayList<Document>();
-		// 存储 从mongo提取的tips统计结果
-		Map<String, Double> mapTips = StatInit.getTrackTipsStat(db_name, col_name_tips_grid, "grid_id", stat_date);
-		Map<String, Double> mapSeason = StatInit.getTrackSeasonStat(db_name, col_name_seasion_grid, "grid_id");
-
-		for (Entry<String, Double> entry : mapSeason.entrySet()) {
-			Document json = new Document();
-			String grid_id = entry.getKey();
-			double total = entry.getValue();
-			double finish = (mapTips.get(grid_id) == null ? 0 : mapTips.get(grid_id));
-
-			// ------------------------------
-			json.put("grid_id", grid_id);
-			json.put("stat_date", stat_date);
-			json.put("stat_time", stat_time);
-			// ------------------------------
-			Document road = new Document();
-			road.put("total", total);
-			road.put("finish", finish);
-			if (finish == 0 || total == 0) {
-				road.put("percent", 0);
-			} else {
-				road.put("percent", StatUtil.formatDouble(finish / total * 100));
-			}
-
-			// ------------------------------
-			json.put("road", road);
-			json_list.add(json);
-		}
-		return json_list;
-	}
-
-	/**
-	 * 构建 block 数据
-	 * 
-	 * @return List<Document>
-	 */
-	public List<Document> build_block() {
-		List<Document> json_list = new ArrayList<Document>();
-		// 存储 从mongo提取的tips统计结果
-		Map<String, Double> mapTips = StatInit.getTrackTipsStat(db_name, col_name_tips_block, "block_id", stat_date);
-		Map<String, Double> mapSeason = StatInit.getTrackSeasonStat(db_name, col_name_seasion_block, "block_id");
-
-		for (Entry<String, Double> entry : mapSeason.entrySet()) {
-			Document json = new Document();
-			String block_id = entry.getKey();
-			double total = entry.getValue();
-			double finish = (mapTips.get(block_id) == null ? 0 : mapTips.get(block_id));
-
-			// ------------------------------
-			json.put("block_id", block_id);
-			json.put("stat_date", stat_date);
-			json.put("stat_time", stat_time);
-			// ------------------------------
-			Document road = new Document();
-			road.put("total", total);
-			road.put("finish", finish);
-			if (finish == 0 || total == 0) {
-				road.put("percent", 0);
-			} else {
-				road.put("percent", StatUtil.formatDouble(finish / total * 100));
-			}
-
-			// ------------------------------
-			json.put("road", road);
-			json_list.add(json);
-		}
-		return json_list;
-	}
-
-	/**
-	 * 构建 city 数据
-	 * 
-	 * @return List<Document>
-	 */
-	public List<Document> build_city() {
-		List<Document> json_list = new ArrayList<Document>();
-		// 存储 从mongo提取的tips统计结果
-		Map<String, Double> mapTips = StatInit.getTrackTipsStat(db_name, col_name_tips_city, "city_id", stat_date);
-		Map<String, Double> mapSeason = StatInit.getTrackSeasonStat(db_name, col_name_seasion_city, "city_id");
-
-		for (Entry<String, Double> entry : mapSeason.entrySet()) {
-			Document json = new Document();
-			String city_id = entry.getKey();
-			double total = entry.getValue();
-			double finish = (mapTips.get(city_id) == null ? 0 : mapTips.get(city_id));
-
-			// ------------------------------
-			json.put("city_id", city_id);
-			json.put("stat_date", stat_date);
-			json.put("stat_time", stat_time);
-			// ------------------------------
-			Document road = new Document();
-			road.put("total", total);
-			road.put("finish", finish);
-			if (finish == 0 || total == 0) {
-				road.put("percent", 0);
-			} else {
-				road.put("percent", StatUtil.formatDouble(finish / total * 100));
-			}
-
-			// ------------------------------
-			json.put("road", road);
-			json_list.add(json);
-		}
-		return json_list;
-	}
-
-	/**
 	 * 多线程执行所有大区库的统计
 	 */
 	public void runStat() {
@@ -232,16 +124,29 @@ public class RoadCollectMain {
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
-			// 统计数据如mongo
-			MongoDao md = new MongoDao(db_name);
-			log.info("-- begin stat:" + col_name_grid);
-			md.insertMany(col_name_grid, build_grid());
-//			log.info("-- begin stat:" + col_name_block);
-//			md.insertMany(col_name_block, build_block());
-//			log.info("-- begin stat:" + col_name_city);
-//			md.insertMany(col_name_city, build_city());
+			// 获得 大区库的db_id
+			List<Integer> ListDbId = OracleDao.getDbIdDaily();
 
-			log.info("-- end stat");
+			int dbid_cnt = ListDbId.size();
+			Iterator<Integer> iter = ListDbId.iterator();
+
+			ExecutorService executorService = Executors.newCachedThreadPool();
+			// 计数器，线程数
+			countDownLatch = new CountDownLatch(dbid_cnt);
+			
+			//new PoiCollectStat(countDownLatch, 84, db_name, col_name_grid, stat_date, stat_time);
+
+			while (iter.hasNext()) {
+				int db_id = iter.next();
+
+				log.info("-- -- 创建统计进程 db_id：" + db_id);
+				executorService.submit(new RoadCollectStat(countDownLatch, db_id, db_name, col_name_grid, stat_date, stat_time));
+			}
+
+			countDownLatch.await();
+			executorService.shutdown();
+			log.info("all sub task finish");
+			log.info("-- end stat:" + col_name_grid);
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

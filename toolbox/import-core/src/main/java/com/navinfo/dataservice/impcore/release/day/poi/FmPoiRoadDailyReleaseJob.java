@@ -470,7 +470,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	private void updateProduceStatus(List<Map<String, Object>> projects,int status, ManApi manApi) throws Exception{
 		for(Map<String, Object> p:projects){
 			int produceId=(int) p.get("produceId");
-			manApi.updateProduceStatus(produceId, 1);
+			manApi.updateProduceStatus(produceId, status);
 		}
 	}
 	

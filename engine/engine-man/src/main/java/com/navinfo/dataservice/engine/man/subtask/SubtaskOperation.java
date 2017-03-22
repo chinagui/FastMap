@@ -1091,7 +1091,7 @@ public class SubtaskOperation {
 						}
 						
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+						if((1==rs.getInt("STAGE")&&5==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
 								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),wkt);
 								if(subtaskStat != null){

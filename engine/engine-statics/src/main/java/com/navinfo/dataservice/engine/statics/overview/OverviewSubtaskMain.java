@@ -361,7 +361,7 @@ public class OverviewSubtaskMain {
 			md.insertMany(col_name_subtask, subtaskListWithStatistics);
 			
 			log.info("-- end stat:" + col_name_subtask);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

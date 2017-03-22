@@ -68,10 +68,11 @@ public class OverviewMain {
 	 * @date 2016年10月21日 下午2:55:50 
 	 */
 	public void runStat() {
+		log.info("-- begin stat:"+col_name_overview_main);
 		try {
 			initMongoDb();
 			exeCalculate(stat_date,db_name);
-
+			log.info("-- end stat:"+col_name_overview_main);
 			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

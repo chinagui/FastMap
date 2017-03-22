@@ -68,11 +68,12 @@ public class OverviewMain {
 	 * @date 2016年10月21日 下午2:55:50 
 	 */
 	public void runStat() {
+		log.info("-- begin stat:"+col_name_overview_main);
 		try {
 			initMongoDb();
 			exeCalculate(stat_date,db_name);
-
-			System.exit(0);
+			log.info("-- end stat:"+col_name_overview_main);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -82,7 +83,7 @@ public class OverviewMain {
 		MongoDao mdao = new MongoDao(dbName);
 		log.info("db_name:"+dbName);
 		Document statInfo = calCollectPercent();
-		log.info(statInfo.toJson().toString());
+		log.info(statInfo.toString());
 		mdao.updateOne(col_name_overview_main,
 				Filters.eq("statDate", statInfo.getString("stateInfo")),
 				statInfo,
@@ -138,7 +139,7 @@ public class OverviewMain {
 						int diffDate = 0;
 
 						statResult.put("percent", rs.getInt("PERCENT"));
-						statResult.put("dailyPercent", rs.getInt("COLLECT_PERCENT")); 
+						statResult.put("collectPercent", rs.getInt("COLLECT_PERCENT")); 
 						statResult.put("dailyPercent", rs.getInt("DAILY_PERCENT"));
 						statResult.put("monthlyPercent", rs.getInt("MONTHLY_PERCENT")); 
 						
@@ -149,10 +150,10 @@ public class OverviewMain {
 							diffDate = StatUtil.daysOfTwo(planEndDate,new Date());;
 						}
 
-						statResult.put("collectPlanStartDate", rs.getTimestamp("COLLECT_PLAN_START_DATE")); 
-						statResult.put("collectPlanEndDate", rs.getTimestamp("COLLECT_PLAN_END_DATE"));
-						statResult.put("collectActualStartDate", rs.getTimestamp("COLLECT_ACTUAL_START_DATE")); 
-						statResult.put("collectActualEndDate", rs.getTimestamp("COLLECT_ACTUAL_END_DATE")); 
+						statResult.put("collectPlanStartDate", StatUtil.formatDate(rs.getTimestamp("COLLECT_PLAN_START_DATE"))); 
+						statResult.put("collectPlanEndDate", StatUtil.formatDate(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+						statResult.put("collectActualStartDate", StatUtil.formatDate(rs.getTimestamp("COLLECT_ACTUAL_START_DATE"))); 
+						statResult.put("collectActualEndDate", StatUtil.formatDate(rs.getTimestamp("COLLECT_ACTUAL_END_DATE"))); 
 						statResult.put("collectPlanDate", planDate);
 						statResult.put("collectDiffDate", diffDate);
 						
@@ -162,10 +163,10 @@ public class OverviewMain {
 							planDate = StatUtil.daysOfTwo(planEndDate,planStartDate);
 							diffDate = StatUtil.daysOfTwo(planEndDate,new Date());;
 						}
-						statResult.put("dailyPlanStartDate",  rs.getTimestamp("DAILY_PLAN_START_DATE")); 
-						statResult.put("dailyPlanEndDate", rs.getTimestamp("DAILY_PLAN_END_DATE")); 
-						statResult.put("dailyActualStartDate", rs.getTimestamp("DAILY_ACTUAL_START_DATE")); 
-						statResult.put("dailyActualEndDate", rs.getTimestamp("DAILY_ACTUAL_END_DATE")); 
+						statResult.put("dailyPlanStartDate",  StatUtil.formatDate(rs.getTimestamp("DAILY_PLAN_START_DATE"))); 
+						statResult.put("dailyPlanEndDate", StatUtil.formatDate(rs.getTimestamp("DAILY_PLAN_END_DATE"))); 
+						statResult.put("dailyActualStartDate", StatUtil.formatDate(rs.getTimestamp("DAILY_ACTUAL_START_DATE"))); 
+						statResult.put("dailyActualEndDate", StatUtil.formatDate(rs.getTimestamp("DAILY_ACTUAL_END_DATE"))); 
 						statResult.put("dailyPlanDate", planDate);
 						statResult.put("dailyDiffDate", diffDate);
 						
@@ -175,10 +176,10 @@ public class OverviewMain {
 							planDate = StatUtil.daysOfTwo(planEndDate,planStartDate);
 							diffDate = StatUtil.daysOfTwo(planEndDate,new Date());;
 						}
-						statResult.put("monthlyPlanStartDate", rs.getTimestamp("MONTHLY_PLAN_START_DATE")); 
-						statResult.put("monthlyPlanEndDate", rs.getTimestamp("MONTHLY_PLAN_END_DATE")); 
-						statResult.put("monthlyActualStartDate", rs.getTimestamp("MONTHLY_ACTUAL_START_DATE")); 
-						statResult.put("monthlyActualEndDate", rs.getTimestamp("MONTHLY_ACTUAL_END_DATE")); 
+						statResult.put("monthlyPlanStartDate", StatUtil.formatDate(rs.getTimestamp("MONTHLY_PLAN_START_DATE"))); 
+						statResult.put("monthlyPlanEndDate", StatUtil.formatDate(rs.getTimestamp("MONTHLY_PLAN_END_DATE"))); 
+						statResult.put("monthlyActualStartDate", StatUtil.formatDate(rs.getTimestamp("MONTHLY_ACTUAL_START_DATE"))); 
+						statResult.put("monthlyActualEndDate", StatUtil.formatDate(rs.getTimestamp("MONTHLY_ACTUAL_END_DATE"))); 
 						statResult.put("monthlyPlanDate", planDate);
 						statResult.put("monthlyDiffDate",  diffDate);
 						

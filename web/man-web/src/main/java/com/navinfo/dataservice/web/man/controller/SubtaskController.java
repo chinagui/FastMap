@@ -171,7 +171,7 @@ public class SubtaskController extends BaseController {
 			int snapshot = dataJson.getInt("snapshot");
 			dataJson.remove("snapshot");
 			
-			//增加平台参数。0：采集端，1：编辑平台
+			//增加平台参数。0：采集端，1：编辑平台2管理平台
 			int platForm = 0;//默认采集端
 			if(dataJson.containsKey("platForm")){
 				platForm = dataJson.getInt("platForm");
@@ -216,8 +216,11 @@ public class SubtaskController extends BaseController {
 			}
 			
 			int subtaskId = dataJson.getInt("subtaskId");
-
-			Map<String,Object> subtask = SubtaskService.getInstance().queryBySubtaskId(subtaskId);
+			int platform=0;//增加平台参数。0：采集端，1：编辑平台2管理平台（grids返回值不一样）
+			if(dataJson.containsKey("platform")){
+				platform=dataJson.getInt("platform");
+			}
+			Map<String,Object> subtask = SubtaskService.getInstance().query(subtaskId,platform);
 			return new ModelAndView("jsonView", success(subtask));
 		}catch(Exception e){
 			log.error("获取明细失败，原因："+e.getMessage(), e);

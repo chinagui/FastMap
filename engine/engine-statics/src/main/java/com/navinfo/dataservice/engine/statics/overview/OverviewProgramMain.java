@@ -4,17 +4,20 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.dubbo.common.status.support.StatusUtils;
 import com.mongodb.BasicDBObject;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 /**
  * 
@@ -80,7 +83,7 @@ public class OverviewProgramMain {
 			
 			MongoDao md = new MongoDao(db_name);
 			List<Document> programList = new ArrayList<Document>();
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddkkmmss");
+			
 			for(FmStatOverviewProgram program:programStatList){
 				Document doc = new Document();
 				doc.append("programId", program.getProgramId());
@@ -88,40 +91,40 @@ public class OverviewProgramMain {
 				doc.append("type", program.getType());
 				doc.append("percent", program.getPercent());
 				doc.append("progress", program.getProgress());
-				doc.append("planStartDate", df.format(program.getPlanStartDate()));
-				doc.append("planEndDate", df.format(program.getPlanEndDate()));
+				doc.append("planStartDate", StatUtil.formatDate(program.getPlanStartDate()));
+				doc.append("planEndDate", StatUtil.formatDate(program.getPlanEndDate()));
 				doc.append("planDate", program.getPlanDate());
-				doc.append("actualStartDate", df.format(program.getActualStartDate()));
-				doc.append("actualEndDate", df.format(program.getActualEndDate()));
+				doc.append("actualStartDate", StatUtil.formatDate(program.getActualStartDate()));
+				doc.append("actualEndDate", StatUtil.formatDate(program.getActualEndDate()));
 				doc.append("diffDate", program.getDiffDate());
 				doc.append("poiPlanTotal", program.getPoiPlanTotal());
 				doc.append("roadPlanTotal", program.getRoadPlanTotal());
 				
 				doc.append("collectProgress", program.getCollectProgress());
 				doc.append("collectPercent", program.getCollectPercent());
-				doc.append("collectPlanStartDate", df.format(program.getCollectPlanStartDate()));
-				doc.append("collectPlanEndDate", df.format(program.getCollectPlanEndDate()));
+				doc.append("collectPlanStartDate", StatUtil.formatDate(program.getCollectPlanStartDate()));
+				doc.append("collectPlanEndDate", StatUtil.formatDate(program.getCollectPlanEndDate()));
 				doc.append("collectPlanDate", program.getCollectPlanDate());
-				doc.append("collectActualStartDate", df.format(program.getCollectActualStartDate()));
-				doc.append("collectActualEndDate", df.format(program.getCollectActualEndDate()));
+				doc.append("collectActualStartDate", StatUtil.formatDate(program.getCollectActualStartDate()));
+				doc.append("collectActualEndDate", StatUtil.formatDate(program.getCollectActualEndDate()));
 				doc.append("collectDiffDate", program.getCollectDiffDate());
 				
 				doc.append("dailyProgress", program.getDailyProgress());
 				doc.append("dailyPercent", program.getDailyPercent());
-				doc.append("dailyPlanStartDate", df.format(program.getDailyPlanStartDate()));
-				doc.append("dailyPlanEndDate", df.format(program.getDailyPlanEndDate()));
+				doc.append("dailyPlanStartDate", StatUtil.formatDate(program.getDailyPlanStartDate()));
+				doc.append("dailyPlanEndDate", StatUtil.formatDate(program.getDailyPlanEndDate()));
 				doc.append("dailyPlanDate", program.getDailyPlanDate());
-				doc.append("dailyActualStartDate", df.format(program.getDailyActualStartDate()));
-				doc.append("dailyActualEndDate", df.format(program.getDailyActualEndDate()));
+				doc.append("dailyActualStartDate", StatUtil.formatDate(program.getDailyActualStartDate()));
+				doc.append("dailyActualEndDate", StatUtil.formatDate(program.getDailyActualEndDate()));
 				doc.append("dailyDiffDate", program.getDailyDiffDate());
 				
 				doc.append("monthlyProgress", program.getMonthlyProgress());
 				doc.append("monthlyPercent", program.getMonthlyPercent());
-				doc.append("monthlyPlanStartDate", df.format(program.getMonthlyPlanStartDate()));
-				doc.append("monthlyPlanEndDate", df.format(program.getMonthlyPlanEndDate()));
+				doc.append("monthlyPlanStartDate", StatUtil.formatDate(program.getMonthlyPlanStartDate()));
+				doc.append("monthlyPlanEndDate", StatUtil.formatDate(program.getMonthlyPlanEndDate()));
 				doc.append("monthlyPlanDate", program.getMonthlyPlanDate());
-				doc.append("monthlyActualStartDate", df.format(program.getMonthlyActualStartDate()));
-				doc.append("monthlyActualEndDate", df.format(program.getMonthlyActualEndDate()));
+				doc.append("monthlyActualStartDate", StatUtil.formatDate(program.getMonthlyActualStartDate()));
+				doc.append("monthlyActualEndDate", StatUtil.formatDate(program.getMonthlyActualEndDate()));
 				doc.append("monthlyDiffDate", program.getMonthlyDiffDate());
 				
 				doc.append("statDate", statDate);
@@ -132,7 +135,7 @@ public class OverviewProgramMain {
 			md.insertMany(col_name_program, programList);
 			
 			log.info("-- end stat:" + col_name_program);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

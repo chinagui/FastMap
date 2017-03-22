@@ -36,6 +36,18 @@ public class RdNameSelector {
 		this.conn = conn;
 	}
 	
+	/**
+	 * @Title: searchByName
+	 * @Description: 查询道路名
+	 * @param name
+	 * @param pageSize
+	 * @param pageNum
+	 * @return
+	 * @throws Exception  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年3月20日 上午10:01:26 
+	 */
 	public JSONObject searchByName(String name, int pageSize, int pageNum)
 			throws Exception {
 
@@ -71,13 +83,13 @@ public class RdNameSelector {
 
 			pstmt = conn.prepareStatement(sql);
 
-			System.out.println("rdname search :"+sql);
+			log.info("rdname search :"+sql);
 			pstmt.setString(1, "%"+name + "%");
 
 			pstmt.setInt(2, endRow);
 
 			pstmt.setInt(3, startRow);
-			System.out.println("rdname search :"+sql +" 参数: "+name+" "+endRow+" "+startRow);
+			log.info("rdname search :"+sql +" 参数: "+name+" "+endRow+" "+startRow);
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -238,7 +250,7 @@ public class RdNameSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	@SuppressWarnings({ "static-access", "unchecked" })
+@SuppressWarnings({ "static-access", "unchecked" })
 public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exception {
 		
 		PreparedStatement pstmt = null;
@@ -253,9 +265,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			conn = DBConnector.getInstance().getMetaConnection();
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
-			System.out.println(scPointAdminArea);		
+			log.info(scPointAdminArea);		
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
-			System.out.println(adminMap);	
+			log.info(adminMap);	
 			JSONObject param =  params.getJSONObject("params");
 			String name = "" ;
 			if(param.containsKey("name") && param.getString("name") != null){
@@ -270,14 +282,14 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				adminId = param.getString("adminId");
 			}
 			
-			System.out.println("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
+			log.info("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
 			String sortby = params.getString("sortby");
 			int pageSize = params.getInt("pageSize");
 			int pageNum = params.getInt("pageNum");
 			int flag = params.getInt("flag");//1是任务查，0是全库查
-			System.out.println("flag: "+flag);
+			log.info("flag: "+flag);
 			int subtaskId = params.getInt("subtaskId");//获取subtaskid 
-			System.out.println("searchForWeb :subtaskId: "+subtaskId);
+			log.info("searchForWeb :subtaskId: "+subtaskId);
 			
 			StringUtils sUtils = new StringUtils();
 			
@@ -287,8 +299,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String tmep = "";
 			Clob pidClod = null;
 			if (flag>0) {
-//				if (tips.size()>0) {
-				System.out.println(tips.size());
 				if (tips.size()>0 || subtaskId >0) {
 					//添加根据子任务id直接查询的sql 
 					sql.append("SELECT * ");
@@ -344,12 +354,10 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 						
 						for (int i=0;i<tips.size();i++) {
 							JSONObject tipsObj = tips.getJSONObject(i);
-							System.out.println(tipsObj.getString("id"));
 							ids += tmep;
 							tmep = ",";
 							ids +=tipsObj.getString("id");
 						}
-						System.out.println(ids);
 						pidClod = ConnectionUtil.createClob(conn);
 						pidClod.setString(1, ids);
 						sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
@@ -427,7 +435,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			int startRow = (pageNum-1) * pageSize + 1;
 
 			int endRow = pageNum * pageSize;
-			System.out.println("rdname/websearch sql : " +sql.toString());
+			log.info("rdname/websearch sql : " +sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			
 			if (flag>0 && tips.size()>0) {
@@ -450,7 +458,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 					total = resultSet.getInt("total");
 				}
 				data.add(result2JsonByTaskOrTips(resultSet, adminMap));
-//				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -498,24 +505,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 		if (rdName.getNameId() != null) {
 			sb.append(" AND name_id !="+rdName.getNameId());
 		}
-		/*if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
-			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
-		}
-		if (rdName.getNamePhonetic() != null && StringUtils.isNotEmpty(rdName.getNamePhonetic())) {
-			sb.append(" AND NAME_PHONETIC ='"+rdName.getNamePhonetic()+"'");
-		}
-		if (rdName.getBase() != null && StringUtils.isNotEmpty(rdName.getBase())) {
-			sb.append(" AND BASE ='"+rdName.getBase()+"'");
-		}
-		if (rdName.getSrcFlag() != null && rdName.getSrcFlag() > 0) {
-			sb.append(" AND SRC_FLAG ="+rdName.getSrcFlag()+" ");
-		}
-		if (rdName.getCodeType() != null && rdName.getCodeType() > 0) {
-			sb.append(" AND CODE_TYPE ="+rdName.getCodeType()+" ");
-		}
-		if (rdName.getVoiceFile() != null && StringUtils.isNotEmpty(rdName.getVoiceFile())) {
-			sb.append(" AND VOICE_FILE ="+rdName.getVoiceFile()+" ");
-		}*/
+		
 		try {
 			
 			pstmt = conn.prepareStatement(sb.toString());
@@ -592,12 +582,12 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				rdNameObj.put("adminName","全国");
 			}else{
 				if (!adminMap.isEmpty()) {
-					System.out.println("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
+					log.info("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
 					if (adminMap.containsKey(String.valueOf(adminId))) {
 						rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
-						System.out.println("String.valueOf(adminId)): "+String.valueOf(adminId));
+						log.info("String.valueOf(adminId)): "+String.valueOf(adminId));
 					} else {
-						System.out.println("空");
+						log.info("空");
 						rdNameObj.put("adminName","");
 					}
 				}
@@ -763,15 +753,11 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			pstmt.execute();
 			
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}finally {
-			//DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 			DbUtils.closeQuietly(conn);
 		}
-		
-		//return null;
 	}
 
 	/**
@@ -795,15 +781,9 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			JSONObject result = new JSONObject();
 			
 			conn = DBConnector.getInstance().getMetaConnection();
-			//StringUtils sUtils = new StringUtils();
 			
 			StringBuilder sql = new StringBuilder();
 			
-			/*select i.name,i.englishName,i.Lang_code,2 type from sc_roadname_infix i
-			-- where i.lang_code = '' 
-			union all 
-			select s.name,s.englishName,s.Lang_code,1 type from sc_roadname_suffix s -- where s.lang_code = '' ; 
-			*/
 			String thislangCode = "CHI";
 			if(langCode != null && StringUtils.isNotEmpty(langCode) && (langCode.equals("CHI") || langCode.equals("CHT"))){
 				thislangCode = langCode;
@@ -814,7 +794,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			sql.append(" select s.name,s.englishName,s.Lang_code,1 type from sc_roadname_suffix s  where s.lang_code = '"+thislangCode+"' ");
 					
 			
-			System.out.println("rdname/searchFix sql : " +sql.toString());
+			log.info("rdname/searchFix sql : " +sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			resultSet = pstmt.executeQuery();
 			

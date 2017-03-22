@@ -1,5 +1,12 @@
 package com.navinfo.dataservice.engine.check.rules;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -8,24 +15,17 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 /*
- * @ClassName:GLM01363
+ * @ClassName：GLM01399
  * @author:Feng Haixia
  * @data:2017/03/22
- * @Description:SA、PA属性的道路的收费信息不能为“收费”
+ * @Description: 轮渡/人渡种别，只能和无属性形态共存
  */
-public class GLM01363 extends baseRule {
+public class GLM01229 extends baseRule {
+
+	private Set<Integer> noPropertyLinkPidSet = new HashSet<>();
 
 	private static Logger logger = Logger.getLogger(GLM01363.class);
-
-	private Set<Integer> chargeLinkPidSet = new HashSet<>();
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
@@ -35,13 +35,13 @@ public class GLM01363 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareLinkPidData(checkCommand);
 
-		for (Integer linkPid : chargeLinkPidSet) {
+		for (Integer linkPid : noPropertyLinkPidSet) {
 			String sqlStr = String.format(
-					"SELECT L.GEOMETRY,'[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK L,RD_LINK_FORM LF WHERE LF.FORM_OF_WAY IN (12,13) "
-							+ "AND L.TOLL_INFO = 1 AND LF.LINK_PID=L.LINK_PID AND LF.U_RECORD<>2 AND L.U_RECORD<>2 AND L.LINK_PID={0}",
+					"SELECT L.GEOMETRY,'[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK L,RD_LINK_FORM LF WHERE LF.FORM_OF_WAY <> 1 AND "
+							+ "L.KIND IN (11,13) AND LF.LINK_PID = L.LINK_PID AND LF.U_RECORD <> 2 AND L.U_RECORD <> 2 AND L.LINK_PID = {0}",
 					linkPid);
 
-			logger.info("RdLink后检查GLM01363 SQL:" + sqlStr);
+			logger.info("RdLink后检查GLM01229 SQL:" + sqlStr);
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> resultList = new ArrayList<Object>();
@@ -59,7 +59,7 @@ public class GLM01363 extends baseRule {
 	 * 
 	 * @param checkCommand
 	 * 
-	 * @result 修改link为收费or修改linkForm为SA\PA
+	 * @result 修改link为轮渡/人渡or修改linkForm不为无属性
 	 */
 	private void prepareLinkPidData(CheckCommand checkCommand) {
 		for (IRow row : checkCommand.getGlmList()) {
@@ -74,15 +74,15 @@ public class GLM01363 extends baseRule {
 
 	private void prepareDateForLinkAndForm(IRow row) {
 		RdLink link = (RdLink) row;
-		int tollInfo = link.getTollInfo();
+		int kind = link.getTollInfo();
 
-		if (link.changedFields().containsKey("tollInfo")) {
-			tollInfo = (int) link.changedFields().get("tollInfo");
+		if (link.changedFields().containsKey("kind")) {
+			kind = (int) link.changedFields().get("kind");
 		}
 
-		// 收费道路
-		if (tollInfo == 1) {
-			chargeLinkPidSet.add(link.getPid());
+		// 人渡/轮渡
+		if (kind == 11 || kind == 13) {
+			noPropertyLinkPidSet.add(link.getPid());
 		}
 	}
 
@@ -94,9 +94,9 @@ public class GLM01363 extends baseRule {
 			formOfWay = (int) linkForm.changedFields().get("formOfWay");
 		}
 
-		// linkForm为SA\PA的道路
-		if (formOfWay == 12 || formOfWay == 13) {
-			chargeLinkPidSet.add(linkForm.getLinkPid());
+		// linkForm不为“无属性”道路
+		if (formOfWay != 1) {
+			noPropertyLinkPidSet.add(linkForm.getLinkPid());
 		}
 	}
 }

@@ -21,8 +21,8 @@ import java.util.Set;
  * @ClassName：GLM01399
  * @author:Feng Haixia
  * @data:2017/03/22
- * @Description:限制信息类型为3穿行限制时，车辆类型必须为空，否则报错;
- *              限制信息类型为2车辆限制时，车辆类型一定非空，否则报错;
+ * @Description: 非公交车专用道、非10级路的UsageFee若设置车辆类型，则只能同时是“客车（小汽车）”、
+ *               “配送卡车”、“运输卡车”、“急救车”、“出租车”、“公交车”，否则报log
  */
 public class GLM01306 extends baseRule {
 

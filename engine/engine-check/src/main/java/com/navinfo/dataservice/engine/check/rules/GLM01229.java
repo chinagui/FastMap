@@ -16,7 +16,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
 /*
- * @ClassName：GLM01399
+ * @ClassName：GLM01229
  * @author:Feng Haixia
  * @data:2017/03/22
  * @Description: 轮渡/人渡种别，只能和无属性形态共存
@@ -25,7 +25,7 @@ public class GLM01229 extends baseRule {
 
 	private Set<Integer> noPropertyLinkPidSet = new HashSet<>();
 
-	private static Logger logger = Logger.getLogger(GLM01363.class);
+	private static Logger logger = Logger.getLogger(GLM01229.class);
 
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {

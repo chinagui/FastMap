@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 /*
- * @ClassName：GLM01399
+ * @ClassName：GLM01306
  * @author:Feng Haixia
  * @data:2017/03/22
  * @Description: 非公交车专用道、非10级路的UsageFee若设置车辆类型，则只能同时是“客车（小汽车）”、

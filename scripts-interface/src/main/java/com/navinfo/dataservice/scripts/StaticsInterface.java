@@ -14,6 +14,7 @@ import com.navinfo.dataservice.engine.statics.overview.OverviewSubtaskMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewTaskMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
+import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.season.PoiSeasonMain;
@@ -39,6 +40,8 @@ public class StaticsInterface {
 	// 统计 daily
 	private static final String flag_daily_poi = "dp";
 	private static final String flag_daily_road = "dr";
+	//统计月编poi
+	private static final String flag_monthly_poi = "mp";
 	//统计子任务
 	private static final String flag_subtask = "subtask";
 	//统计blockman
@@ -85,6 +88,8 @@ public class StaticsInterface {
 				new PoiDailyMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_daily_road)) {
 				new RoadDailyMain(db_name, stat_time).runStat();
+			} else if (flag.equalsIgnoreCase(flag_monthly_poi)) {
+				new PoiMonthlyMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_subtask)) {
 				new OverviewSubtaskMain(db_name, stat_time).runStat();
 				Import2Oracle.impOracle(OverviewSubtaskMain.col_name_subtask);

@@ -186,9 +186,9 @@ public class PoiSeasonMain {
 			executorService.shutdown();
 			log.info("-- -- finish all Thread stat of grid");
 			// 所有大区库统计完成后，进行派生block数据
-			buildBlockStat();
+			//buildBlockStat();
 			// 所有大区库统计完成后，进行派生city数据
-			buildCityStat();
+			//buildCityStat();
 			log.info("-- end stat --");
 			System.exit(0);
 		} catch (Exception e) {

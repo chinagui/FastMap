@@ -527,6 +527,24 @@ public class SubtaskService {
 	 * @throws ServiceException
 	 */
 	
+	public Map<String,Object> query(Integer subtaskId,int platform) throws ServiceException {
+		Map<String,Object> subtaskMap= queryBySubtaskId(subtaskId); 
+		if(platform==0||platform==1){
+			if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
+				Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
+				subtaskMap.put("gridIds",gridIds.keySet());
+			}
+		}
+		return subtaskMap;
+	}
+	
+	/**
+	 * 获取subtask详情
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException
+	 */
+	
 	public Map<String,Object> queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -617,7 +635,7 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds",gridIds.keySet());
+							subtask.put("gridIds",gridIds);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();

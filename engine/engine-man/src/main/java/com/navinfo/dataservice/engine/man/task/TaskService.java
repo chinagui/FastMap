@@ -2141,14 +2141,14 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		try{
 			if(status==0&&(message==null||message.isEmpty())){return;}
-			if(message!=null&&message.length()>1000){message=message.substring(0, 1000);}
+			if(message!=null&&message.length()>500){message=message.substring(0, 500);}
 			QueryRunner run = new QueryRunner();
 			String selectSql ="";
 			if(status==0){
-				selectSql = "UPDATE TASK_CMS_PROGRESS SET message=substr(message||?,0,2000) WHERE PHASE_ID = "+phaseId ;
+				selectSql = "UPDATE TASK_CMS_PROGRESS SET message=substr(message||?,0,1000) WHERE PHASE_ID = "+phaseId ;
 			}else{
 				String updateMsg="";
-				if(message!=null){updateMsg=",message=substr(message||?,0,2000)";}
+				if(message!=null){updateMsg=",message=substr(message||?,0,1000)";}
 				selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+updateMsg+",end_date=sysdate WHERE PHASE_ID = "+phaseId ;
 			}
 			log.info("updateCmsProgressStatus:"+selectSql);

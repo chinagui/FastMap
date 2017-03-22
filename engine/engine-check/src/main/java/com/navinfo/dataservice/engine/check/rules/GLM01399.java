@@ -18,8 +18,8 @@ import java.util.Set;
  * @ClassName：GLM01399
  * @author:Feng Haixia
  * @data:2017/03/22
- * @Description:限制信息类型为3穿行限制时，车辆类型必须为空，否则报错
- *              限制信息类型为2车辆限制时，车辆类型一定非空，否则报错
+ * @Description:限制信息类型为3穿行限制时，车辆类型必须为空，否则报错;
+ *              限制信息类型为2车辆限制时，车辆类型一定非空，否则报错;
  */
 public class GLM01399 extends baseRule {
 

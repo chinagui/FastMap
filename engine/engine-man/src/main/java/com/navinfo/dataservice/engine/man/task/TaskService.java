@@ -1534,7 +1534,10 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT * FROM TASK";
+			String selectSql = "SELECT *"
+					+ "  FROM TASK"
+					+ " WHERE LATEST = 1";
+					//+ "   AND STATUS IN (0, 1)";
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

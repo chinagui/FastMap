@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CountDownLatch;
+import java.util.regex.Pattern;
 
 import oracle.sql.STRUCT;
 
@@ -18,6 +19,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 
+import com.mongodb.BasicDBObject;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
@@ -55,7 +57,7 @@ public class PoiCollectStat implements Runnable {
 		}
 	}
 
-	public Map<String, Integer> getPois() throws ServiceException {
+	public Map<String, Integer> getUploadPois() throws ServiceException {
 		try {
 			QueryRunner run = new QueryRunner();
 
@@ -89,18 +91,51 @@ public class PoiCollectStat implements Runnable {
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
+	}
+	
+	public Map<String, Integer> getAllPois() throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+
+			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid";
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
+
+				@Override
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+
+					Map<String, Integer> map = new HashMap<String, Integer>();
+					while (rs.next()) {
+						try {
+
+							STRUCT struct = (STRUCT) rs.getObject("geometry");
+							Geometry geo = GeoTranslator.struct2Jts(struct);
+							String grid_id = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y)[0];
+							if (map.containsKey(grid_id)) {
+								map.put(grid_id, map.get(grid_id) + 1);
+							} else {
+								map.put(grid_id, 1);
+							}
+						} catch (Exception e1) {
+							e1.printStackTrace();
+						}
+					}
+					return map;
+				}
+			}
+
+			);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} 
 	}
 
-
-	public List<Document> doStatPoi(Map<String, Integer> map) {
+	public List<Document> doStatPoi(Map<String, Integer> map) throws Exception {
 		List<Document> backList = new ArrayList<Document>();
+		Map<String, Integer> allPois = getAllPois();
 
-		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name, col_name_seasion_grid, "grid_id");
-
-		for (Entry<String, Integer> entry : mapSeason.entrySet()) {
+		for (Entry<String, Integer> entry : allPois.entrySet()) {
 
 			String grid_id = entry.getKey();
 			int total = entry.getValue();
@@ -132,11 +167,15 @@ public class PoiCollectStat implements Runnable {
 		log.info("-- begin do sub_task");
 		try {
 			log.info("-- begin do sub_task" + conn);
-			Map<String, Integer> ja = getPois();
-			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
+			Map<String, Integer> ja = getUploadPois();
+			List<Document> pois = doStatPoi(ja);
+			if(pois!=null&&pois.size()>0){
+				new MongoDao(db_name).insertMany(col_name, pois);}
 
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		latch.countDown();
 

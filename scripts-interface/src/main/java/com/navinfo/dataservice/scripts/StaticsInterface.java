@@ -75,6 +75,7 @@ public class StaticsInterface {
 	 */
 	public static void main(String[] args) {
 		String flag = String.valueOf(args[0]);
+		//String flag = "subtask";
 		if (flag == null) {
 			System.exit(0);
 		} else {

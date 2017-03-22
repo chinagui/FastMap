@@ -255,15 +255,15 @@ public class OverviewSubtaskMain {
 				||(subtask.getType()==2&&subtask.getStage()==0)){
 			String poiColName = PoiCollectMain.col_name_grid;
 			String roadColName = RoadCollectMain.col_name_grid;
-			List<Integer> gridIds = null;
+			Map<Integer, Integer> gridIds = null;
 			try {
-				gridIds = api.getGridIdsBySubtaskId(subtask.getSubtaskId());
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-//			subtask.setGridIds(gridIds);
+			subtask.setGridIds(gridIds);
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//POI日编，一体化GRID粗编
@@ -271,14 +271,14 @@ public class OverviewSubtaskMain {
 				||(subtask.getType()==3&&subtask.getStage()==1)){
 			String poiColName = PoiDailyMain.col_name_grid;
 			String roadColName = RoadDailyMain.col_name_grid;
-			List<Integer> gridIds = null;
+			Map<Integer, Integer> gridIds = null;
 			try {
-				gridIds = api.getGridIdsBySubtaskId(subtask.getSubtaskId());
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			subtask.setGridIds(gridIds);	
+			subtask.setGridIds(gridIds);	
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//一体化区域粗编
@@ -287,14 +287,14 @@ public class OverviewSubtaskMain {
 		}else if(subtask.getType()==7&&subtask.getStage()==2){
 			String poiColName = PoiMonthlyMain.col_name_grid;
 			String roadColName=null;
-			List<Integer> gridIds = null;
+			Map<Integer, Integer> gridIds = null;
 			try {
-				gridIds = api.getGridIdsBySubtaskId(subtask.getSubtaskId());
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			subtask.setGridIds(gridIds);	
+			subtask.setGridIds(gridIds);	
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		return doc;
@@ -361,7 +361,7 @@ public class OverviewSubtaskMain {
 			md.insertMany(col_name_subtask, subtaskListWithStatistics);
 			
 			log.info("-- end stat:" + col_name_subtask);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -91,7 +91,7 @@ public class PoiMonthlyMain {
 
 			countDownLatch.await();
 			executorService.shutdown();
-			log.info("all sub task finish");
+			//log.info("all sub task finish");
 //			// 所有大区进程统计完成后，开始汇总 block维度数据。
 //			buildBlockStat();
 //			// 所有大区进程统计完成后，开始汇总city维度数据。

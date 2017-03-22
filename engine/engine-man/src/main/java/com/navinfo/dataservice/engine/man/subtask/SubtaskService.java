@@ -1294,7 +1294,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn, subtask, userId);
 				success ++;
 			}
-			return "子任务批量发布"+success+"个成功，"+(subtaskList.size()-success)+"个失败";
+			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -50,10 +50,10 @@ public class Import2Oracle {
 	 */
 	public static void impOracle(String tableName) {
 		try{
-			System.out.println("start import2Oracle "+tableName);
+			log.info("start import2Oracle "+tableName);
 			Import2Oracle importObj=new Import2Oracle();			
 			importObj.import2OracleByTableName(tableName);
-			System.out.println("end import2Oracle "+tableName);
+			log.info("end import2Oracle "+tableName);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -97,6 +97,9 @@ public class Import2Oracle {
 						SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMdd");  
 				        Calendar cal = Calendar.getInstance();   
 				        String timeStr=json.getString(ObjectName);
+				        if(timeStr.length()!=8){
+				        	sdf=new SimpleDateFormat("yyyyMMddkkmmss"); 
+				        }
 				        if(null!=timeStr && !timeStr.isEmpty() && !timeStr.equals("null")){cal.setTime(sdf.parse(timeStr));}
 				        Timestamp timestamp=new Timestamp(cal.getTimeInMillis());
 						value[i]=timestamp;

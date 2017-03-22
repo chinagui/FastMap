@@ -163,15 +163,14 @@ public class PoiCollectStat implements Runnable {
 		return backList;
 	}
 
-	public void run() {
-		log.info("-- begin do sub_task");
+	public void run() {		
 		try {
-			log.info("-- begin do sub_task" + conn);
+			log.info("-- begin do sub_task:"+col_name+",conn:"+conn);
 			Map<String, Integer> ja = getUploadPois();
 			List<Document> pois = doStatPoi(ja);
 			if(pois!=null&&pois.size()>0){
 				new MongoDao(db_name).insertMany(col_name, pois);}
-
+			log.info("-- end do sub_task:"+col_name+",conn:"+conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{

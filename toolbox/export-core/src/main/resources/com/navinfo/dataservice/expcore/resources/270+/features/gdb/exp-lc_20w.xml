@@ -13,7 +13,7 @@
         -->
         <step value="7">
             <!--提取图幅内link-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_LC_LINK
                     (PID)
@@ -22,7 +22,7 @@
                      WHERE  P.MESH_ID [mesh]);
                      ]]></sql>
 
-            <sql condition="by-area"><![CDATA[
+            <sql condition="area"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_LC_LINK
                     (PID)
@@ -33,7 +33,7 @@
 
 
             <!--提取图廓点-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_LC_NODE
                        (PID)
@@ -50,7 +50,7 @@
 
         <step value="10">
             <!--根据图框线提取face-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_LC_FACE
                            (PID)
@@ -70,7 +70,7 @@
         </step>
         <step value="13">
             <!--根据图框线提取的face补link-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_LC_LINK
                            (PID)
@@ -80,7 +80,7 @@
                          ]]></sql>
 
             <!--根据图廓点提取link-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_LC_LINK
                       (PID)
@@ -98,13 +98,13 @@
         <step value="16">
             <!--按图幅提取FACE信息-->
             <!--提取图幅内的face-->
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_LC_FACE
                           (PID)
                           (SELECT P.FACE_PID FROM LC_FACE_20W P WHERE P.MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="by-area"><![CDATA[
+            <sql condition="area"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_LC_FACE
                           (PID)

@@ -8,19 +8,19 @@
     <feature name="RD_LINK_FILTER">
         <step value="7">
             <!--
-             condition="by-mesh"：按图幅导出的sql
-             condition="by-area"：按区域导出的sql
+             condition="mesh"：按图幅导出的sql
+             condition="area"：按区域导出的sql
              no condition ：所有都符合
             -->
             <!--按图幅过滤RD_LINK-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RD_LINK
                           (PID)
                           (SELECT LINK_PID FROM RD_LINK WHERE MESH_ID [mesh]);
                     ]]></sql>
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RD_LINK
@@ -38,7 +38,7 @@
         <step value="7">
 
             <!--按图幅过滤RD_NODE-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RD_NODE
@@ -46,7 +46,7 @@
                           (SELECT NODE_PID FROM RD_NODE_MESH WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RD_NODE
@@ -61,7 +61,7 @@
     <feature name="RD_SPEEDLIMIT">
         <step value="7">
             <!--按图幅过滤RD_SPEEDLIMIT-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_SPEEDLIMIT
@@ -69,7 +69,7 @@
                           (SELECT PID FROM RD_SPEEDLIMIT WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_SPEEDLIMIT
@@ -81,7 +81,7 @@
         </step>
         <step value="16">
 			<!--通过RD_SPEEDLIMIT补关联RD_LINK -->
-			<sql  sqlType="dataIntegrity" condition="by-mesh">
+			<sql  sqlType="dataIntegrity" condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -95,7 +95,7 @@
     <feature name="RD_SPEEDLIMIT_TRUCK">
         <step value="7">
             <!--按图幅过滤RD_SPEEDLIMIT_TRUCK-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_SPEEDLIMIT_TRUCK
@@ -103,7 +103,7 @@
                           (SELECT PID FROM RD_SPEEDLIMIT_TRUCK WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_SPEEDLIMIT_TRUCK
@@ -115,7 +115,7 @@
         </step>
         <step value="16">
 			<!--通过RD_SPEEDLIMIT_TRUCK补关联RD_LINK -->
-			<sql  sqlType="dataIntegrity" condition="by-mesh">
+			<sql  sqlType="dataIntegrity" condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -131,7 +131,7 @@
     <feature name="RD_HGWG_LIMIT">
         <step value="7">
             <!--按图幅过滤RD_HGWG_LIMIT-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_HGWG_LIMIT
@@ -139,7 +139,7 @@
                           (SELECT PID FROM RD_HGWG_LIMIT WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_HGWG_LIMIT
@@ -151,7 +151,7 @@
         </step>
         <step value="16">
 			<!--通过RD_HGWG_LIMIT补关联RD_LINK -->
-			<sql  sqlType="dataIntegrity" condition="by-mesh">
+			<sql  sqlType="dataIntegrity" condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -166,7 +166,7 @@
     <feature name="RD_MILEAGEPILE">
         <step value="7">
             <!--按图幅过滤RD_MILEAGEPILE-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_MILEAGEPILE
@@ -174,7 +174,7 @@
                           (SELECT PID FROM RD_MILEAGEPILE WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_MILEAGEPILE
@@ -191,7 +191,7 @@
         <step value="7">
 
             <!--按图幅过滤RD_ELECTRONICEYE-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_ELECTRONICEYE
@@ -199,7 +199,7 @@
                           (SELECT PID FROM RD_ELECTRONICEYE WHERE MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_ELECTRONICEYE
@@ -224,7 +224,7 @@
         
         <step value="19">
 			<!-- 通过RD_ELECTRONICEYE补关联RD_LINK -->
-			<sql  sqlType="dataIntegrity" condition="by-mesh">
+			<sql  sqlType="dataIntegrity" condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -241,7 +241,7 @@
         目前仅支持按图幅提取
         -->
         <step value="13">
-            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RD_LINK
                       (PID)
@@ -1321,7 +1321,7 @@
                           ]]></sql>
                           
  			<!--按图幅过滤-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                        INSERT /*+ append */
                          INTO TEMP_RD_NATGUD_JUN
@@ -1331,7 +1331,7 @@
                               WHERE N.NG_ASSO_PID = CN.PID and  CN.MESH_ID  [mesh]
                             );
                     ]]></sql>
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                 		INSERT /*+ append */
                          INTO TEMP_RD_NATGUD_JUN
@@ -1346,7 +1346,7 @@
         <!--按照图幅补充IX_NATGUD-->
         <step value="14">
  			<!--按图幅过滤-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                        INSERT /*+ append */
                          INTO TEMP_IX_NATGUD
@@ -1356,7 +1356,7 @@
                               WHERE CN.MESH_ID  [mesh]
                             );
                     ]]></sql>
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                 		INSERT /*+ append */
                          INTO TEMP_IX_NATGUD

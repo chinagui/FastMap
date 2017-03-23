@@ -4,18 +4,16 @@
 @time:2010-10-11
 -->
 <sqls>
-    <import file="clean-index.xml"/>
-    <import file="clean-data.xml"/>
 
     <feature name="RD_LINK">
         <step value="7">
             <!--
-             condition="by-mesh"：按图幅导出的sql
-             condition="by-area"：按区域导出的sql
+             condition="mesh"：按图幅导出的sql
+             condition="area"：按区域导出的sql
              no condition ：所有都符合
             -->
             <!--按图幅过滤RD_LINK-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RD_LINK

@@ -5,7 +5,7 @@
 	<feature name="ADAS">
 		<step value="7">
 			<!--提取link -->
-			<sql condition="by-mesh"><![CDATA[
+			<sql condition="mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_ADAS_LINK
                        (PID)
@@ -13,7 +13,7 @@
                           FROM ADAS_LINK P
                          WHERE P.RDLINK_PID = 0 AND P.MESH_ID [mesh]);
                      ]]></sql>
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_ADAS_LINK

@@ -17,7 +17,7 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
-import com.navinfo.dataservice.engine.fcc.tips.CopyOfTipsUpload;
+//import com.navinfo.dataservice.engine.fcc.tips.CopyOfTipsUpload;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
@@ -139,13 +139,13 @@ public class TipsImportTest extends InitApplication {
 
 			System.out.println("---------------------");
 
-			CopyOfTipsUpload tipsUploader2 = new CopyOfTipsUpload();
+			/*CopyOfTipsUpload tipsUploader2 = new CopyOfTipsUpload();
 			long t3 = System.currentTimeMillis();
 			tipsUploader2
 					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",
 							photoMap, audioMap);
 			long t4 = System.currentTimeMillis();
-			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));
+			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));*/
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -11,17 +11,17 @@
     <feature name="IX_POINTADDRESS">
         <step value="7">
             <!--按图幅过滤IX_POI-->
-            <sql condition="mesh">
+            <sql condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
-                        INTO TEMP_FILTER_IX_POINTADDRESS
+                        INTO TEMP_FILTER_IX_POINTADDR
                           (PID)
                           (SELECT PID FROM IX_POINTADDRESS WHERE MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
-                        INTO TEMP_FILTER_IX_POINTADDRESS
+                        INTO TEMP_FILTER_IX_POINTADDR
                           (PID)
                           (SELECT PID FROM IX_POINTADDRESS
                             WHERE SDO_ANYINTERACT(GEOMETRY,
@@ -31,23 +31,23 @@
         </step>
         <step value="10">
             <!--  根据POINTADDRESS查询引导link  -->
-            <sql sqlType="dataIntegrity" condition="mesh">
+            <sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
                           (PID)
-                          (SELECT I.GUIDE_LINK_PID FROM IX_POINTADDRESS I,TEMP_FILTER_IX_POINTADDRESS T WHERE I.PID=T.PID);
+                          (SELECT I.GUIDE_LINK_PID FROM IX_POINTADDRESS I,TEMP_FILTER_IX_POINTADDR T WHERE I.PID=T.PID);
                         ]]></sql>
 
             <!--	父在图幅内，子在图幅外，子提取-->
-            <sql sqlType="dataIntegrity" condition="mesh">
+            <sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POINTADDRESS
                           (PID)
                           (SELECT /*+ ORDERED USE_HASH(P) USE_HASH(C) NO_SWAP_JOIN_INPUTS(C)*/
 						 C.CHILD_PA_PID
-						  FROM TEMP_FILTER_IX_POINTADDRESS T,
+						  FROM TEMP_FILTER_IX_POINTADDR T,
 						       IX_POINTADDRESS_PARENT        P,
 						       IX_POINTADDRESS_CHILDREN      C
 						 WHERE P.GROUP_ID = C.GROUP_ID
@@ -55,14 +55,14 @@
                         ]]></sql>
 
             <!--	子在图幅内，父在图幅外，父提取，父的其他子不提-->
-            <sql sqlType="dataIntegrity" condition="mesh">
+            <sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POINTADDRESS
                           (PID)
                           (SELECT /*+ ORDERED USE_HASH(C) USE_HASH(P) NO_SWAP_JOIN_INPUTS(P)*/
 							 P.PARENT_PA_PID
-							  FROM TEMP_FILTER_IX_POINTADDRESS T,
+							  FROM TEMP_FILTER_IX_POINTADDR T,
 							       IX_POINTADDRESS_CHILDREN      C,
 							       IX_POINTADDRESS_PARENT        P
 							 WHERE P.GROUP_ID = C.GROUP_ID
@@ -73,7 +73,7 @@
 
         <step value="19">
             <!--LINK在图幅内，与LINK相关联的IX_POINTADDRESS要提取-->
-            <sql sqlType="dataIntegrity" condition="mesh">
+            <sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POINTADDRESS
@@ -88,7 +88,7 @@
                         INSERT /*+ append */
                         INTO TEMP_IX_POINTADDRESS
                           (PID)
-                          (SELECT P.PID FROM TEMP_FILTER_IX_POINTADDRESS P);
+                          (SELECT P.PID FROM TEMP_FILTER_IX_POINTADDR P);
                         ]]></sql>
 
 
@@ -137,7 +137,7 @@
         
         <!--根据引导link，删除引导link未导出的IX_POINTADDRESS-->
 		<step value="40">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         DELETE FROM TEMP_IX_POINTADDRESS T
 					 WHERE T.PID IN
@@ -149,6 +149,18 @@
 
 
         </step>
+        <!-- 20151208新增 为了解决小范围数据删除问题（三级子表按照外键删除，导致数据未删掉），增加临时表 -->
+        <step value="43">
+            <sql>
+                <![CDATA[
+                       INSERT INTO TEMP_IX_POINTADDR_NAME
+						  (SELECT P.NAME_ID
+						     FROM IX_POINTADDRESS_NAME P, TEMP_IX_POINTADDRESS T
+						    WHERE P.PID = T.PID);
+                        ]]></sql>
+        </step>
+        
+        
         <!--
             提取原则：
             1.按图幅提取
@@ -179,11 +191,16 @@
             <sql><![CDATA[DELETE FROM IX_POINTADDRESS_FLAG P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_POINTADDRESS T ); ]]></sql>
             <!--IX_POINTADDRESS_NAME-->
             <sql><![CDATA[DELETE FROM IX_POINTADDRESS_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_POINTADDRESS T ); ]]></sql>
+            <!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--
             <sql><![CDATA[DELETE FROM IX_POINTADDRESS_NAME_TONE P
 							 WHERE P.NAME_ID IN (SELECT P.NAME_ID
 							                       FROM IX_POINTADDRESS_NAME P, TEMP_IX_POINTADDRESS T
 							                      WHERE P.PID = T.PID) ;
 							]]></sql>
+							
+			-->
+			<sql><![CDATA[DELETE FROM IX_POINTADDRESS_NAME_TONE P WHERE P.NAME_ID IN (SELECT NAME_ID FROM TEMP_IX_POINTADDR_NAME);]]></sql>
             <sql><![CDATA[DELETE FROM IX_POINTADDRESS_PARENT P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_IX_POINTADDRESS_GROUP T ); ]]></sql>
             <sql sqlType="dataIntegrity">
             	<![CDATA[DELETE FROM IX_POINTADDRESS_CHILDREN P WHERE P.GROUP_ID IN (SELECT T.PID FROM TEMP_IX_POINTADDRESS_GROUP T ); ]]></sql>
@@ -220,14 +237,14 @@
     <feature name="IX_HAMLET">
         <step value="7">
             <!--按图幅过滤IX_HAMLET-->
-            <sql condition="mesh">
+            <sql condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_HAMLET
                           (PID)
                           (SELECT PID FROM IX_HAMLET WHERE MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_HAMLET
@@ -240,7 +257,7 @@
         </step>
         <step value="10">
             <!--  根据POINTADDRESS查询引导link  -->
-            <sql sqlType="dataIntegrity" condition="mesh">
+            <sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -252,7 +269,7 @@
 
         <step value="19">
             <!--LINK在图幅内，与LINK相关联的IX_HAMLET要提取-->
-            <sql sqlType="dataIntegrity"  condition="mesh">
+            <sql sqlType="dataIntegrity"  condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_HAMLET
@@ -277,7 +294,7 @@
         
         <!--根据引导link，删除引导link未导出的IX_HAMLET-->
 		<step value="40">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         DELETE FROM TEMP_IX_HAMLET T
 					 WHERE T.PID IN
@@ -289,6 +306,19 @@
 
 
         </step>
+        
+        <!-- 20151208新增 为了解决小范围数据删除问题  提取IX_HAMLET_NAME -->
+        <step value="43">
+            <sql>
+                <![CDATA[
+                        INSERT INTO TEMP_IX_HAMLET_NAME
+						  (SELECT P.NAME_ID
+						     FROM IX_HAMLET_NAME P, TEMP_IX_HAMLET T
+						    WHERE P.PID = T.PID);
+                        ]]></sql>
+        </step>
+        
+        
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_HAMLET-->
@@ -308,6 +338,7 @@
             <sql><![CDATA[DELETE FROM IX_HAMLET_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_HAMLET T ); ]]></sql>
             <sql><![CDATA[DELETE FROM IX_HAMLET_FLAG P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_HAMLET T ); ]]></sql>
             <!--IX_HAMLET_NAME-->
+            <!--
             <sql>
                 <![CDATA[
                 DELETE FROM IX_HAMLET_NAME_TONE P
@@ -315,7 +346,9 @@
 				                       FROM IX_HAMLET_NAME P, TEMP_IX_HAMLET T
 				                      WHERE P.PID = T.PID);
                 ]]></sql>
-
+			-->
+			<!-- 20151208修改 为了解决小范围数据删除问题 -->
+			<sql><![CDATA[DELETE FROM IX_HAMLET_NAME_TONE P WHERE P.NAME_ID IN (SELECT NAME_ID FROM TEMP_IX_HAMLET_NAME);]]></sql>
         </step>
 
         <step value="102">
@@ -336,16 +369,16 @@
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_IC-->
-            <sql condition="mesh"><![CDATA[SELECT P.* FROM IX_IC P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[SELECT P.* FROM IX_IC P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 SELECT P.* FROM IX_IC P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
 
         <step value="101">
             <!--IX_IC-->
-            <sql condition="mesh"><![CDATA[DELETE FROM IX_IC P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[DELETE FROM IX_IC P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 DELETE FROM IX_IC P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
@@ -366,15 +399,15 @@
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_CROSSPOINT-->
-            <sql condition="mesh"><![CDATA[SELECT P.* FROM IX_CROSSPOINT P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[SELECT P.* FROM IX_CROSSPOINT P
+            <sql condition="by-mesh"><![CDATA[SELECT P.* FROM IX_CROSSPOINT P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[SELECT P.* FROM IX_CROSSPOINT P
                 WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';]]></sql>
 
         </step>
         <step value="101">
             <!--IX_CROSSPOINT-->
-            <sql condition="mesh"><![CDATA[DELETE FROM IX_CROSSPOINT P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[DELETE FROM IX_CROSSPOINT P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';]]></sql>
+            <sql condition="by-mesh"><![CDATA[DELETE FROM IX_CROSSPOINT P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[DELETE FROM IX_CROSSPOINT P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';]]></sql>
 
         </step>
         <step value="102">
@@ -393,16 +426,16 @@
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_TOLLGATE-->
-            <sql condition="mesh"><![CDATA[SELECT P.* FROM IX_TOLLGATE P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[SELECT P.* FROM IX_TOLLGATE P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 SELECT P.* FROM IX_TOLLGATE P
                     WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
         <step value="101">
             <!--IX_TOLLGATE-->
-            <sql condition="mesh"><![CDATA[DELETE FROM IX_TOLLGATE P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[DELETE FROM IX_TOLLGATE P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                DELETE FROM IX_TOLLGATE P
                     WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
@@ -424,15 +457,15 @@
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_ROADNAME-->
-            <sql condition="mesh"><![CDATA[SELECT P.* FROM IX_ROADNAME P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[SELECT P.* FROM IX_ROADNAME P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 SELECT P.* FROM IX_ROADNAME P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
         <step value="101">
             <!--IX_ROADNAME-->
-            <sql condition="mesh"><![CDATA[DELETE FROM IX_ROADNAME P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[DELETE FROM IX_ROADNAME P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 DELETE FROM IX_ROADNAME P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
@@ -453,16 +486,16 @@
         <!--图幅号直接提取-->
         <step value="100">
             <!--IX_POSTCODE-->
-            <sql condition="mesh"><![CDATA[SELECT P.* FROM IX_POSTCODE P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[SELECT P.* FROM IX_POSTCODE P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 SELECT P.* FROM IX_POSTCODE P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>
 
         <step value="101">
             <!--IX_POSTCODE-->
-            <sql condition="mesh"><![CDATA[DELETE FROM IX_POSTCODE P WHERE P.MESH_ID [mesh];]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[DELETE FROM IX_POSTCODE P WHERE P.MESH_ID [mesh];]]></sql>
+            <sql condition="by-area"><![CDATA[
                 DELETE FROM IX_POSTCODE P WHERE SDO_ANYINTERACT(GEOMETRY,[area]) = 'TRUE';
             ]]></sql>
         </step>

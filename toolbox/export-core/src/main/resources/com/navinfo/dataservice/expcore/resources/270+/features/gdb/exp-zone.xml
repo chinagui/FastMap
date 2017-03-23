@@ -13,7 +13,7 @@
 
         <step value="7">
             <!--提取图幅内link-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_ZONE_LINK
                     (PID)
@@ -22,7 +22,7 @@
                      WHERE  P.MESH_ID [mesh]);
                      ]]></sql>
 
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_ZONE_LINK
                     (PID)
@@ -32,7 +32,7 @@
                      ]]></sql>
 
             <!--提取图廓点-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_ZONE_NODE
                        (PID)
@@ -51,7 +51,7 @@
 
         <step value="10">
             <!--根据图框线提取face-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_ZONE_FACE
                            (PID)
@@ -71,7 +71,7 @@
         </step>
         <step value="13">
             <!--根据图框线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_ZONE_LINK
                            (PID)
@@ -81,7 +81,7 @@
                          ]]></sql>
 
             <!--根据图廓点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_ZONE_LINK
                       (PID)
@@ -99,13 +99,13 @@
         <step value="16">
             <!--按图幅提取FACE信息-->
             <!--提取图幅内的face-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_ZONE_FACE
                           (PID)
                           (SELECT P.FACE_PID FROM ZONE_FACE P WHERE P.MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_ZONE_FACE
                           (PID)

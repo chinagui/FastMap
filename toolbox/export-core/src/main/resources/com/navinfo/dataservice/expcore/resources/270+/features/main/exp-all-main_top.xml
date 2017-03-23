@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+@authur:liuqing
+@time:2010-01-24
+TOP级结构（土地覆盖）
+-->
+<sqls>
+    <feature name="LC_FEATURE">
+        <!--
+            TOP级结构（土地覆盖）
+        -->
+
+
+        <step value="100">
+            <!--
+                根据图幅号直接提取数据表：
+                LC_FACE_TOP
+                LC_FACE_NAME_TOP
+                LC_FACE_TOPO_TOP
+                LC_LINK_TOP
+                LC_LINK_KIND_TOP
+                LC_LINK_MESH_TOP
+                LC_NODE_TOP
+                LC_NODE_MESH_TOP
+                LC_FEATURE_TOP
+            -->
+
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_NAME_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_FACE_TOPO_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_LINK_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_LINK_KIND_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_LINK_MESH_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_NODE_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_NODE_MESH_TOP P; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM LC_FEATURE_TOP P; ]]></sql>
+
+        </step>
+    </feature>
+    <import file="table-stats.xml"/>
+    <import file="exp-ck_excep.xml"/>
+    <import file="exp-m_para.xml"/>
+</sqls>

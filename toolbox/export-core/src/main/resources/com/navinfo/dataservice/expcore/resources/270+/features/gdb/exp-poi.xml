@@ -13,14 +13,14 @@
 
 		<step value="13">
 			<!--按图幅过滤IX_POI -->
-			<sql condition="mesh">
+			<sql condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_IX_POI
                           (PID)
                           (SELECT PID FROM IX_POI WHERE MESH_ID [mesh]);
                         ]]></sql>
-			<sql condition="area">
+			<sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_IX_POI
@@ -36,7 +36,7 @@
 		<step value="16">
 			<!--POI在图幅内 ，与POI相关联的图幅外LINK要提取 -->
 			<!-- 根据POI查询引导link -->
-			<sql  sqlType="dataIntegrity" condition="mesh">
+			<sql  sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_RD_LINK
@@ -46,7 +46,7 @@
 
 
 			<!-- 父在图幅内，子在图幅外，子提取 -->
-			<sql sqlType="dataIntegrity" condition="mesh">
+			<sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POI
@@ -60,7 +60,7 @@
                         ]]></sql>
 
 			<!-- 子在图幅内，父在图幅外，父提取，父的其他子不提 -->
-			<sql sqlType="dataIntegrity" condition="mesh">
+			<sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POI
@@ -89,7 +89,7 @@
 		<step value="19">
 
 			<!--补充同一POI -->
-			<sql sqlType="dataIntegrity" condition="mesh">
+			<sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POI
@@ -100,7 +100,7 @@
                         ]]></sql>
 			<!--LINK在图幅内，与LINK相关联的POI要提取 -->
 			<!--第二步完成图幅内的Link提取 -->
-			<sql sqlType="dataIntegrity" condition="mesh">
+			<sql sqlType="dataIntegrity" condition="by-mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_POI
@@ -141,6 +141,17 @@
                           (SELECT DISTINCT PID FROM TEMP_FILTER_IX_POI P);
                         ]]></sql>
 
+
+		</step>
+		
+		<step value="43">
+
+			<sql>
+                <![CDATA[
+                        INSERT INTO TEMP_IX_POI_NAME (SELECT DISTINCT(T2.NAME_ID)
+	                       FROM IX_POI_NAME T2, TEMP_IX_POI T
+	                      WHERE T2.POI_PID = T.PID);
+                        ]]></sql>
 
 		</step>
 		

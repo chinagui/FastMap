@@ -16,7 +16,7 @@
             <sql><![CDATA[SELECT P.* FROM IX_ANNOTATION_100W P;]]></sql>
 
             <!--IX_ANNOTATION_NAME-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                          SELECT P.*
                            FROM IX_ANNOTATION_NAME_100W P;
                          ]]></sql>

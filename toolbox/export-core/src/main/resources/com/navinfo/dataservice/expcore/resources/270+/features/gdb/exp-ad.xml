@@ -7,7 +7,7 @@
 			zone 14时提取ad_admin -->
 		<step value="7">
 			<!--提取link -->
-			<sql condition="mesh"><![CDATA[
+			<sql condition="by-mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_AD_LINK
                        (PID)
@@ -15,7 +15,7 @@
                           FROM AD_LINK_MESH P
                          WHERE P.MESH_ID [mesh]);
                      ]]></sql>
-			<sql condition="mesh"><![CDATA[
+			<sql condition="by-mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_AD_ADMIN_RG
                        (PID)
@@ -23,7 +23,7 @@
                           FROM AD_ADMIN P
                          WHERE P.MESH_ID [mesh]);
                      ]]></sql>
-			<sql condition="area"><![CDATA[
+			<sql condition="by-area"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_AD_LINK
                        (PID)
@@ -34,7 +34,7 @@
 
 
 			<!--提取图廓点 -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_AD_NODE
                        (PID)
@@ -51,7 +51,7 @@
 		</step>
 		<step value="10">
 			<!--根据图框线提取face -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_FACE
                            (PID)
@@ -71,7 +71,7 @@
 		</step>
 		<step value="13">
 			<!--根据图框线提取的face补link -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_LINK
                            (PID)
@@ -81,7 +81,7 @@
                          ]]></sql>
 
 			<!--根据图廓点提取link -->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+			<sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_AD_LINK
                       (PID)
@@ -98,7 +98,7 @@
 		</step>
 		<step value="16">
 			<!--按图幅提取FACE信息 -->
-			<sql condition="mesh">
+			<sql condition="by-mesh">
                 <![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_FACE
@@ -106,7 +106,7 @@
                            (SELECT P.FACE_PID FROM AD_FACE P WHERE P.MESH_ID [mesh]);
                          ]]></sql>
 			<!--按区域提取face -->
-			<sql condition="area">
+			<sql condition="by-area">
                 <![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_FACE

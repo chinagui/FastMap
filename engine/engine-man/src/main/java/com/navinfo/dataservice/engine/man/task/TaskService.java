@@ -344,9 +344,11 @@ public class TaskService {
 						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
 						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
 					}}
+				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集或日编任务";}
+				else{return "二代编辑任务发布进行中";}
 			}
-			if((erNum!=0)||(total+erNum!=taskIds.size())){
-				return "任务发布：" + total + "个成功，" + (taskIds.size()-total-erNum) + "个失败," + erNum + "个二代编辑任务进行中";
+			if(total!=taskIds.size()){
+				return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 			}
 			return null;
 		} catch (Exception e) {
@@ -1532,7 +1534,10 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT * FROM TASK";
+			String selectSql = "SELECT *"
+					+ "  FROM TASK"
+					+ " WHERE LATEST = 1";
+					//+ "   AND STATUS IN (0, 1)";
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1726,11 +1731,12 @@ public class TaskService {
 				phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
 			}
 			int curPhase=phase.getPhase();
+			//新增状态4。0创建1进行中2成功3失败4tip转aumark（无tips可转）
 			if(curPhase==1){
-				if(phaseStatusMap.get(2)!=2){return;}
+				if(phaseStatusMap.get(2)!=2&&phaseStatusMap.get(2)!=4){return;}
 			}else{//2,3,4
 				for(int i=1;i<curPhase;i++){
-					if(phaseStatusMap.get(i)!=2){return;}
+					if(phaseStatusMap.get(i)!=2&&phaseStatusMap.get(i)!=4){return;}
 				}
 			}
 			if(curPhase==1||curPhase==2){//日落月
@@ -2033,6 +2039,17 @@ public class TaskService {
 			taskPar.put("area",workType);
 			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
+			taskPar.put("meshs",phase.getMeshIds());
+			
+			//判断之前tip2aumark的过程，是有tips还是没有tips
+			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
+			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
+			for(Map<String, Integer> phaseTmp:phaseList){
+				phaseStatusMap.put(phaseTmp.get("phase"),phaseTmp.get("status"));
+			}
+			taskPar.put("hasAumark",true);
+			if(phaseStatusMap.get(2)==4){taskPar.put("hasAumark",false);}
 			
 			par.put("taskInfo", taskPar);
 			
@@ -2136,7 +2153,7 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		try{
 			if(status==0&&(message==null||message.isEmpty())){return;}
-			if(message!=null&&message.length()>1000){message=message.substring(0, 1000);}
+			if(message!=null&&message.length()>500){message=message.substring(0, 500);}
 			QueryRunner run = new QueryRunner();
 			String selectSql ="";
 			if(status==0){

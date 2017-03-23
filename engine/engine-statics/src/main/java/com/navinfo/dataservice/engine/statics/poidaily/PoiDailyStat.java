@@ -62,7 +62,7 @@ public class PoiDailyStat implements Runnable {
 			QueryRunner run = new QueryRunner();
 
 //			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.row_id = pes.row_id and pes.is_upload=1";
-			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid";
+			String sql = "select ip.geometry from ix_poi ip, poi_edit_status pes where ip.pid = pes.pid and pes.status in (1,2,3)";
 			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>() {
 
 				@Override
@@ -241,12 +241,13 @@ public class PoiDailyStat implements Runnable {
 		}
 	}
 	public void run() {
-		log.info("-- begin do sub_task");
+		//log.info("-- begin do sub_task");
 		try {
-			log.info("-- begin do sub_task" + conn);
+			log.info("-- begin do sub_task:"+col_name+",conn:" + conn);
 //			Map<String, JSONObject> ja = getPois();
 //			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
 			new MongoDao(db_name).insertMany(col_name, doStatPoi());
+			log.info("-- end do sub_task:"+col_name+",conn:" + conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -48,8 +48,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             // 获取RdLink关联的AdFace
             AdFace face = loadAdFace(conn, linkGeometry);
             if (null == face) {
-                link.changedFields().put("leftRegionId", 0);
-                link.changedFields().put("rightRegionId", 0);
+                if (link.getLeftRegionId() != 0)
+                    link.changedFields().put("leftRegionId", 0);
+                if (link.getRightRegionId() != 0)
+                    link.changedFields().put("rightRegionId", 0);
                 return;
             }
             // 获取AdFace的regionId
@@ -151,8 +153,10 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
         if (null == geometry) {
             List<RdLink> links = selector.loadLinkByFaceGeo(faceGeometry, true);
             for (RdLink link : links) {
-                link.changedFields().put("leftRegionId", 0);
-                link.changedFields().put("rightRegionId", 0);
+                if (link.getLeftRegionId() != 0)
+                    link.changedFields().put("leftRegionId", 0);
+                if (link.getRightRegionId() != 0)
+                    link.changedFields().put("rightRegionId", 0);
                 result.insertObject(link, ObjStatus.UPDATE, link.pid());
             }
             return;
@@ -177,29 +181,39 @@ public class AdminIDBatchUtils extends BaseBatchUtils {
             // RdLink包含在AdFace内
             if (isContainOrCover(linkGeometry, geometry)) {
                 // 修行时修改regionId
-                link.changedFields().put("leftRegionId", regionId);
-                link.changedFields().put("rightRegionId", regionId);
+                if (link.getLeftRegionId() != regionId)
+                    link.changedFields().put("leftRegionId", regionId);
+                if (link.getRightRegionId() != regionId)
+                    link.changedFields().put("rightRegionId", regionId);
+                maps.put(link.pid(), link);
                 // RdLink处在AdFace组成线上
             } else if (GeoRelationUtils.Boundary(linkGeometry, geometry)) {
                 // RdLink在AdFace的右边
                 if (GeoRelationUtils.IsLinkOnLeftOfRing(linkGeometry, geometry)) {
                     // 修改时修改RightRegionId值
-                    link.changedFields().put("rightRegionId", regionId);
+                    if (link.getRightRegionId() != regionId) {
+                        link.changedFields().put("rightRegionId", regionId);
+                        maps.put(link.pid(), link);
+                    }
                 } else {
                     // 修改时修改LeftRegionId值
-                    link.changedFields().put("leftRegionId", regionId);
+                    if (link.getLeftRegionId() != regionId) {
+                        link.changedFields().put("leftRegionId", regionId);
+                        maps.put(link.pid(), link);
+                    }
                 }
             } else {
                 // 其他情况暂不处理
             }
-            maps.put(link.pid(), link);
         }
         // 修形时删除原面内link的regionId
         if (null != faceGeometry) {
             links = selector.loadLinkByDiffGeo(faceGeometry, geometry, true);
             for (RdLink link : links) {
-                link.changedFields().put("leftRegionId", 0);
-                link.changedFields().put("rightRegionId", 0);
+                if (link.getLeftRegionId() != 0)
+                    link.changedFields().put("leftRegionId", 0);
+                if (link.getRightRegionId() != 0)
+                    link.changedFields().put("rightRegionId", 0);
                 maps.put(link.pid(), link);
             }
         }

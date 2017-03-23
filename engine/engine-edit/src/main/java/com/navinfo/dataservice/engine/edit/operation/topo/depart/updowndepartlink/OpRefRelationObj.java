@@ -7,7 +7,6 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.CoordinateList;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
 
 public class OpRefRelationObj {
 
@@ -219,13 +218,13 @@ public class OpRefRelationObj {
                 , result);
     }
 
-    // 维护可变限速
-    public String handlerRdVariableSpeed(Command command, Result result) throws Exception {
-        com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart.Operation operation = new com
-                .navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart.Operation(conn);
-        return operation.updownDepart(command.getLinks(), command.getLeftLinkMapping(), command.getRightLinkMapping()
-                , result);
-    }
+	// 维护可变限速
+	public String handlerRdVariableSpeed(Command command, Result result)
+			throws Exception {
+		com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart.Operation(
+				conn);
+		return operation.updownDepart(command.getLinks(), result);
+	}
 
     // 维护信号灯
     public String handlerRdTrafficsignal(Command command, Result result) throws Exception {

@@ -210,7 +210,7 @@ public class PoiRelationImportor extends AbstractOperation{
 										log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
 										IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
 										 long groupId = obj.objPid();
-										 System.out.println("obj :"+obj+", groupId:"+ groupId);
+										 log.info("obj :"+obj+", groupId:"+ groupId);
 										 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
 										 	ixSamepoiPart.setGroupId(groupId);
 										 	ixSamepoiPart.setPoiPid(thisPid);
@@ -238,7 +238,7 @@ public class PoiRelationImportor extends AbstractOperation{
 									log.info("创建新的同一关系，thisPid:" + thisPid + ";thisSamePid: " + thisSamePid);
 									IxSamePoiObj obj = (IxSamePoiObj) ObjFactory.getInstance().create(ObjectName.IX_SAMEPOI);
 									 long groupId = obj.objPid();
-									 System.out.println("obj :"+obj+", groupId:"+ groupId);
+									 log.info("obj :"+obj+", groupId:"+ groupId);
 									 IxSamepoiPart ixSamepoiPart = obj.createIxSamepoiPart();
 									 	ixSamepoiPart.setGroupId(groupId);
 									 	ixSamepoiPart.setPoiPid(thisPid);

@@ -167,12 +167,10 @@ public class CheckController extends BaseController {
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			System.out.println("listRdnResult tips: "+tips);
-			logger.debug("获取子任务范围内的tips: "+tips);
+			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
-			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
-			logger.debug("获取规则号"+ruleCodes);
+			logger.debug("listRdnResult 获取规则号"+ruleCodes);
 			Page page = niValExceptionSelector.listCheckResults(jsonReq,tips,ruleCodes);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
@@ -200,25 +198,22 @@ public class CheckController extends BaseController {
 			int subtaskId = jsonReq.getInt("subtaskId");
 			Integer type = jsonReq.getInt("type");
 			Integer jobId = jsonReq.getInt("jobId");
-			System.out.println("jobId : "+jobId);
+			logger.info("jobId : "+jobId);
 			String jobUuid = "";
-			System.out.println("jobUuid : "+jobUuid);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			if(jobId != null && jobId >0){
 				//根据jobId 查询jobUuid 
 				JobInfo jobInfo = jobApiService.getJobById(jobId);
 				jobUuid = jobInfo.getGuid();
-				System.out.println(1);
 			}else{
 				JSONObject jobObj = jobApiService.getLatestJob(subtaskId);
 				if(jobObj != null && jobObj.size() >0){
 					jobUuid= jobObj.getString("jobGuid");
 					jobId = jobObj.getInt("jobId");
 				}
-				System.out.println(2);
 			}
-			System.out.println("jobId 2: "+jobId);
-			System.out.println("jobUuid 2: "+jobUuid);
+			logger.info("jobId 2: "+jobId);
+			logger.info("jobUuid 2: "+jobUuid);
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
@@ -229,15 +224,10 @@ public class CheckController extends BaseController {
 			}
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			System.out.println("apiFcc : "+apiFcc);
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			System.out.println("listRdnResult tips: "+tips);
-			logger.debug("获取子任务范围内的tips: "+tips);
+			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
 			//获取规则号
-			//JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
-//			System.out.println("listRdnResult ruleCodes: "+ruleCodes);
-//			logger.debug("获取规则号"+ruleCodes);
 			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());

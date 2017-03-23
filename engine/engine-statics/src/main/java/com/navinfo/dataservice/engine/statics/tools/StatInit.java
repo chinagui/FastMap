@@ -6,17 +6,24 @@ import java.util.regex.Pattern;
 
 import net.sf.json.JSONObject;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.alibaba.druid.support.logging.Log;
 import com.mongodb.BasicDBObject;
+import com.mongodb.QueryOperators;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.navicommons.exception.ServiceException;
 
 public class StatInit {
+	private static Logger log =  LogManager.getLogger(RoadCollectMain.class);
 
 	/**
 	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
@@ -31,7 +38,12 @@ public class StatInit {
 		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, query).iterator();
 		while (iter.hasNext()) {
 			JSONObject json = JSONObject.fromObject(iter.next());
-			map.put(json.getString(key), json.getDouble("track_length"));
+			try{
+				map.put(json.getString(key), json.getDouble("stat_length"));
+			}catch(Exception e){
+				log.error("getTrackTipsStat error:"+json,e);
+				throw e;
+			}
 		}
 		return map;
 	}
@@ -53,10 +65,9 @@ public class StatInit {
 	/**
 	 * 获取 tips库中 track轨迹统计结果，并封装成map返回 支持 根据参数key返回 grid，block，city三种
 	 */
-	public static Map<String, Integer> getPoiSeasonStat(String db_name, String col_name, String key) {
+	public static Map<String, Integer> getPoiSeasonStat(String db_name, String col_name, String key,BasicDBObject query) {
 		Map<String, Integer> map = new HashMap<String, Integer>();
-
-		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, null).iterator();
+		MongoCursor<Document> iter = new MongoDao(db_name).find(col_name, query).iterator();
 		while (iter.hasNext()) {
 			JSONObject json = JSONObject.fromObject(iter.next());
 			map.put(json.getString(key), json.getInt("total"));

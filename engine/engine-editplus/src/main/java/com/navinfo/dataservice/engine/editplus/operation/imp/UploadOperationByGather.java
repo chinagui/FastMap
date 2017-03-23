@@ -18,7 +18,7 @@ import org.apache.commons.collections.MultiMap;
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-import com.navinfo.dataservice.api.edit.iface.EditApi;
+//import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -44,7 +44,7 @@ import net.sf.json.JSONObject;
 
 public class UploadOperationByGather {
 	
-	private EditApi apiService ;
+//	private EditApi apiService ;
 	//private QueryRunner runn;
 	private Long userId;
 	
@@ -52,9 +52,9 @@ public class UploadOperationByGather {
 //	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected JSONArray errLog = new JSONArray();
 	public UploadOperationByGather(Long userId) {
-		log.info("ApplicationContextUtil.containsBean('editApi'): "+ApplicationContextUtil.containsBean("editApi"));
-		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
-		log.info("apiService: "+apiService);
+		//log.info("ApplicationContextUtil.containsBean('editApi'): "+ApplicationContextUtil.containsBean("editApi"));
+		//this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
+		//log.info("apiService: "+apiService);
 	//	runn = new QueryRunner();
 		this.userId = userId;
 	}
@@ -111,7 +111,7 @@ public class UploadOperationByGather {
 				Integer dbId = entry.getKey();
 				UploadPois pois = entry.getValue();
 				Connection conn=null;
-				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
+//				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
 				try{
 					conn=DBConnector.getInstance().getConnectionById(dbId);
 					//导入数据
@@ -131,16 +131,18 @@ public class UploadOperationByGather {
 				
 					errLog.addAll(imp.getErrLog());
 					log.debug("dbId("+dbId+")转入成功。");
-					
-					//*************zl 2017.02.09 采集成果自动批任务标识**************
 					OperationResult result = imp.getResult();
+					//*************zl 2017.03.23 poi上传维护poi_edit_status**************
+					PoiEditStatus.insertOrUpdatePoiEditStatus(conn,result);
+					//*************zl 2017.02.09 采集成果自动批任务标识**************
+					
 					poiAutoBatchTaskId(result,conn);
-					//*************zl 2017.03.14 采集成果批处理**************
+					/*//*************zl 2017.03.14 采集成果批处理**************
 //					runBatchPoi(result,dbId);
 					Map<Long,BasicObj> mapObj =result.getObjsMapByType(ObjectName.IX_POI);
 					if(mapObj.values() != null && mapObj.values().size() > 0){
 						ixPoiObjs.addAll(mapObj.values());
-					}
+					}*/
 					
 				}catch(Exception e){
 					DbUtils.rollbackAndCloseQuietly(conn);
@@ -150,14 +152,15 @@ public class UploadOperationByGather {
 					DbUtils.commitAndCloseQuietly(conn);
 					log.info("3.....");
 				}
+				
+				/*//poi上传批处理
 				try{
 					log.info("runBatchPoi begin1.....");
 					runBatchPoi(ixPoiObjs,dbId);
 					log.info("runBatchPoi end2.....");
 				}catch(Exception e){
 					log.error(e.getMessage(),e);
-//					throw new ThreadExecuteException("");
-				}
+				}*/
 			}
 			
 			retObj.put("success", ja.size()-errLog.size());//成功的poi 总数
@@ -182,7 +185,7 @@ public class UploadOperationByGather {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年3月15日 上午9:07:21 
 	 */
-	private void runBatchPoi(List<BasicObj> ixPoiObjs, Integer dbId) throws Exception {
+	/*private void runBatchPoi(List<BasicObj> ixPoiObjs, Integer dbId) throws Exception {
 		DefaultObjConvertor objToJson =new DefaultObjConvertor();
 		JSONArray poiJsonArr = objToJson.objConvertorJson(ixPoiObjs);
 		log.info("poiJsonArr.size(): "+poiJsonArr.size());
@@ -196,7 +199,7 @@ public class UploadOperationByGather {
 			}
 		}
 		
-	}
+	}*/
 
 	/**
 	 * @Title: poiAutoBatchTaskId

@@ -39,7 +39,7 @@ public class GLM01399 extends baseRule {
 		for (Integer linkPid : this.limitResultPidSet) {
 			String sqlStr = String.format(
 					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK L, RD_LINK_LIMIT LM WHERE ((LM.TYPE=3 AND LM.VEHICLE !=0) OR (LM.TYPE=2 AND LM.VEHICLE=0)) "
-							+ "AND LM.U_RECORD <> 2 AND L.U_RECORD <> 2 AND LM.LINK_PID = L.LINK_PID AND L.LINK_PID = {0} ",
+							+ "AND LM.U_RECORD <> 2 AND L.U_RECORD <> 2 AND LM.LINK_PID = L.LINK_PID AND L.LINK_PID = %d ",
 					linkPid);
 
 			logger.info("RdLinkLimit后检查GLM01399 SQL:" + sqlStr);
@@ -69,12 +69,6 @@ public class GLM01399 extends baseRule {
 			}
 
 			RdLinkLimit rdlinkLimit = (RdLinkLimit) row;
-
-			if (!rdlinkLimit.changedFields().containsKey("type")
-					|| rdlinkLimit.changedFields().containsKey("vehicle")) {
-				continue;
-			}
-
 			limitResultPidSet.add(rdlinkLimit.getLinkPid());
 		}
 	}

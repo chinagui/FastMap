@@ -38,7 +38,7 @@ public class GLM01229 extends baseRule {
 		for (Integer linkPid : noPropertyLinkPidSet) {
 			String sqlStr = String.format(
 					"SELECT L.GEOMETRY,'[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK L,RD_LINK_FORM LF WHERE LF.FORM_OF_WAY <> 1 AND "
-							+ "L.KIND IN (11,13) AND LF.LINK_PID = L.LINK_PID AND LF.U_RECORD <> 2 AND L.U_RECORD <> 2 AND L.LINK_PID = {0}",
+							+ "L.KIND IN (11,13) AND LF.LINK_PID = L.LINK_PID AND LF.U_RECORD <> 2 AND L.U_RECORD <> 2 AND L.LINK_PID = %d",
 					linkPid);
 
 			logger.info("RdLink后检查GLM01229 SQL:" + sqlStr);

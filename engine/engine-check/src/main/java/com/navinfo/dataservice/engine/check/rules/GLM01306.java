@@ -41,14 +41,13 @@ public class GLM01306 extends baseRule {
 
 		for (Integer linkPid : this.limitResultPidSet) {
 			String sqlStr = String.format(
-					"SELECT * FROM RD_LINK_LIMIT LM WHERE ((LM.TYPE=6 AND LM.VEHICLE !=903) AND LM.U_RECORD <> 2 AND L.LINK_PID = {0} ",
+					"SELECT * FROM RD_LINK_LIMIT LM WHERE (LM.TYPE=6 AND LM.VEHICLE !=903) AND LM.U_RECORD <> 2 AND LM.LINK_PID = %d ",
 					linkPid);
 
 			logger.info("RdLinkLimit后检查GLM01306 SQL:" + sqlStr);
 
 			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
 			List<Object> tempResultList = new ArrayList<Object>();
-			List<Object> resultList = new ArrayList<Object>();
 			tempResultList = getObj.exeSelect(this.getConn(), sqlStr);
 
 			if (tempResultList.isEmpty()) {
@@ -59,7 +58,7 @@ public class GLM01306 extends baseRule {
 			RdLink link = (RdLink) linkSelector.loadByIdOnlyRdLink(linkPid, false);
 			boolean containBusLane = false;
 
-			//道路属性是否为“公交专用车道”
+			// 道路属性是否为“公交专用车道”
 			for (IRow form : link.getForms()) {
 				RdLinkForm formWay = (RdLinkForm) form;
 
@@ -70,15 +69,16 @@ public class GLM01306 extends baseRule {
 			}
 
 			if (link.getKind() != 15 && containBusLane == false) {
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
+				this.setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
 			}
 		}
 	}
 
 	/*
 	 * 准备检查数据
+	 * 
 	 * @param checkCommand
+	 * 
 	 * @result 已修改限制信息数据集
 	 */
 	private void prepareRDLinkLimitData(CheckCommand checkCommand) {
@@ -88,13 +88,20 @@ public class GLM01306 extends baseRule {
 			}
 
 			RdLinkLimit rdlinkLimit = (RdLinkLimit) row;
+			int limitType = rdlinkLimit.getType();
+			long limitVehicle = rdlinkLimit.getVehicle();
 
-			if (!rdlinkLimit.changedFields().containsKey("type")
-					|| rdlinkLimit.changedFields().containsKey("vehicle")) {
-				continue;
+			if (rdlinkLimit.changedFields().containsKey("type")) {
+				limitType = (int) rdlinkLimit.changedFields().get("type");
 			}
 
-			limitResultPidSet.add(rdlinkLimit.getLinkPid());
-		}
+			if (rdlinkLimit.changedFields().containsKey("vehicle")) {
+				limitVehicle = rdlinkLimit.getVehicle();
+			}
+
+			if (limitType == 6 || limitVehicle != 903) {
+				limitResultPidSet.add(rdlinkLimit.getLinkPid());
+			}
+		}//for循环
 	}
 }

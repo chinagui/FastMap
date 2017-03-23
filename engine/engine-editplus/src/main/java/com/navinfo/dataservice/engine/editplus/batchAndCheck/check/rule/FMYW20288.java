@@ -36,7 +36,7 @@ import oracle.sql.STRUCT;
  * @date 2017年2月28日 下午3:15:02
  * @Description TODO 检查条件： 非删除POI对象 检查原则：
  * (1)POI同点(显示坐标完全相同)，同点有部分有地址，有部分无地址，（不判断地址是否相同)报log：不存在地址，请确认！
- * (2)POI同点(显示坐标完全相同)，但是地址中“路”或“道”后面的阿拉伯数字不一致报log：地址中“路”(道)后面的数字不一致
+ * (删除-20170322)(2)POI同点(显示坐标完全相同)，但是地址中“路”或“道”后面的阿拉伯数字不一致报log：地址中“路”(道)后面的数字不一致
  * ，请确认！ 注："路"与"路"后面的阿拉伯数字比较；"道"与"道"后面的阿拉伯数字比较；
  */
 public class FMYW20288 extends BasicCheckRule {
@@ -85,7 +85,7 @@ public class FMYW20288 extends BasicCheckRule {
 			}
 			ResultSet rs = pstmt.executeQuery();
 			Map<Long, Set<Long>> errorList1=new HashMap<Long, Set<Long>>();
-			Map<Long, Set<Long>> errorList2=new HashMap<Long, Set<Long>>();
+//			Map<Long, Set<Long>> errorList2=new HashMap<Long, Set<Long>>();
 			Map<Long,Geometry> geoMap=new HashMap<Long, Geometry>();
 			Map<Long,Integer> meshMap=new HashMap<Long, Integer>();
 			while (rs.next()) {
@@ -112,26 +112,26 @@ public class FMYW20288 extends BasicCheckRule {
 					if(!errorList1.containsKey(pidTmp1)){errorList1.put(pidTmp1, new HashSet<Long>());}
 					errorList1.get(pidTmp1).add(pidTmp2);
 				}
-				if (address1 != null && address2 != null) {
-					String fullName1 = address1.getFullname();
-					String fullName2 = address2.getFullname();
-					if(fullName1.contains("路")&&fullName2.contains("路")){
-						String digit11 = this.getDigit(fullName1, "路");
-						String digit21 = this.getDigit(fullName2, "路");
-						if(digit11!=null&&digit21!=null&&!StringUtils.equals(digit11, digit21)){
-							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
-							errorList2.get(pidTmp1).add(pidTmp2);
-						}
-					}
-					if(fullName1.contains("道")&&fullName2.contains("道")){
-						String digit12 = this.getDigit(fullName1, "道");
-						String digit22 = this.getDigit(fullName2, "道");
-						if(digit12!=null&&digit22!=null&&!StringUtils.equals(digit12, digit22)){
-							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
-							errorList2.get(pidTmp1).add(pidTmp2);
-						}
-					}
-				}
+//				if (address1 != null && address2 != null) {
+//					String fullName1 = address1.getFullname();
+//					String fullName2 = address2.getFullname();
+//					if(fullName1.contains("路")&&fullName2.contains("路")){
+//						String digit11 = this.getDigit(fullName1, "路");
+//						String digit21 = this.getDigit(fullName2, "路");
+//						if(digit11!=null&&digit21!=null&&!StringUtils.equals(digit11, digit21)){
+//							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
+//							errorList2.get(pidTmp1).add(pidTmp2);
+//						}
+//					}
+//					if(fullName1.contains("道")&&fullName2.contains("道")){
+//						String digit12 = this.getDigit(fullName1, "道");
+//						String digit22 = this.getDigit(fullName2, "道");
+//						if(digit12!=null&&digit22!=null&&!StringUtils.equals(digit12, digit22)){
+//							if(!errorList2.containsKey(pidTmp1)){errorList2.put(pidTmp1, new HashSet<Long>());}
+//							errorList2.get(pidTmp1).add(pidTmp2);
+//						}
+//					}
+//				}
 			}
 			//过滤相同pid
 			Set<Long> filterPid1 = new HashSet<Long>();
@@ -146,18 +146,18 @@ public class FMYW20288 extends BasicCheckRule {
 				filterPid1.add(pid1);
 				filterPid1.addAll(errorList1.get(pid1));
 			}
-			Set<Long> filterPid2 = new HashSet<Long>();
-			for(Long pid1:errorList2.keySet()){
-				String targets="[IX_POI,"+pid1+"]";
-				for(Long pid2:errorList2.get(pid1)){
-					targets=targets+";[IX_POI,"+pid2+"]";
-				}
-				if(!(filterPid2.contains(pid1)&&filterPid2.containsAll(errorList2.get(pid1)))){
-					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"地址中“路”(道)后面的数字不一致，请确认");
-				}
-				filterPid2.add(pid1);
-				filterPid2.addAll(errorList2.get(pid1));
-			}
+//			Set<Long> filterPid2 = new HashSet<Long>();
+//			for(Long pid1:errorList2.keySet()){
+//				String targets="[IX_POI,"+pid1+"]";
+//				for(Long pid2:errorList2.get(pid1)){
+//					targets=targets+";[IX_POI,"+pid2+"]";
+//				}
+//				if(!(filterPid2.contains(pid1)&&filterPid2.containsAll(errorList2.get(pid1)))){
+//					setCheckResult(geoMap.get(pid1), targets, meshMap.get(pid1),"地址中“路”(道)后面的数字不一致，请确认");
+//				}
+//				filterPid2.add(pid1);
+//				filterPid2.addAll(errorList2.get(pid1));
+//			}
 		}
 	}
 
@@ -173,40 +173,40 @@ public class FMYW20288 extends BasicCheckRule {
 
 	}
 
-	private String getDigit(String param, String key) throws Exception {
-		try {
-			if (param == null || key == null || !param.contains(key)) {
-				return null;
-			}
-			String sub = null;
-			for(int i=0;i<param.length();){
-				if(!param.contains(key)){break;}
-				int index = param.indexOf(key);
-				if(index<param.length()-1){
-					String str = param.substring(index+1,index+2);					
-					if(CheckUtil.isDigit(str)){
-						sub = param.substring(index+1);
-						break;
-					}else{
-						param = param.substring(index+1);
-					}
-				}else{break;}
-				i=index;
-			}
-			if (sub != null) {
-				String regex = "\\d*";
-				Pattern p = Pattern.compile(regex);
-				Matcher m = p.matcher(sub);
-				while (m.find()) {
-					if (!"".equals(m.group())) {
-						return m.group(0);
-					}
-				}
-			}
-			return null;
-		} catch (Exception e) {
-			throw e;
-		}
-	}
+//	private String getDigit(String param, String key) throws Exception {
+//		try {
+//			if (param == null || key == null || !param.contains(key)) {
+//				return null;
+//			}
+//			String sub = null;
+//			for(int i=0;i<param.length();){
+//				if(!param.contains(key)){break;}
+//				int index = param.indexOf(key);
+//				if(index<param.length()-1){
+//					String str = param.substring(index+1,index+2);					
+//					if(CheckUtil.isDigit(str)){
+//						sub = param.substring(index+1);
+//						break;
+//					}else{
+//						param = param.substring(index+1);
+//					}
+//				}else{break;}
+//				i=index;
+//			}
+//			if (sub != null) {
+//				String regex = "\\d*";
+//				Pattern p = Pattern.compile(regex);
+//				Matcher m = p.matcher(sub);
+//				while (m.find()) {
+//					if (!"".equals(m.group())) {
+//						return m.group(0);
+//					}
+//				}
+//			}
+//			return null;
+//		} catch (Exception e) {
+//			throw e;
+//		}
+//	}
 
 }

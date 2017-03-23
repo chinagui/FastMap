@@ -114,6 +114,7 @@ public class GLM04005 extends baseRule{
 					if(rdRestrictionDetail.getType()!=1){
 						continue;
 					}
+					linkPidSet.add(rdRestrictionDetail.getOutLinkPid());
 					
 					for(IRow irowInner:rdRestrictionDetail.getConditions()){
 						if (irow instanceof RdRestrictionCondition){		
@@ -127,7 +128,6 @@ public class GLM04005 extends baseRule{
 								continue;
 							}
 
-							linkPidSet.add(rdRestrictionDetail.getOutLinkPid());
 							for(IRow irowInner2:rdRestrictionDetail.getVias()){
 								if (irowInner2 instanceof RdRestrictionVia){
 									RdRestrictionVia RdRestrictionVia = (RdRestrictionVia)irowInner2;
@@ -142,7 +142,7 @@ public class GLM04005 extends baseRule{
 			
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT RR.PID FROM RD_GATE RG WHERE RG.U_RECORD <> 2");
+			sb.append("SELECT 1 FROM RD_GATE RG WHERE RG.U_RECORD <> 2");
 			sb.append(" AND (RG.IN_LINK_PID = " + inLinkPid);
 			sb.append(" OR RG.OUT_LINK_PID IN (");
 			sb.append(StringUtils.join(linkPidSet.toArray(),",") + "))");

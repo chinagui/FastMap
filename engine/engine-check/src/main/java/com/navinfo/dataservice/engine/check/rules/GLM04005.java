@@ -105,40 +105,47 @@ public class GLM04005 extends baseRule{
 			//遍历RdRestrictionDetail，RdRestrictionVia，构造需要检查的linkPid
 			Set<Integer> linkPidSet = new HashSet<Integer>();
 			int inLinkPid = rdRestriction.getInLinkPid();
-
-			for(Map.Entry<Integer, RdRestrictionDetail> entry:rdRestriction.detailMap.entrySet()){
-				boolean flg = false;
-				RdRestrictionDetail rdRestrictionDetail = entry.getValue();
-				//非禁止交限，不参与检查
-				if(entry.getValue().getType()!=1){
-					continue;
-				}
-				for(Map.Entry<String, RdRestrictionCondition> entryCondition:rdRestrictionDetail.conditionMap.entrySet()){
-					RdRestrictionCondition rdRestrictionCondition = entryCondition.getValue();
-					//时间段交限，不参与检查
-					if(rdRestrictionCondition.getTimeDomain()!=null){
+			
+			for(IRow irow:rdRestriction.getDetails()){
+				if (irow instanceof RdRestrictionDetail){
+					boolean flg = false;
+					RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail)irow;
+					//非禁止交限，不参与检查
+					if(rdRestrictionDetail.getType()!=1){
 						continue;
 					}
-					//货车交限，不参与检查:01配送卡车,001运输卡车
-					if((rdRestrictionCondition.getVehicle()&6)>=2){
-						continue;
-					}
-					flg = true;
-				}
-				if(flg){
 					linkPidSet.add(rdRestrictionDetail.getOutLinkPid());
-					for(Map.Entry<String, RdRestrictionVia> entryVia:rdRestrictionDetail.viaMap.entrySet()){
-						linkPidSet.add(entryVia.getValue().getLinkPid());
+					
+					for(IRow irowInner:rdRestrictionDetail.getConditions()){
+						if (irow instanceof RdRestrictionCondition){		
+							RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition)irowInner;
+							//时间段交限，不参与检查
+							if(rdRestrictionCondition.getTimeDomain()!=null){
+								continue;
+							}
+							//货车交限，不参与检查:01配送卡车,001运输卡车
+							if((rdRestrictionCondition.getVehicle()&6)>=2){
+								continue;
+							}
+
+							for(IRow irowInner2:rdRestrictionDetail.getVias()){
+								if (irowInner2 instanceof RdRestrictionVia){
+									RdRestrictionVia RdRestrictionVia = (RdRestrictionVia)irowInner2;
+									linkPidSet.add(RdRestrictionVia.getLinkPid());
+								}
+							}
+						}
 					}
 				}
 			}
 
+			
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT RR.PID FROM RD_GATE RG WHERE RG.U_RECORD <> 2");
-			sb.append(" AND RG.IN_LINK_PID = " + inLinkPid);
-			sb.append(" OR RG.OUT_LINK_PID IN ");
-			sb.append(StringUtils.join(linkPidSet.toArray(),","));
+			sb.append("SELECT 1 FROM RD_GATE RG WHERE RG.U_RECORD <> 2");
+			sb.append(" AND (RG.IN_LINK_PID = " + inLinkPid);
+			sb.append(" OR RG.OUT_LINK_PID IN (");
+			sb.append(StringUtils.join(linkPidSet.toArray(),",") + "))");
 
 			String sql = sb.toString();
 			log.info("RdRestriction GLM04005 sql:" + sql);

@@ -100,7 +100,6 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			batchCommand.setOperationName("BATCH_POI_RELEASE");
 			Batch batch=new Batch(conn,operationResult);
 			batch.operate(batchCommand);
-			batch.setPhysiDelete(true);
 			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
 			
 			

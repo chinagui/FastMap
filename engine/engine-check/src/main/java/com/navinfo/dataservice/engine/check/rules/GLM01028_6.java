@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
@@ -50,6 +52,13 @@ public class GLM01028_6 extends baseRule {
 				if(rdDirectroute.status().equals(ObjStatus.INSERT)){
 					linkPidSet.add(rdDirectroute.getInLinkPid());
 					linkPidSet.add(rdDirectroute.getOutLinkPid());
+					
+					for(IRow irow:rdDirectroute.getVias()){
+						if(irow instanceof RdDirectrouteVia){
+							RdDirectrouteVia rdDirectrouteVia = (RdDirectrouteVia)irow;
+							linkPidSet.add(rdDirectrouteVia.getLinkPid());
+						}
+					}
 				}
 				else if(rdDirectroute.status().equals(ObjStatus.UPDATE)){
 					if(rdDirectroute.changedFields().containsKey("inLinkPid")){
@@ -86,13 +95,13 @@ public class GLM01028_6 extends baseRule {
 
 		sb.append("SELECT T.GEOMETRY, '[RD_LINK,' || T.LINK_PID || ']' TARGET, T.MESH_ID");
 		sb.append(" FROM RD_LINK T");
-		sb.append(" WHERE T.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+		sb.append(" WHERE T.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
 		sb.append(" AND T.U_RECORD <> 2");
 		sb.append(" AND T.KIND IN (10,11)");
-		sb.append(" UNION");
+		sb.append(" UNION ALL");
 		sb.append("	SELECT T.GEOMETRY, '[RD_LINK,' || T.LINK_PID || ']' TARGET, T.MESH_ID");
-		sb.append(" FROM RD_LINK T RD_LINK_FORM F");
-		sb.append(" WHERE T.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray()) + ")");
+		sb.append(" FROM RD_LINK T, RD_LINK_FORM F");
+		sb.append(" WHERE T.LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
 		sb.append(" AND T.LINK_PID = F.LINK_PID");
 		sb.append(" AND F.FORM_OF_WAY = 20");
 		sb.append(" AND T.U_RECORD <> 2");

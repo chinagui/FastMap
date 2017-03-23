@@ -76,10 +76,9 @@ public class GLM04005 extends baseRule{
 
 			StringBuilder sb = new StringBuilder();
 
-			sb.append("SELECT RR.PID FROM RD_GATE RG WHERE RG.U_RECORD !=2");
+			sb.append("SELECT 1 FROM RD_GATE RG WHERE RG.U_RECORD !=2");
 			sb.append(" AND RG.IN_LINK_PID = " + rdDirectroute.getInLinkPid());
-			sb.append(" OR RG.OUT_LINK_PID IN ");
-			sb.append(StringUtils.join(linkPidSet.toArray(),","));
+			sb.append(" OR RG.OUT_LINK_PID IN (" + StringUtils.join(linkPidSet.toArray(),",") + ")");
 
 			String sql = sb.toString();
 			log.info("RdDirectroute GLM04005 sql:" + sql);

@@ -38,6 +38,9 @@ public class FMBAT20103 extends BasicBatchRule {
 		}
 		MetadataApi apiService=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		IxPoiAddress chiAddress = poiObj.getChiAddress();
+		if (chiAddress == null) {
+			return;
+		}
 		if (chiAddress.getHisOpType().equals(OperationType.INSERT) || chiAddress.getHisOpType().equals(OperationType.UPDATE)) {
 			chiAddress.setFullname(ExcelReader.h2f(chiAddress.getFullname()));
 			chiAddress.setFullnamePhonetic(apiService.pyConvertHz(chiAddress.getFullname()));

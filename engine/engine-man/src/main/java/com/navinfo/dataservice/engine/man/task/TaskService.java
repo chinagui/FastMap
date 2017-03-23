@@ -2042,6 +2042,15 @@ public class TaskService {
 			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
 			taskPar.put("meshs",phase.getMeshIds());
 			
+			//判断之前tip2aumark的过程，是有tips还是没有tips
+			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
+			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
+			for(Map<String, Integer> phaseTmp:phaseList){
+				phaseStatusMap.put(phaseTmp.get("phase"),phaseTmp.get("status"));
+			}
+			taskPar.put("hasAumark",true);
+			if(phaseStatusMap.get(2)==4){taskPar.put("hasAumark",false);}
+			
 			par.put("taskInfo", taskPar);
 			
 			String cmsUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.cmsUrl);

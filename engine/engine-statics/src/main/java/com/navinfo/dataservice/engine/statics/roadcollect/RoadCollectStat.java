@@ -149,13 +149,13 @@ public class RoadCollectStat implements Runnable {
 	}
 
 	public void run() {
-		log.info("-- begin do sub_task");
+		//log.info("-- begin do sub_task");
 		try {
-			log.info("-- begin do sub_task" + conn);
+			log.info("-- begin do sub_task:"+col_name+",conn:" + conn);
 			List<Document> pois = doStatPoi();
 			if(pois!=null&&pois.size()>0){
 				new MongoDao(db_name).insertMany(col_name, pois);}
-
+			log.info("-- end do sub_task:"+col_name+",conn:" + conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{

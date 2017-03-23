@@ -178,12 +178,13 @@ public class PoiMonthlyStat implements Runnable {
 		}
 	}
 	public void run() {
-		log.info("-- begin do sub_task");
+		//log.info("-- begin do sub_task");
 		try {
-			log.info("-- begin do sub_task" + conn);
+			log.info("-- begin do sub_task:"+col_name+",conn:" + conn);
 //			Map<String, JSONObject> ja = getPois();
 //			new MongoDao(db_name).insertMany(col_name, doStatPoi(ja));
 			new MongoDao(db_name).insertMany(col_name, doStatPoi());
+			log.info("-- end do sub_task:"+col_name+",conn:" + conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

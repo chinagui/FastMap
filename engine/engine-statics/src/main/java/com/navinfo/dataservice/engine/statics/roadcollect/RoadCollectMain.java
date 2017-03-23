@@ -120,7 +120,7 @@ public class RoadCollectMain {
 	 */
 	public void runStat() {
 		log = LogManager.getLogger(RoadCollectMain.class);
-
+		log.info("-- begin stat:" + col_name_grid);
 		try {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
@@ -145,7 +145,7 @@ public class RoadCollectMain {
 
 			countDownLatch.await();
 			executorService.shutdown();
-			log.info("all sub task finish");
+			//log.info("all sub task finish");
 			log.info("-- end stat:" + col_name_grid);
 			System.exit(0);
 		} catch (Exception e) {

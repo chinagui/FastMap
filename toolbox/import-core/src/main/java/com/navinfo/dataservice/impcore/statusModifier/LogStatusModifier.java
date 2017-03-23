@@ -34,6 +34,17 @@ public abstract class LogStatusModifier {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	public void execute(Connection conn) throws Exception {
+		String sql = this.getStatusModSql();
+		try{
+			QueryRunner run= new QueryRunner();
+			run.update(conn, sql);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+		}
+	}
+	
 	protected abstract  String getStatusModSql() ;
 }
 

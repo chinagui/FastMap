@@ -127,7 +127,7 @@ public class LogWriter {
         PreparedStatement pstmt = null;
 
         String sql = "insert into log_operation (op_id,act_id, op_dt,op_seq, com_sta, com_dt,lock_sta) values (?,?,"
-                + "SYSDATE,log_op_seq.nextval,?,?,?)";
+                + "SYSTIMESTAMP,log_op_seq.nextval,?,?,?)";
 
         try {
             for (LogOperation logOperation : operations) {

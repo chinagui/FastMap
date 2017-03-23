@@ -22,7 +22,7 @@
 			<!--提取跨图幅的点和面，及关联的线和面-->
 			<!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
 			<!--提取跨图幅的点（共线/共面的点）-->
-			<sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+			<sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[             
 			  INSERT /*+ append */
 			  INTO TEMP_CMG_BUILDNODE
 			    (PID)
@@ -39,7 +39,7 @@
                      ]]></sql>   
             
             <!--提取图幅内的link-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_CMG_BUILDLINK
                        (PID)
@@ -51,7 +51,7 @@
                     
            <step value="9">
              <!-- 提取跨图幅的node的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
 						 INTO TEMP_CMG_BUILDFACE
 						  (PID)
@@ -70,7 +70,7 @@
 
                          ]]></sql>                     
 			<!-- 提取跨图幅的link的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CMG_BUILDFACE
                            (PID)
@@ -100,7 +100,7 @@
            
            <step value="13">
             <!--根据跨图幅的线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CMG_BUILDLINK
                            (PID)
@@ -110,7 +110,7 @@
                          ]]></sql>
 
             <!--根据跨图幅的点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CMG_BUILDLINK
                       (PID)
@@ -131,7 +131,7 @@
 			<step value="15">
             <!--提取图幅内的街区面FACE表的组成link-->
             <!-- 市街图face跨图幅，所以为了保证完整性，需要导出 face 的link -->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_CMG_BUILDLINK
                           (PID)
@@ -140,7 +140,7 @@
                             WHERE P.FACE_PID = R.FACE_PID
                               AND R.MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_CMG_BUILDLINK
                           (PID)
@@ -153,7 +153,7 @@
 
 
             <!--提取link  修改到line  61-->
-      <!--    <sql condition="mesh"><![CDATA[
+      <!--    <sql condition="by-mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_CMG_BUILDLINK
                        (PID)
@@ -163,7 +163,7 @@
                      ]]></sql>  -->   
 
 
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_CMG_BUILDLINK
                        (PID)
@@ -176,7 +176,7 @@
 			
 			<step value="16">
             <!--根据图幅提取建筑物要素表,并去重 -->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CMG_BUILDFACE
                       (PID)
@@ -184,7 +184,7 @@
                          FROM CMG_BUILDFACE T
                         WHERE  T.MESH_ID [mesh]);
                     ]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CMG_BUILDFACE
                       (PID)
@@ -418,7 +418,7 @@
         <!--提取跨图幅的点和面，及关联的线和面-->
       <!-- 20150511 补充  说明： 以下补充部分只支持按照图幅 -->
       <!--提取跨图幅的点（共线/共面的点）-->
-      <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[             
+      <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[             
         INSERT /*+ append */
         INTO TEMP_CM_BUILDNODE
           (PID)
@@ -435,7 +435,7 @@
                      ]]></sql>   
             
             <!--提取图幅内的link-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_CM_BUILDLINK
                        (PID)
@@ -448,7 +448,7 @@
             <step value="9">
             
             	<!-- 提取跨图幅的node的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
              INTO TEMP_CM_BUILDFACE
               (PID)
@@ -468,7 +468,7 @@
                          ]]></sql>
                
                <!-- 提取跨图幅的link的面 -->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CM_BUILDFACE
                            (PID)
@@ -498,7 +498,7 @@
             
              <step value="13">  
             <!--根据跨图幅的线提取的face补link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CM_BUILDLINK
                            (PID)
@@ -508,7 +508,7 @@
                          ]]></sql>
 
             <!--根据跨图幅的点提取link-->
-            <sql condition="mesh" sqlType="dataIntegrity"><![CDATA[
+            <sql condition="by-mesh" sqlType="dataIntegrity"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CM_BUILDLINK
                       (PID)
@@ -527,7 +527,7 @@
       		
       		<step value="15">
             <!--提取图幅内的建筑物FACE表的组成link-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_CM_BUILDLINK
                           (PID)
@@ -537,7 +537,7 @@
                               AND R.MESH_ID [mesh]);
                         ]]></sql>
 
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_CM_BUILDLINK
                           (PID)
@@ -549,7 +549,7 @@
                         ]]></sql>
 
             <!--提取link 修改到line 437-->
-          <!--   <sql condition="mesh"><![CDATA[
+          <!--   <sql condition="by-mesh"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_CM_BUILDLINK
                            (PID)
@@ -559,7 +559,7 @@
                          ]]></sql>   -->
 
 
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                      INSERT /*+ append */
                      INTO TEMP_CM_BUILDLINK
                        (PID)
@@ -572,7 +572,7 @@
 		
 		<step value="16">
 			<!--根据图幅提取建筑物要素表,并去重 -->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CM_BUILDING
                       (PID)
@@ -581,7 +581,7 @@
                         WHERE  T.MESH_ID [mesh]
                         AND T.BUILDING_PID !=0 AND T.BUILDING_PID !=-1);
                     ]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_CM_BUILDING
                       (PID)
@@ -593,7 +593,7 @@
                     ]]></sql>
                     
              	<!--根据图幅提取Face -->
-	            <sql condition="mesh"><![CDATA[
+	            <sql condition="by-mesh"><![CDATA[
 	                    INSERT /*+ append */
 	                    INTO TEMP_CM_BUILDFACE
 	                      (PID)
@@ -601,7 +601,7 @@
 	                         FROM CM_BUILDFACE T
 	                        WHERE  T.MESH_ID [mesh]);
 	                    ]]></sql>
-	            <sql condition="area"><![CDATA[
+	            <sql condition="by-area"><![CDATA[
 	                    INSERT /*+ append */
 	                    INTO TEMP_CM_BUILDFACE
 	                      (PID)
@@ -654,22 +654,22 @@
         <step value="100">
         <!-- 20150514 modified by liya -->
            <!--CM_BUILDFACE-->
-           <!--   <sql condition="mesh"><![CDATA[SELECT P.* FROM CM_BUILDFACE P WHERE P.MESH_ID [mesh]; ]]></sql> -->
+           <!--   <sql condition="by-mesh"><![CDATA[SELECT P.* FROM CM_BUILDFACE P WHERE P.MESH_ID [mesh]; ]]></sql> -->
            <sql><![CDATA[SELECT P.* FROM CM_BUILDFACE P,TEMP_CM_BUILDFACE T WHERE P.FACE_PID=T.PID; ]]></sql>
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                 SELECT P.* FROM CM_BUILDFACE P WHERE SDO_ANYINTERACT(P.GEOMETRY,
                                               [area]) = 'TRUE';
 
                 ]]></sql>
             <!--CM_BUILDFACE_TOPO-->
-            <sql condition="mesh"><![CDATA[
+            <sql condition="by-mesh"><![CDATA[
                          SELECT P.*
                           FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE F
                          WHERE P.FACE_PID=F.FACE_PID AND
                          F.MESH_ID [mesh];
                           ]]></sql>
 
-            <sql condition="area"><![CDATA[
+            <sql condition="by-area"><![CDATA[
                          SELECT P.*
                           FROM CM_BUILDFACE_TOPO P, CM_BUILDFACE F
                          WHERE P.FACE_PID=F.FACE_PID AND

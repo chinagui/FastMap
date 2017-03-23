@@ -10,7 +10,7 @@
     
     	<!--  显示坐标、引导坐标字段值在采样框中，并且引导link在转出道路数据中存在的记录。 -->
         <step value="13">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_PT_POI
@@ -24,7 +24,7 @@
         </step>
         <!--根据引导link，删除引导link未导出的pt_poi-->
 		<step value="16">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         DELETE FROM TEMP_PT_POI T
 					 WHERE T.PID IN
@@ -37,7 +37,7 @@
 
         </step>
 		<step value="19">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_PLATFORM
@@ -51,7 +51,7 @@
 
         </step>
         <step value="22">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_TRANSFER
@@ -61,7 +61,7 @@
                                AND P.POI_SEC IN (SELECT PID FROM TEMP_PT_POI T));
                         ]]></sql>
 
-			<sql condition="area">
+			<sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_TRANSFER
@@ -72,7 +72,7 @@
                         ]]></sql>
                         
           <!-- TEMP_PT_STRAND -->         
-          <sql condition="area">
+          <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_STRAND
@@ -84,14 +84,14 @@
 
         </step>
         <step value="25">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         DELETE FROM TEMP_PT_TRANSFER A
                      WHERE A.ROWID !=
                            (SELECT MAX(B.ROWID) FROM TEMP_PT_TRANSFER B WHERE A.PID = B.PID);
                         ]]></sql>
              <!-- TEMP_PT_LINE -->
-             <sql condition="area">
+             <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_LINE
@@ -103,7 +103,7 @@
         </step>
         <step value="28">
              <!-- TEMP_PT_SYSTEM -->
-             <sql condition="area">
+             <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_SYSTEM
@@ -115,7 +115,7 @@
         </step>
 		<step value="31">
              <!-- TEMP_PT_COMPANY -->
-             <sql condition="area">
+             <sql condition="by-area">
                 <![CDATA[
                         INSERT /*+ append */
                          INTO TEMP_PT_COMPANY

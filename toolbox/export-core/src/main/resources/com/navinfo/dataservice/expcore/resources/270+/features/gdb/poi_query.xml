@@ -36,7 +36,7 @@ POI导出查询
         
         <!--根据引导link，删除引导link未导出的ix_poi-->
 		<step value="40">
-            <sql condition="area">
+            <sql condition="by-area">
                 <![CDATA[
                         DELETE FROM TEMP_IX_POI T
 					 WHERE T.PID IN
@@ -183,8 +183,13 @@ POI导出查询
             <sql><![CDATA[DELETE FROM IX_POI_ENTRYIMAGE P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>
 			<sql><![CDATA[DELETE FROM IX_POI_BUILDING P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>			
 			<sql><![CDATA[DELETE FROM IX_POI_PHOTO P WHERE P.POI_PID IN (SELECT T.PID FROM TEMP_IX_POI T);]]></sql>
-			<sql><![CDATA[DELETE FROM IX_POI_NAME_FLAG P WHERE P.NAME_ID IN(SELECT T2.NAME_ID FROM IX_POI_NAME T2, TEMP_IX_POI T WHERE T2.POI_PID=T.PID);]]></sql>                             
+			<!-- 20151208修改 为了解决小范围数据删除问题 -->
+			<!--<sql><![CDATA[DELETE FROM IX_POI_NAME_FLAG P WHERE P.NAME_ID IN(SELECT T2.NAME_ID FROM IX_POI_NAME T2, TEMP_IX_POI T WHERE T2.POI_PID=T.PID);]]></sql>                             
 			<sql><![CDATA[DELETE FROM IX_POI_NAME_TONE P WHERE P.NAME_ID IN(SELECT T2.NAME_ID FROM IX_POI_NAME T2, TEMP_IX_POI T WHERE T2.POI_PID=T.PID);]]></sql>                             
+            -->
+            <sql><![CDATA[DELETE FROM IX_POI_NAME_FLAG P WHERE P.NAME_ID IN (SELECT NAME_ID FROM TEMP_IX_POI_NAME);]]></sql>
+            <sql><![CDATA[DELETE FROM IX_POI_NAME_TONE P WHERE P.NAME_ID IN (SELECT NAME_ID FROM TEMP_IX_POI_NAME);]]></sql>
+            
             <!--IX_POI_PARENT-->
             <sql><![CDATA[
                           DELETE FROM IX_POI_PARENT P WHERE P.GROUP_ID IN (SELECT PID FROM TEMP_IX_POI_GROUP T);

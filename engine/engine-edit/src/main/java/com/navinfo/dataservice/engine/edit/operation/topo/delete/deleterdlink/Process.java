@@ -11,12 +11,14 @@ import org.apache.commons.collections.CollectionUtils;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -641,4 +643,18 @@ public class Process extends AbstractProcess<Command> {
 		return infects;
 	}
 
+	
+	@Override
+	public void postCheck() throws Exception {
+		List<IRow> glmList = new ArrayList<IRow>();
+		glmList.addAll(this.getResult().getAddObjects());
+		glmList.addAll(this.getResult().getUpdateObjects());
+		for(IRow irow:this.getResult().getDelObjects()){
+			if(irow instanceof RdLink){
+				glmList.add(irow);
+			}
+		}
+		this.checkCommand.setGlmList(glmList);
+		this.checkEngine.postCheck();
+	}
 }

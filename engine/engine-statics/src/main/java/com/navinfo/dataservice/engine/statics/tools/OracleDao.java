@@ -256,7 +256,7 @@ public class OracleDao {
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
-					+ " AND FSOS.STATUS <> 0)"
+					+ " AND FSOS.STATUS = 0)"
 					+ " ORDER BY SUBTASK_ID";
 			
 			return run.query(conn, sql, new ResultSetHandler<List<Subtask>>() {
@@ -301,7 +301,7 @@ public class OracleDao {
 			String sql = "SELECT FSOS.SUBTASK_ID,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,FSOS.STAT_DATE,FSOS.STATUS"
 					+ ",FSOS.TOTAL_POI,FSOS.FINISHED_POI,FSOS.TOTAL_ROAD,FSOS.FINISHED_ROAD,FSOS.PERCENT_POI,FSOS.PERCENT_ROAD"
 					+ ",FSOS.PLAN_START_DATE,FSOS.PLAN_END_DATE,FSOS.ACTUAL_START_DATE,FSOS.ACTUAL_END_DATE"
-					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.TASK_ID"
+					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.TASK_ID,fsos.plan_date"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE FSOS.STATUS = 0";
 			
@@ -315,6 +315,7 @@ public class OracleDao {
 						subtask.put("taskId", rs.getInt("TASK_ID"));
 						subtask.put("percent", rs.getInt("PERCENT"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+						subtask.put("planDate", rs.getInt("PLAN_DATE"));
 						subtask.put("progress", rs.getInt("PROGRESS"));
 						subtask.put("statDate", rs.getString("STAT_DATE"));
 						subtask.put("statTime", rs.getString("STAT_TIME"));

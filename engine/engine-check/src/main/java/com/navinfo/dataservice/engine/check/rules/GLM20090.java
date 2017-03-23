@@ -28,7 +28,7 @@ public class GLM20090 extends baseRule {
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 		
 		for(IRow obj:checkCommand.getGlmList()){
-			//收费站 create
+			//立交 create
 			if(obj instanceof RdGsc ){
 				RdGsc rdGsc = (RdGsc)obj;
 				Geometry gscGeo = rdGsc.getGeometry();

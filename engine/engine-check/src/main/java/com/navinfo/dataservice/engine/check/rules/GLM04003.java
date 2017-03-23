@@ -142,8 +142,13 @@ public class GLM04003 extends baseRule{
 				checkFlg = true;
 			}
 		}else if(rdLinkLimit.status().equals(ObjStatus.UPDATE)){
-			int type = Integer.parseInt(rdLinkLimit.changedFields().get("type").toString()) ;
-			if(type==2){
+			if(rdLinkLimit.changedFields().containsKey("type")){
+				int type = Integer.parseInt(rdLinkLimit.changedFields().get("type").toString()) ;
+				if(type==2){
+					checkFlg = true;
+				}
+			}
+			if(rdLinkLimit.changedFields().containsKey("vehicle")){
 				checkFlg = true;
 			}
 		}

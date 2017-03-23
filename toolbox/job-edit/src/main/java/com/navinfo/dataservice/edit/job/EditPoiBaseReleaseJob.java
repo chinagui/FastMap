@@ -12,13 +12,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import net.sf.json.JSONArray;
-
-import com.navinfo.dataservice.api.edit.iface.DatalockApi;
-import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -30,16 +25,20 @@ import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckRuleFactory;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+
+import net.sf.json.JSONArray;
 
 /**
  * 
@@ -89,12 +88,21 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);
 			log.info("EditPoiBaseReleaseJob:执行检查");
-			//构造检查参数，执行检查
+			//构造检查参数，执行批处理检查
 			OperationResult operationResult=new OperationResult();
 			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
 			objsMap.put(ObjectName.IX_POI, objs);
 			objsMap.put(ObjectName.IX_SAMEPOI, sameobjs);
 			operationResult.putAll(objsMap);
+			
+			log.info("执行批处理");
+			BatchCommand batchCommand=new BatchCommand();		
+			batchCommand.setOperationName("BATCH_POI_RELEASE");
+			Batch batch=new Batch(conn,operationResult);
+			batch.operate(batchCommand);
+			batch.setPhysiDelete(true);
+			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
+			
 			
 			CheckCommand checkCommand=new CheckCommand();
 			checkCommand.setOperationName(getOperationName());

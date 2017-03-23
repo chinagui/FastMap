@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.zoneface.create;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +38,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.LineString;
 
 import net.sf.json.JSONObject;
@@ -202,28 +206,21 @@ public class Operation implements IOperation {
                             }
                             links.add(zoneLink);
                         } else {
-
                             Iterator<Geometry> itLinks = mapLink.keySet().iterator();
                             while (itLinks.hasNext()) {
                                 Geometry g = itLinks.next();
                                 if (lineString.contains(g)) {
                                     links.add(mapLink.get(g));
                                 }
-
                             }
-
                         }
-
                     }
-
                 }
                 // 创建线
                 this.createFace();
                 this.reCaleFaceGeometry(links);
             }
-
         }
-
     }
 
     /**
@@ -347,7 +344,8 @@ public class Operation implements IOperation {
         } else {
             this.addLink(map);
         }
-        Geometry g = GeoTranslator.getCalLineToPython(list);
+        Coordinate[] coors = sortGeometry(list);
+        Geometry g = new GeometryFactory().createPolygon(coors);
         Coordinate[] c1 = new Coordinate[g.getCoordinates().length];
         // 判断线组成面是否可逆
         if (!GeometryUtils.IsCCW(g.getCoordinates())) {
@@ -431,7 +429,6 @@ public class Operation implements IOperation {
      * 更新面的几何属性
      */
     private void updateGeometry(Geometry g, ZoneFace face) throws Exception {
-
         JSONObject updateContent = new JSONObject();
         g = GeoTranslator.transform(g, 0.00001, 5);
         updateContent.put("geometry", GeoTranslator.jts2Geojson(g));
@@ -463,6 +460,49 @@ public class Operation implements IOperation {
 
             }
         }
+    }
+
+    private Coordinate[] sortGeometry(List<Geometry> geometries) {
+        List<Coordinate> coors = new ArrayList<>();
+        int length = geometries.size();
+
+        Coordinate endCoor = null;
+        for (int i = 0; i < length; i++) {
+            Iterator<Geometry> iterator = geometries.iterator();
+            while (iterator.hasNext()) {
+                Geometry geo = iterator.next();
+                Coordinate sCoor = geo.getCoordinates()[0];
+                Coordinate eCoor = geo.getCoordinates()[geo.getCoordinates().length - 1];
+                if (endCoor == null) {
+                    for (Coordinate coor : geo.getCoordinates()) {
+                        coors.add(coor);
+                        endCoor = coor;
+                    }
+                    iterator.remove();
+                    break;
+                } else {
+                    if (sCoor.x == endCoor.x && sCoor.y == endCoor.y) {
+                        for (Coordinate coor : geo.getCoordinates()) {
+                            if (coor.x == endCoor.x && coor.y == endCoor.y)
+                                continue;
+                            coors.add(coor);
+                            endCoor = coor;
+                        }
+                        iterator.remove();
+                        break;
+                    } else if (eCoor.x == endCoor.x && eCoor.y == endCoor.y) {
+                        for (int index = geo.getCoordinates().length - 2; index >= 0; index--) {
+                            Coordinate coor = geo.getCoordinates()[index];
+                            coors.add(coor);
+                            endCoor = coor;
+                        }
+                        iterator.remove();
+                        break;
+                    }
+                }
+            }
+        }
+        return coors.toArray(new Coordinate[]{});
     }
 
 }

@@ -9,10 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.bson.Document;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.QueryOperators;
 import com.mongodb.client.MongoCursor;
@@ -23,12 +25,14 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.statics.StatMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
 import com.navinfo.dataservice.engine.statics.poidaily.PoiDailyMain;
+import com.navinfo.dataservice.engine.statics.poimonthly.PoiMonthlyMain;
 import com.navinfo.dataservice.engine.statics.roadcollect.RoadCollectMain;
 import com.navinfo.dataservice.engine.statics.roaddaily.RoadDailyMain;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
 import com.navinfo.dataservice.engine.statics.tools.StatInit;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
+
 import net.sf.json.JSONObject;
 
 /** 
@@ -161,20 +165,21 @@ public class OverviewSubtaskMain {
 			finishedPoi += poi.getInt("finish");
 		}
 		//ROAD
-		iter = md.find(roadColName, query).iterator();
-
-		while (iter.hasNext()) {
-			JSONObject json = JSONObject.fromObject(iter.next());
-			
-			String gridId = json.getString("grid_id");
-			JSONObject road = json.getJSONObject("road");
-			int percent = road.getInt("percent");
-			gridPercentDetailROAD.put(gridId, percent);
-
-			totalRoad += road.getInt("total");
-			finishedRoad += road.getInt("finish");
+		if(roadColName!=null){
+			iter = md.find(roadColName, query).iterator();
+	
+			while (iter.hasNext()) {
+				JSONObject json = JSONObject.fromObject(iter.next());
+				
+				String gridId = json.getString("grid_id");
+				JSONObject road = json.getJSONObject("road");
+				int percent = road.getInt("percent");
+				gridPercentDetailROAD.put(gridId, percent);
+	
+				totalRoad += road.getInt("total");
+				finishedRoad += road.getInt("finish");
+			}
 		}
-		
 		if(totalPoi > 0){
 			percentPoi = finishedPoi*100/totalPoi;
 		}else{
@@ -196,11 +201,11 @@ public class OverviewSubtaskMain {
 		
 		
 		//grid进度详情
-		if(type == 0){
+		if(type == 0||type == 5){
 			//POI
 			stat.put("gridPercentDetails", gridPercentDetailPOI);
 			stat.put("percent", percentPoi);
-		}else if (type == 1){
+		}else if (type == 1||type==7){
 			//道路
 			stat.put("gridPercentDetails", gridPercentDetailROAD);
 			stat.put("percent", percentRoad);
@@ -250,35 +255,47 @@ public class OverviewSubtaskMain {
 				||(subtask.getType()==2&&subtask.getStage()==0)){
 			String poiColName = PoiCollectMain.col_name_grid;
 			String roadColName = RoadCollectMain.col_name_grid;
-			List<Integer> gridIds = null;
+			Map<Integer, Integer> gridIds = null;
 			try {
-				gridIds = api.getGridIdsBySubtaskId(subtask.getSubtaskId());
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
-//			subtask.setGridIds(gridIds);
+			subtask.setGridIds(gridIds);
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//POI日编，一体化GRID粗编
-		else if((subtask.getType()==0&&subtask.getStage()==1)
+		else if((subtask.getType()==5&&subtask.getStage()==1)
 				||(subtask.getType()==3&&subtask.getStage()==1)){
 			String poiColName = PoiDailyMain.col_name_grid;
 			String roadColName = RoadDailyMain.col_name_grid;
-			List<Integer> gridIds = null;
+			Map<Integer, Integer> gridIds = null;
 			try {
-				gridIds = api.getGridIdsBySubtaskId(subtask.getSubtaskId());
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-//			subtask.setGridIds(gridIds);	
+			subtask.setGridIds(gridIds);	
 			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		//一体化区域粗编
 		else if(subtask.getType()==4&&subtask.getStage()==1){
 			doc = getSubtaskStatSpecial(subtask);
+		}else if(subtask.getType()==7&&subtask.getStage()==2){
+			String poiColName = PoiMonthlyMain.col_name_grid;
+			String roadColName=null;
+			Map<Integer, Integer> gridIds = null;
+			try {
+				gridIds = api.getGridIdMapBySubtaskId(subtask.getSubtaskId());
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			subtask.setGridIds(gridIds);	
+			doc = getSubtaskStatThroughGrids(subtask,poiColName,roadColName);
 		}
 		return doc;
 	}
@@ -344,7 +361,7 @@ public class OverviewSubtaskMain {
 			md.insertMany(col_name_subtask, subtaskListWithStatistics);
 			
 			log.info("-- end stat:" + col_name_subtask);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

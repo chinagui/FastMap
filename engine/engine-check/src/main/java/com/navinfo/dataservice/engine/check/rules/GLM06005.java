@@ -2,9 +2,12 @@ package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -57,35 +60,28 @@ public class GLM06005 extends baseRule {
 	 */
 	private void checkRdSe(RdSe rdSe) throws Exception {
 		// TODO Auto-generated method stub
-		if(ObjStatus.INSERT.equals(rdSe.status())){
-			boolean check = this.check(rdSe.getNodePid());
+		if((ObjStatus.INSERT.equals(rdSe.status()))||(ObjStatus.DELETE.equals(rdSe.status()))){
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT S.PID ");
+			sb.append("  FROM RD_SE S ");
+			sb.append(" WHERE S.U_RECORD <> 2 ");
+			sb.append("   AND S.IN_LINK_PID = " + rdSe.getInLinkPid());
+			sb.append("   AND S.NODE_PID = " + rdSe.getNodePid());
+			sb.append("   AND S.OUT_LINK_PID <> " + rdSe.getNodePid());
 			
-			if(check){
-				String target = "[RD_SE," + rdSe.getPid() + "]";
+			String sql = sb.toString();
+			log.info("RdSe GLM06005 sql:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+			
+			if(resultList.size()==1){
+				String target = "[RD_SE," + resultList.get(0) + "]";
 				this.setCheckResult("", target, 0);
 			}
-		}else if(ObjStatus.DELETE.equals(rdSe.status())){
-			boolean check = this.check(rdSe.getNodePid());
-			if(check){
-				StringBuilder sb = new StringBuilder();
-				
-				sb.append("SELECT DISTINCT SE.PID FROM RD_SE SE");
-				sb.append(" WHERE SE.NODE_PID = "+rdSe.getNodePid());
-				sb.append(" AND SE.IN_LINK_PID ="+rdSe.getInLinkPid());
-				sb.append(" AND SE.U_RECORD <>2");
-				String sql = sb.toString();
-				log.info("后检查GLM06005查询关联影响的分岔口提示--sql:" + sql);
-				
-				DatabaseOperator getObj = new DatabaseOperator();
-				List<Object> resultList = new ArrayList<Object>();
-				resultList = getObj.exeSelect(this.getConn(), sql);
-				
-				if(!resultList.isEmpty()){
-					String target = "[RD_SE," + resultList.get(0) + "]";
-					this.setCheckResult("", target, 0);
-				}
-			}
 		}
+
 	}
 	
 	/**
@@ -107,15 +103,14 @@ public class GLM06005 extends baseRule {
 				nodePids.add(rdLink.geteNodePid());
 			}
 		}
-		for (Integer nodePid : nodePids) {
-			//获取rdLink
-			boolean check = this.check(nodePid);
-
-			if(check){
-				String target = "[RD_LINK," + rdLink.getPid() + "]";
-				this.setCheckResult("", target, 0);
-			}
+		//删除link
+		else if (ObjStatus.DELETE.equals(rdLink.status())){
+			nodePids.add(rdLink.getsNodePid());
+			nodePids.add(rdLink.geteNodePid());
 		}
+		
+		check(nodePids);
+		
 	}
 	
 	/**
@@ -123,13 +118,12 @@ public class GLM06005 extends baseRule {
 	 * @param rdNodeForm
 	 * @throws Exception 
 	 */
-	private boolean check(int nodePid) throws Exception {
+	private void check(Set<Integer> nodePids) throws Exception {
 		// TODO Auto-generated method stub
-		boolean flag = false;
 		StringBuilder sb = new StringBuilder();
 		  
-		sb.append("SELECT DISTINCT SE.IN_LINK_PID FROM RD_SE SE");
-		sb.append(" WHERE SE.NODE_PID = "+nodePid);
+		sb.append("SELECT DISTINCT SE.PID FROM RD_SE SE");
+		sb.append(" WHERE SE.NODE_PID IN (" + StringUtils.join(nodePids.toArray(),",") + ")");
 		sb.append(" AND SE.U_RECORD <>2");
 		sb.append(" GROUP BY SE.IN_LINK_PID HAVING COUNT(SE.OUT_LINK_PID) <2");
 		String sql = sb.toString();
@@ -139,9 +133,11 @@ public class GLM06005 extends baseRule {
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
 		
-		if(!resultList.isEmpty()){
-			flag = true;
-		}
-		return flag;
+		Iterator rdSePidIt = resultList.iterator();
+        while(rdSePidIt.hasNext()){
+        	String target = "[RD_SE," + rdSePidIt.next() + "]";
+			this.setCheckResult("", target, 0);
+        }
+
 	}
 }

@@ -247,17 +247,16 @@ public class OracleDao {
 			QueryRunner run = new QueryRunner();
 
 			conn = DBConnector.getInstance().getManConnection();
-			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务
+			//目前只统计采集（POI，道路，一体化）日编（POI,一体化GRID粗编,一体化区域粗编）子任务，月编（poi专项）
 			//如果FM_STAT_OVERVIEW_SUBTASK中该子任务记录为已完成，则不再统计
 			String sql = "SELECT DISTINCT S.SUBTASK_ID, S.STAGE,S.TYPE,S.STATUS,S.PLAN_START_DATE,S.PLAN_END_DATE,S.TASK_ID"
 					+ " FROM SUBTASK S"
-					+ " WHERE S.STAGE IN (0, 1)"
-					+ " AND S.TYPE IN (0, 1, 2, 3, 4)"
+					+ " WHERE S.TYPE IN (0, 1, 2, 3, 4,5,7)"
 					+ " AND S.STATUS IN (0, 1)"
 					+ " AND NOT EXISTS (SELECT 1"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE S.SUBTASK_ID = FSOS.SUBTASK_ID"
-					+ " AND FSOS.STATUS <> 0)"
+					+ " AND FSOS.STATUS = 0)"
 					+ " ORDER BY SUBTASK_ID";
 			
 			return run.query(conn, sql, new ResultSetHandler<List<Subtask>>() {
@@ -302,7 +301,7 @@ public class OracleDao {
 			String sql = "SELECT FSOS.SUBTASK_ID,FSOS.PERCENT,FSOS.DIFF_DATE,FSOS.PROGRESS,FSOS.STAT_DATE,FSOS.STATUS"
 					+ ",FSOS.TOTAL_POI,FSOS.FINISHED_POI,FSOS.TOTAL_ROAD,FSOS.FINISHED_ROAD,FSOS.PERCENT_POI,FSOS.PERCENT_ROAD"
 					+ ",FSOS.PLAN_START_DATE,FSOS.PLAN_END_DATE,FSOS.ACTUAL_START_DATE,FSOS.ACTUAL_END_DATE"
-					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.TASK_ID"
+					+ ",FSOS.STAT_TIME,FSOS.GRID_PERCENT_DETAILS,FSOS.TASK_ID,fsos.plan_date"
 					+ " FROM FM_STAT_OVERVIEW_SUBTASK FSOS"
 					+ " WHERE FSOS.STATUS = 0";
 			
@@ -316,6 +315,7 @@ public class OracleDao {
 						subtask.put("taskId", rs.getInt("TASK_ID"));
 						subtask.put("percent", rs.getInt("PERCENT"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
+						subtask.put("planDate", rs.getInt("PLAN_DATE"));
 						subtask.put("progress", rs.getInt("PROGRESS"));
 						subtask.put("statDate", rs.getString("STAT_DATE"));
 						subtask.put("statTime", rs.getString("STAT_TIME"));
@@ -485,8 +485,8 @@ public class OracleDao {
 					+ "       F.ROAD_PLAN_TOTAL,"
 					+ "       F.MONTHLY_ACTUAL_END_DATE,"
 					+ "       F.MONTHLY_DIFF_DATE,"
-					+ "       SUM(CASE T.TYPE WHEN 0 THEN POI_PLAN_TOTAL ELSE 0 END) NEW_POI_PLAN_TOTAL,"
-					+ "       SUM(CASE T.TYPE WHEN 0 THEN ROAD_PLAN_TOTAL ELSE 0 END) NEW_ROAD_PLAN_TOTAL,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN T.POI_PLAN_TOTAL ELSE 0 END) NEW_POI_PLAN_TOTAL,"
+					+ "       SUM(CASE T.TYPE WHEN 0 THEN T.ROAD_PLAN_TOTAL ELSE 0 END) NEW_ROAD_PLAN_TOTAL,"
 					+ "       SUM(CASE T.TYPE WHEN 0 THEN T.PERCENT ELSE 0 END) NEW_COLLECT_SUM,"
 					+ "       SUM(CASE T.TYPE WHEN 0 THEN 1 ELSE 0 END) NEW_COLLECT_COUNT,"
 					+ "       SUM(CASE T.TYPE WHEN 2 THEN NVL(T.PROGRESS, 1) - 1 ELSE 0 END) NEW_COLLECT_PROGRESS,"

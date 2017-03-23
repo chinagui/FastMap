@@ -108,7 +108,7 @@ public class OverviewGroupMain {
 			md.insertMany(col_name_group, groupStatList);
 			
 			log.info("-- end stat:" + col_name_group);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

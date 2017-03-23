@@ -59,6 +59,14 @@ public interface ManApi{
 	
 	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception;
 	
+	/**
+	 * 
+	 * @param subtaskId
+	 * @return Map<Integer,Integer> key:gridId value:1规划内2规划外
+	 * @throws Exception
+	 */
+	public Map<Integer,Integer> getGridIdMapBySubtaskId(int subtaskId) throws Exception;
+	
 	public List<Map<String,Object>> getSubtaskPercentByBlockManId(int blockManId) throws Exception;
 	
 	//POI月编批状态，改状态，调整范围，发送消息

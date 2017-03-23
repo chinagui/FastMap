@@ -1621,8 +1621,8 @@ public class ProgramService {
 			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
-		}
-		return "项目批量发布"+programIds.size()+"个成功，0个失败";
+		}//项目发布成功*个，失败*个
+		return "项目发布"+programIds.size()+"个，失败0个";
 		
 	}
 	/**

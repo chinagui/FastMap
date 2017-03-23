@@ -122,10 +122,16 @@ public class GLM06005 extends baseRule {
 		// TODO Auto-generated method stub
 		StringBuilder sb = new StringBuilder();
 		  
-		sb.append("SELECT DISTINCT SE.PID FROM RD_SE SE");
+		sb.append("SELECT DISTINCT SE.PID");
+		sb.append("  FROM RD_SE SE");
 		sb.append(" WHERE SE.NODE_PID IN (" + StringUtils.join(nodePids.toArray(),",") + ")");
-		sb.append(" AND SE.U_RECORD <>2");
-		sb.append(" GROUP BY SE.IN_LINK_PID HAVING COUNT(SE.OUT_LINK_PID) <2");
+		sb.append("   AND SE.U_RECORD <> 2");
+		sb.append("   AND (SELECT COUNT(1)");
+		sb.append("          FROM RD_SE SEE");
+		sb.append("         WHERE SEE.NODE_PID = SE.NODE_PID");
+		sb.append("           AND SEE.IN_LINK_PID = SE.IN_LINK_PID");
+		sb.append("           AND SEE.U_RECORD <> 2) < 2");
+		
 		String sql = sb.toString();
 		log.info("后检查GLM06005--sql:" + sql);
 		

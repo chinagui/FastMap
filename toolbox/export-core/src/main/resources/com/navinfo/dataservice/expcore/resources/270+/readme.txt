@@ -24,6 +24,8 @@
                文件内部增加：exp-ck_excep.xml, exp-m_para.xml。
   2) all\*.xml-->features\gdb\*.xml
                排除:1)中exp-all-main*.xml, clean-data.xml, clean-index.xml
+     exp-simple-rd-link.xml文件内去除clean-data.xml, clean-index.xml
+     *.xml中替换by-mesh,by-area为mesh,area,
   3) ck,log,m_para一般不变动
 
 3. tools

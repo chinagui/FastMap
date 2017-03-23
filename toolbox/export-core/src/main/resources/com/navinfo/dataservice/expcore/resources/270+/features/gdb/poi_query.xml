@@ -36,7 +36,7 @@ POI导出查询
         
         <!--根据引导link，删除引导link未导出的ix_poi-->
 		<step value="40">
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         DELETE FROM TEMP_IX_POI T
 					 WHERE T.PID IN

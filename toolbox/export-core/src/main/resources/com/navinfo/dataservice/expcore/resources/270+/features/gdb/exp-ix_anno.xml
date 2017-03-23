@@ -6,14 +6,14 @@
 	<feature name="IX_ANNOTATION">
 		<step value="7">
 			<!--按图幅过滤IX_POI -->
-			<sql condition="by-mesh">
+			<sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_ANNOTATION
                           (PID)
                           (SELECT P.PID FROM IX_ANNOTATION P WHERE P.MESH_ID [mesh]);
                         ]]></sql>
-			<sql condition="by-area">
+			<sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_IX_ANNOTATION

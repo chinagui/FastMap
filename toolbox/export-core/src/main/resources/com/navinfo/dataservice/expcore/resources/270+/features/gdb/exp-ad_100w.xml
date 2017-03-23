@@ -13,14 +13,14 @@
             1.LINK、NODE直接根据图幅号提取
         -->
 <!--        <step value="7">
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_LINK
                            (PID)
                            (SELECT P.LINK_PID FROM AD_LINK_MESH_100W P WHERE P.MESH_ID [mesh]);
                          ]]></sql>
 
-            <sql condition="by-area"><![CDATA[
+            <sql condition="area"><![CDATA[
                          INSERT /*+ append */
                          INTO TEMP_AD_LINK
                            (PID)
@@ -30,7 +30,7 @@
                            );
                          ]]></sql>
             &lt;!&ndash;link关联的node信息,并去重&ndash;&gt;
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_AD_NODE
                             (PID)
@@ -38,7 +38,7 @@
 
                          ]]></sql>
 
-            <sql condition="by-area"><![CDATA[
+            <sql condition="area"><![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_AD_NODE
                             (PID)

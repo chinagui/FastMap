@@ -9,7 +9,7 @@
     <feature name="RW_LINK_FILTER">
         <step value="7">
             <!--按图幅过滤RW_LINK_20W-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RW_LINK
@@ -17,7 +17,7 @@
                           (SELECT LINK_PID FROM RW_LINK_20W WHERE MESH_ID [mesh]);
                         ]]></sql>
 
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RW_LINK
@@ -30,14 +30,14 @@
     <feature name="RW_NODE_FILTER">
         <step value="7">
             <!--按图幅过滤RW_NODE-->
-            <sql condition="by-mesh">
+            <sql condition="mesh">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RW_NODE
                           (PID)
                           (SELECT NODE_PID FROM RW_NODE_MESH_20W WHERE MESH_ID [mesh]);
                         ]]></sql>
-            <sql condition="by-area">
+            <sql condition="area">
                 <![CDATA[
                         INSERT /*+ append */
                         INTO TEMP_FILTER_RW_NODE
@@ -54,7 +54,7 @@
         目前仅支持按图幅提取
         -->
         <step value="13">
-            <sql condition="by-mesh"><![CDATA[
+            <sql condition="mesh"><![CDATA[
                     INSERT /*+ append */
                     INTO TEMP_RW_LINK
                       (PID)

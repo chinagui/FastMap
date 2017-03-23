@@ -45,8 +45,8 @@ public class Operation implements IOperation {
         RdElectroniceye electroniceye = this.command.getEleceye();
         boolean isChanged = electroniceye.fillChangeFields(this.command.getContent());
         if (isChanged) {
-            if (command.getLink().getDirect() != 1)
-                electroniceye.changedFields().put("direct", command.getLink().getDirect());
+            //if (command.getLink().getDirect() != 1)
+            //    electroniceye.changedFields().put("direct", command.getLink().getDirect());
             result.insertObject(electroniceye, ObjStatus.UPDATE, electroniceye.pid());
             result.setPrimaryPid(electroniceye.pid());
         }

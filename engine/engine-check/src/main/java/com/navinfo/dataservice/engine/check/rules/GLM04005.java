@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectroute;
 import com.navinfo.dataservice.dao.glm.model.rd.directroute.RdDirectrouteVia;
+import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestriction;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionCondition;
 import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionDetail;
@@ -28,6 +29,7 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * 新增交限服务端后检查：禁止交限（不包含货车交限和时间段交限）进入线=大门进入线，并且退出线、经过线=大门退出线。
  * 新增顺行服务端后检查：顺行进入线=大门进入线，并且退出线、经过线=大门退出线。
  * 修改交限： 禁止交限（不包含货车交限和时间段交限）进入线=大门进入线，并且退出线、经过线=大门退出线。
+ * 新增大门服务端前检查 
  *
  */
 public class GLM04005 extends baseRule{
@@ -44,18 +46,69 @@ public class GLM04005 extends baseRule{
 	 */
 	@Override
 	public void preCheck(CheckCommand checkCommand) throws Exception {
-//		for (IRow obj : checkCommand.getGlmList()) {
-//			// 交限RdRestriction
-//			if (obj instanceof RdRestriction) {
-//				RdRestriction rdRestriction = (RdRestriction) obj;
-//				checkRdRestriction(rdRestriction,checkCommand.getOperType());
-//			}
-//			// 顺行RdDirectroute
-//			else if (obj instanceof RdDirectroute) {
-//				RdDirectroute rdDirectroute = (RdDirectroute) obj;
-//				checkRdDirectroute(rdDirectroute,checkCommand.getOperType());
-//			}		
-//		}
+		for (IRow obj : checkCommand.getGlmList()) {
+			// 交限RdRestriction
+			if (obj instanceof RdGate) {
+				RdGate rdGate = (RdGate) obj;
+				if(rdGate.status().equals(ObjStatus.INSERT)){
+					checkRdGate(rdGate);
+				}
+			}
+		}
+
+	}
+
+	/**
+	 * @param rdGate
+	 * @throws Exception 
+	 */
+	private void checkRdGate(RdGate rdGate) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append(" SELECT 1                                                                      ");
+		sb.append("   FROM RD_DIRECTROUTE D                                                       ");
+		sb.append("  WHERE D.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("    AND D.OUT_LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND D.U_RECORD <> 2                                                        ");
+		sb.append(" UNION                                                                         ");
+		sb.append(" SELECT 1                                                                      ");
+		sb.append("   FROM RD_DIRECTROUTE D, RD_DIRECTROUTE_VIA V                                 ");
+		sb.append("  WHERE D.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("    AND D.PID = V.PID                                                          ");
+		sb.append("    AND V.LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND D.U_RECORD <> 2                                                        ");
+		sb.append("    AND V.U_RECORD <> 2                                                        ");
+		sb.append(" UNION                                                                         ");
+		sb.append(" SELECT 1                                                                      ");
+		sb.append("   FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL RD                             ");
+		sb.append("  WHERE R.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("    AND R.PID = RD.RESTRIC_PID                                                 ");
+		sb.append("    AND RD.OUT_LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND R.U_RECORD <> 2                                                        ");
+		sb.append("    AND RD.U_RECORD <> 2                                                       ");
+		sb.append("    AND RD.TYPE = 1                                                            ");
+		sb.append(" UNION                                                                         ");
+		sb.append(" SELECT 1                                                                      ");
+		sb.append("   FROM RD_RESTRICTION R, RD_RESTRICTION_DETAIL RD, RD_RESTRICTION_VIA RRV     ");
+		sb.append("  WHERE R.IN_LINK_PID = " + rdGate.getInLinkPid());
+		sb.append("    AND R.PID = RD.RESTRIC_PID                                                 ");
+		sb.append("    AND RRV.LINK_PID = " + rdGate.getOutLinkPid());
+		sb.append("    AND R.U_RECORD <> 2                                                        ");
+		sb.append("    AND RD.U_RECORD <> 2                                                       ");
+		sb.append("    AND RD.TYPE = 1                                                            ");
+		sb.append("    AND RRV.DETAIL_ID = RD.DETAIL_ID                                           ");
+		sb.append("    AND RRV.U_RECORD <> 2                                                      ");
+		
+		String sql = sb.toString();
+		log.info("RdGate GLM04005 sql:" + sql);
+		DatabaseOperator getObj = new DatabaseOperator();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (!resultList.isEmpty()) {
+			this.setCheckResult("", "", 0);
+		}
+		
 	}
 
 	/**
@@ -116,24 +169,10 @@ public class GLM04005 extends baseRule{
 					}
 					linkPidSet.add(rdRestrictionDetail.getOutLinkPid());
 					
-					for(IRow irowInner:rdRestrictionDetail.getConditions()){
-						if (irow instanceof RdRestrictionCondition){		
-							RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition)irowInner;
-							//时间段交限，不参与检查
-							if(rdRestrictionCondition.getTimeDomain()!=null){
-								continue;
-							}
-							//货车交限，不参与检查:01配送卡车,001运输卡车
-							if((rdRestrictionCondition.getVehicle()&6)>=2){
-								continue;
-							}
-
-							for(IRow irowInner2:rdRestrictionDetail.getVias()){
-								if (irowInner2 instanceof RdRestrictionVia){
-									RdRestrictionVia RdRestrictionVia = (RdRestrictionVia)irowInner2;
-									linkPidSet.add(RdRestrictionVia.getLinkPid());
-								}
-							}
+					for(IRow irowInner:rdRestrictionDetail.getVias()){
+						if (irowInner instanceof RdRestrictionVia){
+							RdRestrictionVia RdRestrictionVia = (RdRestrictionVia)irowInner;
+							linkPidSet.add(RdRestrictionVia.getLinkPid());
 						}
 					}
 				}
@@ -175,11 +214,6 @@ public class GLM04005 extends baseRule{
 				RdRestrictionDetail rdRestrictionDetail = (RdRestrictionDetail) obj;
 				checkRdRestrictionDetail(rdRestrictionDetail);
 			}
-//			//新增、修改交限车辆类型
-//			else if (obj instanceof RdRestrictionCondition) {
-//				RdRestrictionCondition rdRestrictionCondition = (RdRestrictionCondition) obj;
-//				checkRdRestrictionCondition(rdRestrictionCondition);
-//			}
 			//新增交限经过线
 			else if (obj instanceof RdRestrictionVia) {
 				RdRestrictionVia rdRestrictionVia = (RdRestrictionVia) obj;

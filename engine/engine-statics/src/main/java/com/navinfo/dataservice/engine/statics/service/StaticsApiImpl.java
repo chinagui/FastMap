@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.json.JSONObject;
-
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -72,10 +70,10 @@ public class StaticsApiImpl implements StaticsApi {
 		return StaticsService.getInstance().getStatBySubtask(subtaskId);
 	}
 
-	@Override
-	public List<Integer> getOpen100TaskIdList() throws Exception {
-		return StaticsService.getInstance().getOpen100TaskIdList();
-	}
+//	@Override
+//	public List<Integer> getOpen100TaskIdList() throws Exception {
+//		return StaticsService.getInstance().getOpen100TaskIdList();
+//	}
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.api.statics.iface.StaticsApi#getStatBySubtaskIdList(java.util.List)

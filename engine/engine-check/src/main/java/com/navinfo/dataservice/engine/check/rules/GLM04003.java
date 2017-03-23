@@ -188,7 +188,8 @@ public class GLM04003 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if (!resultList.isEmpty()) {
-				this.setCheckResult("", "", 0,resultList.get(0).toString());
+				String target = "[RD_LINK," + rdLinkLimit.getLinkPid() + "]";
+				this.setCheckResult("", target, 0,resultList.get(0).toString());
 			}
 		}
 	}
@@ -232,7 +233,8 @@ public class GLM04003 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if (!resultList.isEmpty()) {
-			this.setCheckResult("", "", 0,resultList.get(0).toString());
+			String target = "[RD_GATE," + rdGate.getPid() + "]";
+			this.setCheckResult("", target, 0,resultList.get(0).toString());
 		}
 		
 	}

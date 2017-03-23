@@ -509,12 +509,12 @@ public class StaticsService {
 		return subtaskStatInfo;
 	}
 	
-	public List<Integer> getOpen100TaskIdList() {
-		// TODO Auto-generated method stub
-		
-		List<Integer> taskIdList=StaticsOperation.getOpen100TaskIdList();
-		return taskIdList;
-	}
+//	public List<Integer> getOpen100TaskIdList() {
+//		// TODO Auto-generated method stub
+//		
+//		List<Integer> taskIdList=StaticsOperation.getOpen100TaskIdList();
+//		return taskIdList;
+//	}
 
 	/**
 	 * 

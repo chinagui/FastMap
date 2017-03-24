@@ -115,7 +115,6 @@ public class TipsSelector {
 
 				stages.add(3);
 
-				stages.add(5);
 			}
 			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre = false;
@@ -130,6 +129,10 @@ public class TipsSelector {
 			for (JSONObject json : snapshots) {
 
 				rowkey = json.getString("id");
+				
+				if(rowkey.equals("028002921a855f54c94990ab034c1fe4862d83")){
+					System.out.println("");
+				}
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 

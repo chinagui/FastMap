@@ -529,9 +529,6 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			//加上stage=5的是预处理的tips
-			
-			stage.add(5);
 
 			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
 					dbId,mdFlag);
@@ -571,8 +568,6 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			stages.add(5);
-
 			JSONObject data = selector.getStats(grids, stages);
 
 			return new ModelAndView("jsonView", success(data));

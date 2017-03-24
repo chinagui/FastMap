@@ -37,7 +37,7 @@ public class GLM01284 extends baseRule {
 		for (Integer linkPid : limitLinkPidSet) {
 			String sqlStr = String.format(
 					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK_LIMIT LM, RD_LINK L "
-							+ "WHERE LM.TYPE = 2 AND LM.TIME_DOMAIN IS NULL AND L.LINK_PID = LM.LINK_PID AND L.U_RECORD<> 2 AND LM.U_RECORD <> 2 AND L.LINK_PID = %d",
+							+ "WHERE LM.TYPE = 1 AND LM.TIME_DOMAIN IS NULL AND L.LINK_PID = LM.LINK_PID AND L.U_RECORD<> 2 AND LM.U_RECORD <> 2 AND L.LINK_PID = %d",
 					linkPid);
 
 			logger.info("RdLinkLimit后检查GLM01284 SQL:" + sqlStr);
@@ -55,7 +55,7 @@ public class GLM01284 extends baseRule {
 
 	private void prepareDateForLinkForm(CheckCommand checkCommand) {
 		for (IRow row : checkCommand.getGlmList()) {
-			if (!(row instanceof RdLinkLimit) || row.status() != ObjStatus.DELETE) {
+			if (!(row instanceof RdLinkLimit) || row.status() == ObjStatus.DELETE) {
 				continue;
 			}
 
@@ -71,7 +71,7 @@ public class GLM01284 extends baseRule {
 				timeDomain = rdlinkLimit.changedFields().get("timeDomain").toString();
 			}
 
-			if (limitType == 2 || timeDomain.isEmpty()) {
+			if (limitType == 1 || timeDomain.isEmpty()) {
 				limitLinkPidSet.add(rdlinkLimit.getLinkPid());
 			}
 		} // for循环

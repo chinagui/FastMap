@@ -11,6 +11,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo
 
 import org.apache.log4j.Logger;
 
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -45,9 +47,7 @@ public class GLM01290 extends baseRule {
 
 			logger.info("RdLinkLimit后检查GLM01290 SQL:" + sqlStr);
 
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sqlStr);
+			List<Integer> resultList = this.ExecuteSQL(sqlStr);
 
 			if (resultList.isEmpty()) {
 				continue;
@@ -71,22 +71,23 @@ public class GLM01290 extends baseRule {
 	 * 
 	 * @result 已修改限制信息数据集
 	 */
-	private boolean CheckVehicleType(List<Object> resultList) {
+	private boolean CheckVehicleType(List<Integer> resultList) {
 
 		boolean isRightVechicleType = true;
 
-		for (Object vehicleType : resultList) {
-			if ((int) vehicleType == 0) {
+		for (Integer vehicleType : resultList) {
+			if (vehicleType == 0) {
 				continue;
 			}
 
 			// 将车辆类型转换成16进制
 			String hexString = Integer.toBinaryString((int) vehicleType);
+			String hexStringReverse = new StringBuffer(hexString).reverse().toString();
 
 			Integer[] rightPos = new Integer[] { 0, 1, 2, 3, 7, 8, 9 };
 			List<Integer> rightPosSet = Arrays.asList(rightPos);
 
-			isRightVechicleType = isRightVehicle(hexString, rightPosSet);
+			isRightVechicleType = isRightVehicle(hexStringReverse, rightPosSet);
 		} // for循环
 
 		return isRightVechicleType;
@@ -124,5 +125,20 @@ public class GLM01290 extends baseRule {
 
 			limitResultPidSet.add(rdlinkLimit.getLinkPid());
 		} // for循环
+	}
+
+	private List<Integer> ExecuteSQL(String sql) throws Exception {
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);
+		ResultSet resultSet = pstmt.executeQuery();
+		List<Integer> result = new ArrayList<Integer>();
+
+		if (resultSet.next()) {
+			result.add(resultSet.getInt(1));
+		}
+
+		resultSet.close();
+		pstmt.close();
+
+		return result;
 	}
 }

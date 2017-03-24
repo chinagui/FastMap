@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -39,6 +40,17 @@ public class FMBAT20104 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		if (poi.getHisOpType().equals(OperationType.DELETE)) {
+			return;
+		}
+		List<IxPoiName> poiNames = poiObj.getIxPoiNames();
+		boolean changeFlag = false;
+		for (IxPoiName poiName:poiNames) {
+			// 存在IX_POI_NAME新增或者修改
+			if (poiName.getHisOpType().equals(OperationType.INSERT) || poiName.getHisOpType().equals(OperationType.UPDATE)) {
+				changeFlag = true;
+			}
+		}
+		if (!changeFlag) {
 			return;
 		}
 		IxPoiName standardPoiName = poiObj.getOfficeStandardCHName();

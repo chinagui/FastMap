@@ -444,6 +444,10 @@ public class RdCRFOperateUtils {
 
 			boolean isAllLink = true;
 
+			boolean isAllInter = true;
+			
+			boolean isAllRoad = true;
+			
 			for (IRow row : object.getLinks()) {
 
 				RdObjectLink objectLink = (RdObjectLink) row;
@@ -455,23 +459,6 @@ public class RdCRFOperateUtils {
 					break;
 				}
 			}
-
-			if (!isAllLink) {
-
-				// 在RdObject中去除被删的link
-				for (IRow row : object.getLinks()) {
-
-					RdObjectLink objectLink = (RdObjectLink) row;
-
-					if (this.linkPids.contains(objectLink.getLinkPid())) {
-
-						result.insertObject(objectLink, ObjStatus.DELETE,
-								object.getPid());
-					}
-				}
-			}
-
-			boolean isAllInter = true;
 
 			for (IRow row : object.getInters()) {
 
@@ -485,23 +472,6 @@ public class RdCRFOperateUtils {
 				}
 			}
 
-			if (!isAllInter) {
-
-				// 在RdObject中去除被删的Inter
-				for (IRow row : object.getInters()) {
-
-					RdObjectInter objectInter = (RdObjectInter) row;
-
-					if (delInters.containsKey(objectInter.getInterPid())) {
-
-						result.insertObject(objectInter, ObjStatus.DELETE,
-								object.getPid());
-					}
-				}
-			}
-
-			boolean isAllRoad = true;
-
 			for (IRow row : object.getRoads()) {
 
 				RdObjectRoad objectRoad = (RdObjectRoad) row;
@@ -514,25 +484,48 @@ public class RdCRFOperateUtils {
 				}
 			}
 
-			if (!isAllRoad) {
-
-				// 在RdObject中去除被删的Road
-				for (IRow row : object.getRoads()) {
-
-					RdObjectRoad objectRoad = (RdObjectRoad) row;
-
-					if (delRoads.containsKey(objectRoad.getRoadPid())) {
-
-						result.insertObject(objectRoad, ObjStatus.DELETE,
-								object.getPid());
-					}
-				}
-			}
-
 			// 参与RdObject的link、Inter、Road均被删除时，该RdObject删除
 			if (isAllLink && isAllInter && isAllRoad) {
 
 				result.insertObject(object, ObjStatus.DELETE, object.getPid());
+				
+				continue;
+			}
+			
+			// 在RdObject中去除被删的link
+			for (IRow row : object.getLinks()) {
+
+				RdObjectLink objectLink = (RdObjectLink) row;
+
+				if (this.linkPids.contains(objectLink.getLinkPid())) {
+
+					result.insertObject(objectLink, ObjStatus.DELETE,
+							object.getPid());
+				}
+			}
+			
+			// 在RdObject中去除被删的Inter
+			for (IRow row : object.getInters()) {
+
+				RdObjectInter objectInter = (RdObjectInter) row;
+
+				if (delInters.containsKey(objectInter.getInterPid())) {
+
+					result.insertObject(objectInter, ObjStatus.DELETE,
+							object.getPid());
+				}
+			}			
+			
+			// 在RdObject中去除被删的Road
+			for (IRow row : object.getRoads()) {
+
+				RdObjectRoad objectRoad = (RdObjectRoad) row;
+
+				if (delRoads.containsKey(objectRoad.getRoadPid())) {
+
+					result.insertObject(objectRoad, ObjStatus.DELETE,
+							object.getPid());
+				}
 			}
 		}
 

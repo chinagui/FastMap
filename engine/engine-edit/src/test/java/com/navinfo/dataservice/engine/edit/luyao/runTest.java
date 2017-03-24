@@ -1523,4 +1523,14 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_0324_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":84,\"type\":\"RDNODE\",\"objId\":503000185,\"infect\":0}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

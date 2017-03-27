@@ -149,7 +149,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch(Exception e){
-			log.error("PoiRowValidationJob错误", e);
+			log.error("EditPoiBaseReleaseJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		}finally{

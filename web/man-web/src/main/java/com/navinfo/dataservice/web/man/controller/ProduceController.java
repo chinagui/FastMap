@@ -94,9 +94,9 @@ public class ProduceController extends BaseController {
 	public ModelAndView statics(HttpServletRequest request){
 		try{
 			JSONObject condition = new JSONObject();
-			JSONArray selectParam=new JSONArray();
-			selectParam.add(4);
-			condition.put("selectParam", selectParam);
+			//JSONArray selectParam=new JSONArray();
+			//selectParam.add(4);
+			//condition.put("selectParam", selectParam);
 			Page data=ProduceService.getInstance().list(condition, 1, 20);
 			return new ModelAndView("jsonView", success(data.getTotalCount()));
 		}catch(Exception e){

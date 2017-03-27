@@ -103,6 +103,15 @@ public class GLM05097 extends baseRule{
 					flg = true;
 				}
 			}
+			//道路方向：单向变双向
+			else if(rdLink.changedFields().containsKey("direct")){
+				int direct = Integer.parseInt(rdLink.changedFields().get("direct").toString());
+				if((direct!=3)&&(direct!=2)){
+					if((rdLink.getDirect()==3)||(rdLink.getDirect()==2)){
+						flg = true;
+					}
+				}
+			}
 			
 			if(flg){
 				checkRdLink(rdLink.getPid());

@@ -80,15 +80,16 @@ public class GLM33006 extends baseRule {
             } else if(row instanceof RdVariableSpeedVia){
             	RdVariableSpeedVia speedVia = (RdVariableSpeedVia) row;
             	List<Integer> pids = new ArrayList<Integer>();
-            	if(speedVia.status().equals(ObjStatus.UPDATE)){
+            	int linkPid = speedVia.getLinkPid();
+            	if(!speedVia.status().equals(ObjStatus.DELETE)){
             		Map<String, Object> changedFields = speedVia.changedFields();
         			if(changedFields != null && !changedFields.isEmpty() ){
         				if(changedFields.containsKey("linkPid")){
-        					int linkPid = Integer.valueOf(speedVia.changedFields().get("linkPid").toString());
-        					pids.add(linkPid);
+        					linkPid = Integer.valueOf(speedVia.changedFields().get("linkPid").toString());
         				}
         			}
             	}
+            	pids.add(linkPid);
             	if(!pids.isEmpty()){
             		boolean check = this.check(pids);
             		if(check){
@@ -147,14 +148,26 @@ public class GLM33006 extends baseRule {
                     type = Integer.valueOf(linkLimit.changedFields().get("type").toString());
 
                 if (type == 3) {
-                    setCheckResult("", "[RD_LINK," + linkLimit.getLinkPid() + "]", 0);
+                	List<RdVariableSpeed> list1 = new RdVariableSpeedSelector(getConn()).loadRdVariableSpeedByLinkPid
+                            (linkLimit.getLinkPid(), false);
+                    List<RdVariableSpeed> list2 = new RdVariableSpeedSelector(getConn())
+                            .loadRdVariableSpeedByViaLinkPid(linkLimit.getLinkPid(), false);
+                    if (!list1.isEmpty() || !list2.isEmpty()) {
+                    	setCheckResult("", "[RD_LINK," + linkLimit.getLinkPid() + "]", 0);
+                    }
                 } else if (type == 2) {
                     String timeDomain = linkLimit.getTimeDomain();
                     if (linkLimit.changedFields().containsKey("timeDomain"))
                         timeDomain = linkLimit.changedFields().get("timeDomain").toString();
 
                     if (StringUtils.isEmpty(timeDomain)) {
-                        setCheckResult("", "[RD_LINK," + linkLimit.getLinkPid() + "]", 0);
+                    	List<RdVariableSpeed> list1 = new RdVariableSpeedSelector(getConn()).loadRdVariableSpeedByLinkPid
+                                (linkLimit.getLinkPid(), false);
+                        List<RdVariableSpeed> list2 = new RdVariableSpeedSelector(getConn())
+                                .loadRdVariableSpeedByViaLinkPid(linkLimit.getLinkPid(), false);
+                        if (!list1.isEmpty() || !list2.isEmpty()) {
+                        	setCheckResult("", "[RD_LINK," + linkLimit.getLinkPid() + "]", 0);
+                        }
                     }
                 }
             }
@@ -169,11 +182,21 @@ public class GLM33006 extends baseRule {
 	private boolean check(List<Integer> pids) throws Exception {
 		// TODO Auto-generated method stub
 		boolean flag = false;
-		String sql = "SELECT 1 FROM RD_LINK RL, RD_LINK_FORM RLF, RD_LINK_LIMIT RLL WHERE RL.LINK_PID IN (" +
-                StringUtils.getInteStr(pids) + ") AND RL.LINK_PID = RLF.LINK_PID AND RL.LINK_PID = RLL" + ""
-                + ".LINK_PID AND RL.U_RECORD <> 2 AND RLF.U_RECORD <> 2 AND RLL.U_RECORD <> 2 AND (RL.KIND "
-                + "IN" + " " + "(0, 8, 9, 10, 11, 13) OR RLF.FORM_OF_WAY IN (18, 20, 33, 50) OR RL.IMI_CODE "
-                + "IN " + "(1, 2) " + "OR " + "(RLL.TYPE = 2 AND RLL.TIME_DOMAIN IS NULL) OR RLL.TYPE = 3)";
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT RL.LINK_PID FROM RD_LINK RL WHERE RL.LINK_PID IN ("+StringUtils.getInteStr(pids) + ")");
+		sb.append(" AND (RL.KIND IN (0, 8, 9, 10, 11, 13)OR RL.IMI_CODE IN (1, 2))");
+		sb.append(" AND RL.U_RECORD <>2");
+		sb.append(" UNION");
+		sb.append(" SELECT RLF.LINK_PID FROM RD_LINK_FORM RLF");
+		sb.append(" WHERE RLF.LINK_PID IN ("+StringUtils.getInteStr(pids) + ")");
+		sb.append(" AND RLF.FORM_OF_WAY IN (18, 20, 33, 50) AND RLF.U_RECORD <>2");
+		sb.append(" UNION");
+		sb.append(" SELECT RLL.LINK_PID FROM RD_LINK_LIMIT RLL");
+		sb.append(" WHERE RLL.LINK_PID IN ("+StringUtils.getInteStr(pids) + ")");
+		sb.append(" AND((RLL. TYPE = 2 AND RLL.TIME_DOMAIN IS NULL)");
+		sb.append(" OR RLL. TYPE = 3) AND RLL.U_RECORD <>2");
+		String sql = sb.toString();
 		log.info("后检查GLM33006--sql:" + sql);
 		
 		DatabaseOperator getObj = new DatabaseOperator();

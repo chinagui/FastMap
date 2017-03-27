@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.navicommons.database.sql.ProcedureBase;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
@@ -65,6 +66,20 @@ public class DataRowTool {
 			throw new Exception("关闭主键时出现错误，原因："+e.getMessage(),e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	public static void turnOffFkConstrain(OracleSchema schema)throws Exception{
+		try{
+			ProcedureBase pb = new ProcedureBase(schema.getDriverManagerDataSource());
+			String sql = "BEGIN\n"
+					+"  FOR T IN (SELECT TABLE_NAME,CONSTRAINT_NAME FROM USER_CONSTRAINTS WHERE CONSTRAINT_TYPE='R') LOOP\n"
+					+"    EXECUTE IMMEDIATE 'ALTER TABLE '||T.TABLE_NAME||' DISABLE CONSTRAINT '||T.CONSTRAINT_NAME;\n"
+					+"  END LOOP;\n"
+					+"END;";
+			pb.callProcedure(sql);
+		}catch (Exception e) {
+			log.error("打开外键键时出现错误，原因："+e.getMessage(), e);
+			throw new Exception("打开外键键时出现错误，原因："+e.getMessage(),e);
 		}
 	}
 	public static String getSelectColumnString(Connection conn, String tableName) throws SQLException {

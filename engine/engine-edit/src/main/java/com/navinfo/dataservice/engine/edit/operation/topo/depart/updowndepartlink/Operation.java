@@ -1050,6 +1050,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleRdGsc(command, result);
 
         opRefRelationObj.handlerRdSe(command, result);
+        
+        opRefRelationObj.handCRF(command, result);
     }
 
     /**

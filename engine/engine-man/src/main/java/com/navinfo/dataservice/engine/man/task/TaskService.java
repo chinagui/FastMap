@@ -347,10 +347,7 @@ public class TaskService {
 				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集或日编任务";}
 				else{return "二代编辑任务发布进行中";}
 			}
-			if(total!=taskIds.size()){
-				return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
-			}
-			return null;
+			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

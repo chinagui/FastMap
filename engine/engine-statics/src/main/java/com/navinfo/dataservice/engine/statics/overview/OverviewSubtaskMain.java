@@ -192,24 +192,38 @@ public class OverviewSubtaskMain {
 			percentRoad = 0;
 		}
 
-		stat.put("totalPoi", totalPoi);
-		stat.put("finishedPoi", finishedPoi);
-		stat.put("percentPoi", percentPoi);
-		stat.put("totalRoad", totalRoad);
-		stat.put("finishedRoad", finishedRoad);
-		stat.put("percentRoad", percentRoad);
+		
+		
 		
 		
 		//grid进度详情
-		if(type == 0||type == 5){
+		if(type == 0||type == 5||type==7){
+			stat.put("totalPoi", totalPoi);
+			stat.put("finishedPoi", finishedPoi);
+			stat.put("percentPoi", percentPoi);
+			stat.put("totalRoad", 0);
+			stat.put("finishedRoad", 0);
+			stat.put("percentRoad", 0);
 			//POI
 			stat.put("gridPercentDetails", gridPercentDetailPOI);
 			stat.put("percent", percentPoi);
-		}else if (type == 1||type==7){
+		}else if (type == 1){
+			stat.put("totalPoi", 0);
+			stat.put("finishedPoi", 0);
+			stat.put("percentPoi", 0);
+			stat.put("totalRoad", totalRoad);
+			stat.put("finishedRoad", finishedRoad);
+			stat.put("percentRoad", percentRoad);
 			//道路
 			stat.put("gridPercentDetails", gridPercentDetailROAD);
 			stat.put("percent", percentRoad);
 		}else{
+			stat.put("totalPoi", totalPoi);
+			stat.put("finishedPoi", finishedPoi);
+			stat.put("percentPoi", percentPoi);
+			stat.put("totalRoad", totalRoad);
+			stat.put("finishedRoad", finishedRoad);
+			stat.put("percentRoad", percentRoad);
 			//一体化
 			Map<String,Integer> gridPercentDetail = new HashMap<String,Integer>();
 			for(Map.Entry<String, Integer> entry : gridPercentDetailPOI.entrySet()){

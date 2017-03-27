@@ -600,5 +600,20 @@ public class commonTest extends InitApplication {
 		
 		System.out.print(strFormat);
 	}
+	
+	@Test
+	public void testHaashMap() {
+		
+		Map<Integer,Integer> maps=new HashMap<Integer,Integer>();
+		
+		maps.put(1, 1);
+		maps.put(1, 2);
+		maps.put(1, 3);
+		maps.put(2, 2);
+		maps.put(2, 3);
+		maps.put(3, 3);
+		
+	}
+	
 
 }

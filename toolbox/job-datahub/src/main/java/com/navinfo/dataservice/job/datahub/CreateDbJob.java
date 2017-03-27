@@ -39,6 +39,7 @@ public class CreateDbJob extends AbstractJob {
 			}
 			Map<String,Object> data = new HashMap<String,Object>();
 			data.put("outDbId", db.getDbId());
+			log.info("Created Db:"+db);
 			super.response("创建库完成",data);
 		}catch(DataHubException e){
 			log.error(e.getMessage(),e);

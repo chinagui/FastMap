@@ -6,6 +6,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -36,11 +37,54 @@ public class GLM08004_3 extends baseRule {
 			if(obj instanceof RdLinkLimit ){
 				RdLinkLimit rdLinkLimit=(RdLinkLimit) obj;
 				checkRdLinkLimit(rdLinkLimit);
+			} else if (obj instanceof RdLink) {
+				RdLink rdLink = (RdLink) obj;
+				checkRdLink(rdLink);
 			}
 		}
 		
 	}
 	
+	private void checkRdLink(RdLink rdLink) throws Exception {
+		boolean checkFlg = false;
+		if (rdLink.status().equals(ObjStatus.UPDATE)) {
+			if(rdLink.changedFields().containsKey("kind")){
+				int kind = Integer.parseInt(rdLink.changedFields().get("kind").toString());
+				if (kind == 10) {
+					checkFlg = true;
+				}
+			}
+		}
+		if (checkFlg) {
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT 1");
+			sb.append(" FROM RD_LINK_LIMIT L,RD_RESTRICTION RR,RD_RESTRICTION_DETAIL RRD");
+			sb.append(" WHERE RR.PID = RRD.RESTRIC_PID");
+			sb.append(" AND RRD.TYPE = 1");
+			sb.append(" AND (RRD.OUT_LINK_PID=L.LINK_PID OR RR.IN_LINK_PID=L.LINK_PID)");
+			sb.append(" AND L.TYPE=3");
+			sb.append(" AND L.TIME_DOMAIN IS NOT NULL");
+			sb.append(" AND L.VEHICLE=2147483786");
+			sb.append(" AND L.LINK_PID=");
+			sb.append(rdLink.getPid());
+			sb.append(" AND L.U_RECORD <> 2");
+			sb.append(" AND RRD.U_RECORD <> 2");
+			sb.append(" AND RR.U_RECORD <> 2");
+			
+			String sql = sb.toString();
+			log.info("RdLink后检查GLM08004_3:" + sql);
+
+			DatabaseOperator getObj = new DatabaseOperator();
+			List<Object> resultList = new ArrayList<Object>();
+			resultList = getObj.exeSelect(this.getConn(), sql);
+
+			if(resultList.size()>0){
+				String target = "[RD_LINK," + rdLink.getPid() + "]";
+				this.setCheckResult("", target, 0);
+			}
+		}
+	}
+
 	/**
 	 * @param rdLinkLimit
 	 * @throws Exception 
@@ -49,7 +93,7 @@ public class GLM08004_3 extends baseRule {
 		boolean checkFlg = false;
 		//进不去出不来的link
 		if(rdLinkLimit.status().equals(ObjStatus.INSERT)){
-			if((rdLinkLimit.getType()==2)&&(rdLinkLimit.getVehicle()==2147483786L)&&(!rdLinkLimit.getTimeDomain().isEmpty())){
+			if((rdLinkLimit.getType()==3)&&(rdLinkLimit.getVehicle()==2147483786L)&&(!rdLinkLimit.getTimeDomain().isEmpty())){
 				checkFlg = true;
 			}
 		}
@@ -86,7 +130,7 @@ public class GLM08004_3 extends baseRule {
 				}
 			}
 			
-			if((type==2)&&(vehicle==2147483786L)&&(timeDomain!=null)){
+			if((type==3)&&(vehicle==2147483786L)&&(timeDomain!=null)){
 				checkFlg = true;
 			}
 		}

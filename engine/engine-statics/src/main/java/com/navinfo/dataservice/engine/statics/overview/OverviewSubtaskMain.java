@@ -201,11 +201,11 @@ public class OverviewSubtaskMain {
 		
 		
 		//grid进度详情
-		if(type == 0||type == 5){
+		if(type == 0||type == 5||type==7){
 			//POI
 			stat.put("gridPercentDetails", gridPercentDetailPOI);
 			stat.put("percent", percentPoi);
-		}else if (type == 1||type==7){
+		}else if (type == 1){
 			//道路
 			stat.put("gridPercentDetails", gridPercentDetailROAD);
 			stat.put("percent", percentRoad);

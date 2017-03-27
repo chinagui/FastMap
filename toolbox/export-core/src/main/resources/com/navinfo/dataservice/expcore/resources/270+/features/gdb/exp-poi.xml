@@ -144,6 +144,17 @@
 
 		</step>
 		
+		<step value="43">
+
+			<sql>
+                <![CDATA[
+                        INSERT INTO TEMP_IX_POI_NAME (SELECT DISTINCT(T2.NAME_ID)
+	                       FROM IX_POI_NAME T2, TEMP_IX_POI T
+	                      WHERE T2.POI_PID = T.PID);
+                        ]]></sql>
+
+		</step>
+		
 	</feature>
 
 

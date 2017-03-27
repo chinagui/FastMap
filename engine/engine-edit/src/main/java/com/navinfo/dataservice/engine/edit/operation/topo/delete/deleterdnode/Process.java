@@ -284,9 +284,9 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdSlope opRefRdSlope = new OpRefRdSlope(this.getConn());
 		opRefRdSlope.run(this.getResult(), this.getCommand());
 
-		// CRF交叉点
-		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.getCommand(), this.getCommand().getNodePids());
+//		// CRF交叉点
+//		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
+//		opRefRdInter.run(this.getResult(), this.getCommand(), this.getCommand().getNodePids());
 
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
@@ -300,9 +300,6 @@ public class Process extends AbstractProcess<Command> {
 		// 顺行
 		opRefRelationObj.handleDirectroute(this.getResult(), this.getCommand());
 
-		// CRF道路
-		opRefRelationObj.handleRdroad(this.getResult(), this.getCommand());
-
 		// 警示信息
 		opRefRelationObj.handleWarninginfo(this.getResult(), this.getCommand());
 
@@ -311,10 +308,13 @@ public class Process extends AbstractProcess<Command> {
 
 		// 同一线
 		opRefRelationObj.handleSameLink(this.getResult(), this.getCommand());
+		
+		//CRF要素 (RdInter、RdRoad、RdObject)
+		opRefRelationObj.handleCRF(this.getResult(), this.getCommand());
 
 		// 详细车道
 		OpRefRdLane opRefRdLane = new OpRefRdLane(getConn());
-		opRefRdLane.run(getResult(), this.getCommand());
+		opRefRdLane.run(getResult(), this.getCommand());	
 	}
 
 	/**

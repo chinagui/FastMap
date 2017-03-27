@@ -277,6 +277,9 @@ public abstract class BasicObj {
 			if(entry.getKey().equals("IX_POI")){
 				continue;
 			}
+			if(entry.getKey().equals("IX_SAMEPOI")){
+				continue;
+			}
 			//*****************************
 			for(BasicRow subrow:entry.getValue()){
 				GlmTable glmTable = GlmFactory.getInstance().getTableByName(subrow.tableName());
@@ -299,6 +302,9 @@ public abstract class BasicObj {
 			System.out.println("二级子表 entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
 			//****zl 2017.03.04 修改********
 			if(entry.getKey().equals("IX_POI")){
+				continue;
+			}
+			if(entry.getKey().equals("IX_SAMEPOI")){
 				continue;
 			}
 			//*****************************

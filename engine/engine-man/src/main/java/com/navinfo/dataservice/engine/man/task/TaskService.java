@@ -1733,10 +1733,10 @@ public class TaskService {
 			int curPhase=phase.getPhase();
 			//新增状态4。0创建1进行中2成功3失败4tip转aumark（无tips可转）
 			if(curPhase==1){
-				if(phaseStatusMap.get(2)!=2||phaseStatusMap.get(2)!=4){return;}
+				if(phaseStatusMap.get(2)!=2&&phaseStatusMap.get(2)!=4){return;}
 			}else{//2,3,4
 				for(int i=1;i<curPhase;i++){
-					if(phaseStatusMap.get(i)!=2||phaseStatusMap.get(i)!=4){return;}
+					if(phaseStatusMap.get(i)!=2&&phaseStatusMap.get(i)!=4){return;}
 				}
 			}
 			if(curPhase==1||curPhase==2){//日落月

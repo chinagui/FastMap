@@ -136,6 +136,56 @@ public class IxPoiSelector {
 	}
 	
 	/**
+	 * 查询多个父的子poiPid
+	 * @param conn
+	 * @param pidList
+	 * @return
+	 * @throws ServiceException
+	 */
+	public static Map<Long,List<Long>> getChildrenPidsByParentPidList(Connection conn,Set<Long> pidList) throws ServiceException{
+		Map<Long,List<Long>> childPids = new HashMap<Long,List<Long>>();
+		if(pidList.isEmpty()){
+			return childPids;
+		}
+		try{
+			ResultSetHandler<Map<Long,List<Long>>> rsHandler = new ResultSetHandler<Map<Long,List<Long>>>() {
+				public Map<Long,List<Long>> handle(ResultSet rs) throws SQLException {
+					Map<Long,List<Long>> result = new HashMap<Long,List<Long>>();
+					while (rs.next()) {
+						List<Long> childList = new ArrayList<Long>();
+						if (result.containsKey(rs.getLong("PARENT_POI_PID"))) {
+							childList = result.get(rs.getLong("PARENT_POI_PID"));
+						} 
+						childList.add(rs.getLong("CHILD_POI_PID"));
+						result.put(rs.getLong("PARENT_POI_PID"), childList);
+					}
+					return result;
+				}
+			};
+			String sql = "SELECT DISTINCT IPC.CHILD_POI_PID,IPP.PARENT_POI_PID"
+					+ " FROM IX_POI_PARENT IPP,IX_POI_CHILDREN IPC"
+					+ " WHERE IPC.GROUP_ID = IPP.GROUP_ID"
+					+ " AND IPC.U_RECORD <>2 AND IPP.U_RECORD <>2 "
+					+ " AND IPP.PARENT_POI_PID IN ";
+			if (pidList.size()>100) {
+				sql +=  "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) ";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				return new QueryRunner().query(conn, sql, rsHandler,clob);
+			} else {
+				sql += " (" + StringUtils.join(pidList.toArray(),",") + ")";
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				return new QueryRunner().query(conn,sql, rsHandler);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
 	 * 查找一个poi的多级子
 	 * @param conn
 	 * @param pidList

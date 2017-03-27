@@ -148,7 +148,9 @@ public class PoiMonthlyStat implements Runnable {
 	
 				String grid_id = entry.getKey();
 				int total = entry.getValue();
-				int finish = commitPois.get(grid_id);
+				int finish =0;
+				if(commitPois!=null&&commitPois.size()>0&&commitPois.containsKey(grid_id)){
+					finish = commitPois.get(grid_id);}
 	
 				Document json = new Document();
 				// ------------------------------

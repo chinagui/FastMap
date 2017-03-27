@@ -1502,4 +1502,35 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_0323_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":\"6.6\",\"data\":{\"linkPids\":[410000168,410000169]}}";
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0323_1() throws Exception {
+
+		String parameter = "{\"command\":\"REPAIR\",\"dbId\":84,\"objId\":401000187,\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.42841696739197,40.01905957371441],[116.42871,40.01931],[116.42881,40.01925],[116.42892,40.01918],[116.42908,40.01929],[116.42919,40.01929],[116.42935,40.01928],[116.42956,40.01927]]},\"catchInfos\":[{\"nodePid\":401000140,\"longitude\":116.42841696739197,\"latitude\":40.01905957371441}]},\"type\":\"RDLINK\"}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_0324_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":84,\"type\":\"RDNODE\",\"objId\":503000185,\"infect\":0}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

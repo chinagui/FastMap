@@ -29,21 +29,31 @@ public class OpRefRelationObj {
 		return null;
 	}
 
-	// CRF道路
-	public String handleRdroad(Result result, Command command) throws Exception {
-
-		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation(
-				conn);
-
-		List<Integer> linkPids = new ArrayList<Integer>();
-
-		for (RdLink link : command.getLinks()) {
-
-			linkPids.add(link.getPid());
-		}
-
-		operation.deleteByLinks(linkPids, result);
-
+//	// CRF道路
+//	public String handleRdroad(Result result, Command command) throws Exception {
+//
+//		com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation operation = new com.navinfo.dataservice.engine.edit.operation.obj.rdroad.delete.Operation(
+//				conn);
+//
+//		List<Integer> linkPids = new ArrayList<Integer>();
+//
+//		for (RdLink link : command.getLinks()) {
+//
+//			linkPids.add(link.getPid());
+//		}
+//
+//		operation.deleteByLinks(linkPids, result);
+//
+//		return null;
+//	}
+	
+	//CRF要素 (RdInter、RdRoad、RdObject)
+	public String handleCRF(Result result, Command command) throws Exception {
+		
+		com.navinfo.dataservice.engine.edit.utils.RdCRFOperateUtils rdCRFOperateUtils=new com.navinfo.dataservice.engine.edit.utils.RdCRFOperateUtils(this.conn);
+		
+		rdCRFOperateUtils.delNodeLink(result,command.getLinkPids(),command.getNodePids());
+	
 		return null;
 	}
 

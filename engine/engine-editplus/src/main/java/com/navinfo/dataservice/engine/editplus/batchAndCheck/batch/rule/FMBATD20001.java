@@ -40,9 +40,9 @@ public class FMBATD20001 extends BasicBatchRule {
 		}
 		List<IxPoiGasstation> gasstationsList= poiObj.getIxPoiGasstations();
 		for (IxPoiGasstation gasstation:gasstationsList) {
-//			if (!gasstation.getHisOpType().equals(OperationType.INSERT) && !gasstation.getHisOpType().equals(OperationType.UPDATE)) {
-//				continue;
-//			}
+			if (!gasstation.getHisOpType().equals(OperationType.INSERT) && !gasstation.getHisOpType().equals(OperationType.UPDATE)) {
+				continue;
+			}
 			String oilType = gasstation.getOilType();
 			String egType = gasstation.getEgType();
 			String mgType = gasstation.getMgType();

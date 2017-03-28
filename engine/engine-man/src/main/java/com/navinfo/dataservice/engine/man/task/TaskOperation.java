@@ -69,6 +69,20 @@ public class TaskOperation {
 	}
 	
 	/*
+	 * task的latest字段，修改成无效，0
+	 */
+	public static void updateLatest(Connection conn, Integer taskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateBlock="UPDATE TASK SET LATEST=0 WHERE LATEST=1 AND task_id=" + taskId;
+			run.update(conn,updateBlock);			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/*
 	 * task的status字段，修改成开启
 	 */
 	public static void updateStatus(Connection conn,List<Integer> taskIds,int status) throws Exception{
@@ -2364,7 +2378,62 @@ public class TaskOperation {
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * taskId对应的task表记录以及task_grid_mapping记录进行复制，同时将newTaskId的状态修改为草稿
+	 * @param conn
+	 * @param userId
+	 * @param newTaskId
+	 * @param taskId
+	 * @throws Exception
+	 */
+	public static void copyTask(Connection conn,Long userId, int newTaskId, int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			
+			String insertTask="INSERT INTO TASK  (TASK_ID,CREATE_USER_ID,CREATE_DATE,STATUS,NAME,"
+					+ "   DESCP,PLAN_START_DATE,PLAN_END_DATE,LATEST,PROGRAM_ID,BLOCK_ID,REGION_ID,"
+					+ "   PRODUCE_PLAN_START_DATE,PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,"
+					+ "   POI_PLAN_TOTAL)"
+					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,NAME,DESCP,PLAN_START_DATE,"
+					+ "         PLAN_END_DATE,1,PROGRAM_ID,BLOCK_ID,REGION_ID,PRODUCE_PLAN_START_DATE,"
+					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL"
+					+ "    FROM TASK"
+					+ "   WHERE TASK_ID = "+taskId;
+			String insertTaskGrid="INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT "+newTaskId+", GRID_ID, TYPE"
+					+ "    FROM TASK_GRID_MAPPING"
+					+ "   WHERE TYPE = 1"
+					+ "     AND TASK_ID = "+taskId;
+			run.update(conn, insertTask);
+			run.update(conn, insertTaskGrid);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	
+	/**
+	 * 任务对应的block若为关闭，则同步更新为已规划，否则不动
+	 * @param conn
+	 * @throws Exception
+	 */
+	public static void reOpenBlockByTask(Connection conn,int taskId) throws Exception {		
+		try{
+			QueryRunner run = new QueryRunner();
+			String selectSql = "UPDATE BLOCK"
+					+ "   SET PLAN_STATUS = 1"
+					+ " WHERE PLAN_STATUS = 2"
+					+ "   AND BLOCK_ID = (SELECT BLOCK_ID FROM TASK WHERE TASK_ID = "+taskId+")" ;
+			run.update(conn,selectSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
 }

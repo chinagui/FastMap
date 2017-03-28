@@ -111,9 +111,9 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-				
+
 				String wkt = Geojson.geojson2Wkt(box);
-				
+
 				List<SearchSnapshot> list = search.searchDataBySpatial(wkt);
 
 				JSONArray array = new JSONArray();
@@ -256,25 +256,24 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
-			
+
 				if (condition.containsKey("queryType")) {
-					
+
 					String queryType = condition.getString("queryType");
-					
+
 					// 批量编辑限速link追踪
 					if (queryType.equals("RDSPEEDLIMIT")) {
-						
+
 						int linkPid = condition.getInt("linkPid");
-						
-						int direct = condition.getInt("direct");						
-						
+
+						int direct = condition.getInt("direct");
+
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
-						
+
 						int speedDependnt = -1;
-						
-						if(condition.containsKey("speedDependnt"))
-						{
+
+						if (condition.containsKey("speedDependnt")) {
 							speedDependnt = condition.getInt("speedDependnt");
 						}
 
@@ -290,22 +289,23 @@ public class SearchProcess {
 						array.add(linkPidsArray);
 
 						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids,speedDependnt);
+								.getRdLinkSpeedlimit(nextLinkPids,
+										speedDependnt);
 
 						array.add(speedlimitArray);
 					}
-					//可变限速link追踪
-					if(queryType.equals("RDVARIABLESPEED"))
-					{
+					// 可变限速link追踪
+					if (queryType.equals("RDVARIABLESPEED")) {
 						int linkPid = condition.getInt("linkPid");
-						
+
 						int nodePid = condition.getInt("nodePid");
-						
+
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
-						
-						List<RdLink> links  = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);						
-						
+
+						List<RdLink> links = searchUtils
+								.variableSpeedNextLinks(linkPid, nodePid);
+
 						for (RdLink link : links) {
 							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
@@ -348,25 +348,21 @@ public class SearchProcess {
 					if (condition.containsKey("maxNum")) {
 						maxNum = condition.getInt("maxNum");
 					}
-					if(condition.containsKey("loadChild"))
-					{
+					if (condition.containsKey("loadChild")) {
 						int flag = condition.getInt("loadChild");
-						
-						if(flag == 1)
-						{
+
+						if (flag == 1) {
 							loadChild = true;
 						}
 					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
 					List<RdLink> links = searchUtils.getNextTrackLinks(
-							cuurentLinkPid, cruuentNodePidDir, maxNum,loadChild);
+							cuurentLinkPid, cruuentNodePidDir, maxNum,
+							loadChild);
 					for (RdLink link : links) {
-						if(loadChild)
-						{
+						if (loadChild) {
 							array.add(link.Serialize(ObjLevel.FULL));
-						}
-						else
-						{
+						} else {
 							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
 					}
@@ -512,12 +508,13 @@ public class SearchProcess {
 
 					int outLinkPid = condition.getInt("outLinkPid");
 
-					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
+							conn);
 
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
 							this.conn, inLinkPid, nodePid, outLinkPid);
-					
+
 					// 计算关系类型
 					int relationShipType = calLinkOperateUtils
 							.getRelationShipType(nodePid, outLinkPid);
@@ -525,7 +522,7 @@ public class SearchProcess {
 					JSONObject obj = new JSONObject();
 
 					obj.put("relationshipType", relationShipType);
-					
+
 					List<Integer> linkpids = new ArrayList<Integer>();
 
 					linkpids.add(inLinkPid);
@@ -536,7 +533,7 @@ public class SearchProcess {
 
 					if (!calLinkOperateUtils.isConnect(linkpids, nodePid)) {
 						obj.put("errInfo", "所选进入线、进入点、退出线不连通");
-					}					
+					}
 
 					JSONArray viaArray = new JSONArray();
 
@@ -544,25 +541,9 @@ public class SearchProcess {
 						for (Integer via : viaList) {
 							viaArray.add(via);
 						}
-						// 路口关系交限不记经过link
-						if (StringUtils.isNotEmpty(objType)
-								&& ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							RdLinkSelector selector = new RdLinkSelector(conn);
 
-							List<Integer> kinds = selector.loadRdLinkKindByIds(
-									viaList, false);
-
-							if (relationShipType != 1 && kinds.get(0) < 10) {
-								obj.put("links", viaArray);
-							} else {
-								obj.put("links", new JSONArray());
-							}
-						} else {
-							obj.put("links", viaArray);
-						}
-					} else {
-						obj.put("links", new JSONArray());
 					}
+					obj.put("links", viaArray);
 					array.add(obj);
 
 					return array;
@@ -631,5 +612,4 @@ public class SearchProcess {
 
 		}
 	}
-
 }

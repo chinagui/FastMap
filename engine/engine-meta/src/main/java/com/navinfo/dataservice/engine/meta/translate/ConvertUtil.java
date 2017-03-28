@@ -98,7 +98,7 @@ public class ConvertUtil {
     }
 
     public static boolean isCapitalLetter(char c) {
-        if ((c >= 'A' && c <= 'Z') || (c > 'Ａ' && c < 'Ｚ'))
+        if ((c >= 'A' && c <= 'Z') || (c >= 'Ａ' && c <= 'Ｚ'))
             return true;
         return false;
     }

@@ -1622,7 +1622,7 @@ public class ProgramService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}//项目发布成功*个，失败*个
-		return "项目发布"+programIds.size()+"个，失败0个";
+		return "项目发布成功"+programIds.size()+"个，失败0个";
 		
 	}
 	/**

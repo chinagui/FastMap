@@ -49,6 +49,8 @@ public class RdVariableSpeed implements IObj {
 	private long vehicle = 0;
 
 	private String rowId;
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
@@ -157,7 +159,7 @@ public class RdVariableSpeed implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	public List<IRow> getVias() {
@@ -170,6 +172,7 @@ public class RdVariableSpeed implements IObj {
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -280,7 +283,12 @@ public class RdVariableSpeed implements IObj {
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//		JSONObject json = JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 
 		return json;
 	}

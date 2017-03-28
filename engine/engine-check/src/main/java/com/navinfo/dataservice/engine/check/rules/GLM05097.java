@@ -141,7 +141,7 @@ public class GLM05097 extends baseRule{
 		sb.append("        RLF.FORM_OF_WAY <> 14 OR RL.DIRECT NOT IN (2, 3))               ");
 		
 		String sql = sb.toString();
-		log.info("RdLink GLM05101 sql:" + sql);
+		log.info("RdLink GLM05097 sql:" + sql);
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);
@@ -213,7 +213,7 @@ public class GLM05097 extends baseRule{
 		
 		
 		String sql = sb.toString();
-		log.info("RdBranch GLM05101 sql:" + sql);
+		log.info("RdBranch GLM05097 sql:" + sql);
 		DatabaseOperator getObj = new DatabaseOperator();
 		List<Object> resultList = new ArrayList<Object>();
 		resultList = getObj.exeSelect(this.getConn(), sql);

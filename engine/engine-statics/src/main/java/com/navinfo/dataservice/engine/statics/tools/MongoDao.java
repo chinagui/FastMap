@@ -43,6 +43,7 @@ public class MongoDao {
 	}
 	public void insertMany(String col_name, List<Document> docs) {
 		try {
+			if(docs==null||docs.size()==0){return;}
 			md.getCollection(col_name).insertMany(docs);
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,17 +1,38 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.create;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class Command extends AbstractCommand {
 
 	private String requester;
 
-//	private int projectId;
+	private int relationshipType;
+	private List<Integer> vias = new ArrayList<>();
+
+	public int getRelationshipType() {
+		return relationshipType;
+	}
+
+	public void setRelationshipType(int relationshipType) {
+		this.relationshipType = relationshipType;
+	}
+
+	public List<Integer> getVias() {
+		return vias;
+	}
+
+	public void setVias(List<Integer> vias) {
+		this.vias = vias;
+	}
 
 	private int inLinkPid;
 
@@ -54,14 +75,6 @@ public class Command extends AbstractCommand {
 	public void setOutLinkPid(int outLinkPid) {
 		this.outLinkPid = outLinkPid;
 	}
-
-//	public int getProjectId() {
-//		return projectId;
-//	}
-//
-//	public void setProjectId(int projectId) {
-//		this.projectId = projectId;
-//	}
 	
 	@Override
 	public OperType getOperType() {
@@ -88,8 +101,6 @@ public class Command extends AbstractCommand {
 
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
-
-//		this.projectId = json.getInt("projectId");
 		this.setDbId(json.getInt("dbId"));
 
 		JSONObject data = json.getJSONObject("data");
@@ -103,6 +114,21 @@ public class Command extends AbstractCommand {
 		if(data.containsKey("branchType"))
 		{
 			this.branchType = data.getInt("branchType");
+		}
+		this.setRelationshipType(data.getInt("relationshipType"));
+		if (data.containsKey("vias")) {
+			JSONArray array = data.getJSONArray("vias");
+
+			if (array != null) {
+				for (int i = 0; i < array.size(); i++) {
+
+					int pid = array.getInt(i);
+
+					if (!vias.contains(pid)) {
+						vias.add(pid);
+					}
+				}
+			}
 		}
 	}
 

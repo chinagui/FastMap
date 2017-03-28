@@ -53,34 +53,27 @@ public class Operation implements IOperation {
 				.getRelationShipType(command.getNodePid(),
 						command.getOutLinkPid()));
 
-		List<Integer> viaLinks = new ArrayList<Integer>();
+		if (this.command.getRelationshipType() == 2) {
 
-		if (directroute.getRelationshipType() == 2) {
+			int seqNum = 1;
 
-			viaLinks = calLinkOperateUtils.calViaLinks(conn,
-					command.getInLinkPid(), command.getNodePid(),
-					command.getOutLinkPid());
+			List<IRow> vias = new ArrayList<IRow>();
+
+			for (Integer linkPid : this.command.getVias()) {
+				RdDirectrouteVia via = new RdDirectrouteVia();
+
+				via.setPid(directroute.getPid());
+
+				via.setLinkPid(linkPid);
+
+				via.setSeqNum(seqNum);
+
+				vias.add(via);
+
+				seqNum++;
+			}
+			directroute.setVias(vias);
 		}
-
-		int seqNum = 1;
-
-		List<IRow> vias = new ArrayList<IRow>();
-
-		for (Integer linkPid : viaLinks) {
-			RdDirectrouteVia via = new RdDirectrouteVia();
-
-			via.setPid(directroute.getPid());
-
-			via.setLinkPid(linkPid);
-
-			via.setSeqNum(seqNum);
-
-			vias.add(via);
-
-			seqNum++;
-		}
-
-		directroute.setVias(vias);
 
 		result.insertObject(directroute, ObjStatus.INSERT, directroute.pid());
 

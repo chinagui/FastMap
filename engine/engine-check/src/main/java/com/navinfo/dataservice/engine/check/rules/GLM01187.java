@@ -48,11 +48,11 @@ public class GLM01187 extends baseRule {
                         continue;
 
                     log.append(RdLinkFormUtils.formToChi(form.getFormOfWay()) + "与" + buffer.substring(0, buffer
-                            .length() - 1) + "FORM属性值不匹配;");
+                            .length() - 1) + "FORM属性值不匹配; ");
                 }
                 if (StringUtils.isNotEmpty(log.toString())) {
                     setCheckResult("", "[RD_LINK," + ((RdLinkForm) row).getLinkPid() + "]", 0, log.substring(0, log
-                            .length() - 1));
+                            .length() - 2));
                 }
             }
         }
@@ -60,7 +60,7 @@ public class GLM01187 extends baseRule {
 
     private static Map<Integer, List<Integer>> CHECK_RULE = new HashMap() {{
         put(10, Arrays.asList(1, 2, 11));
-        put(11, Arrays.asList(1));
+        put(11, Arrays.asList(37));
         put(12, Arrays.asList(1, 2));
         put(13, Arrays.asList(1));
         put(14, Arrays.asList(1, 2, 37, 50));

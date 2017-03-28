@@ -60,7 +60,7 @@ public class GLM01221 extends baseRule {
         }
         if (formLog.length() > 0) {
             setCheckResult("", "[RD_LINK," + link.pid() + "]", 0, RdLinkUtils.kindToChi(kind) + "LINK与" + formLog
-                    .substring(0, formLog.length() - 1) + "FORM属性值不匹配");
+                    .substring(0, formLog.length() - 2) + " FORM属性值不匹配");
         }
     }
 

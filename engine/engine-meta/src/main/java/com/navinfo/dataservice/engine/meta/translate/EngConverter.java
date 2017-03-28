@@ -27,8 +27,10 @@ public class EngConverter {
 
     private boolean bConvNum = false;
 
-    public String convertEng(String sourceText, String pinyin, String splitWord, String splitEngWord) throws IOException {
-        if (StringUtils.isEmpty(sourceText)) return "";
+    public String convertEng(String sourceText, String pinyin, String splitWord, String splitEngWord) throws
+            IOException {
+        if (StringUtils.isEmpty(sourceText))
+            return "";
         return convertAll(sourceText, pinyin, splitWord, splitEngWord);
     }
 
@@ -113,7 +115,12 @@ public class EngConverter {
                 textTemps += "/";
 
             if (Pattern.compile(regex).matcher(word).matches()) {
-                if (i + 1 >= words.length) break;
+                if (words.length == 1) {
+                    textTemps += word;
+                    break;
+                }
+                if (i + 1 >= words.length)
+                    break;
                 String oneWord = words[i + 1];
                 if (i + 2 < words.length) {
                     String twoWord = oneWord + words[i + 2];
@@ -191,7 +198,8 @@ public class EngConverter {
                                     flag = false;
                                 }
                             }
-                            strPy = Arrays.toString(strList.toArray()).replaceAll("\\[", "").replaceAll("]", "").replaceAll(",", "");
+                            strPy = Arrays.toString(strList.toArray()).replaceAll("\\[", "").replaceAll("]", "")
+                                    .replaceAll(",", "");
                             strPy = strPy.replaceAll("’", " ");
                         }
                         strPy = strPy.replace(" ", "@");
@@ -267,7 +275,7 @@ public class EngConverter {
         textNew = textNew.replace("22222", " ");
         // 加混淆音分隔
         if (bConfuseMark) {
-//            textNew = self.convUtil.AddConfuseMark(strNew)
+            //            textNew = self.convUtil.AddConfuseMark(strNew)
         }
         textNew = textNew.replace("33333", " ");
         if (type == 1) {

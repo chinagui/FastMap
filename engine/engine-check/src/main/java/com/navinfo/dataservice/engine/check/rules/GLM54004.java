@@ -87,6 +87,7 @@ public class GLM54004 extends baseRule {
 		 sb.append(" FROM RD_TMCLOCATION_LINK RTL, RD_LINK_LIMIT RLM");
 		sb.append(" WHERE RLM.LINK_PID = "+pid);
 		sb.append(" AND RLM.TYPE = 2 AND RLM.TIME_DOMAIN IS NULL");
+		sb.append(" AND RTL.LINK_PID = RLM.LINK_PID");
 		sb.append(" AND RTL.U_RECORD <>2 AND RLM.U_RECORD <>2");
 		String sql = sb.toString();
 		log.info("后检查GLM54004--sql:" + sql);

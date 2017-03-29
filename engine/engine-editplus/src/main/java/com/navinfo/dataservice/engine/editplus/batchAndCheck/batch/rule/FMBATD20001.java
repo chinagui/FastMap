@@ -40,9 +40,9 @@ public class FMBATD20001 extends BasicBatchRule {
 		}
 		List<IxPoiGasstation> gasstationsList= poiObj.getIxPoiGasstations();
 		for (IxPoiGasstation gasstation:gasstationsList) {
-//			if (!gasstation.getHisOpType().equals(OperationType.INSERT) && !gasstation.getHisOpType().equals(OperationType.UPDATE)) {
-//				continue;
-//			}
+			if (!gasstation.getHisOpType().equals(OperationType.INSERT) && !gasstation.getHisOpType().equals(OperationType.UPDATE)) {
+				continue;
+			}
 			String oilType = gasstation.getOilType();
 			String egType = gasstation.getEgType();
 			String mgType = gasstation.getMgType();
@@ -57,10 +57,12 @@ public class FMBATD20001 extends BasicBatchRule {
 					}
 				}
 			} else {
-				if (fuelType.indexOf("|1")>0) {
-					fuelType = fuelType.replace("|1", "");
-				} else if (fuelType.indexOf("1")>0) {
-					fuelType = fuelType.replace("1", "");
+				if (StringUtils.isNotEmpty(fuelType)) {
+					if (fuelType.indexOf("|1")>0) {
+						fuelType = fuelType.replace("|1", "");
+					} else if (fuelType.indexOf("1")>0) {
+						fuelType = fuelType.replace("1", "");
+					}
 				}
 			}
 			if (StringUtils.isNotEmpty(egType)) {
@@ -72,10 +74,12 @@ public class FMBATD20001 extends BasicBatchRule {
 					}
 				}
 			} else {
-				if (fuelType.indexOf("|6")>0) {
-					fuelType = fuelType.replace("|6", "");
-				} else if (fuelType.indexOf("6")>0) {
-					fuelType = fuelType.replace("6", "");
+				if (StringUtils.isNotEmpty(fuelType)) {
+					if (fuelType.indexOf("|6")>0) {
+						fuelType = fuelType.replace("|6", "");
+					} else if (fuelType.indexOf("6")>0) {
+						fuelType = fuelType.replace("6", "");
+					}
 				}
 			}
 			if (StringUtils.isNotEmpty(mgType)) {
@@ -87,10 +91,12 @@ public class FMBATD20001 extends BasicBatchRule {
 					}
 				}
 			} else {
-				if (fuelType.indexOf("|2")>0) {
-					fuelType = fuelType.replace("|2", "");
-				} else if (fuelType.indexOf("2")>0) {
-					fuelType = fuelType.replace("2", "");
+				if (StringUtils.isNotEmpty(fuelType)) {
+					if (fuelType.indexOf("|2")>0) {
+						fuelType = fuelType.replace("|2", "");
+					} else if (fuelType.indexOf("2")>0) {
+						fuelType = fuelType.replace("2", "");
+					}
 				}
 			}
 			

@@ -979,9 +979,11 @@ public class TaskService {
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
+			sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND p.latest=1");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
 			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
@@ -1039,6 +1041,8 @@ public class TaskService {
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
+			sb.append("                   AND t.latest=1");
+			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
 			sb.append("	             ) TASK_LIST");
@@ -2286,6 +2290,31 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 任务关闭再开启，需要对应：任务关闭再开启后，生成一条新的任务记录，属性全部复制，状态=草稿。原来任务关联的子任务不继承到新任务中
+	 * @param userId
+	 * @param taskId
+	 * @throws ServiceException
+	 */
+	public void reOpen(Long userId,int taskId)  throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			int newTaskId=TaskOperation.getNewTaskId(conn);
+			//根据新任务号，复制原有任务的信息（task/task_grid_mapping）
+			TaskOperation.copyTask(conn,userId,newTaskId,taskId);
+			//旧任务状态变更为失效
+			TaskOperation.updateLatest(conn, taskId);
+			//任务对应的block若为关闭，则同步更新为已规划，否则不动
+			TaskOperation.reOpenBlockByTask(conn,newTaskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("关闭任务重新开启失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

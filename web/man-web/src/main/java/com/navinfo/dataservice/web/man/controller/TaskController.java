@@ -481,4 +481,28 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	/**
+	 * 任务关闭再开启，需要对应：任务关闭再开启后，生成一条新的任务记录，属性全部复制，状态=草稿。原来任务关联的子任务不继承到新任务中
+	 * 应用场景：管理平台-生管角色
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/reOpen")
+	public ModelAndView reOpen(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId=dataJson.getInt("taskId");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			TaskService.getInstance().reOpen(userId,taskId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

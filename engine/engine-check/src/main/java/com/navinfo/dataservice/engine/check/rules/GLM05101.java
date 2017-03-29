@@ -70,6 +70,9 @@ public class GLM05101 extends baseRule{
 			if(rdBranchDetail.changedFields().get("patternCode")==null){
 				flg = true;
 			}
+			else if(rdBranchDetail.changedFields().get("patternCode").toString().isEmpty()){
+				flg = true;
+			}
 		}
 		if(flg){
 			checkRdBranch(rdBranchDetail.getBranchPid());

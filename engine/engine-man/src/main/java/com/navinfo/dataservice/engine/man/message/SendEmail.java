@@ -39,7 +39,7 @@ public class SendEmail {
 		try {
 			String VALUE_SMTP=SystemConfigFactory.getSystemConfig().getValue(PropConstant.valueSmtp);
 			String SEND_EMAil=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendEmail);
-			String SEND_USER=SEND_EMAil;//SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendUser);
+			String SEND_USER=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendUser);
 			String SEND_PWD=SystemConfigFactory.getSystemConfig().getValue(PropConstant.sendPwd);
 			//SEND_EMAil="fastmap";
 			SendEmailUtil.sendEmail(VALUE_SMTP, SEND_EMAil, SEND_USER, SEND_PWD, toMail, mailTitle, mailContent);

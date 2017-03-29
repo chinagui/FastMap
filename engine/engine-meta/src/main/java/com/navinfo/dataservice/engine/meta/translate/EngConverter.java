@@ -115,12 +115,10 @@ public class EngConverter {
                 textTemps += "/";
 
             if (Pattern.compile(regex).matcher(word).matches()) {
-                if (words.length == 1) {
+                if (i + 1 >= words.length){
                     textTemps += word;
                     break;
                 }
-                if (i + 1 >= words.length)
-                    break;
                 String oneWord = words[i + 1];
                 if (i + 2 < words.length) {
                     String twoWord = oneWord + words[i + 2];
@@ -154,8 +152,14 @@ public class EngConverter {
         String strPy2 = "";
         String[] wordSplist = text.split("/");
         Map<String, String> indexMap = TranslateDictData.getInstance().getDictWordIndex();
+        Map<String, String> chi2EngMap = TranslateDictData.getInstance().getDictChi2Eng();
         Map<String, List<Map<String, String>>> map = TranslateDictData.getInstance().getDictWord();
         for (String strTmp : wordSplist) {
+            if(chi2EngMap.containsKey(strTmp)) {
+                textNew += " " + chi2EngMap.get(strTmp) + " ";
+                continue;
+            }
+
             if (map.containsKey(strTmp)) {
                 List<Map<String, String>> wordList = map.get(strTmp);
                 int iFound = 0;

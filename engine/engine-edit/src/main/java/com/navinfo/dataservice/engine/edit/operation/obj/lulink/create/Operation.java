@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.lulink.create;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -127,6 +129,7 @@ public class Operation implements IOperation {
 				maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
 						(int) map.get(g).get("e"));
 				Iterator<String> it = meshes.iterator();
+                List<String> geoList = new ArrayList<>();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
 					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g,
@@ -146,15 +149,16 @@ public class Operation implements IOperation {
 					else
 					{
 						geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-						LuLinkOperateUtils.createLuLinkWithMesh(geomInter, maps,
-								result);
+                        // 创建图幅覆盖线时防止重复创建
+                        if (geoList.contains(geomInter.toString()) || geoList.contains(geomInter.reverse().toString()))
+                            continue;
+                        else
+                            geoList.add(geomInter.toString());
+						LuLinkOperateUtils.createLuLinkWithMesh(geomInter, maps, result);
 					}
-
 				}
 			}
-
 		}
-
 	}
 
 	/*

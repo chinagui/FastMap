@@ -4,10 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
@@ -18,6 +22,8 @@ import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
  * @Description TODO
  * 只要是做了车辆限制的道路（有时间段不检查）都不应该制作位置表信息，否则报log
  * 限制类型编辑	服务端后检查
+ * 时间段编辑（link限制表）	服务端后检查
+ * TMC图面编辑(新增)	服务端后检查
  */
 public class GLM54004 extends baseRule {
 
@@ -30,13 +36,38 @@ public class GLM54004 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
-			//限制类型编辑
-			if(row instanceof RdLinkLimit){
+			//新增rdtmclocation对象，检查子表数据
+			if (row instanceof RdTmclocation) {
+				RdTmclocation rdTmclocation = (RdTmclocation) row;
+				this.checkRdTmclocation(rdTmclocation);
+			}
+			//限制类型编辑,时间段编辑（link限制表）
+			else if(row instanceof RdLinkLimit){
 				RdLinkLimit rdLinkLimit = (RdLinkLimit) row;
 				this.checkRdLinkLimit(rdLinkLimit);
 			}
 		}
 
+	}
+
+	/**
+	 * @author Han Shaoming
+	 * @param rdTmclocation
+	 * @throws Exception 
+	 */
+	private void checkRdTmclocation(RdTmclocation rdTmclocation) throws Exception {
+		if(rdTmclocation.status().equals(ObjStatus.INSERT)){
+			List<IRow> tmcLocationLinks = rdTmclocation.getLinks();
+			for (IRow subRow : tmcLocationLinks) {
+				RdTmclocationLink rdTmclocationLink = (RdTmclocationLink) subRow;
+				boolean check = this.check(rdTmclocationLink.getLinkPid());
+				if(check){
+					String target = "[RD_TMCLOCATION," + rdTmclocationLink.getGroupId() + "]";
+					this.setCheckResult("", target, 0);
+					return;
+				}
+			}
+		}
 	}
 
 	/**
@@ -54,6 +85,14 @@ public class GLM54004 extends baseRule {
 		}
 		else if(rdLinkLimit.status().equals(ObjStatus.UPDATE)){
 			Map<String, Object> changedFields = rdLinkLimit.changedFields();
+			if(changedFields != null && !changedFields.isEmpty()){
+				if(changedFields.containsKey("timeDomain")){
+					String timeDomain = (String) changedFields.get("timeDomain");
+					if(StringUtils.isEmpty(timeDomain)){
+						checkFlag = true;
+					}
+				}
+			}
 			if(changedFields != null && !changedFields.isEmpty()){
 				if(changedFields.containsKey("type")){
 					int type = (int) changedFields.get("type");

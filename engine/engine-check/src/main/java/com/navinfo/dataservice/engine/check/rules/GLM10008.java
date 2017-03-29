@@ -8,8 +8,6 @@ import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
-import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInterLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
@@ -34,10 +32,11 @@ public class GLM10008 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
-			if (obj instanceof RdInter) {
-				RdInter rdInter = (RdInter) obj;
-				checkRdInter(rdInter);
-			} else if (obj instanceof RdLink) {
+//			if (obj instanceof RdInter) {
+//				RdInter rdInter = (RdInter) obj;
+//				checkRdInter(rdInter);
+//			}    // 3.29修改，取消新增CRFI的触发时机
+			if (obj instanceof RdLink) {
 				RdLink rdLink = (RdLink) obj;
 				checkRdLink(rdLink);
 			} else if (obj instanceof RdLinkForm) {
@@ -201,37 +200,37 @@ public class GLM10008 extends baseRule {
 	 * @param rdInter
 	 * @throws Exception
 	 */
-	private void checkRdInter(RdInter rdInter) throws Exception {
-		// 制作坡度的退出link和延长LINK不能为CRFI的构成link
-		List<IRow> links = rdInter.getLinks();
-		List<Integer> linkPids = new ArrayList<Integer>();
-		for (IRow link:links) {
-			RdInterLink interLink = (RdInterLink) link;
-			linkPids.add(interLink.getLinkPid());
-		}
-		String pids =  StringUtils.join(linkPids, ",");
-		StringBuilder sb = new StringBuilder();
-		sb.append("select 1");
-		sb.append(" from rd_slope s");
-		sb.append(" where (s.link_pid in ("+ pids +")");
-		sb.append(" or exists");
-		sb.append(" (select 1");
-		sb.append(" from rd_slope_via v");
-		sb.append(" where v.slope_pid = s.pid");
-		sb.append(" and v.link_pid in ("+ pids +")))");
-		sb.append(" and s.u_record <> 2");
-		
-		String sql = sb.toString();
-		log.info("RdInter后检查GLM10008:" + sql);
-
-		DatabaseOperator getObj = new DatabaseOperator();
-		List<Object> resultList = new ArrayList<Object>();
-		resultList = getObj.exeSelect(this.getConn(), sql);
-
-		if(resultList.size()>0){
-			String target = "[RD_INTER," + rdInter.getPid() + "]";
-			this.setCheckResult("", target, 0);
-		}
-	}
+//	private void checkRdInter(RdInter rdInter) throws Exception {
+//		// 制作坡度的退出link和延长LINK不能为CRFI的构成link
+//		List<IRow> links = rdInter.getLinks();
+//		List<Integer> linkPids = new ArrayList<Integer>();
+//		for (IRow link:links) {
+//			RdInterLink interLink = (RdInterLink) link;
+//			linkPids.add(interLink.getLinkPid());
+//		}
+//		String pids =  StringUtils.join(linkPids, ",");
+//		StringBuilder sb = new StringBuilder();
+//		sb.append("select 1");
+//		sb.append(" from rd_slope s");
+//		sb.append(" where (s.link_pid in ("+ pids +")");
+//		sb.append(" or exists");
+//		sb.append(" (select 1");
+//		sb.append(" from rd_slope_via v");
+//		sb.append(" where v.slope_pid = s.pid");
+//		sb.append(" and v.link_pid in ("+ pids +")))");
+//		sb.append(" and s.u_record <> 2");
+//		
+//		String sql = sb.toString();
+//		log.info("RdInter后检查GLM10008:" + sql);
+//
+//		DatabaseOperator getObj = new DatabaseOperator();
+//		List<Object> resultList = new ArrayList<Object>();
+//		resultList = getObj.exeSelect(this.getConn(), sql);
+//
+//		if(resultList.size()>0){
+//			String target = "[RD_INTER," + rdInter.getPid() + "]";
+//			this.setCheckResult("", target, 0);
+//		}
+//	}
 
 }

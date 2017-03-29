@@ -248,6 +248,8 @@ public class Operation implements IOperation {
 
 		Coordinate[] linkCoor = null;
 
+		OpRefRdGsc opRefRdGsc = new OpRefRdGsc(this.conn);
+		
 		if (row instanceof RdLink) {
 			RdLink linkObj = (RdLink) row;
 
@@ -263,6 +265,8 @@ public class Operation implements IOperation {
 				result.insertObject(linkObj, ObjStatus.UPDATE, linkObj.pid());
 			}
 
+			opRefRdGsc.handleSameLink(linkObj, jsonObj, this.command.getDbId(), result);
+			
 			linkCoor = GeoTranslator.geojson2Jts(jsonObj, 100000, 0).getCoordinates();
 		}
 		if (row instanceof RwLink) {
@@ -329,5 +333,5 @@ public class Operation implements IOperation {
 		}
 
 		return jsonObj;
-	}
+	}	
 }

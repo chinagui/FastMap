@@ -79,7 +79,7 @@ public class LuLinkOperateUtils {
         result.setPrimaryPid(link.pid());
         result.insertObject(link, ObjStatus.INSERT, link.pid());
 
-        if (null == sourceLink || meshes.size() > 1) {
+        if (null == sourceLink) {
             // 创建LuLinkKind
             LuLinkKind kind = new LuLinkKind();
             kind.setLinkPid(link.pid());

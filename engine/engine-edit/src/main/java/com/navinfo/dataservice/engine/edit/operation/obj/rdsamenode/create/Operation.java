@@ -75,8 +75,6 @@ public class Operation implements IOperation {
 
         String mainTableName = "";
 
-        Map<Integer, ObjType> nodeMap = new HashMap<>();
-
         // 设置子表rd_samenode_part
         for (int i = 0; i < nodeArray.size(); i++) {
             JSONObject obj = nodeArray.getJSONObject(i);
@@ -94,9 +92,7 @@ public class Operation implements IOperation {
                 mainNodePid = nodePid;
 
                 mainTableName = tableName;
-            } else {
-                nodeMap.put(nodePid, objType);
-            }
+            } 
 
             RdSameNodePart sameNodePart = new RdSameNodePart();
 
@@ -112,54 +108,72 @@ public class Operation implements IOperation {
         result.insertObject(rdSameNode, ObjStatus.INSERT, rdSameNode.getPid());
 
         // 更新点的坐标
-        updateNodeGeo(mainNodePid, mainTableName.toUpperCase(), nodeMap, result);
+        updateNodeGeo(mainNodePid, mainTableName.toUpperCase(), nodeArray, result);
     }
 
-    /**
-     * 维护点的坐标
-     *
-     * @param mainNodePid
-     * @param nodeMap
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     */
-    private void updateNodeGeo(int mainNodePid, String tableName, Map<Integer, ObjType> nodeMap, Result result)
-            throws Exception {
-        if (mainNodePid != 0 && StringUtils.isNotEmpty(tableName)) {
-            RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+    
+    
+	/**
+	 * 维护点的坐标
+	 * 
+	 * @param mainNodePid
+	 * @param nodeMap
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 */
+	private void updateNodeGeo(int mainNodePid, String tableName,
+			JSONArray nodeArray, Result result) throws Exception {
 
-            Geometry nodeGeo = sameNodeSelector.getGeoByNodePidAndTableName(mainNodePid, tableName, true);
+		if (mainNodePid == 0 || StringUtils.isEmpty(tableName)) {
+			return;
+		}
 
-            // 组装参数
-            JSONObject updateContent = new JSONObject();
+		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
 
-            updateContent.put("dbId", command.getDbId());
+		Geometry nodeGeo = sameNodeSelector.getGeoByNodePidAndTableName(
+				mainNodePid, tableName, true);
 
-            JSONObject data = new JSONObject();
+		// 组装参数
+		JSONObject updateContent = new JSONObject();
 
-            data.put("longitude", nodeGeo.getCoordinate().x);
+		updateContent.put("dbId", command.getDbId());
 
-            data.put("latitude", nodeGeo.getCoordinate().y);
+		JSONObject data = new JSONObject();
 
-            updateContent.put("data", data);
+		data.put("longitude", nodeGeo.getCoordinate().x);
 
-            for (Map.Entry<Integer, ObjType> entry : nodeMap.entrySet()) {
-                int nodePid = entry.getKey();
+		data.put("latitude", nodeGeo.getCoordinate().y);
 
-                ObjType type = entry.getValue();
+		updateContent.put("data", data);
 
-                Geometry moveNode = sameNodeSelector.getGeoByNodePidAndTableName(nodePid, ReflectionAttrUtils
-                        .getTableNameByObjType(type), true);
+		for (int i = 0; i < nodeArray.size(); i++) {
 
-                if (moveNode.distance(nodeGeo) != 0) {
-                    updateContent.put("objId", nodePid);
+			JSONObject obj = nodeArray.getJSONObject(i);
 
-                    // 调用移动接口
-                    moveNode(type, updateContent, result);
-                }
-            }
-        }
-    }
+			int isMain = obj.getInt("isMain");
+
+			if (isMain == 1) {
+
+				continue;
+			}
+
+			int nodePid = obj.getInt("nodePid");
+
+			ObjType objType = ObjType.valueOf(obj.getString("type"));
+
+			Geometry moveNode = sameNodeSelector.getGeoByNodePidAndTableName(
+					nodePid,
+					ReflectionAttrUtils.getTableNameByObjType(objType), true);
+
+			if (moveNode.distance(nodeGeo) != 0) {
+
+				updateContent.put("objId", nodePid);
+
+				// 调用移动接口
+				moveNode(objType, updateContent, result);
+			}
+		}
+	}
 
     /**
      * 调用点的移动接口，维护点的坐标

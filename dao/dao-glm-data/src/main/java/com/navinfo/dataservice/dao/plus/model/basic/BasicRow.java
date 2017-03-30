@@ -223,6 +223,7 @@ public abstract class BasicRow{
 		List<String> columnName = new ArrayList<String>();
 		List<String> columnPlaceholder = new ArrayList<String>();
 		List<Object> columnValues = new ArrayList<Object>();
+		System.out.println("this.opType: "+this.opType);
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName);
 			//字段信息
@@ -284,9 +285,12 @@ public abstract class BasicRow{
 	 */
 	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnNames,
 			List<String> columnPlaceholder, List<Object> columnValues, OperationType operationType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+		System.out.println("columns :"+columns.size());
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
 			GlmColumn glmColumn = entry.getValue();	
+			System.out.println("entry.getKey(): "+entry.getKey());
 			Object columnValue = getAttrByColName(entry.getKey());
+			System.out.println("columnValue: "+columnValue);
 			//如果字段为空,则不拼入sql
 			if(columnValue==null){
 				continue;

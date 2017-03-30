@@ -41,7 +41,7 @@ public class RdVoiceguideDetail implements IObj {
 
 	private List<IRow> vias = new ArrayList<IRow>();
 
-	public Map<String, RdVoiceguideVia> directrouteViaMap = new HashMap<String, RdVoiceguideVia>();
+	public Map<String, RdVoiceguideVia> viaMap = new HashMap<String, RdVoiceguideVia>();
 
 	public int getPid() {
 		return pid;
@@ -325,7 +325,7 @@ public class RdVoiceguideDetail implements IObj {
 
 		Map<Class<? extends IRow>, Map<String, ?>> childMap = new HashMap<Class<? extends IRow>, Map<String, ?>>();
 
-		childMap.put(RdVoiceguideVia.class, directrouteViaMap);
+		childMap.put(RdVoiceguideVia.class, viaMap);
 
 		return childMap;
 	}

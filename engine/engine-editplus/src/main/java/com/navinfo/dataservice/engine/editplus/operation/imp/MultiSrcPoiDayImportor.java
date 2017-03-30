@@ -81,13 +81,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();
 			if(addPois!=null&&addPois.size()>0){
-				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,dbId,addPois);
+				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,addPois);
 				result.putAll(ixPoiObjAdd);
 			}
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
 			if(updatePois!=null&&updatePois.size()>0){
-				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,dbId,updatePois);
+				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
 				result.putAll(ixPoiObjUpdate);
 			}
 			//删除
@@ -108,7 +108,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IxPoiObj> improtAdd(Connection conn,int dbId,Map<String, JSONObject> addPois)throws Exception{
+	public List<IxPoiObj> improtAdd(Connection conn,Map<String, JSONObject> addPois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		//排除fid已存在的
 		filterAddedPoi(addPois);
@@ -138,7 +138,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IxPoiObj> improtUpdate(Connection conn,int dbId,Map<String, JSONObject> updatePois)throws Exception{
+	public List<IxPoiObj> improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();

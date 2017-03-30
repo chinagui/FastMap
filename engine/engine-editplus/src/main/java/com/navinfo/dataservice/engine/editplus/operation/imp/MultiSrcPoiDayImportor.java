@@ -14,6 +14,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
+import sun.tools.tree.ThisExpression;
+
 import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -53,6 +55,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	protected Map<String,String> errLog = new HashMap<String,String>();
 	protected List<PoiRelation> parentPid = new ArrayList<PoiRelation>();
 	protected Map<Long,String> sourceTypes = new HashMap<Long,String>();
+	private int dbId;
 	
 	public Map<Long, String> getSourceTypes() {
 		return sourceTypes;
@@ -73,17 +76,18 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
+		this.dbId= ((MultiSrcPoiDayImportorCommand)cmd).getDbId();
 		if(pois!=null){
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();
 			if(addPois!=null&&addPois.size()>0){
-				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn, addPois);
+				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,dbId,addPois);
 				result.putAll(ixPoiObjAdd);
 			}
 			//修改
 			Map<String, JSONObject> updatePois = pois.getUpdatePois();
 			if(updatePois!=null&&updatePois.size()>0){
-				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,dbId,updatePois);
 				result.putAll(ixPoiObjUpdate);
 			}
 			//删除
@@ -104,7 +108,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IxPoiObj> improtAdd(Connection conn,Map<String, JSONObject> addPois)throws Exception{
+	public List<IxPoiObj> improtAdd(Connection conn,int dbId,Map<String, JSONObject> addPois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		//排除fid已存在的
 		filterAddedPoi(addPois);
@@ -134,7 +138,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<IxPoiObj> improtUpdate(Connection conn,Map<String, JSONObject> updatePois)throws Exception{
+	public List<IxPoiObj> improtUpdate(Connection conn,int dbId,Map<String, JSONObject> updatePois)throws Exception{
 		List<IxPoiObj> ixPoiObjList = new ArrayList<IxPoiObj>();
 		//获取所需的子表
 		Set<String> tabNames = this.getTabNames();
@@ -384,26 +388,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				parentPid.add(pr);
 				
 				//新增poi批level
-				JSONObject jsonObj=new JSONObject();
-				jsonObj.put("pid",Integer.valueOf(String.valueOf(poi.objPid())));
-				jsonObj.put("poi_num",ixPoi.getPoiNum());
-				jsonObj.put("kindCode",ixPoi.getKindCode());
-				jsonObj.put("chainCode",ixPoi.getChain());
-				IxPoiName nameObj = poi.getOfficeOriginCHName();
-				String name="";
-				if(nameObj!=null){name=nameObj.getName();}
-				jsonObj.put("name",name);
-				jsonObj.put("level",ixPoi.getLevel());
-				List<IxPoiHotel> hotels = poi.getIxPoiHotels();
-				jsonObj.put("rating",0);
-				if(hotels!=null&&hotels.size()>0){
-					jsonObj.put("rating",hotels.get(0).getRating());
-				}
-				MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
-				String levelStr=metadataApi.getLevelForMulti(jsonObj);
-				if(StringUtils.isNotEmpty(levelStr)){
-					ixPoi.setLevel(levelStr);
-				}
+				usdateLevel(poi);
 				
 				//多源类型
 				String sourceProvider  = null;
@@ -760,16 +745,21 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	 */
 	public void usdateLevel(IxPoiObj poi) throws Exception{		
 		JSONObject jsonObj=new JSONObject();
+		jsonObj.put("dbId", this.dbId);
 		jsonObj.put("pid",Integer.valueOf(String.valueOf(poi.objPid())));
 		IxPoi poiMain=(IxPoi) poi.getMainrow();
 		jsonObj.put("poi_num",poiMain.getPoiNum());
 		jsonObj.put("kindCode",poiMain.getKindCode());
-		jsonObj.put("chainCode",poiMain.getChain());
+		String chain = poiMain.getChain();
+		jsonObj.put("chainCode","");
+		if(StringUtils.isNotEmpty(chain)){jsonObj.put("chainCode",chain);}
 		IxPoiName nameObj = poi.getOfficeOriginCHName();
 		String name="";
 		if(nameObj!=null){name=nameObj.getName();}
 		jsonObj.put("name",name);
-		jsonObj.put("level",poiMain.getLevel());
+		String level = poiMain.getLevel();
+		jsonObj.put("level","");
+		if(StringUtils.isNotEmpty(level)){jsonObj.put("level",level);}
 		List<IxPoiHotel> hotels = poi.getIxPoiHotels();
 		jsonObj.put("rating",0);
 		if(hotels!=null&&hotels.size()>0){

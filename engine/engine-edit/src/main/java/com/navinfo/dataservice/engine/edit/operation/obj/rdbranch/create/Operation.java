@@ -97,40 +97,24 @@ public class Operation implements IOperation {
 				command.getOutLinkPid()));
 
 		branch.setMesh(meshId);
-
-		List<Integer> viaLinks = this.calViaLinks(command.getInLinkPid(),
-				command.getNodePid(), command.getOutLinkPid());
-
 		int seqNum = 1;
-
-		//路口关系的分歧不记录经过线
-		if(branch.getRelationshipType() != 1)
-		{
-			if(viaLinks.size() <= 32)
-			{
+		// 路口关系的分歧不记录经过线
+		if (this.command.getRelationshipType() == 2) {
+			if (this.command.getVias().size() <= 32) {
 				List<IRow> vias = new ArrayList<IRow>();
-				
-				for (Integer linkPid : viaLinks) {
+				for (Integer linkPid : this.command.getVias()) {
 					RdBranchVia via = new RdBranchVia();
-
 					via.setBranchPid(branch.getPid());
-
 					via.setLinkPid(linkPid);
-
 					via.setSeqNum(seqNum);
-
 					vias.add(via);
-
 					via.setMesh(meshId);
-
 					seqNum++;
 				}
-
 				branch.setVias(vias);
-			}
-			else
-			{
-				throw new Exception("分歧经过线数目不能超过32条:"+viaLinks.size());
+			} else {
+				throw new Exception("分歧经过线数目不能超过32条:"
+						+ this.command.getVias().size());
 			}
 		}
 
@@ -190,76 +174,6 @@ public class Operation implements IOperation {
 		return 1;
 	}
 
-	private List<Integer> calViaLinks(int inLinkPid, int nodePid, int outLinkPid)
-			throws Exception {
-
-		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, inLinkPid);
-
-			pstmt.setInt(2, nodePid);
-
-			pstmt.setString(3, String.valueOf(outLinkPid));
-
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
-
-				String viaPath = resultSet.getString("via_path");
-
-				List<Integer> viaLinks = new ArrayList<Integer>();
-
-				if (viaPath != null) {
-
-					String[] splits = viaPath.split(",");
-
-					for (String s : splits) {
-						if (!s.equals("")) {
-
-							int viaPid = Integer.valueOf(s);
-
-							if (viaPid == inLinkPid || viaPid == outLinkPid) {
-								continue;
-							}
-
-							viaLinks.add(viaPid);
-						}
-					}
-
-				}
-
-				return viaLinks;
-			}
-
-		} catch (Exception e) {
-			if(e.getMessage().contains("value too large"))
-			{
-				throw new Exception("经过线长度超过最大长度限制");
-			}
-			else
-			{
-				throw e;
-			}
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-			}
-
-		}
-
-		return null;
-	}
-
 	private void createBranchDetail(RdBranch branch, boolean flag, Result result)
 			throws Exception {
 		RdBranchDetail detail = new RdBranchDetail();
@@ -271,11 +185,11 @@ public class Operation implements IOperation {
 		detail.setBranchType(command.getBranchType());
 
 		detail.setMesh(branch.mesh());
-		//方面分歧默认声音方向为2
-		if(command.getBranchType() == 1){
+		// 方面分歧默认声音方向为2
+		if (command.getBranchType() == 1) {
 			detail.setVoiceDir(2);
 		}
-		if(command.getBranchType() == 3||command.getBranchType() == 4){
+		if (command.getBranchType() == 3 || command.getBranchType() == 4) {
 			detail.setVoiceDir(9);
 			detail.setEstabType(9);
 			detail.setNameKind(9);

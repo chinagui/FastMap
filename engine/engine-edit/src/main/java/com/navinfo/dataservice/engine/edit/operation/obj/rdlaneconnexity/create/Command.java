@@ -1,8 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlaneconnexity.create;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -17,7 +14,15 @@ public class Command extends AbstractCommand {
 
 	private int nodePid;
 
-	private List<Integer> outLinkPids;
+	private JSONArray topos = new JSONArray();
+
+	public JSONArray getTopos() {
+		return topos;
+	}
+
+	public void setTopos(JSONArray topos) {
+		this.topos = topos;
+	}
 
 	private String laneInfo;
 
@@ -33,17 +38,6 @@ public class Command extends AbstractCommand {
 		return nodePid;
 	}
 
-	public void setNodePid(int nodePid) {
-		this.nodePid = nodePid;
-	}
-
-	public List<Integer> getOutLinkPids() {
-		return outLinkPids;
-	}
-
-	public void setOutLinkPids(List<Integer> outLinkPids) {
-		this.outLinkPids = outLinkPids;
-	}
 	public String getLaneInfo() {
 		return laneInfo;
 	}
@@ -77,19 +71,8 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("nodePid");
 
 		this.inLinkPid = data.getInt("inLinkPid");
-		
-		JSONArray array = data.getJSONArray("outLinkPids");
 
-		outLinkPids = new ArrayList<Integer>();
-
-		for (int i = 0; i < array.size(); i++) {
-
-			int pid = array.getInt(i);
-
-			if (!outLinkPids.contains(pid)) {
-				outLinkPids.add(pid);
-			}
-		}
+		this.setTopos(data.getJSONArray("topos"));
 
 		laneInfo = data.getString("laneInfo");
 

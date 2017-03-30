@@ -306,7 +306,6 @@ public class RdNameImportor {
 			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);
-			System.out.println(rdNameNew.getAdminName() +" : "+rdNameNew.getAdminId());
 			JSONObject json = JSONObject.fromObject(rdNameNew);
 			
 			result.put("flag", 1);

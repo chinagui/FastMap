@@ -58,12 +58,12 @@ public class LogReader {
 	public int getObjectState(int objPid, String objTable) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" WITH A AS\n");
-		sb.append(" (SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
+		sb.append(" (SELECT LO.ACT_ID, V.OB_PID, V. DT FROM LOG_OPERATION LO,(SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
 		sb.append(" WHERE T.OP_ID = P.OP_ID  AND T.OB_NM ='"+objTable+"' AND T.OB_PID="+objPid+"\n" );
-		sb.append(" GROUP BY OB_PID),\n");
+		sb.append(" GROUP BY OB_PID) V WHERE LO.OP_DT = V.DT),\n");
 		sb.append(" B AS \n");
 		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A \n");
-		sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.OP_DT = A.DT AND L.TB_NM ='"+ objTable+"'), \n");
+		sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.ACT_ID = A.ACT_ID AND L.TB_NM ='"+ objTable+"'), \n");
 		sb.append(" C AS \n"); 
 		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A \n");
 		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID) \n");

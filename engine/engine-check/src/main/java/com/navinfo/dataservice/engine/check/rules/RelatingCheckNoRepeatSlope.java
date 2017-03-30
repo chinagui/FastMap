@@ -16,15 +16,27 @@ public class RelatingCheckNoRepeatSlope extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof RdSlope && row.status() == ObjStatus.INSERT) {
-                RdSlope slope = (RdSlope) row;
-
-                List<RdSlope> slopeList = new RdSlopeSelector(getConn()).loadByOutLink(slope.getLinkPid(), false);
-                for (RdSlope s : slopeList) {
-                    if (slope.getNodePid() == s.getNodePid()) {
-                        setCheckResult("", "", 0);
+            if (row instanceof RdSlope ) {
+            	RdSlope slope = (RdSlope) row;
+            	if (row.status() == ObjStatus.INSERT) {
+                    List<RdSlope> slopeList = new RdSlopeSelector(getConn()).loadByOutLink(slope.getLinkPid(), false);
+                    for (RdSlope s : slopeList) {
+                        if (slope.getNodePid() == s.getNodePid()) {
+                            setCheckResult("", "", 0);
+                        }
                     }
-                }
+            	} else if (row.status() == ObjStatus.UPDATE) {
+            		// 3.30日新增触发时机，修改坡度
+            		if (slope.changedFields().containsKey("linkPid")) {
+            			int linkPid = Integer.parseInt(slope.changedFields().get("linkPid").toString());
+            			List<RdSlope> slopeList = new RdSlopeSelector(getConn()).loadByOutLink(linkPid, false);
+                        for (RdSlope s : slopeList) {
+                            if (slope.getNodePid() == s.getNodePid()) {
+                                setCheckResult("", "", 0);
+                            }
+                        }
+            		}
+            	}
             }
         }
     }

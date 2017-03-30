@@ -290,7 +290,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	 */
 	private String getBatchPoiCommonSql() {
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.gdbVersion);
+				PropConstant.seasonVersion);
 		return " UPDATE ix_poi p    \n"
 				+ "   SET p.geo_adjust_flag = 1 ,\n"
 				+ "       p.full_attr_flag = 1 ,  \n"

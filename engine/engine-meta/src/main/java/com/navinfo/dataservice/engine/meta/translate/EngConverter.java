@@ -151,7 +151,7 @@ public class EngConverter {
         String strPy = "";
         String strPy2 = "";
         String[] wordSplist = text.split("/");
-        Map<String, String> indexMap = TranslateDictData.getInstance().getDictWordIndex();
+        //Map<String, String> indexMap = TranslateDictData.getInstance().getDictWordIndex();
         Map<String, String> chi2EngMap = TranslateDictData.getInstance().getDictChi2Eng();
         Map<String, List<Map<String, String>>> map = TranslateDictData.getInstance().getDictWord();
         for (String strTmp : wordSplist) {

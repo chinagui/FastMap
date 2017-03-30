@@ -164,7 +164,7 @@ public class TranslateDictData {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getMetaConnection();
-            String sql = "SELECT JT,WM_CONCAT(PY) FROM (SELECT * FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER) GROUP BY JT ";
+            String sql = "SELECT JT,dbms_lob.substr(WM_CONCAT(PY)) FROM (SELECT * FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER) GROUP BY JT ";
             Map<String, List<String>> map = runner.query(conn, sql, new ParseDictonaryHandler());
             dictDictionary.putAll(map);
             logger.debug("加载字典表成功，共" + map.size() + "条数据");

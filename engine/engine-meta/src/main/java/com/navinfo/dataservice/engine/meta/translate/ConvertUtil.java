@@ -207,13 +207,10 @@ public class ConvertUtil {
     }
 
     public static String delSymbol(String text) {
-        if (text.indexOf("°Ｃ") > 0) {
-            text = text.replace("°Ｃ", " Degree ");
-        }
         Map<String, String> symbol = TranslateDictData.getInstance().getDictSymbolMap();
         for (Map.Entry<String, String> entry : symbol.entrySet()) {
             if (text.indexOf(entry.getKey()) >= 0) {
-                text = text.replaceAll(entry.getKey(), entry.getValue());
+                text = text.replaceAll(entry.getKey(), entry.getValue() + " ");
             }
         }
         return text;

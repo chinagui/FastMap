@@ -15,6 +15,7 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
 
 /**
+ * (删除)
  * @ClassName: PERMIT_CHECK_TMC_NUM
  * @author Zhang Xiaolong
  * @date 2016年11月25日 下午4:10:27

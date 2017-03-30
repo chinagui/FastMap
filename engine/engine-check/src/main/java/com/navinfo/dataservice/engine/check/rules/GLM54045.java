@@ -4,9 +4,11 @@
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocationLink;
@@ -37,12 +39,33 @@ public class GLM54045 extends baseRule {
 					setCheckResult(row,selector);
 				}
 			}
-			//直接新增子表
-			else if(obj instanceof RdTmclocationLink)
-			{
-				setCheckResult(obj,selector);
+			//TMC位置方向编辑
+			else if(obj instanceof RdTmclocationLink){
+				RdTmclocationLink rdTmclocationLink = (RdTmclocationLink) obj;
+				this.checkRdTmclocationLink(rdTmclocationLink);
 			}
 		}
+	}
+	
+	/**
+	 * @author Han Shaoming
+	 * @param rdTmclocationLink
+	 * @throws Exception 
+	 */
+	private void checkRdTmclocationLink(RdTmclocationLink rdTmclocationLink) throws Exception {
+		if(ObjStatus.UPDATE.equals(rdTmclocationLink.status())){
+			Map<String, Object> changedFields = rdTmclocationLink.changedFields();
+			if(changedFields != null && !changedFields.isEmpty()){
+				if(changedFields.containsKey("locDirect")){
+					int  locDirect = (int) changedFields.get("locDirect");
+					if(locDirect == 0){
+						String target = "[RD_TMCLOCATION," + rdTmclocationLink.getGroupId() + "]";
+						this.setCheckResult("", target, 0);
+					}
+				}
+			}
+		}
+		
 	}
 	
 	/**
@@ -61,6 +84,7 @@ public class GLM54045 extends baseRule {
 			RdLink rdLink = (RdLink) selector.loadByIdOnlyRdLink(link.getLinkPid(), true);
 			
 			this.setCheckResult(rdLink.getGeometry(), "[RD_TMCLOCATION,"+link.getGroupId()+"]", rdLink.getMeshId());
+			return;
 		}
 	}
 }

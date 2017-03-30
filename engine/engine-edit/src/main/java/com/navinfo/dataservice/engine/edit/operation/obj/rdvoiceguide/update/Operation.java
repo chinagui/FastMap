@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.IVia;
@@ -69,64 +70,171 @@ public class Operation implements IOperation {
 
 		JSONArray details = content.getJSONArray("details");
 
-		int deleteCount = 0;
+		int detailCount =command.getVoiceguide().getDetails().size();
 
 		for (int i = 0; i < details.size(); i++) {
 
 			JSONObject json = details.getJSONObject(i);
 
-			if (json.containsKey("objStatus")
-					&& ObjStatus.DELETE.toString().equals(
-							json.getString("objStatus"))) {
-
-				deleteCount++;
-			}
-		}
-
-		if (deleteCount == command.getVoiceguide().getDetails().size()) {
-
-			result.insertObject(command.getVoiceguide(), ObjStatus.DELETE,
-					command.getVoiceguide().pid());
-
-			return null;
-		}
-
-		for (int i = 0; i < details.size(); i++) {
-
-			JSONObject json = details.getJSONObject(i);
-
-			// detail未标记变化 不处理
 			if (!json.containsKey("objStatus")) {
+
 				continue;
-			}
-
-			RdVoiceguideDetail detail = command.getVoiceguide().detailMap
-					.get(json.getString("rowId"));
-
-			if (detail == null) {
-				throw new Exception("rowId=" + json.getString("rowId")
-						+ "的RdVoiceguideDetail不存在");
 			}
 
 			if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
 
+				detailCount -= 1;
+			}
+
+			if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+
+				detailCount += 1;
+			}
+		}
+
+		if (detailCount < 1) {
+			
+			throw new Exception("更新后无 语音引导详细信息表");
+		}
+
+		for (int i = 0; i < details.size(); i++) {
+
+			JSONObject json = details.getJSONObject(i);
+
+			String objStatus = "";
+
+			if (json.containsKey("objStatus")) {
+
+				objStatus = json.getString("objStatus");
+			}
+			
+			RdVoiceguideDetail detail = new RdVoiceguideDetail();
+			
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				detail = command.getVoiceguide().detailMap.get(json
+						.getString("rowId"));
+
+				if (detail == null) {
+					
+					throw new Exception("rowId=" + json.getString("rowId")
+							+ "的RdVoiceguideDetail不存在");
+				}
+			}
+
+			//删除 语音引导详细信息表
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+				
 				result.insertObject(detail, ObjStatus.DELETE, command
 						.getVoiceguide().pid());
 
 				continue;
 			}
-			if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+			//更新 语音引导详细信息表
+			if (ObjStatus.UPDATE.toString().equals(objStatus)) {				
 
 				boolean isChanged = detail.fillChangeFields(json);
 
 				if (isChanged) {
+					
 					result.insertObject(detail, ObjStatus.UPDATE, command
 							.getVoiceguide().pid());
 				}
 			}
+			//新增 语音引导详细信息表
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {				
+			
+				detail.Unserialize(json);
+				 
+				detail.setPid(PidUtil.getInstance().applyRdVoiceguideDetailPid());
+			
+				detail.setVoiceguidePid(command.getVoiceguide().pid());
+				
+				detail.setMesh(command.getVoiceguide().mesh());
+
+				result.insertObject(detail, ObjStatus.INSERT, command
+						.getVoiceguide().pid());
+			}
+			
+			updateVia(result, json, detail);
 		}
 
 		return null;
+	}
+
+	/**
+	 * 更新经过线
+	 * 
+	 * @param result
+	 * @param json
+	 * @param detail
+	 * @throws Exception
+	 */
+	private void updateVia(Result result, JSONObject content,
+			RdVoiceguideDetail detail) throws Exception {
+
+		if (!content.containsKey("vias")) {
+
+			return;
+		}
+
+		JSONArray vias = content.getJSONArray("vias");
+
+		for (int j = 0; j < vias.size(); j++) {
+
+			JSONObject jsonVia = vias.getJSONObject(j);
+
+			if (!jsonVia.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			String objStatus = jsonVia.getString("objStatus");
+
+			RdVoiceguideVia via = new RdVoiceguideVia();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+				via = detail.viaMap.get(jsonVia.getString("rowId"));
+
+				if (via == null) {
+
+					throw new Exception("rowId=" + jsonVia.getString("rowId")
+							+ "via不存在");
+				}
+			}
+
+			// 删除via
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(via, ObjStatus.DELETE,
+						detail.getVoiceguidePid());
+			}
+			// 更新via
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = via.fillChangeFields(jsonVia);
+
+				if (isChanged) {
+
+					result.insertObject(via, ObjStatus.UPDATE,
+							detail.getVoiceguidePid());
+				}
+			}
+			// 新增via
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				via.Unserialize(jsonVia);
+
+				via.setDetailId(detail.getPid());
+
+				via.setMesh(detail.mesh());
+
+				result.insertObject(via, ObjStatus.INSERT,
+						detail.getVoiceguidePid());
+			}
+		}
 	}
 
 	public void breakRdLink(RdLink deleteLink, List<RdLink> newLinks,

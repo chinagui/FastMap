@@ -404,5 +404,12 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointCode2Level() throws Exception;
+	/**
+	 * 多源导入时，批level
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
 
 }

@@ -48,12 +48,21 @@ public class Import2Oracle {
 	 * @param args
 	 * @throws Exception 
 	 */
-	public static void impOracle(String tableName) {
+	public static void impOracle() {
 		try{
-			System.out.println("start import2Oracle "+tableName);
-			Import2Oracle importObj=new Import2Oracle();			
-			importObj.import2OracleByTableName(tableName);
-			System.out.println("end import2Oracle "+tableName);
+			System.out.println("start import2Oracle");
+			Import2Oracle importObj=new Import2Oracle();
+			System.out.println("start import2Oracle subtask");
+			importObj.import2OracleByTableName(OverviewSubtaskMain.col_name_subtask);
+			System.out.println("start import2Oracle blockMan");
+			importObj.import2OracleByTableName(OverviewBlockMain.col_name_blockman);	
+			System.out.println("start import2Oracle task");
+			importObj.import2OracleByTableName(OverviewTaskMain.col_name_task);
+			System.out.println("start import2Oracle overview_group");
+			importObj.import2OracleByTableName(OverviewGroupMain.col_name_group);
+			System.out.println("start import2Oracle overview");
+			importObj.import2OracleByTableName(OverviewMain.col_name_overview_main);
+			System.out.println("end import2Oracle");
 		}catch(Exception e){
 			e.printStackTrace();
 		}

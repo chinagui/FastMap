@@ -9,7 +9,6 @@ import com.navinfo.dataservice.engine.statics.Import2Oracle;
 import com.navinfo.dataservice.engine.statics.overview.OverviewBlockMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewGroupMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewMain;
-import com.navinfo.dataservice.engine.statics.overview.OverviewProgramMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewSubtaskMain;
 import com.navinfo.dataservice.engine.statics.overview.OverviewTaskMain;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectMain;
@@ -42,11 +41,9 @@ public class StaticsInterface {
 	//统计子任务
 	private static final String flag_subtask = "subtask";
 	//统计blockman
-	//private static final String flag_blockman = "blockman";
+	private static final String flag_blockman = "blockman";
 	//统计任务
 	private static final String flag_task = "task";
-	//统计项目
-	private static final String flag_program = "program";
 	//统计总概览
 	private static final String flag_overview = "overview";
 	//统计group概览
@@ -60,10 +57,9 @@ public class StaticsInterface {
 	// 统计预期图
 	//private static final String flag_expect_stat="es";
 	//统计结果库
-	//public static final String col_name_subtask = "fm_stat_overview_subtask";
-	//public static final String col_name_blockman = "fm_stat_collect_overview_blockman";
-	//public static final String col_name_task = "fm_stat_overview_task";
-	//public static final String col_name_program = "fm_stat_overview_program";
+	public static final String col_name_subtask = "fm_stat_collect_overview_subtask";
+	public static final String col_name_blockman = "fm_stat_collect_overview_blockman";
+	public static final String col_name_task = "fm_stat_collect_overview_task";
 	
 	private static final String flag_imp_oracle="imp_oracle";
 	
@@ -87,26 +83,21 @@ public class StaticsInterface {
 				new RoadDailyMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_subtask)) {
 				new OverviewSubtaskMain(db_name, stat_time).runStat();
-				Import2Oracle.impOracle(OverviewSubtaskMain.col_name_subtask);
-			//}else if (flag.equalsIgnoreCase(flag_blockman)) {
-			//	new OverviewBlockMain(db_name, stat_time).runStat();
+			}else if (flag.equalsIgnoreCase(flag_blockman)) {
+				new OverviewBlockMain(db_name, stat_time).runStat();
 			}else if (flag.equalsIgnoreCase(flag_task)) {
 				new OverviewTaskMain(db_name, stat_time).runStat();
-				Import2Oracle.impOracle(OverviewTaskMain.col_name_task);
-			}else if (flag.equalsIgnoreCase(flag_program)) {
-				new OverviewProgramMain(db_name, stat_time).runStat();
-				Import2Oracle.impOracle(OverviewProgramMain.col_name_program);
 			}else if (flag.equalsIgnoreCase(flag_overview)) {
 				new OverviewMain(db_name, stat_time).runStat();
-				Import2Oracle.impOracle(OverviewMain.col_name_overview_main);
 			}else if (flag.equalsIgnoreCase(flag_group_overview)) {
 				new OverviewGroupMain(db_name, stat_time).runStat();
-				Import2Oracle.impOracle(OverviewGroupMain.col_name_group);
 			}else if (flag.equalsIgnoreCase(flag_season_poi)) {
 				new PoiSeasonMain(db_name, stat_time).runStat();
 			} else if (flag.equalsIgnoreCase(flag_season_road)) {
 				new RoadSeasonMain(db_name, stat_time).runStat();
-			} 
+			} else if (flag.equalsIgnoreCase(flag_imp_oracle)){
+				Import2Oracle.impOracle();
+			}
 //			else if (flag.equalsIgnoreCase(flag_expect_stat)) {
 //				new PoiCollectExpectMain(db_name, stat_time).runStat();
 //				new RoadCollectExpectMain(db_name, stat_time).runStat();

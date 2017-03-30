@@ -8,7 +8,9 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
@@ -17,6 +19,7 @@ import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
@@ -30,6 +33,7 @@ import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
+import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
@@ -68,6 +72,28 @@ import net.sf.json.JSONObject;
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
+	/**
+	 * 多源导入时，批level
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public String getLevelForMulti(JSONObject jsonObj) throws Exception{
+		Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getMetaConnection();
+            LevelSelector selector = new LevelSelector(conn);
+			String res = selector.getLevelForMulti(jsonObj);
+            return res;
+        } catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        	throw e;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+	}
 	/**
 	 * SELECT FOODTYPE,FOODTYPENAME FROM SC_POINT_FOODTYPE
 	 * @return  Map<String, String> key：foodtype value:FOODTYPENAME

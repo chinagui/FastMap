@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -612,6 +613,35 @@ public class commonTest extends InitApplication {
 		maps.put(2, 2);
 		maps.put(2, 3);
 		maps.put(3, 3);
+		
+	}
+
+	@Test
+	public void testIdentityHashMap() {
+		
+		Map<Integer,Integer> maps=new IdentityHashMap<Integer,Integer>();
+		
+		maps.put(1, 1);
+		maps.put(1, 2);
+		maps.put(1, 3);
+		maps.put(2, 2);
+		maps.put(2, 3);
+		maps.put(3, 3);
+		
+		maps.size();
+		
+		Map<Object,Integer> maps2=new IdentityHashMap<Object,Integer>();
+		
+		Integer i=1;
+		
+		Integer j=1;
+		
+		maps2.put(i, 1);
+		
+		maps2.put(j, 2);
+		
+		maps2.size();
+		
 		
 	}
 	

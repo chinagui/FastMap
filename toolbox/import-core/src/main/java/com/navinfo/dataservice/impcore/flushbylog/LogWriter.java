@@ -49,8 +49,7 @@ public class LogWriter {
 	 * 默认情况下，出现履历执行的错误，不抛异常
 	 */
 	public LogWriter(Connection conn) {
-		this(conn,false,null);
-		type="";
+		this(conn,false,"default");
 	}
 
 	public void write(EditLog editLog,ILogWriteListener listener) throws Exception{

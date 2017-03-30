@@ -61,6 +61,7 @@ public class RdBranch implements IObj {
 	public Map<Integer, RdBranchSchematic> schematicMap = new HashMap<Integer, RdBranchSchematic>();
 
 	public Map<String, RdBranchVia> viaMap = new HashMap<String, RdBranchVia>();
+	protected ObjStatus status;
 
 	
 	//outNodePid不属于模型字段，使用protected修饰符。
@@ -182,7 +183,13 @@ public class RdBranch implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 
-		return JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+//		return JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+		JSONObject json = JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override
@@ -341,12 +348,12 @@ public class RdBranch implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

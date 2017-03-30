@@ -40,9 +40,9 @@ public class GLM04009 extends baseRule{
 					int formOfWay = rdNodeForm.getFormOfWay();
 					if(rdNodeForm.changedFields().containsKey("formOfWay")){
 						formOfWay = Integer.parseInt(rdNodeForm.changedFields().get("formOfWay").toString());
-						if(formOfWay==15){
-							check(rdNodeForm.getNodePid());
-						}
+					}
+					if(formOfWay==15){
+						check(rdNodeForm.getNodePid());
 					}
 				}
 			}

@@ -569,8 +569,46 @@ public class Operation implements IOperation {
 
 		return highLevel;
 	}
+	
+	/**
+	 * 创建立交维护组成立交关系的rdlink关联的同一线其他组成link几何
+	 * @param link
+	 * @param newLinkGeoJson
+	 * @param dbId
+	 * @param result
+	 * @return
+	 * @throws Exception
+	 */
+	public String createGscForSamelink(RdLink link, JSONObject newLinkGeoJson, int dbId,
+			Result result) throws Exception {
 
+		// 根据dbId、新link几何生成修改link几何的内部josn参数
+		JSONObject repairJson = new JSONObject();
+
+		repairJson.put("objId", 0);
+
+		repairJson.put("dbId", dbId);
+
+		JSONObject data = new JSONObject();
+
+		data.put("geometry", newLinkGeoJson);
+
+		repairJson.put("data", data);
+
+		return repairLink(link, repairJson, result);
+	}
+	
 	public String repairLink(IObj repairLink, String requester, Result result)
+			throws Exception {
+
+		// link的修形requester可用信息相同，可共用。
+		JSONObject repairJson = JSONObject.fromObject(requester);
+
+		return repairLink(repairLink, repairJson, result);
+
+	}
+
+	private String repairLink(IObj repairLink, JSONObject repairJson, Result result)
 			throws Exception {
 
 		int[] info = getOperationInfo(repairLink);
@@ -611,10 +649,7 @@ public class Operation implements IOperation {
 
 			throw new Exception("此link不是该组同一关系中的主要素，不能进行此操作");
 		}
-
-		// link的修形requester可用信息相同，可共用。
-		JSONObject repairJson = JSONObject.fromObject(requester);
-
+	
 		for (RdSameLinkPart part : linkParts) {
 
 			if (linkTableName.equals(part.getTableName())

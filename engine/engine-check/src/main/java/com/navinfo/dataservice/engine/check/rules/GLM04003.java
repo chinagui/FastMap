@@ -142,8 +142,13 @@ public class GLM04003 extends baseRule{
 				checkFlg = true;
 			}
 		}else if(rdLinkLimit.status().equals(ObjStatus.UPDATE)){
-			int type = Integer.parseInt(rdLinkLimit.changedFields().get("type").toString()) ;
-			if(type==2){
+			if(rdLinkLimit.changedFields().containsKey("type")){
+				int type = Integer.parseInt(rdLinkLimit.changedFields().get("type").toString()) ;
+				if(type==2){
+					checkFlg = true;
+				}
+			}
+			if(rdLinkLimit.changedFields().containsKey("vehicle")){
 				checkFlg = true;
 			}
 		}
@@ -183,7 +188,8 @@ public class GLM04003 extends baseRule{
 			resultList = getObj.exeSelect(this.getConn(), sql);
 
 			if (!resultList.isEmpty()) {
-				this.setCheckResult("", "", 0,resultList.get(0).toString());
+				String target = "[RD_LINK," + rdLinkLimit.getLinkPid() + "]";
+				this.setCheckResult("", target, 0,resultList.get(0).toString());
 			}
 		}
 	}
@@ -227,7 +233,8 @@ public class GLM04003 extends baseRule{
 		resultList = getObj.exeSelect(this.getConn(), sql);
 
 		if (!resultList.isEmpty()) {
-			this.setCheckResult("", "", 0,resultList.get(0).toString());
+			String target = "[RD_GATE," + rdGate.getPid() + "]";
+			this.setCheckResult("", target, 0,resultList.get(0).toString());
 		}
 		
 	}

@@ -250,13 +250,14 @@ public class PoiEditStatus {
 			
 				sb.append(" WHERE T.PID = "+pid);
 
-			
+				logger.info("updateTaskIdByPid sql : "+sb.toString());
 				new QueryRunner().update(conn, sb.toString());
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(),e);
-			throw new Exception("采集成果自动批任务标识失败");
+			logger.error("采集成果自动批任务标识失败");
+			//throw new Exception("采集成果自动批任务标识失败");
 		}
 	}
 	

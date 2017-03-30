@@ -73,7 +73,7 @@ public class PoiMonthlyMain {
 			// 初始化mongodb数据库
 			initMongoDb(db_name);
 			// 获得 大区库的db_id
-			List<Integer> ListDbId = OracleDao.getDbIdDaily();
+			List<Integer> ListDbId = OracleDao.getDbIdMonth();
 
 			int dbid_cnt = ListDbId.size();
 			Iterator<Integer> iter = ListDbId.iterator();

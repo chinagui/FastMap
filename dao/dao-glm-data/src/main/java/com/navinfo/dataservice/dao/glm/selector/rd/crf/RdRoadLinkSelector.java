@@ -87,9 +87,9 @@ public class RdRoadLinkSelector extends AbstractSelector {
 
 			pstmt = conn.prepareStatement(sb.toString());
 
-			resultSet = pstmt.executeQuery();
-
-			if (resultSet.next()) {
+			resultSet = pstmt.executeQuery();			
+	
+			while (resultSet.next()) {
 
 				RdRoadLink roadLink = new RdRoadLink();
 

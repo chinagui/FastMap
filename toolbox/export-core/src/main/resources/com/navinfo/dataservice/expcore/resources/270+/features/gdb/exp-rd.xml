@@ -91,6 +91,102 @@
 
 		</step>
     </feature>
+    <!--260模型新增卡车限速 -->
+    <feature name="RD_SPEEDLIMIT_TRUCK">
+        <step value="7">
+            <!--按图幅过滤RD_SPEEDLIMIT_TRUCK-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_SPEEDLIMIT_TRUCK
+                          (PID)
+                          (SELECT PID FROM RD_SPEEDLIMIT_TRUCK WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_SPEEDLIMIT_TRUCK
+                          (PID)
+                          (SELECT PID FROM RD_SPEEDLIMIT_TRUCK
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+        <step value="16">
+			<!--通过RD_SPEEDLIMIT_TRUCK补关联RD_LINK -->
+			<sql  sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID FROM RD_SPEEDLIMIT_TRUCK P, TEMP_RD_SPEEDLIMIT_TRUCK T WHERE P.PID=T.PID);
+                        ]]></sql>
+
+		</step>
+    </feature>
+    
+    
+    <!--20161102新增，修改限高限重的导出原则，按照图幅导出 -->
+    <feature name="RD_HGWG_LIMIT">
+        <step value="7">
+            <!--按图幅过滤RD_HGWG_LIMIT-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_HGWG_LIMIT
+                          (PID)
+                          (SELECT PID FROM RD_HGWG_LIMIT WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_HGWG_LIMIT
+                          (PID)
+                          (SELECT PID FROM RD_HGWG_LIMIT
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+        <step value="16">
+			<!--通过RD_HGWG_LIMIT补关联RD_LINK -->
+			<sql  sqlType="dataIntegrity" condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_LINK
+                          (PID)
+                          (SELECT P.LINK_PID FROM RD_HGWG_LIMIT P, TEMP_RD_HGWG_LIMIT T WHERE P.PID=T.PID);
+                        ]]></sql>
+
+		</step>
+    </feature>
+    
+    <!--里程桩提取：250新增 -->
+    <feature name="RD_MILEAGEPILE">
+        <step value="7">
+            <!--按图幅过滤RD_MILEAGEPILE-->
+            <sql condition="mesh">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_MILEAGEPILE
+                          (PID)
+                          (SELECT PID FROM RD_MILEAGEPILE WHERE MESH_ID [mesh]);
+                         ]]></sql>
+
+            <sql condition="area">
+                <![CDATA[
+                        INSERT /*+ append */
+                        INTO TEMP_RD_MILEAGEPILE
+                          (PID)
+                          (SELECT PID FROM RD_MILEAGEPILE
+                            WHERE SDO_ANYINTERACT(GEOMETRY,
+                                              [area]) = 'TRUE');
+                         ]]></sql>
+        </step>
+    </feature>
+    
+    
     <feature name="RD_ELECTRONICEYE">
         <step value="7">
 
@@ -267,6 +363,33 @@
                          FROM RD_INTER_NODE P, TEMP_RD_INTER T
                         WHERE P.PID = T.PID);
                     ]]></sql>
+
+        </step>
+        
+        <!-- 20151208新增 为了解决小范围数据删除问题（三级子表按照外键删除，导致数据未删掉），增加临时表 -->
+        <step value="43">
+        <sql>
+                <![CDATA[
+                    INSERT INTO TEMP_RD_LANE2
+					  (SELECT LA.LANE_PID
+					     FROM RD_LANE LA, TEMP_FILTER_RD_LINK T
+					    WHERE LA.LINK_PID = T.PID);
+                    ]]></sql>
+        <sql>
+                <![CDATA[
+                     INSERT INTO TEMP_RD_MAINSIDE_GROUP
+					  (SELECT DISTINCT P.GROUP_ID
+					     FROM RD_MAINSIDE_LINK P, TEMP_FILTER_RD_LINK T
+					    WHERE P.LINK_PID = T.PID);
+                    ]]></sql>
+          <sql>
+                <![CDATA[
+                     INSERT INTO TEMP_RD_MULTI_GROUP
+					  (SELECT DISTINCT P.GROUP_ID
+					     FROM RD_MULTIDIGITIZED_LINK P, TEMP_FILTER_RD_LINK T
+					    WHERE P.LINK_PID = T.PID); 
+                    ]]></sql>            
+                  
 
         </step>
         
@@ -1298,6 +1421,21 @@
                        (SELECT MAX(B.ROWID) FROM TEMP_IX_NATGUD B WHERE A.PID = B.PID);
                 ]]></sql>
         </step>
+        <!-- 20151208新增 为了解决小范围数据删除问题（三级子表按照外键删除，导致数据未删掉），增加临时表 -->
+       <step value="22">
+	       <sql>
+	       		<![CDATA[
+				       INSERT INTO TEMP_RD_NATGUD_JUN_DETAIL
+						  (SELECT p2.DETAIL_ID
+						     FROM RD_NATGUD_JUN_DETAIL p2, TEMP_RD_NATGUD_JUN T
+						    where P2.NG_COND_PID = T.PID);]]></sql>
+		   <sql>
+	       		<![CDATA[
+				       INSERT INTO TEMP_RD_VOICEGUIDE_DETAIL
+						  (SELECT P.DETAIL_ID
+						     FROM RD_VOICEGUIDE_DETAIL P, TEMP_RD_VOICEGUIDE T
+						    WHERE P.VOICEGUIDE_PID = T.PID);]]></sql>
+       </step>
         
 
         <step value="100">
@@ -1318,14 +1456,14 @@
         </step>
         
          <step value="101">
-            <!--删除RD_NATGUD_JUN相关信息：
-                1.VSPEED_PID
-            -->
-            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_NATGUD_JUN T ); ]]></sql>
+         	<!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--<sql><![CDATA[DELETE FROM RD_NATGUD_JUN_VIA P WHERE p.DETAIL_ID IN (SELECT p2.DETAIL_ID FROM RD_NATGUD_JUN_DETAIL p2, TEMP_RD_NATGUD_JUN T where P2.NG_COND_PID=T.PID ); ]]></sql>-->
+            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN_VIA P WHERE p.DETAIL_ID IN (SELECT DETAIL_ID FROM TEMP_RD_NATGUD_JUN_DETAIL); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_NATGUD_JUN_DETAIL P WHERE P.NG_COND_PID IN (SELECT T.PID FROM TEMP_RD_NATGUD_JUN T ); ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN_VIA P WHERE p.DETAIL_ID IN (SELECT p2.DETAIL_ID FROM RD_NATGUD_JUN_DETAIL p2, TEMP_RD_NATGUD_JUN T where P2.NG_COND_PID=T.PID ); ]]></sql>
-            <sql><![CDATA[DELETE FROM IX_NATGUD P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_NATGUD T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_NATGUD_JUN P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_NATGUD_JUN T ); ]]></sql>
             <sql><![CDATA[DELETE FROM IX_NATGUD_NAME P WHERE p.NG_ASSO_PID IN (SELECT T.PID FROM TEMP_IX_NATGUD T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM IX_NATGUD P WHERE P.PID IN (SELECT T.PID FROM TEMP_IX_NATGUD T ); ]]></sql>
+            
         </step>
         
         
@@ -1496,8 +1634,11 @@
             <sql><![CDATA[DELETE FROM RD_TOLLGATE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_TOLLGATE_NAME P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_TOLLGATE_PASSAGE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.IN_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.OUT_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+              <!-- 20161227  MODIFIED BY LIYA 同一个步骤，对同一张表操作。当同一条记录得IN_TOLLGATE和OUT_TOLLGATE相等时，以下两个sql可能会发生死锁，因此修改为一条sql语句 -->
+   <!--          <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.IN_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.OUT_TOLLGATE IN (SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql> -->
+
+            <sql><![CDATA[DELETE FROM RD_TOLLGATE_COST P WHERE P.IN_TOLLGATE IN ( SELECT T.PID FROM TEMP_RD_TOLLGATE T ) OR P.OUT_TOLLGATE IN ( SELECT T.PID FROM TEMP_RD_TOLLGATE T ); ]]></sql>
 
         </step>
 
@@ -1629,6 +1770,17 @@
             ]]></sql>-->
 
         </step>
+        
+         <!-- 20151208新增 为了解决小范围数据删除问题（三级子表按照外键删除，导致数据未删掉），增加临时表 -->
+         <step value="22">
+            <sql>
+                <![CDATA[
+                        INSERT INTO TEMP_RD_BRANCH_NAME(SELECT P.NAME_ID
+	                       FROM RD_BRANCH_NAME P, TEMP_RD_BRANCH_DETAIL T
+	                      WHERE P.DETAIL_ID = T.PID);
+                        ]]></sql>
+        </step>
+        
         <step value="100">
             <!--查询返回RD_BRANCH相关信息：
                 1.RD_BRANCH
@@ -1673,12 +1825,14 @@
             <sql><![CDATA[DELETE FROM RD_BRANCH_VIA P WHERE P.BRANCH_PID IN (SELECT T.PID FROM TEMP_RD_BRANCH T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_BRANCH_DETAIL P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_BRANCH_DETAIL T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_BRANCH_NAME P WHERE P.DETAIL_ID IN (SELECT T.PID FROM TEMP_RD_BRANCH_DETAIL T ); ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_BRANCH_NAME_TONE P
+            <!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--<sql><![CDATA[DELETE FROM RD_BRANCH_NAME_TONE P
 							 WHERE P.NAME_ID IN (SELECT P.NAME_ID
 							                       FROM RD_BRANCH_NAME P, TEMP_RD_BRANCH_DETAIL T
 							                      WHERE P.DETAIL_ID = T.PID);
-							                      ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_SIGNBOARD P WHERE P.SIGNBOARD_ID IN (SELECT T.PID FROM TEMP_RD_SIGNBOARD T ); ]]></sql>
+							                      ]]></sql>-->
+			<sql><![CDATA[DELETE FROM RD_BRANCH_NAME_TONE P WHERE P.NAME_ID IN (SELECT NAME_ID FROM TEMP_RD_BRANCH_NAME ); ]]></sql>				                   
+			<sql><![CDATA[DELETE FROM RD_SIGNBOARD P WHERE P.SIGNBOARD_ID IN (SELECT T.PID FROM TEMP_RD_SIGNBOARD T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_SIGNBOARD_NAME P WHERE P.SIGNBOARD_ID IN (SELECT T.PID FROM TEMP_RD_SIGNBOARD T ); ]]></sql>
 
         </step>
@@ -1811,12 +1965,15 @@
             -->
             <sql><![CDATA[DELETE FROM RD_VOICEGUIDE P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_VOICEGUIDE T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_VOICEGUIDE_DETAIL P WHERE P.VOICEGUIDE_PID IN (SELECT T.PID FROM TEMP_RD_VOICEGUIDE T ); ]]></sql>
+           <!-- 20151208修改 为了解决小范围数据删除问题 --><!--
             <sql><![CDATA[
 						 DELETE FROM RD_VOICEGUIDE_VIA P
 							 WHERE P.DETAIL_ID IN (SELECT P.DETAIL_ID
 							                       FROM RD_VOICEGUIDE_DETAIL P, TEMP_RD_VOICEGUIDE T
 							                      WHERE P.VOICEGUIDE_PID = T.PID);
-						 ]]></sql>
+						 ]]></sql>-->
+		   <sql><![CDATA[DELETE FROM RD_VOICEGUIDE_VIA P WHERE P.DETAIL_ID IN (SELECT DETAIL_ID FROM TEMP_RD_VOICEGUIDE_DETAIL); ]]></sql>
+        
         </step>
 
 
@@ -2096,16 +2253,19 @@
         </step>
 
         <step value="101">
-
+			
             <sql><![CDATA[DELETE FROM RD_MAINSIDE_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
-            <sql><![CDATA[
+            <!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--<sql><![CDATA[
                         DELETE
                           FROM RD_MAINSIDE P2  WHERE P2.GROUP_ID IN
                                (SELECT DISTINCT P.GROUP_ID
                                   FROM RD_MAINSIDE_LINK P, TEMP_FILTER_RD_LINK T
                                  WHERE P.LINK_PID = T.PID) ;
-                    ]]></sql>
-        </step>
+                    ]]></sql>-->
+             <sql><![CDATA[DELETE FROM RD_MAINSIDE P2 WHERE P2.GROUP_ID IN (SELECT DISTINCT GROUP_ID FROM TEMP_RD_MAINSIDE_GROUP);]]></sql>       
+                    
+         </step>
     </feature>
 
     <!--////////////////////////////////////////////////////RD_MULTIDIGITIZED//////////////////////////////////////////////////////-->
@@ -2128,13 +2288,17 @@
         <step value="101">
 
             <sql><![CDATA[DELETE FROM RD_MULTIDIGITIZED_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
-            <sql><![CDATA[
+           
+            <!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--<sql><![CDATA[
                         DELETE
                           FROM RD_MULTIDIGITIZED P2 WHERE P2.GROUP_ID IN
                                (SELECT DISTINCT P.GROUP_ID
                                   FROM RD_MULTIDIGITIZED_LINK P, TEMP_FILTER_RD_LINK T
                                  WHERE P.LINK_PID = T.PID);
                     ]]></sql>
+        	-->
+        <sql><![CDATA[ DELETE FROM RD_MULTIDIGITIZED P2 WHERE P2.GROUP_ID IN (SELECT DISTINCT GROUP_ID FROM TEMP_RD_MULTI_GROUP); ]]></sql>
         </step>
     </feature>
 

@@ -902,7 +902,7 @@ public class SubtaskOperation {
 						}
 
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((1==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+						if((1==rs.getInt("STAGE")&&5==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -3059,40 +3059,28 @@ public class SubtaskOperation {
 	/*
 	 * 查询大区库履历，获取子任务修改的POI几何列表
 	 */
-	public static List<Geometry> loadPoiGeoBySubtaskFromLog(Subtask subtask)throws Exception{
+	public static Set<Integer> loadPoiGeoBySubtaskFromLog(Subtask subtask)throws Exception{
 		Connection conn=null;
 		try{
 			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT I.GEOMETRY");
-			sb.append("  FROM IX_POI I");
-			sb.append(" WHERE I.PID IN (SELECT DISTINCT D.OB_PID");
-			sb.append("                   FROM LOG_OPERATION O, LOG_DETAIL D, LOG_ACTION A");
-			sb.append("                 WHERE A.ACT_ID = O.ACT_ID");
-			sb.append("                   AND O.OP_ID = D.OP_ID");
-			sb.append("                   AND D.OB_NM = 'IX_POI'");
-			sb.append("                  AND A.STK_ID = 30)");
+			String sqlString="SELECT DISTINCT G.GRID_ID"
+					+ "  FROM LOG_ACTION A, LOG_OPERATION O, LOG_DETAIL_GRID G, LOG_DETAIL D"
+					+ " WHERE A.ACT_ID = O.ACT_ID"
+					+ "   AND G.LOG_ROW_ID = D.ROW_ID"
+					+ "   AND D.OP_ID = O.OP_ID"
+					+ "   AND A.STK_ID = "+subtask.getTaskId();
 			
-			log.info("loadPoiGeoBySubtaskFromLog SQL："+sb.toString());
-			ResultSetHandler<List<Geometry>> rsHandler = new ResultSetHandler<List<Geometry>>() {
-				public List<Geometry> handle(ResultSet rs) throws SQLException {
-					List<Geometry> geoList = new ArrayList<Geometry>();
+			log.info("loadPoiGeoBySubtaskFromLog SQL："+sqlString);
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> gridList = new HashSet<Integer>();
 					while (rs.next()) {
-						//GEOMETRY
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							String wkt = GeoTranslator.struct2Wkt(struct);
-							Geometry geo = GeoTranslator.wkt2Geometry(wkt);
-							geoList.add(geo);
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						gridList.add(rs.getInt("GRID_ID"));
 					}
-					return geoList;
+					return gridList;
 				}
 			};
-			return new QueryRunner().query(conn, sb.toString(), rsHandler);
+			return new QueryRunner().query(conn, sqlString, rsHandler);
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -3112,14 +3100,7 @@ public class SubtaskOperation {
 	 */
 	public static Map<Integer,Integer> getGridIdMapBySubtaskFromLog(Subtask subtask) throws Exception {
 		//查询大区库履历，获取子任务数据几何列表
-		List<Geometry> geoList = loadPoiGeoBySubtaskFromLog(subtask);
-		Set<Integer> gridIdList = new HashSet<Integer>();
-		for(Geometry geo:geoList){
-			String[] grids = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y);
-			for(String grid:grids){
-				gridIdList.add(Integer.parseInt(grid));
-			}
-		}
+		Set<Integer> gridIdList = loadPoiGeoBySubtaskFromLog(subtask);
 		
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();

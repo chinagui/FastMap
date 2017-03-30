@@ -27,7 +27,7 @@ import com.vividsolutions.jts.geom.Geometry;
  */
 public class LogGenerator {
 	String insertLogActionSql = "INSERT INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD,SRC_DB,STK_ID) VALUES (?,?,?,?,?)";
-	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSDATE,LOG_OP_SEQ.NEXTVAL)";
+	String insertLogOperationSql = "INSERT INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (?,?,SYSTIMESTAMP,LOG_OP_SEQ.NEXTVAL)";
 	String insertLogDayReleaseSql = "INSERT INTO LOG_DAY_RELEASE (OP_ID) VALUES (?)";
 	String insertLogDetailSql = "INSERT INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 	String insertLogDetailGridSql = "INSERT INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (?,?,?)";

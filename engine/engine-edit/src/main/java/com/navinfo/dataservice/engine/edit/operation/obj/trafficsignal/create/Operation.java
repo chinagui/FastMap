@@ -50,7 +50,7 @@ public class Operation implements IOperation {
 		List<IRow> nodes = this.command.getCross().getNodes();
 
 		RdLinkSelector linkSelector = new RdLinkSelector(this.conn);
-
+		
 		for (IRow row : nodes) {
 			// link form：50为交叉口道路
 			List<RdLink> links = linkSelector.loadInLinkByNodePid(((RdCrossNode) row).getNodePid(), 50, true);
@@ -68,7 +68,10 @@ public class Operation implements IOperation {
 				linkPidList.add(link.getPid());
 			}
 
-			nodeLinkPidMap.put(((RdCrossNode) row).getNodePid(), linkPidList);
+			if (linkPidList.size()>0) {
+				nodeLinkPidMap.put(((RdCrossNode) row).getNodePid(), linkPidList);
+			}
+			
 		}
 
 		return nodeLinkPidMap;

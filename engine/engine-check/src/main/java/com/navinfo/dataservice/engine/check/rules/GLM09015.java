@@ -63,7 +63,7 @@ public class GLM09015 extends baseRule{
 
 			sb.append("SELECT 1 FROM RD_WARNINGINFO W ");
 			sb.append(" WHERE W.U_RECORD <> 2");
-			sb.append(" AND W.NODE_PID = 1");
+			sb.append(" AND W.NODE_PID = " + rdNodeForm.getNodePid());
 			
 			String sql = sb.toString();
 			log.info("RdLane GLM32019 sql:" + sql);

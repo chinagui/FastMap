@@ -50,6 +50,7 @@ public class LogWriter {
 	 */
 	public LogWriter(Connection conn) {
 		this(conn,false,null);
+		type="";
 	}
 
 	public void write(EditLog editLog,ILogWriteListener listener) throws Exception{

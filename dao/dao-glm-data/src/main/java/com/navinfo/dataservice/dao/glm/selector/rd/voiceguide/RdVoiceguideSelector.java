@@ -389,7 +389,7 @@ public class RdVoiceguideSelector extends AbstractSelector {
 			for (IRow viaRow : detail.getVias()) {
 				RdVoiceguideVia via = (RdVoiceguideVia) viaRow;
 
-				detail.directrouteViaMap.put(via.getRowId(), via);
+				detail.viaMap.put(via.getRowId(), via);
 			}
 
 			voiceguide.detailMap.put(detail.getRowId(), detail);

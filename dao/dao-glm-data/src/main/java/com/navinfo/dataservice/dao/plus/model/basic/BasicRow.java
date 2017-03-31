@@ -219,7 +219,7 @@ public abstract class BasicRow{
 		String tbName = tableName();
 		System.out.println("tbName  :"+tbName);
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
-		System.out.println("tbName2  :"+tbName);
+		System.out.println("tbName2 tab :"+tab.getName()+"tab.Columns"+tab.getColumns());
 		List<String> columnName = new ArrayList<String>();
 		List<String> columnPlaceholder = new ArrayList<String>();
 		List<Object> columnValues = new ArrayList<Object>();

@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
@@ -79,26 +80,47 @@ public class GLM01295_1 extends baseRule {
 	}
 
 	/**
+	 * @function 准备检查数据
 	 * @param checkCommand
 	 * @throws Exception
 	 */
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
-			if (row instanceof RdLinkForm) {
-				RdLinkForm form = (RdLinkForm) row;
+			prepareDataLinkForm(row);
+			prepareDataLinkKind(row);
+		}
+	}
 
-				int formOfWay = form.getFormOfWay();
+	private void prepareDataLinkForm(IRow row) {
+		if (!(row instanceof RdLinkForm) || row.status() == ObjStatus.DELETE)
+			return;
 
-				if (form.status() != ObjStatus.DELETE) {
-					if (form.changedFields().containsKey("formOfWay")) {
-						formOfWay = (int) form.changedFields().get("formOfWay");
-					}
+		RdLinkForm form = (RdLinkForm) row;
+		int formOfWay = form.getFormOfWay();
 
-					if (formOfWay == 20) {
-						checkLinkSet.add(form.getLinkPid());
-					}
-				}
-			}
+		if (form.changedFields().containsKey("formOfWay")) {
+			formOfWay = (int) form.changedFields().get("formOfWay");
+		}
+
+		if (formOfWay == 20) {
+			checkLinkSet.add(form.getLinkPid());
+		}
+	}
+	
+	private void prepareDataLinkKind(IRow row) {
+		if (!(row instanceof RdLink) || row.status() == ObjStatus.DELETE){
+			return;
+		}
+
+		RdLink link = (RdLink) row;
+		int kind = link.getKind();
+
+		if (link.changedFields().containsKey("kind")) {
+			kind = (int) link.changedFields().get("kind");
+		}
+
+		if (kind == 10) {
+			checkLinkSet.add(link.getPid());
 		}
 	}
 }

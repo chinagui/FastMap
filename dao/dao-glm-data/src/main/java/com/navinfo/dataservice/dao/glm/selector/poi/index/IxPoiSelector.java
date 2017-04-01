@@ -428,8 +428,13 @@ public class IxPoiSelector extends AbstractSelector {
 		JSONObject poiEditStatus = getPoiStatusByPid(poi.getPid());
 
 		poi.setSamepoiParts(parts);
-
-		poi.setRawFields(poiEditStatus.getString("RAW_FIELDS"));
+		String rawFields = null;
+		if (poiEditStatus.get("RAW_FIELDS")==null){
+			poi.setRawFields(rawFields);
+		}else{
+			rawFields = (String) poiEditStatus.get("RAW_FIELDS");
+			poi.setRawFields(rawFields);
+		}
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
 		

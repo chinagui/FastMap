@@ -3133,6 +3133,67 @@ public class SubtaskOperation {
 		}
 		return gridIdsToInsert;
 	}
+
+
+	public static void changeRegionSubtaskGridByTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND S.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT S.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND S.SUBTASK_ID = M.SUBTASK_ID"
+					+ "     AND S.TYPE = 4";
+			run.update(conn, sql);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static void changeDayRegionSubtaskByCollectTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT T.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND UT.TASK_ID = M.TASK_ID"
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT T.SUBTASK_ID, M.GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND M.SUBTASK_ID = T.SUBTASK_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.TYPE = 4";
+			run.update(conn, createMappingSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 	
 	
 //

@@ -44,6 +44,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -1582,34 +1583,35 @@ public class SubtaskService {
 		log.info("=================closeBySubtaskId==========================");
 
 		//动态调整子任务范围
-		//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
-		if(subtask.getStage()==1){
+		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
+		if(subtask.getStage()==0||subtask.getStage()==1){
 			//获取规划外GRID信息
+			log.info("调整子任务本身范围");
 			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-//			log.info("=================getGridIdMapBySubtaskFromLog==========================");
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-//			log.info("=================insertSubtaskGridMapping==========================");
-
-			//调整任务范围
-			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
-//			log.info("=================insertTaskGridMapping==========================");
-
-			//调整区域子任务范围
-			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
-//			log.info("=================getSubTaskListByType==========================");
-
-//			log.info("=================subtaskList==========================" + subtaskList);
-//			log.info("=================gridIdsToInsert==========================" + gridIdsToInsert);
-			if(subtaskList.size()!=0){
-				for(Subtask subtaskType4:subtaskList){
-//					log.info("=================insertSubtaskGridMapping==========================");
-					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
-				}
+			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
+				//调整任务范围
+				log.info("调整子任务对应任务范围");
+				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
+				if(taskChangeNum>0){					
+					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
+					log.info("调整子任务对应快线项目范围");
+					ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
+					if(subtask.getStage()==1){
+						//调整区域子任务范围
+						log.info("日编子任务 调整区域子任务范围");
+						SubtaskOperation.changeRegionSubtaskGridByTask(conn, subtask.getTaskId());}
+					else if(subtask.getStage()==0){
+						//调整日编任务，二代编辑任务
+						log.info("采集子任务 调整日编任务，二代编辑任务范围");
+						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
+						//调整日编区域子任务范围		
+						log.info("采集子任务 调整日编区域子任务范围");
+						SubtaskOperation.changeDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());}
+				}					
 			}
-			
-		}
-		
+		}		
 		
 		//发送消息
 		try {

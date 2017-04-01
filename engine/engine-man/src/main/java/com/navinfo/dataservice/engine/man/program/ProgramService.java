@@ -2008,4 +2008,32 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	public void changeProgramGridByTask(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="INSERT INTO PROGRAM_GRID_MAPPING"
+					+ "  (PROGRAM_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.PROGRAM_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND S.BLOCK_ID = 0"
+					+ "  MINUS (SELECT P.PROGRAM_ID, M.GRID_ID, 2"
+					+ "           FROM INFOR_GRID_MAPPING M, TASK T, PROGRAM P"
+					+ "          WHERE M.INFOR_ID = P.INFOR_ID"
+					+ "            AND P.PROGRAM_ID = T.PROGRAM_ID"
+					+ "            AND T.TASK_ID = "+taskId
+					+ "         UNION ALL"
+					+ "         SELECT T.PROGRAM_ID, M.GRID_ID, 2"
+					+ "           FROM PROGRAM_GRID_MAPPING M, TASK T"
+					+ "          WHERE M.PROGRAM_ID = T.PROGRAM_ID"
+					+ "            AND T.TASK_ID = "+taskId+")";
+			run.update(conn, sql);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
 }

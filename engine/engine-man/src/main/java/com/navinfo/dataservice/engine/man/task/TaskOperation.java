@@ -2158,6 +2158,35 @@ public class TaskOperation {
 		}
 		
 	}
+	
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @param gridIds
+	 * @throws Exception 
+	 */
+	public static int changeTaskGridBySubtask(Connection conn, int subtaskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.TASK_ID, GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE M.SUBTASK_ID = "+subtaskId
+					+ "     AND S.SUBTASK_ID = M.SUBTASK_ID"
+					+ "  MINUS"
+					+ "  SELECT S.TASK_ID, T.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING T, SUBTASK S"
+					+ "   WHERE S.SUBTASK_ID = "+subtaskId
+					+ "     AND S.TASK_ID = T.TASK_ID";
+			return run.update(conn, createMappingSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
 
 	/**
 	 * @param conn
@@ -2361,6 +2390,35 @@ public class TaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	public static void changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT UT.TASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S, TASK UT"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.TYPE IN (1, 3)"
+					+ "  MINUS"
+					+ "  SELECT UT.TASK_ID, T.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING T, TASK S, TASK UT"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND UT.TYPE IN (1, 3)";
+			run.update(conn, createMappingSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 	
 }

@@ -165,7 +165,10 @@ public class Process extends AbstractProcess<Command> {
                 throw new Exception(preCheckMsg);
             }
 
-            //this.postCheck();
+            // 由于后检查中需要查询数据最新状态, 批量修改时需要分开提交
+            this.recordData();
+            // 执行重写后的后检查, 将删除状态的信息放入待检查LIST中
+            this.postCheck();
 
         } catch (Exception e) {
 

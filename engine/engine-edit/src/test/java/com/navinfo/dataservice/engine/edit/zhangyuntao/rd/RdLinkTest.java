@@ -126,12 +126,12 @@ public class RdLinkTest extends InitApplication {
     @Test
     public void batch() {
         String requester = "{\"command\":\"BATCH\",\"type\":\"RDLINK\",\"dbId\":84," +
-                "\"data\":[{\"forms\":[{\"linkPid\":507000251,\"formOfWay\":1,\"extendedForm\":0,\"auxiFlag\":0," +
-                "\"kgFlag\":0,\"objStatus\":\"INSERT\"},{\"rowId\":\"C1E0EBBABBF44FF6A915BCF75B91288F\"," +
-                "\"linkPid\":507000251,\"objStatus\":\"DELETE\"}],\"pid\":507000251,\"objStatus\":\"UPDATE\"}," +
-                "{\"forms\":[{\"linkPid\":506000263,\"formOfWay\":1,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0," +
-                "\"objStatus\":\"INSERT\"},{\"rowId\":\"F34A6C46D42B42B1BB500A018FC85509\",\"linkPid\":506000263," +
-                "\"objStatus\":\"DELETE\"}],\"pid\":506000263,\"objStatus\":\"UPDATE\"}]}";
+                "\"data\":[{\"forms\":[{\"linkPid\":509000294,\"formOfWay\":1,\"extendedForm\":0,\"auxiFlag\":0," +
+                "\"kgFlag\":0,\"objStatus\":\"INSERT\"},{\"rowId\":\"F54A520957874FEC9C2CDF18178C69E3\"," +
+                "\"linkPid\":509000294,\"objStatus\":\"DELETE\"}],\"pid\":509000294,\"objStatus\":\"UPDATE\"}," +
+                "{\"forms\":[{\"linkPid\":409000268,\"formOfWay\":1,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0," +
+                "\"objStatus\":\"INSERT\"},{\"rowId\":\"8BE7CC2C41684D48A27DE298A149EAD1\",\"linkPid\":409000268," +
+                "\"objStatus\":\"DELETE\"}],\"pid\":409000268,\"objStatus\":\"UPDATE\"}]}";
         TestUtil.run(requester);
     }
 

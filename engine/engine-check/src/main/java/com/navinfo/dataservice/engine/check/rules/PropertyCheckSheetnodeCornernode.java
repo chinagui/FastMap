@@ -8,11 +8,18 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
  * Created by chaixin on 2017/1/9 0009.
+ * 点属性为图廓点或者角点时，种别必须是平面交叉点
+ * ZONE点属性编辑后检查
  */
 public class PropertyCheckSheetnodeCornernode extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
-        for (IRow row : checkCommand.getGlmList()) {
+        
+    }
+
+    @Override
+    public void postCheck(CheckCommand checkCommand) throws Exception {
+    	for (IRow row : checkCommand.getGlmList()) {
             if (row instanceof ZoneNode) {
                 ZoneNode node = (ZoneNode) row;
                 if (node.changedFields().isEmpty())
@@ -45,10 +52,5 @@ public class PropertyCheckSheetnodeCornernode extends baseRule {
                 }
             }
         }
-    }
-
-    @Override
-    public void postCheck(CheckCommand checkCommand) throws Exception {
-
     }
 }

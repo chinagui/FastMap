@@ -11,9 +11,12 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
  */
 public class MultiSrcPoiDayImportorCommand extends AbstractCommand {
 	
+	private int dbId;
+	
 	protected UploadPois pois;
 
-	public MultiSrcPoiDayImportorCommand(UploadPois pois){
+	public MultiSrcPoiDayImportorCommand(int dbId,UploadPois pois){
+		this.dbId=dbId;
 		this.pois=pois;
 	}
 	
@@ -22,5 +25,13 @@ public class MultiSrcPoiDayImportorCommand extends AbstractCommand {
 	}
 	public void setPois(UploadPois pois) {
 		this.pois = pois;
+	}
+
+	public int getDbId() {
+		return dbId;
+	}
+
+	public void setDbId(int dbId) {
+		this.dbId = dbId;
 	}
 }

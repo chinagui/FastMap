@@ -62,29 +62,30 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
-		// 主表是否变化
+		// 维护分歧主表
 		if (content.containsKey("objStatus")) {
 
-			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+			if (ObjStatus.DELETE.toString().equals(
+					content.getString("objStatus"))) {
+
 				result.insertObject(branch, ObjStatus.DELETE, branch.pid());
 
 				return null;
-			} else {
+			}
 
-				updateLinkInfo(content, result);
+			boolean isChanged = branch.fillChangeFields(content);
 
-				boolean isChanged = branch.fillChangeFields(content);
+			if (isChanged) {
 
-				if (isChanged) {
-					result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
-					if(command.getObjId() != 0)
-					{
-						result.setPrimaryPid(command.getObjId());
-					}
-					else
-					{
-						result.setPrimaryPid(command.getPid());
-					}
+				result.insertObject(branch, ObjStatus.UPDATE, branch.pid());
+
+				if (command.getObjId() != 0) {
+
+					result.setPrimaryPid(command.getObjId());
+
+				} else {
+
+					result.setPrimaryPid(command.getPid());
 				}
 			}
 		}
@@ -106,8 +107,80 @@ public class Operation implements IOperation {
 
 		// 更新方向看板(9)
 		updateSignboard(result, content);
+		
+		// 更新经过线
+		updateViaLink( result,content);
 
 		return null;
+	}
+	
+	/**
+	 * 更新经过线
+	 * @param content
+	 * @param result
+	 * @throws Exception
+	 */
+	private void updateViaLink(Result result, JSONObject content)
+			throws Exception {
+		if (!content.containsKey("vias")) {
+
+			return;
+		}
+
+		JSONArray vias = content.getJSONArray("vias");
+
+		for (int i = 0; i < vias.size(); i++) {
+
+			JSONObject jsonVia = vias.getJSONObject(i);
+
+			if (!jsonVia.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			String objStatus = jsonVia.getString("objStatus");
+
+			RdBranchVia via = new RdBranchVia();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				via = branch.viaMap.get(jsonVia.getString("rowId"));
+
+				if (via == null) {
+
+					throw new Exception("rowId=" + jsonVia.getString("rowId")
+							+ "的via不存在");
+				}
+			}
+
+			// 删除via
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(via, ObjStatus.DELETE, branch.getPid());
+			}
+			// 更新via
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = via.fillChangeFields(jsonVia);
+
+				if (isChanged) {
+
+					result.insertObject(via, ObjStatus.UPDATE, branch.pid());
+				}
+			}
+			// 新增via
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				via.Unserialize(jsonVia);
+
+				via.setBranchPid(branch.getPid());
+
+				via.setMesh(branch.mesh());
+
+				result.insertObject(via, ObjStatus.INSERT, branch.pid());
+			}
+		}
 	}
 
 	/**

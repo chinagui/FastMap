@@ -1484,7 +1484,7 @@ public class runTest extends InitApplication {
 	@Test
 	public void run_00309_1() throws Exception {
 
-		String parameter = "{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDBRANCH\",\"objId\":408000003,\"data\":{\"details\":[{\"patternCode\":\"8e000003\",\"voiceDir\":\"\",\"arrowCode\":\"1e000003\",\"names\":[{\"pid\":0,\"seqNum\":1,\"nameGroupid\":1,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"voiceFile\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"F134A36415BA42F8BCBE6302D036AE62\",\"pid\":500000001,\"objStatus\":\"UPDATE\"}],\"rowId\":\"55CCC61FC34544E2BD1D3B61DCA740ED\",\"pid\":408000003,\"objStatus\":\"UPDATE\"}}";
+		String parameter = "{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDBRANCH\",\"objId\":406000006,\"data\":{\"details\":[{\"patternCode\":\"8e000003\",\"voiceDir\":\"\",\"arrowCode\":\"1e000003\",\"names\":[{\"pid\":0,\"seqNum\":1,\"nameGroupid\":1,\"nameClass\":0,\"langCode\":\"CHI\",\"codeType\":0,\"name\":\"\",\"phonetic\":\"\",\"srcFlag\":0,\"voiceFile\":\"\",\"objStatus\":\"INSERT\"}],\"rowId\":\"F134A36415BA42F8BCBE6302D036AE62\",\"pid\":500000001,\"objStatus\":\"UPDATE\"}],\"rowId\":\"55CCC61FC34544E2BD1D3B61DCA740ED\",\"pid\":408000003,\"objStatus\":\"UPDATE\"}}";
 		
 		
 		Transaction t = new Transaction(parameter);
@@ -1501,5 +1501,15 @@ public class runTest extends InitApplication {
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_00330_1() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDVOICEGUIDE\",\"dbId\":84,\"data\":{\"details\":[{\"vias\":[{\"linkPid\":14226823,\"groupId\":1,\"seqNum\":2,\"objStatus\":\"INSERT\"},{\"linkPid\":404000250,\"rowId\":\"FD44FDA8F329413CAC676BE30F9932AE\",\"objStatus\":\"DELETE\"},{\"linkPid\":508000227,\"rowId\":\"3F9E55280A9F4EA794174618498FEED5\",\"objStatus\":\"DELETE\"},{\"linkPid\":510000271,\"rowId\":\"73A8DDD3AB934561807389473EFE9271\",\"objStatus\":\"DELETE\"}],\"rowId\":\"B045F1B12348444798748A88C9DFF634\",\"pid\":507000002,\"objStatus\":\"UPDATE\"}],\"rowId\":\"52474938F17B47FBB7764A0FC4976398\",\"pid\":406000006,\"objStatus\":\"UPDATE\"}}";
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 	
 }

@@ -155,6 +155,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					log.info("开始刷履历入出品库");	
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
+					//修改项目的出品状态为 失败
+					updateProduceStatus(projects,3,manApi);
 					throw new JobException(e);
 				}
 			}else{
@@ -168,6 +170,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					log.info("开始刷履历入出品库");	
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
+					//修改项目的出品状态为 失败
+					updateProduceStatus(projects,3,manApi);
 					throw new JobException(e);
 				}
 			}

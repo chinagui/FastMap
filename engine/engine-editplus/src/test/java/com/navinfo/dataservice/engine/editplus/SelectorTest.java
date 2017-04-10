@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -61,13 +62,13 @@ public class SelectorTest {
 	}
 	
 
-	//@Test
+	@Test
 	public void test0(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);;
+			conn = DBConnector.getInstance().getConnectionById(84);;
 			String objType = "IX_POI";
-			long pid = 237630;
+			long pid = 1;
 			boolean isLock = false;
 
 			Set<String> tabNames = new HashSet<String>();
@@ -84,12 +85,16 @@ public class SelectorTest {
 			tabNames.add("IX_POI_GASSTATION");
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
-			List<BasicRow> list1 = obj.getRowsByName("IX_POI_NAME");
-			List<BasicRow> list2 = obj.getRowsByName("IX_POI_ICON");
+			if(obj!=null){
+				List<BasicRow> list1 = obj.getRowsByName("IX_POI_NAME");
+				List<BasicRow> list2 = obj.getRowsByName("IX_POI_ICON");
+				MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
+				JSONObject json = ms.toJson((IxPoiObj) obj);
+				System.out.println(json);
+			}
+
 			System.out.println("Over.");
-			MultiSrcPoiConvertor ms = new MultiSrcPoiConvertor();
-			JSONObject json = ms.toJson((IxPoiObj) obj);
-			System.out.println(json);
+
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");
 			e.printStackTrace();
@@ -97,11 +102,11 @@ public class SelectorTest {
 	}
 	
 
-	//@Test
+	@Test
 	public void test1(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			long pid = 308;
 			boolean isLock = false;
@@ -117,14 +122,14 @@ public class SelectorTest {
 	}
 	
 
-	//@Test
+	@Test
 	public void test2(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			String colName = "POI_NUM";
-			String colValue = "0335100531LS100266";
+			String colValue = "0010111111HXS00234";
 			boolean isLock = false;
 			Set<String> tabNames = new HashSet<String>();
 			
@@ -169,7 +174,7 @@ public class SelectorTest {
 	public void test3(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			String colName = "PID";
 			long colValue = 308;
@@ -187,7 +192,7 @@ public class SelectorTest {
 	public void test4(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			String colName = "POI_NUM";
 			String colValue = "0010061110WZS00536";
@@ -232,14 +237,14 @@ public class SelectorTest {
 	}
 
 
-	//@Test
+	@Test
 	public void test10(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			Collection<Long> pids = new ArrayList<Long>();
-			pids.add((long) 308);
+			pids.add((long) 1);
 			pids.add((long) 316);
 			pids.add((long) 317);
 			boolean isLock = false;
@@ -317,17 +322,17 @@ public class SelectorTest {
 	}
 	
 
-	//@Test
+	@Test
 	public void test13(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 			String objType = "IX_POI";
 			Collection<String> pids = new ArrayList<String>();
 			String colName = "POI_NUM";
 			pids.add("0335100531LS100266");
 			pids.add("0010060909HYX00855");
-			pids.add("0010060909HYX00856");
+			pids.add("22");
 			boolean isLock = false;
 			boolean isNowait = false;
 

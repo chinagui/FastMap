@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.scripts.tmp.service;
 
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.LogManager;
@@ -10,16 +14,24 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
@@ -38,11 +50,13 @@ public class CollectConvertMain {
 	 * 1.json格式转换，具体原则参照excel
 	 * 2.照片转换时，可调用照片重命名模块
 	 * 3.根据一体化格式geo获取dbid模块
+	 * @param dbId 可选参数前端脚本可能会传入，非0则用，否则自行计算
+	 * @param inPath data/12/
 	 * @param oldPoi
 	 * @return
 	 * @throws Exception 
 	 */
-	public static JSONObject convertMain(JSONObject oldPoi) throws Exception{
+	public static JSONObject convertMain(int dbId, String inPath, JSONObject oldPoi) throws Exception{
 		JSONObject newPoi=new JSONObject();
 		Connection conn = null;
 		try{
@@ -59,7 +73,7 @@ public class CollectConvertMain {
 			String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
 			newPoi.put("geometry", newGeoStr);
 			//获取poi所在大区连接
-			int dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);		
+			if(dbId==0){dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);}	
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			/*线上 fid: "0523081102MFY00291",	
 			 *一体化fid: "00166420170303213016",	原则：直接赋值
@@ -198,13 +212,13 @@ public class CollectConvertMain {
 				  type: 1,	
 				  tag: 3	
 				}],	*/
-			convertAttachments(lifecycle, newPoi, oldPoi, oldPoiObj);
+			convertAttachments(lifecycle, inPath,newPoi, oldPoi);
 			/*sameFid: "",	"查询库里的同一关系，找到同一关系poi赋值对应的fid（同一关系都是两两一组）;
 			若为删除对象(t_lifecycle: 1),则
 			1.不需要补足同一关系.
 			2.查找是否有同一关系，若有，则获取其同一关系poi的fid，查看txt中是否有该poi，若有同一关系poi，则在处理此同一关系poi时，需将sameFid赋值"""""
 			*/
-			convertSameFid(lifecycle, newPoi, oldPoi, oldPoiObj);
+			convertSameFid(conn,lifecycle, newPoi, oldPoi, oldPoiObj);
 			//线上：mergeDate: "20161110214719",	一体化：t_operateDate: "20170303213109",	原则：直接赋值
 			newPoi.put("t_operateDate", CollectConvertUtils.convertStr(oldPoi.getString("mergeDate")));
 			//sourceName: "Android",	sourceName: "Android"	直接赋值	
@@ -227,11 +241,23 @@ public class CollectConvertMain {
 	 * @param newPoi
 	 * @param oldPoi
 	 * @param oldPoiObj
+	 * @throws Exception 
 	 */
-	private static void convertSameFid(int lifecycle, JSONObject newPoi,
-			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+	private static void convertSameFid(Connection conn,int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) throws Exception {
+		if(lifecycle==3||lifecycle==1){//删除新增都不需要补充同一关系
+			newPoi.put("sameFid", "");
+			return;
+		}
+		HashSet<Long> poiSet = new HashSet<Long>();
+		poiSet.add(oldPoiObj.objPid());
+		Map<Long, Long> pidMap = IxPoiSelector.getSamePoiPidsByThisPids(conn,poiSet);
+		if(pidMap!=null&&pidMap.containsKey(oldPoiObj.objPid())){
+			BasicObj samePid = ObjSelector.selectByPid(conn, ObjectName.IX_POI, null, true,pidMap.get(oldPoiObj.objPid()), false);
+			if(samePid!=null){
+				newPoi.put("sameFid",((IxPoi)samePid.getMainrow()).getPoiNum());
+			}
+		}
 	}
 	/**
 	 * 线上：attachments: "[]",	
@@ -252,11 +278,43 @@ public class CollectConvertMain {
 	 * @param newPoi
 	 * @param oldPoi
 	 * @param oldPoiObj
+	 * @throws ParseException 
 	 */
-	private static void convertAttachments(int lifecycle, JSONObject newPoi,
-			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+	private static void convertAttachments(int lifecycle, String path,JSONObject newPoi,
+			JSONObject oldPoi) throws ParseException {
+		JSONArray oldAttachs = JSONArray.fromObject(oldPoi.getString("attachments"));
+		JSONArray newAttachs=new JSONArray();
+		if(oldAttachs==null||oldAttachs.size()==0){
+			newPoi.put("attachments", newAttachs);
+			return;
+		}		
+		for(Object oldAttach:oldAttachs){
+			JSONObject newAttachJson = new JSONObject();
+			JSONObject oldAttachJson = JSONObject.fromObject(oldAttach);
+			
+			newAttachJson.put("type", oldAttachJson.getInt("type"));
+			newAttachJson.put("tag", oldAttachJson.getInt("tag"));
+			
+			JSONObject extContent = new JSONObject();
+			extContent.put("shootDate", new SimpleDateFormat("yyyyMMddkkmmss").format(new Date()));
+			extContent.put("deviceNum","");
+			extContent.put("direction",0);
+			Geometry geometry=new WKTReader().read(newPoi.getString("geometry"));
+			extContent.put("latitude",geometry.getCoordinate().y);
+			extContent.put("longitude",geometry.getCoordinate().x);
+			newAttachJson.put("extContent", extContent);
+			
+			String idStr=UuidUtils.genUuid();
+			newAttachJson.put("id", idStr);
+			newAttachJson.put("content", idStr+".jpg");
+			
+			//照片重命名
+			String oldPath=oldAttachJson.getString("url");
+			String[] oldPathList = oldPath.split("/");
+			String oldName = oldPathList[oldPathList.length-1];
+			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr);
+		}		
+		newPoi.put("attachments", newAttachs);		
 	}
 	/**
 	 * 线上：gasStation: "null",（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour）	
@@ -269,8 +327,40 @@ public class CollectConvertMain {
 	 */
 	private static void convertGasStation(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		String oldGasStr=CollectConvertUtils.convertStr(oldPoi.getString("gasStation"));
+		if(oldGasStr==null||oldGasStr.isEmpty()){
+			newPoi.put("gasStation", null);
+			return;
+		}
+		JSONObject oldGas = JSONObject.fromObject(oldGasStr);
+		JSONObject newGas=new JSONObject();
+		newGas.put("fuelType",CollectConvertUtils.convertStr(oldGas.getString("fuelType")));
+		newGas.put("oilType",CollectConvertUtils.convertStr(oldGas.getString("oilType")));
+		newGas.put("egType",CollectConvertUtils.convertStr(oldGas.getString("egType")));
+		newGas.put("mgType",CollectConvertUtils.convertStr(oldGas.getString("mgType")));
+		newGas.put("payment",CollectConvertUtils.convertStr(oldGas.getString("payment")));
+		newGas.put("service",CollectConvertUtils.convertStr(oldGas.getString("service")));
+		newGas.put("servicePro",CollectConvertUtils.convertStr(oldGas.getString("servicePro")));
+		newGas.put("openHour",CollectConvertUtils.convertStr(oldGas.getString("openHour")));
+		//rowid获取
+		newGas.put("rowId", UuidUtils.genUuid());
+		if(lifecycle!=3){
+			List<IxPoiGasstation> gasList = oldPoiObj.getIxPoiGasstations();
+			if(gasList!=null&&gasList.size()>0){
+				IxPoiGasstation gas=gasList.get(0);
+				if(gas.getFuelType().equals(newGas.getString("fuelType"))
+						&&gas.getOilType().equals(newGas.getString("oilType"))
+						&&gas.getEgType().equals(newGas.getString("egType"))
+						&&gas.getMgType().equals(newGas.getString("mgType"))
+						&&gas.getPayment().equals(newGas.getString("payment"))
+						&&gas.getService().equals(newGas.getString("service"))
+						&&gas.getServiceProv().equals(newGas.getString("servicePro"))
+						&&gas.getOpenHour().equals(newGas.getString("openHour"))){
+					newGas.put("rowId", gas.getRowId());
+					}
+				}
+			}
+		newPoi.put("gasStation", newGas);
 	}
 	/**
 	 * 线上：chargingPole: ""	
@@ -284,8 +374,36 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingPole(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		newPoi.put("chargingPole", null);
+		JSONObject newCharging=new JSONObject();
+		if(lifecycle!=3){
+			List<IxPoiChargingplot> chargingsList = oldPoiObj.getIxPoiChargingplots();
+			if(chargingsList!=null&&chargingsList.size()>0){
+				IxPoiChargingplot charging=chargingsList.get(0);
+				newCharging.put("groupId",charging.getGroupId());
+				newCharging.put("acdc",charging.getAcdc());
+				newCharging.put("plugType",charging.getPlugType());
+				newCharging.put("power",charging.getPower());
+				newCharging.put("voltage",charging.getVoltage());
+				newCharging.put("current",charging.getCurrent());
+				newCharging.put("mode",charging.getMode());
+				newCharging.put("count",charging.getCount());
+				newCharging.put("plugNum",charging.getPlugNum());
+				newCharging.put("prices",charging.getPrices());
+				newCharging.put("openType",charging.getOpenType());
+				newCharging.put("availableState",charging.getAvailableState());
+				newCharging.put("manufacturer",charging.getManufacturer());
+				newCharging.put("factoryNum",charging.getFactoryNum());
+				newCharging.put("plotNum",charging.getPlotNum());
+				newCharging.put("productNum",charging.getProductNum());
+				newCharging.put("parkingNum",charging.getParkingNum());
+				newCharging.put("floor",charging.getFloor());
+				newCharging.put("locationType",charging.getLocationType());
+				newCharging.put("payment",charging.getPayment());
+				newCharging.put("rowId",charging.getRowId());
+				}
+			}
+		if(newCharging!=null&&newCharging.size()>0){newPoi.put("chargingPole", newCharging);}
 	}
 	/**
 	 * 线上：chargingStation: "null",	

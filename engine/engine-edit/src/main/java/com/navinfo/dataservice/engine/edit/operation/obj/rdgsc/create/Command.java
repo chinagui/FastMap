@@ -3,6 +3,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.create;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -11,9 +14,6 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /**
  * 道路交叉关系分为平交和立交。
@@ -27,6 +27,10 @@ public class Command extends AbstractCommand {
 	private String requester;
 
 	private Map<Integer,RdGscLink> linkMap = new HashMap<Integer,RdGscLink>();
+	
+	
+	
+	private JSONArray linkArray=new JSONArray();
 	
 	private JSONObject geoObject;
 	
@@ -50,9 +54,13 @@ public class Command extends AbstractCommand {
 	public Map<Integer, RdGscLink> getLinkMap() {
 		return linkMap;
 	}
-
+	
 	public void setLinkMap(Map<Integer, RdGscLink> linkMap) {
 		this.linkMap = linkMap;
+	}	
+
+	public JSONArray getLinkArray() {
+		return linkArray;
 	}
 
 	public JSONObject getGeoObject() {
@@ -71,39 +79,18 @@ public class Command extends AbstractCommand {
 	}
 
 	public Command(JSONObject json, String requester) throws JSONException {
+		
 		this.requester = requester;
 
 		this.setDbId(json.getInt("dbId"));
+		
 		JSONObject data = json.getJSONObject("data");
 		
 		this.geoObject = data.getJSONObject("geometry");
 		
 		if(data.getJSONArray("linkObjs") instanceof JSONArray)
 		{
-			JSONArray linkAttrArray = data.getJSONArray("linkObjs");
-			
-			for(int i = 0;i<linkAttrArray.size();i++)
-			{
-				JSONObject linkObj = linkAttrArray.getJSONObject(i);
-				
-				int level = linkObj.getInt("zlevel");
-				
-				int pid = linkObj.getInt("pid");
-				
-				String type = linkObj.getString("type");
-				
-				RdGscLink link = new RdGscLink();
-				
-				link.setTableName(type);
-				
-				link.setLinkPid(pid);
-				
-				link.setZlevel(level);
-				
-				linkMap.put(level,link);
-				
-			}
-			
+			linkArray = data.getJSONArray("linkObjs");
 		}
 		
 		if(data.containsKey("gscPoint"))
@@ -122,7 +109,6 @@ public class Command extends AbstractCommand {
 			geoPoint.put("coordinates", new double[] { longitude, latitude });
 			
 			this.gscPoint = GeoTranslator.geojson2Jts(geoPoint, 100000, 0);
-		}
-		
+		}		
 	}
 }

@@ -1,25 +1,88 @@
 package com.navinfo.dataservice.scripts.tmp.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.scripts.JobScriptsInterface;
+import com.navinfo.dataservice.scripts.tmp.CollectConvert;
 
 import net.sf.json.JSONObject;
 
 public class CollectConvertUtils {
+	private static Logger log = LogManager.getLogger(CollectConvert.class);
+
 	/**
 	 * 输入的zip包路径排序list
 	 * 输入：incremental.zip解压后的路径，例如：data/incremental
 	 * 输出：List<String> pathList，例如：data/incremental/20161114/10047/IncrementalData_3565_10047_20161114203047/
 	 * 原则：
-	 * 1.incremental.zip解压
+	 * 1.incremental.zip解压--此步骤删除，默认已经解压好
 	 * 2.IncrementalData_开头的文件夹IncrementalData_3565_10047_20161114203047，
 	 * 以_分割数组后，按照数组的最后一位排序，时间靠前的在txt的最上面。
 	 * @param inPath
 	 * @return
 	 */
 	public static List<String> listPath(String inPath) {
-		return null;
+		File file = new File(inPath);
+		List<String> pathList = new ArrayList<String>();
+		List<String> resultPathList = new ArrayList<String>();
+		getDirectory(file,pathList);
+		Map<String,String> map = new HashMap<String,String>();
+		List<String> keys = new ArrayList<String>();
+		for(String pathStr:pathList){
+			Path path = Paths.get(pathStr);
+
+			String fileName = path.getFileName().toString();
+			String[] cells = fileName.split("_");
+			String cell = cells[cells.length-1];
+			keys.add(cell);
+			map.put(cell, pathStr);
+		}
+		
+		Collections.sort(keys);
+		for(String key:keys){
+			resultPathList.add(map.get(key));
+		}
+		return resultPathList;
 	}
+	
+	public static void getDirectory(File file, List<String> list){
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File f : flist) {
+		    if (f.isDirectory()) {
+		        for(File fileInner:f.listFiles()){
+		        	if(fileInner.getAbsoluteFile().toString().contains(".json")){
+		        		list.add(f.getAbsolutePath());
+		        		log.info("Dir==>" + f.getAbsolutePath());
+		        		break;
+		        	}
+		        }
+		        getDirectory(f,list);
+		    } else {
+		    }
+		}
+	}
+
 	/**
 	 * 读取模块
 	 * 文件：com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils.java
@@ -77,15 +140,69 @@ public class CollectConvertUtils {
 	 * Static void copyPhoto(String outPath,String inPath)
 	 * 实现方式：java
 	 * 输入：
-	 * String outPath 照片当前路径
-	 * String inPath 照片拷贝后的路径，即/data/resource/upload/序列号
+	 * String outPathStr 照片当前路径
+	 * String inPathStr 照片拷贝后的路径，即/data/resource/upload/序列号
 	 * 输出：无 
-	 * 原则：outPath中的所有后缀为jpg的照片均拷贝到路径inPath下
-	 * @param outPath
-	 * @param inPath
+	 * 原则：outPathStr中的所有后缀为jpg的照片均拷贝到路径inPath下
+	 * @param outPathStr
+	 * @param inPathStr
+	 * @throws IOException 
 	 */
-	public static void copyPhoto(String outPath,String inPath) {
-		
+	public static void copyPhoto(String outPathStr,String inPathStr) throws IOException {
+		File file = new File(outPathStr);
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File srcFile : flist) {
+		    if (srcFile.isDirectory()) {
+        		log.info("Dir==>" + srcFile.getAbsolutePath());
+		    	copyPhoto(srcFile.getAbsolutePath(),inPathStr);
+		    } else {
+		    	if(srcFile.getAbsoluteFile().toString().contains(".jpg")){
+	        		log.info("photo==>" + srcFile.getAbsolutePath());
+		    		Path outPath = Paths.get(srcFile.getAbsolutePath());
+		    		String photoName = outPath.getFileName().toString();
+		    		
+		    		Path inPath = Paths.get(inPathStr,photoName);
+		    		File destFile = new File(inPath.toString());
+		    		 // 判断源文件是否存在  
+		            if (!srcFile.exists()) { 
+		            	log.info("photo:" + outPath + " not exists");
+		            } else if (!srcFile.isFile()) {  
+		            	log.info("photo:" + outPath + " is not a file"); 
+		            }
+		            
+		            // 复制文件  
+		            int byteread = 0; // 读取的字节数  
+		            InputStream in = null;  
+		            OutputStream out = null;  
+		      
+		            try {  
+		                in = new FileInputStream(srcFile);  
+		                out = new FileOutputStream(destFile);  
+		                byte[] buffer = new byte[1024];  
+		      
+		                while ((byteread = in.read(buffer)) != -1) {  
+		                    out.write(buffer, 0, byteread);  
+		                }  
+		            } catch (FileNotFoundException e) {  
+		                log.info("file not exists");
+		            } catch (IOException e) {  
+		            	throw  e;  
+		            } finally {  
+		                try {  
+		                    if (out != null)  
+		                        out.close();  
+		                    if (in != null)  
+		                        in.close();  
+		                } catch (IOException e) {  
+		                	throw e; 
+		                }  
+		            }
+	        	}
+		    }
+		}
 	}
 	/**
 	 * 照片重命名模块
@@ -100,7 +217,26 @@ public class CollectConvertUtils {
 	 * @param newName
 	 */
 	public static void reNamePhoto(String photoPath,String newName) {
-		
+		Path filePath = Paths.get(photoPath);
+		Path path = filePath.getParent();
+		String oldName = filePath.getFileName().toString();
+		if(oldName.equals(newName)){
+			log.info("oldName equals newName");
+			return;
+		}
+		File oldfile = new File(photoPath);
+		Path newfilePath = Paths.get(path.toString(),newName);
+		File newfile = new File(newfilePath.toString()); 
+        if(!oldfile.exists()){
+        	return;//重命名文件不存在
+       	}
+       	if(newfile.exists()){
+       		//若在该目录下已经有一个文件和新文件名相同，则不允许重命名 
+			log.info("newName already exists");
+       	}
+       	else{ 
+       		oldfile.renameTo(newfile); 
+       	} 
 	}
 	/**
 	 * 获取序列号模块
@@ -156,5 +292,20 @@ public class CollectConvertUtils {
 		BigDecimal   b   =   new   BigDecimal(old);  
 		double   f1   =   b.setScale(scale,   BigDecimal.ROUND_HALF_UP).doubleValue();
 		return f1;
+	}
+	
+	public static void main(String[] args) throws Exception {
+//		String path = "E:\\Users\\upload";
+//		List<String> resultPathList = listPath(path);
+		
+//		String outPathStr = "E:\\Users\\upload\\";
+//		String inPathStr = "E:\\Users\\upload\\photo";
+//		copyPhoto( outPathStr, inPathStr);
+		
+//		String photoPath = "E:\\Users\\upload\\photo\\366620161022152631.jpg";
+		String photoPath = "E:\\Users\\upload\\photo\\419020161103145434.jpg";
+		String newName = "aaa.jpg";
+		reNamePhoto( photoPath, newName);
+		
 	}
 }

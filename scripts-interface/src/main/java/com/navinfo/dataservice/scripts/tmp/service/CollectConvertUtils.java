@@ -1,9 +1,18 @@
 package com.navinfo.dataservice.scripts.tmp.service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.PrintWriter;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import org.apache.solr.common.StringUtils;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
 
 public class CollectConvertUtils {
 	/**
@@ -32,8 +41,54 @@ public class CollectConvertUtils {
 	 * @param jsonFilePath
 	 * @return
 	 */
-	public static List<JSONObject> readJsonObjects(String jsonFilePath) {
-		return null;
+	public static List<JSONObject> readJsonObjects(String jsonFilePath){
+		Scanner lines = null;
+		List<JSONObject> datas = new ArrayList<JSONObject>();
+		try {
+			if(StringUtils.isEmpty(jsonFilePath)){
+				throw new Exception("路径为:"+jsonFilePath+",文件目录不存在");
+			}
+			File file = new File(jsonFilePath);
+			if(!file.exists()){
+				throw new Exception("路径为:"+jsonFilePath+",文件目录不存在");
+			}
+			//判断文件类型
+			if(file.isFile()&&file.getName().equals("Datum_Point.json")){
+				//获取转换json
+				lines = new Scanner(new FileInputStream(file));
+				while(lines.hasNextLine()){
+					String line = lines.nextLine();
+					//处理字段值为"null"字符串
+					JsonConfig jsonConfig = new JsonConfig();
+					jsonConfig.registerJsonValueProcessor(String.class, new JsonValueProcessor() {
+						
+						@Override
+						public Object processObjectValue(String paramString, Object paramObject, JsonConfig paramJsonConfig) {
+							// TODO Auto-generated method stub
+							if ("\"null\"".equals(paramObject)) {
+								paramObject = JSONNull.getInstance();
+							}
+							return paramObject;
+						}
+						
+						@Override
+						public Object processArrayValue(Object paramObject, JsonConfig paramJsonConfig) {
+							// TODO Auto-generated method stub
+							return null;
+						}
+					});
+					JSONObject jsonObject = JSONObject.fromObject(line,jsonConfig);
+					datas.add(jsonObject);
+				}
+			}
+		} catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(lines!=null){
+				lines.close();
+			}
+		}
+		return datas;
 	}
 	/**
 	 * 写入模块
@@ -51,7 +106,19 @@ public class CollectConvertUtils {
 	 * @param newListJson
 	 */
 	public static void writeJSONObject2TxtFile(String txtPath,List<JSONObject> newListJson) {
-		
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (JSONObject jso : newListJson) {
+				pw.println(jso.toString());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			if(pw!=null){
+				pw.close();
+			}
+		}
 	}
 	/**
 	 * 写入模块
@@ -69,7 +136,19 @@ public class CollectConvertUtils {
 	 * @param newListJson
 	 */
 	public static void writeInteger2TxtFile(String txtPath,List<Integer> newListJson) {
-		
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (Integer seq : newListJson) {
+				pw.println(String.valueOf(seq));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			if(pw!=null){
+				pw.close();
+			}
+		}
 	}
 	/**
 	 * 照片拷贝模块
@@ -156,5 +235,20 @@ public class CollectConvertUtils {
 		BigDecimal   b   =   new   BigDecimal(old);  
 		double   f1   =   b.setScale(scale,   BigDecimal.ROUND_HALF_UP).doubleValue();
 		return f1;
+	}
+	
+	/**
+	 * 创建导入路径
+	 * false:存在当前转换路径,true:没有路径,创建成功
+	 * @param inPath
+	 * @return
+	 */
+	public static boolean createMkdir(String inPath){
+		if(inPath != null){
+			File dirFile = new File(inPath);
+			boolean mkdirs = dirFile.mkdirs();
+			return mkdirs;
+		}
+		return false;
 	}
 }

@@ -1,25 +1,38 @@
 package com.navinfo.dataservice.scripts.tmp.service;
 
 import java.sql.Connection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjType;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
@@ -38,17 +51,19 @@ public class CollectConvertMain {
 	 * 1.json格式转换，具体原则参照excel
 	 * 2.照片转换时，可调用照片重命名模块
 	 * 3.根据一体化格式geo获取dbid模块
+	 * @param dbId 可选参数前端脚本可能会传入，非0则用，否则自行计算
+	 * @param inPath data/12/
 	 * @param oldPoi
 	 * @return
 	 * @throws Exception 
 	 */
-	public static JSONObject convertMain(JSONObject oldPoi) throws Exception{
+	public static JSONObject convertMain(int dbId, String inPath, JSONObject oldPoi) throws Exception{
 		JSONObject newPoi=new JSONObject();
 		Connection conn = null;
 		try{
 			//lifecycle: "2"	t_lifecycle: 3,	字符串转数字后赋值
 			//0 无； 1 删除；2 更新；3 新增；
-			int lifecycle=Integer.valueOf(oldPoi.getString("lifecycle"));
+			int lifecycle=CollectConvertUtils.convertInt(oldPoi.getString("lifecycle"));
 			newPoi.put("t_lifecycle", lifecycle);
 			/*
 			 * 线上 geometry: "POINT (120.1733200000000039 32.3584900000000033)"
@@ -59,7 +74,7 @@ public class CollectConvertMain {
 			String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
 			newPoi.put("geometry", newGeoStr);
 			//获取poi所在大区连接
-			int dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);		
+			if(dbId==0){dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);}	
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			/*线上 fid: "0523081102MFY00291",	
 			 *一体化fid: "00166420170303213016",	原则：直接赋值
@@ -76,7 +91,7 @@ public class CollectConvertMain {
 			}
 			convertPid(lifecycle,newPoi,oldPoi,oldPoiObj);
 			/*线上meshid: "486041",	一体化meshid: 0,	原则：字符串转数字后赋值*/
-			newPoi.put("meshid", Integer.valueOf(oldPoi.getString("meshid")));
+			newPoi.put("meshid",CollectConvertUtils.convertInt(oldPoi.getString("meshid")));
 			//name: "泰州市顺旺铸造有限公司",	name: "Ｉｉｉｉ",	"null"转成""；否则，直接赋值
 			newPoi.put("name", CollectConvertUtils.convertStr(oldPoi.getString("name")));
 			//kindCode: "220100",	kindCode: "110101",	直接赋值
@@ -84,7 +99,7 @@ public class CollectConvertMain {
 			//vipFlag: "null",	vipFlag: "",	"null"转成""；否则，直接赋值
 			newPoi.put("vipFlag", CollectConvertUtils.convertStr(oldPoi.getString("vipFlag")));
 			//truck: "0",	truck: 0,	字符串转数字后赋值
-			newPoi.put("truck", Integer.valueOf(oldPoi.getString("truck")));
+			newPoi.put("truck", CollectConvertUtils.convertInt(oldPoi.getString("truck")));
 			/* 线上guide: "{\"latitude\":32.35849986671124,\"longitude\":120.17348080519618,\"linkPid\":0}",	
 			 * 一体化guide: {linkPid: 208002607,longitude: 116.47924,latitude: 40.01292}
 			 * 原则：guide的字符串转json格式；linkPid，直接赋值；longitude，latitude四舍五入截取小数点后5位赋值
@@ -102,7 +117,7 @@ public class CollectConvertMain {
 			//level: "B3",	level: "B3",	"null"转成""；否则，直接赋值
 			newPoi.put("level", CollectConvertUtils.convertStr(oldPoi.getString("level")));
 			//open24H: "2",	open24H: 0,	字符串转数字后赋值
-			newPoi.put("open24H", Integer.valueOf(oldPoi.getString("open24H")));
+			newPoi.put("open24H", CollectConvertUtils.convertInt(oldPoi.getString("open24H")));
 			/* 线上relateParent: "null",（或者"relateParent":"{\"parentFid\":\"00366620161022153845\",\"parentRowkey\":null}"）
 			 * 一体化parentFid: "",（或者"parentFid":"00000220170306135753"）	
 			 * 原则："null"转成""；relateParent的字符串转json格式；取parentFid直接赋值
@@ -155,7 +170,7 @@ public class CollectConvertMain {
 			if(oldSportsVenues.isEmpty()){
 				newPoi.put("sportsVenues", "");
 			}else{
-				newPoi.put("sportsVenues", JSONObject.fromObject(oldSportsVenues).getString("buildingType"));
+				newPoi.put("sportsVenues", CollectConvertUtils.convertStr(JSONObject.fromObject(oldSportsVenues).getString("buildingType")));
 			}
 			//chargingStation: "null",	chargingStation: null,(或者type,changeBrands,changeOpenType,servicePro,chargingNum,openHour,parkingFees,parkingInfo,availableState,rowId)	取oracle库中对应记录生成，没有则赋值""
 			convertChargingStation(lifecycle,newPoi,oldPoi,oldPoiObj);
@@ -170,10 +185,8 @@ public class CollectConvertMain {
 			}else{
 				JSONObject newIndoor=new JSONObject();
 				JSONObject oldIndoorJson=JSONObject.fromObject(oldIndoor);
-				newIndoor.put("type", oldIndoorJson.getString("type"));
-				String floor=oldIndoorJson.getString("floor");
-				if(floor.isEmpty()){newIndoor.put("floor","");}
-				else{newIndoor.put("floor", floor);}
+				newIndoor.put("type", oldIndoorJson.getInt("type"));
+				newIndoor.put("floor",CollectConvertUtils.convertStr(oldIndoorJson.getString("floor")));
 				newPoi.put("indoor", newIndoor);
 			}
 			//brands: "[]"(或者包含code),	chain: "",（"chain":"304D"）	brands的字符串转json格式；为[]，赋值"";若有值，取第一个的code赋值chain
@@ -181,7 +194,7 @@ public class CollectConvertMain {
 			if(oldBrands==null||oldBrands.size()==0){
 				newPoi.put("chain", "");
 			}else{
-				newPoi.put("chain", JSONObject.fromObject(oldBrands.get(0)).getString("code"));
+				newPoi.put("chain", CollectConvertUtils.convertStr(JSONObject.fromObject(oldBrands.get(0)).getString("code")));
 			}
 			//rawFields: "null",	rawFields: "",	"null"转成""；否则，直接赋值
 			newPoi.put("rawFields", CollectConvertUtils.convertStr(oldPoi.getString("rawFields")));
@@ -198,18 +211,18 @@ public class CollectConvertMain {
 				  type: 1,	
 				  tag: 3	
 				}],	*/
-			convertAttachments(lifecycle, newPoi, oldPoi, oldPoiObj);
+			convertAttachments(lifecycle, inPath,newPoi, oldPoi);
 			/*sameFid: "",	"查询库里的同一关系，找到同一关系poi赋值对应的fid（同一关系都是两两一组）;
 			若为删除对象(t_lifecycle: 1),则
 			1.不需要补足同一关系.
 			2.查找是否有同一关系，若有，则获取其同一关系poi的fid，查看txt中是否有该poi，若有同一关系poi，则在处理此同一关系poi时，需将sameFid赋值"""""
 			*/
-			convertSameFid(lifecycle, newPoi, oldPoi, oldPoiObj);
+			convertSameFid(conn,lifecycle, newPoi, oldPoi, oldPoiObj);
 			//线上：mergeDate: "20161110214719",	一体化：t_operateDate: "20170303213109",	原则：直接赋值
 			newPoi.put("t_operateDate", CollectConvertUtils.convertStr(oldPoi.getString("mergeDate")));
 			//sourceName: "Android",	sourceName: "Android"	直接赋值	
 			newPoi.put("sourceName", CollectConvertUtils.convertStr(oldPoi.getString("sourceName")));
-			return null;
+			return newPoi;
 		}catch (Exception e) {
 			DbUtils.commitAndCloseQuietly(conn);
 			throw e;
@@ -227,11 +240,23 @@ public class CollectConvertMain {
 	 * @param newPoi
 	 * @param oldPoi
 	 * @param oldPoiObj
+	 * @throws Exception 
 	 */
-	private static void convertSameFid(int lifecycle, JSONObject newPoi,
-			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+	private static void convertSameFid(Connection conn,int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) throws Exception {
+		if(lifecycle==3||lifecycle==1){//删除新增都不需要补充同一关系
+			newPoi.put("sameFid", "");
+			return;
+		}
+		HashSet<Long> poiSet = new HashSet<Long>();
+		poiSet.add(oldPoiObj.objPid());
+		Map<Long, Long> pidMap = IxPoiSelector.getSamePoiPidsByThisPids(conn,poiSet);
+		if(pidMap!=null&&pidMap.containsKey(oldPoiObj.objPid())){
+			BasicObj samePid = ObjSelector.selectByPid(conn, ObjectName.IX_POI, null, true,pidMap.get(oldPoiObj.objPid()), false);
+			if(samePid!=null){
+				newPoi.put("sameFid",((IxPoi)samePid.getMainrow()).getPoiNum());
+			}
+		}
 	}
 	/**
 	 * 线上：attachments: "[]",	
@@ -252,11 +277,43 @@ public class CollectConvertMain {
 	 * @param newPoi
 	 * @param oldPoi
 	 * @param oldPoiObj
+	 * @throws ParseException 
 	 */
-	private static void convertAttachments(int lifecycle, JSONObject newPoi,
-			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+	private static void convertAttachments(int lifecycle, String path,JSONObject newPoi,
+			JSONObject oldPoi) throws ParseException {
+		JSONArray oldAttachs = JSONArray.fromObject(oldPoi.getString("attachments"));
+		JSONArray newAttachs=new JSONArray();
+		if(oldAttachs==null||oldAttachs.size()==0){
+			newPoi.put("attachments", newAttachs);
+			return;
+		}		
+		for(Object oldAttach:oldAttachs){
+			JSONObject newAttachJson = new JSONObject();
+			JSONObject oldAttachJson = JSONObject.fromObject(oldAttach);
+			
+			newAttachJson.put("type", oldAttachJson.getInt("type"));
+			newAttachJson.put("tag", oldAttachJson.getInt("tag"));
+			
+			JSONObject extContent = new JSONObject();
+			extContent.put("shootDate", new SimpleDateFormat("yyyyMMddkkmmss").format(new Date()));
+			extContent.put("deviceNum","");
+			extContent.put("direction",0);
+			Geometry geometry=new WKTReader().read(newPoi.getString("geometry"));
+			extContent.put("latitude",geometry.getCoordinate().y);
+			extContent.put("longitude",geometry.getCoordinate().x);
+			newAttachJson.put("extContent", extContent);
+			
+			String idStr=UuidUtils.genUuid();
+			newAttachJson.put("id", idStr);
+			newAttachJson.put("content", idStr+".jpg");
+			
+			//照片重命名
+			String oldPath=oldAttachJson.getString("url");
+			String[] oldPathList = oldPath.split("/");
+			String oldName = oldPathList[oldPathList.length-1];
+			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr+".jpg");
+		}		
+		newPoi.put("attachments", newAttachs);		
 	}
 	/**
 	 * 线上：gasStation: "null",（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour）	
@@ -269,8 +326,40 @@ public class CollectConvertMain {
 	 */
 	private static void convertGasStation(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		String oldGasStr=CollectConvertUtils.convertStr(oldPoi.getString("gasStation"));
+		if(oldGasStr==null||oldGasStr.isEmpty()){
+			newPoi.put("gasStation", null);
+			return;
+		}
+		JSONObject oldGas = JSONObject.fromObject(oldGasStr);
+		JSONObject newGas=new JSONObject();
+		newGas.put("fuelType",CollectConvertUtils.convertStr(oldGas.getString("fuelType")));
+		newGas.put("oilType",CollectConvertUtils.convertStr(oldGas.getString("oilType")));
+		newGas.put("egType",CollectConvertUtils.convertStr(oldGas.getString("egType")));
+		newGas.put("mgType",CollectConvertUtils.convertStr(oldGas.getString("mgType")));
+		newGas.put("payment",CollectConvertUtils.convertStr(oldGas.getString("payment")));
+		newGas.put("service",CollectConvertUtils.convertStr(oldGas.getString("service")));
+		newGas.put("servicePro",CollectConvertUtils.convertStr(oldGas.getString("servicePro")));
+		newGas.put("openHour",CollectConvertUtils.convertStr(oldGas.getString("openHour")));
+		//rowid获取
+		newGas.put("rowId", UuidUtils.genUuid());
+		if(lifecycle!=3){
+			List<IxPoiGasstation> gasList = oldPoiObj.getIxPoiGasstations();
+			if(gasList!=null&&gasList.size()>0){
+				IxPoiGasstation gas=gasList.get(0);
+				if(CollectConvertUtils.compareStr(gas.getFuelType(),newGas.getString("fuelType"))
+						&&CollectConvertUtils.compareStr(gas.getOilType(),newGas.getString("oilType"))
+						&&CollectConvertUtils.compareStr(gas.getEgType(),newGas.getString("egType"))
+						&&CollectConvertUtils.compareStr(gas.getMgType(),newGas.getString("mgType"))
+						&&CollectConvertUtils.compareStr(gas.getPayment(),newGas.getString("payment"))
+						&&CollectConvertUtils.compareStr(gas.getService(),newGas.getString("service"))
+						&&CollectConvertUtils.compareStr(gas.getServiceProv(),newGas.getString("servicePro"))
+						&&CollectConvertUtils.compareStr(gas.getOpenHour(),newGas.getString("openHour"))){
+					newGas.put("rowId", gas.getRowId());
+					}
+				}
+			}
+		newPoi.put("gasStation", newGas);
 	}
 	/**
 	 * 线上：chargingPole: ""	
@@ -284,8 +373,36 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingPole(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		newPoi.put("chargingPole", null);
+		JSONObject newCharging=new JSONObject();
+		if(lifecycle!=3){
+			List<IxPoiChargingplot> chargingsList = oldPoiObj.getIxPoiChargingplots();
+			if(chargingsList!=null&&chargingsList.size()>0){
+				IxPoiChargingplot charging=chargingsList.get(0);
+				newCharging.put("groupId",charging.getGroupId());
+				newCharging.put("acdc",charging.getAcdc());
+				newCharging.put("plugType",charging.getPlugType());
+				newCharging.put("power",charging.getPower());
+				newCharging.put("voltage",charging.getVoltage());
+				newCharging.put("current",charging.getCurrent());
+				newCharging.put("mode",charging.getMode());
+				newCharging.put("count",charging.getCount());
+				newCharging.put("plugNum",charging.getPlugNum());
+				newCharging.put("prices",charging.getPrices());
+				newCharging.put("openType",charging.getOpenType());
+				newCharging.put("availableState",charging.getAvailableState());
+				newCharging.put("manufacturer",charging.getManufacturer());
+				newCharging.put("factoryNum",charging.getFactoryNum());
+				newCharging.put("plotNum",charging.getPlotNum());
+				newCharging.put("productNum",charging.getProductNum());
+				newCharging.put("parkingNum",charging.getParkingNum());
+				newCharging.put("floor",charging.getFloor());
+				newCharging.put("locationType",charging.getLocationType());
+				newCharging.put("payment",charging.getPayment());
+				newCharging.put("rowId",charging.getRowId());
+				}
+			}
+		if(newCharging!=null&&newCharging.size()>0){newPoi.put("chargingPole", newCharging);}
 	}
 	/**
 	 * 线上：chargingStation: "null",	
@@ -358,17 +475,17 @@ public class CollectConvertMain {
 				//rating,creditCards,description,checkInTime,checkOutTime,roomCount,roomType,
 				//roomPrice,breakfast,service,parking,openHour
 				if(hotel.getRating()==newHotel.getInt("rating")
-						&&hotel.getCreditCard().equals(newHotel.getString("creditCards"))
-						&&hotel.getLongDescription().equals(newHotel.getString("description"))
-						&&hotel.getCheckinTime().equals(newHotel.getString("checkInTime"))
-						&&hotel.getCheckoutTime().equals(newHotel.getString("checkOutTime"))
+						&&CollectConvertUtils.compareStr(hotel.getCreditCard(),newHotel.getString("creditCards"))
+						&&CollectConvertUtils.compareStr(hotel.getLongDescription(),newHotel.getString("description"))
+						&&CollectConvertUtils.compareStr(hotel.getCheckinTime(),newHotel.getString("checkInTime"))
+						&&CollectConvertUtils.compareStr(hotel.getCheckoutTime(),newHotel.getString("checkOutTime"))
 						&&hotel.getRoomCount()==newHotel.getInt("roomCount")
-						&&hotel.getRoomType().equals(newHotel.getString("roomType"))
-						&&hotel.getRoomPrice().equals(newHotel.getString("roomPrice"))
+						&&CollectConvertUtils.compareStr(hotel.getRoomType(),newHotel.getString("roomType"))
+						&&CollectConvertUtils.compareStr(hotel.getRoomPrice(),newHotel.getString("roomPrice"))
 						&&hotel.getBreakfast()==newHotel.getInt("breakfast")
-						&&hotel.getService().equals(newHotel.getString("service"))
+						&&CollectConvertUtils.compareStr(hotel.getService(),newHotel.getString("service"))
 						&&hotel.getParking()==newHotel.getInt("parking")
-						&&hotel.getOpenHour().equals(newHotel.getString("openHour"))){
+						&&CollectConvertUtils.compareStr(hotel.getOpenHour(),newHotel.getString("openHour"))){
 					newHotel.put("rowId", hotel.getRowId());
 					}
 				}
@@ -395,7 +512,7 @@ public class CollectConvertMain {
 		}
 		JSONObject oldParkings = JSONObject.fromObject(oldParkingsStr);
 		JSONObject newParkings=new JSONObject();
-		newParkings.put("tollStd",CollectConvertUtils.convertStr(oldParkings.getString("foodtype")));
+		newParkings.put("tollStd",CollectConvertUtils.convertStr(oldParkings.getString("tollStd")));
 		newParkings.put("tollDes",CollectConvertUtils.convertStr(oldParkings.getString("tollDes")));
 		newParkings.put("tollWay",CollectConvertUtils.convertStr(oldParkings.getString("tollWay")));
 		newParkings.put("openTime",CollectConvertUtils.convertStr(oldParkings.getString("openTime")));
@@ -421,20 +538,20 @@ public class CollectConvertMain {
 				IxPoiParking parking=parkingList.get(0);
 				//tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
 				// * resHigh,resWidth,resWeigh,certificate,vehicle,haveSpecialPlace,womenNum,handicapNum,miniNum,vipNum
-				if(parking.getTollStd().equals(newParkings.getString("tollStd"))
-						&&parking.getTollDes().equals(newParkings.getString("tollDes"))
-						&&parking.getTollWay().equals(newParkings.getString("tollWay"))
-						&&parking.getOpenTiime().equals(newParkings.getString("openTime"))
+				if(CollectConvertUtils.compareStr(parking.getTollStd(),newParkings.getString("tollStd"))
+						&&CollectConvertUtils.compareStr(parking.getTollDes(),newParkings.getString("tollDes"))
+						&&CollectConvertUtils.compareStr(parking.getTollWay(),newParkings.getString("tollWay"))
+						&&CollectConvertUtils.compareStr(parking.getOpenTiime(),newParkings.getString("openTime"))
 						&&parking.getTotalNum()==newParkings.getInt("totalNum")
-						&&parking.getPayment().equals(newParkings.getString("payment"))
-						&&parking.getRemark().equals(newParkings.getString("remark"))
-						&&parking.getParkingType().equals(newParkings.getString("buildingType"))
+						&&CollectConvertUtils.compareStr(parking.getPayment(),newParkings.getString("payment"))
+						&&CollectConvertUtils.compareStr(parking.getRemark(),newParkings.getString("remark"))
+						&&CollectConvertUtils.compareStr(parking.getParkingType(),newParkings.getString("buildingType"))
 						&&parking.getResHigh()==newParkings.getDouble("resHigh")
 						&&parking.getResWidth()==newParkings.getDouble("resWidth")
 						&&parking.getResWeigh()==newParkings.getDouble("resWeigh")
 						&&parking.getCertificate()==newParkings.getInt("certificate")
 						&&parking.getVehicle()==newParkings.getInt("vehicle")
-						&&parking.getHaveSpecialplace().equals(newParkings.getString("haveSpecialPlace"))
+						&&CollectConvertUtils.compareStr(parking.getHaveSpecialplace(),newParkings.getString("haveSpecialPlace"))
 						&&parking.getWomenNum()==newParkings.getInt("womenNum")
 						&&parking.getHandicapNum()==newParkings.getInt("handicapNum")
 						&&parking.getMiniNum()==newParkings.getInt("miniNum")
@@ -480,11 +597,11 @@ public class CollectConvertMain {
 			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
 			if(restList!=null&&restList.size()>0){
 				IxPoiRestaurant rest=restList.get(0);
-				if(rest.getFoodType().equals(newFoodTypes.getString("foodtype"))
-						&&rest.getOpenHour().equals(newFoodTypes.getString("openHour"))
+				if(CollectConvertUtils.compareStr(rest.getFoodType(),newFoodTypes.getString("foodtype"))
+						&&CollectConvertUtils.compareStr(rest.getOpenHour(),newFoodTypes.getString("openHour"))
 						&&rest.getParking()==newFoodTypes.getInt("parking")
 						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
-						&&rest.getCreditCard().equals(newFoodTypes.getString("creditCards"))){
+						&&CollectConvertUtils.compareStr(rest.getCreditCard(),newFoodTypes.getString("creditCards"))){
 					newFoodTypes.put("rowId", rest.getRowId());
 					}
 				}
@@ -527,7 +644,7 @@ public class CollectConvertMain {
 				List<IxPoiContact> contactList = oldPoiObj.getIxPoiContacts();
 				if(contactList!=null&&contactList.size()>0){
 					for(IxPoiContact poiContact:contactList){
-						if(poiContact.getContact().equals(oldContactJson.getString("number"))
+						if(CollectConvertUtils.compareStr(poiContact.getContact(),oldContactJson.getString("number"))
 								&&poiContact.getContactType()==oldContactJson.getInt("type")
 								&&poiContact.getPriority()==oldContactJson.getInt("priority")){
 							newContactJson.put("rowId", poiContact.getRowId());

@@ -2,12 +2,16 @@ package com.navinfo.dataservice.scripts.tmp.service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.PrintWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
@@ -18,11 +22,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
+import org.apache.solr.common.StringUtils;
 import java.util.Map;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import net.sf.json.JSONNull;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -41,6 +48,8 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
 
 public class CollectConvertUtils {
 	private static Logger log = LogManager.getLogger(CollectConvert.class);
@@ -113,7 +122,57 @@ public class CollectConvertUtils {
 	 * @return
 	 */
 	public static List<JSONObject> readJsonObjects(String jsonFilePath) {
+		Scanner lines = null;
+		List<JSONObject> datas = new ArrayList<JSONObject>();
+		try {
+			if(StringUtils.isEmpty(jsonFilePath)){
+				log.info("路径为:"+jsonFilePath+",文件目录不存在");
+			}
+			File file = new File(jsonFilePath);
+			if(!file.exists()){
+				log.info("路径为:"+jsonFilePath+",文件目录不存在");
+			}
+			//判断文件类型
+			if(file.isFile()&&file.getName().equals("Datum_Point.json")){
+				//获取转换json
+				lines = new Scanner(new FileInputStream(file));
+				while(lines.hasNextLine()){
+					String line = lines.nextLine();
+					//处理字段值为"null"字符串
+					JsonConfig jsonConfig = new JsonConfig();
+					jsonConfig.registerJsonValueProcessor(String.class, new JsonValueProcessor() {
+						
+						@Override
+						public Object processObjectValue(String paramString, Object paramObject, JsonConfig paramJsonConfig) {
+							// TODO Auto-generated method stub
+							if ("\"null\"".equals(paramObject)) {
+								paramObject = JSONNull.getInstance();
+							}
+							return paramObject;
+						}
+						
+						@Override
+						public Object processArrayValue(Object paramObject, JsonConfig paramJsonConfig) {
+							// TODO Auto-generated method stub
 		return null;
+	}
+					});
+					JSONObject jsonObject = JSONObject.fromObject(line,jsonConfig);
+					datas.add(jsonObject);
+				}
+			}
+		} catch(Exception e){
+			log.error(e.getMessage(), e);
+		}finally{
+			try {
+				if(lines!=null){
+					lines.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
+			}
+		}
+		return datas;
 	}
 	/**
 	 * 写入模块
@@ -131,7 +190,23 @@ public class CollectConvertUtils {
 	 * @param newListJson
 	 */
 	public static void writeJSONObject2TxtFile(String txtPath,List<JSONObject> newListJson) {
-		
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (JSONObject jso : newListJson) {
+				pw.println(jso.toString());
+	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
+			}
+		}
 	}
 	/**
 	 * 写入模块
@@ -149,7 +224,23 @@ public class CollectConvertUtils {
 	 * @param newListJson
 	 */
 	public static void writeInteger2TxtFile(String txtPath,List<Integer> newListJson) {
-		
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (Integer seq : newListJson) {
+				pw.println(String.valueOf(seq));
+	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
+			}
+		}
 	}
 	/**
 	 * 照片拷贝模块
@@ -357,7 +448,7 @@ public class CollectConvertUtils {
 	 * @return
 	 */
 	public static String convertStr(String oldStr){
-		if(oldStr.equals("null")){
+		if(oldStr==null||oldStr.isEmpty()||oldStr.equals("null")){
 			return "";
 		}else{return oldStr;}
 	}
@@ -372,6 +463,21 @@ public class CollectConvertUtils {
 		BigDecimal   b   =   new   BigDecimal(old);  
 		double   f1   =   b.setScale(scale,   BigDecimal.ROUND_HALF_UP).doubleValue();
 		return f1;
+	}
+	
+	/**
+	 * 创建导入路径
+	 * false:存在当前转换路径,true:没有路径,创建成功
+	 * @param inPath
+	 * @return
+	 */
+	public static boolean createMkdir(String inPath){
+		if(inPath != null){
+			File dirFile = new File(inPath);
+			boolean mkdirs = dirFile.mkdirs();
+			return mkdirs;
+		}
+		return false;
 	}
 	
 	public static void main(String[] args) throws Exception {

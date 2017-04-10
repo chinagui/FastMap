@@ -53,7 +53,7 @@ public class LogGridCalculatorByLocalData  {
             	flushLogGrids(oldGrids,1,stmt,conn);
         	}
         	//填充几何依赖
-        	String geoSql = "UPDATE LOG_OPERATION SET GEO_NM=?,GEO_PID=?";
+        	String geoSql = "UPDATE LOG_DETAIL SET GEO_NM=?,GEO_PID=? WHERE ROW_ID=HEXTORAW(?)";
         	stmt4Geo=conn.prepareStatement(geoSql);
         	flushLogDetailGeo(newGrids,stmt4Geo);
 			conn.commit();
@@ -93,6 +93,7 @@ public class LogGridCalculatorByLocalData  {
 			for(Entry<String,LogGeoInfo> entry:grids.entrySet()){
 				stmt.setString(1, entry.getValue().getGeoName());
 				stmt.setLong(2, entry.getValue().getGeoPid());
+				stmt.setString(3, entry.getKey());
 				stmt.addBatch();
 				batchCount++;
 			    if (batchCount % 1000 == 0) {

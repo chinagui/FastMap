@@ -31,35 +31,13 @@ public class GLM35004 extends baseRule {
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {
-        	if(row instanceof RdHgwgLimit){
+        	if(row instanceof RdHgwgLimit) {
         		RdHgwgLimit rdHgwgLimit = (RdHgwgLimit) row;
 				checkRdHgwgLimit(rdHgwgLimit);
-        	}
-        	
-        	else if(row instanceof RdLink){
+        	} else if(row instanceof RdLink) {
         		RdLink rdLink = (RdLink) row;
 				checkRdLink(rdLink);
         	}
-        	
-            if (!(row instanceof RdLinkForm))
-                return;
-            RdLinkForm form = (RdLinkForm) row;
-            int newKind = -1;
-            if (form.changedFields().containsKey("formOfWay")) {
-                newKind = (int) form.changedFields().get("formOfWay");
-            }
-            if ((newKind == -1 && (form.getFormOfWay() != 9 && form.getFormOfWay() != 10)) && newKind != 9 && newKind != 10)
-                return;
-            StringBuffer sql = new StringBuffer();
-            sql.append("SELECT RL.GEOMETRY,'[RD_LINK,' || RL.LINK_PID || ']'");
-            sql.append(",RL.MESH_ID FROM RD_LINK RL, RD_HGWG_LIMIT RHL WHERE RL.LINK_PID = ");
-            sql.append(form.getLinkPid());
-            sql.append(" AND RL.LINK_PID = RHL.LINK_PID ");
-            DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-            List<Object> resultList = getObj.exeSelect(this.getConn(), sql.toString());
-            if (resultList.isEmpty())
-                return;
-            this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int) resultList.get(2));
         }
     }
 

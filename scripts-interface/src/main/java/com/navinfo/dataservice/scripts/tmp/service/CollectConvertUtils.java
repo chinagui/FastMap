@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,12 +26,26 @@ import java.util.Scanner;
 import org.apache.solr.common.StringUtils;
 import java.util.Map;
 
+import org.apache.commons.collections.map.MultiValueMap;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
 import net.sf.json.JSONNull;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.dataservice.scripts.tmp.CollectConvert;
+import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -104,7 +121,7 @@ public class CollectConvertUtils {
 	 * @param jsonFilePath
 	 * @return
 	 */
-	public static List<JSONObject> readJsonObjects(String jsonFilePath){
+	public static List<JSONObject> readJsonObjects(String jsonFilePath) {
 		Scanner lines = null;
 		List<JSONObject> datas = new ArrayList<JSONObject>();
 		try {
@@ -137,8 +154,8 @@ public class CollectConvertUtils {
 						@Override
 						public Object processArrayValue(Object paramObject, JsonConfig paramJsonConfig) {
 							// TODO Auto-generated method stub
-							return null;
-						}
+		return null;
+	}
 					});
 					JSONObject jsonObject = JSONObject.fromObject(line,jsonConfig);
 					datas.add(jsonObject);
@@ -178,7 +195,7 @@ public class CollectConvertUtils {
 			pw = new PrintWriter(txtPath);
 			for (JSONObject jso : newListJson) {
 				pw.println(jso.toString());
-			}
+	}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
@@ -212,7 +229,7 @@ public class CollectConvertUtils {
 			pw = new PrintWriter(txtPath);
 			for (Integer seq : newListJson) {
 				pw.println(String.valueOf(seq));
-			}
+	}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
@@ -339,9 +356,34 @@ public class CollectConvertUtils {
 	 * 原则：
 	 * 1.	登陆sys库获取select seq_upload.nextval from dual
 	 * @return
+	 * @throws ServiceException 
 	 */
-	public static int getUploadSeq() {
-		return 0;
+	public static int getUploadSeq() throws ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner queryRunner = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			String sql = "select seq_upload.nextval from dual ";
+
+			ResultSetHandler<Integer> rsh = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						int jobId = rs.getInt("nextval");
+						return jobId;
+					}
+					return 0;
+				}
+			};
+			return queryRunner.query(conn, sql, rsh);
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("failed to get upload sequence:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	/**
 	 * geo获取dbid模块
@@ -358,9 +400,47 @@ public class CollectConvertUtils {
 	 *    UploadOperationByGather.java:calDbDataMapping
 	 * @param geoWkt
 	 * @return
+	 * @throws ParseException 
+	 * @throws ServiceException 
 	 */
-	public static int getDbidByGeo(String geoWkt) {
-		return 0;
+	public static int getDbidByGeo(String geoWkt) throws ParseException, ServiceException {
+		Connection conn = null;
+		try {
+			QueryRunner queryRunner = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+
+			Geometry geo = JtsGeometryFactory.read(geoWkt);
+			
+			//通过 geo 获取 grid 
+			Coordinate[] coordinate = geo.getCoordinates();
+			CompGridUtil gridUtil = new CompGridUtil();
+			
+
+			long gridId = Long.parseLong(gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0]);
+			log.info(" gridId :"+gridId);
+			
+			String sql = "SELECT daily_db_id FROM grid g,region r WHERE g.region_id=r.region_id and grid_id=" + gridId;
+			
+			ResultSetHandler<Integer> rsh = new ResultSetHandler<Integer>() {
+				@Override
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						int dbId = rs.getInt("daily_db_id");
+						return dbId;
+					}
+					return 0;
+				}
+			};
+			return queryRunner.query(conn, sql, rsh);
+
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("failed to get DBId:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+				
 	}
 	/**
 	 * "null"转成""；否则，直接赋值
@@ -401,6 +481,10 @@ public class CollectConvertUtils {
 	}
 	
 	public static void main(String[] args) throws Exception {
+		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+                new String[] { "dubbo-app-scripts.xml","dubbo-scripts.xml" }); 
+		context.start();
+		new ApplicationContextUtil().setApplicationContext(context);
 //		String path = "E:\\Users\\upload";
 //		List<String> resultPathList = listPath(path);
 		
@@ -409,9 +493,16 @@ public class CollectConvertUtils {
 //		copyPhoto( outPathStr, inPathStr);
 		
 //		String photoPath = "E:\\Users\\upload\\photo\\366620161022152631.jpg";
-		String photoPath = "E:\\Users\\upload\\photo\\419020161103145434.jpg";
-		String newName = "aaa.jpg";
-		reNamePhoto( photoPath, newName);
+//		String photoPath = "E:\\Users\\upload\\photo\\419020161103145434.jpg";
+//		String newName = "aaa.jpg";
+//		reNamePhoto( photoPath, newName);
 		
+//		int seq = getUploadSeq();
+//		System.out.println(seq);
+		
+		String geo = "POINT (120.17332 32.35849)";
+		int dbid = getDbidByGeo(geo);
+		System.out.println(dbid);
+
 	}
 }

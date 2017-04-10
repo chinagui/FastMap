@@ -1,6 +1,14 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkIntRtic;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkRtic;
 import com.navinfo.dataservice.dao.glm.model.rd.slope.RdSlope;
 import com.navinfo.dataservice.dao.glm.selector.rd.slope.RdSlopeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
@@ -19,8 +27,15 @@ public class Process extends AbstractProcess<Command> implements IProcess {
 	}
 	@Override
 	public void postCheck() throws Exception {
+		List<IRow> glmList = new ArrayList<IRow>();
+		for(IRow irow:this.getResult().getDelObjects()){
+			if(irow instanceof RdSlope){
+				glmList.add(irow);
+			}
+		}
 		check.postCheck(this.getConn(), this.getResult(), this.getCommand().getDbId());
-		super.postCheck();
+		this.checkCommand.setGlmList(glmList);
+		this.checkEngine.postCheck();
 	}
 	@Override
 	public boolean prepareData() throws Exception {

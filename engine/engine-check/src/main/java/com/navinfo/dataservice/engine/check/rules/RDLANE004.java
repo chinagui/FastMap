@@ -60,8 +60,10 @@ public class RDLANE004 extends baseRule{
 	 */
 	private void checkRdLaneTopology(RdLaneTopology rdLaneTopology, CheckCommand checkCommand) throws SQLException {
 		boolean checkFlg = false;
-		Set<Integer> linkPidList = new HashSet<Integer>();
-		linkPidList.add(rdLaneTopology.getOutLinkPid());
+		//修改经过线不会去重，故用map存储link
+		Map<Integer,Integer> linkPidMap = new HashMap<Integer,Integer>();
+		int linkPid = rdLaneTopology.getOutLinkPid();
+		linkPidMap.put(linkPid, 1);
 
 		if(rdLaneTopology.status().equals(ObjStatus.INSERT)){
 			if(rdLaneTopology.getRelationshipType()==2){
@@ -78,42 +80,14 @@ public class RDLANE004 extends baseRule{
 			}
 		}
 		if(checkFlg){
-			for(IRow objInnerLoop : checkCommand.getGlmList()){
-				if(objInnerLoop instanceof RdLaneVia){
-					RdLaneVia rdLaneVia = (RdLaneVia)objInnerLoop;
-					//排除删除的经过线
-					if(rdLaneVia.status().equals(ObjStatus.DELETE)){
-						continue;
-					}
-					if(rdLaneVia.getTopologyId()==rdLaneTopology.getPid()){
-						linkPidList.add(rdLaneVia.getLinkPid());
-					}
+			//获取车信进入线,退出线，经过线
+			int connexityPid = getLinkMap(checkCommand,rdLaneTopology.getPid(),linkPidMap);
+			Set<Integer> linkPidList = new HashSet<Integer>();
+			for(Map.Entry<Integer, Integer> entry:linkPidMap.entrySet()){
+				if(entry.getValue()>0){
+					linkPidList.add(entry.getKey());
 				}
 			}
-			//获取车信进入线
-			//获取车信进入线,退出线
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT C.IN_LINK_PID,T.OUT_LINK_PID,V.LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
-			sb.append(" WHERE C.PID = T.CONNEXITY_PID");
-			sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
-			sb.append(" AND C.U_RECORD <> 2");
-			sb.append(" AND T.U_RECORD <> 2");
-			sb.append(" AND V.U_RECORD <> 2");
-			sb.append(" AND T.TOPOLOGY_ID = " + rdLaneTopology.getPid());
-			String sql = sb.toString();
-			log.info("前检查RdLane004:" + sql);
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
-			int connexityPid = 0;
-			while (resultSet.next()){
-				connexityPid = resultSet.getInt("IN_LINK_PID");
-				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
-				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
-				linkPidList.add(resultSet.getInt("LINK_PID")) ;
-			} 
-			resultSet.close();
-			pstmt.close();
-
 			//检查连通性
 			checkConnexity(rdLaneTopology.getConnexityPid(),linkPidList);
 		}
@@ -127,7 +101,9 @@ public class RDLANE004 extends baseRule{
 	 */
 	private void checkRdLaneVia(RdLaneVia rdLaneVia, CheckCommand checkCommand) throws SQLException {
 		boolean checkFlg = false;
-		Set<Integer> linkPidList = new HashSet<Integer>();
+//		Set<Integer> linkPidList = new HashSet<Integer>();
+		//修改经过线不会去重，故用map存储link
+		Map<Integer,Integer> linkPidMap = new HashMap<Integer,Integer>();
 		if(rdLaneVia.status().equals(ObjStatus.INSERT)){
 			checkFlg = true;
 		}
@@ -141,45 +117,146 @@ public class RDLANE004 extends baseRule{
 			checkFlg = true;
 		}
 		if(checkFlg){
-			for(IRow objInnerLoop : checkCommand.getGlmList()){
-				if(objInnerLoop instanceof RdLaneVia){
-					RdLaneVia via = (RdLaneVia)objInnerLoop;
-					//排除删除的经过线
-					if(rdLaneVia.status().equals(ObjStatus.DELETE)){
-						continue;
-					}
-					if(via.getTopologyId()==rdLaneVia.getTopologyId()){
-						linkPidList.add(rdLaneVia.getLinkPid());
-					}
+			//获取车信进入线经过线退出线
+			int connexityPid = getLinkMap(checkCommand,rdLaneVia.getTopologyId(),linkPidMap);
+			//检查连通性
+			Set<Integer> linkPidList = new HashSet<Integer>();
+			for(Map.Entry<Integer, Integer> entry:linkPidMap.entrySet()){
+				if(entry.getValue()>0){
+					linkPidList.add(entry.getKey());
 				}
 			}
-			//获取车信进入线,退出线
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT C.IN_LINK_PID,T.OUT_LINK_PID,V.LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
-			sb.append(" WHERE C.PID = T.CONNEXITY_PID");
-			sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
-			sb.append(" AND C.U_RECORD <> 2");
-			sb.append(" AND T.U_RECORD <> 2");
-			sb.append(" AND V.U_RECORD <> 2");
-			sb.append(" AND T.TOPOLOGY_ID = " + rdLaneVia.getTopologyId());
-			String sql = sb.toString();
-			log.info("前检查RdLane004:" + sql);
-			PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
-			ResultSet resultSet = pstmt.executeQuery();
-			int connexityPid = 0;
-			while (resultSet.next()){
-				connexityPid = resultSet.getInt("IN_LINK_PID");
-				linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
-				linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
-				linkPidList.add(resultSet.getInt("LINK_PID")) ;
-			} 
-			resultSet.close();
-			pstmt.close();
-			//检查连通性
 			checkConnexity(connexityPid,linkPidList);
 		}
 		
 	}
+
+	/**
+	 * @param checkCommand
+	 * @param topologyId
+	 * @param linkPidMap
+	 * @return
+	 * @throws SQLException 
+	 */
+	private int getLinkMap(CheckCommand checkCommand, int topologyId, Map<Integer, Integer> linkPidMap) throws SQLException {
+		int connexityPid = 0;
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT DISTINCT C.PID,C.IN_LINK_PID LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
+		sb.append(" WHERE C.PID = T.CONNEXITY_PID");
+		sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+		sb.append(" AND C.U_RECORD <> 2");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
+		sb.append(" UNION ");
+		sb.append("SELECT DISTINCT C.PID,T.OUT_LINK_PID LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
+		sb.append(" WHERE C.PID = T.CONNEXITY_PID");
+		sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+		sb.append(" AND C.U_RECORD <> 2");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
+		sb.append(" UNION ");
+		sb.append("SELECT DISTINCT C.PID,V.LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
+		sb.append(" WHERE C.PID = T.CONNEXITY_PID");
+		sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+		sb.append(" AND C.U_RECORD <> 2");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
+		String sql = sb.toString();
+		log.info("前检查RdLane004:" + sql);
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+		ResultSet resultSet = pstmt.executeQuery();
+		while (resultSet.next()){
+			connexityPid = resultSet.getInt("PID");
+			int linkPid = resultSet.getInt("LINK_PID");
+			if(linkPidMap.containsKey(linkPid)){
+				int value = linkPidMap.get(linkPid) + 1;
+				linkPidMap.put(linkPid, value);
+			}else{
+				linkPidMap.put(linkPid, 1);
+			}
+		} 
+		resultSet.close();
+		pstmt.close();
+		
+		for(IRow objInnerLoop : checkCommand.getGlmList()){
+			if(objInnerLoop instanceof RdLaneVia){
+				RdLaneVia via = (RdLaneVia)objInnerLoop;
+				if(via.getTopologyId()==topologyId){
+					if(via.status().equals(ObjStatus.DELETE)){
+						int linkPid = via.getLinkPid();
+						if(linkPidMap.containsKey(linkPid)){
+							int value = linkPidMap.get(linkPid) - 1;
+							linkPidMap.put(linkPid, value);
+						}
+					}else{
+						int linkPid = via.getLinkPid();
+						if(linkPidMap.containsKey(linkPid)){
+							int value = linkPidMap.get(linkPid) + 1;
+							linkPidMap.put(linkPid, value);
+						}else{
+							linkPidMap.put(linkPid, 1);
+						}
+					}
+				}
+			}
+		}
+		
+		return connexityPid;
+	}
+
+	/**
+	 * @param checkCommand 
+	 * @param topologyId
+	 * @param linkPidList
+	 * @return
+	 * @throws SQLException 
+	 */
+	private int getLinkSet(CheckCommand checkCommand, int topologyId, Set<Integer> linkPidList) throws SQLException {
+		int connexityPid = 0;
+
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT C.PID,C.IN_LINK_PID,T.OUT_LINK_PID,V.LINK_PID FROM RD_LANE_CONNEXITY C,RD_LANE_TOPOLOGY T,RD_LANE_VIA V");
+		sb.append(" WHERE C.PID = T.CONNEXITY_PID");
+		sb.append(" AND V.TOPOLOGY_ID = T.TOPOLOGY_ID");
+		sb.append(" AND C.U_RECORD <> 2");
+		sb.append(" AND T.U_RECORD <> 2");
+		sb.append(" AND V.U_RECORD <> 2");
+		sb.append(" AND T.TOPOLOGY_ID = " + topologyId);
+		String sql = sb.toString();
+		log.info("前检查RdLane004:" + sql);
+		PreparedStatement pstmt = this.getConn().prepareStatement(sql);	
+		ResultSet resultSet = pstmt.executeQuery();
+		while (resultSet.next()){
+			connexityPid = resultSet.getInt("PID");
+			linkPidList.add(resultSet.getInt("IN_LINK_PID")) ;
+			linkPidList.add(resultSet.getInt("OUT_LINK_PID")) ;
+			linkPidList.add(resultSet.getInt("LINK_PID")) ;
+		} 
+		resultSet.close();
+		pstmt.close();
+		
+		for(IRow objInnerLoop : checkCommand.getGlmList()){
+			if(objInnerLoop instanceof RdLaneVia){
+				RdLaneVia via = (RdLaneVia)objInnerLoop;
+				if(via.getTopologyId()==topologyId){
+					if(via.status().equals(ObjStatus.DELETE)){
+						linkPidList.remove(via.getLinkPid());
+					}else{
+						linkPidList.add(via.getLinkPid());
+					}
+				}
+			}
+		}
+		
+		return connexityPid;
+
+	}
+
+	
 
 	/**
 	 * @param laneObj

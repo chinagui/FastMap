@@ -155,6 +155,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					log.info("开始刷履历入出品库");	
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
+					//修改项目的出品状态为 失败
+					updateProduceStatus(projects,3,manApi);
 					throw new JobException(e);
 				}
 			}else{
@@ -168,6 +170,8 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					log.info("开始刷履历入出品库");	
 					logFlush(regions,tempTabInfo,databhubApi);
 				}catch(Exception e){
+					//修改项目的出品状态为 失败
+					updateProduceStatus(projects,3,manApi);
 					throw new JobException(e);
 				}
 			}
@@ -238,7 +242,11 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	private void logFlush(List<Region> regions,Map<String,Map<String,String>> tempTabInfo,DatahubApi datahubApi) throws Exception{
 		LogMover logMover = null;
 		List<LogMover> logMovers= new ArrayList<LogMover>();
+		//大区库链接集合：这个链接是用来写入错误履历的，有异常不需要回滚。别的操作慎用这个链接；
 		List<Connection> dailyConns= new ArrayList<Connection>();
+		//大区库链接集合：这个链接是用来改出品履历状态的，有异常需要回滚；
+		List<Connection> dailyUpdateStatusConns= new ArrayList<Connection>();
+		//出品库链接集合：这个链接是用来像出品库刷数据的；
 		List<Connection> releaseConns= new ArrayList<Connection>();
 		//poi出品库信息
 		DbInfo releaseDbP = getReleaseDbConn(datahubApi,"POI");
@@ -304,19 +312,22 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 					logMovers.add(logMover);
 					logMover.move();
 				}
+				
+				Connection dailyUpdateStatusConn = dailyDbSchema.getPoolDataSource().getConnection();
+				dailyUpdateStatusConns.add(dailyUpdateStatusConn);
 				//更新状态	
 				LogStatusModifier logStatusModifierPP = createLogStatusModifier("ROAD",dailyDbSchema,tempP);
-				logStatusModifierPP.execute();
+				logStatusModifierPP.execute(dailyUpdateStatusConn);
 				log.info("完成P+R库出品状态更新（poi）");
 				
 				//更新poi状态
 				LogStatusModifier logStatusModifierP = createLogStatusModifier("POI",dailyDbSchema,tempP);
-				logStatusModifierP.execute();
+				logStatusModifierP.execute(dailyUpdateStatusConn);
 				log.info("完成P库出品状态更新（poi）");
 				
 				//更新状态	
 				LogStatusModifier logStatusModifierPR = createLogStatusModifier("ROAD",dailyDbSchema,tempR);
-				logStatusModifierPR.execute();
+				logStatusModifierPR.execute(dailyUpdateStatusConn);
 				log.info("完成P+R库出品状态更新（road）");
 				
 				
@@ -325,6 +336,9 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		}catch(Exception e){
 			if(releaseDbConnP!=null)releaseDbConnP.rollback();
 			if(releaseDbConnR!=null)releaseDbConnR.rollback();
+			for(Connection d2conn:dailyUpdateStatusConns){
+				DbUtils.rollbackAndCloseQuietly(d2conn);
+			}
 			log.info("rollback db");
 			if(logMovers!=null){
 				for(LogMover l:logMovers){
@@ -337,8 +351,12 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 		}finally{
 			DbUtils.commitAndCloseQuietly(releaseDbConnP);
 			DbUtils.commitAndCloseQuietly(releaseDbConnR);
+			//这个链接是用来写入错误履历的，因此不需要回滚。别的操作慎用这个链接；
 			for(Connection dconn:dailyConns){
 				DbUtils.commitAndCloseQuietly(dconn);
+			}
+			for(Connection d2conn:dailyUpdateStatusConns){
+				DbUtils.commitAndCloseQuietly(d2conn);
 			}
 			log.info("commit db");
 			
@@ -470,7 +488,7 @@ public class FmPoiRoadDailyReleaseJob extends AbstractJob {
 	private void updateProduceStatus(List<Map<String, Object>> projects,int status, ManApi manApi) throws Exception{
 		for(Map<String, Object> p:projects){
 			int produceId=(int) p.get("produceId");
-			manApi.updateProduceStatus(produceId, 1);
+			manApi.updateProduceStatus(produceId, status);
 		}
 	}
 	

@@ -124,7 +124,7 @@ public class Operation implements IOperation {
 	private int getRelationShipType(int nodePid, int outLinkPid)
 			throws Exception {
 
-		String sql = "with c1 as  (select node_pid from rd_cross_node a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid=:1))  select count(1) count from rd_link c where c.link_pid=:2 and (c.s_node_pid=:3 or c.e_node_pid=:4 or exists(select null from c1 where c.s_node_pid=c1.node_pid or c.e_node_pid=c1.node_pid))";
+		String sql = "with c1 as  (select node_pid from rd_cross_node a where exists (select null from rd_cross_node b where a.pid=b.pid and b.node_pid=:1) AND a.U_RECORD !=2)  select count(1) count from rd_link c where c.link_pid=:2 and (c.s_node_pid=:3 or c.e_node_pid=:4 or exists(select null from c1 where c.s_node_pid=c1.node_pid or c.e_node_pid=c1.node_pid)) AND c.U_RECORD !=2";
 
 		PreparedStatement pstmt = null;
 

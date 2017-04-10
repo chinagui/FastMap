@@ -37,17 +37,17 @@ public class RdNodeSelector extends AbstractSelector {
 
         List<RdNode> nodes = new ArrayList<RdNode>();
 
-        String sql = "with tmp1 as  (select s_node_pid, e_node_pid from rd_link where link_pid = :1), tmp2 as  " +
-                "(select b.link_pid, s_node_pid     from rd_link b    where exists (select null from tmp1 a where a" +
-                ".s_node_pid = b.s_node_pid) and b.u_record!=2   union all   select b.link_pid, e_node_pid     from " +
-                "rd_link b    where exists (select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b" +
-                ".u_record!=2) , tmp3 as  (select b.link_pid, s_node_pid as e_node_pid     from rd_link b    where " +
-                "exists (select null from tmp1 a where a.e_node_pid = b.s_node_pid) and b.u_record!=2   union all   " +
-                "select b.link_pid, e_node_pid     from rd_link b    where exists (select null from tmp1 a where a" +
-                ".e_node_pid = b.e_node_pid) and b.u_record!=2), tmp4 as  (select s_node_pid pid from tmp2 group by " +
-                "s_node_pid having count(*) = 1), tmp5 as  (select e_node_pid pid from tmp3 group by e_node_pid " +
-                "having count(*) = 1), tmp6 as  (select pid from tmp4 union select pid from tmp5) select *   from " +
-                "rd_node a  where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record!=2";
+        String sql = "with tmp1 as (select s_node_pid, e_node_pid from rd_link where link_pid = :1), tmp2 as (select " +
+                "b.link_pid, s_node_pid from rd_link b where exists (select null from tmp1 a where a.s_node_pid = b" +
+                ".s_node_pid) and b.u_record != 2 union select b.link_pid, e_node_pid from rd_link b where exists " +
+                "(select null from tmp1 a where a.s_node_pid = b.e_node_pid) and b.u_record != 2), tmp3 as (select b" +
+                ".link_pid, s_node_pid as e_node_pid from rd_link b where exists (select null from tmp1 a where a" +
+                ".e_node_pid = b.s_node_pid) and b.u_record != 2 union select b.link_pid, e_node_pid from rd_link b " +
+                "where exists (select null from tmp1 a where a.e_node_pid = b.e_node_pid) and b.u_record != 2), tmp4 " +
+                "as (select s_node_pid pid from tmp2 group by s_node_pid having count(*) = 1), tmp5 as (select " +
+                "e_node_pid pid from tmp3 group by e_node_pid having count(*) = 1), tmp6 as (select pid from tmp4 " +
+                "union select pid from tmp5) select * from rd_node a where exists (select null from tmp6 b where a" +
+                ".node_pid = b.pid) and a.u_record != 2";
 
         if (isLock) {
             sql += " for update nowait";
@@ -90,7 +90,7 @@ public class RdNodeSelector extends AbstractSelector {
 
         List<RdNode> nodes = new ArrayList<RdNode>();
 
-        String sql = "select a.* from rd_node a where exists(select null from rd_link b where (b.e_node_pid=a" +
+        String sql = "select a.* from rd_node a where exists(select null from rd_link b where (b.e_node_pid=a" + "" +
                 ".node_pid or b.s_node_pid=a.node_pid) and b.link_pid=:1)";
 
         if (isLock) {
@@ -278,12 +278,12 @@ public class RdNodeSelector extends AbstractSelector {
         if (nodePids.isEmpty())
             return result;
         StringBuffer sb = new StringBuffer();
-        sb.append("with tmp1 as (select rl.s_node_pid node_pid,count(rl.s_node_pid) num from rd_link rl where rl" +
+        sb.append("with tmp1 as (select rl.s_node_pid node_pid,count(rl.s_node_pid) num from rd_link rl where rl" + "" +
                 ".s_node_pid in (");
         sb.append(StringUtils.getInteStr(nodePids));
         sb.append(") and rl.u_record <> 2 group by rl.s_node_pid),");
-        sb.append("tmp2 as(select rl.e_node_pid node_pid,count(rl.e_node_pid) num from rd_link rl where rl.e_node_pid" +
-                " in (");
+        sb.append("tmp2 as(select rl.e_node_pid node_pid,count(rl.e_node_pid) num from rd_link rl where rl" +
+                ".e_node_pid" + " in (");
         sb.append(StringUtils.getInteStr(nodePids));
         sb.append(") and rl.u_record <> 2 group by rl.e_node_pid) ");
         sb.append("select tmp1.node_pid node_pid,(tmp1.num + tmp2.num) num from tmp1 ,tmp2 where tmp1.node_pid = " +

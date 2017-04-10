@@ -57,7 +57,7 @@ public class FmStatOverviewProgram {
 		if(this.actualEndDate==null){
 			return StatUtil.daysOfTwo(this.statDate,this.planEndDate);
 		}else{
-			return StatUtil.daysOfTwo(this.actualStartDate,this.actualEndDate);
+			return StatUtil.daysOfTwo(this.actualEndDate,this.planEndDate);
 		}
 	}
 	public int getProgress() {
@@ -172,7 +172,7 @@ public class FmStatOverviewProgram {
 		if(this.collectActualEndDate==null){
 			return StatUtil.daysOfTwo(this.statDate,this.collectPlanEndDate);
 		}else{
-			return StatUtil.daysOfTwo(this.collectActualStartDate,this.collectActualEndDate);
+			return StatUtil.daysOfTwo(this.collectActualEndDate,this.collectPlanEndDate);
 		}
 	}
 	public Timestamp getDailyPlanStartDate() {
@@ -206,7 +206,7 @@ public class FmStatOverviewProgram {
 		if(this.dailyActualEndDate==null){
 			return StatUtil.daysOfTwo(this.statDate,this.dailyPlanEndDate);
 		}else{
-			return StatUtil.daysOfTwo(this.dailyActualStartDate,this.dailyActualEndDate);
+			return StatUtil.daysOfTwo(this.dailyActualEndDate,this.dailyPlanEndDate);
 		}
 	}
 	public Timestamp getStatTime() {
@@ -258,7 +258,7 @@ public class FmStatOverviewProgram {
 		if(this.monthlyActualEndDate==null){
 			return StatUtil.daysOfTwo(this.statDate,this.monthlyPlanEndDate);
 		}else{
-			return StatUtil.daysOfTwo(this.monthlyActualStartDate,this.monthlyActualEndDate);
+			return StatUtil.daysOfTwo(this.monthlyActualEndDate,this.monthlyPlanEndDate);
 		}
 	}
 }

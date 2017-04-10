@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.statics.tools;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -14,20 +16,24 @@ public class StatUtil {
 		return b.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 	
+	public static String formatDate(Timestamp date) {
+		if(date==null){return "";}
+		SimpleDateFormat df = new SimpleDateFormat("yyyyMMddkkmmss");
+		return df.format(date);
+	}
 	
 	public static int daysOfTwo(Date fDate, Date oDate) {
+		if(fDate==null||oDate==null){return 0;}
+		Calendar aCalendar = Calendar.getInstance();
 
-	       Calendar aCalendar = Calendar.getInstance();
+		aCalendar.setTime(fDate);
+		long day1 = aCalendar.getTimeInMillis();
 
-	       aCalendar.setTime(fDate);
-	       int day1 = aCalendar.get(Calendar.DAY_OF_YEAR);
+		aCalendar.setTime(oDate);
+		long day2 = aCalendar.getTimeInMillis();
 
-	       aCalendar.setTime(oDate);
-	       int day2 = aCalendar.get(Calendar.DAY_OF_YEAR);
-
-	       return day2 - day1;
-
-	    }
+		return Integer.parseInt(String.valueOf((day2 - day1)/(24*60*60*1000)));
+	}
 
 	public static void main(String[] args) {
 //		System.out.println(formatDouble(123456789.12345));

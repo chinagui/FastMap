@@ -6,6 +6,7 @@ import java.util.List;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkLimit;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperator;
@@ -36,7 +37,7 @@ public class GLM08004_3 extends baseRule {
 			if(obj instanceof RdLinkLimit ){
 				RdLinkLimit rdLinkLimit=(RdLinkLimit) obj;
 				checkRdLinkLimit(rdLinkLimit);
-			}
+			} 
 		}
 		
 	}
@@ -49,7 +50,7 @@ public class GLM08004_3 extends baseRule {
 		boolean checkFlg = false;
 		//进不去出不来的link
 		if(rdLinkLimit.status().equals(ObjStatus.INSERT)){
-			if((rdLinkLimit.getType()==2)&&(rdLinkLimit.getVehicle()==2147483786L)&&(!rdLinkLimit.getTimeDomain().isEmpty())){
+			if((rdLinkLimit.getType()==3)&&(rdLinkLimit.getVehicle()==2147483786L)&&(!rdLinkLimit.getTimeDomain().isEmpty())){
 				checkFlg = true;
 			}
 		}
@@ -86,7 +87,7 @@ public class GLM08004_3 extends baseRule {
 				}
 			}
 			
-			if((type==2)&&(vehicle==2147483786L)&&(timeDomain!=null)){
+			if((type==3)&&(vehicle==2147483786L)&&(timeDomain!=null)){
 				checkFlg = true;
 			}
 		}

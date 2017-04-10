@@ -130,11 +130,12 @@ public class RoadDailyStat implements Runnable {
 		return json_list;
 	}
 	public void run() {
-		log.info("-- begin do sub_task");
+		//log.info("-- begin do sub_task");
 		try {
-			log.info("-- begin do sub_task" + conn);
+			log.info("-- begin do sub_task:"+col_name+",conn:" + conn);
 
 			new MongoDao(db_name).insertMany(col_name, build_grid());
+			log.info("-- end do sub_task:"+col_name+",conn:" + conn);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

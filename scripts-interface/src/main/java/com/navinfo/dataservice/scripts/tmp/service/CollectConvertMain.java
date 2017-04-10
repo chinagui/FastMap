@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -62,7 +63,7 @@ public class CollectConvertMain {
 		try{
 			//lifecycle: "2"	t_lifecycle: 3,	字符串转数字后赋值
 			//0 无； 1 删除；2 更新；3 新增；
-			int lifecycle=Integer.valueOf(oldPoi.getString("lifecycle"));
+			int lifecycle=CollectConvertUtils.convertInt(oldPoi.getString("lifecycle"));
 			newPoi.put("t_lifecycle", lifecycle);
 			/*
 			 * 线上 geometry: "POINT (120.1733200000000039 32.3584900000000033)"
@@ -90,7 +91,7 @@ public class CollectConvertMain {
 			}
 			convertPid(lifecycle,newPoi,oldPoi,oldPoiObj);
 			/*线上meshid: "486041",	一体化meshid: 0,	原则：字符串转数字后赋值*/
-			newPoi.put("meshid", Integer.valueOf(oldPoi.getString("meshid")));
+			newPoi.put("meshid",CollectConvertUtils.convertInt(oldPoi.getString("meshid")));
 			//name: "泰州市顺旺铸造有限公司",	name: "Ｉｉｉｉ",	"null"转成""；否则，直接赋值
 			newPoi.put("name", CollectConvertUtils.convertStr(oldPoi.getString("name")));
 			//kindCode: "220100",	kindCode: "110101",	直接赋值
@@ -98,7 +99,7 @@ public class CollectConvertMain {
 			//vipFlag: "null",	vipFlag: "",	"null"转成""；否则，直接赋值
 			newPoi.put("vipFlag", CollectConvertUtils.convertStr(oldPoi.getString("vipFlag")));
 			//truck: "0",	truck: 0,	字符串转数字后赋值
-			newPoi.put("truck", Integer.valueOf(oldPoi.getString("truck")));
+			newPoi.put("truck", CollectConvertUtils.convertInt(oldPoi.getString("truck")));
 			/* 线上guide: "{\"latitude\":32.35849986671124,\"longitude\":120.17348080519618,\"linkPid\":0}",	
 			 * 一体化guide: {linkPid: 208002607,longitude: 116.47924,latitude: 40.01292}
 			 * 原则：guide的字符串转json格式；linkPid，直接赋值；longitude，latitude四舍五入截取小数点后5位赋值
@@ -116,7 +117,7 @@ public class CollectConvertMain {
 			//level: "B3",	level: "B3",	"null"转成""；否则，直接赋值
 			newPoi.put("level", CollectConvertUtils.convertStr(oldPoi.getString("level")));
 			//open24H: "2",	open24H: 0,	字符串转数字后赋值
-			newPoi.put("open24H", Integer.valueOf(oldPoi.getString("open24H")));
+			newPoi.put("open24H", CollectConvertUtils.convertInt(oldPoi.getString("open24H")));
 			/* 线上relateParent: "null",（或者"relateParent":"{\"parentFid\":\"00366620161022153845\",\"parentRowkey\":null}"）
 			 * 一体化parentFid: "",（或者"parentFid":"00000220170306135753"）	
 			 * 原则："null"转成""；relateParent的字符串转json格式；取parentFid直接赋值
@@ -169,7 +170,7 @@ public class CollectConvertMain {
 			if(oldSportsVenues.isEmpty()){
 				newPoi.put("sportsVenues", "");
 			}else{
-				newPoi.put("sportsVenues", JSONObject.fromObject(oldSportsVenues).getString("buildingType"));
+				newPoi.put("sportsVenues", CollectConvertUtils.convertStr(JSONObject.fromObject(oldSportsVenues).getString("buildingType")));
 			}
 			//chargingStation: "null",	chargingStation: null,(或者type,changeBrands,changeOpenType,servicePro,chargingNum,openHour,parkingFees,parkingInfo,availableState,rowId)	取oracle库中对应记录生成，没有则赋值""
 			convertChargingStation(lifecycle,newPoi,oldPoi,oldPoiObj);
@@ -184,10 +185,8 @@ public class CollectConvertMain {
 			}else{
 				JSONObject newIndoor=new JSONObject();
 				JSONObject oldIndoorJson=JSONObject.fromObject(oldIndoor);
-				newIndoor.put("type", oldIndoorJson.getString("type"));
-				String floor=oldIndoorJson.getString("floor");
-				if(floor.isEmpty()){newIndoor.put("floor","");}
-				else{newIndoor.put("floor", floor);}
+				newIndoor.put("type", oldIndoorJson.getInt("type"));
+				newIndoor.put("floor",CollectConvertUtils.convertStr(oldIndoorJson.getString("floor")));
 				newPoi.put("indoor", newIndoor);
 			}
 			//brands: "[]"(或者包含code),	chain: "",（"chain":"304D"）	brands的字符串转json格式；为[]，赋值"";若有值，取第一个的code赋值chain
@@ -195,7 +194,7 @@ public class CollectConvertMain {
 			if(oldBrands==null||oldBrands.size()==0){
 				newPoi.put("chain", "");
 			}else{
-				newPoi.put("chain", JSONObject.fromObject(oldBrands.get(0)).getString("code"));
+				newPoi.put("chain", CollectConvertUtils.convertStr(JSONObject.fromObject(oldBrands.get(0)).getString("code")));
 			}
 			//rawFields: "null",	rawFields: "",	"null"转成""；否则，直接赋值
 			newPoi.put("rawFields", CollectConvertUtils.convertStr(oldPoi.getString("rawFields")));
@@ -223,7 +222,7 @@ public class CollectConvertMain {
 			newPoi.put("t_operateDate", CollectConvertUtils.convertStr(oldPoi.getString("mergeDate")));
 			//sourceName: "Android",	sourceName: "Android"	直接赋值	
 			newPoi.put("sourceName", CollectConvertUtils.convertStr(oldPoi.getString("sourceName")));
-			return null;
+			return newPoi;
 		}catch (Exception e) {
 			DbUtils.commitAndCloseQuietly(conn);
 			throw e;
@@ -312,7 +311,7 @@ public class CollectConvertMain {
 			String oldPath=oldAttachJson.getString("url");
 			String[] oldPathList = oldPath.split("/");
 			String oldName = oldPathList[oldPathList.length-1];
-			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr);
+			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr+".jpg");
 		}		
 		newPoi.put("attachments", newAttachs);		
 	}
@@ -348,14 +347,14 @@ public class CollectConvertMain {
 			List<IxPoiGasstation> gasList = oldPoiObj.getIxPoiGasstations();
 			if(gasList!=null&&gasList.size()>0){
 				IxPoiGasstation gas=gasList.get(0);
-				if(gas.getFuelType().equals(newGas.getString("fuelType"))
-						&&gas.getOilType().equals(newGas.getString("oilType"))
-						&&gas.getEgType().equals(newGas.getString("egType"))
-						&&gas.getMgType().equals(newGas.getString("mgType"))
-						&&gas.getPayment().equals(newGas.getString("payment"))
-						&&gas.getService().equals(newGas.getString("service"))
-						&&gas.getServiceProv().equals(newGas.getString("servicePro"))
-						&&gas.getOpenHour().equals(newGas.getString("openHour"))){
+				if(CollectConvertUtils.compareStr(gas.getFuelType(),newGas.getString("fuelType"))
+						&&CollectConvertUtils.compareStr(gas.getOilType(),newGas.getString("oilType"))
+						&&CollectConvertUtils.compareStr(gas.getEgType(),newGas.getString("egType"))
+						&&CollectConvertUtils.compareStr(gas.getMgType(),newGas.getString("mgType"))
+						&&CollectConvertUtils.compareStr(gas.getPayment(),newGas.getString("payment"))
+						&&CollectConvertUtils.compareStr(gas.getService(),newGas.getString("service"))
+						&&CollectConvertUtils.compareStr(gas.getServiceProv(),newGas.getString("servicePro"))
+						&&CollectConvertUtils.compareStr(gas.getOpenHour(),newGas.getString("openHour"))){
 					newGas.put("rowId", gas.getRowId());
 					}
 				}
@@ -476,17 +475,17 @@ public class CollectConvertMain {
 				//rating,creditCards,description,checkInTime,checkOutTime,roomCount,roomType,
 				//roomPrice,breakfast,service,parking,openHour
 				if(hotel.getRating()==newHotel.getInt("rating")
-						&&hotel.getCreditCard().equals(newHotel.getString("creditCards"))
-						&&hotel.getLongDescription().equals(newHotel.getString("description"))
-						&&hotel.getCheckinTime().equals(newHotel.getString("checkInTime"))
-						&&hotel.getCheckoutTime().equals(newHotel.getString("checkOutTime"))
+						&&CollectConvertUtils.compareStr(hotel.getCreditCard(),newHotel.getString("creditCards"))
+						&&CollectConvertUtils.compareStr(hotel.getLongDescription(),newHotel.getString("description"))
+						&&CollectConvertUtils.compareStr(hotel.getCheckinTime(),newHotel.getString("checkInTime"))
+						&&CollectConvertUtils.compareStr(hotel.getCheckoutTime(),newHotel.getString("checkOutTime"))
 						&&hotel.getRoomCount()==newHotel.getInt("roomCount")
-						&&hotel.getRoomType().equals(newHotel.getString("roomType"))
-						&&hotel.getRoomPrice().equals(newHotel.getString("roomPrice"))
+						&&CollectConvertUtils.compareStr(hotel.getRoomType(),newHotel.getString("roomType"))
+						&&CollectConvertUtils.compareStr(hotel.getRoomPrice(),newHotel.getString("roomPrice"))
 						&&hotel.getBreakfast()==newHotel.getInt("breakfast")
-						&&hotel.getService().equals(newHotel.getString("service"))
+						&&CollectConvertUtils.compareStr(hotel.getService(),newHotel.getString("service"))
 						&&hotel.getParking()==newHotel.getInt("parking")
-						&&hotel.getOpenHour().equals(newHotel.getString("openHour"))){
+						&&CollectConvertUtils.compareStr(hotel.getOpenHour(),newHotel.getString("openHour"))){
 					newHotel.put("rowId", hotel.getRowId());
 					}
 				}
@@ -513,7 +512,7 @@ public class CollectConvertMain {
 		}
 		JSONObject oldParkings = JSONObject.fromObject(oldParkingsStr);
 		JSONObject newParkings=new JSONObject();
-		newParkings.put("tollStd",CollectConvertUtils.convertStr(oldParkings.getString("foodtype")));
+		newParkings.put("tollStd",CollectConvertUtils.convertStr(oldParkings.getString("tollStd")));
 		newParkings.put("tollDes",CollectConvertUtils.convertStr(oldParkings.getString("tollDes")));
 		newParkings.put("tollWay",CollectConvertUtils.convertStr(oldParkings.getString("tollWay")));
 		newParkings.put("openTime",CollectConvertUtils.convertStr(oldParkings.getString("openTime")));
@@ -539,20 +538,20 @@ public class CollectConvertMain {
 				IxPoiParking parking=parkingList.get(0);
 				//tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
 				// * resHigh,resWidth,resWeigh,certificate,vehicle,haveSpecialPlace,womenNum,handicapNum,miniNum,vipNum
-				if(parking.getTollStd().equals(newParkings.getString("tollStd"))
-						&&parking.getTollDes().equals(newParkings.getString("tollDes"))
-						&&parking.getTollWay().equals(newParkings.getString("tollWay"))
-						&&parking.getOpenTiime().equals(newParkings.getString("openTime"))
+				if(CollectConvertUtils.compareStr(parking.getTollStd(),newParkings.getString("tollStd"))
+						&&CollectConvertUtils.compareStr(parking.getTollDes(),newParkings.getString("tollDes"))
+						&&CollectConvertUtils.compareStr(parking.getTollWay(),newParkings.getString("tollWay"))
+						&&CollectConvertUtils.compareStr(parking.getOpenTiime(),newParkings.getString("openTime"))
 						&&parking.getTotalNum()==newParkings.getInt("totalNum")
-						&&parking.getPayment().equals(newParkings.getString("payment"))
-						&&parking.getRemark().equals(newParkings.getString("remark"))
-						&&parking.getParkingType().equals(newParkings.getString("buildingType"))
+						&&CollectConvertUtils.compareStr(parking.getPayment(),newParkings.getString("payment"))
+						&&CollectConvertUtils.compareStr(parking.getRemark(),newParkings.getString("remark"))
+						&&CollectConvertUtils.compareStr(parking.getParkingType(),newParkings.getString("buildingType"))
 						&&parking.getResHigh()==newParkings.getDouble("resHigh")
 						&&parking.getResWidth()==newParkings.getDouble("resWidth")
 						&&parking.getResWeigh()==newParkings.getDouble("resWeigh")
 						&&parking.getCertificate()==newParkings.getInt("certificate")
 						&&parking.getVehicle()==newParkings.getInt("vehicle")
-						&&parking.getHaveSpecialplace().equals(newParkings.getString("haveSpecialPlace"))
+						&&CollectConvertUtils.compareStr(parking.getHaveSpecialplace(),newParkings.getString("haveSpecialPlace"))
 						&&parking.getWomenNum()==newParkings.getInt("womenNum")
 						&&parking.getHandicapNum()==newParkings.getInt("handicapNum")
 						&&parking.getMiniNum()==newParkings.getInt("miniNum")
@@ -598,11 +597,11 @@ public class CollectConvertMain {
 			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
 			if(restList!=null&&restList.size()>0){
 				IxPoiRestaurant rest=restList.get(0);
-				if(rest.getFoodType().equals(newFoodTypes.getString("foodtype"))
-						&&rest.getOpenHour().equals(newFoodTypes.getString("openHour"))
+				if(CollectConvertUtils.compareStr(rest.getFoodType(),newFoodTypes.getString("foodtype"))
+						&&CollectConvertUtils.compareStr(rest.getOpenHour(),newFoodTypes.getString("openHour"))
 						&&rest.getParking()==newFoodTypes.getInt("parking")
 						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
-						&&rest.getCreditCard().equals(newFoodTypes.getString("creditCards"))){
+						&&CollectConvertUtils.compareStr(rest.getCreditCard(),newFoodTypes.getString("creditCards"))){
 					newFoodTypes.put("rowId", rest.getRowId());
 					}
 				}
@@ -645,7 +644,7 @@ public class CollectConvertMain {
 				List<IxPoiContact> contactList = oldPoiObj.getIxPoiContacts();
 				if(contactList!=null&&contactList.size()>0){
 					for(IxPoiContact poiContact:contactList){
-						if(poiContact.getContact().equals(oldContactJson.getString("number"))
+						if(CollectConvertUtils.compareStr(poiContact.getContact(),oldContactJson.getString("number"))
 								&&poiContact.getContactType()==oldContactJson.getInt("type")
 								&&poiContact.getPriority()==oldContactJson.getInt("priority")){
 							newContactJson.put("rowId", poiContact.getRowId());

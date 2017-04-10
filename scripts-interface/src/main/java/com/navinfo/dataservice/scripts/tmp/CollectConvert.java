@@ -23,6 +23,7 @@ public class CollectConvert {
 	public static void main(String[] args) throws Exception {
 		//incremental.zip解压后的路径，例如：data/incremental
 		String path = String.valueOf(args[0]);
+		//String path="D:/temp/incremental";
 		int dbId=0;
 		if(args.length>1){
 			dbId=Integer.valueOf(args[1]);
@@ -66,11 +67,14 @@ public class CollectConvert {
 			convertSeqList.add(seq);
 			String inPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)+"/"
 		+seq+"/";
+			//String inPath="D:/temp/data/resources/upload"+"/"+seq;
 			log.info("转入路径："+inPath);
+			log.info("路径"+inPath+"目录生成");
+			CollectConvertUtils.createMkdir(inPath);
 			log.info("路径"+outPath+"照片拷贝");
 			CollectConvertUtils.copyPhoto(outPath, inPath);
 			log.info("路径"+outPath+"数据读取");
-			List<JSONObject> oldListJson = CollectConvertUtils.readJsonObjects(outPath+"Datum_Point.json");
+			List<JSONObject> oldListJson = CollectConvertUtils.readJsonObjects(outPath+"/Datum_Point.json");
 			List<JSONObject> newListJson=new ArrayList<JSONObject>();
 			log.info("路径"+outPath+"数据转换");
 			for(JSONObject oldPoi:oldListJson){
@@ -78,16 +82,20 @@ public class CollectConvert {
 					JSONObject newPoi = CollectConvertMain.convertMain(dbId,inPath,oldPoi);
 					newListJson.add(newPoi);
 				}catch (Exception e) {
-					log.error("转换错误", e);
+					log.error("转换错误数据:"+oldPoi, e);
 					errorList.add("from "+outPath+",to "+inPath+",message:"+e.getMessage());
+					for(StackTraceElement t:e.getStackTrace()){
+						errorList.add(t.toString());
+					}
 					errorList.add("from "+outPath+",to "+inPath+",data:"+oldPoi);
 				}
 			}
 			log.info("路径"+outPath+"数据写入");
-			CollectConvertUtils.writeJSONObject2TxtFile(inPath+"poi.txt", newListJson);
+			CollectConvertUtils.writeJSONObject2TxtFile(inPath+"/poi.txt", newListJson);
 		}
 		log.info("本次转换路径汇总");
-		CollectConvertUtils.writeInteger2TxtFile(path+"outConvert.txt", convertSeqList);
+		CollectConvertUtils.writeInteger2TxtFile(path+"/outConvert.txt", convertSeqList);
+		CollectConvertUtils.writeStringTxtFile(path+"/outErrorConvert.txt", errorList);
 		log.info("end convert");
 	}
 }

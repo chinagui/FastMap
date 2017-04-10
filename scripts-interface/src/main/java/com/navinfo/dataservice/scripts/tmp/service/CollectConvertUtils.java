@@ -243,6 +243,40 @@ public class CollectConvertUtils {
 		}
 	}
 	/**
+	 * 写入模块
+	 * 文件：com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils.java
+	 * Static void writeTxtFile(String txtPath,List<JSONObject> data)
+	 * 实现方式：java
+	 * 输入：
+	 *     List<JSONObject>数据
+	 *     String :txt文件路径，例如/data/resources/upload/12/poi.txt
+	 * 输出：无 
+	 * 应用场景：poi数据写入poi.txt;转换后文件夹列表写入outConvert.txt
+	 * 原则：
+	 * 1.	记录写入到txtPath文件中
+	 * @param txtPath
+	 * @param newListJson
+	 */
+	public static void writeStringTxtFile(String txtPath,List<String> newListJson) {
+		PrintWriter pw = null;
+		try {
+			pw = new PrintWriter(txtPath);
+			for (String seq : newListJson) {
+				pw.println(seq);
+	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}finally{
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
+			}
+		}
+	}
+	/**
 	 * 照片拷贝模块
 	 * 文件：com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils.java
 	 * Static void copyPhoto(String outPath,String inPath)
@@ -451,6 +485,30 @@ public class CollectConvertUtils {
 		if(oldStr==null||oldStr.isEmpty()||oldStr.equals("null")){
 			return "";
 		}else{return oldStr;}
+	}
+	
+	/**
+	 * "null"转成0；否则，字符串转数字后赋值
+	 * @param oldStr
+	 * @return
+	 */
+	public static int convertInt(String oldStr){
+		if(oldStr==null||oldStr.isEmpty()||oldStr.equals("null")){
+			return 0;
+		}else{return Integer.valueOf(oldStr);}
+	}
+	/**
+	 * 对比字符串是否相等
+	 * null,""相同。
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static boolean compareStr(String a,String b){
+		if(a==null||a.isEmpty()||a.equals("null")){
+			if(b==null||b.isEmpty()||b.equals("null")){return true;}
+			else{return false;}
+		}else {return a.equals(b);}
 	}
 	
 	/**

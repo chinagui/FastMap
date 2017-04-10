@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.check.rules;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -10,7 +11,10 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkNameSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.DatabaseOperatorResultWithGeo;
 
@@ -34,24 +38,42 @@ public class GLM01544 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		prepareChangeDataSet(checkCommand);
 
-		for (Integer linkPid : nameLinkPidSet) {
-			String sqlStr = String.format(
-					"SELECT L.GEOMETRY, '[RD_LINK,' || L.LINK_PID || ']' TARGET, L.MESH_ID FROM RD_LINK_NAME LM,RD_LINK L WHERE LM.NAME_GROUPID IN "
-					+ "(SELECT NAME_GROUPID FROM RD_LINK_NAME GROUP BY NAME_GROUPID,LINK_PID HAVING COUNT(1) > 1) AND LM.U_RECORD <> 2 AND L.U_RECORD <> 2 AND LM.LINK_PID = L.LINK_PID AND L.LINK_PID = %d",
-					linkPid);
+		RdLinkNameSelector rdName = new RdLinkNameSelector(this.getConn());
+		Map<Integer, List<RdLinkName>> nameList = rdName.loadNameByLinkPids(nameLinkPidSet);
 
-			logger.info("RdLinkLimit后检查GLM01544 SQL:" + sqlStr);
+		for (Map.Entry<Integer, List<RdLinkName>> entry : nameList.entrySet()) {
+			List<RdLinkName> names = entry.getValue();
 
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sqlStr);
-
-			if (resultList.isEmpty()) {
+			boolean flag = compareSameName(names);
+			if (flag == true)
 				continue;
-			}
 
-			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int) resultList.get(2));
-		} // for循环
+			RdLinkSelector linkSelector = new RdLinkSelector(getConn());
+			RdLink link = (RdLink) linkSelector.loadByIdOnlyRdLink(entry.getKey(), false);
+			this.setCheckResult(link.getGeometry(), "[RD_LINK," + link.pid() + "]", link.mesh());
+		}
+	}
+
+	/**
+	 * 比对同一link上的名称是否相同
+	 * 
+	 * @param names
+	 * @return
+	 */
+	private boolean compareSameName(List<RdLinkName> names) {
+		boolean flag = true;
+		for (int i = 0; i < names.size() - 1; i++) {
+			for (int j = i + 1; j < names.size(); j++) {
+				if (names.indexOf(i) == names.indexOf(j)) {
+					flag = false;
+					break;
+				}
+			}
+			if (flag = false)
+				break;
+		}
+
+		return flag;
 	}
 
 	private void prepareChangeDataSet(CheckCommand checkCommand) {

@@ -277,7 +277,7 @@ public class CollectConvertUtils {
 	 * @return
 	 */
 	public static String convertStr(String oldStr){
-		if(oldStr.equals("null")){
+		if(oldStr==null||oldStr.isEmpty()||oldStr.equals("null")){
 			return "";
 		}else{return oldStr;}
 	}

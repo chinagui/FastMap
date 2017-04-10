@@ -2270,6 +2270,8 @@ public class TaskService {
 					+ " WHERE T.LATEST =1"
 					+ " AND T1.LATEST = 1"
 					+ " AND T1.PROGRAM_ID = T.PROGRAM_ID"
+					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.REGION_ID = T.REGION_ID"
 					+ " AND T1.TYPE = " + type
 					+ " AND T.TASK_ID = " + taskId;
 			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);

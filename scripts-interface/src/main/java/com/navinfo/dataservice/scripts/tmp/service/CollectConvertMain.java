@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.scripts.tmp.service;
 
 import java.sql.Connection;
+import java.util.List;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.LogManager;
@@ -8,12 +9,17 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class CollectConvertMain {
@@ -60,7 +66,7 @@ public class CollectConvertMain {
 			newPoi.put("fid", fid);
 			IxPoiObj oldPoiObj =null;
 			if(lifecycle!=3){
-				oldPoiObj = loadPoiByFid(conn, fid);
+				oldPoiObj = loadPoiByFid(conn, fid,false);
 				if(oldPoiObj==null){
 					throw new Exception("数据fid="+fid+"在大区"+dbId+"中不存在");
 				}
@@ -136,42 +142,176 @@ public class CollectConvertMain {
 			 * 字符串转json，直接赋值；然后全字段在IX_POI_PARKING中查找，存在非删除记录，则赋rowId，否则生成rowId
 			 */
 			convertParkings(lifecycle,newPoi,oldPoi,oldPoiObj);
-//hotel: "null",	hotel: null,	字符串转json，直接赋值；然后全字段在IX_POI_HOTEL中查找，存在非删除记录，则赋rowId，否则生成rowId
-//sportsVenues: "null",(包含字段buildingType,sports)	sportsVenues: "",	"null"转成""；否则转json，将buildingType赋给sportsVenues
-//chargingStation: "null",	chargingStation: null,(或者type,changeBrands,changeOpenType,servicePro,chargingNum,openHour,parkingFees,parkingInfo,availableState,rowId)	取oracle库中对应记录生成，没有则赋值""
-//chargingPole: ""	chargingPole: [],(或者groupId,acdc,plugType,power,voltage,current,mode,count,plugNum,prices,openType,availableState,manufacturer,factoryNum,plotNum,productNum,parkingNum,floor,locationType,payment,rowId)	取oracle库中对应记录生成，没有则赋值""
-//gasStation: "null",（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour）	gasStation: null,（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour,rowId）	字符串转json，直接赋值；然后全字段在IX_POI_GASSTATION中查找，存在非删除记录，则赋rowId，否则生成rowId
-//indoor: "{\"floor\":null,\"type\":0,\"open\":1}",	indoor: {type: 0,floor: ""}	indoor的字符串转json格式；type直接赋值；floor，null转"",否则直接赋值
-//brands: "[]",	chain: "",（"chain":"304D"）	brands的字符串转json格式；为[]，赋值"";若有值，取第一个赋值chain
-//rawFields: "null",	rawFields: "",	"null"转成""；否则，直接赋值
-/*attachments: "[]",	attachments: [{	参照word中的照片赋值原则
-	  id: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB",	
-	  content: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB.jpg",	
-	  extContent: {	
-	    shootDate: "20170303213020",	当前时间
-	    latitude: 40.01316,	显示坐标四舍五入截取小数点后5位赋值
-	    longitude: 116.47907,	显示坐标四舍五入截取小数点后5位赋值
-	    deviceNum: "",	赋""
-	    direction: 0	赋0
-	  },	
-	  type: 1,	
-	  tag: 3	
-	}],	*/
-	/*sameFid: "",	"查询库里的同一关系，找到同一关系poi赋值对应的fid（同一关系都是两两一组）;
-若为删除对象(t_lifecycle: 1),则
-1.不需要补足同一关系.
-2.查找是否有同一关系，若有，则获取其同一关系poi的fid，查看txt中是否有该poi，若有同一关系poi，则在处理此同一关系poi时，需将sameFid赋值"""""
-*/
-//mergeDate: "20161110214719",	t_operateDate: "20170303213109",	直接赋值
-//sourceName: "Android",	sourceName: "Android"	直接赋值
-		
-		return null;
+			//hotel: "null",	hotel: null,	字符串转json，直接赋值；然后全字段在IX_POI_HOTEL中查找，存在非删除记录，则赋rowId，否则生成rowId
+			converHotel(lifecycle,newPoi,oldPoi,oldPoiObj);
+			/* 线上：sportsVenues: "null",(包含字段buildingType,sports)
+			 * 一体化：sportsVenues: "",	
+			 * 原则："null"转成""；否则转json，将buildingType赋给sportsVenues
+			 */
+			String oldSportsVenues=CollectConvertUtils.convertStr(oldPoi.getString("sportsVenues"));
+			if(oldSportsVenues.isEmpty()){
+				newPoi.put("sportsVenues", "");
+			}else{
+				newPoi.put("sportsVenues", JSONObject.fromObject(oldSportsVenues).getString("buildingType"));
+			}
+			//chargingStation: "null",	chargingStation: null,(或者type,changeBrands,changeOpenType,servicePro,chargingNum,openHour,parkingFees,parkingInfo,availableState,rowId)	取oracle库中对应记录生成，没有则赋值""
+			convertChargingStation(lifecycle,newPoi,oldPoi,oldPoiObj);
+			//chargingPole: ""	chargingPole: [],(或者groupId,acdc,plugType,power,voltage,current,mode,count,plugNum,prices,openType,availableState,manufacturer,factoryNum,plotNum,productNum,parkingNum,floor,locationType,payment,rowId)	取oracle库中对应记录生成，没有则赋值""
+			convertChargingPole(lifecycle,newPoi,oldPoi,oldPoiObj);
+			//gasStation: "null",（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour）	gasStation: null,（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour,rowId）	字符串转json，直接赋值；然后全字段在IX_POI_GASSTATION中查找，存在非删除记录，则赋rowId，否则生成rowId
+			convertGasStation(lifecycle, newPoi, oldPoi, oldPoiObj);
+			//indoor: "{\"floor\":null,\"type\":0,\"open\":1}",	indoor: {type: 0,floor: ""}	indoor的字符串转json格式；type直接赋值；floor，null转"",否则直接赋值
+			String oldIndoor=CollectConvertUtils.convertStr(oldPoi.getString("indoor"));
+			if(oldIndoor.isEmpty()){
+				newPoi.put("indoor", "");
+			}else{
+				JSONObject newIndoor=new JSONObject();
+				JSONObject oldIndoorJson=JSONObject.fromObject(oldIndoor);
+				newIndoor.put("type", oldIndoorJson.getString("type"));
+				String floor=oldIndoorJson.getString("floor");
+				if(floor.isEmpty()){newIndoor.put("floor","");}
+				else{newIndoor.put("floor", floor);}
+				newPoi.put("indoor", newIndoor);
+			}
+			//brands: "[]"(或者包含code),	chain: "",（"chain":"304D"）	brands的字符串转json格式；为[]，赋值"";若有值，取第一个的code赋值chain
+			JSONArray oldBrands=JSONArray.fromObject(oldPoi.getString("brands"));
+			if(oldBrands==null||oldBrands.size()==0){
+				newPoi.put("chain", "");
+			}else{
+				newPoi.put("chain", JSONObject.fromObject(oldBrands.get(0)).getString("code"));
+			}
+			//rawFields: "null",	rawFields: "",	"null"转成""；否则，直接赋值
+			newPoi.put("rawFields", CollectConvertUtils.convertStr(oldPoi.getString("rawFields")));
+			/*attachments: "[]",	attachments: [{	参照word中的照片赋值原则
+				  id: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB",	
+				  content: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB.jpg",	
+				  extContent: {	
+				    shootDate: "20170303213020",	当前时间
+				    latitude: 40.01316,	显示坐标四舍五入截取小数点后5位赋值
+				    longitude: 116.47907,	显示坐标四舍五入截取小数点后5位赋值
+				    deviceNum: "",	赋""
+				    direction: 0	赋0
+				  },	
+				  type: 1,	
+				  tag: 3	
+				}],	*/
+			convertAttachments(lifecycle, newPoi, oldPoi, oldPoiObj);
+			/*sameFid: "",	"查询库里的同一关系，找到同一关系poi赋值对应的fid（同一关系都是两两一组）;
+			若为删除对象(t_lifecycle: 1),则
+			1.不需要补足同一关系.
+			2.查找是否有同一关系，若有，则获取其同一关系poi的fid，查看txt中是否有该poi，若有同一关系poi，则在处理此同一关系poi时，需将sameFid赋值"""""
+			*/
+			convertSameFid(lifecycle, newPoi, oldPoi, oldPoiObj);
+			//线上：mergeDate: "20161110214719",	一体化：t_operateDate: "20170303213109",	原则：直接赋值
+			newPoi.put("t_operateDate", CollectConvertUtils.convertStr(oldPoi.getString("mergeDate")));
+			//sourceName: "Android",	sourceName: "Android"	直接赋值	
+			newPoi.put("sourceName", CollectConvertUtils.convertStr(oldPoi.getString("sourceName")));
+			return null;
 		}catch (Exception e) {
 			DbUtils.commitAndCloseQuietly(conn);
 			throw e;
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	/**
+	 * 一体化：sameFid: "",	
+	 * 原则：查询库里的同一关系，找到同一关系poi赋值对应的fid（同一关系都是两两一组）;
+	 *		若为删除对象(t_lifecycle: 1),则
+	 * 		1.不需要补足同一关系.
+	 * 		2.查找是否有同一关系，若有，则获取其同一关系poi的fid，查看txt中是否有该poi，若有同一关系poi，则在处理此同一关系poi时，需将sameFid赋值""
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void convertSameFid(int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 线上：attachments: "[]",	
+	 * 一体化+原则：attachments: [{	参照word中的照片赋值原则
+				  id: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB",	
+				  content: "BDCF4FF0B1CC4A18BB4249DF4BBF51AB.jpg",	
+				  extContent: {	
+				    shootDate: "20170303213020",	当前时间
+				    latitude: 40.01316,	显示坐标四舍五入截取小数点后5位赋值
+				    longitude: 116.47907,	显示坐标四舍五入截取小数点后5位赋值
+				    deviceNum: "",	赋""
+				    direction: 0	赋0
+				  },	
+				  type: 1,	
+				  tag: 3	
+				}]
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void convertAttachments(int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 线上：gasStation: "null",（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour）	
+	 * 一体化：gasStation: null,（包含字段fuelType,oilType,egType,mgType,payment,service,servicePro,openHour,rowId）	
+	 * 原则：字符串转json，直接赋值；然后全字段在IX_POI_GASSTATION中查找，存在非删除记录，则赋rowId，否则生成rowId
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void convertGasStation(int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 线上：chargingPole: ""	
+	 * 一体化：chargingPole: [],(或者groupId,acdc,plugType,power,voltage,current,mode,count,plugNum,prices,
+	 * openType,availableState,manufacturer,factoryNum,plotNum,productNum,parkingNum,floor,locationType,payment,rowId)
+	 * 原则：	取oracle库中对应记录生成，没有则赋值""
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void convertChargingPole(int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 线上：chargingStation: "null",	
+	 * 一体化：chargingStation: null,(或者type,changeBrands,changeOpenType,servicePro,chargingNum,openHour,
+	 * parkingFees,parkingInfo,availableState,rowId)	]
+	 * 原则：取oracle库中对应记录生成，没有则赋值""
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void convertChargingStation(int lifecycle,
+			JSONObject newPoi, JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 线上：hotel: "null",	
+	 * 一体化：hotel: null,	
+	 * 原则：字符串转json，直接赋值；然后全字段在IX_POI_HOTEL中查找，存在非删除记录，则赋rowId，否则生成rowId
+	 * @param lifecycle
+	 * @param newPoi
+	 * @param oldPoi
+	 * @param oldPoiObj
+	 */
+	private static void converHotel(int lifecycle, JSONObject newPoi,
+			JSONObject oldPoi, IxPoiObj oldPoiObj) {
+		// TODO Auto-generated method stub
+		
 	}
 	/**
 	 * 线上：parkings: "null",（包含字段tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
@@ -186,8 +326,34 @@ public class CollectConvertMain {
 	 */
 	private static void convertParkings(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		String oldParkingsStr=CollectConvertUtils.convertStr(oldPoi.getString("parkings"));
+		if(oldParkingsStr==null||oldParkingsStr.isEmpty()){
+			newPoi.put("foodtypes", null);
+			return;
+		}
+		JSONObject oldFoodTypes = JSONObject.fromObject(oldfoodTypesStr);
+		JSONObject newFoodTypes=new JSONObject();
+		newFoodTypes.put("foodtype", CollectConvertUtils.convertStr(oldFoodTypes.getString("foodtype")));
+		newFoodTypes.put("openHour", CollectConvertUtils.convertStr(oldFoodTypes.getString("openHour")));
+		newFoodTypes.put("parking", oldFoodTypes.getInt("parking"));
+		newFoodTypes.put("avgCost", oldFoodTypes.getInt("avgCost"));
+		newFoodTypes.put("creditCards", CollectConvertUtils.convertStr(oldFoodTypes.getString("creditCards")));
+		//rowid获取
+		newFoodTypes.put("rowId", UuidUtils.genUuid());
+		if(lifecycle!=3){
+			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
+			if(restList!=null&&restList.size()>0){
+				IxPoiRestaurant rest=restList.get(0);
+				if(rest.getFoodType().equals(newFoodTypes.getString("foodtype"))
+						&&rest.getOpenHour().equals(newFoodTypes.getString("openHour"))
+						&&rest.getParking()==newFoodTypes.getInt("parking")
+						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
+						&&rest.getCreditCard().equals(newFoodTypes.getString("creditCards"))){
+					newFoodTypes.put("rowId", rest.getRowId());
+					}
+				}
+			}
+		newPoi.put("foodtypes", newFoodTypes);
 	}
 	/**
 	 *线上：foodtypes: "null",	
@@ -206,8 +372,34 @@ public class CollectConvertMain {
 	 */
 	private static void convertFoodtypes(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		String oldfoodTypesStr=CollectConvertUtils.convertStr(oldPoi.getString("foodtypes"));
+		if(oldfoodTypesStr==null||oldfoodTypesStr.isEmpty()){
+			newPoi.put("foodtypes", null);
+			return;
+		}
+		JSONObject oldFoodTypes = JSONObject.fromObject(oldfoodTypesStr);
+		JSONObject newFoodTypes=new JSONObject();
+		newFoodTypes.put("foodtype", CollectConvertUtils.convertStr(oldFoodTypes.getString("foodtype")));
+		newFoodTypes.put("openHour", CollectConvertUtils.convertStr(oldFoodTypes.getString("openHour")));
+		newFoodTypes.put("parking", oldFoodTypes.getInt("parking"));
+		newFoodTypes.put("avgCost", oldFoodTypes.getInt("avgCost"));
+		newFoodTypes.put("creditCards", CollectConvertUtils.convertStr(oldFoodTypes.getString("creditCards")));
+		//rowid获取
+		newFoodTypes.put("rowId", UuidUtils.genUuid());
+		if(lifecycle!=3){
+			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
+			if(restList!=null&&restList.size()>0){
+				IxPoiRestaurant rest=restList.get(0);
+				if(rest.getFoodType().equals(newFoodTypes.getString("foodtype"))
+						&&rest.getOpenHour().equals(newFoodTypes.getString("openHour"))
+						&&rest.getParking()==newFoodTypes.getInt("parking")
+						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
+						&&rest.getCreditCard().equals(newFoodTypes.getString("creditCards"))){
+					newFoodTypes.put("rowId", rest.getRowId());
+					}
+				}
+			}
+		newPoi.put("foodtypes", newFoodTypes);
 	}
 	/**
 	 * 线上：contacts: "[]",（或者"contacts":"[{\"number\":\"021-55277040\",\"linkman\":null,\"type\":1,
@@ -222,8 +414,41 @@ public class CollectConvertMain {
 	 */
 	private static void convertContacts(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		JSONArray oldContacts = JSONArray.fromObject(oldPoi.getString("contacts"));
+		JSONArray newContacts=new JSONArray();
+		if(oldContacts==null||oldContacts.size()==0){
+			newPoi.put("contacts", newContacts);
+			return;
+		}		
+		for(Object oldContact:oldContacts){
+			JSONObject newContactJson = new JSONObject();
+			JSONObject oldContactJson = JSONObject.fromObject(oldContact);
+			newContactJson.put("number", oldContactJson.getString("number"));
+			newContactJson.put("type", oldContactJson.getInt("type"));
+			newContactJson.put("priority", oldContactJson.getInt("priority"));
+			String linkman=oldContactJson.getString("linkman");
+			if(linkman==null||linkman.isEmpty()){
+				newContactJson.put("linkman", "");}
+			else{newContactJson.put("linkman", linkman);}
+			
+			//rowid获取
+			newContactJson.put("rowId", UuidUtils.genUuid());
+			if(lifecycle!=3){
+				List<IxPoiContact> contactList = oldPoiObj.getIxPoiContacts();
+				if(contactList!=null&&contactList.size()>0){
+					for(IxPoiContact poiContact:contactList){
+						if(poiContact.getContact().equals(oldContactJson.getString("number"))
+								&&poiContact.getContactType()==oldContactJson.getInt("type")
+								&&poiContact.getPriority()==oldContactJson.getInt("priority")){
+							newContactJson.put("rowId", poiContact.getRowId());
+							break;
+						}
+					}
+				}
+			}
+			newContacts.add(newContactJson);
+		}		
+		newPoi.put("contacts", newContacts);
 	}
 	/**
 	 * 线上：relateChildren: "[]",（或者"relateChildren":"[{\"childFid\":\"00366620161022153619\",\"type\":2,
@@ -236,11 +461,44 @@ public class CollectConvertMain {
 	 * @param newPoi
 	 * @param oldPoi
 	 * @param oldPoiObj
+	 * @throws Exception 
 	 */
 	private static void convertRelateChildren(Connection conn,int lifecycle, JSONObject newPoi,
-			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+			JSONObject oldPoi, IxPoiObj oldPoiObj) throws Exception {
+		JSONArray oldChilds = JSONArray.fromObject(oldPoi.getString("relateChildren"));
+		JSONArray newChilds=new JSONArray();
+		if(oldChilds==null||oldChilds.size()==0){
+			newPoi.put("relateChildren", newChilds);
+			return;
+		}		
+		for(Object oldChild:oldChilds){
+			JSONObject newChildJson = new JSONObject();
+			JSONObject oldChildJson = JSONObject.fromObject(oldChild);
+			newChildJson.put("childFid", oldChildJson.getString("childFid"));
+			newChildJson.put("type", oldChildJson.getInt("type"));
+			IxPoiObj childPoiObj = loadPoiByFid(conn, oldChildJson.getString("childFid"),true);
+			if(childPoiObj==null){
+				newChildJson.put("childPid", 0);
+			}else{
+				newChildJson.put("childPid",childPoiObj.objPid());
+			}
+			//rowid获取
+			newChildJson.put("rowId", UuidUtils.genUuid());
+			if(lifecycle!=3){
+				List<IxPoiChildren> childList = oldPoiObj.getIxPoiChildrens();
+				if(childList!=null&&childList.size()>0){
+					for(IxPoiChildren poiChild:childList){
+						if(poiChild.getChildPoiPid()==newChildJson.getLong("childPid")
+								&&poiChild.getRelationType()==newChildJson.getInt("type")){
+							newChildJson.put("rowId", poiChild.getRowId());
+							break;
+						}
+					}
+				}
+			}
+			newChilds.add(newChildJson);
+		}		
+		newPoi.put("relateChildren", newChilds);
 	}
 	/**
 	 * 根据fid获取poi对象
@@ -249,12 +507,12 @@ public class CollectConvertMain {
 	 * @return
 	 * @throws Exception
 	 */
-	public static IxPoiObj loadPoiByFid(Connection conn,String fid) throws Exception{
+	public static IxPoiObj loadPoiByFid(Connection conn,String fid,boolean isMainOnly) throws Exception{
 		String objType = "IX_POI";
 		String colName = "POI_NUM";
 		String colValue = fid;
 		boolean isLock = false;
-		BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null,false, colName,colValue, isLock);
+		BasicObj obj = ObjSelector.selectBySpecColumn(conn, objType, null,isMainOnly, colName,colValue, isLock);
 		return (IxPoiObj) obj;
 	}
 	/**

@@ -109,11 +109,11 @@ public class CollectConvertUtils {
 		List<JSONObject> datas = new ArrayList<JSONObject>();
 		try {
 			if(StringUtils.isEmpty(jsonFilePath)){
-				throw new Exception("路径为:"+jsonFilePath+",文件目录不存在");
+				log.info("路径为:"+jsonFilePath+",文件目录不存在");
 			}
 			File file = new File(jsonFilePath);
 			if(!file.exists()){
-				throw new Exception("路径为:"+jsonFilePath+",文件目录不存在");
+				log.info("路径为:"+jsonFilePath+",文件目录不存在");
 			}
 			//判断文件类型
 			if(file.isFile()&&file.getName().equals("Datum_Point.json")){
@@ -145,10 +145,14 @@ public class CollectConvertUtils {
 				}
 			}
 		} catch(Exception e){
-			e.printStackTrace();
+			log.error(e.getMessage(), e);
 		}finally{
-			if(lines!=null){
-				lines.close();
+			try {
+				if(lines!=null){
+					lines.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
 			}
 		}
 		return datas;
@@ -178,8 +182,12 @@ public class CollectConvertUtils {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
-			if(pw!=null){
-				pw.close();
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
 			}
 		}
 	}
@@ -208,8 +216,12 @@ public class CollectConvertUtils {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}finally{
-			if(pw!=null){
-				pw.close();
+			try {
+				if(pw!=null){
+					pw.close();
+				}
+			} catch (Exception e2) {
+				log.error(e2.getMessage(), e2);
 			}
 		}
 	}

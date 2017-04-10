@@ -10,8 +10,11 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -296,8 +299,25 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingStation(int lifecycle,
 			JSONObject newPoi, JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		newPoi.put("chargingStation", null);
+		JSONObject newCharging=new JSONObject();
+		if(lifecycle!=3){
+			List<IxPoiChargingstation> chargingsList = oldPoiObj.getIxPoiChargingstations();
+			if(chargingsList!=null&&chargingsList.size()>0){
+				IxPoiChargingstation charging=chargingsList.get(0);
+				newCharging.put("type",charging.getChargingType());
+				newCharging.put("changeBrands",charging.getChangeBrands());
+				newCharging.put("changeOpenType",charging.getChangeOpenType());
+				newCharging.put("servicePro",charging.getServiceProv());
+				newCharging.put("chargingNum",charging.getChargingNum());
+				newCharging.put("openHour",charging.getOpenHour());
+				newCharging.put("parkingFees",charging.getParkingFees());
+				newCharging.put("parkingInfo",charging.getParkingInfo());
+				newCharging.put("availableState",charging.getAvailableState());
+				newCharging.put("rowId",charging.getRowId());
+				}
+			}
+		if(newCharging!=null&&newCharging.size()>0){newPoi.put("chargingStation", newCharging);}
 	}
 	/**
 	 * 线上：hotel: "null",	
@@ -310,8 +330,50 @@ public class CollectConvertMain {
 	 */
 	private static void converHotel(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		// TODO Auto-generated method stub
-		
+		String oldHotelStr=CollectConvertUtils.convertStr(oldPoi.getString("hotel"));
+		if(oldHotelStr==null||oldHotelStr.isEmpty()){
+			newPoi.put("hotel", null);
+			return;
+		}
+		JSONObject oldHotel = JSONObject.fromObject(oldHotelStr);
+		JSONObject newHotel=new JSONObject();
+		newHotel.put("rating",oldHotel.getInt("rating"));
+		newHotel.put("creditCards",CollectConvertUtils.convertStr(oldHotel.getString("creditCards")));
+		newHotel.put("description",CollectConvertUtils.convertStr(oldHotel.getString("description")));
+		newHotel.put("checkInTime",CollectConvertUtils.convertStr(oldHotel.getString("checkInTime")));
+		newHotel.put("checkOutTime",CollectConvertUtils.convertStr(oldHotel.getString("checkOutTime")));
+		newHotel.put("roomCount",oldHotel.getInt("roomCount"));
+		newHotel.put("roomType",CollectConvertUtils.convertStr(oldHotel.getString("roomType")));
+		newHotel.put("roomPrice",CollectConvertUtils.convertStr(oldHotel.getString("roomPrice")));
+		newHotel.put("breakfast",oldHotel.getInt("breakfast"));
+		newHotel.put("service",CollectConvertUtils.convertStr(oldHotel.getString("service")));
+		newHotel.put("parking",oldHotel.getInt("parking"));
+		newHotel.put("openHour",CollectConvertUtils.convertStr(oldHotel.getString("openHour")));
+		//rowid获取
+		newHotel.put("rowId", UuidUtils.genUuid());
+		if(lifecycle!=3){
+			List<IxPoiHotel> hotelList = oldPoiObj.getIxPoiHotels();
+			if(hotelList!=null&&hotelList.size()>0){
+				IxPoiHotel hotel=hotelList.get(0);
+				//rating,creditCards,description,checkInTime,checkOutTime,roomCount,roomType,
+				//roomPrice,breakfast,service,parking,openHour
+				if(hotel.getRating()==newHotel.getInt("rating")
+						&&hotel.getCreditCard().equals(newHotel.getString("creditCards"))
+						&&hotel.getLongDescription().equals(newHotel.getString("description"))
+						&&hotel.getCheckinTime().equals(newHotel.getString("checkInTime"))
+						&&hotel.getCheckoutTime().equals(newHotel.getString("checkOutTime"))
+						&&hotel.getRoomCount()==newHotel.getInt("roomCount")
+						&&hotel.getRoomType().equals(newHotel.getString("roomType"))
+						&&hotel.getRoomPrice().equals(newHotel.getString("roomPrice"))
+						&&hotel.getBreakfast()==newHotel.getInt("breakfast")
+						&&hotel.getService().equals(newHotel.getString("service"))
+						&&hotel.getParking()==newHotel.getInt("parking")
+						&&hotel.getOpenHour().equals(newHotel.getString("openHour"))){
+					newHotel.put("rowId", hotel.getRowId());
+					}
+				}
+			}
+		newPoi.put("hotel", newHotel);
 	}
 	/**
 	 * 线上：parkings: "null",（包含字段tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
@@ -328,32 +390,60 @@ public class CollectConvertMain {
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
 		String oldParkingsStr=CollectConvertUtils.convertStr(oldPoi.getString("parkings"));
 		if(oldParkingsStr==null||oldParkingsStr.isEmpty()){
-			newPoi.put("foodtypes", null);
+			newPoi.put("parkings", null);
 			return;
 		}
-		JSONObject oldFoodTypes = JSONObject.fromObject(oldfoodTypesStr);
-		JSONObject newFoodTypes=new JSONObject();
-		newFoodTypes.put("foodtype", CollectConvertUtils.convertStr(oldFoodTypes.getString("foodtype")));
-		newFoodTypes.put("openHour", CollectConvertUtils.convertStr(oldFoodTypes.getString("openHour")));
-		newFoodTypes.put("parking", oldFoodTypes.getInt("parking"));
-		newFoodTypes.put("avgCost", oldFoodTypes.getInt("avgCost"));
-		newFoodTypes.put("creditCards", CollectConvertUtils.convertStr(oldFoodTypes.getString("creditCards")));
+		JSONObject oldParkings = JSONObject.fromObject(oldParkingsStr);
+		JSONObject newParkings=new JSONObject();
+		newParkings.put("tollStd",CollectConvertUtils.convertStr(oldParkings.getString("foodtype")));
+		newParkings.put("tollDes",CollectConvertUtils.convertStr(oldParkings.getString("tollDes")));
+		newParkings.put("tollWay",CollectConvertUtils.convertStr(oldParkings.getString("tollWay")));
+		newParkings.put("openTime",CollectConvertUtils.convertStr(oldParkings.getString("openTime")));
+		newParkings.put("totalNum",oldParkings.getInt("totalNum"));
+		newParkings.put("payment",CollectConvertUtils.convertStr(oldParkings.getString("payment")));
+		newParkings.put("remark",CollectConvertUtils.convertStr(oldParkings.getString("remark")));
+		newParkings.put("buildingType",CollectConvertUtils.convertStr(oldParkings.getString("buildingType")));
+		newParkings.put("resHigh",oldParkings.getDouble("resHigh"));
+		newParkings.put("resWidth",oldParkings.getDouble("resWidth"));
+		newParkings.put("resWeigh",oldParkings.getDouble("resWeigh"));
+		newParkings.put("certificate",oldParkings.getInt("certificate"));
+		newParkings.put("vehicle",oldParkings.getInt("vehicle"));
+		newParkings.put("haveSpecialPlace",CollectConvertUtils.convertStr(oldParkings.getString("haveSpecialPlace")));
+		newParkings.put("womenNum",oldParkings.getInt("womenNum"));
+		newParkings.put("handicapNum",oldParkings.getInt("handicapNum"));
+		newParkings.put("miniNum",oldParkings.getInt("miniNum"));
+		newParkings.put("vipNum",oldParkings.getInt("vipNum"));
 		//rowid获取
-		newFoodTypes.put("rowId", UuidUtils.genUuid());
+		newParkings.put("rowId", UuidUtils.genUuid());
 		if(lifecycle!=3){
-			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
-			if(restList!=null&&restList.size()>0){
-				IxPoiRestaurant rest=restList.get(0);
-				if(rest.getFoodType().equals(newFoodTypes.getString("foodtype"))
-						&&rest.getOpenHour().equals(newFoodTypes.getString("openHour"))
-						&&rest.getParking()==newFoodTypes.getInt("parking")
-						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
-						&&rest.getCreditCard().equals(newFoodTypes.getString("creditCards"))){
-					newFoodTypes.put("rowId", rest.getRowId());
+			List<IxPoiParking> parkingList = oldPoiObj.getIxPoiParkings();
+			if(parkingList!=null&&parkingList.size()>0){
+				IxPoiParking parking=parkingList.get(0);
+				//tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
+				// * resHigh,resWidth,resWeigh,certificate,vehicle,haveSpecialPlace,womenNum,handicapNum,miniNum,vipNum
+				if(parking.getTollStd().equals(newParkings.getString("tollStd"))
+						&&parking.getTollDes().equals(newParkings.getString("tollDes"))
+						&&parking.getTollWay().equals(newParkings.getString("tollWay"))
+						&&parking.getOpenTiime().equals(newParkings.getString("openTime"))
+						&&parking.getTotalNum()==newParkings.getInt("totalNum")
+						&&parking.getPayment().equals(newParkings.getString("payment"))
+						&&parking.getRemark().equals(newParkings.getString("remark"))
+						&&parking.getParkingType().equals(newParkings.getString("buildingType"))
+						&&parking.getResHigh()==newParkings.getDouble("resHigh")
+						&&parking.getResWidth()==newParkings.getDouble("resWidth")
+						&&parking.getResWeigh()==newParkings.getDouble("resWeigh")
+						&&parking.getCertificate()==newParkings.getInt("certificate")
+						&&parking.getVehicle()==newParkings.getInt("vehicle")
+						&&parking.getHaveSpecialplace().equals(newParkings.getString("haveSpecialPlace"))
+						&&parking.getWomenNum()==newParkings.getInt("womenNum")
+						&&parking.getHandicapNum()==newParkings.getInt("handicapNum")
+						&&parking.getMiniNum()==newParkings.getInt("miniNum")
+						&&parking.getVipNum()==newParkings.getInt("vipNum")){
+					newParkings.put("rowId", parking.getRowId());
 					}
 				}
 			}
-		newPoi.put("foodtypes", newFoodTypes);
+		newPoi.put("parkings", newParkings);
 	}
 	/**
 	 *线上：foodtypes: "null",	

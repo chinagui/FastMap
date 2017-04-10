@@ -10,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 import com.navinfo.dataservice.engine.edit.operation.parameterCheck.DepartCheck;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -58,6 +59,8 @@ public class Process extends AbstractProcess<Command> {
         check.checkCRFI(getConn(), getCommand().getNodePid());
         // 分离节点检查顺行
         check.checkRdDirectRAndLaneC(getConn(), getCommand().getNodePid(), getCommand().getLinkPid());
+        //分离节点检查节点是否在立交点处
+        check.permitCheckGscnodeNotMove(getCommand().getCatchLinkPid(), getCommand().getCatchNodePid(), getConn(), getCommand().getPoint());
         return super.preCheck();
     }
 

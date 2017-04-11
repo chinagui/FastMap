@@ -5,11 +5,12 @@ import java.sql.Timestamp;
 import com.navinfo.dataservice.engine.statics.tools.StatUtil;
 
 public class FmStatOverviewProgram {
-	private int program_id      ;
+	private int programId      ;
 	private int percent         ;
 	private int diffDate       ;
 	private int progress        ;
 	private int status          ;
+	private int type          ;
 	private int collectProgress;
 	private int collectPercent ;
 	private int dailyProgress  ;
@@ -44,11 +45,11 @@ public class FmStatOverviewProgram {
 	private Timestamp monthlyActualEndDate  ;
 	private int monthlyDiffDate  ;
 	
-	public int getProgram_id() {
-		return program_id;
+	public int getProgramId() {
+		return programId;
 	}
-	public void setProgram_id(int program_id) {
-		this.program_id = program_id;
+	public void setProgramId(int programId) {
+		this.programId = programId;
 	}
 	public int getPercent() {
 		return (this.collectPercent+this.dailyPercent+this.monthlyPercent)/3;
@@ -97,10 +98,7 @@ public class FmStatOverviewProgram {
 		this.dailyPercent = dailyPercent;
 	}
 	public Timestamp getStatDate() {
-		return statDate;
-	}
-	public void setStatDate(Timestamp statDate) {
-		this.statDate = statDate;
+		return new Timestamp(System.currentTimeMillis());
 	}
 	public int getMonthlyProgress() {
 		return monthlyProgress;
@@ -130,10 +128,7 @@ public class FmStatOverviewProgram {
 		return StatUtil.daysOfTwo(this.planStartDate,this.planEndDate);
 	}
 	public Timestamp getActualStartDate() {
-		return actualStartDate;
-	}
-	public void setActualStartDate(Timestamp actualStartDate) {
-		this.actualStartDate = actualStartDate;
+		return this.planStartDate;
 	}
 	public Timestamp getActualEndDate() {
 		return actualEndDate;
@@ -157,10 +152,7 @@ public class FmStatOverviewProgram {
 		return StatUtil.daysOfTwo(this.collectPlanStartDate,this.collectPlanEndDate);
 	}
 	public Timestamp getCollectActualStartDate() {
-		return collectActualStartDate;
-	}
-	public void setCollectActualStartDate(Timestamp collectActualStartDate) {
-		this.collectActualStartDate = collectActualStartDate;
+		return this.collectPlanStartDate;
 	}
 	public Timestamp getCollectActualEndDate() {
 		return collectActualEndDate;
@@ -191,10 +183,7 @@ public class FmStatOverviewProgram {
 		return StatUtil.daysOfTwo(this.dailyPlanStartDate,this.dailyPlanEndDate);
 	}
 	public Timestamp getDailyActualStartDate() {
-		return dailyActualStartDate;
-	}
-	public void setDailyActualStartDate(Timestamp dailyActualStartDate) {
-		this.dailyActualStartDate = dailyActualStartDate;
+		return this.dailyPlanStartDate;
 	}
 	public Timestamp getDailyActualEndDate() {
 		return dailyActualEndDate;
@@ -210,10 +199,7 @@ public class FmStatOverviewProgram {
 		}
 	}
 	public Timestamp getStatTime() {
-		return statTime;
-	}
-	public void setStatTime(Timestamp statTime) {
-		this.statTime = statTime;
+		return new Timestamp(System.currentTimeMillis());
 	}
 	public int getPoiPlanTotal() {
 		return poiPlanTotal;
@@ -243,10 +229,7 @@ public class FmStatOverviewProgram {
 		return StatUtil.daysOfTwo(this.monthlyPlanStartDate,this.monthlyPlanEndDate);
 	}
 	public Timestamp getMonthlyActualStartDate() {
-		return monthlyActualStartDate;
-	}
-	public void setMonthlyActualStartDate(Timestamp monthlyActualStartDate) {
-		this.monthlyActualStartDate = monthlyActualStartDate;
+		return this.monthlyPlanStartDate;
 	}
 	public Timestamp getMonthlyActualEndDate() {
 		return monthlyActualEndDate;
@@ -260,5 +243,11 @@ public class FmStatOverviewProgram {
 		}else{
 			return StatUtil.daysOfTwo(this.monthlyActualEndDate,this.monthlyPlanEndDate);
 		}
+	}
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
 	}
 }

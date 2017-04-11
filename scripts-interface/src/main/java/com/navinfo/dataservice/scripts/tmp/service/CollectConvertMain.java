@@ -181,7 +181,7 @@ public class CollectConvertMain {
 			//indoor: "{\"floor\":null,\"type\":0,\"open\":1}",	indoor: {type: 0,floor: ""}	indoor的字符串转json格式；type直接赋值；floor，null转"",否则直接赋值
 			String oldIndoor=CollectConvertUtils.convertStr(oldPoi.getString("indoor"));
 			if(oldIndoor.isEmpty()){
-				newPoi.put("indoor", "");
+				newPoi.put("indoor", null);
 			}else{
 				JSONObject newIndoor=new JSONObject();
 				JSONObject oldIndoorJson=JSONObject.fromObject(oldIndoor);

@@ -64,12 +64,12 @@ public class GLM01544 extends baseRule {
 		boolean flag = true;
 		for (int i = 0; i < names.size() - 1; i++) {
 			for (int j = i + 1; j < names.size(); j++) {
-				if (names.indexOf(i) == names.indexOf(j)) {
+				if (names.get(i).getName().equals(names.get(j).getName())) {
 					flag = false;
 					break;
 				}
 			}
-			if (flag = false)
+			if (flag == false)
 				break;
 		}
 

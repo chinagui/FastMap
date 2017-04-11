@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,17 @@ public class GLM60143 extends BasicCheckRule {
 			Map<String, String> foodtypeNameMap = metadataApi.getFoodtypeNameMap();
 			String kindName = kindNameByKindCode.get(kind);
 			String chainName = chainNameMap.get(chain);
-			String foodtypeName = foodtypeNameMap.get(food);
+			List<String> foodNames = new ArrayList<String>();
+			if(food != null){
+				String[] foods = food.split("\\|");
+				for (String f : foods) {
+					String foodtypeName = foodtypeNameMap.get(f);
+					if(foodtypeName != null){
+						foodNames.add(foodtypeName);
+					}
+				}
+			}
+			String foodtypeName = foodNames.toString().replace("[", "").replace("]", "");
 			if(restList==null||restList.isEmpty()){
 				setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), 
 					"分类为"+kindName+"连锁品牌为"+chainName+"的POI对应的风味类型应为"+foodtypeName);

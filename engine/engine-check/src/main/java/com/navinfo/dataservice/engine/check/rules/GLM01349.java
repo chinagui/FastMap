@@ -28,6 +28,7 @@ public class GLM01349 extends baseRule {
 	private static Logger logger = Logger.getLogger(GLM01349.class);
 
 	private Set<Integer> kindChangeLinkPidSet = new HashSet<>();
+	private Set<Integer> nodeChangePidSet = new HashSet<>();
 
 	public GLM01349() {
 	}
@@ -43,27 +44,25 @@ public class GLM01349 extends baseRule {
 			prepareDataNode(row);
 		}
 
+		String sql = "";
+
+		// 更新link触发
 		for (Integer linkPid : kindChangeLinkPidSet) {
-			StringBuilder sb = new StringBuilder();
 
-			sb.append(
-					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID FROM RD_LINK RL, RD_NODE RN, RD_NODE_FORM RNF WHERE RL.LINK_PID =");
+			sql = String.format(
+					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID FROM RD_LINK RL, RD_NODE RN, RD_NODE_FORM RNF WHERE RL.LINK_PID = %d"
+							+ " AND (RL.S_NODE_PID = RN.NODE_PID OR RL.E_NODE_PID = RN.NODE_PID) AND RN.NODE_PID = RNF.NODE_PID AND RNF.FORM_OF_WAY = 15 AND RN.U_RECORD <> 2 AND RNF.U_RECORD <> 2",
+					linkPid);
+			ExecuteCheckResult(sql);
+		}
 
-			sb.append(linkPid);
-
-			sb.append(
-					" AND (RL.S_NODE_PID = RN.NODE_PID OR RL.E_NODE_PID = RN.NODE_PID) AND RN.NODE_PID = RNF.NODE_PID AND RL.FUNCTION_CLASS BETWEEN 1 AND 4 AND RNF.FORM_OF_WAY = 15 AND RN.U_RECORD <> 2 AND RNF.U_RECORD <> 2 ");
-
-			logger.info("RdLink后检查GLM01349 check1-> SQL:" + sb.toString());
-
-			DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
-			List<Object> resultList = new ArrayList<Object>();
-			resultList = getObj.exeSelect(this.getConn(), sb.toString());
-
-			if (!resultList.isEmpty()) {
-				this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(),
-						(int) resultList.get(2));
-			}
+		// 更新node触发
+		for (Integer nodePid : nodeChangePidSet) {
+			sql = String.format(
+					"SELECT N.GEOMETRY, '[RD_NODE,' || N.NODE_PID || ']' TARGET, L.MESH_ID FROM RD_NODE N,RD_LINK L WHERE N.NODE_PID = %d AND (L.S_NODE_PID = N.NODE_PID OR L.E_NODE_PID = N.NODE_PID) "
+							+ "AND (L.FUNCTION_CLASS BETWEEN 1 AND 4) AND L.U_RECORD <> 2 AND N.U_RECORD <> 2  ",
+					nodePid);
+			ExecuteCheckResult(sql);
 		}
 	}
 
@@ -90,7 +89,7 @@ public class GLM01349 extends baseRule {
 	}
 
 	/**
-	 * @function:端点node形态为15（障碍物）的link集合
+	 * @function:端点node形态为15（障碍物）的node集合
 	 * @param row
 	 * @throws Exception
 	 */
@@ -105,14 +104,18 @@ public class GLM01349 extends baseRule {
 			formOfWay = (int) form.changedFields().get("formOfWay");
 		}
 
-		List<RdLink> rdLinkSet = new ArrayList<RdLink>();
 		if (formOfWay == 15) {
-			RdLinkSelector linkSelector = new RdLinkSelector(this.getConn());
-			rdLinkSet = linkSelector.loadByNodePid(form.getNodePid(), false);
+			nodeChangePidSet.add(form.getNodePid());
 		}
+	}
 
-		for (RdLink link : rdLinkSet) {
-			kindChangeLinkPidSet.add(link.getPid());
+	private void ExecuteCheckResult(String sql) throws Exception {
+		DatabaseOperatorResultWithGeo getObj = new DatabaseOperatorResultWithGeo();
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+
+		if (!resultList.isEmpty()) {
+			this.setCheckResult(resultList.get(0).toString(), resultList.get(1).toString(), (int) resultList.get(2));
 		}
 	}
 }

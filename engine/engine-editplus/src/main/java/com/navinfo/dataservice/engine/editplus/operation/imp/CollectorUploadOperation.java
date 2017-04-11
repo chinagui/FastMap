@@ -1134,6 +1134,8 @@ public class CollectorUploadOperation extends AbstractOperation {
 						}
 					}
 				}
+			}else{//上传的没有子
+				poi.deleteSubrow(ixPoiParent);//删除父
 			}
 		}
 		

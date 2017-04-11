@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.json.JSONObject;
@@ -10,6 +12,11 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.util.ZipUtils;
+import com.navinfo.dataservice.control.service.PoiService;
+import com.navinfo.dataservice.engine.dropbox.dao.DBController;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertMain;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils;
@@ -63,11 +70,15 @@ public class CollectConvert {
 		List<String> errorList=new ArrayList<String>();
 		for(String outPath:listPath){
 			log.info("开始转换路径："+outPath);	
-			int seq=CollectConvertUtils.getUploadSeq();
+			String fileName="IncrementalData_0_"+new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
+			DBController controller = new DBController();
+
+			int seq = controller.addUploadRecord(fileName+".zip", "collectConvert", 1,1);
+			
 			convertSeqList.add(seq);
-			String inPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath)+"/"
-		+seq+"/";
-			//String inPath="D:/temp/data/resources/upload"+"/"+seq;
+			String uploadPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+			//String uploadPath="D:/temp/data/resources/upload";
+			String inPath=uploadPath+"/"+fileName;
 			log.info("转入路径："+inPath);
 			log.info("路径"+inPath+"目录生成");
 			CollectConvertUtils.createMkdir(inPath);
@@ -92,6 +103,10 @@ public class CollectConvert {
 			}
 			log.info("路径"+outPath+"数据写入");
 			CollectConvertUtils.writeJSONObject2TxtFile(inPath+"/poi.txt", newListJson);
+			log.info("路径"+outPath+"数据文件压缩");
+			ZipUtils.zipFile(inPath,uploadPath+"/"+seq+"/"+fileName+".zip");
+			log.info("路径"+outPath+"数据文件采集成果导入相应日库");
+			PoiService.getInstance().importPoi(seq, Long.valueOf(0));
 		}
 		log.info("本次转换路径汇总");
 		CollectConvertUtils.writeInteger2TxtFile(path+"/outConvert.txt", convertSeqList);

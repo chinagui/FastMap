@@ -68,21 +68,22 @@ public class SelectorTest {
 			Connection conn = null;
 			conn = DBConnector.getInstance().getConnectionById(84);;
 			String objType = "IX_POI";
-			long pid = 1;
+			long pid = 21887888;
 			boolean isLock = false;
 
 			Set<String> tabNames = new HashSet<String>();
-			tabNames.add("IX_POI_NAME");
-			tabNames.add("IX_POI_CONTACT");
-			tabNames.add("IX_POI_ADDRESS");
-			tabNames.add("IX_POI_RESTAURANT");
-			tabNames.add("IX_POI_CHILDREN");
-			tabNames.add("IX_POI_PARENT");
-			tabNames.add("IX_POI_PARKING");
-			tabNames.add("IX_POI_HOTEL");
-			tabNames.add("IX_POI_CHARGINGSTATION");
-			tabNames.add("IX_POI_CHARGINGPLOT");
-			tabNames.add("IX_POI_GASSTATION");
+//			tabNames.add("IX_POI_NAME");
+//			tabNames.add("IX_POI_CONTACT");
+//			tabNames.add("IX_POI_ADDRESS");
+			tabNames.add("IX_POI_ICON");
+//			tabNames.add("IX_POI_RESTAURANT");
+//			tabNames.add("IX_POI_CHILDREN");
+//			tabNames.add("IX_POI_PARENT");
+//			tabNames.add("IX_POI_PARKING");
+//			tabNames.add("IX_POI_HOTEL");
+//			tabNames.add("IX_POI_CHARGINGSTATION");
+//			tabNames.add("IX_POI_CHARGINGPLOT");
+//			tabNames.add("IX_POI_GASSTATION");
 			
 			BasicObj obj = ObjSelector.selectByPid(conn, objType, tabNames,false, pid, isLock);
 			if(obj!=null){
@@ -245,8 +246,8 @@ public class SelectorTest {
 			String objType = "IX_POI";
 			Collection<Long> pids = new ArrayList<Long>();
 			pids.add((long) 1);
-			pids.add((long) 316);
-			pids.add((long) 317);
+//			pids.add((long) 316);
+//			pids.add((long) 317);
 			boolean isLock = false;
 			boolean isNowait = false;
 			

@@ -347,16 +347,7 @@ public class CollectConvertMain {
 			List<IxPoiGasstation> gasList = oldPoiObj.getIxPoiGasstations();
 			if(gasList!=null&&gasList.size()>0){
 				IxPoiGasstation gas=gasList.get(0);
-				if(CollectConvertUtils.compareStr(gas.getFuelType(),newGas.getString("fuelType"))
-						&&CollectConvertUtils.compareStr(gas.getOilType(),newGas.getString("oilType"))
-						&&CollectConvertUtils.compareStr(gas.getEgType(),newGas.getString("egType"))
-						&&CollectConvertUtils.compareStr(gas.getMgType(),newGas.getString("mgType"))
-						&&CollectConvertUtils.compareStr(gas.getPayment(),newGas.getString("payment"))
-						&&CollectConvertUtils.compareStr(gas.getService(),newGas.getString("service"))
-						&&CollectConvertUtils.compareStr(gas.getServiceProv(),newGas.getString("servicePro"))
-						&&CollectConvertUtils.compareStr(gas.getOpenHour(),newGas.getString("openHour"))){
-					newGas.put("rowId", gas.getRowId());
-					}
+				newGas.put("rowId", gas.getRowId());
 				}
 			}
 		newPoi.put("gasStation", newGas);
@@ -472,22 +463,7 @@ public class CollectConvertMain {
 			List<IxPoiHotel> hotelList = oldPoiObj.getIxPoiHotels();
 			if(hotelList!=null&&hotelList.size()>0){
 				IxPoiHotel hotel=hotelList.get(0);
-				//rating,creditCards,description,checkInTime,checkOutTime,roomCount,roomType,
-				//roomPrice,breakfast,service,parking,openHour
-				if(hotel.getRating()==newHotel.getInt("rating")
-						&&CollectConvertUtils.compareStr(hotel.getCreditCard(),newHotel.getString("creditCards"))
-						&&CollectConvertUtils.compareStr(hotel.getLongDescription(),newHotel.getString("description"))
-						&&CollectConvertUtils.compareStr(hotel.getCheckinTime(),newHotel.getString("checkInTime"))
-						&&CollectConvertUtils.compareStr(hotel.getCheckoutTime(),newHotel.getString("checkOutTime"))
-						&&hotel.getRoomCount()==newHotel.getInt("roomCount")
-						&&CollectConvertUtils.compareStr(hotel.getRoomType(),newHotel.getString("roomType"))
-						&&CollectConvertUtils.compareStr(hotel.getRoomPrice(),newHotel.getString("roomPrice"))
-						&&hotel.getBreakfast()==newHotel.getInt("breakfast")
-						&&CollectConvertUtils.compareStr(hotel.getService(),newHotel.getString("service"))
-						&&hotel.getParking()==newHotel.getInt("parking")
-						&&CollectConvertUtils.compareStr(hotel.getOpenHour(),newHotel.getString("openHour"))){
-					newHotel.put("rowId", hotel.getRowId());
-					}
+				newHotel.put("rowId", hotel.getRowId());
 				}
 			}
 		newPoi.put("hotel", newHotel);
@@ -536,28 +512,7 @@ public class CollectConvertMain {
 			List<IxPoiParking> parkingList = oldPoiObj.getIxPoiParkings();
 			if(parkingList!=null&&parkingList.size()>0){
 				IxPoiParking parking=parkingList.get(0);
-				//tollStd,tollDes,tollWay,openTime,totalNum,payment,remark,buildingType,
-				// * resHigh,resWidth,resWeigh,certificate,vehicle,haveSpecialPlace,womenNum,handicapNum,miniNum,vipNum
-				if(CollectConvertUtils.compareStr(parking.getTollStd(),newParkings.getString("tollStd"))
-						&&CollectConvertUtils.compareStr(parking.getTollDes(),newParkings.getString("tollDes"))
-						&&CollectConvertUtils.compareStr(parking.getTollWay(),newParkings.getString("tollWay"))
-						&&CollectConvertUtils.compareStr(parking.getOpenTiime(),newParkings.getString("openTime"))
-						&&parking.getTotalNum()==newParkings.getInt("totalNum")
-						&&CollectConvertUtils.compareStr(parking.getPayment(),newParkings.getString("payment"))
-						&&CollectConvertUtils.compareStr(parking.getRemark(),newParkings.getString("remark"))
-						&&CollectConvertUtils.compareStr(parking.getParkingType(),newParkings.getString("buildingType"))
-						&&parking.getResHigh()==newParkings.getDouble("resHigh")
-						&&parking.getResWidth()==newParkings.getDouble("resWidth")
-						&&parking.getResWeigh()==newParkings.getDouble("resWeigh")
-						&&parking.getCertificate()==newParkings.getInt("certificate")
-						&&parking.getVehicle()==newParkings.getInt("vehicle")
-						&&CollectConvertUtils.compareStr(parking.getHaveSpecialplace(),newParkings.getString("haveSpecialPlace"))
-						&&parking.getWomenNum()==newParkings.getInt("womenNum")
-						&&parking.getHandicapNum()==newParkings.getInt("handicapNum")
-						&&parking.getMiniNum()==newParkings.getInt("miniNum")
-						&&parking.getVipNum()==newParkings.getInt("vipNum")){
-					newParkings.put("rowId", parking.getRowId());
-					}
+				newParkings.put("rowId", parking.getRowId());
 				}
 			}
 		newPoi.put("parkings", newParkings);
@@ -597,13 +552,7 @@ public class CollectConvertMain {
 			List<IxPoiRestaurant> restList = oldPoiObj.getIxPoiRestaurants();
 			if(restList!=null&&restList.size()>0){
 				IxPoiRestaurant rest=restList.get(0);
-				if(CollectConvertUtils.compareStr(rest.getFoodType(),newFoodTypes.getString("foodtype"))
-						&&CollectConvertUtils.compareStr(rest.getOpenHour(),newFoodTypes.getString("openHour"))
-						&&rest.getParking()==newFoodTypes.getInt("parking")
-						&&rest.getAvgCost()==newFoodTypes.getInt("avgCost")
-						&&CollectConvertUtils.compareStr(rest.getCreditCard(),newFoodTypes.getString("creditCards"))){
-					newFoodTypes.put("rowId", rest.getRowId());
-					}
+				newFoodTypes.put("rowId", rest.getRowId());
 				}
 			}
 		newPoi.put("foodtypes", newFoodTypes);

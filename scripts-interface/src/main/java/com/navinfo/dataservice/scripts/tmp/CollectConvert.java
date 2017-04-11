@@ -15,8 +15,6 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.service.PoiService;
 import com.navinfo.dataservice.engine.dropbox.dao.DBController;
-import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
-import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertMain;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils;

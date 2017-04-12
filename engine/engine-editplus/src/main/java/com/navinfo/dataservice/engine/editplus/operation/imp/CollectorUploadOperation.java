@@ -461,7 +461,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 							//IX_POI_PHOTO表
 							int type = photo.getInt("type");
 							if(type == 1) {
-								String fccpid = photo.getString("id").toUpperCase();
+								String fccpid = photo.getString("id");
 								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 								if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
 									ixPoiPhoto.setPid(fccpid);
@@ -886,7 +886,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 								//IX_POI_PHOTO表
 								int type = photo.getInt("type");
 								if(type == 1) {
-									String fccpid = photo.getString("id").toUpperCase();
+									String fccpid = photo.getString("id");
 									if (!oldPidList.contains(fccpid)) {//数据库中已经存在,则不上传
 										IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 										if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
@@ -1016,9 +1016,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 			try {
 				ixPoiParent = poi.createIxPoiParent();
 				ixPoiParent.setParentPoiPid(pid);
-				// 鲜度验证
+				/*// 鲜度验证
 				IxPoi ixPoi= (IxPoi)poi.getMainrow();
-				ixPoi.setFreshFlag(false);
+				ixPoi.setFreshFlag(false);*/
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1107,6 +1107,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 					poi.deleteSubrow(ixPoiChildren);
 				}
 				poi.deleteSubrow(ixPoiParent);//删除父
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}else{//原本就已经不存在 子poi
 			if (!JSONUtils.isNull(childrenpoiList) && childrenpoiList.size() > 0) {//上传的poi 存在 子poi
@@ -1134,6 +1137,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 						}
 					}
 				}
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}else{//上传的没有子
 				poi.deleteSubrow(ixPoiParent);//删除父
 			}

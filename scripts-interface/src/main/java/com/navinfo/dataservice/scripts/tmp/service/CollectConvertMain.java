@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import oracle.net.aso.n;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -310,6 +312,7 @@ public class CollectConvertMain {
 			String[] oldPathList = oldPath.split("/");
 			String oldName = oldPathList[oldPathList.length-1];
 			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr+".jpg");
+			newAttachs.add(newAttachJson);
 		}		
 		newPoi.put("attachments", newAttachs);		
 	}
@@ -362,36 +365,38 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingPole(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		newPoi.put("chargingPole", JSONNull.getInstance());
-		JSONObject newCharging=new JSONObject();
+		JSONArray poles=new JSONArray();
+		newPoi.put("chargingPole", poles);
 		if(lifecycle!=3){
 			List<IxPoiChargingplot> chargingsList = oldPoiObj.getIxPoiChargingplots();
 			if(chargingsList!=null&&chargingsList.size()>0){
-				IxPoiChargingplot charging=chargingsList.get(0);
-				newCharging.put("groupId",charging.getGroupId());
-				newCharging.put("acdc",charging.getAcdc());
-				newCharging.put("plugType",charging.getPlugType());
-				newCharging.put("power",charging.getPower());
-				newCharging.put("voltage",charging.getVoltage());
-				newCharging.put("current",charging.getCurrent());
-				newCharging.put("mode",charging.getMode());
-				newCharging.put("count",charging.getCount());
-				newCharging.put("plugNum",charging.getPlugNum());
-				newCharging.put("prices",charging.getPrices());
-				newCharging.put("openType",charging.getOpenType());
-				newCharging.put("availableState",charging.getAvailableState());
-				newCharging.put("manufacturer",charging.getManufacturer());
-				newCharging.put("factoryNum",charging.getFactoryNum());
-				newCharging.put("plotNum",charging.getPlotNum());
-				newCharging.put("productNum",charging.getProductNum());
-				newCharging.put("parkingNum",charging.getParkingNum());
-				newCharging.put("floor",charging.getFloor());
-				newCharging.put("locationType",charging.getLocationType());
-				newCharging.put("payment",charging.getPayment());
-				newCharging.put("rowId",charging.getRowId());
+				for(IxPoiChargingplot charging:chargingsList){
+					JSONObject newCharging=new JSONObject();
+					newCharging.put("groupId",charging.getGroupId());
+					newCharging.put("acdc",charging.getAcdc());
+					newCharging.put("plugType",charging.getPlugType());
+					newCharging.put("power",charging.getPower());
+					newCharging.put("voltage",charging.getVoltage());
+					newCharging.put("current",charging.getCurrent());
+					newCharging.put("mode",charging.getMode());
+					newCharging.put("count",charging.getCount());
+					newCharging.put("plugNum",charging.getPlugNum());
+					newCharging.put("prices",charging.getPrices());
+					newCharging.put("openType",charging.getOpenType());
+					newCharging.put("availableState",charging.getAvailableState());
+					newCharging.put("manufacturer",charging.getManufacturer());
+					newCharging.put("factoryNum",charging.getFactoryNum());
+					newCharging.put("plotNum",charging.getPlotNum());
+					newCharging.put("productNum",charging.getProductNum());
+					newCharging.put("parkingNum",charging.getParkingNum());
+					newCharging.put("floor",charging.getFloor());
+					newCharging.put("locationType",charging.getLocationType());
+					newCharging.put("payment",charging.getPayment());
+					newCharging.put("rowId",charging.getRowId());
+					poles.add(newCharging);}
 				}
 			}
-		if(newCharging!=null&&newCharging.size()>0){newPoi.put("chargingPole", newCharging);}
+		if(poles!=null&&poles.size()>0){newPoi.put("chargingPole", poles);}
 	}
 	/**
 	 * 线上：chargingStation: "null",	

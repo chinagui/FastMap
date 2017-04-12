@@ -399,4 +399,13 @@ public class CmgBuildlink implements IObj {
     public List<IRow> getMeshes() {
         return meshes;
     }
+
+    /**
+     * Setter method for property <tt>meshes</tt>.
+     *
+     * @param meshes value to be assigned to property meshes
+     */
+    public void setMeshes(List<IRow> meshes) {
+        this.meshes = meshes;
+    }
 }

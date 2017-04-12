@@ -41,7 +41,7 @@ public class Process extends AbstractProcess<Command> {
         getCommand().setCmglink((CmgBuildlink) row);
         // 加载关联CMG-FACE信息
         List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).
-                findTheAssociatedFaceOfTheLine(getCommand().getCmglink().pid(), false);
+                listTheAssociatedFaceOfTheLink(getCommand().getCmglink().pid(), false);
         getCommand().setCmgfaces(cmgfaces);
 
         return super.prepareData();
@@ -50,7 +50,7 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public String exeOperation() throws Exception {
         // 处理CMG-LINK打断
-        return new Operation(getCommand()).run(getResult());
+        return new Operation(getCommand(), getConn()).run(getResult());
     }
 
     @Override
@@ -58,7 +58,7 @@ public class Process extends AbstractProcess<Command> {
         this.prepareData();
 
         // 处理CMG-LINK打断
-        new Operation(getCommand()).run(getResult());
+        new Operation(getCommand(), getConn()).run(getResult());
         // TODO 处理CMG-FACE打断
         // TODO 处理立交
 

@@ -41,7 +41,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
      * @return 关联面信息， 无关联面时返回 EMPTY LIST
      * @throws Exception 查询关联面时出错
      */
-    public List<CmgBuildface> findTheAssociatedFaceOfTheLine(int linkPid, boolean isLock) throws Exception {
+    public List<CmgBuildface> listTheAssociatedFaceOfTheLink(int linkPid, boolean isLock) throws Exception {
         List<CmgBuildface> result = new ArrayList<>();
 
         String sql = "select t1.face_pid, t2.link_pid from lc_face t1, lc_face_topo t2 where t1.face_pid = t2.face_pid and "
@@ -56,22 +56,68 @@ public class CmgBuildfaceSelector extends AbstractSelector {
             pstmt = getConn().prepareStatement(sql);
             pstmt.setInt(1, linkPid);
             resultSet = pstmt.executeQuery();
-            while (resultSet.next()) {
-                CmgBuildface cmgBuildface = new CmgBuildface();
-                ReflectionAttrUtils.executeResultSet(cmgBuildface, resultSet);
-
-                List<IRow> topos = new AbstractSelector(CmgBuildfaceTopo.class, getConn()).loadRowsByParentId(cmgBuildface.pid(), false);
-                cmgBuildface.setTopos(topos);
-                List<IRow> tenants = new AbstractSelector(CmgBuildfaceTenant.class, getConn()).loadRowsByParentId(cmgBuildface.pid(), false);
-                cmgBuildface.setTenants(tenants);
-            }
+            generateCmgBuildface(result, resultSet);
         } catch (Exception e) {
-            logger.error("method findTheAssociatedFaceOfTheLine error. [ sql : " + sql + " ] ");
+            logger.error("method listTheAssociatedFaceOfTheLink error. [ sql : " + sql + " ] ");
             throw e;
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
         }
         return result;
+    }
+
+    /**
+     * 根据点查找关联面以及子表信息
+     * @param nodepid CMG-NODE主键
+     * @param isLock 是否加锁
+     * @return 关联面信息， 无关联面时返回 EMPTY LIST
+     * @throws Exception 查询关联面时出错
+     */
+    public List<CmgBuildface> listTheAssociatedFaceOfTheNode(int nodepid, boolean isLock) throws Exception {
+        List<CmgBuildface> result = new ArrayList<>();
+
+        String sql = "with tmp as (select distinct cmt.face_pid from cmg_buildnode cmn, cmg_buildlink cml, cmg_buildface_topo cmt where "
+                + "cmn.node_pid = :1 and (cml.s_node_pid = cmn.node_pid or cml.e_node_pid = cmn.node_pid) and cml.link_pid = cmt.link_pid)"
+                + " select t1.* from cmg_buildface t1, tmp t2 where t1.face_pid = t2.face_pid\n";
+        if (isLock) {
+            sql += " for update nowait";
+        }
+
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            pstmt.setInt(1, nodepid);
+            resultSet = pstmt.executeQuery();
+            generateCmgBuildface(result, resultSet);
+        } catch (Exception e) {
+            logger.error("method listTheAssociatedFaceOfTheNode error. [ sql : " + sql + " ] ");
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return result;
+    }
+
+    /**
+     * 根据结果组装CMG-FACE对象
+     * @param result 结果集
+     * @param resultSet 查询结果
+     * @throws Exception 组装CMG-FACE出错
+     */
+    private void generateCmgBuildface(List<CmgBuildface> result, ResultSet resultSet) throws Exception {
+        while (resultSet.next()) {
+            CmgBuildface cmgBuildface = new CmgBuildface();
+            ReflectionAttrUtils.executeResultSet(cmgBuildface, resultSet);
+
+            List<IRow> topos = new AbstractSelector(CmgBuildfaceTopo.class, getConn()).loadRowsByParentId(cmgBuildface.pid(), false);
+            cmgBuildface.setTopos(topos);
+            List<IRow> tenants = new AbstractSelector(CmgBuildfaceTenant.class, getConn()).loadRowsByParentId(cmgBuildface.pid(), false);
+            cmgBuildface.setTenants(tenants);
+
+            result.add(cmgBuildface);
+        }
     }
 }

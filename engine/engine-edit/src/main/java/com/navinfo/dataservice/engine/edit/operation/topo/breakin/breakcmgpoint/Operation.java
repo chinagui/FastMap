@@ -7,8 +7,12 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -22,6 +26,10 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +50,14 @@ public class Operation implements IOperation {
      */
     private Command command;
 
-    public Operation(Command command) {
+    /**
+     * 数据库链接
+     */
+    private Connection conn;
+
+    public Operation(Command command, Connection conn) {
         this.command = command;
+        this.conn = conn;
     }
 
     /**
@@ -62,7 +76,51 @@ public class Operation implements IOperation {
             this.seriesBreak(result);
         }
 
+        if (!CollectionUtils.isEmpty(command.getCmgfaces())) {
+            createFaceByExistingLink(result);
+        }
         return null;
+    }
+
+    /**
+     * 根据已有线创建CMG-FACE
+     * @param result 结果集
+     * @throws Exception 已有线构面出错
+     */
+    public void createFaceByExistingLink(Result result) throws Exception {
+        AbstractSelector cmglinkSelector = new AbstractSelector(CmgBuildlink.class, conn);
+        for (CmgBuildface cmgface : command.getCmgfaces()) {
+            List<IRow> links = new ArrayList<>();
+            for (IRow topo : cmgface.getTopos()) {
+                if (command.getCmglink().pid() != ((CmgBuildfaceTopo) topo).getLinkPid()) {
+                    links.add((CmgBuildlink) cmglinkSelector.loadById(((CmgBuildfaceTopo) topo).getLinkPid(), false));
+                }
+                result.insertObject(topo, ObjStatus.DELETE, cmgface.pid());
+            }
+            links.addAll(command.getNewCmglinks());
+            Map<Integer, Geometry> map = CmgfaceUtil.calcCmglinkSequence(links);
+            // 更新参数LINK
+            List<Integer> cmglinkPids = new ArrayList<>(map.keySet());
+            // 连接所有坐标点
+            Coordinate[] coordinates = GeoTranslator.getCalLineToPython(new ArrayList<>(map.values())).getCoordinates();
+            // 判断是否逆序
+            if (!GeometryUtils.IsCCW(coordinates)) {
+                List<Coordinate> array = Arrays.asList(coordinates);
+                Collections.reverse(array);
+                coordinates = array.toArray(new Coordinate[array.size()]);
+                Collections.reverse(cmglinkPids);
+            }
+            // 通过坐标点构成面
+            Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
+            cmgface.changedFields().put("geometry", geometry);
+            cmgface.changedFields().put("meshId", CmgfaceUtil.calcFaceMeshId(geometry));
+            cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
+            cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
+            result.insertObject(cmgface, ObjStatus.UPDATE, cmgface.pid());
+            for (int seq = 1; seq < cmglinkPids.size(); seq++) {
+                CmgfaceUtil.createCmgfaceTopo(result, cmglinkPids.get(seq), cmgface.pid(), seq);
+            }
+        }
     }
 
     /**

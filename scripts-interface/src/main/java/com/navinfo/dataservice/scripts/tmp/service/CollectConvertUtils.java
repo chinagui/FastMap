@@ -563,4 +563,65 @@ public class CollectConvertUtils {
 		System.out.println(dbid);
 
 	}
+
+	/**
+	 * 待导入的数据fid信息写入数据库
+	 * @param map
+	 * @throws Exception 
+	 */
+	public static void importConvertFids(Map<Integer, List<String>> map) throws Exception {
+		for(Map.Entry<Integer, List<String>> entry:map.entrySet()){
+			Connection conn = DBConnector.getInstance().getConnectionById(entry.getKey());
+			try {
+				QueryRunner queryRunner = new QueryRunner();
+
+				StringBuilder sb = new StringBuilder();
+				sb.append(" declare                                          ");
+				sb.append("   vl_num        number(8);                       ");
+				sb.append("   STRSQL_CREATE varchar2(1024);                  ");
+				sb.append(" begin                                            ");
+				sb.append("   select count(*)                                ");
+				sb.append("     into vl_num                                  ");
+				sb.append("     from user_tables                             ");
+				sb.append("    where table_name = 'CONVERT_FIDS';            ");
+				sb.append("   if (vl_num = 0) then                           ");
+				sb.append("     strSQL_CREATE := 'create table CONVERT_FIDS  ");
+				sb.append(" (                                                ");
+				sb.append("   fid          VARCHAR2(36) not null,            ");
+				sb.append("   program_id   NUMBER(10) not null,              ");
+				sb.append("   convert_time VARCHAR2(14) not null             ");
+				sb.append(" )';                                              ");
+				sb.append("     EXECUTE IMMEDIATE strSQL_CREATE;             ");
+				sb.append("   end if;                                        ");
+				sb.append(" end;                                             ");
+				
+				String sql = sb.toString();
+				queryRunner.update(conn, sql);
+				
+				QueryRunner run = new QueryRunner();
+
+				String createMappingSql = "insert into CONVERT_FIDS (FID, PROGRAM_ID,CONVERT_TIME) VALUES (?,?,?)";
+				Object[][] inParam = new Object[entry.getValue().size()][];
+				int i = 0;
+				for(String data:entry.getValue()){
+					String[] cells = data.split("_");
+					Object[] temp = new Object[3];
+					temp[0] = cells[0];
+					temp[1] = cells[1];
+					temp[2] = cells[2];
+					inParam[i] = temp;
+					i++;
+				}
+				run.batch(conn, createMappingSql, inParam);
+
+			} catch (Exception e) {
+				DbUtils.rollbackAndCloseQuietly(conn);
+				log.error(e.getMessage(), e);
+				throw new ServiceException("failed to get DBId:" + e.getMessage(), e);
+			} finally {
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+		}
+		
+	}
 }

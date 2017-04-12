@@ -6,6 +6,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -85,17 +86,9 @@ public class Command extends AbstractCommand {
            this.breakNodes = data.getJSONArray("breakNodes");
         } else {
             this.cmgnode.setGeometry(new GeometryFactory().createPoint(
-                    new Coordinate(reviseItude(data.getDouble("longitude")), reviseItude(data.getDouble("longitude")))));
+                    new Coordinate(CmgnodeUtil.reviseItude(data.getDouble("longitude"))
+                            , CmgnodeUtil.reviseItude(data.getDouble("longitude")))));
         }
-    }
-
-    /**
-     * 四舍五入保留五位精度
-     * @param itude 待修正经纬度
-     * @return 截取后经纬度
-     */
-    private double reviseItude(double itude) {
-        return new BigDecimal(itude).setScale(Constant.BASE_PRECISION, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 
     /**

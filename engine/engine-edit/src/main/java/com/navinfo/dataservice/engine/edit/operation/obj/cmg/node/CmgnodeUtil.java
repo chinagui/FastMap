@@ -10,6 +10,7 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 
@@ -51,5 +52,14 @@ public final class CmgnodeUtil {
                 result.insertObject(cmgnodeMesh, ObjStatus.INSERT, cmgnode.pid());
             }
         }
+    }
+
+    /**
+     * 四舍五入保留五位精度
+     * @param itude 待修正经纬度
+     * @return 截取后经纬度
+     */
+    public static double reviseItude(double itude) {
+        return new BigDecimal(itude).setScale(Constant.BASE_PRECISION, BigDecimal.ROUND_HALF_UP).doubleValue();
     }
 }

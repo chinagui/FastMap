@@ -151,7 +151,13 @@ public class GeoTranslator {
 			double[] p0) throws Exception {
 		boolean flag = false;
 
+		
 		if (p1 == p0 || p2 == p0) {
+			return flag;
+		}
+		
+		if(Arrays.equals(p1, p0)||Arrays.equals(p2, p0))
+		{
 			return flag;
 		}
 
@@ -611,6 +617,21 @@ public class GeoTranslator {
 		Point point = geoFactory.createPoint(coordinate);
 
 		return point;
+	}	
+	
+	public static LineString createLineString(List<Coordinate> coordinates)
+			throws JSONException {
+
+		Coordinate[] c = (Coordinate[]) coordinates
+				.toArray(new Coordinate[coordinates.size()]);
+
+		return createLineString(c);
+	}
+
+	public static LineString createLineString(Coordinate[] coordinates)
+			throws JSONException {
+
+		return geoFactory.createLineString(coordinates);
 	}
 
 	public static double calAngle(double x11, double y11, double x12,

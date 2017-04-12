@@ -377,16 +377,16 @@ public class serchConditionTest extends InitApplication {
 	public void getTitleWithGap1() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(84);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.RDLINK);
+			objType.add(ObjType.RDINTER);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 6744,
-					3102, 13, 10));
+			System.out.println(p.searchDataByTileWithGap(objType, 863515,
+					397099, 20, 40));
 
 		} catch (Exception e) {
 			e.printStackTrace();

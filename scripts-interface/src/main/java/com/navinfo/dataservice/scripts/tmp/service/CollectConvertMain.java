@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -26,16 +25,15 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjType;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.selector.ObjSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
-import com.navinfo.navicommons.exception.ServiceException;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class CollectConvertMain {
@@ -181,7 +179,7 @@ public class CollectConvertMain {
 			//indoor: "{\"floor\":null,\"type\":0,\"open\":1}",	indoor: {type: 0,floor: ""}	indoor的字符串转json格式；type直接赋值；floor，null转"",否则直接赋值
 			String oldIndoor=CollectConvertUtils.convertStr(oldPoi.getString("indoor"));
 			if(oldIndoor.isEmpty()){
-				newPoi.put("indoor", null);
+				newPoi.put("indoor", JSONNull.getInstance());
 			}else{
 				JSONObject newIndoor=new JSONObject();
 				JSONObject oldIndoorJson=JSONObject.fromObject(oldIndoor);
@@ -328,7 +326,7 @@ public class CollectConvertMain {
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
 		String oldGasStr=CollectConvertUtils.convertStr(oldPoi.getString("gasStation"));
 		if(oldGasStr==null||oldGasStr.isEmpty()){
-			newPoi.put("gasStation", null);
+			newPoi.put("gasStation", JSONNull.getInstance());
 			return;
 		}
 		JSONObject oldGas = JSONObject.fromObject(oldGasStr);
@@ -364,7 +362,7 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingPole(int lifecycle, JSONObject newPoi,
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		newPoi.put("chargingPole", null);
+		newPoi.put("chargingPole", JSONNull.getInstance());
 		JSONObject newCharging=new JSONObject();
 		if(lifecycle!=3){
 			List<IxPoiChargingplot> chargingsList = oldPoiObj.getIxPoiChargingplots();
@@ -407,7 +405,7 @@ public class CollectConvertMain {
 	 */
 	private static void convertChargingStation(int lifecycle,
 			JSONObject newPoi, JSONObject oldPoi, IxPoiObj oldPoiObj) {
-		newPoi.put("chargingStation", null);
+		newPoi.put("chargingStation", JSONNull.getInstance());
 		JSONObject newCharging=new JSONObject();
 		if(lifecycle!=3){
 			List<IxPoiChargingstation> chargingsList = oldPoiObj.getIxPoiChargingstations();
@@ -440,7 +438,7 @@ public class CollectConvertMain {
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
 		String oldHotelStr=CollectConvertUtils.convertStr(oldPoi.getString("hotel"));
 		if(oldHotelStr==null||oldHotelStr.isEmpty()){
-			newPoi.put("hotel", null);
+			newPoi.put("hotel", JSONNull.getInstance());
 			return;
 		}
 		JSONObject oldHotel = JSONObject.fromObject(oldHotelStr);
@@ -483,7 +481,7 @@ public class CollectConvertMain {
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
 		String oldParkingsStr=CollectConvertUtils.convertStr(oldPoi.getString("parkings"));
 		if(oldParkingsStr==null||oldParkingsStr.isEmpty()){
-			newPoi.put("parkings", null);
+			newPoi.put("parkings", JSONNull.getInstance());
 			return;
 		}
 		JSONObject oldParkings = JSONObject.fromObject(oldParkingsStr);
@@ -536,7 +534,7 @@ public class CollectConvertMain {
 			JSONObject oldPoi, IxPoiObj oldPoiObj) {
 		String oldfoodTypesStr=CollectConvertUtils.convertStr(oldPoi.getString("foodtypes"));
 		if(oldfoodTypesStr==null||oldfoodTypesStr.isEmpty()){
-			newPoi.put("foodtypes", null);
+			newPoi.put("foodtypes", JSONNull.getInstance());
 			return;
 		}
 		JSONObject oldFoodTypes = JSONObject.fromObject(oldfoodTypesStr);

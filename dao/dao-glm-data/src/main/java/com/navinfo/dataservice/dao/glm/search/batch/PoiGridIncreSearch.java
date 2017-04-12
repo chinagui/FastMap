@@ -415,7 +415,7 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setNames(names_delete.get(pid));
 		}
 		//*************************************
-		logger.info("设置子表IX_POI_ADDRESS");
+		/*logger.info("设置子表IX_POI_ADDRESS");
 		
 		 sql="select * from ix_poi_address where "
 				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
@@ -424,7 +424,30 @@ public class PoiGridIncreSearch {
 
 		for(Long pid:addresses.keySet()){
 			pois.get(pid).setAddresses(addresses.get(pid));
+		}*/
+		logger.info("设置子表IX_POI_ADDRESS");
+		
+		 sql="select * from ix_poi_address where "
+				 + "u_record !=2 and "
+				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
+
+		for(Long pid:addresses.keySet()){
+			pois.get(pid).setAddresses(addresses.get(pid));
 		}
+		//当主表是逻辑删除时,子表IX_POI_ADDRESS下载逻辑删除的最新一条记录
+		String sql_del_address="select * from ("
+				+ "select row_number() over(partition by poi_pid order by u_date desc) rn, a.*  "
+				+ "from ix_poi_address a  "
+				+ "where  name_groupid=1 and lang_code='CHI' "
+				+ "and poi_pid in (select to_number(column_value) from table(clob_to_table(?))) ) where rn = 1";
+		logger.info(sql_del_address);
+		Map<Long,List<IRow>> address_delete = run.query(conn, sql_del_address, new IxPoiAddressHandler(),pidsClob_del);
+		for(Long pid:address_delete.keySet()){
+			pois.get(pid).setAddresses(address_delete.get(pid));
+		}
+		//*************************************
 		
 		logger.info("设置子表IX_POI_PARENT");
 		

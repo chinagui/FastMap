@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import oracle.net.aso.n;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -310,6 +312,7 @@ public class CollectConvertMain {
 			String[] oldPathList = oldPath.split("/");
 			String oldName = oldPathList[oldPathList.length-1];
 			CollectConvertUtils.reNamePhoto(path+"/"+oldName, idStr+".jpg");
+			newAttachs.add(newAttachJson);
 		}		
 		newPoi.put("attachments", newAttachs);		
 	}

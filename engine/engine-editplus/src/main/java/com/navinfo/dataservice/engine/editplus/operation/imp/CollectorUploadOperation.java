@@ -461,7 +461,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 							//IX_POI_PHOTO表
 							int type = photo.getInt("type");
 							if(type == 1) {
-								String fccpid = photo.getString("id").toUpperCase();
+								String fccpid = photo.getString("id");
 								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 								if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
 									ixPoiPhoto.setPid(fccpid);
@@ -886,7 +886,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 								//IX_POI_PHOTO表
 								int type = photo.getInt("type");
 								if(type == 1) {
-									String fccpid = photo.getString("id").toUpperCase();
+									String fccpid = photo.getString("id");
 									if (!oldPidList.contains(fccpid)) {//数据库中已经存在,则不上传
 										IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 										if(fccpid != null && StringUtils.isNotEmpty(fccpid)){

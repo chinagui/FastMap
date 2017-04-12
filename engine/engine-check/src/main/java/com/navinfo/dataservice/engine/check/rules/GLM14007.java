@@ -105,12 +105,12 @@ public class GLM14007 extends baseRule {
 			
 			sb.append("SELECT DR.PID FROM RD_DIRECTROUTE DR");
 			sb.append(" WHERE DR.IN_LINK_PID = " + rdLinkForm.getLinkPid());
-			sb.append(" AND DR.RELATIONSHIP_TYPE = 2 ");
+			sb.append(" AND DR.RELATIONSHIP_TYPE = 1 ");
 			sb.append(" AND DR.U_RECORD <> 2 ");
 			sb.append(" UNION");
 			sb.append(" SELECT DR.PID FROM RD_DIRECTROUTE DR");
 			sb.append(" WHERE DR.OUT_LINK_PID = " + rdLinkForm.getLinkPid());
-			sb.append(" AND DR.RELATIONSHIP_TYPE = 2 ");
+			sb.append(" AND DR.RELATIONSHIP_TYPE = 1 ");
 			sb.append(" AND DR.U_RECORD <> 2");
 			
 			String sql = sb.toString();

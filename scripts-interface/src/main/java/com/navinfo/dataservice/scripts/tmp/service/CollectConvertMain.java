@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.util.UuidUtils;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
@@ -61,10 +62,6 @@ public class CollectConvertMain {
 		JSONObject newPoi=new JSONObject();
 		Connection conn = null;
 		try{
-			//lifecycle: "2"	t_lifecycle: 3,	字符串转数字后赋值
-			//0 无； 1 删除；2 更新；3 新增；
-			int lifecycle=CollectConvertUtils.convertInt(oldPoi.getString("lifecycle"));
-			newPoi.put("t_lifecycle", lifecycle);
 			/*
 			 * 线上 geometry: "POINT (120.1733200000000039 32.3584900000000033)"
 			 * 一体化geometry: "POINT (116.47958 40.01322)",	
@@ -83,12 +80,23 @@ public class CollectConvertMain {
 			String fid=oldPoi.getString("fid");
 			newPoi.put("fid", fid);
 			IxPoiObj oldPoiObj =null;
-			if(lifecycle!=3){
-				oldPoiObj = loadPoiByFid(conn, fid,false);
-				if(oldPoiObj==null){
-					throw new Exception("数据fid="+fid+"在大区"+dbId+"中不存在");
+			//lifecycle: "2"	t_lifecycle: 3,	字符串转数字后赋值
+			//0 无； 1 删除；2 更新；3 新增；
+			int lifecycle=CollectConvertUtils.convertInt(oldPoi.getString("lifecycle"));			
+			oldPoiObj = loadPoiByFid(conn, fid,false);
+			if(oldPoiObj==null){
+				if(lifecycle==2){lifecycle=3;}
+				else if(lifecycle==1){throw new Exception("数据fid="+fid+"在大区"+dbId+"中不存在:lifecycle="+lifecycle);}
+			}else{
+				//row.setOpType(OperationType.PRE_DELETED);
+				if(!oldPoiObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)&&lifecycle==3){
+					lifecycle=2;
+				}
+				if(oldPoiObj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)&&(lifecycle==3||lifecycle==2)){
+					throw new Exception("数据fid="+fid+"在大区"+dbId+"中存在,且为删除记录:lifecycle="+lifecycle);
 				}
 			}
+			newPoi.put("t_lifecycle", lifecycle);
 			convertPid(lifecycle,newPoi,oldPoi,oldPoiObj);
 			/*线上meshid: "486041",	一体化meshid: 0,	原则：字符串转数字后赋值*/
 			newPoi.put("meshid",CollectConvertUtils.convertInt(oldPoi.getString("meshid")));

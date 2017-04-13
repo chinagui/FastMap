@@ -81,6 +81,8 @@ public class Process extends AbstractProcess<Command> {
         check.checkCRFI(getConn(), getCommand());
         // 分离节点检查顺行
         check.checkRdDirectRAndLaneC(getConn(), getCommand());
+        //修改link，节点不能到已有的立交点处，请先删除立交关系
+        check.permitCheckGscnodeNotMove(getConn(), getCommand().getCatchInfos());
         return super.preCheck();
     }
 

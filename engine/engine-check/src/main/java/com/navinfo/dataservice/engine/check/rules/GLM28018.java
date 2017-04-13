@@ -246,6 +246,10 @@ public class GLM28018 extends baseRule{
 	 * @throws SQLException 
 	 */
 	private Map<Integer, Integer> getRdInterNodeInfor(Set<Integer> nodePidSet) throws SQLException {
+		Map<Integer,Integer> rdInterNodeMap=new HashMap<Integer,Integer>();
+		if(nodePidSet.isEmpty()){
+			return rdInterNodeMap;
+		}
 		StringBuilder sb2 = new StringBuilder();
 		
 		sb2.append("SELECT RIN.PID,RIN.NODE_PID FROM RD_INTER_NODE RIN");
@@ -258,7 +262,6 @@ public class GLM28018 extends baseRule{
 	
 		
 		ResultSet resultSet2 = pstmt.executeQuery();
-		Map<Integer,Integer> rdInterNodeMap=new HashMap<Integer,Integer>();
 
 		while (resultSet2.next()){
 			rdInterNodeMap.put(resultSet2.getInt("NODE_PID"), resultSet2.getInt("PID"));

@@ -461,7 +461,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 							//IX_POI_PHOTO表
 							int type = photo.getInt("type");
 							if(type == 1) {
-								String fccpid = photo.getString("id").toUpperCase();
+								String fccpid = photo.getString("id");
 								IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 								if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
 									ixPoiPhoto.setPid(fccpid);
@@ -886,7 +886,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 								//IX_POI_PHOTO表
 								int type = photo.getInt("type");
 								if(type == 1) {
-									String fccpid = photo.getString("id").toUpperCase();
+									String fccpid = photo.getString("id");
 									if (!oldPidList.contains(fccpid)) {//数据库中已经存在,则不上传
 										IxPoiPhoto ixPoiPhoto = poi.createIxPoiPhoto();
 										if(fccpid != null && StringUtils.isNotEmpty(fccpid)){
@@ -912,7 +912,8 @@ public class CollectorUploadOperation extends AbstractOperation {
 				}
 				log.info(ixPoi.getPid()+",isFreshFlag:"+ixPoi.isFreshFlag());
 				//改电话
-				if(!JSONUtils.isNull(jo.get("contacts")) && jo.getJSONArray("contacts").size() > 0){
+//				if(!JSONUtils.isNull(jo.get("contacts")) && jo.getJSONArray("contacts").size() > 0){
+				if(jo.containsKey("contacts")){
 					this.usdateIxPoiContact(poi, jo,pid);
 				}
 				
@@ -1015,9 +1016,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 			try {
 				ixPoiParent = poi.createIxPoiParent();
 				ixPoiParent.setParentPoiPid(pid);
-				// 鲜度验证
+				/*// 鲜度验证
 				IxPoi ixPoi= (IxPoi)poi.getMainrow();
-				ixPoi.setFreshFlag(false);
+				ixPoi.setFreshFlag(false);*/
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -1106,6 +1107,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 					poi.deleteSubrow(ixPoiChildren);
 				}
 				poi.deleteSubrow(ixPoiParent);//删除父
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
 			}
 		}else{//原本就已经不存在 子poi
 			if (!JSONUtils.isNull(childrenpoiList) && childrenpoiList.size() > 0) {//上传的poi 存在 子poi
@@ -1133,6 +1137,11 @@ public class CollectorUploadOperation extends AbstractOperation {
 						}
 					}
 				}
+				// 鲜度验证
+				IxPoi ixPoi= (IxPoi)poi.getMainrow();
+				ixPoi.setFreshFlag(false);
+			}else{//上传的没有子
+				poi.deleteSubrow(ixPoiParent);//删除父
 			}
 		}
 		
@@ -2110,12 +2119,12 @@ public class CollectorUploadOperation extends AbstractOperation {
 		//查询的IX_POI_ADDRESS表
 		List<IxPoiAddress> ixPoiAddresses = poi.getIxPoiAddresses();
 		if(!JSONUtils.isNull(jo.get("address"))){
-			if(StringUtils.isNotEmpty(jo.getString("address"))){
+			if(StringUtils.isNotEmpty(jo.getString("address"))){//上传的地址有值
 				String address = jo.getString("address");
 				boolean flag = true;
-				if(ixPoiAddresses !=  null && ixPoiAddresses.size() > 0){
+				if(ixPoiAddresses !=  null && ixPoiAddresses.size() > 0){//数据空中原来存在值
 					for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
-						//多源address不为空，赋值给IX_POI_ADDRESS.FULLNAME(中文地址)
+						//address不为空，赋值给IX_POI_ADDRESS.FULLNAME(中文地址)
 						if(getLangCode().equals(ixPoiAddress.getLangCode())){
 							ixPoiAddress.setFullname(address);
 							flag = false;
@@ -2133,11 +2142,14 @@ public class CollectorUploadOperation extends AbstractOperation {
 					ixPoiAddress.setFullname(address);
 					ixPoiAddress.setLangCode(langCode);
 				}
-			}else{
-				//逻辑删除日库中所有地址记录
-				for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
-					poi.deleteSubrow(ixPoiAddress);
+			}else{//上传的地址为空
+				if(ixPoiAddresses != null && ixPoiAddresses.size() > 0){
+					//逻辑删除日库中所有地址记录
+					for (IxPoiAddress ixPoiAddress : ixPoiAddresses) {
+						poi.deleteSubrow(ixPoiAddress);
+					}
 				}
+				
 			}
 		}
 	}

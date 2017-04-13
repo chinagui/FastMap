@@ -87,7 +87,7 @@ public class GLM01295_1 extends baseRule {
 	private void prepareData(CheckCommand checkCommand) throws Exception {
 		for (IRow row : checkCommand.getGlmList()) {
 			prepareDataLinkForm(row);
-			prepareDataLinkKind(row);
+			//prepareDataLinkKind(row);
 		}
 	}
 

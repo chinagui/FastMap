@@ -129,6 +129,15 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointAdminarea.getInstance().scPointAdminareaContactMap();
 	}
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaDataMap();
+	}
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception

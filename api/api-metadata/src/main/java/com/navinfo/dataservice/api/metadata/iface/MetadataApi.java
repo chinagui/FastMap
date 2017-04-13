@@ -45,6 +45,12 @@ public interface MetadataApi {
 	 */
 	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception;
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception;
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception

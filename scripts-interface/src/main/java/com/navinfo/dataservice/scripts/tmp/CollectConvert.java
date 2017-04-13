@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,7 +36,7 @@ public class CollectConvert {
 	public static void main(String[] args) throws Exception {
 		//incremental.zip解压后的路径，例如：data/incremental
 		String path = String.valueOf(args[0]);
-//		String path = "E:/Users/temp/upload/incremental";
+//		String path = "E:/Users/temp_2_3/upload/incremental";
 		//String path="D:/temp/incremental";
 		int dbId=0;
 		if(args.length>1){
@@ -103,7 +105,9 @@ public class CollectConvert {
 					
 					//记录数据fid_项目号_时间
 					String fid = newPoi.getString("fid");
-					String programId = outPath.split("_")[2];
+					Path pathOut = Paths.get(outPath);
+					
+					String programId = pathOut.getFileName().toString().split("_")[2];
 				    String date=(new SimpleDateFormat("yyyyMMddHHmmss")).format(new Date());  
 					String target = fid + "_" + programId + "_" + date;
 					if(dbId==0){

@@ -17,7 +17,7 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
-//import com.navinfo.dataservice.engine.fcc.tips.CopyOfTipsUpload;
+
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
@@ -33,7 +33,7 @@ public class TipsImportTest{
 
 	 @Test
 	public void test() {
-		String parameter = "{\"jobId\":2677}";
+		String parameter = "{\"jobId\":96}";
 		try {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -42,10 +42,10 @@ public class TipsImportTest{
 
 			UploadService upload = UploadService.getInstance();
 
-			// String filePath = upload.unzipByJobId(jobId); //服务测试
+			String filePath = upload.unzipByJobId(jobId); //服务测试
 
 			//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-			String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
+		//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\2677"; // 本地测试用
 			
 			//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
 
@@ -139,13 +139,15 @@ public class TipsImportTest{
 
 			System.out.println("---------------------");
 
-//			CopyOfTipsUpload tipsUploader2 = new CopyOfTipsUpload();
-//			long t3 = System.currentTimeMillis();
-//			tipsUploader2
-//					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",
-//							photoMap, audioMap);
-//			long t4 = System.currentTimeMillis();
-//			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));
+
+			TipsUpload tipsUploader2 = new TipsUpload();
+			long t3 = System.currentTimeMillis();
+			tipsUploader2
+					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",
+							photoMap, audioMap);
+			long t4 = System.currentTimeMillis();
+			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));
+
 
 		} catch (Exception e) {
 			e.printStackTrace();

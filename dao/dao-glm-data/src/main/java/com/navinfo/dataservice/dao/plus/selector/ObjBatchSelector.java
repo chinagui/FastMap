@@ -81,6 +81,9 @@ public class ObjBatchSelector {
 		
 		
 		for(BasicRow mainrow:mainrowList){
+			if(mainrow==null){
+				continue;
+			}
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(mainrow.getObjPid(), obj);
 		}
@@ -235,6 +238,9 @@ public class ObjBatchSelector {
 		}
 
 		for(BasicRow mainrow:mainrowList){
+			if(mainrow==null){
+				continue;
+			}
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(obj.objPid(), obj);
 		}

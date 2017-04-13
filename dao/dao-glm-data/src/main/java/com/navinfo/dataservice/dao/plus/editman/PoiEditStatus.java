@@ -288,7 +288,9 @@ public class PoiEditStatus {
 	}
 
 	public static void insertOrUpdatePoiEditStatus(Connection conn, OperationResult result)  throws Exception {
-		
+		if(result==null||result.getAllObjs().size()==0){
+			return;
+		}
 		for(Entry<Long, BasicObj> entry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 			IxPoi ixPoi = (IxPoi)entry.getValue().getMainrow();
 			if(entry.getValue().opType().equals(OperationType.INSERT) || entry.getValue().opType().equals(OperationType.DELETE)){

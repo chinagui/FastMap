@@ -264,6 +264,7 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)||mainrow.getOpType().equals(OperationType.PRE_DELETED)){
 			return sqlList;
 		}
+		System.out.println(" physiDelete:  "+physiDelete+" mainrow: "+mainrow.getObjPid()+"  mainrow.getOpType():"+mainrow.getOpType());
 		RunnableSQL mainsql = mainrow.generateSql(physiDelete);
 		if(mainsql!=null){
 			sqlList.add(mainsql);

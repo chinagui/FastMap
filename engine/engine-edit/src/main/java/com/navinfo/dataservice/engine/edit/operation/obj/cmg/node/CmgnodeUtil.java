@@ -31,8 +31,18 @@ public final class CmgnodeUtil {
      * @param cmgnodes 待处理CMG-NODE
      * @param result 结果集
      */
-    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, Result result) {
+    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, int cmgfaceMeshId, Result result) {
         for (CmgBuildnode cmgnode : cmgnodes) {
+            if (cmgnode.getMeshes().size() > 1) {
+                for (IRow row : cmgnode.getMeshes()) {
+                    if(cmgfaceMeshId == row.mesh()) {
+                        result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                        break;
+                    }
+                }
+                continue;
+            }
+
             Coordinate coordinate = GeoTranslator.transform(
                     cmgnode.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate();
             List<String> meshes = Arrays.asList(MeshUtils.point2Meshes(coordinate.x, coordinate.y));

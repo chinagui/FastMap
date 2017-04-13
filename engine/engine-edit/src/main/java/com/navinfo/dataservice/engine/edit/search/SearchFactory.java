@@ -127,7 +127,13 @@ public class SearchFactory {
             case TMCPOINT:
             	 return new TmcPointSearch(conn);
             case RDTMCLOCATION:
-           	 return new RdTmcLocationSearch(conn);
+           	    return new RdTmcLocationSearch(conn);
+            case CMGBUILDNODE:
+                return new CmgBuildnodeSearch(conn);
+            case CMGBUILDLINK:
+                return new CmgBuildlinkSearch(conn);
+            case CMGBUILDFACE:
+                return new CmgBuildfaceSearch(conn);
             default:
                 return null;
         }

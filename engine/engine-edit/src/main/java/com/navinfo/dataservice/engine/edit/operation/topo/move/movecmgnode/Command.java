@@ -12,9 +12,14 @@ import net.sf.json.JSONObject;
 import java.util.List;
 
 /**
- * Created by crayeres on 2017/4/12.
+ * @Title: Command
+ * @Package: com.navinfo.dataservice.engine.edit.operation.topo.move.movecmgnode
+ * @Description: ${TODO}
+ * @Author: Crayeres
+ * @Date: 2017/4/13
+ * @Version: V1.0
  */
-public class Command extends AbstractCommand {
+public class Command extends AbstractCommand{
 
     /**
      * 参数
@@ -70,34 +75,75 @@ public class Command extends AbstractCommand {
         latitude = CmgnodeUtil.reviseItude(json.getDouble("latitude"));
     }
 
-    public CmgBuildnode getCmgnode() {
-        return cmgnode;
-    }
-
-    public void setCmgnode(CmgBuildnode cmgnode) {
-        this.cmgnode = cmgnode;
-    }
-
+    /**
+     * Getter method for property <tt>longitude</tt>.
+     *
+     * @return property value of longitude
+     */
     public double getLongitude() {
         return longitude;
     }
 
+    /**
+     * Getter method for property <tt>latitude</tt>.
+     *
+     * @return property value of latitude
+     */
     public double getLatitude() {
         return latitude;
     }
 
+    /**
+     * Getter method for property <tt>cmgnode</tt>.
+     *
+     * @return property value of cmgnode
+     */
+    public CmgBuildnode getCmgnode() {
+
+        return cmgnode;
+    }
+
+    /**
+     * Setter method for property <tt>cmgnode</tt>.
+     *
+     * @param cmgnode value to be assigned to property cmgnode
+     */
+    public void setCmgnode(CmgBuildnode cmgnode) {
+        this.cmgnode = cmgnode;
+    }
+
+    /**
+     * Getter method for property <tt>cmglinks</tt>.
+     *
+     * @return property value of cmglinks
+     */
     public List<CmgBuildlink> getCmglinks() {
         return cmglinks;
     }
 
+    /**
+     * Setter method for property <tt>cmglinks</tt>.
+     *
+     * @param cmglinks value to be assigned to property cmglinks
+     */
     public void setCmglinks(List<CmgBuildlink> cmglinks) {
         this.cmglinks = cmglinks;
     }
 
+    /**
+     * Getter method for property <tt>cmgfaces</tt>.
+     *
+     * @return property value of cmgfaces
+     */
     public List<CmgBuildface> getCmgfaces() {
         return cmgfaces;
     }
 
+    /**
+     * Setter method for property <tt>cmgfaces</tt>.
+     *
+     * @param cmgfaces value to be assigned to property cmgfaces
+     */
     public void setCmgfaces(List<CmgBuildface> cmgfaces) {
         this.cmgfaces = cmgfaces;
     }

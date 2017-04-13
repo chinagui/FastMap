@@ -30,8 +30,18 @@ public final class CmglinkUtil {
      * @param cmglinks 待处理CMG-LINK
      * @param result 结果集
      */
-    public static void handleCmglinkMesh(List<CmgBuildlink> cmglinks, Result result) {
+    public static void handleCmglinkMesh(List<CmgBuildlink> cmglinks, int cmgfaceMeshId, Result result) {
         for (CmgBuildlink cmglink : cmglinks) {
+            if (cmglink.getMeshes().size() > 1) {
+                for (IRow row : cmglink.getMeshes()) {
+                    if (cmgfaceMeshId == row.mesh()) {
+                        result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
+                        break;
+                    }
+                }
+                continue;
+            }
+
             Coordinate[] coordinates = GeoTranslator.transform(
                     cmglink.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinates();
             List<String> meshes = Arrays.asList(MeshUtils.line2Meshes(

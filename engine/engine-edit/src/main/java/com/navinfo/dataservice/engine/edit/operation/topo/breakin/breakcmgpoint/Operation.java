@@ -11,12 +11,15 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -165,10 +168,25 @@ public class Operation implements IOperation {
      */
     private void createBreakNode(Result result) throws Exception {
         if (this.command.getCmgnode().pid() == 0) {
-            CmgBuildnode node = NodeOperateUtils.createCmgBuildnode(
+            CmgBuildnode cmgnode = NodeOperateUtils.createCmgBuildnode(
                     command.getCmglink().getGeometry().getCoordinate().x, command.getCmglink().getGeometry().getCoordinate().y);
-            result.insertObject(node, ObjStatus.INSERT, node.pid());
-            this.command.setCmgnode(node);
+            // 当新建NODE涉及CMG-FACE时需要重新计算CMG-NODE图幅信息
+            if (!CollectionUtils.isEmpty(command.getCmgfaces())) {
+                cmgnode.getMeshes().clear();
+                Set<Integer> meshes = new HashSet<>();
+                for (CmgBuildface cmgface: command.getCmgfaces()) {
+                    Geometry geometry = GeoTranslator.transform(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+                    meshes.add(CmgfaceUtil.calcFaceMeshId(geometry.getCentroid()));
+                }
+                for (Integer meshId : meshes) {
+                    CmgBuildnodeMesh cmgnodeMesh = new CmgBuildnodeMesh();
+                    cmgnodeMesh.setNodePid(cmgnode.pid());
+                    cmgnodeMesh.setMeshId(meshId);
+                    result.insertObject(cmgnodeMesh, ObjStatus.INSERT, cmgnode.pid());
+                }
+            }
+            result.insertObject(cmgnode, ObjStatus.INSERT, cmgnode.pid());
+            this.command.setCmgnode(cmgnode);
         } else {
             for (IRow row : result.getAddObjects()) {
                 if (row instanceof CmgBuildnode) {

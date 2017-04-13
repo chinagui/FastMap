@@ -28,7 +28,7 @@ public class Command extends AbstractCommand {
     /**
      * CMG-FACE对象
      */
-    private CmgBuildface cmgface;
+    private CmgBuildface cmgface = new CmgBuildface();
 
     /**
      * 受到影响的CMG-LINK对象

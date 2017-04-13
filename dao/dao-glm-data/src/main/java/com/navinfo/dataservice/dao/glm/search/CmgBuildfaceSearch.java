@@ -1,12 +1,20 @@
 package com.navinfo.dataservice.dao.glm.search;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,6 +95,37 @@ public class CmgBuildfaceSearch implements ISearch{
      */
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
-        return null;
+        List<SearchSnapshot> list = new ArrayList<>();
+        String sql = "select a.face_pid, a.geometry, a.kind from cmg_buildface a where a.u_record != 2 and sdo_within_distance(a"
+                + ".geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            double px = MercatorProjection.tileXToPixelX(x);
+            double py = MercatorProjection.tileYToPixelY(y);
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
+                JSONObject m = new JSONObject();
+                m.put("c", resultSet.getInt("kind"));
+                snapshot.setM(m);
+                snapshot.setT(53);
+                snapshot.setI(resultSet.getInt("face_pid"));
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+                JSONObject geojson = Geojson.spatial2Geojson(struct);
+                JSONObject jo = Geojson.face2Pixel(geojson, px, py, z);
+                snapshot.setG(jo.getJSONArray("coordinates"));
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return list;
     }
 }

@@ -10,7 +10,6 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
@@ -20,7 +19,6 @@ import com.vividsolutions.jts.geom.GeometryFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -65,7 +63,7 @@ public class Operation implements IOperation {
                 }
             }
             int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
-            if(cmgface.getMeshId() != cmgfaceMeshId) {
+            if (cmgface.getMeshId() != cmgfaceMeshId) {
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);
                 for (IRow row : cmgface.getTopos()) {
@@ -73,7 +71,7 @@ public class Operation implements IOperation {
                     linkOfMeshId.put(cmgfaceTopo.getLinkPid(), Arrays.asList(cmgface.getMeshId(), cmgfaceMeshId));
                 }
             }
-            cmgface.changedFields().put("geometry", geometry);
+            cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
             cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
             result.insertObject(cmgface, ObjStatus.UPDATE, cmgface.pid());
@@ -84,12 +82,12 @@ public class Operation implements IOperation {
             if (command.getCmgnode().pid() == cmglink.getsNodePid()) {
                 geometry.getCoordinates()[0].x = command.getLongitude();
                 geometry.getCoordinates()[0].y = command.getLatitude();
-            } else if(command.getCmgnode().pid() == cmglink.geteNodePid()) {
+            } else if (command.getCmgnode().pid() == cmglink.geteNodePid()) {
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].x = command.getLongitude();
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].y = command.getLatitude();
             }
             cmglink.changedFields().put("length", GeometryUtils.getLinkLength(geometry));
-            cmglink.changedFields().put("geometry", geometry);
+            cmglink.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             result.insertObject(cmglink, ObjStatus.UPDATE, cmglink.pid());
 
             if (linkOfMeshId.containsKey(cmglink.pid())) {
@@ -106,7 +104,7 @@ public class Operation implements IOperation {
         // 处理CMG-NODE
         Geometry geometry = new GeometryFactory().createPoint(
                 new Coordinate(command.getLongitude(), command.getLatitude()));
-        command.getCmgnode().changedFields().put("geometry", geometry);
+        command.getCmgnode().changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
         result.insertObject(command.getCmgnode(), ObjStatus.UPDATE, command.getCmgnode().pid());
         if (!CollectionUtils.isEmpty(faceMeshIds)) {
             for (IRow row : command.getCmgnode().getMeshes()) {

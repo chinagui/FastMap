@@ -1,6 +1,6 @@
 package com.navinfo.dataservice.dao.glm.model.cmg;
 
-import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class CmgBuildlink implements IObj {
     /**
      * LINK种别
      */
-    private int kind;
+    private int kind = 1;
 
     /**
      * LINK坐标
@@ -150,7 +151,6 @@ public class CmgBuildlink implements IObj {
     public void copy(final IRow row) {
         CmgBuildlink cmgBuildlink = (CmgBuildlink) row;
 
-        this.pid = cmgBuildlink.pid;
         this.sNodePid = cmgBuildlink.sNodePid;
         this.eNodePid = cmgBuildlink.eNodePid;
         this.kind = cmgBuildlink.kind;
@@ -163,6 +163,7 @@ public class CmgBuildlink implements IObj {
         for (IRow m : cmgBuildlink.meshes) {
             CmgBuildlinkMesh mesh = new CmgBuildlinkMesh();
             mesh.copy(m);
+            mesh.setLinkPid(this.pid());
             meshes.add(mesh);
         }
         this.meshes = meshes;
@@ -239,7 +240,8 @@ public class CmgBuildlink implements IObj {
 
     @Override
     public JSONObject Serialize(final ObjLevel objLevel) throws Exception {
-        return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        return JSONObject.fromObject(this, jsonConfig);
     }
 
     @Override

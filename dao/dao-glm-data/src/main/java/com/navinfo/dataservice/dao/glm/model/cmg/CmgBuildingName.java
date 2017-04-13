@@ -37,7 +37,7 @@ public class CmgBuildingName implements IRow {
     /**
      * 名称组号
      */
-    private int nameGroupid;
+    private int nameGroupid = 1;
 
     /**
      * 语言代码

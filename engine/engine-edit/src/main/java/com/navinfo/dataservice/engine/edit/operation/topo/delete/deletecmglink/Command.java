@@ -28,7 +28,7 @@ public class Command extends AbstractCommand {
     /**
      * 待删除CMG-LINK对象
      */
-    private CmgBuildlink cmglink;
+    private CmgBuildlink cmglink = new CmgBuildlink();
 
     /**
      * 受影响CMG-NODE对象

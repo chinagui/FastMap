@@ -29,7 +29,7 @@ public class Command extends AbstractCommand {
     /**
      * 待修改对象
      */
-    private CmgBuildnode cmgnode;
+    private CmgBuildnode cmgnode = new CmgBuildnode();
 
     /**
      * @return 操作类型

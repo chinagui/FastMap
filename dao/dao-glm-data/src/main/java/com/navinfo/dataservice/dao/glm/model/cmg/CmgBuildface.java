@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.dao.glm.model.cmg;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -9,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -51,22 +53,22 @@ public class CmgBuildface implements IObj {
     /**
      * 高度精确度
      */
-    private double heightAcuracy;
+    private double heightAcuracy = 0.5;
 
     /**
      * 高度值来源
      */
-    private int heightSource;
+    private int heightSource = 1;
 
     /**
      * 数据来源
      */
-    private int dataSource;
+    private int dataSource = 3;
 
     /**
      * 墙面材料
      */
-    private int wallMaterial;
+    private int wallMaterial = 1;
 
     /**
      * FACE坐标
@@ -91,7 +93,7 @@ public class CmgBuildface implements IObj {
     /**
      * 编辑标识
      */
-    private int editFlag;
+    private int editFlag = 1;
 
     /**
      * 创建时间(格式"YYYY/MM/DD HH:mm:ss")
@@ -198,7 +200,6 @@ public class CmgBuildface implements IObj {
     public void copy(final IRow row) {
         CmgBuildface cmgBuildface = (CmgBuildface) row;
 
-        this.pid = cmgBuildface.pid;
         this.buildingPid = cmgBuildface.buildingPid;
         this.massing = cmgBuildface.massing;
         this.height = cmgBuildface.height;
@@ -218,6 +219,7 @@ public class CmgBuildface implements IObj {
         for (IRow t : cmgBuildface.tenants) {
             CmgBuildfaceTenant tenant = new CmgBuildfaceTenant();
             tenant.copy(t);
+            tenant.setFacePid(this.pid());
             tenants.add(tenant);
         }
         this.tenants = tenants;
@@ -226,6 +228,7 @@ public class CmgBuildface implements IObj {
         for (IRow t : cmgBuildface.topos) {
             CmgBuildfaceTopo topo = new CmgBuildfaceTopo();
             topo.copy(t);
+            topo.setFacePid(this.pid());
             topos.add(topo);
         }
         this.topos = topos;
@@ -304,7 +307,8 @@ public class CmgBuildface implements IObj {
 
     @Override
     public JSONObject Serialize(final ObjLevel objLevel) throws Exception {
-        return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+        JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        return JSONObject.fromObject(this, jsonConfig);
     }
 
     @Override

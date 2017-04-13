@@ -29,7 +29,7 @@ public class Command extends AbstractCommand{
     /**
      * 待修改对象
      */
-    private CmgBuildnode cmgnode;
+    private CmgBuildnode cmgnode = new CmgBuildnode();
 
     /**
      * 经度
@@ -71,8 +71,10 @@ public class Command extends AbstractCommand{
         this.setDbId(json.getInt("dbId"));
 
         cmgnode.setPid(json.getInt("objId"));
-        longitude = CmgnodeUtil.reviseItude(json.getDouble("longitude"));
-        latitude = CmgnodeUtil.reviseItude(json.getDouble("latitude"));
+
+        JSONObject data = json.getJSONObject("data");
+        longitude = CmgnodeUtil.reviseItude(data.getDouble("longitude"));
+        latitude = CmgnodeUtil.reviseItude(data.getDouble("latitude"));
     }
 
     /**

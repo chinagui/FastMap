@@ -29,7 +29,7 @@ public class Command extends AbstractCommand {
     /**
      * 待修改对象
      */
-    private CmgBuildface cmgface;
+    private CmgBuildface cmgface = new CmgBuildface();
 
     /**
      * @return 操作类型

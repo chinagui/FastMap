@@ -1,12 +1,21 @@
 package com.navinfo.dataservice.dao.glm.search;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import net.sf.json.JSONObject;
+import oracle.spatial.geometry.JGeometry;
+import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -87,6 +96,42 @@ public class CmgBuildlinkSearch implements ISearch {
      */
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
-        return null;
+        List<SearchSnapshot> list = new ArrayList<>();
+        String sql = "select t.link_pid, t.geometry, t.s_node_pid, t.e_node_pid from cmg_buildlink t where sdo_within_distance(a"
+                + ".geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and t.u_record <> 2";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            double px = MercatorProjection.tileXToPixelX(x);
+            double py = MercatorProjection.tileYToPixelY(y);
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
+                JSONObject m = new JSONObject();
+                m.put("a", resultSet.getString("s_node_pid"));
+                m.put("b", resultSet.getString("e_node_pid"));
+                snapshot.setM(m);
+                snapshot.setT(51);
+                snapshot.setI(resultSet.getInt("link_pid"));
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+                JGeometry geo = JGeometry.load(struct);
+                if (geo.getType() != 2) {
+                    continue;
+                }
+                JSONObject geojson = Geojson.spatial2Geojson(struct);
+                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+                snapshot.setG(jo.getJSONArray("coordinates"));
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+            throw new Exception(e);
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return list;
     }
 }

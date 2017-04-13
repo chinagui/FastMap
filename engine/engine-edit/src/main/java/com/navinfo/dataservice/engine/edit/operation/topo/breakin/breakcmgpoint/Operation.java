@@ -115,7 +115,7 @@ public class Operation implements IOperation {
             }
             // 通过坐标点构成面
             Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
-            cmgface.changedFields().put("geometry", geometry);
+            cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             cmgface.changedFields().put("meshId", CmgfaceUtil.calcFaceMeshId(geometry));
             cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
             cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
@@ -133,7 +133,7 @@ public class Operation implements IOperation {
      * @throws Exception 打断操作出错
      */
     private void breakPoint() throws Exception {
-        List<JSONArray> arrays = BasicServiceUtils.breakpoint(command.getCmglink().getGeometry(), (Point) command.getCmglink().getGeometry());
+        List<JSONArray> arrays = BasicServiceUtils.breakpoint(command.getCmglink().getGeometry(), (Point) command.getCmgnode().getGeometry());
         this.create2NewLink(arrays);
     }
 
@@ -169,7 +169,7 @@ public class Operation implements IOperation {
     private void createBreakNode(Result result) throws Exception {
         if (this.command.getCmgnode().pid() == 0) {
             CmgBuildnode cmgnode = NodeOperateUtils.createCmgBuildnode(
-                    command.getCmglink().getGeometry().getCoordinate().x, command.getCmglink().getGeometry().getCoordinate().y);
+                    command.getCmgnode().getGeometry().getCoordinate().x, command.getCmgnode().getGeometry().getCoordinate().y);
             // 当新建NODE涉及CMG-FACE时需要重新计算CMG-NODE图幅信息
             if (!CollectionUtils.isEmpty(command.getCmgfaces())) {
                 cmgnode.getMeshes().clear();
@@ -198,6 +198,8 @@ public class Operation implements IOperation {
                 }
             }
         }
+        // 删除被打断的线
+        result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
         // 组装新生成两条link
         result.setPrimaryPid(command.getCmgnode().pid());
         command.getNewCmglinks().get(0).seteNodePid(command.getCmgnode().pid());

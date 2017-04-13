@@ -32,7 +32,7 @@ public class CmgBuildfaceTopo implements IRow {
     /**
      * LINK序号
      */
-    private int seqNum;
+    private int seqNum = 1;
 
     /**
      * LINK号码

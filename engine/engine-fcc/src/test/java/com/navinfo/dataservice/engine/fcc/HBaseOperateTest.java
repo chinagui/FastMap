@@ -472,7 +472,7 @@ public class HBaseOperateTest {
 
 	public static void main(String[] args) throws Exception {
 		HBaseOperateTest test = new HBaseOperateTest();
-		String rowkey = "id:0211039CCC643A25994E9E93DF4F4EB366F658";
+		String rowkey = "73c0077b-e950-4079-9d3b-c7454c4109f9";
 		// test.QueryAll();
 		 test.QueryByCondition1(rowkey);
 		 

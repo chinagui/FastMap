@@ -115,7 +115,6 @@ public class TipsSelector {
 
 				stages.add(3);
 
-				stages.add(5);
 			}
 			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre = false;
@@ -130,6 +129,10 @@ public class TipsSelector {
 			for (JSONObject json : snapshots) {
 
 				rowkey = json.getString("id");
+				
+				if(rowkey.equals("028002921a855f54c94990ab034c1fe4862d83")){
+					System.out.println("");
+				}
 
 				SearchSnapshot snapshot = new SearchSnapshot();
 
@@ -187,8 +190,10 @@ public class TipsSelector {
 					m.put("b", json.getString("t_lifecycle"));
 				}
 
+				//20170412赵航输入，转为屏幕坐标
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
+				Geojson.coord2Pixel(g_guide, z, px, py);
 
 				// 8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
@@ -1104,6 +1109,56 @@ public class TipsSelector {
 
 		return json;
 	}
+	
+	
+	/**
+	 * 通过rowkey获取Tips(返回符合规格模型的数据)
+	 * 
+	 * @param rowkey
+	 * @return Tips JSON对象
+	 * @throws Exception
+	 */
+	public JSONObject searchDataByRowkeyNew(String rowkey) throws Exception {
+		JSONObject json = new JSONObject();
+
+		try {
+
+			HBaseController controller = new HBaseController();
+
+			ArrayList<KeyValue> list = controller.getTipsByRowkey(rowkey);
+
+			if (list.isEmpty()) {
+				throw new Exception("未找到rowkey对应的数据!");
+			}
+
+			json.put("rowkey", rowkey);
+
+			for (KeyValue kv : list) {
+				System.out.println(kv);
+				JSONObject injson = JSONObject
+						.fromObject(new String(kv.value()));
+
+				String key = new String(kv.qualifier());
+				
+				System.out.println("key:"+key);
+
+			/*	if (key.equals("feedback")) {
+					json.put("feedback", injson);
+				} else {
+					json.putAll(injson);
+				}*/
+				json.put(key, injson);
+				
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		}
+
+		return json;
+	}
+
 
 	/**
 	 * 通过条件查询Tips
@@ -1839,6 +1894,21 @@ public class TipsSelector {
 		}
 
 		return resultArr;
+	}
+
+	/**
+	 * @Description:？、？？
+	 * @param types
+	 * @param stages
+	 * @param jobId
+	 * @param jobType
+	 * @return
+	 * @author: y
+	 * @time:2017-4-13 上午9:07:15
+	 */
+	public List<JSONObject> getTipsByTypesAndJobId(JSONArray types,
+			JSONArray stages, int jobId, int jobType) {
+		return null;
 	}
 
 }

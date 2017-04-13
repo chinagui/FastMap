@@ -96,8 +96,8 @@ public class CmgBuildfaceSearch implements ISearch{
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select a.face_pid, a.geometry, a.kind from cmg_buildface a where a.u_record != 2 and sdo_within_distance(a"
-                + ".geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+        String sql = "select a.face_pid, a.geometry from cmg_buildface a where a.u_record <> 2 and sdo_within_distance("
+                + "a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {
@@ -109,9 +109,6 @@ public class CmgBuildfaceSearch implements ISearch{
             double py = MercatorProjection.tileYToPixelY(y);
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
-                JSONObject m = new JSONObject();
-                m.put("c", resultSet.getInt("kind"));
-                snapshot.setM(m);
                 snapshot.setT(53);
                 snapshot.setI(resultSet.getInt("face_pid"));
                 STRUCT struct = (STRUCT) resultSet.getObject("geometry");

@@ -97,10 +97,10 @@ public class CmgBuildnodeSearch implements ISearch {
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
         String sql = "with tmp1 as (select node_pid, geometry from cmg_buildnode where sdo_relate(geometry, sdo_geometry(:1, 8307), "
-                + "'mask=anyinteract') = 'TRUE' and u_record != 2), tmp2 as (select /*+ index(a) */ b.node_pid, listagg(a.link_pid, ',') "
-                + "within group(order by b.node_pid) linkpids from cmg_buildlink a, tmp1 b where a.u_record != 2 and (a.s_node_pid = b"
+                + "'mask=anyinteract') = 'TRUE' and u_record <> 2), tmp2 as (select /*+ index(a) */ b.node_pid, listagg(a.link_pid, ',') "
+                + "within group(order by b.node_pid) linkpids from cmg_buildlink a, tmp1 b where a.u_record <> 2 and (a.s_node_pid = b"
                 + ".node_pid or a.e_node_pid = b.node_pid) group by b.node_pid) select a.node_pid, a.geometry, b.linkpids from tmp1 a, "
-                + "tmp2 b where a.node_pid = b.node_pid\n";
+                + "tmp2 b where a.node_pid = b.node_pid";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {

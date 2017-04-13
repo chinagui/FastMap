@@ -97,8 +97,8 @@ public class CmgBuildlinkSearch implements ISearch {
     @Override
     public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z, int gap) throws Exception {
         List<SearchSnapshot> list = new ArrayList<>();
-        String sql = "select t.link_pid, t.geometry, t.s_node_pid, t.e_node_pid from cmg_buildlink t where sdo_within_distance(a"
-                + ".geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and t.u_record <> 2";
+        String sql = "select t.link_pid, t.geometry, t.s_node_pid, t.e_node_pid from cmg_buildlink t where sdo_within_distance("
+                + "t.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and t.u_record <> 2";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
         try {

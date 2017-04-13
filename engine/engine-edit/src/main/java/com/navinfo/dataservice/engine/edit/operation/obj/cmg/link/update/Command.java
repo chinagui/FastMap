@@ -29,7 +29,7 @@ public class Command extends AbstractCommand {
     /**
      * 待修改CMG-LINK主键
      */
-    private CmgBuildlink cmglink;
+    private CmgBuildlink cmglink = new CmgBuildlink();
 
     /**
      * @return 操作类型

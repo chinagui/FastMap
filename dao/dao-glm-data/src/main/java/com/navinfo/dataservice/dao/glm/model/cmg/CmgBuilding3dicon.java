@@ -32,12 +32,12 @@ public class CmgBuilding3dicon implements IRow {
     /**
      * 图标宽度
      */
-    private int width;
+    private int width = 64;
 
     /**
      * 图标高度
      */
-    private int height;
+    private int height = 64;
 
     /**
      * 图标文件名

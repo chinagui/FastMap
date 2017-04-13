@@ -52,6 +52,7 @@ public class Operation implements IOperation {
         } else if (CollectionUtils.isEmpty(map)) {
             JSONObject se = CmgLinkOperateUtils.createCmglinkEndpoint(command.getGeometry(), command.getsNodePid(),
                     command.geteNodePid(), result);
+            map.put(command.getGeometry(), se);
         }
 
         // 创建CMG-LINK

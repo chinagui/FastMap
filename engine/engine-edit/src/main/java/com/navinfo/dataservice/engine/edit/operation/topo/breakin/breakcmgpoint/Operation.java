@@ -11,12 +11,15 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.geo.GeoUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -112,7 +115,7 @@ public class Operation implements IOperation {
             }
             // 通过坐标点构成面
             Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
-            cmgface.changedFields().put("geometry", geometry);
+            cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             cmgface.changedFields().put("meshId", CmgfaceUtil.calcFaceMeshId(geometry));
             cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
             cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
@@ -130,7 +133,7 @@ public class Operation implements IOperation {
      * @throws Exception 打断操作出错
      */
     private void breakPoint() throws Exception {
-        List<JSONArray> arrays = BasicServiceUtils.breakpoint(command.getCmglink().getGeometry(), (Point) command.getCmglink().getGeometry());
+        List<JSONArray> arrays = BasicServiceUtils.breakpoint(command.getCmglink().getGeometry(), (Point) command.getCmgnode().getGeometry());
         this.create2NewLink(arrays);
     }
 
@@ -165,10 +168,25 @@ public class Operation implements IOperation {
      */
     private void createBreakNode(Result result) throws Exception {
         if (this.command.getCmgnode().pid() == 0) {
-            CmgBuildnode node = NodeOperateUtils.createCmgBuildnode(
-                    command.getCmglink().getGeometry().getCoordinate().x, command.getCmglink().getGeometry().getCoordinate().y);
-            result.insertObject(node, ObjStatus.INSERT, node.pid());
-            this.command.setCmgnode(node);
+            CmgBuildnode cmgnode = NodeOperateUtils.createCmgBuildnode(
+                    command.getCmgnode().getGeometry().getCoordinate().x, command.getCmgnode().getGeometry().getCoordinate().y);
+            // 当新建NODE涉及CMG-FACE时需要重新计算CMG-NODE图幅信息
+            if (!CollectionUtils.isEmpty(command.getCmgfaces())) {
+                cmgnode.getMeshes().clear();
+                Set<Integer> meshes = new HashSet<>();
+                for (CmgBuildface cmgface: command.getCmgfaces()) {
+                    Geometry geometry = GeoTranslator.transform(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+                    meshes.add(CmgfaceUtil.calcFaceMeshId(geometry.getCentroid()));
+                }
+                for (Integer meshId : meshes) {
+                    CmgBuildnodeMesh cmgnodeMesh = new CmgBuildnodeMesh();
+                    cmgnodeMesh.setNodePid(cmgnode.pid());
+                    cmgnodeMesh.setMeshId(meshId);
+                    result.insertObject(cmgnodeMesh, ObjStatus.INSERT, cmgnode.pid());
+                }
+            }
+            result.insertObject(cmgnode, ObjStatus.INSERT, cmgnode.pid());
+            this.command.setCmgnode(cmgnode);
         } else {
             for (IRow row : result.getAddObjects()) {
                 if (row instanceof CmgBuildnode) {
@@ -180,6 +198,8 @@ public class Operation implements IOperation {
                 }
             }
         }
+        // 删除被打断的线
+        result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
         // 组装新生成两条link
         result.setPrimaryPid(command.getCmgnode().pid());
         command.getNewCmglinks().get(0).seteNodePid(command.getCmgnode().pid());

@@ -160,7 +160,6 @@ public class CmgBuilding implements IObj {
     public void copy(IRow row) {
         CmgBuilding cmgBuilding = (CmgBuilding) row;
 
-        this.pid = cmgBuilding.pid;
         this.kind = cmgBuilding.kind;
         this.rowId = cmgBuilding.rowId;
 
@@ -168,6 +167,7 @@ public class CmgBuilding implements IObj {
         for (IRow n : cmgBuilding.names) {
             CmgBuildingName name = new CmgBuildingName();
             name.copy(n);
+            name.setBuildingPid(this.pid());
             names.add(name);
         }
         this.names = names;
@@ -176,6 +176,7 @@ public class CmgBuilding implements IObj {
         for (IRow m : cmgBuilding.build3dmodels) {
             CmgBuilding3dmodel build3dmodel = new CmgBuilding3dmodel();
             build3dmodel.copy(m);
+            build3dmodel.setBuildingPid(this.pid());
             build3dmodels.add(build3dmodel);
         }
         this.build3dmodels = build3dmodels;
@@ -184,6 +185,7 @@ public class CmgBuilding implements IObj {
         for (IRow i : cmgBuilding.build3dicons) {
             CmgBuilding3dicon build3dicon = new CmgBuilding3dicon();
             build3dicon.copy(i);
+            build3dicon.setBuildingPid(this.pid());
             build3dicons.add(build3dicon);
         }
         this.build3dicons = build3dicons;
@@ -192,6 +194,7 @@ public class CmgBuilding implements IObj {
         for (IRow p : cmgBuilding.pois) {
             CmgBuildingPoi poi = new CmgBuildingPoi();
             poi.copy(p);
+            poi.setBuildingPid(this.pid());
             pois.add(poi);
         }
         this.pois = pois;

@@ -42,7 +42,7 @@ public class CmgBuildlinkMesh implements IRow {
     /**
      * 待修改数据
      */
-    private Map<String, Object> changedFields = new HashMap<>();
+    public Map<String, Object> changedFields = new HashMap<>();
 
     /**
      * 数据状态

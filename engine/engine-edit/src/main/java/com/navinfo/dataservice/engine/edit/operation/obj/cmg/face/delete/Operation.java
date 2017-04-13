@@ -37,9 +37,9 @@ public class Operation implements IOperation {
         // 处理CMG-FACE
         result.insertObject(command.getCmgface(), ObjStatus.DELETE, command.getCmgface().pid());
         // 处理CMG-LINK
-        CmglinkUtil.handleCmglinkMesh(command.getCmglinks(), result);
+        CmglinkUtil.handleCmglinkMesh(command.getCmglinks(), command.getCmgface().getMeshId(), result);
         // 处理CMG-NODE
-        CmgnodeUtil.handleCmgnodeMesh(command.getCmgnodes(), result);
+        CmgnodeUtil.handleCmgnodeMesh(command.getCmgnodes(), command.getCmgface().getMeshId(), result);
         return null;
     }
 

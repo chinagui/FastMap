@@ -35,7 +35,7 @@ public class Command extends AbstractCommand {
     /**
      * 打断点对象
      */
-    private CmgBuildnode cmgnode;
+    private CmgBuildnode cmgnode = new CmgBuildnode();
 
     /**
      * 连续打断点信息
@@ -45,7 +45,7 @@ public class Command extends AbstractCommand {
     /**
      * 被打断线对象
      */
-    private CmgBuildlink cmglink;
+    private CmgBuildlink cmglink = new CmgBuildlink();
 
     /**
      * 打断后生成的CMG-LINK
@@ -87,7 +87,7 @@ public class Command extends AbstractCommand {
         } else {
             this.cmgnode.setGeometry(new GeometryFactory().createPoint(
                     new Coordinate(CmgnodeUtil.reviseItude(data.getDouble("longitude"))
-                            , CmgnodeUtil.reviseItude(data.getDouble("longitude")))));
+                            , CmgnodeUtil.reviseItude(data.getDouble("latitude")))));
         }
     }
 

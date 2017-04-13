@@ -23,6 +23,8 @@ public class ScPointAdminarea {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	private Map<String, List<String>> contactMap= new HashMap<String, List<String>>();
+	
+	private Map<String, List<String>> dataMap= new HashMap<String, List<String>>();
 
 	private static class SingletonHolder {
 		private static final ScPointAdminarea INSTANCE = new ScPointAdminarea();
@@ -69,6 +71,63 @@ public class ScPointAdminarea {
 				}
 			}
 			return contactMap;
+	}
+	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception{
+		if (dataMap==null||dataMap.isEmpty()) {
+				synchronized (this) {
+					if (dataMap==null||dataMap.isEmpty()) {
+						try {
+							String sql = "SELECT sp.province,sp.province_short,sp.city,sp.city_short,sp.district,sp.district_short,sp.remark FROM SC_POINT_ADMINAREA sp";
+								
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								dataMap.put("province", new ArrayList<String>());
+								dataMap.put("province_short", new ArrayList<String>());
+								dataMap.put("city", new ArrayList<String>());
+								dataMap.put("city_short", new ArrayList<String>());
+								dataMap.put("district", new ArrayList<String>());
+								dataMap.put("district_short", new ArrayList<String>());
+								dataMap.put("district_remark1", new ArrayList<String>());
+								dataMap.put("district_short_remark1", new ArrayList<String>());
+								while (rs.next()) {
+									String province=rs.getString("province");
+									String province_short=rs.getString("province_short");
+									String city=rs.getString("city");
+									String city_short=rs.getString("city_short");
+									String district=rs.getString("district");
+									String district_short=rs.getString("district_short");
+									String remark=rs.getString("remark");
+									if(province!=null&&!province.isEmpty()){dataMap.get("province").add(province);}
+									if(province_short!=null&&!province_short.isEmpty()){dataMap.get("province_short").add(province_short);}
+									if(city!=null&&!city.isEmpty()){dataMap.get("city").add(city);}
+									if(city_short!=null&&!city_short.isEmpty()){dataMap.get("city_short").add(city_short);}
+									if(district!=null&&!district.isEmpty()){dataMap.get("district").add(district);}
+									if(district_short!=null&&!district_short.isEmpty()){dataMap.get("district_short").add(district_short);}
+									if(remark.equals("1")&&district!=null&&!district.isEmpty()){dataMap.get("district_remark1").add(district);}
+									if(remark.equals("1")&&district_short!=null&&!district_short.isEmpty()){dataMap.get("district_short_remark1").add(district_short);}
+								} 
+							} catch (Exception e) {
+								throw new Exception(e);
+							} finally {
+								DbUtils.close(conn);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载SC_ENGSHORT_LIST失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return dataMap;
 	}
 	
 	/**

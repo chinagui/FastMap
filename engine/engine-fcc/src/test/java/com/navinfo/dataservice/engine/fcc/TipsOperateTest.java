@@ -28,6 +28,8 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.engine.audio.Audio;
+import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
+import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 
@@ -194,6 +196,43 @@ public class TipsOperateTest {
 		}
 
 	}
+	
+	 @Test
+		public void testDel() {
+
+		 String parameter = "{\"rowkey\":\"02160160f648f9b3c748a6a517e63a3a04b9a3\",\"user\":2922}";
+			try {
+				if (StringUtils.isEmpty(parameter)) {
+					throw new IllegalArgumentException("parameter参数不能为空。");
+				}
+
+				JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+				String rowkey = jsonReq.getString("rowkey");
+				
+				int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
+				
+				int user = jsonReq.getInt("user");
+
+				if (StringUtils.isEmpty(rowkey)) {
+					throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+				}
+				
+				EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
+				
+				PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
+				
+				delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
+
+				op.deleteByRowkey(rowkey,delType,user);
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+	
+	
 
 	//造数据
 	public static void main(String[] args) {

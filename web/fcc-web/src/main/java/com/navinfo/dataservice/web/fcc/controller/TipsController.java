@@ -411,6 +411,41 @@ public class TipsController extends BaseController {
 	}
 	
 	
+	@RequestMapping(value = "/tip/getByRowkeyNew")
+	public void getByRowkeyNew(HttpServletRequest request,HttpServletResponse response
+			) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			 if (StringUtils.isEmpty(rowkey)) {
+                 throw new IllegalArgumentException("参数错误：rowkey不能为空");
+             }
+
+
+			TipsSelector selector = new TipsSelector();
+
+			JSONObject data = selector.searchDataByRowkeyNew(rowkey);
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+	}
+	
 	
 	
 	@RequestMapping(value = "/tip/getByRowkeys")

@@ -37,6 +37,8 @@ public class RdTmclocationLink implements IRow {
 	
 	private String rowId;
 	
+	protected ObjStatus status;
+	
 	protected Geometry geometry;
 	
 	protected int sNodePid;
@@ -93,6 +95,8 @@ public class RdTmclocationLink implements IRow {
 			json.remove("sNodePid");
 			
 			json.remove("eNodePid");
+			
+			json.remove("status");
 		}
 
 		return json;
@@ -137,11 +141,12 @@ public class RdTmclocationLink implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override

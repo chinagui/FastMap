@@ -11,8 +11,11 @@ import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
 
 public class Check {
 
@@ -109,6 +112,33 @@ public class Check {
 		}
 	}
 	
+	public void permitCheckGscnodeNotMove(JSONArray catchLinks, Connection conn) throws Exception {
+		if (catchLinks.size() == 0 || catchLinks == null) {
+			return;
+		}
+
+		boolean isCatch = false;
+
+		for (int i = 0; i < catchLinks.size(); i++) {
+			if (catchLinks.getJSONObject(i).containsKey("linkPid")) {
+				int linkPid = catchLinks.getJSONObject(i).getInt("linkPid");
+				isCatch = RdGscOperateUtils.isCatchLinkRelateGscNode(linkPid,
+						catchLinks.getJSONObject(i).getDouble("lon"), catchLinks.getJSONObject(i).getDouble("lat"),
+						conn);
+			} else if (catchLinks.getJSONObject(i).containsKey("nodePid")) {
+				int nodePid = catchLinks.getJSONObject(i).getInt("nodePid");
+				isCatch = RdGscOperateUtils.isCatchNodeRelateGscNode(nodePid, conn);
+			}
+			
+			if (isCatch == true)
+				break;
+		} // 遍历catchLinks
+
+		if (isCatch == true) {
+			throwException("创建或修改link，节点不能到已有的立交点处，请先删除立交关系");
+		}
+	}
+
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}

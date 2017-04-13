@@ -81,6 +81,9 @@ public class ObjBatchSelector {
 		
 		
 		for(BasicRow mainrow:mainrowList){
+			if(mainrow==null){
+				continue;
+			}
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(mainrow.getObjPid(), obj);
 		}
@@ -90,15 +93,19 @@ public class ObjBatchSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+//				tabNames = glmObj.getTables().keySet();
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(mainTable.getName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,objs.values(),tabNames,pids);
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			selectChildren(conn,objs.values(),tabNames,pids);
-//		}
 		return objs;
 	}
 	
@@ -231,6 +238,9 @@ public class ObjBatchSelector {
 		}
 
 		for(BasicRow mainrow:mainrowList){
+			if(mainrow==null){
+				continue;
+			}
 			BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 			objs.put(obj.objPid(), obj);
 		}
@@ -241,17 +251,19 @@ public class ObjBatchSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+//				tabNames = glmObj.getTables().keySet();for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(mainTable.getName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,objs.values(),tabNames,objs.keySet());
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			logger.info("selectBySpecColumn开始加载子表");
-//			selectChildren(conn,objs.values(),tabNames,objs.keySet());
-//			logger.info("selectBySpecColumn开始加载子表");
-//		}
 		return objs;
 	}
 	

@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.create;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -10,15 +14,34 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 public class Command extends AbstractCommand {
 
 	private String requester;
-	
+
 	private int inLinkPid;
 
 	private int nodePid;
 
-	private int outLinkPid;	
-	
+	private int relationshipType;
+
+	public int getRelationshipType() {
+		return relationshipType;
+	}
+
+	public void setRelationshipType(int relationshipType) {
+		this.relationshipType = relationshipType;
+	}
+
+	private int outLinkPid;
+	private List<Integer> vias = new ArrayList<>();
+
+	public List<Integer> getVias() {
+		return vias;
+	}
+
+	public void setVias(List<Integer> vias) {
+		this.vias = vias;
+	}
+
 	private RdDirectroute directroute;
-	
+
 	public int getInLinkPid() {
 		return inLinkPid;
 	}
@@ -69,11 +92,10 @@ public class Command extends AbstractCommand {
 	public ObjType getObjType() {
 		return ObjType.RDDIRECTROUTE;
 	}
-	
-	
+
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
-		
+
 		this.setDbId(json.getInt("dbId"));
 
 		JSONObject data = json.getJSONObject("data");
@@ -83,6 +105,21 @@ public class Command extends AbstractCommand {
 		this.nodePid = data.getInt("nodePid");
 
 		this.outLinkPid = data.getInt("outLinkPid");
+		this.setRelationshipType(data.getInt("relationshipType"));
+		if (data.containsKey("vias")) {
+			JSONArray array = data.getJSONArray("vias");
+
+			if (array != null) {
+				for (int i = 0; i < array.size(); i++) {
+
+					int pid = array.getInt(i);
+
+					if (!vias.contains(pid)) {
+						vias.add(pid);
+					}
+				}
+			}
+		}
 	}
 
 }

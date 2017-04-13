@@ -157,6 +157,14 @@
 		<artifactId>engine-edit</artifactId>
 	</dependency>
 	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-editplus</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>engine-photo</artifactId>
+	</dependency>
+	<dependency>
 		   <groupId>org.apache.zookeeper</groupId>
 		   <artifactId>zookeeper</artifactId>
 		   <type>pom</type>

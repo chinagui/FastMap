@@ -190,7 +190,7 @@ public class RoadSeasonMain {
 			buildBlockStat();
 			// 所有大区库统计完成后，进行派生city数据
 			buildCityStat();
-			log.info("-- end stat --" );
+			log.info("-- end stat :"+col_name_grid );
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

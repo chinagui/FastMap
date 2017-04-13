@@ -344,11 +344,10 @@ public class TaskService {
 						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
 						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
 					}}
+				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集或日编任务";}
+				else{return "二代编辑任务发布进行中";}
 			}
-			if((erNum!=0)||(total+erNum!=taskIds.size())){
-				return "任务发布：" + total + "个成功，" + (taskIds.size()-total-erNum) + "个失败," + erNum + "个二代编辑任务进行中";
-			}
-			return null;
+			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -980,9 +979,11 @@ public class TaskService {
 			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
 			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
+			sb.append("                   AND T.latest=1");
 			sb.append("                   AND P.CITY_ID = B.CITY_ID");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
+			sb.append("	             AND p.latest=1");
 			sb.append("	             AND P.TYPE = 1");
 			sb.append("	          UNION");
 			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
@@ -1040,6 +1041,8 @@ public class TaskService {
 			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
 			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
 			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
+			sb.append("                   AND t.latest=1");
+			sb.append("                   AND p.latest=1");
 			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
 			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
 			sb.append("	             ) TASK_LIST");
@@ -1532,7 +1535,10 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT * FROM TASK";
+			String selectSql = "SELECT *"
+					+ "  FROM TASK"
+					+ " WHERE LATEST = 1";
+					//+ "   AND STATUS IN (0, 1)";
 			return TaskOperation.selectTaskBySql2(conn, selectSql, null);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1726,11 +1732,12 @@ public class TaskService {
 				phaseIdMap.put(phaseTmp.get("phase"),phaseTmp.get("phaseId"));
 			}
 			int curPhase=phase.getPhase();
+			//新增状态4。0创建1进行中2成功3失败4tip转aumark（无tips可转）
 			if(curPhase==1){
-				if(phaseStatusMap.get(2)!=2){return;}
+				if(phaseStatusMap.get(2)!=2&&phaseStatusMap.get(2)!=4){return;}
 			}else{//2,3,4
 				for(int i=1;i<curPhase;i++){
-					if(phaseStatusMap.get(i)!=2){return;}
+					if(phaseStatusMap.get(i)!=2&&phaseStatusMap.get(i)!=4){return;}
 				}
 			}
 			if(curPhase==1||curPhase==2){//日落月
@@ -2033,6 +2040,17 @@ public class TaskService {
 			taskPar.put("area",workType);
 			taskPar.put("userId", cmsInfo.get("userNickName"));
 			taskPar.put("workSeason", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+			TaskCmsProgress phase = queryCmsProgreeByPhaseId(conn, phaseId);
+			taskPar.put("meshs",phase.getMeshIds());
+			
+			//判断之前tip2aumark的过程，是有tips还是没有tips
+			List<Map<String, Integer>> phaseList = queryTaskCmsProgress(conn,phase.getTaskId());
+			Map<Integer, Integer> phaseStatusMap=new HashMap<Integer, Integer>();
+			for(Map<String, Integer> phaseTmp:phaseList){
+				phaseStatusMap.put(phaseTmp.get("phase"),phaseTmp.get("status"));
+			}
+			taskPar.put("hasAumark",true);
+			if(phaseStatusMap.get(2)==4){taskPar.put("hasAumark",false);}
 			
 			par.put("taskInfo", taskPar);
 			
@@ -2136,7 +2154,7 @@ public class TaskService {
 		// TODO Auto-generated method stub
 		try{
 			if(status==0&&(message==null||message.isEmpty())){return;}
-			if(message!=null&&message.length()>1000){message=message.substring(0, 1000);}
+			if(message!=null&&message.length()>500){message=message.substring(0, 500);}
 			QueryRunner run = new QueryRunner();
 			String selectSql ="";
 			if(status==0){
@@ -2252,6 +2270,8 @@ public class TaskService {
 					+ " WHERE T.LATEST =1"
 					+ " AND T1.LATEST = 1"
 					+ " AND T1.PROGRAM_ID = T.PROGRAM_ID"
+					+ " AND T1.BLOCK_ID = T.BLOCK_ID"
+					+ " AND T1.REGION_ID = T.REGION_ID"
 					+ " AND T1.TYPE = " + type
 					+ " AND T.TASK_ID = " + taskId;
 			log.info("getTaskIdByTaskIdAndTaskType sql :" + selectSql);
@@ -2272,6 +2292,31 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 任务关闭再开启，需要对应：任务关闭再开启后，生成一条新的任务记录，属性全部复制，状态=草稿。原来任务关联的子任务不继承到新任务中
+	 * @param userId
+	 * @param taskId
+	 * @throws ServiceException
+	 */
+	public void reOpen(Long userId,int taskId)  throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			int newTaskId=TaskOperation.getNewTaskId(conn);
+			//根据新任务号，复制原有任务的信息（task/task_grid_mapping）
+			TaskOperation.copyTask(conn,userId,newTaskId,taskId);
+			//旧任务状态变更为失效
+			TaskOperation.updateLatest(conn, taskId);
+			//任务对应的block若为关闭，则同步更新为已规划，否则不动
+			TaskOperation.reOpenBlockByTask(conn,newTaskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("关闭任务重新开启失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

@@ -17,18 +17,19 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
+
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
-public class TipsImportTest extends InitApplication {
+public class TipsImportTest{
 
-	@Override
-	@Before
-	public void init() {
-		initContext();
-	}
+//	@Override
+//	@Before
+//	public void init() {
+//		initContext();
+//	}
 
 	 @Test
 	public void test() {
@@ -138,6 +139,7 @@ public class TipsImportTest extends InitApplication {
 
 			System.out.println("---------------------");
 
+
 			TipsUpload tipsUploader2 = new TipsUpload();
 			long t3 = System.currentTimeMillis();
 			tipsUploader2
@@ -145,6 +147,7 @@ public class TipsImportTest extends InitApplication {
 							photoMap, audioMap);
 			long t4 = System.currentTimeMillis();
 			System.out.println("打断后上传完成,h耗时：" + (t4 - t3));
+
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
@@ -20,6 +21,7 @@ public class RdGateCondition implements IRow {
 	private int pid;
 	private int validObj = 0;
 	private String timeDomain = "";
+	protected ObjStatus status;
 	public Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	public int getPid() {
@@ -64,11 +66,12 @@ public class RdGateCondition implements IRow {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+		status = os;
 	}
 
 	@Override
@@ -170,7 +173,12 @@ public class RdGateCondition implements IRow {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
 
-		JSONObject json = JSONObject.fromObject(this);
+//		JSONObject json = JSONObject.fromObject(this);
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
 
 		return json;
 	}

@@ -465,4 +465,200 @@ public class StaticsController extends BaseController {
 					ResponseUtils.assembleFailResult(e.getMessage()));
 		} 
 	}
+
+	/*
+	 * 应用场景：管理/监控_生管角色首页
+	 * 实现逻辑:查fm_stat_overview表
+	 */
+	@RequestMapping(value = "/noRealStatics/overview")
+	public ModelAndView overview(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			Map<String,Object> data = StaticsService.getInstance().overview();
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	/*
+	 * 管理/监控_采集/日编/月编角色group详情
+	 */
+	@RequestMapping(value = "/noRealStatics/groupOverview")
+	public ModelAndView groupOverview(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//groupId
+			int groupId = dataJson.getInt("groupId");
+			Map<String,Object> data = StaticsService.getInstance().groupOverview(groupId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	/*
+	 * 管理/监控_生管角色常规/情报项目详情_作业中统计详情
+	 */
+	@RequestMapping(value = "/noRealStatics/program/overviewDetail")
+	public ModelAndView programOverviewDetail(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//programId
+			int programId = dataJson.getInt("programId");
+			Map<String,Object> data = StaticsService.getInstance().programOverViewDetail(programId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 管理/监控_生管角色常规/情报项目详情_作业中统计详情
+	 */
+	@RequestMapping(value = "/noRealStatics/program/overviewExpect")
+	public ModelAndView programOverviewExpect(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//programId
+			int programId = dataJson.getInt("programId");
+			String startDate = dataJson.getString("startDate");
+			String endDate = dataJson.getString("endDate");
+			Map<String,Object> data = StaticsService.getInstance().programOverviewExpect(programId,startDate,endDate);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
+	 */
+	@RequestMapping(value = "/noRealStatics/task/overviewDetail")
+	public ModelAndView taskOverviewDetail(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//taskId
+			int taskId = dataJson.getInt("taskId");
+			Map<String,Object> data = StaticsService.getInstance().taskOverviewDetail(taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
+	 */
+	@RequestMapping(value = "/noRealStatics/task/overviewExpect")
+	public ModelAndView taskOverviewExpect(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//programId
+			int taskId = dataJson.getInt("taskId");
+			String startDate = dataJson.getString("startDate");
+			String endDate = dataJson.getString("endDate");
+			Map<String,Object> data = StaticsService.getInstance().taskOverviewExpect(taskId,startDate,endDate);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 
+	 */
+	@RequestMapping(value = "/noRealStatics/subtask/overviewDetail")
+	public ModelAndView subtaskOverviewDetail(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//subtaskId
+			int subtaskId = dataJson.getInt("subtaskId");
+			Map<String,Object> data = StaticsService.getInstance().subtaskOverviewDetail(subtaskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/*
+	 * 管理/监控_各种角色常规/情报任务详情_作业中统计详情
+	 */
+	@RequestMapping(value = "/noRealStatics/subtask/overviewExpect")
+	public ModelAndView subtaskOverviewExpect(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//programId
+			int subtaskId = dataJson.getInt("subtaskId");
+			String startDate = dataJson.getString("startDate");
+			String endDate = dataJson.getString("endDate");
+			Map<String,Object> data = StaticsService.getInstance().subtaskOverviewExpect(subtaskId,startDate,endDate);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
 }

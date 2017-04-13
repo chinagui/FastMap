@@ -67,7 +67,8 @@ public class CheckTest {
 		System.out.println("start check test");
 		CheckTest test=new CheckTest();
 		test.init();
-		Connection conn = DBConnector.getInstance().getConnectionById(17);
+//		Connection conn = DBConnector.getInstance().getConnectionById(17);
+		Connection conn = DBConnector.getInstance().getConnectionById(84);
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
@@ -111,26 +112,26 @@ public class CheckTest {
 //		nameLog.add(namelogg);
 //		name.setHisChangeLogs(nameLog);
 		
-		Set<Long> pids = new HashSet<Long>();
-		pids.add(64L);
-		pids.add(8165144L);
-		pids.add(8165145L);
-		pids.add(4696166L);
-		pids.add(74850060L);
-		pids.add(64133244L);
-		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
-		for (Long key : rows.keySet()) {
-			BasicObj obj1 = rows.get(key);
-			IxPoi row1=(IxPoi) obj1.getMainrow();
-			row1.setHisChangeLogs(logList);
-			operationResult.putObj(obj1);
-		}
+//		Set<Long> pids = new HashSet<Long>();
+//		pids.add(64L);
+//		pids.add(8165144L);
+//		pids.add(8165145L);
+//		pids.add(4696166L);
+//		pids.add(74850060L);
+//		pids.add(64133244L);
+//		Map<Long, BasicObj> rows=ObjBatchSelector.selectByPids(conn, "IX_POI", tabNames, false, pids, false, true);
+//		for (Long key : rows.keySet()) {
+//			BasicObj obj1 = rows.get(key);
+//			IxPoi row1=(IxPoi) obj1.getMainrow();
+//			row1.setHisChangeLogs(logList);
+//			operationResult.putObj(obj1);
+//		}
 		
 		operationResult.putObj(obj);
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("GLM60272");
+		ruleIdList.add("GLM60143");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

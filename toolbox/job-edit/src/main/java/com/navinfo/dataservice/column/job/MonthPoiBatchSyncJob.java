@@ -75,9 +75,11 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			LogReader logReader = new LogReader(conn);
 			Collection<String> grids = new HashSet<String>();
+
 			for (int grid : subtask.getGridIds()) {
 				grids.add(String.valueOf(grid));
 			}
+
 			log.info("grids=" + grids);
 			log.info("获取任务范围内新增修改的poi信息");
 			Map<Integer, Collection<Long>> map = logReader.getUpdatedObj(
@@ -119,8 +121,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			Collection<Long> namePids = new ArrayList<Long>();
 			// 改old_address
 			Collection<Long> addressPids = new ArrayList<Long>();
-			// 改old_kind
-			Collection<Long> kindCodePids = new ArrayList<Long>();
+
 			// 外业log
 			// 改名称
 			Collection<Long> logNamePids = new ArrayList<Long>();
@@ -146,7 +147,6 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					if (poi.getHisOpType() == OperationType.UPDATE) {
 						logKindCodePids.add(pid);
 					}
-					kindCodePids.add(pid);
 				}
 				if (poi.getHisOpType() == OperationType.UPDATE) {
 					if (poi.hisOldValueContains(IxPoi.LEVEL)) {
@@ -163,12 +163,17 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					}
 				}
 				// 作业季新增修改中文地址
-				if (poiObj.getCHIAddress() != null) {
-					IxPoiAddress address = poiObj.getCHIAddress();
+				if (poiObj.getChiAddress() != null) {
+					IxPoiAddress address = poiObj.getChiAddress();
 					if (address.getHisOpType() == OperationType.UPDATE) {
 						logAddressPids.add(pid);
 					}
-					addressPids.add(pid);
+					if (poi.getOldAddress() == null
+							|| !poi.getOldAddress().equals(
+									poiObj.getChiAddress().getFullname())) {
+						addressPids.add(pid);
+					}
+
 				}
 				// 作业季新增修改中文原始
 				if (poiObj.getOfficeOriginCHName() != null) {
@@ -176,18 +181,23 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 					if (poiName.getHisOpType() == OperationType.UPDATE) {
 						logNamePids.add(pid);
 					}
-					namePids.add(pid);
+					if (poi.getOldName() == null
+							|| !poi.getOldName().equals(
+									poiObj.getOfficeOriginCHName().getName())) {
+						namePids.add(pid);
+					}
+
 				}
 
 			}
 			// 修改old_name
 			this.updateBatchPoi(namePids, this.getUpdatePoiOldNameSql(), conn);
+
 			// 修改old_address
 			this.updateBatchPoi(addressPids, this.getUpdatePoiOldAddressSql(),
 					conn);
 			// 修改old_kind
-			this.updateBatchPoi(kindCodePids,
-					this.getUpdatePoiOldKindCodeSql(), conn);
+			this.updateBatchPoi(pids, this.getUpdatePoiOldKindCodeSql(), conn);
 			// 赋值外业log
 			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改名称"),
 					conn);

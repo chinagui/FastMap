@@ -126,6 +126,7 @@
 		<table name="IX_SAMEPOI_PART" pk=""
 			class="com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart">
 			<objRef col="GROUP_ID" refTable="IX_SAMEPOI" refCol="GROUP_ID" isRefMain="true"/>
+			<geoRef col="POI_PID" refTable="IX_POI" refCol="PID" isRefMain="true"/>
 		</table>
     </object>
 	

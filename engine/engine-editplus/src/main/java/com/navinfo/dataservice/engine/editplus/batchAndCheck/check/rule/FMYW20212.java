@@ -19,7 +19,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 * @Desc: FMYW20212.java
 * 检查条件：
 	   以下条件全部满足时，进行检查：
-	  （1）该POI发生变更(新增或修改主子表、删除子表)；
+	  （1） 非删除POI
 	  （2）KIND_CODE在重要分类表中；
 	  （3）存在IX_POI_ADDRESS记录；
 检查原则：

@@ -47,6 +47,12 @@
 		
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>edit-control-app</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>biz-commons</artifactId>
 		</dependency>
 		<dependency>

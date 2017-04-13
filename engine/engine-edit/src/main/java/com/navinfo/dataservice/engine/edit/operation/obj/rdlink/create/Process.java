@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 
 public class Process extends AbstractProcess<Command> {
 
@@ -25,6 +26,8 @@ public class Process extends AbstractProcess<Command> {
         check.checkDupilicateNode(this.getCommand().getGeometry());
         check.checkGLM04002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
         check.checkGLM13002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
+        //分离节点检查节点是否在立交点处
+        check.permitCheckGscnodeNotMove(this.getCommand().getCatchLinks(), this.getConn());
         return super.preCheck();
     }
 

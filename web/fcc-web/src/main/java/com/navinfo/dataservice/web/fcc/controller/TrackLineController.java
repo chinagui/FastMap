@@ -14,7 +14,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
-import com.navinfo.dataservice.engine.fcc.trackline.TrackLinesUpload;
+import com.navinfo.dataservice.engine.fcc.track.TrackLinesUpload;
 
 @Controller
 public class TrackLineController extends BaseController {
@@ -40,7 +40,11 @@ public class TrackLineController extends BaseController {
 			TrackLinesUpload trackUploader = new TrackLinesUpload();
 
 			trackUploader.run(filePath + "/"+ "Datum_Track.json");
+			
+			/*AdasTackPointUpload trackPointUploader = new AdasTackPointUpload();
 
+			trackPointUploader.run(filePath + "/"+ "AdasTrackPoints.json");*/
+			
 			JSONObject result = new JSONObject();
 
 			result.put("total", trackUploader.getTotal());

@@ -21,7 +21,7 @@ public interface ISearch {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception;
+	public List<? extends IRow> searchDataByPids(List<Integer> pidList) throws Exception;
 
 	/**
 	 * 通过范围获取数据

@@ -160,6 +160,9 @@ public class Transaction {
                     case MOVE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
                                 json, requester);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Command(
+                                json, requester);
                 }
             case RDRESTRICTION:
                 switch (operType) {
@@ -927,6 +930,9 @@ public class Transaction {
                                 command);
                     case MOVE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
+                                command);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Process(
                                 command);
                 }
             case RDRESTRICTION:

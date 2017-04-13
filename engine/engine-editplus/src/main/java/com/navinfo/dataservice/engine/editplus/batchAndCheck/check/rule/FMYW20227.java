@@ -36,11 +36,15 @@ public class FMYW20227 extends BasicCheckRule {
 
 			if ("5".equals(tollStd)) {
 				String remark = parking.getRemark();
+				if (remark==null||remark.isEmpty()) {
+					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
+							"收费标准为免费，停车场备注不为无条件免费");
+					return;
+				}
 				if (remark.indexOf("0") < 0) {
 					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 							"收费标准为免费，停车场备注不为无条件免费");
-				} else if (remark.indexOf("1") >= 0 || remark.indexOf("2") >= 0 || remark.indexOf("3") >= 0
-						|| remark.indexOf("4") >= 0 || remark.indexOf("5") >= 0 || remark.indexOf("6") >= 0) {
+				} else if (remark.matches(".*[123456].*")) {
 					setCheckResult(poi.getGeometry(), "[IX_POI," + poi.getPid() + "]", poi.getMeshId(),
 							"收费标准为免费，停车场备注不为无条件免费");
 				}

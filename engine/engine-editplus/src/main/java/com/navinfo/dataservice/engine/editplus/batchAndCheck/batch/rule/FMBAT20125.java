@@ -5,26 +5,35 @@ import java.util.List;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 
 /**
- * 查询条件：该POI发生变更(新增或修改主子表)且KIND_CODE在重要分类表中
- * 批处理：
-	(1)当FULLNAME字段修改且不为空，且存在对应的英文地址时，更新英文地址（LANG_CODE=""ENG""）生成履历；
-	(2)当FULLNAME字段修改且不为空，但没有英文地址时，增加英文地址（LANG_CODE=""ENG""）生成履历，；
-	(3)当FULLNAME字段不为空且没有修改，但没有英文地址（LANG_CODE=""ENG""）时，增加英文地址（LANG_CODE=""ENG""）生成履历，
-	(4)需要翻译的中文地址：将中文地址拆分后的15个字段按照“附加信息、房间号、楼层、楼门号、楼栋号、附属设施名、后缀、子号、类型名、门牌号、前缀、标志物名、街巷名、地名小区名、乡镇街道办”进行合并;
-	(5)合并后的中文地址，进行分词时，应将人工拆分的中文地址作为一级分词结果;
-	(6)在(5)的基础上对一级分词的结果里的房间号（ROOM）、楼层（FLOOR）、楼门号（UNIT）、楼栋号（BUILDING）等四个词，进行二级分词后采用再次倒序翻译，即“5层”翻译为“Floor 5”而不是“5 Floor”；
-	(7)当子号为“－”开头时，按“门牌号+子号”的顺序翻译。如果子号有关键字，需要将“子号”的关键字提到门牌号前面，按照“类型名+门牌号+子号”顺序翻译。如果翻译后，出现“No.No.”时，去掉多余的“No.”；如果翻译后，出现“No.no.”时，去掉多余的“no.”;
-	(8)当子号为“－”开头时，按“门牌号+子号”的顺序翻译。如果子号有关键字，需要将“子号”的关键字提到门牌号前面，按照“类型名+门牌号+子号”顺序翻译。如果翻译后，出现“No.No.”时，去掉多余的“No.”；如果翻译后，出现“No.no.”时，去掉多余的“no.”;
-	(9)当子号不是“－”开头时，按照“子号+类型名+门牌号”的顺序翻译。如果子号有关键字，需要将“子号”的关键字提到子号前面;
-	(10)首字母大写的原则，可避免关键词库中大小问题，如“DAZHONG ELECTRONICS”、”town”、“village”
-	(11)“No.”中点后如果有空格，应去掉空格,当没有对应词库时，翻译的多个拼音之间没有空格;
+ * 查询条件：该POI发生变更(新增或修改主子表)且KIND_CODE在重要分类表中 批处理：
+ * (1)当FULLNAME字段修改且不为空，且存在对应的英文地址时，更新英文地址（LANG_CODE=""ENG""）生成履历；
+ * (2)当FULLNAME字段修改且不为空，但没有英文地址时，增加英文地址（LANG_CODE=""ENG""）生成履历，；
+ * (3)当FULLNAME字段不为空且没有修改，但没有英文地址（LANG_CODE=""ENG""）时，增加英文地址（LANG_CODE=""ENG""）
+ * 生成履历，
+ * (4)需要翻译的中文地址：将中文地址拆分后的15个字段按照“附加信息、房间号、楼层、楼门号、楼栋号、附属设施名、后缀、子号、类型名、门牌号、前缀、标志物名
+ * 、街巷名、地名小区名、乡镇街道办”进行合并; (5)合并后的中文地址，进行分词时，应将人工拆分的中文地址作为一级分词结果;
+ * (6)在(5)的基础上对一级分词的结果里的房间号（ROOM）、楼层（FLOOR）、楼门号（UNIT）、楼栋号（BUILDING）等四个词，
+ * 进行二级分词后采用再次倒序翻译，即“5层”翻译为“Floor 5”而不是“5 Floor”；
+ * 房间号关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
+ * 楼层关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
+ * 楼门号关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
+ * 楼栋号关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
+ * (7)当子号为“－”开头时，按“门牌号+子号”的顺序翻译。如果“门牌号+子号”组合后有关键字，需要将“门牌号+子号”组合后的关键字(
+ * SC_POINT_ADDRCK.type=1)提到门牌号前面，按照“类型名+门牌号+子号+类型名”顺序翻译。如果翻译后，出现“No.No.”时，去掉多余的
+ * “No.”；如果翻译后，出现“No.no.”时，去掉多余的“no.”;
+ * (8)当子号不是“－”开头时，按照“子号+类型名+门牌号”的顺序翻译。如果子号有关键字(SC_POINT_ADDRCK.type=1)，需要将“子号”
+ * 的关键字提到子号前面; (9)首字母大写的原则，可避免关键词库中大小问题，如“DAZHONG ELECTRONICS”、”town”、“village”
+ * (10)“No.”中点后如果有空格，应去掉空格,当没有对应词库时，翻译的多个拼音之间没有空格;
  *
+ * @author wangdongbin
  */
 public class FMBAT20125 extends BasicBatchRule {
 
@@ -38,50 +47,118 @@ public class FMBAT20125 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
+		if (poi.getHisOpType().equals(OperationType.DELETE)) {
+			return;
+		}
 		String kindCode = poi.getKindCode();
 		String chain = poi.getChain();
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
-		if (metadata.judgeScPointKind(kindCode, chain)) {
-			List<IxPoiAddress> address=poiObj.getIxPoiAddresses();
-			IxPoiAddress CHIaddress = null;
-			IxPoiAddress ENGaddress = null;
-			for (IxPoiAddress add:address) {
-				if (add.getLangCode().equals("CHI")) {
-					CHIaddress = add;
-					break;
-				}
+		if (!metadata.judgeScPointKind(kindCode, chain)) {
+			return;
+		}
+		List<IxPoiAddress> poiAddresses = poiObj.getIxPoiAddresses();
+		if (!isBatch(poiAddresses)) {
+			return;
+		}
+		IxPoiAddress chiAddress = poiObj.getChiAddress();
+		IxPoiAddress engAddress = poiObj.getENGAddress(chiAddress.getNameGroupid());
+		String fullEng = transEng(chiAddress,metadata);
+		if (engAddress == null) {
+			engAddress = poiObj.createIxPoiAddress();
+			engAddress.setNameGroupid(chiAddress.getNameGroupid());
+			engAddress.setPoiPid(poi.getPid());
+			engAddress.setLangCode("ENG");
+			engAddress.setFullname(fullEng);
+		} else {
+			engAddress.setFullname(fullEng);
+		}
+		
+	}
+	
+	private boolean isBatch(List<IxPoiAddress> poiAddresses) {
+		IxPoiAddress chiAddress = null;
+		IxPoiAddress engAddress = null;
+		for (IxPoiAddress temp:poiAddresses) {
+			if (temp.getLangCode()!=null && temp.getLangCode().equals("CHI")) {
+				chiAddress = temp;
+			} else if (temp.getLangCode()!=null && temp.getLangCode().equals("ENG")) {
+				engAddress = temp;
 			}
-			if (CHIaddress != null) {
-				for (IxPoiAddress add:address) {
-					if (add.getLangCode().equals("ENG") && add.getNameGroupid()==CHIaddress.getNameGroupid()) {
-						ENGaddress = add;
-						break;
-					}
-				}
-				
-				if (CHIaddress.getFullname() != null && !CHIaddress.getFullname().isEmpty()) {
-					if (CHIaddress.hisOldValueContains(IxPoiAddress.FULLNAME)) {
-						if (ENGaddress != null) {
-							ENGaddress.setFullname(metadata.convertEng(CHIaddress.getFullname()));
-						} else {
-							IxPoiAddress newEngAdd = poiObj.createIxPoiAddress();
-							newEngAdd.setPoiPid(CHIaddress.getPoiPid());
-							newEngAdd.setFullname(metadata.convertEng(CHIaddress.getFullname()));
-							newEngAdd.setNameGroupid(CHIaddress.getNameGroupid());
-							newEngAdd.setLangCode("ENG");
-						}
-					} else {
-						if (ENGaddress == null) {
-							IxPoiAddress newEngAdd = poiObj.createIxPoiAddress();
-							newEngAdd.setPoiPid(CHIaddress.getPoiPid());
-							newEngAdd.setFullname(metadata.convertEng(CHIaddress.getFullname()));
-							newEngAdd.setNameGroupid(CHIaddress.getNameGroupid());
-							newEngAdd.setLangCode("ENG");
-						}
-					}
+		}
+		if (chiAddress == null) {
+			return false;
+		}
+		
+		if (StringUtils.isNotEmpty(chiAddress.getFullname())) {
+			if (chiAddress.hisOldValueContains(IxPoiAddress.FULLNAME)) {
+				// (1)当FULLNAME字段修改且不为空，且存在对应的英文地址时
+				// (2)当FULLNAME字段修改且不为空，但没有英文地址时
+				return true;
+			} else {
+				// (3)当FULLNAME字段不为空且没有修改，但没有英文地址时
+				if (engAddress == null) {
+					return true;
 				}
 			}
 		}
+		
+		return false;
 	}
 
+	private String transEng(IxPoiAddress chiAddress,MetadataApi metadata) throws Exception{
+		String addOns = metadata.convertEng(chiAddress.getAddons());// 附加信息
+		String roomNum = metadata.convertEng(keyAhead(chiAddress.getRoom(),metadata.queryAdRack(7)));// 房间号
+		String floor = metadata.convertEng(keyAhead(chiAddress.getFloor(),metadata.queryAdRack(2)));// 楼层
+		String unit = metadata.convertEng(keyAhead(chiAddress.getUnit(),metadata.queryAdRack(8)));// 楼门号
+		String building = metadata.convertEng(keyAhead(chiAddress.getBuilding(),metadata.queryAdRack(6)));// 楼栋号
+		String estab = metadata.convertEng(chiAddress.getEstab());// 附属设施名
+		String surfix = metadata.convertEng(chiAddress.getSurfix());// 后缀
+		String houseNumTypeSubNum = "";
+		String houseNum = "";
+		if (StringUtils.isNotEmpty(chiAddress.getHousenum())) {
+			houseNum = chiAddress.getHousenum();
+		}
+		String subnum = "";
+		if (StringUtils.isNotEmpty(chiAddress.getSubnum())) {
+			subnum = chiAddress.getSubnum();
+		}
+		String type = "";
+		if (StringUtils.isNotEmpty(chiAddress.getType())) {
+			type = chiAddress.getType();
+		}
+		if (StringUtils.isNotEmpty(subnum)&&(subnum.startsWith("-")||subnum.startsWith("－"))) {
+			houseNumTypeSubNum = metadata.convertEng(keyAhead(houseNum+subnum,metadata.queryAdRack(1))+type);
+		} else {
+			houseNumTypeSubNum = metadata.convertEng(keyAhead(subnum,metadata.queryAdRack(1))+type+houseNum);
+		}
+		String prefix =  metadata.convertEng(chiAddress.getPrefix());
+		String landMark = metadata.convertEng(chiAddress.getLandmark());
+		String street = metadata.convertEng(chiAddress.getStreet());
+		String place = metadata.convertEng(chiAddress.getPlace());
+		String town = metadata.convertEng(chiAddress.getTown());
+		return addOns + " " + roomNum + " " + floor + " " + unit + " " + building + " " + estab + " " + surfix + " " + houseNumTypeSubNum + " " + prefix 
+				+ " " + landMark + " " + street + " " + place + " " + town;
+	}
+	
+	private String keyAhead(String word,List<String> keyArr) {
+		if (StringUtils.isEmpty(word)) {
+			return "";
+		}
+		// 循环拿出最后一个关键词及其位置
+		// 将最后一个关键词提前
+		int keyIndex = 0;
+		String indexWord = "";
+		for (String keyWord:keyArr) {
+			int temp = word.indexOf(keyWord);
+			if (temp>keyIndex) {
+				keyIndex = temp;
+				indexWord = keyWord;
+			}
+		}
+		if (StringUtils.isNotEmpty(indexWord)) {
+			word = indexWord + word.substring(0, keyIndex);
+		}
+		return word;
+	}
+	
 }

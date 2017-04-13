@@ -218,9 +218,9 @@ public class RoadDailyMain {
 		String xx = System.getProperty("user.dir") + File.separator + "config" + File.separator + "log4j.properties";
 		PropertyConfigurator.configure(xx);
 
-		log = LogManager.getLogger("stat");
+		log = LogManager.getLogger(RoadDailyMain.class);
 
-		log.info("-- begin stat --");
+		log.info("-- begin stat :"+col_name_grid);
 
 		try {
 			// 初始化mongodb数据库
@@ -244,15 +244,15 @@ public class RoadDailyMain {
 
 			countDownLatch.await();
 			executorService.shutdown();
-			log.info("-- -- finish all Thread stat of grid");
+			//log.info("-- -- finish all Thread stat of grid");
 			// 根据 grid 结果 汇总 block 和 city
-			MongoDao md = new MongoDao(db_name);
+			//MongoDao md = new MongoDao(db_name);
 //			log.info("-- begin stat:" + col_name_block);
 //			md.insertMany(col_name_block, build_block());
 //			log.info("-- begin stat:" + col_name_city);
 //			md.insertMany(col_name_city, build_city());
 
-			log.info("-- end stat --");
+			log.info("-- end stat:"+col_name_grid);
 			System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();

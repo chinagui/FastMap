@@ -11,12 +11,14 @@ import org.apache.commons.collections.CollectionUtils;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.navinfo.dataservice.dao.glm.model.rd.se.RdSe;
 import com.navinfo.dataservice.dao.glm.model.rd.speedlimit.RdSpeedlimit;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -291,13 +293,13 @@ public class Process extends AbstractProcess<Command> {
 		OpRefRdSlope opRefSlope = new OpRefRdSlope(this.getConn());
 		opRefSlope.run(this.getResult(), this.getCommand().getLinkPid());
 
-		// CRF交叉点
-		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
-		opRefRdInter.run(this.getResult(), this.getCommand().getLink(), this.getCommand().getNodePids());
-
-		// CRF对象
-		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
-		opRefRdObject.run(this.getResult(), this.getCommand().getLinkPid());
+//		// CRF交叉点
+//		OpRefRdInter opRefRdInter = new OpRefRdInter(this.getConn());
+//		opRefRdInter.run(this.getResult(), this.getCommand().getLink(), this.getCommand().getNodePids());
+//
+//		// CRF对象
+//		OpRefRdObject opRefRdObject = new OpRefRdObject(this.getConn());
+//		opRefRdObject.run(this.getResult(), this.getCommand().getLinkPid());
 
 		// 同一点关系
 		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(getConn());
@@ -323,9 +325,6 @@ public class Process extends AbstractProcess<Command> {
 		// 语音引导
 		opRefRelationObj.handleVoiceguide(this.getResult(), this.getCommand().getLink());
 
-		// CRF道路
-		opRefRelationObj.handleRoad(this.getResult(), this.getCommand());
-
 		// 顺行
 		opRefRelationObj.handleDirectroute(this.getResult(), this.getCommand().getLink());
 		// 同一线
@@ -340,7 +339,10 @@ public class Process extends AbstractProcess<Command> {
 
 		// 里程桩
 		OpRefRdMileagepile refRdMileagepile = new OpRefRdMileagepile(getCommand(), getConn());
-		refRdMileagepile.run(getResult());
+		refRdMileagepile.run(getResult());		
+
+		//CRF要素 (RdInter、RdRoad、RdObject)
+		opRefRelationObj.handleCRF(this.getResult(), this.getCommand());
 	}
 
 	/**
@@ -641,4 +643,18 @@ public class Process extends AbstractProcess<Command> {
 		return infects;
 	}
 
+	
+	@Override
+	public void postCheck() throws Exception {
+		List<IRow> glmList = new ArrayList<IRow>();
+		glmList.addAll(this.getResult().getAddObjects());
+		glmList.addAll(this.getResult().getUpdateObjects());
+		for(IRow irow:this.getResult().getDelObjects()){
+			if(irow instanceof RdLink){
+				glmList.add(irow);
+			}
+		}
+		this.checkCommand.setGlmList(glmList);
+		this.checkEngine.postCheck();
+	}
 }

@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.man.service;
 
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -13,6 +16,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.city.CityService;
 import com.navinfo.dataservice.engine.man.config.ConfigService;
@@ -119,6 +123,23 @@ public class ManApiImpl implements ManApi {
 	public List<Integer> getGridIdsBySubtaskId(int subtaskId) throws Exception {
 		// TODO Auto-generated method stub
 		return SubtaskOperation.getGridIdListBySubtaskId(subtaskId);
+	}
+	/**
+	 * 
+	 * @param subtaskId
+	 * @return Map<Integer,Integer> key:gridId value:1规划内2规划外
+	 * @throws Exception
+	 */
+	@Override
+	public Map<Integer,Integer> getGridIdMapBySubtaskId(int subtaskId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn, subtaskId);
+			return gridIds;
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 	@Override
 	public void close(int subtaskId,long userId) throws Exception {

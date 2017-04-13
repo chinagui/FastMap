@@ -100,7 +100,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			Map<Long, BasicObj> objs = ObjBatchSelector.selectByPids(conn,
 					ObjectName.IX_POI, tabNames, false, pids, true, true);
 			log.info("批管理字段几何标识 外业标识 外业任务编号 数据采集版本");
-			this.updateBatchPoi(addPids, this.getBatchPoiCommonSql(), conn);
+			this.updateBatchPoi(pids, this.getBatchPoiCommonSql(taskId), conn);
 			log.info("批管理字段state 状态");
 			// 新增
 			this.updateBatchPoi(addPids, this.getStateParaSql(3), conn);
@@ -142,23 +142,23 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 				IxPoiObj poiObj = (IxPoiObj) obj;
 				// 获取POI的主表信息
 				IxPoi poi = (IxPoi) poiObj.getMainrow();
-				if (poi.hisOldValueContains("kindCode")) {
+				if (poi.hisOldValueContains(IxPoi.KIND_CODE)) {
 					if (poi.getHisOpType() == OperationType.UPDATE) {
 						logKindCodePids.add(pid);
 					}
 					kindCodePids.add(pid);
 				}
 				if (poi.getHisOpType() == OperationType.UPDATE) {
-					if (poi.hisOldValueContains("level")) {
+					if (poi.hisOldValueContains(IxPoi.LEVEL)) {
 						logLevelPids.add(pid);
 					}
-					if (poi.hisOldValueContains("indoor")) {
+					if (poi.hisOldValueContains(IxPoi.INDOOR)) {
 						logIndoorPids.add(pid);
 					}
-					if (poi.hisOldValueContains("sportsVenue")) {
+					if (poi.hisOldValueContains(IxPoi.SPORTS_VENUE)) {
 						logSportPids.add(pid);
 					}
-					if (poi.hisOldValueContains("geometry")) {
+					if (poi.hisOldValueContains(IxPoi.GEOMETRY)) {
 						logLocationPids.add(pid);
 					}
 				}
@@ -191,17 +191,17 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 			// 赋值外业log
 			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改名称"),
 					conn);
-			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改地址"),
+			this.updateBatchPoi(logAddressPids, this.getUpadeLogForSql("改地址"),
 					conn);
-			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改分类"),
+			this.updateBatchPoi(logKindCodePids, this.getUpadeLogForSql("改分类"),
 					conn);
-			this.updateBatchPoi(logNamePids,
+			this.updateBatchPoi(logLevelPids,
 					this.getUpadeLogForSql("改POI_LEVEL"), conn);
-			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改运动场馆"),
+			this.updateBatchPoi(logSportPids, this.getUpadeLogForSql("改运动场馆"),
 					conn);
-			this.updateBatchPoi(logNamePids, this.getUpadeLogForSql("改内部标识"),
+			this.updateBatchPoi(logIndoorPids, this.getUpadeLogForSql("改内部标识"),
 					conn);
-			this.updateBatchPoi(logNamePids,
+			this.updateBatchPoi(logLocationPids,
 					this.getUpadeLogForSql("改RELATION"), conn);
 			// 处理验证标识
 			Collection<Long> metaPids = this.getMetaPidsForPoi(conn);
@@ -288,9 +288,9 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	 * 
 	 * @return
 	 */
-	private String getBatchPoiCommonSql() {
+	private String getBatchPoiCommonSql(long taskId) {
 		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
-				PropConstant.gdbVersion);
+				PropConstant.seasonVersion);
 		return " UPDATE ix_poi p    \n"
 				+ "   SET p.geo_adjust_flag = 1 ,\n"
 				+ "       p.full_attr_flag = 1 ,  \n"
@@ -298,7 +298,7 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 				+ gdbVersion
 				+ "' ,  \n"
 				+ "       p.field_task_id = '"
-				+ jobInfo.getTaskId()
+				+ taskId
 				+ "'  \n"
 				+ "     WHERE p.pid in (select to_number(column_value) from table(clob_to_table(?))) \n";
 	}
@@ -387,11 +387,11 @@ public class MonthPoiBatchSyncJob extends AbstractJob {
 	}
 
 	public static void main(String[] args) {
-		Map<Long,BasicObj> objs = new HashMap<Long,BasicObj>();
+		Map<Long, BasicObj> objs = new HashMap<Long, BasicObj>();
 		for (long pid : objs.keySet()) {
 			System.out.println(pid);
 		}
-		if(objs.isEmpty()){
+		if (objs.isEmpty()) {
 			System.out.println("w3243");
 		}
 	}

@@ -72,7 +72,7 @@ public class PoiCollectExpectStat implements Runnable {
 		List<Document> list = new ArrayList<Document>();
 
 		Map<String, Integer> mapSeason = StatInit.getPoiSeasonStat(db_name,
-				PoiSeasonMain.col_name_block, "block_id");
+				PoiSeasonMain.col_name_block, "block_id",null);
 
 		for (BlockMan block : blocks) {
 

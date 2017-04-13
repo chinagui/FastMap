@@ -56,29 +56,25 @@ public class COM60155 extends baseRule {
 		}
 
 		StringBuilder sb = new StringBuilder();
-
-		sb.append("with tmp1 as(     select tmc_id,GROUP_ID from RD_TMCLOCATION where GROUP_ID = " + link.getGroupId()
-				+ " and U_RECORD !=2 ),tmp2 as (     select a.GROUP_ID,b.link_pid  from     tmp1 a,RD_TMCLOCATION_LINK b     WHERE a.GROUP_ID = b.GROUP_ID AND 	b.U_RECORD !=2 	 AND 	b.LINK_PID = ");
-		sb.append(link.getLinkPid());
-		sb.append(" and b.DIRECT =");
-		sb.append(direct);
-		sb.append(
-				" GROUP BY b.LINK_PID,a.TMC_ID,a.GROUP_ID HAVING COUNT(1) >0 ) select /*+index(c link_pid)*/ c.GEOMETRY, '[RD_TMCLOCATION,' || tmp2.group_id || ']' TARGET, c.MESH_ID FROM tmp2,RD_LINK c WHERE tmp2.link_pid = c.LINK_PID  and c.U_RECORD !=2");
+		 
+		sb.append("SELECT RT.GROUP_ID,RTL.LINK_PID FROM RD_TMCLOCATION RT,RD_TMCLOCATION_LINK RTL");
+		sb.append(" WHERE RT.GROUP_ID ="+link.getGroupId());
+		sb.append(" AND RT.GROUP_ID = RTL.GROUP_ID");
+		sb.append(" AND RT.U_RECORD <>2 AND RTL.U_RECORD <>2");
+		sb.append(" AND EXISTS(SELECT 1 FROM RD_TMCLOCATION RT1,RD_TMCLOCATION_LINK RTL1");
+		sb.append(" WHERE RT1.GROUP_ID <> RT.GROUP_ID AND RTL1.DIRECT = RTL.DIRECT");
+		sb.append(" AND RT1.TMC_ID = RT.TMC_ID AND RTL1.LINK_PID = RTL.LINK_PID");
+		sb.append(" AND RT1.GROUP_ID = RTL1.GROUP_ID AND RT1.U_RECORD <>2 AND RTL1.U_RECORD <>2)");
 		String sql = sb.toString();
 
+		log.info("后检查COM60155--sql:" + sql);
 		DatabaseOperator getObj = new DatabaseOperator();
-		List<NiValException> resultList = new ArrayList<NiValException>();
-		resultList = getObj.getNiValExceptionFromSql(this.getConn(), sql);
-
-		if (resultList.size() > 0) {
-			for (NiValException niValException : resultList) {
-				// 设置好ruleId和log
-				niValException.setRuleId(this.getRuleCode());
-
-				niValException.setInformation(this.getRuleLog());
-
-				this.setCheckResult(niValException);
-			}
+		List<Object> resultList = new ArrayList<Object>();
+		resultList = getObj.exeSelect(this.getConn(), sql);
+		
+		if(!resultList.isEmpty()){
+			String target = "[RD_TMCLOCATION," + link.getGroupId() + "]";
+			this.setCheckResult("", target, 0);
 			return;
 		}
 	}

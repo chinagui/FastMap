@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,17 +68,19 @@ public class ObjSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(obj.getMainrow().tableName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
+//				tabNames = glmObj.getTables().keySet();
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			logger.info("selectByPid开始加载子表");
-//			selectChildren(conn,obj,tabNames);
-//			logger.info("selectByPid加载子表结束");
-//		}
 		return obj;
 	}
 
@@ -184,17 +187,19 @@ public class ObjSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(obj.getMainrow().tableName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
+//				tabNames = glmObj.getTables().keySet();
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			logger.info("selectBySpecColumn开始加载子表");
-//			selectChildren(conn,obj,tabNames);
-//			logger.info("selectBySpecColumn开始加载子表");
-//		}
 		return obj;	
 	}
 

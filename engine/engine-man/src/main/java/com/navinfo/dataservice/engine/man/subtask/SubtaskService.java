@@ -528,6 +528,24 @@ public class SubtaskService {
 	 * @throws ServiceException
 	 */
 	
+	public Map<String,Object> query(Integer subtaskId,int platform) throws ServiceException {
+		Map<String,Object> subtaskMap= queryBySubtaskId(subtaskId); 
+		if(platform==0||platform==1){
+			if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
+				Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
+				subtaskMap.put("gridIds",gridIds.keySet());
+			}
+		}
+		return subtaskMap;
+	}
+	
+	/**
+	 * 获取subtask详情
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException
+	 */
+	
 	public Map<String,Object> queryBySubtaskId(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
@@ -618,7 +636,7 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds",gridIds.keySet());
+							subtask.put("gridIds",gridIds);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -1277,7 +1295,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn, subtask, userId);
 				success ++;
 			}
-			return "子任务批量发布"+success+"个成功，"+(subtaskList.size()-success)+"个失败";
+			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

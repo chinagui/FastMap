@@ -73,8 +73,8 @@ public class RoadSeasonStat implements Runnable {
 							STRUCT struct = (STRUCT) rs.getObject("geometry");
 							Geometry linkGeo = GeoTranslator.struct2Jts(struct);
 							int mesh_id = rs.getInt("mesh_id");
-							// 上下线分离：link*2
-							int md = rs.getInt("multi_digitized") * 2;
+							// 上下线分离：link*2. 20170321 by zxy上下线分离道路取消*2，于桐，李泽确认结果
+							int md = rs.getInt("multi_digitized");
 							// 根据 mesh_id 获得16个grid
 							Set<String> grids = CompGridUtil.mesh2Grid(String.valueOf(mesh_id));
 							// 不知道link跨越多少个grid，所以循环16个grid计算每个中的长度

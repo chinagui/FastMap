@@ -14,6 +14,8 @@ import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.directroute.RdDirectrouteSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
+import com.vividsolutions.jts.geom.Point;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -134,6 +136,23 @@ public class Check {
         }
 
     }
+    
+	public void permitCheckGscnodeNotMove(int linkPid, int nodePid, Connection conn, Point point) throws Exception {
+		if (linkPid == 0 && nodePid == 0) {
+			return;
+		}
+
+		boolean isCatch = false;
+		if (linkPid != 0 && point != null) {
+			isCatch = RdGscOperateUtils.isCatchLinkRelateGscNode(linkPid, point.getX(), point.getY(), conn);
+		} else if (nodePid != 0) {
+			isCatch = RdGscOperateUtils.isCatchNodeRelateGscNode(nodePid, conn);
+		}
+
+		if (isCatch == true) {
+			throwException("创建或修改link，节点不能到已有的立交点处，请先删除立交关系");
+		}
+	}
 
     private void throwException(String msg) throws Exception {
         throw new Exception(msg);

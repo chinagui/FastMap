@@ -212,7 +212,10 @@ public class UploadOperationByGather {
 	 * @date 2017年2月9日 下午7:12:59 
 	 */
 	private void poiAutoBatchTaskId(OperationResult result, Connection conn) throws Exception {
-		if(result != null){
+		if(result==null||result.getAllObjs().size()==0){
+			return;
+		}else{
+//		if(result != null){
 			if(result.getObjsMapByType(ObjectName.IX_POI).entrySet() != null && result.getObjsMapByType(ObjectName.IX_POI).entrySet().size() >0){
 				for(Entry<Long, BasicObj> poiEntry:result.getObjsMapByType(ObjectName.IX_POI).entrySet()){
 					long poiPid = poiEntry.getKey();

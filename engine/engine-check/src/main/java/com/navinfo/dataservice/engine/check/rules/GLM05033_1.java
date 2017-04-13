@@ -107,7 +107,7 @@ public class GLM05033_1  extends baseRule{
 
 		sb.append(" WITH TMP2 AS                                                               ");
 		sb.append("  (SELECT B.BRANCH_PID                                                      ");
-		sb.append("     FROM RD_BRANCH B, TMP1                                                 ");
+		sb.append("     FROM RD_BRANCH B                                                ");
 		sb.append("    WHERE (B.IN_LINK_PID = " + linkPid);
 		sb.append("      OR B.OUT_LINK_PID = " + linkPid + ")");
 		sb.append("      AND B.U_RECORD <> 2),                                                 ");

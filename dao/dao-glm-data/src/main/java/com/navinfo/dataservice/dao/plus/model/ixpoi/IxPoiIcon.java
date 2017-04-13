@@ -1,6 +1,9 @@
 package com.navinfo.dataservice.dao.plus.model.ixpoi;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.Point;
 
 /** 
 * @ClassName:  IxPoiIcon 
@@ -12,7 +15,7 @@ public class IxPoiIcon extends BasicRow {
 	protected long relId ;
 	protected long poiPid ;
 	protected String iconName ;
-	protected Object geometry ;
+	protected Geometry geometry ;
 	protected String manageCode ;
 	protected String clientFlag ;
 	protected String memo ;
@@ -46,10 +49,20 @@ public class IxPoiIcon extends BasicRow {
 			this.iconName = iconName;
 		}
 	}
-	public Object getGeometry() {
+	public Geometry getGeometry() {
 		return geometry;
 	}
-	public void setGeometry(Object geometry) {
+	public void setGeometry(Point geometry) {
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
+			this.geometry = geometry;
+		}
+	}
+	public void setGeometry(Geometry geometry) {
+		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
+			this.geometry = geometry;
+		}
+	}
+	public void setGeometry(LineString geometry) {
 		if(this.checkValue("GEOMETRY",this.geometry,geometry)){
 			this.geometry = geometry;
 		}

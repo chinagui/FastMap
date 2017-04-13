@@ -340,6 +340,53 @@ public class TipsOperateTest2 extends InitApplication{
 		
 	}
 	
+	
+	
+	
+	@Test
+	public void testSaveOrUpdate() throws Exception {
+		
+		String parameter="{\"jsonInfo\":{\"rowkey\":\"021601370d27cad51b49328f13fa1d8c4169a8\",\"deep\":{\"name\":\"测试测试\",\"f_array\":[{\"id\":\"1359079\",\"type\":1},{\"id\":\"1359083\",\"type\":1},{\"id\":\"1359084\",\"type\":1}],\"geo\":{\"coordinates\":[116.37257,40.11223],\"type\":\"Point\"}},\"geometry\":{\"g_location\":{\"type\":\"Polygon\",\"coordinates\":[[[116.37251,40.112022],[116.372505,40.112022],[116.37242,40.112064],[116.37242,40.112064],[116.372375,40.112095],[116.372375,40.1121],[116.37236,40.112118],[116.37235,40.11212],[116.37232,40.112194],[116.37232,40.1122],[116.37232,40.11227],[116.37232,40.112278],[116.372345,40.11232],[116.372345,40.11232],[116.37237,40.11235],[116.37237,40.112354],[116.3724,40.11238],[116.3724,40.112385],[116.37248,40.112427],[116.37248,40.112427],[116.37253,40.11244],[116.372536,40.11244],[116.37262,40.112427],[116.37263,40.112427],[116.37267,40.11242],[116.37268,40.112415],[116.37275,40.112377],[116.37276,40.11237],[116.372795,40.11231],[116.372795,40.11231],[116.37282,40.112267],[116.37282,40.11226],[116.37281,40.112186],[116.3728,40.112183],[116.372765,40.11211],[116.372765,40.112106],[116.372734,40.112076],[116.37271,40.112057],[116.3727,40.112053],[116.37264,40.112034],[116.37264,40.112034],[116.372604,40.112022],[116.3726,40.112022],[116.37251,40.112022]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.37257,40.11223]}},\"feedback\":{\"f_array\":[]},\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":2,\"s_sourceId\":\"\",\"s_sourceType\":\"1601\",\"s_reliability\":100,\"s_sourceProvider\":0,\"s_qTaskId\":0,\"s_mTaskId\":0},\"track\":{\"t_lifecycle\":2,\"t_command\":0,\"t_date\":\"20170223145230\",\"t_cStatus\":1,\"t_dStatus\":0,\"t_mStatus\":0,\"t_inMeth\":0,\"t_pStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_fStatus\":0,\"t_trackInfo\":[{\"stage\":1,\"date\":\"20170222180542\",\"handler\":2922}]}},\"user\":2922,\"command\":1}";
+		
+		//parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1107\",\"s_sourceProvider\":0,\"s_reliability\":null,\"s_qTaskId\":0,\"s_mTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.45158052444458,39.98805384322511]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.45092887795363,39.98703773419431]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_cStatus\":0,\"t_fStatus\":0,\"t_pStatus\":0,\"t_dStatus\":0,\"t_mStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_inMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handel\":2,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"options\":{},\"geoLiveType\":\"TIPTOLLGATE\",\"code\":\"1107\",\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"},\"_originalJson\":{\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"}},\"_initHooksCalled\":true},\"user\":2,\"command\":0}";
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			JSONObject jsonInfo=null; //jsonInfo为全量的tips信息，需要符合规格定义
+			if(jsonReq.containsKey("jsonInfo")){
+				
+				jsonInfo = jsonReq.getJSONObject("jsonInfo");
+				
+			}
+			if (jsonInfo==null||jsonInfo.isNullObject()||jsonInfo.keySet().size()==0) {
+				throw new IllegalArgumentException("参数错误：jsonInfo不能为空。");
+			}
+			
+			int command = jsonReq.getInt("command"); //command,0：save or:1：update
+			
+			if (command!=0&&command!=1) {
+				throw new IllegalArgumentException("参数错误：command不在范围内【0,1】");
+			}
+			
+			int user = jsonReq.getInt("user");
+
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+
+			//return new ModelAndView("jsonView", success());
+			
+			System.out.println("修改成功");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	/**
 	 * 参数的验证
 	 * 

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -43,6 +44,25 @@ public class CityController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	/**
+	 * 
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/city/monitor")
+	public ModelAndView cityMonitor(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			List<Map<String,Object>> res=service.cityMonitor(dataJson);
+			return new ModelAndView("jsonView",success(res));
+		}catch(Exception e){
+			log.error("", e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	/**

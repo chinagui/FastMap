@@ -69,6 +69,10 @@ public class PoiRelationImportor extends AbstractOperation{
 		List<Long> emptyFidPids = new ArrayList<Long>();
 		
 		for(PoiRelation poiRelation:poiRelationImporterCommand.getPoiRels()){
+			log.info("当前关系json：RelationType="+poiRelation.getPoiRelationType()
+					+";fid="+poiRelation.getFid()+";pid="+poiRelation.getPid()
+					+";Fatherfid="+poiRelation.getFatherFid()+";Fatherpid="+poiRelation.getFatherPid()
+					+";Samefid="+poiRelation.getSameFid()+";Samepid="+poiRelation.getSamePid());
 			//处理父子关系导入
 			if(poiRelation.getPoiRelationType().equals(PoiRelationType.FATHER_AND_SON)){
 				long pid = poiRelation.getPid();

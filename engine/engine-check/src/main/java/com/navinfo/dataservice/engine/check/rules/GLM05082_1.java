@@ -118,6 +118,7 @@ public class GLM05082_1 extends baseRule{
 				sb.append("    AND B.U_RECORD != 2                                ");
 				sb.append("    AND D.U_RECORD != 2                                ");
 				sb.append("    AND L1.U_RECORD != 2                               ");
+				sb.append("    AND L1.LINK_PID =  B.IN_LINK_PID                   ");
 				sb.append("    AND (L1.KIND IN (1, 2) OR L1.KIND > 7)             ");
 				sb.append(" UNION ALL                                             ");
 				sb.append(" SELECT 1                                              ");
@@ -128,6 +129,7 @@ public class GLM05082_1 extends baseRule{
 				sb.append("    AND D.U_RECORD != 2                                ");
 				sb.append("    AND L1.U_RECORD != 2                               ");
 				sb.append("    AND B.OUT_LINK_PID = " + rdLink.getPid());
+				sb.append("    AND L1.LINK_PID =  B.OUT_LINK_PID                  ");
 				sb.append("    AND L1.KIND IN (9, 10)                             ");
 
 				String sql = sb.toString();

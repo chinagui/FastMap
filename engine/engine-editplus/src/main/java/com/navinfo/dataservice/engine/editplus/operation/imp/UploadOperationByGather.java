@@ -109,6 +109,7 @@ public class UploadOperationByGather {
 			// 执行转数据
 			for(Map.Entry<Integer, UploadPois> entry:poiMap.entrySet()){
 				Integer dbId = entry.getKey();
+				log.info("start txt import to oracle dbId="+dbId);
 				UploadPois pois = entry.getValue();
 				Connection conn=null;
 //				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();

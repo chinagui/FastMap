@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -21,10 +24,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.laneconnexity.RdLaneVia;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.laneconnexity.RdLaneConnexitySelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class Operation implements IOperation {
 
@@ -55,203 +54,215 @@ public class Operation implements IOperation {
 		if (content.containsKey("objStatus")) {
 
 			if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+				
 				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
 
 				return null;
-			} else {
-
-				if (content.containsKey("laneInfo")) {
-					if (content.getString("laneInfo").length() == 0) {
-						result.insertObject(lane, ObjStatus.DELETE, lane.pid());
-
-						return null;
-					}
-					this.caleRdlaneForRdLaneconnexity(result);
-				}
-
-				boolean isChanged = lane.fillChangeFields(content);
-
-				if (isChanged) {
-					result.insertObject(lane, ObjStatus.UPDATE, lane.pid());
-				}
-			}
-		}
-
-		if (content.containsKey("topos")) {
-
-			Set<Integer> topoPids = new HashSet<Integer>();
-
-			for (Integer topoPid : lane.topologyMap.keySet()) {
-				topoPids.add(topoPid);
-			}
-
-			JSONArray topos = content.getJSONArray("topos");
-
-			for (int i = 0; i < topos.size(); i++) {
-
-				JSONObject json = topos.getJSONObject(i);
-
-				int topoPid = 0;
-
-				if (json.containsKey("objStatus")) {
-
-					if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
-
-						RdLaneTopology topo = lane.topologyMap.get(json.getInt("pid"));
-
-						if (topo == null) {
-							throw new Exception("pid=" + json.getInt("pid") + "的rd_lane_topology不存在");
-						}
-
-						if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-
-							topoPids.remove(topo.getPid());
-
-							result.insertObject(topo, ObjStatus.DELETE, lane.pid());
-							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
-
-							topo.fillChangeFields(json);
-
-							if (topo.changedFields().containsKey("outLinkPid")) {
-								int inNodePid = lane.getNodePid();
-
-								int outLinkPid = json.getInt("outLinkPid");
-
-								CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-
-								int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid, outLinkPid);
-
-								topo.changedFields().put("relationshipType", relationShipType);
-							}
-
-							if (!topo.changedFields().isEmpty()) {
-								result.insertObject(topo, ObjStatus.UPDATE, lane.pid());
-							}
-						}
-					} else {
-						RdLaneTopology topo = new RdLaneTopology();
-
-						topo.Unserialize(json);
-
-						topo.setPid(PidUtil.getInstance().applyLaneTopologyPid());
-
-						topo.setConnexityPid(lane.getPid());
-
-						topo.setMesh(lane.mesh());
-
-						topoPid = topo.getPid();
-
-						int inNodePid = lane.getNodePid();
-
-						int outLinkPid = topo.getOutLinkPid();
-
-						CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-
-						int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid, outLinkPid);
-
-						topo.setRelationshipType(relationShipType);
-
-						result.insertObject(topo, ObjStatus.INSERT, lane.pid());
-
-						topoPids.add(topo.getPid());
-					}
-				}
-
-				if (json.containsKey("vias")) {
-					JSONArray vias = json.getJSONArray("vias");
-
-					for (int j = 0; j < vias.size(); j++) {
-
-						JSONObject viajson = vias.getJSONObject(j);
-
-						if (viajson.containsKey("objStatus")) {
-
-							if (!ObjStatus.INSERT.toString().equals(viajson.getString("objStatus"))) {
-
-								RdLaneVia via = lane.viaMap.get(viajson.getString("rowId"));
-
-								if (via == null) {
-									throw new Exception("rowId=" + viajson.getString("rowId") + "的rd_lane_via不存在");
-								}
-
-								if (ObjStatus.DELETE.toString().equals(viajson.getString("objStatus"))) {
-									result.insertObject(via, ObjStatus.DELETE, lane.pid());
-
-									continue;
-								} else if (ObjStatus.UPDATE.toString().equals(viajson.getString("objStatus"))) {
-
-									boolean isChanged = via.fillChangeFields(viajson);
-
-									if (isChanged) {
-										result.insertObject(via, ObjStatus.UPDATE, lane.pid());
-									}
-								}
-							} else {
-								RdLaneVia via = new RdLaneVia();
-
-								via.setSeqNum(viajson.getInt("seqNum"));
-
-								via.setGroupId(viajson.getInt("groupId"));
-
-								via.setLinkPid(viajson.getInt("linkPid"));
-
-								if (viajson.containsKey("topologyId") && viajson.getInt("topologyId") != 0) {
-									via.setTopologyId(viajson.getInt("topologyId"));
-								} else if (json.containsKey("pid") && json.getInt("pid") != 0) {
-									via.setTopologyId(json.getInt("pid"));
-								} else {
-									via.setTopologyId(topoPid);
-								}
-
-								via.setMesh(lane.mesh());
-
-								result.insertObject(via, ObjStatus.INSERT, lane.pid());
-
-								continue;
-							}
-						}
-
-					}
-				}
-			}
-
-			if (topoPids.size() == 0) {
-
-				result.clear();
+			} 
+			
+			if (content.containsKey("laneInfo")
+					&& content.getString("laneInfo").length() == 0) {
 
 				result.insertObject(lane, ObjStatus.DELETE, lane.pid());
+
+				return null;
+			}
+
+			boolean isChanged = lane.fillChangeFields(content);
+
+			if (isChanged) {
+				
+				result.insertObject(lane, ObjStatus.UPDATE, lane.pid());
 			}
 		}
+
+		updateRdLaneTopology(result, content);
 
 		return null;
 
 	}
-
-	/***
-	 * 修改车信维护车道信息
-	 * 
+	
+	/**
+	 * 更新车道连通表
 	 * @param result
+	 * @param content
+	 * @return 返回车信剩余车道连通表pid列表
 	 * @throws Exception
 	 */
-	private void caleRdlaneForRdLaneconnexity(Result result) throws Exception {
-		/*
-		 * String laneInfo = command.getContent().getString("laneInfo");
-		 * 
-		 * 
-		 * if (StringUtils.isNotEmpty(laneInfo)) { String lanes =
-		 * laneInfo.replace("[", "").replace("]", ""); List<String> laneList =
-		 * Arrays.asList(lanes.split(","));
-		 * com.navinfo.dataservice.engine.edit.operation
-		 * .topo.batch.batchrdlane.Operation operation = new
-		 * com.navinfo.dataservice
-		 * .engine.edit.operation.topo.batch.batchrdlane.Operation( conn);
-		 * operation.setLanInfos(laneList); operation.setConnexity(lane);
-		 * operation.refRdLaneForRdLaneconnexity(result);
-		 * 
-		 * }
-		 */
+	private void  updateRdLaneTopology(Result result,JSONObject content ) throws Exception
+	{
+		Set<Integer> topoPids = new HashSet<Integer>();
+		
+		if (!content.containsKey("topos")) {
+			
+			return ;
+		}
+		
+		JSONArray topos = content.getJSONArray("topos");
+		
+		int topoCount = lane.getTopos().size();
 
+		for (int i = 0; i < topos.size(); i++) {
+
+			JSONObject json = topos.getJSONObject(i);
+
+			if (!json.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+
+				topoCount -= 1;
+			}
+
+			if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+
+				topoCount += 1;
+			}
+		}
+
+		if (topoCount < 1) {
+			
+			throw new Exception("更新后 无车道连通表");
+		}
+
+		for (int i = 0; i < topos.size(); i++) {
+
+			JSONObject json = topos.getJSONObject(i);
+			
+			String objStatus = "";
+			
+			if (json.containsKey("objStatus")) {
+				
+				 objStatus = json.getString("objStatus");
+			}
+
+			RdLaneTopology topo = new RdLaneTopology();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				topo = lane.topologyMap.get(json.getInt("pid"));
+
+				if (topo == null) {
+					throw new Exception("pid=" + json.getInt("pid")
+							+ "的rd_lane_topology不存在");
+				}
+			}
+
+			// 删除车道连通表
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				topoPids.remove(topo.getPid());
+
+				result.insertObject(topo, ObjStatus.DELETE, lane.pid());
+
+				continue;
+			}
+			
+			// 更新车道连通表
+			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = topo.fillChangeFields(json);
+
+				if (isChanged) {
+
+					result.insertObject(topo, ObjStatus.UPDATE, lane.pid());
+				}
+			}
+			// 新增车道连通表
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				topo.Unserialize(json);
+
+				topo.setPid(PidUtil.getInstance().applyLaneTopologyPid());
+
+				topo.setConnexityPid(lane.getPid());
+
+				topo.setMesh(lane.mesh());
+
+				result.insertObject(topo, ObjStatus.INSERT, lane.pid());
+
+				topoPids.add(topo.getPid());
+			}
+
+			updateVia( result, json,  topo);
+		}
+	}
+	
+	
+	/**
+	 * 更新via
+	 * 
+	 * @param result
+	 * @param json
+	 * @param topoPid
+	 *            新增退出线时后台给topoPid赋值
+	 * @throws Exception
+	 */
+	private void updateVia(Result result, JSONObject content,
+			RdLaneTopology topo) throws Exception {
+
+		if (!content.containsKey("vias")) {
+
+			return;
+		}
+
+		JSONArray vias = content.getJSONArray("vias");
+
+		for (int j = 0; j < vias.size(); j++) {
+
+			JSONObject jsonVia = vias.getJSONObject(j);
+
+			if (!jsonVia.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			String objStatus = jsonVia.getString("objStatus");
+
+			RdLaneVia via = new RdLaneVia();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				via = lane.viaMap.get(jsonVia.getString("rowId"));
+
+				if (via == null) {
+
+					throw new Exception("rowId=" + jsonVia.getString("rowId")
+							+ "的rd_lane_via不存在");
+				}
+			}
+
+			// 删除via
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(via, ObjStatus.DELETE, lane.pid());
+			}
+			// 更新via
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = via.fillChangeFields(jsonVia);
+
+				if (isChanged) {
+
+					result.insertObject(via, ObjStatus.UPDATE, lane.pid());
+				}
+			}
+			// 新增via
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				via.Unserialize(jsonVia);
+
+				via.setTopologyId(topo.getPid());
+
+				via.setMesh(topo.mesh());
+
+				result.insertObject(via, ObjStatus.INSERT, lane.pid());
+			}
+		}
 	}
 
 	/**

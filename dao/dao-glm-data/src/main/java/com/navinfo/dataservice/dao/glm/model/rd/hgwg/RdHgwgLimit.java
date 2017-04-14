@@ -42,6 +42,8 @@ public class RdHgwgLimit implements IObj {
     private int meshId;
 
     private Geometry geometry;
+	protected ObjStatus status;
+
 
     public Map<String, Object> changedFields = new HashedMap();
 
@@ -87,12 +89,12 @@ public class RdHgwgLimit implements IObj {
 
     @Override
     public ObjStatus status() {
-        return null;
+        return status;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
-
+    	status = os;
     }
 
     @Override
@@ -191,7 +193,11 @@ public class RdHgwgLimit implements IObj {
     public JSONObject Serialize(ObjLevel objLevel) throws Exception {
         JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
         JSONObject json = JSONObject.fromObject(this, jsonConfig);
-        return json;
+//        return json;
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
     }
 
     @Override

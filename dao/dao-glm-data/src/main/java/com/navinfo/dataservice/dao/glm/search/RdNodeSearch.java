@@ -11,6 +11,7 @@ import java.util.Map;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.node.RdNodeSelector;
@@ -37,8 +38,13 @@ public class RdNodeSearch implements ISearch {
 	}
 
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RdNodeSelector selector = new RdNodeSelector(conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 
 	@Override
@@ -157,8 +163,8 @@ public class RdNodeSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS FROM RD_LINK A, TMP1 B WHERE A.U_RECORD != 2 AND (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ A.NODE_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_FORMS FROM RD_NODE_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.NODE_PID = B.NODE_PID GROUP BY A.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, B.LINKPIDS, C.NODE_FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.NODE_PID = B.NODE_PID AND A.NODE_PID = C.NODE_PID";
-
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, KIND, GEOMETRY FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS FROM RD_LINK A, TMP1 B WHERE A.U_RECORD != 2 AND (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) GROUP BY B.NODE_PID), TMP3 AS (SELECT /*+ index(a) */ A.NODE_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_FORMS FROM RD_NODE_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.NODE_PID = B.NODE_PID GROUP BY A.NODE_PID) SELECT A.NODE_PID, A.KIND, A.GEOMETRY, B.LINKPIDS, C.NODE_FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.NODE_PID = B.NODE_PID AND A.NODE_PID = C.NODE_PID";
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -186,6 +192,8 @@ public class RdNodeSearch implements ISearch {
 				m.put("a", resultSet.getString("linkpids"));
 				
 				m.put("b", resultSet.getString("node_forms"));
+				
+				m.put("c", resultSet.getString("kind"));
 
 				snapshot.setM(m);
 

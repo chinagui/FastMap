@@ -10,19 +10,21 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.inter.RdInter;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.crf.RdInterSelector;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.WKTReader;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: RdInterSearch 
@@ -43,8 +45,13 @@ public class RdInterSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RdInterSelector selector = new RdInterSelector(conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -62,7 +69,7 @@ public class RdInterSearch implements ISearch {
 		
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 		
-		String sql = "WITH tmp1 AS (	SELECT node_pid FROM rd_node WHERE sdo_relate(geometry, sdo_geometry( :1, 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp2 as（ SELECT /*+ index(b) */ pid, listagg(a.node_pid, ',') within group( ORDER BY a.node_pid) node_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ',') within group( ORDER BY a.node_pid) node_wkts FROM rd_inter_node a, rd_node b WHERE EXISTS (	SELECT NULL FROM tmp1 C WHERE a.node_pid = C.node_pid) AND a.node_pid = b.node_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid）, tmp3 AS (	SELECT link_pid FROM rd_link WHERE sdo_relate(geometry, sdo_geometry(:2, 8307), 'mask=anyinteract') = 'TRUE' AND u_record != 2), tmp4 as（ SELECT /*+ index(b) */ pid, listagg(a.link_pid, ',') within group( ORDER BY a.link_pid) link_pids,listagg(b.s_node_pid, ',') within group( ORDER BY a.link_pid) s_node_pids,listagg(b.e_node_pid, ',') within group( ORDER BY a.link_pid) e_node_pids, listagg(sdo_util.to_wktgeometry_varchar(b. geometry), ';') within group( ORDER BY a.link_pid) link_wkts FROM rd_inter_link a, rd_link b WHERE EXISTS (	SELECT NULL FROM tmp3 C WHERE a.link_pid = C.link_pid) AND a.link_pid = b.link_pid AND a.u_record != 2 AND b.u_record != 2 GROUP BY a.pid） SELECT tmp2.*,tmp4.link_pids,tmp4.link_wkts,s_node_pids,e_node_pids FROM tmp2 LEFT JOIN tmp4 ON tmp2.pid = tmp4.pid";
+		String sql = "WITH TMP11 AS (SELECT NODE_PID FROM RD_NODE WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP12 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:2, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP1 AS (SELECT /*+ index(a) */ A.PID INTER_PID FROM RD_INTER_NODE A, TMP11 B WHERE B.NODE_PID = A.NODE_PID AND A.U_RECORD != 2 UNION SELECT /*+ index(a) */ A.PID INTER_PID FROM RD_INTER_LINK A, TMP12 B WHERE B.LINK_PID = A.LINK_PID AND A.U_RECORD != 2), TMP2 AS (SELECT /*+ index(b) */ PID, LISTAGG(A.NODE_PID, ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B. GEOMETRY), ',') WITHIN GROUP(ORDER BY A.NODE_PID) NODE_WKTS FROM RD_INTER_NODE A, RD_NODE B WHERE EXISTS (SELECT NULL FROM TMP1 C WHERE A.PID = C.INTER_PID) AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2 AND B.U_RECORD != 2 GROUP BY A.PID), TMP3 AS (SELECT /*+ index(b) */ PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) LINK_PIDS, LISTAGG(B.S_NODE_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) S_NODE_PIDS, LISTAGG(B.E_NODE_PID, ',') WITHIN GROUP(ORDER BY A.LINK_PID) E_NODE_PIDS, LISTAGG(SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(B. GEOMETRY), ';') WITHIN GROUP(ORDER BY A.LINK_PID) LINK_WKTS FROM RD_INTER_LINK A, RD_LINK B WHERE EXISTS (SELECT NULL FROM TMP1 C WHERE A.PID = C.INTER_PID) AND A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND B.U_RECORD != 2 GROUP BY A.PID) SELECT TMP2.*, TMP3.LINK_PIDS, TMP3.LINK_WKTS, S_NODE_PIDS, E_NODE_PIDS FROM TMP2 LEFT JOIN TMP3 ON TMP2.PID = TMP3.PID ";
 		
 		PreparedStatement pstmt = null;
 

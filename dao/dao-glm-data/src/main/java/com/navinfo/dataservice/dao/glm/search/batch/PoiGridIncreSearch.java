@@ -387,7 +387,7 @@ public class PoiGridIncreSearch {
     	
 		List<Integer> poiList_del = run.query(conn, poi_delete_sql,rsHandler,pidsClob);
 		pidsClob_del.setString(1, StringUtils.join(poiList_del, ","));
-		logger.info("poiList_del: "+StringUtils.join(poiList_del, ","));
+		
 		
 		logger.info("设置子表IX_POI_NAME");
 		Map<Long,List<IRow>> names = null;
@@ -415,6 +415,16 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setNames(names_delete.get(pid));
 		}
 		//*************************************
+		/*logger.info("设置子表IX_POI_ADDRESS");
+		
+		 sql="select * from ix_poi_address where "
+				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
+		
+		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
+
+		for(Long pid:addresses.keySet()){
+			pois.get(pid).setAddresses(addresses.get(pid));
+		}*/
 		logger.info("设置子表IX_POI_ADDRESS");
 		
 		 sql="select * from ix_poi_address where "
@@ -437,6 +447,8 @@ public class PoiGridIncreSearch {
 		for(Long pid:address_delete.keySet()){
 			pois.get(pid).setAddresses(address_delete.get(pid));
 		}
+		//*************************************
+		
 		logger.info("设置子表IX_POI_PARENT");
 		
 		StringBuilder sbParent = new StringBuilder();

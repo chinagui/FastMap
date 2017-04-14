@@ -571,8 +571,9 @@ public class OpRefRelationObj {
 		
 		Geometry oldGeo = updateLink.getGeometry();
 
-		Geometry newGeo = command.getLinkGeom();
-		
+		Geometry newGeo = GeoTranslator.transform(command.getLinkGeom(),
+				GeoTranslator.geoUpgrade, 0);
+
 		if (newLinks.size() > 1 || isMoveShapePoint(oldGeo, newGeo)) {
 
 			if (originalSameLink != null) {

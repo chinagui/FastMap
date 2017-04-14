@@ -264,6 +264,7 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT_DELETE)||mainrow.getOpType().equals(OperationType.PRE_DELETED)){
 			return sqlList;
 		}
+		System.out.println(" physiDelete:  "+physiDelete+" mainrow: "+mainrow.getObjPid()+"  mainrow.getOpType():"+mainrow.getOpType());
 		RunnableSQL mainsql = mainrow.generateSql(physiDelete);
 		if(mainsql!=null){
 			sqlList.add(mainsql);
@@ -275,6 +276,9 @@ public abstract class BasicObj {
 			System.out.println("entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
 			//****zl 2017.03.04 修改********
 			if(entry.getKey().equals("IX_POI")){
+				continue;
+			}
+			if(entry.getKey().equals("IX_SAMEPOI")){
 				continue;
 			}
 			//*****************************
@@ -299,6 +303,9 @@ public abstract class BasicObj {
 			System.out.println("二级子表 entry key : "+entry.getKey()+ " entry value: "+entry.getValue());
 			//****zl 2017.03.04 修改********
 			if(entry.getKey().equals("IX_POI")){
+				continue;
+			}
+			if(entry.getKey().equals("IX_SAMEPOI")){
 				continue;
 			}
 			//*****************************

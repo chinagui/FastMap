@@ -67,7 +67,7 @@ create or replace package body package_utils is
     v_link_row rd_link%rowtype;
   
   begin
-    --¼ÆËã½øÈëÏßµÄ¾àÀë½øÈëµã×î½üµÄÐÎ×´µã
+    --ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ßµÄ¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×´ï¿½ï¿½
     select * into v_link_row from rd_link where link_pid = p_in_link_pid;
   
     if v_link_row.s_node_pid = p_in_node_pid then
@@ -182,7 +182,7 @@ create or replace package body package_utils is
             into v_out_node_pid, v_via_path
             from tmp_restrict2;
         else
-          --¼ÆËã¾àÀë×î¶ÌµÄ¾­¹ýÏß
+          --ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÌµÄ¾ï¿½ï¿½ï¿½ï¿½ï¿½
           declare
             v_min_length number := 100;
             v_tmp_length number;
@@ -211,7 +211,7 @@ create or replace package body package_utils is
           end;
         end if;
       
-        --¼ÆËãÍË³öµã
+        --ï¿½ï¿½ï¿½ï¿½ï¿½Ë³ï¿½ï¿½ï¿½
         get_restrict_out_shape(p_out_link_pid,
                                v_out_node_pid,
                                v_out_lng1,
@@ -221,7 +221,7 @@ create or replace package body package_utils is
       
       else
       
-        --Ã»ÓÐ¾­¹ýÏß£¬Ôò¼ÆËã¾àÀë£¬ÕÒÒ»¸ö¾àÀë½øÈëµã×î½üµÄÄÇ¸öµã×÷ÎªÍË³öµã
+        --Ã»ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ë³ï¿½ï¿½ï¿½
       
         select *
           into v_link_row
@@ -252,7 +252,7 @@ create or replace package body package_utils is
       commit;
     else
     
-      --Ã»ÓÐ¾­¹ýÏß£¬Ôò¼ÆËã¾àÀë£¬ÕÒÒ»¸ö¾àÀë½øÈëµã×î½üµÄÄÇ¸öµã×÷ÎªÍË³öµã
+      --Ã»ï¿½Ð¾ï¿½ï¿½ï¿½ï¿½ß£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë£¬ï¿½ï¿½Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½Ë³ï¿½ï¿½ï¿½
     
       select *
         into v_link_row
@@ -304,7 +304,7 @@ create or replace package body package_utils is
                             and level <=
                                 regexp_count(out_link_pids, '[0-9]+')) loop
     
-      --ÅÐ¶ÏÊÇÂ·¿Ú½»ÏÞ»¹ÊÇÏßÏß½»ÏÞ
+      --ï¿½Ð¶ï¿½ï¿½ï¿½Â·ï¿½Ú½ï¿½ï¿½Þ»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß½ï¿½ï¿½ï¿½
       declare
       
         v_cnt_cross int;
@@ -321,12 +321,14 @@ create or replace package body package_utils is
           from rd_cross_node a, rd_link b
          where a.node_pid = p_in_node_pid
            and b.link_pid = p_in_link_pid
+           and a.u_record <> 2
            and exists
          (select null
                   from rd_cross_node c, rd_link d
                  where a.pid = c.pid
                    and d.link_pid = out_link.pid
-                   and c.node_pid in (d.s_node_pid, d.e_node_pid));
+                   and c.node_pid in (d.s_node_pid, d.e_node_pid)
+                   and c.u_record <> 2);
             get_restrict_via(p_in_link_pid,
                              p_in_node_pid,
                              out_link.pid,
@@ -336,7 +338,7 @@ create or replace package body package_utils is
                              v_out_lat2,
                              v_via_path);
         if v_cnt_cross > 0 then
-          --Â·¿Ú½»ÏÞ
+          --Â·ï¿½Ú½ï¿½ï¿½ï¿½
           select *
             into v_link_row
             from rd_link
@@ -487,13 +489,13 @@ end;
 
 create or replace package body package_check is
   function fun_GLM08049(p_restric_pid int) return int is
-    --»ñÈ¡Â·¿Úpid
+    --ï¿½ï¿½È¡Â·ï¿½ï¿½pid
     cross_pid int;
-    --ÍË³öµã
+    --ï¿½Ë³ï¿½ï¿½ï¿½
     out_node_pid int;
-    --½á¹ûÊý
+    --ï¿½ï¿½ï¿½ï¿½ï¿½
     v_cnt int;
-    --½øÈëµã
+    --ï¿½ï¿½ï¿½ï¿½ï¿½
     v_in_node_pid int;
   begin
     select node_pid

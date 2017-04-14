@@ -57,43 +57,43 @@ public class TranslateDictData {
 
     private Map<String, String> dictChi2Eng = new HashMap<>();
 
-    public Map<String, String> getDictSpecialMap() {
+    public synchronized Map<String, String> getDictSpecialMap() {
         if (dictSpecialMap.isEmpty())
             loadSpecial();
         return dictSpecialMap;
     }
 
-    public Map<String, String> getDictSymbolMap() {
+    public synchronized Map<String, String> getDictSymbolMap() {
         if (dictSymbolMap.isEmpty())
             loadSymbol();
         return dictSymbolMap;
     }
 
-    public Map<String, List<String>> getDictDictionary() {
+    public synchronized Map<String, List<String>> getDictDictionary() {
         if (dictDictionary.isEmpty())
             loadDictionary();
         return dictDictionary;
     }
 
-    public Map<String, String> getDictFhWidth() {
+    public synchronized Map<String, String> getDictFhWidth() {
         if (dictFhWidth.isEmpty())
             loadFhWidth();
         return dictFhWidth;
     }
 
-    public Map<String, List<Map<String, String>>> getDictWord() {
+    public synchronized Map<String, List<Map<String, String>>> getDictWord() {
         if (dictWord.isEmpty())
             loadDictWord();
         return dictWord;
     }
 
-    public Map<String, String> getDictWordIndex() {
+    public synchronized Map<String, String> getDictWordIndex() {
         if (dictWordIndex.isEmpty())
             loadDictWord();
         return dictWordIndex;
     }
 
-    public Map<String, String> getDictChi2Eng() {
+    public synchronized Map<String, String> getDictChi2Eng() {
         if (dictChi2Eng.isEmpty())
             loadChi2Eng();
         return dictChi2Eng;
@@ -164,7 +164,7 @@ public class TranslateDictData {
         Connection conn = null;
         try {
             conn = DBConnector.getInstance().getMetaConnection();
-            String sql = "SELECT JT,WM_CONCAT(PY) FROM (SELECT * FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER) GROUP BY JT ";
+            String sql = "SELECT JT,dbms_lob.substr(WM_CONCAT(PY)) FROM (SELECT * FROM TY_NAVICOVPY_PY ORDER BY JT,PYORDER) GROUP BY JT ";
             Map<String, List<String>> map = runner.query(conn, sql, new ParseDictonaryHandler());
             dictDictionary.putAll(map);
             logger.debug("加载字典表成功，共" + map.size() + "条数据");

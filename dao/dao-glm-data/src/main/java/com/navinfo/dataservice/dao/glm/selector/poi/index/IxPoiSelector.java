@@ -424,13 +424,24 @@ public class IxPoiSelector extends AbstractSelector {
 				conn);
 
 		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
+		
+		JSONObject poiEditStatus = getPoiStatusByPid(poi.getPid());
 
 		poi.setSamepoiParts(parts);
-
-		poi.setRawFields(loadRawByRowId(poi.getPid()));
+		String rawFields = null;
+		if (poiEditStatus.get("RAW_FIELDS")==null){
+			poi.setRawFields(rawFields);
+		}else{
+			rawFields = (String) poiEditStatus.get("RAW_FIELDS");
+			poi.setRawFields(rawFields);
+		}
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
-
+		
+		poi.setStatus(poiEditStatus.getInt("STATUS"));
+		
+		poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
+		
 		return poi;
 	}
 
@@ -510,6 +521,48 @@ public class IxPoiSelector extends AbstractSelector {
 			DBUtils.closeResultSet(resultSet);
 
 			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	/**
+	 * 查询POI的状态信息
+	 * 
+	 * @param pid
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONObject getPoiStatusByPid(int pid) throws Exception {
+
+		String sql = "SELECT PS.STATUS,PS.IS_UPLOAD,PS.UPLOAD_DATE,PS.FRESH_VERIFIED,PS.RAW_FIELDS,PS.WORK_TYPE,PS.COMMIT_HIS_STATUS,PS.SUBMIT_DATE FROM POI_EDIT_STATUS PS WHERE PS.pid="
+				+ pid + " ORDER BY PS.UPLOAD_DATE DESC";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+			JSONObject result = new JSONObject();
+			while (resultSet.next()) {
+				result.put("STATUS", resultSet.getInt("STATUS"));
+				result.put("IS_UPLOAD", resultSet.getInt("IS_UPLOAD"));
+				result.put("FRESH_VERIFIED", resultSet.getInt("FRESH_VERIFIED"));
+				result.put("RAW_FIELDS", resultSet.getString("RAW_FIELDS"));
+				result.put("WORK_TYPE", resultSet.getInt("WORK_TYPE"));
+				result.put("COMMIT_HIS_STATUS", resultSet.getInt("COMMIT_HIS_STATUS"));
+				break;
+			}
+			return result;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+
 		}
 	}
 

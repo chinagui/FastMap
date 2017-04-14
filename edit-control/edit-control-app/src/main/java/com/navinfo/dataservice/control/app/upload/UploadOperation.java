@@ -58,14 +58,13 @@ import net.sf.json.JSONObject;
 
 public class UploadOperation {
 	
-	private EditApi apiService;
+	private EditApiImpl editService=new EditApiImpl();
 	private QueryRunner runn;
 	private Long userId;
 	
 	protected Logger log = Logger.getLogger(UploadOperation.class);
 	
 	public UploadOperation(Long userId) {
-		this.apiService=(EditApi) ApplicationContextUtil.getBean("editApi");
 		runn = new QueryRunner();
 		this.userId = userId;
 	}
@@ -316,8 +315,8 @@ public class UploadOperation {
 								json.put("type", "IXPOIUPLOAD");
 								json.put("data", poiObj);
 								// 调用一次插入
-								apiService.run(json);
-								apiService.runBatch(json);
+								editService.run(json);
+								editService.runBatch(json);
 								
 								// 鲜度验证，POI状态更新
 								String rawFields = jo.getString("rawFields");
@@ -400,8 +399,8 @@ public class UploadOperation {
 								commandJson.put("command", "UPDATE");
 								commandJson.put("type", "IXPOIUPLOAD");
 								// 调用一次更新
-								apiService.run(commandJson);
-								apiService.runBatch(commandJson);
+								editService.run(commandJson);
+								editService.runBatch(commandJson);
 								
 								// 处理一个库中的父子关系20161011
 								if (relateParentChildren.size()>0) {
@@ -479,7 +478,7 @@ public class UploadOperation {
 						poiObj.put("type", "IXPOIUPLOAD");
 						try {
 							// 调用一次删除
-							apiService.run(poiObj);
+							editService.run(poiObj);
 
 							//********zl 2016.12.06 删除同一关系**************
 							

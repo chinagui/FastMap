@@ -127,17 +127,17 @@ public class LogWriter {
         PreparedStatement pstmt = null;
 
         String sql = "insert into log_operation (op_id,act_id, op_dt,op_seq, com_sta, com_dt,lock_sta) values (?,?,"
-                + "to_date(?,'yyyymmddhh24miss'),log_op_seq.nextval,?,?,?)";
+                + "SYSTIMESTAMP,log_op_seq.nextval,?,?,?)";
 
         try {
             for (LogOperation logOperation : operations) {
                 pstmt = this.conn.prepareStatement(sql);
                 pstmt.setString(1, logOperation.getOpId());
                 pstmt.setString(2, this.getActId());
-                pstmt.setString(3, logOperation.getOpDt());
-                pstmt.setInt(4, logOperation.getComSta());
-                pstmt.setString(5, logOperation.getComDt());
-                pstmt.setInt(6, logOperation.getLockSta());
+/*                pstmt.setString(3, logOperation.getOpDt());*/
+                pstmt.setInt(3, logOperation.getComSta());
+                pstmt.setString(4, logOperation.getComDt());
+                pstmt.setInt(5, logOperation.getLockSta());
                 pstmt.execute();
                 pstmt.close();
                 this.insertLogdayRelease(logOperation.getOpId());

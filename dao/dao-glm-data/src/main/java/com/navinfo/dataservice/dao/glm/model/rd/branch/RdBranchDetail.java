@@ -46,6 +46,8 @@ public class RdBranchDetail implements IObj {
 	private String rowId;
 	
 	private Geometry geometry;
+	protected ObjStatus status;
+
 
 	public Geometry getGeometry() {
 		return geometry;
@@ -165,7 +167,13 @@ public class RdBranchDetail implements IObj {
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) {
 	
-		return JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+//		return JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+		JSONObject json = JSONObject.fromObject(this,Geojson.geoJsonConfig(0.00001, 5));
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override
@@ -223,12 +231,12 @@ public class RdBranchDetail implements IObj {
 	@Override
 	public ObjStatus status() {
 
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -672,4 +674,75 @@ public class RdGscOperateUtils {
 
 		return false;
 	}
+	
+	/**
+	 * 捕捉线是否在立交点处
+	 * @param catchLinkPid 捕捉线pid
+	 * @param longitude 捕捉的线上经度
+	 * @param latitude 捕捉的线上纬度
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public static boolean isCatchLinkRelateGscNode(int catchLinkPid, double longitude, double latitude, Connection conn)
+			throws Exception {
+		RdGscSelector selector = new RdGscSelector(conn);
+		boolean result = false;
+
+		List<RdGsc> rdGscList = selector.loadRdGscLinkByLinkPid(catchLinkPid, "RD_LINK", true);
+
+		if (rdGscList.isEmpty()) {
+			return result;
+		}
+
+		for (RdGsc rdGsc : rdGscList) {
+			String sql = String.format(
+					"SELECT COUNT(*) FROM RD_GSC RG WHERE RG.GEOMETRY.SDO_POINT.X=%f AND RG.GEOMETRY.SDO_POINT.Y= %f AND RG.PID=%d AND RG.U_RECORD<>2",
+					longitude, latitude, rdGsc.getPid());
+
+			List<Integer> resultSet = executeSQL(sql, conn);
+			if (resultSet.get(0) == 0) {
+				continue;
+			}
+			result = true;
+		}
+		return result;
+	}
+
+	private static List<Integer> executeSQL(String sql, Connection conn) throws Exception {
+		PreparedStatement pstmt = conn.prepareStatement(sql.toString());
+		ResultSet resultSet = pstmt.executeQuery();
+		List<Integer> result = new ArrayList<Integer>();
+
+		if (resultSet.next()) {
+			result.add(resultSet.getInt(1));
+		}
+
+		resultSet.close();
+		pstmt.close();
+
+		return result;
+	}
+
+	/**
+	 * 
+	 * @param nodePid
+	 *            捕捉的nodepid
+	 * @param conn
+	 * @return
+	 * @throws Exception
+	 */
+	public static boolean isCatchNodeRelateGscNode(int nodePid, Connection conn) throws Exception {
+		String sql = String.format(
+				"SELECT COUNT(*) FROM RD_GSC RG,RD_NODE RN WHERE RN.NODE_PID=%d AND RG.GEOMETRY.SDO_POINT.X=RN.GEOMETRY.SDO_POINT.X AND RG.GEOMETRY.SDO_POINT.Y=RN.GEOMETRY.SDO_POINT.Y AND RG.U_RECORD<>2",
+				nodePid);
+
+		List<Integer> resultSet = executeSQL(sql, conn);
+		if (resultSet.get(0) == 0) {
+			return false;
+		}
+
+		return true;
+	}
+
 }

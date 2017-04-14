@@ -7,24 +7,22 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdTmclocation;
-import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
-import com.navinfo.dataservice.dao.glm.search.RdTmcLocationSearch;
 import com.navinfo.dataservice.dao.glm.search.TmcPointSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
-
-import net.sf.json.JSONArray;
 
 /** 
 * @ClassName: RdTmcLocationTest 
@@ -87,9 +85,9 @@ public class RdTmcLocationTest extends InitApplication{
 			
 			pids.add(36475);
 			
-			List<? extends IObj> objs = p.searchDataByPids(ObjType.RDTMCLOCATION, pids);
+			List<? extends IRow> objs = p.searchDataByPids(ObjType.RDTMCLOCATION, pids);
 			
-			for(IObj obj : objs)
+			for(IRow obj : objs)
 			{
 				System.out.println(obj.Serialize(ObjLevel.FULL));
 			}
@@ -117,4 +115,6 @@ public class RdTmcLocationTest extends InitApplication{
 		}
 		
 	}
+	
+	
 }

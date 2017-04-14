@@ -142,12 +142,12 @@ public class PoiSave {
                 }
             }
 
-            if (ObjType.IXSAMEPOI != objType) {
-                json.put("objId", pid);
-                BatchProcess batchProcess = new BatchProcess("row","save");
-                List<String> batchList = batchProcess.getRowRules();
-                batchProcess.execute(json, conn, editApiImpl, batchList);
-            }
+//            if (ObjType.IXSAMEPOI != objType) {
+//                json.put("objId", pid);
+//                BatchProcess batchProcess = new BatchProcess("row","save");
+//                List<String> batchList = batchProcess.getRowRules();
+//                batchProcess.execute(json, conn, editApiImpl, batchList);
+//            }
             upatePoiStatus(sb.toString(), conn, true);
             
             if(operType == OperType.UPDATE){

@@ -594,6 +594,16 @@ public class PidUtil {
         return applyPid("RD_MILEAGEPILE");
     }
 
-	
+	public int applyCmgBuildnodePid() throws Exception {
+        return applyPid("CMG_BUILDNODE");
+    }
+
+	public int applyCmgBuildlinkPid() throws Exception {
+        return applyPid("CMG_BUILDLINK");
+    }
+
+	public int applyCmgBuildfacePid() throws Exception {
+        return applyPid("CMG_BUILDFACE");
+    }
 
 }

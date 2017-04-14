@@ -42,222 +42,279 @@ public class Operation implements IOperation {
         this.conn = conn;
     }
 
-    @Override
-    public String run(Result result) throws Exception {
+	@Override
+	public String run(Result result) throws Exception {
 
-        JSONObject content = command.getContent();
+		if (null != command.getContent()) {
+			updateNode(result, command.getContent());
+		}
+		// 批量修改
+		else if (null != command.getUpdateContents()) {
 
-        if (content.containsKey("objStatus")) {
+			for (int i = 0; i < command.getUpdateContents().size(); i++) {
 
-            if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
-                result.insertObject(rdnode, ObjStatus.DELETE, rdnode.pid());
-                return null;
-            } else {
-                boolean isChanged = rdnode.fillChangeFields(content);
-                if (content.containsKey("geometry")) {
-                    Geometry geo = GeoTranslator.geojson2Jts(content.getJSONObject("geometry"));
-                    List<String> meshes = new ArrayList<>();
-                    meshes.addAll(Arrays.asList(MeshUtils.point2Meshes(geo.getCoordinate().x, geo.getCoordinate().y)));
+				JSONObject content = command.getUpdateContents().getJSONObject(
+						i);
 
-                    List<IRow> nodeMeshes = new AbstractSelector(RdNodeMesh.class, conn).loadRowsByParentId(rdnode
-                            .pid(), false);
-                    rdnode.getMeshes().clear();
-                    int count = 0;
-                    for (IRow row : nodeMeshes) {
-                        RdNodeMesh mesh = (RdNodeMesh) row;
-                        String meshId = String.valueOf(mesh.getMeshId());
-                        if (meshes.contains(String.valueOf(meshId))) {
-                            meshes.remove(meshId);
-                            count++;
-                        } else {
-                            result.insertObject(mesh, ObjStatus.DELETE, mesh.parentPKValue());
-                        }
-                    }
-                    for (String meshId : meshes) {
-                        RdNodeMesh mesh = new RdNodeMesh();
-                        mesh.setNodePid(rdnode.pid());
-                        mesh.setMeshId(Integer.valueOf(meshId));
-                        result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
-                        count++;
-                    }
+				int nodePid = content.getInt("pid");
 
-                    rdnode.getForms().clear();
-                    List<IRow> forms = new AbstractSelector(RdNodeForm.class, conn).loadRowsByParentId(rdnode.pid(),
-                            false);
-                    if (count >= 2) {
-                        boolean flag = true;
-                        for (IRow f : forms) {
-                            RdNodeForm form = (RdNodeForm) f;
-                            if (form.getFormOfWay() == 1) {
-                                result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
-                            }
-                            if (form.getFormOfWay() == 2) {
-                                flag = false;
-                            }
-                        }
-                        if (flag) {
-                            RdNodeForm form = new RdNodeForm();
-                            form.setNodePid(rdnode.pid());
-                            form.setFormOfWay(2);
-                            result.insertObject(form, ObjStatus.INSERT, form.parentPKValue());
-                        }
-                    } else {
-                        for (IRow f : forms) {
-                            RdNodeForm form = (RdNodeForm) f;
-                            if (form.getFormOfWay() == 2) {
-                                result.insertObject(form, ObjStatus.DELETE, form.parentPKValue());
-                                if (forms.size() == 1) {
-                                    RdNodeForm ff = new RdNodeForm();
-                                    ff.setFormOfWay(1);
-                                    ff.setNodePid(rdnode.pid());
-                                    result.insertObject(ff, ObjStatus.INSERT, ff.parentPKValue());
-                                }
-                            }
-                        }
-                    }
-                }
+				rdnode = command.getNodeMap().get(nodePid);
 
-                if (isChanged) {
-                    result.insertObject(rdnode, ObjStatus.UPDATE, rdnode.pid());
-                }
-            }
-        }
+				updateNode(result, content);
+			}
+		}
 
-        if (content.containsKey("forms")) {
-            JSONArray forms = content.getJSONArray("forms");
+		return null;
+	}
 
-            for (int i = 0; i < forms.size(); i++) {
+	public String updateNode(Result result, JSONObject content)
+			throws Exception {
 
-                JSONObject formJson = forms.getJSONObject(i);
+		if (content.containsKey("objStatus")) {
 
-                if (formJson.containsKey("objStatus")) {
+			if (ObjStatus.DELETE.toString().equals(
+					content.getString("objStatus"))) {
+				result.insertObject(rdnode, ObjStatus.DELETE, rdnode.pid());
+				return null;
+			} else {
+				boolean isChanged = rdnode.fillChangeFields(content);
+				if (content.containsKey("geometry")) {
+					Geometry geo = GeoTranslator.geojson2Jts(content
+							.getJSONObject("geometry"));
+					List<String> meshes = new ArrayList<>();
+					meshes.addAll(Arrays.asList(MeshUtils.point2Meshes(
+							geo.getCoordinate().x, geo.getCoordinate().y)));
 
-                    if (!ObjStatus.INSERT.toString().equals(formJson.getString("objStatus"))) {
+					List<IRow> nodeMeshes = new AbstractSelector(
+							RdNodeMesh.class, conn).loadRowsByParentId(
+							rdnode.pid(), false);
+					rdnode.getMeshes().clear();
+					int count = 0;
+					for (IRow row : nodeMeshes) {
+						RdNodeMesh mesh = (RdNodeMesh) row;
+						String meshId = String.valueOf(mesh.getMeshId());
+						if (meshes.contains(String.valueOf(meshId))) {
+							meshes.remove(meshId);
+							count++;
+						} else {
+							result.insertObject(mesh, ObjStatus.DELETE,
+									mesh.parentPKValue());
+						}
+					}
+					for (String meshId : meshes) {
+						RdNodeMesh mesh = new RdNodeMesh();
+						mesh.setNodePid(rdnode.pid());
+						mesh.setMeshId(Integer.valueOf(meshId));
+						result.insertObject(mesh, ObjStatus.INSERT,
+								mesh.parentPKValue());
+						count++;
+					}
 
-                        RdNodeForm form = rdnode.formMap.get(formJson.getString("rowId"));
+					rdnode.getForms().clear();
+					List<IRow> forms = new AbstractSelector(RdNodeForm.class,
+							conn).loadRowsByParentId(rdnode.pid(), false);
+					if (count >= 2) {
+						boolean flag = true;
+						for (IRow f : forms) {
+							RdNodeForm form = (RdNodeForm) f;
+							if (form.getFormOfWay() == 1) {
+								result.insertObject(form, ObjStatus.DELETE,
+										form.parentPKValue());
+							}
+							if (form.getFormOfWay() == 2) {
+								flag = false;
+							}
+						}
+						if (flag) {
+							RdNodeForm form = new RdNodeForm();
+							form.setNodePid(rdnode.pid());
+							form.setFormOfWay(2);
+							result.insertObject(form, ObjStatus.INSERT,
+									form.parentPKValue());
+						}
+					} else {
+						for (IRow f : forms) {
+							RdNodeForm form = (RdNodeForm) f;
+							if (form.getFormOfWay() == 2) {
+								result.insertObject(form, ObjStatus.DELETE,
+										form.parentPKValue());
+								if (forms.size() == 1) {
+									RdNodeForm ff = new RdNodeForm();
+									ff.setFormOfWay(1);
+									ff.setNodePid(rdnode.pid());
+									result.insertObject(ff, ObjStatus.INSERT,
+											ff.parentPKValue());
+								}
+							}
+						}
+					}
+				}
 
-                        if (form == null) {
-                            throw new Exception("rowId=" + formJson.getString("rowId") + "的RdNodeForm不存在");
-                        }
+				if (isChanged) {
+					result.insertObject(rdnode, ObjStatus.UPDATE, rdnode.pid());
+				}
+			}
+		}
 
-                        if (ObjStatus.DELETE.toString().equals(formJson.getString("objStatus"))) {
-                            result.insertObject(form, ObjStatus.DELETE, rdnode.pid());
+		if (content.containsKey("forms")) {
+			JSONArray forms = content.getJSONArray("forms");
 
-                            continue;
-                        } else if (ObjStatus.UPDATE.toString().equals(formJson.getString("objStatus"))) {
+			for (int i = 0; i < forms.size(); i++) {
 
-                            boolean isChanged = form.fillChangeFields(formJson);
+				JSONObject formJson = forms.getJSONObject(i);
 
-                            if (isChanged) {
-                                result.insertObject(form, ObjStatus.UPDATE, rdnode.pid());
-                            }
-                        }
-                    } else {
-                        RdNodeForm row = new RdNodeForm();
+				if (formJson.containsKey("objStatus")) {
 
-                        row.Unserialize(formJson);
+					if (!ObjStatus.INSERT.toString().equals(
+							formJson.getString("objStatus"))) {
 
-                        row.setNodePid(rdnode.getPid());
+						RdNodeForm form = rdnode.formMap.get(formJson
+								.getString("rowId"));
 
-                        row.setMesh(rdnode.mesh());
+						if (form == null) {
+							throw new Exception("rowId="
+									+ formJson.getString("rowId")
+									+ "的RdNodeForm不存在");
+						}
 
-                        result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
-                    }
-                }
-            }
-        }
+						if (ObjStatus.DELETE.toString().equals(
+								formJson.getString("objStatus"))) {
+							result.insertObject(form, ObjStatus.DELETE,
+									rdnode.pid());
 
-        if (content.containsKey("meshes")) {
-            JSONArray meshes = content.getJSONArray("meshes");
+							continue;
+						} else if (ObjStatus.UPDATE.toString().equals(
+								formJson.getString("objStatus"))) {
 
-            for (int i = 0; i < meshes.size(); i++) {
+							boolean isChanged = form.fillChangeFields(formJson);
 
-                JSONObject meshJson = meshes.getJSONObject(i);
+							if (isChanged) {
+								result.insertObject(form, ObjStatus.UPDATE,
+										rdnode.pid());
+							}
+						}
+					} else {
+						RdNodeForm row = new RdNodeForm();
 
-                if (meshJson.containsKey("objStatus")) {
+						row.Unserialize(formJson);
 
-                    if (!ObjStatus.INSERT.toString().equals(meshJson.getString("objStatus"))) {
+						row.setNodePid(rdnode.getPid());
 
-                        RdNodeMesh row = rdnode.meshMap.get(meshJson.getString("rowId"));
+						row.setMesh(rdnode.mesh());
 
-                        if (row == null) {
-                            throw new Exception("rowId=" + meshJson.getString("rowId") + "的RdNodeMesh不存在");
-                        }
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
+					}
+				}
+			}
+		}
 
-                        if (ObjStatus.DELETE.toString().equals(meshJson.getString("objStatus"))) {
-                            result.insertObject(row, ObjStatus.DELETE, rdnode.pid());
+		if (content.containsKey("meshes")) {
+			JSONArray meshes = content.getJSONArray("meshes");
 
-                            continue;
-                        } else if (ObjStatus.UPDATE.toString().equals(meshJson.getString("objStatus"))) {
+			for (int i = 0; i < meshes.size(); i++) {
 
-                            boolean isChanged = row.fillChangeFields(meshJson);
+				JSONObject meshJson = meshes.getJSONObject(i);
 
-                            if (isChanged) {
-                                result.insertObject(row, ObjStatus.UPDATE, rdnode.pid());
-                            }
-                        }
-                    } else {
-                        RdNodeMesh row = new RdNodeMesh();
+				if (meshJson.containsKey("objStatus")) {
 
-                        row.Unserialize(meshJson);
+					if (!ObjStatus.INSERT.toString().equals(
+							meshJson.getString("objStatus"))) {
 
-                        row.setNodePid(rdnode.getPid());
+						RdNodeMesh row = rdnode.meshMap.get(meshJson
+								.getString("rowId"));
 
-                        row.setMesh(rdnode.mesh());
+						if (row == null) {
+							throw new Exception("rowId="
+									+ meshJson.getString("rowId")
+									+ "的RdNodeMesh不存在");
+						}
 
-                        result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
-                    }
-                }
-            }
-        }
+						if (ObjStatus.DELETE.toString().equals(
+								meshJson.getString("objStatus"))) {
+							result.insertObject(row, ObjStatus.DELETE,
+									rdnode.pid());
 
-        if (content.containsKey("names")) {
-            JSONArray names = content.getJSONArray("names");
+							continue;
+						} else if (ObjStatus.UPDATE.toString().equals(
+								meshJson.getString("objStatus"))) {
 
-            for (int i = 0; i < names.size(); i++) {
+							boolean isChanged = row.fillChangeFields(meshJson);
 
-                JSONObject json = names.getJSONObject(i);
+							if (isChanged) {
+								result.insertObject(row, ObjStatus.UPDATE,
+										rdnode.pid());
+							}
+						}
+					} else {
+						RdNodeMesh row = new RdNodeMesh();
 
-                if (json.containsKey("objStatus")) {
+						row.Unserialize(meshJson);
 
-                    if (!ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+						row.setNodePid(rdnode.getPid());
 
-                        RdNodeName row = rdnode.nameMap.get(json.getString("rowId"));
+						row.setMesh(rdnode.mesh());
 
-                        if (row == null) {
-                            throw new Exception("rowId=" + json.getString("rowId") + "的RdNodeName不存在");
-                        }
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
+					}
+				}
+			}
+		}
 
-                        if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
-                            result.insertObject(row, ObjStatus.DELETE, rdnode.pid());
+		if (content.containsKey("names")) {
+			JSONArray names = content.getJSONArray("names");
 
-                            continue;
-                        } else if (ObjStatus.UPDATE.toString().equals(json.getString("objStatus"))) {
+			for (int i = 0; i < names.size(); i++) {
 
-                            boolean isChanged = row.fillChangeFields(json);
+				JSONObject json = names.getJSONObject(i);
 
-                            if (isChanged) {
-                                result.insertObject(row, ObjStatus.UPDATE, rdnode.pid());
-                            }
-                        }
-                    } else {
-                        RdNodeName row = new RdNodeName();
+				if (json.containsKey("objStatus")) {
 
-                        row.Unserialize(json);
+					if (!ObjStatus.INSERT.toString().equals(
+							json.getString("objStatus"))) {
 
-                        row.setPid(PidUtil.getInstance().applyNodeNameId());
+						RdNodeName row = rdnode.nameMap.get(json
+								.getString("rowId"));
 
-                        row.setNodePid(rdnode.getPid());
+						if (row == null) {
+							throw new Exception("rowId="
+									+ json.getString("rowId")
+									+ "的RdNodeName不存在");
+						}
 
-                        row.setMesh(rdnode.mesh());
+						if (ObjStatus.DELETE.toString().equals(
+								json.getString("objStatus"))) {
+							result.insertObject(row, ObjStatus.DELETE,
+									rdnode.pid());
 
-                        result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
-                    }
-                }
-            }
-        }
+							continue;
+						} else if (ObjStatus.UPDATE.toString().equals(
+								json.getString("objStatus"))) {
 
-        return null;
-    }
+							boolean isChanged = row.fillChangeFields(json);
+
+							if (isChanged) {
+								result.insertObject(row, ObjStatus.UPDATE,
+										rdnode.pid());
+							}
+						}
+					} else {
+						RdNodeName row = new RdNodeName();
+
+						row.Unserialize(json);
+
+						row.setPid(PidUtil.getInstance().applyNodeNameId());
+
+						row.setNodePid(rdnode.getPid());
+
+						row.setMesh(rdnode.mesh());
+
+						result.insertObject(row, ObjStatus.INSERT, rdnode.pid());
+					}
+				}
+			}
+		}
+
+		return null;
+	}
 
 }

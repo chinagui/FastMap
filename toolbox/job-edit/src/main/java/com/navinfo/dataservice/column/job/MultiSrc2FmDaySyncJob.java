@@ -93,7 +93,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	private String downloadAndUnzip(FmMultiSrcSyncApi syncApi,String remoteZipFile)throws Exception{
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
-			//String uploadRoot = "F:\\data\\multisrc\\upload\\";
+			//String uploadRoot = "D:\\temp\\";
+			//return "D:\\temp\\multisrc\\201703\\20161207103647_day";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
@@ -334,7 +335,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			try{
 				conn=DBConnector.getInstance().getConnectionById(dbId);
 				//导入数据
-				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
+				MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(dbId,pois);
 				MultiSrcPoiDayImportor imp = new MultiSrcPoiDayImportor(conn,null);
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());

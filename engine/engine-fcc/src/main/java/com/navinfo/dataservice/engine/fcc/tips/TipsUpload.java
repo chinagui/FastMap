@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -397,7 +396,7 @@ public class TipsUpload {
 	 * @throws Exception
 	 * @time:2017-2-23 上午9:40:53
 	 */
-	private void getTaskIdByGuide(JSONObject json) throws Exception {
+	public void getTaskIdByGuide(JSONObject json) throws Exception {
 		try {
 			// 获取中线快线任务号
 			JSONObject g_guide = json.getJSONObject("g_guide");
@@ -861,7 +860,7 @@ public class TipsUpload {
 	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
 	 * @time:2017-2-13上午9:20:52
 	 */
-/*	private void tipsDiff() throws Exception {
+	/*private void tipsDiff() throws Exception {
 		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
 		SolrBulkUpdater solrConn = null;
@@ -875,15 +874,18 @@ public class TipsUpload {
 				for (String rowkey : rowkeySet) {
 					errRowkey = rowkey;
 					String s_sourceType = allNeedDiffRowkeysCodeMap.get(rowkey);
-
+					
 					BaseTipsProcessor processor = TipsProcessorFactory
 							.getInstance().createProcessor(s_sourceType);
+					//20170331新增，有新增的robot中没有支持的tips processor返回空
+					if(processor!=null){
+						
+						processor.setSolrConn(solrConn);
 
-					processor.setSolrConn(solrConn);
+						processor.diff(rowkey, hbaseConn);
 
-					processor.diff(rowkey, hbaseConn);
-
-					solrConn.commit();
+						solrConn.commit();
+					}
 
 				}
 			}
@@ -990,7 +992,7 @@ public class TipsUpload {
 			return -1;
 		}
 		// 最后一条数据stage!=0需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-		if (lastStage != 0 && operateDate.compareTo(lastDate) <= 0) {
+		if ((lastStage != 0||lastStage != 4) && operateDate.compareTo(lastDate) <= 0) {
 			return -2;
 		}
 
@@ -1010,7 +1012,7 @@ public class TipsUpload {
 
 	public static void main(String[] args) throws Exception {
 
-		Map<String, Photo> photoMap = new HashMap<String, Photo>();
+		/*Map<String, Photo> photoMap = new HashMap<String, Photo>();
 
 		Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
@@ -1018,6 +1020,10 @@ public class TipsUpload {
 
 		a.run("D:/4.txt", photoMap, audioMap);
 
-		System.out.println("成功");
+		System.out.println("成功");*/
+		JSONObject  json=new JSONObject();
+		json.put("g_guide", "{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
+		TipsUpload  l=new TipsUpload();
+		l.getTaskIdByGuide(json);
 	}
 }

@@ -305,6 +305,7 @@ public class Operation implements IOperation {
             Geometry g = GeoTranslator.transform(this.command.getUpdateLink().getGeometry(), 0.00001, 5);
             maps.put(g.getCoordinates()[0], this.command.getUpdateLink().getsNodePid());
             maps.put(g.getCoordinates()[g.getCoordinates().length - 1], this.command.getUpdateLink().geteNodePid());
+            List<String> geoList = new ArrayList<>();
             while (it.hasNext()) {
                 String meshIdStr = it.next();
                 Geometry geomInter = MeshUtils.linkInterMeshPolygon(command.getLinkGeom(), GeoTranslator.transform(MeshUtils.mesh2Jts(meshIdStr), 1, 5));
@@ -321,7 +322,11 @@ public class Operation implements IOperation {
                     }
                 } else {
                     geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, 5);
-
+                    // 创建图幅覆盖线时防止重复创建
+                    if (geoList.contains(geomInter.toString()) || geoList.contains(geomInter.reverse().toString()))
+                        continue;
+                    else
+                        geoList.add(geomInter.toString());
                     links.addAll(LuLinkOperateUtils.getCreateLuLinksWithMesh(geomInter, maps, result, this.command.getUpdateLink()));
                 }
             }

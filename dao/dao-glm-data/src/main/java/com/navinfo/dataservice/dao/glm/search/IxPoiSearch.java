@@ -81,9 +81,13 @@ public class IxPoiSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		IxPoiSelector selector = new IxPoiSelector(conn);
+		
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -1057,11 +1061,8 @@ public class IxPoiSearch implements ISearch {
 					//地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
 					IxPoiAddress address = (IxPoiAddress) aRow;
 					JSONObject addrObj = address.Serialize(null);
-					/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
-					 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
 					//由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
-					if (secondWorkItem.equals("addrPinyin")){
-						
+					if (address.getLangCode().equals("CHI")) {
 						String addrnameStr = stringIsNull(address.getProvince())+"|"+stringIsNull(address.getCity())+"|"+stringIsNull(address.getCounty())+"|"+stringIsNull(address.getTown())+"|"+
 								stringIsNull(address.getPlace())+"|"+stringIsNull(address.getStreet());
 						
@@ -1081,7 +1082,10 @@ public class IxPoiSearch implements ISearch {
 						addrObj.put("addrnamePhoneticStr", addrnamePhoneticStr);
 						addrObj.put("roadnamePhoneticStr", roadnamePhoneticStr);
 						
-						if (address.getLangCode().equals("CHI")) {
+						/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
+						 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
+						if (secondWorkItem.equals("addrPinyin")){
+							
 							if (addrnameStr!=null && !addrnameStr.isEmpty()) {
 								List<List<String>> addrnameMultiPinyin = pyConvertor(addrnameStr);
 								addrObj.put("addrNameMultiPinyin", addrnameMultiPinyin);
@@ -1094,8 +1098,11 @@ public class IxPoiSearch implements ISearch {
 //								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
 //								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 //							}
-						}	
+					
+						}
 					}
+					
+					
 					addrArray.add(addrObj);
 					//addressList赋值
 					

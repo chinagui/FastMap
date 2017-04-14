@@ -323,14 +323,14 @@ public class EditController extends BaseController {
 
 				SearchProcess p = new SearchProcess(conn);
 
-				List<? extends IObj> objList = p.searchDataByPids(
+				List<? extends IRow> objList = p.searchDataByPids(
 						ObjType.valueOf(objType), pidArray);
 
 				JSONArray array = new JSONArray();
 
 				if (objList != null) {
 
-					for (IObj obj : objList) {
+					for (IRow obj : objList) {
 						JSONObject json = obj.Serialize(ObjLevel.FULL);
 						json.put("geoLiveType", objType);
 						array.add(json);

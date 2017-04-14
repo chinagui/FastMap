@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.fcc.trackline;
+package com.navinfo.dataservice.engine.fcc.track;
 
 import java.io.FileInputStream;
 import java.util.ArrayList;
@@ -25,13 +25,13 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 
 /**
- * @ClassName: TrackLinesUpload.java
+ * @ClassName: AdasTrackPointUpload.java
  * @author y
- * @date 2016-6-29下午2:03:48
- * @Description: 轨迹上传，入hbase库
- * 
+ * @date 2017-4-9 下午4:06:07
+ * @Description: adas轨迹点上传
+ *
  */
-public class TrackLinesUpload {
+public class AdasTrackPointUpload {
 	
 	
 	static final int   FAIL = 0;
@@ -90,8 +90,6 @@ public class TrackLinesUpload {
 			
 				Put put = null;
 	
-				//JSONObject trackLine = new JSONObject();
-	
 				String line = scanner.nextLine();
 	
 				JSONObject json = JSONObject.fromObject(line);
@@ -99,6 +97,12 @@ public class TrackLinesUpload {
 				String segmentId = json.getString("segmentId");
 				
 				id=json.getString("id");
+				
+				String  a_prjName=json.getString("a_prjName");
+				
+				String a_weekSeconds=json.getString("a_weekSeconds");
+				
+				String rowkey=a_prjName+a_weekSeconds;
 	
 			/*	trackLine.put("a_uuid", json.getString("id"));
 	
@@ -113,11 +117,11 @@ public class TrackLinesUpload {
 				trackLine.put("a_segmentId", segmentId);*/
 	
 				//通过id判断数据在hbase库中是否已经存在，存在则使用库中的rowkey
-				String rowkey =extisRowKey(json.getString("id"),htab);
+			/*	String rowkey =extisRowKey(json.getString("id"),htab);
 	
 				if(rowkey==null){
 					rowkey = segmentId;
-				}
+				}*/
 	
 				put = new Put(rowkey.getBytes());
 	
@@ -272,7 +276,7 @@ public class TrackLinesUpload {
 		
 		long t1=System.currentTimeMillis();
 
-		TrackLinesUpload a = new TrackLinesUpload();
+		AdasTrackPointUpload a = new AdasTrackPointUpload();
 
 		a.run("D:\\line.txt");
 		

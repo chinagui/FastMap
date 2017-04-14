@@ -892,9 +892,9 @@ public class Transaction {
                     //case REPAIR:
                     //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Command(
                     //            json, requester);
-                    //case DEPART:
-                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Command(
-                    //            json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Command(
+                                json, requester);
                 }
             case CMGBUILDFACE:
                 switch (operType) {
@@ -1712,9 +1712,9 @@ public class Transaction {
                     //case REPAIR:
                     //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Process(
                     //            command);
-                    //case DEPART:
-                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Process(
-                    //            command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Process(
+                                command);
                 }
             case CMGBUILDFACE:
                 switch (operType) {

@@ -6,138 +6,188 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
+
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ISelector;
+
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.vividsolutions.jts.geom.Geometry;
 
-import oracle.sql.STRUCT;
-
+;
 
 /**
- * ZONE:Link  查询接口
- *
+ * ZONE:Link 查询接口
+ * 
  * @author zhaokk
  */
 public class ZoneLinkSelector extends AbstractSelector {
 
-    private Connection conn;
+	private Connection conn;
 
-    public ZoneLinkSelector(Connection conn) {
-        super(conn);
-        this.conn = conn;
-        this.setCls(ZoneLink.class);
-    }
+	public ZoneLinkSelector(Connection conn) {
+		super(conn);
+		this.conn = conn;
+		this.setCls(ZoneLink.class);
+	}
 
-    public List<ZoneLink> loadByNodePid(int nodePid, boolean isLock)
-            throws Exception {
+	public List<ZoneLink> loadByNodePid(int nodePid, boolean isLock)
+			throws Exception {
 
-        List<ZoneLink> links = new ArrayList<ZoneLink>();
+		List<ZoneLink> links = new ArrayList<ZoneLink>();
 
-        StringBuilder sb = new StringBuilder(
-                "select * from zone_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
+		StringBuilder sb = new StringBuilder(
+				"select * from zone_link where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
 
-        if (isLock) {
-            sb.append(" for update nowait");
-        }
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
 
-        PreparedStatement pstmt = null;
+		PreparedStatement pstmt = null;
 
-        ResultSet resultSet = null;
+		ResultSet resultSet = null;
 
-        try {
-            pstmt = conn.prepareStatement(sb.toString());
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
 
-            pstmt.setInt(1, nodePid);
+			pstmt.setInt(1, nodePid);
 
-            pstmt.setInt(2, nodePid);
+			pstmt.setInt(2, nodePid);
 
-            resultSet = pstmt.executeQuery();
+			resultSet = pstmt.executeQuery();
 
-            while (resultSet.next()) {
-                ZoneLink zoneLink = new ZoneLink();
+			while (resultSet.next()) {
+				ZoneLink zoneLink = new ZoneLink();
 
-                ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
-                List<IRow> meshes = new AbstractSelector(ZoneLinkMesh.class, conn).loadRowsByParentId(zoneLink.getPid(), isLock);
-                List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class, conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
+				List<IRow> meshes = new AbstractSelector(ZoneLinkMesh.class,
+						conn).loadRowsByParentId(zoneLink.getPid(), isLock);
+				List<IRow> kinds = new AbstractSelector(ZoneLinkKind.class,
+						conn).loadRowsByParentId(zoneLink.getPid(), isLock);
 
-                for (IRow row : meshes) {
-                    ZoneLinkMesh mesh = (ZoneLinkMesh) row;
-                    zoneLink.meshMap.put(mesh.rowId(), mesh);
-                }
-                zoneLink.setMeshes(meshes);
-                for (IRow row : kinds) {
-                    ZoneLinkKind kind = (ZoneLinkKind) row;
-                    zoneLink.kindMap.put(kind.rowId(), kind);
-                }
-                links.add(zoneLink);
-                zoneLink.setKinds(kinds);
-            }
-        } catch (Exception e) {
+				for (IRow row : meshes) {
+					ZoneLinkMesh mesh = (ZoneLinkMesh) row;
+					zoneLink.meshMap.put(mesh.rowId(), mesh);
+				}
+				zoneLink.setMeshes(meshes);
+				for (IRow row : kinds) {
+					ZoneLinkKind kind = (ZoneLinkKind) row;
+					zoneLink.kindMap.put(kind.rowId(), kind);
+				}
+				links.add(zoneLink);
+				zoneLink.setKinds(kinds);
+			}
+		} catch (Exception e) {
 
-            throw e;
+			throw e;
 
-        } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
 
-        }
+		}
 
-        return links;
+		return links;
 
-    }
+	}
 
-    /*
-     * 仅加载LINK的pid
-     */
-    public List<Integer> loadLinkPidByNodePid(int nodePid, boolean isLock) throws Exception {
+	/***
+	 * 加载联通link不考虑方向
+	 * 
+	 * @param linkPid
+	 * @param nodePidDir
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
 
-        List<Integer> links = new ArrayList<Integer>();
+	public List<ZoneLink> loadTrackLinkNoDirect(int linkPid, int nodePidDir,
+			boolean isLock) throws Exception {
+		List<ZoneLink> list = new ArrayList<ZoneLink>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select rl.* from zone_link rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
 
-        StringBuilder sb = new StringBuilder("select link_pid from ZONE_LINK where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
+		PreparedStatement pstmt = null;
 
-        if (isLock) {
-            sb.append(" for update nowait");
-        }
+		ResultSet resultSet = null;
 
-        PreparedStatement pstmt = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
 
-        ResultSet resultSet = null;
+			pstmt.setInt(1, nodePidDir);
+			pstmt.setInt(2, nodePidDir);
+			pstmt.setInt(3, linkPid);
 
-        try {
-            pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
 
-            pstmt.setInt(1, nodePid);
+			while (resultSet.next()) {
+				ZoneLink zoneLink = new ZoneLink();
+				ReflectionAttrUtils.executeResultSet(zoneLink, resultSet);
+				list.add(zoneLink);
 
-            pstmt.setInt(2, nodePid);
+			}
+			return list;
+		} catch (Exception e) {
 
-            resultSet = pstmt.executeQuery();
+			throw e;
 
-            while (resultSet.next()) {
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 
-                int value = resultSet.getInt("link_pid");
+	/*
+	 * 仅加载LINK的pid
+	 */
+	public List<Integer> loadLinkPidByNodePid(int nodePid, boolean isLock)
+			throws Exception {
 
-                links.add(value);
-            }
-        } catch (Exception e) {
+		List<Integer> links = new ArrayList<Integer>();
 
-            throw e;
+		StringBuilder sb = new StringBuilder(
+				"select link_pid from ZONE_LINK where (s_node_pid = :1 or e_node_pid = :2) and u_record!=2");
 
-        } finally {
-            DBUtils.closeResultSet(resultSet);
-            DBUtils.closeStatement(pstmt);
-        }
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
 
-        return links;
+		PreparedStatement pstmt = null;
 
-    }
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, nodePid);
+
+			pstmt.setInt(2, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				int value = resultSet.getInt("link_pid");
+
+				links.add(value);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return links;
+
+	}
 
 }

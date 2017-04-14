@@ -621,4 +621,14 @@ public class CmgBuildface implements IObj {
     public void setTopos(List<IRow> topos) {
         this.topos = topos;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildface{" + "pid=" + pid + ", buildingPid=" + buildingPid + ", massing=" + massing + ", height=" + height + ", " +
+                "heightAcuracy=" + heightAcuracy + ", heightSource=" + heightSource + ", dataSource=" + dataSource + ", wallMaterial=" +
+                wallMaterial + ", geometry=" + geometry + ", area=" + area + ", perimeter=" + perimeter + ", meshId=" + meshId + ", " +
+                "editFlag=" + editFlag + ", createTime=" + createTime + ", rowId='" + rowId + '\'' + ", tenants=" + tenants + ", " +
+                "tenantMap=" + tenantMap + ", topos=" + topos + ", topoMap=" + topoMap + ", changedFields=" + changedFields + ", " +
+                "status=" + status + '}';
+    }
 }

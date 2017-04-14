@@ -5,12 +5,14 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.exception.DAOException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,9 +61,9 @@ public class CmgBuildnodeSelector extends AbstractSelector {
             pstmt.setInt(1, facePid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildnode(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheAssociatedNodeOfTheFace error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
@@ -100,9 +102,9 @@ public class CmgBuildnodeSelector extends AbstractSelector {
             pstmt.setInt(1, linkPid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildnode(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheBlindNodeOfTheLink error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);

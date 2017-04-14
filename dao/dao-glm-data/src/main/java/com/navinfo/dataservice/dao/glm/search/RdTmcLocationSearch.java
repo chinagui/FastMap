@@ -46,7 +46,7 @@ public class RdTmcLocationSearch implements ISearch {
 	}
 
 	@Override
-	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<? extends IRow> searchDataByPids(List<Integer> pidList) throws Exception {
 		
 		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,false);
 		

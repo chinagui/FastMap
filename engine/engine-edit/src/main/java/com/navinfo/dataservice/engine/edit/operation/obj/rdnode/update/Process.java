@@ -2,7 +2,11 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -27,12 +31,39 @@ public class Process extends AbstractProcess<Command> {
 
 	@Override
 	public boolean prepareData() throws Exception {
+		
 		if (this.getCommand().getNode() != null) {
 			this.rdnode = this.getCommand().getNode();
 			return true;
 		}
 
-		RdNodeSelector selector = new RdNodeSelector(this.getConn());
+		RdNodeSelector selector = new RdNodeSelector(this.getConn());		
+
+		if (null != this.getCommand().getUpdateContents()) {
+
+			List<Integer> nodePids = new ArrayList<Integer>();
+
+			for (int i = 0; i < this.getCommand().getUpdateContents().size(); i++) {
+
+				JSONObject content = this.getCommand().getUpdateContents()
+						.getJSONObject(i);
+
+				nodePids.add(content.getInt("pid"));
+			}
+
+			Map<Integer, RdNode> rdNodeMap = new HashMap<Integer, RdNode>();
+
+			List<IRow> nodeRows = selector.loadByIds(nodePids, true, true);
+
+			for (IRow row : nodeRows) {
+
+				RdNode rdnode = (RdNode) row;
+
+				rdNodeMap.put(this.rdnode.getPid(), rdnode);
+			}
+
+			return true;
+		}
 
 		this.rdnode = (RdNode) selector.loadById(this.getCommand().getPid(), true);
 

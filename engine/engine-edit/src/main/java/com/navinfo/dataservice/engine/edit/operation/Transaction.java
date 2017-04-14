@@ -160,6 +160,9 @@ public class Transaction {
                     case MOVE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Command(
                                 json, requester);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Command(
+                                json, requester);
                 }
             case RDRESTRICTION:
                 switch (operType) {
@@ -860,6 +863,54 @@ public class Transaction {
                     default:
                         break;
                 }
+            case CMGBUILDNODE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint.Command(
+                                json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.update.Command(
+                                json, requester);
+                    case MOVE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.move.movecmgnode.Command(
+                                json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmgnode.Command(
+                                json, requester);
+                }
+            case CMGBUILDLINK:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.create.Command(
+                                json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.update.Command(
+                                json, requester);
+                    case BREAK:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint.Command(
+                                json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmglink.Command(
+                                json, requester);
+                    //case REPAIR:
+                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Command(
+                    //            json, requester);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Command(
+                                json, requester);
+                }
+            case CMGBUILDFACE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.create.Command(
+                                json, requester);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.update.Command(
+                                json, requester);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.delete.Command(
+                                json, requester);
+                }
         }
 
         throw new Exception("不支持的操作类型");
@@ -927,6 +978,9 @@ public class Transaction {
                                 command);
                     case MOVE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.move.moverdnode.Process(
+                                command);
+                    case BATCH:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Process(
                                 command);
                 }
             case RDRESTRICTION:
@@ -1631,6 +1685,54 @@ public class Transaction {
                                 command);
                     default:
                         break;
+                }
+            case CMGBUILDNODE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.update.Process(
+                                command);
+                    case MOVE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.move.movecmgnode.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmgnode.Process(
+                                command);
+                }
+            case CMGBUILDLINK:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.update.Process(
+                                command);
+                    case BREAK:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmglink.Process(
+                                command);
+                    //case REPAIR:
+                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Process(
+                    //            command);
+                    case DEPART:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Process(
+                                command);
+                }
+            case CMGBUILDFACE:
+                switch (operType) {
+                    case CREATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.create.Process(
+                                command);
+                    case UPDATE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.update.Process(
+                                command);
+                    case DELETE:
+                        return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.delete.Process(
+                                command);
                 }
         }
 

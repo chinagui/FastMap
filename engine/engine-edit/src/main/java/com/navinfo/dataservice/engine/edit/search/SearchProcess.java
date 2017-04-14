@@ -206,7 +206,7 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public List<? extends IObj> searchDataByPids(ObjType type, JSONArray pids)
+	public List<? extends IRow> searchDataByPids(ObjType type, JSONArray pids)
 			throws Exception {
 
 		try {
@@ -218,7 +218,7 @@ public class SearchProcess {
 			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
 					JsonUtils.getJsonConfig());
 
-			List<? extends IObj> objList = search.searchDataByPids(pidList);
+			List<? extends IRow> objList = search.searchDataByPids(pidList);
 
 			return objList;
 		} catch (Exception e) {

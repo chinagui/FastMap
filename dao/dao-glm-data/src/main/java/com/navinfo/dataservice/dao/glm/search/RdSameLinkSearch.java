@@ -7,17 +7,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.same.RdSameLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
-
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 public class RdSameLinkSearch implements ISearch {
 
@@ -36,8 +38,13 @@ public class RdSameLinkSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RdSameLinkSelector selector = new RdSameLinkSelector(conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override

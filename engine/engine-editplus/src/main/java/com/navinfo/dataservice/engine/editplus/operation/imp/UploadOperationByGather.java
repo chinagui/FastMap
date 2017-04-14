@@ -114,6 +114,7 @@ public class UploadOperationByGather {
 				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
 				try{
 					conn=DBConnector.getInstance().getConnectionById(dbId);
+					log.info("conn :"+conn+" dbId: "+dbId);
 					//导入数据
 					MultiSrcPoiDayImportorCommand cmd = new MultiSrcPoiDayImportorCommand(pois);
 					CollectorUploadOperation imp = new CollectorUploadOperation(conn,null);
@@ -225,9 +226,11 @@ public class UploadOperationByGather {
 					Integer centreTaskId = 0;
 					ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 					Map<String,Integer> taskMap = manApi.queryTaskIdsByGrid(grid);
+					log.info("taskMap : "+taskMap);
 					if(taskMap != null && taskMap.containsKey("quickTaskId") && taskMap.containsKey("centreTaskId")){
 						quickTaskId = taskMap.get("quickTaskId");
 						centreTaskId = taskMap.get("centreTaskId");
+						log.info("quickTaskId : "+taskMap+" centreTaskId : "+centreTaskId);
 					}
 					//维护 poi_edit_status 表中 快线及中线任务标识
 					PoiEditStatus.updateTaskIdByPid(conn, poiPid, quickTaskId, centreTaskId);
@@ -436,6 +439,12 @@ public class UploadOperationByGather {
 			return poiJson;
 		}
 		
-		
 	}
+/*	public static void main(String[] args) {
+		double x = 116.58572;
+		double y = 39.87998;
+		CompGridUtil gridUtil = new CompGridUtil();
+		String grid = gridUtil.point2Grids(x,y)[0];
+		System.out.println(grid);
+	}*/
 }

@@ -54,9 +54,12 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add names Blob;");
 		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
 		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
+		//********zl 2017.04.11 *************
+		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		//***********************************
 
 		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -175,6 +178,8 @@ public class RdLinkExporter {
 			//
 			prep.setLong(24, json.getLong("sNodePid"));
 			prep.setLong(25, json.getLong("eNodePid"));
+			
+			prep.setInt(26, json.getInt("isADAS"));
 
 			prep.executeUpdate();
 
@@ -384,6 +389,26 @@ public class RdLinkExporter {
 		//s,enodpis
 		json.put("sNodePid",rs.getLong("S_NODE_PID"));
 		json.put("eNodePid",rs.getLong("E_NODE_PID"));
+		
+		//****zl 2017.04.11 *********
+		int adasFlag = rs.getInt("ADAS_FLAG");
+		int isADAS  = 2;
+		if(adasFlag == 1){
+			isADAS = 1;
+		}else if(adasFlag == 0 || adasFlag == 2){
+			/*if(kind == 7 &&　){
+				
+			}*/
+			List<Integer> formList = new ArrayList<>();
+			for (int i = 0; i < formsArray.size(); i++) {
+				JSONObject formsJson = formsArray.getJSONObject(i);
+				formList.add(formsJson.getInt("form"));
+			}
+			if(formList.contains(35) && direct == 1){
+				isADAS = 3;
+			}
+		}
+		json.put("isADAS", isADAS);
 
 		return json;
 	}

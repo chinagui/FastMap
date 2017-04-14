@@ -404,5 +404,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointCode2Level() throws Exception;
+	
+	public JSONObject getAdminMap(Connection conn)throws Exception;
 
 }

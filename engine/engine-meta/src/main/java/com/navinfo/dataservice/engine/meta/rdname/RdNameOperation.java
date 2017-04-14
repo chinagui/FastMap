@@ -6,11 +6,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Iterator;
 
 import org.apache.commons.dbutils.DbUtils;
 
 import com.mysql.jdbc.StringUtils;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
+import com.navinfo.dataservice.engine.meta.service.ScRoadnameHwInfoService;
 import com.navinfo.navicommons.database.sql.ProcedureBase;
 
 import net.sf.json.JSONArray;
@@ -182,6 +184,12 @@ public RdName saveName(RdName rdName) throws Exception {
 			+rdName.getuRecord()+","+rdName.getuFields()+","+rdName.getSplitFlag()+","+rdName.getCity()+")");*/
 			pstmt.execute();
 
+			//判断是否存在hw信息标识,如过存在则新增SC_ROADNAME_HW_INFO
+			if(rdName.getHwInfoFlag() != null && rdName.getHwInfoFlag() == 1){
+				ScRoadnameHwInfoService scRoadnameHwInfoService = new ScRoadnameHwInfoService();
+				scRoadnameHwInfoService.saveHwInfo(conn,nameGroupid);
+			}
+			
 			rdName.setNameId(nameId);
 			rdName.setNameGroupid(nameGroupid);
 			return rdName;
@@ -405,6 +413,13 @@ public RdName saveName(RdName rdName) throws Exception {
 				
 				subPstms.execute();
 			}
+			
+			//判断是否存在hw信息标识,如过存在则新增SC_ROADNAME_HW_INFO
+			if(rdName.getHwInfoFlag() != null && rdName.getHwInfoFlag() == 1){
+				ScRoadnameHwInfoService scRoadnameHwInfoService = new ScRoadnameHwInfoService();
+				scRoadnameHwInfoService.saveHwInfo(conn,rdName.getNameGroupid());
+			}
+			
 			//同步同组的拆分标志：同组的名称，只要有一个修改，那么同组的 拆分标志就一同修改；
 			syncSplitFlag(rdName);
 			conn.commit();
@@ -494,6 +509,110 @@ public RdName saveName(RdName rdName) throws Exception {
 				{
 					pstmt.setClob(1, pidClod);
 				}
+				resultSet = pstmt.executeQuery();
+				while (resultSet.next()) {
+					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
+	/**
+	 * @Title: teilenRdNameByParams
+	 * @Description: 元数据编辑平台,道路名拆分
+	 * @param params
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月11日 下午7:18:00 
+	 */
+	public void teilenRdNameByParams(JSONObject params) throws Exception {
+		RdNameTeilen teilen = new RdNameTeilen(conn);
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			StringBuilder sql = new StringBuilder();
+			JSONObject param =  params.getJSONObject("params");
+			/*String name = "" ;
+			if(param.containsKey("name") 
+					&& !StringUtils.isNullOrEmpty(param.getString("name")) && !param.getString("name").equals("null")){
+				name = param.getString("name");
+			}
+			String nameGroupid = "";
+			if(param.containsKey("nameGroupid") 
+					&& !StringUtils.isNullOrEmpty(param.getString("nameGroupid")) && !param.getString("nameGroupid").equals("null")){
+				nameGroupid = param.getString("nameGroupid");
+			}	
+			String adminId = "";
+			if(param.containsKey("adminId") 
+					&& !StringUtils.isNullOrEmpty(param.getString("adminId")) && !param.getString("adminId").equals("null")){
+				adminId = param.getString("adminId");
+			}*/
+			String roadTypes = "";
+			if(param.containsKey("roadTypes") && param.getJSONArray("roadTypes") != null && param.getJSONArray("roadTypes").size() > 0 ){
+				JSONArray arr = param.getJSONArray("roadTypes");
+				roadTypes = arr.join(",");
+			}
+			
+				sql.append("SELECT a.name_id,a.name_groupid,a.lang_code,a.road_type");
+				sql.append(" FROM rd_name a where a.split_flag!=1");
+			
+				// 添加过滤器条件
+				Iterator<String> keys = param.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					if (key.equals("name")) {
+						if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
+							sql.append(" and a.name like '%");
+							sql.append(param.getString(key));
+							sql.append("%'");
+						}
+						
+					} else if(key.equals("nameGroupid") ){
+						if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+							String columnName = " name_groupId ";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("adminId") ){
+						if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
+							String columnName = " admin_id ";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("roadTypes")){
+						if(!StringUtils.isNullOrEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
+							String columnName = " road_type ";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("  in( ");
+							sql.append(roadTypes);
+							sql.append(") ");
+						}
+						
+					}
+				}
+			
+			if (sql.length()>0) {
+				pstmt = conn.prepareStatement(sql.toString());
+				
 				resultSet = pstmt.executeQuery();
 				while (resultSet.next()) {
 					teilen.teilenName(resultSet.getInt("name_id"), resultSet.getInt("name_groupid"), resultSet.getString("lang_code"), resultSet.getInt("road_type"));

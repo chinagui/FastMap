@@ -687,22 +687,29 @@ public class MetaController extends BaseController {
 
             RdNameSelector selector = new RdNameSelector();
 
-            int subtaskId = jsonReq.getInt("subtaskId");
-            logger.info("subtaskId: "+subtaskId);
-            ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            int flag = jsonReq.getInt("flag");//1是任务查，0是全库查
+            JSONObject data = new JSONObject();
+            if(flag > 0){
+            	int subtaskId = jsonReq.getInt("subtaskId");
+                logger.info("subtaskId: "+subtaskId);
+                ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+                Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
-            if (subtask == null) {
-                throw new Exception("subtaskid未找到数据");
+                if (subtask == null) {
+                    throw new Exception("subtaskid未找到数据");
+                }
+
+//    			int dbId = subtask.getDbId();
+
+                FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+
+                logger.info("tips: "+tips);
+                 data = selector.searchForWeb(jsonReq, tips);
+            }else{
+            	logger.info("全库范围内查询! ");
+            	data = selector.searchForWeb(jsonReq);
             }
-
-//			int dbId = subtask.getDbId();
-
-            FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-            JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
-
-            logger.info("tips: "+tips);
-            JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));
 
@@ -773,7 +780,10 @@ public class MetaController extends BaseController {
 
             JSONObject data = jsonReq.getJSONObject("data");
 
-            int subtaskId = jsonReq.getInt("subtaskId");
+            int subtaskId = 0 ;
+            if(jsonReq.containsKey("subtaskId")){
+            	subtaskId = jsonReq.getInt("subtaskId");
+            }
 
 //			int dbId = jsonReq.getInt("dbId");
 
@@ -1234,6 +1244,55 @@ public class MetaController extends BaseController {
             logger.error(e.getMessage(), e);
 
             return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+    
+    
+    /**
+     * @Title: metadataTeilen
+     * @Description: 道路名拆分,元数据编辑平台
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年4月11日 下午7:02:16 
+     */
+    @RequestMapping(value = "/rdname/metadataTeilen")
+    public ModelAndView metadataTeilen(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int flag = jsonReq.getInt("flag");
+
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            RdNameOperation operation = new RdNameOperation(conn);
+
+            if (flag > 0) {//拆分指定数据
+                JSONArray dataList = jsonReq.getJSONArray("data");
+
+                operation.teilenRdName(dataList);
+            } else {//拆分特定范围内数据
+            	JSONObject params = jsonReq.getJSONObject("params");
+
+                operation.teilenRdNameByParams(params);
+            }
+
+            return new ModelAndView("jsonView", success());
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
         }
     }
 

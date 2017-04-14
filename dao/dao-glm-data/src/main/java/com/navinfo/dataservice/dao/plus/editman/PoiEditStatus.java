@@ -250,7 +250,7 @@ public class PoiEditStatus {
 			
 				sb.append(" WHERE T.PID = "+pid);
 
-			
+				logger.info("updateTaskIdByPid sql:"+sb.toString());
 				new QueryRunner().update(conn, sb.toString());
 			
 		}catch(Exception e){

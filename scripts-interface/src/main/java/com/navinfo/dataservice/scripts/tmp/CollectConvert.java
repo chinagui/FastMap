@@ -103,7 +103,8 @@ public class CollectConvert {
 				log.info("路径"+outPath+"数据转换");
 				for(JSONObject oldPoi:oldListJson){
 					try{
-						JSONObject newPoi = CollectConvertMain.convertMain(dbId,inPath,oldPoi);
+						int poisDbId=dbId;
+						JSONObject newPoi = CollectConvertMain.convertMain(poisDbId,inPath,oldPoi);
 						newListJson.add(newPoi);
 						
 						//记录数据fid_项目号_时间
@@ -113,18 +114,18 @@ public class CollectConvert {
 						String programId = pathOut.getFileName().toString().split("_")[2];
 					    String date=(new SimpleDateFormat("yyyyMMddHHmmss")).format(new Date());  
 						String target = fid + "_" + programId + "_" + date;
-						if(dbId==0){
+						if(poisDbId==0){
 							Geometry oldGeo = new WKTReader().read(oldPoi.getString("geometry"));
 							String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
-							dbId = CollectConvertUtils.getDbidByGeo(newGeoStr);
+							poisDbId = CollectConvertUtils.getDbidByGeo(newGeoStr);
 						}
 						List<String> temp = new ArrayList<String>();
-						if(map.containsKey(dbId)){
-							temp = map.get(dbId);
+						if(map.containsKey(poisDbId)){
+							temp = map.get(poisDbId);
 							temp.add(target);
 						}else{
 							temp.add(target);
-							map.put(dbId, temp);
+							map.put(poisDbId, temp);
 						}
 						
 						

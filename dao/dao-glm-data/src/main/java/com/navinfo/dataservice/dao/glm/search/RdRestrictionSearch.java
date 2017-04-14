@@ -13,6 +13,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
@@ -42,8 +43,13 @@ public class RdRestrictionSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);		
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override

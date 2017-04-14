@@ -86,6 +86,9 @@ public class PoiRelationImportor extends AbstractOperation{
 						List<String> childFid = new ArrayList<String>();
 						childFid.add(fid);
 						Map<String,Long> fidPidMap = IxPoiSelector.getPidByFids(conn, childFid);
+						if(!fidPidMap.containsKey(fid)){
+							log.info("fid:" + fid);
+						}
 						pid = fidPidMap.get(fid);
 					}
 				}

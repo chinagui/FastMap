@@ -255,6 +255,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 	public boolean importAddByJson(IxPoiObj poi,JSONObject jo, String version)throws Exception {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
+				
 				//*************zl 2016.12.20*******************
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
@@ -707,7 +708,6 @@ public class CollectorUploadOperation extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				long pid = ixPoi.getPid();
-				
 				//改分类
 				String newKindCode = null;
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
@@ -2393,6 +2393,9 @@ public class CollectorUploadOperation extends AbstractOperation {
 		Map<String,Long> exists = IxPoiSelector.getPidByFids(conn,addPois.keySet());
 		if(exists==null)return;
 		for(String fid:exists.keySet()){
+			if(fid.equals("0010130518WMH00081")){
+				log.info("");
+			}
 			JSONObject errObj = new JSONObject();
 			errObj.put("fid", fid);
 			errObj.put("reason",  "fid库中已存在");

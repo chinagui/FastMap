@@ -145,6 +145,9 @@ public class CollectConvert {
 				log.info("路径"+outPath+"数据文件采集成果导入相应日库");
 				//List<String> result = new ArrayList<String>();
 				PoiService.getInstance().importPoi(seq, Long.valueOf(0));
+				log.info("start other fidList"+map.toString());
+				CollectConvertUtils.importConvertFids(map);	
+				map=new HashMap<Integer,List<String>>();
 				successSeqList.add(seq);
 				log.info("end 路径"+outPath+"数据入日库,jobid="+seq);
 			}
@@ -154,9 +157,8 @@ public class CollectConvert {
 			log.info("end convert fail");
 			throw e;
 		}finally{
-			//待导入的数据fid信息写入数据库
 			log.info("start other log write");
-			CollectConvertUtils.importConvertFids(map);			
+			//待导入的数据fid信息写入数据库		
 			log.info("本次转换路径汇总");
 			CollectConvertUtils.writeInteger2TxtFile(path+"/outConvert.txt", convertSeqList);
 			log.info("所有jobId："+convertSeqList.toString());

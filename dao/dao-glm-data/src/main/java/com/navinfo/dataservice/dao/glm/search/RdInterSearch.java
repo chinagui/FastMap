@@ -153,9 +153,9 @@ public class RdInterSearch implements ISearch {
 						JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
 							gObject.put("g", jo.getJSONArray("coordinates"));
-							gObject.put("i", linkSplits[i]);
-							gObject.put("s", sNodePids[i]);
-							gObject.put("e", eNodePids[i]);
+							gObject.put("i", Integer.parseInt(linkSplits[i]));
+							gObject.put("s", Integer.parseInt(sNodePids[i]));
+							gObject.put("e", Integer.parseInt(eNodePids[i]));
 							
 							gLinkArray.add(gObject);
 					}

@@ -1494,34 +1494,6 @@ public class ProgramService {
 	
 	public Map<String, Object> query(Connection conn,int programId) throws Exception {
 		try{
-			String sql="SELECT P.PROGRAM_ID,"
-					+ "         P.NAME                       PROGRAM_NAME,"
-					+ "         P.DESCP                      PROGRAM_DESCP,"
-					+ "         P.TYPE,"
-					+ "         P.LOT,"
-					+ "         C.CITY_NAME,"
-					+ "         C.CITY_ID,"
-					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
-					+ "         I.FEATURE_KIND,"
-					+ "         P.CREATE_USER_ID,"
-					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
-					+ "         P.PLAN_START_DATE,"
-					+ "         P.PLAN_END_DATE,"
-					+ "         P.COLLECT_PLAN_START_DATE,"
-					+ "         P.COLLECT_PLAN_END_DATE,"
-					+ "         P.DAY_EDIT_PLAN_START_DATE,"
-					+ "         P.DAY_EDIT_PLAN_END_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_START_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_END_DATE,"
-					+ "         P.PRODUCE_PLAN_START_DATE,"
-					+ "         P.PRODUCE_PLAN_END_DATE"
-					+ "    FROM CITY C, PROGRAM P, USER_INFO U, INFOR I"
-					+ "   WHERE C.CITY_ID(+) = P.CITY_ID"
-					+ "     AND I.INFOR_ID(+) = P.INFOR_ID"
-					+ "     AND P.LATEST = 1"
-					+ "     AND P.CREATE_USER_ID = U.USER_ID"
-					+ "     AND P.PROGRAM_ID = "+programId;
 			StringBuilder sb = new StringBuilder();
 			sb.append(" SELECT P.PROGRAM_ID,                                      ");
 			sb.append("          P.NAME                       PROGRAM_NAME,       ");

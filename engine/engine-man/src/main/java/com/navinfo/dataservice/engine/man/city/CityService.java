@@ -8,8 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javassist.expr.NewArray;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -24,7 +22,6 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -32,7 +29,7 @@ import oracle.sql.STRUCT;
 * @ClassName:  CityService 
 * @author code generator
 * @date 2016-06-06 08:19:11 
-* @Description: TODO
+* @Description: 
 */
 public class CityService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -47,7 +44,7 @@ public class CityService {
 		return SingletonHolder.INSTANCE;
 	}
 
-	public List<HashMap> queryListByWkt(JSONObject json)throws ServiceException{
+	public List<HashMap<String,Object>> queryListByWkt(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -69,9 +66,9 @@ public class CityService {
 					+ " WHERE T.CITY_ID = K.CITY_ID(+)"
 					+ "   AND T.PLAN_STATUS IN "+planningStatus
 					+ "   AND SDO_ANYINTERACT(T.GEOMETRY,SDO_GEOMETRY(?,8307))='TRUE'";		
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
+				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
 					while(rs.next()){
 						try {
 							HashMap<String,Object> map = new HashMap<String,Object>();
@@ -83,7 +80,6 @@ public class CityService {
 								String clobStr = GeoTranslator.struct2Wkt(struct);
 								map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							} catch (Exception e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 							map.put("planStatus", rs.getInt("plan_status"));
@@ -112,7 +108,7 @@ public class CityService {
 		}
 	}
 	
-	public List<HashMap> queryListByAlloc(JSONObject json)throws ServiceException{
+	public List<HashMap<String,Object>> queryListByAlloc(JSONObject json)throws ServiceException{
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -121,9 +117,9 @@ public class CityService {
 			String selectSql = "select c.CITY_ID,c.CITY_NAME, c.geometry,    case  when exists (select 1      from task t, subtask s     where c.city_id = t.city_id       and t.task_id = s.task_id) then   1  else   0    end subtask_status,    case when exists(select 1 from task t where c.city_id=t.city_id) then 1 else 0 end task_status   from city c where" 
 			  +	" SDO_ANYINTERACT(c.geometry,sdo_geometry(?,8307))='TRUE'";
 		
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>(){
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
+				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
 					while(rs.next()){
 						try {
 							HashMap<String,Object> map = new HashMap<String,Object>();
@@ -134,7 +130,6 @@ public class CityService {
 								String clobStr = GeoTranslator.struct2Wkt(struct);
 								map.put("geometry", Geojson.wkt2Geojson(clobStr));
 							} catch (Exception e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
 							}
 							int taskStatus = rs.getInt("task_status");
@@ -220,7 +215,6 @@ public class CityService {
 	 * @throws Exception 
 	 */
 	public int queryCityIdByTaskId(int taskId) throws Exception {
-		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -254,8 +248,7 @@ public class CityService {
 					+ "  FROM CITY"
 					+ " WHERE 1 = 1"
 					+ extentSql ;
-			QueryRunner runn=new QueryRunner();
-			return runn.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
+			return run.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
 
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs)

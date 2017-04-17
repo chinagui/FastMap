@@ -61,8 +61,8 @@ public class EditController extends BaseController {
 			// 加载用户ID
 			t.setUserId(tokenObj.getUserId());
 			// 加载用户taskId
-			if (paraJson.containsKey("taskId")) {
-				t.setTaskId(paraJson.getInt("taskId"));
+			if (paraJson.containsKey("subtaskId")) {
+				t.setSubTaskId(paraJson.getInt("subtaskId"));
 			}
 			// 加载数据库类型
 			if (paraJson.containsKey("dbType")) {

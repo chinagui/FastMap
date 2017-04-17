@@ -219,4 +219,10 @@ public class CmgBuildlinkMesh implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildlinkMesh{" + "linkPid=" + linkPid + ", meshId=" + meshId + ", rowId='" + rowId + '\'' + ", changedFields=" +
+                changedFields + ", status=" + status + '}';
+    }
 }

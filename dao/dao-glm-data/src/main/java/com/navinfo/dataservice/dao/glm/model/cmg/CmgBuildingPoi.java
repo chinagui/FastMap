@@ -218,4 +218,10 @@ public class CmgBuildingPoi implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildingPoi{" + "buildingPid=" + buildingPid + ", poiPid=" + poiPid + ", rowId='" + rowId + '\'' + ", changedFields="
+                + changedFields + ", status=" + status + '}';
+    }
 }

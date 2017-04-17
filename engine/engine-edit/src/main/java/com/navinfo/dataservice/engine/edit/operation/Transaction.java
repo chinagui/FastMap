@@ -892,9 +892,9 @@ public class Transaction {
                     case DELETE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmglink.Command(
                                 json, requester);
-                    //case REPAIR:
-                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Command(
-                    //            json, requester);
+                    case REPAIR:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Command(
+                                json, requester);
                     case DEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Command(
                                 json, requester);
@@ -1715,9 +1715,9 @@ public class Transaction {
                     case DELETE:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmglink.Process(
                                 command);
-                    //case REPAIR:
-                    //    return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Process(
-                    //            command);
+                    case REPAIR:
+                        return new com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink.Process(
+                                command);
                     case DEPART:
                         return new com.navinfo.dataservice.engine.edit.operation.topo.depart.departcmgnode.Process(
                                 command);

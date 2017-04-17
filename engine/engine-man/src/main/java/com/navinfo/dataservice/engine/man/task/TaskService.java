@@ -2668,8 +2668,13 @@ public class TaskService {
 			TaskOperation.updateLatest(conn, taskId);
 			//任务对应的block若为关闭，则同步更新为已规划，否则不动
 			TaskOperation.reOpenBlockByTask(conn,newTaskId);
+			
 			//修改打开二代编辑任务对应的日落月配置表图幅
-			updateDayToMonthMesh(taskId);
+			Task task = queryByTaskId(newTaskId);
+			if(task.getType() == 2){
+				updateDayToMonthMesh(newTaskId);
+			}
+			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

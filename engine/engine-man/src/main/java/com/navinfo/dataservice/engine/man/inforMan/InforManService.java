@@ -9,16 +9,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javassist.expr.NewArray;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.api.man.model.BlockMan;
-import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;

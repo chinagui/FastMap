@@ -61,7 +61,7 @@ public class ProgramService {
 			
 			conn = DBConnector.getInstance().getManConnection();
 			Program bean = (Program) JsonOperation.jsonToBean(dataJson,Program.class);
-			bean.setCreateUserId(Integer.valueOf(String.valueOf(userId)));			
+			bean.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
 			//创建项目，并维护相关状态
 			create(conn, bean);					
 			
@@ -82,123 +82,119 @@ public class ProgramService {
 	public int create(Connection conn,Program bean) throws Exception{
 		QueryRunner run = new QueryRunner();
 		//将旧项目状态修改为失效
-		String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
-		if (bean!=null&&bean.getCityId()!=0){
-			updateSql+=" CITY_ID ="+bean.getCityId();
-		};
-		
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-			updateSql+=" infor_id ='" + bean.getInforId() + "'";
-		};
-		run.update(conn,updateSql);
+			String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
+			if (bean!=null&&bean.getCityId()!=0){
+				updateSql+=" CITY_ID ="+bean.getCityId();
+			};
+			
+			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+				updateSql+=" infor_id ='" + bean.getInforId() + "'";
+			};
+			run.update(conn,updateSql);
 		//创建项目		
 		int programId=getNewProgramId(conn);
 		bean.setProgramId(programId);
-		
-		String insertPart="";
-		String valuePart="";
-		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-		insertPart+=" PROGRAM_ID ";
-		valuePart+=bean.getProgramId();			
-		
-		if (bean!=null&&bean.getCityId()!=0){
+			
+			String insertPart="";
+			String valuePart="";
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" CITY_ID ";
-			valuePart+=bean.getCityId();
-		};
-		
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			insertPart+=" PROGRAM_ID ";
+			valuePart+=bean.getProgramId();			
+			
+			if (bean!=null&&bean.getCityId()!=0){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" CITY_ID ";
+				valuePart+=bean.getCityId();
+			};
+			
+			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" infor_id ";
+				valuePart+= "'" + bean.getInforId() + "'";
+			};
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" infor_id ";
-			valuePart+= "'" + bean.getInforId() + "'";
-		};
-		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-		insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
-		valuePart+=bean.getCreateUserId()+",sysdate,2,1";
-		
-		if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" name ";
-			valuePart+="'"+bean.getName()+"'";
-		};
-		if (bean!=null&&bean.getType()!=0){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" type ";
-			valuePart+=bean.getType();
-		};
-		
-		if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" DESCP ";
-			valuePart+="'"+bean.getDescp()+"'";
-		};
-		if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" PLAN_START_DATE ";
-			valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" PLAN_END_DATE ";
-			valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" Collect_PLAN_START_DATE ";
-			valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" Collect_PLAN_END_DATE";
-			valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" day_EDIT_PLAN_START_DATE ";
-			valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" Day_EDIT_PLAN_END_DATE";
-			valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
-			valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" MONTH_EDIT_PLAN_END_DATE";
-			valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" Produce_Plan_Start_Date ";
-			valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" Produce_Plan_End_Date";
-			valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-		};
-		if (bean!=null&&bean.getLot()!=0){
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" lot ";
-			valuePart+=bean.getLot();
-		};
-		String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
-		run.update(conn,createSql);
+			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
+			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
+			
+			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" name ";
+				valuePart+="'"+bean.getName()+"'";
+			};
+			if (bean!=null&&bean.getType()!=0){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" type ";
+				valuePart+=bean.getType();
+			};
+			
+			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" DESCP ";
+				valuePart+="'"+bean.getDescp()+"'";
+			};
+			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" PLAN_END_DATE ";
+				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" Collect_PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" Collect_PLAN_END_DATE";
+				valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" day_EDIT_PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" Day_EDIT_PLAN_END_DATE";
+				valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
+				valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" MONTH_EDIT_PLAN_END_DATE";
+				valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" Produce_Plan_Start_Date ";
+				valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" Produce_Plan_End_Date";
+				valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+			};
+
+			String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
+			run.update(conn,createSql);
 		//修改项目对应city的状态为已规划
-		if (bean!=null&&bean.getCityId()!=0){
-			CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
-		};
+			if (bean!=null&&bean.getCityId()!=0){
+				CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
+			};
 		//修改项目对应情报为已规划
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
-		};
+			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+				InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
+			};		
 		return programId;
-	}
+		}
 	
 	public void update(long userId,JSONObject dataJson) throws ServiceException {
 		Connection conn = null;
@@ -258,10 +254,7 @@ public class ProgramService {
 				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
 				setPart+=" Produce_Plan_End_Date=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=0){
-				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
-				setPart+=" lot ="+bean.getLot();
-			};
+
 			String updateSql = "update program set "+setPart+" where program_id="+bean.getProgramId();
 			run.update(conn,updateSql);
 			
@@ -1501,34 +1494,38 @@ public class ProgramService {
 	
 	public Map<String, Object> query(Connection conn,int programId) throws Exception {
 		try{
-			String sql="SELECT P.PROGRAM_ID,"
-					+ "         P.NAME                       PROGRAM_NAME,"
-					+ "         P.DESCP                      PROGRAM_DESCP,"
-					+ "         P.TYPE,"
-					+ "         P.LOT,"
-					+ "         C.CITY_NAME,"
-					+ "         C.CITY_ID,"
-					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
-					+ "         I.FEATURE_KIND,"
-					+ "         P.CREATE_USER_ID,"
-					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
-					+ "         P.PLAN_START_DATE,"
-					+ "         P.PLAN_END_DATE,"
-					+ "         P.COLLECT_PLAN_START_DATE,"
-					+ "         P.COLLECT_PLAN_END_DATE,"
-					+ "         P.DAY_EDIT_PLAN_START_DATE,"
-					+ "         P.DAY_EDIT_PLAN_END_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_START_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_END_DATE,"
-					+ "         P.PRODUCE_PLAN_START_DATE,"
-					+ "         P.PRODUCE_PLAN_END_DATE"
-					+ "    FROM CITY C, PROGRAM P, USER_INFO U, INFOR I"
-					+ "   WHERE C.CITY_ID(+) = P.CITY_ID"
-					+ "     AND I.INFOR_ID(+) = P.INFOR_ID"
-					+ "     AND P.LATEST = 1"
-					+ "     AND P.CREATE_USER_ID = U.USER_ID"
-					+ "     AND P.PROGRAM_ID = "+programId;
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT P.PROGRAM_ID,                                      ");
+			sb.append("          P.NAME                       PROGRAM_NAME,       ");
+			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
+			sb.append("          P.TYPE,                                          ");
+//			sb.append("          P.LOT,                                           ");
+			sb.append("          C.CITY_NAME,                                     ");
+			sb.append("          C.CITY_ID,                                       ");
+			sb.append("          I.INFOR_ID,                                      ");
+			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.FEATURE_KIND,                                  ");
+			sb.append("          P.CREATE_USER_ID,                                ");
+			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
+			sb.append("          P.PLAN_START_DATE,                               ");
+			sb.append("          P.PLAN_END_DATE,                                 ");
+			sb.append("          P.COLLECT_PLAN_START_DATE,                       ");
+			sb.append("          P.COLLECT_PLAN_END_DATE,                         ");
+			sb.append("          P.DAY_EDIT_PLAN_START_DATE,                      ");
+			sb.append("          P.DAY_EDIT_PLAN_END_DATE,                        ");
+			sb.append("          P.MONTH_EDIT_PLAN_START_DATE,                    ");
+			sb.append("          P.MONTH_EDIT_PLAN_END_DATE,                      ");
+			sb.append("          P.PRODUCE_PLAN_START_DATE,                       ");
+			sb.append("          P.PRODUCE_PLAN_END_DATE                          ");
+			sb.append("     FROM CITY C, PROGRAM P, USER_INFO U, INFOR I          ");
+			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
+			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
+			sb.append("      AND P.LATEST = 1                                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.PROGRAM_ID = "+programId);
+			
+			String sql = sb.toString();
+			log.info("program query sql :" + sql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> map = new HashMap<String, Object>();
@@ -1537,7 +1534,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-						map.put("lot", rs.getInt("LOT"));
+//						map.put("lot", rs.getInt("LOT"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));

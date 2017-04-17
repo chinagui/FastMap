@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.cmg;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.json.DateJsonValueProcessor;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -308,6 +309,7 @@ public class CmgBuildface implements IObj {
     @Override
     public JSONObject Serialize(final ObjLevel objLevel) throws Exception {
         JsonConfig jsonConfig = Geojson.geoJsonConfig(0.00001, 5);
+        jsonConfig.registerJsonValueProcessor(java.util.Date.class, new DateJsonValueProcessor("yyyy-MM-dd hh:mm:ss"));
         return JSONObject.fromObject(this, jsonConfig);
     }
 

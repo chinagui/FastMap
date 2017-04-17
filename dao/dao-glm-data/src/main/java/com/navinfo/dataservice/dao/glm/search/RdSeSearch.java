@@ -88,7 +88,7 @@ public class RdSeSearch implements ISearch {
 
 				m.put("a", resultSet.getInt("in_link_pid"));
 
-				m.put("b", resultSet.getString("out_link_pid"));
+				m.put("b", resultSet.getInt("out_link_pid"));
 
 				snapshot.setM(m);
 

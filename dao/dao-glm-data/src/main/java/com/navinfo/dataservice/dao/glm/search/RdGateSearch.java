@@ -88,9 +88,9 @@ public class RdGateSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("type"));
+				m.put("a", resultSet.getInt("type"));
 
-				m.put("b", resultSet.getString("dir"));
+				m.put("b", resultSet.getInt("dir"));
 
 				snapshot.setM(m);
 

@@ -72,9 +72,9 @@ public class LcLinkSearch implements ISearch {
 
                 JSONObject m = new JSONObject();
 
-                m.put("a", resultSet.getString("s_nodePid"));
+                m.put("a", resultSet.getInt("s_nodePid"));
 
-                m.put("b", resultSet.getString("e_nodePid"));
+                m.put("b", resultSet.getInt("e_nodePid"));
 
                 m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
 
@@ -140,9 +140,9 @@ public class LcLinkSearch implements ISearch {
 
                 JSONObject m = new JSONObject();
 
-                m.put("a", resultSet.getString("s_node_pid"));
+                m.put("a", resultSet.getInt("s_node_pid"));
 
-                m.put("b", resultSet.getString("e_node_pid"));
+                m.put("b", resultSet.getInt("e_node_pid"));
 
                 m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
 

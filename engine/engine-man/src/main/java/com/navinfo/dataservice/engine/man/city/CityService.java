@@ -6,6 +6,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javassist.expr.NewArray;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -21,6 +24,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 
@@ -227,6 +231,52 @@ public class CityService {
 					.query(conn, querySql, new MapHandler()).get("city_id")
 					.toString());
 			return cityId;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public List<Map<String, Object>> cityMonitor(JSONObject dataJson)throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			String extentSql="";
+			if(dataJson.containsKey("planStatus")){
+				extentSql="   AND PLAN_STATUS IN "+dataJson.getJSONArray("planStatus").toString()
+						.replace("[", "(").replace("]", ")");
+			}
+			String querySql = "SELECT CITY_ID, ADMIN_GEO, PLAN_STATUS"
+					+ "  FROM CITY"
+					+ " WHERE 1 = 1"
+					+ extentSql ;
+			QueryRunner runn=new QueryRunner();
+			return runn.query(conn, querySql, new ResultSetHandler<List<Map<String, Object>>>(){
+
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs)
+						throws SQLException {
+					List<Map<String, Object>> res=new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						Map<String, Object> cityMap=new HashMap<String, Object>();
+						cityMap.put("cityId", rs.getInt("CITY_ID"));
+						cityMap.put("geometry",null);
+						STRUCT struct=(STRUCT)rs.getObject("ADMIN_GEO");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							cityMap.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e1) {
+							log.error(e1.getMessage(),e1);
+						}
+						cityMap.put("planStatus", rs.getInt("PLAN_STATUS"));
+						res.add(cityMap);
+					}
+					return res;
+				}});
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

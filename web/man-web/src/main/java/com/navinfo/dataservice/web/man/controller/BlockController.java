@@ -160,7 +160,7 @@ public class BlockController extends BaseController {
 			if (StringUtils.isEmpty(wkt)) {
 				throw new IllegalArgumentException("wkt参数值不能为空");
 			}
-			List<HashMap> data = service.listByWkt(dataJson);
+			List<Map<String,Object>> data = service.listByWkt(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);

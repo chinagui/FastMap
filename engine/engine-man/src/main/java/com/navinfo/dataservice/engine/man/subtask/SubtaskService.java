@@ -1932,6 +1932,47 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	public Map<String, Integer> getTaskBySubtaskId(int subtaskId)
+			throws Exception {
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String sql="SELECT T.TASK_ID, P.TYPE"
+					+ "  FROM SUBTASK S, TASK T, PROGRAM P"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND S.SUBTASK_ID = "+subtaskId;
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>(){
+
+				@Override
+				public Map<String, Integer> handle(ResultSet rs)
+						throws SQLException {
+					Map<String, Integer> taskMap=new HashMap<String, Integer>();
+					if(rs.next()){
+						taskMap.put("taskId", rs.getInt("TASK_ID"));
+						taskMap.put("programType", rs.getInt("TYPE"));
+					}
+					return taskMap;
+				}
+				
+			});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 	/**
 	 * @param subtaskId

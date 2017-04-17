@@ -9,15 +9,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javassist.expr.NewArray;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.json.JSONException;
 
 import com.navinfo.dataservice.api.man.model.BlockMan;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.man.common.DbOperation;
@@ -300,6 +304,71 @@ public class InforManService {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询列表失败，原因为:" + e.getMessage(), e);
 		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 一级情报监控
+	 * 原则： 
+	 * 根据wkt（可选）筛选全国一级情报数据。
+	 * 1.	将wkt转成gridList
+	 * 2.	与infor_grid_mapping关联可获取与wkt交叉的情报数据列表
+	 * 使用场景：管理平台-一级情报监控
+	 * @param fromObject
+	 * @return
+	 */
+	public List<Map<String, Object>> monitor(JSONObject json)throws Exception {
+		Connection conn=null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			String extendSql="";
+//			if(json.containsKey("wkt")){
+//				String wkt = json.getString("wkt");
+//			}
+			if(json.containsKey("planStatus")){
+				String planStatus = ((json.getJSONArray("planStatus").toString()).replace('[', '(')).replace(']',
+						')');
+				extendSql=extendSql+"   AND T.PLAN_STATUS IN "+planStatus;
+			}
+
+			String selectSql = "SELECT T.INFOR_ID, T.GEOMETRY, T.PLAN_STATUS"
+					+ "  FROM INFOR T"
+					+ " WHERE 1=1"
+					+ extendSql;
+			QueryRunner run=new QueryRunner();
+			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String,Object>>>(){
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs)
+						throws SQLException {
+					List<Map<String, Object>> res=new ArrayList<Map<String,Object>>();
+					while(rs.next()){
+						HashMap<String,Object> map = new HashMap<String,Object>();
+						map.put("inforId", rs.getString("INFOR_ID"));
+						JSONArray geoList = new JSONArray();
+						String inforGeo=rs.getString("GEOMETRY");
+						String[] inforGeoList=inforGeo.split(";");
+						for(String geoTmp:inforGeoList){
+							try {
+								geoList.add(GeoTranslator.jts2Geojson(GeoTranslator.wkt2Geometry(geoTmp)));
+							} catch (JSONException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						map.put("geometry", geoList);
+						map.put("planStatus",rs.getInt("PLAN_STATUS"));
+						res.add(map);
+					}
+					return res;
+				}});
+		}catch (Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error("", e);
+			throw e;
+		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

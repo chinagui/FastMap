@@ -4,6 +4,8 @@ import oracle.spatial.geometry.JGeometry;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.LineSegment;
+import com.vividsolutions.jts.geom.LineString;
+import com.vividsolutions.jts.geom.LinearRing;
 
 /**
  * 计算角度的帮助类
@@ -152,14 +154,14 @@ public class AngleCalculator {
 	}
 
 	/**
-	 * 计算两个线段之间的夹角
+	 * 计算两个线段之间的夹角 flag 0 延长线的最小夹角 1 顺时针夹角 2 逆时针夹角
 	 * 
 	 * @param preLink
 	 * @param nextLink
 	 * @return 两线段 挂接返回两线段的夹角，不挂接返回9999；
 	 */
 	public static double getConnectLinksAngle(LineSegment preLink,
-			LineSegment nextLink) {
+			LineSegment nextLink, int flag) {
 
 		Coordinate preS = preLink.getCoordinate(0);
 		Coordinate preE = preLink.getCoordinate(1);
@@ -191,10 +193,14 @@ public class AngleCalculator {
 		}
 
 		double angle = (rad * 180) / Math.PI;
-
-		if (angle > 180)
-			angle = 360 - angle;
-
+		if (flag == 0) {
+			if (angle > 180) {
+				return 360 - angle;
+			}
+		}
+		if (flag == 1) {
+			return 360 - angle;
+		}
 		return angle;
 	}
 
@@ -305,8 +311,27 @@ public class AngleCalculator {
 	}
 
 	public static void main(String[] args) {
-		LngLatPoint A = new LngLatPoint(113.249648, 23.401553);
-		LngLatPoint B = new LngLatPoint(113.246033, 23.403362);
-		System.out.println(getAngle(A, B));
+		// LINESTRING (116.21878 39.78779, 116.21916 39.78779)
+		// LINESTRING (116.21884 39.78796, 116.21916 39.78779)
+		// LINESTRING (116.21916 39.78779, 116.21889 39.78762)
+		// LINESTRING (116.21916 39.78779, 116.21938 39.78764)
+		// LINESTRING (116.21916 39.78779, 116.21930 39.78786)
+		LineSegment lineSegment = new LineSegment(116.21878, 39.78779,
+				116.21916, 39.78779);
+		LineSegment line1 = new LineSegment(116.21884, 39.78796, 116.21916,
+				39.78779);
+		LineSegment line2 = new LineSegment(116.21916, 39.78779, 116.21889,
+				39.78762);
+
+		LineSegment line3 = new LineSegment(116.21916, 39.78779, 116.21938,
+				39.78764);
+		LineSegment line4 = new LineSegment(116.21916, 39.78779, 116.21930,
+				39.78786);
+
+		System.out.println(getConnectLinksAngle(lineSegment, line1,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line2,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line3,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line4,2));
+
 	}
 }

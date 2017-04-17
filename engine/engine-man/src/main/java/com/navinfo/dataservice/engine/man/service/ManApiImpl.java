@@ -260,6 +260,19 @@ public class ManApiImpl implements ManApi {
 		SubtaskService.getInstance().closeSubtask(subtaskId,userId);
 		
 	}
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, Integer> getTaskBySubtaskId(int subtaskId)
+			throws Exception {
+		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
+	}
 
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)

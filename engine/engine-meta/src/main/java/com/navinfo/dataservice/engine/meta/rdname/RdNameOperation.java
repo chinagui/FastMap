@@ -538,10 +538,10 @@ public RdName saveName(RdName rdName) throws Exception {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-
+		System.out.println(" begin teilenRdNameByParams params: "+ params);
 		try {
 			StringBuilder sql = new StringBuilder();
-			JSONObject param =  params.getJSONObject("params");
+			//JSONObject param =  params.getJSONObject("params");
 			/*String name = "" ;
 			if(param.containsKey("name") 
 					&& !StringUtils.isNullOrEmpty(param.getString("name")) && !param.getString("name").equals("null")){
@@ -558,8 +558,8 @@ public RdName saveName(RdName rdName) throws Exception {
 				adminId = param.getString("adminId");
 			}*/
 			String roadTypes = "";
-			if(param.containsKey("roadTypes") && param.getJSONArray("roadTypes") != null && param.getJSONArray("roadTypes").size() > 0 ){
-				JSONArray arr = param.getJSONArray("roadTypes");
+			if(params.containsKey("roadTypes") && params.getJSONArray("roadTypes") != null && params.getJSONArray("roadTypes").size() > 0 ){
+				JSONArray arr = params.getJSONArray("roadTypes");
 				roadTypes = arr.join(",");
 			}
 			
@@ -567,38 +567,38 @@ public RdName saveName(RdName rdName) throws Exception {
 				sql.append(" FROM rd_name a where a.split_flag!=1");
 			
 				// 添加过滤器条件
-				Iterator<String> keys = param.keys();
+				Iterator<String> keys = params.keys();
 				while (keys.hasNext()) {
 					String key = keys.next();
 					if (key.equals("name")) {
-						if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
+						if((!params.getString(key).isEmpty()) && !params.getString("name").equals("null")){
 							sql.append(" and a.name like '%");
-							sql.append(param.getString(key));
+							sql.append(params.getString(key));
 							sql.append("%'");
 						}
 						
 					} else if(key.equals("nameGroupid") ){
-						if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+						if(!params.getString(key).isEmpty() && !params.getString("nameGroupid").equals("null")){
 							String columnName = " name_groupId ";
 							sql.append(" and a.");
 							sql.append(columnName);
 							sql.append(" = ");
-							sql.append(param.getString(key));
+							sql.append(params.getString(key));
 							sql.append(" ");
 						}
 						
 					}else if(key.equals("adminId") ){
-						if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
+						if(!params.getString(key).isEmpty() && !params.getString("adminId").equals("null")){
 							String columnName = " admin_id ";
 							sql.append(" and a.");
 							sql.append(columnName);
 							sql.append(" = ");
-							sql.append(param.getString(key));
+							sql.append(params.getString(key));
 							sql.append(" ");
 						}
 						
 					}else if(key.equals("roadTypes")){
-						if(!StringUtils.isNullOrEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
+						if(!StringUtils.isNullOrEmpty(roadTypes) && !params.getString("roadTypes").equals("null")){
 							String columnName = " road_type ";
 							sql.append(" and a.");
 							sql.append(columnName);
@@ -609,7 +609,7 @@ public RdName saveName(RdName rdName) throws Exception {
 						
 					}
 				}
-			
+			System.out.println("  teilenRdNameByParams  sql: "+sql.toString());
 			if (sql.length()>0) {
 				pstmt = conn.prepareStatement(sql.toString());
 				

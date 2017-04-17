@@ -16,8 +16,6 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.google.gson.JsonObject;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -760,17 +758,28 @@ public class CheckController extends BaseController {
 	public ModelAndView searchCheckJobList(HttpServletRequest request){
 		try{			
 			JSONObject parameterJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			if(parameterJson==null){
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
+			System.out.println("parameterJson : "+parameterJson.toString());
+			
 			String tableName  = parameterJson.getString("tableName");
 			if(tableName==null || StringUtils.isEmpty(tableName)){
 				throw new IllegalArgumentException("tableName参数不能为空。");
 			}
 			
-			JSONArray data = new JSONArray();
+			List<JobInfo> jobList = null;
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			data = jobApiService.getJobObjList(parameterJson);
+			jobList = jobApiService.getJobInfoList(parameterJson);
+			System.out.println("jobList"+jobList+" jobList.size() : "+jobList.size());
+			JSONArray data = new JSONArray();
+			if(jobList != null && jobList.size() >0 ){
+				for(JobInfo job : jobList){
+					System.out.println("job.getDescp(): "+job.getDescp()+"  "+" job.getGuid(): "+job.getGuid() );
+					JSONObject jobObj = new JSONObject();
+					jobObj.put("jobName", job.getDescp());
+					jobObj.put("jobGuid", job.getGuid());
+					data.add(jobObj);
+				}
+			}
+			System.out.println("data: "+data);
 			
 			return new ModelAndView("jsonView", success(data));
 
@@ -788,28 +797,33 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		logger.info("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
 		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			if(jsonReq.getString("taskName") == null && StringUtils.isEmpty(jsonReq.getString("taskName"))){
+			System.out.println("jobApiService : "+ jobApiService);
+			System.out.println("taskName : "+jsonReq.getString("taskName"));
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
 				String tableName  = jsonReq.getString("tableName");
+				System.out.println("tableName :"+tableName);
 				if(tableName==null || StringUtils.isEmpty(tableName)){
 					throw new IllegalArgumentException("tableName参数不能为空。");
 				}
 				
 				//根据jobId 查询jobUuid 获取最新的一个任务
-				JSONObject jobObj = jobApiService.getLatestJobByDescp(tableName);
-				
-				if(jobObj != null && jobObj.size() >0){
-					jsonReq.put("taskName", jobObj.getString("jobGuid"));
+				JobInfo jobInfo = jobApiService.getLatestJobByDescp(tableName);
+				System.out.println("jobInfo : "+jobInfo);
+				if(jobInfo != null && jobInfo.getGuid() != null && StringUtils.isNotEmpty(jobInfo.getGuid())){
+					System.out.println("jobInfo.getGuid() :"+ jobInfo.getGuid());
+					jsonReq.put("taskName", jobInfo.getGuid());
 				}
 			}
 			
 			conn = DBConnector.getInstance().getMetaConnection();
-			MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadateApi");
-			Map<String,String> adminMap = metadataApiService.getAdminMap(conn);
+			
+			MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String,String> adminMap = metadataApiService.getAdminMap();
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
 			Page page = new Page();
 			page = niValExceptionSelector.listCheckResultsByTaskName(jsonReq,adminMap);
@@ -845,22 +859,26 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 
 		String parameter = request.getParameter("parameter");
-		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		logger.info("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
 		Connection conn = null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			if(jsonReq.getString("taskName") == null && StringUtils.isEmpty(jsonReq.getString("taskName"))){
+			System.out.println("jobApiService : "+jobApiService );
+			System.out.println("taskName : "+ jsonReq.getString("taskName"));
+			
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
 				String tableName  = jsonReq.getString("tableName");
+				System.out.println("tableName : "+tableName );
 				if(tableName==null || StringUtils.isEmpty(tableName)){
 					throw new IllegalArgumentException("tableName参数不能为空。");
 				}
 				
 				//根据jobId 查询jobUuid 获取最新的一个任务
-				JSONObject jobObj = jobApiService.getLatestJobByDescp(tableName);
-				
-				if(jobObj != null && jobObj.size() >0){
-					jsonReq.put("taskName", jobObj.getString("jobGuid"));
+				JobInfo jobInfo = jobApiService.getLatestJobByDescp(tableName);
+				logger.info("jobInfo.getGuid() :"+jobInfo.getGuid());
+				if(jobInfo != null && jobInfo.getGuid() != null && StringUtils.isNotEmpty(jobInfo.getGuid())){
+					jsonReq.put("taskName", jobInfo.getGuid());
 				}
 			}
 			
@@ -868,10 +886,93 @@ public class CheckController extends BaseController {
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
 			JSONArray data = new JSONArray();
 			data = niValExceptionSelector.listCheckResultsRuleIds(jsonReq);
-			
-			logger.info("end check/getResultsByTaskName"+" :"+jsonReq.getString("taskName"));
+			System.out.println("data :"+data);
+			logger.info("end check/getruleIdsByTaskName"+" :"+jsonReq.getString("taskName"));
 			logger.debug(data);
 			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: checkResultsStatis
+	 * @Description: 道路名检查结果统计
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月17日 下午8:00:56 
+	 */
+	@RequestMapping(value = "/check/metadata/checkResultsStatis")
+	public ModelAndView checkResultsStatis(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String taskName = "";
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+			}else{
+				taskName = jsonReq.getString("taskName");
+			}
+			List<String> groupList = new ArrayList<String>();
+			JSONArray groupDate = jsonReq.getJSONArray("data");
+			if(groupDate != null && groupDate.size() > 0){
+				groupList = (List<String>) JSONArray.toCollection(groupDate);
+			}
+			conn = DBConnector.getInstance().getMetaConnection();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			JSONArray newdata = new JSONArray();
+			JSONArray data = niValExceptionSelector.checkResultsStatis(taskName,groupList);
+			
+			if(groupList.contains("admin_id") || groupList.contains("ruleid")){
+				Map<String,String> adminMap =null;
+				if(groupList.contains("admin_id")){
+					MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+					adminMap = metadataApiService.getAdminMap();
+				}
+				if(data != null && data.size() >0){
+					for(Object obj : data){
+						JSONObject jobj = (JSONObject) obj;
+						if(jobj.containsKey("ruleid")){
+							//查询ruleName
+							String ruleName =CheckService.getInstance().getRuleNameById(jobj.getString("ruleid"));
+							jobj.put("ruleName", ruleName);
+						}
+						if(jobj.containsKey("admin_id")){
+							int adminId = jobj.getInt("admin_id"); 
+							if(adminId == 214){
+								jobj.put("admin_name","全国");
+							}else{
+								if (!adminMap.isEmpty()) {
+									if (adminMap.containsKey(String.valueOf(adminId))) {
+										jobj.put("admin_name", adminMap.get(String.valueOf(adminId)));
+									} else {
+										jobj.put("admin_name","");
+									}
+								}
+							}
+						}
+						newdata.add(jobj);
+					}
+				}
+			}
+			
+			logger.info("end check/checkResultsStatis"+" :"+jsonReq.getString("taskName"));
+			logger.debug(newdata);
+			return new ModelAndView("jsonView", success(newdata));
 
 		} catch (Exception e) {
 			

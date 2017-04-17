@@ -1,9 +1,18 @@
 package com.navinfo.dataservice.dao;
 
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Test;
+
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.navicommons.database.Page;
@@ -19,12 +28,12 @@ import net.sf.json.JSONObject;
  */
 public class RdNameResultsTest {
 	
-	@Test
+	//@Test
 	public void checkResultList(){
 		Connection conn =null;
 		try{
 			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
-					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "fm_meta_all_sp6", "fm_meta_all_sp6").getConnection();
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.228:1521/orcl", "metadata_pd_17_sum", "metadata_pd_17_sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 
 			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'subtaskId':78,'dbId':17}");	
@@ -91,4 +100,108 @@ public class RdNameResultsTest {
 		//JSONObject json = selector.searchByName("八通", 5, 1, 17,conn);
 		//System.out.println(json);
 	}
+	
+	
+//	@Test
+	public void checkResultListByTask(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'2d6475dcd01a41d6b3b8588544d83db6','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+				
+				Page page = null;
+				//List<JSONObject> page =null;
+				try {
+					Map adminMap = new HashMap();
+					page = a.listCheckResultsByTaskName(jsonReq, adminMap);
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println(page.getResult());
+					 System.out.println(page.getTotalCount());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
+	//@Test
+	public void listCheckResultsRuleIds(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','tableName':'rdName'}");	
+			
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+				
+				JSONArray arr = null;
+				//List<JSONObject> page =null;
+				try {
+					arr = a.listCheckResultsRuleIds(jsonReq);
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println(arr);
+					 System.out.println(arr.size());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@Test
+	public void checkResultsStatis(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			//JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid','level','information','admin_id']}");
+			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid']}");
+				String taskName = "";
+				taskName = jsonReq.getString("taskName");
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				List<String> groupList = new ArrayList<String>();
+				JSONArray groupDate = jsonReq.getJSONArray("data");
+				if(groupDate != null && groupDate.size() > 0){
+					groupList = (List<String>) JSONArray.toCollection(groupDate);
+				}
+				
+				JSONArray arr = null;
+				//List<JSONObject> page =null;
+				try {
+					arr = a.checkResultsStatis(taskName,groupList);
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println(arr);
+					 System.out.println(arr.size());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	
 }

@@ -200,5 +200,31 @@ public class CheckService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
+	
+	/**
+	 * @Title: getCkRuleCodes
+	 * @Description: 根据规则号获取规则名称
+	 * @param ruleCode
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月17日 下午3:12:14 
+	 */
+	public String getRuleNameById( String ruleCode) throws Exception {
+		
+		Connection conn = null;
+		try {
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			
+			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
+			
+			return ckRuleSelector.getRuleNameById(ruleCode);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
 
 }

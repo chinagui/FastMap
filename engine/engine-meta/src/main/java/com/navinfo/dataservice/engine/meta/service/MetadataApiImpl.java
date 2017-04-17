@@ -1,17 +1,13 @@
 package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
@@ -63,7 +59,6 @@ import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -802,13 +797,13 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 	@Override
-	public JSONObject getAdminMap(Connection conn) throws Exception {
+	public JSONObject getAdminMap() throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea();
+		return areaSelector.getAdminMap();
+	}
+	private JSONObject getAdminMap(Connection conn) throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
 	}
-	/*private JSONObject getAdminMap(Connection conn) throws Exception {
-		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
-		return areaSelector.getAdminMap();
-	}*/
 
 }

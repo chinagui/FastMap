@@ -130,5 +130,32 @@ public class CkRuleSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	public String getRuleNameById(String ruleCode) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		String ruleName = "";
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct c.rule_name from ck_rule_cop c ");
+			sb.append(" where c.rule_status=1 ");
+			if(ruleCode != null && StringUtils.isNotEmpty(ruleCode)){
+				sb.append("and c.rule_code ='"+ruleCode+"'");
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			if(resultSet.next()) {
+				ruleName = resultSet.getString("rule_name");
+			}
+			return ruleName;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 
 }

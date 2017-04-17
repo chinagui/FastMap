@@ -19,10 +19,16 @@ public class CmgBuildlinkTest extends InitApplication {
     }
 
     @Test
-    public void testCreaCMGBUILDLINKteLink(){
+    public void testCreateCmgBuildlink(){
         String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
                 "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.0669363439083,33.9616218843058],[127.06732124090196," +
                 "33.96170864585347]]},\"catchLinks\":[]},\"dbId\":84}";
+        TestUtil.run(requester);
+    }
+
+    @Test
+    public void testDeleteCmgBuildlink(){
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDLINK\",\"objId\":402000001}";
         TestUtil.run(requester);
     }
 }

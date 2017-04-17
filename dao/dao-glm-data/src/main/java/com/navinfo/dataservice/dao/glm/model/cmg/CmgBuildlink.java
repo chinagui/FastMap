@@ -410,4 +410,11 @@ public class CmgBuildlink implements IObj {
     public void setMeshes(List<IRow> meshes) {
         this.meshes = meshes;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildlink{" + "pid=" + pid + ", sNodePid=" + sNodePid + ", eNodePid=" + eNodePid + ", kind=" + kind + ", geometry=" +
+                geometry + ", length=" + length + ", editFlag=" + editFlag + ", rowId='" + rowId + '\'' + ", status=" + status + ", " +
+                "changedFields=" + changedFields + ", meshes=" + meshes + ", meshMap=" + meshMap + '}';
+    }
 }

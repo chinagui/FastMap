@@ -46,7 +46,7 @@ public class RdTmcLocationSearch implements ISearch {
 	}
 
 	@Override
-	public List<? extends IObj> searchDataByPids(List<Integer> pidList) throws Exception {
+	public List<? extends IRow> searchDataByPids(List<Integer> pidList) throws Exception {
 		
 		List<IRow> objList = new AbstractSelector(RdTmclocation.class,conn).loadByIds(pidList, false,false);
 		
@@ -108,7 +108,7 @@ public class RdTmcLocationSearch implements ISearch {
 				
 				snapshot.setT(49);
 
-				jsonM.put("a",resultSet.getString("link_pid"));
+				jsonM.put("a",resultSet.getInt("link_pid"));
 				
 				String tmc = "";
 				
@@ -131,11 +131,11 @@ public class RdTmcLocationSearch implements ISearch {
 				
 				jsonM.put("b",tmc);
 				
-				jsonM.put("c",resultSet.getString("loc_direct"));
+				jsonM.put("c",resultSet.getInt("loc_direct"));
 				
 				jsonM.put("d",locCode);
 				
-				jsonM.put("e",resultSet.getString("direct"));
+				jsonM.put("e",resultSet.getInt("direct"));
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				

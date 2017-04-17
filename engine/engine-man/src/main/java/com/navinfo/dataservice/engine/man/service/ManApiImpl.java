@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 /*
@@ -270,6 +272,15 @@ public class ManApiImpl implements ManApi {
 	public Map<String, Integer> getTaskBySubtaskId(int subtaskId)
 			throws Exception {
 		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)
+	 */
+	@Override
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
+		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
+		return taskIdSet;
 	}
 	
 }

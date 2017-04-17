@@ -88,7 +88,7 @@ public class StaticsService {
 		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
 	
-	public List<HashMap> blockExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<Map<String,Object>> blockExpectStatQuery(String wkt) throws JSONException, Exception{
 		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -105,11 +105,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.listByWkt(json);
+		List<Map<String,Object>> data = service.listByWkt(json);
 		
 		Set<Integer> blocks = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			int blockId = (int) map.get("blockId");
 			
 			blocks.add(blockId);
@@ -119,7 +119,7 @@ public class StaticsService {
 		
 		Map<Integer,Integer> statusMap = api.getExpectStatusByBlocks(blocks);
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			map.put("expectStatus", statusMap.get(map.get("blockId")));
 		}
 		

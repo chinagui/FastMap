@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.alibaba.dubbo.monitor.Monitor;
+import com.alibaba.dubbo.remoting.Server;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -161,6 +164,27 @@ public class InforManController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	/**
+	 * 一级情报监控
+	 * 原则： 
+	 * 根据wkt（可选）筛选全国一级情报数据。
+	 * 1.	将wkt转成gridList
+	 * 2.	与infor_grid_mapping关联可获取与wkt交叉的情报数据列表
+	 * 使用场景：管理平台-一级情报监控
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value="/inforMan/monitor")
+	public ModelAndView monitor(HttpServletRequest request){
+		try{
+			String parStr=URLDecode(request.getParameter("parameter"));
+			List<Map<String, Object>> res=service.monitor(JSONObject.fromObject(parStr));
+			return new ModelAndView("jsonView",success(res));
+		}catch(Exception e){
+			log.error("", e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 	

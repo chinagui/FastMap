@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.iface;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -19,6 +20,15 @@ import net.sf.json.JSONObject;
  * 描述：apiGridSelectorExternalService.java
  */
 public interface ManApi{
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	public Map<String, Integer> getTaskBySubtaskId(int subtaskId) throws Exception;
 	/**
 	 * 生管角色发布二代编辑任务后，点击打开小窗口可查看发布进度： 查询cms任务发布进度
 	 * 其中有关于tip转aumark的功能，有其他系统异步执行。执行成功后调用接口修改进度并执行下一步
@@ -140,6 +150,7 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
 	
 }
 

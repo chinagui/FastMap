@@ -325,7 +325,7 @@ public class RdLinkSearchUtils {
 				LineSegment lineSegment = getLineSegment(link, connectNodePid);
 
 				double angle = Math.abs(180 - AngleCalculator
-						.getConnectLinksAngle(targetlineSegment, lineSegment));
+						.getConnectLinksAngle(targetlineSegment, lineSegment,0));
 
 				if (angle < minAngle) {
 
@@ -438,7 +438,7 @@ public class RdLinkSearchUtils {
 				// 计算当前线直线和联通直线夹角 选出当前线延长线夹角最小
 				double minAngle = Math.abs(180 - AngleCalculator
 						.getConnectLinksAngle(currentLinklineSegment,
-								nextLinklineSegment));
+								nextLinklineSegment,0));
 
 				if (map.size() > 0) {
 					if (map.keySet().iterator().next() > minAngle) {
@@ -583,5 +583,68 @@ public class RdLinkSearchUtils {
 							.getCoordinates().length - 1]);
 		}
 		return lineSegment;
+	}
+	
+	public List<RdLink> getCloseTrackLinks(int cuurentLinkPid, int cisFlag)
+			throws Exception {
+		List<RdLink> tracks = new ArrayList<RdLink>();
+		RdLinkSelector selector = new RdLinkSelector(conn);
+		Set<Integer> nodes = new HashSet<Integer>();
+		// 添加当前选中的link
+		RdLink fristLink = (RdLink) selector.loadById(cuurentLinkPid, true);
+		nodes.add(fristLink.getsNodePid());
+		nodes.add(fristLink.geteNodePid());
+		tracks.add(fristLink);
+		// 查找当前link联通的links
+		int cruuentNodePid = fristLink.geteNodePid();
+		List<RdLink> nextLinks = selector.loadTrackLinkNoDirect(cuurentLinkPid,
+				cruuentNodePid, true);
+		while (nextLinks.size() > 0) {
+			// 加载当前link
+			RdLink currentLink = (RdLink) selector.loadById(cuurentLinkPid,
+					true);
+			// 计算当前link直线的几何属性
+			LineSegment currentLinklineSegment = getLineSegment(currentLink,
+					cruuentNodePid);
+			// 如果当前link的起点等于当前联通方向
+			// 取当前link的最后两个形状点组成直线
+
+			Map<Double, RdLink> map = new HashMap<Double, RdLink>();
+			for (RdLink rdlink : nextLinks) {
+				// 获取联通links直线的几何
+				LineSegment nextLinklineSegment = getLineSegment(rdlink,
+						cruuentNodePid);
+				// 计算当前线直线和联通直线夹角 按照顺逆标志
+				double minAngle = Math.abs(AngleCalculator
+						.getConnectLinksAngle(currentLinklineSegment,
+								nextLinklineSegment, cisFlag));
+
+				if (map.size() > 0) {
+					if (map.keySet().iterator().next() > minAngle) {
+						map.clear();
+						map.put(minAngle, rdlink);
+					}
+
+				} else {
+					map.put(minAngle, rdlink);
+				}
+			}
+			// 获取联通线中夹角最小的link
+			// 赋值给当前cuurentLinkPid 确定方向
+			RdLink link = map.values().iterator().next();
+			cuurentLinkPid = link.getPid();
+			cruuentNodePid = (cruuentNodePid == link.getsNodePid()) ? link
+					.geteNodePid() : link.getsNodePid();
+			if (nodes.contains(cruuentNodePid)) {
+				tracks.add(link);
+				break;
+			}
+			nodes.add(cruuentNodePid);
+			tracks.add(link);
+			// 赋值查找下一组联通links
+			nextLinks = selector.loadTrackLinkNoDirect(cuurentLinkPid,
+					cruuentNodePid, true);
+		}
+		return tracks;
 	}
 }

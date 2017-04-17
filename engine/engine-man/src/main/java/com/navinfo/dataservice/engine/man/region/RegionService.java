@@ -139,8 +139,20 @@ public class RegionService {
 	public Region query(Region bean ) throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
+			return query(conn,bean.getRegionId());			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Region query(Connection conn,int regionId) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
 			String selectSql = "select * from Region where REGION_ID=?";
 			ResultSetHandler<Region> rsHandler = new ResultSetHandler<Region>() {
 				public Region handle(ResultSet rs) throws SQLException {
@@ -157,8 +169,7 @@ public class RegionService {
 				}
 
 			};
-			return run.query(conn, selectSql, rsHandler, bean.getRegionId());
-			
+			return run.query(conn, selectSql, rsHandler, regionId);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

@@ -434,4 +434,13 @@ public class CmgBuildingName implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildingName{" + "nameId=" + nameId + ", buildingPid=" + buildingPid + ", nameGroupid=" + nameGroupid + ", " +
+                "langCode='" + langCode + '\'' + ", fullName='" + fullName + '\'' + ", baseName='" + baseName + '\'' + ", buildNumber='"
+                + buildNumber + '\'' + ", fullNamePhonetic='" + fullNamePhonetic + '\'' + ", baseNamePhonetic='" + baseNamePhonetic +
+                '\'' + ", buildNumPhonetic='" + buildNumPhonetic + '\'' + ", srcFlag=" + srcFlag + ", rowId='" + rowId + '\'' + ", " +
+                "changedFields=" + changedFields + ", status=" + status + '}';
+    }
 }

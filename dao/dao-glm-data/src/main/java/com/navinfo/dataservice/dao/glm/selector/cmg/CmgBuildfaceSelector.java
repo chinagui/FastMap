@@ -6,12 +6,14 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTenant;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.exception.DAOException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
     public List<CmgBuildface> listTheAssociatedFaceOfTheLink(int linkPid, boolean isLock) throws Exception {
         List<CmgBuildface> result = new ArrayList<>();
 
-        String sql = "select t1.face_pid, t2.link_pid from lc_face t1, lc_face_topo t2 where t1.face_pid = t2.face_pid and "
+        String sql = "select t1.face_pid, t2.link_pid from cmg_buildface t1, cmg_buildface_topo t2 where t1.face_pid = t2.face_pid and "
                 + "t2.link_pid = :1 and t1.u_record <> 2 and t2.u_record <> 2";
         if (isLock) {
             sql += " for update nowait";
@@ -57,9 +59,9 @@ public class CmgBuildfaceSelector extends AbstractSelector {
             pstmt.setInt(1, linkPid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildface(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheAssociatedFaceOfTheLink error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
@@ -79,7 +81,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
 
         String sql = "with tmp as (select distinct cmt.face_pid from cmg_buildnode cmn, cmg_buildlink cml, cmg_buildface_topo cmt where "
                 + "cmn.node_pid = :1 and (cml.s_node_pid = cmn.node_pid or cml.e_node_pid = cmn.node_pid) and cml.link_pid = cmt.link_pid)"
-                + " select t1.* from cmg_buildface t1, tmp t2 where t1.face_pid = t2.face_pid\n";
+                + " select t1.* from cmg_buildface t1, tmp t2 where t1.face_pid = t2.face_pid";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -91,9 +93,9 @@ public class CmgBuildfaceSelector extends AbstractSelector {
             pstmt.setInt(1, nodepid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildface(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheAssociatedFaceOfTheNode error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);

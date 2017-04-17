@@ -58,11 +58,30 @@ public class ProgramService {
 	public void create(long userId, JSONObject dataJson) throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
+			
 			conn = DBConnector.getInstance().getManConnection();
 			Program bean = (Program) JsonOperation.jsonToBean(dataJson,Program.class);
 			bean.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
+			//创建项目，并维护相关状态
+			create(conn, bean);					
 			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 创建新项目，并维护相关状态
+	 * @param conn
+	 * @param bean
+	 * @return int 项目id
+	 */
+	public int create(Connection conn,Program bean) throws Exception{
+		QueryRunner run = new QueryRunner();
+		//将旧项目状态修改为失效
 			String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
 			if (bean!=null&&bean.getCityId()!=0){
 				updateSql+=" CITY_ID ="+bean.getCityId();
@@ -72,8 +91,9 @@ public class ProgramService {
 				updateSql+=" infor_id ='" + bean.getInforId() + "'";
 			};
 			run.update(conn,updateSql);
-			
-			bean.setProgramId(getNewProgramId(conn));
+		//创建项目		
+		int programId=getNewProgramId(conn);
+		bean.setProgramId(programId);
 			
 			String insertPart="";
 			String valuePart="";
@@ -165,23 +185,16 @@ public class ProgramService {
 
 			String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
 			run.update(conn,createSql);
-			
+		//修改项目对应city的状态为已规划
 			if (bean!=null&&bean.getCityId()!=0){
 				CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
 			};
-			
+		//修改项目对应情报为已规划
 			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
 				InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
 			};		
-			
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("更新失败:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+		return programId;
 		}
-	}
 	
 	public void update(long userId,JSONObject dataJson) throws ServiceException {
 		Connection conn = null;
@@ -1469,6 +1482,46 @@ public class ProgramService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+	    	return query(conn, programId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String, Object> query(Connection conn,int programId) throws Exception {
+		try{
+			String sql="SELECT P.PROGRAM_ID,"
+					+ "         P.NAME                       PROGRAM_NAME,"
+					+ "         P.DESCP                      PROGRAM_DESCP,"
+					+ "         P.TYPE,"
+					+ "         P.LOT,"
+					+ "         C.CITY_NAME,"
+					+ "         C.CITY_ID,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         P.CREATE_USER_ID,"
+					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
+					+ "         P.PLAN_START_DATE,"
+					+ "         P.PLAN_END_DATE,"
+					+ "         P.COLLECT_PLAN_START_DATE,"
+					+ "         P.COLLECT_PLAN_END_DATE,"
+					+ "         P.DAY_EDIT_PLAN_START_DATE,"
+					+ "         P.DAY_EDIT_PLAN_END_DATE,"
+					+ "         P.MONTH_EDIT_PLAN_START_DATE,"
+					+ "         P.MONTH_EDIT_PLAN_END_DATE,"
+					+ "         P.PRODUCE_PLAN_START_DATE,"
+					+ "         P.PRODUCE_PLAN_END_DATE"
+					+ "    FROM CITY C, PROGRAM P, USER_INFO U, INFOR I"
+					+ "   WHERE C.CITY_ID(+) = P.CITY_ID"
+					+ "     AND I.INFOR_ID(+) = P.INFOR_ID"
+					+ "     AND P.LATEST = 1"
+					+ "     AND P.CREATE_USER_ID = U.USER_ID"
+					+ "     AND P.PROGRAM_ID = "+programId;
 			StringBuilder sb = new StringBuilder();
 			sb.append(" SELECT P.PROGRAM_ID,                                      ");
 			sb.append("          P.NAME                       PROGRAM_NAME,       ");
@@ -1836,8 +1889,10 @@ public class ProgramService {
 		}
 		
 		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
-				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date  "
-				+ "FROM PROGRAM P where 1=1 "+conditionSql;
+				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date,"
+				+ "P.MONTH_EDIT_PLAN_START_DATE,P.MONTH_EDIT_PLAN_END_DATE,"
+				+ "P.PLAN_START_DATE,P.PLAN_END_DATE  "
+				+ "FROM PROGRAM P where p.latest=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
 			public List<Program> handle(ResultSet rs) throws SQLException {
@@ -1852,6 +1907,10 @@ public class ProgramService {
 					map.setCollectPlanEndDate(rs.getTimestamp("collect_plan_end_date"));
 					map.setDayEditPlanStartDate(rs.getTimestamp("day_edit_plan_start_date"));
 					map.setDayEditPlanEndDate(rs.getTimestamp("day_edit_plan_end_date"));
+					map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+					map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+					map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+					map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 					list.add(map);
 				}
 				return list;

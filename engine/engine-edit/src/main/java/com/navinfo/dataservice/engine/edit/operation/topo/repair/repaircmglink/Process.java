@@ -1,7 +1,5 @@
-package com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint;
+package com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
@@ -15,10 +13,10 @@ import java.util.List;
 
 /**
  * @Title: Process
- * @Package: com.navinfo.dataservice.engine.edit.operation.topo.breakin.breakcmgpoint
+ * @Package: com.navinfo.dataservice.engine.edit.operation.topo.repair.repaircmglink
  * @Description: ${TODO}
  * @Author: Crayeres
- * @Date: 2017/4/11
+ * @Date: 2017/4/17
  * @Version: V1.0
  */
 public class Process extends AbstractProcess<Command> {
@@ -36,35 +34,17 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public boolean prepareData() throws Exception {
-        // 加载CMG-LINK信息
-        IRow row = new AbstractSelector(CmgBuildlink.class, getConn()).loadById(getCommand().getCmglink().pid(), false);
-        getCommand().setCmglink((CmgBuildlink) row);
-        // 加载关联CMG-FACE信息
-        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).
-                listTheAssociatedFaceOfTheLink(getCommand().getCmglink().pid(), false);
-        getCommand().setCmgfaces(cmgfaces);
+        CmgBuildlink cmglink = (CmgBuildlink) new AbstractSelector(CmgBuildlink.class, getConn())
+                .loadById(getCommand().getCmglink().pid(), false);
+        getCommand().setCmglink(cmglink);
 
+        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).listTheAssociatedFaceOfTheLink(cmglink.pid(), false);
+        getCommand().setCmgfaces(cmgfaces);
         return super.prepareData();
     }
 
     @Override
     public String exeOperation() throws Exception {
-        // 处理CMG-LINK打断/CMG-FACE打断
         return new Operation(getCommand(), getConn()).run(getResult());
-    }
-
-    @Override
-    public String innerRun() throws Exception {
-        this.prepareData();
-
-        // 处理CMG-LINK打断/CMG-FACE打断
-        new Operation(getCommand(), getConn()).run(getResult());
-        // TODO 处理立交
-
-        String preCheckMsg = super.preCheck();
-        if (StringUtils.isNotEmpty(preCheckMsg)) {
-            throw new Exception(preCheckMsg);
-        }
-        return null;
     }
 }

@@ -220,4 +220,10 @@ public class CmgBuildnodeMesh implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildnodeMesh{" + "nodePid=" + nodePid + ", meshId=" + meshId + ", rowId='" + rowId + '\'' + ", status=" + status +
+                ", changedFields=" + changedFields + '}';
+    }
 }

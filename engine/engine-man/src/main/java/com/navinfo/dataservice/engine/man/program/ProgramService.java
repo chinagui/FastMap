@@ -162,11 +162,7 @@ public class ProgramService {
 				insertPart+=" Produce_Plan_End_Date";
 				valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" lot ";
-				valuePart+=bean.getLot();
-			};
+
 			String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
 			run.update(conn,createSql);
 			
@@ -245,10 +241,7 @@ public class ProgramService {
 				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
 				setPart+=" Produce_Plan_End_Date=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=0){
-				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
-				setPart+=" lot ="+bean.getLot();
-			};
+
 			String updateSql = "update program set "+setPart+" where program_id="+bean.getProgramId();
 			run.update(conn,updateSql);
 			
@@ -1476,34 +1469,38 @@ public class ProgramService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String sql="SELECT P.PROGRAM_ID,"
-					+ "         P.NAME                       PROGRAM_NAME,"
-					+ "         P.DESCP                      PROGRAM_DESCP,"
-					+ "         P.TYPE,"
-					+ "         P.LOT,"
-					+ "         C.CITY_NAME,"
-					+ "         C.CITY_ID,"
-					+ "         I.INFOR_ID,"
-					+ "         I.INFOR_NAME,"
-					+ "         I.FEATURE_KIND,"
-					+ "         P.CREATE_USER_ID,"
-					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
-					+ "         P.PLAN_START_DATE,"
-					+ "         P.PLAN_END_DATE,"
-					+ "         P.COLLECT_PLAN_START_DATE,"
-					+ "         P.COLLECT_PLAN_END_DATE,"
-					+ "         P.DAY_EDIT_PLAN_START_DATE,"
-					+ "         P.DAY_EDIT_PLAN_END_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_START_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_END_DATE,"
-					+ "         P.PRODUCE_PLAN_START_DATE,"
-					+ "         P.PRODUCE_PLAN_END_DATE"
-					+ "    FROM CITY C, PROGRAM P, USER_INFO U, INFOR I"
-					+ "   WHERE C.CITY_ID(+) = P.CITY_ID"
-					+ "     AND I.INFOR_ID(+) = P.INFOR_ID"
-					+ "     AND P.LATEST = 1"
-					+ "     AND P.CREATE_USER_ID = U.USER_ID"
-					+ "     AND P.PROGRAM_ID = "+programId;
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT P.PROGRAM_ID,                                      ");
+			sb.append("          P.NAME                       PROGRAM_NAME,       ");
+			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
+			sb.append("          P.TYPE,                                          ");
+//			sb.append("          P.LOT,                                           ");
+			sb.append("          C.CITY_NAME,                                     ");
+			sb.append("          C.CITY_ID,                                       ");
+			sb.append("          I.INFOR_ID,                                      ");
+			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.FEATURE_KIND,                                  ");
+			sb.append("          P.CREATE_USER_ID,                                ");
+			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
+			sb.append("          P.PLAN_START_DATE,                               ");
+			sb.append("          P.PLAN_END_DATE,                                 ");
+			sb.append("          P.COLLECT_PLAN_START_DATE,                       ");
+			sb.append("          P.COLLECT_PLAN_END_DATE,                         ");
+			sb.append("          P.DAY_EDIT_PLAN_START_DATE,                      ");
+			sb.append("          P.DAY_EDIT_PLAN_END_DATE,                        ");
+			sb.append("          P.MONTH_EDIT_PLAN_START_DATE,                    ");
+			sb.append("          P.MONTH_EDIT_PLAN_END_DATE,                      ");
+			sb.append("          P.PRODUCE_PLAN_START_DATE,                       ");
+			sb.append("          P.PRODUCE_PLAN_END_DATE                          ");
+			sb.append("     FROM CITY C, PROGRAM P, USER_INFO U, INFOR I          ");
+			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
+			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
+			sb.append("      AND P.LATEST = 1                                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.PROGRAM_ID = "+programId);
+			
+			String sql = sb.toString();
+			log.info("program query sql :" + sql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> map = new HashMap<String, Object>();
@@ -1512,7 +1509,7 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-						map.put("lot", rs.getInt("LOT"));
+//						map.put("lot", rs.getInt("LOT"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.iface;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
@@ -140,6 +141,7 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
 	
 }
 

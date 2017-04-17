@@ -144,9 +144,9 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 				m.put("b", resultSet.getString("color"));
 
-				m.put("c", resultSet.getString("s_node_pid"));
+				m.put("c", resultSet.getInt("s_node_pid"));
 
-				m.put("d", resultSet.getString("e_node_pid"));
+				m.put("d", resultSet.getInt("e_node_pid"));
 
 				snapshot.setM(m);
 

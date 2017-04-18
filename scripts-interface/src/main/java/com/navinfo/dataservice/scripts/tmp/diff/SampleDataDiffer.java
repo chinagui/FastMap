@@ -69,7 +69,7 @@ public class SampleDataDiffer {
 	 * mongodbHost:
 	 * mongodbPort:
 	 * mongodbDbName:
-	 * mongodbCollectioinName
+	 * mongodbCollectionName
 	 * orclHost:
 	 * orclHost:
 	 * orclSid:
@@ -178,7 +178,7 @@ public class SampleDataDiffer {
 		// TODO 从mongodb中查询获取poi数据；
 		return null;
 	}
-	private Connection getConnection() {
+	private Connection getConnection() throws Exception {
 		String driver = "oracle.jdbc.driver.OracleDriver";  
         String url = "jdbc:Oracle:thin:@"+this.inParam.getOralceHost()+":"+this.inParam.getOraclePort()+":"+this.inParam.getOracleSid();
         Class.forName(driver);  

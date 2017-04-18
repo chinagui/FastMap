@@ -87,7 +87,7 @@ public class RdSlopeSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("type"));
+				m.put("a", resultSet.getInt("type"));
 
 				snapshot.setM(m);
 

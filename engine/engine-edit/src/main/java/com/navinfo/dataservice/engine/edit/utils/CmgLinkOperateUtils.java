@@ -196,8 +196,9 @@ public final class CmgLinkOperateUtils {
         cmglink.setGeometry(GeoTranslator.transform(geometry, Constant.BASE_EXPAND, 0));
         cmglink.setLength(GeometryUtils.getLinkLength(geometry));
         result.insertObject(cmglink, ObjStatus.INSERT, cmglink.pid());
-
-        createCmglinkChild(cmglink, geometry, result);
+        if (createChild) {
+            createCmglinkChild(cmglink, geometry, result);
+        }
         return cmglink;
     }
 

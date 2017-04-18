@@ -335,4 +335,12 @@ public class CmgBuilding implements IObj {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuilding{" + "pid=" + pid + ", kind='" + kind + '\'' + ", rowId='" + rowId + '\'' + ", changedFields=" +
+                changedFields + ", status=" + status + ", names=" + names + ", nameMap=" + nameMap + ", build3dmodels=" + build3dmodels
+                + ", build3dmodelMap=" + build3dmodelMap + ", build3dicons=" + build3dicons + ", build3diconMap=" + build3diconMap + ", " +
+                "pois=" + pois + ", poiMap=" + poiMap + '}';
+    }
 }

@@ -314,4 +314,11 @@ public class CmgBuilding3dmodel implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuilding3dmodel{" + "modelId=" + modelId + ", buildingPid=" + buildingPid + ", resolution=" + resolution + ", " +
+                "modelName='" + modelName + '\'' + ", materialName='" + materialName + '\'' + ", textureName='" + textureName + '\'' +
+                ", rowId='" + rowId + '\'' + ", changedFields=" + changedFields + ", status=" + status + '}';
+    }
 }

@@ -10,7 +10,6 @@ import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
 
 import java.sql.Connection;
@@ -101,6 +100,7 @@ public class Operation implements IOperation {
 
     /**
      * 修改CMG-LINK几何，修改CMG-LINK起始点PID
+     * @param cmgnode 生成的CMG-NODE
      * @param result 结果集
      * @throws Exception 修改CMG-LINK出错
      */

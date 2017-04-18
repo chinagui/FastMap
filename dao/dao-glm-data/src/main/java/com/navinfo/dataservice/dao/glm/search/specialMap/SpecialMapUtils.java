@@ -304,7 +304,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("TRUCKCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -370,7 +370,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getString("LIMITCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -443,7 +443,7 @@ public class SpecialMapUtils {
 
 				m.put("a", speedClass);
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -515,7 +515,7 @@ public class SpecialMapUtils {
 
 				m.put("a", speedClassWork);
 
-				m.put("d", resultSet.getString("direct"));
+				m.put("d", resultSet.getInt("direct"));
 
 				snapshot.setM(m);
 
@@ -611,7 +611,7 @@ public class SpecialMapUtils {
 
 				m.put("a", speedClassWork);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -677,7 +677,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("LANE_CLASS"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -750,7 +750,7 @@ public class SpecialMapUtils {
 
 				m.put("a", functionClass);
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -845,7 +845,7 @@ public class SpecialMapUtils {
 					}
 				}
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -911,7 +911,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("DEVELOP_STATE"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -977,7 +977,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("MULTI_DIGITIZED"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1043,7 +1043,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("PAVE_STATUS"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1109,7 +1109,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("TOLL_INFO"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1175,7 +1175,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("SPECIAL_TRAFFIC"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1241,7 +1241,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("IS_VIADUCT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1307,7 +1307,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("APP_INFO"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1373,7 +1373,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("FORMCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1440,23 +1440,23 @@ public class SpecialMapUtils {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("kind"));
+				m.put("a", resultSet.getInt("kind"));
 				
 				m.put("c", resultSet.getString("limits"));
 
-				m.put("d", resultSet.getString("direct"));
+				m.put("d", resultSet.getInt("direct"));
 
-				m.put("e", resultSet.getString("s_node_pid"));
+				m.put("e", resultSet.getInt("s_node_pid"));
 
-				m.put("f", resultSet.getString("e_node_pid"));
+				m.put("f", resultSet.getInt("e_node_pid"));
 
 				m.put("h", resultSet.getString("forms"));
 
-				m.put("i", resultSet.getString("function_class"));
+				m.put("i", resultSet.getInt("function_class"));
 
-				m.put("j", resultSet.getString("imi_code"));
+				m.put("j", resultSet.getInt("imi_code"));
 				
-				m.put("k", resultSet.getString("length"));
+				m.put("k", resultSet.getDouble("length"));
 
 				snapshot.setM(m);
 
@@ -1549,7 +1549,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getInt("GROUPCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1653,13 +1653,13 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int direct = 0;
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -1707,7 +1707,7 @@ public class SpecialMapUtils {
 
 				m.put("a", flagType);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -1767,7 +1767,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getString("CONDITIONCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1875,7 +1875,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getString("LIMITCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -1976,12 +1976,12 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int direct = 0;
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -1994,9 +1994,9 @@ public class SpecialMapUtils {
 						m.put("a", type);
 
 						if (dirs.contains(2) && !dirs.contains(3)) {
-							m.put("d", String.valueOf(2));
+							m.put("d", 2);
 						} else if (dirs.contains(3) && !dirs.contains(2)) {
-							m.put("d", String.valueOf(3));
+							m.put("d", 3);
 						} else {
 							m.put("d", String.valueOf(direct));
 						}
@@ -2039,11 +2039,11 @@ public class SpecialMapUtils {
 				m.put("a", type);
 				
 				if (dirs.contains(2) && !dirs.contains(3)) {
-					m.put("d", String.valueOf(2));
+					m.put("d", 2);
 				} else if (dirs.contains(3) && !dirs.contains(2)) {
-					m.put("d", String.valueOf(3));
+					m.put("d", 3);
 				} else {
-					m.put("d", String.valueOf(direct));
+					m.put("d", direct);
 				}
 
 				snapshot.setM(m);
@@ -2179,7 +2179,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getString("FORMCOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -2274,13 +2274,13 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int direct = 0;
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -2292,7 +2292,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", String.valueOf(direct));
+						m.put("d", direct);
 
 						snapshot.setM(m);
 
@@ -2331,7 +2331,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -2390,13 +2390,13 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int direct =0;
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -2408,7 +2408,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", String.valueOf(direct));
+						m.put("d", direct);
 
 						snapshot.setM(m);
 
@@ -2447,7 +2447,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -2533,13 +2533,13 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int  direct = 0;
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -2551,7 +2551,7 @@ public class SpecialMapUtils {
 
 						m.put("a", type);
 
-						m.put("d", String.valueOf(direct));
+						m.put("d", direct);
 
 						snapshot.setM(m);
 
@@ -2590,7 +2590,7 @@ public class SpecialMapUtils {
 
 				m.put("a", type);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -2649,7 +2649,7 @@ public class SpecialMapUtils {
 
 				m.put("a", resultSet.getString("ZONECOUNT"));
 
-				m.put("d", resultSet.getString("DIRECT"));
+				m.put("d", resultSet.getInt("DIRECT"));
 
 				snapshot.setM(m);
 
@@ -2740,13 +2740,13 @@ public class SpecialMapUtils {
 
 			int flagLinkPid = 0;
 
-			String direct = "";
+			int direct = 0;
 
 			while (resultSet.next()) {
 
 				int currLinkPid = resultSet.getInt("LINK_PID");
 
-				direct = resultSet.getString("DIRECT");
+				direct = resultSet.getInt("DIRECT");
 
 				if (flagLinkPid != currLinkPid) {
 
@@ -2758,7 +2758,7 @@ public class SpecialMapUtils {
 
 						m.put("a", regionInfo);
 
-						m.put("d", String.valueOf(direct));
+						m.put("d", direct);
 
 						snapshot.setM(m);
 
@@ -2804,7 +2804,7 @@ public class SpecialMapUtils {
 
 				m.put("a", regionInfo);
 
-				m.put("d", String.valueOf(direct));
+				m.put("d", direct);
 
 				snapshot.setM(m);
 
@@ -2863,25 +2863,25 @@ public class SpecialMapUtils {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("kind"));
+				m.put("a", resultSet.getInt("kind"));
 
 				m.put("b", resultSet.getString("name"));
 
 				m.put("c", resultSet.getString("limits"));
 
-				m.put("d", resultSet.getString("direct"));
+				m.put("d", resultSet.getInt("direct"));
 
-				m.put("e", resultSet.getString("s_node_pid"));
+				m.put("e", resultSet.getInt("s_node_pid"));
 
-				m.put("f", resultSet.getString("e_node_pid"));
+				m.put("f", resultSet.getInt("e_node_pid"));
 
 				m.put("h", resultSet.getString("forms"));
 
-				m.put("i", resultSet.getString("function_class"));
+				m.put("i", resultSet.getInt("function_class"));
 
-				m.put("j", resultSet.getString("imi_code"));
+				m.put("j", resultSet.getInt("imi_code"));
 				
-				m.put("k", resultSet.getString("length"));
+				m.put("k", resultSet.getDouble("length"));
 
 				m.put("l", resultSet.getInt("lane_num"));
 				m.put("m", resultSet.getInt("toll_info"));

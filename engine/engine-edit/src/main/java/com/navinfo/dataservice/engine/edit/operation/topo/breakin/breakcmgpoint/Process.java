@@ -49,7 +49,7 @@ public class Process extends AbstractProcess<Command> {
 
     @Override
     public String exeOperation() throws Exception {
-        // 处理CMG-LINK打断
+        // 处理CMG-LINK打断/CMG-FACE打断
         return new Operation(getCommand(), getConn()).run(getResult());
     }
 
@@ -57,9 +57,8 @@ public class Process extends AbstractProcess<Command> {
     public String innerRun() throws Exception {
         this.prepareData();
 
-        // 处理CMG-LINK打断
+        // 处理CMG-LINK打断/CMG-FACE打断
         new Operation(getCommand(), getConn()).run(getResult());
-        // TODO 处理CMG-FACE打断
         // TODO 处理立交
 
         String preCheckMsg = super.preCheck();

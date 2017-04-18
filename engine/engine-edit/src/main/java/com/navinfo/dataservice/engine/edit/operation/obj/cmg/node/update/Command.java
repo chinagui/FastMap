@@ -29,7 +29,7 @@ public class Command extends AbstractCommand {
     /**
      * 待修改对象
      */
-    private CmgBuildnode cmgnode = new CmgBuildnode();
+   private CmgBuildnode cmgnode = new CmgBuildnode();
 
     /**
      * @return 操作类型
@@ -58,7 +58,6 @@ public class Command extends AbstractCommand {
     public Command(JSONObject json, String requester) {
         this.requester = requester;
         this.setDbId(json.getInt("dbId"));
-
         content = json.getJSONObject("data");
         cmgnode.setPid(content.getInt("pid"));
     }

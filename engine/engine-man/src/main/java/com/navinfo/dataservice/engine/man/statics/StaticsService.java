@@ -142,7 +142,7 @@ public class StaticsService {
 		return data;
 	}
 	
-	public List<HashMap> cityExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<HashMap<String, Object>> cityExpectStatQuery(String wkt) throws JSONException, Exception{
 		CityService service = CityService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -157,11 +157,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.queryListByWkt(json);
+		List<HashMap<String, Object>> data = service.queryListByWkt(json);
 		
 		Set<Integer> citys = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(HashMap<String, Object> map : data){
 			int blockId = (int) map.get("cityId");
 			
 			citys.add(blockId);

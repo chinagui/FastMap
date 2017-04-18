@@ -338,4 +338,10 @@ public class CmgBuildnode implements IObj {
     public void setMeshes(List<IRow> meshes) {
         this.meshes = meshes;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildnode{" + "pid=" + pid + ", form=" + form + ", geometry=" + geometry + ", editFlag=" + editFlag + ", rowId='" +
+                rowId + '\'' + ", status=" + status + ", changedFields=" + changedFields + ", meshes=" + meshes + ", meshMap=" + meshMap + '}';
+    }
 }

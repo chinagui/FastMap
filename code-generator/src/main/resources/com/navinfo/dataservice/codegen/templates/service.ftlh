@@ -38,7 +38,7 @@ public class ${modelClassName}Service {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
+			conn = DBConnector.getInstance().getMetaConnection();	
 			
 			String createSql = "insert into ${tableName} (<#list columns as column><#if column?is_first>${column.name}<#else>, ${column.name}</#if></#list>) values(<#list columns as column><#if column?is_first>?<#else>,?</#if></#list>)";			
 			run.update(conn, 
@@ -58,7 +58,7 @@ public class ${modelClassName}Service {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			String updateSql = "update ${tableName} set <#list columns as column><#if column?is_first>${column.name}=?<#else>, ${column.name}=?</#if></#list> where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
@@ -86,7 +86,7 @@ public class ${modelClassName}Service {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			String deleteSql = "delete from  ${tableName} where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
@@ -114,7 +114,7 @@ public class ${modelClassName}Service {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
+			conn = DBConnector.getInstance().getMetaConnection();
 			
 			String selectSql = "select * from ${tableName} where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
@@ -160,7 +160,7 @@ public class ${modelClassName}Service {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
+			conn = DBConnector.getInstance().getMetaConnection();	
 					
 			String selectSql = "select * from ${tableName} where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
@@ -203,7 +203,7 @@ public class ${modelClassName}Service {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
+			conn = DBConnector.getInstance().getMetaConnection();	
 			
 			String selectSql = "select * from ${tableName} where 1=1 ";
 			List<Object> values=new ArrayList<Object>();

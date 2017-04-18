@@ -242,4 +242,10 @@ public class CmgBuildfaceTopo implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildfaceTopo{" + "facePid=" + facePid + ", seqNum=" + seqNum + ", linkPid=" + linkPid + ", rowId='" + rowId + '\'' +
+                ", changedFields=" + changedFields + ", status=" + status + '}';
+    }
 }

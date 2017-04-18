@@ -13,6 +13,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -62,8 +63,8 @@ public class Operation implements IOperation {
                     coordinate.y = command.getLatitude();
                 }
             }
-            int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
-            if (cmgface.getMeshId() != cmgfaceMeshId) {
+            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
+                int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);
                 for (IRow row : cmgface.getTopos()) {

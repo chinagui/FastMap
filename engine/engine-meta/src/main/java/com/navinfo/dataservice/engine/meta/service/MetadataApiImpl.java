@@ -310,10 +310,7 @@ public class MetadataApiImpl implements MetadataApi {
 		return kindCodeSelector.getKindCodeMap();
 	}
 
-	private JSONObject getAdminMap(Connection conn) throws Exception {
-		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
-		return areaSelector.getAdminMap();
-	}
+	
 
 	@Override
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception {
@@ -804,5 +801,14 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointCode2Level() throws Exception{
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
+	@Override
+	public JSONObject getAdminMap(Connection conn) throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+		return areaSelector.getAdminMap();
+	}
+	/*private JSONObject getAdminMap(Connection conn) throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+		return areaSelector.getAdminMap();
+	}*/
 
 }

@@ -21,6 +21,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
 import org.springframework.util.CollectionUtils;
 
@@ -82,7 +83,7 @@ public class Operation implements IOperation {
             // 创建CMG-LINK子表MESH
             createCmglinkMesh(result, cmgfaceMeshId, cmglink);
             // 创建CMG-FACE
-            CmgBuildface cmgface = createCmgface(result, geometry, cmgfaceMeshId);
+            CmgBuildface cmgface = createCmgface(result, GeoTranslator.getPolygonToPoints(geometry.getCoordinates()), cmgfaceMeshId);
             // 创建CMG-FACE子表TOPO
             CmgfaceUtil.createCmgfaceTopo(result, cmglink.pid(), cmgface.pid(), 1);
         } else {

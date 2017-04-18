@@ -386,4 +386,11 @@ public class CmgBuildfaceTenant implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuildfaceTenant{" + "facePid=" + facePid + ", poiPid=" + poiPid + ", flag=" + flag + ", tel='" + tel + '\'' + ", x="
+                + x + ", y=" + y + ", name='" + name + '\'' + ", floor='" + floor + '\'' + ", srcFlag=" + srcFlag + ", rowId='" + rowId
+                + '\'' + ", changedFields=" + changedFields + ", status=" + status + '}';
+    }
 }

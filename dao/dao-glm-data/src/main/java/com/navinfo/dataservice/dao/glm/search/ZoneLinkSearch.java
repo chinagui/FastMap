@@ -73,9 +73,9 @@ public class ZoneLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("s_node_pid"));
+				m.put("a", resultSet.getInt("s_node_pid"));
 
-				m.put("b", resultSet.getString("e_node_pid"));
+				m.put("b", resultSet.getInt("e_node_pid"));
 				
 
 				
@@ -149,9 +149,9 @@ public class ZoneLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("s_node_pid"));
+				m.put("a", resultSet.getInt("s_node_pid"));
 
-				m.put("b", resultSet.getString("e_node_pid"));
+				m.put("b", resultSet.getInt("e_node_pid"));
 
 				int sameLinkKind = 0;
 

@@ -1497,7 +1497,7 @@ public class SubtaskService {
 					+ "  FROM SUBTASK T"
 					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.STAGE != 0"
+//					+ "   AND T.STAGE != 0"
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();

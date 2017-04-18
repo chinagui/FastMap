@@ -40,6 +40,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -2779,5 +2780,17 @@ public class StaticsService {
 	       return day2 - day1;
 
 	    }
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map> getDayTaskTipsStatics(int taskId) throws ServiceException {
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
+		//调用fccApi
+		
+		return null;
+	}
 
 }

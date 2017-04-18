@@ -2734,4 +2734,49 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(meta);
 		}
 	}
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdByTaskId(int taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT TT.TASK_ID                   ");
+			sb.append("   FROM TASK T, TASK TT   ");
+			sb.append("  WHERE TT.BLOCK_ID = T.BLOCK_ID     ");
+			sb.append("    AND TT.TYPE = 0                  ");
+			sb.append("    AND T.TASK_ID = " + taskId);
+			
+			String sql = sb.toString();
+			
+			log.info("getCollectTaskIdByTaskId sql :" + sql);
+			
+			
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> result = new HashSet<Integer>();
+					while(rs.next()) {
+						result.add(rs.getInt("TASK_ID"));
+					}
+					return result;
+				}
+			};
+			Set<Integer> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

@@ -1,0 +1,19 @@
+export NLS_LANG=.AL32UTF8
+source ./*.conf
+#tomcat part
+sh $svr_dir/tomcat/tomcat-datahub/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-dropbox/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-edit/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-fcc/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-job/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-man/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-metadata/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-render/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-statics/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-column/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-row/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-sys/bin/startup.sh
+sh $svr_dir/tomcat/tomcat-mapspotter/bin/startup.sh
+#job server part
+cd $svr_dir/job-server/
+sh startup.sh

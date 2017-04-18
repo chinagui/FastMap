@@ -111,8 +111,8 @@ public class CmgBuildlinkSearch implements ISearch {
             while (resultSet.next()) {
                 SearchSnapshot snapshot = new SearchSnapshot();
                 JSONObject m = new JSONObject();
-                m.put("a", resultSet.getString("s_node_pid"));
-                m.put("b", resultSet.getString("e_node_pid"));
+                m.put("a", resultSet.getInt("s_node_pid"));
+                m.put("b", resultSet.getInt("e_node_pid"));
                 snapshot.setM(m);
                 snapshot.setT(51);
                 snapshot.setI(resultSet.getInt("link_pid"));

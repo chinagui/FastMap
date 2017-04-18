@@ -437,8 +437,8 @@ public class IxPoiSelector extends AbstractSelector {
 		}
 		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
-		
-		poi.setStatus(poiEditStatus.getInt("STATUS"));
+		if(poiEditStatus.containsKey("STATUS")){
+		poi.setStatus(poiEditStatus.getInt("STATUS"));}
 		
 		poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
 		

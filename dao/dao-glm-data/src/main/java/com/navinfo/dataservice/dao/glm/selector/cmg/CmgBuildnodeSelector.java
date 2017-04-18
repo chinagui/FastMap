@@ -5,12 +5,14 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.exception.DAOException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,10 +46,10 @@ public class CmgBuildnodeSelector extends AbstractSelector {
     public List<CmgBuildnode> listTheAssociatedNodeOfTheFace(int facePid, boolean isLock) throws Exception {
         List<CmgBuildnode> result = new ArrayList<>();
 
-        String sql = "with tmp as(select distinct cmn.node_pid from lc_node cmn, lc_link cml, lc_face_topo cmf where (cmn.node_pid = "
-                + "cml.s_node_pid or cmn.node_pid = cml.e_node_pid) and cml.link_pid = cmf.link_pid and cmf.face_pid = :1 and "
-                + "cmn.u_record <> 2 and cml.u_record <> 2 and cmf.u_record <> 2) select * from lc_node t, tmp t1 "
-                + "where t.node_pid = t1.node_pid";
+        String sql = "with tmp as(select distinct cmn.node_pid from cmg_buildnode cmn, cmg_buildlink cml, cmg_buildface_topo cmf where ("
+                + "cmn.node_pid = cml.s_node_pid or cmn.node_pid = cml.e_node_pid) and cml.link_pid = cmf.link_pid and cmf.face_pid = :1 "
+                + "and cmn.u_record <> 2 and cml.u_record <> 2 and cmf.u_record <> 2) select * from cmg_buildnode t, tmp t1 where "
+                + "t.node_pid = t1.node_pid";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -59,9 +61,9 @@ public class CmgBuildnodeSelector extends AbstractSelector {
             pstmt.setInt(1, facePid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildnode(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheAssociatedNodeOfTheFace error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
@@ -88,7 +90,7 @@ public class CmgBuildnodeSelector extends AbstractSelector {
                 + "e_node_pid from cmg_buildlink b where exists (select null from tmp1 a where a.e_node_pid = b.e_node_pid) and b.u_record"
                 + " != 2), tmp4 as (select s_node_pid pid from tmp2 group by s_node_pid having count(*) = 1), tmp5 as (select e_node_pid "
                 + "pid from tmp3 group by e_node_pid having count(*) = 1), tmp6 as (select pid from tmp4 union select pid from tmp5) "
-                + "select * from lc_node a where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record != 2";
+                + "select * from cmg_buildnode a where exists (select null from tmp6 b where a.node_pid = b.pid) and a.u_record != 2";
         if (isLock) {
             sql += " for update nowait";
         }
@@ -100,9 +102,9 @@ public class CmgBuildnodeSelector extends AbstractSelector {
             pstmt.setInt(1, linkPid);
             resultSet = pstmt.executeQuery();
             generateCmgBuildnode(result, resultSet);
-        } catch (Exception e) {
+        } catch (SQLException e) {
             logger.error("method listTheBlindNodeOfTheLink error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);

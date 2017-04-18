@@ -130,7 +130,7 @@ public class RdRoadSearch implements ISearch {
 
 					JSONObject gObject = new JSONObject();
 
-					gObject.put("i", linkpid);
+					gObject.put("i", Integer.parseInt(linkpid));
 
 					gObject.put("g",
 							linkMap.get(linkpid).getJSONArray("coordinates"));

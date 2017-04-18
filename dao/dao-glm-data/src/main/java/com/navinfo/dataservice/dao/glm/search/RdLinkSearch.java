@@ -77,11 +77,11 @@ public class RdLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("s_node_pid"));
+				m.put("a", resultSet.getInt("s_node_pid"));
 
-				m.put("b", resultSet.getString("e_node_pid"));
+				m.put("b", resultSet.getInt("e_node_pid"));
 				
-				m.put("c", resultSet.getString("kind"));
+				m.put("c", resultSet.getInt("kind"));
 				
 				m.put("d", resultSet.getInt("samelink_pid"));
 				
@@ -151,26 +151,26 @@ public class RdLinkSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("kind"));
+				m.put("a", resultSet.getInt("kind"));
 
 				m.put("b", resultSet.getString("name"));
 
 				m.put("c", resultSet.getString("limits"));
 
-				m.put("d", resultSet.getString("direct"));
+				m.put("d", resultSet.getInt("direct"));
 
-				m.put("e", resultSet.getString("s_node_pid"));
+				m.put("e", resultSet.getInt("s_node_pid"));
 
-				m.put("f", resultSet.getString("e_node_pid"));
+				m.put("f", resultSet.getInt("e_node_pid"));
 
 				m.put("h", resultSet.getString("forms"));
 
-				m.put("i", resultSet.getString("function_class"));
+				m.put("i", resultSet.getInt("function_class"));
 
-				m.put("j", resultSet.getString("imi_code"));
-				m.put("k", resultSet.getString("length"));
+				m.put("j", resultSet.getInt("imi_code"));
+				m.put("k", resultSet.getDouble("length"));
 				
-				m.put("l", resultSet.getString("special_traffic"));
+				m.put("l", resultSet.getInt("special_traffic"));
 
 				snapshot.setM(m);
 

@@ -290,4 +290,11 @@ public class CmgBuilding3dicon implements IRow {
     public String getRowId() {
         return rowId;
     }
+
+    @Override
+    public String toString() {
+        return "CmgBuilding3dicon{" + "buildingPid=" + buildingPid + ", width=" + width + ", height=" + height + ", iconName='" +
+                iconName + '\'' + ", alphaName='" + alphaName + '\'' + ", rowId='" + rowId + '\'' + ", changedFields=" + changedFields +
+                ", status=" + status + '}';
+    }
 }

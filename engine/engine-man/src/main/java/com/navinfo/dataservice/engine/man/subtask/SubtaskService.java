@@ -8,9 +8,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -554,14 +556,33 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
-			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,t.name task_name");
-			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
-			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append(" AND T.REGION_ID = R.REGION_ID");
-			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
-	
+			sb.append(" SELECT ST.SUBTASK_ID,                           ");
+			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.STATUS,                               ");
+			sb.append("        ST.STAGE,                                ");
+			sb.append("        ST.DESCP,                                ");
+			sb.append("        ST.PLAN_START_DATE,                      ");
+			sb.append("        ST.PLAN_END_DATE,                        ");
+			sb.append("        ST.TYPE,                                 ");
+			sb.append("        ST.GEOMETRY,                             ");
+			sb.append("        ST.REFER_ID,                             ");
+			sb.append("        ST.EXE_USER_ID,                          ");
+			sb.append("        ST.EXE_GROUP_ID,                         ");
+			sb.append("        ST.QUALITY_SUBTASK_ID,                   ");
+			sb.append("        ST.IS_QUALITY,                           ");
+			sb.append("        T.TASK_ID,                               ");
+			sb.append("        T.TYPE                TASK_TYPE,         ");
+			sb.append("        R.DAILY_DB_ID,                           ");
+			sb.append("        R.MONTHLY_DB_ID,                         ");
+			sb.append("        T.NAME                TASK_NAME,         ");
+			sb.append("        T.TASK_ID,                               ");
+			sb.append("        P.TYPE PROGRAM_TYPE                      ");
+			sb.append("   FROM SUBTASK ST, TASK T, REGION R,PROGRAM P   ");
+			sb.append("  WHERE ST.TASK_ID = T.TASK_ID                   ");
+			sb.append("    AND T.REGION_ID = R.REGION_ID                ");
+			sb.append("    AND T.PROGRAM_ID = P.PROGRAM_ID              ");
+			sb.append("    AND ST.SUBTASK_ID = " + subtaskId);
+
 			String selectSql = sb.toString();
 
 			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
@@ -579,6 +600,8 @@ public class SubtaskService {
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));
 						subtask.put("referId",rs.getInt("REFER_ID"));
+						subtask.put("taskId",rs.getInt("TASK_ID"));
+						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -1947,6 +1970,51 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param subtaskId
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT TT.TASK_ID                   ");
+			sb.append("   FROM SUBTASK S, TASK T, TASK TT   ");
+			sb.append("  WHERE S.TASK_ID = T.TASK_ID        ");
+			sb.append("    AND TT.BLOCK_ID = T.BLOCK_ID     ");
+			sb.append("    AND TT.TYPE = 0                  ");
+			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
+			
+			String sql = sb.toString();
+			
+			log.info("getCollectTaskIdByDaySubtask sql :" + sql);
+			
+			
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> result = new HashSet<Integer>();
+					while(rs.next()) {
+						result.add(rs.getInt("TASK_ID"));
+					}
+					return result;
+				}
+			};
+			Set<Integer> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByDaySubtask失败，原因为:" + e.getMessage(), e);
+		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}

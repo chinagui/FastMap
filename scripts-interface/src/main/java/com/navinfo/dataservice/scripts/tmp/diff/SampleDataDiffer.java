@@ -22,7 +22,6 @@ public class SampleDataDiffer {
 	 * adminCode          通过regionid 关联查询 AD_ADMIN.region得到 admin_id: select admin_id from ad_admin where region_id=?
 	 * website		      ix_poi_detail.website
 	 * hwEntryExit        ix_poi_detail.HW_ENTRYEXIT
-	 * fieldVerification  ？？
 	 * truck			  ix_poi.TRUCK_FLAG
 	 * rawFields		  poi_edit_status.raw_fields
 	 * sportsVenues			IX_POI.SPORTS_VENUE
@@ -44,20 +43,19 @@ public class SampleDataDiffer {
 	 * contacts			  	IX_POI_CONTACT //如果数量不同，则不同；如果数量相同，但是逻辑主键“poi_pid,contact_type,contact”不同，则不同；否则判断“pririoty”是否相同；
 	 * businessTime       	IX_POI_BUSINESSTIME //数量不同，则不同；如果数量相同，但是DAY_SRT,DAY_END,TIME_SRT,TIME_DUR,MON_SRT,MON_END,WEEK_IN_YEAR_SRT,WEEK_IN_YEAR_END,WEEK_IN_MONTH_SRT,WEEK_IN_MONTH_END,VALID_WEEK 全字段匹配
 	 * foodtypes			IX_POI_RESTAURANT//数量不同，则不同；如果数量相同，但是FOOD_TYPE,CREDIT_CARD,PARKING,AVG_COST,OPEN_HOUR全字段匹配，匹配则ok；否则不ok
-	 * parkings				IX_POI_PARKING//数量不同，则不同；如果数量相同，但是全字段匹配，匹配则ok；否则不ok
-	 * hotel				IX_POI_HOTEL //数量不同，则不同；如果数量相同，但是全字段匹配，匹配则ok；否则不ok
-	 * chargingStation		IX_POI_CHARGINGSTATION
-	 * chargingPole			IX_POI_CHARGINGPLOT
-	 * gasStation			IX_POI_GASSTATION
-	 * attraction			IX_POI_ATTRACTION
-	 * rental				IX_POI_CARRENTAL
-	 * hospital				IX_POI.DETAIL.HOSPITAL_CLASS
+	 * parkings				IX_POI_PARKING//数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * hotel				IX_POI_HOTEL //数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * chargingStation		IX_POI_CHARGINGSTATION//数量不同，则不同；如果数量相同，匹配逻辑主键“POI_PID，CHARGING_TYPE，CHANGE_BRANDS，CHANGE_OPEN_TYPE，CHARGING_NUM，SERVICE_PROV，OPEN_HOUR，PARKING_FEES，PARKING_INFO，AVAILABLE_STATE”，匹配则ok；否则不ok
+	 * chargingPole			IX_POI_CHARGINGPLOT//数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * gasStation			IX_POI_GASSTATION //数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * attraction			IX_POI_ATTRACTION//数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * rental				IX_POI_CARRENTAL//数量不同，则不同；如果数量相同，但是全字段匹配（以mongo字段为参照），匹配则ok；否则不ok
+	 * hospital				IX_POI_DETAIL.HOSPITAL_CLASS
 	 * indoor.type			IX_POI.INDOOR 如果是1，则转为3；否则原值转出；
 	 * indoor.floor			IX_POI_ADDRESS.FLOOR
 	 * attachments			IX_POI_PHOTO 只比较数量
-	 * brands.code			??
+	 * brands.code			在oralce元数据chain的列表中； oracle poi中对应的chain的列表 查询sql： select chain  from SC_POINT_BRAND_FOODTYPE t where poikind=?;//?是oracle中的ix_poi.kind_code
 	 * freshnessVerification POI_EDIT_STATUS.FRESH_VERIFIED
-	 * sourceFlags			??
 	 * @param args:
 	 * 输入参数
 	 * mongodbHost:

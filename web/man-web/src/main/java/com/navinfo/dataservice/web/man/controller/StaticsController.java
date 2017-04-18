@@ -125,7 +125,7 @@ public class StaticsController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String wkt = dataJson.getString("wkt");
-			List<HashMap> data = StaticsService.getInstance()
+			List<HashMap<String, Object>> data = StaticsService.getInstance()
 					.cityExpectStatQuery(wkt);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {

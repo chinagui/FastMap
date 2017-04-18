@@ -1,15 +1,11 @@
 package com.navinfo.dataservice.engine.man.region;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-
-import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.map.MultiValueMap;
@@ -22,7 +18,6 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.sql.SqlClause;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
@@ -30,7 +25,7 @@ import com.navinfo.navicommons.exception.ServiceException;
  * @ClassName: RegionService
  * @author code generator
  * @date 2016-06-08 02:32:17
- * @Description: TODO
+ * @Description: 
  */
 public class RegionService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -83,7 +78,7 @@ public class RegionService {
 			conn = DBConnector.getInstance().getManConnection();
 
 			String selectSql = "select * from Region where 1=1 ";
-			List<Object> values = new ArrayList();
+			List<Object> values = new ArrayList<Object>();
 			if (bean != null && bean.getRegionId() != null
 					&& StringUtils.isNotEmpty(bean.getRegionId().toString())) {
 				selectSql += " and REGION_ID=? ";

@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.job.iface;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -16,4 +17,6 @@ public interface JobApi {
 	JSONObject getLatestJob(int subtaskId)throws Exception;
 	JobInfo getJobByGuid(String jobGuid)throws Exception;
 	String help();
+	JSONArray getJobObjList(JSONObject parameterJson)throws Exception;
+	JSONObject getLatestJobByDescp(String descp)throws Exception;
 }

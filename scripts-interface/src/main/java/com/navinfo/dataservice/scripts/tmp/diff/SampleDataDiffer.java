@@ -10,6 +10,7 @@ import java.util.Map;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -130,6 +131,7 @@ public class SampleDataDiffer {
 				if(diffIxPoiResult!=null){
 					diffFields.addAll(diffIxPoiParentResult);
 				}
+				if (CollectionUtils.isEmpty(diffFields)) continue;
 				//TODO:比较其他的子表属性
 				DiffResult diffResult= new DiffResult(fid,diffFields);
 				//TODO:把DiffResult输出到文件

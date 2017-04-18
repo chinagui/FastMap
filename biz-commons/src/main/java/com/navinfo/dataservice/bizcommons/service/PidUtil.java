@@ -599,5 +599,8 @@ public class PidUtil {
 	public int applyCmgBuildfacePid() throws Exception {
         return applyPid("CMG_BUILDFACE");
     }
+	public int applyCmgBuildingPid() throws Exception {
+        return applyPid("CMG_BUILDING");
+    }
 
 }

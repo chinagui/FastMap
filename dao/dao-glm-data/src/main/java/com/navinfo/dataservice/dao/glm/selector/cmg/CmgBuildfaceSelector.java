@@ -100,6 +100,45 @@ public class CmgBuildfaceSelector extends AbstractSelector {
         }
         return result;
     }
+    
+    /**
+     * 根据根据建筑物pid查cmgface
+     * @param buildingPid 建筑物PID
+     * @param isLock 是否加锁
+     * @return 关联面信息， 无关联面时返回 EMPTY LIST
+     * @throws Exception 查询关联面时出错
+     */
+    public List<CmgBuildface> loadFaceByBuildingPid(int buildingPid, boolean isLock) throws Exception {
+        List<CmgBuildface> result = new ArrayList<>();
+
+        String sql = "SELECT * FROM CMG_BUILDFACE T WHERE T.BUILDING_PID = :1 AND T.U_RECORD <> 2";
+        
+        if (isLock) {
+            sql += " for update nowait";
+        }
+
+        PreparedStatement pstmt = null;
+        
+        ResultSet resultSet = null;
+        
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            
+            pstmt.setInt(1, buildingPid);
+            
+            resultSet = pstmt.executeQuery();
+            
+            generateCmgBuildface(result, resultSet);
+            
+        } catch (Exception e) {
+            logger.error("method loadFaceByBuildingPid error. [ sql : " + sql + " ] ");
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+        return result;
+    }
 
     /**
      * 根据结果组装CMG-FACE对象

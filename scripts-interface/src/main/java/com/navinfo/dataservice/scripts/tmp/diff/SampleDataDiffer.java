@@ -1,6 +1,14 @@
 package com.navinfo.dataservice.scripts.tmp.diff;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
 
@@ -77,38 +85,104 @@ public class SampleDataDiffer {
 	 * {"field":"names","mongoValue":[],"oracleValue":[]},
 	 * ]
 	 * }
+	 * @throws Exception 
 	 * 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		logger.info("解析获取参数");
 		Param inParam = parseArgs(args);
 		logger.info(inParam);
 		SampleDataDiffer differ = new SampleDataDiffer();
 		differ.inParam = inParam;
-		logger.info("查询 未导入到一体化的fid列表");
-		List<String> notImpFidList = differ.findNotImpFids();
 		logger.info("相同fid的数据开始差分");
-		differ.doDiff(notImpFidList);
+		differ.doDiff();
 
 	}
-	private  void doDiff(List<String> notImpFidList) {
-		// TODO 差分主表字段；
-		this.diffIxPoi();
-		// TODO 差分relateParent；
-		// TODO 差分relateChildren；
-		
-	}
-	private void diffIxPoi() {
-		logger.info("差分主表属性");
+	private  void doDiff() throws Exception {
 		//将fid对应的poi，从mongo中查询得到一个hashmap(key:fid,value: poiJson)
+		Map<String,JSONObject> mongoData = this.queryFromMongo();
 		//从oracle中查询得到 hashmap(key:fid,value:poiJon)
+		java.sql.Connection conn = getConnection();
+		try{
+			//查询主表信息 key是fid
+			Map<String,JSONObject> ixPoiMap = queryIxPoi(conn);
+			//查询父表信息，key=当前poi的fid，得到其父表对应的fid
+			Map<String,String> ixPoiParentMap = queryIxPoiParent(conn);
+			//查询children表，得到子表对应的fid
+			Map<String,JSONArray> ixPoiChildrenMap = queryIxPoiChildren(conn);
+			Map<String,JSONArray> ixPoiNameMap = queryIxPoiName(conn);
+			Map<String,JSONArray> ixPoiAddressMap = queryIxPoiAddress(conn);
+			//TODO:查询其他子表
+			//执行mongdb和oracle数据的差分比较
+			for (String fid : mongoData.keySet()){
+				logger.info("开始比较:fid="+fid);
+				List<DiffField> diffFields  =new ArrayList<DiffField>();
+				logger.info("比较主表属性");
+				JSONObject mongoPoi = mongoData.get(fid);
+				JSONObject orcleIxPoi = ixPoiMap.get(fid);
+				List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
+				if(diffIxPoiResult!=null){
+					diffFields.addAll(diffIxPoiResult);
+				}
+				logger.info("比较relateParent属性");
+				List<DiffField> diffIxPoiParentResult = diffIxPoiParent(mongoPoi,orcleIxPoi);
+				if(diffIxPoiResult!=null){
+					diffFields.addAll(diffIxPoiParentResult);
+				}
+				//TODO:比较其他的子表属性
+				DiffResult diffResult= new DiffResult(fid,diffFields);
+				//TODO:把DiffResult输出到文件
+				writeDiffResult(diffResult);
+			}
+			
+		}finally{
+			if(conn!=null){conn.close();}
+		}
 		
 	}
-	private  List<String> findNotImpFids() {
-		//TODO:获取一体化数据库connection
-		//TODO:查询在inParam.diffFidTempTableName 中存在，但是在一体化ix_poi表中不存在的数据；返回fid的列表；
+	
+	private void writeDiffResult(DiffResult diffResult) {
+		
+		
+	}
+	private List<DiffField> diffIxPoiParent(JSONObject mongoPoi, JSONObject orcleIxPoi) {
+		// TODO Auto-generated method stub
 		return null;
+	}
+	private List<DiffField> diffIxPoi(JSONObject mongoPoi, JSONObject orcleIxPoi) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String, JSONArray> queryIxPoiAddress(Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String, JSONArray> queryIxPoiName(Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String, JSONArray> queryIxPoiChildren(Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String, String> queryIxPoiParent(Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String, JSONObject> queryIxPoi(Connection conn) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	private Map<String,JSONObject> queryFromMongo() {
+		// TODO 从mongodb中查询获取poi数据；
+		return null;
+	}
+	private Connection getConnection() {
+		String driver = "oracle.jdbc.driver.OracleDriver";  
+        String url = "jdbc:Oracle:thin:@"+this.inParam.getOralceHost()+":"+this.inParam.getOraclePort()+":"+this.inParam.getOracleSid();
+        Class.forName(driver);  
+        return DriverManager.getConnection(url, this.inParam.getOracleUser(), this.inParam.getOraclePwd());
 	}
 	private static Param parseArgs(String[] args) {
 		Param param = new Param();

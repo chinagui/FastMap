@@ -380,6 +380,12 @@ public class PidUtil {
     public int applyRdNamePid() throws Exception {
         return applyPid("RD_NAME");
     }
+    /**
+     * 申請SC_ROADNAME_HW_INFO pid
+     */
+    public int applyHwInfoPid() throws Exception {
+        return applyPid("SC_ROADNAME_HW_INFO");
+    }
 
     /**
      * 申请lu_node_pid
@@ -588,6 +594,16 @@ public class PidUtil {
         return applyPid("RD_MILEAGEPILE");
     }
 
-	
+	public int applyCmgBuildnodePid() throws Exception {
+        return applyPid("CMG_BUILDNODE");
+    }
+
+	public int applyCmgBuildlinkPid() throws Exception {
+        return applyPid("CMG_BUILDLINK");
+    }
+
+	public int applyCmgBuildfacePid() throws Exception {
+        return applyPid("CMG_BUILDFACE");
+    }
 
 }

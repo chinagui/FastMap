@@ -69,12 +69,14 @@ public class TipsSelectorTest extends InitApplication {
 		new ApplicationContextUtil().setApplicationContext(context);*/
 
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
-	//@Test
+	@Test
 	public void testGetSnapshot() {
 		
 		
 	JSONArray grid = JSONArray
-				.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131]");
+				.fromObject("[59566422]");
+	
+	//{"grids":[59566422],"stage":[1,2,3],"mdFlag":"d","type":"2101","dbId":24}
 	
 	//parameter=%7B"grids":%5B60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131%5D,"stage":%5B1,2%5D,"mdFlag":"d","type":"1101","dbId":17%7D
 	
@@ -91,12 +93,12 @@ public class TipsSelectorTest extends InitApplication {
 		JSONArray stage = new JSONArray();
 		stage.add(1);
 		stage.add(2);
-		stage.add(5);
+		stage.add(3);
 		
 		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
 		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 1101;
-		int dbId = 17;
+		int type = 2101;
+		int dbId = 24;
 		
 		
 		try {
@@ -218,7 +220,7 @@ public class TipsSelectorTest extends InitApplication {
 		types.add(1306);
 		types.add(1102);*/
 		
-		types.add(8001);
+		//types.add(8002);
 		
 		
 		
@@ -267,7 +269,9 @@ public class TipsSelectorTest extends InitApplication {
 			//{"gap":40,"mdFlag":"d","z":17,"x":107945,"y":49614}
 			
 			//{"gap":40,"mdFlag":"d","z":18,"x":215889,"y":99228}
-			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(215889, 99228, 18,
+			//028002921a855f54c94990ab034c1fe4862d83
+			//{"gap":40,"mdFlag":"d","z":14,"x":13492,"y":6201}
+			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
 					40, types,"d"));
 			
 		} catch (Exception e) {
@@ -278,15 +282,20 @@ public class TipsSelectorTest extends InitApplication {
 	/**
 	 *
 	 */
-	//@Test
+	@Test
 	public void testSearchDataByWkt() {
 		JSONArray types = new JSONArray();
 //		types.add(1202);
 
 		//{"gap":40,"mdFlag":"d","z":17,"x":107942,"y":49613}
 		try {
+			JSONArray grids=new JSONArray();
+			grids.add(60560302);
 			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
+			wkt = GridUtils.grids2Wkt(grids);
+			System.out.println(wkt);
 			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d");
+			System.out.println(tips);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -335,18 +344,20 @@ public class TipsSelectorTest extends InitApplication {
 	}
 	
 	//根据网格获取tips统计
-		//@Test
+		@Test
 		public void testGetStats() {
 		/*	JSONArray grid = JSONArray
 					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
 			
 			JSONArray grid = JSONArray
-					.fromObject("[60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131,59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");
+					.fromObject("[59565431,59565430,59565333,59565323,59566302,59566303,59566402,59565433,59566403,59565432,59566400,59566401]");
 			JSONArray stage = new JSONArray();
 			stage.add(1);
 			stage.add(2);
-			stage.add(3);
 			stage.add(5);
+/*			stage.add(3);
+			stage.add(5);*/
+			
 			try {
 				System.out.println(solrSelector.getStats(grid, stage));
 			} catch (Exception e) {
@@ -473,16 +484,16 @@ public class TipsSelectorTest extends InitApplication {
 	        return String.valueOf(sum);
 	    }
 	    
-	  // @Test
+	  @Test
 	    public  void  testQuerySolr(){
 	    	System.out.println("查询rowkey");
-	    	/*JSONArray grids = JSONArray
-					.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
-	    	*/
-	    	
 	    	JSONArray grids = JSONArray
+					.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
+	    	
+	    	
+	    /*	JSONArray grids = JSONArray
 					.fromObject("[59567233]");
-			
+			*/
 	    	//[59567303,59567313]
 	    /*	JSONArray grids = JSONArray
 			.fromObject("[60560303,60560311,60560312,60560313,60560322]");
@@ -521,7 +532,7 @@ public class TipsSelectorTest extends InitApplication {
 		    			ids+=","+json.get("id");
 		    			update(json.get("id").toString());
 		    			count++;
-		    			if(count==10)  break;
+		    			//if(count==10)  break;
 		    		}
 		    		if(StringUtils.isNotEmpty(ids)){
 		    			System.out.println("type:"+type+"找到数据rowkeys:"+ids);
@@ -585,20 +596,9 @@ public class TipsSelectorTest extends InitApplication {
 				
 			}
 			
+			track.put("s_qTaskId", 2);
 			
-			track.put("t_lifecycle", 2);
-			
-			track.put("t_cStatus", 1);
-			
-			track.put("t_dStatus", 0);
-			
-			track.put("t_mStatus", 0);
-			
-			String date = StringUtils.getCurrentTime();
-
-			track.put("t_trackInfo", trackInfo);
-
-			track.put("t_date", date);
+			track.put("s_mTaskId", 1);
 			
 
 			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
@@ -606,20 +606,11 @@ public class TipsSelectorTest extends InitApplication {
 
 			htab.put(put);
 			
-			
 			JSONObject solrIndex = conn.getById(rowkey);
 
-			solrIndex.put("t_lifecycle", 2);
+			solrIndex.put("s_qTaskId", 0);
 
-			solrIndex.put("t_date", date);
-			
-			solrIndex.put("t_cStatus", 1);
-			
-			solrIndex.put("t_dStatus", 0);
-			
-			solrIndex.put("t_mStatus", 0);
-			
-			solrIndex.put("stage", 1);
+			solrIndex.put("s_mTaskId", 0);
 			
 			conn.addTips(solrIndex);
 
@@ -843,7 +834,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":2677}";
+				String parameter = "{\"jobId\":548}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -855,9 +846,9 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1423"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\548"; // 本地测试用
 					
-					//String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\1664"; // 本地测试用
+				//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 
 					// String
 					// filePath="E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\upload\\893";
@@ -912,10 +903,24 @@ public class TipsSelectorTest extends InitApplication {
 				e.printStackTrace();
 			}
 		 }
+		 
+		 @Test
+		 public void testGetByRowkeyNew(){
+			 TipsSelector selector = new TipsSelector();
+
+			 try {
+				
+				JSONObject data = selector.searchDataByRowkeyNew("021109nirobot17032500026");
+				System.out.println(data);
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		 }
 		
 		 
 		 
-		// @Test
+		 @Test
 		 public void testGetByRowkeys(){
 			 TipsSelector selector = new TipsSelector();
 

@@ -33,7 +33,7 @@ public class RdNameSelectorTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	//@Test
+//	@Test
 	public void testGetRdName()
 	{
 		String parameter = "{'subtaskId':76,'pageNum':1,'pageSize':20,'flag':1,'sortby':'','params':{'name':'','nameGroupid':304000027,'adminId':''}}";//
@@ -74,6 +74,33 @@ public class RdNameSelectorTest {
 		}
 	}
 	
+	@Test
+	public void testGetRdNameAll()
+	{
+		//{"pageNum":1,"pageSize":20,"sortby":"","flag":0,"params":{"name":"","nameGroupid":"","adminId":"","roadTypes":[]}}
+		String parameter = "{'pageNum':1,'pageSize':20,'flag':0,'sortby':'','params':{'name':'定武高速','nameGroupid':'','adminId':214,'roadTypes':[1]}}";//
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			RdNameSelector selector = new RdNameSelector();
+			
+			int flag = jsonReq.getInt("flag");//1是任务查，0是全库查
+            JSONObject data = new JSONObject();
+            if(flag > 0){
+            	
+            }else{
+            	data = selector.searchForWeb(jsonReq);
+            }
+			
+			System.out.println(data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
 	//@Test
 	public void testGetRdNameByNameId()
 	{
@@ -104,7 +131,7 @@ public class RdNameSelectorTest {
         
 	}
 	
-	@Test
+	//@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
 		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'ENG','name':'Ceshiyuyin','type':'*','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':1,'roadType':1,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'\"task\":76','paRegionId':null,'splitFlag':0,'memo':'','routeId':null,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':null,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");

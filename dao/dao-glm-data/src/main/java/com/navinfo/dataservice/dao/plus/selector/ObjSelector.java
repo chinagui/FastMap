@@ -58,8 +58,12 @@ public class ObjSelector {
 		if(isLock){
 			sql += " FOR UPDATE NOWAIT";
 		}
-		logger.info("selectByPid查询主表："+sql);
-		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
+		logger.info("selectByPid查询主表："+sql+",参数："+pid);
+//		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
+		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),pid);
+		if(mainrow==null){
+			return null;
+		}
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		
 		//加载子表
@@ -180,6 +184,9 @@ public class ObjSelector {
 		logger.info("selectBySpecColumn查询主表："+sql);
 		
 		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),colValue);
+		if(mainrow==null){
+			return null;
+		}
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		
 		if(isMainOnly){

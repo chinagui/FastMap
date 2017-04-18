@@ -8,19 +8,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.road.RdRoad;
+import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
 
 public class RdRoadSearch implements ISearch {
 
@@ -38,8 +40,13 @@ public class RdRoadSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		AbstractSelector selector = new AbstractSelector(RdRoad.class, conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -60,8 +67,10 @@ public class RdRoadSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+index(b)*/ B.PID, A.LINK_PID, A.GEOMETRY FROM TMP1 A, RD_ROAD_LINK B WHERE A.LINK_PID = B.LINK_PID AND B.U_RECORD != 2";
-
+		String sql = "WITH TMP1 AS (SELECT LINK_PID FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.PID ROAD_PID FROM RD_ROAD_LINK A, TMP1 B WHERE B.LINK_PID = A.LINK_PID AND A.U_RECORD != 2) SELECT /*+index(b)*/ B.PID, C.LINK_PID, C.GEOMETRY FROM TMP2 A, RD_ROAD_LINK B, RD_LINK C WHERE A.ROAD_PID = B.PID AND C.LINK_PID = B.LINK_PID AND B.U_RECORD != 2";
+		
+		
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -121,7 +130,7 @@ public class RdRoadSearch implements ISearch {
 
 					JSONObject gObject = new JSONObject();
 
-					gObject.put("i", linkpid);
+					gObject.put("i", Integer.parseInt(linkpid));
 
 					gObject.put("g",
 							linkMap.get(linkpid).getJSONArray("coordinates"));

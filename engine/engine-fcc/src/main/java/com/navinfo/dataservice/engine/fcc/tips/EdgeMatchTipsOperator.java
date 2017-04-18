@@ -178,40 +178,6 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
 	
 
-	/**
-	 * @Description:删除tips
-	 * @param rowkey
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-11-16 下午5:21:09
-	 */
-	public void deleteByRowkey(String rowkey) throws Exception {
-		Connection hbaseConn;
-		try {
-			// delete solr
-			solr.deleteByRowkey(rowkey);
 
-			// delete hbase
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-			
-			List list = new ArrayList();
-			Delete d1 = new Delete(rowkey.getBytes());
-			list.add(d1);
-			
-			htab.delete(list);
-			
-			htab.close();
-		} catch (SolrServerException e) {
-
-			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
-			
-			throw new Exception(
-					"删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
-		}
-
-	}
 
 }

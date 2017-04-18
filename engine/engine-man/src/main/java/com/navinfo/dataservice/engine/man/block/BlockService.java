@@ -238,48 +238,30 @@ public class BlockService {
 		}
 	}
 
-	public List<HashMap> listByWkt(JSONObject json) throws ServiceException {
+	public List<Map<String,Object>> listByWkt(JSONObject json) throws ServiceException {
 		Connection conn = null;
 		try {
 
 			conn = DBConnector.getInstance().getManConnection();
-			String wkt = json.getString("wkt");
-			String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
-					')');
-			//int type = 1;
-			//if(json.containsKey("type")){
-			//	type = json.getInt("type");
-			//}
+			String extendSql="";
+			if(json.containsKey("wkt")){
+				String wkt = json.getString("wkt");
+				extendSql=extendSql+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
+				+ "       'TRUE'";
+			}
+			if(json.containsKey("planningStatus")){
+				String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
+						')');
+				extendSql=extendSql+"   AND T.PLAN_STATUS IN "+planningStatus;
+			}
+			if(json.containsKey("cityId")){
+				extendSql=extendSql+"   AND T.CITY_ID = "+json.getInt("cityId");
+			}
 
 			String selectSql = "SELECT T.BLOCK_ID, T.BLOCK_NAME, T.GEOMETRY, T.PLAN_STATUS, T.CITY_ID"
 					+ "  FROM BLOCK T"
-					+ " WHERE T.PLAN_STATUS IN "+planningStatus
-					+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
-					+ "       'TRUE'";
-
-			/*if (StringUtils.isNotEmpty(json.getString("snapshot"))) {
-				if ("1".equals(json.getString("snapshot"))) {
-					selectSql = "select t.BLOCK_ID,t.BLOCK_NAME,t.PLAN_STATUS,t.CITY_ID,TMP.PERCENT"
-							+ " from BLOCK t"
-							+ ", (SELECT DISTINCT BM.BLOCK_ID,FSOB.PERCENT FROM BLOCK_MAN BM, FM_STAT_OVERVIEW_BLOCKMAN FSOB WHERE BM.BLOCK_MAN_ID = FSOB.BLOCK_MAN_ID(+) AND BM.LATEST = 1) TMP"
-							+ " where t.PLAN_STATUS in " + planningStatus
-							+ " AND T.BLOCK_ID = TMP.BLOCK_ID";
-				}
-			};*/
-			/*if (!json.containsKey("relation") || ("intersect".equals(json.getString("relation")))) {
-				selectSql += " and SDO_ANYINTERACT(t.geometry,sdo_geometry('" + wkt + "',8307))='TRUE'";
-			} else {
-				if ("within".equals(json.getString("relation"))) {
-					selectSql += " and sdo_within_distance(t.geometry,  sdo_geom.sdo_mbr(sdo_geometry('" + wkt
-							+ "', 8307)), 'DISTANCE=0') = 'TRUE'";
-				}
-			}
-			
-			if(4==type){
-				selectSql += " AND t.CITY_ID = 100002";
-			}else if(1==type){
-				selectSql += " AND t.CITY_ID < 100000";
-			}*/
+					+ " WHERE 1=1"
+					+ extendSql;
 			log.debug(selectSql);
 			return BlockOperation.queryBlockBySql(conn, selectSql);
 		} catch (Exception e) {

@@ -1,5 +1,9 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdnode.update;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -12,11 +16,15 @@ public class Command extends AbstractCommand {
 
 	private String requester;
 
-	private JSONObject content;
-	
+	private JSONObject content;	
+
+	private JSONArray updateContents;
+
 	private int pid;
 	
 	private RdNode node;
+
+	private Map<Integer, RdNode> rdNodeMap = new HashMap<Integer, RdNode>();	
 	
 	public RdNode getNode() {
 		return node;
@@ -24,6 +32,15 @@ public class Command extends AbstractCommand {
 
 	public void setNode(RdNode node) {
 		this.node = node;
+	}
+	
+	/**
+	 * 被修改的node映射关系。Integer：nodePid, RdNode：node对象
+	 * @return
+	 */
+	public Map<Integer, RdNode> getNodeMap() {
+
+		return rdNodeMap;
 	}
 
 	public int getPid() {
@@ -40,7 +57,14 @@ public class Command extends AbstractCommand {
 
 	public void setContent(JSONObject content) {
 		this.content = content;
-	}
+	}	
+
+	/**
+	 * 修改内容，批量编辑node使用
+	 */
+	public JSONArray getUpdateContents() {
+		return updateContents;
+	}	
 
 	@Override
 	public OperType getOperType() {
@@ -70,8 +94,10 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester,RdNode node) {
 		this(json,requester);
 		this.node =node;
-		
-
+	}
+	//批量编辑使用
+	public Command(JSONArray json) {
+		this.updateContents = json;	
 	}
 
 }

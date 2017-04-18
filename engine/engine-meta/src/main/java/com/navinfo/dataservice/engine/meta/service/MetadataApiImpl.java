@@ -129,6 +129,15 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointAdminarea.getInstance().scPointAdminareaContactMap();
 	}
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaDataMap();
+	}
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception
@@ -301,10 +310,7 @@ public class MetadataApiImpl implements MetadataApi {
 		return kindCodeSelector.getKindCodeMap();
 	}
 
-	private JSONObject getAdminMap(Connection conn) throws Exception {
-		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
-		return areaSelector.getAdminMap();
-	}
+	
 
 	@Override
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception {
@@ -795,5 +801,14 @@ public class MetadataApiImpl implements MetadataApi {
 	public Map<String, String> scPointCode2Level() throws Exception{
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
+	@Override
+	public JSONObject getAdminMap(Connection conn) throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+		return areaSelector.getAdminMap();
+	}
+	/*private JSONObject getAdminMap(Connection conn) throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+		return areaSelector.getAdminMap();
+	}*/
 
 }

@@ -6,10 +6,12 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +23,7 @@ import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -737,7 +740,6 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
 		try {
-			
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
 			
@@ -750,6 +752,134 @@ public class CheckController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	//查询某个时间段内元数据检查job
+	@RequestMapping(value = "/check/metadataEdit/searchCheckJobList")
+	public ModelAndView searchCheckJobList(HttpServletRequest request){
+		try{			
+			JSONObject parameterJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			if(parameterJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			
+			JSONArray data = new JSONArray();
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			data = jobApiService.getJobObjList(parameterJson);
+			
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+		}
+	}
+	
+	@RequestMapping(value = "/check/getResultsByTaskName")
+	public ModelAndView getResultsByTaskName(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			if(jsonReq.getString("taskName") == null && StringUtils.isEmpty(jsonReq.getString("taskName"))){
+				String tableName  = jsonReq.getString("tableName");
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				//根据jobId 查询jobUuid 获取最新的一个任务
+				JSONObject jobObj = jobApiService.getLatestJobByDescp(tableName);
+				
+				if(jobObj != null && jobObj.size() >0){
+					jsonReq.put("taskName", jobObj.getString("jobGuid"));
+				}
+			}
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadateApi");
+			Map<String,String> adminMap = metadataApiService.getAdminMap(conn);
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			Page page = new Page();
+			page = niValExceptionSelector.listCheckResultsByTaskName(jsonReq,adminMap);
+			
+			logger.info("end check/getResultsByTaskName"+" :"+jsonReq.getString("taskName"));
+			logger.debug(page.getResult());
+			logger.debug(page.getTotalCount());
+			return new ModelAndView("jsonView", success(page));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: getruleIdsByTaskName
+	 * @Description: 获取当前任务下的所有规则号
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月12日 下午5:47:39 
+	 */
+	@RequestMapping(value = "/check/getruleIdsByTaskName")
+	public ModelAndView getruleIdsByTaskName(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			if(jsonReq.getString("taskName") == null && StringUtils.isEmpty(jsonReq.getString("taskName"))){
+				String tableName  = jsonReq.getString("tableName");
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				//根据jobId 查询jobUuid 获取最新的一个任务
+				JSONObject jobObj = jobApiService.getLatestJobByDescp(tableName);
+				
+				if(jobObj != null && jobObj.size() >0){
+					jsonReq.put("taskName", jobObj.getString("jobGuid"));
+				}
+			}
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			JSONArray data = new JSONArray();
+			data = niValExceptionSelector.listCheckResultsRuleIds(jsonReq);
+			
+			logger.info("end check/getResultsByTaskName"+" :"+jsonReq.getString("taskName"));
+			logger.debug(data);
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

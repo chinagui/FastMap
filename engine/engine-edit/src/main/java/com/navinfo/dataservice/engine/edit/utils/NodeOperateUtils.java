@@ -11,6 +11,8 @@ import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNode;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNodeMesh;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNodeMesh;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
@@ -243,6 +245,39 @@ public class NodeOperateUtils {
             nodeMesh.setNodePid(node.getPid());
             nodeMesh.setMeshId(Integer.parseInt(mesh));
             nodeMeshs.add(nodeMesh);
+        }
+        node.setMeshes(nodeMeshs);
+        return node;
+    }
+
+    /**
+     * 创建CMG-NODE公共方法
+     * @param x 经度
+     * @param y 维度
+     * @return CMG-NODE
+     */
+    public static CmgBuildnode createCmgBuildnode(double x, double y) throws Exception {
+        CmgBuildnode node = new CmgBuildnode();
+        // 申请pid
+        node.setPid(PidUtil.getInstance().applyCmgBuildnodePid());
+        // 获取点的几何信息
+        node.setGeometry(GeoTranslator.transform(GeoTranslator.point2Jts(x, y), Constant.BASE_EXPAND, 0));
+        // 维护Node图幅信息
+        String[] meshes = MeshUtils.point2Meshes(x, y);
+        // 判断是否角点
+        if (meshes.length == 4) {
+            node.setForm(7);
+            // 判断是否图廓点
+        } else if (meshes.length == 2) {
+            node.setForm(1);
+        }
+
+        List<IRow> nodeMeshs = new ArrayList<>();
+        for (String m : meshes) {
+            CmgBuildnodeMesh mesh = new CmgBuildnodeMesh();
+            mesh.setNodePid(node.getPid());
+            mesh.setMeshId(Integer.valueOf(m));
+            nodeMeshs.add(mesh);
         }
         node.setMeshes(nodeMeshs);
         return node;

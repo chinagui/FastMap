@@ -148,4 +148,53 @@ public class LuLinkSelector extends AbstractSelector {
         return links;
 
     }
+    /***
+	 * 加载联通link不考虑方向
+	 * 
+	 * @param linkPid
+	 * @param nodePidDir
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+
+	public List<LuLink> loadTrackLinkNoDirect(int linkPid, int nodePidDir,
+			boolean isLock) throws Exception {
+		List<LuLink> list = new ArrayList<LuLink>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select rl.* from lu_link rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, nodePidDir);
+			pstmt.setInt(2, nodePidDir);
+			pstmt.setInt(3, linkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				LuLink luLink = new LuLink();
+				ReflectionAttrUtils.executeResultSet(luLink, resultSet);
+				list.add(luLink);
+
+			}
+			return list;
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+
 }

@@ -850,10 +850,11 @@ public class SubtaskOperation {
 				if(0 == platForm){
 					//采集端
 					sb.append(" and st.STAGE in (0) ");
-				}else if(1 == platForm){
-					//编辑端
-					sb.append(" and st.STAGE in (1,2) ");
 				}
+//				else if(1 == platForm){
+//					//编辑端
+//					sb.append(" and st.STAGE in (1,2) ");
+//				}
 			}
 
 			if (dataJson.containsKey("type")) {
@@ -1001,9 +1002,10 @@ public class SubtaskOperation {
 			}else{
 				if(0 == platForm){//采集端
 					sb.append(" AND ST.STAGE = 0");
-				}else if(1 == platForm){//编辑端
-					sb.append(" AND ST.STAGE IN (1,2) ");
 				}
+//				else if(1 == platForm){//编辑端
+//					sb.append(" AND ST.STAGE IN (1,2) ");
+//				}
 			}
 
 			if (dataJson.containsKey("type")) {

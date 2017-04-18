@@ -3,14 +3,11 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -26,19 +23,15 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class TaskOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskOperation.class);
 	
 	public TaskOperation() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static int getNewTaskId(Connection conn) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -2062,7 +2055,6 @@ public class TaskOperation {
 			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
 				@Override
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					Map<String,Object> map = new HashMap<String, Object>();
 					while(rs.next()){
 						map.put("blockManId", rs.getLong("BLOCK_MAN_ID"));
@@ -2104,7 +2096,6 @@ public class TaskOperation {
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
 				public List<Integer> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					List<Integer> map = new ArrayList<Integer>();
 					while(rs.next()){
 						map.add(rs.getInt("TASK_ID"));
@@ -2137,7 +2128,6 @@ public class TaskOperation {
 			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();

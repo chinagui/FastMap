@@ -246,7 +246,7 @@ public class Operation implements IOperation {
      */
     private void updateLink(Result result) throws Exception {
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(command.getGeometry()));
-        command.getCmglink().changedFields().put("length", GeoTranslator.jts2Geojson(command.getGeometry()));
+        command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(command.getGeometry()));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());
     }
 

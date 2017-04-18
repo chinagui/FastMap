@@ -25,6 +25,18 @@ public class SampleDataDiffer {
 	 * 将oracle中的数据和对应的mongodb中的数据进行字段级比较；
 	 * 1)poi基础属性比较：
 	 * mongdb             oracle
+	 * location
+	 * guide
+	 * fid
+	 * meshid
+	 * postcode
+	 * kindcode
+	 * level
+	 * open24h
+	 * adminReal
+	 * imporance
+	 * airportCode
+	 * vipFlag
 	 * lifecycle		  ix_poi.U_RECORD 如果一个是删除，另外一个不是删除； 则算不一致；否则算一致；
 	 * name               取官方原始中文名称；
 	 * address            取官方原始中文地址；
@@ -169,11 +181,11 @@ public class SampleDataDiffer {
 		return null;
 	}
 	private Map<String, String> queryIxPoiParent(Connection conn) {
-		// TODO Auto-generated method stub
+		String sql = "select * from ix_poi_parent a,ix_poi b,"+this.inParam.getDiffFidTempTableName()+" c,ix_poi_children d  where b.poi_num=c.fid and ";//TODO://
 		return null;
 	}
 	private Map<String, JSONObject> queryIxPoi(Connection conn) {
-		// TODO Auto-generated method stub
+		String sql = "select * from ix_poi a  ,"+this.inParam.getDiffFidTempTableName()+"  b where  a.poi_num=b.fid and a.u_record!=2";
 		return null;
 	}
 	private Map<String,JSONObject> queryFromMongo() {

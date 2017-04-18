@@ -301,8 +301,10 @@ public class RdNameImportor {
 			
 			RdNameOperation operation = new RdNameOperation(conn);
 			//web新增rd_name是，根据当前子任务的id， 赋值给rd_name.src_resume 格式 "task":3443434
-			if(rdName.getSrcResume() == null || StringUtils.isEmpty(rdName.getSrcResume())){
-				rdName.setSrcResume("\"task\":"+subtaskId);
+			if(rdName.getSrcResume() == null || StringUtils.isEmpty(rdName.getSrcResume()) ){
+				if(subtaskId > 0){
+					rdName.setSrcResume("\"task\":"+subtaskId);
+				}
 			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);

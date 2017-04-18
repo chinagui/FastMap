@@ -91,7 +91,7 @@ public class CodeGen {
 		this.genCode("service.ftlh", "Service.java");
 	}
 	private void genModel() throws Exception{
-		this.genCode("modelPoi.ftlh", ".java");
+		this.genCode("model.ftlh", ".java");
 	}
 
 	/**
@@ -122,11 +122,12 @@ public class CodeGen {
 //	 	codeGen.genModel();
 //	    }
 	 public static void main(String[] args) throws Exception {
-		    Table table = new Table("jdbc:oracle:thin:@192.168.4.61:1521/orcl","fm_regiondb_sp6_d_1","fm_regiondb_sp6_d_1","IX_POI_CARRENTAL");
-		    CodeGen codeGen = new CodeGen("com.navinfo.dataservice.engine.editplus.model.ixpoi",table,"E:\\Users\\songdongyan\\fm_road\\DataService\\engine\\engine-editplus\\src\\main\\java");
-//	 	codeGen.genController();
-//		 	codeGen.genService();
-		 	codeGen.genModel();
+		    Table table = new Table("jdbc:oracle:thin:@192.168.3.227:1521/orcl","metadata_pd_17sum","metadata_pd_17sum","SC_ROADNAME_ABB");
+		    
+		    CodeGen codeGen = new CodeGen("com.navinfo.dataservice.engine.meta.model",table,"D:\\code\\dataservice20161027\\DataService\\engine\\engine-meta\\src\\main\\java");
+		    //codeGen.genController();
+		 	//codeGen.genService();
+		 	//codeGen.genModel();
 		    }
 	
 }

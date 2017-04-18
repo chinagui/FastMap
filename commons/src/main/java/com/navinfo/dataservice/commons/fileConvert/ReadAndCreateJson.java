@@ -45,8 +45,8 @@ public class ReadAndCreateJson {
 		
         while (it.hasNext()) {
             JSONObject ob = (JSONObject) it.next();
-            if( ob.getString("city").equals("北京市") || ob.getString("city").equals("天津市")
-            		|| ob.getString("city").equals("承德市")){
+            /*if( ob.getString("city").equals("北京市") || ob.getString("city").equals("天津市")
+            		|| ob.getString("city").equals("承德市")){*/
 	
             //
 			String geoWkt=ob.getString("geometry");
@@ -119,7 +119,7 @@ public class ReadAndCreateJson {
 			}
             
         }
-        }
+//        }
         if(citys != null && citys.size() > 0){
 			for(String cityName : citys.keySet()){
 				City cityObj = citys.get(cityName);
@@ -175,8 +175,8 @@ public class ReadAndCreateJson {
 		
         while (it.hasNext()) {
             JSONObject ob = (JSONObject) it.next();
-            if( ob.getString("city").equals("北京市") || ob.getString("city").equals("天津市")
-            		|| ob.getString("city").equals("承德市")){
+            /*if( ob.getString("city").equals("北京市") || ob.getString("city").equals("天津市")
+            		|| ob.getString("city").equals("承德市")){*/
             //
 			String geoWkt=ob.getString("geometry");
 			Geometry jtsGeo = JtsGeometryFactory.read(geoWkt);
@@ -253,7 +253,7 @@ public class ReadAndCreateJson {
 				}
 			}
             
-        	}	 
+//        	}	 
         }
         if(blocks != null && blocks.size() > 0){
 			for(String blockcode : blocks.keySet()){

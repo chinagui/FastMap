@@ -57,9 +57,7 @@ public class Operation implements IOperation {
         excludeCmglink.add(command.getCmglink().pid());
         result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
         // 处理CMG-FACE
-        CmgBuildnodeSelector cmgnodeSelector = new CmgBuildnodeSelector(conn);
-        CmgBuildlinkSelector cmglinkSelector = new CmgBuildlinkSelector(conn);
-        CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, cmgnodeSelector, cmglinkSelector);
+        CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, conn);
         return null;
     }
 

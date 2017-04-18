@@ -6,6 +6,8 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.CmglinkUtil;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 
+import java.sql.Connection;
+
 /**
  * @Title: Operation
  * @Package: com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.delete
@@ -21,8 +23,14 @@ public class Operation implements IOperation {
      */
     private Command command;
 
-    public Operation(Command command) {
+    /**
+     * 数据库链接
+     */
+    private Connection conn;
+
+    public Operation(Command command, Connection conn) {
         this.command = command;
+        this.conn = conn;
     }
 
     /**
@@ -37,9 +45,9 @@ public class Operation implements IOperation {
         // 处理CMG-FACE
         result.insertObject(command.getCmgface(), ObjStatus.DELETE, command.getCmgface().pid());
         // 处理CMG-LINK
-        CmglinkUtil.handleCmglinkMesh(command.getCmglinks(), command.getCmgface().getMeshId(), result);
+        CmglinkUtil.handleCmglinkMesh(command.getCmglinks(), command.getCmgface().getMeshId(), conn, result);
         // 处理CMG-NODE
-        CmgnodeUtil.handleCmgnodeMesh(command.getCmgnodes(), command.getCmgface().getMeshId(), result);
+        CmgnodeUtil.handleCmgnodeMesh(command.getCmgnodes(), command.getCmgface().getMeshId(), conn, result);
         return null;
     }
 

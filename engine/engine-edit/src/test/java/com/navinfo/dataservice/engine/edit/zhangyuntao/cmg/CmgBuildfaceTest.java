@@ -42,4 +42,10 @@ public class CmgBuildfaceTest extends InitApplication {
         CmgBuildfaceSearch search = new CmgBuildfaceSearch(DBConnector.getInstance().getConnectionById(13));
         System.out.println(search.searchDataByPid(508000002));
     }
+
+    @Test
+    public void testDeleteCmgBuildface() {
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":502000001}";
+        TestUtil.run(requester);
+    }
 }

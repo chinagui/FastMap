@@ -262,6 +262,9 @@ public class UploadOperationByGather {
 		MultiMap gridDataMapping = new MultiValueMap();
 		for (int i = 0; i < pois.size(); i++) {
 			JSONObject jo = pois.getJSONObject(i);
+			if(jo.getString("fid").equals("0010130518WMH00081")){
+				log.info("");
+			}
 			// 坐标确定grid，grid确定区库ID
 			String wkt = jo.getString("geometry");
 			Geometry point = new WKTReader().read(wkt);
@@ -303,6 +306,7 @@ public class UploadOperationByGather {
 			Map<String,PoiWrap> fidPoiMap = new HashMap<String,PoiWrap>();
 			for(JSONObject poiJson:poiList){
 				String fid = poiJson.getString("fid");
+				log.info("dbId:  "+dbId+" fid:"+fid);
 				int lifecycle = poiJson.getInt("t_lifecycle");
 				PoiWrap poiWrap = new PoiWrap(fid,lifecycle,poiJson);
 				fidPoiMap.put(fid, poiWrap);
@@ -314,6 +318,7 @@ public class UploadOperationByGather {
 			for(String fid:fidPoiMap.keySet()){
 				// 判断每一条数据是新增、修改还是删除
 				PoiWrap poiWrap = fidPoiMap.get(fid);
+				
 				JSONObject poi = poiWrap.getPoiJson();
 				int uRecord = poiWrap.getuRecord();
 				int lifecycle = poiWrap.getLifecycle();
@@ -324,6 +329,7 @@ public class UploadOperationByGather {
 						poi.put("delFlag", 1);
 						poi.put("addFlag", 0);
 						poi.put("updateFlag", 0);
+						log.info("需要删除的poi: fid:"+fid+" pid:"+poiWrap.getPid());
 					} else {
 						if (uRecord == 2) {
 							JSONObject errObj = new JSONObject();
@@ -339,6 +345,7 @@ public class UploadOperationByGather {
 							poi.put("delFlag", 0);
 							poi.put("addFlag", 0);
 							poi.put("updateFlag", 1);
+							log.info("需要修改的poi: fid:"+fid+" pid:"+poiWrap.getPid());
 						}
 					}
 				} else {
@@ -357,6 +364,7 @@ public class UploadOperationByGather {
 						poi.put("delFlag", 0);
 						poi.put("addFlag", 1);
 						poi.put("updateFlag", 0);
+						log.info("需要新增的poi: fid:"+fid+" pid:"+poiWrap.getPid());
 					}
 				}
 				UploadPois upoi = poiMap.get(Integer.parseInt(dbId));

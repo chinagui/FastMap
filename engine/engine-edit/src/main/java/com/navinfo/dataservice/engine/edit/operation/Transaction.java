@@ -912,6 +912,18 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.delete.Command(
 						json, requester);
 			}
+		case CMGBUILDING:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.create.Command(
+						json, requester);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.update.Command(
+						json, requester);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.delete.Command(
+						json, requester);
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -1738,6 +1750,18 @@ public class Transaction {
 				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.delete.Process(
 						command);
 			}
+		case CMGBUILDING:
+			switch (operType) {
+			case CREATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.create.Process(
+						command);
+			case UPDATE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.update.Process(
+						command);
+			case DELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.delete.Process(
+						command);
+			}
 		}
 
 		throw new Exception("不支持的操作类型");
@@ -1812,6 +1836,4 @@ public class Transaction {
 				JsonUtils.getStrConfig());
 		System.out.println(json);
 	}
-
-
 }

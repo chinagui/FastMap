@@ -13,6 +13,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.selector.CkRuleSelector;
 import com.navinfo.dataservice.dao.check.selector.CkSuiteSelector;
 
@@ -37,8 +38,7 @@ public class CheckService {
 	 * @param dbId
 	 * @param subTaskId
 	 * @param userId
-	 * @param checkType 检查类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
-	 * （0 poi行编，1poi精编, 2道路,3 道路名）
+	 * @param checkType 检查类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他;7道路名子版本检查)
 	 * @return
 	 * @throws Exception 
 	 */
@@ -47,10 +47,11 @@ public class CheckService {
 		long jobId=0;
 		
 		ManApi manApi=(ManApi) ApplicationContextUtil.getBean("manApi");
+		
 		Subtask subtaskObj=manApi.queryBySubtaskId(subtaskId);
 		if (subtaskObj == null) {
 			throw new Exception("subtaskid未找到数据");
-		}		
+		}	
 		int dbId=subtaskObj.getDbId();
 		
 		String ckRules = "";		
@@ -73,15 +74,62 @@ public class CheckService {
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
 			Integer metaDbid = metaDb.getDbId();
 			if(metaDbid != null && metaDbid >0){
+				String jobName = "";
+				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+						&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
+					jobName = "rdName:"+jsonReq.getString("jobName");
+				}else{
+					jobName = "rdName:"+"元数据库检查";
+				}
+				
 			//System.out.println("metaDbid: "+metaDbid);
 			JSONObject metaValidationRequestJSON=new JSONObject();
 			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
 			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
 			metaValidationRequestJSON.put("ruleIds", ruleList);
 			metaValidationRequestJSON.put("timeOut", 600);
-			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, "元数据库检查");
+			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, jobName);
 			//System.out.println("jobId == "+jobId);
 			}
+		}else if(checkType == 7){//道路名子版本检查
+			
+			System.out.println(" begin 道路名子版本检查 ");
+			String name = "" ;
+			if(jsonReq.containsKey("name") && jsonReq.getString("name") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("name")) && !jsonReq.getString("name").equals("null")){
+				name = jsonReq.getString("name");
+			}
+			String nameGroupid = "";
+			if(jsonReq.containsKey("nameGroupid") && jsonReq.getString("nameGroupid") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("nameGroupid")) && !jsonReq.getString("nameGroupid").equals("null")){
+				nameGroupid = jsonReq.getString("nameGroupid");
+			}	
+			String adminId = "";
+			if(jsonReq.containsKey("adminId") && jsonReq.getString("adminId") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("adminId")) && !jsonReq.getString("adminId").equals("null")){
+				adminId = jsonReq.getString("adminId");
+			}
+			String roadTypes = "";
+			if(jsonReq.containsKey("roadTypes") && jsonReq.getJSONArray("roadTypes") != null && jsonReq.getJSONArray("roadTypes").size() > 0 ){
+				JSONArray arr = jsonReq.getJSONArray("roadTypes");
+				roadTypes = arr.join(",");
+			}
+			String jobName = "";
+			if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
+				jobName = "rdName:"+jsonReq.getString("jobName");
+			}
+			
+			System.out.println("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" jobName: "+jobName);
+			JSONObject validationRequestJSON=new JSONObject();
+			validationRequestJSON.put("name", name);
+			validationRequestJSON.put("nameGroupid", nameGroupid);
+			validationRequestJSON.put("adminId", adminId);
+			validationRequestJSON.put("roadTypes", roadTypes);
+//			validationRequestJSON.put("jobName", jobName);
+			validationRequestJSON.put("rules", ruleList);
+//			validationRequestJSON.put("targetDbId", dbId);
+			jobId=apiService.createJob("metaValidation", validationRequestJSON, userId,subtaskId, jobName);
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
 			List<Integer> grids= new ArrayList<Integer>();
 			if(subtaskObj.getGridIds() != null && subtaskObj.getGridIds().size() >0){
@@ -142,6 +190,90 @@ public class CheckService {
 			}
 			poiRequestJSON.put("status", status);
 			jobId=apiService.createJob("poiColumnValidation", poiRequestJSON, userId,subtaskId, "检查");
+		}
+		
+		return jobId;
+	}
+	
+	public long metaCheckRun(long userId,int checkType,JSONObject jsonReq) throws Exception{
+		long jobId=0;
+		
+		String ckRules = "";		
+		if (jsonReq.containsKey("ckRules")) {
+			ckRules = jsonReq.getString("ckRules");
+		}
+		
+		List<String> ruleList=new ArrayList<String>();
+		if (!ckRules.isEmpty()) {
+			String[] rules = ckRules.split(",");
+			for (String rule:rules) {
+				ruleList.add(rule);
+			}
+		}
+		
+		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+		if(checkType == 5){  //道路名检查 ,直接调元数据库 全表检查		
+			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+					.getBean("datahubApi");
+			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
+			Integer metaDbid = metaDb.getDbId();
+			if(metaDbid != null && metaDbid >0){
+				String jobName = "";
+				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+						&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
+					jobName = "rdName:"+jsonReq.getString("jobName");
+				}else{
+					jobName = "rdName:"+"元数据库检查";
+				}
+				
+			//System.out.println("metaDbid: "+metaDbid);
+			JSONObject metaValidationRequestJSON=new JSONObject();
+			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
+			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
+			metaValidationRequestJSON.put("ruleIds", ruleList);
+			metaValidationRequestJSON.put("timeOut", 600);
+			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, 0, jobName);
+			//System.out.println("jobId == "+jobId);
+			}
+		}else if(checkType == 7){//道路名子版本检查
+			
+			System.out.println(" begin 道路名子版本检查 ");
+			String name = "" ;
+			if(jsonReq.containsKey("name") && jsonReq.getString("name") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("name")) && !jsonReq.getString("name").equals("null")){
+				name = jsonReq.getString("name");
+			}
+			String nameGroupid = "";
+			if(jsonReq.containsKey("nameGroupid") && jsonReq.getString("nameGroupid") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("nameGroupid")) && !jsonReq.getString("nameGroupid").equals("null")){
+				nameGroupid = jsonReq.getString("nameGroupid");
+			}	
+			String adminId = "";
+			if(jsonReq.containsKey("adminId") && jsonReq.getString("adminId") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("adminId")) && !jsonReq.getString("adminId").equals("null")){
+				adminId = jsonReq.getString("adminId");
+			}
+			String roadTypes = "";
+			if(jsonReq.containsKey("roadTypes") && jsonReq.getJSONArray("roadTypes") != null && jsonReq.getJSONArray("roadTypes").size() > 0 ){
+				JSONArray arr = jsonReq.getJSONArray("roadTypes");
+				roadTypes = arr.join(",");
+			}
+			String jobName = "";
+			if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
+				jobName = "rdName:"+jsonReq.getString("jobName");
+			}
+			
+			System.out.println("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" jobName: "+jobName);
+			JSONObject validationRequestJSON=new JSONObject();
+			validationRequestJSON.put("name", name);
+			validationRequestJSON.put("nameGroupid", nameGroupid);
+			validationRequestJSON.put("adminId", adminId);
+			validationRequestJSON.put("roadTypes", roadTypes);
+//			validationRequestJSON.put("jobName", jobName);
+			validationRequestJSON.put("rules", ruleList);
+//			validationRequestJSON.put("targetDbId", dbId);
+			jobId=apiService.createJob("metaValidation", validationRequestJSON, userId, 0, jobName);
 		}
 		
 		return jobId;

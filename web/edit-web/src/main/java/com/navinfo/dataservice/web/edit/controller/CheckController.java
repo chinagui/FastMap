@@ -775,7 +775,7 @@ public class CheckController extends BaseController {
 					System.out.println("job.getDescp(): "+job.getDescp()+"  "+" job.getGuid(): "+job.getGuid() );
 					JSONObject jobObj = new JSONObject();
 					jobObj.put("jobName", job.getDescp());
-					jobObj.put("jobGuid", job.getGuid());
+					jobObj.put("taskName", job.getGuid());
 					data.add(jobObj);
 				}
 			}
@@ -920,10 +920,11 @@ public class CheckController extends BaseController {
 		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
 		Connection conn = null;
 		try {
+			JSONArray newdata = new JSONArray();
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			String taskName = "";
 			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
-					throw new IllegalArgumentException("tableName参数不能为空。");
+					throw new IllegalArgumentException("taskName参数不能为空。");
 			}else{
 				taskName = jsonReq.getString("taskName");
 			}
@@ -931,46 +932,70 @@ public class CheckController extends BaseController {
 			JSONArray groupDate = jsonReq.getJSONArray("data");
 			if(groupDate != null && groupDate.size() > 0){
 				groupList = (List<String>) JSONArray.toCollection(groupDate);
-			}
-			conn = DBConnector.getInstance().getMetaConnection();
-			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
-			JSONArray newdata = new JSONArray();
-			JSONArray data = niValExceptionSelector.checkResultsStatis(taskName,groupList);
 			
-			if(groupList.contains("admin_id") || groupList.contains("ruleid")){
+				conn = DBConnector.getInstance().getMetaConnection();
+				NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			
+				JSONArray data = niValExceptionSelector.checkResultsStatis(taskName,groupList);
+			
 				Map<String,String> adminMap =null;
-				if(groupList.contains("admin_id")){
+				if(groupList.contains("adminName")){
 					MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 					adminMap = metadataApiService.getAdminMap();
 				}
 				if(data != null && data.size() >0){
 					for(Object obj : data){
 						JSONObject jobj = (JSONObject) obj;
+						/*JSONObject newjobj = new JSONObject();
+						newjobj.put("ruleid", "");
+						newjobj.put("ruleName", "");
+						newjobj.put("adminName", "");
+						newjobj.put("information", "");
+						newjobj.put("level", "");
+						newjobj.put("count", 0);*/
+						
 						if(jobj.containsKey("ruleid")){
 							//查询ruleName
 							String ruleName =CheckService.getInstance().getRuleNameById(jobj.getString("ruleid"));
 							jobj.put("ruleName", ruleName);
+//							newjobj.put("ruleid", jobj.getString("ruleid"));
+//							newjobj.put("ruleName", ruleName);
 						}
 						if(jobj.containsKey("admin_id")){
 							int adminId = jobj.getInt("admin_id"); 
+							jobj.remove("admin_id");
+							System.out.println("jobj.containsKey('admin_id'):"+jobj.containsKey("admin_id"));
 							if(adminId == 214){
-								jobj.put("admin_name","全国");
+								jobj.put("adminName","全国");
+//								newjobj.put("adminName", "全国");
 							}else{
 								if (!adminMap.isEmpty()) {
 									if (adminMap.containsKey(String.valueOf(adminId))) {
-										jobj.put("admin_name", adminMap.get(String.valueOf(adminId)));
+//										newjobj.put("adminName", adminMap.get(String.valueOf(adminId)));
+										jobj.put("adminName", adminMap.get(String.valueOf(adminId)));
 									} else {
-										jobj.put("admin_name","");
+										jobj.put("adminName", "");
+//										newjobj.put("adminName", "");
 									}
 								}
 							}
 						}
+						/*if(jobj.containsKey("information")){
+							newjobj.put("information", jobj.getString("information"));
+						}
+						if(jobj.containsKey("level")){
+							newjobj.put("level", jobj.getString("level"));
+						}
+						if(jobj.containsKey("count")){
+							newjobj.put("count", jobj.getString("count"));
+						}*/
 						newdata.add(jobj);
+//						logger.info("newjobj : "+newjobj);
 					}
 				}
 			}
 			
-			logger.info("end check/checkResultsStatis"+" :"+jsonReq.getString("taskName"));
+			logger.info("end check/checkResultsStatis"+" :"+jsonReq.getString("taskName")+"  newdata.size(): "+newdata.size());
 			logger.debug(newdata);
 			return new ModelAndView("jsonView", success(newdata));
 

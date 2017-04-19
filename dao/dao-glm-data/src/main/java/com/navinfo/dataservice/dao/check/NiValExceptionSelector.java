@@ -1225,7 +1225,7 @@ public class NiValExceptionSelector {
 			QueryRunner run = new QueryRunner();
 			String columSql = "";
 			String groupBy = "";
-			if(groupList.contains("ruleid")){
+			if(groupList.contains("rule")){
 				if(StringUtils.isNotEmpty(groupBy)){
 					groupBy+=" , ";
 				}
@@ -1239,7 +1239,7 @@ public class NiValExceptionSelector {
 				columSql += ",information";
 				groupBy+="information ";
 			}
-			if(groupList.contains("admin_id")){
+			if(groupList.contains("adminName")){
 				if(StringUtils.isNotEmpty(groupBy)){
 					groupBy+=" , ";
 				}
@@ -1277,7 +1277,7 @@ public class NiValExceptionSelector {
 			}
 			System.out.println("sql : "+sql);
 			System.out.println("sql_adminId : "+sql_adminId);
-			if(groupList.contains("admin_id")){
+			if(groupList.contains("adminName")){
 				jobRuleObjs = run.query(conn, sql_adminId, new ResultSetHandler<JSONArray>(){
 					@Override
 					public JSONArray handle(ResultSet rs) throws SQLException {

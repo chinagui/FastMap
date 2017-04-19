@@ -1,24 +1,13 @@
 package com.navinfo.dataservice.scripts;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.dataservice.jobframework.service.JobService;
@@ -28,6 +17,14 @@ public class JobTest {
 	public JobTest() {
 		// TODO Auto-generated constructor stub
 	}
+	
+	/* @Before
+	    public void init() {
+	        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
+	                new String[]{"dubbo-test.xml"});
+	        context.start();
+	        new ApplicationContextUtil().setApplicationContext(context);
+	    }*/
 	
 	/*public static void main(String[] args){
 		try{
@@ -112,8 +109,10 @@ public class JobTest {
 //	    System.out.println(jobId);286,2955
 	    try{
 			//执行job
-			int jobId=686;
-			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
+			int jobId=963;
+			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo jobInfo=apiService.getJobById(jobId);
+//			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);
 			AbstractJob job = JobCreateStrategy.createAsMethod(jobInfo);
 			job.run();
 //			job.execute();

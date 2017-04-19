@@ -5,12 +5,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Test;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
@@ -174,8 +171,8 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			//JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid','level','information','admin_id']}");
-			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid']}");
+			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['rule','level','information','adminName']}");
+//			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid']}");
 				String taskName = "";
 				taskName = jsonReq.getString("taskName");
 				NiValExceptionSelector a = new NiValExceptionSelector(conn);
@@ -184,14 +181,78 @@ public class RdNameResultsTest {
 				if(groupDate != null && groupDate.size() > 0){
 					groupList = (List<String>) JSONArray.toCollection(groupDate);
 				}
-				
+				JSONArray newdata = new JSONArray();
 				JSONArray arr = null;
 				//List<JSONObject> page =null;
 				try {
 					arr = a.checkResultsStatis(taskName,groupList);
+					
+					Map<String,String> adminMap =null;
+					if(groupList.contains("adminName")){
+//						MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+//						adminMap = metadataApiService.getAdminMap();
+						adminMap = new HashMap<String,String>();
+					}
+					if(arr != null && arr.size() >0){
+						for(Object obj : arr){
+							JSONObject jobj = (JSONObject) obj;
+							/*JSONObject newjobj = new JSONObject();
+							newjobj.put("ruleid", "");
+							newjobj.put("ruleName", "");
+							newjobj.put("adminName", "");
+							newjobj.put("information", "");
+							newjobj.put("level", "");
+							newjobj.put("count", 0);*/
+							
+							if(jobj.containsKey("ruleid")){
+								//查询ruleName
+								String ruleName ="hhh";
+								jobj.put("ruleName", ruleName);
+//								newjobj.put("ruleid", jobj.getString("ruleid"));
+//								newjobj.put("ruleName", ruleName);
+							}
+							if(jobj.containsKey("admin_id")){
+								int adminId = jobj.getInt("admin_id"); 
+								jobj.remove("admin_id");
+								System.out.println("jobj.containsKey('admin_id'):"+jobj.containsKey("admin_id"));
+								if(adminId == 214){
+									jobj.put("adminName","全国");
+//									newjobj.put("adminName", "全国");
+								}else{
+									if (!adminMap.isEmpty()) {
+										if (adminMap.containsKey(String.valueOf(adminId))) {
+//											newjobj.put("adminName", adminMap.get(String.valueOf(adminId)));
+											jobj.put("adminName", adminMap.get(String.valueOf(adminId)));
+										} else {
+											jobj.put("adminName", "");
+//											newjobj.put("adminName", "");
+										}
+									}
+								}
+							}
+							/*if(jobj.containsKey("information")){
+								newjobj.put("information", jobj.getString("information"));
+							}
+							if(jobj.containsKey("level")){
+								newjobj.put("level", jobj.getString("level"));
+							}
+							if(jobj.containsKey("count")){
+								newjobj.put("count", jobj.getString("count"));
+							}*/
+							newdata.add(jobj);
+//							logger.info("newjobj : "+newjobj);
+						}
+					}
+					
+					
+					
+					
 					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
 					 System.out.println(arr);
 					 System.out.println(arr.size());
+					 
+					 System.out.println(newdata);
+					 System.out.println(newdata.size());
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

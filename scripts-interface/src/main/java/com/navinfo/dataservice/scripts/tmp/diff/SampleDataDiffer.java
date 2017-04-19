@@ -141,10 +141,34 @@ public class SampleDataDiffer {
 					diffFields.addAll(diffIxPoiResult);
 				}
 				logger.info("比较relateParent属性");
-				List<DiffField> diffIxPoiParentResult = diffIxPoiParent(mongoPoi,orcleIxPoi);
-				if(diffIxPoiResult!=null){
-					diffFields.addAll(diffIxPoiParentResult);
+				if (ixPoiParentMap.containsKey(fid)) {
+					List<DiffField> diffIxPoiParentResult = diffIxPoiParent(mongoPoi,ixPoiParentMap.get(fid));
+					if(diffIxPoiResult!=null){
+						diffFields.addAll(diffIxPoiParentResult);
+					}
+				} else {
+					JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
+					if (relateParent != null && relateParent.containsKey("parentFid")) {
+						String parentFid = relateParent.getString("parentFid");
+						if (parentFid != null && !parentFid.isEmpty()) {
+							diffFields.add(setDiffField("relateParent",parentFid,null));
+						}
+					}
 				}
+				
+				logger.info("比较relateChildren属性");
+				if (ixPoiChildrenMap.containsKey(fid)) {
+					List<DiffField> diffIxPoiChildResult = diffIxPoiChildren(mongoPoi,ixPoiChildrenMap.get(fid));
+					if(diffIxPoiChildResult!=null){
+						diffFields.addAll(diffIxPoiChildResult);
+					}
+				} else {
+					JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
+					if (relateChildren.size()>0) {
+						diffFields.add(setDiffField("relateChildren",relateChildren,null));
+					}
+				}
+				
 				if (CollectionUtils.isEmpty(diffFields)) continue;
 				//TODO:比较其他的子表属性
 				DiffResult diffResult= new DiffResult(fid,diffFields);
@@ -162,10 +186,64 @@ public class SampleDataDiffer {
 		
 		
 	}
-	private List<DiffField> diffIxPoiParent(JSONObject mongoPoi, JSONObject orcleIxPoi) {
-		// TODO Auto-generated method stub
+	private List<DiffField> diffIxPoiParent(JSONObject mongoPoi, String parentFid) {
+		JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
+		if (relateParent == null || relateParent.isEmpty() || !relateParent.containsKey("parentFid") || relateParent.getString("parentFid") == null) {
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("relateParent",null,parentFid));
+			return diffList;
+		} else {
+			String mongoParentFid = relateParent.getString("parentFid");
+			if (!mongoParentFid.equals(parentFid)) {
+				List<DiffField> diffList = new ArrayList<DiffField>();
+				diffList.add(setDiffField("relateParent",mongoParentFid,parentFid));
+				return diffList;
+			}
+		}
 		return null;
 	}
+	
+	private List<DiffField> diffIxPoiChildren(JSONObject mongoPoi, List<String> childFids) {
+		JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
+		if (relateChildren.size() == 0) {
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("relateChildren",null,childFids));
+			return diffList;
+		} else {
+			if (relateChildren.size() != childFids.size()) {
+				// 数量不相等
+				List<DiffField> diffList = new ArrayList<DiffField>();
+				diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+				return diffList;
+			} else {
+				for (int i=0;i<relateChildren.size();i++) {
+					// 判断fid是否相等
+					JSONObject childObj = relateChildren.getJSONObject(i);
+					if (!childObj.containsKey("childFid")) {
+						List<DiffField> diffList = new ArrayList<DiffField>();
+						diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+						return diffList;
+					}
+					String childFid = childObj.getString("childFid");
+					if (!childFids.contains(childFid)) {
+						List<DiffField> diffList = new ArrayList<DiffField>();
+						diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+						return diffList;
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private DiffField setDiffField(String field,Object mongoValue,Object oracleValue) {
+		DiffField diffField = new DiffField();
+		diffField.setField(field);
+		diffField.setMongoValue(mongoValue);
+		diffField.setOracleValue(oracleValue);
+		return diffField;
+	}
+	
 	private List<DiffField> diffIxPoi(JSONObject mongoPoi, JSONObject orcleIxPoi) {
 		// TODO Auto-generated method stub
 		return null;

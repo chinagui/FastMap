@@ -125,18 +125,18 @@ public class SubtaskService {
 				dataJson.discard("qualityPlanStartDate");
 				dataJson.discard("qualityPlanEndDate");}
 			
-			//自采自录子任务
-			int isSelfRecord = 0;//是否进行自采自录，0否1是
-			int selfRecordType = 0;//自采自录日编子任务作业类型
-			String selfRecordName = "";//自采自录日编子任务名称
-			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
-				isSelfRecord = dataJson.getInt("isSelfRecord");
-				selfRecordType = dataJson.getInt("selfRecordType");
-				selfRecordName = dataJson.getString("selfRecordName");
-				//删除传入参数的对应键值对,因为bean中没有这些字段
-				dataJson.discard("isSelfRecord");
-				dataJson.discard("selfRecordType");
-				dataJson.discard("selfRecordName");}
+//			//自采自录子任务
+//			int isSelfRecord = 0;//是否进行自采自录，0否1是
+//			int selfRecordType = 0;//自采自录日编子任务作业类型
+//			String selfRecordName = "";//自采自录日编子任务名称
+//			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
+//				isSelfRecord = dataJson.getInt("isSelfRecord");
+//				selfRecordType = dataJson.getInt("selfRecordType");
+//				selfRecordName = dataJson.getString("selfRecordName");
+//				//删除传入参数的对应键值对,因为bean中没有这些字段
+//				dataJson.discard("isSelfRecord");
+//				dataJson.discard("selfRecordType");
+//				dataJson.discard("selfRecordName");}
 			
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			
@@ -153,19 +153,19 @@ public class SubtaskService {
 				//创建质检子任务 subtask	
 				qualitySubtaskId = createSubtask(qualityBean);	
 			}
-			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
-				//根据参数生成日编子任务 subtask dailyBean
-				Subtask dailyBean = createSubtaskBean(userId,dataJson);
-				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
-				dailyBean.setTaskId(taskId);
-				dailyBean.setStage(1);
-				dailyBean.setName(selfRecordName);
-				dailyBean.setIsQuality(0);
-				dailyBean.setStatus(2);
-				dailyBean.setType(selfRecordType);
-				//创建质检子任务 subtask	
-				createSubtask(dailyBean);	
-			}
+//			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
+//				//根据参数生成日编子任务 subtask dailyBean
+//				Subtask dailyBean = createSubtaskBean(userId,dataJson);
+//				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
+//				dailyBean.setTaskId(taskId);
+//				dailyBean.setStage(1);
+//				dailyBean.setName(selfRecordName);
+//				dailyBean.setIsQuality(0);
+//				dailyBean.setStatus(2);
+//				dailyBean.setType(selfRecordType);
+//				//创建质检子任务 subtask	
+//				createSubtask(dailyBean);	
+//			}
 
 			
 			//根据参数生成subtask bean
@@ -1497,7 +1497,7 @@ public class SubtaskService {
 					+ "  FROM SUBTASK T"
 					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.STAGE != 0"
+//					+ "   AND T.STAGE != 0"
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();

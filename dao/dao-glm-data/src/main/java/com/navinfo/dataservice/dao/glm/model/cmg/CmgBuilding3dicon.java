@@ -113,7 +113,7 @@ public class CmgBuilding3dicon implements IRow {
 
     @Override
     public String parentPKName() {
-        return "PID";
+        return "BUILDING_PID";
     }
 
     @Override

@@ -119,7 +119,7 @@ public class CmgBuilding3dmodel implements IRow {
 
     @Override
     public String parentPKName() {
-        return "PID";
+        return "BUILDING_PID";
     }
 
     @Override

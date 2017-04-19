@@ -1545,8 +1545,29 @@ public class runTest extends InitApplication {
 	@Test
 	public void run_00418_2() throws Exception {
 
-		String parameter = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDING\",\"data\":{\"kind\":1,\"facePids\":[2928340,2928341]},\"dbId\":13}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDING\",\"data\":{\"kind\":1001,\"facePids\":[400000005]},\"dbId\":13}";
 		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00419_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"CMGBUILDING\",\"objId\":400000011,\"dbId\":13}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00419_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"CMGBUILDING\",\"dbId\":13,\"data\":{\"kind\":1002,\"pid\":400000012,\"objStatus\":\"UPDATE\"}}";
 		
 		Transaction t = new Transaction(parameter);
 

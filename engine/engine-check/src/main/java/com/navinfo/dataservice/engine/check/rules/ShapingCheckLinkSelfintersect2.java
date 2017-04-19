@@ -1,4 +1,3 @@
-
 package com.navinfo.dataservice.engine.check.rules;
 
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 

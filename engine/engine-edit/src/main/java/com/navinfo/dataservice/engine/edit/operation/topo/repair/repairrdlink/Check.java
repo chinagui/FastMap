@@ -18,7 +18,6 @@ import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;

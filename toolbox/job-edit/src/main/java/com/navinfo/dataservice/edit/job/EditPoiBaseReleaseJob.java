@@ -145,7 +145,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //			log.info("end gdb batch");
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(conn,myRequest);
+			commitPoi(conn);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch(Exception e){
@@ -213,7 +213,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			//Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
 			//行编提交由针对删除数据的检查，此处要全部加载
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
@@ -221,9 +221,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   AND ps.status =2"
 					+ "   AND ps.FRESH_VERIFIED=0"
 					//+ "   and ip.u_record!=2"
-					+ "   AND sdo_within_distance(ip.geometry,"
-					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
-					+ "                           'mask=anyinteract') = 'TRUE'";
+					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			QueryRunner run=new QueryRunner();
 			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){
 
@@ -247,10 +245,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(Connection conn,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+	public void commitPoi(Connection conn) throws Exception{
 		//Connection conn = null;
 		try{
-			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
+			//String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.GET);
 			String sql="UPDATE POI_EDIT_STATUS E"
 					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
 					+ " WHERE E.STATUS = 2"
@@ -258,12 +256,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "          FROM CK_RESULT_OBJECT R"
 					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
 					+ "           AND R.PID = E.PID)"
-					+ "   AND EXISTS (SELECT 1"
-					+ "          FROM IX_POI P"
-					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,"
-					+ "                                   SDO_GEOMETRY('"+wkt+"', 8307),"
-					+ "                                   'MASK=ANYINTERACT') = 'TRUE'"
-					+ "           AND P.PID = E.PID)";
+					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
 			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		

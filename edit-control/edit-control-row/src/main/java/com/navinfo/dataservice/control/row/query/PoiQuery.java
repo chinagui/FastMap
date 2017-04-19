@@ -108,9 +108,9 @@ public class PoiQuery {
 			// subtaskId
 			int subtaskId = jsonReq.getInt("subtaskId");
 			int type = jsonReq.getInt("type");
-			ManApi apiService = (ManApi) ApplicationContextUtil
-					.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+//			ManApi apiService = (ManApi) ApplicationContextUtil
+//					.getBean("manApi");
+//			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			//int pid = 0;
@@ -125,7 +125,7 @@ public class PoiQuery {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
 			resultJson = selector.loadPids(false, pidName, type,
-					subtask.getGeometry(), pageSize, pageNum);
+					subtaskId, pageSize, pageNum);
 			logger.debug(resultJson);
 
 		} catch (Exception e) {

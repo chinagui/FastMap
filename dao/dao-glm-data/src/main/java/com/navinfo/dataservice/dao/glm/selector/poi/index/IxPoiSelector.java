@@ -54,7 +54,7 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @throws Exception
 	 */
 	public JSONObject loadPids(boolean isLock, String pidName,
-			int type, String g, int pageSize, int pageNum) throws Exception {
+			int type, int subtaskId, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -77,8 +77,7 @@ public class IxPoiSelector extends AbstractSelector {
 //		buffer.append(" AND ipn.name_class = 1");
 
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
-		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
-				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
+		buffer.append(" AND (ps.QUICK_SUBTASK_ID="+subtaskId+" or ps.MEDIUM_SUBTASK_ID="+subtaskId+") ");
 		
 		if (!pidName.isEmpty()) {
 			Pattern pattern = Pattern.compile("[0-9]*"); 

@@ -244,8 +244,8 @@ public final class CmgLinkOperateUtils {
     public static CmgBuildlink createCmglinkBySource(Geometry geometry, int sNodePid, int eNodePid, Result result, CmgBuildlink sourceLink) throws
             Exception {
         CmgBuildlink cmglink = new CmgBuildlink();
-        cmglink.copy(sourceLink);
         cmglink.setPid(PidUtil.getInstance().applyCmgBuildlinkPid());
+        cmglink.copy(sourceLink);
         cmglink.setsNodePid(sNodePid);
         cmglink.seteNodePid(eNodePid);
         cmglink.setGeometry(GeoTranslator.transform(geometry, Constant.BASE_EXPAND, 0));

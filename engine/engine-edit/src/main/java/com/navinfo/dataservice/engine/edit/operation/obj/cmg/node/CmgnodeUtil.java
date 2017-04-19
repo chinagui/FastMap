@@ -4,13 +4,17 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 
 import java.math.BigDecimal;
+import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,8 +35,9 @@ public final class CmgnodeUtil {
      * @param cmgnodes 待处理CMG-NODE
      * @param cmgfaceMeshId 修形后CMG-FACE的图符号
      * @param result 结果集
+     * @param conn 数据库链接
      */
-    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, int cmgfaceMeshId, Result result) {
+    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, int cmgfaceMeshId, Connection conn, Result result) {
         for (CmgBuildnode cmgnode : cmgnodes) {
             if (cmgnode.getMeshes().size() > 1) {
                 for (IRow row : cmgnode.getMeshes()) {
@@ -44,9 +49,19 @@ public final class CmgnodeUtil {
                 continue;
             }
 
+            try {
+                // 当CMG-LINK关联面大于一并且图幅数为1，在删除面时不处理图幅
+                List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(conn).listTheAssociatedFaceOfTheNode(cmgnode.pid(), false);
+                if (cmgfaces.size() > 1) {
+                    continue;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             Coordinate coordinate = GeoTranslator.transform(
                     cmgnode.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION).getCoordinate();
-            List<String> meshes = Arrays.asList(MeshUtils.point2Meshes(coordinate.x, coordinate.y));
+            List<String> meshes = new ArrayList(Arrays.asList(MeshUtils.point2Meshes(coordinate.x, coordinate.y)));
 
             for (IRow row : cmgnode.getMeshes()) {
                 if (meshes.contains(String.valueOf(row.mesh()))) {

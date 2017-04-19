@@ -15,6 +15,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 /**

@@ -192,6 +192,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>editrow</finalName>
+		<finalName>row</finalName>
 	</build>
 </project>

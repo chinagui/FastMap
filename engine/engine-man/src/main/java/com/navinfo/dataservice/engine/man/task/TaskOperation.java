@@ -2092,7 +2092,7 @@ public class TaskOperation {
 					+ "         WHERE T.BLOCK_ID = T2.BLOCK_ID"
 					+ "           AND T2.LATEST = 1"
 					+ "           AND T2.STATUS != 0"
-					+ "           AND T2.TYPE in (0, 1))";	
+					+ "           AND T2.TYPE in (0))";	
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
 				public List<Integer> handle(ResultSet rs) throws SQLException {
@@ -2369,6 +2369,7 @@ public class TaskOperation {
 	}
 
 	/**
+	 * 获取block对应的regionid
 	 * @param blockId
 	 * @return
 	 * @throws Exception 

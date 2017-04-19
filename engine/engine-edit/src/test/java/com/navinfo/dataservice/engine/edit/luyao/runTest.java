@@ -1536,11 +1536,42 @@ public class runTest extends InitApplication {
 	@Test
 	public void run_0329_1() throws Exception {
 
-		String parameter = "{\"command\":\"CREATE\",\"dbId\":84,\"type\":\"RDSAMENODE\",\"data\":{\"nodes\":[{\"nodePid\":404000247,\"isMain\":1,\"type\":\"RDNODE\"},{\"nodePid\":509000008,\"isMain\":0,\"type\":\"ADNODE\"},{\"nodePid\":410000014,\"isMain\":0,\"type\":\"ZONENODE\"},{\"nodePid\":509000008,\"isMain\":0,\"type\":\"LUNODE\"},{\"nodePid\":501000006,\"isMain\":0,\"type\":\"LUNODE\"}]}}";
+		String parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":408000016,\"dbId\":13,\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52361,39.74859],[116.52406454086304,39.748262345723944]]},\"catchInfos\":[{\"nodePid\":400000020,\"longitude\":116.52361,\"latitude\":39.74859},{\"nodePid\":400000019,\"longitude\":116.52406454086304,\"latitude\":39.748262345723944}]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	@Test
+	public void run_00418_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDING\",\"data\":{\"kind\":1001,\"facePids\":[400000005]},\"dbId\":13}";
 		
 		
 		Transaction t = new Transaction(parameter);
 
 		String msg = t.run();
 	}
+	
+	@Test
+	public void run_00419_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"CMGBUILDING\",\"objId\":400000011,\"dbId\":13}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00419_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"CMGBUILDING\",\"dbId\":13,\"data\":{\"kind\":1002,\"pid\":400000012,\"objStatus\":\"UPDATE\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

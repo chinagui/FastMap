@@ -15,6 +15,7 @@ import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -107,13 +108,14 @@ public final class CmgfaceUtil {
      * @param result 结果集
      * @param excludeCmgnode 不需要维护的CMG-NODE
      * @param excludeCmglink 不需要维护的CMG-LINK
-     * @param cmgnodeSelector CmgBuildnodeSelector
-     * @param cmglinkSelector CmgBuildlinkSelector
+     * @param conn 数据库链接
      * @throws Exception 处理CMG-FACE出错
      */
     public static void handleCmgface(List<CmgBuildface> cmgfaces, Result result, List<Integer> excludeCmgnode,
-                               List<Integer> excludeCmglink, CmgBuildnodeSelector cmgnodeSelector,
-                               CmgBuildlinkSelector cmglinkSelector) throws Exception {
+                                     List<Integer> excludeCmglink, Connection conn) throws Exception {
+        CmgBuildnodeSelector cmgnodeSelector = new CmgBuildnodeSelector(conn);
+        CmgBuildlinkSelector cmglinkSelector = new CmgBuildlinkSelector(conn);
+
         for (CmgBuildface cmgface : cmgfaces) {
             result.insertObject(cmgface, ObjStatus.DELETE, cmgface.pid());
             List<CmgBuildnode> cmgnodes = cmgnodeSelector.listTheAssociatedNodeOfTheFace(cmgface.pid(), false);
@@ -123,7 +125,7 @@ public final class CmgfaceUtil {
                     nodeIterator.remove();
                 }
             }
-            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface.getMeshId(), result);
+            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface.getMeshId(), conn, result);
             List<CmgBuildlink> cmglinks = cmglinkSelector.listTheAssociatedLinkOfTheFace(cmgface.pid(), false);
             Iterator<CmgBuildlink> linkIterator = cmglinks.iterator();
             while (linkIterator.hasNext()) {
@@ -131,7 +133,7 @@ public final class CmgfaceUtil {
                     linkIterator.remove();
                 }
             }
-            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface.getMeshId(), result);
+            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface.getMeshId(), conn, result);
         }
     }
 }

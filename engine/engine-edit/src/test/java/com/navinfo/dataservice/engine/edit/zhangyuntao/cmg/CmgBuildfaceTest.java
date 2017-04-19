@@ -2,10 +2,8 @@ package com.navinfo.dataservice.engine.edit.zhangyuntao.cmg;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.dao.glm.search.CmgBuildfaceSearch;
-import com.navinfo.dataservice.dao.glm.search.LcFaceSearch;
 import com.navinfo.dataservice.engine.edit.InitApplication;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import org.junit.Test;
 
 /**
@@ -41,5 +39,11 @@ public class CmgBuildfaceTest extends InitApplication {
     public void testGetByPid() throws Exception {
         CmgBuildfaceSearch search = new CmgBuildfaceSearch(DBConnector.getInstance().getConnectionById(13));
         System.out.println(search.searchDataByPid(508000002));
+    }
+
+    @Test
+    public void testDeleteCmgBuildface() {
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":507000005}";
+        TestUtil.run(requester);
     }
 }

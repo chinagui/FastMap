@@ -169,9 +169,7 @@ public class RegionService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 	public Region queryByDbId(int dbId) throws ServiceException {
 		Connection conn = null;

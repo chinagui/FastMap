@@ -661,4 +661,28 @@ public class StaticsController extends BaseController {
 		}
 	}
 	
+	/*
+	 * 快线tips日编状态统计接口
+	 */
+	@RequestMapping(value = "/realStatics/getDayTaskTipsStatics")
+	public ModelAndView getDayTaskTipsStatics(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//taskId
+			int taskId = dataJson.getInt("taskId");
+			List<Map> data = StaticsService.getInstance().getDayTaskTipsStatics(taskId);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

@@ -122,6 +122,12 @@ public class Check {
 		}
 	}
 
+	/**
+	 * 创建或修改link，节点不能到已有的立交点处，请先删除立交关系
+	 * @param conn
+	 * @param catchInfos
+	 * @throws Exception
+	 */
 	public void permitCheckGscnodeNotMove(Connection conn, JSONArray catchInfos) throws Exception {
 		if (catchInfos == null || catchInfos.size() == 0) {
 			return;

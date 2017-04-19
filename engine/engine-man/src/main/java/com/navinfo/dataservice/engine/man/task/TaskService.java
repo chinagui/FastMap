@@ -69,12 +69,12 @@ import net.sf.json.JSONObject;
 * @ClassName:  TaskService 
 * @author code generator
 * @date 2016-06-06 06:12:30 
-* @Description: TODO
+* @Description: 
 */
 
 public class TaskService {
 	private Logger log = LoggerRepos.getLogger(TaskService.class);
-	private JSONArray newTask;
+	//private JSONArray newTask;
 	private TaskService(){}
 	private static class SingletonHolder{
 		private static final TaskService INSTANCE =new TaskService();
@@ -141,7 +141,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public int create(Connection conn, List<Task> taskList) throws Exception {
-		// TODO Auto-generated method stub
 		int total = 0;
 		for(Task task:taskList){
 			createWithBean(conn,task);
@@ -577,7 +576,6 @@ public class TaskService {
 					taskPushMsgByMsg(conn,msgContentList,userId);	
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 				log.error("task编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
@@ -1209,7 +1207,7 @@ public class TaskService {
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page();
 				    int totalCount = 0;
-				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				    //SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
 						task.put("taskId", 0);
@@ -1322,20 +1320,26 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();	
 			Task task = queryByTaskId(taskId);
 			//更新任务状态
+			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
 			//更新block状态：如果所有task都已关闭，则block状态置3
+			log.info("更新"+taskId+"任务对应的block状态，如果所有task都已关闭，则block状态置3关闭");
 			TaskOperation.closeBlock(conn,task.getBlockId());
-			
+			/*
+			 * byzhangxiaoyi 20170418 代码存在逻辑错误，另外，目前动态调整都通过子任务进行，所以将代码注销
 			//动态调整
 			//获取该任务新增的grid
+			log.info("更新"+taskId+"任务的grid范围");
 			Map<Integer, Integer> gridIdMap = TaskOperation.getAddedGridMap(conn,taskId);
 			//调整该任务范围
 			TaskOperation.insertTaskGridMapping(conn, taskId, gridIdMap);
 			
 			//如果任务类型为采集
 			if(task.getType() == 0){
+				log.info("任务类型为采集任务，更新"+taskId+"任务的对应的日编任务范围");
 				//调整日编任务范围
 				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
+				log.info("任务类型为采集任务，更新"+taskId+"任务的对应的区域子任务范围");
 				//调整区域子任务范围
 				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,taskId,4);
 				for(Subtask subtask:subtaskList){
@@ -1353,10 +1357,42 @@ public class TaskService {
 			else if(task.getType()==1&&task.getBlockId()==0){
 				//调整项目范围
 				ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
-			}
+			}*/
 			//快线采集任务关闭，需批中线采集任务id
 			if(task.getType()==0&&task.getBlockId()==0){
-				batchMidTask(conn,userId,task);
+				log.info(taskId+"任务为快线采集任务，关闭时需同步批poi，tips的对应的中线任务号");
+				Set<Integer> collectTask = batchMidTask(conn,userId,task);
+				if(collectTask!=null&&collectTask.size()>0){
+					try {
+						log.info(taskId+"任务为快线采集任务，快转中消息推送start");
+						List<Object[]> msgContentList=new ArrayList<Object[]>();
+						String msgTitle="快线转中线";
+						JSONArray taskIds=new JSONArray();
+						taskIds.addAll(collectTask);
+						List<Task> pushtask = getTaskListWithLeader(conn, taskIds);
+						for(Task t:pushtask){
+							if(t.getGroupLeader()!=0){
+								Object[] msgTmp=new Object[4];
+								msgTmp[0]=t.getGroupLeader();//收信人
+								msgTmp[1]=msgTitle;//消息头
+								msgTmp[2]="快线"+task.getName()+"采集任务的数据，已落入中线"+t.getName()+"采集任务,请关注";//消息内容
+								//关联要素
+								JSONObject msgParam = new JSONObject();
+								msgParam.put("relateObject", "TASK");
+								msgParam.put("relateObjectId", t.getTaskId());
+								msgTmp[3]=msgParam.toString();//消息对象
+								msgContentList.add(msgTmp);
+							}
+						}
+						if(msgContentList.size()>0){
+							taskPushMsgByMsg(conn,msgContentList,userId);	
+							log.info(taskId+"任务为快线采集任务，快转中消息推送end");
+						}						
+					} catch (Exception e) {
+						e.printStackTrace();
+						log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
+					}
+				}
 			}
 			//发送消息
 			try {
@@ -1378,7 +1414,6 @@ public class TaskService {
 					taskPushMsgByMsg(conn,msgContentList,userId);	
 				}
 			} catch (Exception e) {
-				// TODO: handle exception
 				e.printStackTrace();
 				log.error("task关闭消息发送失败,原因:"+e.getMessage(), e);
 			}
@@ -1396,13 +1431,15 @@ public class TaskService {
 	 * @param conn 
 	 * @param task
 	 */
-	private void batchMidTask(Connection conn, Long userId,Task task) throws Exception{
-	// TODO Auto-generated method stub
+	private Set<Integer> batchMidTask(Connection conn, Long userId,Task task) throws Exception{
+		Connection dailyConn=null;
 		try{
 			Region region=RegionService.getInstance().query(conn,task.getRegionId());
-			Connection dailyConn=DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			dailyConn=DBConnector.getInstance().getConnectionById(region.getDailyDbId());
 			//获取快线采集任务对应的poi/tips的grid集合
+			log.info(task.getTaskId()+"任务为快线采集任务，获取其poi与grid的对照关系");
 			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
+			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
 			Set<Integer> tipsGrids= getTipsGridByTaskId(task.getTaskId());
 			Set<Integer> allGrids=new HashSet<Integer>();
 			if(tipsGrids!=null&&tipsGrids.size()>0){
@@ -1412,17 +1449,61 @@ public class TaskService {
 				allGrids.addAll(poiGridMap.values());
 			}
 			//判断grid所在项目，区县，返回grid所在中线采集任务id
+			if(allGrids==null||allGrids.size()==0){
+				log.info(task.getTaskId()+"任务为快线采集任务，poi，tips无数据");
+				return null;}
+			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
 			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids);
+			//任务号批数据
+			//tip批中线任务号
+			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
+				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			}
 			
-			Map<Long, Integer> poiTaskMap=new HashMap<Long, Integer>();
-			//TODO
-			//batchPoiMidTask(dailyConn,poiTaskMap);
+			//poi批中线任务号	
+			if(poiGridMap!=null&&poiGridMap.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，批poi中线采集任务号");
+				Map<Long, Integer> poiTaskMap=new HashMap<Long, Integer>();
+				for(Long pid:poiGridMap.keySet()){
+					poiTaskMap.put(pid, gridMap.get(poiGridMap.get(pid)));
+				}
+				batchPoiMidTask(dailyConn,poiTaskMap);
+			}
+			Set<Integer> taskIdSet=new HashSet<Integer>();
+			taskIdSet.addAll(gridMap.values());
+			return taskIdSet;
 		}catch(Exception e){
-			
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
-			
+			DbUtils.commitAndCloseQuietly(dailyConn);
 		}	
 	}
+	/**
+	 * poi批中线任务号
+	 * @param dailyConn
+	 * @param poiTaskMap
+	 * @throws SQLException 
+	 */
+	private void batchPoiMidTask(Connection dailyConn,
+			Map<Long, Integer> poiTaskMap) throws SQLException {
+		String updateSql="update poi_edit_status set centre_task_id=? where pid=? and centre_task_id=0";
+		QueryRunner run=new QueryRunner();
+		Object[][] params=new Object[poiTaskMap.keySet().size()][2] ;
+		int i=0;
+		for(Long pid:poiTaskMap.keySet()){
+			Object[] pidMap=new Object[2];
+			pidMap[0]=poiTaskMap.get(pid);
+			pidMap[1]=pid;
+			params[i]=pidMap;
+			i++;
+		}
+		run.batch(dailyConn, updateSql, params);
+	}
+
 	private Map<Integer, Integer> getMidTaskIdByGrid(Connection conn,final Long userId,Set<Integer> gridSet) throws Exception{
 		if(gridSet==null||gridSet.size()==0){return null;}
 		List<Clob> values=new ArrayList<Clob>();
@@ -1512,11 +1593,13 @@ public class TaskService {
 							}
 							int programId=rs.getInt("PROGRAM_ID");
 							if(cityStatus==0||cityStatus==2){//需创建项目
+								log.info(gridId+"无对应中线项目，新建项目");
 								Program program=new Program();
 								program.setCityId(rs.getInt("CITY_ID"));
 								program.setType(1);
 								program.setCreateUserId(Integer.valueOf(userId.toString()));
 								programId=ProgramService.getInstance().create(conn,program);
+								log.info(gridId+"无对应中线项目，新建项目："+programId);
 							}
 							//创建block项目
 							List<Integer> gridList = GridService.getInstance().getGridListByBlockId(conn,blockId);
@@ -1534,6 +1617,7 @@ public class TaskService {
 								myProgram=programList.get(0);
 							}
 							int regionId=rs.getInt("REGION_ID");
+							log.info(gridId+"无对应中线block任务，新建任务start");
 							//创建采集任务
 							Task collectTask=new Task();
 							collectTask.setProgramId(programId);
@@ -1552,28 +1636,14 @@ public class TaskService {
 							gridMap.put(gridId, collectTaskId);
 							blockMap.put(blockId, collectTaskId);
 
-							//创建日编，月编，二代编辑任务
-							Task dayTask=new Task();
-							dayTask.setProgramId(programId);
-							dayTask.setRegionId(regionId);
-							dayTask.setBlockId(blockId);
-							dayTask.setGridIds(gridIds);
-							dayTask.setCreateUserId(Integer.valueOf(userId.toString()));
-							dayTask.setType(0);
-							if(myProgram!=null){
-								dayTask.setPlanStartDate(myProgram.getDayEditPlanStartDate());
-								dayTask.setPlanEndDate(myProgram.getDayEditPlanEndDate());
-								dayTask.setName(myProgram.getName() + regionId);
-							}
-							createWithBean(conn, dayTask);
-							
+							//创建月编，二代编辑任务							
 							Task monthTask=new Task();
 							monthTask.setProgramId(programId);
 							monthTask.setRegionId(regionId);
 							monthTask.setBlockId(blockId);
 							monthTask.setGridIds(gridIds);
 							monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
-							monthTask.setType(0);
+							monthTask.setType(2);
 							if(myProgram!=null){
 								monthTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
 								monthTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
@@ -1587,13 +1657,14 @@ public class TaskService {
 							cmsTask.setBlockId(blockId);
 							cmsTask.setGridIds(gridIds);
 							cmsTask.setCreateUserId(Integer.valueOf(userId.toString()));
-							cmsTask.setType(0);
+							cmsTask.setType(3);
 							if(myProgram!=null){
 								cmsTask.setPlanStartDate(myProgram.getPlanStartDate());
 								cmsTask.setPlanEndDate(myProgram.getPlanEndDate());
 								cmsTask.setName(myProgram.getName() + regionId);
 							}
 							createWithBean(conn, cmsTask);
+							log.info(gridId+"无对应中线block任务，新建任务：end");
 						}						
 					}
 					return gridMap;
@@ -1636,10 +1707,8 @@ public class TaskService {
 						try {
 							Geometry geo = GeoTranslator.struct2Jts(struct);
 							//通过 geo 获取 grid 
-							Coordinate[] coordinate = geo.getCoordinates();
-							CompGridUtil gridUtil = new CompGridUtil();							
-
-							Integer gridId = Integer.valueOf(gridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0]);
+							Coordinate[] coordinate = geo.getCoordinates();	
+							Integer gridId = Integer.valueOf(CompGridUtil.point2Grids(coordinate[0].x, coordinate[0].y)[0]);
 							poiGrids.put(rs.getLong("PID"), gridId);
 						} catch (Exception e1) {
 							log.error(e1.getMessage(),e1);
@@ -1650,8 +1719,6 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(dailyConn);
 		}
 	}
 
@@ -1671,7 +1738,7 @@ public class TaskService {
 			sb.append("B.BLOCK_ID,B.BLOCK_NAME,B.WORK_PROPERTY,");
 			sb.append("P.PROGRAM_ID,P.NAME PROGRAM_NAME,P.TYPE PROGRAM_TYPE,");
 			sb.append("U.USER_ID,U.USER_REAL_NAME,");
-			sb.append("UG.GROUP_ID,UG.GROUP_NAME");
+			sb.append("UG.GROUP_ID,UG.GROUP_NAME,t.region_id");
 			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
 			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
 			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
@@ -1708,6 +1775,7 @@ public class TaskService {
 						task.setCreateUserName(rs.getString("USER_REAL_NAME"));
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setGroupName(rs.getString("GROUP_NAME"));
+						task.setRegionId(rs.getInt("REGION_ID"));
 						
 						Map<Integer, Integer> gridIds;
 						try {
@@ -1718,7 +1786,6 @@ public class TaskService {
 							String wkt = GridUtils.grids2Wkt(jsonArray);
 							task.setGeometry(Geojson.wkt2Geojson(wkt));
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 						
@@ -1880,7 +1947,6 @@ public class TaskService {
 			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					List<Map<String, Object>> taskNameList = new ArrayList<Map<String,Object>>();
 					while(rs.next()){
 						Map<String,Object> map = new HashMap<String,Object>();
@@ -1912,7 +1978,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public JSONArray getGridListByTaskId(int taskId) throws Exception {
-		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
@@ -1945,7 +2010,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public List<Map<String,Integer>> queryTaskCmsProgress(int taskId) throws Exception {
-		// TODO Auto-generated method stub
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
@@ -2001,7 +2065,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public void taskUpdateCmsProgress(int phaseId,int status,String message) throws Exception {
-		// TODO Auto-generated method stub
 		Connection conn=null;
 		try{
 			log.info("phaseId"+phaseId+"状态修改为"+status);
@@ -2024,7 +2087,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public void taskUpdateCmsProgress(Connection conn,int phaseId,int status,String message) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			//修改本阶段执行状态
 			updateCmsProgressStatus(conn,phaseId, status,message);
@@ -2506,7 +2568,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public void updateCmsProgressStatus(Connection conn,int phaseId,int status,String message) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			if(status==0&&(message==null||message.isEmpty())){return;}
 			if(message!=null&&message.length()>500){message=message.substring(0, 500);}
@@ -2538,7 +2599,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public void createCmsProgress(Connection conn,int taskId,int phase) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "INSERT INTO TASK_CMS_PROGRESS P"
@@ -2560,7 +2620,6 @@ public class TaskService {
 	 * @throws Exception 
 	 */
 	public int updateCmsProgressStatusStart(Connection conn,int phaseId,int status) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "UPDATE TASK_CMS_PROGRESS SET STATUS = "+status+",start_date=sysdate WHERE STATUS IN(0,3) AND PHASE_ID = "+phaseId ;
@@ -2610,6 +2669,7 @@ public class TaskService {
 	}
 
 	/**
+	 * 根据任务id获取相同项目block下，类型为type的任务id
 	 * @param taskId
 	 * @param i
 	 * @return
@@ -2709,6 +2769,51 @@ public class TaskService {
 			throw new Exception("失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(meta);
+		}
+	}
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdByTaskId(int taskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT TT.TASK_ID                   ");
+			sb.append("   FROM TASK T, TASK TT   ");
+			sb.append("  WHERE TT.BLOCK_ID = T.BLOCK_ID     ");
+			sb.append("    AND TT.TYPE = 0                  ");
+			sb.append("    AND T.TASK_ID = " + taskId);
+			
+			String sql = sb.toString();
+			
+			log.info("getCollectTaskIdByTaskId sql :" + sql);
+			
+			
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> result = new HashSet<Integer>();
+					while(rs.next()) {
+						result.add(rs.getInt("TASK_ID"));
+					}
+					return result;
+				}
+			};
+			Set<Integer> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByTaskId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

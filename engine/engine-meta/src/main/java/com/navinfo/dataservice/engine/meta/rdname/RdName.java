@@ -107,9 +107,18 @@ public class RdName {
 	/*是否操作城市字段 add by wangdongbin*/
 	protected boolean isCity=false;
 	
+	//****zl 2017.04.09 ****
+	/*HW 信息标识 默认为 0 如果为1 则需在SC_ROADNAME_HW_INFO表中新增*/
+	protected Integer hwInfoFlag;
 
+	public Integer getHwInfoFlag() {
+		return hwInfoFlag;
+	}
 
-	
+	public void setHwInfoFlag(Integer hwInfoFlag) {
+		this.hwInfoFlag = hwInfoFlag;
+	}
+	//***********************
 	
 	/**
 	 * ------------------------getter,setter方法-------------------------------------

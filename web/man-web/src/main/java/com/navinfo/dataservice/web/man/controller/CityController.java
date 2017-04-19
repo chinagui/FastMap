@@ -5,14 +5,10 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.navinfo.dataservice.api.man.model.City;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.engine.man.city.CityService;
@@ -23,7 +19,7 @@ import net.sf.json.JSONObject;
  * @ClassName: CityController
  * @author code generator
  * @date 2016年4月6日 下午6:25:24
- * @Description: TODO
+ * @Description: 
  */
 @Controller
 public class CityController extends BaseController {
@@ -39,7 +35,7 @@ public class CityController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			List<HashMap> data = service.queryListByWkt(dataJson);
+			List<HashMap<String, Object>> data = service.queryListByWkt(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);

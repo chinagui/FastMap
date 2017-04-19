@@ -920,7 +920,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 
 		 
-		// @Test
+		 @Test
 		 public void testGetByRowkeys(){
 			 TipsSelector selector = new TipsSelector();
 

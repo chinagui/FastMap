@@ -1304,14 +1304,10 @@ public class TaskService {
 //		}
 //	}	
 	
-	/*
+	/**
 	 * 查询task
 	 * 关闭task,相应修改block状态
-	 * 采集任务:
-	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
-	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
-	 * 日编任务:
-	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 快线采集任务关闭，需对poi，tips采集成果批中线任务号
 	 * 发送消息
 	 */
 	public String close(int taskId, long userId)throws Exception{
@@ -1440,7 +1436,9 @@ public class TaskService {
 			log.info(task.getTaskId()+"任务为快线采集任务，获取其poi与grid的对照关系");
 			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
 			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
-			Set<Integer> tipsGrids= getTipsGridByTaskId(task.getTaskId());
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			//TODO
+			Set<Integer> tipsGrids= null;//getTipsGridByTaskId(task.getTaskId());
 			Set<Integer> allGrids=new HashSet<Integer>();
 			if(tipsGrids!=null&&tipsGrids.size()>0){
 				allGrids.addAll(tipsGrids);
@@ -1458,7 +1456,7 @@ public class TaskService {
 			//tip批中线任务号
 			if(tipsGrids!=null&&tipsGrids.size()>0){
 				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				//TODO
 			}
 			
 			//poi批中线任务号	
@@ -1678,9 +1676,6 @@ public class TaskService {
 			}
 			
 		});
-	}
-	private Set<Integer> getTipsGridByTaskId(int collectTaskId){
-		return null;
 	}
 	/**
 	 * 查询采集任务taskId对应的poi及grid的map

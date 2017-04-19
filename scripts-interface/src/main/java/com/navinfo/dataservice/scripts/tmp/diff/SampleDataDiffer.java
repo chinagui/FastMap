@@ -2,18 +2,20 @@ package com.navinfo.dataservice.scripts.tmp.diff;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class SampleDataDiffer {
 	Param inParam;
@@ -123,7 +125,7 @@ public class SampleDataDiffer {
 			//查询父表信息，key=当前poi的fid，得到其父表对应的fid
 			Map<String,String> ixPoiParentMap = queryIxPoiParent(conn);
 			//查询children表，得到子表对应的fid
-			Map<String,JSONArray> ixPoiChildrenMap = queryIxPoiChildren(conn);
+			Map<String,List<String>> ixPoiChildrenMap = queryIxPoiChildren(conn);
 			Map<String,JSONArray> ixPoiNameMap = queryIxPoiName(conn);
 			Map<String,JSONArray> ixPoiAddressMap = queryIxPoiAddress(conn);
 			//TODO:查询其他子表
@@ -176,14 +178,84 @@ public class SampleDataDiffer {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	private Map<String, JSONArray> queryIxPoiChildren(Connection conn) {
-		// TODO Auto-generated method stub
-		return null;
+	private Map<String, List<String>> queryIxPoiChildren(Connection conn) throws Exception {
+		Map<String, List<String>> retMap = new HashMap<String,List<String>>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select i.poi_num fid,(select poi_num from ix_poi where pid=c.child_poi_pid) cfid");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+"  f,ix_poi i,ix_poi_parent p,ix_poi_children c");
+		sb.append(" where f.fid=i.poi_num");
+		sb.append(" and i.pid=p.parent_poi_pid");
+		sb.append(" and p.group_id=c.group_id");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and p.u_record != 2");
+		sb.append(" and c.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				List<String> cfids = new ArrayList<String>();
+				if (retMap.containsKey(fid)) {
+					cfids = retMap.get(fid);
+					cfids.add(resultSet.getString("cfid"));
+					retMap.put(fid, cfids);
+				} else {
+					cfids.add(resultSet.getString("cfid"));
+					retMap.put(fid, cfids);
+				}
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
 	}
-	private Map<String, String> queryIxPoiParent(Connection conn) {
-		String sql = "select * from ix_poi_parent a,ix_poi b,"+this.inParam.getDiffFidTempTableName()+" c,ix_poi_children d  where b.poi_num=c.fid and ";//TODO://
-		return null;
+	
+	private Map<String, String> queryIxPoiParent(Connection conn) throws Exception {
+		
+		Map<String, String> retMap = new HashMap<String,String>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select i.poi_num fid,(select poi_num from ix_poi where pid=p.parent_poi_pid) pfid");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+"  f,ix_poi i,ix_poi_children c,ix_poi_parent p");
+		sb.append(" where f.fid=i.poi_num");
+		sb.append(" and i.pid=c.child_poi_pid");
+		sb.append(" and c.group_id=p.group_id");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and c.u_record != 2");
+		sb.append(" and p.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				retMap.put(resultSet.getString("fid"), resultSet.getString("pfid"));
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
 	}
+	
 	private Map<String, JSONObject> queryIxPoi(Connection conn) {
 		String sql = "select * from ix_poi a  ,"+this.inParam.getDiffFidTempTableName()+"  b where  a.poi_num=b.fid and a.u_record!=2";
 		return null;

@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -654,7 +656,15 @@ public class SearchProcess {
 					array.add(object);
 
 				}
-
+            case CMGBUILDLINK:
+                if (condition.containsKey("nodePid")) {
+                    int nodePid = condition.getInt("nodePid");
+                    CmgBuildlinkSelector selector = new CmgBuildlinkSelector(this.conn);
+                    List<CmgBuildlink> cmglinks = selector.listTheAssociatedLinkOfTheNode(nodePid, false);
+                    for (CmgBuildlink link : cmglinks) {
+                        array.add(link.Serialize(ObjLevel.BRIEF));
+                    }
+                }
 			}
 			return array;
 		} catch (Exception e) {

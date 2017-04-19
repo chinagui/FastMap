@@ -384,7 +384,7 @@ public class TaskService {
 						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
 						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
 					}}
-				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集或日编任务";}
+				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
 			}
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";

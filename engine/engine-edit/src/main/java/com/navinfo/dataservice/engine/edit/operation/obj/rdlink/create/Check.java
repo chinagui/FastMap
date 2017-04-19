@@ -113,7 +113,7 @@ public class Check {
 	}
 	
 	public void permitCheckGscnodeNotMove(JSONArray catchLinks, Connection conn) throws Exception {
-		if (catchLinks.size() == 0 || catchLinks == null) {
+		if (catchLinks == null || catchLinks.size() == 0 ) {
 			return;
 		}
 

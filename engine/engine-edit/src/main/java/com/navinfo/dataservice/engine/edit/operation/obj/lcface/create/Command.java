@@ -15,8 +15,15 @@ public class Command extends AbstractCommand implements ICommand {
 	private String requester;
 
 	private JSONObject geometry;
+
 	private List<Integer> linkPids;
+
 	private List<IObj> links;
+
+    /**
+     * 构面线的类型
+     */
+	private String linkType;
 
 	public List<IObj> getLinks() {
 		return links;
@@ -67,6 +74,7 @@ public class Command extends AbstractCommand implements ICommand {
 
 		}
 		if (data.containsKey("linkPids")) {
+            this.linkType = data.getString("linkType");
 			JSONArray array = data.getJSONArray("linkPids");
 			linkPids = new ArrayList<Integer>();
 			for (int i = 0; i < array.size(); i++) {
@@ -76,7 +84,14 @@ public class Command extends AbstractCommand implements ICommand {
 				}
 			}
 		}
-
 	}
 
+    /**
+     * Getter method for property <tt>linkType</tt>.
+     *
+     * @return property value of linkType
+     */
+    public String getLinkType() {
+        return linkType;
+    }
 }

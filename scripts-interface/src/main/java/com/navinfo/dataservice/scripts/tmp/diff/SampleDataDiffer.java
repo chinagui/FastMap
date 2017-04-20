@@ -101,6 +101,7 @@ public class SampleDataDiffer {
 	 * orclUser:
 	 * orclPwd:
 	 * diffFidTempTableName: 差分的fid的临时表
+	 * outputFile: 输出文件全路径
 	 * 输出：差分json格式如下
 	 * {
 	 * "fid":"32fdfdf",//差分的主键
@@ -109,6 +110,7 @@ public class SampleDataDiffer {
 	 * {"field":"relateChildren","mongoValue":[],"oracleValue":[]},
 	 * {"field":"names","mongoValue":[],"oracleValue":[]},
 	 * ]
+	 * "oracleExists":1 存在， 0不存在
 	 * }
 	 * @throws Exception 
 	 * 
@@ -147,57 +149,63 @@ public class SampleDataDiffer {
 				List<DiffField> diffFields  =new ArrayList<DiffField>();
 				
 				logger.info("比较主表属性");
-				JSONObject mongoPoi = mongoData.get(fid);
-				if (ixPoiMap.containsKey(fid)){
-					JSONObject orcleIxPoi = ixPoiMap.get(fid);
-					List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
-					if(diffIxPoiResult!=null){
-						diffFields.addAll(diffIxPoiResult);
-					}
-				}
-				
-				logger.info("比较relateParent属性");
-				if (ixPoiParentMap.containsKey(fid)) {
-					List<DiffField> diffIxPoiParentResult = diffIxPoiParent(mongoPoi,ixPoiParentMap.get(fid));
-					if(diffIxPoiParentResult!=null){
-						diffFields.addAll(diffIxPoiParentResult);
-					}
-				} else {
-					JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
-					if (relateParent != null && relateParent.containsKey("parentFid")) {
-						String parentFid = relateParent.getString("parentFid");
-						if (parentFid != null && !parentFid.isEmpty()) {
-							diffFields.add(setDiffField("relateParent",parentFid,null));
+				try{
+					JSONObject mongoPoi = mongoData.get(fid);
+					if (ixPoiMap.containsKey(fid)){
+						JSONObject orcleIxPoi = ixPoiMap.get(fid);
+						List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
+						if(diffIxPoiResult!=null){
+							diffFields.addAll(diffIxPoiResult);
 						}
 					}
-				}
-				
-				logger.info("比较relateChildren属性");
-				if (ixPoiChildrenMap.containsKey(fid)) {
-					List<DiffField> diffIxPoiChildResult = diffIxPoiChildren(mongoPoi,ixPoiChildrenMap.get(fid));
-					if(diffIxPoiChildResult!=null){
-						diffFields.addAll(diffIxPoiChildResult);
+					
+					logger.info("比较relateParent属性");
+					if (ixPoiParentMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiParentResult = diffIxPoiParent(mongoPoi,ixPoiParentMap.get(fid));
+						if(diffIxPoiParentResult!=null){
+							diffFields.addAll(diffIxPoiParentResult);
+						}
+					} else {
+						JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
+						if (relateParent != null && relateParent.containsKey("parentFid")) {
+							String parentFid = relateParent.getString("parentFid");
+							if (parentFid != null && !parentFid.isEmpty()) {
+								diffFields.add(setDiffField("relateParent",parentFid,null));
+							}
+						}
 					}
-				} else {
-					JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
-					if (relateChildren.size()>0) {
-						diffFields.add(setDiffField("relateChildren",relateChildren,null));
+					
+					logger.info("比较relateChildren属性");
+					if (ixPoiChildrenMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiChildResult = diffIxPoiChildren(mongoPoi,ixPoiChildrenMap.get(fid));
+						if(diffIxPoiChildResult!=null){
+							diffFields.addAll(diffIxPoiChildResult);
+						}
+					} else {
+						JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
+						if (relateChildren.size()>0) {
+							diffFields.add(setDiffField("relateChildren",relateChildren,null));
+						}
 					}
+					
+					if (CollectionUtils.isEmpty(diffFields)) continue;
+					//TODO:比较其他的子表属性
+					
+					DiffResult diffResult= new DiffResult(fid,diffFields);
+					
+					// oracle数据不存在
+					if (!ixPoiMap.containsKey(fid)){
+						diffResult.setOracleExists(0);
+					}
+					outResult.add(JSONObject.fromObject(diffResult));
+				}catch (Exception e){
+					System.out.println("fid:" + fid);
+					e.printStackTrace();
+					logger.error(e.getMessage());
 				}
-				
-				if (CollectionUtils.isEmpty(diffFields)) continue;
-				//TODO:比较其他的子表属性
-				
-				DiffResult diffResult= new DiffResult(fid,diffFields);
-				
-				// oracle数据不存在
-				if (!ixPoiMap.containsKey(fid)){
-					diffResult.setOracleExists(0);
-				}
-				outResult.add(JSONObject.fromObject(diffResult));
 			}
 			//TODO:把DiffResult输出到文件
-			logger.info("差分结果t输出至txt");
+			logger.info("差分结果输出至txt");
 			writeDiffResult(outResult);
 		}finally{
 			if(conn!=null){conn.close();}

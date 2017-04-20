@@ -50,20 +50,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void update() {
-        String parameter = "{\"command\":\"REPAIR\",\"dbId\":19,\"objId\":308003473," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62678,39.75126]," +
-                "[116.62719011306763,39.75074524577661],[116.6287136077881,39.75066275883986],[116.6293,39.75147]]},"
-                + "\"catchInfos\":[]},\"type\":\"RDLINK\"}";
-
-        //        try {
-        //            Connection conn = DBConnector.getInstance().getConnectionById(42);
-        //            RdLinkSelector selector = new RdLinkSelector(conn);
-        //            RdLink link = (RdLink) selector.loadById(589615, false, null);
-        //            JSONObject json = JSONObject.fromObject("{\"urban\":1,\"pid\":589615,\"objStatus\":\"UPDATE\"}");
-        //            SpeedLimitUtils.updateRdLink(link, json, null);
-        //        } catch (Exception e) {
-        //            e.printStackTrace();
-        //        }
+        String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDSPEEDLIMIT\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"pid\":500000001," +
+                "\"direct\":3,\"linkPid\":49913063,\"longitude\":116.53538352127916,\"latitude\":39.7420088702255," +
+                "\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(parameter);
     }
 

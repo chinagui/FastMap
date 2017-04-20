@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.service;
 
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -362,7 +361,7 @@ public class FccApiImpl implements FccApi{
 			//fccApi.tips2Aumark(par);
 		/*	System.out.println("end");*/
 			
-			int s_qTaskId=56;
+		/*	int s_qTaskId=56;
 			Set<Integer> list= fccApi.getTipsGridsBySqTaskId(s_qTaskId);
 			System.out.println(list.size());
 			for (Integer grid : list) {
@@ -376,6 +375,14 @@ public class FccApiImpl implements FccApi{
 			gridMTaskMap.put(60561220, 50);
 			
 			fccApi.batchUpdateSmTaskId(56, gridMTaskMap);
+			*/
+			
+			Set<Integer> grid=fccApi.getTipsGridsBySqTaskId(25);
+			
+			for (Integer grid2 : grid) {
+				System.out.println(grid2);
+			}
+			
 			
 			System.out.println("快转中完成");
 		} catch (Exception e) {

@@ -377,11 +377,15 @@ public class TipsExporter {
 		List<Get> photoGets = new ArrayList<Get>();
 		List<Get> audioGets = new ArrayList<Get>(); 
 		
+		String rowkey="";
+		try{
 		for (Result result : results) {
 
 			if (result.isEmpty()) {
 				continue;
 			}
+			
+			 rowkey = new String(result.getRow());
 			JSONObject track= JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
 			
@@ -448,6 +452,12 @@ public class TipsExporter {
 					}
 				}
 			}
+		}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error----"+rowkey);
+			throw new Exception(e.getMessage(),e);
 			
 		}
 		

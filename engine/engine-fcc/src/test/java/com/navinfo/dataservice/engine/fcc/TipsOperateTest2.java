@@ -135,15 +135,14 @@ public class TipsOperateTest2 extends InitApplication{
 		
 	}
 	
-	
-	
 	@Test
 	public void createPreTips() throws Exception {
 		
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} }}";
 		
+		try{
+		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} }}";
 
 		if (StringUtils.isEmpty(parameter)) {
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -177,7 +176,41 @@ public class TipsOperateTest2 extends InitApplication{
 
 		System.out.println("创建预处理tips成功");
 		
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
+		
+	}
+	
+	
+	
+	@Test
+	public void testInfoSubmit() throws Exception {
+		
+		try{
+		String  parameter=null;
+		//0280017b8ead071595417cb3305ac9d8e49d73
+		parameter="{\"user\":123,\"taskId\":123,\"taskType\":1}";
+		
+		System.out.println(parameter);
+		
+		JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+		int user = jsonReq.getInt("user");
+		
+		int taskId= jsonReq.getInt("taskId");
+		
+		int taskType= jsonReq.getInt("taskType");
+		
+		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+		
+		op.submitInfoJobTips2Web( user,taskId,taskType);
+
+		System.out.println("预处理提交tips成功");
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 	}
 	

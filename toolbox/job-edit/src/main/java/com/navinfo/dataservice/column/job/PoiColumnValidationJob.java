@@ -189,10 +189,10 @@ public class PoiColumnValidationJob extends AbstractJob {
 					+ "  FROM POI_COLUMN_WORKITEM_CONF C"
 					+ " WHERE C.FIRST_WORK_ITEM = '"+myRequest.getFirstWorkItem()+"'"
 					+ "   AND CHECK_FLAG IN (2, 3)";
-			//poi精编按照一级项获取检查规则，poi精编深度信息按照二级项获取检查规则
-			if(myRequest.getFirstWorkItem().equals("poi_deep")){
-				sql+="   AND C.SECOND_WORK_ITEM='"+myRequest.getSecondWorkItem()+"'";
-			}
+			//20170420精编和深度信息都按二级项获取规则
+			//if(myRequest.getFirstWorkItem().equals("poi_deep")){
+			sql+="   AND C.SECOND_WORK_ITEM='"+myRequest.getSecondWorkItem()+"'";
+			//}
 			QueryRunner run=new QueryRunner();
 			rules=run.query(conn, sql, new ResultSetHandler<List<String>>(){
 

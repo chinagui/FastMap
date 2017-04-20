@@ -351,8 +351,9 @@ public class TipsSelectorTest extends InitApplication {
 					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
 			
 			JSONArray grid = JSONArray
-					.fromObject("[59565431,59565430,59565333,59565323,59566302,59566303,59566402,59565433,59566403,59565432,59566400,59566401]");
+					.fromObject("[[59564420,59564431,59564430,59565401,59565400]");
 			JSONArray stage = new JSONArray();
+			
 			stage.add(1);
 			stage.add(2);
 			stage.add(5);
@@ -360,7 +361,7 @@ public class TipsSelectorTest extends InitApplication {
 			stage.add(5);*/
 			
 			try {
-				System.out.println(solrSelector.getStats(grid, stage));
+				System.out.println(solrSelector.getStats(grid, stage,27));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -494,10 +495,12 @@ public class TipsSelectorTest extends InitApplication {
 	    	
 			grids=JSONArray.fromObject("[59567120,59557611,59557610,60550500,59557613,59557612,60550501,60550502,60550503,59557603,59557602,60550510,60550511,60550513,60550512,59556530,59557630,59557631,60550521,60550520,60550523,60550522,59557620,59557621,59557622,59557623,60550432,60550433]");
 			
+			grids=new JSONArray();
 			
 			JSONArray stages = new JSONArray();
 			stages.add(1);
 			stages.add(2);
+			stages.add(5);
 			//没找到：1113  1202
 			//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线、2001
 			//1102、1103 、1104、1106、1111、1113、1202、1207、1208、1304、1305、1404、1405、1502
@@ -510,11 +513,13 @@ public class TipsSelectorTest extends InitApplication {
 			
 			//int [] types={1202,1207,1304,1305};
 		
-			for (int i = 0; i < types.length; i++) {
+	/*		for (int i = 0; i < types.length; i++) {*/
 				int type = 0;
 	    		String wkt;
 				try {
-					wkt = GridUtils.grids2Wkt(grids);
+					//wkt = GridUtils.grids2Wkt(grids);
+					
+					wkt="";
 					List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,false);
 					if(tips==null||tips.size()==0){
 						System.out.println("type:"+type+"在"+grids+"没有找到");
@@ -524,8 +529,12 @@ public class TipsSelectorTest extends InitApplication {
 					String ids="";
 		    		for (JSONObject json : tips) {
 		    			ids+=","+json.get("id");
-		    			System.out.println(json.get("id").toString());
+		    			//System.out.println(json.get("id").toString());
 		    			//updateOld2Null(json.get("id").toString());
+		    			//if(!json.containsKey("s_qSubTaskId")){
+		    				update(json.get("id").toString());
+		    		//	}
+		    			
 		    			//count ++;
 		    		//	if(count==1) break;
 		    		}
@@ -537,7 +546,7 @@ public class TipsSelectorTest extends InitApplication {
 					e.printStackTrace();
 				}
 			}
-			}
+			/*}*/
 
 	    		
 	/*    }*/
@@ -555,12 +564,15 @@ public class TipsSelectorTest extends InitApplication {
 		public  boolean update(String rowkey)
 				throws Exception {
 
+			try{
 			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 			Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
 
 			Get get = new Get(rowkey.getBytes());
 
+			//get.addColumn("data".getBytes(), "source".getBytes());
+			
 			get.addColumn("data".getBytes(), "track".getBytes());
 
 			Result result = htab.get(get);
@@ -571,45 +583,97 @@ public class TipsSelectorTest extends InitApplication {
 
 			Put put = new Put(rowkey.getBytes());
 
+			/*JSONObject source = JSONObject.fromObject(new String(result.getValue(
+					"data".getBytes(), "source".getBytes())));
+					
+		    source.put("s_qSubTaskId", 0);
+			
+			source.put("s_mSubTaskId", 0);
+			
+			put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
+					.getBytes());
+
+*/
+
 			JSONObject track = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "track".getBytes())));
-
-
-			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
 			
-			int i=0;
+			if(track.containsKey("t_trackInfo")){
+				return true;
+			}
+			JSONArray trackInfo = new JSONArray();
 			
-			for (Object obj:trackInfo) {
-				
-				JSONObject info=JSONObject.fromObject(obj);
-				i++;
-				
-				info.put("stage", 1);
-				trackInfo.add(info);
-				
-				if(i==1) break;
-				
-				
+			System.out.println(rowkey);
+			
+			JSONObject solrIndex = conn.getById(rowkey);
+			
+			int lifecycle=solrIndex.getInt("t_lifecycle");
+			int stage=solrIndex.getInt("stage");
+			int handler=solrIndex.getInt("handler");
+			int command=solrIndex.getInt("t_command");
+			String t_operateDate=solrIndex.getString("t_operateDate");
+			String currentDate=solrIndex.getString("t_date");
+			int t_cStatus=solrIndex.getInt("t_cStatus");
+			int t_dStatus=solrIndex.getInt("t_dStatus");
+			int t_mStatus=solrIndex.getInt("t_mStatus");
+			int t_inMeth=solrIndex.getInt("t_inMeth");
+			int t_pStatus=solrIndex.getInt("t_pStatus");
+			int t_dInProc=solrIndex.getInt("t_dInProc");
+			int t_mInProc=solrIndex.getInt("t_mInProc");
+			
+			int t_fStatus=0;
+			if(solrIndex.containsKey("t_fStatus")){
+				t_fStatus=solrIndex.getInt("t_fStatus");
 			}
 			
-			track.put("s_qTaskId", 2);
 			
-			track.put("s_mTaskId", 1);
-			
-
+			track =TipsUtils.generateTrackJson(lifecycle, stage, handler, command, trackInfo, 
+					t_operateDate, currentDate, t_cStatus,
+					t_dStatus, t_mStatus, t_inMeth, t_pStatus, t_dInProc, t_mInProc, t_fStatus);
 			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 					.getBytes());
+			
+			/*for (Object obj:trackInfo) {
+							
+							JSONObject info=JSONObject.fromObject(obj);
+							
+							info.put("stage", 1);
+							trackInfo.add(info);
+							
+							if(i==1) break;
+							
+							
+						}*/
+						
+			
+
+		
 
 			htab.put(put);
 			
-			JSONObject solrIndex = conn.getById(rowkey);
-
-			solrIndex.put("s_qTaskId", 0);
-
-			solrIndex.put("s_mTaskId", 0);
+			htab.close();
 			
-			conn.addTips(solrIndex);
+			/*JSONObject solrIndex = conn.getById(rowkey);
 
+			solrIndex.put("s_qSubTaskId", 0);
+
+			solrIndex.put("s_mSubTaskId", 0);
+			
+			solrIndex.put("wktLocation",solrIndex.getString("wkt"));
+			
+			if(!solrIndex.containsKey("s_mTaskId")){
+				solrIndex.put("s_mTaskId", 0);
+
+				solrIndex.put("s_qTaskId", 0);
+				
+				solrIndex.put("t_fStatus", 0);
+			}
+
+			conn.addTips(solrIndex);*/
+			}catch (Exception e) {
+				System.out.println("error:"+rowkey);
+				e.printStackTrace();
+			}
 
 			return true;
 		}
@@ -651,8 +715,8 @@ public class TipsSelectorTest extends InitApplication {
 				System.out.println(d);
 			}
 		}
-		
-	/*	public static void main(String[] args) {
+/*		
+		public static void main(String[] args) {
 			
 			TipsSelectorTest test=new TipsSelectorTest();
 			try {
@@ -858,7 +922,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":548,\"subtaskid\":24}";
+				String parameter = "{\"jobId\":548,\"subtaskid\":27}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -878,7 +942,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\548"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\nana0420"; // 本地测试用
 					
 				//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 

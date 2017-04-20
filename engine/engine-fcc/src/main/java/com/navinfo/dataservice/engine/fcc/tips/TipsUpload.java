@@ -216,7 +216,7 @@ public class TipsUpload {
 		htab.close();
 
 		// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-	//	tipsDiff();
+		//tipsDiff();
 
 		// 道路名入元数据库
 		importRoadNameToMeta();
@@ -770,8 +770,10 @@ public class TipsUpload {
 
 				JSONObject json = en.getValue();
 
-				// 是否是鲜度验证的tips
-				if (isFreshnessVerification(oldTip, json)) {
+				
+				int lifecycle = json.getInt("t_lifecycle");
+				// 是否是鲜度验证的tips  lifecycle==1删除的，不进行鲜度验证
+				if (lifecycle!=1&&isFreshnessVerification(oldTip, json)) {
 
 					reasons.add(newReasonObject(rowkey,
 							ErrorType.FreshnessVerificationData));
@@ -932,8 +934,8 @@ public class TipsUpload {
 
 		}
 
-	}*/
-
+	}
+*/
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 
 		Photo photo = new Photo();

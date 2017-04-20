@@ -56,7 +56,7 @@ public class TipsImportTest{
 
 			Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
-			TipsUpload tipsUploader = new TipsUpload();
+			TipsUpload tipsUploader = new TipsUpload(0);
 
 			tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 
@@ -94,7 +94,7 @@ public class TipsImportTest{
 		Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
 		try {
-			TipsUpload tipsUploader = new TipsUpload();
+			TipsUpload tipsUploader = new TipsUpload(0);
 			long t1 = System.currentTimeMillis();
 			System.out.println("t1:" + t1);
 			tipsUploader
@@ -140,7 +140,7 @@ public class TipsImportTest{
 			System.out.println("---------------------");
 
 
-			TipsUpload tipsUploader2 = new TipsUpload();
+			TipsUpload tipsUploader2 = new TipsUpload(0);
 			long t3 = System.currentTimeMillis();
 			tipsUploader2
 					.run("E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1425_1\\tip_1000.txt",

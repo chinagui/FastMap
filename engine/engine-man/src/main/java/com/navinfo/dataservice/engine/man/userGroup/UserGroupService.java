@@ -538,4 +538,54 @@ public class UserGroupService {
 		}
 	}
 	
+
+	public Map<Integer,UserGroup> getGroupByAdmin(String admin) throws ServiceException{
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT G.GROUP_ID, G.GROUP_NAME, G.GROUP_TYPE           ");
+			sb.append("   FROM USER_GROUP G                                     ");
+			sb.append("  WHERE G.GROUP_TYPE IN (0, 1)                           ");
+			sb.append("    AND G.GROUP_NAME IN (SELECT M.COLLECT_GROUP_NAME     ");
+			sb.append("                           FROM ADMIN_GROUP_MAPPING M    ");
+			sb.append("                          WHERE M.PROVINCE_NAME = 'aa'   ");
+			sb.append("                         UNION                           ");
+			sb.append("                         SELECT M.EDIT_GROUP_NAME        ");
+			sb.append("                           FROM ADMIN_GROUP_MAPPING M    ");
+			sb.append("                          WHERE M.PROVINCE_NAME = '" + admin + "')  ");
+			
+			log.info("getGroupByAdmin sql :" + sb.toString());
+
+			ResultSetHandler<Map<Integer,UserGroup>> rsh = new ResultSetHandler<Map<Integer,UserGroup>>() {
+				@Override
+				public Map<Integer,UserGroup> handle(ResultSet rs) throws SQLException {
+					Map<Integer,UserGroup> result = new HashMap<Integer,UserGroup>();
+					while(rs.next()){
+						int groupId = rs.getInt("COLLECT_GROUP_ID");
+						String groupName = rs.getString("GROUP_NAME");
+						int type = rs.getInt("GROUP_TYPE");
+						UserGroup group = new UserGroup();
+						group.setGroupId(groupId);
+						group.setGroupName(groupName);
+						group.setGroupType(type);
+						result.put(type, group);
+					}
+					return result;
+				}
+			};
+			Map<Integer,UserGroup> result = run.query(conn, sb.toString(), rsh);
+			return result;
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getGroupByAdmin失败，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 }

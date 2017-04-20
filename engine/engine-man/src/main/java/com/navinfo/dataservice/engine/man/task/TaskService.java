@@ -344,8 +344,8 @@ public class TaskService {
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
-					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+df.format(new Date())+"_"+task.getGroupName());//任务名称+日期+_作业组
+//					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					subtask.setName(task.getName() +"_"+task.getGroupName());//任务名称+日期+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -2777,6 +2777,83 @@ public class TaskService {
 			throw new ServiceException("getCollectTaskIdByTaskId失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Task> getTaskByProgramId(int programId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT T.TASK_ID,T.TYPE");
+			sb.append("   FROM TASK T ");
+			sb.append("  WHERE T.PROGRAM_ID = " + programId);
+			
+			String sql = sb.toString();
+			
+			log.info("getTaskByProgramId sql :" + sql);
+			
+			
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>() {
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> result = new ArrayList<Task>();
+					while(rs.next()) {
+						Task task = new Task();
+						task.setTaskId(rs.getInt("TASK_ID"));
+						task.setType(rs.getInt("TYPE"));
+						result.add(task);
+					}
+					return result;
+				}
+			};
+			List<Task> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getTaskByProgramId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception 
+	 */
+	public void createWithBeanWithTaskId(Connection conn, Task bean) throws Exception {
+		try{
+			/*与block关联的常规任务
+			 * 1.修改同类型task的latest
+			 * 2.如果block没有开启则开启block
+			 */
+			if(bean.getBlockId()!=0){
+				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
+				List<Integer> blockList = new ArrayList<Integer>();
+				blockList.add(bean.getBlockId());
+				BlockOperation.openBlockByBlockIdList(conn,blockList);
+			}	
+			//创建任务
+			TaskOperation.insertTask(conn, bean);
+			
+			// 插入TASK_GRID_MAPPING
+			if(bean.getGridIds() != null){
+				TaskOperation.insertTaskGridMapping(conn, bean);
+			}
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 }

@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.man.program;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -35,7 +38,9 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -1743,7 +1748,23 @@ public class ProgramService {
 			QueryRunner run=new QueryRunner();
 			List<Task> list=run.query(conn, selectSql, rsHandler);
 			if(list!=null&&list.size()>0){
-				for(Task t:list){TaskService.getInstance().createWithBean(conn, t);}
+				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				for(Task t:list){
+//					TaskService.getInstance().createWithBean(conn, t);
+					Map<String,String> inforName = getInforByProgramId(t.getProgramId());
+					
+					String admin = inforName.get("adminName");
+					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(admin);
+					int taskId=TaskOperation.getNewTaskId(conn);
+					t.setTaskId(taskId);
+					t.setName(inforName.get("inforName")+"_"+df.format(new Date())+"_"+taskId);
+					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
+						t.setGroupId(userGroupMap.get(0).getGroupId());
+					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
+						t.setGroupId(userGroupMap.get(1).getGroupId());
+					}
+					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
+				}
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1752,6 +1773,51 @@ public class ProgramService {
 		}
 	}
 	
+	/**
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	private Map<String,String> getInforByProgramId(Integer programId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME");
+			sb.append("   FROM PROGRAM P, INFOR I       ");
+			sb.append("  WHERE P.INFOR_ID = I.INFOR_ID  ");
+			sb.append("    AND P.PROGRAM_ID = " + programId);
+			
+			String sql = sb.toString();
+			
+			log.info("getInforNameByProgramId sql :" + sql);
+			
+			
+			ResultSetHandler<Map<String,String>> rsHandler = new ResultSetHandler<Map<String,String>>() {
+				public Map<String,String> handle(ResultSet rs) throws SQLException {
+					Map<String,String> result = new HashMap<String,String>();
+					if(rs.next()) {
+						result.put("inforName", rs.getString("INFOR_NAME"));
+						result.put("adminName", rs.getString("ADMIN_NAME"));
+					}
+					return result;
+				}
+			};
+			Map<String,String> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getInforNameByProgramId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 	/*项目创建/编辑/关闭
 	 * 1.所有生管角色
 	 * 2.2.项目包含的所有任务作业组组长
@@ -2063,5 +2129,124 @@ public class ProgramService {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	/**
+	 * @param conn
+	 * @param program
+	 * @throws Exception 
+	 */
+	public void createWithProgramId(Connection conn, Program bean) throws Exception {
+		QueryRunner run = new QueryRunner();
+		//将旧项目状态修改为失效
+		String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
+		if (bean!=null&&bean.getCityId()!=0){
+			updateSql+=" CITY_ID ="+bean.getCityId();
+		};
+
+		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			updateSql+=" infor_id ='" + bean.getInforId() + "'";
+		};
+		run.update(conn,updateSql);
+		
+		//创建项目		
+		String insertPart="";
+		String valuePart="";
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" PROGRAM_ID ";
+		valuePart+=bean.getProgramId();			
+
+		if (bean!=null&&bean.getCityId()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" CITY_ID ";
+			valuePart+=bean.getCityId();
+		};
+
+		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" infor_id ";
+			valuePart+= "'" + bean.getInforId() + "'";
+		};
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
+		valuePart+=bean.getCreateUserId()+",sysdate,2,1";
+
+		if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" name ";
+			valuePart+="'"+bean.getName()+"'";
+		};
+		if (bean!=null&&bean.getType()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" type ";
+			valuePart+=bean.getType();
+		};
+
+		if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" DESCP ";
+			valuePart+="'"+bean.getDescp()+"'";
+		};
+		if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_END_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" day_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Day_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_Start_Date ";
+			valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_End_Date";
+			valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+
+		String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
+		run.update(conn,createSql);
+		//修改项目对应city的状态为已规划
+		if (bean!=null&&bean.getCityId()!=0){
+			CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
+		};
+		//修改项目对应情报为已规划
+		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
+		};	
 	}
 }

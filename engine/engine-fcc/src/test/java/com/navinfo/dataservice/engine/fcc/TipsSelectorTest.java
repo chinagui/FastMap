@@ -40,6 +40,7 @@ import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -103,7 +104,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		try {
 			System.out.println(solrSelector.getSnapshot(grid, stage, type,
-					dbId,"d"));
+					dbId,"d",24));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -486,39 +487,31 @@ public class TipsSelectorTest extends InitApplication {
 	    
 	  @Test
 	    public  void  testQuerySolr(){
+		  
 	    	System.out.println("查询rowkey");
 	    	JSONArray grids = JSONArray
 					.fromObject("[60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310]");
 	    	
-	    	
-	    /*	JSONArray grids = JSONArray
-					.fromObject("[59567233]");
-			*/
-	    	//[59567303,59567313]
-	    /*	JSONArray grids = JSONArray
-			.fromObject("[60560303,60560311,60560312,60560313,60560322]");
-	    	*/
-	    	
-	    	System.out.println(grids.toString());
+			grids=JSONArray.fromObject("[59567120,59557611,59557610,60550500,59557613,59557612,60550501,60550502,60550503,59557603,59557602,60550510,60550511,60550513,60550512,59556530,59557630,59557631,60550521,60550520,60550523,60550522,59557620,59557621,59557622,59557623,60550432,60550433]");
+			
+			
 			JSONArray stages = new JSONArray();
-			stages.add(0);
 			stages.add(1);
 			stages.add(2);
-			stages.add(3);
-			stages.add(4);
 			//没找到：1113  1202
 			//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线、2001
 			//1102、1103 、1104、1106、1111、1113、1202、1207、1208、1304、1305、1404、1405、1502
 			
 			//int [] types={1102,1103,1104,1106,1111,1113,1202,1207,1208,1304,1305,1404,1405,1502};
 			
-			int [] types={1507,1512,1511,1516,1517,1605,1606,1601,1602,1804};
+			//int [] types={1507,1512,1511,1516,1517,1605,1606,1601,1602,1804};
 			
+			int [] types={};
 			
 			//int [] types={1202,1207,1304,1305};
 		
 			for (int i = 0; i < types.length; i++) {
-				int type = types[i];
+				int type = 0;
 	    		String wkt;
 				try {
 					wkt = GridUtils.grids2Wkt(grids);
@@ -526,13 +519,15 @@ public class TipsSelectorTest extends InitApplication {
 					if(tips==null||tips.size()==0){
 						System.out.println("type:"+type+"在"+grids+"没有找到");
 					}
-					int count=0;
+					System.out.println("共找到："+tips.size()+"条数据");
+					//int count=0;
 					String ids="";
 		    		for (JSONObject json : tips) {
 		    			ids+=","+json.get("id");
-		    			update(json.get("id").toString());
-		    			count++;
-		    			//if(count==10)  break;
+		    			System.out.println(json.get("id").toString());
+		    			//updateOld2Null(json.get("id").toString());
+		    			//count ++;
+		    		//	if(count==1) break;
 		    		}
 		    		if(StringUtils.isNotEmpty(ids)){
 		    			System.out.println("type:"+type+"找到数据rowkeys:"+ids);
@@ -542,9 +537,10 @@ public class TipsSelectorTest extends InitApplication {
 					e.printStackTrace();
 				}
 			}
+			}
 
 	    		
-	    }
+	/*    }*/
 	    
 	    
 	    
@@ -617,6 +613,34 @@ public class TipsSelectorTest extends InitApplication {
 
 			return true;
 		}
+		
+		
+		      /**
+				 * 修改tips 删除old
+				 * 
+				 * @param rowkey
+				 * @return
+				 * @throws Exception
+				 */
+				public  boolean updateOld2Null(String rowkey)
+						throws Exception {
+
+					Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+					Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+					Put put = new Put(rowkey.getBytes());
+
+
+					put.addColumn("data".getBytes(), "old".getBytes(),"{}".getBytes());
+
+					htab.put(put);
+
+					htab.close();
+
+					return true;
+				}
+
 
 		//@Test
 		public void testGrid2Location(){
@@ -834,12 +858,20 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":548}";
+				String parameter = "{\"jobId\":548,\"subtaskid\":24}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 					int jobId = jsonReq.getInt("jobId");
+					
+					int subtaskid = 0;
+					
+					//外业，有可能没有任务号
+					if(jsonReq.containsKey("subtaskid")){
+						
+						subtaskid=jsonReq.getInt("subtaskid");
+					}
 
 					//UploadService upload = UploadService.getInstance();
 
@@ -857,7 +889,7 @@ public class TipsSelectorTest extends InitApplication {
 
 					Map<String, Audio> audioMap = new HashMap<String, Audio>();
 
-					TipsUpload tipsUploader = new TipsUpload();
+					TipsUpload tipsUploader = new TipsUpload(subtaskid);
 
 					tipsUploader.run(filePath + "\\tips.txt", photoMap, audioMap);
 					
@@ -920,7 +952,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 
 		 
-		 @Test
+		// @Test
 		 public void testGetByRowkeys(){
 			 TipsSelector selector = new TipsSelector();
 

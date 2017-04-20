@@ -237,6 +237,14 @@ public class TipsController extends BaseController {
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
+			
+			int subtaskid = 0;
+			
+			//外业，有可能没有任务号
+			if(json.containsKey("subtaskid")){
+				
+				subtaskid=json.getInt("subtaskid");
+			}
 
 			UploadService upload = UploadService.getInstance();
 
@@ -244,7 +252,7 @@ public class TipsController extends BaseController {
 			
 			logger.info("jobId"+jobId+"\tfilePath:"+filePath);
 			
-			TipsUpload tipsUploader = new TipsUpload();
+			TipsUpload tipsUploader = new TipsUpload(subtaskid);
 			
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			
@@ -543,6 +551,8 @@ public class TipsController extends BaseController {
 
 			int dbId = jsonReq.getInt("dbId");
 			
+			int subtaskid = jsonReq.getInt("subtaskId");
+			
 			String mdFlag = jsonReq.getString("mdFlag");
 			
 			if (grids==null||grids.size()==0) {
@@ -566,7 +576,7 @@ public class TipsController extends BaseController {
 			
 
 			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
-					dbId,mdFlag);
+					dbId,mdFlag,subtaskid);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

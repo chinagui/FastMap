@@ -1628,7 +1628,11 @@ public class SubtaskService {
 		if(subtask.getStage()==0||subtask.getStage()==1){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");
-			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
+			int programType=1;
+			if(subtask.getStage()==0){
+				programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+			}
+			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
@@ -1934,7 +1938,7 @@ public class SubtaskService {
 	}
 	
 	/**
-	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 返回值Map<Integer,Integer> key：taskId，programType：1，中线4，快线
 	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
 	 * 应用场景：采集（poi，tips）成果批任务号
 	 * @param subtaskId

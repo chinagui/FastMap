@@ -3092,6 +3092,51 @@ public class SubtaskOperation {
 		}
 		
 	}
+	
+	/*
+	 * 查询大区库履历，获取子任务修改的POI几何列表
+	 */
+	public static Set<Integer> loadPoiGeoBySubtaskFromEdit(Subtask subtask)throws Exception{
+		Connection conn=null;
+		try{
+			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
+			String sql="SELECT I.GEOMETRY"
+					+ "  FROM POI_EDIT_STATUS S, IX_POI I"
+					+ " WHERE S.PID = I.PID"
+					+ "   AND (S.QUICK_SUBTASK_ID = "+subtask.getSubtaskId()+" OR S.MEDIUM_SUBTASK_ID = "+subtask.getSubtaskId()+")";
+			
+			log.info("loadPoiGeoBySubtaskFromEdit SQL："+sql);
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> gridIdList = new HashSet<Integer>();
+					while (rs.next()) {
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String wkt = GeoTranslator.struct2Wkt(struct);
+							Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+							String[] grids = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y);
+							for(String grid:grids){
+								gridIdList.add(Integer.parseInt(grid));
+							}
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					return gridIdList;
+				}
+			};
+			return new QueryRunner().query(conn, sql, rsHandler);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
 
 
 	/**
@@ -3100,9 +3145,17 @@ public class SubtaskOperation {
 	 * 根据subtask查询大区库，获取gridList
 	 * @throws Exception 
 	 */
-	public static Map<Integer,Integer> getGridIdMapBySubtaskFromLog(Subtask subtask) throws Exception {
+	public static Map<Integer,Integer> getGridIdMapBySubtaskFromLog(Subtask subtask,int programType) throws Exception {
 		//查询大区库履历，获取子任务数据几何列表
-		Set<Integer> gridIdList = loadPoiGeoBySubtaskFromLog(subtask);
+		Set<Integer> gridIdList = new HashSet<Integer>();
+		if(subtask.getStage()==0){
+			gridIdList = loadPoiGeoBySubtaskFromEdit(subtask);
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");			
+			Set<Integer> tipsGrids=api.getTipsGridsBySubtaskId(subtask.getSubtaskId(), programType);
+			if(tipsGrids!=null&&tipsGrids.size()>0){
+				gridIdList.addAll(tipsGrids);
+			}
+		}else{gridIdList = loadPoiGeoBySubtaskFromLog(subtask);}
 		
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
@@ -3116,7 +3169,6 @@ public class SubtaskOperation {
 		}
 		return gridIdsToInsert;
 	}
-
 
 	public static void changeRegionSubtaskGridByTask(Connection conn,
 			int taskId) throws Exception {

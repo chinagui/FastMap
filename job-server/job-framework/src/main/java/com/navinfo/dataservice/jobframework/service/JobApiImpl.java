@@ -4,12 +4,10 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.navicommons.exception.ServiceException;
-
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -47,9 +45,27 @@ public class JobApiImpl implements JobApi{
 		}
 	}
 	
+	public JobInfo getLatestJobByDescp(String descp)throws Exception{
+		try{
+			return JobService.getInstance().getLatestJobByDescp(descp);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new Exception(e.getMessage(),e);
+		}
+	}
+	
 	public JobInfo getJobByGuid(String jobGuid)throws Exception{
 		try{
 			return JobService.getInstance().getJobByGuid(jobGuid);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new Exception(e.getMessage(),e);
+		}
+	}
+	
+	public List<JobInfo> getJobInfoList(JSONObject parameterJson) throws Exception {
+		try{
+			return JobService.getInstance().getJobInfoList(parameterJson);
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			throw new Exception(e.getMessage(),e);
@@ -61,4 +77,5 @@ public class JobApiImpl implements JobApi{
 	public static void main(String[] args){
 		
 	}
+	
 }

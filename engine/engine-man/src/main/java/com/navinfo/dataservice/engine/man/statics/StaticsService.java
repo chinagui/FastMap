@@ -40,6 +40,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -88,7 +89,7 @@ public class StaticsService {
 		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
 	
-	public List<HashMap> blockExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<Map<String,Object>> blockExpectStatQuery(String wkt) throws JSONException, Exception{
 		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -105,11 +106,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.listByWkt(json);
+		List<Map<String,Object>> data = service.listByWkt(json);
 		
 		Set<Integer> blocks = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			int blockId = (int) map.get("blockId");
 			
 			blocks.add(blockId);
@@ -119,7 +120,7 @@ public class StaticsService {
 		
 		Map<Integer,Integer> statusMap = api.getExpectStatusByBlocks(blocks);
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			map.put("expectStatus", statusMap.get(map.get("blockId")));
 		}
 		
@@ -142,7 +143,7 @@ public class StaticsService {
 		return data;
 	}
 	
-	public List<HashMap> cityExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<HashMap<String, Object>> cityExpectStatQuery(String wkt) throws JSONException, Exception{
 		CityService service = CityService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -157,11 +158,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.queryListByWkt(json);
+		List<HashMap<String, Object>> data = service.queryListByWkt(json);
 		
 		Set<Integer> citys = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(HashMap<String, Object> map : data){
 			int blockId = (int) map.get("cityId");
 			
 			citys.add(blockId);
@@ -2779,5 +2780,17 @@ public class StaticsService {
 	       return day2 - day1;
 
 	    }
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Map> getDayTaskTipsStatics(int taskId) throws ServiceException {
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
+		//调用fccApi
+		
+		return null;
+	}
 
 }

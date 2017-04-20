@@ -34,13 +34,13 @@ public class ReadJson2CityOrBlockJson {
 	//将传回来的json 转换成我们所需的 flag = 0 cityJson ;flag = 1 blockJson 
 	public static JSONObject changeData(JSONArray ja,int flag) throws Exception {
 		JSONObject retObj = new JSONObject();
-		
+		String cityFlag = "";
 		if(flag == 0){//city
 			JSONArray cityList = ReadAndCreateJson.readCityJson2List(ja);
-			export2Txt(cityList,"F:/readjson","city2meshgeo.txt");
+			export2Txt(cityList,"F:/readjson",cityFlag+"city2meshgeo.txt");
 		}else{
 			JSONArray  blockList = ReadAndCreateJson.readBlockJson2List(ja);
-			export2Txt(blockList,"F:/readjson","block2gridgeo.txt");
+			export2Txt(blockList,"F:/readjson",cityFlag+"block2gridgeo.txt");
 		}
 		return null;
 	}
@@ -75,7 +75,7 @@ public class ReadJson2CityOrBlockJson {
 	public static void main(String[] args) throws Exception{
 		System.out.println("start"); 
 		JobScriptsInterface.initContext();//F:\tabfile
-		String filePathString="F:\\readjson\\20170306block.txt";
+		String filePathString="F:\\readjson\\newBlock.txt";
 		importJson( filePathString);
 		System.out.println("end"); 
 		System.exit(0);

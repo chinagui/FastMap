@@ -27,7 +27,7 @@ public class PERMIT_MODIFICATE_CROSSINNER_POINT extends baseRule {
 
 		for (Integer nodePid : changeGeoNodePidSet) {
 			String sql = String.format(
-					"SELECT A.* FROM RD_CROSS A,RD_CROSS_NODE B WHERE A.PID=B.PID AND B.NODE_PID = %d", nodePid);
+					"SELECT A.* FROM RD_CROSS A,RD_CROSS_NODE B WHERE A.PID=B.PID AND B.NODE_PID = %d AND A.U_RECORD <> 2 AND B.U_RECORD <> 2", nodePid);
 
 			RdCrossSelector crossSelector = new RdCrossSelector(this.getConn());
 			List<RdCross> cross = crossSelector.loadCrossBySql(sql, false);

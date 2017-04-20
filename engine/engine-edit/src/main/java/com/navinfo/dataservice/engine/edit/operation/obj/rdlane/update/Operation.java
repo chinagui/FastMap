@@ -192,7 +192,7 @@ public class Operation implements IOperation {
 					targetBranch.getNodePid());
 
 			double angle = AngleCalculator.getConnectLinksAngle(inLineSegment,
-					outLineSegment);
+					outLineSegment,0);
 
 			outMap.put(angle, link);
 		}

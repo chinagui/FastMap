@@ -78,5 +78,44 @@ public class CkSuiteSelector extends AbstractSelector {
 		}
 		
 	}
+	public JSONArray getSuite(int type) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			JSONArray result = new JSONArray();
+			
+			sb.append("select a.* from ck_suite_cop a  where a.feature=:1 ");
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, type);
+
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("suiteId", resultSet.getString("suite_id"));
+				data.put("suiteName", resultSet.getString("suite_name"));
+				data.put("suiteRange", resultSet.getString("suite_range"));
+				data.put("feature", resultSet.getString("feature"));
+//				data.put("total", resultSet.getInt("total"));
+				result.add(data);
+			}
+			
+			return result;
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
 
 }

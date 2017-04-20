@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 /**
  * @author zhangyt
@@ -24,7 +25,7 @@ public class LcLinkSelector extends AbstractSelector {
 
     private Connection conn;
 
-    public LcLinkSelector(Connection conn) throws InstantiationException, IllegalAccessException {
+    public LcLinkSelector(Connection conn)  {
         super(LcLink.class, conn);
         this.conn = conn;
     }
@@ -81,4 +82,52 @@ public class LcLinkSelector extends AbstractSelector {
         }
         return links;
     }
+    /***
+   	 * 加载联通link不考虑方向
+   	 * 
+   	 * @param linkPid
+   	 * @param nodePidDir
+   	 * @param isLock
+   	 * @return
+   	 * @throws Exception
+   	 */
+
+   	public List<LcLink> loadTrackLinkNoDirect(int linkPid, int nodePidDir,
+   			boolean isLock) throws Exception {
+   		List<LcLink> list = new ArrayList<LcLink>();
+   		StringBuilder sb = new StringBuilder();
+   		sb.append(" select rl.* from lc_link rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+   		if (isLock) {
+   			sb.append(" for update nowait");
+   		}
+
+   		PreparedStatement pstmt = null;
+
+   		ResultSet resultSet = null;
+
+   		try {
+   			pstmt = conn.prepareStatement(sb.toString());
+
+   			pstmt.setInt(1, nodePidDir);
+   			pstmt.setInt(2, nodePidDir);
+   			pstmt.setInt(3, linkPid);
+
+   			resultSet = pstmt.executeQuery();
+
+   			while (resultSet.next()) {
+   				LcLink lcLink = new LcLink();
+   				ReflectionAttrUtils.executeResultSet(lcLink, resultSet);
+   				list.add(lcLink);
+
+   			}
+   			return list;
+   		} catch (Exception e) {
+
+   			throw e;
+
+   		} finally {
+   			DBUtils.closeResultSet(resultSet);
+   			DBUtils.closeStatement(pstmt);
+   		}
+   	}
 }

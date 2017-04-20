@@ -113,13 +113,21 @@ public class Check {
 	}
 	
 	/**
+<<<<<<< HEAD
 	 * 检查：创建或修改link，节点不能到已有的立交点处，请先删除立交关系
+=======
+	 * 创建或修改link，节点不能到已有的立交点处，请先删除立交关系
+>>>>>>> origin/master
 	 * @param catchLinks
 	 * @param conn
 	 * @throws Exception
 	 */
 	public void permitCheckGscnodeNotMove(JSONArray catchLinks, Connection conn) throws Exception {
+<<<<<<< HEAD
 		if (catchLinks == null || catchLinks.size() == 0) {
+=======
+		if (catchLinks == null || catchLinks.size() == 0 ) {
+>>>>>>> origin/master
 			return;
 		}
 

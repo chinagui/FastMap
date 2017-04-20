@@ -6,16 +6,18 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.gate.RdGate;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
-
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import com.navinfo.dataservice.dao.glm.selector.rd.gate.RdGateSelector;
 
 public class RdGateSearch implements ISearch {
 
@@ -34,9 +36,13 @@ public class RdGateSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+
+		RdGateSelector selector = new RdGateSelector(this.conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -82,9 +88,9 @@ public class RdGateSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("a", resultSet.getString("type"));
+				m.put("a", resultSet.getInt("type"));
 
-				m.put("b", resultSet.getString("dir"));
+				m.put("b", resultSet.getInt("dir"));
 
 				snapshot.setM(m);
 

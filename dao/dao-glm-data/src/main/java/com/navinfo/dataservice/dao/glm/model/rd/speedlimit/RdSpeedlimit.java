@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.vividsolutions.jts.geom.Coordinate;
+<<<<<<< HEAD
+=======
+import com.vividsolutions.jts.geom.Point;
+>>>>>>> origin/master
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -396,6 +400,7 @@ public class RdSpeedlimit implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else if ("longitude".equals(key)) {
+<<<<<<< HEAD
                 double longitude = json.getDouble("longitude");
 
                 double latitude = json.getDouble("latitude");
@@ -409,6 +414,21 @@ public class RdSpeedlimit implements IObj {
                 if (!wkt.equals(oldwkt)) {
                     changedFields.put("geometry", GeoTranslator.jts2Geojson(geometry));
                 }
+=======
+				double longitude = json.getDouble("longitude");
+
+				double latitude = json.getDouble("latitude");
+
+				Geometry geometry  = GeoTranslator.transform(GeoTranslator.createPoint(new Coordinate(longitude, latitude)), 1, 5);
+
+				String wkt = GeoTranslator.jts2Wkt(geometry);
+
+				String oldwkt = GeoTranslator.jts2Wkt(this.geometry, 0.00001, 5);
+
+				if (!wkt.equals(oldwkt)) {
+					changedFields.put("geometry", GeoTranslator.jts2Geojson(geometry));
+				}
+>>>>>>> origin/master
 			} else {
 				if (!"objStatus".equals(key) && !"latitude".equals(key)) {
 

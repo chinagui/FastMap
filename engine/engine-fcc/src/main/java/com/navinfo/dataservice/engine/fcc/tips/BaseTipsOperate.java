@@ -5,19 +5,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.Connection;
+import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
+import org.apache.solr.client.solrj.SolrServerException;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -242,6 +241,153 @@ public class BaseTipsOperate {
 		return oldTip;
 	}
 
+	
+	/**
+	 * @Description:删除tips
+	 * @param rowkey
+	 * @author: y
+	 * @param user ：删除用户
+	 * @param delType :0 逻辑删除，1：物理删除
+	 * @throws Exception
+	 * @time:2016-11-16 下午5:21:09
+	 */
+	public void deleteByRowkey(String rowkey, int delType, int user) throws Exception {
+		Connection hbaseConn;
+		try {
+			//物理删除
+			if(delType==1){
+				physicalDel(rowkey);
+			}
+			//逻辑删除
+			else{
+				logicDel(rowkey,user);
+			}
+			
+		} catch (SolrServerException e) {
+
+			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
+			
+			throw new Exception(
+					"删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
+		}
+
+	}
+
+
+
+
+
+	/**
+	 * @Description:逻辑删除tips(将t_lifecycle改为1：删除)
+	 * @param rowkey：被删除的tips的rowkey
+	 * @param user：删除操作的作业员id
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-4-8 下午4:14:57
+	 */
+	private void logicDel(String rowkey, int user) throws Exception {
+		
+		String date = StringUtils.getCurrentTime();
+		
+		//修改hbase
+		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+
+		Table htab = hbaseConn
+				.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+		Get get = new Get(rowkey.getBytes());
+
+		get.addColumn("data".getBytes(), "track".getBytes());
+
+		Result result = htab.get(get);
+
+		if (result.isEmpty()) {
+			throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey："+rowkey);
+		}
+
+		Put put = new Put(rowkey.getBytes());
+
+		JSONObject track = JSONObject.fromObject(new String(result.getValue(
+				"data".getBytes(), "track".getBytes())));
+
+		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+		
+		JSONObject lastTrackInfo = trackInfoArr.getJSONObject(trackInfoArr.size() - 1);
+
+		int lastStage = lastTrackInfo.getInt("stage");
+
+		JSONObject jo = new JSONObject();
+
+		jo.put("stage", lastStage);
+
+		jo.put("date", date);
+
+		jo.put("handler", user);
+
+		trackInfoArr.add(jo);
+
+		track.put("t_trackInfo", trackInfoArr);
+
+		track.put("t_date", date);
+		
+		track.put("t_lifecycle", 1);//将t_lifecycle改为1：删除
+
+		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
+				.getBytes());
+		
+		htab.put(put);
+		
+		htab.close();
+
+		
+		//同步更新solr
+		JSONObject solrIndex=solr.getById(rowkey);
+		
+		solrIndex.put("t_lifecycle", 1);
+		
+		solrIndex.put("t_date", date);
+		
+		solrIndex.put("handler", user);
+		
+		solr.addTips(solrIndex);
+		
+		
+		
+		
+	}
+
+
+
+
+
+	/**
+	 * @Description:TOOD
+	 * @param rowkey
+	 * @throws SolrServerException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-4-8 下午4:14:15
+	 */
+	private void physicalDel(String rowkey) throws SolrServerException,
+			IOException {
+		Connection hbaseConn;
+		// delete hbase
+		hbaseConn = HBaseConnector.getInstance().getConnection();
+		
+		Table htab = hbaseConn.getTable(TableName
+				.valueOf(HBaseConstant.tipTab));
+		
+		List list = new ArrayList();
+		Delete d1 = new Delete(rowkey.getBytes());
+		list.add(d1);
+		
+		htab.delete(list);
+		
+		htab.close();
+		
+		// delete solr
+		solr.deleteByRowkey(rowkey);
+	}
 	
 
 }

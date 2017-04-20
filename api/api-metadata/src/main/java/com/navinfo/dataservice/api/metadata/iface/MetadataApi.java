@@ -417,5 +417,6 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
+	public JSONObject getAdminMap()throws Exception;
 
 }

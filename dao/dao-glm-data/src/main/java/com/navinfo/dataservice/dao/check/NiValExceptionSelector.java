@@ -4,18 +4,20 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.exception.DataNotFoundException;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -1035,5 +1037,325 @@ public class NiValExceptionSelector {
 
 		Page p = run.query(conn, sql.toString(), rsHandler3);
 		return p;
+	}
+
+	public Page listCheckResultsByTaskName(JSONObject params, final Map<String, String> adminMap) throws SQLException {
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		
+		String taskName = params.getString("taskName");
+		//int flag = params.getInt("flag");
+//		String nameIds = "";
+		
+		String sql_where_r = "";
+		String sql_where_e = "";
+		/*if(flag > 0){//查询选中数据的检查结果
+			JSONArray dataArr = params.getJSONArray("data");
+			if(dataArr != null &&  dataArr.size() > 0 ){
+				nameIds = dataArr.join(",");
+				sql_where_r = " and r.name_id in("+nameIds+")";
+			}
+		}else{*///根据查询条件查询检查结果
+			JSONObject paramsObj = params.getJSONObject("params");
+			if(paramsObj != null ){
+				if(paramsObj.containsKey("name") && paramsObj.getString("name") != null && StringUtils.isNotEmpty(paramsObj.getString("name")) ){
+					sql_where_r+=" and  r.name like '%"+paramsObj.getString("name")+"%' ";
+				}
+				if(paramsObj.containsKey("nameId") && paramsObj.getString("nameId") != null && StringUtils.isNotEmpty(paramsObj.getString("nameId")) ){
+					sql_where_r+=" and  r.nameId = "+paramsObj.getString("nameId")+" ";
+				}
+				if(paramsObj.containsKey("adminId") && paramsObj.getString("adminId") != null && StringUtils.isNotEmpty(paramsObj.getString("adminId")) ){
+					sql_where_r+=" and r.admin_id =  "+paramsObj.getString("adminId")+" ";
+				}
+				if(paramsObj.containsKey("namePhonetic") && paramsObj.getString("namePhonetic") != null && StringUtils.isNotEmpty(paramsObj.getString("namePhonetic")) ){
+					sql_where_r+=" and  r.name_phonetic like '%"+paramsObj.getString("namePhonetic")+"%' ";
+				}
+				if(paramsObj.containsKey("ruleCode") && paramsObj.getString("ruleCode") != null && StringUtils.isNotEmpty(paramsObj.getString("ruleCode")) ){
+					sql_where_e+=" and  d.ruleid like '%"+paramsObj.getString("ruleCode")+"%' ";
+				}
+				if(paramsObj.containsKey("information") && paramsObj.getString("information") != null && StringUtils.isNotEmpty(paramsObj.getString("information")) ){
+					sql_where_e+=" and  d.information like '%"+paramsObj.getString("information")+"%' ";
+				}
+				
+			}
+			
+//		}
+		
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("with ");
+		// **********************
+		// 获取子任务范围内的所有 rdName 的nameId
+		sql.append("q1 as ( ");
+		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
+		
+		sql.append(sql_where_r);
+		
+		sql.append(" ),");
+		// **********************
+		sql.append("q2 as ( ");
+		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d  where d.task_name = '"+taskName+"' ");
+		
+		sql.append(sql_where_e);
+		
+		sql.append(" ), ");
+		sql.append("q3 as ( ");
+		sql.append(" select e.*,n.name_id,n.name,n.name_phonetic,n.road_type,n.admin_id from q1 n ,q2 e where   e.targets like '%'||n.targets||'%'  ");
+		sql.append(") ");
+		
+		// ************************
+		sql.append(" SELECT A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
+		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
+				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		
+		System.out.println("listCheckResultsBytaskName sql:  " + sql.toString());
+
+		QueryRunner run = new QueryRunner();
+
+		
+		// ****************************************
+		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while (rs.next()) {
+					if (total == 0) {
+						total = rs.getInt("TOTAL_RECORD_NUM_");
+					}
+
+					JSONObject json = new JSONObject();
+
+					//json.put("jobId", rs.getInt("jobId"));
+					
+					json.put("id", rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+//					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+//					json.put("geometry",
+//							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
+//									+ ")");
+
+					json.put("create_date", rs.getString("created"));
+
+//					json.put("worker", rs.getString("worker"));
+					json.put("nameId", rs.getInt("name_id"));
+					json.put("name", rs.getString("name"));
+					json.put("namePhonetic", rs.getString("name_phonetic"));
+					json.put("roadType", rs.getInt("road_type"));
+					int adminId = rs.getInt("admin_id");
+//					json.put("adminId", adminId);
+					if(adminId == 214){
+						json.put("adminName","全国");
+					}else{
+						if (!adminMap.isEmpty()) {
+							if (adminMap.containsKey(String.valueOf(adminId))) {
+								json.put("adminName", adminMap.get(String.valueOf(adminId)));
+							} else {
+								json.put("adminName","");
+							}
+						}
+					}
+					
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		};
+		Page p = run.query(conn, sql.toString(), rsHandler3);
+		return p;
+	}
+
+	public JSONArray listCheckResultsRuleIds(JSONObject params) {
+		JSONArray jobRuleObjs = null;
+		try{
+		
+			String taskName = params.getString("taskName");
+		
+			QueryRunner run = new QueryRunner();
+			
+			String jobInfoSql = "select e.ruleid,count(1) numb  from ni_val_exception e  where e.task_name = '"+taskName+"' group by(ruleid) ";
+			
+			jobRuleObjs = run.query(conn, jobInfoSql, new ResultSetHandler<JSONArray>(){
+				
+				@Override
+				public JSONArray handle(ResultSet rs) throws SQLException {
+					JSONArray jobRuleArr = new JSONArray();
+					while (rs.next()){
+						JSONObject jobRuleObj = new JSONObject();
+						jobRuleObj.put("ruleId", rs.getString("ruleid"));
+//						jobRuleObj.put("count", rs.getString("numb"));
+						jobRuleArr.add(jobRuleObj);
+					}
+					return jobRuleArr;
+				}
+				
+			});
+			return jobRuleObjs;
+		
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return jobRuleObjs;
+		}
+	}
+	
+	public JSONArray checkResultsStatis(String taskName ,List<String> groupList) {
+		JSONArray jobRuleObjs = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			String columSql = "";
+			String groupBy = "";
+			if(groupList.contains("rule")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",ruleid";
+				groupBy+="ruleid ";
+			}
+			if(groupList.contains("information")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",information";
+				groupBy+="information ";
+			}
+			if(groupList.contains("adminName")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",admin_id";
+				groupBy+="admin_id ";
+			}
+			if(groupList.contains("level")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",\"LEVEL\" level_";
+				groupBy+="\"LEVEL\" ";
+				
+			}
+			
+			String sql = "select count(1) numb "+columSql+"   from ni_val_exception   where task_name = '"+taskName+"' ";
+			String sql_adminId  = " with  q1 as ( ";
+				sql_adminId  += " select '[NAME_ID,'||r.name_id||']' targets,r.admin_id  from rd_name r where 1=1 ), ";
+				sql_adminId  += " q2 as ( "
+						+ " select NVL(d.ruleid,0) ruleid,\"LEVEL\" , NVL(to_char(d.addition_info),'') targets,NVL(d.information,'') information "
+						+ " from ni_val_exception d  where d.task_name = '"+taskName+"' "
+								+ "), ";
+				sql_adminId  += " q3 as ( select e.*,n.admin_id from q1 n, q2 e where   e.targets like '%'||n.targets||'%' ) ";
+				
+				sql_adminId  +="  select count(1) numb"+columSql+" from q3 q  ";
+			if(StringUtils.isNotEmpty(groupBy)){
+							
+				sql+= "group by(  ";
+				sql+= groupBy;
+				sql+= " ) ";
+				
+				sql_adminId+= "group by(  ";
+				sql_adminId+= groupBy;
+				sql_adminId+= " ) ";
+			}
+			System.out.println("sql : "+sql);
+			System.out.println("sql_adminId : "+sql_adminId);
+			if(groupList.contains("adminName")){
+				jobRuleObjs = run.query(conn, sql_adminId, new ResultSetHandler<JSONArray>(){
+					@Override
+					public JSONArray handle(ResultSet rs) throws SQLException {
+						JSONArray jobRuleArr = new JSONArray();
+						ResultSetMetaData rsmd = rs.getMetaData();
+						int columnCount = rsmd.getColumnCount();
+						System.out.println(columnCount);
+						List<String> columns = new ArrayList<String>();
+						for(int i=1;i<=columnCount;i++){
+						    System.out.println(rsmd.getColumnName(i));
+						    columns.add(rsmd.getColumnName(i));
+						}
+						while (rs.next()){
+							JSONObject jobRuleObj = new JSONObject();
+							jobRuleObj.put("count", rs.getInt("numb"));
+							
+							if(columns.contains("RULEID") ){
+								jobRuleObj.put("ruleid", rs.getString("RULEID"));
+							}
+							if(columns.contains("INFORMATION")){
+								jobRuleObj.put("information", rs.getString("information"));
+							}
+							if(columns.contains("ADMIN_ID")){
+								jobRuleObj.put("admin_id", rs.getInt("admin_id"));
+								
+							}
+							if(columns.contains("LEVEL_")){
+								jobRuleObj.put("level", rs.getInt("level_"));
+							}
+
+							jobRuleArr.add(jobRuleObj);
+						}
+						return jobRuleArr;
+					}
+					
+				});
+			}else{
+				jobRuleObjs = run.query(conn, sql, new ResultSetHandler<JSONArray>(){
+					@Override
+					public JSONArray handle(ResultSet rs) throws SQLException {
+						JSONArray jobRuleArr = new JSONArray();
+						ResultSetMetaData rsmd = rs.getMetaData();
+						int columnCount = rsmd.getColumnCount();
+						System.out.println(columnCount);
+						List<String> columns = new ArrayList<String>();
+						for(int i=1;i<=columnCount;i++){
+						    System.out.println(rsmd.getColumnName(i));
+						    columns.add(rsmd.getColumnName(i));
+						}
+						while (rs.next()){
+							JSONObject jobRuleObj = new JSONObject();
+							jobRuleObj.put("count", rs.getInt("numb"));
+							
+							if(columns.contains("RULEID") ){
+								jobRuleObj.put("ruleid", rs.getString("RULEID"));
+							}
+							if(columns.contains("INFORMATION")){
+								jobRuleObj.put("information", rs.getString("information"));
+							}
+							
+							if(columns.contains("LEVEL_")){
+								jobRuleObj.put("level", rs.getInt("level_"));
+							}
+
+							jobRuleArr.add(jobRuleObj);
+						}
+						return jobRuleArr;
+					}
+					
+				});
+			}
+				
+				
+			return jobRuleObjs;
+		
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return jobRuleObjs;
+		}
 	}
 }

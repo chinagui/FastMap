@@ -32,7 +32,7 @@ public abstract class AbstractOperation {
 	protected OperationResult result;
 	protected Connection conn;
 	protected boolean unionOperation=false;//设置true，会在生成履历时把所有有几何修改的对象合并到一个operation
-	protected int subtaskId;
+	protected int subtaskId=0;
 	protected boolean physiDelete=false; 
 	
 	public int getSubtaskId() {

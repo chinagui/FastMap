@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
-import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
 /**
@@ -91,7 +91,108 @@ public class PretreatmentTipsController extends BaseController {
 	}
 
 
+	
+	/**
+	 * @Description:删除tips
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/pretreatmen/delete")
+	public ModelAndView deleteByRowkey(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
 
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			int delType=1; //默认物理删除。0：逻辑删除；1：物理删除
+			
+			int user = jsonReq.getInt("user");
+
+			if (StringUtils.isEmpty(rowkey)) {
+				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+			}
+			
+			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
+			
+			PretreatmentTipsOperator op2 = new PretreatmentTipsOperator();
+			
+			delType=op2.getDelTypeByRowkeyAndUserId(rowkey,user);
+
+			op.deleteByRowkey(rowkey,delType,user);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+
+	
+	
+	/**
+	 * @Description:测线打断（情报矢量化测线打断）
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/pretreatmen/measuringLineCut")
+	public ModelAndView measuringLineCut(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			int user = jsonReq.getInt("user");
+			
+			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
+			
+			int subTaskId=jsonReq.getInt("subTaskId"); //任务号
+			
+			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
+
+			if (StringUtils.isEmpty(rowkey)) {
+				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+			}
+			
+			if (pointGeo==null||pointGeo.isEmpty()) {
+				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
+			}
+			
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
 
 
 	
@@ -252,6 +353,47 @@ public class PretreatmentTipsController extends BaseController {
 	}
 	
 	
+	/**
+	 * @Description:情报矢量化理tips提交(按任务) 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-4-14 下午2:39:49
+	 */
+	@RequestMapping(value = "/tip/infoTaskSubmit")
+	public ModelAndView infoTaskSubmit(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int user = jsonReq.getInt("user");
+			
+			int taskId= jsonReq.getInt("taskId");
+			
+			int taskType= jsonReq.getInt("taskType");
+			
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.submitInfoJobTips2Web( user,taskId,taskType);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
 
 	/**
 	 * @Description:fc预处理同时编辑备注和fc
@@ -308,6 +450,118 @@ public class PretreatmentTipsController extends BaseController {
 	
 	
 	/**
+	 * @Description:fc预处理（情报矢量化）tip新增或者修改
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/pretreatmen/saveOrUpdate")
+	public ModelAndView saveOrUpdate(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		logger.info("pretreatmen/saveOrUpdate,parameter:"+parameter);
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			JSONObject jsonInfo=null; //jsonInfo为全量的tips信息，需要符合规格定义
+			if(jsonReq.containsKey("jsonInfo")){
+				
+				jsonInfo = jsonReq.getJSONObject("jsonInfo");
+				
+			}
+			if (jsonInfo==null||jsonInfo.isNullObject()||jsonInfo.keySet().size()==0) {
+				throw new IllegalArgumentException("参数错误：jsonInfo不能为空。");
+			}
+			
+			int command = jsonReq.getInt("command"); //command,0：save or:1：update
+			
+			if (command!=0&&command!=1) {
+				throw new IllegalArgumentException("参数错误：command不在范围内【0,1】");
+			}
+			
+			int user = jsonReq.getInt("user");
+
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			String rowkey=op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+			
+			JSONObject  data=new JSONObject();
+			
+			data.put("rowkey", rowkey);
+
+			return new ModelAndView("jsonView", success(data));
+
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	
+	
+	
+	/**
+	 * @Description:批量新增
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2016-11-15 上午9:50:32
+	 */
+	@RequestMapping(value = "/tip/pretreatmen/batchSave")
+	public ModelAndView batchSave(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			JSONArray jsonInfoArr=null; //jsonInfo为全量的tips信息，需要符合规格定义
+			if(jsonReq.containsKey("jsonInfoArr")){
+				
+				jsonInfoArr = jsonReq.getJSONArray("jsonInfoArr");
+				
+			}
+			if (jsonInfoArr==null||jsonInfoArr.size()==0) {
+				throw new IllegalArgumentException("参数错误：jsonInfoArr不能为空。");
+			}
+			
+			int user = jsonReq.getInt("user");
+
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.batchSave(jsonInfoArr,user); //新增多个tips
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	
+	
+	
+	/**
 	 * @Description:从request的token中获取userId
 	 * @param request
 	 * @return
@@ -320,6 +574,10 @@ public class PretreatmentTipsController extends BaseController {
 		int userId=(int)token.getUserId() ;
 		return userId;
 	}*/
+	
+	
+	
+	
 	
 	
 

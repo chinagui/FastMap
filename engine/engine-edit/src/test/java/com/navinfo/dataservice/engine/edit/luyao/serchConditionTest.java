@@ -11,6 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.search.specialMap.SpecialMapUtils;
 import com.navinfo.dataservice.engine.edit.InitApplication;
@@ -71,7 +73,7 @@ public class serchConditionTest extends InitApplication {
 
 		try {
 
-			String parameter = "{\"dbId\":17,\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":301003550,\"nodePid\":210002800,\"outLinkPid\":200003581,\"type\":\"RDLANECONNEXITY\"}}";
+			String parameter = "{\"dbId\":13,\"type\":\"RDLANEVIA\",\"data\":{\"inLinkPid\":407000013,\"nodePid\":420000011,\"outLinkPid\":520000007,\"type\":\"RDLANECONNEXITY\"}}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
@@ -377,16 +379,16 @@ public class serchConditionTest extends InitApplication {
 	public void getTitleWithGap1() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(84);
+			conn = DBConnector.getInstance().getConnectionById(13);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.RDINTER);
+			objType.add(ObjType.CMGBUILDING);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 863515,
-					397099, 20, 40));
+			System.out.println(p.searchDataByTileWithGap(objType, 863724,
+					397951, 20, 10));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -520,16 +522,16 @@ public class serchConditionTest extends InitApplication {
 	public void getTitleWithGap2() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(247);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.RDSPEEDLIMIT_DEPENDENT);
+			objType.add(ObjType.RDOBJECT);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 431368,
-					197410, 19, 80));
+			System.out.println(p.searchDataByTileWithGap(objType, 107932,
+					49627, 17, 10));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -555,6 +557,78 @@ public class serchConditionTest extends InitApplication {
 
 			System.out.println(p.searchDataBySpatial(objType, box));
 			
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void getTitleWithGap3() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(84);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDINTER);
+			
+			System.out.println(p.searchDataByTileWithGap(objType, 862301,
+					397168, 20, 40));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void getTitleWithGap4() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			List<ObjType> objType = new ArrayList<>();
+
+			objType.add(ObjType.RDOBJECT);
+
+			System.out.println(p.searchDataByTileWithGap(objType, 431721,
+					198496, 19, 40));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void testGetByPids() {
+		Connection conn;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			List<Integer> pidList = new ArrayList<>();
+			
+			pidList.add(238269);
+			
+			pidList.add(235801);
+			
+			JSONArray pids = new JSONArray();
+			
+			pids.add(238269);
+			
+			pids.add(235801);
+			
+			List<? extends IRow> objs = p.searchDataByPids(ObjType.RDNODE, pids);
+			
+			for(IRow obj : objs)
+			{
+				System.out.println(obj.Serialize(ObjLevel.FULL));
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -6,15 +6,17 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
-
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 
 public class RwLinkSearch extends AbstractSearch implements ISearch {
 
@@ -30,8 +32,13 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		RwLinkSelector selector = new RwLinkSelector(conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -137,9 +144,9 @@ public class RwLinkSearch extends AbstractSearch implements ISearch {
 
 				m.put("b", resultSet.getString("color"));
 
-				m.put("c", resultSet.getString("s_node_pid"));
+				m.put("c", resultSet.getInt("s_node_pid"));
 
-				m.put("d", resultSet.getString("e_node_pid"));
+				m.put("d", resultSet.getInt("e_node_pid"));
 
 				snapshot.setM(m);
 

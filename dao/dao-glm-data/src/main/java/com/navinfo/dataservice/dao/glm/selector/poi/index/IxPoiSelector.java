@@ -53,8 +53,13 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
+<<<<<<< HEAD
 	public JSONObject loadPids(boolean isLock, String pidName, int type,
 			String g, int pageSize, int pageNum) throws Exception {
+=======
+	public JSONObject loadPids(boolean isLock, String pidName,
+			int type, int subtaskId, int pageSize, int pageNum) throws Exception {
+>>>>>>> origin/master
 
 		JSONObject result = new JSONObject();
 
@@ -77,9 +82,14 @@ public class IxPoiSelector extends AbstractSelector {
 		// buffer.append(" AND ipn.name_class = 1");
 
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
+<<<<<<< HEAD
 		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
 				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
 
+=======
+		buffer.append(" AND (ps.QUICK_SUBTASK_ID="+subtaskId+" or ps.MEDIUM_SUBTASK_ID="+subtaskId+") ");
+		
+>>>>>>> origin/master
 		if (!pidName.isEmpty()) {
 			Pattern pattern = Pattern.compile("[0-9]*");
 			Matcher isNum = pattern.matcher(pidName);
@@ -443,12 +453,20 @@ public class IxPoiSelector extends AbstractSelector {
 			}
 		}
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
+<<<<<<< HEAD
 		if (poiEditStatus.containsKey("STATUS")) {
 			poi.setStatus(poiEditStatus.getInt("STATUS"));
 		}
 		if (poiEditStatus.containsKey("FRESH_VERIFIED")) {
 			poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
 		}
+=======
+		if(poiEditStatus.containsKey("STATUS")){
+		poi.setStatus(poiEditStatus.getInt("STATUS"));}
+		
+		poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
+		
+>>>>>>> origin/master
 		return poi;
 	}
 

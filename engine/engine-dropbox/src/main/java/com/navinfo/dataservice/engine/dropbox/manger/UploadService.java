@@ -177,6 +177,8 @@ public class UploadService {
 		int pid = 0;
 		int dbId = 0;
 		String fileType = "";
+		String userName = "";
+		String userId = "";
 		
 //		int pid = 1;
 //		int dbId = 43;	
@@ -195,6 +197,8 @@ public class UploadService {
 					pid = jsonParam.getInt("pid");
 					dbId = jsonParam.getInt("dbId");
 					fileType = jsonParam.getString("filetype");
+					userName = jsonParam.getString("userName");
+					userId = jsonParam.getString("userId");
 				}
 				
 			}else{
@@ -221,9 +225,52 @@ public class UploadService {
 			
 			data.put("PID", photoId);
 			return data;
-		};
+		}else if(fileType.equals("android_log")){//安卓端日志
+			//"dropbox.upload.path"
+			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);  //服务器部署路径
+			InputStream fileStream = uploadItem.getInputStream();
+			
+		}
+		
 		return null;
 
+	}
+	
+	public String uploadFile(String urlString, String fileName, InputStream fileStream) throws IOException{
+		URL url=new URL(urlString);
+	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
+	    connection.setDoInput(true);
+	    connection.setDoOutput(true);
+	    connection.setRequestMethod("POST");
+	    connection.addRequestProperty("FileName", fileName);
+	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
+	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
+	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());
+	    
+	    //读取文件上传到服务器
+//	    File file=new File(filePath+"/"+fileName);
+//	    FileInputStream fileInputStream=new FileInputStream(file);
+	    byte[]bytes=new byte[1024];
+	    
+	    int numReadByte=0;
+	    while((numReadByte=fileStream.read(bytes,0,1024))>0)
+	    {
+	        out.write(bytes, 0, numReadByte);
+	    }
+	
+	    out.flush();
+	    fileStream.close();
+	    //读取URLConnection的响应
+	    String result = "";
+	    BufferedReader in = new BufferedReader(new InputStreamReader(
+                connection.getInputStream()));
+        String line;
+        while ((line = in.readLine()) != null) {
+            result += line;
+        }
+	    
+	    return result;
 	}
 	
 	public String uploadFile(String urlString, String fileName, String filePath) throws IOException{
@@ -261,13 +308,21 @@ public class UploadService {
 	    
 	    return result;
 	}
-	
 	public static void main(String[] args) throws IOException {
-		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
-		String fileName = "infor.txt";
-		String filePath = "c:/infor.txt";
+		String url = "F:\\aaa";
+		String fileName = "poi.txt";
+		String filePath = "F:\\aaa\\poi04.txt";
 		System.out.println(UploadService.getInstance().uploadFile(url, fileName, filePath));
 		
 		System.exit(0);
 	}
+	/*public static void main(String[] args) throws IOException {
+//		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
+		String url = "f:";
+		String fileName = "poi003.txt";
+		String filePath = "f:/poi004.txt";
+		System.out.println(UploadService.getInstance().uploadFile(url, fileName, filePath));
+		
+		System.exit(0);
+	}*/
 }

@@ -8,6 +8,7 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
@@ -16,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLinkMesh;
 import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.engine.edit.utils.LcLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -70,7 +72,18 @@ public class Operation implements IOperation {
 
         // 既有线构成面
         if (command.getLinkPids() != null) {
-            this.createFaceByLcLink(command.getLinks(), null);
+            if (StringUtils.equals(command.getLinkType(), ObjType.LCLINK.toString())) {
+                this.createFaceByLcLink(command.getLinks(), null);
+            } else if (StringUtils.equals(command.getLinkType(), ObjType.RDLINK.toString())) {
+                // 根据RDLINK生成ADLINK
+                Map<Coordinate, Integer> maps = new HashMap<>();
+                List<IObj> rdLinks = new ArrayList<>();
+                for (IObj obj : command.getLinks()) {
+                    RdLink link = (RdLink) obj;
+                    rdLinks.add(this.createLinkOfFace(GeoTranslator.transform(link.getGeometry(), 0.00001, 5), maps));
+                }
+                this.createFaceByLcLink(rdLinks, null);
+            }
         }
 
         // 创建
@@ -88,8 +101,8 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     public void createFaceByLcLink(List<IObj> objList, LcFace face) throws Exception {
-        Set<String> meshes = new HashSet<String>();
-        List<LcLink> lcLinks = new ArrayList<LcLink>();
+        Set<String> meshes = new HashSet<>();
+        List<LcLink> lcLinks = new ArrayList<>();
         for (IObj obj : objList) {
             LcLink link = (LcLink) obj;
             lcLinks.add(link);
@@ -122,8 +135,8 @@ public class Operation implements IOperation {
     private void createFaceWithMesh(Set<String> meshes, Geometry geom, List<IObj> objList, int flag, LcFace face)
             throws Exception {
         Iterator<String> it = meshes.iterator();
-        Map<Coordinate, Integer> mapNode = new HashMap<Coordinate, Integer>();
-        Map<Geometry, LcLink> mapLink = new HashMap<Geometry, LcLink>();
+        Map<Coordinate, Integer> mapNode = new HashMap<>();
+        Map<Geometry, LcLink> mapLink = new HashMap<>();
         if (flag == 1) {
             for (IObj obj : objList) {
                 LcLink lcLink = (LcLink) obj;
@@ -147,7 +160,7 @@ public class Operation implements IOperation {
             Iterator<LineString[]> itLine = set.iterator();
             while (itLine.hasNext()) {
                 LineString[] lineStrings = itLine.next();
-                List<LcLink> links = new ArrayList<LcLink>();
+                List<LcLink> links = new ArrayList<>();
                 for (LineString lineString : lineStrings) {
                     LcLink lcLink = null;
                     if (MeshUtils.isMeshLine(lineString)) {
@@ -206,15 +219,14 @@ public class Operation implements IOperation {
         Geometry geom = GeoTranslator.geojson2Jts(command.getGeometry(), 1, 5);
         Coordinate sPoint = geom.getCoordinates()[0];
         // 获取几何形状跨越图幅号
-        Set<String> meshes = new HashSet<String>();
-        meshes = geoToMeshesWithoutBreak(geom);
+        Set<String> meshes = geoToMeshesWithoutBreak(geom);
         // 如果不跨图幅
         if (meshes.size() == 1) {
             // 生成起始node
             LcNode Node = NodeOperateUtils.createLcNode(sPoint.x, sPoint.y);
             result.insertObject(Node, ObjStatus.INSERT, Node.pid());
             this.createFace(null);
-            List<LcLink> links = new ArrayList<LcLink>();
+            List<LcLink> links = new ArrayList<>();
             LcLink lcLink = LcLinkOperateUtils.getAddLink(geom, Node.getPid(), Node.getPid(), result, null);
             links.add(lcLink);
             LcLinkKind kind = new LcLinkKind();
@@ -255,7 +267,7 @@ public class Operation implements IOperation {
      * 添加Link和FaceTopo关系
      */
     public void lcdLink(Map<LcLink, Integer> map) {
-        List<IRow> lcFaceTopos = new ArrayList<IRow>();
+        List<IRow> lcFaceTopos = new ArrayList<>();
         for (LcLink link : map.keySet()) {
             LcFaceTopo faceTopo = new LcFaceTopo();
             faceTopo.setLinkPid(link.getPid());
@@ -270,7 +282,7 @@ public class Operation implements IOperation {
      * 添加Link和FaceTopo关系
      */
     public void createFaceTop(Map<LcLink, Integer> map) {
-        List<IRow> lcFaceTopos = new ArrayList<IRow>();
+        List<IRow> lcFaceTopos = new ArrayList<>();
         for (LcLink link : map.keySet()) {
             LcFaceTopo faceTopo = new LcFaceTopo();
             faceTopo.setLinkPid(link.getPid());
@@ -300,12 +312,12 @@ public class Operation implements IOperation {
         // 获取当前LINK和NODE
         int startNodePid = currLink.getsNodePid();
         int currNodePid = startNodePid;
-        Map<LcLink, Integer> map = new HashMap<LcLink, Integer>();
+        Map<LcLink, Integer> map = new HashMap<>();
         map.put(currLink, 1);
         int index = 1;
-        List<Geometry> list = new ArrayList<Geometry>();
+        List<Geometry> list = new ArrayList<>();
         list.add(currLink.getGeometry());
-        Map<Integer, LcLink> currLinkAndPidMap = new HashMap<Integer, LcLink>();
+        Map<Integer, LcLink> currLinkAndPidMap = new HashMap<>();
         currLinkAndPidMap.put(currNodePid, currLink);
         // 获取下一条联通的LINK
         while (LcLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {
@@ -363,11 +375,11 @@ public class Operation implements IOperation {
         // 获取当前LINK和NODE
         int startNodePid = currLink.getsNodePid();
         int currNodePid = startNodePid;
-        Map<LcLink, Integer> map = new HashMap<LcLink, Integer>();
+        Map<LcLink, Integer> map = new HashMap<>();
         map.put(currLink, 1);
-        List<Geometry> list = new ArrayList<Geometry>();
+        List<Geometry> list = new ArrayList<>();
         list.add(currLink.getGeometry());
-        Map<Integer, LcLink> currLinkAndPidMap = new HashMap<Integer, LcLink>();
+        Map<Integer, LcLink> currLinkAndPidMap = new HashMap<>();
         currLinkAndPidMap.put(currNodePid, currLink);
         // 获取下一条联通的LINK
         while (LcLinkOperateUtils.getNextLink(links, currLinkAndPidMap)) {

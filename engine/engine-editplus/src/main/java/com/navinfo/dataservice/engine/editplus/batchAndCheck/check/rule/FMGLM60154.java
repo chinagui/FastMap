@@ -1,21 +1,12 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
-import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 /**
  * FM-GLM60154	POI中文名称检查	DHM	

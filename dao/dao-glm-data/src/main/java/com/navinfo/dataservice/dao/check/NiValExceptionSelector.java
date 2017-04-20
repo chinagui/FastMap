@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -17,9 +18,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1049,7 +1048,7 @@ public class NiValExceptionSelector {
 		
 		String taskName = params.getString("taskName");
 		//int flag = params.getInt("flag");
-		String nameIds = "";
+//		String nameIds = "";
 		
 		String sql_where_r = "";
 		String sql_where_e = "";
@@ -1091,7 +1090,7 @@ public class NiValExceptionSelector {
 		// **********************
 		// 获取子任务范围内的所有 rdName 的nameId
 		sql.append("q1 as ( ");
-		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* rd_name r where 1=1 ");
+		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
 		
 		sql.append(sql_where_r);
 		
@@ -1202,7 +1201,7 @@ public class NiValExceptionSelector {
 				@Override
 				public JSONArray handle(ResultSet rs) throws SQLException {
 					JSONArray jobRuleArr = new JSONArray();
-					if(rs.next()){
+					while (rs.next()){
 						JSONObject jobRuleObj = new JSONObject();
 						jobRuleObj.put("ruleId", rs.getString("ruleid"));
 //						jobRuleObj.put("count", rs.getString("numb"));
@@ -1212,6 +1211,146 @@ public class NiValExceptionSelector {
 				}
 				
 			});
+			return jobRuleObjs;
+		
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return jobRuleObjs;
+		}
+	}
+	
+	public JSONArray checkResultsStatis(String taskName ,List<String> groupList) {
+		JSONArray jobRuleObjs = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			String columSql = "";
+			String groupBy = "";
+			if(groupList.contains("rule")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",ruleid";
+				groupBy+="ruleid ";
+			}
+			if(groupList.contains("information")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",information";
+				groupBy+="information ";
+			}
+			if(groupList.contains("adminName")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",admin_id";
+				groupBy+="admin_id ";
+			}
+			if(groupList.contains("level")){
+				if(StringUtils.isNotEmpty(groupBy)){
+					groupBy+=" , ";
+				}
+				columSql += ",\"LEVEL\" level_";
+				groupBy+="\"LEVEL\" ";
+				
+			}
+			
+			String sql = "select count(1) numb "+columSql+"   from ni_val_exception   where task_name = '"+taskName+"' ";
+			String sql_adminId  = " with  q1 as ( ";
+				sql_adminId  += " select '[NAME_ID,'||r.name_id||']' targets,r.admin_id  from rd_name r where 1=1 ), ";
+				sql_adminId  += " q2 as ( "
+						+ " select NVL(d.ruleid,0) ruleid,\"LEVEL\" , NVL(to_char(d.addition_info),'') targets,NVL(d.information,'') information "
+						+ " from ni_val_exception d  where d.task_name = '"+taskName+"' "
+								+ "), ";
+				sql_adminId  += " q3 as ( select e.*,n.admin_id from q1 n, q2 e where   e.targets like '%'||n.targets||'%' ) ";
+				
+				sql_adminId  +="  select count(1) numb"+columSql+" from q3 q  ";
+			if(StringUtils.isNotEmpty(groupBy)){
+							
+				sql+= "group by(  ";
+				sql+= groupBy;
+				sql+= " ) ";
+				
+				sql_adminId+= "group by(  ";
+				sql_adminId+= groupBy;
+				sql_adminId+= " ) ";
+			}
+			System.out.println("sql : "+sql);
+			System.out.println("sql_adminId : "+sql_adminId);
+			if(groupList.contains("adminName")){
+				jobRuleObjs = run.query(conn, sql_adminId, new ResultSetHandler<JSONArray>(){
+					@Override
+					public JSONArray handle(ResultSet rs) throws SQLException {
+						JSONArray jobRuleArr = new JSONArray();
+						ResultSetMetaData rsmd = rs.getMetaData();
+						int columnCount = rsmd.getColumnCount();
+						System.out.println(columnCount);
+						List<String> columns = new ArrayList<String>();
+						for(int i=1;i<=columnCount;i++){
+						    System.out.println(rsmd.getColumnName(i));
+						    columns.add(rsmd.getColumnName(i));
+						}
+						while (rs.next()){
+							JSONObject jobRuleObj = new JSONObject();
+							jobRuleObj.put("count", rs.getInt("numb"));
+							
+							if(columns.contains("RULEID") ){
+								jobRuleObj.put("ruleid", rs.getString("RULEID"));
+							}
+							if(columns.contains("INFORMATION")){
+								jobRuleObj.put("information", rs.getString("information"));
+							}
+							if(columns.contains("ADMIN_ID")){
+								jobRuleObj.put("admin_id", rs.getInt("admin_id"));
+								
+							}
+							if(columns.contains("LEVEL_")){
+								jobRuleObj.put("level", rs.getInt("level_"));
+							}
+
+							jobRuleArr.add(jobRuleObj);
+						}
+						return jobRuleArr;
+					}
+					
+				});
+			}else{
+				jobRuleObjs = run.query(conn, sql, new ResultSetHandler<JSONArray>(){
+					@Override
+					public JSONArray handle(ResultSet rs) throws SQLException {
+						JSONArray jobRuleArr = new JSONArray();
+						ResultSetMetaData rsmd = rs.getMetaData();
+						int columnCount = rsmd.getColumnCount();
+						System.out.println(columnCount);
+						List<String> columns = new ArrayList<String>();
+						for(int i=1;i<=columnCount;i++){
+						    System.out.println(rsmd.getColumnName(i));
+						    columns.add(rsmd.getColumnName(i));
+						}
+						while (rs.next()){
+							JSONObject jobRuleObj = new JSONObject();
+							jobRuleObj.put("count", rs.getInt("numb"));
+							
+							if(columns.contains("RULEID") ){
+								jobRuleObj.put("ruleid", rs.getString("RULEID"));
+							}
+							if(columns.contains("INFORMATION")){
+								jobRuleObj.put("information", rs.getString("information"));
+							}
+							
+							if(columns.contains("LEVEL_")){
+								jobRuleObj.put("level", rs.getInt("level_"));
+							}
+
+							jobRuleArr.add(jobRuleObj);
+						}
+						return jobRuleArr;
+					}
+					
+				});
+			}
+				
+				
 			return jobRuleObjs;
 		
 		} catch (SQLException e) {

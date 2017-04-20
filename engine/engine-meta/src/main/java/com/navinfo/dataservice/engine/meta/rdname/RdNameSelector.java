@@ -277,9 +277,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			conn = DBConnector.getInstance().getMetaConnection();
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
-			log.info(scPointAdminArea);		
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
-			log.info(adminMap);	
+//			log.info(adminMap);	
 			JSONObject param =  params.getJSONObject("params");
 			String name = "" ;
 			if(param.containsKey("name") && param.getString("name") != null){
@@ -507,9 +506,9 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 		conn = DBConnector.getInstance().getMetaConnection();
 		
 		ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
-		log.info(scPointAdminArea);		
+		//log.info(scPointAdminArea);		
 		Map<String,String> adminMap = scPointAdminArea.getAdminMap();
-		log.info(adminMap);	
+		//log.info(adminMap);	
 		JSONObject param =  params.getJSONObject("params");
 		String name = "" ;
 		if(param.containsKey("name") && param.getString("name") != null 

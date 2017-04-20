@@ -237,6 +237,14 @@ public class TipsController extends BaseController {
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
+			
+			int subtaskId = 0;
+			
+			//外业，有可能没有任务号
+			if(json.containsKey("subtaskId")){
+				
+				subtaskId=json.getInt("subtaskId");
+			}
 
 			UploadService upload = UploadService.getInstance();
 
@@ -244,7 +252,7 @@ public class TipsController extends BaseController {
 			
 			logger.info("jobId"+jobId+"\tfilePath:"+filePath);
 			
-			TipsUpload tipsUploader = new TipsUpload();
+			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 			
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			
@@ -543,6 +551,8 @@ public class TipsController extends BaseController {
 
 			int dbId = jsonReq.getInt("dbId");
 			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
 			String mdFlag = jsonReq.getString("mdFlag");
 			
 			if (grids==null||grids.size()==0) {
@@ -566,7 +576,7 @@ public class TipsController extends BaseController {
 			
 
 			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
-					dbId,mdFlag);
+					dbId,mdFlag,subtaskId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -593,6 +603,8 @@ public class TipsController extends BaseController {
 
 			JSONArray stages = jsonReq.getJSONArray("stage");
 			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
@@ -603,7 +615,7 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			JSONObject data = selector.getStats(grids, stages);
+			JSONObject data = selector.getStats(grids, stages,subtaskId);
 
 			return new ModelAndView("jsonView", success(data));
 

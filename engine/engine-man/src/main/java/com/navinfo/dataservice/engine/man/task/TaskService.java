@@ -29,7 +29,6 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -52,6 +51,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
+import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.navicommons.database.Page;
@@ -345,7 +345,7 @@ public class TaskService {
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
 					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+df.format(new Date())+"_"+task.getGroupName());//任务名称+日期+_作业组
+					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -384,7 +384,7 @@ public class TaskService {
 						returnProgress=tips2Aumark(conn, phaseIdMap.get(2));
 						updateCmsProgressStatus(conn, phaseIdMap.get(2), returnProgress.getStatus(), returnProgress.getMessage());
 					}}
-				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集或日编任务";}
+				if(erNum==0){return "二代编辑任务发布失败，存在未关闭的采集任务";}
 				else{return "二代编辑任务发布进行中";}
 			}
 			return "任务发布成功" + total + "个，失败" + (taskIds.size()-total) + "个";
@@ -1304,21 +1304,17 @@ public class TaskService {
 //		}
 //	}	
 	
-	/*
+	/**
 	 * 查询task
 	 * 关闭task,相应修改block状态
-	 * 采集任务:
-	 * 		常规采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整二代编辑任务范围
-	 * 		快速更新采集任务关闭:调整任务范围;调整日编任务范围,调整区域子任务范围;调整项目范围;
-	 * 日编任务:
-	 * 		快速更新日编任务关闭:调整项目范围.
+	 * 快线采集任务关闭，需对poi，tips采集成果批中线任务号
 	 * 发送消息
 	 */
 	public String close(int taskId, long userId)throws Exception{
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();	
-			Task task = queryByTaskId(taskId);
+			Task task = queryByTaskId(conn,taskId);
 			//更新任务状态
 			log.info("更新"+taskId+"任务状态为关闭");
 			TaskOperation.updateStatus(conn, taskId, 0);
@@ -1440,12 +1436,15 @@ public class TaskService {
 			log.info(task.getTaskId()+"任务为快线采集任务，获取其poi与grid的对照关系");
 			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
 			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
-			Set<Integer> tipsGrids= getTipsGridByTaskId(task.getTaskId());
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			Set<Integer> tipsGrids=api.getTipsGridsBySqTaskId(task.getTaskId());
 			Set<Integer> allGrids=new HashSet<Integer>();
 			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，tips对应grid范围"+tipsGrids.toString());
 				allGrids.addAll(tipsGrids);
 			}
 			if(poiGridMap!=null&&poiGridMap.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，poi对应grid范围"+poiGridMap.toString());
 				allGrids.addAll(poiGridMap.values());
 			}
 			//判断grid所在项目，区县，返回grid所在中线采集任务id
@@ -1453,12 +1452,13 @@ public class TaskService {
 				log.info(task.getTaskId()+"任务为快线采集任务，poi，tips无数据");
 				return null;}
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
-			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids);
+			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
+			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
 			//任务号批数据
 			//tip批中线任务号
 			if(tipsGrids!=null&&tipsGrids.size()>0){
 				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
 			}
 			
 			//poi批中线任务号	
@@ -1490,7 +1490,7 @@ public class TaskService {
 	 */
 	private void batchPoiMidTask(Connection dailyConn,
 			Map<Long, Integer> poiTaskMap) throws SQLException {
-		String updateSql="update poi_edit_status set centre_task_id=? where pid=? and centre_task_id=0";
+		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
 		QueryRunner run=new QueryRunner();
 		Object[][] params=new Object[poiTaskMap.keySet().size()][2] ;
 		int i=0;
@@ -1504,7 +1504,7 @@ public class TaskService {
 		run.batch(dailyConn, updateSql, params);
 	}
 
-	private Map<Integer, Integer> getMidTaskIdByGrid(Connection conn,final Long userId,Set<Integer> gridSet) throws Exception{
+	private Map<Integer, Integer> getMidTaskIdByGrid(Connection conn,final Long userId,Set<Integer> gridSet,final Task quickTask) throws Exception{
 		if(gridSet==null||gridSet.size()==0){return null;}
 		List<Clob> values=new ArrayList<Clob>();
 		String gridString="";
@@ -1520,10 +1520,12 @@ public class TaskService {
 		}
 		String sql="SELECT G.GRID_ID,"
 				+ "       C.CITY_ID,"
+				+ "       C.CITY_NAME,"
 				+ "       C.REGION_ID,"
 				+ "       C.PLAN_STATUS CITY_STATUS,"
 				+ "       0             PROGRAM_ID,"
 				+ "       B.BLOCK_ID,"
+				+ "       B.BLOCK_NAME,"				
 				+ "       B.PLAN_STATUS BLOCK_STATUS,"
 				+ "       0             TASK_ID"
 				+ "  FROM GRID G, CITY C, BLOCK B"
@@ -1535,10 +1537,12 @@ public class TaskService {
 				+ " UNION ALL"
 				+ " SELECT G.GRID_ID,"
 				+ "       C.CITY_ID,"
+				+ "       C.CITY_NAME,"
 				+ "       C.REGION_ID,"
 				+ "       C.PLAN_STATUS CITY_STATUS,"
 				+ "       P.PROGRAM_ID,"
 				+ "       B.BLOCK_ID,"
+				+ "       B.BLOCK_NAME,"
 				+ "       B.PLAN_STATUS BLOCK_STATUS,"
 				+ "       0             TASK_ID"
 				+ "  FROM GRID G, CITY C, BLOCK B, PROGRAM P"
@@ -1552,10 +1556,12 @@ public class TaskService {
 				+ " UNION ALL"
 				+ " SELECT G.GRID_ID,"
 				+ "       C.CITY_ID,"
+				+ "       C.CITY_NAME,"
 				+ "       C.REGION_ID,"
 				+ "       C.PLAN_STATUS CITY_STATUS,"
 				+ "       0             PROGRAM_ID,"
 				+ "       B.BLOCK_ID,"
+				+ "       B.BLOCK_NAME,"
 				+ "       B.PLAN_STATUS BLOCK_STATUS,"
 				+ "       T.TASK_ID"
 				+ "  FROM GRID G, CITY C, BLOCK B, TASK T"
@@ -1574,6 +1580,7 @@ public class TaskService {
 					throws SQLException {
 				Map<Integer, Integer> gridMap=new HashMap<Integer, Integer>();
 				Map<Integer, Integer> blockMap=new HashMap<Integer, Integer>();
+				String time = new SimpleDateFormat("yyyyMMdd").format(new Date());
 				Connection conn=null;
 				try{
 					conn = DBConnector.getInstance().getManConnection();
@@ -1594,11 +1601,31 @@ public class TaskService {
 							int programId=rs.getInt("PROGRAM_ID");
 							if(cityStatus==0||cityStatus==2){//需创建项目
 								log.info(gridId+"无对应中线项目，新建项目");
+								JSONObject condition=new JSONObject();
+								JSONArray programIds=new JSONArray();
+								programIds.add(quickTask.getProgramId());
+								condition.put("programIds",programIds);
+								List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
+								Program quickProgram = programList.get(0);
 								Program program=new Program();
+								program.setName(rs.getString("CITY_NAME")+"_"+time);
 								program.setCityId(rs.getInt("CITY_ID"));
 								program.setType(1);
-								program.setCreateUserId(Integer.valueOf(userId.toString()));
+								program.setDescp("快线项目："+quickProgram.getName()+"转中线");
+								program.setCollectPlanStartDate(quickProgram.getCollectPlanStartDate());
+								program.setCollectPlanEndDate(quickProgram.getCollectPlanEndDate());
+								program.setMonthEditPlanStartDate(TimestampUtils.addDays(quickProgram.getProducePlanEndDate(),1));
+								program.setMonthEditPlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanStartDate(),1));
+								program.setProducePlanStartDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),1));
+								program.setProducePlanEndDate(TimestampUtils.addDays(program.getProducePlanEndDate(),10));
+								program.setPlanStartDate(quickProgram.getCollectPlanStartDate());
+								program.setPlanEndDate(program.getProducePlanEndDate());
+								program.setCreateUserId(0);
 								programId=ProgramService.getInstance().create(conn,program);
+								JSONArray openProgramIds=new JSONArray();
+								openProgramIds.add(programId);
+								condition.put("programIds",programIds);
+								ProgramService.getInstance().openStatus(conn, openProgramIds);
 								log.info(gridId+"无对应中线项目，新建项目："+programId);
 							}
 							//创建block项目
@@ -1624,12 +1651,16 @@ public class TaskService {
 							collectTask.setRegionId(regionId);
 							collectTask.setBlockId(blockId);
 							collectTask.setGridIds(gridIds);
-							collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
+							collectTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+							collectTask.setDescp(myProgram.getDescp());
+							collectTask.setCreateUserId(0);
 							collectTask.setType(0);
+							collectTask.setGroupId(quickTask.getGroupId());
+							collectTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+							collectTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
 							if(myProgram!=null){
 								collectTask.setPlanStartDate(myProgram.getCollectPlanStartDate());
 								collectTask.setPlanEndDate(myProgram.getCollectPlanEndDate());
-								collectTask.setName(myProgram.getName() + regionId);
 							}
 							int collectTaskId=createWithBean(conn, collectTask);
 							TaskOperation.updateStatus(conn, collectTaskId, 0);
@@ -1642,12 +1673,15 @@ public class TaskService {
 							monthTask.setRegionId(regionId);
 							monthTask.setBlockId(blockId);
 							monthTask.setGridIds(gridIds);
-							monthTask.setCreateUserId(Integer.valueOf(userId.toString()));
+							monthTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+							monthTask.setDescp(myProgram.getDescp());
+							monthTask.setCreateUserId(0);
 							monthTask.setType(2);
+							monthTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+							monthTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
 							if(myProgram!=null){
 								monthTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
 								monthTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
-								monthTask.setName(myProgram.getName() + regionId);
 							}
 							createWithBean(conn, monthTask);
 							
@@ -1656,12 +1690,15 @@ public class TaskService {
 							cmsTask.setRegionId(regionId);
 							cmsTask.setBlockId(blockId);
 							cmsTask.setGridIds(gridIds);
-							cmsTask.setCreateUserId(Integer.valueOf(userId.toString()));
+							cmsTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
+							cmsTask.setDescp(myProgram.getDescp());
+							cmsTask.setCreateUserId(0);
 							cmsTask.setType(3);
+							cmsTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
+							cmsTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
 							if(myProgram!=null){
-								cmsTask.setPlanStartDate(myProgram.getPlanStartDate());
-								cmsTask.setPlanEndDate(myProgram.getPlanEndDate());
-								cmsTask.setName(myProgram.getName() + regionId);
+								cmsTask.setPlanStartDate(myProgram.getMonthEditPlanEndDate());
+								cmsTask.setPlanEndDate(myProgram.getMonthEditPlanEndDate());
 							}
 							createWithBean(conn, cmsTask);
 							log.info(gridId+"无对应中线block任务，新建任务：end");
@@ -1678,9 +1715,6 @@ public class TaskService {
 			}
 			
 		});
-	}
-	private Set<Integer> getTipsGridByTaskId(int collectTaskId){
-		return null;
 	}
 	/**
 	 * 查询采集任务taskId对应的poi及grid的map
@@ -1721,7 +1755,7 @@ public class TaskService {
 			throw e;
 		}
 	}
-
+	
 	/*
 	 * 返回task详细信息
 	 * 包含block,program,几何信息
@@ -1730,6 +1764,22 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return queryByTaskId(conn,taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/*
+	 * 返回task详细信息
+	 * 包含block,program,几何信息
+	 */
+	public Task queryByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
 			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.DESCP,T.TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,");
@@ -1801,8 +1851,6 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -2229,8 +2277,8 @@ public class TaskService {
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
 			par.put("phaseId",phaseId);
-//			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
-			par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
+			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
+			//par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
 			taskPar.put("manager_id", cmsInfo.get("collectId"));

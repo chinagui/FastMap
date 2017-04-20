@@ -17,6 +17,7 @@ import com.navinfo.dataservice.engine.meta.service.ScBranchCommcService;
 import com.navinfo.dataservice.engine.meta.service.ScBranchSpeccService;
 import com.navinfo.dataservice.engine.meta.service.ScModelMatchGService;
 import com.navinfo.dataservice.engine.meta.service.ScModelRepdelGService;
+import com.navinfo.dataservice.engine.meta.service.ScRoadnameHwInfoService;
 import com.navinfo.dataservice.engine.meta.service.ScVectorMatchService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -211,7 +212,7 @@ public class RdNameAndPatternImageTest {
 				}
 	}
 	
-	@Test
+//	@Test
 	public void getImageTest() throws ServiceException{
 		
 		String parameter = "{'tableName':'scMdelMatchG','id':'201400000165'}";
@@ -247,5 +248,114 @@ public class RdNameAndPatternImageTest {
         	
         }
 		
+	}
+	
+	
+//	@Test
+	public void deleteTestRdname(){
+			String parameter = "{'tableName':'scRoadnameHwInfo','ids':[0]}";
+		
+		try{			
+			JSONObject parameterJson = JSONObject.fromObject(parameter);			
+			if(parameterJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			JSONArray idsJson = parameterJson.getJSONArray("ids");
+			if(idsJson==null || idsJson.size() <= 0 ){
+				throw new IllegalArgumentException("ids参数不能为空。");
+			}
+			if(tableName.equals("scRoadnameHwInfo")){
+				ScRoadnameHwInfoService scRoadnameHwInfoService=new ScRoadnameHwInfoService();
+				scRoadnameHwInfoService.deleteByIds(idsJson);
+			}
+			/*else if(tableName.equals("scRoadnameInfix")){
+				scRoadnameInfixService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameFixedPhrase")){
+				scRoadnameFixedPhraseService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameTypename")){
+				scRoadnameTypenameService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnamePosition")){
+				scRoadnamePositionService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameSuffix")){
+				scRoadnameSuffixService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameSplitPrefix")){
+				scRoadnameSplitPrefixService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameEngnmQj")){
+				scRoadnameEngnmQjService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameHwCode")){
+				scRoadnameHwCodeService.deleteByIds(idsJson);
+			}else if(tableName.equals("scRoadnameAbb")){
+				scRoadnameAbbService.deleteByIds(idsJson);
+			}*/else{
+				throw new IllegalArgumentException("不识别的表: "+tableName);
+			}
+		}catch(Exception e){
+			throw new IllegalArgumentException("删除失败 "+e.getMessage());
+		}
+	}
+	
+	@Test
+	public void searchTestRdname(){
+				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':'','uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
+				
+				try{	
+					if (StringUtils.isEmpty(parameter)){
+						throw new IllegalArgumentException("parameter参数不能为空。");
+					}		
+					JSONObject parameterJson = JSONObject.fromObject(parameter);			
+					if(parameterJson==null){
+						throw new IllegalArgumentException("parameter参数不能为空。");
+					}
+					String tableName  = parameterJson.getString("tableName");
+					if(tableName==null || StringUtils.isEmpty(tableName)){
+						throw new IllegalArgumentException("tableName参数不能为空。");
+					}
+					JSONObject dataJson = parameterJson.getJSONObject("data");
+					if(dataJson==null || dataJson.isEmpty()){
+						throw new IllegalArgumentException("data参数不能为空。");
+					}
+					int curPageNum= 1;//默认为第一页
+					int pageSize = 20;
+					String sortby = "";//排序
+					if(parameterJson.containsKey("pageNum") &&  parameterJson.getInt("pageNum") > 0){
+						curPageNum = parameterJson.getInt("pageNum");
+					}
+					if(parameterJson.containsKey("pageSize") &&  parameterJson.getInt("pageSize") > 0){
+						pageSize = parameterJson.getInt("pageSize");
+					}
+
+					if(parameterJson.containsKey("sortby") &&  parameterJson.getString("sortby") != null){
+						sortby = parameterJson.getString("sortby");
+					}
+					Page data = new Page();
+					if(tableName.equals("scRoadnameHwInfo")){
+						ScRoadnameHwInfoService scRoadnameHwInfoService=new ScRoadnameHwInfoService();
+						data = scRoadnameHwInfoService.list(dataJson, curPageNum, pageSize, sortby);
+					}/*else if(tableName.equals("scModelRepdelG")){
+						ScModelRepdelGService scModelRepdelGService =new ScModelRepdelGService();
+						data = scModelRepdelGService.list(dataJson,curPageNum,pageSize,sortby);
+					}else if(tableName.equals("scVectorMatch")){
+						ScVectorMatchService scVectorMatchService =new ScVectorMatchService();
+						data = scVectorMatchService.list(dataJson,curPageNum,pageSize,sortby);
+					}else if(tableName.equals("scBranchCommc")){
+						ScBranchCommcService scBranchCommcService =new ScBranchCommcService();
+						data = scBranchCommcService.list(dataJson,curPageNum,pageSize,sortby);
+					}else if(tableName.equals("scBranchSpecc")){
+						ScBranchSpeccService scBranchSpeccService =new ScBranchSpeccService();
+						data = scBranchSpeccService.list(dataJson,curPageNum,pageSize,sortby);
+					}else if(tableName.equals("scBcrossnodeMatchck")){
+						ScBcrossnodeMatchckService scBcrossnodeMatchckService =new ScBcrossnodeMatchckService();
+						data = scBcrossnodeMatchckService.list(dataJson,curPageNum,pageSize,sortby);
+					}*/else{
+						throw new IllegalArgumentException("不识别的表: "+tableName);
+					}
+				System.out.println(data.getResult());
+				}catch(Exception e){
+					throw new IllegalArgumentException("查询失败  "+e.getMessage());
+				}
 	}
 }

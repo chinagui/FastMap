@@ -503,6 +503,38 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	
+	/**
+	 * @Title: checkMetadataEditRun
+	 * @Description: 元数据编辑平台检查
+	 * @param  type	是	检查类型 ( 5道路名子版本; 7 道路名全表检查 ;)
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月20日 下午3:19:19 
+	 */
+	@RequestMapping(value = "/check/metadataEdit/run")
+	public ModelAndView checkMetadataEditRun(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int checkType=jsonReq.getInt("checkType");			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			long jobId=CheckService.getInstance().metaCheckRun(userId, checkType, jsonReq);				
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
 	/**
 	 * 执行检查引擎 前检查
 	 * 应用场景：测试
@@ -710,6 +742,85 @@ public class CheckController extends BaseController {
 			int type = jsonReq.getInt("type");
 			
 			JSONArray result = CheckService.getInstance().getCkRules(pageSize, pageNum, type);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @Title: getCkSuites
+	 * @Description: 获取某一类检查中所有的suiteId
+	 * @param request   type	是	类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月19日 下午1:57:35 
+	 */
+	@RequestMapping(value = "/check/getCkSuites")
+	public ModelAndView getCkSuites(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn =null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int type = jsonReq.getInt("type");
+			logger.info("type:"+type);
+			JSONArray result = CheckService.getInstance().getCkSuites(type);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @Title: getCkRulesBySuiteId
+	 * @Description: 根据一个 suiteId获取此suite下所有检查检查项
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月19日 下午1:58:06 
+	 */
+	@RequestMapping(value = "/check/getCkRulesBySuiteId")
+	public ModelAndView getCkRulesBySuiteId(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn =null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			String suiteId = jsonReq.getString("suiteId");
+			JSONArray result  = new JSONArray();
+			if(suiteId != null && StringUtils.isNotEmpty(suiteId) && !suiteId.equals("null")){
+				logger.info("suiteId : "+suiteId);
+				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+			}
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {

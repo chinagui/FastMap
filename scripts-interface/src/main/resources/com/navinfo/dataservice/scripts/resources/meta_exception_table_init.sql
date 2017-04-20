@@ -2,45 +2,40 @@
 /* Table: CK_EXCEPTION                                          */
 /*==============================================================*/
 create table CK_EXCEPTION  (
-   EXCEPTION_ID         NUMBER(10)                      not null,
-   RULE_ID              VARCHAR2(100),
-   TASK_NAME            VARCHAR2(50),
-   STATUS               NUMBER(2)                      default 0 not null
-       check (STATUS in (0,1,2,3)),
-   GROUP_ID             NUMBER(10)                     default 0 not null,
-   RANK                 NUMBER(10)                     default 0 not null,
-   SITUATION            VARCHAR2(4000),
-   INFORMATION          VARCHAR2(4000),
-   SUGGESTION           VARCHAR2(4000),
-   GEOMETRY             VARCHAR2(4000),
-   TARGETS              CLOB,
-   ADDITION_INFO        CLOB,
-   MEMO                 VARCHAR2(500),
-   CREATE_DATE          DATE,
-   UPDATE_DATE          DATE,
-   MESH_ID              NUMBER(8)                       not null,
-   SCOPE_FLAG           NUMBER(2)                      default 1 not null
-       check (SCOPE_FLAG in (1,2,3)),
-   PROVINCE_NAME        VARCHAR2(60),
-   MAP_SCALE            NUMBER(2)                      default 0 not null
-       check (MAP_SCALE in (0,1,2,3)),
-   RESERVED             VARCHAR2(1000),
-   EXTENDED             VARCHAR2(1000),
-   TASK_ID              VARCHAR2(500),
-   QA_TASK_ID           VARCHAR2(500),
-   QA_STATUS            NUMBER(2)                      default 2 not null
-       check (QA_STATUS in (1,2)),
-   WORKER               VARCHAR2(500),
-   QA_WORKER            VARCHAR2(500),
-   MEMO_1               VARCHAR2(500),
-   MEMO_2               VARCHAR2(500),
-   MEMO_3               VARCHAR2(500),
-   MD5_CODE             VARCHAR2(32),
-   U_RECORD             NUMBER(2)                      default 0 not null
-       check (U_RECORD in (0,1,2,3)),
-   U_FIELDS             VARCHAR2(1000),
-   U_DATE               VARCHAR2(14),
-   ROW_ID               RAW(16),
+  exception_id  NUMBER(10) not null,
+  rule_id       VARCHAR2(100),
+  task_name     VARCHAR2(50),
+  status        NUMBER(2) default 0 not null,
+  group_id      NUMBER(10) default 0 not null,
+  rank          NUMBER(10) default 0 not null,
+  situation     VARCHAR2(4000),
+  information   VARCHAR2(4000),
+  suggestion    VARCHAR2(4000),
+  geometry      VARCHAR2(4000),
+  targets       CLOB,
+  addition_info CLOB,
+  memo          VARCHAR2(500),
+  create_date   DATE,
+  update_date   DATE,
+  mesh_id       NUMBER(8) default 0 not null,
+  scope_flag    NUMBER(2) default 1 not null,
+  province_name VARCHAR2(60),
+  map_scale     NUMBER(2) default 0 not null,
+  reserved      VARCHAR2(1000),
+  extended      VARCHAR2(1000),
+  task_id       VARCHAR2(500),
+  qa_task_id    VARCHAR2(500),
+  qa_status     NUMBER(2) default 2 not null,
+  worker        VARCHAR2(500),
+  qa_worker     VARCHAR2(500),
+  memo_1        VARCHAR2(500),
+  memo_2        VARCHAR2(500),
+  memo_3        VARCHAR2(500),
+  md5_code      VARCHAR2(32),
+  u_record      NUMBER(2) default 0 not null,
+  u_fields      VARCHAR2(1000),
+  u_date        VARCHAR2(14),
+  row_id        RAW(16),
    constraint PK_CK_EXCEPTION primary key (EXCEPTION_ID)
 );
 
@@ -79,39 +74,53 @@ comment on column CK_EXCEPTION.U_FIELDS is
 /*==============================================================*/
 /* Table: NI_VAL_EXCEPTION                                      */
 /*==============================================================*/
-create table NI_VAL_EXCEPTION  (
-   VAL_EXCEPTION_ID     NUMBER(10)                     default 0 not null,
-   RULEID               VARCHAR2(100),
-   TASK_NAME            VARCHAR2(50),
-   GROUPID              NUMBER(10)                     default 0 not null,
-   "LEVEL"              NUMBER(10)                     default 0 not null,
-   SITUATION            VARCHAR2(4000),
-   INFORMATION          VARCHAR2(4000),
-   SUGGESTION           VARCHAR2(4000),
-   LOCATION             SDO_GEOMETRY,
-   TARGETS              CLOB,
-   ADDITION_INFO        CLOB,
-   DEL_FLAG             NUMBER(1)                      default 0 not null
-       check (DEL_FLAG in (0,1)),
-   CREATED              DATE,
-   UPDATED              DATE,
-   MESH_ID              NUMBER(8),
-   SCOPE_FLAG           NUMBER(2)                      default 1 not null
-       check (SCOPE_FLAG in (1,2,3)),
-   PROVINCE_NAME        VARCHAR2(60),
-   MAP_SCALE            NUMBER(2)                      default 0 not null
-       check (MAP_SCALE in (0,1,2,3)),
-   RESERVED             VARCHAR2(1000),
-   EXTENDED             VARCHAR2(1000),
-   TASK_ID              VARCHAR2(500),
-   QA_TASK_ID           VARCHAR2(500),
-   QA_STATUS            NUMBER(2)                      default 2 not null
-       check (QA_STATUS in (1,2)),
-   WORKER               VARCHAR2(500),
-   QA_WORKER            VARCHAR2(500),
-   LOG_TYPE             NUMBER(5)                      default 0 not null,
-   MD5_CODE             VARCHAR2(32)
+-- Create table
+create table NI_VAL_EXCEPTION
+(
+  val_exception_id NUMBER(10) not null,
+  ruleid           VARCHAR2(100) default '0',
+  task_name        VARCHAR2(50),
+  groupid          NUMBER(10) default 0 not null,
+  "LEVEL"            NUMBER(10) default 0,
+  situation        VARCHAR2(4000),
+  information      VARCHAR2(4000),
+  suggestion       VARCHAR2(4000),
+  location         SDO_GEOMETRY,
+  targets          CLOB,
+  addition_info    CLOB,
+  del_flag         NUMBER(1) default 0 not null,
+  created          DATE,
+  updated          DATE,
+  mesh_id          NUMBER(6),
+  scope_flag       NUMBER(2) default 1 not null,
+  province_name    VARCHAR2(60),
+  map_scale        NUMBER(2) default 0 not null,
+  reserved         VARCHAR2(1000),
+  extended         VARCHAR2(1000),
+  task_id          VARCHAR2(500),
+  qa_task_id       VARCHAR2(500),
+  qa_status        NUMBER(2) default 2 not null,
+  worker           VARCHAR2(500),
+  qa_worker        VARCHAR2(500),
+  log_type         NUMBER(5) default 0 not null,
+  md5_code         VARCHAR2(32),
+  u_record         NUMBER(2) default 0,
+  u_fields         VARCHAR2(1000),
+  u_date           VARCHAR2(14),
+  row_id           RAW(16)
 );
+
+alter table NI_VAL_EXCEPTION
+  add constraint CKC_RECORD_EXCEPTION
+  check (U_RECORD in ('1','2','3','0'));
+alter table NI_VAL_EXCEPTION
+  add check (DEL_FLAG in (0,1));
+alter table NI_VAL_EXCEPTION
+  add check (SCOPE_FLAG in (1,2,3));
+alter table NI_VAL_EXCEPTION
+  add check (MAP_SCALE in (0,1,2,3));
+alter table NI_VAL_EXCEPTION
+  add check (QA_STATUS in (1,2));
 
 comment on column NI_VAL_EXCEPTION.RULEID is
 '参考"CK_RULE"';
@@ -122,79 +131,8 @@ comment on column NI_VAL_EXCEPTION.CREATED is
 comment on column NI_VAL_EXCEPTION.UPDATED is
 '格式"YYYY/MM/DD HH:mm:ss"';
 
-/* ck */
-
-CREATE TABLE CK_EXCEPTION_GRID(
-  CK_ROW_ID RAW(16) NOT NULL,
-  GRID_ID NUMBER(10) NOT NULL
-);
-CREATE INDEX IX_CK_EXCEP_GRID_01 ON CK_EXCEPTION_GRID(CK_ROW_ID);
 
 CREATE UNIQUE INDEX IX_NI_VAL_MD5 ON NI_VAL_EXCEPTION(MD5_CODE);
-create table CK_RESULT_OBJECT (
-  MD5_CODE VARCHAR2(32) not null,
-  TABLE_NAME VARCHAR2(32) not null,
-  PID NUMBER(10) default 0 not null
-);
-CREATE INDEX IX_CK_RESULT_OBJ_MD5 ON CK_RESULT_OBJECT(MD5_CODE);
-create index IX_CK_RESULT_OBJECT_01 on CK_RESULT_OBJECT (PID);
 
-CREATE TABLE NI_VAL_EXCEPTION_GRID(
-  MD5_CODE VARCHAR2(32) NOT NULL,
-  GRID_ID NUMBER(10) NOT NULL
-);
-CREATE INDEX IX_NI_VAL_GRID_01 ON NI_VAL_EXCEPTION_GRID(MD5_CODE);
-
-/*==============================================================*/
-/* Table: NI_VAL_EXCEPTION_HISTORY                                      */
-/*==============================================================*/
-create table NI_VAL_EXCEPTION_HISTORY  (
-   VAL_EXCEPTION_ID     NUMBER(10)                     default 0 not null,
-   RULEID               VARCHAR2(100),
-   TASK_NAME            VARCHAR2(50),
-   GROUPID              NUMBER(10)                     default 0 not null,
-   "LEVEL"              NUMBER(10)                     default 0 not null,
-   SITUATION            VARCHAR2(4000),
-   INFORMATION          VARCHAR2(4000),
-   SUGGESTION           VARCHAR2(4000),
-   LOCATION             SDO_GEOMETRY,
-   TARGETS              CLOB,
-   ADDITION_INFO        CLOB,
-   DEL_FLAG             NUMBER(1)                      default 0 not null
-       check (DEL_FLAG in (0,1)),
-   CREATED              DATE,
-   UPDATED              DATE,
-   MESH_ID              NUMBER(8),
-   SCOPE_FLAG           NUMBER(2)                      default 1 not null
-       check (SCOPE_FLAG in (1,2,3)),
-   PROVINCE_NAME        VARCHAR2(60),
-   MAP_SCALE            NUMBER(2)                      default 0 not null
-       check (MAP_SCALE in (0,1,2,3)),
-   RESERVED             VARCHAR2(1000),
-   EXTENDED             VARCHAR2(1000),
-   TASK_ID              VARCHAR2(500),
-   QA_TASK_ID           VARCHAR2(500),
-   QA_STATUS            NUMBER(2)                      default 2 not null
-       check (QA_STATUS in (1,2)),
-   WORKER               VARCHAR2(500),
-   QA_WORKER            VARCHAR2(500),
-   LOG_TYPE             NUMBER(5)                      default 0 not null,
-   MD5_CODE             VARCHAR2(32)
-);
-
-comment on column NI_VAL_EXCEPTION_HISTORY.RULEID is
-'参考"CK_RULE"';
-
-comment on column NI_VAL_EXCEPTION_HISTORY.CREATED is
-'格式"YYYY/MM/DD HH:mm:ss"';
-
-comment on column NI_VAL_EXCEPTION_HISTORY.UPDATED is
-'格式"YYYY/MM/DD HH:mm:ss"';
-CREATE UNIQUE INDEX IX_NIVAL_HIS_MD5 ON NI_VAL_EXCEPTION_HISTORY(MD5_CODE);
-CREATE TABLE NI_VAL_EXCEPTION_HISTORY_GRID(
-  MD5_CODE VARCHAR2(32) NOT NULL,
-  GRID_ID NUMBER(10) NOT NULL
-);
-CREATE INDEX IX_NI_VAL_HIS_GRID_01 ON NI_VAL_EXCEPTION_HISTORY_GRID(MD5_CODE);
 
 commit;

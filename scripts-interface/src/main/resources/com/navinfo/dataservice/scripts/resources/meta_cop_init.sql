@@ -60,36 +60,8 @@ alter table RD_NAME
   add constraint CKC_SRC_FLAG_RD_NAME
   check (SRC_FLAG is null or (SRC_FLAG in (0,1,2,3)));
   
-  
---SC_ROADNAME_SUFFIX
--- Create table
-create table SC_ROADNAME_SUFFIX
-(
-  id          NUMBER(10) not null,
-  name        VARCHAR2(10) not null,
-  py          VARCHAR2(10) not null,
-  englishname VARCHAR2(10) not null,
-  region_flag NUMBER(1),
-  lang_code   VARCHAR2(3) not null
-);
--- Create/Recreate primary, unique and foreign key constraints 
-alter table SC_ROADNAME_SUFFIX
-  add constraint PK_SC_ROADNAME_SUFFIX primary key (NAME, LANG_CODE)
-  using index 
-  tablespace GDB_DATA
-  pctfree 10
-  initrans 2
-  maxtrans 255
-  storage
-  (
-    initial 80K
-    next 1M
-    minextents 1
-    maxextents unlimited
-  );
  
 --SC_ROADNAME_SUFFIX
--- Create table
 create table SC_ROADNAME_SUFFIX
 (
   id          NUMBER(10) not null,
@@ -103,33 +75,6 @@ create table SC_ROADNAME_SUFFIX
 -- Create/Recreate primary, unique and foreign key constraints 
 alter table SC_ROADNAME_SUFFIX
   add constraint PK_SC_ROADNAME_SUFFIX primary key (NAME, LANG_CODE)
-  using index 
-  tablespace GDB_DATA
-  pctfree 10
-  initrans 2
-  maxtrans 255
-  storage
-  (
-    initial 80K
-    next 1M
-    minextents 1
-    maxextents unlimited
-  );
-
---
--- Create table
-create table SC_ROADNAME_INFIX
-(
-  id          NUMBER(10) not null,
-  name        VARCHAR2(50) not null,
-  py          VARCHAR2(50) not null,
-  englishname VARCHAR2(50) not null,
-  region_flag NUMBER(1),
-  lang_code   VARCHAR2(3) not null
-);
--- Create/Recreate primary, unique and foreign key constraints 
-alter table SC_ROADNAME_INFIX
-  add constraint PK_SC_ROADNAME_INFIX primary key (NAME, LANG_CODE)
   using index 
   tablespace GDB_DATA
   pctfree 10
@@ -505,5 +450,30 @@ alter table TY_CHARACTER_FJT_HM_CHECK
 alter table TY_CHARACTER_FJT_HM_CHECK
   add constraint CKC_TYPE_TY_CHARA
   check (TYPE in (1,2));
+-----------------------------------------
 
+ -- Create table
+create table M_PARAMETER
+(
+  name        VARCHAR2(32) not null,
+  parameter   VARCHAR2(32) not null,
+  description VARCHAR2(200) not null
+);
+
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table M_PARAMETER
+  add constraint PK_M_PARAMETER primary key (NAME)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  ); 
+ 
  commit;

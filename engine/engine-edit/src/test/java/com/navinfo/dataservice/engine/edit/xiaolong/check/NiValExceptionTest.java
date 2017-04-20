@@ -151,7 +151,7 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
-	@Test
+	//@Test
 	public void testAddCheckRunMetaRdName() throws Exception {
 		Connection conn = null;
 		try {
@@ -171,6 +171,36 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
+//	@Test
+	public void testgetsuites() throws Exception {
+		try {
+			String parameter = "{'type':5}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int type=jsonReq.getInt("type");	
+			
+			JSONArray suites=CheckService.getInstance().getCkSuites(type);
+			System.out.println("suites: "+suites);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+	}
+	@Test
+	public void testgetrules() throws Exception {
+		try {
+			String parameter = "{'suiteId':'suite7'}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String suiteId=jsonReq.getString("suiteId");	
+			
+			JSONArray rules=CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+			System.out.println("rules: "+rules);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+	}
 	public static void main(String[] args) {
 		JSONObject jobj = new JSONObject();
 		jobj.put("ruleid", "1");

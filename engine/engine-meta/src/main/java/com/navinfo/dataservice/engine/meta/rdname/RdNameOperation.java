@@ -233,6 +233,7 @@ public RdName saveName(RdName rdName) throws Exception {
 				if ("CHI".equals(rdName.getLangCode()) ||"CHT".equals(rdName.getLangCode() )  ) {
 					// 中文名
 //					rdName.setCity(true);
+//					System.out.println("新增");
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
@@ -241,6 +242,7 @@ public RdName saveName(RdName rdName) throws Exception {
 				}
 			} else {
 				// 修改
+//				System.out.println("修改");
 				rdName = updateName(rdName);
 			}
 			
@@ -321,7 +323,7 @@ public RdName saveName(RdName rdName) throws Exception {
 		sb.append("ROAD_TYPE = ?,");
 		sb.append("ADMIN_ID = ?,");
 		sb.append("CODE_TYPE = ?,");
-		if(rdName.getRoadType().equals(1)){//高速公路,生成语音
+		if(rdName.getRoadType().equals(1) && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))){//高速公路,生成语音
 			sb.append("VOICE_FILE = (select py_utils_word.convert_rd_name_voice(?,null,null,null) voicefile  from dual ),");
 		}else{
 			sb.append("VOICE_FILE = ?,");
@@ -366,7 +368,7 @@ public RdName saveName(RdName rdName) throws Exception {
 			pstmt.setInt(17, rdName.getCodeType());
 			
 			//********ZL 2017.3.10*********
-			if(rdName.getRoadType().equals(1) ){//如果是高速类型自动生成名称语音
+			if(rdName.getRoadType().equals(1) && StringUtils.isNullOrEmpty(rdName.getVoiceFile())){//如果是高速类型自动生成名称语音
 				pstmt.setString(18, rdName.getName());
 			} else{
 				pstmt.setString(18, rdName.getVoiceFile());

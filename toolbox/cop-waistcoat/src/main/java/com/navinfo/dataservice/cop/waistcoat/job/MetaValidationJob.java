@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.cop.waistcoat.job;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -99,13 +100,14 @@ public class MetaValidationJob extends AbstractJob {
 			}
 			// 3. 检查结果搬迁
 			System.out.println("检查结果搬迁");
+			
 			CkResultTool.generateCkMd5(valSchema);
 			CkResultTool.generateCkResultObject(valSchema);
 			CkResultTool.generateCkResultGrid(valSchema);
-			DbInfo tarDb = datahub.getDbById(metaDb.getDbId());
+			DbInfo tarDb = datahub.getDbById(metaDb.getDbId());//目标库:
 			OracleSchema tarSchema = new OracleSchema(
 					DbConnectConfig.createConnectConfig(tarDb.getConnectParam()));
-			CkResultTool.moveNiVal(valSchema, tarSchema, null);
+			CkResultTool.moveNiValMeta(valSchema, tarSchema);
 			response("检查生成的检查结果后处理及搬迁完毕。",null);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -138,12 +140,9 @@ public class MetaValidationJob extends AbstractJob {
 			DbConnectConfig connConfig = DbConnectConfig.createConnectConfig(subMetaDb.getConnectParam());
 			//创建元数据库dblink  DBLINK_SMM
 			createMetaDbLink(MultiDataSourceFactory.getInstance().getDataSource(connConfig),metaDb);
-
 			
 			conn = MultiDataSourceFactory.getInstance().getDataSource(connConfig).getConnection();
-			//修改log_action默认值
-//			new QueryRunner().execute(conn, "ALTER TABLE LOG_ACTION MODIFY SRC_DB DEFAULT "+dbType);
-			//
+
 			SqlExec sqlExec = new SqlExec(conn);
 			//创建 子版本元数据库中的表
 			String sqlFile = "/com/navinfo/dataservice/scripts/resources/meta_cop_init.sql";
@@ -182,8 +181,9 @@ public class MetaValidationJob extends AbstractJob {
 			
 			//向子版本导入其他依赖表数据	
 			String insertOtherTable = "/com/navinfo/dataservice/scripts/resources/meta_table_insert.sql";
-			sqlExec.executeIgnoreError(sqlFile);
+			sqlExec.execute(insertOtherTable);
 			
+			System.out.println(conn);	
 			conn.commit();
 		}finally{
 			DbUtils.closeQuietly(conn);

@@ -3,7 +3,6 @@ package com.navinfo.dataservice.dao.fcc;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,8 +20,6 @@ import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.StringUtils;
 
 public class SolrController {
 
@@ -42,6 +39,9 @@ public class SolrController {
 		doc.addField("id", json.getString("id"));
 
 		doc.addField("wkt", json.getString("wkt"));
+		
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		doc.addField("wktLocation", json.getString("wktLocation"));
 
 		doc.addField("stage", json.getInt("stage"));
 
@@ -97,6 +97,8 @@ public class SolrController {
 		doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
 
 		doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
+		
+
 
 		// doc.addField("t_fStatus", json.getInt("t_fStatus"));
 
@@ -376,14 +378,20 @@ public class SolrController {
 
 		return snapshots;
 	}
+	
 
-	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages)
+	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages) throws SolrServerException, IOException{
+		
+		return queryTipsWeb(wkt, stages,null);
+	}
+
+	public List<JSONObject> queryTipsWeb(String wkt, JSONArray stages,Set<Integer> taskSet)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
 		String param = "wkt:\"intersects(" + wkt + ")\"";
 
-		StringBuffer builder = new StringBuffer();
+		StringBuilder builder = new StringBuilder();
 
 		if (stages.size() > 0) {
 
@@ -424,6 +432,12 @@ public class SolrController {
 
 		if (!"".equals(builder.toString())) {
 			query.set("fq", builder.toString());
+		}
+		
+		if (taskSet != null) {
+
+			addTaskIdFilterSql(builder, taskSet);
+
 		}
 
 		query.set("start", 0);

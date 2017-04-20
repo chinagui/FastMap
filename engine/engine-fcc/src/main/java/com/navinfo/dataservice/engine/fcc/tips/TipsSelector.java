@@ -1190,12 +1190,15 @@ public class TipsSelector {
 	 * 
 	 * @param grids
 	 * @param stages
+	 * @param subtaskId :日编任务号
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getStats(JSONArray grids, JSONArray stages)
+	public JSONObject getStats(JSONArray grids, JSONArray stages, int subtaskId)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
+		
+		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskId); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 

@@ -27,7 +27,7 @@ public class ReadJson2CityOrBlockJson {
 				throw e;
 			}
 		}
-		retObj = changeData(ja, 0);
+		retObj = changeData(ja, 1);
 		//return retObj;
 	}
 	

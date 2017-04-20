@@ -26,6 +26,7 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+import com.sun.source.tree.WhileLoopTree;
 
 /** 
 * @ClassName: JobService 
@@ -203,28 +204,38 @@ public class JobService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年4月12日 下午5:26:55 
 	 */
-	public JSONObject getLatestJobByDescp(String descp)throws ServiceException{
+	public JobInfo getLatestJobByDescp(String descp)throws ServiceException{
+		System.out.println("begin getLatestJobByDescp descp:"+descp);
 		Connection conn = null;
-		JSONObject jobObj = null;
+		JobInfo jobInfo = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "select * from ( select  j.job_guid  from job_info j where  and j.descp like '%"+descp+"%'  and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+			String jobInfoSql = "select * from ( select  j.job_id , j.job_guid  from job_info j where  1=1 ";
+					if(descp != null && StringUtils.isNotEmpty(descp)){
+						jobInfoSql += " and  j.descp like '%"+descp+"%'  ";
+					}
+					
+					jobInfoSql +=  "and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
 			System.out.println("getLatestJobByDescp: "+jobInfoSql);
-			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
+			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
 				
 				@Override
-				public JSONObject handle(ResultSet rs) throws SQLException {
-					JSONObject jobObjInfo = new JSONObject();
+				public JobInfo handle(ResultSet rs) throws SQLException {
+					JobInfo jobInfo = null;
 					if(rs.next()){
-						jobObjInfo.put("jobGuid", rs.getString("job_guid"));
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						System.out.println("id : "+id+ " guid: "+guid);
+						 jobInfo = new JobInfo(id,guid);
+						
 					}
-					return jobObjInfo;
+					return jobInfo;
 				}
 				
 			});
-			return jobObj;
+			return jobInfo;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -245,9 +256,10 @@ public class JobService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年4月12日 上午10:44:14 
 	 */
-	public JSONArray getJobObjList(JSONObject parameterJson) throws ServiceException {
+	public List<JobInfo> getJobInfoList(JSONObject parameterJson) throws ServiceException {
+		System.out.println("begin getJobInfoList parameterJson :"+parameterJson);
 		Connection conn = null;
-		JSONArray jobObjs = null;
+		List<JobInfo> jobInfos = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
@@ -256,7 +268,7 @@ public class JobService {
 // "j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
 			
 			String tableName  = parameterJson.getString("tableName");
-			if(tableName==null || StringUtils.isEmpty(tableName)){
+			if(tableName!=null || StringUtils.isNotEmpty(tableName)){
 				jobInfoSql+=" and j.descp like '%"+tableName+"%'";
 			}
 			String startDate = "";
@@ -274,8 +286,8 @@ public class JobService {
 				
 				Timestamp beginTime = DateUtilsEx.getDayOfDelayMonths(curTime, -1);
 				
-				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-mm-dd");
-				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-mm-dd");
+				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd");
+				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd");
 				log.info("startDate : "+startDate+"  "+" endDate :"+endDate);
 			}
 			jobInfoSql+=" and (j.end_time "
@@ -284,7 +296,8 @@ public class JobService {
 					+ ") ";
 			
 			String jobName = "";
-			if(parameterJson.containsKey("jobName") && parameterJson.getString("jobName") != null){
+			if(parameterJson.containsKey("jobName") && parameterJson.getString("jobName") != null 
+					&& StringUtils.isNotEmpty(parameterJson.getString("jobName")) && !parameterJson.getString("jobName").equals("null")){
 				jobName = parameterJson.getString("jobName");
 				jobInfoSql+=" and j.descp like '%"+jobName+"%'";
 				
@@ -293,22 +306,27 @@ public class JobService {
 			jobInfoSql+=" order by j.end_time desc ";
 			
 			log.info(jobInfoSql);
-			jobObjs = run.query(conn, jobInfoSql, new ResultSetHandler<JSONArray>(){
+			jobInfos = run.query(conn, jobInfoSql, new ResultSetHandler<List<JobInfo>>(){
 				
 				@Override
-				public JSONArray handle(ResultSet rs) throws SQLException {
-					JSONArray jobArr = new JSONArray();
-					if(rs.next()){
-						JSONObject jobObjInfo = new JSONObject();
-						jobObjInfo.put("descp", rs.getString("descp"));
-						jobObjInfo.put("jobGuid", rs.getString("job_guid"));
-						jobArr.add(jobObjInfo);
+				public List<JobInfo> handle(ResultSet rs) throws SQLException {
+					List<JobInfo> jobArr = new ArrayList<JobInfo>();
+					while(rs.next()){
+						log.info("job_id: "+rs.getLong("job_id")+" job_guid: "+rs.getString("job_guid")+" descp: "+rs.getString("descp"));
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						JobInfo jobInfo = new JobInfo(id,guid);
+						jobInfo.setDescp(rs.getString("descp"));
+						//jobInfo.setGuid(rs.getString("job_guid"));
+						
+						jobArr.add(jobInfo);
 					}
+					log.info("jobArr : "+ jobArr.size());
 					return jobArr;
 				}
 				
 			});
-			return jobObjs;
+			return jobInfos;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

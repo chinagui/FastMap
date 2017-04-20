@@ -232,6 +232,8 @@ public class DbService {
 		try{
 			String sql = mainSql+" where D.SERVER_ID=S.SERVER_ID AND D.DB_ID=? AND D.DB_ROLE=0";
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
+			log.info("sys conn : "+conn);
+			log.info("sys sql : "+sql);
 			QueryRunner run = new QueryRunner();
 			db = run.query(conn,sql, new DbResultSetHandler(false),dbId);
 			

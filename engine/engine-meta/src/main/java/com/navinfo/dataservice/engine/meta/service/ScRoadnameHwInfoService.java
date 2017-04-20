@@ -134,6 +134,7 @@ public class ScRoadnameHwInfoService {
 				deleteSql+=" and U_FIELDS=? ";
 				values.add(bean.getUFields());
 			};
+			log.info("deleteSql: "+deleteSql);
 			if (values.size()==0){
 	    		run.update(conn, deleteSql);
 	    	}else{
@@ -220,6 +221,25 @@ public class ScRoadnameHwInfoService {
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getMetaConnection();
+			//处理"memo":[],"uRecords":[]
+			JSONArray memoArr = dataJson.getJSONArray("memo");
+			dataJson.remove("memo");
+			String memoStr="";
+			if(memoArr != null && memoArr.size() > 0 ){
+				memoStr = memoArr.join(",");
+			}
+			dataJson.put("memo", memoStr);
+			
+			JSONArray uRecordsArr = dataJson.getJSONArray("uRecords");
+			dataJson.remove("uRecords");
+			String uRecordStr="";
+			if(uRecordsArr != null && uRecordsArr.size() > 0 ){
+				uRecordStr = uRecordsArr.join(",");
+			}
+			dataJson.put("uRecord", uRecordStr);
+			
+			
+			
 			ScRoadnameHwInfo bean =(ScRoadnameHwInfo) JSONObject.toBean(dataJson, ScRoadnameHwInfo.class);
 			
 			String selectSql = "select * from SC_ROADNAME_HW_INFO where 1=1 ";
@@ -237,11 +257,11 @@ public class ScRoadnameHwInfoService {
 				values.add(bean.getNameGroupid());
 			};
 			if (bean!=null&&bean.getMemo()!=null && StringUtils.isNotEmpty(bean.getMemo().toString())){
-				selectSql+=" and MEMO=? ";
+				selectSql+=" and MEMO in(?) ";
 				values.add(bean.getMemo());
 			};
 			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
-				selectSql+=" and U_RECORD=? ";
+				selectSql+=" and U_RECORD in(?) ";
 				values.add(bean.getURecord());
 			};
 			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
@@ -508,6 +528,7 @@ public class ScRoadnameHwInfoService {
 	
 	public void update(JSONObject dataJson) throws ServiceException {
 		ScRoadnameHwInfo bean =(ScRoadnameHwInfo) JSONObject.toBean(dataJson, ScRoadnameHwInfo.class);
+		bean.setURecord(3);
 		if(bean != null && bean.getHwPidUp() != null && bean.getHwPidUp() > 0){
 			update(bean);
 		}
@@ -522,6 +543,7 @@ public class ScRoadnameHwInfoService {
 			Integer hwPidDw=applyPid();
 			bean.setHwPidUp(hwPidUp);
 			bean.setHwPidDw(hwPidDw);
+			bean.setURecord(1);
 			create(bean, conn);
 		}
 		

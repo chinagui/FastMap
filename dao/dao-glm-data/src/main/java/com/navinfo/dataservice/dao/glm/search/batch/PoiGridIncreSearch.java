@@ -392,9 +392,6 @@ public class PoiGridIncreSearch {
 		logger.info("设置子表IX_POI_NAME");
 		Map<Long,List<IRow>> names = null;
 		Map<Long,List<IRow>> names_delete = null;
-		/*String sql="select * from ix_poi_name where "
-				+ "u_record !=2 and "
-				+ "name_class=1 and name_type=2 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";*/
 		//当主表不是逻辑删除时,子表IX_POI_NAME也不下载逻辑删除的
 		String sql="select * from ix_poi_name where "
 				+ "u_record !=2 and "
@@ -415,16 +412,7 @@ public class PoiGridIncreSearch {
 			pois.get(pid).setNames(names_delete.get(pid));
 		}
 		//*************************************
-		/*logger.info("设置子表IX_POI_ADDRESS");
-		
-		 sql="select * from ix_poi_address where "
-				+ "name_groupid=1 and lang_code='CHI' and poi_pid in (select to_number(column_value) from table(clob_to_table(?)))";
-		
-		Map<Long,List<IRow>> addresses = run.query(conn, sql, new IxPoiAddressHandler(),pidsClob);
 
-		for(Long pid:addresses.keySet()){
-			pois.get(pid).setAddresses(addresses.get(pid));
-		}*/
 		logger.info("设置子表IX_POI_ADDRESS");
 		
 		 sql="select * from ix_poi_address where "

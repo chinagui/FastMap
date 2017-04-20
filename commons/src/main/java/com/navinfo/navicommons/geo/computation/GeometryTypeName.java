@@ -9,4 +9,9 @@ public class GeometryTypeName {
 	public static final String  MULTILINESTRING= "MultiLineString";
 	public static final String GEOMETRYCOLLECTION = "GeometryCollection";
 	
+	public static final String MULTIPOINT = "MultiPoint";
+	
+	public static final String MULTIPOLYGON = "MultiPolygon";
+	
+	
 }

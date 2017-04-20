@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -29,6 +31,17 @@ public class UploadTest {
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));
 //			System.out.println(UuidUtils.genUuid());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	@Test
+	public void testUpload() {
+		try {
+			UploadOperationByGather op = new UploadOperationByGather(4127L,24);
+			JSONObject retArray = op.importPoi("F:\\data\\collector\\poi.txt");
+			System.out.println(retArray.toString());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

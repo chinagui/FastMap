@@ -184,6 +184,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>editcolumn</finalName>
+		<finalName>column</finalName>
 	</build>
 </project>

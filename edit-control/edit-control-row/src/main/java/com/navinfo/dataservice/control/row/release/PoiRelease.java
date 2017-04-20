@@ -34,7 +34,7 @@ public class PoiRelease {
 		long jobId = 0;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			long taskId = jsonReq.getLong("taskId");
+			long subtaskId = jsonReq.getLong("subtaskId");
 			int dbId = jsonReq.getInt("dbId");
 			JSONArray gridIds = jsonReq.getJSONArray("gridIds");
 
@@ -53,7 +53,7 @@ public class PoiRelease {
 			jobReq.put("checkRules", ckRulesJA);*/
 			JobApi apiService = (JobApi) ApplicationContextUtil
 					.getBean("jobApi");
-			jobId = apiService.createJob("editPoiBaseRelease", jobReq, userId,taskId,
+			jobId = apiService.createJob("editPoiBaseRelease", jobReq, userId,subtaskId,
 					"POI行编提交");
 			return jobId;
 		}catch (Exception e) {

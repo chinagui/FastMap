@@ -78,8 +78,8 @@ public class PERMITMOVECORNERRULES extends baseRule {
 	 */
 	public boolean isPointCornerNode(Geometry geo) {
 		boolean result = false;
-		Coordinate coord = geo.getCoordinate();
-
+		Coordinate coord =GeoTranslator.transform(geo, 0.00001, 5).getCoordinate(); 
+	
 		if (coord == null)
 			return result;
 

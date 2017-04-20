@@ -32,7 +32,7 @@ public class CmgBuildnodeSelector extends AbstractSelector {
     private Logger logger = Logger.getLogger(CmgBuildnodeSelector.class);
 
     public CmgBuildnodeSelector(Connection conn) {
-        super(conn);
+        super(CmgBuildnode.class, conn);
     }
 
     /**

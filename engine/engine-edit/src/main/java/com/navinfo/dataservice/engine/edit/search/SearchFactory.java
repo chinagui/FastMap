@@ -134,6 +134,8 @@ public class SearchFactory {
                 return new CmgBuildlinkSearch(conn);
             case CMGBUILDFACE:
                 return new CmgBuildfaceSearch(conn);
+            case CMGBUILDING:
+                return new CmgBuildingSearch(conn);
             default:
                 return null;
         }

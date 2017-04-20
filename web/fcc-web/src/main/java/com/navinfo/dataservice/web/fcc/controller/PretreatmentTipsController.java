@@ -168,7 +168,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
 			
-			int jobId=jsonReq.getInt("jobId"); //任务号
+			int subTaskId=jsonReq.getInt("subTaskId"); //任务号
 			
 			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
 
@@ -182,7 +182,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,jobId,jobType);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
 
 			return new ModelAndView("jsonView", success());
 
@@ -341,6 +341,47 @@ public class PretreatmentTipsController extends BaseController {
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
 			op.submit2Web( user);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * @Description:情报矢量化理tips提交(按任务) 
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-4-14 下午2:39:49
+	 */
+	@RequestMapping(value = "/tip/infoTaskSubmit")
+	public ModelAndView infoTaskSubmit(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			int user = jsonReq.getInt("user");
+			
+			int taskId= jsonReq.getInt("taskId");
+			
+			int taskType= jsonReq.getInt("taskType");
+			
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+			
+			op.submitInfoJobTips2Web( user,taskId,taskType);
 
 			return new ModelAndView("jsonView", success());
 

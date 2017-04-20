@@ -31,7 +31,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
@@ -52,7 +51,7 @@ import oracle.sql.STRUCT;
  * @Description: SubtaskOperation.java
  */
 public class SubtaskOperation {
-	private static Logger log = LoggerRepos.getLogger(TaskOperation.class);
+	private static Logger log = LoggerRepos.getLogger(SubtaskOperation.class);
 	
 	public SubtaskOperation() {
 		// TODO Auto-generated constructor stub
@@ -3153,6 +3152,7 @@ public class SubtaskOperation {
 			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");			
 			Set<Integer> tipsGrids=api.getTipsGridsBySubtaskId(subtask.getSubtaskId(), programType);
 			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info("子任务"+subtask.getSubtaskId()+"对应tips所在grid范围："+tipsGrids);
 				gridIdList.addAll(tipsGrids);
 			}
 		}else{gridIdList = loadPoiGeoBySubtaskFromLog(subtask);}

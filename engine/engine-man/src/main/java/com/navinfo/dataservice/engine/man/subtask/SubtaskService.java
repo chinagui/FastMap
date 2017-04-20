@@ -25,9 +25,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -43,7 +40,6 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;

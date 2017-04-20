@@ -29,7 +29,6 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -1441,9 +1440,11 @@ public class TaskService {
 			Set<Integer> tipsGrids=api.getTipsGridsBySqTaskId(task.getTaskId());
 			Set<Integer> allGrids=new HashSet<Integer>();
 			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，tips对应grid范围"+tipsGrids.toString());
 				allGrids.addAll(tipsGrids);
 			}
 			if(poiGridMap!=null&&poiGridMap.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，poi对应grid范围"+poiGridMap.toString());
 				allGrids.addAll(poiGridMap.values());
 			}
 			//判断grid所在项目，区县，返回grid所在中线采集任务id
@@ -1452,6 +1453,7 @@ public class TaskService {
 				return null;}
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
 			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
+			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
 			//任务号批数据
 			//tip批中线任务号
 			if(tipsGrids!=null&&tipsGrids.size()>0){

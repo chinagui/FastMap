@@ -122,11 +122,7 @@ public class Check {
 	}
 
 	/**
-<<<<<<< HEAD
-	 * 
-=======
 	 * 创建或修改link，节点不能到已有的立交点处，请先删除立交关系
->>>>>>> origin/master
 	 * @param conn
 	 * @param catchInfos
 	 * @throws Exception

@@ -2,7 +2,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
@@ -11,7 +10,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.sun.mail.handlers.message_rfc822;
 /**
  * FM-YW-20-085	B-11合法字符集前后空格检查	DHM
  * 检查条件：
@@ -39,8 +37,8 @@ public class FMYW20085 extends BasicCheckRule {
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			if(names==null||names.size()==0){return;}
-			Pattern p = Pattern.compile("[^ ]+[\\-_/:;'\"~^.,?!*<>$%&#@+]+ .*");
-			Pattern p1 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+");
+			Pattern p = Pattern.compile(".*[^ ]+[\\-_/:;'\"~^.,?!*<>$%&#@+]+ .*");
+			Pattern p1 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isEng()&&nameTmp.isOfficeName()
 						&&(nameTmp.isOriginName()||nameTmp.isStandardName())){

@@ -33,7 +33,7 @@ public class FMYW20086 extends BasicCheckRule {
 					officeNameCH=name;
 					continue;
 				}
-				if(nameTmp.isEng()&&nameTmp.isOfficeName()&&nameTmp.isOriginName()){
+				if(nameTmp.isEng()&&nameTmp.isOfficeName()&&(nameTmp.isOriginName()||nameTmp.isStandardName())){
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
 					officeNameEng=name;

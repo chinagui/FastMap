@@ -144,7 +144,7 @@ public class LcLinkSearch implements ISearch {
 
 				m.put("b", resultSet.getInt("e_node_pid"));
 
-				m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
+				m.put("c", resultSet.getInt("kind"));
 
 				snapshot.setM(m);
 

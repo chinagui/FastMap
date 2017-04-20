@@ -1513,6 +1513,7 @@ public class SubtaskService {
 						int typeCount=rs.getInt("TYPE_COUNT");
 						String name="";
 						if(stage==1){name+="日编 - ";}
+						else if(stage==0){name+="采集 - ";}
 						else{name+="月编 - ";}
 						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
 						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项

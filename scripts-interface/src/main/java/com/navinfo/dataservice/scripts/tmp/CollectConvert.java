@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.scripts.tmp;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -34,7 +36,7 @@ public class CollectConvert {
 	public static void main(String[] args) throws Exception {
 		//incremental.zip解压后的路径，例如：data/incremental
 		String path = String.valueOf(args[0]);
-//		String path = "E:/Users/temp/upload/incremental";
+//		String path = "E:/Users/temp_2_3/upload/incremental";
 		//String path="D:/temp/incremental";
 		int dbId=0;
 		if(args.length>1){
@@ -72,78 +74,99 @@ public class CollectConvert {
 		List<String> listPath = CollectConvertUtils.listPath(path);
 		log.info("遍历路径");
 		List<Integer> convertSeqList=new ArrayList<Integer>();
+		List<Integer> successSeqList=new ArrayList<Integer>();
 		List<String> errorList=new ArrayList<String>();
 		
 		Map<Integer,List<String>> map = new HashMap<Integer,List<String>>();
-		for(String outPath:listPath){
-			log.info("开始转换路径："+outPath);	
-			String fileName="IncrementalData_0_"+new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
-			DBController controller = new DBController();
-
-			int seq = controller.addUploadRecord(fileName+".zip", "collectConvert", 1,1);
-			
-			convertSeqList.add(seq);
-			String uploadPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
-//			String uploadPath="E:/Users/temp/resources/upload";
-			//String uploadPath="D:/temp/data/resources/upload";
-			String inPath=uploadPath+"/"+fileName;
-			log.info("转入路径："+inPath);
-			log.info("路径"+inPath+"目录生成");
-			CollectConvertUtils.createMkdir(inPath);
-			log.info("路径"+outPath+"照片拷贝");
-			CollectConvertUtils.copyPhoto(outPath, inPath);
-			log.info("路径"+outPath+"数据读取");
-			List<JSONObject> oldListJson = CollectConvertUtils.readJsonObjects(outPath+"/Datum_Point.json");
-			List<JSONObject> newListJson=new ArrayList<JSONObject>();
-			log.info("路径"+outPath+"数据转换");
-			for(JSONObject oldPoi:oldListJson){
-				try{
-					JSONObject newPoi = CollectConvertMain.convertMain(dbId,inPath,oldPoi);
-					newListJson.add(newPoi);
-					
-					//记录数据fid_项目号_时间
-					String fid = newPoi.getString("fid");
-					String programId = outPath.split("_")[2];
-				    String date=(new SimpleDateFormat("yyyyMMddHHmmss")).format(new Date());  
-					String target = fid + "_" + programId + "_" + date;
-					if(dbId==0){
-						Geometry oldGeo = new WKTReader().read(oldPoi.getString("geometry"));
-						String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
-						dbId = CollectConvertUtils.getDbidByGeo(newGeoStr);
+		try{
+			for(String outPath:listPath){
+				log.info("开始转换路径："+outPath);	
+				String fileName="IncrementalData_0_"+new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
+				DBController controller = new DBController();
+	
+				int seq = controller.addUploadRecord(fileName+".zip", "collectConvert", 1,1);
+				
+				convertSeqList.add(seq);
+				String uploadPath=SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
+	//			String uploadPath="E:/Users/temp/resources/upload";
+				//String uploadPath="D:/temp/data/resources/upload";
+				String inPath=uploadPath+"/"+fileName;
+				log.info("转入路径："+inPath);
+				log.info("路径"+inPath+"目录生成");
+				CollectConvertUtils.createMkdir(inPath);
+				log.info("路径"+outPath+"照片拷贝");
+				CollectConvertUtils.copyPhoto(outPath, inPath);
+				log.info("路径"+outPath+"数据读取");
+				log.info("start 路径"+outPath+"数据转换,jobid="+seq);
+				List<JSONObject> oldListJson = CollectConvertUtils.readJsonObjects(outPath+"/Datum_Point.json");
+				List<JSONObject> newListJson=new ArrayList<JSONObject>();
+				log.info("路径"+outPath+"数据转换");
+				for(JSONObject oldPoi:oldListJson){
+					try{
+						int poisDbId=dbId;
+						JSONObject newPoi = CollectConvertMain.convertMain(poisDbId,inPath,oldPoi);
+						newListJson.add(newPoi);
+						
+						//记录数据fid_项目号_时间
+						String fid = newPoi.getString("fid");
+						Path pathOut = Paths.get(outPath);
+						
+						String programId = pathOut.getFileName().toString().split("_")[2];
+					    String date=(new SimpleDateFormat("yyyyMMddHHmmss")).format(new Date());  
+						String target = fid + "_" + programId + "_" + date;
+						if(poisDbId==0){
+							Geometry oldGeo = new WKTReader().read(oldPoi.getString("geometry"));
+							String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
+							poisDbId = CollectConvertUtils.getDbidByGeo(newGeoStr);
+						}
+						List<String> temp = new ArrayList<String>();
+						if(map.containsKey(poisDbId)){
+							temp = map.get(poisDbId);
+							temp.add(target);
+						}else{
+							temp.add(target);
+							map.put(poisDbId, temp);
+						}
+						
+						
+					}catch (Exception e) {
+						log.error("转换错误数据:"+oldPoi, e);
+						errorList.add("from "+outPath+",to "+inPath+",message:"+e.getMessage());
+						for(StackTraceElement t:e.getStackTrace()){
+							errorList.add(t.toString());
+						}
+						errorList.add("from "+outPath+",to "+inPath+",data:"+oldPoi);
 					}
-					List<String> temp = new ArrayList<String>();
-					if(map.containsKey(dbId)){
-						temp = map.get(dbId);
-						temp.add(target);
-					}else{
-						temp.add(target);
-						map.put(dbId, temp);
-					}
-					
-					
-				}catch (Exception e) {
-					log.error("转换错误数据:"+oldPoi, e);
-					errorList.add("from "+outPath+",to "+inPath+",message:"+e.getMessage());
-					for(StackTraceElement t:e.getStackTrace()){
-						errorList.add(t.toString());
-					}
-					errorList.add("from "+outPath+",to "+inPath+",data:"+oldPoi);
 				}
+				log.info("路径"+outPath+"数据写入");
+				CollectConvertUtils.writeJSONObject2TxtFile(inPath+"/poi.txt", newListJson);
+				log.info("路径"+outPath+"数据文件压缩");
+				ZipUtils.zipFile(inPath,uploadPath+"/"+seq+"/"+fileName+".zip");
+				log.info("end 路径"+outPath+"数据转换,jobid="+seq);
+				log.info("路径"+outPath+"数据文件采集成果导入相应日库");
+				//List<String> result = new ArrayList<String>();
+				PoiService.getInstance().importPoi(seq, Long.valueOf(0));
+				log.info("start other fidList"+map.toString());
+				CollectConvertUtils.importConvertFids(map);	
+				map=new HashMap<Integer,List<String>>();
+				successSeqList.add(seq);
+				log.info("end 路径"+outPath+"数据入日库,jobid="+seq);
 			}
-			log.info("路径"+outPath+"数据写入");
-			CollectConvertUtils.writeJSONObject2TxtFile(inPath+"/poi.txt", newListJson);
-			log.info("路径"+outPath+"数据文件压缩");
-			ZipUtils.zipFile(inPath,uploadPath+"/"+seq+"/"+fileName+".zip");
-			log.info("路径"+outPath+"数据文件采集成果导入相应日库");
-			List<String> result = new ArrayList<String>();
-			PoiService.getInstance().importPoi(seq, Long.valueOf(0));
+			log.info("end convert success");
+		}catch(Exception e){
+			log.error("转换失败", e);
+			log.info("end convert fail");
+			throw e;
+		}finally{
+			log.info("start other log write");
+			//待导入的数据fid信息写入数据库		
+			log.info("本次转换路径汇总");
+			CollectConvertUtils.writeInteger2TxtFile(path+"/outConvert.txt", convertSeqList);
+			log.info("所有jobId："+convertSeqList.toString());
+			CollectConvertUtils.writeInteger2TxtFile(path+"/outSuccessConvert.txt", successSeqList);
+			log.info("所有成果入oracle库的jobId："+successSeqList.toString());
+			CollectConvertUtils.writeStringTxtFile(path+"/outErrorConvert.txt", errorList);
+			log.info("end other log write");
 		}
-		//待导入的数据fid信息写入数据库
-		CollectConvertUtils.importConvertFids(map);
-		
-		log.info("本次转换路径汇总");
-		CollectConvertUtils.writeInteger2TxtFile(path+"/outConvert.txt", convertSeqList);
-		CollectConvertUtils.writeStringTxtFile(path+"/outErrorConvert.txt", errorList);
-		log.info("end convert");
 	}
 }

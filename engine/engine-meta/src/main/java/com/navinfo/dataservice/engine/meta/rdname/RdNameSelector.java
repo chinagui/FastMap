@@ -10,17 +10,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import com.sun.tools.internal.xjc.model.SymbolSpace;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

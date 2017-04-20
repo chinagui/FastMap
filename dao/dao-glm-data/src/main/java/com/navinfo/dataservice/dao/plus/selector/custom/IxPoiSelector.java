@@ -45,7 +45,7 @@ public class IxPoiSelector {
 	protected static Logger log = LoggerRepos.getLogger(IxPoiSelector.class);
 
 	public static Map<String,Long> getPidByFids(Connection conn,Collection<String> fids)throws Exception{
-		if(fids==null|fids.size()==0)return null;
+		if(fids==null|fids.size()==0)return new HashMap<String,Long>();
 
 		if(fids.size()>1000){
 			String sql= "SELECT PID,POI_NUM FROM IX_POI WHERE POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?))) AND U_RECORD <>2";

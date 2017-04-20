@@ -5,6 +5,7 @@ import java.util.List;
 public class DiffResult {
 	String fid;
 	List<DiffField> diffResult;
+	int oracleExists = 1; //默认存在
 	public DiffResult(String fid, List<DiffField> diffResult) {
 		super();
 		this.fid = fid;
@@ -22,5 +23,10 @@ public class DiffResult {
 	public void setDiffResult(List<DiffField> diffResult) {
 		this.diffResult = diffResult;
 	}
-	
+	public void setOracleExists(int oracleExists){
+		this.oracleExists = oracleExists;
+	}
+	public int getOracleExists(){
+		return oracleExists;
+	}
 }

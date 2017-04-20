@@ -4,17 +4,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import oracle.net.aso.k;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
-import com.sun.tools.javac.jvm.Code.Chain;
+
 /**
  * FM_POI_004
  * 检查对象：Lifecycle为“1（删除）”不检查；

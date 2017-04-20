@@ -27,7 +27,7 @@ import net.sf.json.JSONObject;
 
 @Controller
 public class PoiController extends BaseController{
-	private static final Logger logger = Logger.getLogger(EditController.class);
+	private static final Logger logger = Logger.getLogger(PoiController.class);
 	
 
 	/**
@@ -91,21 +91,27 @@ public class PoiController extends BaseController{
 	@RequestMapping(value = "/poi/base/upload")
 	public ModelAndView importPoi(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		
 		try{
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			JSONObject json = JSONObject.fromObject(parameter);
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(paraJson.get("jobId")==null){
+				throw new IllegalArgumentException("jobId参数不能为空。");
+			}
+			int jobId = paraJson.getInt("jobId");
 
-			int jobId = json.getInt("jobId");
+			int subtaskId = 0;
+			if(paraJson.containsKey("subtaskId")){
+				subtaskId = paraJson.getInt("subtaskId");
+			}
+
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
-			JSONObject res=PoiService.getInstance().importPoi(jobId, userId);
+			JSONObject res=PoiService.getInstance().importPoi(jobId, subtaskId,userId);
 			return new ModelAndView("jsonView", success(res));
 		}catch(Exception e){
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
+			logger.error(e.getMessage(),e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		

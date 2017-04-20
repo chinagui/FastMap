@@ -26,7 +26,7 @@ public class PoiService {
 		return SingletonHolder.INSTANCE;
 	}
 	
-	public JSONObject importPoi(int jobId,Long userId) throws Exception{
+	public JSONObject importPoi(int jobId,int subtaskId,Long userId) throws Exception{
 		Date startTime = new Date();
 		logger.info("/poi/base/upload jobId : "+ jobId);
 		

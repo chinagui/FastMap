@@ -27,6 +27,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 
@@ -112,6 +113,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			int t_fStatus = 0;
 			int s_qTaskId = 0;
 			int s_mTaskId = 0;
+			int s_qSubTaskId = 0;
+			int s_mSubTaskId = 0;
+
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,
 					stage, user, t_command, null, currentDate, currentDate,
@@ -125,7 +129,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			JSONObject source = new JSONObject();
 			source = TipsUtils.newSource(s_featureKind, null, s_sourceCode,
-					null, sourceType, s_reliability, 0);
+					null, sourceType, s_reliability, 0,s_qTaskId,s_qSubTaskId,s_mTaskId,s_mSubTaskId);
 
 			// deep; 生成deep信息
 			JSONObject deepNew = new JSONObject();
@@ -171,7 +175,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
 					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,
 					t_inMeth, t_pStatus, t_dInProc, t_mInProc, s_qTaskId,
-					s_mTaskId, t_fStatus);
+					s_mTaskId, t_fStatus,s_qSubTaskId,s_mSubTaskId);
 
 			solr.addTips(solrIndex);
 
@@ -1451,7 +1455,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	}
 
 	/**
-	 * @Description:情报测线打断 1.测线打段位2根 2.维护挂在改测线上的所有的tips的测线号码
+	 * @Description:情报测线打断 1.测线打段位2根 2.维护挂在该测线上的所有的tips的测线号码(任务范围内的)
+	 *                     注明：只维护：情报矢量化的26类tips.不区分状态
 	 * @param rowkey
 	 *            :测线的rowkey
 	 * @param pointGeo
@@ -1463,47 +1468,338 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param jobId
 	 *            任务id
 	 * @author: y
+	 * @throws Exception
 	 * 
 	 * @time:2017-4-12 下午8:24:43
 	 */
 	public void cutMeasuringLineCut(String rowkey, JSONObject pointGeo,
-			int user, int jobId, int jobType) {
-
-		JSONObject line1 = new JSONObject();
-
-		JSONObject line2 = new JSONObject();
-
+			int user, int subTaskId, int jobType) throws Exception {
+		// 第一步：按打断点，生成两个tips
+		
+		List<JSONObject> resultArr = breakLine2(rowkey, pointGeo, user);
+		
+		JSONObject line1=resultArr.get(0);
+		
+		JSONObject line2=resultArr.get(1);
+		
+		// 第二步：更新测线关联的tips
 		TipsSelector selector = new TipsSelector();
-
-		JSONArray types = new JSONArray();
-
-		JSONArray stages = new JSONArray();
+		JSONArray souceTypes = new JSONArray();
 
 		// 查询tips
-		List<JSONObject> snapotList = selector.getTipsByTypesAndJobId(types,
-				stages, jobId, jobType);
+		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
+				souceTypes, subTaskId, jobType);
+		
+		List<JSONObject> updateList=new ArrayList<JSONObject>();
 
 		for (JSONObject json : snapotList) {
 
-			updateRelateMeasuringLine(json, line1, line2);
+			JSONObject result=updateRelateMeasuringLine(json, line1, line2);
+			
+			if(result!=null){
+				
+				updateList.add(result);
+			}
 
 		}
+		//更新后的数据进行报错 ？？待补充
 
 	}
 
 	/**
+	 * @Description:测线打断:返回打断后的两条tips sorl信息
+	 * @param rowkey
+	 * @param pointGeo
+	 * @param user
+	 * @author: y
+	 * @time:2017-4-17 下午4:12:25
+	 */
+	private List<JSONObject> breakLine2(String rowkey, JSONObject pointGeo, int user) throws Exception {
+		
+		List<JSONObject> resultArr=new ArrayList<JSONObject>();
+		
+		Connection hbaseConn;
+		try {
+
+			JSONObject solrIndex = solr.getById(rowkey);
+
+			String s_sourceType = solrIndex.getString("s_sourceType");
+
+			hbaseConn = HBaseConnector.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+
+			Result result = getResultByRowKey(htab, rowkey, null);
+
+			if (result.isEmpty()) {
+				
+				throw new Exception("测线打断出错，找不到数据：rowkey:"+rowkey);
+			}
+
+			// 0.copy一个新的tips,rowkey重新申请
+
+			String newRowkey = TipsUtils.getNewRowkey(s_sourceType);
+
+			Put newPut = copyNewATips(result, newRowkey);
+
+			Put put = new Put(rowkey.getBytes());
+
+			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
+
+			newSolrIndex.put("id", newRowkey);
+
+			// 1.cut line
+
+			Point point = (Point) GeoTranslator.geojson2Jts(pointGeo);
+
+			JSONObject oldGeo = JSONObject.fromObject(solrIndex
+					.get("g_location"));
+
+			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
+
+			JSONObject geo1 = new JSONObject();
+
+			JSONObject geo2 = new JSONObject();
+
+			JSONObject g_location1 = cutGeoResult.get(0);
+
+			JSONObject g_location2 = cutGeoResult.get(1);
+
+			// JSONObject
+			
+			//
+		/*	1.测线 deep.geo=?:如果只有两个形状点，则在线段的中央，如果多于两个，取第二个形状点坐标赋值
+			2.测线：geometry.g_location=打断后的location
+			3.测线：geomtry.g_guide=? geomtry.g_guide=geo
+			*/
+			
+			//更新geomtry
+			JSONObject g_guide1 =null;
+			
+			JSONObject g_guide2 =null;
+			
+			int pointSize=g_location1.getJSONArray("coordinates").size();
+			
+			int pointSize2=g_location2.getJSONArray("coordinates").size();
+			
+			if(pointSize==2){
+				g_guide1 = getMidPointByGeometry(g_location1);
+			}else{
+				
+				g_guide1 = getSencondPoint(g_location1);
+			}
+			
+			if(pointSize2==2){
+				g_guide2 = getMidPointByGeometry(g_location2);
+			}else{
+				g_guide2 = getSencondPoint(g_location2);
+			}
+
+			geo1.put("g_location", g_location1);
+
+			geo1.put("g_guide", g_guide1);
+
+			geo2.put("g_location", g_location2);
+
+			geo2.put("g_guide", g_guide2);
+
+			solrIndex.put("g_location", g_location1);
+
+			newSolrIndex.put("g_location", g_location2);
+
+			solrIndex.put("g_guide", g_guide1);
+
+			newSolrIndex.put("g_guide", g_guide2);
+
+			// 更新wkt
+			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
+					.get("feedback"));
+
+			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					"2001", null, g_location1,
+					feedbackObj));
+
+			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+					"2001", null, g_location2,
+					feedbackObj));
+
+			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
+					.toString().getBytes());
+
+			newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo2
+					.toString().getBytes());
+
+			// update deep (重新计算point)
+			//更新deep.geo
+			JSONObject deep1 = JSONObject.fromObject(solrIndex.get("deep"));
+			// 几何中心点
+			deep1.put("geo",g_guide1);
+
+			JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
+
+			deep2.put("geo", g_guide2);
+
+			put.addColumn("data".getBytes(), "deep".getBytes(), deep1.toString()
+					.getBytes());
+
+			newPut.addColumn("data".getBytes(), "deep".getBytes(), deep2.toString()
+					.getBytes());
+
+			solrIndex.put("deep", deep1);
+
+			newSolrIndex.put("deep", deep2);
+
+			// 2.update track
+
+			JSONObject track = JSONObject.fromObject(new String(result
+					.getValue("data".getBytes(), "track".getBytes())));
+
+			String date = DateUtils.dateToString(new Date(),
+					DateUtils.DATE_COMPACTED_FORMAT);
+
+			track = addTrackInfo(user, track, date);
+
+			JSONObject newTrack = JSONObject.fromObject(track);
+
+			put.addColumn("data".getBytes(), "track".getBytes(), track
+					.toString().getBytes());
+
+			newPut.addColumn("data".getBytes(), "track".getBytes(), newTrack
+					.toString().getBytes());
+
+			// update solr
+
+			solrIndex.put("t_date", date);
+
+			solrIndex.put("handler", user);
+
+			solr.addTips(solrIndex);
+
+			solr.addTips(newSolrIndex);
+
+			htab.put(put);
+
+			htab.put(newPut);
+
+			htab.close();
+
+			resultArr.add(solrIndex);
+			
+			resultArr.add(newSolrIndex);
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+			logger.error("测线打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());
+
+			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
+					+ e.getMessage(), e);
+		}
+		
+		return resultArr;
+		
+	}
+
+	/**
+	 * @Description:获取g_location1中的第二个形状点坐标
+	 * @param g_location1
+	 * @return
+	 * @author: y
+	 * @time:2017-4-17 下午4:27:51
+	 */
+	private JSONObject getSencondPoint(JSONObject g_location1) {
+		JSONObject g_guide1;
+		Geometry geo=GeoTranslator.geojson2Jts(g_location1);
+		
+		Coordinate[] cs = geo.getCoordinates();
+
+		double x  = cs[1].x;
+		double y  =cs[1].y;
+
+		Geometry pointGeo = GeoTranslator.point2Jts(x, y);
+		
+		g_guide1= GeoTranslator.jts2Geojson(pointGeo);
+		return g_guide1;
+	}
+
+	/**
 	 * @Description:根据tips类型，修改tips的关联测线
-	 * @param json
+	 * @param json：被修改的tips solr
 	 * @param line1
 	 * @param line2
 	 * @author: y
+	 * @return 
 	 * @time:2017-4-12 下午8:37:30
 	 */
-	private void updateRelateMeasuringLine(JSONObject json, JSONObject line1,
+	private JSONObject updateRelateMeasuringLine(JSONObject json, JSONObject line1,
 			JSONObject line2) {
 		TipsRelateLineUpdate relateLineUpdate = new TipsRelateLineUpdate(json,
 				line1, line2);
-		relateLineUpdate.excute();
+		return relateLineUpdate.excute();
+	}
+
+	/**
+	 * @Description:情报预处理tips提交（按照任务提交）
+	 * @param user
+	 * @author: y
+	 * @param taskType
+	 *            :1 快线任务号,2 快线子任务号,3 中线任务号,4 中线子任务号
+	 * @param taskId
+	 * @throws Exception
+	 * @time:2017-4-14 下午2:42:25
+	 */
+	public void submitInfoJobTips2Web(int user, int taskId, int taskType)
+			throws Exception {
+
+		Connection hbaseConn;
+
+		List<Put> puts = new ArrayList<Put>();
+		try {
+			hbaseConn = HBaseConnector.getInstance().getConnection();
+
+			Table htab = hbaseConn.getTable(TableName
+					.valueOf(HBaseConstant.tipTab));
+
+			TipsSelector selector = new TipsSelector();
+
+			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
+					taskType);
+
+			for (JSONObject json : tipsList) {
+
+				String rowkey = json.getString("rowkey");
+
+				json.put("t_fStatus", 1); // 是否完成多源融合 0 否；1 是；
+
+				JSONObject old = getOldTips(rowkey, htab);
+
+				JSONObject oldTrack = old.getJSONObject("track");
+
+				oldTrack.put("t_fStatus", 1);
+
+				// put
+				Put put = new Put(rowkey.getBytes());
+
+				put.addColumn("data".getBytes(), "track".getBytes(), oldTrack
+						.toString().getBytes());
+
+				puts.add(put);
+
+				solr.addTips(json); // 更新solr
+
+			}
+
+			htab.put(puts);
+
+			htab.close();
+
+		} catch (Exception e) {
+
+			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
+		}
+
 	}
 
 }

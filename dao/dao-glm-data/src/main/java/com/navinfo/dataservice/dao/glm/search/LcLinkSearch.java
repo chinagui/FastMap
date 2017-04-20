@@ -23,171 +23,172 @@ import oracle.sql.STRUCT;
 
 public class LcLinkSearch implements ISearch {
 
-    private Connection conn;
+	private Connection conn;
 
-    public LcLinkSearch(Connection conn) {
-        this.conn = conn;
-    }
-
-    @Override
-    public IObj searchDataByPid(int pid) throws Exception {
-        LcLinkSelector lcLinkSelector = new LcLinkSelector(conn);
-
-        IObj lcLink = (IObj) lcLinkSelector.loadById(pid, false);
-
-        return lcLink;
-    }
-    
-    @Override
-	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
-    	
-    	 LcLinkSelector selector = new LcLinkSelector(conn);
-
- 		List<IRow> rows = selector.loadByIds(pidList, false, true);
-
- 		return rows;
+	public LcLinkSearch(Connection conn) {
+		this.conn = conn;
 	}
-    
-    @Override
-    public List<SearchSnapshot> searchDataBySpatial(String wkt)
-            throws Exception {
 
-        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+	@Override
+	public IObj searchDataByPid(int pid) throws Exception {
+		LcLinkSelector lcLinkSelector = new LcLinkSelector(conn);
 
-        String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
+		IObj lcLink = (IObj) lcLinkSelector.loadById(pid, false);
 
-        PreparedStatement pstmt = null;
+		return lcLink;
+	}
 
-        ResultSet resultSet = null;
+	@Override
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
 
-        try {
-            pstmt = conn.prepareStatement(sql);
+		LcLinkSelector selector = new LcLinkSelector(conn);
 
-            pstmt.setString(1, wkt);
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
 
-            resultSet = pstmt.executeQuery();
+		return rows;
+	}
 
-            while (resultSet.next()) {
-                SearchSnapshot snapshot = new SearchSnapshot();
+	@Override
+	public List<SearchSnapshot> searchDataBySpatial(String wkt)
+			throws Exception {
 
-                JSONObject m = new JSONObject();
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-                m.put("a", resultSet.getInt("s_nodePid"));
+		String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
 
-                m.put("b", resultSet.getInt("e_nodePid"));
+		PreparedStatement pstmt = null;
 
-                m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
+		ResultSet resultSet = null;
 
-                snapshot.setM(m);
+		try {
+			pstmt = conn.prepareStatement(sql);
 
-                snapshot.setT(31);
+			pstmt.setString(1, wkt);
 
-                snapshot.setI(resultSet.getInt("link_pid"));
+			resultSet = pstmt.executeQuery();
 
-                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
 
-                JSONObject jo = Geojson.spatial2Geojson(struct);
+				JSONObject m = new JSONObject();
 
-                snapshot.setG(jo.getJSONArray("coordinates"));
+				m.put("a", resultSet.getInt("s_nodePid"));
 
-                list.add(snapshot);
-            }
-        } catch (Exception e) {
+				m.put("b", resultSet.getInt("e_nodePid"));
 
-            throw new Exception(e);
-        } finally {
-            DbUtils.closeQuietly(resultSet);
-            DbUtils.closeQuietly(pstmt);
-        }
+				m.put("c", resultSet.getInt("kind"));
 
-        return list;
-    }
+				snapshot.setM(m);
 
-    @Override
-    public List<SearchSnapshot> searchDataByCondition(String condition)
-            throws Exception {
+				snapshot.setT(31);
 
-        return null;
-    }
+				snapshot.setI(resultSet.getInt("link_pid"));
 
-    @Override
-    public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
-                                                        int gap) throws Exception {
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+				JSONObject jo = Geojson.spatial2Geojson(struct);
 
-        String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
+				snapshot.setG(jo.getJSONArray("coordinates"));
 
-        PreparedStatement pstmt = null;
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
 
-        ResultSet resultSet = null;
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 
-        try {
-            pstmt = conn.prepareStatement(sql);
+		return list;
+	}
 
-            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+	@Override
+	public List<SearchSnapshot> searchDataByCondition(String condition)
+			throws Exception {
 
-            pstmt.setString(1, wkt);
+		return null;
+	}
 
-            resultSet = pstmt.executeQuery();
+	@Override
+	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
+			int gap) throws Exception {
 
-            double px = MercatorProjection.tileXToPixelX(x);
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-            double py = MercatorProjection.tileYToPixelY(y);
+		String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
 
-            while (resultSet.next()) {
-                SearchSnapshot snapshot = new SearchSnapshot();
+		PreparedStatement pstmt = null;
 
-                JSONObject m = new JSONObject();
+		ResultSet resultSet = null;
 
-                m.put("a", resultSet.getInt("s_node_pid"));
+		try {
+			pstmt = conn.prepareStatement(sql);
 
-                m.put("b", resultSet.getInt("e_node_pid"));
+			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-                m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
+			pstmt.setString(1, wkt);
 
-                snapshot.setM(m);
+			resultSet = pstmt.executeQuery();
 
-                snapshot.setT(31);
+			double px = MercatorProjection.tileXToPixelX(x);
 
-                snapshot.setI(resultSet.getInt("link_pid"));
+			double py = MercatorProjection.tileYToPixelY(y);
 
-                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
 
-                JGeometry geo = JGeometry.load(struct);
+				JSONObject m = new JSONObject();
 
-                if (geo.getType() != 2) {
-                    continue;
-                }
+				m.put("a", resultSet.getInt("s_node_pid"));
 
-                JSONObject geojson = Geojson.spatial2Geojson(struct);
+				m.put("b", resultSet.getInt("e_node_pid"));
 
-                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+				m.put("c", resultSet.getInt("kind") <= 8 ? 21 : 22);
 
-                snapshot.setG(jo.getJSONArray("coordinates"));
+				snapshot.setM(m);
 
-                list.add(snapshot);
-            }
-        } catch (Exception e) {
+				snapshot.setT(31);
 
-            throw new Exception(e);
-        } finally {
-            DbUtils.closeQuietly(resultSet);
-            DbUtils.closeQuietly(pstmt);
-        }
+				snapshot.setI(resultSet.getInt("link_pid"));
 
-        return list;
-    }
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-    public static void main(String[] args) throws Exception {
-        Connection conn = DBConnector.getInstance().getConnectionById(11);
+				JGeometry geo = JGeometry.load(struct);
 
-        LcLinkSearch search = new LcLinkSearch(conn);
+				if (geo.getType() != 2) {
+					continue;
+				}
 
-        List<SearchSnapshot> res = search.searchDataByTileWithGap(215829, 99329, 18, 20);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-        for (SearchSnapshot s : res) {
-            System.out.println(s.Serialize(null));
-        }
-    }
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+				snapshot.setG(jo.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return list;
+	}
+
+	public static void main(String[] args) throws Exception {
+		Connection conn = DBConnector.getInstance().getConnectionById(11);
+
+		LcLinkSearch search = new LcLinkSearch(conn);
+
+		List<SearchSnapshot> res = search.searchDataByTileWithGap(215829,
+				99329, 18, 20);
+
+		for (SearchSnapshot s : res) {
+			System.out.println(s.Serialize(null));
+		}
+	}
 }

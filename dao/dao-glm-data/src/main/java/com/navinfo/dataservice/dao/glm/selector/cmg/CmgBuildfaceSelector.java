@@ -47,7 +47,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
     public List<CmgBuildface> listTheAssociatedFaceOfTheLink(int linkPid, boolean isLock) throws Exception {
         List<CmgBuildface> result = new ArrayList<>();
 
-        String sql = "select t1.face_pid, t2.link_pid from cmg_buildface t1, cmg_buildface_topo t2 where t1.face_pid = t2.face_pid and "
+        String sql = "select t1.* from cmg_buildface t1, cmg_buildface_topo t2 where t1.face_pid = t2.face_pid and "
                 + "t2.link_pid = :1 and t1.u_record <> 2 and t2.u_record <> 2";
         if (isLock) {
             sql += " for update nowait";

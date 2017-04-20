@@ -2369,6 +2369,7 @@ public class TaskOperation {
 	}
 
 	/**
+	 * 获取block对应的regionid
 	 * @param blockId
 	 * @return
 	 * @throws Exception 

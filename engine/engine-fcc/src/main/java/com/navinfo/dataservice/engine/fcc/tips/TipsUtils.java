@@ -13,7 +13,10 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
  * @Description: TODO
  * 
  */
+
+
 public class TipsUtils {
+	
 
 	public static int[] notExpSourceType = { 8001, 8002 }; // 不下载的tips
 	
@@ -151,7 +154,12 @@ public class TipsUtils {
 
 		index.put("feedback", feedbacks.toString());
 
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedbacks));
+		
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
 				g_location, feedbacks));
 
 		index.put("s_reliability", 100);
@@ -172,6 +180,9 @@ public class TipsUtils {
 		
 		index.put("t_fStatus", json.getInt("t_fStatus"));
 		
+		index.put("s_qSubTaskId", json.getInt("s_qSubTaskId"));
+		
+		index.put("s_mSubTaskId", json.getInt("s_mSubTaskId"));
 		
 		return index;
 		
@@ -199,6 +210,8 @@ public class TipsUtils {
 	 * @author: y
 	 * @param currentDate
 	 * @param s_reliability
+	 * @param s_mSubTaskId 
+	 * @param s_qSubTaskId 
 	 * @throws Exception
 	 * @time:2016-11-16 上午10:46:38
 	 */
@@ -208,7 +221,7 @@ public class TipsUtils {
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
 			JSONObject feedbackObj, int s_reliability,int t_inMeth,
-			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus) throws Exception {
+			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus, int s_qSubTaskId, int s_mSubTaskId) throws Exception {
 		JSONObject index = new JSONObject();
 
 		index.put("id", rowkey);
@@ -276,8 +289,13 @@ public class TipsUtils {
 
 		index.put("feedback", feedbackObj);
 
-		index.put("wkt", TipsImportUtils.generateSolrWkt(
-				String.valueOf(sourceType), deep, g_location, feedbackObj));
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedbackObj));
+		
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
+				g_location, feedbackObj));
 
 		index.put("s_reliability", s_reliability);
 		
@@ -289,6 +307,9 @@ public class TipsUtils {
 		
 		index.put("t_fStatus", t_fStatus);
 		
+		index.put("s_qSubTaskId", s_qSubTaskId);
+		
+		index.put("s_mSubTaskId", s_mSubTaskId);
 
 		return index;
 	}
@@ -344,11 +365,15 @@ public class TipsUtils {
 	 * @param s_sourceProvider
 	 * @return
 	 * @author: y
+	 * @param s_mSubTaskId 
+	 * @param s_mTaskId 
+	 * @param s_qSubTaskId 
+	 * @param s_qTaskId 
 	 * @time:2016-11-17 下午8:30:29
 	 */
 	public static JSONObject newSource(int s_featureKind, String s_project,
 			int s_sourceCode, String s_sourceId, String s_sourceType,
-			int s_reliability, int s_sourceProvider) {
+			int s_reliability, int s_sourceProvider, int s_qTaskId, int s_qSubTaskId, int s_mTaskId, int s_mSubTaskId) {
 		JSONObject source = new JSONObject();
 		source.put("s_featureKind", s_featureKind);
 		source.put("s_project", s_project);
@@ -357,6 +382,10 @@ public class TipsUtils {
 		source.put("s_sourceType", s_sourceType);
 		source.put("s_reliability", s_reliability);
 		source.put("s_sourceProvider", s_sourceProvider);
+		source.put("s_qTaskId", s_qTaskId);
+		source.put("s_qSubTaskId", s_qSubTaskId);
+		source.put("s_mTaskId", s_mTaskId);
+		source.put("s_mSubTaskId", s_mSubTaskId);
 		return source;
 	}
 
@@ -424,8 +453,12 @@ public class TipsUtils {
 		index.put("g_location",g_location);
 		index.put("g_guide",jsonInfo.getJSONObject("geometry").getJSONObject("g_guide").toString());
 		
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedback));
 		
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
 				g_location, feedback));
 	   
 	   index.put("deep",jsonInfo.getJSONObject("deep").toString());
@@ -457,6 +490,9 @@ public class TipsUtils {
 	   }else{
 		   index.put("tipdiff", "{}");
 	   }
+	   
+	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
+	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
 	   
 	   return index;
 	}

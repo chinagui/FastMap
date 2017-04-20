@@ -4,8 +4,6 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
-import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
-import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildnodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 
 import java.sql.Connection;
@@ -57,9 +55,7 @@ public class Operation implements IOperation {
             result.insertObject(cmglink, ObjStatus.DELETE, cmglink.pid());
         }
         // 处理CMG-FACE
-        CmgBuildnodeSelector cmgnodeSelector = new CmgBuildnodeSelector(conn);
-        CmgBuildlinkSelector cmglinkSelector = new CmgBuildlinkSelector(conn);
-        CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, cmgnodeSelector, cmglinkSelector);
+        CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, conn);
         return null;
     }
 

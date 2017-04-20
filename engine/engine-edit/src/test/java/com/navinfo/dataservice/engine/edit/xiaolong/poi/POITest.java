@@ -197,8 +197,8 @@ public class POITest extends InitApplication {
 			// subtaskId
 			int subtaskId = jsonReq.getInt("subtaskId");
 			int type = jsonReq.getInt("type");
-			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+//			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+//			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			int pageNum = jsonReq.getInt("pageNum");
 			int pageSize = jsonReq.getInt("pageSize");
 			int pid = 0;
@@ -211,7 +211,7 @@ public class POITest extends InitApplication {
 			}
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiSelector selector = new IxPoiSelector(conn);
-			JSONObject jsonObject = selector.loadPids(false, pidName, type, subtask.getGeometry(), pageSize,
+			JSONObject jsonObject = selector.loadPids(false, pidName, type, subtaskId, pageSize,
 					pageNum);
 			System.out.println(jsonObject.toString());
 		} catch (Exception e) {

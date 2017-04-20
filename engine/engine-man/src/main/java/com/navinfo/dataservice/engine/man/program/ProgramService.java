@@ -2036,7 +2036,12 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
+	/**
+	 * 调整子任务对应快线项目范围.若子任务非快线项目，则不进行调整
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception
+	 */
 	public void changeProgramGridByTask(Connection conn, int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();

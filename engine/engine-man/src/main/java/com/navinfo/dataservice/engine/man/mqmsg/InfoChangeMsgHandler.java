@@ -270,7 +270,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 	 *1.所有生管角色
 	 *2.分配的采集作业组组长(暂无)
 	 * 有新的一级情报，情报名称：XXX，请关注*/
-	public void taskPushMsg(Connection conn,String infoName, long pushUser, String inforId) {
+	public void taskPushMsg(Connection conn,String infoName, long pushUser, Integer inforId) {
 		try {
 			String msgTitle="新增一级情报";
 			List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();

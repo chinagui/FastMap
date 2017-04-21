@@ -39,7 +39,7 @@ public class InforManOperation {
 		run.update(conn,sql);
 	}*/
 	
-	public static void updatePlanStatus(Connection conn,String inforId,int planStatus) throws Exception{
+	public static void updatePlanStatus(Connection conn,int inforId,int planStatus) throws Exception{
 		String sql="update infor set plan_status="+planStatus+" where infor_id='"+inforId+"'";
 		QueryRunner run = new QueryRunner();
 		run.update(conn,sql);

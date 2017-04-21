@@ -63,11 +63,11 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			
-//			int inforId = getInforId(conn);
-			String inforId = "DDD";
+			int inforId = getInforId(conn);
+//			String inforId = "DDD";
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
-			infor.setInforId("DDD");
+			infor.setInforId(inforId);
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
 			infor.setExpectDate(new Timestamp(df.parse(dataJson.getString("expectDate")).getTime()));
 			infor.setPublishDate(new Timestamp(df.parse(dataJson.getString("publishDate")).getTime()));
@@ -135,8 +135,8 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			String insertPart="";
 			String values="";
 			List<Object> value = new ArrayList<Object>();
-//			if (bean!=null&&bean.getInforId()!=null && bean.getInforId()!=0 && StringUtils.isNotEmpty(bean.getInforId().toString())){
-			if (bean!=null&&bean.getInforId()!=null && !bean.getInforId().isEmpty() && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			if (bean!=null&&bean.getInforId()!=0){
+//			if (bean!=null&&bean.getInforId()!=null && !bean.getInforId().isEmpty() && StringUtils.isNotEmpty(bean.getInforId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 				insertPart+=" INFOR_ID ";
 				values+=" ? ";

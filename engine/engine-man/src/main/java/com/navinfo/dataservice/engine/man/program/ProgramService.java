@@ -95,7 +95,7 @@ public class ProgramService {
 				updateSql+=" CITY_ID ="+bean.getCityId();
 			};
 			
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			if (bean!=null&&bean.getInforId()!=0){
 				updateSql+=" infor_id ='" + bean.getInforId() + "'";
 			};
 			run.update(conn,updateSql);
@@ -115,7 +115,7 @@ public class ProgramService {
 				valuePart+=bean.getCityId();
 			};
 			
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			if (bean!=null&&bean.getInforId()!=0){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" infor_id ";
 				valuePart+= "'" + bean.getInforId() + "'";
@@ -198,7 +198,7 @@ public class ProgramService {
 				CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
 			};
 		//修改项目对应情报为已规划
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+			if (bean!=null&&bean.getInforId()!=0){
 				InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
 			};		
 		return programId;
@@ -1972,7 +1972,7 @@ public class ProgramService {
 					Program map = new Program();
 					map.setProgramId(rs.getInt("PROGRAM_ID"));
 					map.setName(rs.getString("NAME"));
-					map.setInforId(rs.getString("INFOR_ID"));
+					map.setInforId(rs.getInt("INFOR_ID"));
 					map.setType(rs.getInt("TYPE"));
 					map.setCollectPlanStartDate(rs.getTimestamp("collect_plan_start_date"));
 					map.setCollectPlanEndDate(rs.getTimestamp("collect_plan_end_date"));
@@ -2182,7 +2182,7 @@ public class ProgramService {
 			updateSql+=" CITY_ID ="+bean.getCityId();
 		};
 
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+		if (bean!=null&&bean.getInforId()!=0){
 			updateSql+=" infor_id ='" + bean.getInforId() + "'";
 		};
 		run.update(conn,updateSql);
@@ -2200,7 +2200,7 @@ public class ProgramService {
 			valuePart+=bean.getCityId();
 		};
 
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+		if (bean!=null&&bean.getInforId()!=0){
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 			insertPart+=" infor_id ";
 			valuePart+= "'" + bean.getInforId() + "'";
@@ -2283,7 +2283,7 @@ public class ProgramService {
 			CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
 		};
 		//修改项目对应情报为已规划
-		if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
+		if (bean!=null&&bean.getInforId()!=0){
 			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
 		};	
 	}

@@ -10,9 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bson.Document;
@@ -20,13 +17,14 @@ import org.bson.Document;
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.QueryOperators;
-import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class SampleDataDiffer {
 	Param inParam;
@@ -141,7 +139,15 @@ public class SampleDataDiffer {
 			Map<String,List<String>> ixPoiChildrenMap = queryIxPoiChildren(conn);
 			Map<String,JSONArray> ixPoiNameMap = queryIxPoiName(conn);
 			Map<String,JSONArray> ixPoiAddressMap = queryIxPoiAddress(conn);
+			Map<String,JSONArray> ixPoiBusinessTimeMap = queryBusinessTimes(conn);
+			Map<String,JSONArray> ixPoiContactMap=queryIxPoiContact(conn);
 			//TODO:查询其他子表
+			Map<String,JSONObject> ixPoiChargingStation = queryIxPoiCharigngStation(conn);
+			Map<String,JSONArray> ixPoiChargingPlots = queryIxPoiChargingPlot(conn);
+			Map<String,JSONObject> ixPoiGasStation = queryIxPoiGasStation(conn);
+			Map<String,JSONObject> ixPoiAttraction = queryIxPoiAttraction(conn);
+			Map<String,JSONObject> ixPoiRental = queryIxPoiRental(conn);
+			Map<String,JSONObject> ixPoiHospital = queryIxPoiHospital(conn);
 			//执行mongdb和oracle数据的差分比较
 			List<JSONObject> outResult = new ArrayList<JSONObject>();
 			for (String fid : mongoData.keySet()){
@@ -154,7 +160,7 @@ public class SampleDataDiffer {
 					if (ixPoiMap.containsKey(fid)){
 						JSONObject orcleIxPoi = ixPoiMap.get(fid);
 						List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
-						if(diffIxPoiResult!=null){
+						if(!diffIxPoiResult.isEmpty()){
 							diffFields.addAll(diffIxPoiResult);
 						}
 					}
@@ -167,14 +173,13 @@ public class SampleDataDiffer {
 						}
 					} else {
 						JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
-						if (relateParent != null && relateParent.containsKey("parentFid")) {
+						if (!relateParent.isNullObject() && relateParent.containsKey("parentFid")) {
 							String parentFid = relateParent.getString("parentFid");
 							if (parentFid != null && !parentFid.isEmpty()) {
 								diffFields.add(setDiffField("relateParent",parentFid,null));
 							}
 						}
 					}
-					
 					logger.info("比较relateChildren属性");
 					if (ixPoiChildrenMap.containsKey(fid)) {
 						List<DiffField> diffIxPoiChildResult = diffIxPoiChildren(mongoPoi,ixPoiChildrenMap.get(fid));
@@ -187,9 +192,131 @@ public class SampleDataDiffer {
 							diffFields.add(setDiffField("relateChildren",relateChildren,null));
 						}
 					}
+					logger.info("比较names属性");
+					if(ixPoiNameMap.containsKey(fid)){
+						List<DiffField> diffIxPoiNamesResult = diffIxPoiNames(mongoPoi,ixPoiNameMap.get(fid));
+						if (diffIxPoiNamesResult!=null){
+							diffFields.addAll(diffIxPoiNamesResult);
+						}
+					}else{
+						JSONArray mongoNames = mongoPoi.getJSONArray("names");
+						if (mongoNames.size()>0){
+							diffFields.add(setDiffField("names", mongoNames, null));
+						}
+					}
+					logger.info("比较addresses属性");
+					if(ixPoiAddressMap.containsKey(fid)){
+						List<DiffField> diffIxPoiAddressesResult = diffIxPoiAddress(mongoPoi,ixPoiAddressMap.get(fid));
+						if (diffIxPoiAddressesResult!=null){
+							diffFields.addAll(diffIxPoiAddressesResult);
+						}
+					}else{
+						JSONArray mongoAddresses = mongoPoi.getJSONArray("addresses");
+						if (mongoAddresses.size()>0){
+							diffFields.add(setDiffField("addresses", mongoAddresses, null));
+						}
+					}
+					logger.info("比较businessTime属性");
+					if(ixPoiBusinessTimeMap.containsKey(fid)){
+						List<DiffField> diffIxPoiBusinessTimeResult = diffIxPoiBusinessTime(mongoPoi,ixPoiBusinessTimeMap.get(fid));
+						if (diffIxPoiBusinessTimeResult!=null){
+							diffFields.addAll(diffIxPoiBusinessTimeResult);
+						}
+					}else{
+						JSONArray mongoBusinessTimes = mongoPoi.getJSONArray("businessTime");
+						if (mongoBusinessTimes.size()>0){
+							diffFields.add(setDiffField("businessTime", mongoBusinessTimes, null));
+						}
+					}
+					logger.info("比较CONTACT子表");
+					if(ixPoiContactMap.containsKey(fid)){
+						List<DiffField> diffIxPoiContactResult=diffIxPoiContact(mongoPoi,ixPoiContactMap.get(fid));
+						if(diffIxPoiContactResult!=null){
+							diffFields.addAll(diffIxPoiContactResult);
+						}
+					}else{
+						JSONArray relateContact=mongoPoi.getJSONArray("contacts");
+						if(relateContact.size()>0){
+							diffFields.add(setDiffField("contacts", relateContact,null));
+						}
+					}
+					//TODO:比较其他的子表属性
+					logger.info("比较chargingStation属性");
+					if (ixPoiChargingStation.containsKey(fid)) {
+						List<DiffField> diffIxPoiChargingStationResult = diffIxPoiChargingStation(mongoPoi,ixPoiChargingStation.get(fid));
+						if(diffIxPoiChargingStationResult!=null){
+							diffFields.addAll(diffIxPoiChargingStationResult);
+						}
+					} else {
+						JSONObject chargingStation = mongoPoi.getJSONObject("chargingStation");
+						if (!chargingStation.isNullObject() && !chargingStation.isEmpty()) {
+							diffFields.add(setDiffField("chargingStation",chargingStation,null));
+						}
+					}
+					logger.info("比较chargingPlots属性");
+					if (ixPoiChargingPlots.containsKey(fid)) {
+						List<DiffField> diffIxPoiChargingPlotsResult = diffIxPoiChargingPlots(mongoPoi,ixPoiChargingPlots.get(fid));
+						if(diffIxPoiChargingPlotsResult!=null){
+							diffFields.addAll(diffIxPoiChargingPlotsResult);
+						}
+					} else {
+						JSONObject chargingPlots = mongoPoi.getJSONObject("chargingPole");
+						if (!chargingPlots.isNullObject() && !chargingPlots.isEmpty()) {
+							diffFields.add(setDiffField("chargingPole",chargingPlots,null));
+						}
+					}
+					logger.info("比较gasstation属性");
+					if (ixPoiGasStation.containsKey(fid)) {
+						List<DiffField> diffIxPoiGasStationResult = diffIxPoiGasStation(mongoPoi,ixPoiGasStation.get(fid));
+						if(diffIxPoiGasStationResult!=null){
+							diffFields.addAll(diffIxPoiGasStationResult);
+						}
+					} else {
+						JSONObject gasStation = mongoPoi.getJSONObject("gasStation");
+						if (!gasStation.isNullObject() && !gasStation.isEmpty()) {
+							diffFields.add(setDiffField("gasStation",gasStation,null));
+						}
+					}
+					logger.info("比较attraction属性");
+					if (ixPoiAttraction.containsKey(fid)) {
+						List<DiffField> diffIxPoiAttractionResult = diffIxPoiAttraction(mongoPoi,ixPoiAttraction.get(fid));
+						if(diffIxPoiAttractionResult!=null){
+							diffFields.addAll(diffIxPoiAttractionResult);
+						}
+					} else {
+						JSONObject attraction = mongoPoi.getJSONObject("attraction");
+						if (!attraction.isNullObject() && !attraction.isEmpty()) {
+							diffFields.add(setDiffField("attraction",attraction,null));
+						}
+					}
+					logger.info("比较rental属性");
+					if (ixPoiRental.containsKey(fid)) {
+						List<DiffField> diffIxPoiRentalResult = diffIxPoiRental(mongoPoi,ixPoiRental.get(fid));
+						if(diffIxPoiRentalResult!=null){
+							diffFields.addAll(diffIxPoiRentalResult);
+						}
+					} else {
+						JSONObject rental = mongoPoi.getJSONObject("rental");
+						if (!rental.isNullObject() && !rental.isEmpty()) {
+							diffFields.add(setDiffField("rental",rental,null));
+						}
+					}
+					logger.info("比较hospital属性");
+					if (ixPoiHospital.containsKey(fid)) {
+						List<DiffField> diffIxPoiHospitalResult = diffIxPoiHospital(mongoPoi,ixPoiHospital.get(fid));
+						if(diffIxPoiHospitalResult!=null){
+							diffFields.addAll(diffIxPoiHospitalResult);
+						}
+					} else {
+						JSONObject hospital = mongoPoi.getJSONObject("hospital");
+						if (!hospital.isNullObject() && !hospital.isEmpty()) {
+							diffFields.add(setDiffField("hospital",hospital,null));
+						}
+					}
+
 					
 					if (CollectionUtils.isEmpty(diffFields)) continue;
-					//TODO:比较其他的子表属性
+					
 					
 					DiffResult diffResult= new DiffResult(fid,diffFields);
 					
@@ -217,6 +344,156 @@ public class SampleDataDiffer {
 //		String txtPath = "W:\\test\\POI.txt";
 		String txtPath = this.inParam.getOutputFile();
 		CollectConvertUtils.writeJSONObject2TxtFile(txtPath, outResult);
+	}
+	private List<DiffField> diffIxPoiContact(JSONObject mongoPoi, JSONArray contactLists) {
+		List<DiffField> diffList = new ArrayList<DiffField>();
+
+		JSONArray relateContacts = mongoPoi.getJSONArray("contacts");
+		if (relateContacts.size() == 0) {
+			diffList.add(setDiffField("contacts", null, contactLists));
+			return diffList;
+		} else {
+			if (relateContacts.size() != contactLists.size()) {
+				// 数量不相等
+				diffList.add(setDiffField("contacts", relateContacts, contactLists));
+				return diffList;
+			} else {
+				
+				for (int i = 0; i < relateContacts.size(); i++) {
+					JSONObject relateObj = relateContacts.getJSONObject(i);
+					boolean isSame = false;
+					for (int j = 0; j < contactLists.size(); j++) {
+						JSONObject contactObj = contactLists.getJSONObject(i);
+
+						// 判断联系方式和联系方式类型，如果相同，判断优先选择
+						if (isStringSame(relateObj.getString("number"), contactObj.getString("number"))
+								&& relateObj.getInt("type") == contactObj.getInt("type")) {
+							if (relateObj.getInt("priority") == contactObj.getInt("priority")) {
+								isSame = true;
+								break;
+							}
+						}
+					} // 内层for
+					if(!isSame){
+						diffList.add(setDiffField("contacts", relateContacts, contactLists));
+						return diffList;
+					}
+				} // 外层for
+			}
+		} // 外层else
+
+		return null;
+	}
+	private List<DiffField> diffIxPoiBusinessTime(JSONObject mongoPoi, JSONArray orcleBusinessTimes){
+		JSONArray mongoBusinessTimes = mongoPoi.getJSONArray("businessTime");
+		if (mongoBusinessTimes.size() != orcleBusinessTimes.size()){
+			// 数量不相等
+			List<DiffField> diffResult = new ArrayList<DiffField>();
+			diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
+			return diffResult;
+		}else{
+			for (int i=0;i<mongoBusinessTimes.size();i++) {
+				boolean isSame = false;
+				JSONObject mongoBusinessTime = mongoBusinessTimes.getJSONObject(i);
+				for (int j=0;j<orcleBusinessTimes.size();j++){
+					JSONObject orcleBusinessTime = orcleBusinessTimes.getJSONObject(j);
+					//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
+					//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
+					if (isStringSame(mongoBusinessTime.getString("validWeek"),orcleBusinessTime.getString("validWeek")) &&
+							isStringSame(mongoBusinessTime.getString("weekStartMonth"),orcleBusinessTime.getString("weekStartMonth")) &&
+						    isStringSame(mongoBusinessTime.getString("timeDuration"),orcleBusinessTime.getString("timeDuration")) &&
+						    isStringSame(mongoBusinessTime.getString("timeStart"),orcleBusinessTime.getString("timeStart")) &&
+							isStringSame(mongoBusinessTime.getString("monEnd"),orcleBusinessTime.getString("monEnd")) &&
+							isStringSame(mongoBusinessTime.getString("weekStartYear"),orcleBusinessTime.getString("weekStartYear")) &&
+							isStringSame(mongoBusinessTime.getString("monStart"),orcleBusinessTime.getString("monStart")) &&
+						    isStringSame(mongoBusinessTime.getString("dayEnd"),orcleBusinessTime.getString("dayEnd")) &&
+							isStringSame(mongoBusinessTime.getString("weekEndYear"),orcleBusinessTime.getString("weekEndYear")) &&
+							isStringSame(mongoBusinessTime.getString("dayStart"),orcleBusinessTime.getString("dayStart")) &&
+						    isStringSame(mongoBusinessTime.getString("weekEndMonth"),orcleBusinessTime.getString("weekEndMonth"))){
+						isSame = true;
+						break;
+					}
+				}	
+				if (!isSame){
+					List<DiffField> diffResult = new ArrayList<DiffField>();
+					diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
+					return diffResult;
+				}
+			}
+		}
+		return null;
+	}
+	private List<DiffField> diffIxPoiAddress(JSONObject mongoPoi, JSONArray orcleAddresses){
+		JSONArray mongoAddresses = mongoPoi.getJSONArray("addresses");
+		if (mongoAddresses.size() != orcleAddresses.size()){
+			// 数量不相等
+			List<DiffField> diffResult = new ArrayList<DiffField>();
+			diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
+			return diffResult;
+		}else{
+			
+			for (int i=0;i<mongoAddresses.size();i++) {
+				boolean isSame = false;
+				JSONObject mongoAddress = mongoAddresses.getJSONObject(i);
+				for (int j=0;j<orcleAddresses.size();j++){
+					JSONObject orcleAddress = orcleAddresses.getJSONObject(j);
+					//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
+					//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
+					if (isStringSame(mongoAddress.getString("langCode"),orcleAddress.getString("langCode")) &&
+							isStringSame(mongoAddress.getString("fullName"),orcleAddress.getString("fullName")) &&
+						    isStringSame(mongoAddress.getString("fullNamePinyin"),orcleAddress.getString("fullNamePinyin")) &&
+						    isStringSame(mongoAddress.getString("roadName"),orcleAddress.getString("roadName")) &&
+							isStringSame(mongoAddress.getString("roadNamePinyin"),orcleAddress.getString("roadNamePinyin")) &&
+							isStringSame(mongoAddress.getString("addrName"),orcleAddress.getString("addrName")) &&
+						    isStringSame(mongoAddress.getString("addrNamePinyin"),orcleAddress.getString("addrNamePinyin"))){
+						isSame = true;
+						break;
+					}
+				}	
+				if (!isSame){
+					List<DiffField> diffResult = new ArrayList<DiffField>();
+					diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
+					return diffResult;
+				}
+			}
+		}
+		return null;
+	}
+	private List<DiffField> diffIxPoiNames(JSONObject mongoPoi, JSONArray orcleNames){
+		JSONArray mongoNames = mongoPoi.getJSONArray("names");
+		if (mongoNames.size() != orcleNames.size()){
+			// 数量不相等
+			List<DiffField> diffResult = new ArrayList<DiffField>();
+			diffResult.add(setDiffField("names", mongoNames, orcleNames));
+			return diffResult;
+		}else{
+			
+			for (int i=0;i<mongoNames.size();i++) {
+				boolean isSame = false;
+				JSONObject mongoName = mongoNames.getJSONObject(i);
+				for (int j=0;j<orcleNames.size();j++){
+					JSONObject orcleName = orcleNames.getJSONObject(j);
+					//如果数量相同，但是包含的逻辑主键 “poi_pid,name_class,name_type,lang_code,name” 不相同，则不同；
+					//如果mongo，oracle 的““poi_pid,name_class,name_type,lang_code,name”” 相同，
+					//但是“name_phonetic或者name-groupid”不同，则不同
+					if (mongoName.getInt("nameClass")==orcleName.getInt("nameClass") && 
+							mongoName.getInt("type")==orcleName.getInt("type") && 
+							isStringSame(mongoName.getString("langCode"),orcleName.getString("langCode")) &&
+							isStringSame(mongoName.getString("nameStr"),orcleName.getString("nameStr"))){
+						if (isStringSame(mongoName.getString("nameStrPinyin"),orcleName.getString("nameStrPinyin")) || mongoName.getInt("nameGrpId")==orcleName.getInt("nameGrpId")){
+							isSame = true;
+							break;
+						}
+					}
+				}
+				if (!isSame){
+					List<DiffField> diffResult = new ArrayList<DiffField>();
+					diffResult.add(setDiffField("names", mongoNames, orcleNames));
+					return diffResult;
+				}
+			}
+		}
+		return null;
 	}
 	private List<DiffField> diffIxPoiParent(JSONObject mongoPoi, String parentFid) {
 		JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
@@ -263,6 +540,119 @@ public class SampleDataDiffer {
 						return diffList;
 					}
 				}
+			}
+		}
+		return null;
+	}
+		private List<DiffField> diffIxPoiChargingStation(JSONObject mongoPoi, JSONObject chargingStation) throws Exception {
+		JSONObject chargingStationObj = mongoPoi.getJSONObject("chargingStation");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("chargingStation",chargingStationObj,chargingStation));
+		if (chargingStationObj.isNullObject() || chargingStationObj.isEmpty()) {
+			return diffList;
+		} else {
+			if (chargingStationObj.getInt("type") != chargingStation.getInt("chargingType") || !isStringSame(chargingStationObj.getString("changeBrands"),chargingStation.getString("changeBrands"))
+				|| !isStringSame(chargingStationObj.getString("changeOpenType"),chargingStation.getString("changeOpenType")) || chargingStationObj.getInt("chargingNum") != chargingStation.getInt("chargingNum") 
+				|| !isStringSame(chargingStationObj.getString("servicePro"),chargingStation.getString("serviceProv")) || !isStringSame(chargingStationObj.getString("openHour"),chargingStation.getString("openHour"))
+				|| chargingStationObj.getInt("parkingFees") != chargingStation.getInt("parkingFees") || !isStringSame(chargingStationObj.getString("parkingInfo"),chargingStation.getString("parkingInfo"))
+				|| chargingStationObj.getInt("availableState") != chargingStation.getInt("availableState")) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiChargingPlots(JSONObject mongoPoi, JSONArray chargingPlots) throws Exception {
+		JSONArray chargingPole = mongoPoi.getJSONArray("chargingPole");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("chargingPole",chargingPole,chargingPlots));
+		if (chargingPole.size() != chargingPlots.size()) {
+			// 数量不相等
+			return diffList;
+		} else {
+			for (int i=0;i<chargingPole.size();i++) {
+				boolean flag = true;
+				JSONObject poleObj = chargingPole.getJSONObject(i);
+				for (int j=0;j<chargingPlots.size();j++) {
+					JSONObject plotsObj = chargingPlots.getJSONObject(j);
+					if (isStringSame(poleObj.getString("plugType"),plotsObj.getString("plugType")) && isStringSame(poleObj.getString("productNum"),plotsObj.getString("productNum"))
+						&& isStringSame(poleObj.getString("power"),plotsObj.getString("power")) && poleObj.getInt("floor") == plotsObj.getInt("floor")
+						&& isStringSame(poleObj.getString("factoryNum"),plotsObj.getString("factoryNum")) && poleObj.getInt("locationType") == plotsObj.getInt("locationType")
+						&& isStringSame(poleObj.getString("parkingNum"),plotsObj.getString("parkingNum")) && poleObj.getInt("acdc") == plotsObj.getInt("acdc")
+						&& isStringSame(poleObj.getString("payment"),plotsObj.getString("payment")) && isStringSame(poleObj.getString("current"),plotsObj.getString("current"))
+						&& isStringSame(poleObj.getString("plotNum"),plotsObj.getString("plotNum")) && poleObj.getInt("plugNum") == plotsObj.getInt("plugNum")
+						&& poleObj.getInt("mode") == plotsObj.getInt("mode") && isStringSame(poleObj.getString("prices"),plotsObj.getString("prices"))
+						&& isStringSame(poleObj.getString("openType"),plotsObj.getString("openType")) && poleObj.getInt("availableState") == plotsObj.getInt("availableState")
+						&& isStringSame(poleObj.getString("manufacturer"),plotsObj.getString("manufacturer")) && poleObj.getInt("voltage") == plotsObj.getInt("voltage")) {
+						flag = false;
+						break;
+					}
+				}
+				if (flag) {
+					return diffList;
+				}
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiGasStation(JSONObject mongoPoi, JSONObject gasStationObj) throws Exception {
+		JSONObject gasStation = mongoPoi.getJSONObject("gasStation");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("gasStation",gasStation,gasStationObj));
+		if (gasStation.isNullObject() || gasStation.isEmpty()) {
+			return diffList;
+		} else {
+			if (!isStringSame(gasStation.getString("servicePro"),gasStationObj.getString("servicePro")) || !isStringSame(gasStation.getString("service"),gasStationObj.getString("service"))
+				|| !isStringSame(gasStation.getString("openHour"),gasStationObj.getString("openHour")) || !isStringSame(gasStation.getString("egType"),gasStationObj.getString("egType")) 
+				|| !isStringSame(gasStation.getString("fuelType"),gasStationObj.getString("fuelType")) || !isStringSame(gasStation.getString("payment"),gasStationObj.getString("payment"))
+				|| !isStringSame(gasStation.getString("mgType"),gasStationObj.getString("mgType")) || !isStringSame(gasStation.getString("oilType"),gasStationObj.getString("oilType"))) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiAttraction(JSONObject mongoPoi, JSONObject attractionObj) throws Exception {
+		JSONObject attraction = mongoPoi.getJSONObject("attraction");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("attraction",attraction,attractionObj));
+		if (attraction.isNullObject() || attraction.isEmpty()) {
+			return diffList;
+		} else {
+			if (!isStringSame(attraction.getString("ticketPrice"),attractionObj.getString("ticketPrice")) || attraction.getInt("sightLevel") != attractionObj.getInt("sightLevel")
+				|| !isStringSame(attraction.getString("openHour"),attractionObj.getString("openHour")) || !isStringSame(attraction.getString("description"),attractionObj.getString("description"))
+				|| attraction.getInt("parking") != attractionObj.getInt("parking")) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiRental(JSONObject mongoPoi, JSONObject rentalObj) throws Exception {
+		JSONObject rental = mongoPoi.getJSONObject("rental");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("rental",rental,rentalObj));
+		if (rental.isNullObject() || rental.isEmpty()) {
+			return diffList;
+		} else {
+			if (!isStringSame(rental.getString("openHour"),rentalObj.getString("openHour")) || !isStringSame(rental.getString("adressDes"),rentalObj.getString("adressDes"))
+				|| !isStringSame(rental.getString("howToGo"),rentalObj.getString("howToGo"))) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiHospital(JSONObject mongoPoi, JSONObject hospitalObj) throws Exception {
+		JSONObject hospital = mongoPoi.getJSONObject("hospital");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("hospital",hospital,hospitalObj));
+		if (hospital.isNullObject() || hospital.isEmpty()) {
+			return diffList;
+		} else {
+			if (hospital.getInt("rating") != hospitalObj.getInt("rating")) {
+				return diffList;
 			}
 		}
 		return null;
@@ -396,9 +786,161 @@ public class SampleDataDiffer {
 		
 		return diffList;
 	}
-	private Map<String, JSONArray> queryIxPoiAddress(Connection conn) {
-		// TODO Auto-generated method stub
+	//处理联系方式表
+	private Map<String, JSONArray> queryIxPoiContact(Connection conn) throws Exception {
+		Map<String, JSONArray> ixPoiContactMap = new HashMap<String, JSONArray>();
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT P.POI_NUM fid,N.* FROM IX_POI POI,IX_POI_CONTACT N," + this.inParam.getDiffFidTempTableName()
+				+ " C");
+		sb.append("WHERE C.FID = P.POI_NUM AND P.PID = N.POI_PID AND P.U_RECORD <> 2 AND N.U_RECORD <> 2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("FID");
+				JSONArray contacts = new JSONArray();
+				JSONObject contact = new JSONObject();
+				if (ixPoiContactMap.containsKey(fid)) {
+					contacts = ixPoiContactMap.get(fid);
+				}
+				contact.put("number", resultSet.getString("CONTACT"));
+				contact.put("type", resultSet.getInt("CONTACT_TYPE"));
+				contact.put("priority", resultSet.getInt("PRIORITY"));
+				contacts.add(contact);
+				ixPoiContactMap.put(fid, contacts);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (pstmt != null) {
+				pstmt.close();
+			}
+			if (resultSet != null) {
+				resultSet.close();
+			}
+		}
+
 		return null;
+	}
+	private Map<String, JSONArray> queryBusinessTimes(Connection conn) throws SQLException {
+		Map<String, JSONArray> ixPoiBusinessTimesMap = new HashMap<String, JSONArray>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" nvl(b.MON_SRT,'') MON_SRT,nvl(b.MON_END, '') MON_END,nvl(b.WEEK_IN_YEAR_SRT, '') WEEK_IN_YEAR_SRT,nvl(b.WEEK_IN_YEAR_END, '') WEEK_IN_YEAR_END,nvl(b.WEEK_IN_MONTH_SRT, '') WEEK_IN_MONTH_SRT,nvl(b.WEEK_IN_MONTH_END, '') WEEK_IN_MONTH_END,nvl(b.VALID_WEEK, '') VALID_WEEK,nvl(b.DAY_SRT, '') DAY_SRT,nvl(b.DAY_END, '') DAY_END,nvl(b.TIME_SRT, '') TIME_SRT,nvl(b.TIME_DUR, '') TIME_DUR ");
+		sb.append(" from ix_poi p, IX_POI_BUSINESSTIME b," + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.pid = b.poi_pid");
+		sb.append(" and p.u_record != 2");
+		sb.append(" and b.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				String monStart = resultSet.getString("MON_SRT");
+				String monEnd = resultSet.getString("MON_END");
+				String weekStartYear = resultSet.getString("WEEK_IN_YEAR_SRT");
+				String weekEndYear = resultSet.getString("WEEK_IN_YEAR_END");
+				String weekStartMonth = resultSet.getString("WEEK_IN_MONTH_SRT");
+				String weekEndMonth = resultSet.getString("WEEK_IN_MONTH_END");
+				String validWeek = resultSet.getString("VALID_WEEK");
+				String dayStart = resultSet.getString("DAY_SRT");
+				String dayEnd = resultSet.getString("DAY_END");
+				String timeStart = resultSet.getString("TIME_SRT");
+				String timeDuration = resultSet.getString("TIME_DUR");
+				JSONArray businessTimes = new JSONArray();
+				JSONObject businessTime = new JSONObject();
+				if (ixPoiBusinessTimesMap.containsKey(fid)){
+					businessTimes = ixPoiBusinessTimesMap.get(fid);
+				}
+				businessTime.put("monStart", monStart);
+				businessTime.put("monEnd", monEnd);
+				businessTime.put("weekStartYear", weekStartYear);
+				businessTime.put("weekEndYear", weekEndYear);
+				businessTime.put("weekStartMonth", weekStartMonth);
+				businessTime.put("weekEndMonth", weekEndMonth);
+				businessTime.put("validWeek", validWeek);
+				businessTime.put("dayStart", dayStart);
+				businessTime.put("dayEnd", dayEnd);
+				businessTime.put("timeStart", timeStart);
+				businessTime.put("timeDuration", timeDuration);
+				businessTimes.add(businessTime);
+				ixPoiBusinessTimesMap.put(fid, businessTimes);
+				
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return ixPoiBusinessTimesMap;
+	}
+	private Map<String, JSONArray> queryIxPoiAddress(Connection conn) throws SQLException {
+		// TODO Auto-generated method stub
+		Map<String, JSONArray> ixPoiAddressMap = new HashMap<String, JSONArray>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" nvl(d.LANG_CODE,'') LANG_CODE,nvl(d.FULLNAME, '') FULLNAME,nvl(d.PROVINCE, '') PROVINCE,nvl(d.CITY, '') CITY,nvl(d.COUNTY, '') COUNTY,nvl(d.TOWN, '') TOWN,nvl(d.PLACE, '') PLACE,nvl(d.STREET, '') STREET,nvl(d.LANDMARK, '') LANDMARK,nvl(d.PREFIX, '') PREFIX,nvl(d.HOUSENUM, '') HOUSENUM,nvl(d.TYPE, '') TYPE,nvl(d.SUBNUM, '') SUBNUM,nvl(d.SURFIX, '') SURFIX,nvl(d.ESTAB, '') ESTAB,nvl(d.BUILDING, '') BUILDING,nvl(d.FLOOR, '') FLOOR,nvl(d.UNIT, '') UNIT,nvl(d.ROOM, '') ROOM,nvl(d.ADDONS, '') ADDONS,");
+		sb.append(" nvl(d.FULLNAME_PHONETIC, '') FULLNAME_PHONETIC,nvl(d.PROV_PHONETIC, '') PROV_PHONETIC,nvl(d.CITY_PHONETIC, '') CITY_PHONETIC,nvl(d.COUNTY_PHONETIC, '') COUNTY_PHONETIC,nvl(d.TOWN_PHONETIC, '') TOWN_PHONETIC,nvl(d.STREET_PHONETIC, '') STREET_PHONETIC,nvl(d.PLACE_PHONETIC, '') PLACE_PHONETIC,nvl(d.LANDMARK_PHONETIC, '') LANDMARK_PHONETIC,nvl(d.PREFIX_PHONETIC, '') PREFIX_PHONETIC,nvl(d.HOUSENUM_PHONETIC, '') HOUSENUM_PHONETIC,nvl(d.TYPE_PHONETIC, '') TYPE_PHONETIC,nvl(d.SUBNUM_PHONETIC, '') SUBNUM_PHONETIC,nvl(d.SURFIX_PHONETIC, '') SURFIX_PHONETIC,nvl(d.ESTAB_PHONETIC, '') ESTAB_PHONETIC,nvl(d.BUILDING_PHONETIC, '') BUILDING_PHONETIC,nvl(d.FLOOR_PHONETIC, '') FLOOR_PHONETIC,nvl(d.UNIT_PHONETIC, '') UNIT_PHONETIC,nvl(d.ROOM_PHONETIC, '') ROOM_PHONETIC,nvl(d.ADDONS_PHONETIC, '') ADDONS_PHONETIC ");
+		sb.append(" from ix_poi p, ix_poi_address d," + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.pid = d.poi_pid");
+		sb.append(" and p.u_record != 2");
+		sb.append(" and d.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				JSONArray addresses = new JSONArray();
+				JSONObject address = new JSONObject();
+				String roadName = resultSet.getString("PROVINCE")+"|"+resultSet.getString("CITY")+"|"+resultSet.getString("COUNTY")+"|"
+									+resultSet.getString("TOWN")+"|"+resultSet.getString("PLACE")+"|"+resultSet.getString("STREET");
+				if ("|||||".equals(roadName)){roadName="";}
+				String roadNamePinyin = resultSet.getString("PROV_PHONETIC")+"|"+resultSet.getString("CITY_PHONETIC")+"|"+resultSet.getString("COUNTY_PHONETIC")+"|"
+										+resultSet.getString("TOWN_PHONETIC")+"|"+resultSet.getString("PLACE_PHONETIC")+"|"+resultSet.getString("STREET_PHONETIC");
+				if ("|||||".equals(roadNamePinyin)){roadNamePinyin="";}
+				String addrName = resultSet.getString("LANDMARK")+"|"+resultSet.getString("PREFIX")+"|"+resultSet.getString("HOUSENUM")+"|"
+									+resultSet.getString("TYPE")+"|"+resultSet.getString("SUBNUM")+"|"+resultSet.getString("SURFIX")+"|"
+									+resultSet.getString("ESTAB")+"|"+resultSet.getString("BUILDING")+"|"+resultSet.getString("FLOOR")+"|"
+									+resultSet.getString("UNIT")+"|"+resultSet.getString("ROOM")+"|"+resultSet.getString("ADDONS");
+				if ("|||||||||||".equals(addrName)){addrName="";}
+				String addrNamePinyin = resultSet.getString("LANDMARK_PHONETIC")+"|"+resultSet.getString("PREFIX_PHONETIC")+"|"+resultSet.getString("HOUSENUM_PHONETIC")+"|"
+										+resultSet.getString("TYPE_PHONETIC")+"|"+resultSet.getString("SUBNUM_PHONETIC")+"|"+resultSet.getString("SURFIX_PHONETIC")+"|"
+										+resultSet.getString("ESTAB_PHONETIC")+"|"+resultSet.getString("BUILDING_PHONETIC")+"|"+resultSet.getString("FLOOR_PHONETIC")+"|"
+										+resultSet.getString("UNIT_PHONETIC")+"|"+resultSet.getString("ROOM_PHONETIC")+"|"+resultSet.getString("ADDONS_PHONETIC");
+				if ("|||||||||||".equals(addrNamePinyin)){addrNamePinyin="";}
+				if (ixPoiAddressMap.containsKey(fid)){
+					addresses = ixPoiAddressMap.get(fid);
+				}
+				address.put("langCode", resultSet.getString("LANG_CODE"));
+				address.put("fullName", resultSet.getString("FULLNAME"));
+				address.put("fullNamePinyin", resultSet.getString("FULLNAME_PHONETIC"));
+				address.put("roadName", roadName);
+				address.put("roadNamePinyin", roadNamePinyin);
+				address.put("addrName", addrName);
+				address.put("addrNamePinyin", addrNamePinyin);
+				addresses.add(address);
+				ixPoiAddressMap.put(fid, addresses);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return ixPoiAddressMap;
 	}
 	private Map<String, JSONArray> queryIxPoiName(Connection conn) throws SQLException {
 		// TODO Auto-generated method stub
@@ -421,24 +963,15 @@ public class SampleDataDiffer {
 				JSONObject name = new JSONObject();
 				if (ixPoiNameMap.containsKey(fid)){
 					names = ixPoiNameMap.get(fid);
-					name.put("nameGrpId", resultSet.getInt("NAME_GROUPID"));
-					name.put("type", resultSet.getInt("NAME_TYPE"));
-					name.put("nameClass", resultSet.getInt("NAME_CLASS"));
-					name.put("nameStrPinyin", resultSet.getString("NAME_PHONETIC")!=null?resultSet.getString("NAME_PHONETIC"):"");
-					name.put("nameStr", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
-					name.put("langCode", resultSet.getString("LANG_CODE")!=null?resultSet.getString("LANG_CODE"):"");
-					names.add(name);
-					ixPoiNameMap.put(fid, names);
-				}else{
-					name.put("nameGrpId", resultSet.getInt("NAME_GROUPID"));
-					name.put("type", resultSet.getInt("NAME_TYPE"));
-					name.put("nameClass", resultSet.getInt("NAME_CLASS"));
-					name.put("nameStrPinyin", resultSet.getString("NAME_PHONETIC")!=null?resultSet.getString("NAME_PHONETIC"):"");
-					name.put("nameStr", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
-					name.put("langCode", resultSet.getString("LANG_CODE")!=null?resultSet.getString("LANG_CODE"):"");
-					names.add(name);
-					ixPoiNameMap.put(fid, names);
 				}
+				name.put("nameGrpId", resultSet.getInt("NAME_GROUPID"));
+				name.put("type", resultSet.getInt("NAME_TYPE"));
+				name.put("nameClass", resultSet.getInt("NAME_CLASS"));
+				name.put("nameStrPinyin", resultSet.getString("NAME_PHONETIC")!=null?resultSet.getString("NAME_PHONETIC"):"");
+				name.put("nameStr", resultSet.getString("NAME")!=null?resultSet.getString("NAME"):"");
+				name.put("langCode", resultSet.getString("LANG_CODE")!=null?resultSet.getString("LANG_CODE"):"");
+				names.add(name);
+				ixPoiNameMap.put(fid, names);
 			}		
 		}catch (Exception e){
 			e.printStackTrace();
@@ -471,12 +1004,9 @@ public class SampleDataDiffer {
 				List<String> cfids = new ArrayList<String>();
 				if (retMap.containsKey(fid)) {
 					cfids = retMap.get(fid);
-					cfids.add(resultSet.getString("cfid"));
-					retMap.put(fid, cfids);
-				} else {
-					cfids.add(resultSet.getString("cfid"));
-					retMap.put(fid, cfids);
 				}
+				cfids.add(resultSet.getString("cfid"));
+				retMap.put(fid, cfids);
 			}
 			return retMap;
 		} catch (Exception e) {
@@ -609,6 +1139,256 @@ public class SampleDataDiffer {
 		}
 		return IxPoiMap;
 	}
+	
+	private Map<String, JSONObject> queryIxPoiCharigngStation(Connection conn) throws Exception {
+		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,s.charging_type,s.change_brands,s.change_open_type,s.charging_num,s.service_prov,s.open_hour");
+		sb.append(",s.parking_fees,s.parking_info,s.available_state");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_chargingstation s");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=s.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and s.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("chargingType", resultSet.getInt("charging_type"));
+				jsonObj.put("changeBrands", resultSet.getString("change_brands"));
+				jsonObj.put("changeOpenType", resultSet.getString("change_open_type"));
+				jsonObj.put("chargingNum", resultSet.getInt("charging_num"));
+				jsonObj.put("serviceProv", resultSet.getString("service_prov"));
+				jsonObj.put("openHour", resultSet.getString("openHour"));
+				jsonObj.put("parkingFees", resultSet.getInt("parking_fees"));
+				jsonObj.put("parkingInfo", resultSet.getString("parking_info"));
+				jsonObj.put("availableState", resultSet.getInt("available_state"));
+				retMap.put(resultSet.getString("fid"), jsonObj);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
+	private Map<String, JSONArray> queryIxPoiChargingPlot(Connection conn) throws Exception {
+		Map<String, JSONArray> retMap = new HashMap<String,JSONArray>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,p.*");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_chargingplot p");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=p.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and p.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("plugType", resultSet.getString("plug_type"));
+				jsonObj.put("productNum", resultSet.getString("product_num"));
+				jsonObj.put("power", resultSet.getString("power"));
+				jsonObj.put("floor", resultSet.getInt("floor"));
+				jsonObj.put("factoryNum", resultSet.getString("factory_num"));
+				jsonObj.put("locationType", resultSet.getInt("location_type"));
+				jsonObj.put("parkingNum", resultSet.getString("parking_num"));
+				jsonObj.put("acdc", resultSet.getInt("acdc"));
+				jsonObj.put("payment", resultSet.getString("payment"));
+				jsonObj.put("current", resultSet.getString("current"));
+				jsonObj.put("plotNum", resultSet.getString("plot_num"));
+				jsonObj.put("plugNum", resultSet.getInt("plug_num"));
+				jsonObj.put("mode", resultSet.getInt("mode"));
+				jsonObj.put("prices", resultSet.getString("prices"));
+				jsonObj.put("openType", resultSet.getString("open_type"));
+				jsonObj.put("availableState", resultSet.getInt("available_state"));
+				jsonObj.put("manufacturer", resultSet.getString("manufacturer"));
+				jsonObj.put("voltage", resultSet.getInt("voltage"));
+				String fid = resultSet.getString("fid");
+				JSONArray plots = new JSONArray();
+				if (retMap.containsKey(fid)) {
+					plots = retMap.get(fid);
+				}
+				plots.add(jsonObj);
+				retMap.put(fid, plots);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
+	private Map<String, JSONObject> queryIxPoiGasStation(Connection conn) throws Exception {
+		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,g.* ");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_gasstation g");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=g.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and g.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("servicePro", resultSet.getString("service_prov"));
+				jsonObj.put("service", resultSet.getString("service"));
+				jsonObj.put("openHour", resultSet.getString("open_hour"));
+				jsonObj.put("egType", resultSet.getString("eg_type"));
+				jsonObj.put("fuelType", resultSet.getString("fuel_type"));
+				jsonObj.put("payment", resultSet.getString("payment"));
+				jsonObj.put("mgType", resultSet.getString("mg_type"));
+				jsonObj.put("oilType", resultSet.getString("oil_type"));
+				retMap.put(resultSet.getString("fid"), jsonObj);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
+	private Map<String, JSONObject> queryIxPoiAttraction(Connection conn) throws Exception {
+		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,a.ticket_price,a.sight_level,a.open_hour,a.long_description,a.parking");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_attraction a");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=a.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and a.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("ticketPrice", resultSet.getString("ticket_price"));
+				jsonObj.put("sightLevel", resultSet.getInt("sight_level"));
+				jsonObj.put("openHour", resultSet.getString("open_hour"));
+				jsonObj.put("description", resultSet.getString("long_description"));
+				jsonObj.put("parking", resultSet.getInt("parking"));
+				retMap.put(resultSet.getString("fid"), jsonObj);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
+	private Map<String, JSONObject> queryIxPoiRental(Connection conn) throws Exception {
+		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,r.open_hour,r.address,r.how_to_go");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_carrental r");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=r.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and r.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("openHour", resultSet.getString("ticket_price"));
+				jsonObj.put("adressDes", resultSet.getString("sight_level"));
+				jsonObj.put("howToGo", resultSet.getString("open_hour"));
+				retMap.put(resultSet.getString("fid"), jsonObj);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
+	private Map<String, JSONObject> queryIxPoiHospital(Connection conn) throws Exception {
+		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("select c.fid,d.hospital_class");
+		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_detail d");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=d.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and d.u_record != 2");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+				jsonObj.put("rating", resultSet.getInt("hospital_class"));
+				retMap.put(resultSet.getString("fid"), jsonObj);
+			}
+			return retMap;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+	}
+	
 	private Map<String,JSONObject> queryFromMongo() throws Exception {
 		// TODO 从mongodb中查询获取poi数据；
 		logger.info("Get diff fidList");

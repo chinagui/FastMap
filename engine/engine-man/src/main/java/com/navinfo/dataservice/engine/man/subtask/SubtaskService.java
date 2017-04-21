@@ -1517,6 +1517,7 @@ public class SubtaskService {
 						int typeCount=rs.getInt("TYPE_COUNT");
 						String name="";
 						if(stage==1){name+="日编 - ";}
+						else if(stage==0){name+="采集 - ";}
 						else{name+="月编 - ";}
 						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
 						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项
@@ -2017,5 +2018,33 @@ public class SubtaskService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+
+	/**
+	 * @param conn
+	 * @param subtask
+	 * @throws ServiceException 
+	 */
+	public void createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
+		try {
+			//默认subtask状态为草稿2
+			if(bean.getStatus()== null){
+				bean.setStatus(2);
+			}
+			
+			// 插入subtask
+			SubtaskOperation.insertSubtask(conn, bean);
+			
+			// 插入SUBTASK_GRID_MAPPING
+			if(bean.getGridIds() != null){
+				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
+				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+			}
+			log.debug("子任务创建成功!");
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} 
 	}
 }

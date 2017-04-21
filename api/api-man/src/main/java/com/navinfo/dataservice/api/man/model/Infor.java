@@ -34,15 +34,16 @@ public class Infor  {
 	private Integer featureKind;
 	
 	private String adminName;
-	private String infoCode;
+	private String inforCode;
 	
 	private Timestamp publishDate;
 	private Timestamp expectDate;
+	private Timestamp newsDate;
 
 	private String topicName;
 	private String infoTypeName;
 	
-	private Integer method;
+	private String method;
 	private Integer roadLength;
 	private Integer sourceCode;
 
@@ -203,15 +204,15 @@ public class Infor  {
 	/**
 	 * @return the infoCode
 	 */
-	public String getInfoCode() {
-		return infoCode;
+	public String getInforCode() {
+		return inforCode;
 	}
 
 	/**
 	 * @param infoCode the infoCode to set
 	 */
-	public void setInfoCode(String infoCode) {
-		this.infoCode = infoCode;
+	public void setInfroCode(String inforCode) {
+		this.inforCode = inforCode;
 	}
 
 	/**
@@ -273,14 +274,14 @@ public class Infor  {
 	/**
 	 * @return the method
 	 */
-	public Integer getMethod() {
+	public String getMethod() {
 		return method;
 	}
 
 	/**
 	 * @param method the method to set
 	 */
-	public void setMethod(Integer method) {
+	public void setMethod(String method) {
 		this.method = method;
 	}
 
@@ -310,6 +311,20 @@ public class Infor  {
 	 */
 	public void setSourceCode(Integer sourceCode) {
 		this.sourceCode = sourceCode;
+	}
+
+	/**
+	 * @return the newsDate
+	 */
+	public Timestamp getNewsDate() {
+		return newsDate;
+	}
+
+	/**
+	 * @param newsDate the newsDate to set
+	 */
+	public void setNewsDate(Timestamp newsDate) {
+		this.newsDate = newsDate;
 	}
 	
 	

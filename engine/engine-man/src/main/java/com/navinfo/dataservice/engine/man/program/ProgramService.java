@@ -24,6 +24,7 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
@@ -45,6 +46,8 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import infor.InforService;
 
 public class ProgramService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -1606,21 +1609,12 @@ public class ProgramService {
 		}
 	}
 	
-	public String pushMsg(long userId,JSONArray programIds) throws Exception{
-		Connection conn = null;
+	public void pushMsgWithConnection(Connection conn,long userId,List<Program> programs, JSONArray programIds) throws Exception{
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			//发送消息
-			JSONObject condition=new JSONObject();
-			condition.put("programIds",programIds);
-			JSONArray status=new JSONArray();
-			status.add(2);
-			condition.put("status",status);
-			List<Program> programs = queryProgramTable(conn, condition);
-			List<Integer> inforPrograms=new ArrayList<Integer>();
+			Map<Integer,Program> inforPrograms=new HashMap<Integer,Program>();
 			for(Program p:programs){
 				if(p.getType()==4){
-					inforPrograms.add(p.getProgramId());
+					inforPrograms.put(p.getProgramId(), p);
 				}
 			}
 			splitInforTasks(conn,inforPrograms,userId);
@@ -1643,6 +1637,51 @@ public class ProgramService {
 			}		
 			openStatus(conn,programIds);
 		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public String pushMsg(long userId,JSONArray programIds) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//发送消息
+			JSONObject condition=new JSONObject();
+			condition.put("programIds",programIds);
+			JSONArray status=new JSONArray();
+			status.add(2);
+			condition.put("status",status);
+			List<Program> programs = queryProgramTable(conn, condition);
+			
+			pushMsgWithConnection( conn, userId, programs,programIds);
+			
+//			Map<Integer,Program> inforPrograms=new HashMap<Integer,Program>();
+//			for(Program p:programs){
+//				if(p.getType()==4){
+//					inforPrograms.put(p.getProgramId(), p);
+//				}
+//			}
+//			splitInforTasks(conn,inforPrograms,userId);
+//			/*项目发布1.所有生管角色 新增项目：XXX(项目名称)，请关注*/			
+//			String msgTitle="项目发布";
+//			List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
+//			for(Program program:programs){
+//				Map<String,Object> map = new HashMap<String, Object>();
+//				String msgContent = "新增项目:"+program.getName()+",请关注";
+//				map.put("msgContent", msgContent);
+//				//关联要素
+//				JSONObject msgParam = new JSONObject();
+//				msgParam.put("relateObject", "PROGRAM");
+//				msgParam.put("relateObjectId", program.getProgramId());
+//				map.put("msgParam", msgParam.toString());
+//				msgContentList.add(map);
+//			}
+//			if(msgContentList.size()>0){
+//				programPushMsg(conn,msgTitle,msgContentList,null,userId);
+//			}		
+//			openStatus(conn,programIds);
+		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
@@ -1655,27 +1694,22 @@ public class ProgramService {
 	/**
 	 * 情报项目发布时，自动创建两条任务：采集任务和日编任务，均为草稿状态（若情报跨大区，则按照大区拆分成多个任务）
 	 * @param conn
-	 * @param programIds
+	 * @param inforPrograms
 	 * @param userId
 	 * @throws Exception
 	 */
-	private void splitInforTasks(Connection conn,List<Integer> programIds,final Long userId)throws Exception{
+	private void splitInforTasks(Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
 		try{
-			if(programIds==null||programIds.size()==0){return;}
+			if(inforPrograms==null||inforPrograms.size()==0){return;}
 			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID,r.region_name"
 					+ "  FROM PROGRAM P, INFOR_GRID_MAPPING M, GRID G,region r"
 					+ " WHERE P.INFOR_ID = M.INFOR_ID"
 					+ "   AND M.GRID_ID = G.GRID_ID"
 					+ "   AND g.region_ID = r.region_ID"
-					+ "   AND P.PROGRAM_ID IN "+programIds.toString().replace("[", "(").replace("]", ")")
+					+ "   AND P.PROGRAM_ID IN (" + StringUtils.join(inforPrograms.keySet().toArray(),",") + ")"
 					+ " ORDER BY P.PROGRAM_ID, G.REGION_ID";
-			JSONObject condition=new JSONObject();
-			condition.put("programIds", programIds);
-			List<Program> programs = queryProgramTable(conn, condition);
-			final Map<Integer, Program> programMap=new HashMap<Integer, Program>();
-			for(Program p:programs){
-				programMap.put(p.getProgramId(), p);
-			}
+			log.info("splitInforTasks sql:" + selectSql);
+
 			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> list = new ArrayList<Task>();
@@ -1699,9 +1733,10 @@ public class ProgramService {
 							collectTask.setGridIds(gridMap);
 							collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							collectTask.setType(0);
-							collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
-							collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-							collectTask.setName(programMap.get(programId).getName() + regionId);
+							collectTask.setPlanStartDate(inforPrograms.get(programId).getCollectPlanStartDate());
+							collectTask.setPlanEndDate(inforPrograms.get(programId).getCollectPlanEndDate());
+//							collectTask.setName(inforPrograms.get(programId).getName() + regionId);
+							
 							list.add(collectTask);
 							Task dailyTask=new Task();
 							dailyTask.setProgramId(programId);
@@ -1709,9 +1744,9 @@ public class ProgramService {
 							dailyTask.setGridIds(gridMap);
 							dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							dailyTask.setType(1);
-							dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
-							dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-							dailyTask.setName(programMap.get(programId).getName() +regionId);
+							dailyTask.setPlanStartDate(inforPrograms.get(programId).getDayEditPlanStartDate());
+							dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
+//							dailyTask.setName(inforPrograms.get(programId).getName() +regionId);
 							list.add(dailyTask);
 							gridMap =new HashMap<Integer, Integer>();
 							programId=programIdTmp;
@@ -1727,9 +1762,9 @@ public class ProgramService {
 						collectTask.setGridIds(gridMap);
 						collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						collectTask.setType(0);
-						collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
-						collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-						collectTask.setName(programMap.get(programId).getName() + regionId);
+						collectTask.setPlanStartDate(inforPrograms.get(programId).getCollectPlanStartDate());
+						collectTask.setPlanEndDate(inforPrograms.get(programId).getCollectPlanEndDate());
+//						collectTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(collectTask);
 						Task dailyTask=new Task();
 						dailyTask.setProgramId(programId);
@@ -1737,9 +1772,9 @@ public class ProgramService {
 						dailyTask.setGridIds(gridMap);
 						dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						dailyTask.setType(1);
-						dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
-						dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-						dailyTask.setName(programMap.get(programId).getName() + regionId);
+						dailyTask.setPlanStartDate(inforPrograms.get(programId).getDayEditPlanStartDate());
+						dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
+//						dailyTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(dailyTask);
 					}
 					return list;
@@ -1751,13 +1786,12 @@ public class ProgramService {
 				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
-					Map<String,String> inforName = getInforByProgramId(t.getProgramId());
-					
-					String admin = inforName.get("adminName");
-					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(admin);
+					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
+					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(conn,infor.getAdminName());
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
-					t.setName(inforName.get("inforName")+"_"+df.format(new Date())+"_"+taskId);
+					t.setName(infor.getInforName()+"_"+df.format(new Date())+"_"+taskId);
+
 					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
 						t.setGroupId(userGroupMap.get(0).getGroupId());
 					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
@@ -1767,7 +1801,6 @@ public class ProgramService {
 				}
 			}
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
 		}

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
+import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
@@ -42,6 +44,7 @@ import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
 import infor.InforService;
@@ -152,7 +155,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			}
 			
 			//发送消息
-			taskPushMsg(conn, dataJson.getString("INFO_NAME"), 0,infor.getInforId());	
+			taskPushMsg(conn, dataJson.getString("inforName"), 0,infor.getInforId());	
 			
 			conn.commit();
 			
@@ -173,34 +176,40 @@ public class InfoChangeMsgHandler implements MsgHandler {
 	private void generateManAccount(Connection conn, Infor infor) throws Exception {
 		//新建项目
 		Program program = new Program();
+		
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		int programId = ProgramService.getInstance().getNewProgramId(conn);
 		program.setProgramId(programId);
 		program.setName(infor.getInforName() + df.format(new Date()) + programId);
 		program.setType(4);
-		program.setCollectPlanStartDate(new Timestamp(infor.getPublishDate().getDate()+1));
-		if(infor.getMethod().equals("预采集")){
-			program.setCollectPlanEndDate(new Timestamp(infor.getPublishDate().getDate()+7));
-		}else{
-			program.setCollectPlanEndDate(new Timestamp(infor.getPublishDate().getDate()+3));
-		}
-//		program.setDayEditPlanStartDate(dayEditPlanStartDate);
-//		program.setDayEditPlanEndDate(dayEditPlanEndDate);
-		
-		program.setPlanStartDate(program.getCollectPlanStartDate());
-//		program.setPlanEndDate(planEndDate);
-		
 
+		program.setCollectPlanStartDate((Timestamp)getCalculatedDate(infor.getPublishDate(),1));
+		if(infor.getMethod().equals("预采集")){
+			program.setCollectPlanEndDate((Timestamp)getCalculatedDate(infor.getPublishDate(),7));
+		}else{
+			program.setCollectPlanEndDate((Timestamp)getCalculatedDate(infor.getPublishDate(),3));
+		}
+		
+		program.setDayEditPlanStartDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),1));
+		program.setDayEditPlanEndDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),2));
+		program.setProducePlanStartDate(program.getDayEditPlanEndDate());
+		program.setProducePlanEndDate((Timestamp)getCalculatedDate(program.getCollectPlanEndDate(),2));
+		program.setPlanStartDate(program.getCollectPlanStartDate());
+		program.setPlanEndDate(program.getProducePlanEndDate());
+		program.setInforId(infor.getInforId());
 		ProgramService.getInstance().createWithProgramId(conn, program);
 
-		JSONArray programIds = new JSONArray();
-		programIds.add(programId);
 		//发布项目,包含了任务的创建
-		ProgramService.getInstance().pushMsg(0, programIds);
-		List<Task> taskList = TaskService.getInstance().getTaskByProgramId(programId);
+		List<Program> programs = new ArrayList<Program>();
+		programs.add(program);
+		JSONArray programIds = new JSONArray();
+		programIds.add(program.getProgramId());
+		ProgramService.getInstance().pushMsgWithConnection(conn,0, programs,programIds);
 		
-		List<Task> collectTaskList = new ArrayList<Task>();
 		
+		//任务发布
+		List<Task> taskList = TaskService.getInstance().getTaskByProgramId(conn,programId);	
+		List<Task> collectTaskList = new ArrayList<Task>();	
 		List<Task> taskListToPublish = new ArrayList<Task>();
 		List<Integer> commontaskIds=new ArrayList<Integer>();
 		for(Task task:taskList){
@@ -222,8 +231,39 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		//采集任务创建子任务
 		for(Task task:collectTaskList){
 			Subtask subtask = new Subtask();
-			SubtaskService.getInstance().createSubtask(subtask);
+			int subtaskId = SubtaskOperation.getSubtaskId(conn, subtask);
+			subtask.setSubtaskId(subtaskId);
+			subtask.setName(infor.getInforName()+"_"+df.format(new Date())+"_"+subtaskId);
+			subtask.setType(2);
+			subtask.setStage(0);
+			subtask.setTaskId(task.getTaskId());
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setGridIds(task.getGridIds());
+			List<Integer> gridIdList = subtask.getGridIds();
+			if(!gridIdList.isEmpty()){
+				String wkt = GridUtils.grids2Wkt(JSONArray.fromObject(gridIdList));
+				subtask.setGeometry(wkt);
+			}
+			SubtaskService.getInstance().createSubtaskWithSubtaskId(conn,subtask);
 		}
+	}
+
+	/**
+	 * @param publishDate
+	 * @param i
+	 * @return
+	 */
+	private Timestamp getCalculatedDate(Date publishDate, int i) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(publishDate);
+		cal.add(Calendar.DATE, 1);
+		Date d = cal.getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+//        yyyy-MM-dd HH24:MI:ss
+        String s = sdf.format(d);
+        Timestamp t = Timestamp.valueOf(s);
+		return t;
 	}
 
 	/*新增一级情报
@@ -363,7 +403,8 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			context.start();
 			new ApplicationContextUtil().setApplicationContext(context);
 			final InfoChangeMsgHandler sub = new InfoChangeMsgHandler();
-			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
+//			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
+			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"inforLevel\":2,\"feedbackType\":0,\"featureKind\":1,\"sourceCode\":1,\"roadLength\":19,\"adminName\":\"北京\",\"publishDate\":\"2017042015511230\",\"expectDate\":\"2017042015511230\",\"newsDate\":\"2017042015511230\",\"infoCode\":\"sfoiuojkw89234jkjsfjksf\",\"topicName\":\"道路通车\",\"inforName\":\"道路通车\",\"infoContent\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\",\"infoTypeName\":\"INFO_TYPE_NAME\"}";
 			sub.save(message);
 		} catch (Exception e) {
 			e.printStackTrace();

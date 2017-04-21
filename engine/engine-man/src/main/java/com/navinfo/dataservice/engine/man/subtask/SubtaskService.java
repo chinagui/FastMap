@@ -207,7 +207,14 @@ public class SubtaskService {
 			if(bean.getGridIds() != null){
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
 				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
-				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+				List<Integer> deleteGrids = SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+				if(deleteGrids!=null&&deleteGrids.size()>0){
+					List<Integer> oldGrids = bean.getGridIds();
+					oldGrids.removeAll(deleteGrids);
+					JSONArray newGrids=new JSONArray();
+					newGrids.addAll(oldGrids);
+					SubtaskOperation.updateSubtaskGeo(conn, GridUtils.grids2Wkt(newGrids), bean.getSubtaskId());
+				}
 			}
 			
 			//消息发布

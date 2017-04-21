@@ -150,6 +150,29 @@ public class SubtaskOperation {
 		}
 	}
 	
+	/**
+	 * @Title: updateSubtask
+	 * @Description: 修改子任务(修)(第七迭代)
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月7日 下午2:21:21 
+	 */
+	public static void updateSubtaskGeo(Connection conn,String geoStr,int subtaskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String baseSql = "update SUBTASK set GEOMETRY=? where SUBTASK_ID="+subtaskId;			
+			log.info("updateSubtask sql:" + baseSql);
+			run.update(conn,baseSql,GeoTranslator.wkt2Struct(conn,geoStr));			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 	//根据subtaskId列表获取包含subtask type,status,gridIds信息的List<Subtask>
 	public static List<Subtask> getSubtaskListBySubtaskIdList(Connection conn,List<Integer> subtaskIdList) throws Exception{
 		try{
@@ -619,7 +642,7 @@ public class SubtaskOperation {
 	 * @param gridIdsToInsert
 	 * @throws Exception 
 	 */
-	public static void checkSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
+	public static List<Integer> checkSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -631,22 +654,23 @@ public class SubtaskOperation {
 					+ "   AND T.BLOCK_ID != 0"
 					+ " MINUS"
 					+ " SELECT GRID_ID FROM TASK_GRID_MAPPING WHERE TASK_ID = "+bean.getTaskId();
-			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					List<Long> grids=new ArrayList<Long>();
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> grids=new ArrayList<Integer>();
 					while (rs.next()) {
-						grids.add(rs.getLong("GRID_ID"));
+						grids.add(rs.getInt("GRID_ID"));
 					}
 					return grids;
 				}
 
 			};
 			log.info("checkSubtaskGridMapping-sql:"+sql);
-			List<Long> grids= run.query(conn, sql, rsHandler);
-			if(grids==null||grids.size()==0){return;}
+			List<Integer> grids= run.query(conn, sql, rsHandler);
+			if(grids==null||grids.size()==0){return grids;}
 			//存在block外的grid，需删除
 			sql="DELETE FROM SUBTASK_GRID_MAPPING WHERE GRID_ID IN "+grids.toString().replace("[", "(").replace("]", ")");
 			run.execute(conn, sql);
+			return grids;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);

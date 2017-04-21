@@ -46,10 +46,11 @@ public class CollectorImport {
 		for (File f : files) {
 			if(f.isFile() && f.getName().endsWith(".jpg")){
 				FileInputStream in = new FileInputStream(f);
+				System.out.println(f.getName());
 				//******zl 2016.12.09添加自动图片旋转**************
 				FileInputStream inn = new FileInputStream(f);
 				int rotateAngle = RotateImageUtils.rotateOrientatione(inn);//获取图片旋转角度
-				InputStream newIn =new FileInputStream(f);;
+				InputStream newIn =new FileInputStream(f);
 		    	if(rotateAngle > 0){
 					BufferedImage image= ImageIO.read(in); 
 			    	Image newImage = RotateImageUtils.rotateImage(image,rotateAngle);

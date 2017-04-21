@@ -37,9 +37,9 @@ import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 /*import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
-import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
-import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
-import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;*/
+ import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
+ import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
+ import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;*/
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -159,7 +159,7 @@ public class TipsUpload {
 		htab.close();
 
 		// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-		//tipsDiff();
+		// tipsDiff();
 
 		// 道路名入元数据库
 		importRoadNameToMeta();
@@ -191,8 +191,9 @@ public class TipsUpload {
 					.getBean("metaApi");
 			JSONArray names = deep.getJSONArray("n_array");
 			for (Object name : names) {
-				//修改 20170308，道路名去除空格，否则转英文报错
-				if (name != null && StringUtils.isNotEmpty(name.toString().trim())) {
+				// 修改 20170308，道路名去除空格，否则转英文报错
+				if (name != null
+						&& StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
 						metaApi.nameImport(name.toString().trim(), longitude,
 								latitude, rowkey);
@@ -347,10 +348,10 @@ public class TipsUpload {
 				json.put("t_dInProc", 0);
 
 				json.put("t_mInProc", 0);
-				
+
 				json.put("t_fStatus", 0);
-				
-				//20170223添加：增加快线、中线任务号
+
+				// 20170223添加：增加快线、中线任务号
 
 				getTaskIdByGuide(json);
 
@@ -408,7 +409,7 @@ public class TipsUpload {
 					coordinate[0].y)[0];
 
 			Map<String, Integer> taskMap = gridTaskMap.get(grid);
-			
+
 			if (taskMap != null && taskMap.containsKey("quickTaskId")
 					&& taskMap.containsKey("centreTaskId")) {
 
@@ -431,9 +432,9 @@ public class TipsUpload {
 
 					json.put("s_mTaskId", taskMap.get("centreTaskId"));
 				}
-				//查不到值赋值0
-				else{
-					
+				// 查不到值赋值0
+				else {
+
 					json.put("s_qTaskId", 0);
 
 					json.put("s_mTaskId", 0);
@@ -671,7 +672,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
+				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -747,9 +748,10 @@ public class TipsUpload {
 
 				JSONObject json = en.getValue();
 
-				// 是否是鲜度验证的tips
-				if (isFreshnessVerification(oldTip, json)) {
+				int lifecycle = json.getInt("t_lifecycle");
+				// 是否是鲜度验证的tips lifecycle==1删除的，不进行鲜度验证
 
+				if (lifecycle != 1 && isFreshnessVerification(oldTip, json)) {
 					reasons.add(newReasonObject(rowkey,
 							ErrorType.FreshnessVerificationData));
 
@@ -810,7 +812,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
+				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -856,55 +858,46 @@ public class TipsUpload {
 		return put;
 	}
 
-	 /**
+	/**
 	 * @throws Exception
 	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
 	 * @time:2017-2-13上午9:20:52
 	 */
-/*	private void tipsDiff() throws Exception {
-		String errRowkey = null; // 报错时用
-		Connection hbaseConn = null;
-		SolrBulkUpdater solrConn = null;
-
-		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			solrConn = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
-					TipsBuilderUtils.ThreadCount);
-			Set<String> rowkeySet = allNeedDiffRowkeysCodeMap.keySet();
-			if (rowkeySet.size() > 0) {
-				for (String rowkey : rowkeySet) {
-					errRowkey = rowkey;
-					String s_sourceType = allNeedDiffRowkeysCodeMap.get(rowkey);
-
-					BaseTipsProcessor processor = TipsProcessorFactory
-							.getInstance().createProcessor(s_sourceType);
-
-					processor.setSolrConn(solrConn);
-
-					processor.diff(rowkey, hbaseConn);
-
-					solrConn.commit();
-
-				}
-			}
-
-		} catch (Exception e) {
-			logger.error(
-					"tips差分报错：rowkey:" + errRowkey + ";出错原因：" + e.getMessage(),
-					e);
-			throw new Exception("tips差分报错：rowkey:" + errRowkey + ";出错原因："
-					+ e.getMessage(), e);
-		} finally {
-			System.out.println("-----------");
-			// 连接不能关
-			
-			 * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
-			 
-				 * if(solrConn!=null){ solrConn.close(); }
-				 
-		}
-
-	}*/
+	/*
+	 * private void tipsDiff() throws Exception { String errRowkey = null; //
+	 * 报错时用 Connection hbaseConn = null; SolrBulkUpdater solrConn = null;
+	 * 
+	 * try { hbaseConn = HBaseConnector.getInstance().getConnection(); solrConn
+	 * = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
+	 * TipsBuilderUtils.ThreadCount); Set<String> rowkeySet =
+	 * allNeedDiffRowkeysCodeMap.keySet(); if (rowkeySet.size() > 0) { for
+	 * (String rowkey : rowkeySet) { errRowkey = rowkey; String s_sourceType =
+	 * allNeedDiffRowkeysCodeMap.get(rowkey);
+	 * 
+	 * BaseTipsProcessor processor = TipsProcessorFactory
+	 * .getInstance().createProcessor(s_sourceType);
+	 * 
+	 * processor.setSolrConn(solrConn);
+	 * 
+	 * processor.diff(rowkey, hbaseConn);
+	 * 
+	 * solrConn.commit();
+	 * 
+	 * } }
+	 * 
+	 * } catch (Exception e) { logger.error( "tips差分报错：rowkey:" + errRowkey +
+	 * ";出错原因：" + e.getMessage(), e); throw new Exception("tips差分报错：rowkey:" +
+	 * errRowkey + ";出错原因：" + e.getMessage(), e); } finally {
+	 * System.out.println("-----------"); // 连接不能关
+	 * 
+	 * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
+	 * 
+	 * if(solrConn!=null){ solrConn.close(); }
+	 * 
+	 * }
+	 * 
+	 * }
+	 */
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 

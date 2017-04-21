@@ -136,7 +136,7 @@ public class CollectConvert {
 			ZipUtils.zipFile(inPath,uploadPath+"/"+seq+"/"+fileName+".zip");
 			log.info("路径"+outPath+"数据文件采集成果导入相应日库");
 			List<String> result = new ArrayList<String>();
-			PoiService.getInstance().importPoi(seq, Long.valueOf(0));
+			PoiService.getInstance().importPoi(seq, 0,Long.valueOf(0));
 		}
 		//待导入的数据fid信息写入数据库
 		CollectConvertUtils.importConvertFids(map);

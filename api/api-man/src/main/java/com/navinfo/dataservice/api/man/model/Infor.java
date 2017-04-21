@@ -19,6 +19,8 @@ public class Infor  {
 		TASK_ID	任务id	NUMBER(10)	外键	空	
 		INSERT_TIME	情报插入时间	TIMESTAMP			
 	 */
+	
+
 	private String inforId ;
 	private String inforName;
 	private String geometry;
@@ -27,6 +29,28 @@ public class Infor  {
 	private String inforContent;
 	private Integer taskId;
 	private Timestamp insertTime;
+	
+	private Integer feedbackType;
+	private Integer featureKind;
+	
+	private String adminName;
+	private String inforCode;
+	
+	private Timestamp publishDate;
+	private Timestamp expectDate;
+	private Timestamp newsDate;
+
+	private String topicName;
+	private String infoTypeName;
+	
+	private String method;
+	private Integer roadLength;
+	private Integer sourceCode;
+
+
+
+
+
 	
 	public Infor (){
 	}
@@ -133,6 +157,174 @@ public class Infor  {
 		} else if (!inforId.equals(other.inforId))
 			return false;
 		return true;
+	}
+
+	/**
+	 * @return the feedbackType
+	 */
+	public Integer getFeedbackType() {
+		return feedbackType;
+	}
+
+	/**
+	 * @param feedbackType the feedbackType to set
+	 */
+	public void setFeedbackType(Integer feedbackType) {
+		this.feedbackType = feedbackType;
+	}
+
+	/**
+	 * @return the featureKind
+	 */
+	public Integer getFeatureKind() {
+		return featureKind;
+	}
+
+	/**
+	 * @param featureKind the featureKind to set
+	 */
+	public void setFeatureKind(Integer featureKind) {
+		this.featureKind = featureKind;
+	}
+
+	/**
+	 * @return the adminName
+	 */
+	public String getAdminName() {
+		return adminName;
+	}
+
+	/**
+	 * @param adminName the adminName to set
+	 */
+	public void setAdminName(String adminName) {
+		this.adminName = adminName;
+	}
+
+	/**
+	 * @return the infoCode
+	 */
+	public String getInforCode() {
+		return inforCode;
+	}
+
+	/**
+	 * @param infoCode the infoCode to set
+	 */
+	public void setInfroCode(String inforCode) {
+		this.inforCode = inforCode;
+	}
+
+	/**
+	 * @return the publishDate
+	 */
+	public Timestamp getPublishDate() {
+		return publishDate;
+	}
+
+	/**
+	 * @param publishDate the publishDate to set
+	 */
+	public void setPublishDate(Timestamp publishDate) {
+		this.publishDate = publishDate;
+	}
+
+	/**
+	 * @return the expectDate
+	 */
+	public Timestamp getExpectDate() {
+		return expectDate;
+	}
+
+	/**
+	 * @param expectDate the expectDate to set
+	 */
+	public void setExpectDate(Timestamp expectDate) {
+		this.expectDate = expectDate;
+	}
+
+	/**
+	 * @return the topicName
+	 */
+	public String getTopicName() {
+		return topicName;
+	}
+
+	/**
+	 * @param topicName the topicName to set
+	 */
+	public void setTopicName(String topicName) {
+		this.topicName = topicName;
+	}
+
+	/**
+	 * @return the infoTypeName
+	 */
+	public String getInfoTypeName() {
+		return infoTypeName;
+	}
+
+	/**
+	 * @param infoTypeName the infoTypeName to set
+	 */
+	public void setInfoTypeName(String infoTypeName) {
+		this.infoTypeName = infoTypeName;
+	}
+
+	/**
+	 * @return the method
+	 */
+	public String getMethod() {
+		return method;
+	}
+
+	/**
+	 * @param method the method to set
+	 */
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	/**
+	 * @return the roadLength
+	 */
+	public Integer getRoadLength() {
+		return roadLength;
+	}
+
+	/**
+	 * @param roadLength the roadLength to set
+	 */
+	public void setRoadLength(Integer roadLength) {
+		this.roadLength = roadLength;
+	}
+
+	/**
+	 * @return the sourceCode
+	 */
+	public Integer getSourceCode() {
+		return sourceCode;
+	}
+
+	/**
+	 * @param sourceCode the sourceCode to set
+	 */
+	public void setSourceCode(Integer sourceCode) {
+		this.sourceCode = sourceCode;
+	}
+
+	/**
+	 * @return the newsDate
+	 */
+	public Timestamp getNewsDate() {
+		return newsDate;
+	}
+
+	/**
+	 * @param newsDate the newsDate to set
+	 */
+	public void setNewsDate(Timestamp newsDate) {
+		this.newsDate = newsDate;
 	}
 	
 	

@@ -1942,6 +1942,29 @@ public class TaskService {
 		}
 	}
 	
+	public Map<Integer,Integer> getGridMapByTaskId(Connection conn,Integer taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			StringBuilder sb = new StringBuilder();
+			sb.append("SELECT M.GRID_ID,M.TYPE FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId);
+			String selectSql= sb.toString();
+
+			ResultSetHandler<Map<Integer,Integer>> rsHandler = new ResultSetHandler<Map<Integer,Integer>>() {
+				public Map<Integer,Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer,Integer> gridMap = new HashMap<Integer,Integer>();
+					while (rs.next()) {
+						gridMap.put(rs.getInt("GRID_ID"), rs.getInt("TYPE"));
+					}
+					return gridMap;
+				}
+			};
+			return run.query(conn, selectSql, rsHandler);	
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
 //	public Page queryMonthTask(JSONObject condition, int curPageNum, int curPageSize) throws Exception {
 //		Connection conn = null;
 //		try{
@@ -2862,6 +2885,88 @@ public class TaskService {
 			throw new ServiceException("getCollectTaskIdByTaskId失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param conn 
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public List<Task> getTaskByProgramId(final Connection conn, int programId) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("   FROM TASK T ");
+			sb.append("  WHERE T.PROGRAM_ID = " + programId);
+			
+			String sql = sb.toString();
+			
+			log.info("getTaskByProgramId sql :" + sql);
+			
+			
+			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>() {
+				public List<Task> handle(ResultSet rs) throws SQLException {
+					List<Task> result = new ArrayList<Task>();
+					while(rs.next()) {
+						Task task = new Task();
+						task.setTaskId(rs.getInt("TASK_ID"));
+						task.setType(rs.getInt("TYPE"));
+						task.setGroupId(rs.getInt("GROUP_ID"));
+						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						try {
+							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						result.add(task);
+					}
+					return result;
+				}
+			};
+			List<Task> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getTaskByProgramId失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param bean
+	 * @throws Exception 
+	 */
+	public void createWithBeanWithTaskId(Connection conn, Task bean) throws Exception {
+		try{
+			/*与block关联的常规任务
+			 * 1.修改同类型task的latest
+			 * 2.如果block没有开启则开启block
+			 */
+			if(bean.getBlockId()!=0){
+				TaskOperation.updateLatest(conn,bean.getProgramId(),bean.getRegionId(),bean.getBlockId(),bean.getType());
+				List<Integer> blockList = new ArrayList<Integer>();
+				blockList.add(bean.getBlockId());
+				BlockOperation.openBlockByBlockIdList(conn,blockList);
+			}	
+			//创建任务
+			TaskOperation.insertTask(conn, bean);
+			
+			// 插入TASK_GRID_MAPPING
+			if(bean.getGridIds() != null){
+				TaskOperation.insertTaskGridMapping(conn, bean);
+			}
+			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 }

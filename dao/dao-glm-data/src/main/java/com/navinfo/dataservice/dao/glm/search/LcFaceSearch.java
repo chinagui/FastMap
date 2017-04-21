@@ -51,7 +51,7 @@ public class LcFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid, a.geometry,a.kind,(select count(1) from lc_face_name ln where ln.face_id = a.face_id and ln.u_record !=2) count from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.face_pid, a.geometry,a.kind,(select count(1) from lc_face_name ln where ln.face_pid = a.face_pid and ln.u_record !=2) count from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -119,7 +119,7 @@ public class LcFaceSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "select a.face_pid, a.geometry, a.kind from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
+		String sql = "select a.face_pid, a.geometry,a.kind,(select count(1) from lc_face_name ln where ln.face_pid = a.face_pid and ln.u_record !=2) count from lc_face a where a.u_record != 2 and sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE'";
 
 		PreparedStatement pstmt = null;
 
@@ -143,7 +143,8 @@ public class LcFaceSearch implements ISearch {
 
 				JSONObject m = new JSONObject();
 
-				m.put("c", resultSet.getInt("kind"));
+				m.put("a", resultSet.getInt("kind"));
+				m.put("b", resultSet.getInt("count") > 0 ? 1 : 0);
 
 				snapshot.setM(m);
 

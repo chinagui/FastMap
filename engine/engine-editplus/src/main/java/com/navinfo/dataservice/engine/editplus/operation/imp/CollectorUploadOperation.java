@@ -802,20 +802,25 @@ public class CollectorUploadOperation extends AbstractOperation {
 				}
 				//改名称
 				String outdoorName = jo.getString("name");
-				if(!stringEquals(outdoorName,ixPoi.getOldName())){
-					ixPoi.setFreshFlag(false);
-					ixPoi.setOldName(outdoorName);
-					outDoorLog.append("改名称|");
+				if(outdoorName != null){
+					if(!stringEquals(outdoorName,ixPoi.getOldName())){
+						ixPoi.setFreshFlag(false);
+						ixPoi.setOldName(outdoorName);
+						outDoorLog.append("改名称|");
+					}
 					this.usdateName(poi, jo, getLangCode());
 				}
 				//改地址
 				String outDoorAddress = jo.getString("address");
-				if(!stringEquals(outDoorAddress,ixPoi.getOldAddress())){
-					ixPoi.setFreshFlag(false);
-					ixPoi.setOldAddress(outDoorAddress);
-					outDoorLog.append("改地址|");
+				if(outDoorAddress != null){
+					if(!stringEquals(outDoorAddress,ixPoi.getOldAddress())){
+						ixPoi.setFreshFlag(false);
+						ixPoi.setOldAddress(outDoorAddress);
+						outDoorLog.append("改地址|");
+					}
 					this.usdateAddress(poi, jo, getLangCode());
 				}
+				
 				
 				ixPoi.setPoiNum(jo.getString("fid"));
 				ixPoi.setDataVersion(version);

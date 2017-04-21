@@ -130,5 +130,77 @@ public class CkRuleSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
+	
+	public String getRuleNameById(String ruleCode) throws Exception {
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		String ruleName = "";
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select distinct c.rule_name from ck_rule_cop c ");
+			sb.append(" where c.rule_status=1 ");
+			if(ruleCode != null && StringUtils.isNotEmpty(ruleCode)){
+				sb.append("and c.rule_code ='"+ruleCode+"'");
+			}
+			
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			if(resultSet.next()) {
+				ruleName = resultSet.getString("rule_name");
+			}
+			return ruleName;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 
+	public JSONArray getCkRulesBySuiteId(String suiteId) throws Exception {
+		JSONArray result = new JSONArray();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append("select c.* from ck_rule_cop c ");
+			sb.append("where c.rule_status=1 ");
+			if(suiteId != null && StringUtils.isNotEmpty(suiteId)){
+				sb.append("and c.suite_id = '"+suiteId+"'");
+			}
+
+			System.out.println("rules sql : "+sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				String suiteKey = resultSet.getString("suite_id");
+				
+				JSONObject data = new JSONObject();
+				data.put("suiteId", suiteKey);
+				data.put("ruleCode", resultSet.getString("rule_code"));
+				data.put("ruleName", resultSet.getString("rule_name"));
+				data.put("ruleDesc", resultSet.getString("rule_desc"));
+				data.put("ruleLevel", resultSet.getInt("rule_level"));
+				if ( resultSet.getString("depends") == null) {
+					data.put("depends", "");
+				} else {
+					data.put("depends", resultSet.getString("depends"));
+				}
+				
+				result.add(data);
+			}
+			
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
 }

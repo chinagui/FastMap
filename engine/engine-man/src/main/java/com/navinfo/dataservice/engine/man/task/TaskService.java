@@ -29,7 +29,6 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -345,8 +344,8 @@ public class TaskService {
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
-//					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName() +"_"+task.getGroupName());//任务名称+日期+_作业组
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
 					subtask.setPlanStartDate(task.getPlanStartDate());
@@ -1438,13 +1437,14 @@ public class TaskService {
 			Map<Long, Integer> poiGridMap=getPoiGridByQuickTask(dailyConn,task.getTaskId());
 			log.info(task.getTaskId()+"任务为快线采集任务，获取其tips对应的grid集合");
 			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			//TODO
-			Set<Integer> tipsGrids= null;//getTipsGridByTaskId(task.getTaskId());
+			Set<Integer> tipsGrids=api.getTipsGridsBySqTaskId(task.getTaskId());
 			Set<Integer> allGrids=new HashSet<Integer>();
 			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，tips对应grid范围"+tipsGrids.toString());
 				allGrids.addAll(tipsGrids);
 			}
 			if(poiGridMap!=null&&poiGridMap.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，poi对应grid范围"+poiGridMap.toString());
 				allGrids.addAll(poiGridMap.values());
 			}
 			//判断grid所在项目，区县，返回grid所在中线采集任务id
@@ -1453,11 +1453,12 @@ public class TaskService {
 				return null;}
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
 			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
+			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
 			//任务号批数据
 			//tip批中线任务号
 			if(tipsGrids!=null&&tipsGrids.size()>0){
 				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				//TODO
+				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
 			}
 			
 			//poi批中线任务号	
@@ -1489,7 +1490,7 @@ public class TaskService {
 	 */
 	private void batchPoiMidTask(Connection dailyConn,
 			Map<Long, Integer> poiTaskMap) throws SQLException {
-		String updateSql="update poi_edit_status set centre_task_id=? where pid=? and centre_task_id=0";
+		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
 		QueryRunner run=new QueryRunner();
 		Object[][] params=new Object[poiTaskMap.keySet().size()][2] ;
 		int i=0;
@@ -2299,8 +2300,8 @@ public class TaskService {
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
 			par.put("phaseId",phaseId);
-//			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
-			par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
+			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
+			//par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
 			taskPar.put("manager_id", cmsInfo.get("collectId"));

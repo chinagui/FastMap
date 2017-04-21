@@ -53,8 +53,13 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
+<<<<<<< HEAD
+	public JSONObject loadPids(boolean isLock, String pidName, int type,
+			String g, int pageSize, int pageNum) throws Exception {
+=======
 	public JSONObject loadPids(boolean isLock, String pidName,
 			int type, int subtaskId, int pageSize, int pageNum) throws Exception {
+>>>>>>> origin/master
 
 		JSONObject result = new JSONObject();
 
@@ -72,33 +77,39 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 
-//		buffer.append(" AND ipn.lang_code = 'CHI'");
-//		buffer.append(" AND ipn.name_type = 2 ");
-//		buffer.append(" AND ipn.name_class = 1");
+		// buffer.append(" AND ipn.lang_code = 'CHI'");
+		// buffer.append(" AND ipn.name_type = 2 ");
+		// buffer.append(" AND ipn.name_class = 1");
 
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
+<<<<<<< HEAD
+		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
+				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
+
+=======
 		buffer.append(" AND (ps.QUICK_SUBTASK_ID="+subtaskId+" or ps.MEDIUM_SUBTASK_ID="+subtaskId+") ");
 		
+>>>>>>> origin/master
 		if (!pidName.isEmpty()) {
-			Pattern pattern = Pattern.compile("[0-9]*"); 
+			Pattern pattern = Pattern.compile("[0-9]*");
 			Matcher isNum = pattern.matcher(pidName);
-			if( isNum.matches() ){
-				buffer.append(" AND (ip.pid = " + pidName + " OR ipn.name like '%" + pidName + "%') ");
-			}else{
+			if (isNum.matches()) {
+				buffer.append(" AND (ip.pid = " + pidName
+						+ " OR ipn.name like '%" + pidName + "%') ");
+			} else {
 				if (StringUtils.isNotBlank(pidName)) {
 					buffer.append(" AND ipn.name like '%" + pidName + "%'");
 				}
 			}
 		}
 
-		
-//		if (pid != 0) {
-//			buffer.append(" AND ip.pid = " + pid + "");
-//		} else {
-//			if (StringUtils.isNotBlank(pidName)) {
-//				buffer.append(" AND ipn.name like '%" + pidName + "%'");
-//			}
-//		}
+		// if (pid != 0) {
+		// buffer.append(" AND ip.pid = " + pid + "");
+		// } else {
+		// if (StringUtils.isNotBlank(pidName)) {
+		// buffer.append(" AND ipn.name like '%" + pidName + "%'");
+		// }
+		// }
 
 		buffer.append(" ) c");
 		buffer.append(" WHERE ROWNUM <= :1) ");
@@ -115,7 +126,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
-			LogReader logRead=new LogReader(conn);
+			LogReader logRead = new LogReader(conn);
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");
@@ -123,37 +134,41 @@ public class IxPoiSelector extends AbstractSelector {
 				// STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 				// Geometry geometry = GeoTranslator.struct2Jts(struct, 1, 0);
 				JSONObject json = new JSONObject();
-				
+
 				json.put("poiNum", resultSet.getString("poi_num"));
 				json.put("pid", resultSet.getInt("pid"));
-				json.put("status", logRead.getObjectState(resultSet.getInt("pid"), "IX_POI"));
+				json.put("status", logRead.getObjectState(
+						resultSet.getInt("pid"), "IX_POI"));
 				json.put("name", resultSet.getString("name"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				String flag = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("flag"))){
+				if (StringUtils.isNotEmpty(resultSet.getString("flag"))) {
 					flag = resultSet.getString("flag");
 				}
 				json.put("flag", flag);
-				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(conn);
-				json.put("photo", selector.getPoiPhotoTotal(resultSet.getInt("pid")));
+				IxPoiDeepStatusSelector selector = new IxPoiDeepStatusSelector(
+						conn);
+				json.put("photo",
+						selector.getPoiPhotoTotal(resultSet.getInt("pid")));
 				String poiMemo = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("poi_memo"))){
+				if (StringUtils.isNotEmpty(resultSet.getString("poi_memo"))) {
 					poiMemo = resultSet.getString("poi_memo");
 				}
 				json.put("memo", poiMemo);
 				String collectTime = "";
-				if (StringUtils.isNotEmpty(resultSet.getString("collect_time"))){
+				if (StringUtils.isNotEmpty(resultSet.getString("collect_time"))) {
 					collectTime = resultSet.getString("collect_time");
 				}
 				json.put("collectTime", collectTime);
 				json.put("freshnessVefication",
 						resultSet.getInt("freshness_vefication"));
-				json.put("errorCount", getcheckErrorTotal(resultSet.getInt("pid"), "IX_POI"));
+				json.put("errorCount",
+						getcheckErrorTotal(resultSet.getInt("pid"), "IX_POI"));
 				json.put("errorType", "");
-				json.put("auditProblem","");
+				json.put("auditProblem", "");
 				json.put("auditStatus", "");
-//				json.put("geometry", GeoTranslator.jts2Geojson(geometry));
-//				json.put("uRecord", resultSet.getInt("u_record"));
+				// json.put("geometry", GeoTranslator.jts2Geojson(geometry));
+				// json.put("uRecord", resultSet.getInt("u_record"));
 
 				array.add(json);
 			}
@@ -174,9 +189,10 @@ public class IxPoiSelector extends AbstractSelector {
 
 		}
 	}
-	
+
 	/**
 	 * 获取poi的检查项错误个数
+	 * 
 	 * @param pid
 	 * @param tableName
 	 * @return
@@ -191,15 +207,15 @@ public class IxPoiSelector extends AbstractSelector {
 		ResultSet resultSet = null;
 		try {
 			pstmt = conn.prepareStatement(sql);
-			
+
 			pstmt.setInt(1, pid);
 			pstmt.setString(2, tableName);
-			
+
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				total = resultSet.getInt("count");
 			}
-			
+
 			return total;
 		} catch (Exception e) {
 
@@ -213,7 +229,7 @@ public class IxPoiSelector extends AbstractSelector {
 
 		}
 	}
-	
+
 	/**
 	 * 安卓端检查是否有可下载的POI
 	 * 
@@ -407,14 +423,14 @@ public class IxPoiSelector extends AbstractSelector {
 	public IRow loadByIdAndChildren(int id, boolean isLock) throws Exception {
 
 		IxPoi poi = null;
-		LogReader logRead=new LogReader(conn);
+		LogReader logRead = new LogReader(conn);
 		List<Integer> ids = new ArrayList<Integer>();
 		ids.add(id);
 		List<IRow> iRows = loadByIds(ids, isLock, false);
-		//查询删除poi的信息
+		// 查询删除poi的信息
 		if (iRows.size() == 0 || iRows == null) {
 			poi = (IxPoi) loadAllById(id, isLock);
-			//根据履历过滤掉子表单独删除的记录，只留最后一次和主表同时删除的子表记录
+			// 根据履历过滤掉子表单独删除的记录，只留最后一次和主表同时删除的子表记录
 			logRead.filterValidRowId(poi);
 		} else {
 			poi = (IxPoi) loadById(id, isLock);
@@ -423,24 +439,34 @@ public class IxPoiSelector extends AbstractSelector {
 				conn);
 
 		List<IRow> parts = samepoiPartsSelector.loadByPoiPid(poi.pid(), isLock);
-		
+
 		JSONObject poiEditStatus = getPoiStatusByPid(poi.getPid());
 
 		poi.setSamepoiParts(parts);
 		String rawFields = null;
-		if (poiEditStatus.get("RAW_FIELDS")==null){
-			poi.setRawFields(rawFields);
-		}else{
-			rawFields = (String) poiEditStatus.get("RAW_FIELDS");
-			poi.setRawFields(rawFields);
+		if (poiEditStatus.containsKey("RAW_FIELDS")) {
+			if (poiEditStatus.get("RAW_FIELDS") == null) {
+				poi.setRawFields(rawFields);
+			} else {
+				rawFields = (String) poiEditStatus.get("RAW_FIELDS");
+				poi.setRawFields(rawFields);
+			}
 		}
-		
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
+<<<<<<< HEAD
+		if (poiEditStatus.containsKey("STATUS")) {
+			poi.setStatus(poiEditStatus.getInt("STATUS"));
+		}
+		if (poiEditStatus.containsKey("FRESH_VERIFIED")) {
+			poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
+		}
+=======
 		if(poiEditStatus.containsKey("STATUS")){
 		poi.setStatus(poiEditStatus.getInt("STATUS"));}
 		
 		poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
 		
+>>>>>>> origin/master
 		return poi;
 	}
 
@@ -453,8 +479,8 @@ public class IxPoiSelector extends AbstractSelector {
 	 */
 	public String loadRawByRowId(int pid) throws Exception {
 
-		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE pid="
-				+ pid + " ORDER BY UPLOAD_DATE DESC";
+		String sql = "SELECT RAW_FIELDS FROM POI_EDIT_STATUS WHERE pid=" + pid
+				+ " ORDER BY UPLOAD_DATE DESC";
 
 		PreparedStatement pstmt = null;
 
@@ -480,10 +506,10 @@ public class IxPoiSelector extends AbstractSelector {
 
 		}
 	}
-	
-	
+
 	/**
 	 * 根据子任务获取该任务圈下所有的PID
+	 * 
 	 * @param subtask
 	 * @return
 	 * @throws Exception
@@ -492,24 +518,24 @@ public class IxPoiSelector extends AbstractSelector {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		
+
 		try {
 			StringBuilder sb = new StringBuilder();
 			sb.append("select p.pid from IX_POI p");
 			sb.append(" WHERE sdo_within_distance(p.geometry, sdo_geometry(    :1  , 8307), 'mask=anyinteract') = 'TRUE'");
-			
+
 			pstmt = conn.prepareStatement(sb.toString());
-			
+
 			pstmt.setString(1, subtask.getGeometry());
-			
+
 			resultSet = pstmt.executeQuery();
-			
+
 			List<Integer> pids = new ArrayList<Integer>();
-			
-			while(resultSet.next()) {
+
+			while (resultSet.next()) {
 				pids.add(resultSet.getInt("pid"));
 			}
-			
+
 			return pids;
 		} catch (Exception e) {
 
@@ -522,7 +548,7 @@ public class IxPoiSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
-	
+
 	/**
 	 * 查询POI的状态信息
 	 * 
@@ -548,7 +574,8 @@ public class IxPoiSelector extends AbstractSelector {
 				result.put("FRESH_VERIFIED", resultSet.getInt("FRESH_VERIFIED"));
 				result.put("RAW_FIELDS", resultSet.getString("RAW_FIELDS"));
 				result.put("WORK_TYPE", resultSet.getInt("WORK_TYPE"));
-				result.put("COMMIT_HIS_STATUS", resultSet.getInt("COMMIT_HIS_STATUS"));
+				result.put("COMMIT_HIS_STATUS",
+						resultSet.getInt("COMMIT_HIS_STATUS"));
 				break;
 			}
 			return result;

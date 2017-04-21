@@ -25,9 +25,6 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -43,7 +40,6 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
@@ -1629,7 +1625,11 @@ public class SubtaskService {
 		if(subtask.getStage()==0||subtask.getStage()==1){
 			//获取规划外GRID信息
 			log.info("调整子任务本身范围");
-			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
+			int programType=1;
+			if(subtask.getStage()==0){
+				programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+			}
+			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
@@ -1935,7 +1935,7 @@ public class SubtaskService {
 	}
 	
 	/**
-	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 返回值Map<Integer,Integer> key：taskId，programType：1，中线4，快线
 	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
 	 * 应用场景：采集（poi，tips）成果批任务号
 	 * @param subtaskId

@@ -25,7 +25,7 @@ public class NiValExceptionTest extends InitApplication {
 		initContext();
 	}
 	
-	@Test
+//	@Test
 	public void testGLM01455() throws Exception{
 		String parameter="{\"command\":\"UPDATE\",\"dbId\":84,\"type\":\"RDLINK\",\"objId\":502000037,\"data\":{\"forms\":[{\"linkPid\":502000037,\"formOfWay\":36,\"extendedForm\":0,\"auxiFlag\":0,\"kgFlag\":0,\"objStatus\":\"INSERT\"}],\"rowId\":\"AE884CC4C8614A00B7E3B20A065A27D3\",\"pid\":502000037,\"objStatus\":\"UPDATE\"}}";
 		Transaction t = new Transaction(parameter);
@@ -129,7 +129,7 @@ public class NiValExceptionTest extends InitApplication {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	@Test
+//	@Test
 	public void testAddCheckRun() throws Exception {
 		Connection conn = null;
 		try {
@@ -151,4 +151,81 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
+	//@Test
+	public void testAddCheckRunMetaRdName() throws Exception {
+		Connection conn = null;
+		try {
+			String parameter = "{'isMetaFlag':1,'ckRules':'CHR73040,CHR70108,CHR73042,CHR73043','checkType':7,'name':'雲嶺山莊','nameGroupid':'','adminId':'','roadTypes':[0,2]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int checkType=jsonReq.getInt("checkType");	
+			
+			//conn = DBConnector.getInstance().getConnectionById(19);
+
+			long jobId=CheckService.getInstance().metaCheckRun(2,checkType,jsonReq);
+			System.out.println("jobId: "+jobId);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+//	@Test
+	public void testgetsuites() throws Exception {
+		try {
+			String parameter = "{'type':5}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int type=jsonReq.getInt("type");	
+			
+			JSONArray suites=CheckService.getInstance().getCkSuites(type);
+			System.out.println("suites: "+suites);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+	}
+	@Test
+	public void testgetrules() throws Exception {
+		try {
+			String parameter = "{'suiteId':'suite7'}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String suiteId=jsonReq.getString("suiteId");	
+			
+			JSONArray rules=CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+			System.out.println("rules: "+rules);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+	}
+	public static void main(String[] args) {
+		JSONObject jobj = new JSONObject();
+		jobj.put("ruleid", "1");
+		jobj.put("ruleName", "2");
+		jobj.put("adminName", "3");
+		jobj.put("information", "4");
+		jobj.put("level", "5");
+		jobj.put("count", 0);
+		
+		JSONObject newjobj = new JSONObject();
+		newjobj.put("ruleid", "");
+		newjobj.put("ruleName", "");
+		newjobj.put("adminName", "");
+		newjobj.put("information", "");
+		newjobj.put("level", "");
+		newjobj.put("count", 0);
+		if(jobj.containsKey("information")){
+			newjobj.put("information", jobj.getString("information"));
+		}
+		if(jobj.containsKey("level")){
+			newjobj.put("level", jobj.getString("level"));
+		}
+		if(jobj.containsKey("count")){
+			newjobj.put("count", jobj.getString("count"));
+		}
+		System.out.println(newjobj);
+	}
 }

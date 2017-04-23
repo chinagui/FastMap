@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -88,9 +89,10 @@ public final class CmgLinkOperateUtils {
         // 如果挂接只有CMG-NODE则不需要生成新的CMG-NODE
         while (p < catchLinks.size() && pc < coordinates.size()) {
             tmpCs.add(coordinates.getJSONArray(pc));
+            double lon = catchLinks.getJSONObject(p).getDouble("lon");
+            double lat = catchLinks.getJSONObject(p).getDouble("lat");
 
-            if (coordinates.getJSONArray(pc).getDouble(0) == catchLinks.getJSONObject(p).getDouble("lon")
-                    && coordinates.getJSONArray(pc).getDouble(1) == catchLinks.getJSONObject(p).getDouble("lat")) {
+            if (coordinates.getJSONArray(pc).getDouble(0) == lon && coordinates.getJSONArray(pc).getDouble(1) == lat) {
 
                 tmpGeom.put("coordinates", tmpCs);
                 if (catchLinks.getJSONObject(p).containsKey("nodePid")) {
@@ -100,10 +102,7 @@ public final class CmgLinkOperateUtils {
 
                     se.put("s", catchLinks.getJSONObject(p).getInt("nodePid"));
                 } else {
-                    double x = catchLinks.getJSONObject(p).getDouble("lon");
-                    double y = catchLinks.getJSONObject(p).getDouble("lat");
-
-                    CmgBuildnode node = NodeOperateUtils.createCmgBuildnode(x, y);
+                    CmgBuildnode node = NodeOperateUtils.createCmgBuildnode(lon, lat);
 
                     result.insertObject(node, ObjStatus.INSERT, node.pid());
 

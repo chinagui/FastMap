@@ -6,7 +6,12 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -15,10 +20,7 @@ import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkSearch implements ISearch {
 
@@ -56,7 +58,6 @@ public class RdLinkSearch implements ISearch {
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
 		String sql = "WITH TMP1 AS (SELECT A.LINK_PID, A.KIND, A.GEOMETRY, A.S_NODE_PID, A.E_NODE_PID FROM RD_LINK A WHERE SDO_WITHIN_DISTANCE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND A.U_RECORD != 2), TMP2 AS /*+ index(P) */ (SELECT P.LINK_PID, S.GROUP_ID SAMELINK_PID FROM RD_SAMELINK_PART P, RD_SAMELINK S, TMP1 L WHERE P.LINK_PID = L.LINK_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :2 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP3 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID S_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.S_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :3 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2), TMP4 AS /*+ index(P) */ (SELECT L.LINK_PID, S.GROUP_ID E_SAMENODEPID FROM RD_SAMENODE_PART P, RD_SAMENODE S, TMP1 L WHERE P.NODE_PID = L.E_NODE_PID AND S.GROUP_ID = P.GROUP_ID AND P.TABLE_NAME = :4 AND P.U_RECORD <> 2 AND S.U_RECORD <> 2) SELECT A.*, B.SAMELINK_PID, C.S_SAMENODEPID, D.E_SAMENODEPID FROM TMP1 A, TMP2 B, TMP3 C, TMP4 D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+)";
-		
 		
 		PreparedStatement pstmt = null;
 
@@ -208,6 +209,144 @@ public class RdLinkSearch implements ISearch {
 				}
 			}
 
+		}
+
+		return list;
+	}
+	
+	
+	
+	
+	
+	
+	private List<SearchSnapshot> searchData(ResultSet resultSet)
+			throws Exception {
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		try {
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("kind"));
+
+				m.put("b", resultSet.getString("name"));
+
+				m.put("c", resultSet.getString("limits"));
+
+				m.put("d", resultSet.getInt("direct"));
+
+				m.put("e", resultSet.getInt("s_node_pid"));
+
+				m.put("f", resultSet.getInt("e_node_pid"));
+
+				m.put("h", resultSet.getString("forms"));
+
+				m.put("i", resultSet.getInt("function_class"));
+
+				m.put("j", resultSet.getInt("imi_code"));
+
+				m.put("k", resultSet.getDouble("length"));
+
+				m.put("l", resultSet.getInt("special_traffic"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(4);
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				Geometry geom = GeoTranslator.struct2Jts(struct);
+
+				JSONArray geoArray = GeoTranslator.jts2JSONArray(geom);
+
+				snapshot.setG(geoArray);
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+
+		}
+
+		return list;
+	}
+
+	public List<SearchSnapshot> searchDataByLinkPids(List<Integer> pids)
+			throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0)
+			return list;
+		if (pids.size() > 1000) {
+			return list;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE LINK_PID  IN ( " + ids + ")  AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			list = searchData(resultSet);
+
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return list;
+	}
+
+	public List<SearchSnapshot> searchDataByNodePid(int nodePid)
+			throws Exception {
+
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, SPECIAL_TRAFFIC, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE (S_NODE_PID = :1 OR E_NODE_PID = :2) AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) ";
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setInt(1, nodePid);
+
+			pstmt.setInt(2, nodePid);
+
+			resultSet = pstmt.executeQuery();
+
+			list = searchData(resultSet);
+
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
 		}
 
 		return list;

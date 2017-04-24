@@ -6,11 +6,13 @@ package org.navinfo.dataservice.engine.meta;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 
@@ -74,7 +76,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void testGetRdNameAll()
 	{
 		//{"pageNum":1,"pageSize":20,"sortby":"","flag":0,"params":{"name":"","nameGroupid":"","adminId":"","roadTypes":[]}}
@@ -165,5 +167,24 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	
+	@Test
+	public void autoConvert() throws Exception{
+		String word = "ｗ２４５";
+
+        PinyinConverter py = new PinyinConverter();
+
+        String[] result = py.autoConvert(word);
+        if (result != null) {
+            JSONObject json = new JSONObject();
+
+            json.put("voicefile", result[1]);
+
+            json.put("phonetic", result[0]);
+
+            System.out.println( json );
+        } else {
+            throw new Exception("转拼音失败");
+        }
+        
+	}
 }

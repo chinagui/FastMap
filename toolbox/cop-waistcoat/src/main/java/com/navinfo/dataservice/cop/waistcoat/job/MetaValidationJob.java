@@ -76,7 +76,7 @@ public class MetaValidationJob extends AbstractJob {
 			//给检查子版本库导数据
 			//获取元数据库的dbID
 			DbInfo metaDb =  datahub.getOnlyDbByType("metaRoad");
-			installPckUtils(req.getName(),req.getNameGroupid(),req.getAdminId(),req.getRoadTypes(),metaDb,valDb);	
+			installPckUtils(req.getName(),req.getNameGroupid(),req.getAdminId(),req.getRoadTypes(),req.getNameIds(),metaDb,valDb);	
 				
 			/*//System.out.println("metaDbid: "+metaDbid);
 			JSONObject metaValidationRequestJSON=new JSONObject();
@@ -131,7 +131,7 @@ public class MetaValidationJob extends AbstractJob {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年4月18日 下午3:21:23 
 	 */
-	private void installPckUtils(String name, String nameGroupid, String adminId, String roadTypes,
+	private void installPckUtils(String name, String nameGroupid, String adminId, String roadTypes,List<Integer> nameIds,
 			DbInfo metaDb,DbInfo subMetaDb) throws Exception {
 	
 		Connection conn = null;
@@ -176,6 +176,22 @@ public class MetaValidationJob extends AbstractJob {
 					insertRdnameDataSql.append(roadTypes);
 					insertRdnameDataSql.append(") ");
 				}
+				String nameIdsStr ="";
+				String str = "";
+				if(nameIds != null && nameIds.size() > 0){
+					for(int nameId : nameIds){
+						if(StringUtils.isEmpty(str)){
+							str=",";
+						}
+						nameIdsStr+=nameId+str;
+					}
+					System.out.println("nameIdsStr: "+nameIdsStr);
+					insertRdnameDataSql.append(" and nameid ");
+					insertRdnameDataSql.append("  in( ");
+					insertRdnameDataSql.append(nameIdsStr);
+					insertRdnameDataSql.append(") ");
+				}
+			System.out.println("insertRdnameDataSql.toString(): "+insertRdnameDataSql.toString());
 			//向子版本导入查询出的rd_name 表数据					
 			new QueryRunner().execute(conn,insertRdnameDataSql.toString());
 			

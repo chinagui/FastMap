@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -230,7 +231,8 @@ public class UploadService {
 			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath);  //服务器部署路径
 			InputStream fileStream = uploadItem.getInputStream();
-			
+//			String fileName = ""
+//			uploadFile(logUploadDir,);
 		}
 		
 		return null;
@@ -238,21 +240,12 @@ public class UploadService {
 	}
 	
 	public String uploadFile(String urlString, String fileName, InputStream fileStream) throws IOException{
-		URL url=new URL(urlString);
-	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
-	    connection.setDoInput(true);
-	    connection.setDoOutput(true);
-	    connection.setRequestMethod("POST");
-	    connection.addRequestProperty("FileName", fileName);
-	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
-	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
-	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());
 	    
 	    //读取文件上传到服务器
-//	    File file=new File(filePath+"/"+fileName);
-//	    FileInputStream fileInputStream=new FileInputStream(file);
 	    byte[]bytes=new byte[1024];
 	    
+	  //选择你要存放的文件
+        FileOutputStream out=new FileOutputStream("f:\\poi00333.txt");
 	    int numReadByte=0;
 	    while((numReadByte=fileStream.read(bytes,0,1024))>0)
 	    {
@@ -261,15 +254,8 @@ public class UploadService {
 	
 	    out.flush();
 	    fileStream.close();
-	    //读取URLConnection的响应
-	    String result = "";
-	    BufferedReader in = new BufferedReader(new InputStreamReader(
-                connection.getInputStream()));
-        String line;
-        while ((line = in.readLine()) != null) {
-            result += line;
-        }
 	    
+	    String result = null ;
 	    return result;
 	}
 	
@@ -309,12 +295,29 @@ public class UploadService {
 	    return result;
 	}
 	public static void main(String[] args) throws IOException {
-		String url = "F:\\aaa";
-		String fileName = "poi.txt";
-		String filePath = "F:\\aaa\\poi04.txt";
-		System.out.println(UploadService.getInstance().uploadFile(url, fileName, filePath));
 		
-		System.exit(0);
+		
+        //选择你要读取的文件
+        FileInputStream fis=new FileInputStream("f:\\poi003.txt");
+        byte[]bytes=new byte[1024];
+        //选择你要存放的文件
+        FileOutputStream fos=new FileOutputStream("f:\\poi00333.txt");
+        //byte[] buf=new byte[1024];
+//      BufferedReader bufr=new BufferedReader(buf);
+       /* int len;
+        while((len=fis.read())!=-1){
+            fos.write(len);
+        }*/
+        int numReadByte=0;
+	    while((numReadByte=fis.read(bytes,0,1024))>0)
+	    {
+	    	fos.write(bytes, 0, numReadByte);
+	    }
+	
+	    fos.flush();
+        fis.close();
+        fos.close();
+        System.exit(0);
 	}
 	/*public static void main(String[] args) throws IOException {
 //		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);

@@ -45,12 +45,12 @@ public class RdNameAndPatternImageTest {
 //	@Test
 	public void saveUpdataTest()
 	{
-//		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-03-21 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
+		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':20170162137,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士222','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 		//String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'00','convOut':'2','kind':'3e1'}}";
 //		String parameter = "{'tableName':'scVectorMatch','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士2','specification':null,'type':'2D','panel':'b2p4|b2p1|b2p2|b1p1','fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-03-21 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/16夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 //		String parameter = "{'tableName':'scBranchCommc','data':{'branch1':'0','branch2':'2','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''}}";
 //		String parameter = "{'tableName':'scBranchSpecc','data':{'branch1':'0','branch2':'0','seriesbranch1':'00'}}";
-		String parameter = "{'tableName':'scBcrossnodeMatchck','data':{'seq':0,'schematicCode':'22','arrowCode':'22'}}";
+//		String parameter = "{'tableName':'scBcrossnodeMatchck','data':{'seq':0,'schematicCode':'22','arrowCode':'22'}}";
 		
 		
 		try{	
@@ -96,14 +96,14 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-	//@Test
+//	@Test
 	public void deleteTest(){
-			//String parameter = "{'tableName':'scMdelMatchG','ids':[20170162142,20170162143]}";
+			String parameter = "{'tableName':'scMdelMatchG','ids':[20170162141,20170162140]}";
 			//String parameter = "{'tableName':'scModelRepdelG','ids':['0','00']}";
 			//String parameter = "{'tableName':'scVectorMatch','ids':[20170162142 ,201705002116]}";
 		    //String parameter = "{'tableName':'scBranchCommc','ids':[{'branch1':'0','branch2':'0','branch3':'','branch4':'','branch5':'','seriesbranch1':'01','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''},{'branch1':'0','branch2':'1','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''}]}";
 			//String parameter = "{'tableName':'scBranchSpecc','ids':[{'branch1':'0','branch2':'0','seriesbranch1':'00'},{'branch1':'0','branch2':'1','seriesbranch1':'11'}]}";
-			String parameter = "{'tableName':'scBcrossnodeMatchck','ids':[0]}";
+//			String parameter = "{'tableName':'scBcrossnodeMatchck','ids':[0]}";
 		
 		try{			
 			JSONObject parameterJson = JSONObject.fromObject(parameter);			
@@ -147,7 +147,7 @@ public class RdNameAndPatternImageTest {
 	
 //	@Test
 	public void searchTest(){
-				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'','version':'','projectNm':'','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','impDate':null,'urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
+				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':20170162137,'productLine':'','version':'','projectNm':'','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','impDate':'2017-03-21 13:55:00','urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
 //				String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'83180890','convOut':'83180800','kind':'3d'},'sortby':'-convBefore','pageSize':20,'pageNum':1}";
 //				String parameter = "{'tableName':'scVectorMatch','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士2','specification':null,'type':'2D','panel':'b2p4|b2p1|b2p2|b1p1','fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':null,'urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/16夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'},'sortby':'-fileId','pageSize':20,'pageNum':1}";
 //				String parameter = "{'tableName':'scBranchCommc','data':{'branch1':'0','branch2':'','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''},'sortby':'+branch1','pageSize':20,'pageNum':1}";
@@ -212,7 +212,7 @@ public class RdNameAndPatternImageTest {
 				}
 	}
 	
-//	@Test
+	@Test
 	public void getImageTest() throws ServiceException{
 		
 		String parameter = "{'tableName':'scMdelMatchG','id':'201400000165'}";
@@ -231,7 +231,7 @@ public class RdNameAndPatternImageTest {
 			imageBlob =scModelMatchGService.getFileContentById(id);
 		}
 	
-		String filepath = "F:/111.png";
+		String filepath = "F:/1111111.png";
         System.out.println("输出文件路径为:" + filepath);
         try {
 	         //处理返回的imageBlob 数据
@@ -298,7 +298,7 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void searchTestRdname(){
 				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':'','uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
 				

@@ -112,7 +112,7 @@ public class JobServiceTest {
 			}
 		}
 		
-		@Test
+//		@Test
 		public void getLatestJobByDescp2(){
 			try{
 				JSONObject jsonReq = JSONObject.fromObject("{'tableName':'rdName','taskName':''}");	
@@ -123,6 +123,36 @@ public class JobServiceTest {
 					String tableName  = jsonReq.getString("tableName");
 					JobInfo obj = JobService.getInstance().getLatestJobByDescp("rdName");
 					System.out.println(obj);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		@Test
+		public void getJobByDescp2(){
+			try{
+				JSONObject jsonReq = JSONObject.fromObject("{'tableName':'rdName','jobName':'元数据库检查7'}");	
+		
+				String jobName = jsonReq.getString("jobName");
+				if( jobName == null || StringUtils.isEmpty(jobName)){
+					throw new IllegalArgumentException("jobName参数不能为空。");
+				}
+				String tableName  = jsonReq.getString("tableName");
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				String descp = tableName+":"+jobName;
+				System.out.println("descp :" +descp);
+				if(descp != null && StringUtils.isNotEmpty(descp)){
+					JobInfo obj = JobService.getInstance().getJobByDescp(descp);
+					System.out.println(obj);
+					int flag = 0;
+					if(obj != null){
+						flag = 1;
+					}
+					
+					System.out.println(flag);
 				}
 			}catch(Exception e){
 				e.printStackTrace();

@@ -10,6 +10,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.navicommons.database.sql.ProcedureBase;
 
 
 public class PinyinConverter {
@@ -43,6 +44,78 @@ public class PinyinConverter {
 				result[0] = resultSet.getString("voicefile");
 
 				result[1] = resultSet.getString("phonetic");
+
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+		}
+
+		return result;
+	}
+	
+	public String[] autoConvert(String word) throws Exception {
+//		String sql = "select py_utils_word.conv_to_english_mode_voicefile(:1,      null,      null,      null) voicefile ,  py_utils_word.convert_hz_tone(:2,    null,    null) phonetic from dual";
+		String sql = " select PY_UTILS_WORD.CONVERT_HZ_TONE(:2, NULL, NULL) phonetic,"
+				+ "py_utils_word.convert_rd_name_voice(:1,null,null,null) voicefile"
+				+ "   from dual ";
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		String[] result = new String[2];
+
+		Connection conn = null;
+
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			String initSql = "BEGIN PY_UTILS_WORD.C_CONVERT_NUMBER:= 0;END;";
+			ProcedureBase procedureBase = new ProcedureBase(conn);
+	        procedureBase.callProcedure(initSql);
+
+			pstmt = conn.prepareStatement(sql);
+
+			pstmt.setString(1, word);
+
+			pstmt.setString(2, word);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				result[0] = resultSet.getString("phonetic");
+
+				result[1] = resultSet.getString("voicefile");
 
 			} else {
 				return null;

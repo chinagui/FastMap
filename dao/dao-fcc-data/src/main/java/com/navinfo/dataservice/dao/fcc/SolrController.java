@@ -1,15 +1,9 @@
 package com.navinfo.dataservice.dao.fcc;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
@@ -19,7 +13,12 @@ import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONException;
 
-import com.navinfo.dataservice.commons.geom.Geojson;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class SolrController {
 
@@ -1055,5 +1054,63 @@ public class SolrController {
 		}
 
 	}
+
+    /**
+     * 根据快线采集任务ID查询Tips
+     * @param collectTaskIds
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    public List<JSONObject> queryCollectTaskTips(Set<Integer> collectTaskIds) throws SolrServerException, IOException{
+        StringBuilder builder = new StringBuilder();
+        if (collectTaskIds.size() > 0) {
+            builder.append("s_qTaskId:(");
+            int index = 0;
+            for (int collectTaskId : collectTaskIds) {
+                if(index != 0)
+                    builder.append(" ");
+                builder.append(collectTaskId);
+                index ++;
+            }
+            builder.append(")");
+        }
+        List<JSONObject> snapshots = this.queryTips(builder.toString(), null);
+        return snapshots;
+    }
+
+    /**
+     * 根据查询条件查询符合条件的所有Tips
+     * @param queryBuilder
+     * @param filterQueryBuilder
+     * @return
+     * @throws SolrServerException
+     * @throws IOException
+     */
+    public List<JSONObject> queryTips(String queryBuilder, String filterQueryBuilder) throws SolrServerException, IOException {
+        SolrQuery query = new SolrQuery();
+        query.set("q", queryBuilder);
+        if(StringUtils.isNotEmpty(filterQueryBuilder)){
+            query.set("fq", filterQueryBuilder);
+        }
+        query.set("start", 0);
+        query.set("rows", fetchNum);
+
+        List<JSONObject> snapshots = new ArrayList<JSONObject>();
+        QueryResponse response = client.query(query);
+        SolrDocumentList sdList = response.getResults();
+        long totalNum = sdList.getNumFound();
+        if (totalNum <= fetchNum) {
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                snapshots.add(snapshot);
+            }
+        } else {
+            // 暂先不处理
+        }
+        return snapshots;
+    }
+
 
 }

@@ -389,6 +389,14 @@ public class FccApiImpl implements FccApi{
 			e.printStackTrace();
 		}
 	}
-    
+
+    @Override
+    public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
+        if (collectTaskIds == null || collectTaskIds.size() == 0) {
+            throw new IllegalArgumentException("参数错误:collectTaskIds不能为空。");
+        }
+        TipsSelector selector = new TipsSelector();
+        return selector.getCollectTaskTipsStats(collectTaskIds);
+    }
 
 }

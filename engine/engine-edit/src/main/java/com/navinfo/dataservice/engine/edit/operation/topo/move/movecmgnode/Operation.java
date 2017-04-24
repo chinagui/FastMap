@@ -57,13 +57,14 @@ public class Operation implements IOperation {
         // 处理CMG-FACE
         for (CmgBuildface cmgface : command.getCmgfaces()) {
             Geometry geometry = GeoTranslator.transform(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+            Geometry cmgnodeGeo = GeoTranslator.transform(command.getCmgnode().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
             for (Coordinate coordinate : geometry.getCoordinates()) {
-                if (command.getLongitude() == coordinate.x && command.getLatitude() == coordinate.y) {
+                if (cmgnodeGeo.getCoordinate().x == coordinate.x && cmgnodeGeo.getCoordinate().y == coordinate.y) {
                     coordinate.x = command.getLongitude();
                     coordinate.y = command.getLatitude();
                 }
             }
-            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
+            if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
                 int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);
@@ -83,7 +84,8 @@ public class Operation implements IOperation {
             if (command.getCmgnode().pid() == cmglink.getsNodePid()) {
                 geometry.getCoordinates()[0].x = command.getLongitude();
                 geometry.getCoordinates()[0].y = command.getLatitude();
-            } else if (command.getCmgnode().pid() == cmglink.geteNodePid()) {
+            }
+            if (command.getCmgnode().pid() == cmglink.geteNodePid()) {
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].x = command.getLongitude();
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].y = command.getLatitude();
             }

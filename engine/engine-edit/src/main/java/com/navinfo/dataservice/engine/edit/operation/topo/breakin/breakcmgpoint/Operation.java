@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
@@ -70,6 +71,9 @@ public class Operation implements IOperation {
      */
     @Override
     public String run(Result result) throws Exception {
+        // 删除被打断的线
+        result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
+
         if (CollectionUtils.isEmpty(command.getBreakNodes())) {
             this.breakPoint();
             this.createBreakNode(result);
@@ -113,12 +117,14 @@ public class Operation implements IOperation {
             }
             // 通过坐标点构成面
             Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
-            cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
-            cmgface.changedFields().put("meshId", CmgfaceUtil.calcFaceMeshId(geometry));
-            cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
-            cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
+            cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry, Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+            // 打断无法造成图幅/周长/面积变化
+            //cmgface.changedFields().put("meshId", CmgfaceUtil.calcFaceMeshId(
+            //        GeoTranslator.transform(geometry, Constant.BASE_SHRINK, Constant.BASE_PRECISION)));
+            //cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(geometry));
+            //cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(geometry));
             result.insertObject(cmgface, ObjStatus.UPDATE, cmgface.pid());
-            for (int seq = 1; seq < cmglinkPids.size(); seq++) {
+            for (int seq = 0; seq < cmglinkPids.size(); seq++) {
                 CmgfaceUtil.createCmgfaceTopo(result, cmglinkPids.get(seq), cmgface.pid(), seq);
             }
         }
@@ -196,8 +202,8 @@ public class Operation implements IOperation {
                 }
             }
         }
-        // 删除被打断的线
-        result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
+        // 删除被打断的线 (已放在外部统一删除)
+        //result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
         // 组装新生成两条link
         result.setPrimaryPid(command.getCmgnode().pid());
         command.getNewCmglinks().get(0).seteNodePid(command.getCmgnode().pid());

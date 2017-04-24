@@ -15,7 +15,6 @@ public class Infor  {
 		GEOMETRY	几何	CLOB		空	
 		INFOR_LEVEL	情报级别	NUMBER(1)		空	
 		PLAN_STATUS	情报规划状态	NUMBER(1)	0未规划，1已规划，2已关闭	0	
-		INFO_CONTENT	情报内容描述	VARCHAR2(200)		空	
 		TASK_ID	任务id	NUMBER(10)	外键	空	
 		INSERT_TIME	情报插入时间	TIMESTAMP			
 	 */
@@ -26,7 +25,6 @@ public class Infor  {
 	private String geometry;
 	private Integer inforLevel;
 	private Integer planStatus;
-	private String inforContent;
 	private Integer taskId;
 	private Timestamp insertTime;
 	
@@ -67,7 +65,7 @@ public class Infor  {
 	 */
 	@Override
 	public String toString() {
-		return "Infor [inforId=" + inforId +",inforName="+inforName+",geometry="+geometry+",inforLevel="+inforLevel+",planStatus="+planStatus+",inforContent="+inforContent+",taskId="+taskId+",insertTime="+insertTime+"]";
+		return "Infor [inforId=" + inforId +",inforName="+inforName+",geometry="+geometry+",inforLevel="+inforLevel+",planStatus="+planStatus+",taskId="+taskId+",insertTime="+insertTime+"]";
 	}
 
 
@@ -101,14 +99,6 @@ public class Infor  {
 
 	public void setPlanStatus(Integer planStatus) {
 		this.planStatus = planStatus;
-	}
-
-	public String getInforContent() {
-		return inforContent;
-	}
-
-	public void setInforContent(String inforContent) {
-		this.inforContent = inforContent;
 	}
 
 	public Integer getTaskId() {

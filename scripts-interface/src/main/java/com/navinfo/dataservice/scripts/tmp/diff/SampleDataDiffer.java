@@ -1532,7 +1532,7 @@ public class SampleDataDiffer {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select p.geometry.sdo_point.x locationX,p.geometry.sdo_point.y locationY,p.*,");
 		sb.append(" (select a.admin_id from ad_admin a where p.region_id=a.region_id) admin_id,");
-		sb.append(" (select n.name from ix_poi_name n where n.poi_pid=p.pid and n.name_class=1 and n.name_type = 2 and n.lang_code = 'CHI'and n.u_record != 2) name,");
+		sb.append(" (select n.name from ix_poi_name n where n.poi_pid=p.pid and n.name_class=1 and n.name_type = 2 and n.lang_code = 'CHI' and n.u_record != 2) name,");
 		sb.append(" (select ad.fullname from ix_poi_address ad where ad.poi_pid=p.pid and ad.lang_code='CHI' and ad.u_record!=2) address,");
 		sb.append(" (select de.web_site from ix_poi_detail de where de.poi_pid=p.pid and de.u_record!=2) web_site,");
 		sb.append(" (select de.hw_entryexit from ix_poi_detail de where de.poi_pid=p.pid and de.u_record!=2) hw_entryexit");
@@ -2044,20 +2044,25 @@ public class SampleDataDiffer {
 	}
 	private static Param parseArgs(String[] args) {
 		Param param = new Param();
-		param.setMongodbHost(args[0]);//
-		param.setMongoPort(Integer.parseInt(args[1]));//
-		param.setMongodbDbName(args[2]);//
-		param.setMongodbCollectionName(args[3]);
+		String strArg =  args[0];
+		String[] ArgList = strArg.split("|");
+		if (ArgList.length != 12){
+			System.out.println("参数个数错误");
+		}
+		param.setMongodbHost(ArgList[0]);//
+		param.setMongoPort(Integer.parseInt(ArgList[1]));//
+		param.setMongodbDbName(ArgList[2]);//
+		param.setMongodbCollectionName(ArgList[3]);
 		//TODO:解析其他参数
-		param.setOralceHost(args[4]);
-		param.setOraclePort(args[5]);
-		param.setOracleSid(args[6]);
-		param.setOracleUser(args[7]);
-		param.setOraclePwd(args[8]);
-		param.setDiffFidTempTableName(args[9]);
-		param.setOutputFile(args[10]);
+		param.setOralceHost(ArgList[4]);
+		param.setOraclePort(ArgList[5]);
+		param.setOracleSid(ArgList[6]);
+		param.setOracleUser(ArgList[7]);
+		param.setOraclePwd(ArgList[8]);
+		param.setDiffFidTempTableName(ArgList[9]);
+		param.setOutputFile(ArgList[10]);
 		//差分类型：1 日库差分， 2月库差分
-		param.setDiffType(Integer.parseInt(args[11]));
+		param.setDiffType(Integer.parseInt(ArgList[11]));
 		return param;
 		
 	}

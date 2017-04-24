@@ -404,7 +404,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			new ApplicationContextUtil().setApplicationContext(context);
 			final InfoChangeMsgHandler sub = new InfoChangeMsgHandler();
 //			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
-			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"inforLevel\":2,\"feedbackType\":0,\"featureKind\":1,\"sourceCode\":1,\"roadLength\":19,\"adminName\":\"北京\",\"publishDate\":\"2017042015511230\",\"expectDate\":\"2017042015511230\",\"newsDate\":\"2017042015511230\",\"infoCode\":\"sfoiuojkw89234jkjsfjksf\",\"topicName\":\"道路通车\",\"inforName\":\"道路通车\",\"infoContent\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\",\"infoTypeName\":\"INFO_TYPE_NAME\"}";
+			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"inforLevel\":2,\"feedbackType\":0,\"featureKind\":1,\"sourceCode\":1,\"roadLength\":19,\"adminName\":\"北京\",\"publishDate\":\"2017042015511230\",\"expectDate\":\"2017042015511230\",\"newsDate\":\"2017042015511230\",\"infoCode\":\"sfoiuojkw89234jkjsfjksf\",\"topicName\":\"道路通车\",\"inforName\":\"道路通车2\",\"infoContent\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\",\"infoTypeName\":\"INFO_TYPE_NAME\"}";
 			sub.save(message);
 		} catch (Exception e) {
 			e.printStackTrace();

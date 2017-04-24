@@ -218,7 +218,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			};
 			if (bean!=null&&bean.getMethod()!=null && StringUtils.isNotEmpty(bean.getMethod().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
-				insertPart+=" METHED ";
+				insertPart+=" METHOD ";
 				values+=" ? ";
 				value.add(bean.getMethod());
 			};

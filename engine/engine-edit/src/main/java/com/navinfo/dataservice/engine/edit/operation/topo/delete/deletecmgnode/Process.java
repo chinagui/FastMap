@@ -37,10 +37,10 @@ public class Process extends AbstractProcess<Command> {
     public boolean prepareData() throws Exception {
         // 加载被删除CMG-NODE对象
         CmgBuildnode cmgnode = (CmgBuildnode) new AbstractSelector(CmgBuildnode.class, getConn()).
-                loadById(getCommand().getCmgnode().pid(), false);
+                loadById(getCommand().getCmgnode().pid(), true);
         getCommand().setCmgnode(cmgnode);
         // 加载受影响CMG-LINK
-        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).listTheAssociatedLinkOfTheNode(cmgnode.pid(), false);
+        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).listTheAssociatedLinkOfTheNode(cmgnode.pid(), true);
         getCommand().setCmglinks(cmglinks);
         // 加载受影响CMG-FACE
         List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).listTheAssociatedFaceOfTheNode(cmgnode.pid(), false);

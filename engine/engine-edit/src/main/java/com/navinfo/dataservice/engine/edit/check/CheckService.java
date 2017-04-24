@@ -1,22 +1,25 @@
 package com.navinfo.dataservice.engine.edit.check;
 
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.dbutils.DbUtils;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.selector.CkRuleSelector;
 import com.navinfo.dataservice.dao.check.selector.CkSuiteSelector;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -74,32 +77,15 @@ public class CheckService {
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
 			Integer metaDbid = metaDb.getDbId();
 			if(metaDbid != null && metaDbid >0){
-				System.out.println(" begin 道路名子版本检查 ");
-				JSONObject paramsObj = new JSONObject();
-				if(jsonReq.containsKey("params") && jsonReq.getJSONObject("params") != null ){
-					paramsObj = jsonReq.getJSONObject("params");
-				}
+				//根据subtask_id 获取rd_name 的nameIds
+                FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
+                JSONArray tips = apiFcc.searchDataBySpatial(subtaskObj.getGeometry(), 1901, new JSONArray());
+                
+                System.out.println("tips: "+tips);
+                //获取当前子任务下所有的道路名id
+                List<Integer> nameIds = getNameIds(subtaskId, tips);
 				
-				String name = "" ;
-				if(paramsObj.containsKey("name") && paramsObj.getString("name") != null 
-						&& StringUtils.isNotEmpty(paramsObj.getString("name")) && !paramsObj.getString("name").equals("null")){
-					name = paramsObj.getString("name");
-				}
-				String nameGroupid = "";
-				if(paramsObj.containsKey("nameGroupid") && paramsObj.getString("nameGroupid") != null 
-						&& StringUtils.isNotEmpty(paramsObj.getString("nameGroupid")) && !paramsObj.getString("nameGroupid").equals("null")){
-					nameGroupid = paramsObj.getString("nameGroupid");
-				}	
-				String adminId = "";
-				if(paramsObj.containsKey("adminId") && paramsObj.getString("adminId") != null 
-						&& StringUtils.isNotEmpty(paramsObj.getString("adminId")) && !paramsObj.getString("adminId").equals("null")){
-					adminId = paramsObj.getString("adminId");
-				}
-				String roadTypes = "";
-				if(paramsObj.containsKey("roadTypes") && paramsObj.getJSONArray("roadTypes") != null && paramsObj.getJSONArray("roadTypes").size() > 0 ){
-					JSONArray arr = paramsObj.getJSONArray("roadTypes");
-					roadTypes = arr.join(",");
-				}
+				System.out.println(" begin 道路名子版本检查 ");
 				
 				String jobName = "";
 				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
@@ -110,22 +96,15 @@ public class CheckService {
 				}
 			
 				JSONObject validationRequestJSON=new JSONObject();
-				validationRequestJSON.put("name", name);
-				validationRequestJSON.put("nameGroupid", nameGroupid);
-				validationRequestJSON.put("adminId", adminId);
-				validationRequestJSON.put("roadTypes", roadTypes);
+				validationRequestJSON.put("name", "");
+				validationRequestJSON.put("nameGroupid", "");
+				validationRequestJSON.put("adminId", "");
+				validationRequestJSON.put("roadTypes", "");
 				validationRequestJSON.put("rules", ruleList);
+				validationRequestJSON.put("nameIds", nameIds);
 				jobId=apiService.createJob("metaValidation", validationRequestJSON, userId, subtaskId, jobName);
 				
-		/*	//System.out.println("metaDbid: "+metaDbid);
-			JSONObject metaValidationRequestJSON=new JSONObject();
-			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
-			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
-			metaValidationRequestJSON.put("ruleIds", ruleList);
-			metaValidationRequestJSON.put("timeOut", 600);
-			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId,subtaskId, jobName);
-			//System.out.println("jobId == "+jobId);
-*/			}
+			}
 		}else if(checkType==3 ||checkType ==4 || checkType ==1){//道路 + poi粗编
 			List<Integer> grids= new ArrayList<Integer>();
 			if(subtaskObj.getGridIds() != null && subtaskObj.getGridIds().size() >0){
@@ -270,19 +249,29 @@ public class CheckService {
 				JSONArray arr = paramsObj.getJSONArray("roadTypes");
 				roadTypes = arr.join(",");
 			}
+			List<Integer> nameIds = new ArrayList<Integer>();
+			if(paramsObj.containsKey("nameIds") && paramsObj.getJSONArray("nameIds") != null && paramsObj.getJSONArray("nameIds").size() > 0 ){
+				JSONArray arr = paramsObj.getJSONArray("nameIds");
+				nameIds = (List<Integer>) JSONArray.toCollection(arr);
+//				nameIds = arr.join(",");
+			}
+			
+			
+			
 			String jobName = "";
 			if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
 					&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
 				jobName = "rdName:"+jsonReq.getString("jobName");
 			}
 			
-			System.out.println("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" jobName: "+jobName);
+			System.out.println("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" nameIds: "+nameIds+" jobName: "+jobName);
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("name", name);
 			validationRequestJSON.put("nameGroupid", nameGroupid);
 			validationRequestJSON.put("adminId", adminId);
 			validationRequestJSON.put("roadTypes", roadTypes);
 			validationRequestJSON.put("rules", ruleList);
+			validationRequestJSON.put("nameIds", nameIds);
 			jobId=apiService.createJob("metaValidation", validationRequestJSON, userId, 0, jobName);
 		}
 		return jobId;
@@ -412,6 +401,60 @@ public class CheckService {
 			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
 			
 			return ckRuleSelector.getCkRulesBySuiteId(suiteId);
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	public List<Integer> getNameIds(int subtaskId,JSONArray tips) throws Exception {
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+		ResultSet resultSet = null;
+		List<Integer> nameIds = null;
+		
+		try {
+			nameIds = new ArrayList<Integer>();
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			StringBuilder sql = new StringBuilder();
+			String ids = "";
+			String tmep = "";
+			Clob pidClod = null;
+			//添加根据子任务id直接查询的sql 
+			sql.append("SELECT  * ");
+			sql.append(" FROM ( ");
+			
+			sql.append("SELECT name_id  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
+			
+			if (tips.size()>0) {
+				sql.append(" union all  ");
+				sql.append(" SELECT tt.name_id  FROM ( ");
+				sql.append(" select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.name_id ");
+				sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt ");
+				sql.append(" where 1=1 ");
+				
+				for (int i=0;i<tips.size();i++) {
+					JSONObject tipsObj = tips.getJSONObject(i);
+					ids += tmep;
+					tmep = ",";
+					ids +=tipsObj.getString("id");
+				}
+				pidClod = ConnectionUtil.createClob(conn);
+				pidClod.setString(1, ids);
+				sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
+			}
+			sql.append(" )  ");
+			System.out.println(" getNameIds :"+sql.toString());
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setClob(1, pidClod);
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				nameIds.add(resultSet.getInt("name_id"));
+			}
+			
+			return nameIds;
 		} catch (Exception e) {
 			throw e;
 		} finally {

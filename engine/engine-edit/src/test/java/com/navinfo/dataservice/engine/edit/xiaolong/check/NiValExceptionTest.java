@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.edit.xiaolong.check;
 
 import java.sql.Connection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -186,7 +187,7 @@ public class NiValExceptionTest extends InitApplication {
 		} finally {
 		}
 	}
-	@Test
+//	@Test
 	public void testgetrules() throws Exception {
 		try {
 			String parameter = "{'suiteId':'suite7'}";
@@ -201,6 +202,26 @@ public class NiValExceptionTest extends InitApplication {
 		} finally {
 		}
 	}
+	
+	@Test
+	public void testgetnameids() throws Exception {
+		try {
+			JSONArray tips=new JSONArray();
+			JSONObject tipObj1= new JSONObject(); 
+				tipObj1.put("id", "02190164f80db1ccf74e9da50c8288ab439423");
+			JSONObject tipObj2= new JSONObject(); 
+				tipObj2.put("id", "021901cb57f7f997f148bd800ff8e508072ead");
+				tips.add(tipObj1);
+				tips.add(tipObj2);
+			List<Integer> rules=CheckService.getInstance().getNameIds(305, tips);
+			
+			System.out.println("rules: "+rules);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+	}
+	
 	public static void main(String[] args) {
 		JSONObject jobj = new JSONObject();
 		jobj.put("ruleid", "1");

@@ -123,6 +123,53 @@ public class MetaController extends BaseController {
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
+    
+    /**
+     * @Title: autoConvertPinyin
+     * @Description: 自动生成语音及拼音
+     * 备注: 和道路名保存生成语音及拼音规则是一致的
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年4月21日 下午3:12:36 
+     */
+    @RequestMapping(value = "/pinyin/autoConvert")
+    public ModelAndView autoConvertPinyin(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            PinyinConverter py = new PinyinConverter();
+
+            String[] result = py.autoConvert(word);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("voicefile", result[1]);
+
+                json.put("phonetic", result[0]);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转拼音失败");
+            }
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
     @RequestMapping(value = "/eng/convert")
     public ModelAndView convertEng(HttpServletRequest request) throws ServletException, IOException {

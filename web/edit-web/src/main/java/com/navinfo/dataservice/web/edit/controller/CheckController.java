@@ -915,6 +915,7 @@ public class CheckController extends BaseController {
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			System.out.println("jobApiService : "+ jobApiService);
 			System.out.println("taskName : "+jsonReq.getString("taskName"));
+			System.out.println(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName")));
 			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
 				String tableName  = jsonReq.getString("tableName");
 				System.out.println("tableName :"+tableName);
@@ -1109,6 +1110,50 @@ public class CheckController extends BaseController {
 			logger.info("end check/checkResultsStatis"+" :"+jsonReq.getString("taskName")+"  newdata.size(): "+newdata.size());
 			logger.debug(newdata);
 			return new ModelAndView("jsonView", success(newdata));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/check/metadata/checkJobNameExists")
+	public ModelAndView checkJobNameExists(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("checkJobNameExists:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String jobName = jsonReq.getString("jobName");
+			logger.info("jobName: "+jobName);
+			if(jsonReq.getString("jobName") == null || StringUtils.isEmpty(jsonReq.getString("jobName"))){
+					throw new IllegalArgumentException("jobName参数不能为空。");
+			}
+			String tableName  = jsonReq.getString("tableName");
+			logger.info("tableName : "+tableName );
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			
+			String descp = tableName+":"+jobName;
+			logger.info("checkJobNameExists descp :"+descp);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			JobInfo job = jobApiService.getJobByDescp(descp);
+			logger.info("job :"+job);
+			int flag = 0;
+			if(job != null){
+				flag = 1;
+			}
+			JSONObject isExistsflag = new JSONObject();
+			isExistsflag.put("isExistsflag", flag);
+			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("taskName")+":  "+jsonReq.getString("tableName")+" ");
+			return new ModelAndView("jsonView", success(isExistsflag));
 
 		} catch (Exception e) {
 			

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.meta.service;
 
-import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -8,27 +7,23 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.engine.meta.model.ScModelMatchG;
-import com.navinfo.dataservice.engine.meta.rdname.RdName;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.json.TimestampMorpher;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.ExcelReader;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 import oracle.sql.BLOB;
-
 import com.navinfo.navicommons.database.Page;
 import org.apache.commons.lang.StringUtils;
 
@@ -50,7 +45,7 @@ public class ScModelMatchGService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getMetaConnection();	
 			
-			String createSql = "insert into SC_MODEL_MATCH_G (FILE_ID, PRODUCT_LINE, VERSION, PROJECT_NM, SPECIFICATION, B_TYPE, M_TYPE, S_TYPE, FILE_NAME, \"SIZE\", FORMAT, IMP_WORKER, IMP_DATE, URL_DB, URL_FILE, MEMO, FILE_CONTENT, UPDATE_TIME) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";			
+			String createSql = "insert into SC_MODEL_MATCH_G (FILE_ID, PRODUCT_LINE, VERSION, PROJECT_NM, SPECIFICATION, B_TYPE, M_TYPE, S_TYPE, FILE_NAME, \"SIZE\", FORMAT, IMP_WORKER, IMP_DATE, URL_DB, URL_FILE, MEMO, FILE_CONTENT, UPDATE_TIME) values(?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?,?,?,?,?)";			
 			run.update(conn, 
 					   createSql, 
 					   bean.getFileId() , bean.getProductLine(), bean.getVersion(), bean.getProjectNm(), bean.getSpecification(), bean.getbType(), bean.getmType(), bean.getsType(), bean.getFileName(), bean.getSize(), bean.getFormat(), bean.getImpWorker(), bean.getImpDate(), bean.getUrlDb(), bean.getUrlFile(), bean.getMemo(), bean.getFileContent(), bean.getUpdateTime()
@@ -132,7 +127,8 @@ public class ScModelMatchGService {
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
 				if(StringUtils.isNotEmpty(valueSql)){valueSql+=" , ";}
-				valueSql+="  IMP_DATE=? ";
+				valueSql+=" IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
+//				valueSql+="  IMP_DATE=? ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -235,7 +231,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				updateSql+=" and IMP_DATE=? ";
+				updateSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
+//				updateSql+=" and IMP_DATE=? ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -329,7 +326,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				deleteSql+=" and IMP_DATE=? ";
+//				deleteSql+=" and IMP_DATE=? ";
+				deleteSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -451,7 +449,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				selectSql+=" and IMP_DATE=? ";
+				selectSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
+//				selectSql+=" and IMP_DATE=? ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -493,7 +492,11 @@ public class ScModelMatchGService {
 						model.setSize(rs.getString("SIZE"));
 						model.setFormat(rs.getString("FORMAT"));
 						model.setImpWorker(rs.getString("IMP_WORKER"));
-						model.setImpDate(rs.getTimestamp("IMP_DATE"));
+						
+						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
+						System.out.println(impDateStr);
+						model.setImpDate(impDateStr);
+						model.setImpDate(impDateStr);
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
 						model.setMemo(rs.getString("MEMO"));
@@ -578,7 +581,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				selectSql+=" and IMP_DATE=? ";
+//				selectSql+=" and IMP_DATE=? ";
+				selectSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -618,7 +622,11 @@ public class ScModelMatchGService {
 						model.setSize(rs.getString("SIZE"));
 						model.setFormat(rs.getString("FORMAT"));
 						model.setImpWorker(rs.getString("IMP_WORKER"));
-						model.setImpDate(rs.getTimestamp("IMP_DATE"));
+						
+						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
+						System.out.println(impDateStr);
+						model.setImpDate(impDateStr);
+						
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
 						model.setMemo(rs.getString("MEMO"));
@@ -702,7 +710,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				selectSql+=" and IMP_DATE=? ";
+//				selectSql+=" and IMP_DATE=? ";
+				selectSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -742,7 +751,11 @@ public class ScModelMatchGService {
 						model.setSize(rs.getString("SIZE"));
 						model.setFormat(rs.getString("FORMAT"));
 						model.setImpWorker(rs.getString("IMP_WORKER"));
-						model.setImpDate(rs.getTimestamp("IMP_DATE"));
+						
+						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
+						System.out.println(impDateStr);
+						model.setImpDate(impDateStr);
+						
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
 						model.setMemo(rs.getString("MEMO"));
@@ -874,7 +887,8 @@ public class ScModelMatchGService {
 				values.add(bean.getImpWorker());
 			};
 			if (bean!=null&&bean.getImpDate()!=null && StringUtils.isNotEmpty(bean.getImpDate().toString())){
-				selectSql+=" and IMP_DATE=? ";
+				selectSql+=" and IMP_DATE=TO_DATE(?,'yyyy-MM-dd HH24:MI:ss') ";
+//				selectSql+=" and IMP_DATE=? ";
 				values.add(bean.getImpDate());
 			};
 			if (bean!=null&&bean.getUrlDb()!=null && StringUtils.isNotEmpty(bean.getUrlDb().toString())){
@@ -937,13 +951,16 @@ public class ScModelMatchGService {
 						model.setSize(rs.getString("SIZE"));
 						model.setFormat(rs.getString("FORMAT"));
 						model.setImpWorker(rs.getString("IMP_WORKER"));
-						model.setImpDate(rs.getTimestamp("IMP_DATE"));
+						
+						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
+						System.out.println(impDateStr);
+						model.setImpDate(impDateStr);
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
 						model.setMemo(rs.getString("MEMO"));
 						//System.out.println(rs.getObject("FILE_CONTENT"));
-						System.out.println((oracle.sql.BLOB)rs.getBlob("FILE_CONTENT"));
-						model.setFileContent((BLOB) rs.getBlob("FILE_CONTENT"));
+						//System.out.println((oracle.sql.BLOB)rs.getBlob("FILE_CONTENT"));
+						//model.setFileContent((BLOB) rs.getBlob("FILE_CONTENT"));
 						model.setUpdateTime(rs.getString("UPDATE_TIME"));
 						list.add(model);
 					}
@@ -1057,7 +1074,11 @@ public class ScModelMatchGService {
 						model.setSize(rs.getString("SIZE"));
 						model.setFormat(rs.getString("FORMAT"));
 						model.setImpWorker(rs.getString("IMP_WORKER"));
-						model.setImpDate(rs.getTimestamp("IMP_DATE"));
+						
+						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
+						System.out.println(impDateStr);
+						model.setImpDate(impDateStr);
+						
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
 						model.setMemo(rs.getString("MEMO"));

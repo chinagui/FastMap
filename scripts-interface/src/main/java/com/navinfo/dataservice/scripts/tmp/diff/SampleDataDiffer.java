@@ -54,20 +54,12 @@ public class SampleDataDiffer {
 	 * website		      ix_poi_detail.website
 	 * hwEntryExit        ix_poi_detail.HW_ENTRYEXIT
 	 * truck			  ix_poi.TRUCK_FLAG
-	 * rawFields		  poi_edit_status.raw_fields
 	 * sportsVenues			IX_POI.SPORTS_VENUE
 	 * vipFlag				IX_POI.VIP_FLAG
 	 * verifyFlags.record	IX_POI.VERIFIED_FLAG
+	 * brands.code			IX_POI.CHAIN
 	 * relateParent			IX_POI_PARENT 对应的fid  //根据mongo中relateParent.fid 和 对应oracle库中poi的ix_poi_parent对应的fid进行比较
 	 * 2)poi子表比较（以下子表，oracle删除的数据除外）
-	 * [下文中oracle的子表，可以参考192.168.3.107 gdb_vm/gdb_vm 中关于poi子表的逻辑配置
-	 * 有逻辑主键的用下面的sql去查询；
-	 * select *
-		  from glm_table_meta t
-		 where table_name = 'IX_POI_CONTACT'
-		   AND IS_PK = 1
-	   如果没有逻辑主键，则全字段匹配
-	 *  ]
 	 * relateChildren		IX_POI_CHILDREN //如果数量不同，则不同；如果数量相同，但是包含的fid不相同，则不同；
 	 * names				IX_POI_NAMES //如果数量不同，则不同；如果数量相同，但是包含的逻辑主键 “poi_pid,name_class,name_type,lang_code,name” 不相同，则不同；如果mongo，oracle 的““poi_pid,name_class,name_type,lang_code,name”” 相同，但是“name_phonetic或者name-groupid”不同，则不同； 
 	 * addresses			IX_POI_ADDRESS //如果数量不同，则不同；如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
@@ -85,8 +77,9 @@ public class SampleDataDiffer {
 	 * indoor.type			IX_POI.INDOOR 如果是1，则转为3；否则原值转出；
 	 * indoor.floor			IX_POI_ADDRESS.FLOOR
 	 * attachments			IX_POI_PHOTO 只比较数量
-	 * brands.code			在oralce元数据chain的列表中； oracle poi中对应的chain的列表 查询sql： select chain  from SC_POINT_BRAND_FOODTYPE t where poikind=?;//?是oracle中的ix_poi.kind_code
-	 * freshnessVerification POI_EDIT_STATUS.FRESH_VERIFIED
+	 * 3)状态字段，日编存在，月编不存在，考虑月编使用时，排除掉以下字段,控制字段diffType
+	 * freshnessVerification   POI_EDIT_STATUS.FRESH_VERIFIED   
+	 * rawFields		       POI_EDIT_STATUS.raw_fields   
 	 * @param args:
 	 * 输入参数
 	 * mongodbHost:
@@ -100,6 +93,7 @@ public class SampleDataDiffer {
 	 * orclPwd:
 	 * diffFidTempTableName: 差分的fid的临时表
 	 * outputFile: 输出文件全路径
+	 * diffType:   //差分类型：1 日库差分， 2月库差分
 	 * 输出：差分json格式如下
 	 * {
 	 * "fid":"32fdfdf",//差分的主键
@@ -133,6 +127,7 @@ public class SampleDataDiffer {
 		try{
 			//查询主表信息 key是fid
 			Map<String,JSONObject> ixPoiMap = queryIxPoi(conn);
+			//TODO:查询其他子表
 			//查询父表信息，key=当前poi的fid，得到其父表对应的fid
 			Map<String,String> ixPoiParentMap = queryIxPoiParent(conn);
 			//查询children表，得到子表对应的fid
@@ -140,23 +135,41 @@ public class SampleDataDiffer {
 			Map<String,JSONArray> ixPoiNameMap = queryIxPoiName(conn);
 			Map<String,JSONArray> ixPoiAddressMap = queryIxPoiAddress(conn);
 			Map<String,JSONArray> ixPoiBusinessTimeMap = queryBusinessTimes(conn);
-			Map<String,JSONArray> ixPoiContactMap=queryIxPoiContact(conn);
-			//TODO:查询其他子表
+			Map<String,JSONArray> ixPoiContactMap = queryIxPoiContact(conn);
+			Map<String,JSONObject> ixPoiRestaurantMap = queryIxPoiRestaurant(conn);
+			Map<String,JSONObject> ixPoiParkingMap = queryIxPoiParking(conn);
+			Map<String, Integer> ixPoiPhotoMap = queryIxPoiPhoto(conn);
+			Map<String, JSONObject> ixPoiInDoorMap = queryIxPoiInDoor(conn);
 			Map<String,JSONObject> ixPoiChargingStation = queryIxPoiCharigngStation(conn);
 			Map<String,JSONArray> ixPoiChargingPlots = queryIxPoiChargingPlot(conn);
 			Map<String,JSONObject> ixPoiGasStation = queryIxPoiGasStation(conn);
 			Map<String,JSONObject> ixPoiAttraction = queryIxPoiAttraction(conn);
 			Map<String,JSONObject> ixPoiRental = queryIxPoiRental(conn);
 			Map<String,JSONObject> ixPoiHospital = queryIxPoiHospital(conn);
+			Map<String,JSONObject> ixPoiHotel = queryIxPoiHotel(conn);
+			
+			//日库差分时，查询freshnessVerification，rawFields
+			Map<String, Integer> ixPoiFreshnessVerificationMap = new HashMap<String, Integer>();
+			Map<String, String> ixPoiRawFieldsMap = new HashMap<String, String>();
+			//TODO 月库差分时，查询字段
+			
+			if (this.inParam.getDiffType() == 1){
+				//日库差分时，查询freshnessVerification，rawFields
+				ixPoiFreshnessVerificationMap = queryIxPoiFreshnessVerification(conn);
+				ixPoiRawFieldsMap = queryIxPoiRawFields(conn);
+				
+			}else if (this.inParam.getDiffType() == 2){
+				//TODO 月库差分时，查询字段
+			}
 			//执行mongdb和oracle数据的差分比较
 			List<JSONObject> outResult = new ArrayList<JSONObject>();
 			for (String fid : mongoData.keySet()){
 				logger.info("开始比较:fid="+fid);
 				List<DiffField> diffFields  =new ArrayList<DiffField>();
 				
-				logger.info("比较主表属性");
 				try{
 					JSONObject mongoPoi = mongoData.get(fid);
+					logger.info("比较主表属性");
 					if (ixPoiMap.containsKey(fid)){
 						JSONObject orcleIxPoi = ixPoiMap.get(fid);
 						List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
@@ -240,6 +253,54 @@ public class SampleDataDiffer {
 							diffFields.add(setDiffField("contacts", relateContact,null));
 						}
 					}
+					logger.info("比较foodtypes子表");
+					if (ixPoiRestaurantMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiFoodTypeResult = diffIxPoiFoodType(mongoPoi,ixPoiRestaurantMap.get(fid));
+						if(diffIxPoiFoodTypeResult!=null){
+							diffFields.addAll(diffIxPoiFoodTypeResult);
+						}
+					} else {
+						JSONObject mongoFoodType = mongoPoi.getJSONObject("foodtypes");
+						if (!mongoFoodType.isNullObject() && !mongoFoodType.isEmpty()) {
+							diffFields.add(setDiffField("foodtypes",mongoFoodType,null));
+						}
+					}
+					logger.info("比较parkings子表");
+					if (ixPoiParkingMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiParkingResult = diffIxPoiParking(mongoPoi,ixPoiParkingMap.get(fid));
+						if(diffIxPoiParkingResult!=null){
+							diffFields.addAll(diffIxPoiParkingResult);
+						}
+					} else {
+						JSONObject mongoParkings = mongoPoi.getJSONObject("parkings");
+						if (!mongoParkings.isNullObject() && !mongoParkings.isEmpty()) {
+							diffFields.add(setDiffField("parkings",mongoParkings,null));
+						}
+					}
+					logger.info("比较attachments属性");
+					if (ixPoiPhotoMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiPhotoResult = diffIxPoiPhoto(mongoPoi,ixPoiPhotoMap.get(fid));
+						if(diffIxPoiPhotoResult!=null){
+							diffFields.addAll(diffIxPoiPhotoResult);
+						}
+					} else {
+						JSONArray mongoAttachments = mongoPoi.getJSONArray("attachments");
+						if (mongoAttachments.size()> 0) {
+							diffFields.add(setDiffField("attachments",mongoAttachments.size(),0));
+						}
+					}
+					logger.info("比较indoor属性");
+					if (ixPoiInDoorMap.containsKey(fid)) {
+						List<DiffField> diffIxPoiInDoorResult = diffIxPoiInDoor(mongoPoi,ixPoiInDoorMap.get(fid));
+						if(diffIxPoiInDoorResult!=null){
+							diffFields.addAll(diffIxPoiInDoorResult);
+						}
+					} else {
+						JSONObject mongoIndoor = mongoPoi.getJSONObject("indoor");
+						if (!mongoIndoor.isNullObject() && !mongoIndoor.isEmpty()) {
+							diffFields.add(setDiffField("indoor",mongoIndoor,null));
+						}
+					}
 					//TODO:比较其他的子表属性
 					logger.info("比较chargingStation属性");
 					if (ixPoiChargingStation.containsKey(fid)) {
@@ -260,8 +321,8 @@ public class SampleDataDiffer {
 							diffFields.addAll(diffIxPoiChargingPlotsResult);
 						}
 					} else {
-						JSONObject chargingPlots = mongoPoi.getJSONObject("chargingPole");
-						if (!chargingPlots.isNullObject() && !chargingPlots.isEmpty()) {
+						JSONArray chargingPlots = mongoPoi.getJSONArray("chargingPole");
+						if (!chargingPlots.isEmpty()) {
 							diffFields.add(setDiffField("chargingPole",chargingPlots,null));
 						}
 					}
@@ -313,7 +374,48 @@ public class SampleDataDiffer {
 							diffFields.add(setDiffField("hospital",hospital,null));
 						}
 					}
-
+					logger.info("比较hotel属性");
+					if (ixPoiHotel.containsKey(fid)) {
+						List<DiffField> diffIxPoiHotelResult = diffIxPoiHotel(mongoPoi,ixPoiHotel.get(fid));
+						if(diffIxPoiHotelResult!=null){
+							diffFields.addAll(diffIxPoiHotelResult);
+						}
+					} else {
+						JSONObject hotel = mongoPoi.getJSONObject("hotel");
+						if (!hotel.isNullObject() && !hotel.isEmpty()) {
+							diffFields.add(setDiffField("hotel",hotel,null));
+						}
+					}
+					
+					//日库差分状态字段
+					if(!ixPoiFreshnessVerificationMap.isEmpty()){
+						logger.info("比较freshnessVerification属性");
+						if(ixPoiFreshnessVerificationMap.containsKey(fid)){
+							List<DiffField> diffIxPoiFreshResult = diffIxPoiFresh(mongoPoi,ixPoiFreshnessVerificationMap.get(fid));
+							if(diffIxPoiFreshResult!=null){
+								diffFields.addAll(diffIxPoiFreshResult);
+							}
+						}else{
+							int mongoFresh = mongoPoi.getInt("freshnessVerification");
+							if (mongoFresh != 0) {
+								diffFields.add(setDiffField("freshnessVerification",mongoFresh,0));
+							}
+						}
+					}
+					if(!ixPoiRawFieldsMap.isEmpty()){
+						logger.info("比较rawFields属性");
+						if(ixPoiRawFieldsMap.containsKey(fid)){
+							List<DiffField> diffIxPoiRawFieldsResult = diffIxPoiRawFieldsResult(mongoPoi,ixPoiRawFieldsMap.get(fid));
+							if(diffIxPoiRawFieldsResult!=null){
+								diffFields.addAll(diffIxPoiRawFieldsResult);
+							}
+						}else{
+							String mongoRawFields = mongoPoi.getString("rawFields");
+							if (StringUtils.isNotEmpty(mongoRawFields)) {
+								diffFields.add(setDiffField("rawFields",mongoRawFields,""));
+							}
+						}
+					}
 					
 					if (CollectionUtils.isEmpty(diffFields)) continue;
 					
@@ -344,6 +446,76 @@ public class SampleDataDiffer {
 //		String txtPath = "W:\\test\\POI.txt";
 		String txtPath = this.inParam.getOutputFile();
 		CollectConvertUtils.writeJSONObject2TxtFile(txtPath, outResult);
+	}
+	private List<DiffField> diffIxPoiInDoor(JSONObject mongoPoi, JSONObject orcleIndoor){
+		JSONObject mongoIndoor = mongoPoi.getJSONObject("indoor");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("indoor",mongoIndoor,orcleIndoor));
+		if (mongoIndoor.isNullObject() || mongoIndoor.isEmpty()) {
+			return diffList;
+		} else {
+			if (mongoIndoor.getInt("type") != orcleIndoor.getInt("type") ||
+					!isStringSame(mongoIndoor.getString("floor"),orcleIndoor.getString("floor"))) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	private List<DiffField> diffIxPoiPhoto(JSONObject mongoPoi, int orclePhoto){
+		JSONArray mongoPhoto = mongoPoi.getJSONArray("attachments");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("attachments",mongoPhoto.size(),orclePhoto));
+		if (mongoPhoto.size() != orclePhoto) {
+			return diffList;
+		}
+		return null;
+	}
+	private List<DiffField> diffIxPoiParking(JSONObject mongoPoi, JSONObject orcleParking){
+		JSONObject mongoParking = mongoPoi.getJSONObject("parkings");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("parkings",mongoParking,orcleParking));
+		if (mongoParking.isNullObject() || mongoParking.isEmpty()) {
+			return diffList;
+		} else {
+			if (mongoParking.getInt("totalNum") != orcleParking.getInt("totalNum") ||
+					mongoParking.getInt("certificate") != orcleParking.getInt("certificate") ||
+					mongoParking.getInt("vehicle") != orcleParking.getInt("vehicle") ||
+					mongoParking.getInt("womenNum") != orcleParking.getInt("womenNum") ||
+					mongoParking.getInt("handicapNum") != orcleParking.getInt("handicapNum") ||
+					mongoParking.getInt("miniNum") != orcleParking.getInt("miniNum") ||
+					mongoParking.getInt("vipNum") != orcleParking.getInt("vipNum") ||
+					mongoParking.getDouble("resHigh") != orcleParking.getDouble("resHigh") ||
+					mongoParking.getDouble("resWidth") != orcleParking.getDouble("resWidth") ||
+					mongoParking.getDouble("resWeigh") != orcleParking.getDouble("resWeigh") ||
+					!isStringSame(mongoParking.getString("tollStd"),orcleParking.getString("tollStd"))||
+					!isStringSame(mongoParking.getString("tollDes"),orcleParking.getString("tollDes"))||
+					!isStringSame(mongoParking.getString("tollWay"),orcleParking.getString("tollWay"))||
+					!isStringSame(mongoParking.getString("openTime"),orcleParking.getString("openTime"))||
+					!isStringSame(mongoParking.getString("payment"),orcleParking.getString("payment"))||
+					!isStringSame(mongoParking.getString("haveSpecialPlace"),orcleParking.getString("haveSpecialPlace"))||
+					!isStringSame(mongoParking.getString("remark"),orcleParking.getString("remark"))||
+					!isStringSame(mongoParking.getString("buildingType"),orcleParking.getString("buildingType"))) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	private List<DiffField> diffIxPoiFoodType(JSONObject mongoPoi, JSONObject orcleFoodType){
+		JSONObject mongoFoodType = mongoPoi.getJSONObject("foodtypes");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("foodtypes",mongoFoodType,orcleFoodType));
+		if (mongoFoodType.isNullObject() || mongoFoodType.isEmpty()) {
+			return diffList;
+		} else {
+			if (mongoFoodType.getInt("avgCost") != orcleFoodType.getInt("avgCost") ||
+					mongoFoodType.getInt("parking") != orcleFoodType.getInt("parking") ||
+					!isStringSame(mongoFoodType.getString("foodtype"),orcleFoodType.getString("foodtype"))||
+					!isStringSame(mongoFoodType.getString("creditCards"),orcleFoodType.getString("creditCards"))||
+					!isStringSame(mongoFoodType.getString("openHour"),orcleFoodType.getString("openHour"))) {
+				return diffList;
+			}
+		}
+		return null;
 	}
 	private List<DiffField> diffIxPoiContact(JSONObject mongoPoi, JSONArray contactLists) {
 		List<DiffField> diffList = new ArrayList<DiffField>();
@@ -658,6 +830,52 @@ public class SampleDataDiffer {
 		return null;
 	}
 	
+	private List<DiffField> diffIxPoiHotel(JSONObject mongoPoi, JSONObject hotelPoi) throws Exception {
+		JSONObject relateHotel = mongoPoi.getJSONObject("hotel");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("hotel", relateHotel, hotelPoi));
+		
+		if (relateHotel.isNullObject() || relateHotel.isEmpty()) {
+			return diffList;
+		} else {
+			if (relateHotel.getInt("rating") != hotelPoi.getInt("rating")
+					|| !isStringSame(relateHotel.getString("description"), hotelPoi.getString("description"))
+					|| !isStringSame(relateHotel.getString("service"), hotelPoi.getString("service"))
+					|| !isStringSame(relateHotel.getString("roomType"), hotelPoi.getString("roomType"))
+					|| relateHotel.getInt("parking") != hotelPoi.getInt("parking")
+					|| relateHotel.getInt("roomCount") != relateHotel.getInt("roomCount")
+					|| !isStringSame(relateHotel.getString("openHour"), hotelPoi.getString("openHour"))
+					|| !isStringSame(relateHotel.getString("checkOutTime"), hotelPoi.getString("checkOutTime"))
+					|| !isStringSame(relateHotel.getString("creditCards"), hotelPoi.getString("creditCards"))
+					|| !isStringSame(relateHotel.getString("checkInTime"), hotelPoi.getString("checkInTime"))
+					|| relateHotel.getInt("breakfast") != hotelPoi.getInt("breakfast")
+					|| !isStringSame(relateHotel.getString("roomPrice"), hotelPoi.getString("roomPrice"))) {
+				return diffList;
+			}
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiFresh(JSONObject mongoPoi, int orcleFresh) throws Exception {
+		int mongoFresh = mongoPoi.getInt("freshnessVerification");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("freshnessVerification", mongoFresh, orcleFresh));
+		if (mongoFresh != orcleFresh) {
+			return diffList;
+		}
+		return null;
+	}
+	
+	private List<DiffField> diffIxPoiRawFieldsResult(JSONObject mongoPoi, String orcleRawFields) throws Exception {
+		String mongoRawFields = mongoPoi.getString("rawFields");
+		List<DiffField> diffList = new ArrayList<DiffField>();
+		diffList.add(setDiffField("rawFields", mongoRawFields, orcleRawFields));
+		if (!isStringSame(mongoRawFields, orcleRawFields)) {
+			return diffList;
+		}
+		return null;
+	}
+
 	private DiffField setDiffField(String field,Object mongoValue,Object oracleValue) {
 		DiffField diffField = new DiffField();
 		diffField.setField(field);
@@ -783,18 +1001,170 @@ public class SampleDataDiffer {
 		if (mongoHwEntryExit != orcleHwEntryExit){
 			diffList.add(setDiffField("hwEntryExit",mongoHwEntryExit,orcleHwEntryExit));
 		}
-		
+		String orcleChain = orcleIxPoi.getString("chain");
+		JSONArray mongoBrands = mongoPoi.getJSONArray("brands");
+		String mongoChain = "";
+		if (!mongoBrands.isEmpty()){
+			JSONObject jsonObj = mongoBrands.getJSONObject(0);
+			if(!jsonObj.isNullObject() && !jsonObj.isEmpty() && jsonObj.containsKey("code")){
+				mongoChain = jsonObj.getString("code");
+				if (!isStringSame(orcleChain, mongoChain)){
+					diffList.add(setDiffField("chain",mongoChain,orcleChain));
+				}
+			}
+		}
 		return diffList;
+	}
+	private Map<String, JSONObject> queryIxPoiInDoor(Connection conn) throws Exception {
+		Map<String, JSONObject> IxPoiInDoorMap = new HashMap<String, JSONObject>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num FID,p.INDOOR,");
+		sb.append(" (select ad.FLOOR from ix_poi_address ad where ad.poi_pid=p.pid and ad.lang_code='CHI' and ad.u_record!=2) FLOOR");
+		sb.append(" from ix_poi p, " + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("FID");
+				JSONObject indoor = new JSONObject();
+				indoor.put("floor", resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):"");
+				indoor.put("type", resultSet.getInt("INDOOR")==1?3:resultSet.getInt("INDOOR"));
+				IxPoiInDoorMap.put(fid, indoor);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiInDoorMap;
+	}
+	private Map<String, Integer> queryIxPoiPhoto(Connection conn) throws Exception {
+		Map<String, Integer> IxPoiPhotoMap = new HashMap<String, Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" (select count(*) from ix_poi_photo r where r.poi_pid=p.pid and r.u_record!=2) photo_count");
+		sb.append(" from ix_poi p, " + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				int count = resultSet.getInt("photo_count");
+				IxPoiPhotoMap.put(fid, count);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiPhotoMap;
+	}
+	private Map<String, JSONObject> queryIxPoiParking(Connection conn) throws Exception {
+		Map<String, JSONObject> IxPoiParkingMap = new HashMap<String, JSONObject>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" nvl(r.TOLL_STD, '') TOLL_STD,");
+		sb.append(" nvl(r.TOLL_DES, '') TOLL_DES,");
+		sb.append(" nvl(r.TOLL_WAY, '') TOLL_WAY,");
+		sb.append(" nvl(r.OPEN_TIIME, '') OPEN_TIIME,");
+		sb.append(" r.TOTAL_NUM,");
+		sb.append(" nvl(r.PAYMENT, '') PAYMENT,");
+		sb.append(" nvl(r.REMARK, '') REMARK,");
+		sb.append(" nvl(r.PARKING_TYPE, '') PARKING_TYPE,");
+		sb.append("  r.RES_HIGH,r.RES_WIDTH,r.RES_WEIGH,r.CERTIFICATE,r.VEHICLE,");
+		sb.append("  nvl(r.HAVE_SPECIALPLACE,'') HAVE_SPECIALPLACE,");
+		sb.append(" r.WOMEN_NUM,r.HANDICAP_NUM,r.MINI_NUM,r.VIP_NUM");
+		sb.append(" from ix_poi p, IX_POI_PARKING r," + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.pid = r.poi_pid");
+		sb.append(" and p.u_record != 2");
+		sb.append(" and r.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				JSONObject parking = new JSONObject();
+				parking.put("tollStd", resultSet.getString("TOLL_STD"));
+				parking.put("tollDes", resultSet.getString("TOLL_DES"));
+				parking.put("tollWay", resultSet.getString("TOLL_WAY"));
+				parking.put("openTime", resultSet.getString("OPEN_TIIME"));
+				parking.put("totalNum", resultSet.getInt("TOTAL_NUM"));
+				parking.put("payment", resultSet.getString("PAYMENT"));
+				parking.put("remark", resultSet.getString("REMARK"));
+				parking.put("buildingType", resultSet.getString("PARKING_TYPE"));
+				parking.put("resHigh", resultSet.getDouble("RES_HIGH"));
+				parking.put("resWidth", resultSet.getDouble("RES_WIDTH"));
+				parking.put("resWeigh", resultSet.getDouble("RES_WEIGH"));
+				parking.put("certificate", resultSet.getInt("CERTIFICATE"));
+				parking.put("vehicle", resultSet.getInt("VEHICLE"));
+				parking.put("haveSpecialPlace", resultSet.getString("HAVE_SPECIALPLACE"));
+				parking.put("womenNum", resultSet.getInt("WOMEN_NUM"));
+				parking.put("handicapNum", resultSet.getInt("HANDICAP_NUM"));
+				parking.put("miniNum", resultSet.getInt("MINI_NUM"));
+				parking.put("vipNum", resultSet.getInt("VIP_NUM"));
+				IxPoiParkingMap.put(fid, parking);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiParkingMap;
+	}
+	private Map<String, JSONObject> queryIxPoiRestaurant(Connection conn) throws Exception {
+		Map<String, JSONObject> IxPoiRestaurantMap = new HashMap<String, JSONObject>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" r.AVG_COST,nvl(r.OPEN_HOUR,'') OPEN_HOUR,r.PARKING,nvl(r.FOOD_TYPE,'') FOOD_TYPE,nvl(r.CREDIT_CARD,'') CREDIT_CARD ");
+		sb.append(" from ix_poi p, IX_POI_RESTAURANT r," + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.pid = r.poi_pid");
+		sb.append(" and p.u_record != 2");
+		sb.append(" and r.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				JSONObject restaurant = new JSONObject();
+				restaurant.put("foodtype", resultSet.getString("FOOD_TYPE"));
+				restaurant.put("creditCards", resultSet.getString("CREDIT_CARD"));
+				restaurant.put("parking", resultSet.getString("PARKING"));
+				restaurant.put("openHour", resultSet.getString("OPEN_HOUR"));
+				restaurant.put("avgCost", resultSet.getString("AVG_COST"));
+				IxPoiRestaurantMap.put(fid, restaurant);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiRestaurantMap;
 	}
 	//处理联系方式表
 	private Map<String, JSONArray> queryIxPoiContact(Connection conn) throws Exception {
 		Map<String, JSONArray> ixPoiContactMap = new HashMap<String, JSONArray>();
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("SELECT P.POI_NUM fid,N.* FROM IX_POI POI,IX_POI_CONTACT N," + this.inParam.getDiffFidTempTableName()
-				+ " C");
-		sb.append("WHERE C.FID = P.POI_NUM AND P.PID = N.POI_PID AND P.U_RECORD <> 2 AND N.U_RECORD <> 2");
-
+		sb.append("SELECT P.POI_NUM fid,N.* FROM IX_POI P,IX_POI_CONTACT N," + this.inParam.getDiffFidTempTableName()+ " C");
+		sb.append(" WHERE C.FID = P.POI_NUM AND P.PID = N.POI_PID AND P.U_RECORD <> 2 AND N.U_RECORD <> 2");
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 
@@ -808,7 +1178,7 @@ public class SampleDataDiffer {
 				if (ixPoiContactMap.containsKey(fid)) {
 					contacts = ixPoiContactMap.get(fid);
 				}
-				contact.put("number", resultSet.getString("CONTACT"));
+				contact.put("number", resultSet.getString("CONTACT")!=null?resultSet.getString("CONTACT"):"");
 				contact.put("type", resultSet.getInt("CONTACT_TYPE"));
 				contact.put("priority", resultSet.getInt("PRIORITY"));
 				contacts.add(contact);
@@ -825,7 +1195,7 @@ public class SampleDataDiffer {
 			}
 		}
 
-		return null;
+		return ixPoiContactMap;
 	}
 	private Map<String, JSONArray> queryBusinessTimes(Connection conn) throws SQLException {
 		Map<String, JSONArray> ixPoiBusinessTimesMap = new HashMap<String, JSONArray>();
@@ -1068,7 +1438,7 @@ public class SampleDataDiffer {
 		sb.append(" from ix_poi p,"+this.inParam.getDiffFidTempTableName() + " b");
 		sb.append(" where p.poi_num = b.fid");
 		sb.append(" and p.u_record != 2");
-				
+		System.out.println(sb.toString());		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
@@ -1124,6 +1494,8 @@ public class SampleDataDiffer {
 				poi.put("website", resultSet.getString("WEB_SITE")!=null?resultSet.getString("WEB_SITE"):"");
 				//hwEntryExit
 				poi.put("hwEntryExit", resultSet.getInt("HW_ENTRYEXIT"));
+				//chain
+				poi.put("chain", resultSet.getString("CHAIN")!=null?resultSet.getString("CHAIN"):"");
 
 				IxPoiMap.put(fid, poi);
 			}
@@ -1144,8 +1516,8 @@ public class SampleDataDiffer {
 		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select c.fid,s.charging_type,s.change_brands,s.change_open_type,s.charging_num,s.service_prov,s.open_hour");
-		sb.append(",s.parking_fees,s.parking_info,s.available_state");
+		sb.append("select c.fid,s.charging_type,nvl(s.change_brands,'') change_brands,nvl(s.change_open_type,'') change_open_type,s.charging_num,nvl(s.service_prov,'') service_prov,nvl(s.open_hour,'') open_hour");
+		sb.append(",s.parking_fees,nvl(s.parking_info,'') parking_info,s.available_state");
 		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_chargingstation s");
 		sb.append(" where c.fid=i.poi_num");
 		sb.append(" and i.pid=s.poi_pid");
@@ -1164,7 +1536,7 @@ public class SampleDataDiffer {
 				jsonObj.put("changeOpenType", resultSet.getString("change_open_type"));
 				jsonObj.put("chargingNum", resultSet.getInt("charging_num"));
 				jsonObj.put("serviceProv", resultSet.getString("service_prov"));
-				jsonObj.put("openHour", resultSet.getString("openHour"));
+				jsonObj.put("openHour", resultSet.getString("open_hour"));
 				jsonObj.put("parkingFees", resultSet.getInt("parking_fees"));
 				jsonObj.put("parkingInfo", resultSet.getString("parking_info"));
 				jsonObj.put("availableState", resultSet.getInt("available_state"));
@@ -1187,13 +1559,17 @@ public class SampleDataDiffer {
 		Map<String, JSONArray> retMap = new HashMap<String,JSONArray>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select c.fid,p.*");
+		sb.append("select c.fid,");
+		sb.append(" nvl(p.plug_type, '') plug_type,nvl(p.product_num, '') product_num,nvl(p.power, '') power,p.floor,");
+		sb.append(" nvl(p.factory_num,'') factory_num,p.location_type,nvl(p.parking_num,'') parking_num,p.acdc,");
+		sb.append(" nvl(p.payment,'') payment,nvl(p.\"CURRENT\",'') \"CURRENT\",nvl(p.plot_num,'') plot_num,");
+		sb.append(" p.plug_num,p.\"MODE\",p.available_state,p.voltage,");
+		sb.append(" nvl(p.prices,'') prices,nvl(p.open_type,'') open_type,nvl(p.manufacturer,'') manufacturer ");
 		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_chargingplot p");
 		sb.append(" where c.fid=i.poi_num");
 		sb.append(" and i.pid=p.poi_pid");
 		sb.append(" and i.u_record != 2");
 		sb.append(" and p.u_record != 2");
-		
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
 		try {
@@ -1244,7 +1620,15 @@ public class SampleDataDiffer {
 		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select c.fid,g.* ");
+		sb.append("select c.fid, ");
+		sb.append(" nvl(g.service_prov,'') service_prov,");
+		sb.append(" nvl(g.service,'') service,");
+		sb.append(" nvl(g.open_hour,'') open_hour,");
+		sb.append(" nvl(g.eg_type,'') eg_type,");
+		sb.append(" nvl(g.fuel_type,'') fuel_type,");
+		sb.append(" nvl(g.payment,'') payment,");
+		sb.append(" nvl(g.mg_type,'') mg_type,");
+		sb.append(" nvl(g.oil_type,'') oil_type ");
 		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_gasstation g");
 		sb.append(" where c.fid=i.poi_num");
 		sb.append(" and i.pid=g.poi_pid");
@@ -1285,7 +1669,7 @@ public class SampleDataDiffer {
 		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select c.fid,a.ticket_price,a.sight_level,a.open_hour,a.long_description,a.parking");
+		sb.append("select c.fid,nvl(a.ticket_price,'') ticket_price,a.sight_level,nvl(a.open_hour,'') open_hour,nvl(a.long_description,'') long_description,a.parking");
 		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_attraction a");
 		sb.append(" where c.fid=i.poi_num");
 		sb.append(" and i.pid=a.poi_pid");
@@ -1323,7 +1707,7 @@ public class SampleDataDiffer {
 		Map<String, JSONObject> retMap = new HashMap<String,JSONObject>();
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("select c.fid,r.open_hour,r.address,r.how_to_go");
+		sb.append("select c.fid,nvl(r.open_hour,'') open_hour,nvl(r.address,'') address,nvl(r.how_to_go,'') how_to_go");
 		sb.append(" from "+this.inParam.getDiffFidTempTableName()+" c,ix_poi i,ix_poi_carrental r");
 		sb.append(" where c.fid=i.poi_num");
 		sb.append(" and i.pid=r.poi_pid");
@@ -1337,9 +1721,9 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("openHour", resultSet.getString("ticket_price"));
-				jsonObj.put("adressDes", resultSet.getString("sight_level"));
-				jsonObj.put("howToGo", resultSet.getString("open_hour"));
+				jsonObj.put("openHour", resultSet.getString("open_hour"));
+				jsonObj.put("adressDes", resultSet.getString("address"));
+				jsonObj.put("howToGo", resultSet.getString("how_to_go"));
 				retMap.put(resultSet.getString("fid"), jsonObj);
 			}
 			return retMap;
@@ -1389,6 +1773,110 @@ public class SampleDataDiffer {
 		}
 	}
 	
+	private Map<String, JSONObject> queryIxPoiHotel(Connection conn) throws Exception {
+		Map<String, JSONObject> ixHotelMap = new HashMap<String, JSONObject>();
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("select c.fid,r.RATING,r.ROOM_COUNT,nvl(r.ROOM_TYPE,'') ROOM_TYPE,nvl(r.SERVICE,'') SERVICE,");
+		sb.append("r.BREAKFAST,r.PARKING,nvl(r.ROOM_PRICE,'') ROOM_PRICE, nvl(r.CHECKIN_TIME,'') CHECKIN_TIME,");
+		sb.append("nvl(r.CHECKOUT_TIME,'') CHECKOUT_TIME,nvl(r.OPEN_HOUR,'') OPEN_HOUR,");
+		sb.append("nvl(r.CREDIT_CARD,'') CREDIT_CARD,nvl(r.LONG_DESCRIPTION,'') LONG_DESCRIPTION");
+		sb.append(" from " + this.inParam.getDiffFidTempTableName() + " c,ix_poi i,ix_poi_hotel r");
+		sb.append(" where c.fid=i.poi_num");
+		sb.append(" and i.pid=r.poi_pid");
+		sb.append(" and i.u_record != 2");
+		sb.append(" and r.u_record != 2");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject jsonObj = new JSONObject();
+
+				jsonObj.put("rating", resultSet.getInt("RATING"));
+				jsonObj.put("description", resultSet.getString("LONG_DESCRIPTION"));
+				jsonObj.put("service", resultSet.getString("SERVICE"));
+				jsonObj.put("roomType", resultSet.getString("ROOM_TYPE"));
+				jsonObj.put("parking", resultSet.getInt("PARKING"));
+				jsonObj.put("roomCount", resultSet.getInt("ROOM_COUNT"));
+				jsonObj.put("openHour", resultSet.getString("OPEN_HOUR"));
+				jsonObj.put("checkOutTime", resultSet.getString("CHECKOUT_TIME"));
+				jsonObj.put("creditCards", resultSet.getString("CREDIT_CARD"));
+				jsonObj.put("checkInTime", resultSet.getString("CHECKIN_TIME"));
+				jsonObj.put("breakfast", resultSet.getInt("BREAKFAST"));
+				jsonObj.put("roomPrice", resultSet.getString("ROOM_PRICE"));
+
+				ixHotelMap.put(resultSet.getString("fid"), jsonObj);
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+			if (pstmt != null) {
+				pstmt.close();
+			}
+		}
+		return ixHotelMap;
+	}
+	private Map<String, Integer> queryIxPoiFreshnessVerification(Connection conn) throws Exception {
+		Map<String, Integer> IxPoiFreshnessVerificationMap = new HashMap<String, Integer>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" (select s.FRESH_VERIFIED from poi_edit_status s where s.pid=p.pid) FRESH_VERIFIED");
+		sb.append(" from ix_poi p, " + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				int count = resultSet.getInt("FRESH_VERIFIED");
+				IxPoiFreshnessVerificationMap.put(fid, count);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiFreshnessVerificationMap;
+	}
+	
+	private Map<String, String> queryIxPoiRawFields(Connection conn) throws Exception {
+		Map<String, String> IxPoiRawFieldsMap = new HashMap<String, String>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("select p.poi_num fid,");
+		sb.append(" (select s.raw_fields from poi_edit_status s where s.pid=p.pid) raw_fields");
+		sb.append(" from ix_poi p, " + this.inParam.getDiffFidTempTableName() + " c");
+		sb.append(" where c.fid = p.poi_num");
+		sb.append(" and p.u_record != 2");
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				String fid = resultSet.getString("fid");
+				String raw_fields = resultSet.getString("raw_fields")!=null?resultSet.getString("raw_fields"):"";
+				IxPoiRawFieldsMap.put(fid, raw_fields);
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			if(pstmt != null){pstmt.close();}
+			if(resultSet != null){resultSet.close();}
+		}
+		return IxPoiRawFieldsMap;
+	}
+	
 	private Map<String,JSONObject> queryFromMongo() throws Exception {
 		// TODO 从mongodb中查询获取poi数据；
 		logger.info("Get diff fidList");
@@ -1432,7 +1920,6 @@ public class SampleDataDiffer {
 				}
 			}
 		}catch(Exception e){
-			conn.rollback();
 			e.printStackTrace();
 		}finally{
 			if (conn != null){
@@ -1468,6 +1955,8 @@ public class SampleDataDiffer {
 		param.setOraclePwd(args[8]);
 		param.setDiffFidTempTableName(args[9]);
 		param.setOutputFile(args[10]);
+		//差分类型：1 日库差分， 2月库差分
+		param.setDiffType(Integer.parseInt(args[11]));
 		return param;
 		
 	}

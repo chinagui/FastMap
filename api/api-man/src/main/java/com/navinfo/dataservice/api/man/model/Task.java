@@ -48,6 +48,9 @@ public class Task implements Serializable{
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;
 	
+	private String methed;
+	private String adminName;
+	
 	public Task (){
 	}
 
@@ -522,6 +525,26 @@ public class Task implements Serializable{
 	 */
 	public void setGridIds(Map<Integer,Integer> gridIds) {
 		this.gridIds = gridIds;
+	}
+
+
+	public String getMethed() {
+		return methed;
+	}
+
+
+	public void setMethed(String methed) {
+		methed = methed;
+	}
+
+
+	public String getAdminName() {
+		return adminName;
+	}
+
+
+	public void setAdminName(String adminName) {
+		this.adminName = adminName;
 	}
 
 }

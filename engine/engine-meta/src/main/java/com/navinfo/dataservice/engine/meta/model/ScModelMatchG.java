@@ -1,7 +1,5 @@
 package com.navinfo.dataservice.engine.meta.model;
 
-import java.sql.Timestamp;
-
 import oracle.sql.BLOB;
 
 /** 

@@ -380,7 +380,8 @@ public class NiValExceptionOperator {
 	}
 
 	/**
-	 * 修改检查结果状态为例外、确认已修改、确认不修改 确认已修改进ni_val_exception_history表
+	 * 修改检查结果状态为例外、确认已修改、确认不修改 确认已修改
+	 * 
 	 * 例外、确认不修改就ck_exception表
 	 * 
 	 * @param md5
@@ -409,7 +410,7 @@ public class NiValExceptionOperator {
 				pstmt.executeUpdate();
 				pstmt.close();
 
-				sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
+				/*sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, md5);
 				pstmt.executeUpdate();
@@ -419,7 +420,7 @@ public class NiValExceptionOperator {
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, md5);
 				pstmt.executeUpdate();
-				pstmt.close();
+				pstmt.close();*/
 			} else {
 
 				NiValExceptionSelector selector = new NiValExceptionSelector(
@@ -455,7 +456,7 @@ public class NiValExceptionOperator {
 
 				pstmt.close();
 
-				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=:2";
+				/*sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=:2";
 
 				pstmt = conn.prepareStatement(sql);
 
@@ -465,7 +466,7 @@ public class NiValExceptionOperator {
 
 				pstmt.executeUpdate();
 
-				pstmt.close();
+				pstmt.close();*/
 
 				result = new Result();
 
@@ -484,7 +485,7 @@ public class NiValExceptionOperator {
 
 			pstmt.close();
 
-			sql = "delete from ck_result_object where md5_code=:1";
+			/*sql = "delete from ck_result_object where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -492,15 +493,15 @@ public class NiValExceptionOperator {
 
 			pstmt.executeUpdate();
 
-			pstmt.close();
+			pstmt.close();*/
 
-			sql = "delete from NI_VAL_EXCEPTION_GRID where md5_code=:1";
+			/*sql = "delete from NI_VAL_EXCEPTION_GRID where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, md5);
 
-			pstmt.executeUpdate();
+			pstmt.executeUpdate();*/
 
 			if (result != null) {
 				LogWriter writer = new LogWriter(conn);

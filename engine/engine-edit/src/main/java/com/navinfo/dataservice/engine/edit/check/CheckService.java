@@ -85,7 +85,7 @@ public class CheckService {
                 //获取当前子任务下所有的道路名id
                 List<Integer> nameIds = getNameIds(subtaskId, tips);
 				
-				System.out.println(" begin 道路名子版本检查 ");
+				System.out.println(" begin 子任务范围内 道路名子版本检查 ");
 				
 				String jobName = "";
 				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
@@ -198,7 +198,7 @@ public class CheckService {
 		}
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		if(checkType == 7){  //道路名检查 ,直接调元数据库 全表检查		
+		/*if(checkType == 7){  //道路名检查 ,直接调元数据库 全表检查		
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
@@ -221,9 +221,10 @@ public class CheckService {
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, 0, jobName);
 			//System.out.println("jobId == "+jobId);
 			}
-		}else if(checkType == 5){//道路名子版本检查
+		}else*/ 
+		if(checkType == 5){//道路名子版本检查+全库检查
 			
-			System.out.println(" begin 道路名子版本检查 ");
+			System.out.println(" begin 道路名子版本检查+全库检查 ");
 			JSONObject paramsObj = new JSONObject();
 			if(jsonReq.containsKey("params") && jsonReq.getJSONObject("params") != null ){
 				paramsObj = jsonReq.getJSONObject("params");
@@ -361,13 +362,14 @@ public class CheckService {
 	 * @Title: getCkSuites
 	 * @Description: 获取某类检查的所有 suite
 	 * @param type
+	 * @param flag 
 	 * @return
 	 * @throws Exception  JSONArray
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年4月19日 下午2:01:13 
 	 */
-	public JSONArray getCkSuites(int type) throws Exception {
+	public JSONArray getCkSuites(int type, int flag) throws Exception {
 		
 		Connection conn = null;
 		
@@ -377,7 +379,7 @@ public class CheckService {
 			System.out.println(conn);
 			CkSuiteSelector suiteSelector = new CkSuiteSelector(conn);
 			
-			JSONArray suiteArray = suiteSelector.getSuite(type);
+			JSONArray suiteArray = suiteSelector.getSuite(type,flag);
 			
 //			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
 			

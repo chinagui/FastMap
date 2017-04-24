@@ -2045,7 +2045,7 @@ public class SampleDataDiffer {
 	private static Param parseArgs(String[] args) {
 		Param param = new Param();
 		String strArg =  args[0];
-		String[] ArgList = strArg.split("|");
+		String[] ArgList = strArg.split(",");
 		if (ArgList.length != 12){
 			System.out.println("参数个数错误");
 		}

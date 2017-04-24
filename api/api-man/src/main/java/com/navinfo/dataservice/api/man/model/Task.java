@@ -48,7 +48,7 @@ public class Task implements Serializable{
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;
 	
-	private String methed;
+	private String method;
 	private String adminName;
 	
 	public Task (){
@@ -528,13 +528,13 @@ public class Task implements Serializable{
 	}
 
 
-	public String getMethed() {
-		return methed;
+	public String getMethod() {
+		return method;
 	}
 
 
-	public void setMethed(String methed) {
-		this.methed = methed;
+	public void setMethod(String method) {
+		this.method = method;
 	}
 
 

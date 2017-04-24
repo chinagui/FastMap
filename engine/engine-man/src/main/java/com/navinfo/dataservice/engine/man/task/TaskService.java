@@ -1804,7 +1804,7 @@ public class TaskService {
 					+ "       UG.GROUP_ID,"
 					+ "       UG.GROUP_NAME,"
 					+ "       T.REGION_ID,"
-					+ "       I.METHED,"
+					+ "       I.METHOD,"
 					+ "       I.ADMIN_NAME"
 					+ "  FROM TASK T, BLOCK B, PROGRAM P, USER_GROUP UG, USER_INFO U, INFOR I"
 					+ " WHERE T.BLOCK_ID = B.BLOCK_ID(+)"
@@ -1843,7 +1843,7 @@ public class TaskService {
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setGroupName(rs.getString("GROUP_NAME"));
 						task.setRegionId(rs.getInt("REGION_ID"));
-						task.setMethed(rs.getString("METHED"));
+						task.setMethod(rs.getString("METHOD"));
 						task.setAdminName(rs.getString("ADMIN_NAME"));
 						
 						Map<Integer, Integer> gridIds;
@@ -1924,7 +1924,7 @@ public class TaskService {
 			map.put("gridIds", task.getGridIds());
 			map.put("geometry", task.getGeometry());
 			map.put("version", task.getVersion());
-			map.put("methed", task.getMethed());
+			map.put("method", task.getMethod());
 			map.put("adminName", task.getAdminName());
 			
 			return map;

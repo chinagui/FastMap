@@ -18,4 +18,5 @@ public interface JobApi {
 	String help();
 	List<JobInfo> getJobInfoList(JSONObject parameterJson)throws Exception;
 	JobInfo getLatestJobByDescp(String descp)throws Exception;
+	JobInfo getJobByDescp(String descp)throws Exception;
 }

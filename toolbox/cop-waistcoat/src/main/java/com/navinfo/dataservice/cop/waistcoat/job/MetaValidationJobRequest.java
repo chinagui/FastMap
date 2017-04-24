@@ -23,7 +23,10 @@ public class MetaValidationJobRequest extends AbstractJobRequest {
 	protected String adminId;
 	protected String roadTypes;
 	protected List<String> rules;
-//	protected int targetDbId;
+	protected List<Integer> nameIds;
+	
+
+	//	protected int targetDbId;
 	protected int valDbId=0;
 	protected int timeOut;
 	
@@ -110,6 +113,13 @@ public class MetaValidationJobRequest extends AbstractJobRequest {
 		this.roadTypes = roadTypes;
 	}
 	
+	public List<Integer> getNameIds() {
+		return nameIds;
+	}
+
+	public void setNameIds(List<Integer> nameIds) {
+		this.nameIds = nameIds;
+	}
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
 		subJobRequests = new HashMap<String,AbstractJobRequest>();

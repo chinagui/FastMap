@@ -268,10 +268,11 @@ public class MetaEditController extends BaseController {
 			InputStream in = imageBlob.getBinaryStream(); // 建立输出流
             int len = (int) imageBlob.length();
             byte[] data = new byte[len]; // 建立缓冲区
-
+            in.read(data);
+            in.close();
 			response.getOutputStream().write(data);
 
-			in.close();
+			
 		} catch (Exception e) {
 
 			logger.error(e.getMessage(), e);

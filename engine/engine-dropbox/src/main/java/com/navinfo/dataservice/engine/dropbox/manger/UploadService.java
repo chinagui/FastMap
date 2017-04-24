@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -177,6 +178,8 @@ public class UploadService {
 		int pid = 0;
 		int dbId = 0;
 		String fileType = "";
+		String userName = "";
+		String userId = "";
 		
 //		int pid = 1;
 //		int dbId = 43;	
@@ -195,6 +198,8 @@ public class UploadService {
 					pid = jsonParam.getInt("pid");
 					dbId = jsonParam.getInt("dbId");
 					fileType = jsonParam.getString("filetype");
+					userName = jsonParam.getString("userName");
+					userId = jsonParam.getString("userId");
 				}
 				
 			}else{
@@ -221,9 +226,37 @@ public class UploadService {
 			
 			data.put("PID", photoId);
 			return data;
-		};
+		}else if(fileType.equals("android_log")){//安卓端日志
+			//"dropbox.upload.path"
+			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath);  //服务器部署路径
+			InputStream fileStream = uploadItem.getInputStream();
+//			String fileName = ""
+//			uploadFile(logUploadDir,);
+		}
+		
 		return null;
 
+	}
+	
+	public String uploadFile(String urlString, String fileName, InputStream fileStream) throws IOException{
+	    
+	    //读取文件上传到服务器
+	    byte[]bytes=new byte[1024];
+	    
+	  //选择你要存放的文件
+        FileOutputStream out=new FileOutputStream("f:\\poi00333.txt");
+	    int numReadByte=0;
+	    while((numReadByte=fileStream.read(bytes,0,1024))>0)
+	    {
+	        out.write(bytes, 0, numReadByte);
+	    }
+	
+	    out.flush();
+	    fileStream.close();
+	    
+	    String result = null ;
+	    return result;
 	}
 	
 	public String uploadFile(String urlString, String fileName, String filePath) throws IOException{
@@ -261,13 +294,38 @@ public class UploadService {
 	    
 	    return result;
 	}
-	
 	public static void main(String[] args) throws IOException {
-		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
-		String fileName = "infor.txt";
-		String filePath = "c:/infor.txt";
+		
+		
+        //选择你要读取的文件
+        FileInputStream fis=new FileInputStream("f:\\poi003.txt");
+        byte[]bytes=new byte[1024];
+        //选择你要存放的文件
+        FileOutputStream fos=new FileOutputStream("f:\\poi00333.txt");
+        //byte[] buf=new byte[1024];
+//      BufferedReader bufr=new BufferedReader(buf);
+       /* int len;
+        while((len=fis.read())!=-1){
+            fos.write(len);
+        }*/
+        int numReadByte=0;
+	    while((numReadByte=fis.read(bytes,0,1024))>0)
+	    {
+	    	fos.write(bytes, 0, numReadByte);
+	    }
+	
+	    fos.flush();
+        fis.close();
+        fos.close();
+        System.exit(0);
+	}
+	/*public static void main(String[] args) throws IOException {
+//		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
+		String url = "f:";
+		String fileName = "poi003.txt";
+		String filePath = "f:/poi004.txt";
 		System.out.println(UploadService.getInstance().uploadFile(url, fileName, filePath));
 		
 		System.exit(0);
-	}
+	}*/
 }

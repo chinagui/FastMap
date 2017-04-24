@@ -54,6 +54,15 @@ public class JobApiImpl implements JobApi{
 		}
 	}
 	
+	public JobInfo getJobByDescp(String descp)throws Exception{
+		try{
+			return JobService.getInstance().getJobByDescp(descp);
+		}catch(Exception e){
+			log.error(e.getMessage(),e);
+			throw new Exception(e.getMessage(),e);
+		}
+	}
+	
 	public JobInfo getJobByGuid(String jobGuid)throws Exception{
 		try{
 			return JobService.getInstance().getJobByGuid(jobGuid);

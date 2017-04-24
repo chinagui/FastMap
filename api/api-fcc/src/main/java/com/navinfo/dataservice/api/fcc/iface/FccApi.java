@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.fcc.iface;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,6 +65,13 @@ public interface FccApi {
 	 */
 	
 	public Set<Integer>  getTipsGridsBySubtaskId(int subTaskid,int programType) throws Exception;
-	
 
+
+    /**
+     * 快线tips日编状态实时统计
+     * @param collectTaskIds
+     * @return
+     * @throws Exception
+     */
+    public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception;
 }

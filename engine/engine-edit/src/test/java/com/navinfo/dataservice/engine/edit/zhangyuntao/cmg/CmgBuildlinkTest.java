@@ -34,13 +34,11 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testRepairCmgBuildlink() {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":400000005,\"dbId\":13," +
-                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.5321,39.74285]," +
-                "[116.53262615203856,39.743609760516875],[116.53354883193968,39.74352726503679],[116.53340935707092,39.74224857246603]," +
-                "[116.53236865997314,39.74179483714053],[116.5316,39.74253],[116.53074860572815,39.741852585438785],[116.53011560440063," +
-                "39.742413566389125],[116.53009414672852,39.74353551458925],[116.53132,39.74315],[116.53151035308838,39.74344476945796]," +
-                "[116.53210043907164,39.74395624045471],[116.5321,39.74285]]},\"catchInfos\":[{\"nodePid\":508000009," +
-                "\"longitude\":116.5321,\"latitude\":39.74285},{\"nodePid\":508000009,\"longitude\":116.5321,\"latitude\":39.74285}]}}";
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":401000007,\"dbId\":13,\"subtaskId\":1," +
+                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52590990066528," +
+                "39.74020261499875],[116.52642,39.73992],[116.52611,39.73939],[116.52585,39.7399]]}," +
+                "\"catchInfos\":[{\"nodePid\":510000009,\"longitude\":116.52590990066528,\"latitude\":39.74020261499875}," +
+                "{\"nodePid\":510000009,\"longitude\":116.52585,\"latitude\":39.7399}]}}";
         TestUtil.run(requester);
     }
 }

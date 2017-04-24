@@ -21,15 +21,15 @@ public class CmgBuildnodeTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildnode() {
-        String requester = "{\"command\":\"CREATE\",\"dbId\":84,\"objId\":408000006,\"data\":{\"longitude\":127.0671184778542," +
-                "\"latitude\":33.96166322264574},\"type\":\"CMGBUILDNODE\"}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":508000016," +
+                "\"data\":{\"longitude\":116.52638664822061,\"latitude\":39.740536435428126}}";
         TestUtil.run(requester);
     }
 
     @Test
     public void testMoveCmgBuildnode() {
-        String requester = "{\"command\":\"MOVE\",\"objId\":404000004,\"type\":\"CMGBUILDNODE\",\"data\":{\"longitude\":127.0668625831604,"
-                + "\"latitude\":33.96168639931121},\"dbId\":84}";
+        String requester = "{\"command\":\"MOVE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":405000018," +
+                "\"data\":{\"longitude\":116.52737170492552,\"latitude\":39.74154004946846}}";
         TestUtil.run(requester);
     }
 }

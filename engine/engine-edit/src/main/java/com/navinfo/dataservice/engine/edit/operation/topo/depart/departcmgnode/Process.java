@@ -36,14 +36,14 @@ public class Process extends AbstractProcess<Command> {
     public boolean prepareData() throws Exception {
         // 加载待分离节点
         CmgBuildnode cmgnode = (CmgBuildnode) new AbstractSelector(CmgBuildnode.class, getConn()).
-                loadById(getCommand().getCmgnode().pid(), false);
+                loadById(getCommand().getCmgnode().pid(), true);
         getCommand().setCmgnode(cmgnode);
         // 加载待分离线
         CmgBuildlink cmglink = (CmgBuildlink) new AbstractSelector(CmgBuildlink.class, getConn()).
-                loadById(getCommand().getCmglink().pid(), false);
+                loadById(getCommand().getCmglink().pid(), true);
         getCommand().setCmglink(cmglink);
         // 加载分离节点挂接线
-        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).listTheAssociatedLinkOfTheNode(cmgnode.pid(), false);
+        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).listTheAssociatedLinkOfTheNode(cmgnode.pid(), true);
         getCommand().setCmglinks(cmglinks);
         return super.prepareData();
     }

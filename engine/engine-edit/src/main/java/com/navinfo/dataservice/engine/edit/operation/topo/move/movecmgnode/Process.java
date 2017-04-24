@@ -37,15 +37,13 @@ public class Process extends AbstractProcess<Command> {
     public boolean prepareData() throws Exception {
         // 加载CMG-NODE
         CmgBuildnode cmgnode = (CmgBuildnode) new AbstractSelector(CmgBuildnode.class, getConn()).
-                loadById(getCommand().getCmgnode().pid(), false);
+                loadById(getCommand().getCmgnode().pid(), true);
         getCommand().setCmgnode(cmgnode);
         // 加载CMG-LINK
-        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).
-                listTheAssociatedLinkOfTheNode(cmgnode.pid(), false);
+        List<CmgBuildlink> cmglinks = new CmgBuildlinkSelector(getConn()).listTheAssociatedLinkOfTheNode(cmgnode.pid(), true);
         getCommand().setCmglinks(cmglinks);
         // 加载CMG-FACE
-        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).
-                listTheAssociatedFaceOfTheNode(cmgnode.pid(), false);
+        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).listTheAssociatedFaceOfTheNode(cmgnode.pid(), false);
         getCommand().setCmgfaces(cmgfaces);
         return super.prepareData();
     }

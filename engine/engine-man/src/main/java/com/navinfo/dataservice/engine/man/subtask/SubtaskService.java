@@ -221,11 +221,7 @@ public class SubtaskService {
 				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
 				List<Integer> deleteGrids = SubtaskOperation.checkSubtaskGridMapping(conn, bean);
 				if(deleteGrids!=null&&deleteGrids.size()>0){
-					List<Integer> oldGrids = bean.getGridIds();
-					oldGrids.removeAll(deleteGrids);
-					JSONArray newGrids=new JSONArray();
-					newGrids.addAll(oldGrids);
-					SubtaskOperation.updateSubtaskGeo(conn, GridUtils.grids2Wkt(newGrids), bean.getSubtaskId());
+					updateSubtaskGeo(conn,bean.getSubtaskId());
 				}
 			}
 			
@@ -241,6 +237,19 @@ public class SubtaskService {
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private void updateSubtaskGeo(Connection conn,int subtaskId)throws Exception{
+		try{
+			Map<Integer, Integer> gridMap = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn, subtaskId);
+			JSONArray newGrids=new JSONArray();
+			newGrids.addAll(gridMap.keySet());
+			SubtaskOperation.updateSubtaskGeo(conn, GridUtils.grids2Wkt(newGrids), subtaskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
 	/*
@@ -1678,6 +1687,7 @@ public class SubtaskService {
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
 			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
+				updateSubtaskGeo(conn,subtask.getSubtaskId());
 				//调整任务范围
 				log.info("调整子任务对应任务范围");
 				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
@@ -1688,14 +1698,25 @@ public class SubtaskService {
 					if(subtask.getStage()==1){
 						//调整区域子任务范围
 						log.info("日编子任务 调整区域子任务范围");
-						SubtaskOperation.changeRegionSubtaskGridByTask(conn, subtask.getTaskId());}
-					else if(subtask.getStage()==0){
+						int regionChange=SubtaskOperation.changeRegionSubtaskGridByTask(conn, subtask.getTaskId());
+						if(regionChange>0){
+							List<Integer> regionSubtaskIds = SubtaskOperation.getRegionSubtaskByTask(conn, subtask.getTaskId());
+							for(int tmpSubtaskId:regionSubtaskIds){
+								updateSubtaskGeo(conn,tmpSubtaskId);}
+						}
+					}else if(subtask.getStage()==0){
 						//调整日编任务，二代编辑任务
 						log.info("采集子任务 调整日编任务，二代编辑任务范围");
 						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
 						//调整日编区域子任务范围		
 						log.info("采集子任务 调整日编区域子任务范围");
-						SubtaskOperation.changeDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());}
+						int regionChange=SubtaskOperation.changeDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());
+						if(regionChange>0){
+							List<Integer> regionSubtaskIds = SubtaskOperation.getDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());
+							for(int tmpSubtaskId:regionSubtaskIds){
+								updateSubtaskGeo(conn,tmpSubtaskId);}
+						}
+					}
 				}					
 			}
 		}		

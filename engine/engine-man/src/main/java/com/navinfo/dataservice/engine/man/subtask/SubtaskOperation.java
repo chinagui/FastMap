@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javassist.expr.NewArray;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.MapHandler;
@@ -3194,7 +3196,7 @@ public class SubtaskOperation {
 		return gridIdsToInsert;
 	}
 
-	public static void changeRegionSubtaskGridByTask(Connection conn,
+	public static int changeRegionSubtaskGridByTask(Connection conn,
 			int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();
@@ -3204,14 +3206,16 @@ public class SubtaskOperation {
 					+ "    FROM TASK_GRID_MAPPING M, SUBTASK S"
 					+ "   WHERE M.TASK_ID = "+taskId
 					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND S.STATUS!=0"
 					+ "     AND S.TYPE = 4"
 					+ "  MINUS"
 					+ "  SELECT S.SUBTASK_ID, GRID_ID, 2"
 					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK S"
 					+ "   WHERE S.TASK_ID = "+taskId
 					+ "     AND S.SUBTASK_ID = M.SUBTASK_ID"
+					+ "     AND S.STATUS!=0"
 					+ "     AND S.TYPE = 4";
-			run.update(conn, sql);	
+			return run.update(conn, sql);	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -3219,7 +3223,35 @@ public class SubtaskOperation {
 		}
 	}
 	
-	public static void changeDayRegionSubtaskByCollectTask(Connection conn,int taskId) throws Exception {
+	public static List<Integer> getRegionSubtaskByTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT S.SUBTASK_ID"
+					+ "    FROM SUBTASK S"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND S.STATUS!=0"
+					+ "     AND S.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static int changeDayRegionSubtaskByCollectTask(Connection conn,int taskId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -3234,6 +3266,7 @@ public class SubtaskOperation {
 					+ "     AND UT.LATEST = 1"
 					+ "     AND UT.TYPE = 1"
 					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
 					+ "     AND T.TYPE = 4"
 					+ "  MINUS"
 					+ "  SELECT T.SUBTASK_ID, M.GRID_ID, 2"
@@ -3245,13 +3278,47 @@ public class SubtaskOperation {
 					+ "     AND UT.LATEST = 1"
 					+ "     AND UT.TYPE = 1"
 					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
 					+ "     AND T.TYPE = 4";
-			run.update(conn, createMappingSql);
+			return run.update(conn, createMappingSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 		
+	}
+	
+	public static List<Integer> getDayRegionSubtaskByCollectTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT T.SUBTASK_ID"
+					+ "    FROM TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
+					+ "     AND T.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	

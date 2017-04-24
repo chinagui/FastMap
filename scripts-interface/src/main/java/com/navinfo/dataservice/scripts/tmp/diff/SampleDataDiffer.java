@@ -448,430 +448,525 @@ public class SampleDataDiffer {
 		CollectConvertUtils.writeJSONObject2TxtFile(txtPath, outResult);
 	}
 	private List<DiffField> diffIxPoiInDoor(JSONObject mongoPoi, JSONObject orcleIndoor){
-		JSONObject mongoIndoor = mongoPoi.getJSONObject("indoor");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("indoor",mongoIndoor,orcleIndoor));
-		if (mongoIndoor.isNullObject() || mongoIndoor.isEmpty()) {
-			return diffList;
-		} else {
-			if (mongoIndoor.getInt("type") != orcleIndoor.getInt("type") ||
-					!isStringSame(mongoIndoor.getString("floor"),orcleIndoor.getString("floor"))) {
+		try {
+			JSONObject mongoIndoor = mongoPoi.getJSONObject("indoor");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("indoor",mongoIndoor,orcleIndoor));
+			if (mongoIndoor.isNullObject() || mongoIndoor.isEmpty()) {
 				return diffList;
+			} else {
+				if (mongoIndoor.getInt("type") != orcleIndoor.getInt("type") ||
+						!isStringSame(mongoIndoor.getString("floor"),orcleIndoor.getString("floor"))) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
+		
 		return null;
 	}
 	private List<DiffField> diffIxPoiPhoto(JSONObject mongoPoi, int orclePhoto){
-		JSONArray mongoPhoto = mongoPoi.getJSONArray("attachments");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("attachments",mongoPhoto.size(),orclePhoto));
-		if (mongoPhoto.size() != orclePhoto) {
-			return diffList;
+		try {
+			JSONArray mongoPhoto = mongoPoi.getJSONArray("attachments");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("attachments",mongoPhoto.size(),orclePhoto));
+			if (mongoPhoto.size() != orclePhoto) {
+				return diffList;
+			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiParking(JSONObject mongoPoi, JSONObject orcleParking){
-		JSONObject mongoParking = mongoPoi.getJSONObject("parkings");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("parkings",mongoParking,orcleParking));
-		if (mongoParking.isNullObject() || mongoParking.isEmpty()) {
-			return diffList;
-		} else {
-			if (mongoParking.getInt("totalNum") != orcleParking.getInt("totalNum") ||
-					mongoParking.getInt("certificate") != orcleParking.getInt("certificate") ||
-					mongoParking.getInt("vehicle") != orcleParking.getInt("vehicle") ||
-					mongoParking.getInt("womenNum") != orcleParking.getInt("womenNum") ||
-					mongoParking.getInt("handicapNum") != orcleParking.getInt("handicapNum") ||
-					mongoParking.getInt("miniNum") != orcleParking.getInt("miniNum") ||
-					mongoParking.getInt("vipNum") != orcleParking.getInt("vipNum") ||
-					mongoParking.getDouble("resHigh") != orcleParking.getDouble("resHigh") ||
-					mongoParking.getDouble("resWidth") != orcleParking.getDouble("resWidth") ||
-					mongoParking.getDouble("resWeigh") != orcleParking.getDouble("resWeigh") ||
-					!isStringSame(mongoParking.getString("tollStd"),orcleParking.getString("tollStd"))||
-					!isStringSame(mongoParking.getString("tollDes"),orcleParking.getString("tollDes"))||
-					!isStringSame(mongoParking.getString("tollWay"),orcleParking.getString("tollWay"))||
-					!isStringSame(mongoParking.getString("openTime"),orcleParking.getString("openTime"))||
-					!isStringSame(mongoParking.getString("payment"),orcleParking.getString("payment"))||
-					!isStringSame(mongoParking.getString("haveSpecialPlace"),orcleParking.getString("haveSpecialPlace"))||
-					!isStringSame(mongoParking.getString("remark"),orcleParking.getString("remark"))||
-					!isStringSame(mongoParking.getString("buildingType"),orcleParking.getString("buildingType"))) {
+		try {
+			JSONObject mongoParking = mongoPoi.getJSONObject("parkings");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("parkings",mongoParking,orcleParking));
+			if (mongoParking.isNullObject() || mongoParking.isEmpty()) {
 				return diffList;
+			} else {
+				if (mongoParking.getInt("totalNum") != orcleParking.getInt("totalNum") ||
+						mongoParking.getInt("certificate") != orcleParking.getInt("certificate") ||
+						mongoParking.getInt("vehicle") != orcleParking.getInt("vehicle") ||
+						mongoParking.getInt("womenNum") != orcleParking.getInt("womenNum") ||
+						mongoParking.getInt("handicapNum") != orcleParking.getInt("handicapNum") ||
+						mongoParking.getInt("miniNum") != orcleParking.getInt("miniNum") ||
+						mongoParking.getInt("vipNum") != orcleParking.getInt("vipNum") ||
+						mongoParking.getDouble("resHigh") != orcleParking.getDouble("resHigh") ||
+						mongoParking.getDouble("resWidth") != orcleParking.getDouble("resWidth") ||
+						mongoParking.getDouble("resWeigh") != orcleParking.getDouble("resWeigh") ||
+						!isStringSame(mongoParking.getString("tollStd"),orcleParking.getString("tollStd"))||
+						!isStringSame(mongoParking.getString("tollDes"),orcleParking.getString("tollDes"))||
+						!isStringSame(mongoParking.getString("tollWay"),orcleParking.getString("tollWay"))||
+						!isStringSame(mongoParking.getString("openTime"),orcleParking.getString("openTime"))||
+						!isStringSame(mongoParking.getString("payment"),orcleParking.getString("payment"))||
+						!isStringSame(mongoParking.getString("haveSpecialPlace"),orcleParking.getString("haveSpecialPlace"))||
+						!isStringSame(mongoParking.getString("remark"),orcleParking.getString("remark"))||
+						!isStringSame(mongoParking.getString("buildingType"),orcleParking.getString("buildingType"))) {
+					return diffList;
+				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiFoodType(JSONObject mongoPoi, JSONObject orcleFoodType){
-		JSONObject mongoFoodType = mongoPoi.getJSONObject("foodtypes");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("foodtypes",mongoFoodType,orcleFoodType));
-		if (mongoFoodType.isNullObject() || mongoFoodType.isEmpty()) {
-			return diffList;
-		} else {
-			if (mongoFoodType.getInt("avgCost") != orcleFoodType.getInt("avgCost") ||
-					mongoFoodType.getInt("parking") != orcleFoodType.getInt("parking") ||
-					!isStringSame(mongoFoodType.getString("foodtype"),orcleFoodType.getString("foodtype"))||
-					!isStringSame(mongoFoodType.getString("creditCards"),orcleFoodType.getString("creditCards"))||
-					!isStringSame(mongoFoodType.getString("openHour"),orcleFoodType.getString("openHour"))) {
+		try {
+			JSONObject mongoFoodType = mongoPoi.getJSONObject("foodtypes");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("foodtypes",mongoFoodType,orcleFoodType));
+			if (mongoFoodType.isNullObject() || mongoFoodType.isEmpty()) {
 				return diffList;
+			} else {
+				if (mongoFoodType.getInt("avgCost") != orcleFoodType.getInt("avgCost") ||
+						mongoFoodType.getInt("parking") != orcleFoodType.getInt("parking") ||
+						!isStringSame(mongoFoodType.getString("foodtype"),orcleFoodType.getString("foodtype"))||
+						!isStringSame(mongoFoodType.getString("creditCards"),orcleFoodType.getString("creditCards"))||
+						!isStringSame(mongoFoodType.getString("openHour"),orcleFoodType.getString("openHour"))) {
+					return diffList;
+				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiContact(JSONObject mongoPoi, JSONArray contactLists) {
-		List<DiffField> diffList = new ArrayList<DiffField>();
-
-		JSONArray relateContacts = mongoPoi.getJSONArray("contacts");
-		if (relateContacts.size() == 0) {
-			diffList.add(setDiffField("contacts", null, contactLists));
-			return diffList;
-		} else {
-			if (relateContacts.size() != contactLists.size()) {
-				// 数量不相等
-				diffList.add(setDiffField("contacts", relateContacts, contactLists));
+		try {
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			JSONArray relateContacts = mongoPoi.getJSONArray("contacts");
+			if (relateContacts.size() == 0) {
+				diffList.add(setDiffField("contacts", null, contactLists));
 				return diffList;
 			} else {
-				
-				for (int i = 0; i < relateContacts.size(); i++) {
-					JSONObject relateObj = relateContacts.getJSONObject(i);
-					boolean isSame = false;
-					for (int j = 0; j < contactLists.size(); j++) {
-						JSONObject contactObj = contactLists.getJSONObject(i);
+				if (relateContacts.size() != contactLists.size()) {
+					// 数量不相等
+					diffList.add(setDiffField("contacts", relateContacts, contactLists));
+					return diffList;
+				} else {
+					
+					for (int i = 0; i < relateContacts.size(); i++) {
+						JSONObject relateObj = relateContacts.getJSONObject(i);
+						boolean isSame = false;
+						for (int j = 0; j < contactLists.size(); j++) {
+							JSONObject contactObj = contactLists.getJSONObject(i);
 
-						// 判断联系方式和联系方式类型，如果相同，判断优先选择
-						if (isStringSame(relateObj.getString("number"), contactObj.getString("number"))
-								&& relateObj.getInt("type") == contactObj.getInt("type")) {
-							if (relateObj.getInt("priority") == contactObj.getInt("priority")) {
-								isSame = true;
-								break;
+							// 判断联系方式和联系方式类型，如果相同，判断优先选择
+							if (isStringSame(relateObj.getString("number"), contactObj.getString("number"))
+									&& relateObj.getInt("type") == contactObj.getInt("type")) {
+								if (relateObj.getInt("priority") == contactObj.getInt("priority")) {
+									isSame = true;
+									break;
+								}
 							}
+						} // 内层for
+						if(!isSame){
+							diffList.add(setDiffField("contacts", relateContacts, contactLists));
+							return diffList;
 						}
-					} // 内层for
-					if(!isSame){
-						diffList.add(setDiffField("contacts", relateContacts, contactLists));
-						return diffList;
-					}
-				} // 外层for
-			}
-		} // 外层else
-
+					} // 外层for
+				}
+			} // 外层else
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
+		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiBusinessTime(JSONObject mongoPoi, JSONArray orcleBusinessTimes){
-		JSONArray mongoBusinessTimes = mongoPoi.getJSONArray("businessTime");
-		if (mongoBusinessTimes.size() != orcleBusinessTimes.size()){
-			// 数量不相等
-			List<DiffField> diffResult = new ArrayList<DiffField>();
-			diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
-			return diffResult;
-		}else{
-			for (int i=0;i<mongoBusinessTimes.size();i++) {
-				boolean isSame = false;
-				JSONObject mongoBusinessTime = mongoBusinessTimes.getJSONObject(i);
-				for (int j=0;j<orcleBusinessTimes.size();j++){
-					JSONObject orcleBusinessTime = orcleBusinessTimes.getJSONObject(j);
-					//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
-					//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
-					if (isStringSame(mongoBusinessTime.getString("validWeek"),orcleBusinessTime.getString("validWeek")) &&
-							isStringSame(mongoBusinessTime.getString("weekStartMonth"),orcleBusinessTime.getString("weekStartMonth")) &&
-						    isStringSame(mongoBusinessTime.getString("timeDuration"),orcleBusinessTime.getString("timeDuration")) &&
-						    isStringSame(mongoBusinessTime.getString("timeStart"),orcleBusinessTime.getString("timeStart")) &&
-							isStringSame(mongoBusinessTime.getString("monEnd"),orcleBusinessTime.getString("monEnd")) &&
-							isStringSame(mongoBusinessTime.getString("weekStartYear"),orcleBusinessTime.getString("weekStartYear")) &&
-							isStringSame(mongoBusinessTime.getString("monStart"),orcleBusinessTime.getString("monStart")) &&
-						    isStringSame(mongoBusinessTime.getString("dayEnd"),orcleBusinessTime.getString("dayEnd")) &&
-							isStringSame(mongoBusinessTime.getString("weekEndYear"),orcleBusinessTime.getString("weekEndYear")) &&
-							isStringSame(mongoBusinessTime.getString("dayStart"),orcleBusinessTime.getString("dayStart")) &&
-						    isStringSame(mongoBusinessTime.getString("weekEndMonth"),orcleBusinessTime.getString("weekEndMonth"))){
-						isSame = true;
-						break;
+		try {
+			JSONArray mongoBusinessTimes = mongoPoi.getJSONArray("businessTime");
+			if (mongoBusinessTimes.size() != orcleBusinessTimes.size()){
+				// 数量不相等
+				List<DiffField> diffResult = new ArrayList<DiffField>();
+				diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
+				return diffResult;
+			}else{
+				for (int i=0;i<mongoBusinessTimes.size();i++) {
+					boolean isSame = false;
+					JSONObject mongoBusinessTime = mongoBusinessTimes.getJSONObject(i);
+					for (int j=0;j<orcleBusinessTimes.size();j++){
+						JSONObject orcleBusinessTime = orcleBusinessTimes.getJSONObject(j);
+						//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
+						//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
+						if (isStringSame(mongoBusinessTime.getString("validWeek"),orcleBusinessTime.getString("validWeek")) &&
+								isStringSame(mongoBusinessTime.getString("weekStartMonth"),orcleBusinessTime.getString("weekStartMonth")) &&
+							    isStringSame(mongoBusinessTime.getString("timeDuration"),orcleBusinessTime.getString("timeDuration")) &&
+							    isStringSame(mongoBusinessTime.getString("timeStart"),orcleBusinessTime.getString("timeStart")) &&
+								isStringSame(mongoBusinessTime.getString("monEnd"),orcleBusinessTime.getString("monEnd")) &&
+								isStringSame(mongoBusinessTime.getString("weekStartYear"),orcleBusinessTime.getString("weekStartYear")) &&
+								isStringSame(mongoBusinessTime.getString("monStart"),orcleBusinessTime.getString("monStart")) &&
+							    isStringSame(mongoBusinessTime.getString("dayEnd"),orcleBusinessTime.getString("dayEnd")) &&
+								isStringSame(mongoBusinessTime.getString("weekEndYear"),orcleBusinessTime.getString("weekEndYear")) &&
+								isStringSame(mongoBusinessTime.getString("dayStart"),orcleBusinessTime.getString("dayStart")) &&
+							    isStringSame(mongoBusinessTime.getString("weekEndMonth"),orcleBusinessTime.getString("weekEndMonth"))){
+							isSame = true;
+							break;
+						}
+					}	
+					if (!isSame){
+						List<DiffField> diffResult = new ArrayList<DiffField>();
+						diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
+						return diffResult;
 					}
-				}	
-				if (!isSame){
-					List<DiffField> diffResult = new ArrayList<DiffField>();
-					diffResult.add(setDiffField("businessTime", mongoBusinessTimes, orcleBusinessTimes));
-					return diffResult;
 				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiAddress(JSONObject mongoPoi, JSONArray orcleAddresses){
-		JSONArray mongoAddresses = mongoPoi.getJSONArray("addresses");
-		if (mongoAddresses.size() != orcleAddresses.size()){
-			// 数量不相等
-			List<DiffField> diffResult = new ArrayList<DiffField>();
-			diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
-			return diffResult;
-		}else{
-			
-			for (int i=0;i<mongoAddresses.size();i++) {
-				boolean isSame = false;
-				JSONObject mongoAddress = mongoAddresses.getJSONObject(i);
-				for (int j=0;j<orcleAddresses.size();j++){
-					JSONObject orcleAddress = orcleAddresses.getJSONObject(j);
-					//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
-					//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
-					if (isStringSame(mongoAddress.getString("langCode"),orcleAddress.getString("langCode")) &&
-							isStringSame(mongoAddress.getString("fullName"),orcleAddress.getString("fullName")) &&
-						    isStringSame(mongoAddress.getString("fullNamePinyin"),orcleAddress.getString("fullNamePinyin")) &&
-						    isStringSame(mongoAddress.getString("roadName"),orcleAddress.getString("roadName")) &&
-							isStringSame(mongoAddress.getString("roadNamePinyin"),orcleAddress.getString("roadNamePinyin")) &&
-							isStringSame(mongoAddress.getString("addrName"),orcleAddress.getString("addrName")) &&
-						    isStringSame(mongoAddress.getString("addrNamePinyin"),orcleAddress.getString("addrNamePinyin"))){
-						isSame = true;
-						break;
+		try {
+			JSONArray mongoAddresses = mongoPoi.getJSONArray("addresses");
+			if (mongoAddresses.size() != orcleAddresses.size()){
+				// 数量不相等
+				List<DiffField> diffResult = new ArrayList<DiffField>();
+				diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
+				return diffResult;
+			}else{
+				
+				for (int i=0;i<mongoAddresses.size();i++) {
+					boolean isSame = false;
+					JSONObject mongoAddress = mongoAddresses.getJSONObject(i);
+					for (int j=0;j<orcleAddresses.size();j++){
+						JSONObject orcleAddress = orcleAddresses.getJSONObject(j);
+						//如果数量相同，但是逻辑主键“poi_pid,fullname,lang_code”不同，则不同；
+						//否则，判断逻辑主键之外的字段不同（name,u_record,u_fields,u_date,row_id除外），则不同；
+						if (isStringSame(mongoAddress.getString("langCode"),orcleAddress.getString("langCode")) &&
+								isStringSame(mongoAddress.getString("fullName"),orcleAddress.getString("fullName")) &&
+							    isStringSame(mongoAddress.getString("fullNamePinyin"),orcleAddress.getString("fullNamePinyin")) &&
+							    isStringSame(mongoAddress.getString("roadName"),orcleAddress.getString("roadName")) &&
+								isStringSame(mongoAddress.getString("roadNamePinyin"),orcleAddress.getString("roadNamePinyin")) &&
+								isStringSame(mongoAddress.getString("addrName"),orcleAddress.getString("addrName")) &&
+							    isStringSame(mongoAddress.getString("addrNamePinyin"),orcleAddress.getString("addrNamePinyin"))){
+							isSame = true;
+							break;
+						}
+					}	
+					if (!isSame){
+						List<DiffField> diffResult = new ArrayList<DiffField>();
+						diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
+						return diffResult;
 					}
-				}	
-				if (!isSame){
-					List<DiffField> diffResult = new ArrayList<DiffField>();
-					diffResult.add(setDiffField("addresses", mongoAddresses, orcleAddresses));
-					return diffResult;
 				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiNames(JSONObject mongoPoi, JSONArray orcleNames){
-		JSONArray mongoNames = mongoPoi.getJSONArray("names");
-		if (mongoNames.size() != orcleNames.size()){
-			// 数量不相等
-			List<DiffField> diffResult = new ArrayList<DiffField>();
-			diffResult.add(setDiffField("names", mongoNames, orcleNames));
-			return diffResult;
-		}else{
-			
-			for (int i=0;i<mongoNames.size();i++) {
-				boolean isSame = false;
-				JSONObject mongoName = mongoNames.getJSONObject(i);
-				for (int j=0;j<orcleNames.size();j++){
-					JSONObject orcleName = orcleNames.getJSONObject(j);
-					//如果数量相同，但是包含的逻辑主键 “poi_pid,name_class,name_type,lang_code,name” 不相同，则不同；
-					//如果mongo，oracle 的““poi_pid,name_class,name_type,lang_code,name”” 相同，
-					//但是“name_phonetic或者name-groupid”不同，则不同
-					if (mongoName.getInt("nameClass")==orcleName.getInt("nameClass") && 
-							mongoName.getInt("type")==orcleName.getInt("type") && 
-							isStringSame(mongoName.getString("langCode"),orcleName.getString("langCode")) &&
-							isStringSame(mongoName.getString("nameStr"),orcleName.getString("nameStr"))){
-						if (isStringSame(mongoName.getString("nameStrPinyin"),orcleName.getString("nameStrPinyin")) || mongoName.getInt("nameGrpId")==orcleName.getInt("nameGrpId")){
-							isSame = true;
-							break;
+		try {
+			JSONArray mongoNames = mongoPoi.getJSONArray("names");
+			if (mongoNames.size() != orcleNames.size()){
+				// 数量不相等
+				List<DiffField> diffResult = new ArrayList<DiffField>();
+				diffResult.add(setDiffField("names", mongoNames, orcleNames));
+				return diffResult;
+			}else{
+				for (int i=0;i<mongoNames.size();i++) {
+					boolean isSame = false;
+					JSONObject mongoName = mongoNames.getJSONObject(i);
+					for (int j=0;j<orcleNames.size();j++){
+						JSONObject orcleName = orcleNames.getJSONObject(j);
+						//如果数量相同，但是包含的逻辑主键 “poi_pid,name_class,name_type,lang_code,name” 不相同，则不同；
+						//如果mongo，oracle 的““poi_pid,name_class,name_type,lang_code,name”” 相同，
+						//但是“name_phonetic或者name-groupid”不同，则不同
+						if (mongoName.getInt("nameClass")==orcleName.getInt("nameClass") && 
+								mongoName.getInt("type")==orcleName.getInt("type") && 
+								isStringSame(mongoName.getString("langCode"),orcleName.getString("langCode")) &&
+								isStringSame(mongoName.getString("nameStr"),orcleName.getString("nameStr"))){
+							if (isStringSame(mongoName.getString("nameStrPinyin"),orcleName.getString("nameStrPinyin")) || mongoName.getInt("nameGrpId")==orcleName.getInt("nameGrpId")){
+								isSame = true;
+								break;
+							}
 						}
 					}
-				}
-				if (!isSame){
-					List<DiffField> diffResult = new ArrayList<DiffField>();
-					diffResult.add(setDiffField("names", mongoNames, orcleNames));
-					return diffResult;
+					if (!isSame){
+						List<DiffField> diffResult = new ArrayList<DiffField>();
+						diffResult.add(setDiffField("names", mongoNames, orcleNames));
+						return diffResult;
+					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	private List<DiffField> diffIxPoiParent(JSONObject mongoPoi, String parentFid) {
-		JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
-		if (relateParent == null || relateParent.isEmpty() || !relateParent.containsKey("parentFid") || relateParent.getString("parentFid") == null) {
-			List<DiffField> diffList = new ArrayList<DiffField>();
-			diffList.add(setDiffField("relateParent",null,parentFid));
-			return diffList;
-		} else {
-			String mongoParentFid = relateParent.getString("parentFid");
-			if (!mongoParentFid.equals(parentFid)) {
+		try {
+			JSONObject relateParent = mongoPoi.getJSONObject("relateParent");
+			if (relateParent == null || relateParent.isEmpty() || !relateParent.containsKey("parentFid") || relateParent.getString("parentFid") == null) {
 				List<DiffField> diffList = new ArrayList<DiffField>();
-				diffList.add(setDiffField("relateParent",mongoParentFid,parentFid));
+				diffList.add(setDiffField("relateParent",null,parentFid));
 				return diffList;
+			} else {
+				String mongoParentFid = relateParent.getString("parentFid");
+				if (!mongoParentFid.equals(parentFid)) {
+					List<DiffField> diffList = new ArrayList<DiffField>();
+					diffList.add(setDiffField("relateParent",mongoParentFid,parentFid));
+					return diffList;
+				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiChildren(JSONObject mongoPoi, List<String> childFids) {
-		JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
-		if (relateChildren.size() == 0) {
-			List<DiffField> diffList = new ArrayList<DiffField>();
-			diffList.add(setDiffField("relateChildren",null,childFids));
-			return diffList;
-		} else {
-			if (relateChildren.size() != childFids.size()) {
-				// 数量不相等
+		try {
+			JSONArray relateChildren = mongoPoi.getJSONArray("relateChildren");
+			if (relateChildren.size() == 0) {
 				List<DiffField> diffList = new ArrayList<DiffField>();
-				diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+				diffList.add(setDiffField("relateChildren",null,childFids));
 				return diffList;
 			} else {
-				for (int i=0;i<relateChildren.size();i++) {
-					// 判断fid是否相等
-					JSONObject childObj = relateChildren.getJSONObject(i);
-					if (!childObj.containsKey("childFid")) {
-						List<DiffField> diffList = new ArrayList<DiffField>();
-						diffList.add(setDiffField("relateChildren",relateChildren,childFids));
-						return diffList;
-					}
-					String childFid = childObj.getString("childFid");
-					if (!childFids.contains(childFid)) {
-						List<DiffField> diffList = new ArrayList<DiffField>();
-						diffList.add(setDiffField("relateChildren",relateChildren,childFids));
-						return diffList;
+				if (relateChildren.size() != childFids.size()) {
+					// 数量不相等
+					List<DiffField> diffList = new ArrayList<DiffField>();
+					diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+					return diffList;
+				} else {
+					for (int i=0;i<relateChildren.size();i++) {
+						// 判断fid是否相等
+						JSONObject childObj = relateChildren.getJSONObject(i);
+						if (!childObj.containsKey("childFid")) {
+							List<DiffField> diffList = new ArrayList<DiffField>();
+							diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+							return diffList;
+						}
+						String childFid = childObj.getString("childFid");
+						if (!childFids.contains(childFid)) {
+							List<DiffField> diffList = new ArrayList<DiffField>();
+							diffList.add(setDiffField("relateChildren",relateChildren,childFids));
+							return diffList;
+						}
 					}
 				}
 			}
+		} catch (Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
-		private List<DiffField> diffIxPoiChargingStation(JSONObject mongoPoi, JSONObject chargingStation) throws Exception {
-		JSONObject chargingStationObj = mongoPoi.getJSONObject("chargingStation");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("chargingStation",chargingStationObj,chargingStation));
-		if (chargingStationObj.isNullObject() || chargingStationObj.isEmpty()) {
-			return diffList;
-		} else {
-			if (chargingStationObj.getInt("type") != chargingStation.getInt("chargingType") || !isStringSame(chargingStationObj.getString("changeBrands"),chargingStation.getString("changeBrands"))
-				|| !isStringSame(chargingStationObj.getString("changeOpenType"),chargingStation.getString("changeOpenType")) || chargingStationObj.getInt("chargingNum") != chargingStation.getInt("chargingNum") 
-				|| !isStringSame(chargingStationObj.getString("servicePro"),chargingStation.getString("serviceProv")) || !isStringSame(chargingStationObj.getString("openHour"),chargingStation.getString("openHour"))
-				|| chargingStationObj.getInt("parkingFees") != chargingStation.getInt("parkingFees") || !isStringSame(chargingStationObj.getString("parkingInfo"),chargingStation.getString("parkingInfo"))
-				|| chargingStationObj.getInt("availableState") != chargingStation.getInt("availableState")) {
+	private List<DiffField> diffIxPoiChargingStation(JSONObject mongoPoi, JSONObject chargingStation) throws Exception {
+		try {
+			JSONObject chargingStationObj = mongoPoi.getJSONObject("chargingStation");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("chargingStation",chargingStationObj,chargingStation));
+			if (chargingStationObj.isNullObject() || chargingStationObj.isEmpty()) {
 				return diffList;
+			} else {
+				if (chargingStationObj.getInt("type") != chargingStation.getInt("chargingType") || !isStringSame(chargingStationObj.getString("changeBrands"),chargingStation.getString("changeBrands"))
+					|| !isStringSame(chargingStationObj.getString("changeOpenType"),chargingStation.getString("changeOpenType")) || chargingStationObj.getInt("chargingNum") != chargingStation.getInt("chargingNum") 
+					|| !isStringSame(chargingStationObj.getString("servicePro"),chargingStation.getString("serviceProv")) || !isStringSame(chargingStationObj.getString("openHour"),chargingStation.getString("openHour"))
+					|| chargingStationObj.getInt("parkingFees") != chargingStation.getInt("parkingFees") || !isStringSame(chargingStationObj.getString("parkingInfo"),chargingStation.getString("parkingInfo"))
+					|| chargingStationObj.getInt("availableState") != chargingStation.getInt("availableState")) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiChargingPlots(JSONObject mongoPoi, JSONArray chargingPlots) throws Exception {
-		JSONArray chargingPole = mongoPoi.getJSONArray("chargingPole");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("chargingPole",chargingPole,chargingPlots));
-		if (chargingPole.size() != chargingPlots.size()) {
-			// 数量不相等
-			return diffList;
-		} else {
-			for (int i=0;i<chargingPole.size();i++) {
-				boolean flag = true;
-				JSONObject poleObj = chargingPole.getJSONObject(i);
-				for (int j=0;j<chargingPlots.size();j++) {
-					JSONObject plotsObj = chargingPlots.getJSONObject(j);
-					if (isStringSame(poleObj.getString("plugType"),plotsObj.getString("plugType")) && isStringSame(poleObj.getString("productNum"),plotsObj.getString("productNum"))
-						&& isStringSame(poleObj.getString("power"),plotsObj.getString("power")) && poleObj.getInt("floor") == plotsObj.getInt("floor")
-						&& isStringSame(poleObj.getString("factoryNum"),plotsObj.getString("factoryNum")) && poleObj.getInt("locationType") == plotsObj.getInt("locationType")
-						&& isStringSame(poleObj.getString("parkingNum"),plotsObj.getString("parkingNum")) && poleObj.getInt("acdc") == plotsObj.getInt("acdc")
-						&& isStringSame(poleObj.getString("payment"),plotsObj.getString("payment")) && isStringSame(poleObj.getString("current"),plotsObj.getString("current"))
-						&& isStringSame(poleObj.getString("plotNum"),plotsObj.getString("plotNum")) && poleObj.getInt("plugNum") == plotsObj.getInt("plugNum")
-						&& poleObj.getInt("mode") == plotsObj.getInt("mode") && isStringSame(poleObj.getString("prices"),plotsObj.getString("prices"))
-						&& isStringSame(poleObj.getString("openType"),plotsObj.getString("openType")) && poleObj.getInt("availableState") == plotsObj.getInt("availableState")
-						&& isStringSame(poleObj.getString("manufacturer"),plotsObj.getString("manufacturer")) && poleObj.getInt("voltage") == plotsObj.getInt("voltage")) {
-						flag = false;
-						break;
+		try {
+			JSONArray chargingPole = mongoPoi.getJSONArray("chargingPole");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("chargingPole",chargingPole,chargingPlots));
+			if (chargingPole.size() != chargingPlots.size()) {
+				// 数量不相等
+				return diffList;
+			} else {
+				for (int i=0;i<chargingPole.size();i++) {
+					boolean flag = true;
+					JSONObject poleObj = chargingPole.getJSONObject(i);
+					for (int j=0;j<chargingPlots.size();j++) {
+						JSONObject plotsObj = chargingPlots.getJSONObject(j);
+						if (isStringSame(poleObj.getString("plugType"),plotsObj.getString("plugType")) && isStringSame(poleObj.getString("productNum"),plotsObj.getString("productNum"))
+							&& isStringSame(poleObj.getString("power"),plotsObj.getString("power")) && poleObj.getInt("floor") == plotsObj.getInt("floor")
+							&& isStringSame(poleObj.getString("factoryNum"),plotsObj.getString("factoryNum")) && poleObj.getInt("locationType") == plotsObj.getInt("locationType")
+							&& isStringSame(poleObj.getString("parkingNum"),plotsObj.getString("parkingNum")) && poleObj.getInt("acdc") == plotsObj.getInt("acdc")
+							&& isStringSame(poleObj.getString("payment"),plotsObj.getString("payment")) && isStringSame(poleObj.getString("current"),plotsObj.getString("current"))
+							&& isStringSame(poleObj.getString("plotNum"),plotsObj.getString("plotNum")) && poleObj.getInt("plugNum") == plotsObj.getInt("plugNum")
+							&& poleObj.getInt("mode") == plotsObj.getInt("mode") && isStringSame(poleObj.getString("prices"),plotsObj.getString("prices"))
+							&& isStringSame(poleObj.getString("openType"),plotsObj.getString("openType")) && poleObj.getInt("availableState") == plotsObj.getInt("availableState")
+							&& isStringSame(poleObj.getString("manufacturer"),plotsObj.getString("manufacturer")) && poleObj.getInt("voltage") == plotsObj.getInt("voltage")) {
+							flag = false;
+							break;
+						}
+					}
+					if (flag) {
+						return diffList;
 					}
 				}
-				if (flag) {
-					return diffList;
-				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiGasStation(JSONObject mongoPoi, JSONObject gasStationObj) throws Exception {
-		JSONObject gasStation = mongoPoi.getJSONObject("gasStation");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("gasStation",gasStation,gasStationObj));
-		if (gasStation.isNullObject() || gasStation.isEmpty()) {
-			return diffList;
-		} else {
-			if (!isStringSame(gasStation.getString("servicePro"),gasStationObj.getString("servicePro")) || !isStringSame(gasStation.getString("service"),gasStationObj.getString("service"))
-				|| !isStringSame(gasStation.getString("openHour"),gasStationObj.getString("openHour")) || !isStringSame(gasStation.getString("egType"),gasStationObj.getString("egType")) 
-				|| !isStringSame(gasStation.getString("fuelType"),gasStationObj.getString("fuelType")) || !isStringSame(gasStation.getString("payment"),gasStationObj.getString("payment"))
-				|| !isStringSame(gasStation.getString("mgType"),gasStationObj.getString("mgType")) || !isStringSame(gasStation.getString("oilType"),gasStationObj.getString("oilType"))) {
+		try {
+			JSONObject gasStation = mongoPoi.getJSONObject("gasStation");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("gasStation",gasStation,gasStationObj));
+			if (gasStation.isNullObject() || gasStation.isEmpty()) {
 				return diffList;
+			} else {
+				if (!isStringSame(gasStation.getString("servicePro"),gasStationObj.getString("servicePro")) || !isStringSame(gasStation.getString("service"),gasStationObj.getString("service"))
+					|| !isStringSame(gasStation.getString("openHour"),gasStationObj.getString("openHour")) || !isStringSame(gasStation.getString("egType"),gasStationObj.getString("egType")) 
+					|| !isStringSame(gasStation.getString("fuelType"),gasStationObj.getString("fuelType")) || !isStringSame(gasStation.getString("payment"),gasStationObj.getString("payment"))
+					|| !isStringSame(gasStation.getString("mgType"),gasStationObj.getString("mgType")) || !isStringSame(gasStation.getString("oilType"),gasStationObj.getString("oilType"))) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiAttraction(JSONObject mongoPoi, JSONObject attractionObj) throws Exception {
-		JSONObject attraction = mongoPoi.getJSONObject("attraction");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("attraction",attraction,attractionObj));
-		if (attraction.isNullObject() || attraction.isEmpty()) {
-			return diffList;
-		} else {
-			if (!isStringSame(attraction.getString("ticketPrice"),attractionObj.getString("ticketPrice")) || attraction.getInt("sightLevel") != attractionObj.getInt("sightLevel")
-				|| !isStringSame(attraction.getString("openHour"),attractionObj.getString("openHour")) || !isStringSame(attraction.getString("description"),attractionObj.getString("description"))
-				|| attraction.getInt("parking") != attractionObj.getInt("parking")) {
+		try {
+			JSONObject attraction = mongoPoi.getJSONObject("attraction");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("attraction",attraction,attractionObj));
+			if (attraction.isNullObject() || attraction.isEmpty()) {
 				return diffList;
+			} else {
+				if (!isStringSame(attraction.getString("ticketPrice"),attractionObj.getString("ticketPrice")) || attraction.getInt("sightLevel") != attractionObj.getInt("sightLevel")
+					|| !isStringSame(attraction.getString("openHour"),attractionObj.getString("openHour")) || !isStringSame(attraction.getString("description"),attractionObj.getString("description"))
+					|| attraction.getInt("parking") != attractionObj.getInt("parking")) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiRental(JSONObject mongoPoi, JSONObject rentalObj) throws Exception {
-		JSONObject rental = mongoPoi.getJSONObject("rental");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("rental",rental,rentalObj));
-		if (rental.isNullObject() || rental.isEmpty()) {
-			return diffList;
-		} else {
-			if (!isStringSame(rental.getString("openHour"),rentalObj.getString("openHour")) || !isStringSame(rental.getString("adressDes"),rentalObj.getString("adressDes"))
-				|| !isStringSame(rental.getString("howToGo"),rentalObj.getString("howToGo"))) {
+		try {
+			JSONObject rental = mongoPoi.getJSONObject("rental");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("rental",rental,rentalObj));
+			if (rental.isNullObject() || rental.isEmpty()) {
 				return diffList;
+			} else {
+				if (!isStringSame(rental.getString("openHour"),rentalObj.getString("openHour")) || !isStringSame(rental.getString("adressDes"),rentalObj.getString("adressDes"))
+					|| !isStringSame(rental.getString("howToGo"),rentalObj.getString("howToGo"))) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiHospital(JSONObject mongoPoi, JSONObject hospitalObj) throws Exception {
-		JSONObject hospital = mongoPoi.getJSONObject("hospital");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("hospital",hospital,hospitalObj));
-		if (hospital.isNullObject() || hospital.isEmpty()) {
-			return diffList;
-		} else {
-			if (hospital.getInt("rating") != hospitalObj.getInt("rating")) {
+		try {
+			JSONObject hospital = mongoPoi.getJSONObject("hospital");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("hospital",hospital,hospitalObj));
+			if (hospital.isNullObject() || hospital.isEmpty()) {
 				return diffList;
+			} else {
+				if (hospital.getInt("rating") != hospitalObj.getInt("rating")) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiHotel(JSONObject mongoPoi, JSONObject hotelPoi) throws Exception {
-		JSONObject relateHotel = mongoPoi.getJSONObject("hotel");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("hotel", relateHotel, hotelPoi));
-		
-		if (relateHotel.isNullObject() || relateHotel.isEmpty()) {
-			return diffList;
-		} else {
-			if (relateHotel.getInt("rating") != hotelPoi.getInt("rating")
-					|| !isStringSame(relateHotel.getString("description"), hotelPoi.getString("description"))
-					|| !isStringSame(relateHotel.getString("service"), hotelPoi.getString("service"))
-					|| !isStringSame(relateHotel.getString("roomType"), hotelPoi.getString("roomType"))
-					|| relateHotel.getInt("parking") != hotelPoi.getInt("parking")
-					|| relateHotel.getInt("roomCount") != relateHotel.getInt("roomCount")
-					|| !isStringSame(relateHotel.getString("openHour"), hotelPoi.getString("openHour"))
-					|| !isStringSame(relateHotel.getString("checkOutTime"), hotelPoi.getString("checkOutTime"))
-					|| !isStringSame(relateHotel.getString("creditCards"), hotelPoi.getString("creditCards"))
-					|| !isStringSame(relateHotel.getString("checkInTime"), hotelPoi.getString("checkInTime"))
-					|| relateHotel.getInt("breakfast") != hotelPoi.getInt("breakfast")
-					|| !isStringSame(relateHotel.getString("roomPrice"), hotelPoi.getString("roomPrice"))) {
+		try {
+			JSONObject relateHotel = mongoPoi.getJSONObject("hotel");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("hotel", relateHotel, hotelPoi));
+			
+			if (relateHotel.isNullObject() || relateHotel.isEmpty()) {
 				return diffList;
+			} else {
+				if (relateHotel.getInt("rating") != hotelPoi.getInt("rating")
+						|| !isStringSame(relateHotel.getString("description"), hotelPoi.getString("description"))
+						|| !isStringSame(relateHotel.getString("service"), hotelPoi.getString("service"))
+						|| !isStringSame(relateHotel.getString("roomType"), hotelPoi.getString("roomType"))
+						|| relateHotel.getInt("parking") != hotelPoi.getInt("parking")
+						|| relateHotel.getInt("roomCount") != relateHotel.getInt("roomCount")
+						|| !isStringSame(relateHotel.getString("openHour"), hotelPoi.getString("openHour"))
+						|| !isStringSame(relateHotel.getString("checkOutTime"), hotelPoi.getString("checkOutTime"))
+						|| !isStringSame(relateHotel.getString("creditCards"), hotelPoi.getString("creditCards"))
+						|| !isStringSame(relateHotel.getString("checkInTime"), hotelPoi.getString("checkInTime"))
+						|| relateHotel.getInt("breakfast") != hotelPoi.getInt("breakfast")
+						|| !isStringSame(relateHotel.getString("roomPrice"), hotelPoi.getString("roomPrice"))) {
+					return diffList;
+				}
 			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiFresh(JSONObject mongoPoi, int orcleFresh) throws Exception {
-		int mongoFresh = mongoPoi.getInt("freshnessVerification");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("freshnessVerification", mongoFresh, orcleFresh));
-		if (mongoFresh != orcleFresh) {
-			return diffList;
+		try {
+			int mongoFresh = mongoPoi.getInt("freshnessVerification");
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			diffList.add(setDiffField("freshnessVerification", mongoFresh, orcleFresh));
+			if (mongoFresh != orcleFresh) {
+				return diffList;
+			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
 	
 	private List<DiffField> diffIxPoiRawFieldsResult(JSONObject mongoPoi, String orcleRawFields) throws Exception {
-		String mongoRawFields = mongoPoi.getString("rawFields");
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		diffList.add(setDiffField("rawFields", mongoRawFields, orcleRawFields));
-		if (!isStringSame(mongoRawFields, orcleRawFields)) {
-			return diffList;
+		try {
+			if (mongoPoi.containsKey("rawFields")) {
+				String mongoRawFields = mongoPoi.getString("rawFields");
+				List<DiffField> diffList = new ArrayList<DiffField>();
+				diffList.add(setDiffField("rawFields", mongoRawFields, orcleRawFields));
+				if (!isStringSame(mongoRawFields, orcleRawFields)) {
+					return diffList;
+				}
+			}
+		} catch(Exception e) {
+			logger.error(e);
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -899,122 +994,128 @@ public class SampleDataDiffer {
         return flag;
     }
 	private List<DiffField> diffIxPoi(JSONObject mongoPoi, JSONObject orcleIxPoi) {
-		// TODO Auto-generated method stub
-		List<DiffField> diffList = new ArrayList<DiffField>();
-		JSONObject mongoLocation = mongoPoi.getJSONObject("location");
-		JSONObject orcleLocation = orcleIxPoi.getJSONObject("location");
-		if((mongoLocation.getDouble("longitude")!=orcleLocation.getDouble("longitude")) || (mongoLocation.getDouble("latitude")!=orcleLocation.getDouble("latitude"))){
-			diffList.add(setDiffField("location", mongoLocation, orcleLocation));
-		}
-		String mongoMeshId = mongoPoi.getString("meshid");
-		String oracleMeshId = orcleIxPoi.getString("meshid");
-		if (!isStringSame(mongoMeshId, oracleMeshId)){
-			diffList.add(setDiffField("meshid", mongoMeshId, oracleMeshId));
-		}
-		String mongoPostCode = mongoPoi.getString("postCode");
-		String orclePostCode = orcleIxPoi.getString("postCode");
-		if (!isStringSame(mongoPostCode, orclePostCode)){
-			diffList.add(setDiffField("postCode", mongoPostCode, orclePostCode));
-		}
-		String mongoKindCode = mongoPoi.getString("kindCode");
-		String orcleKindCode = orcleIxPoi.getString("kindCode");
-		if (!isStringSame(mongoKindCode, orcleKindCode)){
-			diffList.add(setDiffField("kindCode", mongoKindCode, orcleKindCode));
-		}
-		String mongoLevel = mongoPoi.getString("level");
-		String orcleLevel = orcleIxPoi.getString("level");
-		if (!isStringSame(mongoLevel, orcleLevel)){
-			diffList.add(setDiffField("level",mongoLevel, orcleLevel));
-		}
-		int mongoOpen24H = mongoPoi.getInt("open24H");
-		int orcleOpen24H = orcleIxPoi.getInt("open24H");
-		if (mongoOpen24H != orcleOpen24H){
-			diffList.add(setDiffField("open24H",mongoOpen24H, orcleOpen24H));
-		}
-		int mongoAdminReal = mongoPoi.getInt("adminReal");
-		int orcleAdminReal = orcleIxPoi.getInt("adminReal");
-		if (mongoAdminReal != orcleAdminReal){
-			diffList.add(setDiffField("adminReal",mongoAdminReal, orcleAdminReal));
-		}
-		int mongoImportance = mongoPoi.getInt("importance");
-		int orcleImportance = orcleIxPoi.getInt("importance");
-		if (mongoImportance != orcleImportance){
-			diffList.add(setDiffField("importance",mongoImportance, orcleImportance));
-		}
-		String mongoAirPort = mongoPoi.getString("airportCode");
-		String orcleAirPort = orcleIxPoi.getString("airportCode");
-		if (!isStringSame(mongoAirPort, orcleAirPort)){
-			diffList.add(setDiffField("airportCode",mongoAirPort, orcleAirPort));
-		}
-		String mongoVipFlag = mongoPoi.getString("vipFlag");
-		String orcleVipFlag = orcleIxPoi.getString("vipFlag");
-		if (!isStringSame(mongoVipFlag, orcleVipFlag)){
-			diffList.add(setDiffField("vipFlag",mongoVipFlag, orcleVipFlag));
-		}
-		int mongoTruck = mongoPoi.getInt("truck");
-		int orcleTruck = orcleIxPoi.getInt("truck");
-		if (mongoTruck != orcleTruck){
-			diffList.add(setDiffField("truck",mongoTruck, orcleTruck));
-		}
-		JSONObject mongoSportsVenues = mongoPoi.getJSONObject("sportsVenues");
-		String orcleSportsVenues = orcleIxPoi.getString("sportsVenues");
-		if (mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")){
-			diffList.add(setDiffField("sportsVenues",null,orcleSportsVenues));
-		}else{
-			String sportsVenues = mongoSportsVenues.getString("buildingType");
-			if (!isStringSame(sportsVenues, orcleSportsVenues)){
-				diffList.add(setDiffField("sportsVenues",sportsVenues,orcleSportsVenues));
+		try {
+			List<DiffField> diffList = new ArrayList<DiffField>();
+			JSONObject mongoLocation = mongoPoi.getJSONObject("location");
+			JSONObject orcleLocation = orcleIxPoi.getJSONObject("location");
+			if((mongoLocation.getDouble("longitude")!=orcleLocation.getDouble("longitude")) || (mongoLocation.getDouble("latitude")!=orcleLocation.getDouble("latitude"))){
+				diffList.add(setDiffField("location", mongoLocation, orcleLocation));
 			}
-		}
-		JSONObject mongoVerifyFlags = mongoPoi.getJSONObject("verifyFlags");
-		String orcleVerifyFlags = orcleIxPoi.getString("verifyFlags");
-		if (mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")){
-			diffList.add(setDiffField("verifyFlags",null,orcleVerifyFlags));
-		}else{
-			String verifyFlags = mongoVerifyFlags.getString("record");
-			if (!isStringSame(verifyFlags, orcleVerifyFlags)){
-				diffList.add(setDiffField("verifyFlags",verifyFlags,orcleVerifyFlags));
+			String mongoMeshId = mongoPoi.getString("meshid");
+			String oracleMeshId = orcleIxPoi.getString("meshid");
+			if (!isStringSame(mongoMeshId, oracleMeshId)){
+				diffList.add(setDiffField("meshid", mongoMeshId, oracleMeshId));
 			}
-		}
-		String mongoName = mongoPoi.getString("name");
-		String orcleName =  orcleIxPoi.getString("name");
-		if (!isStringSame(mongoName, orcleName)){
-			diffList.add(setDiffField("name",mongoName,orcleName));
-		}
-		String mongoAdd = mongoPoi.getString("address");
-		String orcleAdd =  orcleIxPoi.getString("address");
-		if (!isStringSame(mongoAdd, orcleAdd)){
-			diffList.add(setDiffField("address",mongoAdd,orcleAdd));
-		}
-		String mongoAdminCode = mongoPoi.getString("adminCode");
-		String orcleAdminCode =  orcleIxPoi.getString("adminCode");
-		if (!isStringSame(mongoAdminCode, orcleAdminCode)){
-			diffList.add(setDiffField("adminCode",mongoAdminCode,orcleAdminCode));
-		}
-		String mongoWebsite = mongoPoi.getString("website");
-		String orcleWebsite =  orcleIxPoi.getString("website");
-		if (!isStringSame(mongoWebsite, orcleWebsite)){
-			diffList.add(setDiffField("website",mongoWebsite,orcleWebsite));
-		}
-		int mongoHwEntryExit = mongoPoi.getInt("hwEntryExit");
-		int orcleHwEntryExit = orcleIxPoi.getInt("hwEntryExit");
-		if (mongoHwEntryExit != orcleHwEntryExit){
-			diffList.add(setDiffField("hwEntryExit",mongoHwEntryExit,orcleHwEntryExit));
-		}
-		String orcleChain = orcleIxPoi.getString("chain");
-		JSONArray mongoBrands = mongoPoi.getJSONArray("brands");
-		String mongoChain = "";
-		if (!mongoBrands.isEmpty()){
-			JSONObject jsonObj = mongoBrands.getJSONObject(0);
-			if(!jsonObj.isNullObject() && !jsonObj.isEmpty() && jsonObj.containsKey("code")){
-				mongoChain = jsonObj.getString("code");
-				if (!isStringSame(orcleChain, mongoChain)){
-					diffList.add(setDiffField("chain",mongoChain,orcleChain));
+			String mongoPostCode = mongoPoi.getString("postCode");
+			String orclePostCode = orcleIxPoi.getString("postCode");
+			if (!isStringSame(mongoPostCode, orclePostCode)){
+				diffList.add(setDiffField("postCode", mongoPostCode, orclePostCode));
+			}
+			String mongoKindCode = mongoPoi.getString("kindCode");
+			String orcleKindCode = orcleIxPoi.getString("kindCode");
+			if (!isStringSame(mongoKindCode, orcleKindCode)){
+				diffList.add(setDiffField("kindCode", mongoKindCode, orcleKindCode));
+			}
+			String mongoLevel = mongoPoi.getString("level");
+			String orcleLevel = orcleIxPoi.getString("level");
+			if (!isStringSame(mongoLevel, orcleLevel)){
+				diffList.add(setDiffField("level",mongoLevel, orcleLevel));
+			}
+			int mongoOpen24H = mongoPoi.getInt("open24H");
+			int orcleOpen24H = orcleIxPoi.getInt("open24H");
+			if (mongoOpen24H != orcleOpen24H){
+				diffList.add(setDiffField("open24H",mongoOpen24H, orcleOpen24H));
+			}
+			int mongoAdminReal = mongoPoi.getInt("adminReal");
+			int orcleAdminReal = orcleIxPoi.getInt("adminReal");
+			if (mongoAdminReal != orcleAdminReal){
+				diffList.add(setDiffField("adminReal",mongoAdminReal, orcleAdminReal));
+			}
+			int mongoImportance = mongoPoi.getInt("importance");
+			int orcleImportance = orcleIxPoi.getInt("importance");
+			if (mongoImportance != orcleImportance){
+				diffList.add(setDiffField("importance",mongoImportance, orcleImportance));
+			}
+			String mongoAirPort = mongoPoi.getString("airportCode");
+			String orcleAirPort = orcleIxPoi.getString("airportCode");
+			if (!isStringSame(mongoAirPort, orcleAirPort)){
+				diffList.add(setDiffField("airportCode",mongoAirPort, orcleAirPort));
+			}
+			String mongoVipFlag = mongoPoi.getString("vipFlag");
+			String orcleVipFlag = orcleIxPoi.getString("vipFlag");
+			if (!isStringSame(mongoVipFlag, orcleVipFlag)){
+				diffList.add(setDiffField("vipFlag",mongoVipFlag, orcleVipFlag));
+			}
+			int mongoTruck = mongoPoi.getInt("truck");
+			int orcleTruck = orcleIxPoi.getInt("truck");
+			if (mongoTruck != orcleTruck){
+				diffList.add(setDiffField("truck",mongoTruck, orcleTruck));
+			}
+			JSONObject mongoSportsVenues = mongoPoi.getJSONObject("sportsVenues");
+			String orcleSportsVenues = orcleIxPoi.getString("sportsVenues");
+			if (mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")){
+				diffList.add(setDiffField("sportsVenues",null,orcleSportsVenues));
+			}else{
+				String sportsVenues = mongoSportsVenues.getString("buildingType");
+				if (!isStringSame(sportsVenues, orcleSportsVenues)){
+					diffList.add(setDiffField("sportsVenues",sportsVenues,orcleSportsVenues));
 				}
 			}
+			JSONObject mongoVerifyFlags = mongoPoi.getJSONObject("verifyFlags");
+			String orcleVerifyFlags = orcleIxPoi.getString("verifyFlags");
+			if (mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")){
+				diffList.add(setDiffField("verifyFlags",null,orcleVerifyFlags));
+			}else{
+				String verifyFlags = mongoVerifyFlags.getString("record");
+				if (!isStringSame(verifyFlags, orcleVerifyFlags)){
+					diffList.add(setDiffField("verifyFlags",verifyFlags,orcleVerifyFlags));
+				}
+			}
+			String mongoName = mongoPoi.getString("name");
+			String orcleName =  orcleIxPoi.getString("name");
+			if (!isStringSame(mongoName, orcleName)){
+				diffList.add(setDiffField("name",mongoName,orcleName));
+			}
+			String mongoAdd = mongoPoi.getString("address");
+			String orcleAdd =  orcleIxPoi.getString("address");
+			if (!isStringSame(mongoAdd, orcleAdd)){
+				diffList.add(setDiffField("address",mongoAdd,orcleAdd));
+			}
+			String mongoAdminCode = mongoPoi.getString("adminCode");
+			String orcleAdminCode =  orcleIxPoi.getString("adminCode");
+			if (!isStringSame(mongoAdminCode, orcleAdminCode)){
+				diffList.add(setDiffField("adminCode",mongoAdminCode,orcleAdminCode));
+			}
+			String mongoWebsite = mongoPoi.getString("website");
+			String orcleWebsite =  orcleIxPoi.getString("website");
+			if (!isStringSame(mongoWebsite, orcleWebsite)){
+				diffList.add(setDiffField("website",mongoWebsite,orcleWebsite));
+			}
+			int mongoHwEntryExit = mongoPoi.getInt("hwEntryExit");
+			int orcleHwEntryExit = orcleIxPoi.getInt("hwEntryExit");
+			if (mongoHwEntryExit != orcleHwEntryExit){
+				diffList.add(setDiffField("hwEntryExit",mongoHwEntryExit,orcleHwEntryExit));
+			}
+			String orcleChain = orcleIxPoi.getString("chain");
+			JSONArray mongoBrands = mongoPoi.getJSONArray("brands");
+			String mongoChain = "";
+			if (!mongoBrands.isEmpty()){
+				JSONObject jsonObj = mongoBrands.getJSONObject(0);
+				if(!jsonObj.isNullObject() && !jsonObj.isEmpty() && jsonObj.containsKey("code")){
+					mongoChain = jsonObj.getString("code");
+					if (!isStringSame(orcleChain, mongoChain)){
+						diffList.add(setDiffField("chain",mongoChain,orcleChain));
+					}
+				}
+			}
+			return diffList;
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.error(e);
 		}
-		return diffList;
+		return null;
 	}
+	
 	private Map<String, JSONObject> queryIxPoiInDoor(Connection conn) throws Exception {
 		Map<String, JSONObject> IxPoiInDoorMap = new HashMap<String, JSONObject>();
 		StringBuilder sb = new StringBuilder();

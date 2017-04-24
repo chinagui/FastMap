@@ -5,7 +5,7 @@ import java.sql.Timestamp;
 public class Program {
 	private int programId;
 	private int cityId;
-	private String inforId;
+	private int inforId;
 	private int latest;
 	private int createUserId;
 	private String name;
@@ -36,10 +36,10 @@ public class Program {
 	public void setCityId(int cityId) {
 		this.cityId = cityId;
 	}
-	public String getInforId() {
+	public int getInforId() {
 		return inforId;
 	}
-	public void setInforId(String inforId) {
+	public void setInforId(int inforId) {
 		this.inforId = inforId;
 	}
 	public int getLatest() {

@@ -21,7 +21,7 @@ public class Infor  {
 	 */
 	
 
-	private String inforId ;
+	private Integer inforId ;
 	private String inforName;
 	private String geometry;
 	private Integer inforLevel;
@@ -55,10 +55,10 @@ public class Infor  {
 	public Infor (){
 	}
 	
-	public String getInforId() {
+	public int getInforId() {
 		return inforId;
 	}
-	public void setInforId(String inforId) {
+	public void setInforId(int inforId) {
 		this.inforId = inforId;
 	}
 	

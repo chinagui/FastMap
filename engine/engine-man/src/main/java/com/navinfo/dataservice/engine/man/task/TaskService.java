@@ -1781,23 +1781,40 @@ public class TaskService {
 	public Task queryByTaskId(Connection conn,int taskId) throws Exception {
 		try{
 			QueryRunner run=new QueryRunner();
-			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.DESCP,T.TYPE,T.PLAN_START_DATE,T.PLAN_END_DATE,");
-			sb.append("T.PRODUCE_PLAN_START_DATE,T.PRODUCE_PLAN_END_DATE,");
-			sb.append("T.LOT,T.POI_PLAN_TOTAL,T.ROAD_PLAN_TOTAL,");
-			sb.append("B.BLOCK_ID,B.BLOCK_NAME,B.WORK_PROPERTY,");
-			sb.append("P.PROGRAM_ID,P.NAME PROGRAM_NAME,P.TYPE PROGRAM_TYPE,");
-			sb.append("U.USER_ID,U.USER_REAL_NAME,");
-			sb.append("UG.GROUP_ID,UG.GROUP_NAME,t.region_id");
-			sb.append(" FROM TASK T,BLOCK B,PROGRAM P,USER_GROUP UG,USER_INFO U");
-			sb.append(" WHERE T.BLOCK_ID = B.BLOCK_ID(+)");
-			sb.append(" AND T.PROGRAM_ID = P.PROGRAM_ID");
-			sb.append(" AND T.GROUP_ID = UG.GROUP_ID(+)");
-			sb.append(" AND T.CREATE_USER_ID = U.USER_ID");
-			sb.append(" AND T.TASK_ID = " + taskId);
+			String sql="SELECT T.TASK_ID,"
+					+ "       T.NAME,"
+					+ "       T.STATUS,"
+					+ "       T.DESCP,"
+					+ "       T.TYPE,"
+					+ "       T.PLAN_START_DATE,"
+					+ "       T.PLAN_END_DATE,"
+					+ "       T.PRODUCE_PLAN_START_DATE,"
+					+ "       T.PRODUCE_PLAN_END_DATE,"
+					+ "       T.LOT,"
+					+ "       T.POI_PLAN_TOTAL,"
+					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       B.BLOCK_ID,"
+					+ "       B.BLOCK_NAME,"
+					+ "       B.WORK_PROPERTY,"
+					+ "       P.PROGRAM_ID,"
+					+ "       P.NAME                    PROGRAM_NAME,"
+					+ "       P.TYPE                    PROGRAM_TYPE,"
+					+ "       U.USER_ID,"
+					+ "       U.USER_REAL_NAME,"
+					+ "       UG.GROUP_ID,"
+					+ "       UG.GROUP_NAME,"
+					+ "       T.REGION_ID,"
+					+ "       I.METHOD,"
+					+ "       I.ADMIN_NAME"
+					+ "  FROM TASK T, BLOCK B, PROGRAM P, USER_GROUP UG, USER_INFO U, INFOR I"
+					+ " WHERE T.BLOCK_ID = B.BLOCK_ID(+)"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND P.INFOR_ID = I.INFOR_ID(+)"
+					+ "   AND T.GROUP_ID = UG.GROUP_ID(+)"
+					+ "   AND T.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.TASK_ID = "+taskId;
 			
-			log.info("queryByTaskId sql:" + sb.toString());
-			String selectSql= sb.toString();
+			log.info("queryByTaskId sql:" + sql);
 
 			ResultSetHandler<Task> rsHandler = new ResultSetHandler<Task>() {
 				public Task handle(ResultSet rs) throws SQLException {
@@ -1826,6 +1843,8 @@ public class TaskService {
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setGroupName(rs.getString("GROUP_NAME"));
 						task.setRegionId(rs.getInt("REGION_ID"));
+						task.setMethod(rs.getString("METHOD"));
+						task.setAdminName(rs.getString("ADMIN_NAME"));
 						
 						Map<Integer, Integer> gridIds;
 						try {
@@ -1846,7 +1865,7 @@ public class TaskService {
 
 			};
 			
-			return run.query(conn, selectSql, rsHandler);	
+			return run.query(conn, sql, rsHandler);	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1905,6 +1924,8 @@ public class TaskService {
 			map.put("gridIds", task.getGridIds());
 			map.put("geometry", task.getGeometry());
 			map.put("version", task.getVersion());
+			map.put("method", task.getMethod());
+			map.put("adminName", task.getAdminName());
 			
 			return map;
 		}catch(Exception e){
@@ -2300,8 +2321,8 @@ public class TaskService {
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
 			par.put("phaseId",phaseId);
-			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
-			//par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
+			//par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
+			par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
 			taskPar.put("manager_id", cmsInfo.get("collectId"));

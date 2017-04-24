@@ -35,10 +35,10 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public boolean prepareData() throws Exception {
         CmgBuildlink cmglink = (CmgBuildlink) new AbstractSelector(CmgBuildlink.class, getConn())
-                .loadById(getCommand().getCmglink().pid(), false);
+                .loadById(getCommand().getCmglink().pid(), true);
         getCommand().setCmglink(cmglink);
 
-        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).listTheAssociatedFaceOfTheLink(cmglink.pid(), false);
+        List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).listTheAssociatedFaceOfTheLink(cmglink.pid(), true);
         getCommand().setCmgfaces(cmgfaces);
         return super.prepareData();
     }

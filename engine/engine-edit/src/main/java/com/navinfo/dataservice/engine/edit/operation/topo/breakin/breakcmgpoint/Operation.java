@@ -6,6 +6,7 @@ import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
@@ -70,6 +71,9 @@ public class Operation implements IOperation {
      */
     @Override
     public String run(Result result) throws Exception {
+        // 删除被打断的线
+        result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
+
         if (CollectionUtils.isEmpty(command.getBreakNodes())) {
             this.breakPoint();
             this.createBreakNode(result);

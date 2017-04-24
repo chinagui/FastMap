@@ -2321,8 +2321,8 @@ public class TaskService {
 			par.put("au_db_port",auDb.getDbServer().getPort());
 			par.put("types","");
 			par.put("phaseId",phaseId);
-			par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
-			//par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
+			//par.put("grids",getGridListByTaskId((int)cmsInfo.get("cmsId")));
+			par.put("collectTaskIds",getCollectTaskIdsByTaskId((int)cmsInfo.get("cmsId")));
 
 			JSONObject taskPar=new JSONObject();
 			taskPar.put("manager_id", cmsInfo.get("collectId"));

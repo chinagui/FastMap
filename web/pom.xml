@@ -10,6 +10,7 @@
     <artifactId>web</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <modules>
+		<module>collector-web</module>
 		<module>job-web</module>
 		<module>datahub-web</module>
 		<module>edit-web</module>

@@ -534,7 +534,7 @@ public class Task implements Serializable{
 
 
 	public void setMethed(String methed) {
-		methed = methed;
+		this.methed = methed;
 	}
 
 

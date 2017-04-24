@@ -324,4 +324,44 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			throw new ServiceException("getInforNameByProgramId失败，原因为:" + e.getMessage(), e);
 		}
 	}
+	
+	/**
+	 * @param conn2 
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Infor getInforByInforId(Connection conn, Integer inforId) throws ServiceException {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE");
+			sb.append("   FROM INFOR I       ");
+			sb.append("  WHERE I.INFOR_ID   = " + inforId);
+			
+			String sql = sb.toString();
+			
+			log.info("getInforByInforId sql :" + sql);
+			
+			ResultSetHandler<Infor> rsHandler = new ResultSetHandler<Infor>() {
+				public Infor handle(ResultSet rs) throws SQLException {
+					Infor infor = new Infor();
+					if(rs.next()) {
+						infor.setAdminName(rs.getString("ADMIN_NAME"));
+						infor.setInforName(rs.getString("INFOR_NAME"));
+						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
+					}
+					return infor;
+				}
+			};
+			Infor result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getInforByInforId失败，原因为:" + e.getMessage(), e);
+		}
+	}
 }

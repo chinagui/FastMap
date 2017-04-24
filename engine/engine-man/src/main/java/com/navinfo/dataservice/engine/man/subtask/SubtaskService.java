@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.man.subtask;
 
+import infor.InforService;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,10 +26,13 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Bean;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -198,6 +203,13 @@ public class SubtaskService {
 			//默认subtask状态为草稿2
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
+			}
+			//情报项目为空时，需要后台自动创建名称
+			if(StringUtils.isNotEmpty(bean.getName())){
+				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
+				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+				if(infor!=null){
+					bean.setName(infor.getInforName()+"_"+infor.getPublishDate());}
 			}
 			
 			// 插入subtask
@@ -399,8 +411,20 @@ public class SubtaskService {
 
 			List<Integer> updatedSubtaskIdList = new ArrayList<Integer>();
 			for (int i = 0; i < subtaskList.size(); i++) {
-				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
-				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
+				Subtask subtask = subtaskList.get(i);
+				//情报子任务修改时，若填入执行人，则需修改子任务名称
+				if(subtask.getExeUserId()!=0){
+					int programType=getTaskBySubtaskId(conn,subtask.getSubtaskId()).get("programType");
+					if(programType==4){
+						Subtask oldSubtask = queryBySubtaskIdS(conn,subtask.getSubtaskId());
+						if(oldSubtask.getExeUserId()==0){
+							UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(subtask.getExeUserId());
+							subtask.setName(subtask.getName()+"_"+userInfo.getUserRealName()+"_"+subtask.getSubtaskId());
+						}
+					}
+				}
+				SubtaskOperation.updateSubtask(conn, subtask);
+				updatedSubtaskIdList.add(subtask.getSubtaskId());
 				
 			}
 			//发送消息
@@ -447,6 +471,22 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return queryBySubtaskIdS(conn,subtaskId);		
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
+	 */
+	
+	public Subtask queryBySubtaskIdS(Connection conn,Integer subtaskId) throws ServiceException {
+		try {
 			QueryRunner run = new QueryRunner();
 			
 			StringBuilder sb = new StringBuilder();
@@ -521,9 +561,7 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
+		} 
 	}
 	
 	/**
@@ -1954,6 +1992,26 @@ public class SubtaskService {
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getManConnection();
+			return getTaskBySubtaskId(conn,subtaskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，programType：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	public Map<String, Integer> getTaskBySubtaskId(Connection conn,int subtaskId)
+			throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 			String sql="SELECT T.TASK_ID, P.TYPE"
 					+ "  FROM SUBTASK S, TASK T, PROGRAM P"
@@ -1977,8 +2035,6 @@ public class SubtaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

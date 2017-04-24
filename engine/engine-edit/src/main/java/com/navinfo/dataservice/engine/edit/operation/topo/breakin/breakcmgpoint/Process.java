@@ -37,11 +37,11 @@ public class Process extends AbstractProcess<Command> {
     @Override
     public boolean prepareData() throws Exception {
         // 加载CMG-LINK信息
-        IRow row = new AbstractSelector(CmgBuildlink.class, getConn()).loadById(getCommand().getCmglink().pid(), false);
+        IRow row = new AbstractSelector(CmgBuildlink.class, getConn()).loadById(getCommand().getCmglink().pid(), true);
         getCommand().setCmglink((CmgBuildlink) row);
         // 加载关联CMG-FACE信息
         List<CmgBuildface> cmgfaces = new CmgBuildfaceSelector(getConn()).
-                listTheAssociatedFaceOfTheLink(getCommand().getCmglink().pid(), false);
+                listTheAssociatedFaceOfTheLink(getCommand().getCmglink().pid(), true);
         getCommand().setCmgfaces(cmgfaces);
 
         return super.prepareData();

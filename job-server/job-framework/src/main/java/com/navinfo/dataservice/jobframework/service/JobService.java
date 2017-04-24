@@ -168,7 +168,7 @@ public class JobService {
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
 			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
-			System.out.println(jobInfoSql);
+			log.info("getLatestJob jobInfoSql: "+jobInfoSql);
 			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
 				
 				@Override
@@ -205,7 +205,7 @@ public class JobService {
 	 * @date 2017年4月12日 下午5:26:55 
 	 */
 	public JobInfo getLatestJobByDescp(String descp)throws ServiceException{
-		System.out.println("begin getLatestJobByDescp descp:"+descp);
+		log.info("begin getLatestJobByDescp descp:"+descp);
 		Connection conn = null;
 		JobInfo jobInfo = null;
 		try{
@@ -218,7 +218,7 @@ public class JobService {
 					}
 					
 					jobInfoSql +=  "and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
-			System.out.println("getLatestJobByDescp: "+jobInfoSql);
+					log.info("getLatestJobByDescp: "+jobInfoSql);
 			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
 				
 				@Override
@@ -227,7 +227,49 @@ public class JobService {
 					if(rs.next()){
 						long id = rs.getLong("job_id");
 						String guid = rs.getString("job_guid");
-						System.out.println("id : "+id+ " guid: "+guid);
+						log.info("id : "+id+ " guid: "+guid);
+						 jobInfo = new JobInfo(id,guid);
+						
+					}
+					return jobInfo;
+				}
+				
+			});
+			return jobInfo;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//return jobObj;
+	}
+	
+	public JobInfo getJobByDescp(String descp)throws ServiceException{
+		log.info("begin getJobByDescp descp:"+descp);
+		Connection conn = null;
+		JobInfo jobInfo = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "select * from ( select  j.job_id , j.job_guid  from job_info j where  1=1 ";
+					if(descp != null && StringUtils.isNotEmpty(descp)){
+						jobInfoSql += " and  j.descp = '"+descp+"'  ";
+					}
+					
+					jobInfoSql +=  "and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+					log.info("getJobByDescp jobInfoSql: "+jobInfoSql);
+			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
+				
+				@Override
+				public JobInfo handle(ResultSet rs) throws SQLException {
+					JobInfo jobInfo = null;
+					if(rs.next()){
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						log.info("id : "+id+ " guid: "+guid);
 						 jobInfo = new JobInfo(id,guid);
 						
 					}
@@ -264,7 +306,7 @@ public class JobService {
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = " select j.job_id , j.job_guid, j.descp  from job_info j where 1=1 ";
+			String jobInfoSql = " select distinct j.job_id , j.job_guid, j.descp  from job_info j where 1=1 ";
 // "j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
 			
 			String tableName  = parameterJson.getString("tableName");

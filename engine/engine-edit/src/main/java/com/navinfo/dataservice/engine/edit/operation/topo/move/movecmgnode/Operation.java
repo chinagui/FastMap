@@ -83,7 +83,8 @@ public class Operation implements IOperation {
             if (command.getCmgnode().pid() == cmglink.getsNodePid()) {
                 geometry.getCoordinates()[0].x = command.getLongitude();
                 geometry.getCoordinates()[0].y = command.getLatitude();
-            } else if (command.getCmgnode().pid() == cmglink.geteNodePid()) {
+            }
+            if (command.getCmgnode().pid() == cmglink.geteNodePid()) {
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].x = command.getLongitude();
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].y = command.getLatitude();
             }

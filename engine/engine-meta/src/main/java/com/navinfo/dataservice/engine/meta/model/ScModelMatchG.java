@@ -23,7 +23,8 @@ public class ScModelMatchG  {
 	private String size ;
 	private String format ;
 	private String impWorker ;
-	private Timestamp impDate ;
+//	private Timestamp impDate ;
+	private String impDate ;
 	private String urlDb ;
 	private String urlFile ;
 	private String memo ;
@@ -34,7 +35,7 @@ public class ScModelMatchG  {
 	public ScModelMatchG (){
 	}
 	
-	public ScModelMatchG (Long fileId ,String productLine,String version,String projectNm,String specification,String bType,String mType,String sType,String fileName,String size,String format,String impWorker,Timestamp impDate,String urlDb,String urlFile,String memo,BLOB fileContent,String updateTime){
+	public ScModelMatchG (Long fileId ,String productLine,String version,String projectNm,String specification,String bType,String mType,String sType,String fileName,String size,String format,String impWorker,String impDate,String urlDb,String urlFile,String memo,BLOB fileContent,String updateTime){
 		this.fileId=fileId ;
 		this.productLine=productLine ;
 		this.version=version ;
@@ -126,10 +127,10 @@ public class ScModelMatchG  {
 	public void setImpWorker(String impWorker) {
 		this.impWorker = impWorker;
 	}
-	public Timestamp getImpDate() {
+	public String getImpDate() {
 		return impDate;
 	}
-	public void setImpDate(Timestamp impDate) {
+	public void setImpDate(String impDate) {
 		this.impDate = impDate;
 	}
 	public String getUrlDb() {

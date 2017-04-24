@@ -160,6 +160,11 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>api-metadata</artifactId>
 		</dependency>
+		<!-- zl 2017.4.23 check rd_name -->
+		<dependency>
+			<groupId>com.navinfo.dataservice</groupId>
+			<artifactId>api-fcc</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.zookeeper</groupId>
 			<artifactId>zookeeper</artifactId>

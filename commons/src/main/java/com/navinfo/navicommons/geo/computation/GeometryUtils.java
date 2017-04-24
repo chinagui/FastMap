@@ -1,24 +1,15 @@
 package com.navinfo.navicommons.geo.computation;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONException;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.vividsolutions.jts.algorithm.ConvexHull;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.LineSegment;
-import com.vividsolutions.jts.geom.LineString;
-import com.vividsolutions.jts.geom.MultiPoint;
-import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.geom.Polygon;
+import com.vividsolutions.jts.geom.*;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-
 import net.sf.json.JSONObject;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GeometryUtils {
 	private static double EARTH_RADIUS = 6378137;
@@ -421,6 +412,21 @@ public class GeometryUtils {
 
 		return mpoint;
 	}
+
+    /**
+     * create point by wkt
+     * @param wkt
+     * @return
+     * @throws ParseException
+     */
+    public static Point getPointByWKT(String wkt) throws ParseException {
+
+        WKTReader reader = new WKTReader();
+
+        Point point = (Point) reader.read(wkt);
+
+        return point;
+    }
 
 	public static double[] getCoordinate(Geometry geo) {
 

@@ -1,33 +1,6 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONNull;
-import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.log4j.Logger;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.common.SolrDocument;
-import org.apache.solr.common.SolrDocumentList;
-import org.hbase.async.KeyValue;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -37,15 +10,31 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
-import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
-import com.navinfo.navicommons.geo.computation.GeometryTypeName;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
+import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.client.Table;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+import org.hbase.async.KeyValue;
+
+import java.sql.Connection;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -2002,7 +1991,50 @@ public class TipsSelector {
 		
 		return gridsSet;
 	}
-            	
-		
+
+	/**
+	 * 快线tips日编状态实时统计
+	 * @param collectTaskIds
+	 * @return
+	 */
+	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
+		List<Map> list = new ArrayList<>();
+		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds);
+		Map<String,int[]> statsMap = new HashMap<>();
+		for(JSONObject snapshot : snapshots) {
+			String wkt = snapshot.getString("wkt");//统计坐标
+			Point point = GeometryUtils.getPointByWKT(wkt);
+			Coordinate coordinate = point.getCoordinates()[0];
+			String gridId = CompGridUtil.point2Grids(coordinate.x, coordinate.y)[0];
+			int dStatus = snapshot.getInt("t_dStatus");
+			if(statsMap.containsKey(gridId)) {
+				int[] statsArray = statsMap.get(gridId);
+				if(dStatus == 0) {//未完成
+					statsArray[0] += 1;
+				}else if(dStatus == 1) {//已完成
+					statsArray[1] += 1;
+				}
+			} else {
+				int[] statsArray = new int[]{0,0};
+				if(dStatus == 0) {//未完成
+					statsArray[0] += 1;
+				}else if(dStatus == 1) {//已完成
+					statsArray[1] += 1;
+				}
+				statsMap.put(gridId, statsArray);
+			}
+		}
+		if(statsMap.size() > 0) {
+			for(String gridId : statsMap.keySet()) {
+				Map<String, Integer> map = new HashMap<>();
+				map.put("gridId", Integer.valueOf(gridId));
+				int[] statsArray = statsMap.get(gridId);
+				map.put("finished",statsArray[1]);
+				map.put("unfinished",statsArray[0]);
+				list.add(map);
+			}
+		}
+		return list;
+	}
 
 }

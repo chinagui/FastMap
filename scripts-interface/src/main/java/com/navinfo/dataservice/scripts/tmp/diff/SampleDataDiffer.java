@@ -985,9 +985,9 @@ public class SampleDataDiffer {
             flag = true;
         } else if (str1 == null && str2 == null) {
             flag = true;
-        } else if (str1 == null && "".equals(str2)){
+        } else if ((str1 == null || str1 == "null" ) && "".equals(str2)){
         	flag = true;
-        } else if ("".equals(str1) && str2 == null){
+        } else if ("".equals(str1) && (str2 == null || str2 == "null")){
         	flag = true;
         }
 
@@ -1053,7 +1053,7 @@ public class SampleDataDiffer {
 			}
 			JSONObject mongoSportsVenues = mongoPoi.getJSONObject("sportsVenues");
 			String orcleSportsVenues = orcleIxPoi.getString("sportsVenues");
-			if (mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")){
+			if ((mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")) && StringUtils.isNotEmpty(orcleSportsVenues)){
 				diffList.add(setDiffField("sportsVenues",null,orcleSportsVenues));
 			}else{
 				String sportsVenues = mongoSportsVenues.getString("buildingType");
@@ -1063,7 +1063,7 @@ public class SampleDataDiffer {
 			}
 			JSONObject mongoVerifyFlags = mongoPoi.getJSONObject("verifyFlags");
 			String orcleVerifyFlags = orcleIxPoi.getString("verifyFlags");
-			if (mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")){
+			if ((mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")) && StringUtils.isNotEmpty(orcleVerifyFlags)){
 				diffList.add(setDiffField("verifyFlags",null,orcleVerifyFlags));
 			}else{
 				String verifyFlags = mongoVerifyFlags.getString("record");
@@ -1246,9 +1246,9 @@ public class SampleDataDiffer {
 				JSONObject restaurant = new JSONObject();
 				restaurant.put("foodtype", resultSet.getString("FOOD_TYPE"));
 				restaurant.put("creditCards", resultSet.getString("CREDIT_CARD"));
-				restaurant.put("parking", resultSet.getString("PARKING"));
+				restaurant.put("parking", resultSet.getInt("PARKING"));
 				restaurant.put("openHour", resultSet.getString("OPEN_HOUR"));
-				restaurant.put("avgCost", resultSet.getString("AVG_COST"));
+				restaurant.put("avgCost", resultSet.getInt("AVG_COST"));
 				IxPoiRestaurantMap.put(fid, restaurant);
 			}
 		}catch(Exception e){

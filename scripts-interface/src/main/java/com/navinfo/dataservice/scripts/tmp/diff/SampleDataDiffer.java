@@ -544,6 +544,10 @@ public class SampleDataDiffer {
 		try {
 			List<DiffField> diffList = new ArrayList<DiffField>();
 			JSONArray relateContacts = mongoPoi.getJSONArray("contacts");
+			String fid = mongoPoi.getString("fid");
+			if (fid.equals("0010130507LC200241")) {
+				System.out.println("==========================");
+			}
 			if (relateContacts.size() == 0) {
 				diffList.add(setDiffField("contacts", null, contactLists));
 				return diffList;
@@ -558,7 +562,7 @@ public class SampleDataDiffer {
 						JSONObject relateObj = relateContacts.getJSONObject(i);
 						boolean isSame = false;
 						for (int j = 0; j < contactLists.size(); j++) {
-							JSONObject contactObj = contactLists.getJSONObject(i);
+							JSONObject contactObj = contactLists.getJSONObject(j);
 
 							// 判断联系方式和联系方式类型，如果相同，判断优先选择
 							if (isStringSame(relateObj.getString("number"), contactObj.getString("number"))

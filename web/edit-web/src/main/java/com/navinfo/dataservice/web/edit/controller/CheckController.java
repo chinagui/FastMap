@@ -1148,6 +1148,7 @@ public class CheckController extends BaseController {
 			String descp = tableName+":"+jobName;
 			logger.info("checkJobNameExists descp :"+descp);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			logger.info("jobApiService: "+jobApiService);
 			JobInfo job = jobApiService.getJobByDescp(descp);
 			logger.info("job :"+job);
 			int flag = 0;
@@ -1156,7 +1157,7 @@ public class CheckController extends BaseController {
 			}
 			JSONObject isExistsflag = new JSONObject();
 			isExistsflag.put("isExistsflag", flag);
-			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("taskName")+":  "+jsonReq.getString("tableName")+" ");
+			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("jobName")+":  "+jsonReq.getString("tableName")+" ");
 			return new ModelAndView("jsonView", success(isExistsflag));
 
 		} catch (Exception e) {

@@ -503,15 +503,14 @@ public class NiValExceptionOperator {
 
 			pstmt.executeUpdate();*/
 
-			if (result != null) {
+			/*if (result != null) {
 				LogWriter writer = new LogWriter(conn);
 
 				Command command = new Command();
 
 				writer.generateLog(command, result);
 
-				writer.recordLog(command, result);
-			}
+			}*/
 
 			conn.commit();
 

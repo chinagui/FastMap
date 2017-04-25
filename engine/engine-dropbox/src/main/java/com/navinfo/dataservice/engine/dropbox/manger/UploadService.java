@@ -170,13 +170,13 @@ public class UploadService {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public HashMap<Object,Object>  uploadResource(HttpServletRequest request) throws Exception {
-		// TODO Auto-generated method stub
+		System.out.println(" begin uploadResource :");
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		
 		List<FileItem> items = upload.parseRequest(request);
-		
+		System.out.println("items :"+items.size());
 		Iterator<FileItem> it = items.iterator();
 		
 		int pid = 0;
@@ -185,36 +185,46 @@ public class UploadService {
 		String userName = "";
 		String userId = "";
 		
-//		int pid = 1;
-//		int dbId = 43;	
-//		String fileType = "photo";
-		
 		FileItem uploadItem = null;
 			
 		while(it.hasNext()){
 			FileItem item = it.next();
 			
 			if (item.isFormField()){
-				
+				System.out.println("item.isFormField() :");
+				System.out.println("item.getFieldName():"+item.getFieldName());
 				if ("parameter".equals(item.getFieldName())) {
 					String param = item.getString("UTF-8");
 					JSONObject jsonParam = JSONObject.fromObject(param);
-					pid = jsonParam.getInt("pid");
-					dbId = jsonParam.getInt("dbId");
-					fileType = jsonParam.getString("filetype");
-					userName = jsonParam.getString("userName");
-					userId = jsonParam.getString("userId");
+					System.out.println("jsonParam: "+jsonParam);
+					if(jsonParam.containsKey("pid")){
+						pid = jsonParam.getInt("pid");
+					}
+					if(jsonParam.containsKey("dbId")){
+						dbId = jsonParam.getInt("dbId");
+					}
+					if(jsonParam.containsKey("filetype")){
+						fileType = jsonParam.getString("filetype");
+					}
+					if(jsonParam.containsKey("userName")){
+						userName = jsonParam.getString("userName");
+					}
+					if(jsonParam.containsKey("userId")){
+						userId = jsonParam.getString("userId");
+					}
 				}
 				
 			}else{
+				System.out.println("item is not FormField :");
 				if (item.getName()!= null && !item.getName().equals("")){
+					System.out.println("item.getName() :"+item.getName());
 					uploadItem = item;
 				}else{
 					throw new Exception("上传的文件格式有问题！");
 				}
 			}
 		}
-		
+		System.out.println("fileType: "+fileType);
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
 			DBController dbController = new DBController();
@@ -238,20 +248,29 @@ public class UploadService {
 					PropConstant.uploadPath)+"/android_log";  //服务器部署路径 /data/resources/upload
 			logUploadDir+="/"+userName+"_"+userId;
 			System.out.println("logUploadDir: "+logUploadDir);
-			
-//			File tempFile = new File(uploadItem.getName());//传上来的文件
+			File tempFile = new File(uploadItem.getName());
 			System.out.println("uploadItem: "+uploadItem);
 			System.out.println("uploadItem.getName(): "+uploadItem.getName());
-			File file = new File(logUploadDir,uploadItem.getName());
-			
+			System.out.println("tempFile.getName(): "+tempFile.getName());
+			File file = new File(logUploadDir,tempFile.getName());
+			File fileParent = file.getParentFile();
+			System.out.println(" fileParent.exists(): "+fileParent.exists());
+			if(!fileParent.exists()){
+				System.out.println("fileParent.mkdirs() :"+fileParent.mkdirs());
+				fileParent.mkdirs();
+			}
+			System.out.println(" file.exists(): "+file.exists());
+			if(!file.exists()){
+				System.out.println("file.createNewFile() :"+file.createNewFile());
+			    file.createNewFile(); 
+			}
 			uploadItem.write(file);
 			
-			String zipFileName =userName+"_"+userId+"_log_"+ new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+".zip";
+			/*String zipFileName =userName+"_"+userId+"_log_"+ new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+".zip";
 			System.out.println("zipFileName: "+zipFileName);
-			ZipUtils.zipFile(logUploadDir,logUploadDir+"/"+zipFileName);
-			data.put("url", logUploadDir+"/"+zipFileName+" +"+uploadItem.getName());
+			ZipUtils.zipFile(logUploadDir,logUploadDir+"/"+zipFileName);*/
+			data.put("url", logUploadDir+"/"+tempFile.getName());
 			return data;
-//			uploadFile(logUploadDir,fileName,fileStream);
 		}
 		
 		return null;

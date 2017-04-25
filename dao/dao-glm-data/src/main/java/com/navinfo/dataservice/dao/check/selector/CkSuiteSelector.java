@@ -78,7 +78,7 @@ public class CkSuiteSelector extends AbstractSelector {
 		}
 		
 	}
-	public JSONArray getSuite(int type) throws Exception {
+	public JSONArray getSuite(int type, int flag) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		
 		PreparedStatement pstmt = null;
@@ -90,6 +90,10 @@ public class CkSuiteSelector extends AbstractSelector {
 			
 			sb.append("select a.* from ck_suite_cop a  where a.feature=:1 ");
 			
+			if(flag == 0 && type ==5 ){//如果不是道路名全表检查并且检查类型不是 元数据检查
+				sb.append(" and a.suite_id not in('suite1') ");//
+			}
+			System.out.println("getSuite :"+sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, type);

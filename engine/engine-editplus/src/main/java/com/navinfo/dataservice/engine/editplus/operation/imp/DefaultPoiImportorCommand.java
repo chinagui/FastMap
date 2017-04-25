@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 
 /**

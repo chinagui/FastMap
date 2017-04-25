@@ -1370,28 +1370,54 @@ public class SampleDataDiffer {
 				String fid = resultSet.getString("fid");
 				JSONArray addresses = new JSONArray();
 				JSONObject address = new JSONObject();
-				String roadName = resultSet.getString("PROVINCE")!=null?resultSet.getString("PROVINCE"):""+"|"+resultSet.getString("CITY")!=null?resultSet.getString("CITY"):""
-									+"|"+resultSet.getString("COUNTY")!=null?resultSet.getString("COUNTY"):""+"|"+resultSet.getString("TOWN")!=null?resultSet.getString("TOWN"):""
-									+"|"+resultSet.getString("PLACE")!=null?resultSet.getString("PLACE"):""+"|"+resultSet.getString("STREET")!=null?resultSet.getString("STREET"):"";
+				String province = resultSet.getString("PROVINCE")!=null?resultSet.getString("PROVINCE"):"";
+				String city = resultSet.getString("CITY")!=null?resultSet.getString("CITY"):"";
+				String county = resultSet.getString("COUNTY")!=null?resultSet.getString("COUNTY"):"";
+				String town = resultSet.getString("TOWN")!=null?resultSet.getString("TOWN"):"";
+				String place = resultSet.getString("PLACE")!=null?resultSet.getString("PLACE"):"";
+				String street = resultSet.getString("STREET")!=null?resultSet.getString("STREET"):"";
+				String roadName = province+"|"+ city +"|"+county+"|"+ town +"|"+place+"|"+street;
 				if ("|||||".equals(roadName)){roadName="";}
-				String roadNamePinyin = resultSet.getString("PROV_PHONETIC")!=null?resultSet.getString("PROV_PHONETIC"):""+"|"+resultSet.getString("CITY_PHONETIC")!=null?resultSet.getString("CITY_PHONETIC"):""
-										+"|"+resultSet.getString("COUNTY_PHONETIC")!=null?resultSet.getString("COUNTY_PHONETIC"):""+"|"+resultSet.getString("TOWN_PHONETIC")!=null?resultSet.getString("TOWN_PHONETIC"):""
-										+"|"+resultSet.getString("PLACE_PHONETIC")!=null?resultSet.getString("PLACE_PHONETIC"):""+"|"+resultSet.getString("STREET_PHONETIC")!=null?resultSet.getString("STREET_PHONETIC"):"";
+				
+				String provPho = resultSet.getString("PROV_PHONETIC")!=null?resultSet.getString("PROV_PHONETIC"):"";
+				String cityPho = resultSet.getString("CITY_PHONETIC")!=null?resultSet.getString("CITY_PHONETIC"):"";
+				String countyPho = resultSet.getString("COUNTY_PHONETIC")!=null?resultSet.getString("COUNTY_PHONETIC"):"";
+				String townPho = resultSet.getString("TOWN_PHONETIC")!=null?resultSet.getString("TOWN_PHONETIC"):"";
+				String placePho =  resultSet.getString("PLACE_PHONETIC")!=null?resultSet.getString("PLACE_PHONETIC"):"";
+				String streetPho = resultSet.getString("STREET_PHONETIC")!=null?resultSet.getString("STREET_PHONETIC"):"";
+				String roadNamePinyin = provPho+"|"+ cityPho+"|"+countyPho+"|"+townPho+"|"+placePho+"|"+streetPho;
 				if ("|||||".equals(roadNamePinyin)){roadNamePinyin="";}
-				String addrName = resultSet.getString("LANDMARK")!=null?resultSet.getString("LANDMARK"):""+"|"+resultSet.getString("PREFIX")!=null?resultSet.getString("PREFIX"):""
-									+"|"+resultSet.getString("HOUSENUM")!=null?resultSet.getString("HOUSENUM"):""+"|"+resultSet.getString("TYPE")!=null?resultSet.getString("TYPE"):""
-									+"|"+resultSet.getString("SUBNUM")!=null?resultSet.getString("SUBNUM"):""+"|"+resultSet.getString("SURFIX")!=null?resultSet.getString("SURFIX"):""
-									+"|"+resultSet.getString("ESTAB")!=null?resultSet.getString("ESTAB"):""+"|"+resultSet.getString("BUILDING")!=null?resultSet.getString("BUILDING"):""
-									+"|"+resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):""+"|"+resultSet.getString("UNIT")!=null?resultSet.getString("UNIT"):""
-									+"|"+resultSet.getString("ROOM")!=null?resultSet.getString("ROOM"):""+"|"+resultSet.getString("ADDONS")!=null?resultSet.getString("ADDONS"):"";
+				
+				String landmark = resultSet.getString("LANDMARK")!=null?resultSet.getString("LANDMARK"):"";
+				String prefix = resultSet.getString("PREFIX")!=null?resultSet.getString("PREFIX"):"";
+				String housenum = resultSet.getString("HOUSENUM")!=null?resultSet.getString("HOUSENUM"):"";
+				String type = resultSet.getString("TYPE")!=null?resultSet.getString("TYPE"):"";
+				String subnum = resultSet.getString("SUBNUM")!=null?resultSet.getString("SUBNUM"):"";
+				String subfix = resultSet.getString("SURFIX")!=null?resultSet.getString("SURFIX"):"";
+				String estab = resultSet.getString("ESTAB")!=null?resultSet.getString("ESTAB"):"";
+				String building = resultSet.getString("BUILDING")!=null?resultSet.getString("BUILDING"):"";
+				String floor = resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):"";
+				String unit = resultSet.getString("UNIT")!=null?resultSet.getString("UNIT"):"";
+				String room = resultSet.getString("ROOM")!=null?resultSet.getString("ROOM"):"";
+				String addons = resultSet.getString("ADDONS")!=null?resultSet.getString("ADDONS"):"";
+				String addrName = landmark+"|"+prefix+"|"+housenum+"|"+type+"|"+subnum+"|"+ subfix+"|"+estab+"|"+building+"|"+floor+"|"+ unit+"|"+room+"|"+addons;
 				if ("|||||||||||".equals(addrName)){addrName="";}
-				String addrNamePinyin = resultSet.getString("LANDMARK_PHONETIC")!=null?resultSet.getString("LANDMARK_PHONETIC"):""+"|"+resultSet.getString("PREFIX_PHONETIC")!=null?resultSet.getString("PREFIX_PHONETIC"):""
-										+"|"+resultSet.getString("HOUSENUM_PHONETIC")!=null?resultSet.getString("HOUSENUM_PHONETIC"):""+"|"+resultSet.getString("TYPE_PHONETIC")!=null?resultSet.getString("TYPE_PHONETIC"):""
-										+"|"+resultSet.getString("SUBNUM_PHONETIC")!=null?resultSet.getString("SUBNUM_PHONETIC"):""+"|"+resultSet.getString("SURFIX_PHONETIC")!=null?resultSet.getString("SURFIX_PHONETIC"):""
-										+"|"+resultSet.getString("ESTAB_PHONETIC")!=null?resultSet.getString("ESTAB_PHONETIC"):""+"|"+resultSet.getString("BUILDING_PHONETIC")!=null?resultSet.getString("BUILDING_PHONETIC"):""
-										+"|"+resultSet.getString("FLOOR_PHONETIC")!=null?resultSet.getString("FLOOR_PHONETIC"):""+"|"+resultSet.getString("UNIT_PHONETIC")!=null?resultSet.getString("UNIT_PHONETIC"):""
-										+"|"+resultSet.getString("ROOM_PHONETIC")!=null?resultSet.getString("ROOM_PHONETIC"):""+"|"+resultSet.getString("ADDONS_PHONETIC")!=null?resultSet.getString("ADDONS_PHONETIC"):"";
+				
+				String landmarkPho = resultSet.getString("LANDMARK_PHONETIC")!=null?resultSet.getString("LANDMARK_PHONETIC"):"";
+				String prefixPho = resultSet.getString("PREFIX_PHONETIC")!=null?resultSet.getString("PREFIX_PHONETIC"):"";
+				String housenumPho = resultSet.getString("HOUSENUM_PHONETIC")!=null?resultSet.getString("HOUSENUM_PHONETIC"):"";
+				String typePho = resultSet.getString("TYPE_PHONETIC")!=null?resultSet.getString("TYPE_PHONETIC"):"";
+				String subnumPho = resultSet.getString("SUBNUM_PHONETIC")!=null?resultSet.getString("SUBNUM_PHONETIC"):"";
+				String subfixPho = resultSet.getString("SURFIX_PHONETIC")!=null?resultSet.getString("SURFIX_PHONETIC"):"";
+				String estabPho = resultSet.getString("ESTAB_PHONETIC")!=null?resultSet.getString("ESTAB_PHONETIC"):"";
+				String buildingPho = resultSet.getString("BUILDING_PHONETIC")!=null?resultSet.getString("BUILDING_PHONETIC"):"";
+				String floorPho = resultSet.getString("FLOOR_PHONETIC")!=null?resultSet.getString("FLOOR_PHONETIC"):"";
+				String unitPho = resultSet.getString("UNIT_PHONETIC")!=null?resultSet.getString("UNIT_PHONETIC"):"";
+				String roomPho = resultSet.getString("ROOM_PHONETIC")!=null?resultSet.getString("ROOM_PHONETIC"):"";
+				String addonsPho = resultSet.getString("ADDONS_PHONETIC")!=null?resultSet.getString("ADDONS_PHONETIC"):"";
+				String addrNamePinyin = landmarkPho+"|"+prefixPho+"|"+housenumPho+"|"+typePho+"|"+subnumPho+"|"+ subfixPho+"|"+estabPho+"|"+buildingPho+"|"+floorPho+"|"+ unitPho+"|"+roomPho+"|"+addonsPho;
 				if ("|||||||||||".equals(addrNamePinyin)){addrNamePinyin="";}
+				
 				if (ixPoiAddressMap.containsKey(fid)){
 					addresses = ixPoiAddressMap.get(fid);
 				}
@@ -1431,9 +1457,6 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				String fid = resultSet.getString("fid");
-				if (fid.equals("00238820150319102300")) {
-					
-				}
 				JSONArray names = new JSONArray();
 				JSONObject name = new JSONObject();
 				if (ixPoiNameMap.containsKey(fid)){

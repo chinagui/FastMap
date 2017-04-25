@@ -740,9 +740,9 @@ public class SysMsgService {
 				String msgParam = rs.getString("MSG_PARAM");
 				JSONObject jsn = JSONObject.fromObject(msgParam);
 				String relateObject = (String) jsn.get("relateObject");
-				long relateObjectId = (Integer) jsn.get("relateObjectId");
+				//long relateObjectId = (Integer) jsn.get("relateObjectId");
 				msg.put("relateObject",relateObject);
-				msg.put("relateObjectId",relateObjectId);
+				msg.put("relateObjectId",jsn.get("relateObjectId"));
 				msg.put("pushUserName",rs.getString("PUSH_USER_NAME"));
 				msg.put("msgStatus",rs.getLong("MSG_STATUS"));
 				msgs.add(msg);

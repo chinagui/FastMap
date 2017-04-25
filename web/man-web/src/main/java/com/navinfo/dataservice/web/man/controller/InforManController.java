@@ -105,7 +105,7 @@ public class InforManController extends BaseController {
 			}
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			if (service.query(dataJson.getString("inforId"))==null){
+			if (service.query(dataJson.getInt("inforId"))==null){
 				service.create(dataJson, userId);
 			}else{
 				service.update(dataJson);
@@ -153,14 +153,8 @@ public class InforManController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			HashMap<String,Object> data = service.query(dataJson.getString("inforId"));
-			
-			if(data!=null){
-				return new ModelAndView("jsonView", success(data));
-			}
-			else{
-				return new ModelAndView("jsonView", success(null));
-			}
+			HashMap<String,Object> data = service.query(dataJson.getInt("inforId"));			
+			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

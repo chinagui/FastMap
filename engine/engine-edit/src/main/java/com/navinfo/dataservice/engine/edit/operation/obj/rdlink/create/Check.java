@@ -112,8 +112,14 @@ public class Check {
 		}
 	}
 	
+	/**
+	 * 检查：创建或修改link，节点不能到已有的立交点处，请先删除立交关系
+	 * @param catchLinks
+	 * @param conn
+	 * @throws Exception
+	 */
 	public void permitCheckGscnodeNotMove(JSONArray catchLinks, Connection conn) throws Exception {
-		if (catchLinks.size() == 0 || catchLinks == null) {
+		if (catchLinks == null || catchLinks.size() == 0) {
 			return;
 		}
 
@@ -129,7 +135,7 @@ public class Check {
 				int nodePid = catchLinks.getJSONObject(i).getInt("nodePid");
 				isCatch = RdGscOperateUtils.isCatchNodeRelateGscNode(nodePid, conn);
 			}
-			
+
 			if (isCatch == true)
 				break;
 		} // 遍历catchLinks

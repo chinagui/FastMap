@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
+import com.vividsolutions.jts.util.CollectionUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -13,6 +14,7 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.warninginfo.RdWarninginfo;
 import com.navinfo.dataservice.dao.glm.selector.rd.warninginfo.RdWarninginfoSelector;
+import org.apache.commons.collections.CollectionUtils;
 
 public class Operation implements IOperation {
 
@@ -72,11 +74,25 @@ public class Operation implements IOperation {
      * @param result
      * @throws Exception
      */
-    public void breakRdLink(Map<RdNode, List<RdLink>> nodeLinkRelation, int linkPid, List<RdLink> newLinks, Result
+    public void breakRdLink(JSONArray catchInfos, Map<RdNode, List<RdLink>> nodeLinkRelation, int linkPid, List<RdLink> newLinks, Result
             result) throws Exception {
         if (conn == null) {
             return;
         }
+
+        // 用于区分平滑修行移动端点还是挂接打断
+        List<Integer> catchNodePids = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(catchInfos)) {
+            for (Object obj : catchInfos) {
+                JSONObject json = (JSONObject) obj;
+                if (json.containsKey("catchNodePid") && json.getInt("catchNodePid") != 0) {
+                    catchNodePids.add(json.getInt("nodePid"));
+                } else if (json.containsKey("catchLinkPid") && json.getInt("catchLinkPid") != 0) {
+                    catchNodePids.add(json.getInt("nodePid"));
+                }
+            }
+        }
+
         RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
 
         List<RdWarninginfo> warninginfos = selector.loadByLink(linkPid, true);
@@ -84,7 +100,8 @@ public class Operation implements IOperation {
         if (null != nodeLinkRelation && !nodeLinkRelation.isEmpty()) {
             List<Integer> catchIds = new ArrayList<>();
             for (Map.Entry<RdNode, List<RdLink>> entry : nodeLinkRelation.entrySet()) {
-                if (entry.getValue().size() > 1) {
+                // 挂接打断或分离节点都需要删除警示信息
+                if (catchNodePids.contains(Integer.valueOf(entry.getKey().pid())) || entry.getValue().size() > 1) {
                     catchIds.add(entry.getKey().pid());
                 }
             }

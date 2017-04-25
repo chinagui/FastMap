@@ -71,14 +71,23 @@ public class CollectConvertMain {
 			String newGeoStr=GeoTranslator.jts2Wkt(oldGeo,0.00001, 5);
 			newPoi.put("geometry", newGeoStr);
 			//获取poi所在大区连接
-			if(dbId==0){dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);}	
+			if(dbId==0){
+				dbId=CollectConvertUtils.getDbidByGeo(newGeoStr);}
+//			else{
+//				log.info("");}
+			String fid=oldPoi.getString("fid");
+			newPoi.put("fid", fid);
+//			if(fid.equals("0010080605XJ300066")||fid.equals("0010130518WMH00081")){
+//				log.info("");
+//			}
+			log.info("采集成果格式转换：fid="+fid+",dbId="+dbId);
+			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			/*线上 fid: "0523081102MFY00291",	
 			 *一体化fid: "00166420170303213016",	原则：直接赋值
 			 *		pid: 0,	原则：根据fid查IX_POI表，若有则，更新pid；否则为0
 		     */
-			String fid=oldPoi.getString("fid");
-			newPoi.put("fid", fid);
+			
 			IxPoiObj oldPoiObj =null;
 			//lifecycle: "2"	t_lifecycle: 3,	字符串转数字后赋值
 			//0 无； 1 删除；2 更新；3 新增；

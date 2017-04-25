@@ -1574,4 +1574,25 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+	@Test
+	public void run_00424_2() throws Exception {
+
+		String parameter = "{\"command\":\"UPDATE\",\"type\":\"RDLANECONNEXITY\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"topos\":[{\"vias\":[{\"groupId\":1,\"linkPid\":326107,\"seqNum\":1,\"topologyId\":504000003,\"objStatus\":\"INSERT\"},{\"groupId\":1,\"linkPid\":328306,\"seqNum\":2,\"topologyId\":504000003,\"objStatus\":\"INSERT\"},{\"rowId\":\"7E6183DDBAE64D71BAA7065B5BBEF055\",\"linkPid\":328296,\"objStatus\":\"DELETE\"},{\"rowId\":\"B254D21394C04FC78C0088DB90A81C0C\",\"linkPid\":328312,\"objStatus\":\"DELETE\"}],\"rowId\":\"EB5CF6F1E42A4E79BA4D5EA85F994636\",\"pid\":504000003,\"objStatus\":\"UPDATE\"}],\"rowId\":\"0E82EF9AFDEA47529AA7E1BF0B13C063\",\"pid\":501000002,\"objStatus\":\"UPDATE\"}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	@Test
+	public void run_00425_2() throws Exception {
+
+		String parameter = "{\"command\":\"BATCH\",\"type\":\"RDNODE\",\"dbId\":13,\"data\":[{\"kind\":2,\"rowId\":\"EFEF28E7830A4F98AC0BFBEDB0A7E67F\",\"pid\":507000045,\"objStatus\":\"UPDATE\"},{\"kind\":2,\"rowId\":\"035D24ECD1C44180B812D3519CF008AF\",\"pid\":510000047,\"objStatus\":\"UPDATE\"}],\"subtaskId\":1}";
+		
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
 }

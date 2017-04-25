@@ -281,11 +281,9 @@ public class RdNodeSearch implements ISearch {
 
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				Geometry geom = GeoTranslator.struct2Jts(struct);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				JSONArray geoArray = GeoTranslator.jts2JSONArray(geom);
-
-				snapshot.setG(geoArray);
+				snapshot.setG(geojson.getJSONArray("coordinates"));
 
 				list.add(snapshot);
 			}

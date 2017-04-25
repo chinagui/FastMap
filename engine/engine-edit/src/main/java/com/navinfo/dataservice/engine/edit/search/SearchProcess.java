@@ -548,24 +548,17 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANEVIA:
+				CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
+						conn);
 				if (condition.containsKey("inLinkPid")
 						&& condition.containsKey("nodePid")
 						&& condition.containsKey("outLinkPid")) {
 
 					int inLinkPid = condition.getInt("inLinkPid");
 
-					// 要素类型
-					String objType = null;
-					if (condition.containsKey("type")) {
-						objType = condition.getString("type");
-					}
-
 					int nodePid = condition.getInt("nodePid");
 
 					int outLinkPid = condition.getInt("outLinkPid");
-
-					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
-							conn);
 
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
@@ -603,6 +596,57 @@ public class SearchProcess {
 					array.add(obj);
 
 					return array;
+				}
+				if (!condition.containsKey("nodePid")) {
+					int inLinkPid = condition.getInt("inLinkPid");
+					int outLinkPid = condition.getInt("outLinkPid");
+					int nodePid = 0;
+					RdLinkSelector linkSelector = new RdLinkSelector(conn);
+					IRow row = linkSelector.loadById(inLinkPid, true, true);
+					RdLink link = (RdLink) row;
+					List<Integer> viaList = new ArrayList<Integer>();
+					if (link.getDirect() == 2) {
+						nodePid = link.geteNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 3) {
+						nodePid = link.getsNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 1) {
+						List<Integer> sviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.getsNodePid(), outLinkPid);
+						List<Integer> eviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.geteNodePid(), outLinkPid);
+						if (sviaList.size() == 0 && eviaList.size() == 0) {
+							viaList = sviaList;
+						}
+						if (sviaList.size() == 0 && eviaList.size() > 0) {
+							viaList = eviaList;
+						}
+						if (eviaList.size() == 0 && sviaList.size() > 0) {
+							viaList = sviaList;
+						}
+						if (eviaList.size() > 0 && sviaList.size() > 0) {
+							double eLength = linkSelector.loadByPidsLength(
+									eviaList, true);
+							double sLength = linkSelector.loadByPidsLength(
+									eviaList, true);
+							viaList = (eLength >= sLength) ? sviaList
+									: eviaList;
+
+						}
+
+					}
+					// 计算经过线
+
+					for (Integer pid : viaList) {
+						array.add(pid);
+					}
 				}
 				break;
 			case RDLANE:

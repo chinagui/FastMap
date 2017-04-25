@@ -207,7 +207,13 @@ public class SubtaskService {
 				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
 				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
 				if(infor!=null){
-					bean.setName(infor.getInforName()+"_"+infor.getPublishDate());}
+					bean.setName(infor.getInforName()+"_"+infor.getPublishDate());
+					if(bean.getExeUserId()!=0){
+						UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(bean.getExeUserId());
+						bean.setName(bean.getName()+"_"+userInfo.getUserRealName()+"_"+bean.getSubtaskId());
+					}
+					
+				}
 			}
 			
 			// 插入subtask

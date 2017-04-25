@@ -276,7 +276,7 @@ public class Operation implements IOperation {
         // 警示信息
         com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation warninginOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdwarninginfo.update.Operation(
                 this.conn);
-        warninginOperation.breakRdLink(null, oldLink.getPid(), newLinks, result);
+        warninginOperation.breakRdLink(null,null, oldLink.getPid(), newLinks, result);
 
         // 维护信号灯
         com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation trafficSignalOperation = new com.navinfo.dataservice.engine.edit.operation.obj.trafficsignal.update.Operation(
@@ -291,7 +291,7 @@ public class Operation implements IOperation {
         // 减速带
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation rdSpeedbumpOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
                 this.conn);
-        rdSpeedbumpOpeartion.breakSpeedbump(null, result, oldLink.getPid(), newLinks);
+        rdSpeedbumpOpeartion.breakSpeedbump(null,null, result, oldLink.getPid(), newLinks);
 
         // 坡度
         com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation rdSlopeOpeartion = new com.navinfo.dataservice.engine.edit.operation.obj.rdslope.update.Operation(

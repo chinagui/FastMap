@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.vividsolutions.jts.io.WKTReader;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -343,9 +345,16 @@ public class GlmGridCalculator {
 									.intersectGeometryGrid(geo,
 											String.valueOf(meshId)));
 						} else {
-							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids.addAll(JGeometryUtil
-									.intersectGeometryGrid(geo, meshes));
+						    // 由于CMG_BUILDLINK跨图幅不需要打断在此处添加特殊处理
+							if (StringUtils.equals("CMG_BUILDLINK",tableName) ||
+                                    StringUtils.equals("CMG_BUILDLINK_MESH", tableName)) {
+                                String w = new String(new WKT().fromJGeometry(geo));
+                                WKTReader reader = new WKTReader();
+                                rowGrids.addAll(CompGeometryUtil.geo2GridsWithoutBreak(reader.read(w)));
+                            } else {
+                                String[] meshes = JGeometryUtil.geo2MeshIds(geo);
+                                rowGrids.addAll(JGeometryUtil.intersectGeometryGrid(geo, meshes));
+                            }
 						}
 					}
 				}

@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.speedbump.RdSpeedbump;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedbump.RdSpeedbumpSelector;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 
 /**
  * @author zhangyt
@@ -53,16 +54,29 @@ public class Operation implements IOperation {
      * @return
      * @throws Exception
      */
-    public String breakSpeedbump(Map<RdNode, List<RdLink>> nodeLinkRelation, Result result, int oldLinkPid,
+    public String breakSpeedbump(JSONArray catchInfos, Map<RdNode, List<RdLink>> nodeLinkRelation, Result result, int oldLinkPid,
                                  List<RdLink> newLinks) throws Exception {
         RdSpeedbumpSelector selector = new RdSpeedbumpSelector(this.conn);
         // 查询出将要被影响的减速带信息
         List<RdSpeedbump> speedbumps = selector.loadByLinkPid(oldLinkPid, true);
 
+        // 用于区分平滑修行移动端点还是挂接打断
+        List<Integer> catchNodePids = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(catchInfos)) {
+            for (Object obj : catchInfos) {
+                JSONObject json = (JSONObject) obj;
+                if (json.containsKey("catchNodePid") && json.getInt("catchNodePid") != 0) {
+                    catchNodePids.add(json.getInt("nodePid"));
+                } else if (json.containsKey("catchLinkPid") && json.getInt("catchLinkPid") != 0) {
+                    catchNodePids.add(json.getInt("nodePid"));
+                }
+            }
+        }
+
         if (null != nodeLinkRelation && !nodeLinkRelation.isEmpty()) {
             List<Integer> catchIds = new ArrayList<>();
             for (Map.Entry<RdNode, List<RdLink>> entry : nodeLinkRelation.entrySet()) {
-                if (entry.getValue().size() > 1) {
+                if (catchNodePids.contains(Integer.valueOf(entry.getKey().pid())) || entry.getValue().size() > 1) {
                     catchIds.add(entry.getKey().pid());
                 }
             }

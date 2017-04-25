@@ -17,7 +17,6 @@ import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.api.edit.iface.FmMultiSrcSyncApi;
 import com.navinfo.dataservice.api.edit.model.MultiSrcFmSync;
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -34,6 +33,7 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImpor
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.UploadPois;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;

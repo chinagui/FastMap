@@ -4,8 +4,12 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
-import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.util.JSONUtils;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
@@ -18,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -27,6 +32,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -39,15 +45,10 @@ import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ADLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.LcLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.LuLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
-import net.sf.json.util.JSONUtils;
 
 /**
  * 查询进程
@@ -547,24 +548,17 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANEVIA:
+				CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
+						conn);
 				if (condition.containsKey("inLinkPid")
 						&& condition.containsKey("nodePid")
 						&& condition.containsKey("outLinkPid")) {
 
 					int inLinkPid = condition.getInt("inLinkPid");
 
-					// 要素类型
-					String objType = null;
-					if (condition.containsKey("type")) {
-						objType = condition.getString("type");
-					}
-
 					int nodePid = condition.getInt("nodePid");
 
 					int outLinkPid = condition.getInt("outLinkPid");
-
-					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
-							conn);
 
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
@@ -602,6 +596,57 @@ public class SearchProcess {
 					array.add(obj);
 
 					return array;
+				}
+				if (!condition.containsKey("nodePid")) {
+					int inLinkPid = condition.getInt("inLinkPid");
+					int outLinkPid = condition.getInt("outLinkPid");
+					int nodePid = 0;
+					RdLinkSelector linkSelector = new RdLinkSelector(conn);
+					IRow row = linkSelector.loadById(inLinkPid, true, true);
+					RdLink link = (RdLink) row;
+					List<Integer> viaList = new ArrayList<Integer>();
+					if (link.getDirect() == 2) {
+						nodePid = link.geteNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 3) {
+						nodePid = link.getsNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 1) {
+						List<Integer> sviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.getsNodePid(), outLinkPid);
+						List<Integer> eviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.geteNodePid(), outLinkPid);
+						if (sviaList.size() == 0 && eviaList.size() == 0) {
+							viaList = sviaList;
+						}
+						if (sviaList.size() == 0 && eviaList.size() > 0) {
+							viaList = eviaList;
+						}
+						if (eviaList.size() == 0 && sviaList.size() > 0) {
+							viaList = sviaList;
+						}
+						if (eviaList.size() > 0 && sviaList.size() > 0) {
+							double eLength = linkSelector.loadByPidsLength(
+									eviaList, true);
+							double sLength = linkSelector.loadByPidsLength(
+									eviaList, true);
+							viaList = (eLength >= sLength) ? sviaList
+									: eviaList;
+
+						}
+
+					}
+					// 计算经过线
+
+					for (Integer pid : viaList) {
+						array.add(pid);
+					}
 				}
 				break;
 			case RDLANE:
@@ -674,5 +719,27 @@ public class SearchProcess {
 		} finally {
 
 		}
+	}
+	
+	public JSONObject searchDataByObject(JSONObject condition) throws Exception {
+
+		ObjectSearchUtils objectSearchUtils = new ObjectSearchUtils(conn,
+				getJsonConfig());
+
+		JSONObject json = objectSearchUtils.searchObject(condition);
+
+		return json;
+
+	}
+
+	public JSONObject searchLinkByNode(JSONObject condition) throws Exception {
+
+		ObjectSearchUtils objectSearchUtils = new ObjectSearchUtils(conn,
+				getJsonConfig());
+
+		JSONObject json = objectSearchUtils.searchLinkByNode(condition);
+
+		return json;
+
 	}
 }

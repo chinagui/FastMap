@@ -56,6 +56,10 @@ public class Operation implements IOperation {
         }
         // 处理CMG-FACE
         CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, conn);
+        // 处理立交对象
+        com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation operation =
+                new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(conn);
+        operation.deleteByLinkPid(command.getCmglinks(), result);
         return null;
     }
 

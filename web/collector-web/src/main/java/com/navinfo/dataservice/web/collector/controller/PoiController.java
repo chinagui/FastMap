@@ -15,8 +15,8 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-//import com.navinfo.dataservice.control.service.PoiService;
-//import com.navinfo.dataservice.jobframework.service.JobService;
+import com.navinfo.dataservice.control.service.PoiService;
+import com.navinfo.dataservice.jobframework.service.JobService;
 
 import net.sf.json.JSONObject;
 
@@ -54,7 +54,7 @@ public class PoiController extends BaseController {
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
-			JSONObject res=null;//PoiService.getInstance().importPoi(jobId, subtaskId,userId);
+			JSONObject res=PoiService.getInstance().importPoi(jobId, subtaskId,userId);
 			return new ModelAndView("jsonView", success(res));
 		}catch(Exception e){
 			logger.error(e.getMessage(),e);
@@ -72,9 +72,8 @@ public class PoiController extends BaseController {
 			if(StringUtils.isEmpty(dbType)){
 				throw new IllegalArgumentException("type参数不能为空。");
 			}
-//			DbInfo db = DbService.getInstance().getDbByName(dbName, dbType);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
+			DbInfo db = DbService.getInstance().getDbByName(dbName, dbType);
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -87,9 +86,8 @@ public class PoiController extends BaseController {
 			if(StringUtils.isEmpty(dbId)){
 				throw new IllegalArgumentException("id参数不能为空。");
 			}
-//			DbInfo db = DbService.getInstance().getDbById(Integer.parseInt(dbId));
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
+			DbInfo db = DbService.getInstance().getDbById(Integer.parseInt(dbId));
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -102,9 +100,8 @@ public class PoiController extends BaseController {
 			if(StringUtils.isEmpty(dbName)){
 				throw new IllegalArgumentException("name参数不能为空。");
 			}
-//			DbInfo db = DbService.getInstance().getOnlyDbByName(dbName);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
+			DbInfo db = DbService.getInstance().getOnlyDbByName(dbName);
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -117,9 +114,8 @@ public class PoiController extends BaseController {
 			if(StringUtils.isEmpty(bizType)){
 				throw new IllegalArgumentException("type参数不能为空。");
 			}
-//			DbInfo db = DbService.getInstance().getOnlyDbByBizType(bizType);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
+			DbInfo db = DbService.getInstance().getOnlyDbByBizType(bizType);
+			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){
 			log.error("获取db失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));

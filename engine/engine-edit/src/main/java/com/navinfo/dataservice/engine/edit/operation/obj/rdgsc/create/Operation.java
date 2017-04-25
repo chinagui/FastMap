@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
@@ -123,7 +125,7 @@ public class Operation implements IOperation {
 	 * 处理立交组成link
 	 * 
 	 * @param gscLink
-	 * @param row
+	 * @param type
 	 * @param gscGeo
 	 * @throws Exception
 	 */
@@ -151,12 +153,13 @@ public class Operation implements IOperation {
 			LcLink linkObj = (LcLink) linkRow;
 
 			linkGeometry = linkObj.getGeometry();
+		} else if (linkRow instanceof CmgBuildlink) {
 
+            CmgBuildlink linkObj = (CmgBuildlink) linkRow;
+            linkGeometry = linkObj.getGeometry();
 		} else {
-
-			return;
-		}
-
+		    return;
+        }
 		LineString linkNewGeo = lineStringInsertPoint(linkGeometry, gscGeo);
 
 		Geometry newGeo = GeoTranslator.transform(linkNewGeo,
@@ -201,7 +204,6 @@ public class Operation implements IOperation {
 	 * 计算立交点在组成线上的形状点号
 	 * 
 	 * @param rdGscLink
-	 * @param linkGeo
 	 * @param gscGeo
 	 * @param linkCoor
 	 * @throws Exception
@@ -234,7 +236,7 @@ public class Operation implements IOperation {
 	/**
 	 * 处理link上其他立交的位置序号
 	 * 
-	 * @param linkPid
+	 * @param gscLink
 	 * @param result
 	 * @param linkCoor
 	 *            线上新的几何点
@@ -307,8 +309,8 @@ public class Operation implements IOperation {
 	/**
 	 * 根据立交组成link信息获取组成link对象
 	 * 
-	 * @param rdGscLink
-	 * @param conn
+	 * @param gscLink
+	 * @param type
 	 * @return
 	 * @throws Exception
 	 */
@@ -336,6 +338,11 @@ public class Operation implements IOperation {
 
 			return lcLinkSelector.loadById(linkPid, true);
 
+        case "CMGBUILDLINK":
+
+            CmgBuildlinkSelector cmgBuildlinkSelector = new CmgBuildlinkSelector(conn);
+
+            return cmgBuildlinkSelector.loadById(linkPid, true);
 		default:
 			throw new Exception(type + "不支持创建立交");
 		}

@@ -29,8 +29,10 @@ import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Title: Operation
@@ -72,7 +74,23 @@ public class Operation implements IOperation {
         this.updateLink(result);
         // 处理受影响线
         this.updateFace(result);
+        // 处理立交
+        this.handleGsc(result);
         return null;
+    }
+
+    /**
+     * 更新立交信息
+     * @param result 结果集
+     * @throws Exception 更新立交信息出错
+     */
+    private void handleGsc(Result result) throws Exception {
+        com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation operation =
+                new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
+        Map<Integer, Geometry> newLinkMap = new HashMap<>();
+        newLinkMap.put(command.getCmglink().getPid(),
+                GeoTranslator.geojson2Jts((JSONObject) command.getCmglink().changedFields().get("geometry")));
+        operation.repairLink(this.command.getGscs(), newLinkMap, command.getCmglink(), result);
     }
 
     /***

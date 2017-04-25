@@ -24,6 +24,7 @@ public class OpRefRdWarninginfo {
 
 		warninginfoOperation.breakRdLink(null, null, linkPid, newLinks, result);
 
+
 		return null;
 	}
 

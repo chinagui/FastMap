@@ -141,7 +141,8 @@ public class UploadController extends BaseController {
 			UploadService upload = UploadService.getInstance();
 
 			HashMap<Object,Object> data = upload.uploadResource(request);
-			if(!data.isEmpty()){
+			logger.info("data : "+data);
+			if(data != null && !data.isEmpty()){
 				return new ModelAndView("jsonView", success(data));
 			}else{
 				return new ModelAndView("jsonView", exception("上传失败"));

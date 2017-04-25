@@ -28,6 +28,6 @@ public class OpRefRdSpeedbum {
         // 维护减速带
         com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation op = new com.navinfo.dataservice.engine.edit.operation.obj.rdspeedbump.update.Operation(
                 this.conn);
-        return op.breakSpeedbump(null, result, oldLinkPid, newLinks);
+        return op.breakSpeedbump(null,null, result, oldLinkPid, newLinks);
     }
 }

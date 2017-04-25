@@ -59,9 +59,10 @@ public class Process extends AbstractProcess<Command> {
 
 				RdNode rdnode = (RdNode) row;
 
-				rdNodeMap.put(this.rdnode.getPid(), rdnode);
+				rdNodeMap.put(rdnode.getPid(), rdnode);
 			}
 
+			this.getCommand().setRdNodeMap(rdNodeMap);
 			return true;
 		}
 

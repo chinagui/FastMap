@@ -385,10 +385,10 @@ public class serchConditionTest extends InitApplication {
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.CMGBUILDING);
+			objType.add(ObjType.RDOBJECT);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 863724,
-					397951, 20, 10));
+			System.out.println(p.searchDataByTileWithGap(objType, 215865,
+					99247, 18, 10));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -629,6 +629,46 @@ public class serchConditionTest extends InitApplication {
 			{
 				System.out.println(obj.Serialize(ObjLevel.FULL));
 			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void searchLinkByNode() {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			String parameter = "{\"dbId\":13,\"type\":\"RDNODE\",\"pid\":13064669}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
+			
+			System.out.println(p.searchLinkByNode(jsonReq));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void searchDataByObject() {
+		
+		Connection conn = null;
+		
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			String parameter = "{\"dbId\":13,\"type\":\"RDNODE\",\"pids\":[13064669,14880768]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
+			
+			System.out.println(p.searchDataByObject(jsonReq));
 
 		} catch (Exception e) {
 			e.printStackTrace();

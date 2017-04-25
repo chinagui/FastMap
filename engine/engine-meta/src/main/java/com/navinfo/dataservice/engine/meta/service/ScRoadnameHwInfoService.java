@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.engine.meta.model.ScModelMatchG;
 import com.navinfo.dataservice.engine.meta.model.ScRoadnameHwInfo;
@@ -46,7 +47,7 @@ public class ScRoadnameHwInfoService {
 			String createSql = "insert into SC_ROADNAME_HW_INFO (HW_PID_UP, HW_PID_DW, NAME_GROUPID, MEMO, U_RECORD, U_FIELDS) values(?,?,?,?,?,?)";			
 			run.update(conn, 
 					   createSql, 
-					   bean.getHwPidUp() , bean.getHwPidDw(), bean.getNameGroupid(), bean.getMemo(), bean.getURecord(), bean.getUFields()
+					   bean.getHwPidUp() , bean.getHwPidDw(), bean.getNameGroupid(), bean.getMemo(), bean.getuRecord(), bean.getuFields()
 					   );
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -73,15 +74,15 @@ public class ScRoadnameHwInfoService {
 				valueSql+="  MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				if(StringUtils.isNotEmpty(valueSql)){valueSql+=" , ";}
 				valueSql+="  U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				if(StringUtils.isNotEmpty(valueSql)){valueSql+=" , ";}
 				valueSql+="  U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			
 			if (bean!=null&&bean.getHwPidUp()!=null && StringUtils.isNotEmpty(bean.getHwPidUp().toString())){
@@ -126,13 +127,13 @@ public class ScRoadnameHwInfoService {
 				deleteSql+=" and MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				deleteSql+=" and U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				deleteSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			log.info("deleteSql: "+deleteSql);
 			if (values.size()==0){
@@ -173,13 +174,13 @@ public class ScRoadnameHwInfoService {
 				selectSql+=" and MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				selectSql+=" and U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>(){
 				public Page handle(ResultSet rs) throws SQLException {
@@ -192,8 +193,8 @@ public class ScRoadnameHwInfoService {
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
 						model.setMemo(rs.getString("MEMO"));
-						model.setURecord(rs.getInt("U_RECORD"));
-						model.setUFields(rs.getString("U_FIELDS"));
+						model.setuRecord(rs.getInt("U_RECORD"));
+						model.setuFields(rs.getString("U_FIELDS"));
 						list.add(model);
 					}
 					page.setResult(list);
@@ -260,13 +261,13 @@ public class ScRoadnameHwInfoService {
 				selectSql+=" and MEMO in(?) ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				selectSql+=" and U_RECORD in(?) ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			//添加分页
 			com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
@@ -295,19 +296,21 @@ public class ScRoadnameHwInfoService {
 					while(rs.next()){
 						ScRoadnameHwInfo model = new ScRoadnameHwInfo();
 						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
+						log.info(" total : "+rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
 						model.setHwPidUp(rs.getInt("HW_PID_UP"));
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
 						model.setMemo(rs.getString("MEMO"));
-						model.setURecord(rs.getInt("U_RECORD"));
-						model.setUFields(rs.getString("U_FIELDS"));
+						model.setuRecord(rs.getInt("U_RECORD"));
+						model.setuFields(rs.getString("U_FIELDS"));
 						list.add(model);
 					}
 					page.setResult(list);
 					return page;
 				}
 	    		
-	    	}	;
+	    	};
+	    	log.info(" hw sql select :"+selectSql +"  values:"+values);
 			if (values.size()==0){
 	    		return run.query(curPageNum, pageSize, conn, selectSql, rsHandler
 						);
@@ -347,13 +350,13 @@ public class ScRoadnameHwInfoService {
 				selectSql+=" and MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				selectSql+=" and U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			ResultSetHandler<List<ScRoadnameHwInfo>> rsHandler = new ResultSetHandler<List<ScRoadnameHwInfo>>(){
 				public List<ScRoadnameHwInfo> handle(ResultSet rs) throws SQLException {
@@ -364,8 +367,8 @@ public class ScRoadnameHwInfoService {
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
 						model.setMemo(rs.getString("MEMO"));
-						model.setURecord(rs.getInt("U_RECORD"));
-						model.setUFields(rs.getString("U_FIELDS"));
+						model.setuRecord(rs.getInt("U_RECORD"));
+						model.setuFields(rs.getString("U_FIELDS"));
 						list.add(model);
 					}
 					return list;
@@ -411,13 +414,13 @@ public class ScRoadnameHwInfoService {
 				selectSql+=" and MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				selectSql+=" and U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			selectSql+=" and rownum=1";
 			ResultSetHandler<ScRoadnameHwInfo> rsHandler = new ResultSetHandler<ScRoadnameHwInfo>(){
@@ -428,8 +431,8 @@ public class ScRoadnameHwInfoService {
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
 						model.setMemo(rs.getString("MEMO"));
-						model.setURecord(rs.getInt("U_RECORD"));
-						model.setUFields(rs.getString("U_FIELDS"));
+						model.setuRecord(rs.getInt("U_RECORD"));
+						model.setuFields(rs.getString("U_FIELDS"));
 						return model;
 					}
 					return null;
@@ -459,7 +462,7 @@ public class ScRoadnameHwInfoService {
 			String createSql = "insert into SC_ROADNAME_HW_INFO (HW_PID_UP, HW_PID_DW, NAME_GROUPID, MEMO, U_RECORD, U_FIELDS) values(?,?,?,?,?,?)";			
 			run.update(conn, 
 					   createSql, 
-					   bean.getHwPidUp() , bean.getHwPidDw(), bean.getNameGroupid(), bean.getMemo(), bean.getURecord(), bean.getUFields()
+					   bean.getHwPidUp() , bean.getHwPidDw(), bean.getNameGroupid(), bean.getMemo(), bean.getuRecord(), bean.getuFields()
 					   );
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -489,13 +492,13 @@ public class ScRoadnameHwInfoService {
 				selectSql+=" and MEMO=? ";
 				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getURecord()!=null && StringUtils.isNotEmpty(bean.getURecord().toString())){
+			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
 				selectSql+=" and U_RECORD=? ";
-				values.add(bean.getURecord());
+				values.add(bean.getuRecord());
 			};
-			if (bean!=null&&bean.getUFields()!=null && StringUtils.isNotEmpty(bean.getUFields().toString())){
+			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getUFields());
+				values.add(bean.getuFields());
 			};
 			selectSql+=" and rownum=1";
 			ResultSetHandler<ScRoadnameHwInfo> rsHandler = new ResultSetHandler<ScRoadnameHwInfo>(){
@@ -506,8 +509,8 @@ public class ScRoadnameHwInfoService {
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
 						model.setMemo(rs.getString("MEMO"));
-						model.setURecord(rs.getInt("U_RECORD"));
-						model.setUFields(rs.getString("U_FIELDS"));
+						model.setuRecord(rs.getInt("U_RECORD"));
+						model.setuFields(rs.getString("U_FIELDS"));
 						return model;
 					}
 					return null;
@@ -527,8 +530,11 @@ public class ScRoadnameHwInfoService {
 	}
 	
 	public void update(JSONObject dataJson) throws ServiceException {
-		ScRoadnameHwInfo bean =(ScRoadnameHwInfo) JSONObject.toBean(dataJson, ScRoadnameHwInfo.class);
-		bean.setURecord(3);
+//		ScRoadnameHwInfo bean =(ScRoadnameHwInfo) JSONObject.toBean(dataJson, ScRoadnameHwInfo.class);
+		ScRoadnameHwInfo bean =(ScRoadnameHwInfo) JsonOperation.jsonToBean(dataJson,ScRoadnameHwInfo.class);
+		if(bean.getuRecord() == null || bean.getuRecord() == 0){
+			bean.setuRecord(3);
+		}	
 		if(bean != null && bean.getHwPidUp() != null && bean.getHwPidUp() > 0){
 			update(bean);
 		}
@@ -543,7 +549,7 @@ public class ScRoadnameHwInfoService {
 			Integer hwPidDw=applyPid();
 			bean.setHwPidUp(hwPidUp);
 			bean.setHwPidDw(hwPidDw);
-			bean.setURecord(1);
+			bean.setuRecord(1);
 			create(bean, conn);
 		}
 		

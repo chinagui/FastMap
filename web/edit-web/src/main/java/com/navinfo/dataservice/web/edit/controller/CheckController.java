@@ -762,6 +762,7 @@ public class CheckController extends BaseController {
 	 * @Title: getCkSuites
 	 * @Description: 获取某一类检查中所有的suiteId
 	 * @param request   type	是	类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
+	 * 					flag    0:范围检查 ; 1:全表检查
 	 * @return
 	 * @throws ServletException
 	 * @throws IOException  ModelAndView
@@ -776,10 +777,13 @@ public class CheckController extends BaseController {
 		Connection conn =null;
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
+			int flag = 0;
+			if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") >0 ){
+				flag =jsonReq.getInt("flag");
+			}
 			int type = jsonReq.getInt("type");
 			logger.info("type:"+type);
-			JSONArray result = CheckService.getInstance().getCkSuites(type);
+			JSONArray result = CheckService.getInstance().getCkSuites(type,flag);
 			
 			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
@@ -1144,6 +1148,7 @@ public class CheckController extends BaseController {
 			String descp = tableName+":"+jobName;
 			logger.info("checkJobNameExists descp :"+descp);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			logger.info("jobApiService: "+jobApiService);
 			JobInfo job = jobApiService.getJobByDescp(descp);
 			logger.info("job :"+job);
 			int flag = 0;
@@ -1152,7 +1157,7 @@ public class CheckController extends BaseController {
 			}
 			JSONObject isExistsflag = new JSONObject();
 			isExistsflag.put("isExistsflag", flag);
-			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("taskName")+":  "+jsonReq.getString("tableName")+" ");
+			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("jobName")+":  "+jsonReq.getString("tableName")+" ");
 			return new ModelAndView("jsonView", success(isExistsflag));
 
 		} catch (Exception e) {

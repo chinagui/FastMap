@@ -24,11 +24,13 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.scripts.tmp.service.CollectConvertUtils;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 
 public class SampleDataDiffer {
 	Param inParam;
 	private static Logger logger = LoggerRepos.getLogger(SampleDataDiffer.class);
+	
 	/**
 	 * 1.根据临时表中的fid，进行修改差分。修改差分逻辑如下
 	 * mongodb记录的是Fastmap-POI生产系统中作业的poi； mongodb规格参考：https://192.168.0.72:8443/svn/ArchitectureTeam/FastMap/01Trunk/01设计（文档）/03规格/01模型/17夏/FastMap规格_17sum_20161209.xlsx
@@ -176,6 +178,12 @@ public class SampleDataDiffer {
 						if(!diffIxPoiResult.isEmpty()){
 							diffFields.addAll(diffIxPoiResult);
 						}
+					} else {
+						// oracle数据不存在
+						DiffResult diffResult= new DiffResult(fid,null);
+						diffResult.setOracleExists(0);
+						outResult.add(JSONObject.fromObject(diffResult));
+						continue;
 					}
 					
 					logger.info("比较relateParent属性");
@@ -419,13 +427,7 @@ public class SampleDataDiffer {
 					
 					if (CollectionUtils.isEmpty(diffFields)) continue;
 					
-					
 					DiffResult diffResult= new DiffResult(fid,diffFields);
-					
-					// oracle数据不存在
-					if (!ixPoiMap.containsKey(fid)){
-						diffResult.setOracleExists(0);
-					}
 					outResult.add(JSONObject.fromObject(diffResult));
 				}catch (Exception e){
 					System.out.println("fid:" + fid);
@@ -1132,7 +1134,7 @@ public class SampleDataDiffer {
 			while (resultSet.next()) {
 				String fid = resultSet.getString("FID");
 				JSONObject indoor = new JSONObject();
-				indoor.put("floor", resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):"");
+				indoor.put("floor", resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):JSONNull.getInstance());
 				indoor.put("type", resultSet.getInt("INDOOR")==1?3:resultSet.getInt("INDOOR"));
 				IxPoiInDoorMap.put(fid, indoor);
 			}
@@ -1198,20 +1200,20 @@ public class SampleDataDiffer {
 			while (resultSet.next()) {
 				String fid = resultSet.getString("fid");
 				JSONObject parking = new JSONObject();
-				parking.put("tollStd", resultSet.getString("TOLL_STD"));
-				parking.put("tollDes", resultSet.getString("TOLL_DES"));
-				parking.put("tollWay", resultSet.getString("TOLL_WAY"));
-				parking.put("openTime", resultSet.getString("OPEN_TIIME"));
+				parking.put("tollStd", resultSet.getString("TOLL_STD")!=null?resultSet.getString("TOLL_STD"):JSONNull.getInstance());
+				parking.put("tollDes", resultSet.getString("TOLL_DES")!=null?resultSet.getString("TOLL_DES"):JSONNull.getInstance());
+				parking.put("tollWay", resultSet.getString("TOLL_WAY")!=null?resultSet.getString("TOLL_WAY"):JSONNull.getInstance());
+				parking.put("openTime", resultSet.getString("OPEN_TIIME")!=null?resultSet.getString("OPEN_TIIME"):JSONNull.getInstance());
 				parking.put("totalNum", resultSet.getInt("TOTAL_NUM"));
-				parking.put("payment", resultSet.getString("PAYMENT"));
-				parking.put("remark", resultSet.getString("REMARK"));
-				parking.put("buildingType", resultSet.getString("PARKING_TYPE"));
+				parking.put("payment", resultSet.getString("PAYMENT")!=null?resultSet.getString("PAYMENT"):JSONNull.getInstance());
+				parking.put("remark", resultSet.getString("REMARK")!=null?resultSet.getString("REMARK"):JSONNull.getInstance());
+				parking.put("buildingType", resultSet.getString("PARKING_TYPE")!=null?resultSet.getString("PARKING_TYPE"):JSONNull.getInstance());
 				parking.put("resHigh", resultSet.getDouble("RES_HIGH"));
 				parking.put("resWidth", resultSet.getDouble("RES_WIDTH"));
 				parking.put("resWeigh", resultSet.getDouble("RES_WEIGH"));
 				parking.put("certificate", resultSet.getInt("CERTIFICATE"));
 				parking.put("vehicle", resultSet.getInt("VEHICLE"));
-				parking.put("haveSpecialPlace", resultSet.getString("HAVE_SPECIALPLACE"));
+				parking.put("haveSpecialPlace", resultSet.getString("HAVE_SPECIALPLACE")!=null?resultSet.getString("HAVE_SPECIALPLACE"):JSONNull.getInstance());
 				parking.put("womenNum", resultSet.getInt("WOMEN_NUM"));
 				parking.put("handicapNum", resultSet.getInt("HANDICAP_NUM"));
 				parking.put("miniNum", resultSet.getInt("MINI_NUM"));
@@ -1244,10 +1246,10 @@ public class SampleDataDiffer {
 			while (resultSet.next()) {
 				String fid = resultSet.getString("fid");
 				JSONObject restaurant = new JSONObject();
-				restaurant.put("foodtype", resultSet.getString("FOOD_TYPE"));
-				restaurant.put("creditCards", resultSet.getString("CREDIT_CARD"));
+				restaurant.put("foodtype", resultSet.getString("FOOD_TYPE")!=null?resultSet.getString("FOOD_TYPE"):JSONNull.getInstance());
+				restaurant.put("creditCards", resultSet.getString("CREDIT_CARD")!=null?resultSet.getString("CREDIT_CARD"):JSONNull.getInstance());
 				restaurant.put("parking", resultSet.getInt("PARKING"));
-				restaurant.put("openHour", resultSet.getString("OPEN_HOUR"));
+				restaurant.put("openHour", resultSet.getString("OPEN_HOUR")!=null?resultSet.getString("OPEN_HOUR"):JSONNull.getInstance());
 				restaurant.put("avgCost", resultSet.getInt("AVG_COST"));
 				IxPoiRestaurantMap.put(fid, restaurant);
 			}
@@ -1279,7 +1281,7 @@ public class SampleDataDiffer {
 				if (ixPoiContactMap.containsKey(fid)) {
 					contacts = ixPoiContactMap.get(fid);
 				}
-				contact.put("number", resultSet.getString("CONTACT")!=null?resultSet.getString("CONTACT"):"");
+				contact.put("number", resultSet.getString("CONTACT")!=null?resultSet.getString("CONTACT"):JSONNull.getInstance());
 				contact.put("type", resultSet.getInt("CONTACT_TYPE"));
 				contact.put("priority", resultSet.getInt("PRIORITY"));
 				contacts.add(contact);
@@ -1315,33 +1317,22 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				String fid = resultSet.getString("fid");
-				String monStart = resultSet.getString("MON_SRT");
-				String monEnd = resultSet.getString("MON_END");
-				String weekStartYear = resultSet.getString("WEEK_IN_YEAR_SRT");
-				String weekEndYear = resultSet.getString("WEEK_IN_YEAR_END");
-				String weekStartMonth = resultSet.getString("WEEK_IN_MONTH_SRT");
-				String weekEndMonth = resultSet.getString("WEEK_IN_MONTH_END");
-				String validWeek = resultSet.getString("VALID_WEEK");
-				String dayStart = resultSet.getString("DAY_SRT");
-				String dayEnd = resultSet.getString("DAY_END");
-				String timeStart = resultSet.getString("TIME_SRT");
-				String timeDuration = resultSet.getString("TIME_DUR");
 				JSONArray businessTimes = new JSONArray();
 				JSONObject businessTime = new JSONObject();
 				if (ixPoiBusinessTimesMap.containsKey(fid)){
 					businessTimes = ixPoiBusinessTimesMap.get(fid);
 				}
-				businessTime.put("monStart", monStart);
-				businessTime.put("monEnd", monEnd);
-				businessTime.put("weekStartYear", weekStartYear);
-				businessTime.put("weekEndYear", weekEndYear);
-				businessTime.put("weekStartMonth", weekStartMonth);
-				businessTime.put("weekEndMonth", weekEndMonth);
-				businessTime.put("validWeek", validWeek);
-				businessTime.put("dayStart", dayStart);
-				businessTime.put("dayEnd", dayEnd);
-				businessTime.put("timeStart", timeStart);
-				businessTime.put("timeDuration", timeDuration);
+				businessTime.put("monStart", resultSet.getString("MON_SRT")!=null?resultSet.getString("MON_SRT"):JSONNull.getInstance());
+				businessTime.put("monEnd", resultSet.getString("MON_END")!=null?resultSet.getString("MON_END"):JSONNull.getInstance());
+				businessTime.put("weekStartYear", resultSet.getString("WEEK_IN_YEAR_SRT")!=null?resultSet.getString("WEEK_IN_YEAR_SRT"):JSONNull.getInstance());
+				businessTime.put("weekEndYear", resultSet.getString("WEEK_IN_YEAR_END")!=null?resultSet.getString("WEEK_IN_YEAR_END"):JSONNull.getInstance());
+				businessTime.put("weekStartMonth", resultSet.getString("WEEK_IN_MONTH_SRT")!=null?resultSet.getString("WEEK_IN_MONTH_SRT"):JSONNull.getInstance());
+				businessTime.put("weekEndMonth", resultSet.getString("WEEK_IN_MONTH_END")!=null?resultSet.getString("WEEK_IN_MONTH_END"):JSONNull.getInstance());
+				businessTime.put("validWeek", resultSet.getString("VALID_WEEK")!=null?resultSet.getString("VALID_WEEK"):JSONNull.getInstance());
+				businessTime.put("dayStart", resultSet.getString("DAY_SRT")!=null?resultSet.getString("DAY_SRT"):JSONNull.getInstance());
+				businessTime.put("dayEnd", resultSet.getString("DAY_END")!=null?resultSet.getString("DAY_END"):JSONNull.getInstance());
+				businessTime.put("timeStart", resultSet.getString("TIME_SRT")!=null?resultSet.getString("TIME_SRT"):JSONNull.getInstance());
+				businessTime.put("timeDuration", resultSet.getString("TIME_DUR")!=null?resultSet.getString("TIME_DUR"):JSONNull.getInstance());
 				businessTimes.add(businessTime);
 				ixPoiBusinessTimesMap.put(fid, businessTimes);
 				
@@ -1375,28 +1366,34 @@ public class SampleDataDiffer {
 				String fid = resultSet.getString("fid");
 				JSONArray addresses = new JSONArray();
 				JSONObject address = new JSONObject();
-				String roadName = resultSet.getString("PROVINCE")+"|"+resultSet.getString("CITY")+"|"+resultSet.getString("COUNTY")+"|"
-									+resultSet.getString("TOWN")+"|"+resultSet.getString("PLACE")+"|"+resultSet.getString("STREET");
+				String roadName = resultSet.getString("PROVINCE")!=null?resultSet.getString("PROVINCE"):""+"|"+resultSet.getString("CITY")!=null?resultSet.getString("CITY"):""
+									+"|"+resultSet.getString("COUNTY")!=null?resultSet.getString("COUNTY"):""+"|"+resultSet.getString("TOWN")!=null?resultSet.getString("TOWN"):""
+									+"|"+resultSet.getString("PLACE")!=null?resultSet.getString("PLACE"):""+"|"+resultSet.getString("STREET")!=null?resultSet.getString("STREET"):"";
 				if ("|||||".equals(roadName)){roadName="";}
-				String roadNamePinyin = resultSet.getString("PROV_PHONETIC")+"|"+resultSet.getString("CITY_PHONETIC")+"|"+resultSet.getString("COUNTY_PHONETIC")+"|"
-										+resultSet.getString("TOWN_PHONETIC")+"|"+resultSet.getString("PLACE_PHONETIC")+"|"+resultSet.getString("STREET_PHONETIC");
+				String roadNamePinyin = resultSet.getString("PROV_PHONETIC")!=null?resultSet.getString("PROV_PHONETIC"):""+"|"+resultSet.getString("CITY_PHONETIC")!=null?resultSet.getString("CITY_PHONETIC"):""
+										+"|"+resultSet.getString("COUNTY_PHONETIC")!=null?resultSet.getString("COUNTY_PHONETIC"):""+"|"+resultSet.getString("TOWN_PHONETIC")!=null?resultSet.getString("TOWN_PHONETIC"):""
+										+"|"+resultSet.getString("PLACE_PHONETIC")!=null?resultSet.getString("PLACE_PHONETIC"):""+"|"+resultSet.getString("STREET_PHONETIC")!=null?resultSet.getString("STREET_PHONETIC"):"";
 				if ("|||||".equals(roadNamePinyin)){roadNamePinyin="";}
-				String addrName = resultSet.getString("LANDMARK")+"|"+resultSet.getString("PREFIX")+"|"+resultSet.getString("HOUSENUM")+"|"
-									+resultSet.getString("TYPE")+"|"+resultSet.getString("SUBNUM")+"|"+resultSet.getString("SURFIX")+"|"
-									+resultSet.getString("ESTAB")+"|"+resultSet.getString("BUILDING")+"|"+resultSet.getString("FLOOR")+"|"
-									+resultSet.getString("UNIT")+"|"+resultSet.getString("ROOM")+"|"+resultSet.getString("ADDONS");
+				String addrName = resultSet.getString("LANDMARK")!=null?resultSet.getString("LANDMARK"):""+"|"+resultSet.getString("PREFIX")!=null?resultSet.getString("PREFIX"):""
+									+"|"+resultSet.getString("HOUSENUM")!=null?resultSet.getString("HOUSENUM"):""+"|"+resultSet.getString("TYPE")!=null?resultSet.getString("TYPE"):""
+									+"|"+resultSet.getString("SUBNUM")!=null?resultSet.getString("SUBNUM"):""+"|"+resultSet.getString("SURFIX")!=null?resultSet.getString("SURFIX"):""
+									+"|"+resultSet.getString("ESTAB")!=null?resultSet.getString("ESTAB"):""+"|"+resultSet.getString("BUILDING")!=null?resultSet.getString("BUILDING"):""
+									+"|"+resultSet.getString("FLOOR")!=null?resultSet.getString("FLOOR"):""+"|"+resultSet.getString("UNIT")!=null?resultSet.getString("UNIT"):""
+									+"|"+resultSet.getString("ROOM")!=null?resultSet.getString("ROOM"):""+"|"+resultSet.getString("ADDONS")!=null?resultSet.getString("ADDONS"):"";
 				if ("|||||||||||".equals(addrName)){addrName="";}
-				String addrNamePinyin = resultSet.getString("LANDMARK_PHONETIC")+"|"+resultSet.getString("PREFIX_PHONETIC")+"|"+resultSet.getString("HOUSENUM_PHONETIC")+"|"
-										+resultSet.getString("TYPE_PHONETIC")+"|"+resultSet.getString("SUBNUM_PHONETIC")+"|"+resultSet.getString("SURFIX_PHONETIC")+"|"
-										+resultSet.getString("ESTAB_PHONETIC")+"|"+resultSet.getString("BUILDING_PHONETIC")+"|"+resultSet.getString("FLOOR_PHONETIC")+"|"
-										+resultSet.getString("UNIT_PHONETIC")+"|"+resultSet.getString("ROOM_PHONETIC")+"|"+resultSet.getString("ADDONS_PHONETIC");
+				String addrNamePinyin = resultSet.getString("LANDMARK_PHONETIC")!=null?resultSet.getString("LANDMARK_PHONETIC"):""+"|"+resultSet.getString("PREFIX_PHONETIC")!=null?resultSet.getString("PREFIX_PHONETIC"):""
+										+"|"+resultSet.getString("HOUSENUM_PHONETIC")!=null?resultSet.getString("HOUSENUM_PHONETIC"):""+"|"+resultSet.getString("TYPE_PHONETIC")!=null?resultSet.getString("TYPE_PHONETIC"):""
+										+"|"+resultSet.getString("SUBNUM_PHONETIC")!=null?resultSet.getString("SUBNUM_PHONETIC"):""+"|"+resultSet.getString("SURFIX_PHONETIC")!=null?resultSet.getString("SURFIX_PHONETIC"):""
+										+"|"+resultSet.getString("ESTAB_PHONETIC")!=null?resultSet.getString("ESTAB_PHONETIC"):""+"|"+resultSet.getString("BUILDING_PHONETIC")!=null?resultSet.getString("BUILDING_PHONETIC"):""
+										+"|"+resultSet.getString("FLOOR_PHONETIC")!=null?resultSet.getString("FLOOR_PHONETIC"):""+"|"+resultSet.getString("UNIT_PHONETIC")!=null?resultSet.getString("UNIT_PHONETIC"):""
+										+"|"+resultSet.getString("ROOM_PHONETIC")!=null?resultSet.getString("ROOM_PHONETIC"):""+"|"+resultSet.getString("ADDONS_PHONETIC")!=null?resultSet.getString("ADDONS_PHONETIC"):"";
 				if ("|||||||||||".equals(addrNamePinyin)){addrNamePinyin="";}
 				if (ixPoiAddressMap.containsKey(fid)){
 					addresses = ixPoiAddressMap.get(fid);
 				}
-				address.put("langCode", resultSet.getString("LANG_CODE"));
-				address.put("fullName", resultSet.getString("FULLNAME"));
-				address.put("fullNamePinyin", resultSet.getString("FULLNAME_PHONETIC"));
+				address.put("langCode", resultSet.getString("LANG_CODE")!=null?resultSet.getString("LANG_CODE"):"");
+				address.put("fullName", resultSet.getString("FULLNAME")!=null?resultSet.getString("FULLNAME"):"");
+				address.put("fullNamePinyin", resultSet.getString("FULLNAME_PHONETIC")!=null?resultSet.getString("FULLNAME_PHONETIC"):"");
 				address.put("roadName", roadName);
 				address.put("roadNamePinyin", roadNamePinyin);
 				address.put("addrName", addrName);
@@ -1430,6 +1427,9 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				String fid = resultSet.getString("fid");
+				if (fid.equals("00238820150319102300")) {
+					
+				}
 				JSONArray names = new JSONArray();
 				JSONObject name = new JSONObject();
 				if (ixPoiNameMap.containsKey(fid)){
@@ -1633,13 +1633,13 @@ public class SampleDataDiffer {
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
 				jsonObj.put("chargingType", resultSet.getInt("charging_type"));
-				jsonObj.put("changeBrands", resultSet.getString("change_brands"));
-				jsonObj.put("changeOpenType", resultSet.getString("change_open_type"));
+				jsonObj.put("changeBrands", resultSet.getString("change_brands")!=null?resultSet.getString("change_brands"):"");
+				jsonObj.put("changeOpenType", resultSet.getString("change_open_type")!=null?resultSet.getString("change_open_type"):"");
 				jsonObj.put("chargingNum", resultSet.getInt("charging_num"));
-				jsonObj.put("serviceProv", resultSet.getString("service_prov"));
-				jsonObj.put("openHour", resultSet.getString("open_hour"));
+				jsonObj.put("serviceProv", resultSet.getString("service_prov")!=null?resultSet.getString("service_prov"):"");
+				jsonObj.put("openHour", resultSet.getString("open_hour")!=null?resultSet.getString("open_hour"):"");
 				jsonObj.put("parkingFees", resultSet.getInt("parking_fees"));
-				jsonObj.put("parkingInfo", resultSet.getString("parking_info"));
+				jsonObj.put("parkingInfo", resultSet.getString("parking_info")!=null?resultSet.getString("parking_info"):"");
 				jsonObj.put("availableState", resultSet.getInt("available_state"));
 				retMap.put(resultSet.getString("fid"), jsonObj);
 			}
@@ -1678,23 +1678,23 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("plugType", resultSet.getString("plug_type"));
-				jsonObj.put("productNum", resultSet.getString("product_num"));
-				jsonObj.put("power", resultSet.getString("power"));
+				jsonObj.put("plugType", resultSet.getString("plug_type")!=null?resultSet.getString("plug_type"):"");
+				jsonObj.put("productNum", resultSet.getString("product_num")!=null?resultSet.getString("product_num"):"");
+				jsonObj.put("power", resultSet.getString("power")!=null?resultSet.getString("power"):"");
 				jsonObj.put("floor", resultSet.getInt("floor"));
-				jsonObj.put("factoryNum", resultSet.getString("factory_num"));
+				jsonObj.put("factoryNum", resultSet.getString("factory_num")!=null?resultSet.getString("factory_num"):"");
 				jsonObj.put("locationType", resultSet.getInt("location_type"));
-				jsonObj.put("parkingNum", resultSet.getString("parking_num"));
+				jsonObj.put("parkingNum", resultSet.getString("parking_num")!=null?resultSet.getString("parking_num"):"");
 				jsonObj.put("acdc", resultSet.getInt("acdc"));
-				jsonObj.put("payment", resultSet.getString("payment"));
-				jsonObj.put("current", resultSet.getString("current"));
-				jsonObj.put("plotNum", resultSet.getString("plot_num"));
+				jsonObj.put("payment", resultSet.getString("payment")!=null?resultSet.getString("payment"):"");
+				jsonObj.put("current", resultSet.getString("current")!=null?resultSet.getString("current"):"");
+				jsonObj.put("plotNum", resultSet.getString("plot_num")!=null?resultSet.getString("plot_num"):"");
 				jsonObj.put("plugNum", resultSet.getInt("plug_num"));
 				jsonObj.put("mode", resultSet.getInt("mode"));
-				jsonObj.put("prices", resultSet.getString("prices"));
-				jsonObj.put("openType", resultSet.getString("open_type"));
+				jsonObj.put("prices", resultSet.getString("prices")!=null?resultSet.getString("prices"):"");
+				jsonObj.put("openType", resultSet.getString("open_type")!=null?resultSet.getString("open_type"):"");
 				jsonObj.put("availableState", resultSet.getInt("available_state"));
-				jsonObj.put("manufacturer", resultSet.getString("manufacturer"));
+				jsonObj.put("manufacturer", resultSet.getString("manufacturer")!=null?resultSet.getString("manufacturer"):"");
 				jsonObj.put("voltage", resultSet.getInt("voltage"));
 				String fid = resultSet.getString("fid");
 				JSONArray plots = new JSONArray();
@@ -1743,14 +1743,14 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("servicePro", resultSet.getString("service_prov"));
-				jsonObj.put("service", resultSet.getString("service"));
-				jsonObj.put("openHour", resultSet.getString("open_hour"));
-				jsonObj.put("egType", resultSet.getString("eg_type"));
-				jsonObj.put("fuelType", resultSet.getString("fuel_type"));
-				jsonObj.put("payment", resultSet.getString("payment"));
-				jsonObj.put("mgType", resultSet.getString("mg_type"));
-				jsonObj.put("oilType", resultSet.getString("oil_type"));
+				jsonObj.put("servicePro", resultSet.getString("service_prov")!=null?resultSet.getString("service_prov"):"");
+				jsonObj.put("service", resultSet.getString("service")!=null?resultSet.getString("service"):"");
+				jsonObj.put("openHour", resultSet.getString("open_hour")!=null?resultSet.getString("open_hour"):"");
+				jsonObj.put("egType", resultSet.getString("eg_type")!=null?resultSet.getString("eg_type"):"");
+				jsonObj.put("fuelType", resultSet.getString("fuel_type")!=null?resultSet.getString("fuel_type"):"");
+				jsonObj.put("payment", resultSet.getString("payment")!=null?resultSet.getString("payment"):"");
+				jsonObj.put("mgType", resultSet.getString("mg_type")!=null?resultSet.getString("mg_type"):"");
+				jsonObj.put("oilType", resultSet.getString("oil_type")!=null?resultSet.getString("oil_type"):"");
 				retMap.put(resultSet.getString("fid"), jsonObj);
 			}
 			return retMap;
@@ -1784,10 +1784,10 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("ticketPrice", resultSet.getString("ticket_price"));
+				jsonObj.put("ticketPrice", resultSet.getString("ticket_price")!=null?resultSet.getString("ticket_price"):"");
 				jsonObj.put("sightLevel", resultSet.getInt("sight_level"));
-				jsonObj.put("openHour", resultSet.getString("open_hour"));
-				jsonObj.put("description", resultSet.getString("long_description"));
+				jsonObj.put("openHour", resultSet.getString("open_hour")!=null?resultSet.getString("open_hour"):"");
+				jsonObj.put("description", resultSet.getString("long_description")!=null?resultSet.getString("long_description"):"");
 				jsonObj.put("parking", resultSet.getInt("parking"));
 				retMap.put(resultSet.getString("fid"), jsonObj);
 			}
@@ -1822,9 +1822,9 @@ public class SampleDataDiffer {
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				JSONObject jsonObj = new JSONObject();
-				jsonObj.put("openHour", resultSet.getString("open_hour"));
-				jsonObj.put("adressDes", resultSet.getString("address"));
-				jsonObj.put("howToGo", resultSet.getString("how_to_go"));
+				jsonObj.put("openHour", resultSet.getString("open_hour")!=null?resultSet.getString("open_hour"):"");
+				jsonObj.put("adressDes", resultSet.getString("address")!=null?resultSet.getString("address"):"");
+				jsonObj.put("howToGo", resultSet.getString("how_to_go")!=null?resultSet.getString("how_to_go"):"");
 				retMap.put(resultSet.getString("fid"), jsonObj);
 			}
 			return retMap;
@@ -1898,17 +1898,17 @@ public class SampleDataDiffer {
 				JSONObject jsonObj = new JSONObject();
 
 				jsonObj.put("rating", resultSet.getInt("RATING"));
-				jsonObj.put("description", resultSet.getString("LONG_DESCRIPTION"));
-				jsonObj.put("service", resultSet.getString("SERVICE"));
-				jsonObj.put("roomType", resultSet.getString("ROOM_TYPE"));
+				jsonObj.put("description", resultSet.getString("LONG_DESCRIPTION")!=null?resultSet.getString("LONG_DESCRIPTION"):"");
+				jsonObj.put("service", resultSet.getString("SERVICE")!=null?resultSet.getString("SERVICE"):"");
+				jsonObj.put("roomType", resultSet.getString("ROOM_TYPE")!=null?resultSet.getString("ROOM_TYPE"):"");
 				jsonObj.put("parking", resultSet.getInt("PARKING"));
 				jsonObj.put("roomCount", resultSet.getInt("ROOM_COUNT"));
-				jsonObj.put("openHour", resultSet.getString("OPEN_HOUR"));
-				jsonObj.put("checkOutTime", resultSet.getString("CHECKOUT_TIME"));
-				jsonObj.put("creditCards", resultSet.getString("CREDIT_CARD"));
-				jsonObj.put("checkInTime", resultSet.getString("CHECKIN_TIME"));
+				jsonObj.put("openHour", resultSet.getString("OPEN_HOUR")!=null?resultSet.getString("OPEN_HOUR"):"");
+				jsonObj.put("checkOutTime", resultSet.getString("CHECKOUT_TIME")!=null?resultSet.getString("CHECKOUT_TIME"):"");
+				jsonObj.put("creditCards", resultSet.getString("CREDIT_CARD")!=null?resultSet.getString("CREDIT_CARD"):"");
+				jsonObj.put("checkInTime", resultSet.getString("CHECKIN_TIME")!=null?resultSet.getString("CHECKIN_TIME"):"");
 				jsonObj.put("breakfast", resultSet.getInt("BREAKFAST"));
-				jsonObj.put("roomPrice", resultSet.getString("ROOM_PRICE"));
+				jsonObj.put("roomPrice", resultSet.getString("ROOM_PRICE")!=null?resultSet.getString("ROOM_PRICE"):"");
 
 				ixHotelMap.put(resultSet.getString("fid"), jsonObj);
 			}
@@ -1978,6 +1978,7 @@ public class SampleDataDiffer {
 		return IxPoiRawFieldsMap;
 	}
 	
+	@SuppressWarnings("resource")
 	private Map<String,JSONObject> queryFromMongo() throws Exception {
 		// TODO 从mongodb中查询获取poi数据；
 		logger.info("Get diff fidList");
@@ -1988,6 +1989,7 @@ public class SampleDataDiffer {
 		logger.info("MongoDB init success");
 		BasicDBObject condition = new BasicDBObject();
 		condition.put("fid",new BasicDBObject(QueryOperators.IN, fidList));
+		condition.put("lifecycle", new BasicDBObject(QueryOperators.NE,1));
 		logger.info("MongoDB find data");
 		MongoCursor<Document> cur = mongoDB.find(condition).iterator();
 		
@@ -2009,7 +2011,7 @@ public class SampleDataDiffer {
 		Connection conn = getConnection();
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
-		String sql = "select c.fid from " + this.inParam.getDiffFidTempTableName() +" c";
+		String sql = "select distinct c.fid from " + this.inParam.getDiffFidTempTableName() +" c";
 		List<String> fidList = new ArrayList<String>();
 		try{
 			pstmt = conn.prepareStatement(sql);

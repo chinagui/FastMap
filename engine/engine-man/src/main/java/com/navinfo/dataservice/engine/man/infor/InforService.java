@@ -1,4 +1,4 @@
-package infor;
+package com.navinfo.dataservice.engine.man.infor;
 
 import java.sql.Clob;
 import java.sql.Connection;

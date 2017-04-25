@@ -633,9 +633,9 @@ public class SearchProcess {
 						}
 						if (eviaList.size() > 0 && sviaList.size() > 0) {
 							double eLength = linkSelector.loadByPidsLength(
-									eviaList, true);
+									eviaList);
 							double sLength = linkSelector.loadByPidsLength(
-									eviaList, true);
+									eviaList);
 							viaList = (eLength >= sLength) ? sviaList
 									: eviaList;
 

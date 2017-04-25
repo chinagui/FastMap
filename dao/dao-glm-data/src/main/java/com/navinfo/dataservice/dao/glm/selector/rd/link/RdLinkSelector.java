@@ -1156,25 +1156,15 @@ public class RdLinkSelector extends AbstractSelector {
 	 * 求一串link的长度
 	 * 
 	 * @param pids
-	 * @param isLock
 	 * @return
 	 * @throws Exception
 	 */
-	public double loadByPidsLength(List<Integer> pids, boolean isLock)
-			throws Exception {
+	public double loadByPidsLength(List<Integer> pids) throws Exception {
 		double length = 0;
 		StringBuilder sb = new StringBuilder(
-				"select SUB(LENGTH) length from rd_link where link_pid in ( "
+				"select SUM(LENGTH) length from rd_link where link_pid in ( "
 						+ com.navinfo.dataservice.commons.util.StringUtils
 								.getInteStr(pids) + ") and u_record!=2");
-		sb.append(" order by instr('"
-				+ com.navinfo.dataservice.commons.util.StringUtils
-						.getInteStr(pids) + "',link_pid)");
-
-		if (isLock) {
-			sb.append(" for update nowait");
-		}
-
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -1183,7 +1173,7 @@ public class RdLinkSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
 
-			while (resultSet.next()) {
+			if (resultSet.next()) {
 				length = resultSet.getDouble("length");
 			}
 			return length;

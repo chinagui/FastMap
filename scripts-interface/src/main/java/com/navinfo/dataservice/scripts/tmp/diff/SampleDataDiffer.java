@@ -175,7 +175,7 @@ public class SampleDataDiffer {
 					if (ixPoiMap.containsKey(fid)){
 						JSONObject orcleIxPoi = ixPoiMap.get(fid);
 						List<DiffField> diffIxPoiResult = diffIxPoi(mongoPoi,orcleIxPoi);
-						if(!diffIxPoiResult.isEmpty()){
+						if(diffIxPoiResult != null && diffIxPoiResult.size()>0){
 							diffFields.addAll(diffIxPoiResult);
 						}
 					} else {
@@ -1055,8 +1055,10 @@ public class SampleDataDiffer {
 			}
 			JSONObject mongoSportsVenues = mongoPoi.getJSONObject("sportsVenues");
 			String orcleSportsVenues = orcleIxPoi.getString("sportsVenues");
-			if ((mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")) && StringUtils.isNotEmpty(orcleSportsVenues)){
-				diffList.add(setDiffField("sportsVenues",null,orcleSportsVenues));
+			if (mongoSportsVenues.isEmpty() || mongoSportsVenues.isNullObject() || !mongoSportsVenues.containsKey("buildingType")){
+				if (StringUtils.isNotEmpty(orcleSportsVenues)) {
+					diffList.add(setDiffField("sportsVenues",null,orcleSportsVenues));
+				}
 			}else{
 				String sportsVenues = mongoSportsVenues.getString("buildingType");
 				if (!isStringSame(sportsVenues, orcleSportsVenues)){
@@ -1065,8 +1067,10 @@ public class SampleDataDiffer {
 			}
 			JSONObject mongoVerifyFlags = mongoPoi.getJSONObject("verifyFlags");
 			String orcleVerifyFlags = orcleIxPoi.getString("verifyFlags");
-			if ((mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")) && StringUtils.isNotEmpty(orcleVerifyFlags)){
-				diffList.add(setDiffField("verifyFlags",null,orcleVerifyFlags));
+			if (mongoVerifyFlags.isEmpty() || mongoVerifyFlags.isNullObject() || !mongoVerifyFlags.containsKey("record")){
+				if (StringUtils.isNotEmpty(orcleVerifyFlags)) {
+					diffList.add(setDiffField("verifyFlags",null,orcleVerifyFlags));
+				}
 			}else{
 				String verifyFlags = mongoVerifyFlags.getString("record");
 				if (!isStringSame(verifyFlags, orcleVerifyFlags)){

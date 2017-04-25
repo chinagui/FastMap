@@ -312,8 +312,9 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setAdminName(rs.getString("ADMIN_NAME"));
 						infor.setInforName(rs.getString("INFOR_NAME"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
+						return infor;
 					}
-					return infor;
+					return null;
 				}
 			};
 			Infor result =  run.query(conn, sql,rsHandler);
@@ -352,8 +353,9 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setAdminName(rs.getString("ADMIN_NAME"));
 						infor.setInforName(rs.getString("INFOR_NAME"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
+						return infor;
 					}
-					return infor;
+					return null;
 				}
 			};
 			Infor result =  run.query(conn, sql,rsHandler);

@@ -204,7 +204,7 @@ public class SubtaskService {
 				bean.setStatus(2);
 			}
 			//情报项目为空时，需要后台自动创建名称
-			if(StringUtils.isNotEmpty(bean.getName())){
+			if(!StringUtils.isNotEmpty(bean.getName())){
 				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
 				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
 				if(infor!=null){

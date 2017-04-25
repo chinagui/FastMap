@@ -172,15 +172,19 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
-//	@Test
+	@Test
 	public void testgetsuites() throws Exception {
 		try {
-			String parameter = "{'type':5}";
-
+			String parameter = "{'type':5,'flag':1}";
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int flag = 0;
+			if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") >0 ){
+				flag =jsonReq.getInt("flag");
+			}
+			
 			int type=jsonReq.getInt("type");	
 			
-			JSONArray suites=CheckService.getInstance().getCkSuites(type);
+			JSONArray suites=CheckService.getInstance().getCkSuites(type,flag);
 			System.out.println("suites: "+suites);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -203,7 +207,7 @@ public class NiValExceptionTest extends InitApplication {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void testgetnameids() throws Exception {
 		try {
 			JSONArray tips=new JSONArray();

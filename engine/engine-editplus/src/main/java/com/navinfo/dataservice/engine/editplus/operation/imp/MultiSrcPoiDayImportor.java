@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 
 import sun.tools.tree.ThisExpression;
 
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;

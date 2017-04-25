@@ -392,21 +392,24 @@ public class RdLinkExporter {
 		
 		//****zl 2017.04.11 *********
 		int adasFlag = rs.getInt("ADAS_FLAG");
+		double linkLength = rs.getDouble("LENGTH");
 		int isADAS  = 2;
 		if(adasFlag == 1){
 			isADAS = 1;
 		}else if(adasFlag == 0 || adasFlag == 2){
-			/*if(kind == 7 &&　){
-				
-			}*/
 			List<Integer> formList = new ArrayList<>();
 			for (int i = 0; i < formsArray.size(); i++) {
 				JSONObject formsJson = formsArray.getJSONObject(i);
 				formList.add(formsJson.getInt("form"));
 			}
-			if(formList.contains(35) && direct == 1){
+			if(kind > 7){//7级以下道路
 				isADAS = 3;
+			}else if(formList.contains(35) && direct == 1){//双向调头口
+				isADAS = 3;
+			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
+				
 			}
+			
 		}
 		json.put("isADAS", isADAS);
 
@@ -447,6 +450,10 @@ public class RdLinkExporter {
 			count+=1;
 		}
 
+		if (formList.contains(34) && (!formList.contains(35) || !formList.contains(39))) {
+			style = 12;
+			count+=1;
+		}
 		/*if (formList.contains(22)) {
 			style = 14;
 			count+=1;

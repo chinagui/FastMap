@@ -55,16 +55,16 @@ public class ScRoadnameHwInfo  {
 	public void setMemo(String memo) {
 		this.memo = memo;
 	}
-	public Integer getURecord() {
+	public Integer getuRecord() {
 		return uRecord;
 	}
-	public void setURecord(Integer uRecord) {
+	public void setuRecord(Integer uRecord) {
 		this.uRecord = uRecord;
 	}
-	public String getUFields() {
+	public String getuFields() {
 		return uFields;
 	}
-	public void setUFields(String uFields) {
+	public void setuFields(String uFields) {
 		this.uFields = uFields;
 	}
 	/* (non-Javadoc)

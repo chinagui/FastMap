@@ -1504,6 +1504,117 @@ public class ProgramService {
 		}
 	}
 	
+	//查询情报项目
+	public Map<String, Object> queryIntelligence(int programId) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+	    	return queryIntelligence(conn, programId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String, Object> queryIntelligence(Connection conn,int programId) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT P.PROGRAM_ID,                                      ");
+			sb.append("          P.NAME                       PROGRAM_NAME,       ");
+			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
+			sb.append("          P.TYPE,                                          ");
+			sb.append("          C.CITY_NAME,                                     ");
+			sb.append("          C.CITY_ID,                                       ");
+			sb.append("          I.INFOR_ID,                                      ");
+			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.FEATURE_KIND,                                  ");
+			sb.append("          I.METHOD,                                        ");
+			sb.append("          I.ADMIN_NAME,                                    ");
+			sb.append("          I.INFOR_CODE,                                    ");
+			sb.append("          I.SOURCE_CODE,                                   ");
+			sb.append("          I.INFO_TYPE_NAME,                                ");
+			sb.append("          I.TOPIC_NAME,                                    ");
+			sb.append("          I.PUBLISH_DATE,                                  ");
+			sb.append("          I.NEWS_DATE,                                     ");
+			sb.append("          I.EXPECT_DATE,                                   ");
+			sb.append("          P.CREATE_USER_ID,                                ");
+			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
+			sb.append("          P.PLAN_START_DATE,                               ");
+			sb.append("          P.PLAN_END_DATE,                                 ");
+			sb.append("          P.COLLECT_PLAN_START_DATE,                       ");
+			sb.append("          P.COLLECT_PLAN_END_DATE,                         ");
+			sb.append("          P.DAY_EDIT_PLAN_START_DATE,                      ");
+			sb.append("          P.DAY_EDIT_PLAN_END_DATE,                        ");
+			sb.append("          P.MONTH_EDIT_PLAN_START_DATE,                    ");
+			sb.append("          P.MONTH_EDIT_PLAN_END_DATE,                      ");
+			sb.append("          P.PRODUCE_PLAN_START_DATE,                       ");
+			sb.append("          P.PRODUCE_PLAN_END_DATE                          ");
+			sb.append("     FROM CITY C, PROGRAM P, USER_INFO U, INFOR I          ");
+			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
+			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
+			sb.append("      AND P.LATEST = 1                                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.PROGRAM_ID = "+programId);
+			
+			String sql = sb.toString();
+			log.info("program query sql :" + sql);
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("programId", rs.getInt("PROGRAM_ID"));
+						map.put("name", rs.getString("PROGRAM_NAME"));
+						map.put("descp", rs.getString("PROGRAM_DESCP"));
+						map.put("type", rs.getInt("TYPE"));
+						map.put("cityId", rs.getInt("CITY_ID"));
+						map.put("cityName", rs.getString("CITY_NAME"));
+						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
+						
+						map.put("method", rs.getString("METHOD"));	
+						map.put("adminName", rs.getString("ADMIN_NAME"));	
+						map.put("inforCode", rs.getString("INFOR_CODE"));	
+						map.put("sourceCode", rs.getInt("SOURCE_CODE"));	
+						map.put("infoTypeName", rs.getString("INFO_TYPE_NAME"));	
+						map.put("topicName", rs.getString("TOPIC_NAME"));	
+						map.put("publishDate", DateUtils.dateToString(rs.getTimestamp("PUBLISH_DATE")));
+						map.put("newsDate", DateUtils.dateToString(rs.getTimestamp("NEWS_DATE")));
+						map.put("expectDate",DateUtils.dateToString(rs.getTimestamp("EXPECT_DATE")));	
+						
+						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						map.put("collectPlanStartDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+						map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
+						map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
+						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
+						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return map;
+					}
+					return map;
+				}
+	    	};
+	    	QueryRunner run = new QueryRunner();
+	    	Map<String, Object> programMap = run.query(conn, sql, rsHandler);
+	    	return programMap;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	public Map<String, Object> query(Connection conn,int programId) throws Exception {
 		try{
 			StringBuilder sb = new StringBuilder();

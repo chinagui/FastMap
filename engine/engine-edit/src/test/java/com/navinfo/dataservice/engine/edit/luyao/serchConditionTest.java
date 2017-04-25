@@ -385,10 +385,10 @@ public class serchConditionTest extends InitApplication {
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.CMGBUILDING);
+			objType.add(ObjType.RDOBJECT);
 
-			System.out.println(p.searchDataByTileWithGap(objType, 863724,
-					397951, 20, 10));
+			System.out.println(p.searchDataByTileWithGap(objType, 215865,
+					99247, 18, 10));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -642,14 +642,10 @@ public class serchConditionTest extends InitApplication {
 			conn = DBConnector.getInstance().getConnectionById(13);
 
 			SearchProcess p = new SearchProcess(conn);
-
-			List<ObjType> objType = new ArrayList<>();
 			
 			String parameter = "{\"dbId\":13,\"type\":\"RDNODE\",\"pid\":13064669}";
 
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
-			
-			
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
 			
 			System.out.println(p.searchLinkByNode(jsonReq));
 

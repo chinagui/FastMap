@@ -2,10 +2,11 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.create;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
-import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import net.sf.json.JSONObject;
 
 import org.apache.log4j.Logger;
@@ -16,11 +17,13 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.gsc.RdGscSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
@@ -46,6 +49,9 @@ public class Operation implements IOperation {
 	private Connection conn;
 
 	private Result result;
+	
+	// 增加形状点后的几何。String：表名+linkPid;Coordinate[]：link几何
+	Map<String, Coordinate[]> linkCoorMap = new HashMap<String, Coordinate[]>();
 
 	public Operation(Command command, Check check, Connection conn) {
 
@@ -90,6 +96,13 @@ public class Operation implements IOperation {
 		rdGsc.setProcessFlag(1);
 
 		log.info("新建立交组成线");
+		
+		// 同一个link的gscLink组
+		Map<String, List<RdGscLink>> josnLinkMap = new HashMap<String, List<RdGscLink>>();
+
+		// Map<link标识, TreeMap<Integer： 交点所在该gscLink对应的link的线段序号,
+		// RdGscLink：新增的立交link>>
+		Map<String, TreeMap<Integer, RdGscLink>> laneNumInfo = new HashMap<String, TreeMap<Integer, RdGscLink>>();
 
 		// 立交关系组成 LINK 表
 		for (int i = 0; i < command.getLinkArray().size(); i++) {
@@ -108,17 +121,58 @@ public class Operation implements IOperation {
 
 			handleGscLink(gscLink, gscGeo, linkType);
 
-			if (linkObj.containsKey("shpSeqNum")) {
+			rdGsc.getLinks().add(gscLink);
 
-				gscLink.setShpSeqNum(linkObj.getInt("shpSeqNum"));
+			String linkFlag = getLinkFlag( gscLink);
+
+			if (!josnLinkMap.containsKey(linkFlag)) {
+
+				josnLinkMap.put(linkFlag, new ArrayList<RdGscLink>());
 			}
 
-			rdGsc.getLinks().add(gscLink);
+			josnLinkMap.get(linkFlag).add(gscLink);
+			
+			if (!laneNumInfo.containsKey(linkFlag)) {
+
+				laneNumInfo.put(linkFlag, new TreeMap<Integer, RdGscLink>());
+			}
+			
+			laneNumInfo.get(linkFlag).put(linkObj.getInt("lineNum"), gscLink);
 		}
+		
+		handleIntersectSelf(gscGeo, josnLinkMap, laneNumInfo);
 
 		result.setPrimaryPid(rdGsc.getPid());
 
 		result.insertObject(rdGsc, ObjStatus.INSERT, rdGsc.pid());
+	}
+	
+	private void handleIntersectSelf(Geometry gscGeo,
+			Map<String, List<RdGscLink>> josnLinkMap,
+			Map<String, TreeMap<Integer, RdGscLink>> laneNumInfo) {
+
+		for (String linkFlag : josnLinkMap.keySet()) {
+
+			//非自相交不处理
+			if (josnLinkMap.get(linkFlag).size() < 2) {
+
+				continue;
+			}
+
+			Coordinate[] linkCoor = linkCoorMap.get(linkFlag);
+
+			List<Integer> shpSeqNumList = RdGscOperateUtils.calcShpSeqNum(
+					gscGeo, linkCoor);
+
+			TreeMap<Integer, RdGscLink> group = laneNumInfo.get(linkFlag);
+
+			int index = 0;
+
+			for (Map.Entry<Integer, RdGscLink> entry : group.entrySet()) {
+
+				entry.getValue().setShpSeqNum(shpSeqNumList.get(index++));
+			}
+		}
 	}
 
 	/**
@@ -192,6 +246,10 @@ public class Operation implements IOperation {
 		gscLink.setTableName(linkRow.tableName().toUpperCase());
 
 		Coordinate[] linkCoor = linkNewGeo.getCoordinates();
+		
+		String linkFlag = getLinkFlag( gscLink);
+
+		linkCoorMap.put(linkFlag, linkCoor);
 
 		// 计算立交点序号和起终点标识
 		calShpSeqNum(gscLink, gscGeo, linkCoor);
@@ -347,4 +405,14 @@ public class Operation implements IOperation {
 			throw new Exception(type + "不支持创建立交");
 		}
 	}
+	
+	/**
+	 * 获取gscLink标识
+	 * @param gscLink
+	 * @return
+	 */
+	private String getLinkFlag(RdGscLink gscLink) {
+		return gscLink.getTableName() + gscLink.getLinkPid();
+	}
+
 }

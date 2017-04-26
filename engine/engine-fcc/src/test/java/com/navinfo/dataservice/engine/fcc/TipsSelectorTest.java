@@ -592,7 +592,6 @@ public class TipsSelectorTest extends InitApplication {
 			
 			put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
 					.getBytes());
-
 */
 
 			JSONObject track = JSONObject.fromObject(new String(result.getValue(
@@ -654,21 +653,17 @@ public class TipsSelectorTest extends InitApplication {
 			htab.close();
 			
 			/*JSONObject solrIndex = conn.getById(rowkey);
-
 			solrIndex.put("s_qSubTaskId", 0);
-
 			solrIndex.put("s_mSubTaskId", 0);
 			
 			solrIndex.put("wktLocation",solrIndex.getString("wkt"));
 			
 			if(!solrIndex.containsKey("s_mTaskId")){
 				solrIndex.put("s_mTaskId", 0);
-
 				solrIndex.put("s_qTaskId", 0);
 				
 				solrIndex.put("t_fStatus", 0);
 			}
-
 			conn.addTips(solrIndex);*/
 			}catch (Exception e) {
 				System.out.println("error:"+rowkey);

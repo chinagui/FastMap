@@ -62,10 +62,9 @@ public class RdLinkTest extends InitApplication {
                 "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46721,40.083]," +
                 "[116.46730363368988,40.082890151613405],[116.46738,40.08272]]},\"interLinks\":[],\"interNodes\":[]}," +
                 "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "" + "\"type\":\"RDLINK\"}";
-        parameter = "{\"command\":\"REPAIR\",\"dbId\":84,\"objId\":404000006," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.145,39.83244],[116.14479," +
-                "39.8322],[116.14524275064468,39.83227028570906],[116.145,39.83244]]},\"catchInfos\":[]}," +
-                "\"type\":\"LULINK\"}";
+        parameter = "{\"command\":\"REPAIR\",\"type\":\"RDLINK\",\"objId\":500000044,\"dbId\":13,\"subtaskId\":1," +
+                "\"data\":{\"type\":\"RDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52417,39.74599]," +
+                "[116.52445882558823,39.745980432174434]]},\"catchInfos\":[{\"nodePid\":509000031,\"catchNodePid\":503000039}]}}";
         TestUtil.run(parameter);
     }
 

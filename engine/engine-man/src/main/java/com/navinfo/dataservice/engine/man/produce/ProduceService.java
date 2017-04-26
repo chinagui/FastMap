@@ -251,7 +251,7 @@ public class ProduceService {
 				public Map<String,Object> handle(ResultSet rs) throws SQLException{
 					while(rs.next()){
 						Map<String,Object> map=new HashMap<String, Object>();
-						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforId", rs.getInt("INFOR_ID"));
 						return map;
 					}
 					return null;
@@ -260,7 +260,7 @@ public class ProduceService {
 			
 			Map<String,Object> produceMap=run.query(conn, sql,rsHandler);
 			if(produceMap!=null&&produceMap.containsKey("inforId")){
-				produceMap.put("grids", InforManService.getInstance().getProgramGridsByInfor(conn,(String)produceMap.get("inforId")));
+				produceMap.put("grids", InforManService.getInstance().getProgramGridsByInfor(conn,(Integer)produceMap.get("inforId")));
 			}
 			return produceMap;
 		}catch(Exception e){

@@ -41,6 +41,10 @@ public class Command extends AbstractCommand {
 	public Map<Integer, RdNode> getNodeMap() {
 
 		return rdNodeMap;
+	}	
+
+	public void setRdNodeMap(Map<Integer, RdNode> rdNodeMap) {
+		this.rdNodeMap = rdNodeMap;
 	}
 
 	public int getPid() {

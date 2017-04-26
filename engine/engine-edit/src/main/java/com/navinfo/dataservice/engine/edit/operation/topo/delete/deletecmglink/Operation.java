@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmglink;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 
@@ -56,6 +57,12 @@ public class Operation implements IOperation {
         result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
         // 处理CMG-FACE
         CmgfaceUtil.handleCmgface(command.getCmgfaces(), result, excludeCmgnode, excludeCmglink, conn);
+        // 处理立交对象
+        com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation operation =
+                new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.delete.Operation(conn);
+        List<CmgBuildlink> cmglinks = new ArrayList<>();
+        cmglinks.add(command.getCmglink());
+        operation.deleteByLinkPid(cmglinks, result);
         return null;
     }
 

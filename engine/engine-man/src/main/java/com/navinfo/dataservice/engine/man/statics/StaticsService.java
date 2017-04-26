@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -2784,13 +2785,17 @@ public class StaticsService {
 	/**
 	 * @param taskId
 	 * @return
-	 * @throws ServiceException 
+	 * @throws Exception 
 	 */
-	public List<Map> getDayTaskTipsStatics(int taskId) throws ServiceException {
+	public List<Map> getDayTaskTipsStatics(int taskId) throws Exception {
+		List<Map> result = new ArrayList<Map>();
 		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
 		//调用fccApi
+		FccApi fccApi = (FccApi) ApplicationContextUtil
+				.getBean("fccApi");
+		result = fccApi.getCollectTaskTipsStats(collectTaskIdSet);
 		
-		return null;
+		return result;
 	}
 
 }

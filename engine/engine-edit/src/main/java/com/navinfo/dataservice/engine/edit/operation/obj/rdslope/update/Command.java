@@ -19,6 +19,16 @@ public class Command extends AbstractCommand {
 
 	private JSONObject content;
 
+	private JSONObject json;
+
+	public JSONObject getJson() {
+		return json;
+	}
+
+	public void setJson(JSONObject json) {
+		this.json = json;
+	}
+
 	private int outLinkPid;
 
 	private double length;
@@ -79,6 +89,7 @@ public class Command extends AbstractCommand {
 	public Command(JSONObject json, String requester) {
 		this.requester = requester;
 		this.setDbId(json.getInt("dbId"));
+		this.json = json;
 		this.content = json.getJSONObject("data");
 		this.pid = json.getInt("objId");
 		if (this.content.containsKey("linkPid")) {

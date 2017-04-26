@@ -102,9 +102,9 @@ public class ProgramService {
 		int programId=getNewProgramId(conn);
 		bean.setProgramId(programId);
 		//情报项目为空时，需要后台自动创建名称
-		if(StringUtils.isNotEmpty(bean.getName())&&bean.getType()==4){
+		if(!StringUtils.isNotEmpty(bean.getName())&&bean.getType()==4){
 			Infor infor = InforService.getInstance().getInforByInforId(conn, bean.getInforId());
-			bean.setName(infor.getInforName()+"_"+infor.getPublishDate()+"_"+programId);
+			bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd")+"_"+programId);
 		}
 			
 		String insertPart="";

@@ -42,6 +42,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
@@ -207,7 +208,7 @@ public class SubtaskService {
 				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
 				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
 				if(infor!=null){
-					bean.setName(infor.getInforName()+"_"+infor.getPublishDate());
+					bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
 					if(bean.getExeUserId()!=0){
 						UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(bean.getExeUserId());
 						bean.setName(bean.getName()+"_"+userInfo.getUserRealName()+"_"+bean.getSubtaskId());

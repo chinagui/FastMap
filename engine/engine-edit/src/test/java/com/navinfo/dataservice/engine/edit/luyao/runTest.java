@@ -1595,4 +1595,15 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 	
+		@Test
+	public void run_00425_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDGSC\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[116.5500470995903,39.73500082461386],[116.55032873153687,39.73500082461386],[116.55032873153687,39.73528340618207],[116.5500470995903,39.73528340618207],[116.5500470995903,39.73500082461386]]]},\"gscPoint\":{\"longitude\":116.55021582673737,\"latitude\":39.735121259117044},\"linkObjs\":[{\"pid\":510000054,\"type\":\"RDLINK\",\"zlevel\":0,\"lineNum\":1},{\"pid\":510000054,\"type\":\"RDLINK\",\"zlevel\":1,\"lineNum\":7}]}}";
+		
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	
+	
 }

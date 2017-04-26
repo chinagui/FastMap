@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +30,7 @@ import com.navinfo.dataservice.api.man.model.FmDay2MonSync;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
@@ -60,6 +62,7 @@ import com.navinfo.dataservice.impcore.selector.LogSelector;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 
 import net.sf.json.JSONObject;
@@ -115,19 +118,25 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			log.info("确定日落月大区库个数："+regions.size()+"个。");
 			response("确定日落月大区库个数："+regions.size()+"个。",null);
 			
-			
-			
 			List<Integer> grids = new ArrayList<Integer>();
 			//支持精编任务关闭日落月
 			if(specMeshes!=null&&specMeshes.size()>0){
-				for(Integer m:specMeshes){
-					for(int i=0;i<4;i++){
-						for(int j=0;j<4;j++){
-							grids.add(m*100 + i*10+ j);
+				grids= meshs2grids(specMeshes);
+				for(Region region:regions){
+					
+					//20170426 按任务落添加图幅开关判断
+					//	1、获取任务范围内已关闭的图幅号
+					List<Integer> closemeshes = metaApi.getCloseMeshs(specMeshes);
+					//	2、将任务范围内关闭的图幅号转换成grids
+					List<Integer> closeGrids = meshs2grids(closemeshes);
+					//	3、筛选这些grids中的是否存在未落的履历
+					if(closeGrids.size()>0){
+						List<String> logGrids =selectLogFromCloseGrids(closeGrids,datahubApi,region);
+						if(logGrids!=null&&logGrids.size()>0){
+							throw new Exception("以下图幅关闭，请开启后再落:"+logGrids.toString());
 						}
 					}
-				}
-				for(Region region:regions){
+					
 					doSync(region,null,grids, datahubApi, d2mSyncApi,manApi,phaseId);
 					log.info("大区库（regionId:"+region.getRegionId()+"）日落月完成。");
 				}
@@ -177,6 +186,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		
 
 	}
+	
 
 	private void doSync(Region region,List<Integer> filterGrids,List<Integer> grids,DatahubApi datahubApi, Day2MonthSyncApi d2mSyncApi,ManApi manApi,int phaseId)
 			throws Exception{
@@ -438,6 +448,65 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			throw new Exception("以下图幅DMS加锁:"+retainMeshs.toString());
 		}
 	}
+	
+	protected List<String> selectLogFromCloseGrids(List<Integer> grids,DatahubApi datahubApi,Region region) throws Exception{
+	
+		DbInfo dailyDbInfo = datahubApi.getDbById(region.getDailyDbId());
+		OracleSchema dailyDbSchema = new OracleSchema(
+				DbConnectConfig.createConnectConfig(dailyDbInfo.getConnectParam()));
+		Connection conn = dailyDbSchema.getPoolDataSource().getConnection();
+		
+		try{
+			QueryRunner queryRunner = new QueryRunner();
+			SqlClause sqlClause = getSelectLogSql(conn,grids);
+			
+			ResultSetHandler<List<String>> rsh = new ResultSetHandler<List<String>>() {
+				@Override
+				public List<String> handle(ResultSet rs) throws SQLException {
+					// TODO Auto-generated method stub
+					List<String> msgs = new ArrayList<String>();
+					while(rs.next()){
+						msgs.add(rs.getString("GRID_ID"));
+					}
+					return msgs;
+				}
+			};
+			List<String> query = queryRunner.query(conn, sqlClause.getSql(), rsh, sqlClause.getValues().toArray());
+			return query;
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	protected SqlClause getSelectLogSql(Connection conn,List<Integer> grids) throws Exception{
+		StringBuilder sb = new StringBuilder();
+		sb.append(" select distinct g.GRID_ID\r\n" + 
+				"   from log_operation   p,\r\n" + 
+				"       log_detail d,\r\n" +
+				"       log_detail_grid g,\r\n" + 
+				"       poi_edit_status s\r\n" + 
+				"   where p.op_id = d.op_id\r\n" + 
+				"    and d.row_id = g.log_row_id\r\n" + 
+				"    and (d.ob_pid = s.pid or d.geo_pid = s.pid)\r\n"+ 
+				"    and p.com_sta = 0"+ 
+				"    and (d.ob_nm = 'IX_POI' or d.geo_nm = 'IX_POI')"+ 
+				"    and s.status = 3");
+				 
+		List<Object> values = new ArrayList<Object> ();
+		if(grids!=null&&grids.size()>0){
+			SqlClause inClause = SqlClause.genInClauseWithMulInt(conn,grids," g.GRID_ID ");
+			if (inClause!=null)
+				sb .append(" AND "+ inClause.getSql());
+			values.addAll(inClause.getValues());
+		}
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
+	}
+	
 	private List<Integer> grids2meshs(List<Integer> grids) throws Exception {
 		List<Integer> meshs =new ArrayList<Integer>();
 		for(int g:grids){
@@ -448,6 +517,18 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			meshs.add(mesh);
 		}
 		return meshs;
+	}
+	
+	private List<Integer> meshs2grids(List<Integer> meshs) throws Exception {
+		List<Integer> grids =new ArrayList<Integer>();
+		for(int m:meshs){
+			for(int i=0;i<4;i++){
+				for(int j=0;j<4;j++){
+					grids.add(m*100 + i*10+ j);
+				}
+			}
+		}
+		return grids;
 	}
 	
 	public static void main(String[] args) throws JobException{

@@ -725,6 +725,15 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getCloseMeshs(List<Integer> meshs)throws Exception{
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.getCloseMeshs(meshs);
+	}
+	
+	
+	/**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
      * @return Map<String, Integer> key:KIND_CODE value:KIND_USE

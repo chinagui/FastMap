@@ -2,3 +2,7 @@
 	功能：过渡期管理规格升级
 	目标库：fm_man
 	author：宋冬燕
+2. fm_sys/glm_table_init.sql
+	功能：计算建筑物grid
+	目标库：fm_sys
+	author：鹿尧

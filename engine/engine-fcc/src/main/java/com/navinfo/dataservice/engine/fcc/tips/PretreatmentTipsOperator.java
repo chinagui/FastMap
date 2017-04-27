@@ -1131,18 +1131,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throws Exception {
 		String rowkey = "";
 		Connection hbaseConn;
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
+			
+			JSONObject source = jsonInfo.getJSONObject("source");
+
+			String sourceType = source.getString("s_sourceType");
 			// 新增
 			if (command == 0) {
-
-				JSONObject source = jsonInfo.getJSONObject("source");
-
-				String sourceType = source.getString("s_sourceType");
 
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
@@ -1159,7 +1160,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				updateOneTips(jsonInfo, user, htab, date); // 同时修改hbase和solr
 			}
+			
 			htab.close();
+			
+			//需要进行tips差分
+			allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
+			
+			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 			return rowkey;
 		} catch (Exception e) {
@@ -1393,6 +1400,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public void batchSave(JSONArray jsonInfoArr, int user) throws Exception {
 
 		Connection hbaseConn;
+		
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+		
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
@@ -1417,11 +1427,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				puts.add(put);
 
 				addSolr(tipsInfo, user, date);
+				
+				//需要进行tips差分
+				allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
 			}
 
 			htab.put(puts);
 
 			htab.close();
+			
+			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
 			logger.error("批量新增tips出错：" + e.getMessage(), e);
@@ -1772,7 +1787,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			for (JSONObject json : tipsList) {
 
-				String rowkey = json.getString("rowkey");
+				String rowkey = json.getString("id");
 
 				json.put("t_fStatus", 1); // 是否完成多源融合 0 否；1 是；
 

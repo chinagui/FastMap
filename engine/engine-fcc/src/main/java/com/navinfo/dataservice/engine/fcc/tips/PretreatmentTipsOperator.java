@@ -1781,6 +1781,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			TipsSelector selector = new TipsSelector();
 			
 			int taskType=getTaskType(taskId);
+			
+			
+			if(taskType == TaskType.Q_TASK_TYPE){
+				taskType=TaskType.Q_SUB_TASK_TYPE;
+			}
+			
+			else if(taskType == TaskType.M_TASK_TYPE){
+				taskType=TaskType.M_SUB_TASK_TYPE;
+			}
+			
+			else {
+				throw new Exception("不支持的任务类型：" + taskType);
+			}
 
 			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
 					taskType);

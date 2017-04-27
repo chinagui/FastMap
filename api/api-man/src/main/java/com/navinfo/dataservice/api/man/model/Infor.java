@@ -201,7 +201,7 @@ public class Infor  {
 	/**
 	 * @param infoCode the infoCode to set
 	 */
-	public void setInfroCode(String inforCode) {
+	public void setInforCode(String inforCode) {
 		this.inforCode = inforCode;
 	}
 

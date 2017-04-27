@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
@@ -56,6 +57,11 @@ public class Command extends AbstractCommand {
      * 被打断线所关联面对象
      */
     private List<CmgBuildface> cmgfaces;
+
+    /**
+     * 被打断线所关联立交对象
+     */
+    private List<RdGsc> gscs;
 
     @Override
     public OperType getOperType() {
@@ -170,5 +176,23 @@ public class Command extends AbstractCommand {
      */
     public void setNewCmglinks(List<CmgBuildlink> newCmglinks) {
         this.newCmglinks = newCmglinks;
+    }
+
+    /**
+     * Getter method for property <tt>gscs</tt>.
+     *
+     * @return property value of gscs
+     */
+    public List<RdGsc> getGscs() {
+        return gscs;
+    }
+
+    /**
+     * Setter method for property <tt>gscs</tt>.
+     *
+     * @param gscs value to be assigned to property gscs
+     */
+    public void setGscs(List<RdGsc> gscs) {
+        this.gscs = gscs;
     }
 }

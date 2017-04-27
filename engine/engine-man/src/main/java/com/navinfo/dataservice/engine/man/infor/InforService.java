@@ -1,4 +1,4 @@
-package infor;
+package com.navinfo.dataservice.engine.man.infor;
 
 import java.sql.Clob;
 import java.sql.Connection;
@@ -68,7 +68,10 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
 			infor.setInforId(inforId);
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
+			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			infor.setAdminName(infor.getAdminName().replace("|", ""));
+			
 			infor.setExpectDate(new Timestamp(df.parse(dataJson.getString("expectDate")).getTime()));
 			infor.setPublishDate(new Timestamp(df.parse(dataJson.getString("publishDate")).getTime()));
 			infor.setNewsDate(new Timestamp(df.parse(dataJson.getString("newsDate")).getTime()));
@@ -312,8 +315,9 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setAdminName(rs.getString("ADMIN_NAME"));
 						infor.setInforName(rs.getString("INFOR_NAME"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
+						return infor;
 					}
-					return infor;
+					return null;
 				}
 			};
 			Infor result =  run.query(conn, sql,rsHandler);
@@ -352,8 +356,9 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 						infor.setAdminName(rs.getString("ADMIN_NAME"));
 						infor.setInforName(rs.getString("INFOR_NAME"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
+						return infor;
 					}
-					return infor;
+					return null;
 				}
 			};
 			Infor result =  run.query(conn, sql,rsHandler);

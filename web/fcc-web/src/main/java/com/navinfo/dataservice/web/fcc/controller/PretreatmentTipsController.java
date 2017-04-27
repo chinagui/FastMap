@@ -377,11 +377,11 @@ public class PretreatmentTipsController extends BaseController {
 			
 			int taskId= jsonReq.getInt("taskId");
 			
-			int taskType= jsonReq.getInt("taskType");
+			/*int taskType= jsonReq.getInt("taskType");*/
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submitInfoJobTips2Web( user,taskId,taskType);
+			op.submitInfoJobTips2Web( user,taskId);
 
 			return new ModelAndView("jsonView", success());
 

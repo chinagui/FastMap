@@ -42,7 +42,7 @@ public class FMD0140 extends BasicCheckRule {
 					}
 					
 					if(errorList!=null&&errorList.size()>0){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方中文别名包含敏感字:“"
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方中文简称包含敏感字:“"
 								+errorList.toString().replace("[", "").replace("]", "")+"”");
 						return;
 					}

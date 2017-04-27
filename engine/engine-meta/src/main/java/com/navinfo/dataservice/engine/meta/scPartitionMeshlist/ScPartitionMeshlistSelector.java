@@ -71,6 +71,40 @@ public class ScPartitionMeshlistSelector {
 	}
 	
 	/**
+	 * cp_meshlist,sc_partition_meshlist,查询关闭的图幅
+	 * @return List<Mesh4Partition>
+	 * @throws Exception
+	 */
+	public List<Integer> getCloseMeshs(List<Integer> meshs) throws Exception{
+		
+		Connection conn = null;
+		
+		String sql = "SELECT spm.MESH FROM SC_PARTITION_MESHLIST spm WHERE spm.open_flag=0 AND spm.MESH IN  ("+StringUtils.join(meshs.toArray(), ",")+")";
+		
+		ResultSet rs = null;
+		
+		PreparedStatement pstmt = null;
+		
+		List<Integer> meshList= new ArrayList<Integer>();
+		
+		try {
+			conn = DBConnector.getInstance().getMetaConnection();
+			pstmt = conn.prepareStatement(sql);
+			rs = pstmt.executeQuery();
+			while (rs.next()) {	
+				meshList.add(rs.getInt("mesh"));					
+			} 
+			return meshList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(rs);
+			DBUtils.closeStatement(pstmt);
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
 	 * cp_meshlist,sc_partition_meshlist查询所有图幅相关信息
 	 * @return List<Mesh4Partition>
 	 * @throws Exception

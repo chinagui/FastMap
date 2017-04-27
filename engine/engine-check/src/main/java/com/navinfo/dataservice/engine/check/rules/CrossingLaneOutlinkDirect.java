@@ -90,7 +90,7 @@ public class CrossingLaneOutlinkDirect extends baseRule{
 			sb.append(" AND C.U_RECORD <> 2");
 			sb.append(" AND C.PID =" + rdLaneConnexityPid);
 			sb.append(" AND R.DIRECT = 3");
-			sb.append(" AND R.E_NODE_PID = C.NODE_PID");
+			sb.append(" AND R.S_NODE_PID = C.NODE_PID");
 			sb.append(" AND R.LINK_PID = " + linkPid);
 
 			String sql = sb.toString();

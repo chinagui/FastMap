@@ -1051,7 +1051,7 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiName getAliasCHIName(long nameGroupId){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")&&(br.getNameGroupid()==nameGroupId)){
 				return br;}
 			}
 		return null;

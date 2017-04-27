@@ -6,7 +6,6 @@ import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
@@ -26,7 +25,7 @@ import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.springframework.util.CollectionUtils;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -80,9 +79,15 @@ public class Operation implements IOperation {
         } else {
             this.seriesBreak(result);
         }
-
+        // 维护面对象
         if (!CollectionUtils.isEmpty(command.getCmgfaces())) {
             createFaceByExistingLink(result);
+        }
+        // 维护立交对象
+        if (CollectionUtils.isNotEmpty(command.getGscs())) {
+            com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation updateOp =
+                    new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation("CMG_BUILDLINK");
+            updateOp.breakLineForGsc(result, command.getCmglink(), command.getNewCmglinks(), command.getGscs());
         }
         return null;
     }
@@ -98,7 +103,7 @@ public class Operation implements IOperation {
             List<IRow> links = new ArrayList<>();
             for (IRow topo : cmgface.getTopos()) {
                 if (command.getCmglink().pid() != ((CmgBuildfaceTopo) topo).getLinkPid()) {
-                    links.add((CmgBuildlink) cmglinkSelector.loadById(((CmgBuildfaceTopo) topo).getLinkPid(), false));
+                    links.add(cmglinkSelector.loadById(((CmgBuildfaceTopo) topo).getLinkPid(), false));
                 }
                 result.insertObject(topo, ObjStatus.DELETE, cmgface.pid());
             }

@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,8 +18,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-/*import com.navinfo.nirobot.business.Tips2AuMarkApi;
-*/
+/*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
+
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
 	
@@ -87,7 +88,7 @@ public class FccApiImpl implements FccApi{
 	
 
     @Override
-    public void tips2Aumark(JSONObject parameter)  {
+    public void tips2Aumark(JSONObject parameter)throws Exception  {
     	
     	try{
 
@@ -108,6 +109,7 @@ public class FccApiImpl implements FccApi{
         logger.debug("进入Api:tips2Aumark,调用run()");
     	}catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			throw e;
 		}
         
         
@@ -127,7 +129,7 @@ public class FccApiImpl implements FccApi{
         String managerId =null;
       //  List<String> gridList =null;
         
-        List<Integer> collectTaskIds =null; //中线任务号
+        List<Integer> collectTaskIds =new ArrayList<Integer>(); //中线任务号
         JSONObject taskInfo =null;
         String types=null;
         int phaseId =0;
@@ -269,9 +271,9 @@ public class FccApiImpl implements FccApi{
                apiService= (ManApi) ApplicationContextUtil.getBean("manApi");
                int count=0;
                
-        /*       Tips2AuMarkApi api=new Tips2AuMarkApi();
+          /*     Tips2AuMarkApi api=new Tips2AuMarkApi();
                count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
-              */ 
+               */
                
                if(count!=0){
                	apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
@@ -285,10 +287,7 @@ public class FccApiImpl implements FccApi{
 
 
                }
-               
-               logger.debug("API,回调完成-------------------！");
                 
-                apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
                 logger.info("API,调用完成-------------------！");
                 logger.debug("API,调用完成-------------------！");
 

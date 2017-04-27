@@ -13,7 +13,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import com.ctc.wstx.util.DataUtil;
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;

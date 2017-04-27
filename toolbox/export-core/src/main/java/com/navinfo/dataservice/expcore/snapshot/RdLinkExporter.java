@@ -29,10 +29,8 @@ public class RdLinkExporter {
 
 		// creating a LINESTRING table
 		stmt.execute("create table gdb_rdLine(pid integer primary key)");
-	/*	stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");//add GEOMETRY column
-	*/	/*stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
-	*/	
-		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		stmt.execute("select addgeometrycolumn('gdb_rdLine','geometry',4326,'GEOMETRY','XY')");//add GEOMETRY column
+		stmt.execute("select createspatialindex('gdb_rdLine','geometry')");
 		stmt.execute("alter table gdb_rdLine add display_style text;");
 		stmt.execute("alter table gdb_rdLine add display_text text;");
 		stmt.execute("alter table gdb_rdLine add meshid text;");
@@ -57,12 +55,12 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
 		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
 		//********zl 2017.04.11 *************
-//		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		stmt.execute("alter table gdb_rdLine add isADAS integer;");
 		//***********************************
 
 		String insertSql = "insert into gdb_rdLine values("
-//				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -107,7 +105,6 @@ public class RdLinkExporter {
 		resultSet3.setFetchSize(5000);
 
 		//****************************************
-		
 		Set<Integer> linkPidSet = new HashSet<Integer>();//所有linkPid 的集合 无重复
 		List<Integer> sNodePidList=new ArrayList<Integer>();//所有sNodePid 的集合 有重复
 		List<Integer> eNodePidList=new ArrayList<Integer>();//所有eNodePid 的集合 有重复
@@ -117,8 +114,6 @@ public class RdLinkExporter {
 		Map<Integer,Integer> eNodeAndsNode = new HashMap<Integer,Integer>();// 所有eNodePid, sNodePid的map集合
 		Map<Integer,Integer> sNodeAndLinkPid = new HashMap<Integer,Integer>();// 所有 sNodePid,linkPid的map集合
 		Map<Integer,Integer> eNodeAndLinkPid = new HashMap<Integer,Integer>();// 所有eNodePid,linkPid的map集合
-		
-		
 		while (resultSet3.next()) {
 			if(resultSet3.getInt("kind") != 10){//排除十级路
 				linkPidSet.add(resultSet3.getInt("link_pid"));
@@ -131,7 +126,6 @@ public class RdLinkExporter {
 				sNodeAndLinkPid.put(resultSet3.getInt("S_NODE_PID"), resultSet3.getInt("link_pid"));
 				eNodeAndLinkPid.put(resultSet3.getInt("E_NODE_PID"), resultSet3.getInt("link_pid"));
 			}
-			
 		}
 		//****************************************
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
@@ -163,8 +157,8 @@ public class RdLinkExporter {
 
 			prep.setInt(1, pid);
 
-//			prep.setString(2, json.getString("geometry"));
-			prep.setInt(2, json.getInt("isADAS"));
+			prep.setString(2, json.getString("geometry"));
+//			prep.setInt(2, json.getInt("isADAS"));
 
 			prep.setString(3, json.getString("display_style"));
 
@@ -224,7 +218,7 @@ public class RdLinkExporter {
 			prep.setLong(24, json.getLong("sNodePid"));
 			prep.setLong(25, json.getLong("eNodePid"));
 			
-//			prep.setInt(26, json.getInt("isADAS"));
+			prep.setInt(26, json.getInt("isADAS"));
 
 			prep.executeUpdate();
 
@@ -456,6 +450,7 @@ public class RdLinkExporter {
 			}else if(formList.contains(35) && direct == 1){//双向调头口
 				isADAS = 3;
 			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
+				System.out.println("begin kind == 7 && linkLength < 1000 :");
 				//计算此link 的sNode和eNode 出现的次数
 				List<Integer> nodeList = new ArrayList<>();
 				nodeList.addAll(sNodePidList);
@@ -472,10 +467,12 @@ public class RdLinkExporter {
 					if(sNodePid > 0){
 						sNodeCount =getNodeCount(sNodePid,nodeList);
 					}
+					System.out.println("sNodeCount: "+ sNodePid+":"+sNodeCount);
 					if(eNodeCount > 0){
 						eNodeCount =getNodeCount(eNodePid,nodeList);
 					}
-					if((sNodeCount ==1 && eNodeCount ==2) || (sNodeCount ==2 && eNodeCount ==1)){//
+					System.out.println("eNodeCount: "+ eNodePid+":"+eNodeCount);
+					if((sNodeCount ==1 && eNodeCount ==2) || (sNodeCount ==2 && eNodeCount ==1)){//判断是否存在断头路迟勋跟踪
 						Map<String,Object> map = 
 								getLengthAll(sNodeCount,eNodeCount,
 												sNodePid,eNodePid,
@@ -499,15 +496,11 @@ public class RdLinkExporter {
 					}else{
 						break;
 					}
-					
 				}
-				
 				if(length < 1000){
 					isADAS =3;
 				}
-				
 			}
-			
 		}
 		json.put("isADAS", isADAS);
 
@@ -523,8 +516,8 @@ public class RdLinkExporter {
 			style = 32;
 			count+=1;
 		}
-
-		List<Integer> formList = new ArrayList<>();
+		System.out.println("forms : "+forms);
+		List<Integer> formList = new ArrayList<Integer>();
 
 		for (int i = 0; i < forms.size(); i++) {
 			JSONObject json = forms.getJSONObject(i);
@@ -606,12 +599,18 @@ public class RdLinkExporter {
 		if (count == 0) {
 			style = 255;
 		}
-		System.out.println("style: "+style);
-		System.out.println("count: "+count);
+		System.out.println("style: "+style+" ,count: "+count);
 		return style;
 	}
 	
 	
+	/**
+	 * @Title: getLengthAll
+	 * @Description: 判断追踪反向
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月27日 下午2:38:35 
+	 */
 	private static Map<String, Object> getLengthAll(int sNodeCount,int eNodeCount,
 			int sNodePid, int eNodePid,
 			List<Integer> sNodePidList,List<Integer> eNodePidList, 
@@ -623,9 +622,9 @@ public class RdLinkExporter {
 		double length = 0;
 		int flag = 0;
 		//第一步
-		
 		if(sNodeCount == 1 && eNodeCount == 2){
 			//追踪eNode  返回的是7级路的总长度
+			System.out.println("追踪eNode snode是唯一点    eNodePid: "+eNodePid);
 				map = traceNode(0,
 						 sNodePid,eNodePid,
 						 sNodePidList,eNodePidList,
@@ -634,6 +633,7 @@ public class RdLinkExporter {
 						sNodeAndLinkPid,eNodeAndLinkPid,nodeList);
 		}else if(eNodeCount == 1 && sNodeCount == 2){
 			//追踪sNode  返回的是7级路的总长度
+			System.out.println("追踪sNode enode是唯一点    sNodePid: "+sNodePid);
 				map =  traceNode(1,
 						 sNodePid,eNodePid,
 						 sNodePidList,eNodePidList,
@@ -660,23 +660,23 @@ public class RdLinkExporter {
 	 * @date 2017年4月26日 上午10:15:10 
 	 */
 	private static int getNodeCount(int nodePid,List<Integer> nodeList){
-		int nodeCount = 1;
+		int nodeCount = 0;
 		if(nodeList != null && nodeList.size() >0 ){
 			for(int i=0;i < nodeList.size();i++ ){
-				nodeCount = 1;  
-	            for (int j = i + 1; j < nodeList.size(); j++) {  
-	                if (nodeList.get(i) == nodeList.get(j)) {  
-	                	nodeCount++;// 次数+1  
-	                	nodeList.remove(j);  
-	                    j--;// 这里是重点，因为集合remove（）后，长度改变了，对应的下标也不再是原来的下标，//仔细体会  
-	                }  
-	            }
-			
+				if(nodeList.get(i) == nodePid){
+					nodeCount++;
+				}
 			}
-		
 		}
 		return nodeCount;
 	}
+	/**
+	 * @Title: traceNode
+	 * @Description: 追踪node_pid ,返回下一节点node_pid
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月27日 下午2:37:13 
+	 */
 	private static Map<String,Object> traceNode(int flag ,
 			int sNodePid, int eNodePid, 
 			List<Integer> sNodePidList, List<Integer> eNodePidList,
@@ -712,8 +712,5 @@ public class RdLinkExporter {
 			
 		}
 		return map;
-	}
-	public static void main(String[] args) {
-		List list = new ArrayList<>();
 	}
 }

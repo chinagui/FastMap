@@ -153,6 +153,20 @@ public class ProgramController extends BaseController {
 		}
 	}
 	
+	//查询情报项目的接口
+	@RequestMapping(value = "/inforProgram/query")
+	public ModelAndView queryIntelligence(HttpServletRequest request) {
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			int programId= dataJson.getInt("programId");
+			Map<String, Object> data = service.queryIntelligence(programId);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 	@RequestMapping(value = "/program/nameList")
 	public ModelAndView nameList(HttpServletRequest request) {
 		try{	

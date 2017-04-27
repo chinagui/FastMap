@@ -271,7 +271,9 @@ public class RdNameTeilen {
 	private Map<String,Object> teilenEngNameNew(Connection conn, String nameGruopId, String nameId,Integer roadType) throws Exception{
 		Map<String,Object> returnMap = null;  
 		// 根据组号，取英文名的名称ID
-		String sqlForEng = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'ENG' AND N.NAME_GROUPID = ?";
+		String sqlForEng = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'ENG' AND N.NAME_GROUPID = ?  "
+				//****2017.04.27 zl ****
+				+ " and N.SPLIT_FLAG != 1 ";
 		
 		QueryRunner runner=new QueryRunner();
 		List<RdName> listEngName=runner.query(conn, sqlForEng, new ResultSetHandler<List<RdName>>(){
@@ -286,7 +288,9 @@ public class RdNameTeilen {
 			} ,nameGruopId);
 		
 		// 根据名称ID，取中文名
-		String sqlForChi = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'CHI' AND N.NAME_GROUPID = ?";
+		String sqlForChi = "SELECT n.*,'' ADMIN_NAME, '' MESSAGE, substr(n.U_FIELDS,0,instr(n.U_FIELDS,',')-1) userName,substr(n.U_FIELDS,instr(n.U_FIELDS,',') + 1) time FROM RD_NAME N WHERE N.LANG_CODE = 'CHI' AND N.NAME_GROUPID = ?  "
+				//****2017.04.27 zl ****
+				+ " and N.SPLIT_FLAG != 1 ";
 		List<RdName> listName=runner.query(conn, sqlForChi, new ResultSetHandler<List<RdName>>(){
 			@Override
 			public List<RdName> handle(ResultSet rs) throws SQLException{

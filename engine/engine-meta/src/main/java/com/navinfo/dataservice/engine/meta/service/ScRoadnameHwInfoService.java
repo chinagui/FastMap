@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.meta.service;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -545,8 +546,8 @@ public class ScRoadnameHwInfoService {
 		bean.setNameGroupid(nameGroupid);
 		ScRoadnameHwInfo oldBean = query(bean, conn);
 		if(oldBean == null){//数据库中不存在
-			Integer hwPidUp=applyPid();
-			Integer hwPidDw=applyPid();
+			Integer hwPidUp=getPid();
+			Integer hwPidDw=hwPidUp + 1;
 			bean.setHwPidUp(hwPidUp);
 			bean.setHwPidDw(hwPidDw);
 			bean.setMemo("0");
@@ -569,8 +570,33 @@ public class ScRoadnameHwInfoService {
 		
 	}
 	
-	private int applyPid() throws Exception {
-		return PidUtil.getInstance().applyHwInfoPid();
+	private Integer getPid() throws Exception{
+		Connection conn = null;
+		PreparedStatement pstmt=null;
+		
+		ResultSet rs=null;
+		
+		try{
+		conn = DBConnector.getInstance().getMetaConnection();	
+		//max（）+1
+		String sql=" SELECT  max(hw_pid_up)+1  hw_pid_up  from  sc_roadname_hw_info  ";
+		
+		pstmt = conn.prepareStatement(sql);
+		
+		rs= pstmt.executeQuery();
+		
+		if(rs.next()){
+			return rs.getInt("hw_pid_up");
+		}
+		
+		}catch (Exception e) {
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
+		return 0;
+		
+		
 	}
-	
 }

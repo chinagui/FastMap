@@ -240,7 +240,7 @@ public class RdNameSelector {
 		arr.add(3);
 		
 		String types = arr.join(",");
-		System.out.println(types);
+//		System.out.println(types);
 		
 		
 		
@@ -802,7 +802,6 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 				rdNameObj.put("hwInfoFlag", 0);
 			}
 			//*************************
-			
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

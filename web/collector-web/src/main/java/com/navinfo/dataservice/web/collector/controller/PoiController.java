@@ -15,8 +15,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-//import com.navinfo.dataservice.control.service.PoiService;
-//import com.navinfo.dataservice.jobframework.service.JobService;
 
 import net.sf.json.JSONObject;
 
@@ -54,78 +52,13 @@ public class PoiController extends BaseController {
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			Long userId = tokenObj.getUserId();
-			JSONObject res=null;//PoiService.getInstance().importPoi(jobId, subtaskId,userId);
-			return new ModelAndView("jsonView", success(res));
+//			JSONObject res=PoiService.getInstance().importPoi(jobId, subtaskId,userId);
+			return new ModelAndView("jsonView", success(null));
 		}catch(Exception e){
 			logger.error(e.getMessage(),e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
-	@RequestMapping(value = "/db/getbyname/")
-	public ModelAndView getDbByName(HttpServletRequest request){
-		try{
-			String dbName = URLDecode(request.getParameter("name"));
-			String dbType = URLDecode(request.getParameter("type"));
-			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("name参数不能为空。");
-			}
-			if(StringUtils.isEmpty(dbType)){
-				throw new IllegalArgumentException("type参数不能为空。");
-			}
-//			DbInfo db = DbService.getInstance().getDbByName(dbName, dbType);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
-		}catch(Exception e){
-			log.error("获取db失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	@RequestMapping(value = "/db/getbyid/")
-	public ModelAndView getDbById(HttpServletRequest request){
-		try{
-			String dbId = URLDecode(request.getParameter("id"));
-			if(StringUtils.isEmpty(dbId)){
-				throw new IllegalArgumentException("id参数不能为空。");
-			}
-//			DbInfo db = DbService.getInstance().getDbById(Integer.parseInt(dbId));
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
-		}catch(Exception e){
-			log.error("获取db失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	@RequestMapping(value = "/db/getonlybyname/")
-	public ModelAndView getOnlyDbByName(HttpServletRequest request){
-		try{
-			String dbName = URLDecode(request.getParameter("name"));
-			if(StringUtils.isEmpty(dbName)){
-				throw new IllegalArgumentException("name参数不能为空。");
-			}
-//			DbInfo db = DbService.getInstance().getOnlyDbByName(dbName);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
-		}catch(Exception e){
-			log.error("获取db失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	@RequestMapping(value = "/db/getonlybytype/")
-	public ModelAndView getOnlyDbByType(HttpServletRequest request){
-		try{
-			String bizType = URLDecode(request.getParameter("type"));
-			if(StringUtils.isEmpty(bizType)){
-				throw new IllegalArgumentException("type参数不能为空。");
-			}
-//			DbInfo db = DbService.getInstance().getOnlyDbByBizType(bizType);
-//			return new ModelAndView("jsonView", success(db.getConnectParam()));
-			return null;
-		}catch(Exception e){
-			log.error("获取db失败，原因："+e.getMessage(), e);
-			return new ModelAndView("jsonView",exception(e));
-		}
-	}
-	
 	public static void main(String[] args){
 		Map<String,Object> map = new HashMap<String,Object>();
 		map.put("dbName", "1");

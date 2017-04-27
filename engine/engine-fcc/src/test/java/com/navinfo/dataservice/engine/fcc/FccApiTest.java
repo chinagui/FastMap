@@ -1,10 +1,13 @@
 package com.navinfo.dataservice.engine.fcc;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
 
 /**
@@ -14,7 +17,14 @@ import com.navinfo.dataservice.engine.fcc.service.FccApiImpl;
  * @Description: TODO
  * 
  */
-public class FccApiTest {
+public class FccApiTest extends InitApplication  {
+	
+	
+	@Override
+	@Before
+	public void init() {
+		initContext();
+	}
 
 	@Test
 	public  void testSearchDataBySpatial(){
@@ -26,6 +36,19 @@ public class FccApiTest {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	@Test
+	public void testFcc(){
+	    try {
+	    	FccApi  apiFcc=new FccApiImpl();
+			String parameter = "{\"gdbid\":12,\"au_db_ip\":\"192.168.3.227\",\"au_db_username\":\"gdb270_dcs_17sum_bj\",\"au_db_password\":\"gdb270_dcs_17sum_bj\",\"au_db_sid\":\"orcl\",\"au_db_port\":1521,\"types\":\"\",\"phaseId\":27,\"collectTaskIds\":[21],\"taskid\":{\"manager_id\":21,\"imp_task_name\":\"北京市北京市城区天安门20170418\",\"province\":\"北京市\",\"city\":\"北京市\",\"district\":\"北京市北京市城区天安门\",\"job_nature\":\"更新\",\"job_type\":\"行人导航\"}}";
+			JSONObject  obj=JSONObject.fromObject(parameter);
+			apiFcc.tips2Aumark(obj);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -1,7 +1,9 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -22,6 +24,44 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  */
 public class GLM60439 extends BasicCheckRule {
 
+//	@Override
+//	public void runCheck(BasicObj obj) throws Exception {
+//		if(obj.objName().equals(ObjectName.IX_POI)){
+//			IxPoiObj poiObj=(IxPoiObj) obj;
+//			IxPoi poi=(IxPoi) poiObj.getMainrow();
+//			List<IxPoiName> names = poiObj.getIxPoiNames();
+//			if(names==null||names.size()==0){return;}
+//			for(IxPoiName nameTmp:names){
+//				if(nameTmp.isCH()){
+//					if(nameTmp.isUsedName()){continue;}
+//					
+//					String name=nameTmp.getName();
+//					if(name==null||name.isEmpty()){continue;}
+//					
+//					IxPoiName aliaPoiName = poiObj.getAliasCHIName(nameTmp.getNameGroupid());
+//					if(aliaPoiName==null){
+//						continue;
+//					}
+//
+//					Pattern p = Pattern.compile(".*[\uFF10-\uFF19]{3,}.*"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
+//					String convertNumber = "";
+//					String aliaName = aliaPoiName.getName();
+//					if(p.matcher(aliaName).matches()){
+//						Pattern p1 = Pattern.compile("[^\uFF10-\uFF19]{3,}");
+//						String beforeConvertNumber = p1.matcher(aliaName).replaceAll("").trim();
+//						convertNumber = SBC2Chinese(beforeConvertNumber);
+//					}
+//					if(nameTmp.isOfficeName()&&nameTmp.isStandardName()){
+//						if(!name.contains(convertNumber)){
+//							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+//							return;
+//						}
+//					}
+//				}
+//			}
+//		}
+//	}
+	
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
@@ -30,24 +70,30 @@ public class GLM60439 extends BasicCheckRule {
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			if(names==null||names.size()==0){return;}
 			for(IxPoiName nameTmp:names){
-				if(nameTmp.isCH()){
-					String name=nameTmp.getName();
-					IxPoiName aliaPoiName = poiObj.getAliasCHIName(0);
-					if(name==null||name.isEmpty()){continue;}
+				if(nameTmp.isCH()&&nameTmp.isOfficeName()&&nameTmp.isStandardName()){
 					if(nameTmp.isUsedName()){continue;}
-					Pattern p = Pattern.compile(".*[\uFF10-\uFF19]{3,}.*"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
+					
+					String name=nameTmp.getName();
+					if(name==null||name.isEmpty()){continue;}
+					
+					IxPoiName aliaPoiName = poiObj.getAliasCHIName(nameTmp.getNameGroupid());
+					if(aliaPoiName==null){
+						continue;
+					}
+
+					Pattern p = Pattern.compile("([\uFF10-\uFF19]{3,})"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
 					String convertNumber = "";
 					String aliaName = aliaPoiName.getName();
-					if(p.matcher(aliaName).matches()){
-						Pattern p1 = Pattern.compile("[^\uFF10-\uFF19]{3,}");
-						String beforeConvertNumber = p1.matcher(aliaName).replaceAll("").trim();
-						convertNumber = SBC2Chinese(beforeConvertNumber);
-					}
-					if(nameTmp.isOfficeName()&&nameTmp.isStandardName()){
-						if(!name.contains(convertNumber)){
-							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-							return;
-						}
+					Matcher m = p.matcher(aliaName);
+			        while (m.find()) {
+			        	String beforeConvertNumber = m.group(1);
+						convertNumber = SBC2Chinese(beforeConvertNumber); 
+						aliaName = aliaName.replace(beforeConvertNumber,convertNumber);
+			        }
+
+					if(!name.equals(aliaName)){
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+						return;
 					}
 				}
 			}

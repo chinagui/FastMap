@@ -16,8 +16,8 @@ public class AdasTrackPointUpload extends TrackUpload{
 
     @Override
     public String getSourceRowkey(JSONObject json) {
-        String a_prjName=json.getString("a_prjName");
-        String a_weekSeconds=json.getString("a_weekSeconds");
+        String a_prjName=json.getString("prjName");
+        String a_weekSeconds=json.getString("weekSeconds");
         return a_prjName + a_weekSeconds;
     }
 

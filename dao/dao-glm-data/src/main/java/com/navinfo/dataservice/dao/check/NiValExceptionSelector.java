@@ -1065,7 +1065,7 @@ public class NiValExceptionSelector {
 					sql_where_r+=" and  r.name like '%"+paramsObj.getString("name")+"%' ";
 				}
 				if(paramsObj.containsKey("nameId") && paramsObj.getString("nameId") != null && StringUtils.isNotEmpty(paramsObj.getString("nameId")) ){
-					sql_where_r+=" and  r.nameId = "+paramsObj.getString("nameId")+" ";
+					sql_where_r+=" and  r.name_id = "+paramsObj.getString("nameId")+" ";
 				}
 				if(paramsObj.containsKey("adminId") && paramsObj.getString("adminId") != null && StringUtils.isNotEmpty(paramsObj.getString("adminId")) ){
 					sql_where_r+=" and r.admin_id =  "+paramsObj.getString("adminId")+" ";

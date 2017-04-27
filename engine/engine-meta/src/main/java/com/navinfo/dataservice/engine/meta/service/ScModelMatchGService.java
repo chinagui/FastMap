@@ -851,8 +851,8 @@ public class ScModelMatchGService {
 				values.add(bean.getVersion());
 			};
 			if (bean!=null&&bean.getProjectNm()!=null && StringUtils.isNotEmpty(bean.getProjectNm().toString())){
-				selectSql+=" and PROJECT_NM=? ";
-				values.add(bean.getProjectNm());
+				selectSql+=" and PROJECT_NM like ? ";
+				values.add("%"+bean.getProjectNm()+"%");
 			};
 			if (bean!=null&&bean.getSpecification()!=null && StringUtils.isNotEmpty(bean.getSpecification().toString())){
 				selectSql+=" and SPECIFICATION=? ";

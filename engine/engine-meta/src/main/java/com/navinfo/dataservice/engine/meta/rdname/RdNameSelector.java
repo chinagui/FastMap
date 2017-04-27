@@ -535,77 +535,80 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 		
 		StringBuilder sql = new StringBuilder();
 		
-			sql.append("SELECT * ");
-			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-			sql.append(" ,( select substr(replace(src_resume,'\"',''),instr(replace(src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) tipid from rd_name where src_resume like '%tips%' and name_id = a.name_id) as tipid  ");
-			sql.append(" from rd_name a where 1=1");
-			// 添加过滤器条件
-			Iterator<String> keys = param.keys();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				if (key.equals("name")) {
-					if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
-						sql.append(" and a.name like '%");
-						sql.append(param.getString(key));
-						sql.append("%'");
-					}
-					
-				} else if(key.equals("nameGroupid") ){
-					if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+			sql.append("with q1 as(");
+			sql.append(" select distinct a.NAME_GROUPID  from rd_name a where 1=1 ");
+				// 添加过滤器条件
+				Iterator<String> keys = param.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					if (key.equals("name")) {
+						if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
+							sql.append(" and a.name like '%");
+							sql.append(param.getString(key));
+							sql.append("%'");
+						}
+						
+					} else if(key.equals("nameGroupid") ){
+						if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("adminId") ){
+						if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("roadTypes")){
+						if(StringUtils.isNotEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
+							String columnName = "road_type";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("  in( ");
+							sql.append(roadTypes);
+							sql.append(") ");
+						}
+						
+					}else {
 						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append(" = ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}
-					
-				}else if(key.equals("adminId") ){
-					if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append(" = ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}
-					
-				}else if(key.equals("roadTypes")){
-					if(StringUtils.isNotEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
-						String columnName = "road_type";
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("  in( ");
-						sql.append(roadTypes);
-						sql.append(") ");
-					}
-					
-				}else {
-					String columnName = sUtils.toColumnName(key);
-					if (!param.getString(key).isEmpty()) {
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("='");
-						sql.append(param.getString(key));
-						sql.append("'");
+						if (!param.getString(key).isEmpty()) {
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("='");
+							sql.append(param.getString(key));
+							sql.append("'");
+						}
 					}
 				}
-			}
+
+			sql.append(") ");
+			sql.append("SELECT * ");
+			sql.append(" FROM (SELECT c.*, rownum rn");
+			sql.append(" FROM (select distinct COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+			sql.append(" from rd_name a , q1 q  where 1=1 and a.name_groupid = q.NAME_GROUPID ");
 		
 		// 添加排序条件
 		if (sortby.length()>0) {
 			int index = sortby.indexOf("-");
 			if (index != -1) {
-				sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
+				sql.append(" ORDER BY ");
 				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" , a.");
+				sql.append("  a.");
 				sql.append(sortbyName);
 				sql.append(" DESC");
 			} else {
-				sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+				sql.append(" ORDER BY ");
 				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" , a.");
+				sql.append("  a.");
 				sql.append(sortbyName);
 			}
 		} else {

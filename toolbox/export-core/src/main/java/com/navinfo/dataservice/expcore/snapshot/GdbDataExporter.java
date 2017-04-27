@@ -63,7 +63,7 @@ public class GdbDataExporter {
 		
 		RdLinkExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
-		System.out.println("exporting rdnode");
+		/*System.out.println("exporting rdnode");
 
 		RdNodeExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
 
@@ -81,7 +81,7 @@ public class GdbDataExporter {
 		
 		System.out.println("exporting adface");
 
-		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);
+		AdFaceExporter.run(sqliteConn, stmt, conn, operateDate, meshes);*/
 
 		sqliteConn.close();
 

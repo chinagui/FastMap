@@ -246,16 +246,16 @@ public class ScRoadnameHwInfoService {
 			String selectSql = "select * from SC_ROADNAME_HW_INFO where 1=1 ";
 			List<Object> values=new ArrayList<Object>();
 			if (bean!=null&&bean.getHwPidUp()!=null && StringUtils.isNotEmpty(bean.getHwPidUp().toString())){
-				selectSql+=" and HW_PID_UP=? ";
-				values.add(bean.getHwPidUp());
+				selectSql+=" and HW_PID_UP like ? ";
+				values.add("%"+bean.getHwPidUp()+"%");
 			};
 			if (bean!=null&&bean.getHwPidDw()!=null && StringUtils.isNotEmpty(bean.getHwPidDw().toString())){
-				selectSql+=" and HW_PID_DW=? ";
-				values.add(bean.getHwPidDw());
+				selectSql+=" and HW_PID_DW like ? ";
+				values.add("%"+bean.getHwPidDw()+"%");
 			};
 			if (bean!=null&&bean.getNameGroupid()!=null && StringUtils.isNotEmpty(bean.getNameGroupid().toString())){
-				selectSql+=" and NAME_GROUPID=? ";
-				values.add(bean.getNameGroupid());
+				selectSql+=" and NAME_GROUPID like ? ";
+				values.add("%"+bean.getNameGroupid()+"%");
 			};
 			if (bean!=null&&bean.getMemo()!=null && StringUtils.isNotEmpty(bean.getMemo().toString())){
 				selectSql+=" and MEMO in(?) ";
@@ -266,8 +266,8 @@ public class ScRoadnameHwInfoService {
 				values.add(bean.getuRecord());
 			};
 			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
-				selectSql+=" and U_FIELDS=? ";
-				values.add(bean.getuFields());
+				selectSql+=" and U_FIELDS like ? ";
+				values.add("%"+bean.getuFields()+"%");
 			};
 			//添加分页
 			com.navinfo.dataservice.commons.util.StringUtils sUtils = new com.navinfo.dataservice.commons.util.StringUtils();
@@ -549,10 +549,10 @@ public class ScRoadnameHwInfoService {
 			Integer hwPidDw=applyPid();
 			bean.setHwPidUp(hwPidUp);
 			bean.setHwPidDw(hwPidDw);
+			bean.setMemo("0");
 			bean.setuRecord(1);
 			create(bean, conn);
 		}
-		
 		
 	}
 	

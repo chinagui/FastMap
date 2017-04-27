@@ -1,12 +1,9 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;

@@ -191,7 +191,7 @@ public class TipsOperateTest2 extends InitApplication{
 		try{
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"user\":1664,\"taskId\":1}";
+		parameter="{\"user\":1664,\"taskId\":57}";
 		
 		//{"user":1672,"taskId":37}
 		

@@ -147,7 +147,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //			log.info("end gdb batch");
 			
 			//修改父子关系关联批到的数据任务号及状态
-			changeRefeDataStatus(changeReferData,conn);
+			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
 			commitPoi(conn);

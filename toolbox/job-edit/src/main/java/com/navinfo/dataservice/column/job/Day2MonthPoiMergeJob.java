@@ -133,7 +133,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					if(closeGrids.size()>0){
 						List<String> logGrids =selectLogFromCloseGrids(closeGrids,datahubApi,region);
 						if(logGrids!=null&&logGrids.size()>0){
-							throw new Exception("以下图幅关闭，请开启后再落:"+logGrids.toString());
+							throw new Exception("以下gird存在需要落的数据，但是对应的图幅关闭，请开启后再落:"+logGrids.toString());
 						}
 					}
 					

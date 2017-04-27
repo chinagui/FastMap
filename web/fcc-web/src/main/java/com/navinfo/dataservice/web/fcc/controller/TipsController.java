@@ -645,7 +645,7 @@ public class TipsController extends BaseController {
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataByWkt(wkt,
-					types, flag);
+					types, flag, "wkt");
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

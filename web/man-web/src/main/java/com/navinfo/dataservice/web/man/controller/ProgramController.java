@@ -158,8 +158,8 @@ public class ProgramController extends BaseController {
 	public ModelAndView queryIntelligence(HttpServletRequest request) {
 		try{	
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			int programId= dataJson.getInt("programId");
-			Map<String, Object> data = service.queryIntelligence(programId);
+			
+			Map<String, Object> data = service.queryIntelligence(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

@@ -191,7 +191,9 @@ public class TipsOperateTest2 extends InitApplication{
 		try{
 		String  parameter=null;
 		//0280017b8ead071595417cb3305ac9d8e49d73
-		parameter="{\"user\":123,\"taskId\":123,\"taskType\":1}";
+		parameter="{\"user\":1664,\"taskId\":57}";
+		
+		//{"user":1672,"taskId":37}
 		
 		System.out.println(parameter);
 		
@@ -201,11 +203,11 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		int taskId= jsonReq.getInt("taskId");
 		
-		int taskType= jsonReq.getInt("taskType");
+		//int taskType= jsonReq.getInt("taskType");
 		
 		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 		
-		op.submitInfoJobTips2Web( user,taskId,taskType);
+		op.submitInfoJobTips2Web( user,taskId);
 
 		System.out.println("预处理提交tips成功");
 		}catch (Exception e) {
@@ -381,6 +383,8 @@ public class TipsOperateTest2 extends InitApplication{
 		
 		String parameter="{\"jsonInfo\":{\"rowkey\":\"021601370d27cad51b49328f13fa1d8c4169a8\",\"deep\":{\"name\":\"测试测试\",\"f_array\":[{\"id\":\"1359079\",\"type\":1},{\"id\":\"1359083\",\"type\":1},{\"id\":\"1359084\",\"type\":1}],\"geo\":{\"coordinates\":[116.37257,40.11223],\"type\":\"Point\"}},\"geometry\":{\"g_location\":{\"type\":\"Polygon\",\"coordinates\":[[[116.37251,40.112022],[116.372505,40.112022],[116.37242,40.112064],[116.37242,40.112064],[116.372375,40.112095],[116.372375,40.1121],[116.37236,40.112118],[116.37235,40.11212],[116.37232,40.112194],[116.37232,40.1122],[116.37232,40.11227],[116.37232,40.112278],[116.372345,40.11232],[116.372345,40.11232],[116.37237,40.11235],[116.37237,40.112354],[116.3724,40.11238],[116.3724,40.112385],[116.37248,40.112427],[116.37248,40.112427],[116.37253,40.11244],[116.372536,40.11244],[116.37262,40.112427],[116.37263,40.112427],[116.37267,40.11242],[116.37268,40.112415],[116.37275,40.112377],[116.37276,40.11237],[116.372795,40.11231],[116.372795,40.11231],[116.37282,40.112267],[116.37282,40.11226],[116.37281,40.112186],[116.3728,40.112183],[116.372765,40.11211],[116.372765,40.112106],[116.372734,40.112076],[116.37271,40.112057],[116.3727,40.112053],[116.37264,40.112034],[116.37264,40.112034],[116.372604,40.112022],[116.3726,40.112022],[116.37251,40.112022]]]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.37257,40.11223]}},\"feedback\":{\"f_array\":[]},\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":2,\"s_sourceId\":\"\",\"s_sourceType\":\"1601\",\"s_reliability\":100,\"s_sourceProvider\":0,\"s_qTaskId\":0,\"s_mTaskId\":0},\"track\":{\"t_lifecycle\":2,\"t_command\":0,\"t_date\":\"20170223145230\",\"t_cStatus\":1,\"t_dStatus\":0,\"t_mStatus\":0,\"t_inMeth\":0,\"t_pStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_fStatus\":0,\"t_trackInfo\":[{\"stage\":1,\"date\":\"20170222180542\",\"handler\":2922}]}},\"user\":2922,\"command\":1}";
 		
+		
+		parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1507\",\"s_sourceProvider\":0,\"s_reliability\":0,\"s_qTaskId\":0,\"s_mTaskId\":77,\"s_qSubTaskId\":0,\"s_mSubTaskId\":57},\"geometry\":{\"g_location\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.34488,39.85711],[116.34487,39.85745],[116.34485,39.85778]],[[116.34484325138497,39.85782268913135],[116.34484738111495,39.85778147738756]],[[116.34488,39.85711],[116.34487,39.85745],[116.34485,39.85778]],[[116.34487956762312,39.85711025168359],[116.34484325138497,39.85782268913135]]]},\"g_guide\":{\"type\":\"MultiLineString\",\"coordinates\":[[[116.34488,39.85711],[116.34487,39.85745],[116.34485,39.85778]],[[116.34484325138497,39.85782268913135],[116.34484738111495,39.85778147738756]],[[116.34488,39.85711],[116.34487,39.85745],[116.34485,39.85778]],[[116.34487956762312,39.85711025168359],[116.34484325138497,39.85782268913135]]]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_cStatus\":0,\"t_fStatus\":0,\"t_pStatus\":0,\"t_dStatus\":0,\"t_mStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_inMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handler\":1664,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"content\":\"\",\"options\":{},\"geoLiveType\":\"TIPPEDESTRIANSTREET\",\"code\":\"1507\",\"deep\":{\"name\":\"\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.34484325138497,39.85782268913135]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.34487956762312,39.85702789224931]},\"f_array\":[{\"id\":17631897,\"type\":1,\"flag\":\"1\"},{\"id\":17610108,\"type\":1,\"flag\":\"2\"},{\"id\":17631896,\"type\":1,\"flag\":\"0\"}],\"time\":\"\"},\"_originalJson\":{\"deep\":{\"name\":\"\",\"gSLoc\":{\"type\":\"Point\",\"coordinates\":[116.34484325138497,39.85782268913135]},\"gELoc\":{\"type\":\"Point\",\"coordinates\":[116.34487956762312,39.85702789224931]},\"f_array\":[{\"id\":17631897,\"type\":1,\"flag\":\"1\"},{\"id\":17610108,\"type\":1,\"flag\":\"2\"},{\"id\":17631896,\"type\":1,\"flag\":\"0\"}],\"time\":\"\"}},\"_initHooksCalled\":true},\"user\":1664,\"command\":0}";
 		//parameter="{\"jsonInfo\":{\"rowkey\":null,\"pid\":null,\"source\":{\"s_featureKind\":2,\"s_project\":\"\",\"s_sourceCode\":7,\"s_sourceId\":\"\",\"s_sourceType\":\"1107\",\"s_sourceProvider\":0,\"s_reliability\":null,\"s_qTaskId\":0,\"s_mTaskId\":0},\"geometry\":{\"g_location\":{\"type\":\"Point\",\"coordinates\":[116.45158052444458,39.98805384322511]},\"g_guide\":{\"type\":\"Point\",\"coordinates\":[116.45092887795363,39.98703773419431]}},\"track\":{\"t_lifecycle\":3,\"t_command\":0,\"t_date\":\"\",\"t_cStatus\":0,\"t_fStatus\":0,\"t_pStatus\":0,\"t_dStatus\":0,\"t_mStatus\":0,\"t_dInProc\":0,\"t_mInProc\":0,\"t_inMeth\":0,\"t_trackInfo\":[{\"date\":\"\",\"handel\":2,\"stage\":6}]},\"feedback\":{\"f_array\":[]},\"options\":{},\"geoLiveType\":\"TIPTOLLGATE\",\"code\":\"1107\",\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"},\"_originalJson\":{\"deep\":{\"id\":\"\",\"in\":{\"id\":19361679,\"type\":1},\"out\":{},\"nId\":0,\"agl\":0,\"tp\":0,\"pNum\":0,\"etc\":[],\"loc\":0,\"name\":\"\"}},\"_initHooksCalled\":true},\"user\":2,\"command\":0}";
 		try {
 			if (StringUtils.isEmpty(parameter)) {

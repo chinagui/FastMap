@@ -46,7 +46,7 @@ public class FMA0901 extends BasicCheckRule {
 		List<IxPoiAddress> Addresses= poiObj.getIxPoiAddresses();
 		for (IxPoiAddress Address : Addresses) {
 			if(Address.getHisOpType().equals(OperationType.INSERT)){return true;}
-			if (Address.getHisOpType().equals(OperationType.UPDATE) &&Address.getLangCode()=="CHI"&&Address.hisOldValueContains(IxPoiAddress.FULLNAME)){
+			if (Address.getHisOpType().equals(OperationType.UPDATE) &&Address.getLangCode().equals("CHI")&&Address.hisOldValueContains(IxPoiAddress.FULLNAME)){
 				String oldFullname=(String) Address.getHisOldValue(IxPoiAddress.FULLNAME);
 				String newFullname=Address.getFullname();
 				if(!oldFullname.equals(newFullname)){

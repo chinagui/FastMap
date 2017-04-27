@@ -449,15 +449,12 @@ public abstract class BasicRow{
 	}
 	public boolean checkValue(String colName,Object oldValue,Object newValue){
 		if(oldValue==null&&newValue==null)return false;
-		if(oldValue!=null&&oldValue.equals(newValue))return false;
-		if(oldValue!=null){
-			if(oldValue.equals(newValue)){
-				return false;
-			}
-			if(oldValue instanceof String 
-					&&StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))
-					){
+		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
+		//处理String的null和""的问题
+		if((oldValue!=null&&oldValue instanceof String)
+				||(newValue!=null&&newValue instanceof String)){
+			if(StringUtils.isEmpty(String.valueOf(oldValue))
+					&&StringUtils.isEmpty(String.valueOf(newValue))){
 				return false;
 			}
 		}

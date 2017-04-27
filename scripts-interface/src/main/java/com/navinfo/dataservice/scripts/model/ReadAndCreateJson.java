@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.commons.fileConvert;
+package com.navinfo.dataservice.scripts.model;
 
 import java.util.HashMap;
 import java.util.HashSet;

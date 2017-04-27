@@ -52,9 +52,6 @@ public class FMBAT20186 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")) {
 			return;
 		}

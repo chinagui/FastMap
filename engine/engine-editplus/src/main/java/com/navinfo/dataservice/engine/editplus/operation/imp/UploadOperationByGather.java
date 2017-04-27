@@ -111,14 +111,14 @@ public class UploadOperationByGather {
 		try {
 			
 			manConn = DBConnector.getInstance().getManConnection();
-			Map<Integer,UploadPois> poiMap =  distribute(manConn,ja);
+			Map<Integer,MultiSrcUploadPois> poiMap =  distribute(manConn,ja);
 			
 			
 			// 执行转数据
-			for(Map.Entry<Integer, UploadPois> entry:poiMap.entrySet()){
+			for(Map.Entry<Integer, MultiSrcUploadPois> entry:poiMap.entrySet()){
 				Integer dbId = entry.getKey();
 				log.info("start txt import to oracle dbId="+dbId);
-				UploadPois pois = entry.getValue();
+				MultiSrcUploadPois pois = entry.getValue();
 				Connection conn=null;
 //				List<BasicObj> ixPoiObjs = new ArrayList<BasicObj>();
 				try{
@@ -205,8 +205,8 @@ public class UploadOperationByGather {
 	}
 	
 	//分库
-	private Map<Integer,UploadPois> distribute(Connection manConn,JSONArray pois)throws Exception{
-		Map<Integer,UploadPois> poiMap = new HashMap<Integer,UploadPois>();//key:大区dbid
+	private Map<Integer,MultiSrcUploadPois> distribute(Connection manConn,JSONArray pois)throws Exception{
+		Map<Integer,MultiSrcUploadPois> poiMap = new HashMap<Integer,MultiSrcUploadPois>();//key:大区dbid
 		//ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		MultiMap gridDataMapping = new MultiValueMap();
 		for (int i = 0; i < pois.size(); i++) {
@@ -316,9 +316,9 @@ public class UploadOperationByGather {
 						log.info("需要新增的poi: fid:"+fid+" pid:"+poiWrap.getPid());
 					}
 				}
-				UploadPois upoi = poiMap.get(Integer.parseInt(dbId));
+				MultiSrcUploadPois upoi = poiMap.get(Integer.parseInt(dbId));
 				if(upoi==null){
-					upoi=new UploadPois();
+					upoi=new MultiSrcUploadPois();
 					poiMap.put(Integer.parseInt(dbId), upoi);
 				}
 				upoi.addJsonPoi(poi);

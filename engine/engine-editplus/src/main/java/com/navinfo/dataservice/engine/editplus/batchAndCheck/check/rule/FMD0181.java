@@ -2,8 +2,11 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -15,6 +18,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 	 非删除POI对象
 	检查原则：
 	官方标准英文名中合法字符（不查括号，不查No.中的点）前存在空格，后不存在空格或前不存在空格，后存在空格时，报log：英文名合法字符前后空格错误！
+	英文名称中包含.的，且.前的单词(举例：Eccl. Hist.)在单词简化列表sc_engshort_list中简化后的单词short_name(short_name=Eccl. Hist.)一列存在的，不报log
 	备注：符号-_/:;'"~^.,?!*<>$%&#@+
 	备注：
 	Bang&Bang    不用报log；
@@ -25,6 +29,7 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  * @author sunjiawei
  */
 public class FMD0181 extends BasicCheckRule {
+	private MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
@@ -35,15 +40,23 @@ public class FMD0181 extends BasicCheckRule {
 			if(names==null||names.size()==0){return;}
 			Pattern p = Pattern.compile(".*[^ ]+[\\-_/:;'\"~^.,?!*<>$%&#@+]+ .*");
 			Pattern p1 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
+			Map<String,String> engshortListMap = metadataApi.scEngshortListMap();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isEng()&&nameTmp.isOfficeName()
 						&&nameTmp.isStandardName()){
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
-					String nameLow=name.toLowerCase();
-					String[] nameList = nameLow.split("no.");
-					for(String subname:nameList){
-						if(p.matcher(subname).matches()||p1.matcher(subname).matches()){
+					if(p.matcher(name).matches()||p1.matcher(name).matches()){
+						boolean flag = false;
+						if(name.contains(".")){
+							for (String engShortName : engshortListMap.values()) {
+								if(name.equals(engShortName)){
+									flag = true;
+									break;
+								}
+							}
+						}
+						if(!flag){
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 							return;
 						}

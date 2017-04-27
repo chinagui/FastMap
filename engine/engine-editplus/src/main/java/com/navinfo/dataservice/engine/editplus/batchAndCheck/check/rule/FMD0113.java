@@ -45,7 +45,7 @@ public class FMD0113 extends BasicCheckRule {
 					}
 					if(errorList.size()>0){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),
-								"标准化中文名称空格错误："+errorList.toString().replace("[", "").replace("]", ""));
+								"名称中存在空格或回车符，请检查！："+errorList.toString().replace("[", "").replace("]", ""));
 						return;
 					}
 				}

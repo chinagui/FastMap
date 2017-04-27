@@ -1,29 +1,20 @@
-/**
- * 
- */
 package com.navinfo.dataservice.scripts;
 
-import java.io.File;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.fileConvert.LoadAndCreateTab;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
@@ -119,7 +110,6 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 //				if(admincode!=420000){
 //					continue;
 //				}
-				
 				System.out.println("export admincode "+admincode+" ...");
 				
 				Set<Integer> meshes =new  HashSet<Integer>();
@@ -128,9 +118,6 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 					meshes.add(625716);
 					meshes.add(625860);
 					
-						//en.getValue();
-				
-
 				String output = path + admincode / 10000;
 
 				String filename = GdbDataExporter.run(conn, output, meshes);

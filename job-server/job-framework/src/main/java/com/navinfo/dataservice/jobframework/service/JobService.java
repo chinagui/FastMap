@@ -115,7 +115,7 @@ public class JobService {
 	}
 	
 	public Map<String,Object> getJobByTask(int taskId, long userId, String jobType) throws Exception {
-		Map<String,Object> retMap = new HashMap<String,Object>();
+		Map<String,Object> retMap = null;
 		Connection conn = null;
 		PreparedStatement pstmt = null;
 		ResultSet ret = null;
@@ -141,6 +141,7 @@ public class JobService {
 			pstmt.setLong(3, userId);
 			ret = pstmt.executeQuery();
 			if (ret.next()) {
+				retMap = new HashMap<String,Object>();
 				retMap.put("jobId", ret.getInt("job_id"));
 				retMap.put("jobType", ret.getString("job_type"));
 				retMap.put("createTime", ret.getTimestamp("create_time"));

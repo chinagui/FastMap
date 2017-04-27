@@ -20,6 +20,7 @@ import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -32,7 +33,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  * 项目号取值要小于Integer.MAX_VALUE:2147483647
  */
 public class GridLockManager{
-	protected Logger log = Logger.getLogger(this.getClass());
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	private volatile static GridLockManager instance;
 	
@@ -78,7 +79,7 @@ public class GridLockManager{
 				gridInClause = " GRID_ID IN ("+StringUtils.join(grids, ",")+")";
 			}
 			StringBuffer sqlBuf = new StringBuffer();
-			sqlBuf.append("SELECT "+getGridLockDbName(dbType)+" FROM GRID_LOCK WHERE");
+			sqlBuf.append("SELECT GRID_ID FROM "+getGridLockDbName(dbType)+" WHERE");
 			sqlBuf.append(gridInClause);
 			sqlBuf.append(" AND (HANDLE_REGION_ID <> ? OR LOCK_STATUS=1)");
 			sqlBuf.append(getLockObjectClause(lockObject));
@@ -95,7 +96,7 @@ public class GridLockManager{
 			if(e instanceof LockException){
 				throw (LockException)e;
 			}else{
-				throw new LockException("申请GRID锁发生SQL错误，"+e.getMessage(),e);
+				throw new LockException("查询GRID锁发生SQL错误，"+e.getMessage(),e);
 			}
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);

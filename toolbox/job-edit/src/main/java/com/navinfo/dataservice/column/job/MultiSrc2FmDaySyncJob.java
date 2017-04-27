@@ -33,7 +33,7 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImpor
 import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcPoiDayImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.PoiRelationImportorCommand;
-import com.navinfo.dataservice.engine.editplus.operation.imp.UploadPois;
+import com.navinfo.dataservice.engine.editplus.operation.imp.MultiSrcUploadPois;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.download.DownloadUtils;
@@ -155,8 +155,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			}
 		}
 	}
-	private Map<Integer,UploadPois> distribute(JSONArray pois)throws Exception{
-		Map<Integer,UploadPois> poiMap = new HashMap<Integer,UploadPois>();//key:大区dbid
+	private Map<Integer,MultiSrcUploadPois> distribute(JSONArray pois)throws Exception{
+		Map<Integer,MultiSrcUploadPois> poiMap = new HashMap<Integer,MultiSrcUploadPois>();//key:大区dbid
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		//key:admincode,value:day dbid
 		Map<Integer,Integer> adminDbMap = manApi.listDayDbIdsByAdminId();
@@ -168,9 +168,9 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				int dbId = 0;
 				if(adminDbMap.containsKey(adminId)){
 					dbId = adminDbMap.get(adminId);
-					UploadPois upoi = poiMap.get(dbId);
+					MultiSrcUploadPois upoi = poiMap.get(dbId);
 					if(upoi==null){
-						upoi=new UploadPois();
+						upoi=new MultiSrcUploadPois();
 						poiMap.put(dbId, upoi);
 					}
 					upoi.addJsonPoi(poi);
@@ -195,7 +195,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 			resJson.put("total", pois.size());
 
 			//分库
-			Map<Integer,UploadPois> poiMap = distribute(pois);
+			Map<Integer,MultiSrcUploadPois> poiMap = distribute(pois);
 			
 			//执行导入
 			int dbSize = poiMap.size();
@@ -204,7 +204,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				return;
 			}
 			if(poiMap.size()==1){
-				Map.Entry<Integer,UploadPois> entry = poiMap.entrySet().iterator().next();
+				Map.Entry<Integer,MultiSrcUploadPois> entry = poiMap.entrySet().iterator().next();
 				new MultiSrc2FmDayThread(null,entry.getKey(),entry.getValue()).run();;
 			}else{
 				if(dbSize>10){
@@ -215,7 +215,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				final CountDownLatch latch = new CountDownLatch(dbSize);
 				threadPoolExecutor.addDoneSignal(latch);
 				// 执行转数据
-				for(Map.Entry<Integer, UploadPois> entry:poiMap.entrySet()){
+				for(Map.Entry<Integer, MultiSrcUploadPois> entry:poiMap.entrySet()){
 					threadPoolExecutor.execute(new MultiSrc2FmDayThread(latch,entry.getKey(),entry.getValue()));
 				}
 				latch.await();
@@ -322,8 +322,8 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 	class MultiSrc2FmDayThread implements Runnable{
 		CountDownLatch latch = null;
 		int dbId=0;
-		UploadPois pois=null;
-		MultiSrc2FmDayThread(CountDownLatch latch,int dbId,UploadPois pois){
+		MultiSrcUploadPois pois=null;
+		MultiSrc2FmDayThread(CountDownLatch latch,int dbId,MultiSrcUploadPois pois){
 			this.latch=latch;
 			this.dbId=dbId;
 			this.pois=pois;

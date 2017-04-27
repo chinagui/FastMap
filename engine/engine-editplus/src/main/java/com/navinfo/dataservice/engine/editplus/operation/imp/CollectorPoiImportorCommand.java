@@ -3,27 +3,27 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 
 /**
- * POI导入类的请求参数类，导入一般为外部平台，所以POI唯一标识使用fid
+ * Collector POI导入类的请求参数类，POI唯一标识使用fid
  * @ClassName: DefaultPoiImportorCommand
  * @author xiaoxiaowen4127
  * @date 2017年4月24日
  * @Description: DefaultPoiImportorCommand.java
  */
-public class DefaultPoiImportorCommand extends AbstractCommand {
+public class CollectorPoiImportorCommand extends AbstractCommand {
 	
 	private int dbId;
 	
-	protected UploadPois pois;
+	protected CollectorUploadPois pois;
 
-	public DefaultPoiImportorCommand(int dbId,UploadPois pois){
+	public CollectorPoiImportorCommand(int dbId,CollectorUploadPois pois){
 		this.dbId=dbId;
 		this.pois=pois;
 	}
 	
-	public UploadPois getPois() {
+	public CollectorUploadPois getPois() {
 		return pois;
 	}
-	public void setPois(UploadPois pois) {
+	public void setPois(CollectorUploadPois pois) {
 		this.pois = pois;
 	}
 

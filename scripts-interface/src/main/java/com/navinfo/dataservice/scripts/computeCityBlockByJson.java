@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -20,12 +21,15 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.scripts.model.Block4Imp;
+import com.navinfo.dataservice.scripts.model.City;
 import com.navinfo.dataservice.scripts.model.City4Imp;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -43,17 +47,14 @@ public class computeCityBlockByJson {
 	public static void main(String[] args) {
 
 		try {
-			if(args==null||args.length!=2){
-				System.out.println("ERROR:need args:cityFile blockFile");
+			if(args==null||args.length!=1){
+				System.out.println("ERROR:need args:raw block file");
 				return;
 			}
 
-			String cityFile = args[0];
-			String blockFile = args[1];
-
-			JobScriptsInterface.initContext();
+			String rawBlockFile = args[0];
 			
-			imp(cityFile,blockFile);
+			compute(rawBlockFile);
 
 			System.out.println("Over.");
 			System.exit(0);
@@ -63,59 +64,15 @@ public class computeCityBlockByJson {
 
 		}
 	}
-	private static long getCityId(Connection conn)throws SQLException{
-		String sql = "SELECT CITY_SEQ.NEXTVAL FROM DUAL";
-		return runner.queryForLong(conn, sql);
-	}
 	
-	private static long getBlockId(Connection conn)throws SQLException{
-		String sql = "SELECT BLOCK_SEQ.NEXTVAL FROM DUAL";
-		return runner.queryForLong(conn, sql);
-	}
-	
-	public static void imp(String cityFile,String blockFile)throws Exception{
+	public static void compute(String rawBlockFile)throws Exception{
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			Map<String,City4Imp> citys = parseCity(cityFile);
-			//write citys
-			String insCitySql = "INSERT INTO CITY (CITY_ID,CITY_NAME,ADMIN_ID,PROVINCE_NAME,GEOMETRY,REGION_ID) VALUES (?,?,?,?,SDO_GEOMETRY(?,8307),(select REGION_ID from cp_region_province where province=?))";
-			String updCityGridSql = "UPDATE GRID SET CITY_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
-			for(City4Imp city:citys.values()){
-				long cityId= getCityId(conn);
-				Geometry cityGeo = MeshUtils.meshes2Jts(city.getMeshes());
-				Clob clob = ConnectionUtil.createClob(conn);
-				clob.setString(1, JtsGeometryFactory.writeWKT(cityGeo));
-				run.update(conn, insCitySql, cityId,city.getCityName(),city.getAdminId(),city.getProvName(),clob,city.getProvName());
-				//update grid table
-				Set<String> grids = new HashSet<String>();
-				for(String mesh:city.getMeshes()){
-					grids.addAll(CompGridUtil.mesh2Grid(mesh));
-				}
-
-				Clob clob2 = ConnectionUtil.createClob(conn);
-				clob2.setString(1, StringUtils.join(grids,","));
-				run.update(conn, updCityGridSql,cityId, clob2);
-			}
-			//
-			Map<String,Block4Imp> blocks = parseBlock(citys,blockFile);
-			//write blocks
-
-			String insBlockSql = "INSERT INTO BLOCK (BLOCK_ID,CITY_ID,BLOCK_NAME,GEOMETRY,WORK_PROPERTY) VALUES (?,(SELECT CITY_ID FROM CITY WHERE CITY_NAME=?),?,SDO_GEOMETRY(?,8307),?)";
-			String updBlockGridSql = "UPDATE GRID SET BLOCK_ID=? WHERE GRID_ID IN (select to_number(column_value) from table(clob_to_table(?)))";
-			for(Block4Imp block:blocks.values()){
-				long blockId= getBlockId(conn);
-				Geometry blockGeo = CompGridUtil.grids2Jts(block.getGrids());
-				Clob clob = ConnectionUtil.createClob(conn);
-				clob.setString(1, JtsGeometryFactory.writeWKT(blockGeo));
-				run.update(conn, insBlockSql, blockId,block.getCityName(),block.getBlockName(),clob,block.getWrokProperty());
-				//update grid table
-				Clob clob2 = ConnectionUtil.createClob(conn);
-				clob2.setString(1, StringUtils.join(block.getGrids(),","));
-				run.update(conn, updBlockGridSql,blockId, clob2);
-			}
+			//read
+			JSONArray rawBlocks = readJsonFile(rawBlockFile);
+			//city
+			
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -126,94 +83,98 @@ public class computeCityBlockByJson {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	public static Map<String,City4Imp> parseCity(String cityFile)throws Exception{
-		BufferedReader reader = null;
+	private static JSONArray readJsonFile(String rawBlockFile)throws Exception{
+		Scanner scan = null;
+		FileInputStream fis = null;
 		try{
-			System.out.println("Starting read city file...");
-			Map<String,City4Imp> citys = new HashMap<String,City4Imp>();
-			File file = new File(cityFile);
-
-			InputStreamReader read = new InputStreamReader(
-					new FileInputStream(file));
-
-			reader = new BufferedReader(read);
-			String line=null;
-			while ((line = reader.readLine()) != null){
-				JSONObject cityJson = JSONObject.fromObject(line);
-				String cityName = cityJson.getString("city");
-				if(citys.containsKey(cityName)){
-					citys.get(cityName).getMeshes().add(cityJson.getString("meshId"));
-				}else{
-					City4Imp newCity = new City4Imp();
-					newCity.setCityName(cityName);
-					newCity.setAdminId(Integer.parseInt(cityJson.getString("code").substring(0, 6)));
-					newCity.setProvName(cityJson.getString("province"));
-					Set<String> meshes = new HashSet<String>();
-					meshes.add(cityJson.getString("meshId"));
-					newCity.setMeshes(meshes);
-					citys.put(cityName, newCity);
+			fis = new FileInputStream(rawBlockFile);
+			scan = new Scanner(fis);
+			JSONArray ja = new JSONArray();
+			while (scan.hasNextLine()) {
+				String line = scan.nextLine();
+				if(line != null && StringUtils.isNotEmpty(line)){
+					JSONObject json = JSONObject.fromObject(line);
+					ja.add(json);
 				}
 			}
-			System.out.println("read city file over. city size:"+citys.size());
-			return citys;
+			return ja;
 		}catch(Exception e){
 			e.printStackTrace();
 			throw e;
 		}finally{
-			if(reader!=null){
-				reader.close();
-			}
+			if(fis!=null)fis.close();
+			if(scan!=null)scan.close();
 		}
-		
 	}
+	private static JSONArray computeCitys(JSONArray rawBlocks)throws Exception{
+		Map<String,City> citys = new HashMap<String,City>();
+		for(Object obj:rawBlocks){
+			JSONObject jo = (JSONObject)obj;
 
-	public static Map<String,Block4Imp> parseBlock(Map<String,City4Imp> citys,String blockFile)throws Exception{
-		BufferedReader reader = null;
-		try{
-			System.out.println("Starting read block file...");
-			Map<String,Block4Imp> blocks = new HashMap<String,Block4Imp>();
-			File file = new File(blockFile);
-
-			InputStreamReader read = new InputStreamReader(
-					new FileInputStream(file));
-
-			reader = new BufferedReader(read);
-			String line=null;
-			while ((line = reader.readLine()) != null){
-				JSONObject blockJson = JSONObject.fromObject(line);
-				//先判断计算的grid是否超过了城市界定的图幅，如果超过了，忽略
-				String cityName = blockJson.getString("city");
-				String grid = blockJson.getString("gridId");
-				String mesh = grid.substring(0, 6);
-				if(citys.containsKey(cityName)&&citys.get(cityName).getMeshes().contains(mesh)){
-
-					String blockCode = blockJson.getString("code");
-					if(blocks.containsKey(blockCode)){
-						blocks.get(blockCode).getGrids().add(grid);
-					}else{
-						Block4Imp newBlock = new Block4Imp();
-						newBlock.setCityName(cityName);
-						String blockName =blockJson.getString("province")+cityName+blockJson.getString("county")+blockJson.getString("job1")+blockJson.getString("job2");
-						newBlock.setBlockName(blockName);
-						newBlock.setWrokProperty(blockJson.getString("workProperty"));
-						Set<String> grids = new HashSet<String>();
-						grids.add(grid);
-						newBlock.setGrids(grids);
-						blocks.put(blockCode, newBlock);
-					}
+			String geoWkt=jo.getString("geometry");
+			Geometry jtsGeo = JtsGeometryFactory.read(geoWkt);
+			Set<String> meshIds = CompGeometryUtil.geoToMeshesWithoutBreak(jtsGeo);
+			if(meshIds != null && meshIds.size() > 0){
+				String provinceVal = jo.getString("province");
+	            String cityVal = jo.getString("city");
+	            String codeVal = jo.getString("code");
+	            String nameVal = jo.getString("name");
+	            String job1Val = jo.getString("job1");
+	            String areaVal = jo.getString("area");
+	            String countyVal = jo.getString("county");
+	           // String geometry = "";
+	            String workPropertyVal = jo.getString("workProperty");
+	            String job2Val = jo.getString("job2");      
+				
+				if(citys.containsKey(cityVal)){
+					citys.get(cityVal).getMeshIds().addAll(meshIds);
+				}else{
+					City city = new City();
+					city.setName(nameVal);
+					city.setCity(cityVal);;
+					city.setArea(areaVal);
+					city.setCounty(countyVal);
+					city.setBlockCode(codeVal);
+					city.setProvince(provinceVal);
+					city.setMeshIds(meshIds);
+					city.setJob1(job1Val);
+					city.setJob2(job2Val);
+					city.setWorkProperty(workPropertyVal);
+					citys.put(cityVal, city);
 				}
 			}
-			System.out.println("read block file over. block size:"+citys.size());
-			return blocks;
-		}catch(Exception e){
-			e.printStackTrace();
-			throw e;
-		}finally{
-			if(reader!=null){
-				reader.close();
-			}
 		}
-		
+		JSONArray cityJsons = new JSONArray();
+		//convert to json
+		if(citys != null && citys.size() > 0){
+			for(String cityName : citys.keySet()){
+				City cityObj = citys.get(cityName);
+				//添加数据到 JsonArray
+				String wktStr = null;
+				for(String meshId : cityObj.getMeshIds()){
+					JSONObject meshObj = new JSONObject();
+					meshObj.put("city", cityObj.getCity());
+					meshObj.put("area", cityObj.getArea());
+					meshObj.put("code", cityObj.getBlockCode());
+					meshObj.put("county", cityObj.getCounty());
+					meshObj.put("name", cityObj.getName());
+					meshObj.put("province", cityObj.getProvince());
+					meshObj.put("meshId", meshId);
+					meshObj.put("job1", cityObj.getJob1());
+					meshObj.put("job2", cityObj.getJob2());
+					meshObj.put("workProperty", cityObj.getWorkProperty());
+					//meshObj.put("", cityObj.get);
+					
+					if(meshId != null && StringUtils.isNotEmpty(meshId)){
+						wktStr = MeshUtils.mesh2WKT(meshId); 
+						System.out.println("meshId: "+meshId+" wktStr: "+wktStr);
+					}
+					meshObj.put("geometry", wktStr);
+		    
+				    cityJsons.add(meshObj);
+				 }
+		    }
+        }
+		return cityJsons;
 	}
 }

@@ -14,7 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.fileConvert.LoadAndCreateTab;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;

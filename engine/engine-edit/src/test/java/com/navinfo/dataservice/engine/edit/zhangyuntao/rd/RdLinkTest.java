@@ -1,27 +1,16 @@
 package com.navinfo.dataservice.engine.edit.zhangyuntao.rd;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.check.helper.GeoHelper;
 import com.navinfo.dataservice.engine.edit.InitApplication;
-import com.navinfo.dataservice.engine.edit.utils.batch.SpeedLimitUtils;
 import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import com.vividsolutions.jts.io.WKTWriter;
 import net.sf.json.JSONObject;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.navinfo.dataservice.dao.glm.iface.ObjType.RDLINK;
 
 /**
  * @author zhangyt
@@ -70,9 +59,9 @@ public class RdLinkTest extends InitApplication {
 
     @Test
     public void create() {
-        String parameter = "{\"command\":\"CREATE\",\"dbId\":19,\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.46699,40.08309],[116.46714,40.08249]]},"
-                + "\"catchLinks\":[]},\"type\":\"RDLINK\"}";
+        String parameter = "{\"command\":\"CREATE\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.53312236070633,39.738882610203135]," +
+                "[116.53334632515907,39.738935204627836]]},\"catchLinks\":[]}}";
         TestUtil.run(parameter);
     }
 
@@ -99,8 +88,8 @@ public class RdLinkTest extends InitApplication {
     public void updownDepart() {
         String parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":17,\"distance\":\"6.6\"," +
                 "\"data\":{\"linkPids\":[209000217]}}";
-        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":84,\"distance\":16.6," +
-                "\"data\":{\"linkPids\":[410000081, 507000083]}}";
+        parameter = "{\"command\":\"UPDOWNDEPART\",\"type\":\"RDLINK\",\"dbId\":13,\"distance\":8.8," +
+                "\"data\":{\"linkPids\":[520000070]}}";
         TestUtil.run(parameter);
     }
 
@@ -144,6 +133,13 @@ public class RdLinkTest extends InitApplication {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    @Test
+    public void testCreateSideRoad() {
+        String requester = "{\"command\":\"CREATESIDEROAD\",\"type\":\"RDLINK\",\"dbId\":13,\"subtaskId\":1,\"distance\":4," +
+                "\"sideType\":1,\"sNodePid\":409000057,\"data\":{\"linkPids\":[502000077]}}";
+        TestUtil.run(requester);
     }
 
 }

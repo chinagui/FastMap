@@ -74,7 +74,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
-		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
+		MultiSrcUploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		this.dbId= ((MultiSrcPoiDayImportorCommand)cmd).getDbId();
 		if(pois!=null){
 			//新增

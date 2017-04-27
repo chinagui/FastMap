@@ -49,10 +49,10 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 /** 
- * @ClassName: MultiSrcPoiImportorByGather
+ * @ClassName: CollectorUploadOperation
  * @author xiaoxiaowen4127
  * @date 2016年11月17日
- * @Description: MultiSrcPoiImportorByGather.java
+ * @Description: CollectorUploadOperation.java
  */
 public class CollectorUploadOperation extends AbstractOperation {
 
@@ -83,7 +83,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 	public void operate(AbstractCommand cmd) throws Exception {
 		// 获取当前做业季
 		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
-		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
+		MultiSrcUploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();

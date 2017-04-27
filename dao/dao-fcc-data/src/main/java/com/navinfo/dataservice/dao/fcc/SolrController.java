@@ -167,7 +167,7 @@ public class SolrController {
 			int[] notExpSourceType) throws SolrServerException, IOException {
 		List<String> rowkeys = new ArrayList<String>();
 
-		String param = "wkt:\"intersects(" + wkt + ")\"";
+		String param = "wktLocation:\"intersects(" + wkt + ")\"";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date:[" + date + " TO *]";

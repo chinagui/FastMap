@@ -19,6 +19,8 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleComm
 
 public class Batch extends AbstractOperation{
 	private BatchCommand batchCommand;
+	
+	private OperationResult changeReferData;
 
 	public BatchCommand getBatchCommand() {
 		return batchCommand;
@@ -31,6 +33,11 @@ public class Batch extends AbstractOperation{
 	public Batch(Connection conn,  OperationResult preResult) {
 		super(conn,  preResult);
 		// TODO Auto-generated constructor stub
+	}
+	
+	//获取批处理关联批到的数据
+	public OperationResult getChangeReferData() {
+		return changeReferData;
 	}
 
 	//执行批处理
@@ -82,6 +89,7 @@ public class Batch extends AbstractOperation{
 			for(BasicObj obj:referMap.values()){
 				if (obj.isChanged()) {
 					result.putObj(obj);
+					changeReferData.putObj(obj);
 				}
 			}
 		}

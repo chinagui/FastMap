@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
@@ -14,6 +15,7 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridRefInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
@@ -30,16 +32,20 @@ public class SelectorUtils {
 	private Connection conn;
 
 	private GlmGridCalculator gridCalculator;
+	protected Logger log = LoggerRepos.getLogger(this.getClass());
 
 	public SelectorUtils(Connection conn) {
 		this.conn = conn;
-		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.gdbVersion);
 
-		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
+		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
+				gdbVersion);
 	}
 
-	public JSONObject loadByElementCondition(JSONObject object, ObjType objType, int pageSize, int pageNum,
-			boolean isLock) throws Exception {
+	public JSONObject loadByElementCondition(JSONObject object,
+			ObjType objType, int pageSize, int pageNum, boolean isLock)
+			throws Exception {
 
 		TableNameFactory nameFactory = TableNameFactory.getInstance();
 
@@ -59,38 +65,50 @@ public class SelectorUtils {
 
 			String columnName = StringUtils.toColumnName(key);
 
-			String tableName = ReflectionAttrUtils.getTableNameByObjType(objType);
+			String tableName = ReflectionAttrUtils
+					.getTableNameByObjType(objType);
 
 			StringBuilder fromSql = new StringBuilder(" FROM ");
-
+			String realName = "";
 			StringBuilder innerLeftJoinSql = new StringBuilder();
 
-			StringBuilder selectSql = new StringBuilder("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,");
+			StringBuilder selectSql = new StringBuilder(
+					"SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,");
 
+			if (objType == ObjType.RDSAMELINK || objType == ObjType.RDSAMENODE) {
+				realName = gridCalculator.loadRealNameForSame(conn, pid,
+						tableName);
+			}
 			// 获取关联名称的sql
-			TableNameSqlInfo sqlInfo = nameFactory.getSqlInfoByTableName(tableName);
+			TableNameSqlInfo sqlInfo = nameFactory
+					.getSqlInfoByTableName(tableName);
 
-			if (sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getOutSelectCol())) {
+			if (sqlInfo != null
+					&& StringUtils.isNotEmpty(sqlInfo.getOutSelectCol())) {
 				selectSql.append(sqlInfo.getOutSelectCol());
 			} else {
 				selectSql.append("'' as name");
 			}
 
-			String tmpSql = ",tmp.geometry from(" + "SELECT P." + columnName + " AS PID,";
+			String tmpSql = ",tmp.geometry from(" + "SELECT P." + columnName
+					+ " AS PID,";
 
 			selectSql.append(tmpSql);
 
-			if (sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getSelectColumn())) {
+			if (sqlInfo != null
+					&& StringUtils.isNotEmpty(sqlInfo.getSelectColumn())) {
 				selectSql.append(sqlInfo.getSelectColumn() + " as name,");
 
 				if (StringUtils.isNotEmpty(sqlInfo.getLeftJoinSql())) {
-					innerLeftJoinSql.append(" LEFT JOIN " + sqlInfo.getLeftJoinSql());
+					innerLeftJoinSql.append(" LEFT JOIN "
+							+ sqlInfo.getLeftJoinSql());
 				}
 			}
 
 			StringBuilder whereSql = new StringBuilder();
 
-			GlmGridRefInfo glmGridRefInfo = gridCalculator.getGlmGridRefInfo(tableName);
+			GlmGridRefInfo glmGridRefInfo = gridCalculator
+					.getGlmGridRefInfo(tableName);
 
 			if (CollectionUtils.isNotEmpty(glmGridRefInfo.getRefInfo())
 					|| glmGridRefInfo.getTableName().equals("RD_CROSS")) {
@@ -106,25 +124,54 @@ public class SelectorUtils {
 
 			int whereIndex = editQuerySql.indexOf("WHERE");
 
-			String fromTableSql = editQuerySql.substring(fromIndex + 4, whereIndex);
+			String fromTableSql = editQuerySql.substring(fromIndex + 4,
+					whereIndex);
 
 			fromSql.append(fromTableSql);
 
 			String whereCondition = editQuerySql.substring(whereIndex);
 
-			whereSql.append(
-					" " + whereCondition + " AND P." + ReflectionAttrUtils.getBranchPrimaryKey(objType, columnName)
-							+ "= " + pid + " AND P.U_RECORD !=2 ");
+			whereSql.append(" "
+					+ whereCondition
+					+ " AND P."
+					+ ReflectionAttrUtils.getBranchPrimaryKey(objType,
+							columnName) + "= " + pid + " AND P.U_RECORD !=2 ");
+
+			if (StringUtils.isNotEmpty(realName)) {
+
+				whereSql.append(" AND R2.TABLE_NAME = '" + realName + "' ");
+
+			}
 
 			StringBuilder outerLeftJoinSql = new StringBuilder();
 
-			if (sqlInfo != null && StringUtils.isNotEmpty(sqlInfo.getOutLeftJoinSql())) {
-				outerLeftJoinSql.append(" LEFT JOIN " + sqlInfo.getOutLeftJoinSql());
+			if (sqlInfo != null
+					&& StringUtils.isNotEmpty(sqlInfo.getOutLeftJoinSql())) {
+				outerLeftJoinSql.append(" LEFT JOIN "
+						+ sqlInfo.getOutLeftJoinSql());
 			}
 
-			selectSql.append(fromSql).append(innerLeftJoinSql).append(whereSql).append(")tmp").append(outerLeftJoinSql);
+			selectSql.append(fromSql).append(innerLeftJoinSql).append(whereSql)
+					.append(")tmp").append(outerLeftJoinSql);
+			String resultSql = selectSql.toString();
 
-			sql = getSqlFromBufferCondition(selectSql, false);
+			if (StringUtils.isNotEmpty(realName)) {
+
+				if (tableName.equals("RD_SAMENODE")) {
+					resultSql = resultSql.replaceAll("RD_NODE", realName);
+
+				}
+				if (tableName.equals("RD_SAMELINK")) {
+					resultSql = resultSql.replaceAll("RD_LINK", realName);
+
+				}
+
+			}
+
+			sql = getSqlFromBufferCondition(resultSql, false);
+
+			log.info("sql ===== " + sql);
+
 		}
 
 		try {
@@ -143,7 +190,7 @@ public class SelectorUtils {
 					total = resultSet.getInt("total");
 				}
 				JSONObject json = new JSONObject();
-				//连续分歧返回rowId
+				// 连续分歧返回rowId
 				String rowId = null;
 				int pid = 0;
 				if (key.equals("rowId")) {
@@ -151,16 +198,18 @@ public class SelectorUtils {
 				} else {
 					pid = resultSet.getInt("pid");
 				}
-				json.put("pid", rowId==null?pid:rowId);
+				json.put("pid", rowId == null ? pid : rowId);
 				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-				json.put("geometry", GeoTranslator.jts2Geojson(GeoTranslator.struct2Jts(struct)));
+				json.put("geometry", GeoTranslator.jts2Geojson(GeoTranslator
+						.struct2Jts(struct)));
 				String name = resultSet.getString("name");
 				if (name == null) {
 					name = "";
 				}
 				json.put("name", name);
 				json.put("type", objType);
-				String jsonStr = (rowId==null?pid:rowId) + "," + name + "," + objType;
+				String jsonStr = (rowId == null ? pid : rowId) + "," + name
+						+ "," + objType;
 				if (dataStr.contains(jsonStr)) {
 					total = total - 1;
 				} else {
@@ -186,7 +235,8 @@ public class SelectorUtils {
 		}
 	}
 
-	private String getSearchSqlFromLinkPOI(ObjType objType, JSONObject object, boolean isLock) {
+	private String getSearchSqlFromLinkPOI(ObjType objType, JSONObject object,
+			boolean isLock) {
 		String sql = "";
 		StringBuilder bufferCondition = new StringBuilder();
 		if (objType == ObjType.RDLINK) {
@@ -202,35 +252,47 @@ public class SelectorUtils {
 								+ object.getString("linkPid")
 								+ " AND TMPLINK.U_RECORD != 2 ) TMP LEFT JOIN RD_NAME RN ON TMP.NAME_GROUPID = RN.NAME_GROUPID AND RN.LANG_CODE = 'CHI' AND RN.U_RECORD != 2");
 
-				sql = getSqlFromBufferCondition(bufferCondition, isLock);
+				sql = getSqlFromBufferCondition(bufferCondition.toString(),
+						isLock);
 			}
 		}
 		if (objType == ObjType.IXPOI) {
 			if (object.containsKey("name")) {
-				bufferCondition.append(
-						" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid pid,ipn.name,poi.geometry from ix_poi_name ipn,ix_poi poi WHERE ipn.poi_pid = poi.pid and ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
-				bufferCondition.append(" and ipn.name like '%" + object.getString("name") + "%' ");
-				sql = getSqlFromBufferCondition(bufferCondition, isLock);
+				bufferCondition
+						.append(" select COUNT (1) OVER (PARTITION BY 1) total,ipn.poi_pid pid,ipn.name,poi.geometry from ix_poi_name ipn,ix_poi poi WHERE ipn.poi_pid = poi.pid and ipn.name_class=1 and ipn.name_type =2 and ipn.lang_code = 'CHI' ");
+				bufferCondition.append(" and ipn.name like '%"
+						+ object.getString("name") + "%' ");
+				sql = getSqlFromBufferCondition(bufferCondition.toString(),
+						isLock);
 			} else {
-				bufferCondition.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry "
-						+ "FROM(select poi.pid,ipn.name,poi.geometry from( SELECT ix.pid,ix.geometry FROM ix_poi ix "
-						+ "where ix.pid =" + object.getInt("pid") + " and ix.U_RECORD !=2 " + "union all "
-						+ "select ix.pid,ix.geometry from ix_poi ix,poi_edit_status ps " + "where ix.PID = "
-						+ object.getInt("pid") + " and ix.U_RECORD = 2 " + "and ix.PID = ps.PID and ps.STATUS <3)poi "
-						+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
-						+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' " + ")tmp");
-				sql = getSqlFromBufferCondition(bufferCondition, isLock);
+				bufferCondition
+						.append("SELECT COUNT (1) OVER (PARTITION BY 1) total,tmp.pid,tmp.name,tmp.geometry "
+								+ "FROM(select poi.pid,ipn.name,poi.geometry from( SELECT ix.pid,ix.geometry FROM ix_poi ix "
+								+ "where ix.pid ="
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD !=2 "
+								+ "union all "
+								+ "select ix.pid,ix.geometry from ix_poi ix,poi_edit_status ps "
+								+ "where ix.PID = "
+								+ object.getInt("pid")
+								+ " and ix.U_RECORD = 2 "
+								+ "and ix.PID = ps.PID and ps.STATUS <3)poi "
+								+ "LEFT JOIN ix_poi_name ipn ON poi.pid = ipn.poi_pid "
+								+ "AND ipn.name_class=1 AND ipn.name_type =2 AND ipn.lang_code = 'CHI' "
+								+ ")tmp");
+				sql = getSqlFromBufferCondition(bufferCondition.toString(),
+						isLock);
 
 			}
 		}
 		return sql;
 	}
 
-	private String getSqlFromBufferCondition(StringBuilder bufferCondition, boolean isLock) {
+	private String getSqlFromBufferCondition(String sql, boolean isLock) {
 		StringBuilder buffer = new StringBuilder();
 		buffer.append(" SELECT * ");
 		buffer.append(" FROM (SELECT c.*, ROWNUM rn ");
-		buffer.append(" FROM ( " + bufferCondition.toString() + "");
+		buffer.append(" FROM ( " + sql + "");
 
 		buffer.append(" ) c");
 		buffer.append(" WHERE ROWNUM <= :1) ");
@@ -238,7 +300,6 @@ public class SelectorUtils {
 		if (isLock) {
 			buffer.append(" for update nowait");
 		}
-		System.out.println(buffer.toString());
 		return buffer.toString();
 	}
 
@@ -260,18 +321,18 @@ public class SelectorUtils {
 			return "RD_RESTRICTION";
 		case "RD_RESTRICTION_CONDITION":
 			return "RD_RESTRICTION";
-		// 分歧
+			// 分歧
 		case "RD_BRANCH_NAME":
 			return "RD_BRANCH";
 		case "RD_SIGNBOARD_NAME":
 			return "RD_BRANCH";
-		// 车信
+			// 车信
 		case "RD_LANE_VIA":
 			return "RD_LANE_CONNEXITY";
-		// 语音引导
+			// 语音引导
 		case "RD_VOICEGUIDE_VIA":
 			return "RD_VOICEGUIDE";
-		// POI
+			// POI
 		case "IX_POI_NAME_TONE":
 			return "IX_POI";
 		case "IX_SAMEPOI":
@@ -280,13 +341,13 @@ public class SelectorUtils {
 			return "IX_SAMEPOI";
 		case "IX_POI_CHILDREN":
 			return "IX_POI";
-		// 铁路
+			// 铁路
 		case "RW_LINK":
 			return "RW_LINK";
-		// 土地覆盖
+			// 土地覆盖
 		case "LC_FACE":
 			return "LC_FACE";
-		// 土地利用
+			// 土地利用
 		case "LU_FACE":
 			return "LU_FACE";
 		default:

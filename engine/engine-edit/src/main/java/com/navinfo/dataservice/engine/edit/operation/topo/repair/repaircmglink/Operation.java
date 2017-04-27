@@ -285,9 +285,12 @@ public class Operation implements IOperation {
 
                 if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(faceGeo)) {
                     int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(faceGeo);
+                    // 更新面MESH_ID
+                    cmgface.changedFields().put("meshId", cmgfaceMeshId);
+                    // 更新点MESH_ID
                     List<CmgBuildnode> cmgnodes = cmgnodeSelector.listTheAssociatedNodeOfTheFace(cmgface.pid(), false);
                     updateCmgnodeMesh(result, cmgfaceSelector, cmgface, cmgfaceMeshId, cmgnodes);
-
+                    // 更新线MESH_ID
                     List<CmgBuildlink> cmglinks = cmglinkSelector.listTheAssociatedLinkOfTheFace(cmgface.pid(), false);
                     updateCmglinkMesh(result, cmgfaceSelector, cmgface, cmgfaceMeshId, cmglinks);
                 }

@@ -235,7 +235,7 @@ public class RenderController extends BaseController {
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types, mdFlag);
+					types, mdFlag, "wktLocation");
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

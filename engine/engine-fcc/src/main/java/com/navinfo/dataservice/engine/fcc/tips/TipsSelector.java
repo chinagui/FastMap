@@ -8,6 +8,7 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
@@ -19,9 +20,11 @@ import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -84,7 +87,7 @@ public class TipsSelector {
 	 * @time:2016-7-2 上午10:08:16
 	 */
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-			JSONArray types, String mdFlag) throws Exception {
+			JSONArray types, String mdFlag, String wktIndexName) throws Exception {
 		JSONArray array = new JSONArray();
 
 		String rowkey = null;
@@ -124,7 +127,7 @@ public class TipsSelector {
 			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false, isPre);
+					stages, false, isPre, wktIndexName);
 
 			for (JSONObject json : snapshots) {
 
@@ -742,6 +745,7 @@ public class TipsSelector {
 
 	/**
 	 * @Description:获取线编号和线编号坐标,同时判断是否有线编号
+     * @param type
 	 * @param z
 	 * @param px
 	 * @param py
@@ -749,7 +753,6 @@ public class TipsSelector {
 	 *            ：渲染返回值中的m
 	 * @param deep
 	 * @author: y
-	 * @param py2
 	 * @time:2017-2-20 下午2:02:17
 	 */
 	private void getOutNumAndGeo(int type, int z, double px, double py,
@@ -922,7 +925,6 @@ public class TipsSelector {
 	 * @param z
 	 * @param px
 	 * @param py
-	 * @param reusltArr
 	 * @param object3
 	 * @author: y
 	 * @time:2017-2-20 下午2:06:29
@@ -992,7 +994,7 @@ public class TipsSelector {
 		return tipdiff;
 	}
 
-	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag)
+	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag, String wktIndexName)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -1001,7 +1003,7 @@ public class TipsSelector {
 			JSONArray stages = new JSONArray();
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, true);
+					stages, true, wktIndexName);
 
 			for (JSONObject json : snapshots) {
 				JSONObject result = new JSONObject();
@@ -1193,7 +1195,7 @@ public class TipsSelector {
 
 		String wkt = GridUtils.grids2Wkt(grids);
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages, taskSet);
 
 		for (JSONObject json : tips) {
 			int type = Integer.valueOf(json.getInt("s_sourceType"));
@@ -1250,7 +1252,7 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
-	 * @param grids
+	 * @param wkt
 	 * @param stages
 	 * @return
 	 * @throws Exception
@@ -1288,8 +1290,9 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
 	 * 
-	 * @param grids
+	 * @param wkt
 	 * @param stages
+     * @param tdStatus
 	 * @return
 	 * @throws Exception
 	 */
@@ -1727,7 +1730,7 @@ public class TipsSelector {
 					JSONArray a = deep.getJSONArray("n_array");
 
 					if (a.size() > 0) {
-						m.put("e", a.get(0));
+						m.put("e", a.get(0).toString());
 					}
 				}
 				// 里程桩
@@ -2036,5 +2039,4 @@ public class TipsSelector {
 		}
 		return list;
 	}
-
 }

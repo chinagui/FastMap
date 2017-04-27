@@ -53,9 +53,8 @@ public class FMBAT20147 extends BasicBatchRule {
 				if (officialNameStr == null) {
 					return;
 				}
-				if (officialNameStr.length()>35) {
-					transName(standarEngName,officialNameStr,poiObj,officialEngName);
-				}
+				transName(standarEngName,officialNameStr,poiObj,officialEngName);
+
 			}
 		}
 	}

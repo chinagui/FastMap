@@ -109,6 +109,8 @@ public class TipsSelector {
 				stages.add(2);
 
 				stages.add(5);
+				
+				stages.add(6);
 
 			} else if ("m".equals(mdFlag)) {
 

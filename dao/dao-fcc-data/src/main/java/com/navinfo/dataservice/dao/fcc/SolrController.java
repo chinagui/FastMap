@@ -167,7 +167,7 @@ public class SolrController {
 			int[] notExpSourceType) throws SolrServerException, IOException {
 		List<String> rowkeys = new ArrayList<String>();
 
-		String param = "wkt:\"intersects(" + wkt + ")\"";
+		String param = "wktLocation:\"intersects(" + wkt + ")\"";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date:[" + date + " TO *]";
@@ -649,8 +649,12 @@ public class SolrController {
 
 			if ("".equals(builder.toString())) {
 				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
+				
+				builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
 			} else {
 				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
+				
+				builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
 			}
 		}
 

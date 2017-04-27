@@ -1505,11 +1505,11 @@ public class ProgramService {
 	}
 	
 	//查询情报项目
-	public Map<String, Object> queryIntelligence(int programId) throws Exception {
+	public Map<String, Object> queryIntelligence(JSONObject dataJson) throws Exception {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-	    	return queryIntelligence(conn, programId);
+	    	return queryIntelligence(conn, dataJson);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1519,47 +1519,80 @@ public class ProgramService {
 		}
 	}
 	
-	public Map<String, Object> queryIntelligence(Connection conn,int programId) throws Exception {
+	public Map<String, Object> queryIntelligence(Connection conn,JSONObject dataJson) throws Exception {
 		try{
-			StringBuilder sb = new StringBuilder();
-			sb.append(" SELECT P.PROGRAM_ID,                                      ");
-			sb.append("          P.NAME                       PROGRAM_NAME,       ");
-			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
-			sb.append("          P.TYPE,                                          ");
-			sb.append("          C.CITY_NAME,                                     ");
-			sb.append("          C.CITY_ID,                                       ");
-			sb.append("          I.INFOR_ID,                                      ");
-			sb.append("          I.INFOR_NAME,                                    ");
-			sb.append("          I.FEATURE_KIND,                                  ");
-			sb.append("          I.METHOD,                                        ");
-			sb.append("          I.ADMIN_NAME,                                    ");
-			sb.append("          I.INFOR_CODE,                                    ");
-			sb.append("          I.SOURCE_CODE,                                   ");
-			sb.append("          I.INFO_TYPE_NAME,                                ");
-			sb.append("          I.TOPIC_NAME,                                    ");
-			sb.append("          I.PUBLISH_DATE,                                  ");
-			sb.append("          I.NEWS_DATE,                                     ");
-			sb.append("          I.EXPECT_DATE,                                   ");
-			sb.append("          P.CREATE_USER_ID,                                ");
-			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
-			sb.append("          P.PLAN_START_DATE,                               ");
-			sb.append("          P.PLAN_END_DATE,                                 ");
-			sb.append("          P.COLLECT_PLAN_START_DATE,                       ");
-			sb.append("          P.COLLECT_PLAN_END_DATE,                         ");
-			sb.append("          P.DAY_EDIT_PLAN_START_DATE,                      ");
-			sb.append("          P.DAY_EDIT_PLAN_END_DATE,                        ");
-			sb.append("          P.MONTH_EDIT_PLAN_START_DATE,                    ");
-			sb.append("          P.MONTH_EDIT_PLAN_END_DATE,                      ");
-			sb.append("          P.PRODUCE_PLAN_START_DATE,                       ");
-			sb.append("          P.PRODUCE_PLAN_END_DATE                          ");
-			sb.append("     FROM CITY C, PROGRAM P, USER_INFO U, INFOR I          ");
-			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
-			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
-			sb.append("      AND P.LATEST = 1                                     ");
-			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
-			sb.append("      AND P.PROGRAM_ID = "+programId);
-			
-			String sql = sb.toString();
+			String appendSql="";
+			if(dataJson.containsKey("programId")){
+				appendSql=appendSql+" AND T.PROGRAM_ID="+dataJson.getInt("programId");
+			}
+			if(dataJson.containsKey("inforId")){
+				appendSql=appendSql+" AND T.INFOR_ID="+dataJson.getInt("inforId");
+			}
+			String sql="WITH T AS"
+					+ " (SELECT P.PROGRAM_ID,"
+					+ "         P.NAME                     PROGRAM_NAME,"
+					+ "         P.DESCP                    PROGRAM_DESCP,"
+					+ "         P.TYPE,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"		
+					+ "         I.EXPECT_DATE,"
+					+ "         P.CREATE_USER_ID,"
+					+ "         U.USER_REAL_NAME           CREATE_USER_NAME,"
+					+ "         P.PLAN_START_DATE,"
+					+ "         P.PLAN_END_DATE,"
+					+ "         P.COLLECT_PLAN_START_DATE,"
+					+ "         P.COLLECT_PLAN_END_DATE,"
+					+ "         P.DAY_EDIT_PLAN_START_DATE,"
+					+ "         P.DAY_EDIT_PLAN_END_DATE,"
+					+ "         P.PRODUCE_PLAN_START_DATE,"
+					+ "         P.PRODUCE_PLAN_END_DATE"
+					+ "    FROM PROGRAM P, USER_INFO U, INFOR I"
+					+ "   WHERE I.INFOR_ID = P.INFOR_ID"
+					+ "     AND P.LATEST = 1"
+					+ "     AND P.CREATE_USER_ID = U.USER_ID(+)"
+					+ "  UNION ALL"
+					+ "  SELECT 0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         4,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"
+					+ "         I.EXPECT_DATE,"
+					+ "         0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL"
+					+ "    FROM INFOR I"
+					+ "   WHERE I.PLAN_STATUS = 0)"
+					+ "SELECT *"
+					+ "  FROM T"
+					+ " WHERE 1=1"+appendSql;
 			log.info("program query sql :" + sql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
@@ -1569,8 +1602,6 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-						map.put("cityId", rs.getInt("CITY_ID"));
-						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
 						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
@@ -1581,6 +1612,7 @@ public class ProgramService {
 						map.put("sourceCode", rs.getInt("SOURCE_CODE"));	
 						map.put("infoTypeName", rs.getString("INFO_TYPE_NAME"));	
 						map.put("topicName", rs.getString("TOPIC_NAME"));	
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));	
 						map.put("publishDate", DateUtils.dateToString(rs.getTimestamp("PUBLISH_DATE")));
 						map.put("newsDate", DateUtils.dateToString(rs.getTimestamp("NEWS_DATE")));
 						map.put("expectDate",DateUtils.dateToString(rs.getTimestamp("EXPECT_DATE")));	
@@ -1593,8 +1625,6 @@ public class ProgramService {
 						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
 						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
 						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
-						map.put("monthEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE")));
-						map.put("monthEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE")));
 						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
 						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
 						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));

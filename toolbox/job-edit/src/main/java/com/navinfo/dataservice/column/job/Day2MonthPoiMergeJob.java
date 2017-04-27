@@ -53,6 +53,7 @@ import com.navinfo.dataservice.day2mon.Day2MonPoiLogSelector;
 import com.navinfo.dataservice.day2mon.DeepInfoMarker;
 import com.navinfo.dataservice.day2mon.PostBatch;
 import com.navinfo.dataservice.day2mon.PreBatch;
+import com.navinfo.dataservice.impcore.exception.LockException;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.dataservice.impcore.flusher.Day2MonLogFlusher;
 import com.navinfo.dataservice.impcore.mover.Day2MonMover;
@@ -246,6 +247,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("开始进行履历分析");
 				OperationResult result = parseLog(logMoveResult, monthConn);
+				if(result==null){throw new LockException("可落的履历全部刷库失败，请查看："+flushResult.getTempFailLogTable());}
 				log.info("开始进行深度信息打标记");
 				new DeepInfoMarker(result,monthConn).execute();
 				log.info("开始执行前批");

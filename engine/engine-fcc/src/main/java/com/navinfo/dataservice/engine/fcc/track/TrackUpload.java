@@ -3,12 +3,16 @@ package com.navinfo.dataservice.engine.fcc.track;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
 import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.Admin;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -54,6 +58,7 @@ public abstract class TrackUpload {
 	 */
 	public void run(String fileName, String tableName) throws Exception {
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+        this.createTabIfNotExists(hbaseConn, tableName);
 		Table htab = hbaseConn.getTable(TableName
 				.valueOf(tableName));
 		loadFileContent(fileName, htab);
@@ -88,10 +93,10 @@ public abstract class TrackUpload {
 					puts.clear();
 					count = 0;
 				}
-				resultJsonArr.add(newResultObject(rowkey, SUCESS, ""));
+				resultJsonArr.add(newResultObject(rowkey, SUCESS, 1));
 			}catch (Exception e) {
 				failed ++;
-				resultJsonArr.add(newResultObject(rowkey, FAIL, e.getMessage()));
+				resultJsonArr.add(newResultObject(rowkey, FAIL, 0));
 			}
 		}
 		htab.put(puts);
@@ -107,16 +112,30 @@ public abstract class TrackUpload {
 	 * @author: y
 	 * @time:2016-6-30 下午4:50:41
 	 */
-	private JSONObject newResultObject(String id, int result,String errorReason) {
+	private JSONObject newResultObject(String id, int result,int errorReason) {
 		JSONObject json = new JSONObject();
 		json.put("id", id);
 		json.put("status", result);
-		json.put("remark", errorReason);
+        json.put("trackType", this.getTrackType());
+        json.put("remark", errorReason);
 		return json;
 	}
-	
 
-	/**
+    private static void createTabIfNotExists(Connection connection,
+                                             String tabName) throws IOException {
+        Admin admin = connection.getAdmin();
+        TableName tableName = TableName.valueOf(tabName);
+        if (!admin.tableExists(tableName)) {
+            HTableDescriptor htd = new HTableDescriptor(tableName);
+            HColumnDescriptor hcd = new HColumnDescriptor("attribute");
+            htd.addFamily(hcd);
+            admin.createTable(htd);
+        }
+    }
+
+
+
+    /**
 	 * @return the errCount
 	 */
 	public int getFailed() {
@@ -151,8 +170,9 @@ public abstract class TrackUpload {
 		
 		long t1=System.currentTimeMillis();
 
-		TrackLinesUpload trackUploader = new TrackLinesUpload();
-		trackUploader.run("F:\\FCC\\ADAS\\Datum_Track.json","tracklines_sprint5");
+        TrackLinesUpload trackUploader = new TrackLinesUpload();
+		trackUploader.run("F:\\FCC\\track\\Datum_Track.json","tracklines_sprint5");
+        System.out.println(trackUploader.getResultJsonArr().get(0).toString());
 
 //		TrackUpload a = new TrackUpload();
 //

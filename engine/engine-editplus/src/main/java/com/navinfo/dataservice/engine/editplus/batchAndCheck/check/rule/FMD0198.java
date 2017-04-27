@@ -31,7 +31,7 @@ public class FMD0198 extends BasicCheckRule {
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
 					if(nameTmp.isOriginName()&&(name.contains("co,.")||name.contains("Co,."))){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "官方原始英文名“公司”缩写错误");
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "英文名“公司”缩写错误！");
 						return;
 					}
 				}

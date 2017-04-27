@@ -101,6 +101,34 @@ public class IxPoiSelector {
 		}
 		return null;
 	}
+	/**
+	 * 查询父POI的Pid
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long,Long> getParentPidByPids(Connection conn,Set<Long> pids)throws Exception{
+		if(pids!=null&&pids.size()>0){
+			if(pids.size()>1000){
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I "
+						+ "WHERE C.GROUP_ID=P.GROUP_ID AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN  "
+						+ "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 ";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				return new QueryRunner().query(conn, sql, new PoiParentPidSelHandler(),clob);
+			}else{
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ " FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I WHERE C.GROUP_ID=P.GROUP_ID "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 "
+						+ " AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN ("+StringUtils.join(pids, ",")+")";
+				return new QueryRunner().query(conn,sql,new PoiParentPidSelHandler());
+			}
+		}
+		return null;
+	}
 	public static List<Long> getChildrenPidsByParentPid(Connection conn,Set<Long> pidList) throws ServiceException{
 		List<Long> childPids = new ArrayList<Long>();
 		if(pidList.isEmpty()){

@@ -21,11 +21,14 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1744,13 +1747,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @Description:情报预处理tips提交（按照任务提交）
 	 * @param user
 	 * @author: y
-	 * @param taskType
-	 *            :1 快线任务号,2 快线子任务号,3 中线任务号,4 中线子任务号
 	 * @param taskId
 	 * @throws Exception
 	 * @time:2017-4-14 下午2:42:25
 	 */
-	public void submitInfoJobTips2Web(int user, int taskId, int taskType)
+	public void submitInfoJobTips2Web(int user, int taskId)
 			throws Exception {
 
 		Connection hbaseConn;
@@ -1763,6 +1764,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.valueOf(HBaseConstant.tipTab));
 
 			TipsSelector selector = new TipsSelector();
+			
+			int taskType=getTaskType(taskId);
 
 			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
 					taskType);
@@ -1800,6 +1803,33 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
 		}
 
+	}
+
+	/**
+	 * 根据任务号 获取任务类型
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	private int getTaskType(int taskId) throws Exception {
+		// 调用 manapi 获取 任务类型、及任务号
+		int taskType=0;
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		try {
+			Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(taskId);
+			if (taskMap != null) {
+				int taskIdResult = taskMap.get("taskId");
+				// 1，中线 4，快线
+				taskType = taskMap.get("programType");
+
+			}else{
+				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+taskId);
+			}
+		}catch (Exception e) {
+			logger.error("根据子任务号，获取任务任务号及任务类型出错：" + e.getMessage(), e);
+			throw e;
+		}
+		return taskType;
 	}
 
 }

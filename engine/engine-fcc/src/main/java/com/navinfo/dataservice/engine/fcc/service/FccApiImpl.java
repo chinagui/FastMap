@@ -129,7 +129,7 @@ public class FccApiImpl implements FccApi{
         String managerId =null;
       //  List<String> gridList =null;
         
-        List<String> collectTaskIds =null; //中线任务号
+        List<Integer> collectTaskIds =null; //中线任务号
         JSONObject taskInfo =null;
         String types=null;
         int phaseId =0;
@@ -145,6 +145,7 @@ public class FccApiImpl implements FccApi{
 		 */
 		public void validateParamAndInit() {
 			
+			 logger.info("API,参数验证：");
 			 logger.debug("API,参数验证：");
 
              //外业库信息
@@ -202,7 +203,11 @@ public class FccApiImpl implements FccApi{
              }
              JSONArray collectArray = parameter.getJSONArray("collectTaskIds");
              
-             collectTaskIds = JSONArray.toList(collectArray,new String(),new JsonConfig());
+            // collectTaskIds = JSONArray.toList(collectArray,new String(),new JsonConfig());
+             
+             for (Object object : collectArray) {
+            	 collectTaskIds.add(Integer.valueOf(object.toString()));
+			}
 
              
              if(collectTaskIds==null||collectTaskIds.isEmpty()){
@@ -250,6 +255,7 @@ public class FccApiImpl implements FccApi{
              //phaseId
               phaseId = parameter.getInt("phaseId");
              
+             logger.info("API,参数验证通过！");
              logger.debug("API,参数验证通过！");
 
 		}
@@ -265,13 +271,13 @@ public class FccApiImpl implements FccApi{
 
          /*       Tips2AuMarkApi api=new Tips2AuMarkApi();
                api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
-               */ 
+                */
                 logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
                logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
 
                 
                 apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
-                
+                logger.info("API,调用完成-------------------！");
                 logger.debug("API,调用完成-------------------！");
 
             }catch(Exception e){

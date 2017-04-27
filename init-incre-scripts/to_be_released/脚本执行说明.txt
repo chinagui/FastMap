@@ -6,3 +6,8 @@
 	功能：计算建筑物grid
 	目标库：fm_sys
 	author：鹿尧
+
+3. fm_sys/轨迹入库接口FCC新增表.sql
+功能：轨迹点导入
+目标库：fm_sys
+author：李娅

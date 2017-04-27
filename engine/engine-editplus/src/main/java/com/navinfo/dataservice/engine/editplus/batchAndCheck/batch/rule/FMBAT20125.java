@@ -27,7 +27,7 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * 楼门号关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
  * 楼栋号关键字对应SC_POINT_ADDRCK.type=7对应的pre_key；
  * (7)当子号为“－”开头时，按“门牌号+子号”的顺序翻译。如果“门牌号+子号”组合后有关键字，需要将“门牌号+子号”组合后的关键字(
- * SC_POINT_ADDRCK.type=1)提到门牌号前面，按照“类型名+门牌号+子号+类型名”顺序翻译。如果翻译后，出现“No.No.”时，去掉多余的
+ * SC_POINT_ADDRCK.type=1)提到门牌号前面，按照“类型名+门牌号+子号”顺序翻译。如果翻译后，出现“No.No.”时，去掉多余的
  * “No.”；如果翻译后，出现“No.no.”时，去掉多余的“no.”;
  * (8)当子号不是“－”开头时，按照“子号+类型名+门牌号”的顺序翻译。如果子号有关键字(SC_POINT_ADDRCK.type=1)，需要将“子号”
  * 的关键字提到子号前面; (9)首字母大写的原则，可避免关键词库中大小问题，如“DAZHONG ELECTRONICS”、”town”、“village”
@@ -108,9 +108,9 @@ public class FMBAT20125 extends BasicBatchRule {
 	private String transEng(IxPoiAddress chiAddress,MetadataApi metadata) throws Exception{
 		String addOns = metadata.convertEng(chiAddress.getAddons());// 附加信息
 		String roomNum = metadata.convertEng(keyAhead(chiAddress.getRoom(),metadata.queryAdRack(7)));// 房间号
-		String floor = metadata.convertEng(keyAhead(chiAddress.getFloor(),metadata.queryAdRack(2)));// 楼层
-		String unit = metadata.convertEng(keyAhead(chiAddress.getUnit(),metadata.queryAdRack(8)));// 楼门号
-		String building = metadata.convertEng(keyAhead(chiAddress.getBuilding(),metadata.queryAdRack(6)));// 楼栋号
+		String floor = metadata.convertEng(keyAhead(chiAddress.getFloor(),metadata.queryAdRack(7)));// 楼层
+		String unit = metadata.convertEng(keyAhead(chiAddress.getUnit(),metadata.queryAdRack(7)));// 楼门号
+		String building = metadata.convertEng(keyAhead(chiAddress.getBuilding(),metadata.queryAdRack(7)));// 楼栋号
 		String estab = metadata.convertEng(chiAddress.getEstab());// 附属设施名
 		String surfix = metadata.convertEng(chiAddress.getSurfix());// 后缀
 		String houseNumTypeSubNum = "";
@@ -127,17 +127,59 @@ public class FMBAT20125 extends BasicBatchRule {
 			type = chiAddress.getType();
 		}
 		if (StringUtils.isNotEmpty(subnum)&&(subnum.startsWith("-")||subnum.startsWith("－"))) {
-			houseNumTypeSubNum = metadata.convertEng(keyAhead(houseNum+subnum,metadata.queryAdRack(1))+type);
+			houseNumTypeSubNum = metadata.convertEng(type+keyAhead(houseNum+subnum,metadata.queryAdRack(1)));
 		} else {
 			houseNumTypeSubNum = metadata.convertEng(keyAhead(subnum,metadata.queryAdRack(1))+type+houseNum);
+		}
+		if (houseNumTypeSubNum.indexOf("No. No.")>=0) {
+			houseNumTypeSubNum = houseNumTypeSubNum.replace("No. No.", "No.");
+		} else if (houseNumTypeSubNum.indexOf("No. no.")>=0) {
+			houseNumTypeSubNum = houseNumTypeSubNum.replace("No. no.", "No.");
 		}
 		String prefix =  metadata.convertEng(chiAddress.getPrefix());
 		String landMark = metadata.convertEng(chiAddress.getLandmark());
 		String street = metadata.convertEng(chiAddress.getStreet());
 		String place = metadata.convertEng(chiAddress.getPlace());
 		String town = metadata.convertEng(chiAddress.getTown());
-		return addOns + " " + roomNum + " " + floor + " " + unit + " " + building + " " + estab + " " + surfix + " " + houseNumTypeSubNum + " " + prefix 
-				+ " " + landMark + " " + street + " " + place + " " + town;
+		String fullName = addOns;
+		if (!roomNum.isEmpty()) {
+			fullName +=  " " + roomNum;
+		}
+		if (!floor.isEmpty()) {
+			fullName +=  " " + floor;
+		}
+		if (!unit.isEmpty()) {
+			fullName +=  " " + unit;
+		}
+		if (!building.isEmpty()) {
+			fullName +=  " " + building;
+		}
+		if (!estab.isEmpty()) {
+			fullName +=  " " + estab;
+		}
+		if (!surfix.isEmpty()) {
+			fullName +=  " " + surfix;
+		}
+		if (!houseNumTypeSubNum.isEmpty()) {
+			fullName +=  " " + houseNumTypeSubNum;
+		}
+		if (!prefix.isEmpty()) {
+			fullName +=  " " + prefix;
+		}
+		if (!landMark.isEmpty()) {
+			fullName +=  " " + landMark;
+		}
+		if (!street.isEmpty()) {
+			fullName +=  " " + street;
+		}
+		if (!place.isEmpty()) {
+			fullName +=  " " + place;
+		}
+		if (!town.isEmpty()) {
+			fullName +=  " " + town;
+		}
+
+		return fullName.trim();
 	}
 	
 	private String keyAhead(String word,List<String> keyArr) {

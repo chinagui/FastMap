@@ -87,7 +87,7 @@ public class FMBAT20187 extends BasicBatchRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private void detealNewData(List<IxPoiChargingplot> newPlotsList) throws Exception {
+	public static void detealNewData(List<IxPoiChargingplot> newPlotsList) throws Exception {
 		Map<Integer,List<IxPoiChargingplot>> newPlotsMap = new HashMap<Integer,List<IxPoiChargingplot>>();
 		int maxGroupId = 1;
 		// 将新增的数据分组

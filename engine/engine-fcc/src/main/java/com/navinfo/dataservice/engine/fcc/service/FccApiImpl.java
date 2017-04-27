@@ -7,20 +7,18 @@ import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-/*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
-import com.navinfo.dataservice.api.man.iface.ManApi;
-
+/*import com.navinfo.nirobot.business.Tips2AuMarkApi;
+*/
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
 	
@@ -267,14 +265,28 @@ public class FccApiImpl implements FccApi{
         	
             try{
             	
-            	apiService= (ManApi) ApplicationContextUtil.getBean("manApi");
+               
+               apiService= (ManApi) ApplicationContextUtil.getBean("manApi");
+               int count=0;
+               
+        /*       Tips2AuMarkApi api=new Tips2AuMarkApi();
+               count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
+              */ 
+               
+               if(count!=0){
+               	apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
+                   logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
+                   logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
 
-         /*       Tips2AuMarkApi api=new Tips2AuMarkApi();
-               api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
-                */
-                logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
-               logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
+               }else{
+               	apiService.taskUpdateCmsProgress(phaseId,4,"转mark执行成功,转出0条");
+                   logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
+                   logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
 
+
+               }
+               
+               logger.debug("API,回调完成-------------------！");
                 
                 apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
                 logger.info("API,调用完成-------------------！");

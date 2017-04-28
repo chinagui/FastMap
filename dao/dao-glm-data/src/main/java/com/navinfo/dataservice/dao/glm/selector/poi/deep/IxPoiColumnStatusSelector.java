@@ -464,10 +464,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" AND CO.TABLE_NAME = :1");
 		sb.append(" AND NE.RULEID IN (SELECT W.WORK_ITEM_ID");
 		sb.append(" FROM POI_COLUMN_WORKITEM_CONF W");
-		sb.append(" WHERE W.FIRST_WORK_ITEM = :2");
-		if (firstWorkItem.equals("poi_deep")){
-			sb.append(" AND W.SECOND_WORK_ITEM = :3");
-		}
+		sb.append(" WHERE W.SECOND_WORK_ITEM = :2");
+//		if (firstWorkItem.equals("poi_deep")){
+//			sb.append(" AND W.SECOND_WORK_ITEM = :3");
+//		}
 		sb.append(" AND W.TYPE = 1)");
 		sb.append("   AND CO.PID in (");
 		
@@ -488,10 +488,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setString(1, tbNm);
-			pstmt.setString(2, firstWorkItem);
-			if (firstWorkItem.equals("poi_deep")){
-				pstmt.setString(3, secondWorkItem);
-			}
+			pstmt.setString(2, secondWorkItem);
+//			if (firstWorkItem.equals("poi_deep")){
+//				pstmt.setString(3, secondWorkItem);
+//			}
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				String keyPid=String.valueOf(resultSet.getInt("PID"));

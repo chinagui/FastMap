@@ -254,10 +254,10 @@ public class PoiSave {
 			sb.append(" 	(CASE WHEN "+qst+" = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"+qst+") THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=1 AND T.QUICK_SUBTASK_ID =0 THEN T.QUICK_SUBTASK_ID ELSE "+qst+" END) QST,");
 			sb.append(" 	(CASE WHEN "+qt+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0,"+qt+") THEN T.QUICK_TASK_ID WHEN T.STATUS=1 AND T.QUICK_TASK_ID =0 THEN T.QUICK_TASK_ID ELSE "+qt+" END) QT,");
 			sb.append(" 	(CASE WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID= 0 THEN 1");
-			sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
+			//sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
 			sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID <> 0 AND "+mst+" <> T.MEDIUM_SUBTASK_ID THEN T.STATUS");
 			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID= 0 THEN 1");
-			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
+			//sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
 			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID <> 0 AND "+qst+" <> T.QUICK_SUBTASK_ID THEN T.STATUS");
 			sb.append(" 		  ELSE 2 END) B,");
 			sb.append(" 	0 AS C,");

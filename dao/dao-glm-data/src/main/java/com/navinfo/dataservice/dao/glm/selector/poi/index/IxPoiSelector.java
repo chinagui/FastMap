@@ -433,6 +433,8 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 		String rawFields = null;
+		
+		//这个接口日编和月编都调用了，而月编没有这些字段，所以要加判断（RAW_FIELDS，STATUS，FRESH_VERIFIED）
 		if (poiEditStatus.containsKey("RAW_FIELDS")) {
 			if (poiEditStatus.get("RAW_FIELDS") == null) {
 				poi.setRawFields(rawFields);
@@ -445,7 +447,10 @@ public class IxPoiSelector extends AbstractSelector {
 		if(poiEditStatus.containsKey("STATUS")){
 		poi.setStatus(poiEditStatus.getInt("STATUS"));}
 		
-		poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
+		if(poiEditStatus.containsKey("FRESH_VERIFIED")){
+			poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
+		}
+		
 		
 		return poi;
 	}

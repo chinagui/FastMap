@@ -5,14 +5,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class CkSuiteSelector extends AbstractSelector {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	public CkSuiteSelector(Connection conn) {
@@ -93,7 +95,7 @@ public class CkSuiteSelector extends AbstractSelector {
 			if(flag == 0 && type ==5 ){//如果不是道路名全表检查并且检查类型不是 元数据检查
 				sb.append(" and a.suite_id not in('suite1') ");//
 			}
-			System.out.println("getSuite :"+sb.toString());
+			log.info("getSuite :"+sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setInt(1, type);

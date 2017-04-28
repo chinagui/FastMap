@@ -99,7 +99,7 @@ public class RdNameResultsTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void checkResultListByTask(){
 		Connection conn =null;
 		try{
@@ -107,7 +107,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'2d6475dcd01a41d6b3b8588544d83db6','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'4471ce577cbd4588886a3ed9672a8a0d','tableName':'rdName','params':{'name':'Jin','nameId':'647501','adminId':'440000','namePhonetic':'','ruleCode':'CHR70107','information':'中文中'}}");	
 			
 				NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
@@ -163,7 +163,7 @@ public class RdNameResultsTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void checkResultsStatis(){
 		Connection conn =null;
 		try{

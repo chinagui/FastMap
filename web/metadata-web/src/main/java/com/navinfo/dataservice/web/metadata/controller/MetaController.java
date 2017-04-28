@@ -1280,6 +1280,9 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             String langCode = jsonReq.getString("langCode");
+            if(langCode==null || StringUtils.isEmpty(langCode)){
+				throw new IllegalArgumentException("langCode参数不能为空。");
+			}
             logger.info("langCode: "+langCode);
            
             JSONObject data = selector.searchRdNameFix(langCode);

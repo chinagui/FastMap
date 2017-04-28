@@ -873,7 +873,7 @@ public class CheckController extends BaseController {
 	public ModelAndView searchCheckJobList(HttpServletRequest request){
 		try{			
 			JSONObject parameterJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
-			System.out.println("parameterJson : "+parameterJson.toString());
+			logger.info("parameterJson : "+parameterJson.toString());
 			
 			String tableName  = parameterJson.getString("tableName");
 			if(tableName==null || StringUtils.isEmpty(tableName)){
@@ -883,18 +883,17 @@ public class CheckController extends BaseController {
 			List<JobInfo> jobList = null;
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			jobList = jobApiService.getJobInfoList(parameterJson);
-			System.out.println("jobList"+jobList+" jobList.size() : "+jobList.size());
+			logger.info("jobList"+jobList+" jobList.size() : "+jobList.size());
 			JSONArray data = new JSONArray();
 			if(jobList != null && jobList.size() >0 ){
 				for(JobInfo job : jobList){
-					System.out.println("job.getDescp(): "+job.getDescp()+"  "+" job.getGuid(): "+job.getGuid() );
+					logger.info("job.getDescp(): "+job.getDescp()+"  "+" job.getGuid(): "+job.getGuid() );
 					JSONObject jobObj = new JSONObject();
 					jobObj.put("jobName", job.getDescp());
 					jobObj.put("taskName", job.getGuid());
 					data.add(jobObj);
 				}
 			}
-			System.out.println("data: "+data);
 			
 			return new ModelAndView("jsonView", success(data));
 
@@ -917,21 +916,21 @@ public class CheckController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			System.out.println("jobApiService : "+ jobApiService);
-			System.out.println("taskName : "+jsonReq.getString("taskName"));
-			System.out.println(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName")));
+			logger.info("jobApiService : "+ jobApiService);
+			logger.info("taskName : "+jsonReq.getString("taskName"));
+			logger.info(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName")));
 			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
 				String tableName  = jsonReq.getString("tableName");
-				System.out.println("tableName :"+tableName);
+				logger.info("tableName :"+tableName);
 				if(tableName==null || StringUtils.isEmpty(tableName)){
 					throw new IllegalArgumentException("tableName参数不能为空。");
 				}
 				
 				//根据jobId 查询jobUuid 获取最新的一个任务
 				JobInfo jobInfo = jobApiService.getLatestJobByDescp(tableName);
-				System.out.println("jobInfo : "+jobInfo);
+				logger.info("jobInfo : "+jobInfo);
 				if(jobInfo != null && jobInfo.getGuid() != null && StringUtils.isNotEmpty(jobInfo.getGuid())){
-					System.out.println("jobInfo.getGuid() :"+ jobInfo.getGuid());
+					logger.info("jobInfo.getGuid() :"+ jobInfo.getGuid());
 					jsonReq.put("taskName", jobInfo.getGuid());
 				}
 			}
@@ -980,12 +979,10 @@ public class CheckController extends BaseController {
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-			System.out.println("jobApiService : "+jobApiService );
-			System.out.println("taskName : "+ jsonReq.getString("taskName"));
+			logger.info("taskName : "+ jsonReq.getString("taskName"));
 			
 			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
 				String tableName  = jsonReq.getString("tableName");
-				System.out.println("tableName : "+tableName );
 				if(tableName==null || StringUtils.isEmpty(tableName)){
 					throw new IllegalArgumentException("tableName参数不能为空。");
 				}
@@ -1002,7 +999,6 @@ public class CheckController extends BaseController {
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
 			JSONArray data = new JSONArray();
 			data = niValExceptionSelector.listCheckResultsRuleIds(jsonReq);
-			System.out.println("data :"+data);
 			logger.info("end check/getruleIdsByTaskName"+" :"+jsonReq.getString("taskName"));
 			logger.debug(data);
 			return new ModelAndView("jsonView", success(data));
@@ -1062,51 +1058,29 @@ public class CheckController extends BaseController {
 				if(data != null && data.size() >0){
 					for(Object obj : data){
 						JSONObject jobj = (JSONObject) obj;
-						/*JSONObject newjobj = new JSONObject();
-						newjobj.put("ruleid", "");
-						newjobj.put("ruleName", "");
-						newjobj.put("adminName", "");
-						newjobj.put("information", "");
-						newjobj.put("level", "");
-						newjobj.put("count", 0);*/
 						
 						if(jobj.containsKey("ruleid")){
 							//查询ruleName
 							String ruleName =CheckService.getInstance().getRuleNameById(jobj.getString("ruleid"));
 							jobj.put("ruleName", ruleName);
-//							newjobj.put("ruleid", jobj.getString("ruleid"));
-//							newjobj.put("ruleName", ruleName);
 						}
 						if(jobj.containsKey("admin_id")){
 							int adminId = jobj.getInt("admin_id"); 
 							jobj.remove("admin_id");
-							System.out.println("jobj.containsKey('admin_id'):"+jobj.containsKey("admin_id"));
+							logger.info("jobj.containsKey('admin_id'):"+jobj.containsKey("admin_id"));
 							if(adminId == 214){
 								jobj.put("adminName","全国");
-//								newjobj.put("adminName", "全国");
 							}else{
 								if (!adminMap.isEmpty()) {
 									if (adminMap.containsKey(String.valueOf(adminId))) {
-//										newjobj.put("adminName", adminMap.get(String.valueOf(adminId)));
 										jobj.put("adminName", adminMap.get(String.valueOf(adminId)));
 									} else {
 										jobj.put("adminName", "");
-//										newjobj.put("adminName", "");
 									}
 								}
 							}
 						}
-						/*if(jobj.containsKey("information")){
-							newjobj.put("information", jobj.getString("information"));
-						}
-						if(jobj.containsKey("level")){
-							newjobj.put("level", jobj.getString("level"));
-						}
-						if(jobj.containsKey("count")){
-							newjobj.put("count", jobj.getString("count"));
-						}*/
 						newdata.add(jobj);
-//						logger.info("newjobj : "+newjobj);
 					}
 				}
 			}

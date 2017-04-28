@@ -24,8 +24,8 @@ import com.navinfo.navicommons.database.QueryRunner;
 
 public class GdbExportScriptsInterface {
 
-	private static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList(String type) throws SQLException {
-	
+//	private static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList(String type) throws SQLException {
+	public static Map<Integer, Map<Integer, Set<Integer>>> getProvinceMeshList(String type) throws SQLException {
 		Connection conn = DBConnector.getInstance().getManConnection();
 
 		QueryRunner runner = new QueryRunner();

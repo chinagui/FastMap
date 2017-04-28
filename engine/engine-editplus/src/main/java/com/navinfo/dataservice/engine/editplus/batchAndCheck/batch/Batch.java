@@ -85,6 +85,7 @@ public class Batch extends AbstractOperation{
 		/*若存在修改参考数据的规则，则遍历batchRuleCommand中的referDatas将修改的数据put入result中；
 		 * 调用batch的调用方，通过batch.persistChangeLog将变更持久化*/
 		//if(changeReferData){
+		changeReferData = new OperationResult();
 		for(Map<Long, BasicObj> referMap:batchRuleCommand.getReferDatas().values()){
 			for(BasicObj obj:referMap.values()){
 				if (obj.isChanged()) {

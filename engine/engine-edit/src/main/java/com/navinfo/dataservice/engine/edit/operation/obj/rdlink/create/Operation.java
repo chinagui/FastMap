@@ -22,6 +22,7 @@ import com.navinfo.dataservice.engine.edit.utils.AdminOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
 import com.navinfo.dataservice.engine.edit.utils.RdLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.AdminIDBatchUtils;
+import com.navinfo.dataservice.engine.edit.utils.batch.SpeedUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.ZoneIDBatchUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -175,15 +176,8 @@ public class Operation implements IOperation {
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             // 设置link的zoneId属性
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
-
-            if (link.getUrban() == 1) {
-                for (IRow row : link.getSpeedlimits()) {
-                    RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
-                    limit.setFromSpeedLimit(400);
-                    limit.setToSpeedLimit(400);
-                    limit.setSpeedClass(6);
-                }
-            }
+            // 设置link的速度限制值
+            SpeedUtils.updateLinkSpeed(link);
 
             this.linkList.add(link);
 
@@ -261,15 +255,8 @@ public class Operation implements IOperation {
         AdminIDBatchUtils.updateAdminID(link, null, conn);
         // 设置link的zoneId属性
         ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
-
-        if (link.getUrban() == 1) {
-            for (IRow row : link.getSpeedlimits()) {
-                RdLinkSpeedlimit limit = (RdLinkSpeedlimit) row;
-                limit.setFromSpeedLimit(400);
-                limit.setToSpeedLimit(400);
-                limit.setSpeedClass(6);
-            }
-        }
+        // 设置link的速度限制值
+        SpeedUtils.updateLinkSpeed(link);
         this.linkList.add(link);
 
         result.insertObject(link, ObjStatus.INSERT, link.pid());

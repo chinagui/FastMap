@@ -1,10 +1,5 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdlink.update;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.bizcommons.service.RticService;
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -22,10 +17,13 @@ import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkSpeedlimit;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkWalkstair;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
 import com.navinfo.dataservice.dao.glm.model.rd.trafficsignal.RdTrafficsignal;
-import com.navinfo.dataservice.engine.edit.utils.batch.SpeedLimitUtils;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+
+import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * RLINK 修改和属性维护
@@ -565,25 +563,10 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     private void updataRelationObj(Result result) throws Exception {
-        this.calSpeedLimit(updateLink, command.getUpdateContent(), result);
         // this.updateRdLane(result);
         // 信号灯维护
         this.updateRdTraffic(result);
 
-    }
-
-    /**
-     * 更新车道限速信息
-     * 
-     * @param link
-     *            原始RdLink
-     * @param json
-     *            待修改属性JSON
-     * @param result
-     *            结果集
-     */
-    private void calSpeedLimit(RdLink link, JSONObject json, Result result) {
-        SpeedLimitUtils.updateRdLink(link, json, result);
     }
 
     /**

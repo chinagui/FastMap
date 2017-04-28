@@ -167,7 +167,7 @@ public class SolrController {
 			int[] notExpSourceType) throws SolrServerException, IOException {
 		List<String> rowkeys = new ArrayList<String>();
 
-		String param = "wkt:\"intersects(" + wkt + ")\"";
+		String param = "wktLocation:\"intersects(" + wkt + ")\"";
 
 		if (date != null && !date.equals("")) {
 			param += " AND t_date:[" + date + " TO *]";
@@ -425,18 +425,18 @@ public class SolrController {
 			builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
 		}
 
+        if (taskSet != null) {
+
+            addTaskIdFilterSql(builder, taskSet);
+
+        }
+
 		SolrQuery query = new SolrQuery();
 
 		query.set("q", param);
 
 		if (!"".equals(builder.toString())) {
 			query.set("fq", builder.toString());
-		}
-		
-		if (taskSet != null) {
-
-			addTaskIdFilterSql(builder, taskSet);
-
 		}
 
 		query.set("start", 0);
@@ -518,10 +518,10 @@ public class SolrController {
 	}
 
 	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-			JSONArray stages, boolean filterDelete) throws SolrServerException,
+			JSONArray stages, boolean filterDelete, String wktIndexName) throws SolrServerException,
 			IOException {
 		// 默认不是预处理的tips
-		return queryTipsWebType(wkt, types, stages, filterDelete, false);
+		return queryTipsWebType(wkt, types, stages, filterDelete, false, wktIndexName);
 	}
 
 	public JSONObject getById(String id) throws Exception {
@@ -614,8 +614,9 @@ public class SolrController {
 	 * @param wkt
 	 * @param types
 	 * @param stages
-	 * @param b
+	 * @param filterDelete
 	 * @param isPre
+	 * @param wktIndexName
 	 * @return
 	 * @author: y
 	 * @throws IOException
@@ -623,7 +624,7 @@ public class SolrController {
 	 * @time:2017-1-5 下午2:03:57
 	 */
 	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-			JSONArray stages, boolean filterDelete, boolean isPre)
+			JSONArray stages, boolean filterDelete, boolean isPre, String wktIndexName)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
@@ -631,7 +632,7 @@ public class SolrController {
 
 		// builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
 
-		builder.append("wkt:\"intersects(" + wkt + ")\" ");
+		builder.append(wktIndexName + ":\"intersects(" + wkt + ")\" ");
 
 		if (filterDelete) {
 			// 过滤删除的数据
@@ -648,8 +649,12 @@ public class SolrController {
 
 			if ("".equals(builder.toString())) {
 				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
+				
+				builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
 			} else {
 				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
+				
+				builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
 			}
 		}
 
@@ -945,7 +950,7 @@ public class SolrController {
 	 * @param type
 	 * @param stages
 	 * @param isPre
-	 * @param subtaskid
+	 * @param taskList
 	 * @return
 	 * @author: y
 	 * @throws IOException
@@ -996,8 +1001,6 @@ public class SolrController {
 		}
 
 		SolrQuery query = new SolrQuery();
-		
-		System.out.println(builder.toString());
 
 		query.set("q", builder.toString());
 

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONObject;
@@ -43,6 +45,30 @@ public class VersionController extends BaseController {
 			json.put("type", type);
 			
 			return new ModelAndView("jsonView", success(json));
+		} catch (Exception e) {
+			log.error("创建失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/version/getAppVersion")
+	public ModelAndView getAppVersion(HttpServletRequest request) {
+		try {
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(parameter));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			//android,ios
+			String appPlatform = dataJson.getString("appPlatform");
+			//1.一体化  2.精细化
+			int appType=dataJson.getInt("appType");
+			
+			Map<String, Object> res= service.getAppVersion(appPlatform,appType);
+			return new ModelAndView("jsonView", success(res));
 		} catch (Exception e) {
 			log.error("创建失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

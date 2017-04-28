@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
+import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.vividsolutions.jts.geom.Geometry;
@@ -48,6 +49,11 @@ public class Command extends AbstractCommand {
      * 挂接信息
      */
     private JSONArray catchInfos;
+
+    /**
+     * 修行线挂接立交
+     */
+    private List<RdGsc> gscs;
 
     /**
      * @return 操作类型
@@ -139,5 +145,23 @@ public class Command extends AbstractCommand {
      */
     public void setCmgfaces(List<CmgBuildface> cmgfaces) {
         this.cmgfaces = cmgfaces;
+    }
+
+    /**
+     * Getter method for property <tt>gscs</tt>.
+     *
+     * @return property value of gscs
+     */
+    public List<RdGsc> getGscs() {
+        return gscs;
+    }
+
+    /**
+     * Setter method for property <tt>gscs</tt>.
+     *
+     * @param gscs value to be assigned to property gscs
+     */
+    public void setGscs(List<RdGsc> gscs) {
+        this.gscs = gscs;
     }
 }

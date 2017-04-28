@@ -12,6 +12,7 @@ public class Param{
 	String oraclePwd;
 	String diffFidTempTableName;
 	String outputFile;
+	int diffType;
 	//
 	public Param() {
 		super();
@@ -82,6 +83,11 @@ public class Param{
 	public void setOutputFile(String outputFile) {
 		this.outputFile = outputFile;
 	}
-	
+	public int getDiffType(){
+		return diffType;
+	}
+	public void setDiffType(int diffType){
+		this.diffType = diffType;
+	}
 	
 }

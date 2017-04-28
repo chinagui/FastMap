@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.iface;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -7,6 +8,7 @@ import java.util.Set;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -64,6 +66,7 @@ public interface ManApi{
 	public String querySpecVersionByType(int type) throws Exception;
 	
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception;
+	public List<RegionMesh> queryRegionWithMeshes(Collection<String> meshes) throws Exception;
 	
 	public void pushMessage(Message message,Integer push) throws Exception;
 	

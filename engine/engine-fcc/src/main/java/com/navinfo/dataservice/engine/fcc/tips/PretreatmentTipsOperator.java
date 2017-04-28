@@ -21,11 +21,14 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -1128,18 +1131,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throws Exception {
 		String rowkey = "";
 		Connection hbaseConn;
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			String date = StringUtils.getCurrentTime();
+			
+			JSONObject source = jsonInfo.getJSONObject("source");
+
+			String sourceType = source.getString("s_sourceType");
 			// 新增
 			if (command == 0) {
-
-				JSONObject source = jsonInfo.getJSONObject("source");
-
-				String sourceType = source.getString("s_sourceType");
 
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
@@ -1156,7 +1160,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				updateOneTips(jsonInfo, user, htab, date); // 同时修改hbase和solr
 			}
+			
 			htab.close();
+			
+			//需要进行tips差分
+			allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
+			
+			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 			return rowkey;
 		} catch (Exception e) {
@@ -1390,6 +1400,9 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	public void batchSave(JSONArray jsonInfoArr, int user) throws Exception {
 
 		Connection hbaseConn;
+		
+		Map<String, String> allNeedDiffRowkeysCodeMap = new HashMap<String, String>(); // 所有入库需要差分的tips的<rowkey,code
+		
 		try {
 			hbaseConn = HBaseConnector.getInstance().getConnection();
 			Table htab = hbaseConn.getTable(TableName
@@ -1414,11 +1427,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 				puts.add(put);
 
 				addSolr(tipsInfo, user, date);
+				
+				//需要进行tips差分
+				allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);
 			}
 
 			htab.put(puts);
 
 			htab.close();
+			
+			TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		} catch (Exception e) {
 			logger.error("批量新增tips出错：" + e.getMessage(), e);
@@ -1744,13 +1762,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @Description:情报预处理tips提交（按照任务提交）
 	 * @param user
 	 * @author: y
-	 * @param taskType
-	 *            :1 快线任务号,2 快线子任务号,3 中线任务号,4 中线子任务号
 	 * @param taskId
 	 * @throws Exception
 	 * @time:2017-4-14 下午2:42:25
 	 */
-	public void submitInfoJobTips2Web(int user, int taskId, int taskType)
+	public void submitInfoJobTips2Web(int user, int taskId)
 			throws Exception {
 
 		Connection hbaseConn;
@@ -1763,13 +1779,28 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.valueOf(HBaseConstant.tipTab));
 
 			TipsSelector selector = new TipsSelector();
+			
+			int taskType=getTaskType(taskId);
+			
+			
+			if(taskType == TaskType.Q_TASK_TYPE){
+				taskType=TaskType.Q_SUB_TASK_TYPE;
+			}
+			
+			else if(taskType == TaskType.M_TASK_TYPE){
+				taskType=TaskType.M_SUB_TASK_TYPE;
+			}
+			
+			else {
+				throw new Exception("不支持的任务类型：" + taskType);
+			}
 
 			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
 					taskType);
 
 			for (JSONObject json : tipsList) {
 
-				String rowkey = json.getString("rowkey");
+				String rowkey = json.getString("id");
 
 				json.put("t_fStatus", 1); // 是否完成多源融合 0 否；1 是；
 
@@ -1800,6 +1831,33 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			throw new Exception("情报任务提交失败：" + e.getMessage(), e);
 		}
 
+	}
+
+	/**
+	 * 根据任务号 获取任务类型
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	private int getTaskType(int taskId) throws Exception {
+		// 调用 manapi 获取 任务类型、及任务号
+		int taskType=0;
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		try {
+			Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(taskId);
+			if (taskMap != null) {
+				int taskIdResult = taskMap.get("taskId");
+				// 1，中线 4，快线
+				taskType = taskMap.get("programType");
+
+			}else{
+				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+taskId);
+			}
+		}catch (Exception e) {
+			logger.error("根据子任务号，获取任务任务号及任务类型出错：" + e.getMessage(), e);
+			throw e;
+		}
+		return taskType;
 	}
 
 }

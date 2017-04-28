@@ -1,25 +1,24 @@
 package com.navinfo.dataservice.engine.fcc.service;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 /*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
-import com.navinfo.dataservice.api.man.iface.ManApi;
 
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
@@ -89,7 +88,7 @@ public class FccApiImpl implements FccApi{
 	
 
     @Override
-    public void tips2Aumark(JSONObject parameter)  {
+    public void tips2Aumark(JSONObject parameter)throws Exception  {
     	
     	try{
 
@@ -105,11 +104,12 @@ public class FccApiImpl implements FccApi{
         
         newThread.start();
         
-       // tips2AuMark.run();
+        tips2AuMark.run();
         
         logger.debug("进入Api:tips2Aumark,调用run()");
     	}catch (Exception e) {
 			logger.error(e.getMessage(), e);
+			throw e;
 		}
         
         
@@ -127,7 +127,9 @@ public class FccApiImpl implements FccApi{
         //gdb参考库
         String gdbId =null;
         String managerId =null;
-        List<String> gridList =null;
+      //  List<String> gridList =null;
+        
+        List<Integer> collectTaskIds =new ArrayList<Integer>(); //中线任务号
         JSONObject taskInfo =null;
         String types=null;
         int phaseId =0;
@@ -143,6 +145,7 @@ public class FccApiImpl implements FccApi{
 		 */
 		public void validateParamAndInit() {
 			
+			 logger.info("API,参数验证：");
 			 logger.debug("API,参数验证：");
 
              //外业库信息
@@ -185,15 +188,33 @@ public class FccApiImpl implements FccApi{
 
             //grid，types
             // String grids = parameter.getString("grids");
-             JSONArray gridsArray = parameter.getJSONArray("grids");
+/*             JSONArray gridsArray = parameter.getJSONArray("grids");
              gridList = JSONArray.toList(gridsArray,new String(),new JsonConfig());
 
-             /*if (grids==null||grids.isEmpty()) {
-                 throw new IllegalArgumentException("参数错误:grids不能为空");
-             }*/
-             if (gridList.isEmpty()||gridList.size()==0) {
+             if (grids==null||grids.isEmpty()) {
                  throw new IllegalArgumentException("参数错误:grids不能为空");
              }
+             if (gridList.isEmpty()||gridList.size()==0) {
+                 throw new IllegalArgumentException("参数错误:grids不能为空");
+             }*/
+             
+             if(!parameter.containsKey("collectTaskIds")){
+            	 throw new IllegalArgumentException("参数错误:collectTaskIds不能为空");
+             }
+             JSONArray collectArray = parameter.getJSONArray("collectTaskIds");
+             
+            // collectTaskIds = JSONArray.toList(collectArray,new String(),new JsonConfig());
+             
+             for (Object object : collectArray) {
+            	 collectTaskIds.add(Integer.valueOf(object.toString()));
+			}
+
+             
+             if(collectTaskIds==null||collectTaskIds.isEmpty()){
+            	 throw new IllegalArgumentException("参数错误:collectTaskIds不能为空");
+             }
+             
+             
              types = parameter.getString("types");
 
              taskInfo = parameter.getJSONObject("taskid");
@@ -234,6 +255,7 @@ public class FccApiImpl implements FccApi{
              //phaseId
               phaseId = parameter.getInt("phaseId");
              
+             logger.info("API,参数验证通过！");
              logger.debug("API,参数验证通过！");
 
 		}
@@ -245,18 +267,29 @@ public class FccApiImpl implements FccApi{
         	
             try{
             	
-            	apiService= (ManApi) ApplicationContextUtil.getBean("manApi");
+               
+               apiService= (ManApi) ApplicationContextUtil.getBean("manApi");
+               int count=0;
+               
+          /*     Tips2AuMarkApi api=new Tips2AuMarkApi();
+               count=api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,collectTaskIds,types,taskInfo);
+               */
+               
+               if(count!=0){
+               	apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
+                   logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
+                   logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
 
-            /*    Tips2AuMarkApi api=new Tips2AuMarkApi();
-               api.tips2Aumark(auip,ausid,auport,auuser,aupw,gdbId,gridList,types,taskInfo);
-              */  
-                logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
-               logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+2+",转mark执行成功)");
+               }else{
+               	apiService.taskUpdateCmsProgress(phaseId,4,"转mark执行成功,转出0条");
+                   logger.debug("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
+                   logger.info("回调用manApi:taskUpdateCmsProgress（"+phaseId+","+4+",转mark执行成功,转出0条)");
 
+
+               }
                 
-                apiService.taskUpdateCmsProgress(phaseId,2,"转mark执行成功");
-                
-               // logger.debug("API,调用完成-------------------！");
+                logger.info("API,调用完成-------------------！");
+                logger.debug("API,调用完成-------------------！");
 
             }catch(Exception e){
             	  logger.error("转mark出错："+e.getMessage(),e);

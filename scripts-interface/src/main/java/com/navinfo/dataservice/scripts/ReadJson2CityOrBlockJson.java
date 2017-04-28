@@ -3,8 +3,10 @@ package com.navinfo.dataservice.scripts;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.Scanner;
-import com.navinfo.dataservice.commons.fileConvert.ReadAndCreateJson;
+
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.scripts.model.ReadAndCreateJson;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

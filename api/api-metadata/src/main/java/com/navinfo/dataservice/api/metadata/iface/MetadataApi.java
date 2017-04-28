@@ -351,6 +351,11 @@ public interface MetadataApi {
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception;
 	
 	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getCloseMeshs(List<Integer> admincodes)throws Exception;
+	
+	/**
 	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录
 	 * @param name
 	 * @return List<Map<String, Object>>

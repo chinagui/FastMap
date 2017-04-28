@@ -29,8 +29,10 @@ public class GLM22003 extends baseRule {
 	@Override
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		for(IRow obj:checkCommand.getGlmList()){
-			RdSameNode rdSameNode = (RdSameNode) obj;
-			checkSameNode(rdSameNode);
+			if (obj instanceof RdSameNode) {
+				RdSameNode rdSameNode = (RdSameNode) obj;
+				checkSameNode(rdSameNode);
+			}
 		}
 	}
 

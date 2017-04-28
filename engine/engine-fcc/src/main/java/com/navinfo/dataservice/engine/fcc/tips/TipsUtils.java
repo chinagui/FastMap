@@ -18,7 +18,7 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 public class TipsUtils {
 	
 
-	public static int[] notExpSourceType = { 8001, 8002 }; // 不下载的tips
+	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211 }; // 不下载的tips
 	
 	//关于空值得定义：对象NULL,数据[]，字符串""
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();

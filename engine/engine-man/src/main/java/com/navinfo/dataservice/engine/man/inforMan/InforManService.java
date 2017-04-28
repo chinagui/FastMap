@@ -177,12 +177,11 @@ public class InforManService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	public HashMap<String,Object> query(String inforId) throws Exception {
+	public HashMap<String,Object> query(int inforId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "select * from infor where INFOR_ID='" + inforId + "'";
+			String selectSql = "select * from infor where INFOR_ID=" + inforId;
 			HashMap<String,Object> list = InforManOperation.selectTaskBySql2(conn, selectSql);
 			list.put("grids", getProgramGridsByInfor(conn,inforId));
 			return list;
@@ -195,17 +194,17 @@ public class InforManService {
 		}
 	}
 	
-	public Map<Integer, Integer> getProgramGridsByInfor(Connection conn,String inforId)throws Exception{
+	public Map<Integer, Integer> getProgramGridsByInfor(Connection conn,int inforId)throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
 			String sqlString="SELECT GRID_ID,1 type"
 					+ "  FROM INFOR_GRID_MAPPING"
-					+ " WHERE INFOR_ID = '"+inforId+"'"
+					+ " WHERE INFOR_ID = "+inforId
 					+ " UNION"
 					+ " SELECT M.GRID_ID, M.TYPE"
 					+ "  FROM PROGRAM_GRID_MAPPING M, PROGRAM P"
 					+ " WHERE M.PROGRAM_ID = P.PROGRAM_ID"
-					+ "   AND P.INFOR_ID = '"+inforId+"'";
+					+ "   AND P.INFOR_ID = "+inforId;
 			log.info("getProgramGridsByInfor sql:" + sqlString);
 			ResultSetHandler<Map<Integer, Integer>> rsh = new ResultSetHandler<Map<Integer, Integer>>() {
 				@Override

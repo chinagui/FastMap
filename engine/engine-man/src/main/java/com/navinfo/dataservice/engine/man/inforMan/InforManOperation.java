@@ -69,7 +69,7 @@ public class InforManOperation {
 				public HashMap<String,Object> handle(ResultSet rs) throws SQLException {
 					if(rs.next()){
 						HashMap<String,Object> map = new HashMap<String,Object>();
-						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforId", rs.getInt("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
 						JSONArray geoList = new JSONArray();
 						String inforGeo=rs.getString("GEOMETRY");
@@ -88,7 +88,8 @@ public class InforManOperation {
 						map.put("geometry", geoList);
 						map.put("inforLevel",rs.getInt("INFOR_LEVEL"));
 						map.put("planStatus",rs.getInt("PLAN_STATUS"));
-						map.put("inforContent",rs.getString("INFOR_CONTENT"));
+						//map.put("inforContent",rs.getString("INFOR_CONTENT"));
+						
 						//map.put("taskId",rs.getInt("TASK_ID"));						
 						map.put("insertTime",rs.getTimestamp("INSERT_TIME"));
 						return map;

@@ -143,12 +143,11 @@ public class Operation implements IOperation {
 			if (ObjStatus.DELETE.toString().equals(objStatus)
 					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
 
-				detail = restrict.detailMap.get(json.getString("rowId"));
+				detail = restrict.detailMap.get(json.getInt("pid"));
 
 				if (detail == null) {
-
-					throw new Exception("rowId=" + json.getString("rowId")
-							+ "的RdVoiceguideDetail不存在");
+					
+					throw new Exception("detailId=" + json.getInt("pid") + "的交限detail不存在");
 				}
 			}
 

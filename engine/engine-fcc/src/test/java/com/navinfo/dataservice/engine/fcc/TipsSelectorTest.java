@@ -273,7 +273,7 @@ public class TipsSelectorTest extends InitApplication {
 			//028002921a855f54c94990ab034c1fe4862d83
 			//{"gap":40,"mdFlag":"d","z":14,"x":13492,"y":6201}
 			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
-					40, types,"d"));
+					40, types,"d","wktLocation"));
 			
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -295,7 +295,7 @@ public class TipsSelectorTest extends InitApplication {
 			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
 			wkt = GridUtils.grids2Wkt(grids);
 			System.out.println(wkt);
-			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d");
+			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d","wkt");
 			System.out.println(tips);
 			
 		} catch (Exception e) {
@@ -592,7 +592,6 @@ public class TipsSelectorTest extends InitApplication {
 			
 			put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
 					.getBytes());
-
 */
 
 			JSONObject track = JSONObject.fromObject(new String(result.getValue(
@@ -654,21 +653,17 @@ public class TipsSelectorTest extends InitApplication {
 			htab.close();
 			
 			/*JSONObject solrIndex = conn.getById(rowkey);
-
 			solrIndex.put("s_qSubTaskId", 0);
-
 			solrIndex.put("s_mSubTaskId", 0);
 			
 			solrIndex.put("wktLocation",solrIndex.getString("wkt"));
 			
 			if(!solrIndex.containsKey("s_mTaskId")){
 				solrIndex.put("s_mTaskId", 0);
-
 				solrIndex.put("s_qTaskId", 0);
 				
 				solrIndex.put("t_fStatus", 0);
 			}
-
 			conn.addTips(solrIndex);*/
 			}catch (Exception e) {
 				System.out.println("error:"+rowkey);

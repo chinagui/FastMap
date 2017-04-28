@@ -21,6 +21,7 @@ import com.vividsolutions.jts.io.ParseException;
 * @Description: TODO
 */
 public class CompGridUtil {
+	
 
 	/**
 	 * 计算line在图幅范围内所属的grid
@@ -438,6 +439,11 @@ public class CompGridUtil {
 		}
 		
 		return grids;
+	}
+	
+	public static boolean gridInMesh(String meshId,String gridId){
+		if(meshId==null&&gridId==null)return false;
+		return meshId.equals(gridId.substring(0, gridId.length()-2));
 	}
 	
 	/**

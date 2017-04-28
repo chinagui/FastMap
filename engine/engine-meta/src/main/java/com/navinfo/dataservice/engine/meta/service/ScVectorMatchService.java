@@ -727,7 +727,7 @@ public class ScVectorMatchService {
 				bean.setFileId(fileId);
 				create(bean);
 			}catch(Exception e){
-				System.out.println("bean : "+e.getMessage());
+				log.error("bean : "+e.getMessage());
 			}
 		}
 		

@@ -7,14 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Iterator;
-
 import org.apache.commons.dbutils.DbUtils;
-
+import org.apache.log4j.Logger;
 import com.mysql.jdbc.StringUtils;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.engine.meta.service.ScRoadnameHwInfoService;
 import com.navinfo.navicommons.database.sql.ProcedureBase;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -33,6 +31,7 @@ public class RdNameOperation {
 		this.conn = conn;
 	}
 
+	private Logger log = Logger.getLogger(RdNameOperation.class);
 /**
  * @Title: saveName
  * @Description: 新增道路名
@@ -233,7 +232,6 @@ public RdName saveName(RdName rdName) throws Exception {
 				if ("CHI".equals(rdName.getLangCode()) ||"CHT".equals(rdName.getLangCode() )  ) {
 					// 中文名
 //					rdName.setCity(true);
-//					System.out.println("新增");
 					rdName = saveName(rdName);
 				} else {
 					// 英文/葡文名
@@ -242,7 +240,6 @@ public RdName saveName(RdName rdName) throws Exception {
 				}
 			} else {
 				// 修改
-//				System.out.println("修改");
 				rdName = updateName(rdName);
 			}
 			
@@ -323,7 +320,7 @@ public RdName saveName(RdName rdName) throws Exception {
 		sb.append("ROAD_TYPE = ?,");
 		sb.append("ADMIN_ID = ?,");
 		sb.append("CODE_TYPE = ?,");
-		if(rdName.getRoadType().equals(1) && (StringUtils.isNullOrEmpty(rdName.getNamePhonetic()))){//高速公路,生成语音
+		if(rdName.getRoadType().equals(1) && (StringUtils.isNullOrEmpty(rdName.getVoiceFile()))){//高速公路,生成语音
 			sb.append("VOICE_FILE = (select py_utils_word.convert_rd_name_voice(?,null,null,null) voicefile  from dual ),");
 		}else{
 			sb.append("VOICE_FILE = ?,");
@@ -540,7 +537,7 @@ public RdName saveName(RdName rdName) throws Exception {
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
-		System.out.println(" begin teilenRdNameByParams params: "+ params);
+		log.info(" begin teilenRdNameByParams params: "+ params);
 		try {
 			StringBuilder sql = new StringBuilder();
 			//JSONObject param =  params.getJSONObject("params");
@@ -611,7 +608,7 @@ public RdName saveName(RdName rdName) throws Exception {
 						
 					}
 				}
-			System.out.println("  teilenRdNameByParams  sql: "+sql.toString());
+			log.info("  teilenRdNameByParams  sql: "+sql.toString());
 			if (sql.length()>0) {
 				pstmt = conn.prepareStatement(sql.toString());
 				

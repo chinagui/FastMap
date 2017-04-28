@@ -378,8 +378,8 @@ public class JobService {
 				
 				Timestamp beginTime = DateUtilsEx.getDayOfDelayMonths(curTime, -1);
 				
-				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd");
-				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd");
+				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd HH:mm:ss");
+				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd HH:mm:ss");
 				log.info("startDate : "+startDate+"  "+" endDate :"+endDate);
 			}
 			jobInfoSql+=" and (j.end_time "

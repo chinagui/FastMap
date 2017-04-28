@@ -1,0 +1,13 @@
+﻿1. fm_man/update_fm_man.sh
+	功能：过渡期管理规格升级
+	目标库：fm_man
+	author：宋冬燕
+2. fm_sys/glm_table_init.sql
+	功能：计算建筑物grid
+	目标库：fm_sys
+	author：鹿尧
+
+3. fm_sys/轨迹入库接口FCC新增表.sql
+功能：轨迹点导入
+目标库：fm_sys
+author：李娅

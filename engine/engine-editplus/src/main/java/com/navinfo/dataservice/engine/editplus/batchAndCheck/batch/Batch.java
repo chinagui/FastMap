@@ -89,7 +89,7 @@ public class Batch extends AbstractOperation{
 			for(BasicObj obj:referMap.values()){
 				if (obj.isChanged()) {
 					result.putObj(obj);
-					changeReferData.putObj(obj);
+					if(changeReferData!=null){changeReferData.putObj(obj);}
 				}
 			}
 		}

@@ -18,16 +18,27 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
+import com.navinfo.dataservice.api.datahub.model.BizType;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.DbServerType;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.SingleBatchSelRsHandler;
+import com.navinfo.dataservice.jobframework.exception.JobException;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
+import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.SqlExec;
 
@@ -47,10 +58,12 @@ public class PoiGuideLinkBatch {
 	Logger log = LoggerRepos.getLogger(this.getClass());
 	private OperationResult opResult;
 	private Connection conn = null;
-	public PoiGuideLinkBatch(OperationResult opResult, Connection conn) {
+	private OracleSchema monthDbSchema;
+	public PoiGuideLinkBatch(OperationResult opResult, Connection conn, OracleSchema monthDbSchema) {
 		super();
 		this.opResult = opResult;
 		this.conn = conn;
+		this.monthDbSchema = monthDbSchema;
 	}
 	public void execute() throws Exception {
 		//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
@@ -79,6 +92,8 @@ public class PoiGuideLinkBatch {
 		DbInfo copVersionDbInfo = createCopVersion();
 		OracleSchema copVersionSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(copVersionDbInfo.getConnectParam()));
+		// 在子版本库上建立月库的db_link
+		String dbLinkName = createDbLink(copVersionSchema);
 		//4.1创建子版本库并初始化子版本数据；
 		//4.2创建需要的表结构:ix_poi,ix_poi_address,rd_link,rd_link_form,rd_name
 		exeTabelCreateSql(copVersionSchema);
@@ -161,15 +176,61 @@ public class PoiGuideLinkBatch {
 	private void initIxPoi(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
 		// TODO Auto-generated method stub
 		
+		
 	}
 	private void exeTabelCreateSql(OracleSchema copVersionSchema) throws Exception {
 		String sqlFile = "/com/navinfo/dataservice/scripts/resources/poi_guide_link_batch_db_create.sql";
 		SqlExec sqlExec = new SqlExec(copVersionSchema.getPoolDataSource().getConnection());
 		sqlExec.execute(sqlFile);
 	}
-	private DbInfo createCopVersion() {
+	
+	private String createDbLink(OracleSchema copVersionSchema) throws SQLException{
+		String dbLinkName = "DBLINK_GDB_M_1";
+		String userName = conn.getMetaData().getUserName();
+		String userPassWord = monthDbSchema.getConnConfig().getUserPasswd();
+		String URL = conn.getMetaData().getURL();
+		String tmpUrl = URL.substring(URL.indexOf("@")+1);
+		String sql = "CREATE DATABASE LINK "+ dbLinkName +" CONNECT TO "+ userName +" IDENTIFIED BY "+ userPassWord +" USING '"+ tmpUrl +"';";
+		new QueryRunner().update(copVersionSchema.getPoolDataSource().getConnection(), sql);
+		return dbLinkName;
+	}
+	private DbInfo createCopVersion() throws Exception {
 		// TODO 创建cop子版本库
-		return null;
+		DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
+		int copDbId = 0;
+		DbInfo copDb = datahub.getReuseDb(BizType.DB_COP_VERSION);
+		Connection sysConn = null;
+		try {
+			QueryRunner run = new QueryRunner();
+			sysConn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			long jobId = run.queryForLong(sysConn, "SELECT JOB_ID_SEQ.NEXTVAL FROM DUAL");
+			String jobGuid = UuidUtils.genUuid();
+			AbstractJobRequest createCopDb = JobCreateStrategy.createJobRequest("createDb", null);
+			createCopDb.setAttrValue("serverType", DbServerType.TYPE_ORACLE);
+			createCopDb.setAttrValue("bizType", BizType.DB_COP_VERSION);
+			createCopDb.setAttrValue("descp", "batch guide_link temp db");
+			createCopDb.setAttrValue("gdbVersion", "");
+			JobInfo createCopDbJobInfo = new JobInfo(jobId, jobGuid);
+			AbstractJob createCopDbJob = JobCreateStrategy.create(createCopDbJobInfo,createCopDb);
+			createCopDbJob.run();
+			if (createCopDbJob.getJobInfo().getStatus() != 3) {
+				String msg = (createCopDbJob.getException()==null)?"未知错误。":"错误："+createCopDbJob.getException().getMessage();
+				throw new Exception("创建子版本库时job内部发生"+msg);
+			}
+			//新建子版本库的dbid
+			copDbId = createCopDbJob.getJobInfo().getResponse().getInt("outDbId");
+			System.out.println("新建子版本库的dbid :" +copDbId);
+			//根据返回的自版本库的dbid 获取子版本库的DbInfo
+			copDb = datahub.getDbById(copDbId);
+		}catch (Exception e){
+			DbUtils.rollbackAndCloseQuietly(sysConn);
+			log.error(e.getMessage(), e);
+			throw new JobException(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(sysConn);
+		}
+		return copDb;
 		
 	}
 	private void insertPois2TempTab(Collection<Long> pids,String tempPoiTable) throws Exception{
@@ -197,7 +258,7 @@ public class PoiGuideLinkBatch {
 		new QueryRunner().update(conn, sql, clobPids);
 	}
 	public static void main(String args[]) throws Exception{
-		PoiGuideLinkBatch batch = new PoiGuideLinkBatch(null,null);
+		PoiGuideLinkBatch batch = new PoiGuideLinkBatch(null,null,null);
 		System.out.print(batch.createTempPoiGLinkTable());
 	}
 	

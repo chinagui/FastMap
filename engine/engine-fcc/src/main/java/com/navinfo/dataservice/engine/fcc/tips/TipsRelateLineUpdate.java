@@ -48,59 +48,59 @@ public class TipsRelateLineUpdate {
 	public JSONObject excute() {
 
 		switch (sourceType) {
-		case "1803":// 2.挂接  null
+		case "1803":// 2.挂接 null
 			return updateHookTips();
-		case "1116":// 3.立交   [f_array].id
+		case "1116":// 3.立交 [f_array].id
 			return updateGSCTips();
-		case "1201":// 4.种别   f.id
+		case "1201":// 4.种别 f.id
 			return updateKindTips();
-		case "1203":// 5.道路通行方向   f.id
+		case "1203":// 5.道路通行方向 f.id
 			return updateLinkDirTips();
-		case "1202":// 6. 车道数  f.id
+		case "1202":// 6. 车道数 f.id
 			return updateKindLaneTips();
-			// 7.SA、PA、匝道  f.id
-		case "1205": 
+			// 7.SA、PA、匝道 f.id
+		case "1205":
 			return updateSATips();
-		case "1206": // 8 .PA  f.id
+		case "1206": // 8 .PA f.id
 			return updatePATips();
-		case "1207": // 9.匝道  f.id
+		case "1207": // 9.匝道 f.id
 			return updateRampTips();
-		case "1211": // 10.IC\JCT  f.id
+		case "1211": // 10.IC\JCT f.id
 			return updateJCTTips();
 		case "1102":// 11 .红绿灯 [f_array].f
 			return updateTrafficSignalTips();
-		case "1107":// 12.收费站 in.id+out.id ??
+		case "1107":// 12.收费站 in.id+out.id 复杂的----
 			return updateTollgateTips();
 		case "1101":// 13. 点限速 f.id
 			return updateSpeedLimitTips();
-		case "1301":// 14. 车道信息   复杂的----？？
+		case "1301":// 14. 车道信息（车信） 复杂的----
 			return updateRdLaneTips();
-		case "1302":// 15. 普通交限  复杂的----？？
+		case "1302":// 15. 普通交限 复杂的----
 			return updateRestrictionTips();
-		case "1501": // 16. 上下线分离 [f_array].id 
+		case "1501": // 16. 上下线分离 [f_array].id
 			return updateUpDownSeparateLine();
-		case "1507":// 17.步行街 [f_array].id 
+		case "1507":// 17.步行街 [f_array].id
 			return updateWalkStreetTips();
-		case "1508":// 18.公交专用道 [f_array].id 
+		case "1508":// 18.公交专用道 [f_array].id
 			return updateLineAttrTips();
 			// 起终点类
-		case "1510":// 19. 桥 [f_array].id 
+		case "1510":// 19. 桥 [f_array].id
 			return updateBridgeTips();
-		case "1511":// 20. 隧道 [f_array].id 
+		case "1511":// 20. 隧道 [f_array].id
 			return updateTunnel();
-		case "1514":// 21.施工 [f_array].id 
+		case "1514":// 21.施工 [f_array].id
 			return updateConstruction();
 			// 范围线类
-		case "1601":// 22. 环岛 [f_array].id 
+		case "1601":// 22. 环岛 [f_array].id
 			return updateFArray_Id();
-		case "1604":// 23. 区域内道路 [f_array].id 
+		case "1604":// 23. 区域内道路 [f_array].id
 			return updateFArray_Id();
 		case "1702":// 24. 铁路道口 f.id
 			return updateSimpleF();
-		case "1901":// 25. 道路名  null
+		case "1901":// 25. 道路名 null
 			return null;
-		case "2101":// 26.删除道路标记  null
-			return null; 
+		case "2101":// 26.删除道路标记 null
+			return null;
 		default:
 			return null;
 		}
@@ -112,61 +112,7 @@ public class TipsRelateLineUpdate {
 		return updateSimpleF();
 	}
 
-	/**
-	 * @Description:TOOD
-	 * @author: y
-	 * @return
-	 * @time:2017-4-13 上午10:15:32
-	 */
-	private JSONObject updateDelRoadMarkTips() {
 
-		return null;
-
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @author: y
-	 * @return
-	 * @time:2017-4-13 上午10:15:17
-	 */
-	private JSONObject updateRoadNameTips() {
-		return null;
-
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @author: y
-	 * @return
-	 * @time:2017-4-13 上午10:15:00
-	 */
-	private JSONObject updateRailwayCrossingTips() {
-		return null;
-
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @author: y
-	 * @return
-	 * @time:2017-4-13 上午10:13:39
-	 */
-	private JSONObject updateRegionalRoad() {
-		return null;
-
-	}
-
-	/**
-	 * @Description:TOOD
-	 * @author: y
-	 * @return
-	 * @time:2017-4-13 上午10:12:49
-	 */
-	private JSONObject updatRrotaryIsland() {
-		return null;
-
-	}
 
 	/**
 	 * @Description:TOOD
@@ -191,8 +137,7 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:TOOD
-	 * [f_array].id 
+	 * @Description:TOOD [f_array].id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午10:09:26
@@ -236,30 +181,173 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:1302 普通交限 in.id+[o_array].[out].id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午10:08:04
 	 */
 	private JSONObject updateRestrictionTips() {
+
+		boolean hasMeasuringLine = false;
+
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+
+		//out:[o_array].[out].id
+		JSONArray o_array = deep.getJSONArray("o_array");
+
+		JSONArray o_array_new = new JSONArray(); // 一个新的o_array数组
+
+		for (Object object : o_array) {
+
+			JSONObject o_object = JSONObject.fromObject(object);
+
+			JSONArray ourArr = o_object.getJSONArray("out");
+
+			JSONArray ourArr_new = new JSONArray(); // 一个新的out数组
+
+			for (Object object2 : ourArr) {
+
+				JSONObject out = JSONObject.fromObject(object2);
+
+				// 关联link是测线的
+				if (out != null && out.getInt("type") == 2) {
+
+					String id = getNearlestLineId();
+
+					out.put("id", id);
+
+					out.put("out", out);// 新的
+
+					hasMeasuringLine = true;
+
+				}
+
+				ourArr_new.add(out);
+
+			}
+			o_object.put("out", ourArr_new);
+
+			o_array_new.add(o_object);
+
+		}
+
+		deep.put("o_array", o_array);
+
+		
+		// in:in.id
+		JSONObject in = deep.getJSONObject("in");
+
+		// 关联link是测线的
+		if (in != null && in.getInt("type") == 2) {
+
+			String id = getNearlestLineId();
+
+			in.put("id", id);
+
+			deep.put("in", in);// 新的
+
+			hasMeasuringLine = true;
+
+		}
+
+		// 如果有测线，则修改，并返回
+		if (hasMeasuringLine) {
+
+			json.put("deep", deep);
+
+			return json;
+		}
+
 		return null;
 
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:1301 车道信息(车信) in.id+[o_array].[d_array].out.id(out是对象)
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午10:07:50
 	 */
 	private JSONObject updateRdLaneTips() {
+
+		boolean hasMeasuringLine = false;
+
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+
+		// out:[o_array].[d_array].out.id(out是对象)
+		JSONArray o_array = deep.getJSONArray("o_array");
+
+		JSONArray o_array_new = new JSONArray(); // 一个新的o_array数组
+
+		for (Object object : o_array) {
+
+			JSONObject o_array_info = JSONObject.fromObject(object); // 一个o_array对象
+
+			JSONArray d_array = o_array_info.getJSONArray("d_array");
+
+			JSONArray d_array_new = new JSONArray(); // 一个新的d_array数组
+
+			for (Object object2 : d_array) {
+
+				JSONObject dInfo = JSONObject.fromObject(object2);
+
+				JSONObject out = dInfo.getJSONObject("out");
+
+				// 关联link是测线的
+				if (out != null && out.getInt("type") == 2) {
+
+					String id = getNearlestLineId();
+
+					out.put("id", id);
+
+					dInfo.put("out", out);// 新的
+
+					hasMeasuringLine = true;
+
+				}
+
+				d_array_new.add(dInfo);
+			}
+
+			o_array_info.put("d_array", d_array_new);// 新的 d_array_new
+			o_array_new.add(o_array_info);
+
+		}
+		
+		deep.put("o_array", o_array_new); // 新的
+		
+
+		// in:in.id
+		JSONObject in = deep.getJSONObject("in");
+
+		// 关联link是测线的
+		if (in != null && in.getInt("type") == 2) {
+
+			String id = getNearlestLineId();
+
+			in.put("id", id);
+
+			deep.put("in", in);// 新的
+
+			hasMeasuringLine = true;
+
+		}
+		
+
+		// 如果有测线，则修改，并返回
+		if (hasMeasuringLine) {
+
+			json.put("deep", deep);
+
+			return json;
+		}
+
 		return null;
 
 	}
 
 	/**
-	 * @Description:1101 点限速，关联测线修改
-	 * f.id
+	 * @Description:1101 点限速，关联测线修改 f.id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午10:07:31
@@ -271,8 +359,8 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * 简单的关联link修改
-	 * 规格：deep.f.id
+	 * 简单的关联link修改 规格：deep.f.id
+	 * 
 	 * @return
 	 */
 	private JSONObject updateSimpleF() {
@@ -343,12 +431,56 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:TOOD
+	 * @Description:1107 收费站 in.id+out.id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午10:07:15
 	 */
 	private JSONObject updateTollgateTips() {
+
+		boolean hasMeasuringLine = false;
+
+		JSONObject deep = JSONObject.fromObject(this.json.getString("deep"));
+
+		// in.id
+		JSONObject in = deep.getJSONObject("in");
+
+		// 关联link是测线的
+		if (in != null && in.getInt("type") == 2) {
+
+			String id = getNearlestLineId();
+
+			in.put("id", id);
+
+			deep.put("in", in);// 新的
+
+			hasMeasuringLine = true;
+
+		}
+
+		// out.id
+		JSONObject out = deep.getJSONObject("out");
+
+		// 关联link是测线的
+		if (out != null && out.getInt("type") == 2) {
+
+			String id = getNearlestLineId();
+
+			out.put("id", id);
+
+			deep.put("out", out);// 新的
+
+			hasMeasuringLine = true;
+
+		}
+
+		// 如果有测线，则修改，并返回
+		if (hasMeasuringLine) {
+
+			json.put("deep", deep);
+
+			return json;
+		}
 		return null;
 
 	}
@@ -393,7 +525,7 @@ public class TipsRelateLineUpdate {
 
 			}
 
-			f_array_new.add(fInfo); //添加到新数组
+			f_array_new.add(fInfo); // 添加到新数组
 
 		}
 
@@ -441,8 +573,7 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:1203 （道路方向）
-	 * f.id
+	 * @Description:1203 （道路方向） f.id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午9:59:13
@@ -464,8 +595,7 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:1116 立交
-	 *[f_array].id
+	 * @Description:1116 立交 [f_array].id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午9:58:25
@@ -518,21 +648,19 @@ public class TipsRelateLineUpdate {
 	}
 
 	/**
-	 * @Description:种别
-	 * f.id
+	 * @Description:种别 f.id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午9:58:15
 	 */
 	private JSONObject updateKindTips() {
-		
+
 		return updateSimpleF();
 
 	}
 
 	/**
-	 * @Description:1203
-	 * f.id
+	 * @Description:1203 f.id
 	 * @author: y
 	 * @return
 	 * @time:2017-4-13 上午9:58:10

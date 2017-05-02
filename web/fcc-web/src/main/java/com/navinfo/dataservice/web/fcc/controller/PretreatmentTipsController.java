@@ -545,7 +545,9 @@ public class PretreatmentTipsController extends BaseController {
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.batchSave(jsonInfoArr,user); //新增多个tips
+			int command=PretreatmentTipsOperator.COMMAND_INSERT;
+			
+			op.batchSaveOrUpdate(jsonInfoArr,user,command); //新增多个tips
 
 			return new ModelAndView("jsonView", success());
 

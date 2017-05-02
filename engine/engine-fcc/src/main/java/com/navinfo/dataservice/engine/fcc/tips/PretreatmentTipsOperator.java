@@ -1512,6 +1512,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		JSONObject line2=resultArr.get(1);
 		
+		logger.debug("打断后line1:"+line1.getString("id"));
+		
+		logger.debug("打断后line2:"+line2.getString("id"));
+		
 		// 第二步：更新测线关联的tips
 		TipsSelector selector = new TipsSelector();
 		JSONArray souceTypes = new JSONArray();

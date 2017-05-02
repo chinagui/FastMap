@@ -76,12 +76,13 @@ public final class CmgfaceUtil {
                 CmgBuildlink cmglink = (CmgBuildlink) cmglinks.get(i);
                 if (nextNodePid == cmglink.getsNodePid()) {
                     nextNodePid = cmglink.geteNodePid();
+                    map.put(cmglink.pid(), cmglink.getGeometry());
                 } else if (nextNodePid == cmglink.geteNodePid()) {
                     nextNodePid = cmglink.getsNodePid();
+                    map.put(cmglink.pid(), cmglink.getGeometry().reverse());
                 } else {
                     continue;
                 }
-                map.put(cmglink.pid(), cmglink.getGeometry());
             }
             count++;
         }

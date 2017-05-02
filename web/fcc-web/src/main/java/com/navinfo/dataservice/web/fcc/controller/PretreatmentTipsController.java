@@ -168,7 +168,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
 			
-			int subTaskId=jsonReq.getInt("subTaskId"); //任务号
+			int subTaskId=jsonReq.getInt("subtaskId"); //任务号
 			
 			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
 

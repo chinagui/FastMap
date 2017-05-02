@@ -520,7 +520,7 @@ public class DeepCoreControl {
 			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
-			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
+			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId);
 			
 			// 可申请数据的条数
 			int canApply = 100 - hasApply;

@@ -1,13 +1,5 @@
 package com.navinfo.dataservice.engine.meta.service;
 
-import java.sql.Connection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
@@ -56,11 +48,20 @@ import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
-import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.translates.ConvertUtil;
+import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author wangshishuai3966
@@ -536,10 +537,8 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	@Override
 	public String convertEng(String word) throws Exception {
-		
-		 EngConverterHelper converterHelper = new EngConverterHelper();
-         String result = converterHelper.chiToEng(word);
-		return result;
+        EnglishConvert convert = new EnglishConvert();
+		return convert.convert(word);
 	}
 	
 	@Override
@@ -583,7 +582,7 @@ public class MetadataApiImpl implements MetadataApi {
 
 	@Override
 	public String convFull2Half(String word) throws Exception {
-		 return ConvertUtil.convFull2Half(word);
+		 return ConvertUtil.convertFull2Half(word);
 	}
 	/**
 	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。

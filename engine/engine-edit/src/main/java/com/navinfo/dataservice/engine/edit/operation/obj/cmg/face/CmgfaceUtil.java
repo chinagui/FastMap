@@ -18,8 +18,10 @@ import com.vividsolutions.jts.geom.Point;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @Title: CmgfaceUtil
@@ -61,7 +63,7 @@ public final class CmgfaceUtil {
      * @throws Exception 重排序出错
      */
     public static Map<Integer, Geometry> calcCmglinkSequence(List<IRow> cmglinks) throws Exception {
-        Map<Integer, Geometry> map = new HashMap<>();
+        Map<Integer, Geometry> map = new LinkedHashMap<>();
         CmgBuildlink firstLink = (CmgBuildlink) cmglinks.get(0);
         map.put(firstLink.pid(), firstLink.getGeometry());
         int firstNodePid = firstLink.getsNodePid();

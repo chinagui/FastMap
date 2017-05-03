@@ -1454,13 +1454,12 @@ public class TaskService {
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
 			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
-			//任务号批数据
-			//tip批中线任务号
-			if(tipsGrids!=null&&tipsGrids.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
+			//判断是否所有grid均获取到中线任务
+			if(gridMap.size()!=allGrids.size()){
+				allGrids.removeAll(gridMap.keySet());
+				throw new Exception("存在grid未获取中线任务号，请查看："+allGrids.toString());
 			}
-			
+			//任务号批数据			
 			//poi批中线任务号	
 			if(poiGridMap!=null&&poiGridMap.size()>0){
 				log.info(task.getTaskId()+"任务为快线采集任务，批poi中线采集任务号");
@@ -1469,6 +1468,12 @@ public class TaskService {
 					poiTaskMap.put(pid, gridMap.get(poiGridMap.get(pid)));
 				}
 				batchPoiMidTask(dailyConn,poiTaskMap);
+			}			
+			
+			//tip批中线任务号
+			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
+				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
 			}
 			Set<Integer> taskIdSet=new HashSet<Integer>();
 			taskIdSet.addAll(gridMap.values());
@@ -1639,6 +1644,7 @@ public class TaskService {
 							
 							if(cityStatus==1||cityStatus==3){
 								if(cityStatus==1){
+									log.info(gridId+"有对应"+programId+"项目，但项目处于草稿状态，需先进行开启");
 									//JSONObject condition=new JSONObject();
 									JSONArray openProgramIds=new JSONArray();
 									openProgramIds.add(programId);

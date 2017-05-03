@@ -137,6 +137,11 @@
 	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>edit-control-app</artifactId>
+	</dependency>
+	
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
 	</dependency>
 

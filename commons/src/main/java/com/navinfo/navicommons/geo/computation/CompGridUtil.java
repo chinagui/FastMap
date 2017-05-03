@@ -498,4 +498,11 @@ public class CompGridUtil {
 		}
 		return geometry;
 	}
+	
+	public static void main(String[] args) {
+		String[] grids = point2Grids(116.27896,40.12822);
+		for(String g:grids){
+			System.out.println(g);
+		}
+	}	
 }

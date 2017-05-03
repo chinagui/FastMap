@@ -156,14 +156,34 @@ public abstract class BasicObj {
 	
 	/**
 	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * 注意：对于新增的子表，又通过此方法进行删除，存在异常可能：当外面使用for循环删除表的list时，会出现java.util.ConcurrentModificationException
 	 * @param subrow
 	 */
 	public void deleteSubrow(BasicRow subrow){
 		if(subrow.getOpType().equals(OperationType.INSERT)){
 			String tname = subrow.tableName();
-			subrows.get(tname).remove(subrow);
+			subrows.get(tname).remove(subrow);//当外面使用for循环删除表的list时，会出现java.util.ConcurrentModificationException
 		}else{
 			subrow.setOpType(OperationType.DELETE);
+		}
+	}
+
+	/**
+	 * 根据表名删除，会把该子表全部记录删除
+	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * @param subrow
+	 */
+	public void deleteSubrow(String tableName){
+		List<BasicRow> rows = subrows.get(tableName);
+		if(rows!=null){
+			for(Iterator<BasicRow> it= rows.iterator();it.hasNext();){
+				BasicRow r = it.next();
+				if(r.getOpType().equals(OperationType.INSERT)){
+					it.remove();
+				}else{
+					r.setOpType(OperationType.DELETE);
+				}
+			}
 		}
 	}
 	/**

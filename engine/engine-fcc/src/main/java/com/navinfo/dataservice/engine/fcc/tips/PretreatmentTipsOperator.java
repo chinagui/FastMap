@@ -48,7 +48,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	static String FC_SOURCE_TYPE = "8001"; // FC预处理理tips
 
 	static int FC_DEFAULT_STAGE = 2;
-
+	
+	public static int COMMAND_INSERT=0;
+	
+	public static int COMMAND_UPADATE=1;
+	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
 
@@ -1143,7 +1147,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			String sourceType = source.getString("s_sourceType");
 			// 新增
-			if (command == 0) {
+			if (command == COMMAND_INSERT) {
 
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
@@ -1394,10 +1398,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 *            :tips数组
 	 * @param user
 	 * @author: y
+	 * @param command   ：操作指令，0:新增一个tips;1：修改tips
 	 * @throws Exception
 	 * @time:2017-3-13 下午3:57:32
 	 */
-	public void batchSave(JSONArray jsonInfoArr, int user) throws Exception {
+	public void batchSaveOrUpdate(JSONArray jsonInfoArr, int user, int command) throws Exception {
 
 		Connection hbaseConn;
 		
@@ -1414,14 +1419,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			for (Object jsonInfo : jsonInfoArr) {
 
 				JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
-
+				
+				String rowkey=tipsInfo.getString("rowkey");
+				
 				JSONObject source = tipsInfo.getJSONObject("source");
-
+				
 				String sourceType = source.getString("s_sourceType");
+				
+				//如果是新增，则生成rowkey
+				
+				if(command==COMMAND_INSERT){
+					
+					rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
-				String rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
-
-				tipsInfo.put("rowkey", rowkey);
+					tipsInfo.put("rowkey", rowkey);
+				}
 
 				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
 				puts.add(put);
@@ -1500,6 +1512,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		JSONObject line2=resultArr.get(1);
 		
+		logger.debug("打断后line1:"+line1.getString("id"));
+		
+		logger.debug("打断后line2:"+line2.getString("id"));
+		
 		// 第二步：更新测线关联的tips
 		TipsSelector selector = new TipsSelector();
 		JSONArray souceTypes = new JSONArray();
@@ -1508,7 +1524,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
 				souceTypes, subTaskId, jobType);
 		
-		List<JSONObject> updateList=new ArrayList<JSONObject>();
+		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
 		for (JSONObject json : snapotList) {
 
@@ -1516,12 +1532,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			if(result!=null){
 				
-				updateList.add(result);
+				updateArray.add(result);
 			}
 
 		}
-		//更新后的数据进行报错 ？？待补充
+		//更新后的数据进行更新
+		saveUpdateData(updateArray,user);
 
+	}
+
+	
+	/**
+	 * 保存测线打断后维护的数据结果
+	 * @param updateArray
+	 * @param user 
+	 * @throws Exception 
+	 */
+	private void saveUpdateData(JSONArray updateArray, int user) throws Exception {
+		try {
+			batchSaveOrUpdate(updateArray, user, COMMAND_UPADATE);
+		} catch (Exception e) {
+		logger.error("测线打断，批量修改出错，"+e.getMessage());
+		throw new Exception("测线打断，批量修改出错，"+e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -1745,8 +1778,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	/**
 	 * @Description:根据tips类型，修改tips的关联测线
 	 * @param json：被修改的tips solr
-	 * @param line1
-	 * @param line2
+	 * @param line1:打断后的第一条link
+	 * @param line2:打断后的第二条link
 	 * @author: y
 	 * @return 
 	 * @time:2017-4-12 下午8:37:30

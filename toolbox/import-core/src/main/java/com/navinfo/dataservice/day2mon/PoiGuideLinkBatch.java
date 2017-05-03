@@ -3,12 +3,16 @@ package com.navinfo.dataservice.day2mon;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -108,9 +112,11 @@ public class PoiGuideLinkBatch {
 			//导入ix_poi_flag:根据tempPoiGLinkTab 进行关联
 			initIxPoiFlag(copVersionConn,tempPoiGLinkTab,dbLinkName);
 			//4.5导入rd_link:按照4.3的poi进行扩圈，计算要导入的rd_link的pid
-			initRdLink(copVersionSchema,tempPoiGLinkTab);
+			initRdLink(copVersionConn,tempPoiGLinkTab,dbLinkName);
 			//4.6导入rd_link_form :按照4.5得到的rd_link导入rd_link_form;
-			initRdLinkForm(copVersionSchema,tempPoiGLinkTab);
+			initRdLinkForm(copVersionConn,dbLinkName);
+			//导入rd_link_name:按照4.5得到的rd_link导入rd_link_name;
+			initRdLinkName(copVersionConn, dbLinkName);
 			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
 			initRdName(copVersionSchema,tempPoiGLinkTab);
 			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
@@ -184,12 +190,56 @@ public class PoiGuideLinkBatch {
 		// TODO Auto-generated method stub
 		
 	}
-	private void initRdLinkForm(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
+	private void initRdLinkName(Connection copVersionConn, String dbLinkName) throws SQLException{
+		String sql = "insert /*+append*/ into rd_link_name "
+				+ " select n.* from rd_link_name@"+dbLinkName +" d "
+				+ " where n.link_pid in (select r.link_pid from rd_link r)";
+		new QueryRunner().update(copVersionConn, sql);
+	}
+	private void initRdLinkForm(Connection copVersionConn, String dbLinkName) throws SQLException {
 		// TODO Auto-generated method stub
+		String sql = "insert /*+append*/ into rd_link_form "
+				+ " select f.* from rd_link_form@"+dbLinkName +" f "
+				+ " where f.link_pid in (select r.link_pid from rd_link r)";
+		new QueryRunner().update(copVersionConn, sql); 
 		
 	}
-	private void initRdLink(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
+	private void initRdLink(Connection copVersionConn, String tempPoiGLinkTab, String dbLinkName) {
 		// TODO Auto-generated method stub
+		List<Long> linkPids = new ArrayList<Long>();
+		StringBuilder sb = new StringBuilder();
+		sb.append("SELECT L.link_pid FROM ix_poi P,rd_link L ");
+		sb.append(" WHERE P.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+" t)");
+		sb.append(" AND SDO_NN(L.GEOMETRY,");
+		sb.append("  NAVI_GEOM.CREATEPOINT(P.X_GUIDE, P.Y_GUIDE),");
+		sb.append(" 'SDO_NUM_RES=4 DISTANCE=80000 UNIT=METER') = 'TRUE'");
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			rs = pstmt.executeQuery();
+			while(rs.next()){
+				long linkPid = rs.getLong("link_pid");
+				if (!linkPids.contains(linkPid)){
+					linkPids.add(linkPid);
+				}
+			}
+			if (linkPids.size()>0){
+				String sql = "insert /*+append*/ into RD_LINK "
+						+ "select r.* from RD_LINK@"+dbLinkName+" r  "
+						+ "where r.link_pid in (select column_value from table(clob_to_table(?))) ";
+				this.log.debug("sql:"+sql);
+				Clob clobLinkPids=ConnectionUtil.createClob(copVersionConn);
+				clobLinkPids.setString(1, StringUtils.join(linkPids, ","));
+				new QueryRunner().update(copVersionConn, sql, clobLinkPids);
+			}
+		}catch(Exception e){
+			log.error(e.getMessage());
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(rs);
+			DbUtils.closeQuietly(pstmt);
+		}
 		
 	}
 	private void initIxPoiAddress(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws Exception {

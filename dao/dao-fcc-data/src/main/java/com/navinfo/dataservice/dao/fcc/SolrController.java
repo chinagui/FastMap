@@ -108,7 +108,7 @@ public class SolrController {
 			doc.addField("t_fStatus", json.getString("t_fStatus"));
 		}
 
-		// doc.addField("tipdiff", json.getString("tipdiff"));
+		doc.addField("relate_links", json.getString("relate_links"));
 
 		client.add(doc);
 

@@ -917,7 +917,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":548,\"subtaskid\":27}";
+				String parameter = "{\"jobId\":1217,\"subtaskId\":415}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -927,9 +927,9 @@ public class TipsSelectorTest extends InitApplication {
 					int subtaskid = 0;
 					
 					//外业，有可能没有任务号
-					if(jsonReq.containsKey("subtaskid")){
+					if(jsonReq.containsKey("subtaskId")){
 						
-						subtaskid=jsonReq.getInt("subtaskid");
+						subtaskid=jsonReq.getInt("subtaskId");
 					}
 
 					//UploadService upload = UploadService.getInstance();
@@ -937,7 +937,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\nana0420"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1217"; // 本地测试用
 					
 				//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 

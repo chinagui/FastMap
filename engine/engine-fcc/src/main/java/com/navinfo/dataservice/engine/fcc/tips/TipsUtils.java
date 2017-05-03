@@ -26,7 +26,6 @@ public class TipsUtils {
 	static String STRING_NULL_DEFAULT_VALUE="";
 	
 	
-	
 	/**
 	 * 组装Track(上传、接边、预处理都调用)
 	 * 
@@ -184,6 +183,8 @@ public class TipsUtils {
 		
 		index.put("s_mSubTaskId", json.getInt("s_mSubTaskId"));
 		
+		index.put("relate_links", TipsLineRelateQuery.getRelateLine(json.getString("s_sourceType"), deep));
+		
 		return index;
 		
 	}
@@ -310,6 +311,9 @@ public class TipsUtils {
 		index.put("s_qSubTaskId", s_qSubTaskId);
 		
 		index.put("s_mSubTaskId", s_mSubTaskId);
+		
+		index.put("relate_links", TipsLineRelateQuery.getRelateLine(sourceType, deep));
+		
 
 		return index;
 	}
@@ -494,6 +498,8 @@ public class TipsUtils {
 	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
 	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
 	   
+		index.put("relate_links", TipsLineRelateQuery.getRelateLine(sourceType, deep));
+		
 	   return index;
 	}
 

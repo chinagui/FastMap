@@ -118,7 +118,7 @@ public class PoiGuideLinkBatch {
 			//导入rd_link_name:按照4.5得到的rd_link导入rd_link_name;
 			initRdLinkName(copVersionConn, dbLinkName);
 			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
-			initRdName(copVersionSchema,tempPoiGLinkTab);
+			initRdName(copVersionConn,dbLinkName);
 			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
 			backupIxPoi(copVersionConn);
 			//4.9备份ix_poi为ix_poi_flag_back；
@@ -186,9 +186,12 @@ public class PoiGuideLinkBatch {
 		new QueryRunner().update(copVersionConn, sql);
 	}
 	
-	private void initRdName(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
+	private void initRdName(Connection copVersionConn, String dbLinkName) throws SQLException {
 		// TODO Auto-generated method stub
-		
+		String sql = "insert /*+append*/ into ni_rd_name "
+				+ "select n.* from rd_name@"+dbLinkName+" n "
+				+ " where n.name_groupid in (select r.name_groupid from rd_link l,rd_link_name r where l.link_pid=r.link_pid )";
+		new QueryRunner().update(copVersionConn, sql);
 	}
 	private void initRdLinkName(Connection copVersionConn, String dbLinkName) throws SQLException{
 		String sql = "insert /*+append*/ into rd_link_name "

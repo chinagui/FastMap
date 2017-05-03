@@ -141,9 +141,9 @@ public class PoiGuideLinkBatch {
 	}
 	
 	private void initIxPoiFlag(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws SQLException {
-		String sql = "INSERT INTO ix_poi_flag"+
-				"SELECT q.* FROM (SELECT * FROM ix_poi_flag@dblink_gdb_m_1 p "+
-				"WHERE p.poi_pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		String sql = "INSERT /*+append*/ INTO ix_poi_flag "+
+				"SELECT q.* FROM (SELECT * FROM ix_poi_flag@"+dbLinkName+" p "+
+				"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
 		new QueryRunner().update(copVersionConn, sql); 
 	}
 	private void moveDiffLog(OracleSchema copVersionSchema) {
@@ -176,13 +176,13 @@ public class PoiGuideLinkBatch {
 	}
 	
 	private void backupIxPoi(Connection copVersionConn) throws Exception{
-		String sql = "INSERT INTO ix_poi_back"+
-				"SELECT p.PID,p.X_GUIDE,p.Y_GUIDE,p.LINK_PID,p.SIDE,p.NAME_GROUPID,p.PMESH_ID FROM ix_poi p; ";
+		String sql = "INSERT /*+append*/ INTO ix_poi_back "+
+				"SELECT p.PID,p.X_GUIDE,p.Y_GUIDE,p.LINK_PID,p.SIDE,p.NAME_GROUPID,p.PMESH_ID FROM ix_poi p";
 		new QueryRunner().update(copVersionConn, sql); 		
 	}
 	
 	private void backupIxPoiFlag(Connection copVersionConn) throws Exception{
-		String sql = "INSERT INTO ix_poi_flag_back SELECT p.* FROM ix_poi_flag p";
+		String sql = "INSERT /*+append*/ INTO ix_poi_flag_back SELECT p.* FROM ix_poi_flag p";
 		new QueryRunner().update(copVersionConn, sql);
 	}
 	
@@ -204,7 +204,7 @@ public class PoiGuideLinkBatch {
 		new QueryRunner().update(copVersionConn, sql); 
 		
 	}
-	private void initRdLink(Connection copVersionConn, String tempPoiGLinkTab, String dbLinkName) {
+	private void initRdLink(Connection copVersionConn, String tempPoiGLinkTab, String dbLinkName) throws SQLException {
 		// TODO Auto-generated method stub
 		List<Long> linkPids = new ArrayList<Long>();
 		StringBuilder sb = new StringBuilder();
@@ -224,15 +224,7 @@ public class PoiGuideLinkBatch {
 					linkPids.add(linkPid);
 				}
 			}
-			if (linkPids.size()>0){
-				String sql = "insert /*+append*/ into RD_LINK "
-						+ "select r.* from RD_LINK@"+dbLinkName+" r  "
-						+ "where r.link_pid in (select column_value from table(clob_to_table(?))) ";
-				this.log.debug("sql:"+sql);
-				Clob clobLinkPids=ConnectionUtil.createClob(copVersionConn);
-				clobLinkPids.setString(1, StringUtils.join(linkPids, ","));
-				new QueryRunner().update(copVersionConn, sql, clobLinkPids);
-			}
+		
 		}catch(Exception e){
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -240,18 +232,26 @@ public class PoiGuideLinkBatch {
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
 		}
-		
+		if (linkPids.size()>0){
+			String sql = "insert /*+append*/ into RD_LINK "
+					+ "select r.* from RD_LINK@"+dbLinkName+" r  "
+					+ "where r.link_pid in (select column_value from table(clob_to_table(?))) ";
+			this.log.debug("sql:"+sql);
+			Clob clobLinkPids=ConnectionUtil.createClob(copVersionConn);
+			clobLinkPids.setString(1, StringUtils.join(linkPids, ","));
+			new QueryRunner().update(copVersionConn, sql, clobLinkPids);
+		}
 	}
 	private void initIxPoiAddress(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws Exception {
-		String sql = "INSERT INTO ix_poi_address"+
-		"SELECT q.* FROM (SELECT * FROM ix_poi_address@dblink_gdb_m_1 p "+
-		"WHERE p.poi_pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		String sql = "INSERT /*+append*/ INTO ix_poi_address "+
+		"SELECT q.* FROM (SELECT * FROM ix_poi_address@"+dbLinkName+" p "+
+		"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
 		new QueryRunner().update(copVersionConn, sql); 
 	}
 	private void initIxPoi(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws Exception {
-		String sql = "INSERT INTO ix_poi"+
-		"SELECT q.* FROM (SELECT * FROM ix_poi@dblink_gdb_m_1 p "+
-		"WHERE p.pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		String sql = "INSERT /*+append*/ INTO ix_poi "+
+		"SELECT q.* FROM (SELECT * FROM ix_poi@"+dbLinkName+" p "+
+		"WHERE p.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
 		new QueryRunner().update(copVersionConn, sql); 
 		
 	}

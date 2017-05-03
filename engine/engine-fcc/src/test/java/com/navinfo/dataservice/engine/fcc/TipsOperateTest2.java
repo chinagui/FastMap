@@ -302,6 +302,57 @@ public class TipsOperateTest2 extends InitApplication{
 	}
 	
 	
+	
+
+	@Test
+	public void testMeasureLineCut() throws Exception {
+		
+		String  parameter=null;
+		//0280017b8ead071595417cb3305ac9d8e49d73
+		parameter="{\"rowkey\":022001CF4FB458DB484AA798DC7804E2401595,\"user\":123,\"subtaskId\":1,\"jobType\":1,\"pointGeo\":{\"type\":\"Point\",\"coordinates\":[116.47977,40.01272]}}";
+		
+		try {
+			if (StringUtils.isEmpty(parameter)) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			int user = jsonReq.getInt("user");
+			
+			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
+			
+			int subTaskId=jsonReq.getInt("subtaskId"); //任务号
+			
+			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
+
+			if (StringUtils.isEmpty(rowkey)) {
+				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
+			}
+			
+			if (pointGeo==null||pointGeo.isEmpty()) {
+				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
+			}
+			
+			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
+
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+
+			//return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+
+			e.printStackTrace();
+
+			//return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+
+		System.out.println("测线打断成功");
+	}
+	
+	
 	@Test
 	public void testEditShape() throws Exception {
 		
@@ -413,11 +464,11 @@ public class TipsOperateTest2 extends InitApplication{
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
+			String rowkey= op.saveOrUpdateTips(jsonInfo,command,user); //新增或者修改一个tips
 
 			//return new ModelAndView("jsonView", success());
 			
-			System.out.println("修改成功");
+			System.out.println("修改成功:"+rowkey);
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -441,6 +492,11 @@ public class TipsOperateTest2 extends InitApplication{
 		return notExistsKey;
 	}
 	
+	
+	public static void main(String[] args) {
+		
+		
+	}
 	
 
 

@@ -92,31 +92,41 @@ public class PoiGuideLinkBatch {
 		DbInfo copVersionDbInfo = createCopVersion();
 		OracleSchema copVersionSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(copVersionDbInfo.getConnectParam()));
-		// 在子版本库上建立月库的db_link
-		String dbLinkName = createDbLink(copVersionSchema);
-		//4.1创建子版本库并初始化子版本数据；
-		//4.2创建需要的表结构:ix_poi,ix_poi_address,rd_link,rd_link_form,rd_name
-		exeTabelCreateSql(copVersionSchema);
-		//4.3导入ix_poi:根据tempPoiGLinkTab 进行关联
-		initIxPoi(copVersionSchema,tempPoiGLinkTab);
-		//4.4导入ix_poi_address:根据tempPoiGLinkTab 进行关联
-		initIxPoiAddress(copVersionSchema,tempPoiGLinkTab);
-		//4.5导入rd_link:按照4.3的poi进行扩圈，计算要导入的rd_link的pid
-		initRdLink(copVersionSchema,tempPoiGLinkTab);
-		//4.6导入rd_link_form :按照4.5得到的rd_link导入rd_link_form;
-		initRdLinkForm(copVersionSchema,tempPoiGLinkTab);
-		//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
-		initRdName(copVersionSchema,tempPoiGLinkTab);
-		//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
-		backupIxPoi(copVersionSchema);
-		//5.调用cop的批处理程序；
-		callCopPackage(copVersionSchema);
-		//6.差分ix_poi和ix_poi_back;生成差分履历；
-		diff(copVersionSchema);
-		//7.根据6的差分履历刷新月库；
-		flushDiffLog(copVersionSchema);
-		//8.把6生成的履历搬移到月库
-		moveDiffLog(copVersionSchema);
+		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
+		try{
+			// 在子版本库上建立月库的db_link
+			String dbLinkName = createDbLink(copVersionConn);
+			//4.1创建子版本库并初始化子版本数据；
+			//4.2创建需要的表结构:ix_poi,ix_poi_address,rd_link,rd_link_form,rd_name
+			exeTabelCreateSql(copVersionConn);
+			//导入cop的point_feature_batch包
+			importCopPck(copVersionConn);
+			//4.3导入ix_poi:根据tempPoiGLinkTab 进行关联
+			initIxPoi(copVersionSchema,tempPoiGLinkTab);
+			//4.4导入ix_poi_address:根据tempPoiGLinkTab 进行关联
+			initIxPoiAddress(copVersionSchema,tempPoiGLinkTab);
+			//4.5导入rd_link:按照4.3的poi进行扩圈，计算要导入的rd_link的pid
+			initRdLink(copVersionSchema,tempPoiGLinkTab);
+			//4.6导入rd_link_form :按照4.5得到的rd_link导入rd_link_form;
+			initRdLinkForm(copVersionSchema,tempPoiGLinkTab);
+			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
+			initRdName(copVersionSchema,tempPoiGLinkTab);
+			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
+			backupIxPoi(copVersionSchema);
+			//5.调用cop的批处理程序；
+			callCopPackage(copVersionConn);
+			//6.差分ix_poi和ix_poi_back;生成差分履历；
+			diff(copVersionSchema);
+			//7.根据6的差分履历刷新月库；
+			flushDiffLog(copVersionSchema);
+			//8.把6生成的履历搬移到月库
+			moveDiffLog(copVersionSchema);
+		}catch(Exception e){
+			DbUtils.rollback(copVersionConn);
+			log.error(e.getMessage());
+		}finally{
+			DbUtils.commitAndClose(copVersionConn);
+		}
 		
 	}
 	private void moveDiffLog(OracleSchema copVersionSchema) {
@@ -131,24 +141,19 @@ public class PoiGuideLinkBatch {
 		// TODO Auto-generated method stub
 		
 	}
-	private void callCopPackage(OracleSchema copVersionSchema) throws Exception {
-		
-		Connection conn = copVersionSchema.getPoolDataSource().getConnection();
+	private void callCopPackage(Connection copVersionConn) throws Exception {
 		
 		CallableStatement cs = null;
 		long pid=0L;
 		try{
 			String sql = "{call POINT_FEATURE_BATCH.BATCH_IXPOI_LINK()}";
-			cs = conn.prepareCall(sql);
+			cs = copVersionConn.prepareCall(sql);
 			cs.execute();
-			conn.commit();
 		}catch(Exception e){
 			log.error(e);
     		DbUtils.closeQuietly(cs);
-			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
     		DbUtils.closeQuietly(cs);
-    		DbUtils.closeQuietly(conn);
 		}
 		
 	}
@@ -178,20 +183,26 @@ public class PoiGuideLinkBatch {
 		
 		
 	}
-	private void exeTabelCreateSql(OracleSchema copVersionSchema) throws Exception {
+	private void importCopPck(Connection copVersionConn) throws Exception{
+		String pckFile = "/com/navinfo/dataservice/scripts/resources/point_feature_batch.pck";
+		SqlExec sqlExec = new SqlExec(copVersionConn);
+		sqlExec.execute(pckFile);
+	}
+	
+	private void exeTabelCreateSql(Connection copVersionConn) throws Exception {
 		String sqlFile = "/com/navinfo/dataservice/scripts/resources/poi_guide_link_batch_db_create.sql";
-		SqlExec sqlExec = new SqlExec(copVersionSchema.getPoolDataSource().getConnection());
+		SqlExec sqlExec = new SqlExec(copVersionConn);
 		sqlExec.execute(sqlFile);
 	}
 	
-	private String createDbLink(OracleSchema copVersionSchema) throws SQLException{
+	private String createDbLink(Connection copVersionConn) throws SQLException{
 		String dbLinkName = "DBLINK_GDB_M_1";
 		String userName = conn.getMetaData().getUserName();
 		String userPassWord = monthDbSchema.getConnConfig().getUserPasswd();
 		String URL = conn.getMetaData().getURL();
 		String tmpUrl = URL.substring(URL.indexOf("@")+1);
 		String sql = "CREATE DATABASE LINK "+ dbLinkName +" CONNECT TO "+ userName +" IDENTIFIED BY "+ userPassWord +" USING '"+ tmpUrl +"';";
-		new QueryRunner().update(copVersionSchema.getPoolDataSource().getConnection(), sql);
+		new QueryRunner().update(copVersionConn, sql);
 		return dbLinkName;
 	}
 	private DbInfo createCopVersion() throws Exception {
@@ -224,7 +235,7 @@ public class PoiGuideLinkBatch {
 			//根据返回的自版本库的dbid 获取子版本库的DbInfo
 			copDb = datahub.getDbById(copDbId);
 		}catch (Exception e){
-			DbUtils.rollbackAndCloseQuietly(sysConn);
+			DbUtils.rollback(sysConn);
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);
 		}finally{

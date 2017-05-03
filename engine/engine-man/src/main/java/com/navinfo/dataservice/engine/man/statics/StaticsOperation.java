@@ -581,7 +581,7 @@ public class StaticsOperation {
 					closededInfoCollect.put("closedRegular", closedRegularCollect);
 					closededInfoCollect.put("closedAdvanced", closedAdvancedCollect);
 					closededInfoCollect.put("closedOverdue", closedOverdueCollect);
-					collectInfo.put("closededInfo", closededInfoCollect);
+					collectInfo.put("closedInfo", closededInfoCollect);
 					//日编
 					Map<String,Object> dailyInfo = new HashMap<String,Object>();
 					dailyInfo.put("total", totalDaily);
@@ -604,7 +604,7 @@ public class StaticsOperation {
 					closededInfoDaily.put("closedRegular", closedRegularDaily);
 					closededInfoDaily.put("closedAdvanced", closedAdvancedDaily);
 					closededInfoDaily.put("closedOverdue", closedOverdueDaily);
-					dailyInfo.put("closededInfo", closededInfoDaily);
+					dailyInfo.put("closedInfo", closededInfoDaily);
 					
 					//月编
 					Map<String,Object> monthlyInfo = new HashMap<String,Object>();
@@ -629,7 +629,7 @@ public class StaticsOperation {
 					closededInfoMonthly.put("closedRegular", closedRegularMonthly);
 					closededInfoMonthly.put("closedAdvanced", closedAdvancedMonthly);
 					closededInfoMonthly.put("closedOverdue", closedOverdueMonthly);
-					monthlyInfo.put("closededInfo", closededInfoMonthly);
+					monthlyInfo.put("closedInfo", closededInfoMonthly);
 					
 					result.put("collectInfo", collectInfo);
 					result.put("dailyInfo", dailyInfo);

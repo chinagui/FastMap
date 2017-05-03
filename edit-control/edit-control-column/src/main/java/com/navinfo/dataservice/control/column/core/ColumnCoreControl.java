@@ -77,7 +77,7 @@ public class ColumnCoreControl {
 
 				if (columnSecondWorkItems.contains(secondWorkItem)) {
 
-					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type);
+					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId);
 					// 可申请数据条数
 					int canApply = 100 - hasApply;
 					if (canApply == 0) {

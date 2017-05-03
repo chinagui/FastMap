@@ -168,7 +168,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
 			
-			int subTaskId=jsonReq.getInt("subTaskId"); //任务号
+			int subTaskId=jsonReq.getInt("subtaskId"); //任务号
 			
 			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
 
@@ -545,7 +545,9 @@ public class PretreatmentTipsController extends BaseController {
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.batchSave(jsonInfoArr,user); //新增多个tips
+			int command=PretreatmentTipsOperator.COMMAND_INSERT;
+			
+			op.batchSaveOrUpdate(jsonInfoArr,user,command); //新增多个tips
 
 			return new ModelAndView("jsonView", success());
 

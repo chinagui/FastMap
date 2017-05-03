@@ -175,7 +175,7 @@ public class Operation implements IOperation {
 				detail.Unserialize(json);
 
 				detail.setPid(PidUtil.getInstance()
-						.applyRdVoiceguideDetailPid());
+						.applyRestrictionDetailPid());
 
 				detail.setRestricPid(restrict.pid());
 

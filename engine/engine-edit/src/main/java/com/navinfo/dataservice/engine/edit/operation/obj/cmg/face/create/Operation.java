@@ -103,12 +103,12 @@ public class Operation implements IOperation {
             // 通过坐标点构成面
             Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
             // 计算CMG-FACE的图幅号
-            int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry);
+            int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(GeoTranslator.transform(geometry, Constant.BASE_SHRINK, Constant.BASE_PRECISION));
             // 创建CMG-FACE
             CmgBuildface cmgface = createCmgface(result, geometry, cmgfaceMeshId);
             // 创建CMG-FACE-TOPO
-            for (int seq = 1; seq < command.getLinkPids().size(); seq++) {
-                CmgfaceUtil.createCmgfaceTopo(result, command.getLinkPids().get(seq), cmgface.pid(), seq);
+            for (int seq = 0; seq < command.getLinkPids().size();) {
+                CmgfaceUtil.createCmgfaceTopo(result, command.getLinkPids().get(seq), cmgface.pid(), ++seq);
             }
             // 初始化CMG-NODE-SELECTOR
             AbstractSelector cmgnodeSelector = new AbstractSelector(CmgBuildnode.class, conn);

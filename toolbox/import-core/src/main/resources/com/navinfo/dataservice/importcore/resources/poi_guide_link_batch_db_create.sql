@@ -1,5 +1,5 @@
 -- Create table
-create table RD_NAME
+create table NI_RD_NAME
 (
   name_id         NUMBER(10) not null,
   name_groupid    NUMBER(10) not null,
@@ -32,7 +32,7 @@ create table RD_NAME
   process_flag    NUMBER(1) default 0
 );
 -- Create/Recreate primary, unique and foreign key constraints 
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint NAME_01 primary key (NAME_ID)
   using index 
   tablespace GDB_DATA
@@ -47,16 +47,16 @@ alter table RD_NAME
     maxextents unlimited
   );
 -- Create/Recreate check constraints 
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_CODE_TYPE_RD_NAME
   check (CODE_TYPE in (0,1,2,3,4,5,6,7));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_ROAD_TYPE_RD_NAME
   check (ROAD_TYPE in (0,1,2,3,4));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_SPLIT_FLAG_RD_NAME
   check (SPLIT_FLAG is null or (SPLIT_FLAG in (0,1,2)));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_SRC_FLAG_RD_NAME
   check (SRC_FLAG is null or (SRC_FLAG in (0,1,2,3)));
   
@@ -1276,3 +1276,102 @@ create unique index IDX_POI_FLAG_BACK_20170411032958_R on IX_POI_FLAG_BACK (ROW_
     minextents 1
     maxextents unlimited
   );
+-- Create table
+create table RD_LINK_NAME
+(
+  LINK_PID     NUMBER(10) not null,
+  NAME_GROUPID NUMBER(10) default 0 not null,
+  SEQ_NUM      NUMBER(2) default 1 not null,
+  NAME_CLASS   NUMBER(1) default 1 not null,
+  INPUT_TIME   VARCHAR2(32),
+  NAME_TYPE    NUMBER(2) default 0 not null,
+  SRC_FLAG     NUMBER(1) default 9 not null,
+  ROUTE_ATT    NUMBER(1) default 0 not null,
+  CODE         NUMBER(1) default 0 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the columns 
+comment on column RD_LINK_NAME.LINK_PID
+  is '外键,引用"RD_LINK"';
+comment on column RD_LINK_NAME.NAME_GROUPID
+  is '[170]参考"RD_NAME"';
+comment on column RD_LINK_NAME.SEQ_NUM
+  is '从1开始递增编号';
+comment on column RD_LINK_NAME.NAME_CLASS
+  is '(1)分为官方名称,别名,外来名或曾用名等类型
+(2)NaviMap中,当为曾用名时,需记录曾用名时间(OLD_NAME_TIME)';
+comment on column RD_LINK_NAME.INPUT_TIME
+  is '[170](1)当NAME_CLASS=3 时有效,其他为空
+(2)记录方式为数据版本,如"10 夏"';
+comment on column RD_LINK_NAME.NAME_TYPE
+  is '区分Junction Name,立交桥名(主路)';
+comment on column RD_LINK_NAME.SRC_FLAG
+  is '注:当来自线门牌时,需判断Link 上是否有官方名,无则赋官方名;有则赋别名';
+comment on column RD_LINK_NAME.ROUTE_ATT
+  is '(1)记录路线的上下行,内外环
+(2)NaviMap数据转换中值为15的转为9(未定义)';
+comment on column RD_LINK_NAME.CODE
+  is '注:当Link 种别为高速,城市高速,国道时,主从CODE=1,其他为0';
+comment on column RD_LINK_NAME.U_RECORD
+  is '增量更新标识';
+comment on column RD_LINK_NAME.U_FIELDS
+  is '记录更新的英文字段名,多个之间采用半角''|''分隔';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table RD_LINK_NAME
+  add constraint RDLINK_NAMES foreign key (LINK_PID)
+  references RD_LINK (LINK_PID)
+  disable;
+-- Create/Recreate check constraints 
+alter table RD_LINK_NAME
+  add check (NAME_CLASS in (1,2,3));
+alter table RD_LINK_NAME
+  add check (NAME_TYPE in (0,1,2,3,4,5,6,7,8,9,14,15));
+alter table RD_LINK_NAME
+  add check (SRC_FLAG in (0,1,2,3,4,5,6,9));
+alter table RD_LINK_NAME
+  add check (ROUTE_ATT in (0,1,2,3,4,5,9));
+alter table RD_LINK_NAME
+  add check (CODE in (0,1,2,9));
+alter table RD_LINK_NAME
+  add check (U_RECORD in (0,1,2,3));
+-- Create/Recreate indexes 
+create index EXP_RD_52 on RD_LINK_NAME (LINK_PID, NAME_GROUPID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032911_R on RD_LINK_NAME (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+  

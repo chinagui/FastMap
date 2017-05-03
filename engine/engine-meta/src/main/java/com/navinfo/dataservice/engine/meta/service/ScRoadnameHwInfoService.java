@@ -228,17 +228,37 @@ public class ScRoadnameHwInfoService {
 			dataJson.remove("memo");
 			String memoStr="";
 			if(memoArr != null && memoArr.size() > 0 ){
-				memoStr = memoArr.join(",");
+				//List<Integer> memoList = (List<Integer>) JSONArray.toCollection(memoArr);
+				for(Object memoObj :memoArr){
+					if(StringUtils.isNotEmpty(memoStr)){
+						memoStr+=",";
+					}
+					memoStr+="'"+memoObj+"'";
+					
+				}
+				log.info(" memoStr :"+memoStr);
 			}
+			//memoStr = memoArr.join(",");
 			dataJson.put("memo", memoStr);
 			
 			JSONArray uRecordsArr = dataJson.getJSONArray("uRecords");
-			dataJson.remove("uRecords");
+			//dataJson.remove("uRecords");
+			
 			String uRecordStr="";
 			if(uRecordsArr != null && uRecordsArr.size() > 0 ){
-				uRecordStr = uRecordsArr.join(",");
+//				List<Integer> uRecordList = (List<Integer>) JSONArray.toCollection(uRecordsArr);
+				/*for(Object uRecordObj :uRecordsArr){
+					//int uRecord = (int) uRecordObj;
+					if(StringUtils.isNotEmpty(uRecordStr)){
+						uRecordStr+=",";
+					}
+					uRecordStr+="'"+uRecordObj+"'";
+					
+				}*/
+				uRecordStr=uRecordsArr.join(",");
+				log.info(" uRecordStr :"+uRecordStr);
 			}
-			dataJson.put("uRecord", uRecordStr);
+			dataJson.put("uRecords", uRecordStr);
 			
 			
 			
@@ -259,12 +279,13 @@ public class ScRoadnameHwInfoService {
 				values.add("%"+bean.getNameGroupid()+"%");
 			};
 			if (bean!=null&&bean.getMemo()!=null && StringUtils.isNotEmpty(bean.getMemo().toString())){
-				selectSql+=" and MEMO in(?) ";
-				values.add(bean.getMemo());
+				selectSql+=" and MEMO in("+bean.getMemo()+") ";
+//				values.add(bean.getMemo());
 			};
-			if (bean!=null&&bean.getuRecord()!=null && StringUtils.isNotEmpty(bean.getuRecord().toString())){
-				selectSql+=" and U_RECORD in(?) ";
-				values.add(bean.getuRecord());
+			if (bean!=null&&bean.getuRecords()!=null && StringUtils.isNotEmpty(bean.getuRecords())){
+				selectSql+=" and U_RECORD in("+bean.getuRecords()+") ";
+				//selectSql+=" and U_RECORD in(?) ";
+				//values.add(bean.getuRecords());
 			};
 			if (bean!=null&&bean.getuFields()!=null && StringUtils.isNotEmpty(bean.getuFields().toString())){
 				selectSql+=" and U_FIELDS like ? ";

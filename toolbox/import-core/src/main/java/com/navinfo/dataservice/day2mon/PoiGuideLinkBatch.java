@@ -102,9 +102,11 @@ public class PoiGuideLinkBatch {
 			//导入cop的point_feature_batch包
 			importCopPck(copVersionConn);
 			//4.3导入ix_poi:根据tempPoiGLinkTab 进行关联
-			initIxPoi(copVersionSchema,tempPoiGLinkTab);
+			initIxPoi(copVersionConn,tempPoiGLinkTab,dbLinkName);
 			//4.4导入ix_poi_address:根据tempPoiGLinkTab 进行关联
-			initIxPoiAddress(copVersionSchema,tempPoiGLinkTab);
+			initIxPoiAddress(copVersionConn,tempPoiGLinkTab,dbLinkName);
+			//导入ix_poi_flag:根据tempPoiGLinkTab 进行关联
+			initIxPoiFlag(copVersionConn,tempPoiGLinkTab,dbLinkName);
 			//4.5导入rd_link:按照4.3的poi进行扩圈，计算要导入的rd_link的pid
 			initRdLink(copVersionSchema,tempPoiGLinkTab);
 			//4.6导入rd_link_form :按照4.5得到的rd_link导入rd_link_form;
@@ -112,7 +114,9 @@ public class PoiGuideLinkBatch {
 			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
 			initRdName(copVersionSchema,tempPoiGLinkTab);
 			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
-			backupIxPoi(copVersionSchema);
+			backupIxPoi(copVersionConn);
+			//4.9备份ix_poi为ix_poi_flag_back；
+			backupIxPoiFlag(copVersionConn);
 			//5.调用cop的批处理程序；
 			callCopPackage(copVersionConn);
 			//6.差分ix_poi和ix_poi_back;生成差分履历；
@@ -128,6 +132,13 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndClose(copVersionConn);
 		}
 		
+	}
+	
+	private void initIxPoiFlag(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws SQLException {
+		String sql = "INSERT INTO ix_poi_flag"+
+				"SELECT q.* FROM (SELECT * FROM ix_poi_flag@dblink_gdb_m_1 p "+
+				"WHERE p.poi_pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		new QueryRunner().update(copVersionConn, sql); 
 	}
 	private void moveDiffLog(OracleSchema copVersionSchema) {
 		// TODO Auto-generated method stub
@@ -158,10 +169,17 @@ public class PoiGuideLinkBatch {
 		
 	}
 	
-	private void backupIxPoi(OracleSchema copVersionSchema) {
-		// TODO Auto-generated method stub
-		
+	private void backupIxPoi(Connection copVersionConn) throws Exception{
+		String sql = "INSERT INTO ix_poi_back"+
+				"SELECT p.PID,p.X_GUIDE,p.Y_GUIDE,p.LINK_PID,p.SIDE,p.NAME_GROUPID,p.PMESH_ID FROM ix_poi p; ";
+		new QueryRunner().update(copVersionConn, sql); 		
 	}
+	
+	private void backupIxPoiFlag(Connection copVersionConn) throws Exception{
+		String sql = "INSERT INTO ix_poi_flag_back SELECT p.* FROM ix_poi_flag p";
+		new QueryRunner().update(copVersionConn, sql);
+	}
+	
 	private void initRdName(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
 		// TODO Auto-generated method stub
 		
@@ -174,13 +192,17 @@ public class PoiGuideLinkBatch {
 		// TODO Auto-generated method stub
 		
 	}
-	private void initIxPoiAddress(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
-		// TODO Auto-generated method stub
-		
+	private void initIxPoiAddress(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws Exception {
+		String sql = "INSERT INTO ix_poi_address"+
+		"SELECT q.* FROM (SELECT * FROM ix_poi_address@dblink_gdb_m_1 p "+
+		"WHERE p.poi_pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		new QueryRunner().update(copVersionConn, sql); 
 	}
-	private void initIxPoi(OracleSchema copVersionSchema, String tempPoiGLinkTab) {
-		// TODO Auto-generated method stub
-		
+	private void initIxPoi(Connection copVersionConn, String tempPoiGLinkTab,String dbLinkName) throws Exception {
+		String sql = "INSERT INTO ix_poi"+
+		"SELECT q.* FROM (SELECT * FROM ix_poi@dblink_gdb_m_1 p "+
+		"WHERE p.pid IN (SELECT * FROM temp_poi_glink_1@dblink_gdb_m_1 t)) q; ";
+		new QueryRunner().update(copVersionConn, sql); 
 		
 	}
 	private void importCopPck(Connection copVersionConn) throws Exception{

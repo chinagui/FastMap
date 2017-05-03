@@ -344,7 +344,7 @@ public class TaskService {
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
-					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
@@ -1599,6 +1599,7 @@ public class TaskService {
 								continue;
 							}
 							int programId=rs.getInt("PROGRAM_ID");
+							Program myProgram=null;
 							if(cityStatus==0||cityStatus==2){//需创建项目
 								log.info(gridId+"无对应中线项目，新建项目");
 								JSONObject condition=new JSONObject();
@@ -1624,8 +1625,9 @@ public class TaskService {
 								programId=ProgramService.getInstance().create(conn,program);
 								JSONArray openProgramIds=new JSONArray();
 								openProgramIds.add(programId);
-								condition.put("programIds",programIds);
+								//condition.put("programIds",programIds);
 								ProgramService.getInstance().openStatus(conn, openProgramIds);
+								myProgram=program;
 								log.info(gridId+"无对应中线项目，新建项目："+programId);
 							}
 							//创建block项目
@@ -1634,8 +1636,15 @@ public class TaskService {
 							for(Integer gridtmp:gridList){
 								gridIds.put(gridtmp, 1);
 							}
-							Program myProgram=null;
+							
 							if(cityStatus==1||cityStatus==3){
+								if(cityStatus==1){
+									//JSONObject condition=new JSONObject();
+									JSONArray openProgramIds=new JSONArray();
+									openProgramIds.add(programId);
+									//condition.put("programIds",openProgramIds);
+									ProgramService.getInstance().openStatus(conn, openProgramIds);
+								}
 								JSONObject condition=new JSONObject();
 								JSONArray programIds=new JSONArray();
 								programIds.add(programId);

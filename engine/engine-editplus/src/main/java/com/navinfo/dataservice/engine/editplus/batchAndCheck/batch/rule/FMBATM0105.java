@@ -175,7 +175,11 @@ public class FMBATM0105 extends BasicBatchRule {
 		if (!StringUtils.isEmpty(strType) && strType.endsWith("No.")&&CheckUtil.isDigit(strHouseNum)) {
 			fullName = strType + strHouseNum + " " + strStreet;
 		} else {
-			fullName = strType + " " + strHouseNum + " " + strStreet;
+			if (StringUtils.isEmpty(strType)) {
+				fullName = strHouseNum + " " + strStreet;
+			} else {
+				fullName = strType + " " + strHouseNum + " " + strStreet;
+			}
 		}
 		return fullName.trim();
 	}

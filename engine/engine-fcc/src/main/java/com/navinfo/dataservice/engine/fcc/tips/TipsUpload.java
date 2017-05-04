@@ -974,7 +974,7 @@ public class TipsUpload {
 		
 		
 		//2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-			//如果不存在stage=1时，则按以下情况比较（如果存在stage=5且不存在stage=1时，直接覆盖）
+			//如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
 		if(lastDate==null && hasPreStage(tracks)){
 			return 0;
 		}else{
@@ -999,7 +999,7 @@ public class TipsUpload {
 			
 			JSONObject info = tracks.getJSONObject(i - 1);
 
-			if (info.getInt("stage") == 5) {
+			if (info.getInt("stage") == 5||info.getInt("stage") == 6) {
 
 				return true;
 			}

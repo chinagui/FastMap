@@ -44,6 +44,7 @@ public class FMA0408 extends BasicCheckRule {
 			Map<String, String> typeD3 = metadataApi.scPointNameckTypeD3();
 
 			IxPoiName Name=poiObj.getOfficeStandardCHIName();
+			if(Name==null){return;}
 			String nameStr= Name.getName();
 			
 			for(String key:typeD3.keySet()){

@@ -344,7 +344,7 @@ public class TaskService {
 			if(poiMonthlyTask.size()>0){
 				for(Task task:poiMonthlyTask){
 					Subtask subtask = new Subtask();
-					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
 					subtask.setExeGroupId(task.getGroupId());
 					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
@@ -1454,13 +1454,12 @@ public class TaskService {
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号");
 			Map<Integer, Integer> gridMap=getMidTaskIdByGrid(conn,userId,allGrids,task);
 			log.info(task.getTaskId()+"任务为快线采集任务，计算poi，tips所在grid对应的中线采集任务号"+gridMap.toString());
-			//任务号批数据
-			//tip批中线任务号
-			if(tipsGrids!=null&&tipsGrids.size()>0){
-				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
-				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
+			//判断是否所有grid均获取到中线任务
+			if(gridMap.size()!=allGrids.size()){
+				allGrids.removeAll(gridMap.keySet());
+				throw new Exception("存在grid未获取中线任务号，请查看："+allGrids.toString());
 			}
-			
+			//任务号批数据			
 			//poi批中线任务号	
 			if(poiGridMap!=null&&poiGridMap.size()>0){
 				log.info(task.getTaskId()+"任务为快线采集任务，批poi中线采集任务号");
@@ -1469,6 +1468,12 @@ public class TaskService {
 					poiTaskMap.put(pid, gridMap.get(poiGridMap.get(pid)));
 				}
 				batchPoiMidTask(dailyConn,poiTaskMap);
+			}			
+			
+			//tip批中线任务号
+			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info(task.getTaskId()+"任务为快线采集任务，批tips中线采集任务号");
+				api.batchUpdateSmTaskId(task.getTaskId(), gridMap);
 			}
 			Set<Integer> taskIdSet=new HashSet<Integer>();
 			taskIdSet.addAll(gridMap.values());
@@ -1599,6 +1604,7 @@ public class TaskService {
 								continue;
 							}
 							int programId=rs.getInt("PROGRAM_ID");
+							Program myProgram=null;
 							if(cityStatus==0||cityStatus==2){//需创建项目
 								log.info(gridId+"无对应中线项目，新建项目");
 								JSONObject condition=new JSONObject();
@@ -1624,8 +1630,9 @@ public class TaskService {
 								programId=ProgramService.getInstance().create(conn,program);
 								JSONArray openProgramIds=new JSONArray();
 								openProgramIds.add(programId);
-								condition.put("programIds",programIds);
+								//condition.put("programIds",programIds);
 								ProgramService.getInstance().openStatus(conn, openProgramIds);
+								myProgram=program;
 								log.info(gridId+"无对应中线项目，新建项目："+programId);
 							}
 							//创建block项目
@@ -1634,8 +1641,16 @@ public class TaskService {
 							for(Integer gridtmp:gridList){
 								gridIds.put(gridtmp, 1);
 							}
-							Program myProgram=null;
+							
 							if(cityStatus==1||cityStatus==3){
+								if(cityStatus==1){
+									log.info(gridId+"有对应"+programId+"项目，但项目处于草稿状态，需先进行开启");
+									//JSONObject condition=new JSONObject();
+									JSONArray openProgramIds=new JSONArray();
+									openProgramIds.add(programId);
+									//condition.put("programIds",openProgramIds);
+									ProgramService.getInstance().openStatus(conn, openProgramIds);
+								}
 								JSONObject condition=new JSONObject();
 								JSONArray programIds=new JSONArray();
 								programIds.add(programId);

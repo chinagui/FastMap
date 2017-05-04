@@ -1,5 +1,5 @@
 -- Create table
-create table RD_NAME
+create table NI_RD_NAME
 (
   name_id         NUMBER(10) not null,
   name_groupid    NUMBER(10) not null,
@@ -32,7 +32,7 @@ create table RD_NAME
   process_flag    NUMBER(1) default 0
 );
 -- Create/Recreate primary, unique and foreign key constraints 
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint NAME_01 primary key (NAME_ID)
   using index 
   tablespace GDB_DATA
@@ -47,16 +47,16 @@ alter table RD_NAME
     maxextents unlimited
   );
 -- Create/Recreate check constraints 
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_CODE_TYPE_RD_NAME
   check (CODE_TYPE in (0,1,2,3,4,5,6,7));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_ROAD_TYPE_RD_NAME
   check (ROAD_TYPE in (0,1,2,3,4));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_SPLIT_FLAG_RD_NAME
   check (SPLIT_FLAG is null or (SPLIT_FLAG in (0,1,2)));
-alter table RD_NAME
+alter table NI_RD_NAME
   add constraint CKC_SRC_FLAG_RD_NAME
   check (SRC_FLAG is null or (SRC_FLAG in (0,1,2,3)));
   
@@ -697,3 +697,681 @@ create index EXP_RD_60 on RD_LINK_FORM (LINK_PID);
 create index EXP_RD_D04 on RD_LINK_FORM (LINK_PID, FORM_OF_WAY);
 create unique index IDX_20170414206221_R on RD_LINK_FORM (ROW_ID);
 
+
+-- Create table
+create table IX_POI_FLAG
+(
+  POI_PID   NUMBER(10) not null,
+  FLAG_CODE VARCHAR2(12),
+  U_RECORD  NUMBER(2) default 0 not null,
+  U_FIELDS  VARCHAR2(1000),
+  U_DATE    VARCHAR2(14),
+  ROW_ID    RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the table 
+comment on table IX_POI_FLAG
+  is '[170]';
+-- Add comments to the columns 
+comment on column IX_POI_FLAG.POI_PID
+  is '外键,引用"IX_POI"';
+comment on column IX_POI_FLAG.FLAG_CODE
+  is '参考"M_FLAG_CODE"';
+comment on column IX_POI_FLAG.U_RECORD
+  is '增量更新标识';
+comment on column IX_POI_FLAG.U_FIELDS
+  is '记录更新的英文字段名,多个之间采用半角''|''分隔';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table IX_POI_FLAG
+  add constraint IXPOI_FLAG foreign key (POI_PID)
+  references IX_POI (PID)
+  disable;
+-- Create/Recreate check constraints 
+alter table IX_POI_FLAG
+  add check (U_RECORD in (0,1,2,3));
+-- Create/Recreate indexes 
+create index EXP_IX_35 on IX_POI_FLAG (POI_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032958_R on IX_POI_FLAG (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+  
+  
+-- Create table
+create table LOG_ACTION
+(
+  ACT_ID RAW(16) not null,
+  US_ID  NUMBER(36) default 0,
+  OP_CMD VARCHAR2(1000),
+  SRC_DB NUMBER(1) default 2,
+  STK_ID NUMBER(10) default 0
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table LOG_ACTION
+  add constraint PK_LOG_ACT primary key (ACT_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate indexes 
+create index IX_LOG_ACT_STKID on LOG_ACTION (STK_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+  
+  
+-- Create table
+create table LOG_DETAIL
+(
+  ROW_ID    RAW(16) not null,
+  OP_ID     RAW(16) not null,
+  OB_NM     VARCHAR2(30),
+  OB_PID    NUMBER(10) default 0,
+  GEO_NM    VARCHAR2(30),
+  GEO_PID   NUMBER(10) default 0,
+  TB_NM     VARCHAR2(30),
+  OLD       CLOB,
+  NEW       CLOB,
+  FD_LST    VARCHAR2(1000),
+  OP_TP     NUMBER(1) default 0 not null,
+  TB_ROW_ID RAW(16),
+  IS_CK     NUMBER(1) default 0,
+  DES_STA   NUMBER(1) default 0 not null,
+  DES_DT    TIMESTAMP(6)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table LOG_DETAIL
+  add constraint PK_LOG_DETAIL primary key (ROW_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+alter table LOG_DETAIL
+  add constraint FK_LOG_DETAIL_OP foreign key (OP_ID)
+  references LOG_OPERATION (OP_ID)
+  disable;
+-- Create/Recreate check constraints 
+alter table LOG_DETAIL
+  add check (OP_TP IN (0,1,2,3))
+  disable;
+alter table LOG_DETAIL
+  add check (DES_STA IN (0,1))
+  disable;
+-- Create/Recreate indexes 
+create index IX_LOG_DETAIL_OPID on LOG_DETAIL (OP_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+  
+  -- Create table
+create table LOG_OPERATION
+(
+  OP_ID    RAW(16) not null,
+  ACT_ID   RAW(16) not null,
+  OP_DT    TIMESTAMP(6),
+  OP_SEQ   NUMBER(12) default 0 not null,
+  COM_STA  NUMBER(1) default 0 not null,
+  COM_DT   TIMESTAMP(6),
+  LOCK_STA NUMBER(1) default 0 not null
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table LOG_OPERATION
+  add constraint PK_LOG_OP primary key (OP_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+alter table LOG_OPERATION
+  add constraint FK_LOG_OP_ACT foreign key (ACT_ID)
+  references LOG_ACTION (ACT_ID)
+  disable;
+-- Create/Recreate check constraints 
+alter table LOG_OPERATION
+  add check (COM_STA IN (0,1))
+  disable;
+alter table LOG_OPERATION
+  add check (LOCK_STA IN (0,1))
+  disable;
+-- Create/Recreate indexes 
+create index IX_LOG_OP_DT on LOG_OPERATION (OP_DT)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+-- Create table
+create table LOG_DAY_RELEASE
+(
+  OP_ID        RAW(16) not null,
+  REL_POI_STA  NUMBER(1) default 0 not null,
+  REL_POI_DT   TIMESTAMP(6),
+  REL_ALL_STA  NUMBER(1) default 0 not null,
+  REL_ALL_DT   TIMESTAMP(6),
+  REL_POI_LOCK NUMBER(1) default 0 not null,
+  REL_ALL_LOCK NUMBER(1) default 0 not null
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the table 
+comment on table LOG_DAY_RELEASE
+  is '日库出品管理表';
+-- Add comments to the columns 
+comment on column LOG_DAY_RELEASE.OP_ID
+  is '参考log_operation.op_id';
+comment on column LOG_DAY_RELEASE.REL_POI_STA
+  is 'POI出品状态';
+comment on column LOG_DAY_RELEASE.REL_POI_DT
+  is 'POI出品时间';
+comment on column LOG_DAY_RELEASE.REL_ALL_STA
+  is 'POI+ROAD出品状态';
+comment on column LOG_DAY_RELEASE.REL_ALL_DT
+  is 'POI+ROAD出品时间';
+comment on column LOG_DAY_RELEASE.REL_POI_LOCK
+  is 'POI 出品锁状态';
+comment on column LOG_DAY_RELEASE.REL_ALL_LOCK
+  is 'POI+ROAD出品锁状态';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table LOG_DAY_RELEASE
+  add constraint PK_LOG_RELEASE primary key (OP_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate indexes 
+create index IDX_LOG_DAY_REL_1 on LOG_DAY_RELEASE (REL_POI_STA)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index IDX_LOG_DAY_REL_2 on LOG_DAY_RELEASE (REL_ALL_STA)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index IDX_LOG_DAY_REL_3 on LOG_DAY_RELEASE (REL_POI_LOCK)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index IDX_LOG_DAY_REL_4 on LOG_DAY_RELEASE (REL_ALL_LOCK)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+  
+-- Create table
+create table LOG_DETAIL_GRID
+(
+  LOG_ROW_ID RAW(16) not null,
+  GRID_ID    NUMBER(10) not null,
+  GRID_TYPE  NUMBER(1) not null
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 64
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table LOG_DETAIL_GRID
+  add constraint FK_LOG_DETAIL_GRID_ROWID foreign key (LOG_ROW_ID)
+  references LOG_DETAIL (ROW_ID)
+  disable;
+-- Create/Recreate check constraints 
+alter table LOG_DETAIL_GRID
+  add check (GRID_TYPE IN (0,1))
+  disable;
+-- Create/Recreate indexes 
+create index IX_LOG_DET_GRID_ROW on LOG_DETAIL_GRID (LOG_ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+create table IX_POI_BACK
+(
+  PID             NUMBER(10) not null,
+  X_GUIDE         NUMBER(10,5) default 0 not null,
+  Y_GUIDE         NUMBER(10,5) default 0 not null,
+  LINK_PID        NUMBER(10) default 0 not null,
+  SIDE            NUMBER(1) default 0 not null,
+  NAME_GROUPID    NUMBER(10) default 0 not null,
+  PMESH_ID        NUMBER(8) default 0 not null
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+  -- Create/Recreate primary, unique and foreign key constraints 
+alter table IX_POI_BACK
+  add constraint PK_IX_POI_BACK primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the columns 
+comment on column IX_POI_BACK.PID
+  is '主键';
+comment on column IX_POI_BACK.LINK_PID
+  is '参考"RD_LINK"';
+comment on column IX_POI_BACK.SIDE
+  is '记录POI位于引导道路Link上,左侧或右侧';
+comment on column IX_POI_BACK.NAME_GROUPID
+  is '[173sp2]参考"RD_NAME"';
+comment on column IX_POI_BACK.PMESH_ID
+  is '[171A]每个作业季POI 在成果库中第一次与LINK 建关联时生成,且该作业季内重新建关联时该图幅号不变,以保证该作业季每次数据分省转出的一致性';
+-- Create/Recreate check constraints 
+alter table IX_POI_BACK
+  add check (SIDE in (0,1,2,3));
+-- Create/Recreate indexes 
+create index EXP_IX_POI_BACK_01 on IX_POI_BACK (MESH_ID, LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_POI_BACK_1001 on IX_POI_BACK (POI_NUM)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_POI_BACK_49 on IX_POI_BACK (KIND_CODE)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_POI_BACK_D01 on IX_POI_BACK (CHAIN, TYPE)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_POI_BACK_20170411032882_R on IX_POI_BACK (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+  
+  -- Create table
+create table IX_POI_FLAG_BACK
+(
+  POI_PID   NUMBER(10) not null,
+  FLAG_CODE VARCHAR2(12),
+  U_RECORD  NUMBER(2) default 0 not null,
+  U_FIELDS  VARCHAR2(1000),
+  U_DATE    VARCHAR2(14),
+  ROW_ID    RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the table 
+comment on table IX_POI_FLAG_BACK
+  is '[170]';
+-- Add comments to the columns 
+comment on column IX_POI_FLAG_BACK.POI_PID
+  is '外键,引用"IX_POI"';
+comment on column IX_POI_FLAG_BACK.FLAG_CODE
+  is '参考"M_FLAG_CODE"';
+comment on column IX_POI_FLAG_BACK.U_RECORD
+  is '增量更新标识';
+comment on column IX_POI_FLAG_BACK.U_FIELDS
+  is '记录更新的英文字段名,多个之间采用半角''|''分隔';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table IX_POI_FLAG_BACK
+  add constraint IXPOI_FLAG_BACK foreign key (POI_PID)
+  references IX_POI_BACK (PID)
+  disable;
+-- Create/Recreate check constraints 
+alter table IX_POI_FLAG_BACK
+  add check (U_RECORD in (0,1,2,3));
+  -- Create/Recreate indexes 
+create index EXP_IX_POI_FLAG_BACK_35 on IX_POI_FLAG_BACK (POI_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_POI_FLAG_BACK_20170411032958_R on IX_POI_FLAG_BACK (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create table
+create table RD_LINK_NAME
+(
+  LINK_PID     NUMBER(10) not null,
+  NAME_GROUPID NUMBER(10) default 0 not null,
+  SEQ_NUM      NUMBER(2) default 1 not null,
+  NAME_CLASS   NUMBER(1) default 1 not null,
+  INPUT_TIME   VARCHAR2(32),
+  NAME_TYPE    NUMBER(2) default 0 not null,
+  SRC_FLAG     NUMBER(1) default 9 not null,
+  ROUTE_ATT    NUMBER(1) default 0 not null,
+  CODE         NUMBER(1) default 0 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+-- Add comments to the columns 
+comment on column RD_LINK_NAME.LINK_PID
+  is '外键,引用"RD_LINK"';
+comment on column RD_LINK_NAME.NAME_GROUPID
+  is '[170]参考"RD_NAME"';
+comment on column RD_LINK_NAME.SEQ_NUM
+  is '从1开始递增编号';
+comment on column RD_LINK_NAME.NAME_CLASS
+  is '(1)分为官方名称,别名,外来名或曾用名等类型
+(2)NaviMap中,当为曾用名时,需记录曾用名时间(OLD_NAME_TIME)';
+comment on column RD_LINK_NAME.INPUT_TIME
+  is '[170](1)当NAME_CLASS=3 时有效,其他为空
+(2)记录方式为数据版本,如"10 夏"';
+comment on column RD_LINK_NAME.NAME_TYPE
+  is '区分Junction Name,立交桥名(主路)';
+comment on column RD_LINK_NAME.SRC_FLAG
+  is '注:当来自线门牌时,需判断Link 上是否有官方名,无则赋官方名;有则赋别名';
+comment on column RD_LINK_NAME.ROUTE_ATT
+  is '(1)记录路线的上下行,内外环
+(2)NaviMap数据转换中值为15的转为9(未定义)';
+comment on column RD_LINK_NAME.CODE
+  is '注:当Link 种别为高速,城市高速,国道时,主从CODE=1,其他为0';
+comment on column RD_LINK_NAME.U_RECORD
+  is '增量更新标识';
+comment on column RD_LINK_NAME.U_FIELDS
+  is '记录更新的英文字段名,多个之间采用半角''|''分隔';
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table RD_LINK_NAME
+  add constraint RDLINK_NAMES foreign key (LINK_PID)
+  references RD_LINK (LINK_PID)
+  disable;
+-- Create/Recreate check constraints 
+alter table RD_LINK_NAME
+  add check (NAME_CLASS in (1,2,3));
+alter table RD_LINK_NAME
+  add check (NAME_TYPE in (0,1,2,3,4,5,6,7,8,9,14,15));
+alter table RD_LINK_NAME
+  add check (SRC_FLAG in (0,1,2,3,4,5,6,9));
+alter table RD_LINK_NAME
+  add check (ROUTE_ATT in (0,1,2,3,4,5,9));
+alter table RD_LINK_NAME
+  add check (CODE in (0,1,2,9));
+alter table RD_LINK_NAME
+  add check (U_RECORD in (0,1,2,3));
+-- Create/Recreate indexes 
+create index EXP_RD_52 on RD_LINK_NAME (LINK_PID, NAME_GROUPID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032911_R on RD_LINK_NAME (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+  

@@ -1674,7 +1674,7 @@ public class ProgramService {
 			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
 			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
 			sb.append("      AND P.LATEST = 1                                     ");
-			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID(+)                     ");
 			sb.append("      AND P.PROGRAM_ID = "+programId);
 			
 			String sql = sb.toString();
@@ -2107,7 +2107,7 @@ public class ProgramService {
 		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
 				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date,"
 				+ "P.MONTH_EDIT_PLAN_START_DATE,P.MONTH_EDIT_PLAN_END_DATE,"
-				+ "P.PLAN_START_DATE,P.PLAN_END_DATE  "
+				+ "P.PLAN_START_DATE,P.PLAN_END_DATE,P.PRODUCE_PLAN_START_DATE,P.PRODUCE_PLAN_END_DATE  "
 				+ "FROM PROGRAM P where p.latest=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
@@ -2127,6 +2127,8 @@ public class ProgramService {
 					map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
 					map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 					map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+					map.setProducePlanStartDate(rs.getTimestamp("PRODUCE_PLAN_START_DATE"));
+					map.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 					list.add(map);
 				}
 				return list;

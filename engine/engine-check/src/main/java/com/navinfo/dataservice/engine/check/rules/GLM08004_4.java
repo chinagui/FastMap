@@ -68,8 +68,9 @@ public class GLM08004_4 extends baseRule {
 	
 	/**
 	 * @param restriObj
+	 * @throws SQLException 
 	 */
-	private void checkRdRestriction(RdRestriction restriObj) {
+	private void checkRdRestriction(RdRestriction restriObj) throws SQLException {
 		List<IRow> details=restriObj.getDetails();
 		Set<Integer> linkPidList = new HashSet<Integer>();
 		for(IRow objTmp:details){

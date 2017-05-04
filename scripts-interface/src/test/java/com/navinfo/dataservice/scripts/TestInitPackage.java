@@ -112,11 +112,13 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 //				}
 				System.out.println("export admincode "+admincode+" ...");
 				
-				Set<Integer> meshes =new  HashSet<Integer>();
+				Set<Integer> meshes = en.getValue();
+				
+				/*Set<Integer> meshes =new  HashSet<Integer>();
 					meshes.add(625714);
 					meshes.add(625713);
 					meshes.add(625716);
-					meshes.add(625860);
+					meshes.add(625860);*/
 					
 				String output = path + admincode / 10000;
 

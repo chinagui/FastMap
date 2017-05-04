@@ -602,6 +602,7 @@ public class RdLinkExporter {
 		}*/
 
 		List<Integer> styleList = new ArrayList<>();
+		System.out.println("styleFactors:  "+styleFactors);
 		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
 
@@ -609,6 +610,7 @@ public class RdLinkExporter {
 		}
 
 		if (styleList.contains(98)) {
+			System.out.println(" type = 98");
 			style = 29;
 			count+=1;
 		}

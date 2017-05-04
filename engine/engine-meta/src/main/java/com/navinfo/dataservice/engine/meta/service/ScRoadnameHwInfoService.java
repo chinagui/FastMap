@@ -571,7 +571,7 @@ public class ScRoadnameHwInfoService {
 			Integer hwPidDw=hwPidUp + 1;
 			bean.setHwPidUp(hwPidUp);
 			bean.setHwPidDw(hwPidDw);
-			bean.setMemo("0");
+			bean.setMemo("1");
 			bean.setuRecord(1);
 			create(bean, conn);
 		}

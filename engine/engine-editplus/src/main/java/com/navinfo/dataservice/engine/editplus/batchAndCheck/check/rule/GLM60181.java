@@ -46,21 +46,20 @@ public class GLM60181 extends BasicCheckRule {
 		Map<String, List<String>> addrAdminMap = metadataApi.scPointAdminareaDataMap();
 		List<String> errList = new ArrayList<String>();
 		if (StringUtils.isNotEmpty(province)) {
-			if(!addrAdminMap.get("province").contains(province)&&!addrAdminMap.get("province_short").contains(province)){
+			if(!(addrAdminMap.get("province").contains(province)||addrAdminMap.get("province_short").contains(province))){
 				errList.add("省名不在该POI对应的行政区划中；");
 			}
 		}
 		
 		if (StringUtils.isNotEmpty(city)) {
-			if(!addrAdminMap.get("city").contains(city)&&!addrAdminMap.get("city_short").contains(city)&&
-					!addrAdminMap.get("district_remark1").contains(city)&&
-					!addrAdminMap.get("district_short_remark1").contains(city)){
+			if(!(addrAdminMap.get("city").contains(city)||addrAdminMap.get("city_short").contains(city)||
+					addrAdminMap.get("district_remark1").contains(city)||addrAdminMap.get("district_short_remark1").contains(city))){
 				errList.add("市名不在该POI对应的行政区划中；");
 			}
 		}
 		
 		if (StringUtils.isNotEmpty(county)) {
-			if(!addrAdminMap.get("district").contains(county)&&!addrAdminMap.get("district_short").contains(county)){
+			if(!(addrAdminMap.get("district").contains(county)||addrAdminMap.get("district_short").contains(county))){
 				errList.add("区县名不在该POI对应的行政区划中；");
 			}
 		}

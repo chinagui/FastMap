@@ -6,7 +6,6 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
-import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -216,15 +215,10 @@ public abstract class MeshUtils {
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08345, 116.50022, 40.08333)));
         //System.out.println(Arrays.toString(line2Meshes(116.50032, 40.08341, 116.50049, 40.0835)));
         //System.out.println(Arrays.toString(line2Meshes(116.5, 40.08328, 116.50007, 40.08333)));
-        Geometry mesh = mesh2Jts("605612");
-        JSONObject json = new JSONObject();
-        json.put("type", "LineString");
-        json.put("coordinates", "[[116.24999910593033,40.09000063562161],[116.24999910593033,40.089891880564885],[116.24999910593033,40.08980056722269]]");
-        //json.put("coordinates","[[116.24981671571733,40.08986007480792],[116.25013053417204,40.08990316647509]]");
-        //json.put("coordinates","[[116.24980330467223,40.089813905134235],[116.2498891353607,40.08990932242532],[116.25007823109628,40.08992984225538]]");
-        Geometry link = GeoTranslator.geojson2Jts(json);
-        Geometry result = linkInterMeshPolygon(link, mesh);
-        System.out.println(result.getGeometryType());
+        Geometry geo1 = GeoTranslator.wkt2Geometry("POLYGON ((116.5 39.75, 116.5 39.833333, 116.625 39.833333, 116.625 39.75, 116.5 39.75))");
+        Geometry geo2 = GeoTranslator.wkt2Geometry("POLYGON ((116.52351 39.74985, 116.52341 39.74997, 116.52353 39.74997, 116.52365 39.74997, 116.52351 39.74985))");
+        System.out.println(geo1.intersects(geo2));
+        System.out.println(mesh2Jts("595654").intersects(geo2));
     }
 
 
@@ -373,7 +367,10 @@ public abstract class MeshUtils {
      * 计算线段所属图幅号，可以在图廓线上
      * 计算原则：1.只要有任意一点在图幅内部,2.两点都在图幅的边线上
      *
-     * @param line:[x1,y1,x2,y2]
+     * @param x1
+     * @param x2
+     * @param y1
+     * @param y2
      * @return
      */
     public static String[] line2Meshes(double x1, double y1, double x2, double y2) {
@@ -451,6 +448,11 @@ public abstract class MeshUtils {
                             lbMesh = rtMesh = m;
                             break;
                         }
+                    }
+                    // 左下、右上坐标的图幅号完全不相等（左下点处于左下左上图幅, 右上点处于右下右上图幅）
+                    if (StringUtils.isEmpty(lbMesh) || StringUtils.isEmpty(rtMesh)) {
+                        lbMesh = lbMeshes[0];
+                        rtMesh = rtMeshes[1];
                     }
                 }
             // 右上坐标处于四个图幅共用线
@@ -853,7 +855,7 @@ public abstract class MeshUtils {
     /**
      * 计算n圈的邻接图幅
      *
-     * @param meshId
+     * @param meshSet
      * @param extendCount
      * @return
      */
@@ -872,7 +874,7 @@ public abstract class MeshUtils {
     /**
      * 计算n圈的邻接图幅
      *
-     * @param meshId
+     * @param meshSet
      * @param extendCount
      * @return
      */
@@ -921,7 +923,7 @@ public abstract class MeshUtils {
 
     /***
      * @author zhaokk
-     * @param Geometry g
+     * @param  g
      * @return 图幅号
      * 判断是否图廓线
      * @throws Exception
@@ -977,7 +979,7 @@ public abstract class MeshUtils {
      * 判断grid是否被一个面包含
      *
      * @param face
-     * @param gridId
+     * @param meshId
      * @return
      */
     public static boolean meshInFace(double[] face, String meshId) {
@@ -1007,7 +1009,7 @@ public abstract class MeshUtils {
     /**
      * grid转wkt
      *
-     * @param gridId
+     * @param meshes
      * @return
      * @throws ParseException
      */

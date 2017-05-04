@@ -493,4 +493,93 @@ public class EditController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
+	
+	
+	/**
+	 * 查询以渲染格式返回的数据
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/getObject")
+	public ModelAndView getObject(HttpServletRequest request)
+			throws ServletException, IOException {	
+		
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject condition = JSONObject.fromObject(parameter);
+
+			int dbId = condition.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONObject array = p.searchDataByObject(condition);
+
+			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}		
+	}
+	
+	/**
+	 * 根据node查询以渲染格式返回的link
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/getLinkByNode")
+	public ModelAndView getLinkByNode(HttpServletRequest request)
+			throws ServletException, IOException {	
+		
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject condition = JSONObject.fromObject(parameter);
+
+			int dbId = condition.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONObject array = p.searchLinkByNode(condition);
+
+			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }

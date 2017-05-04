@@ -30,7 +30,7 @@ public class GLM60186 extends BasicCheckRule {
 			return;
 		}
 
-		if(address.getLandmark()==null||address.getLandmark().length()==0){
+		if(address.getLandmark()!=null||address.getLandmark().length()>0){
 			setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"标志物逻辑检查：标志物有内容应该为空");
 		}
 	}

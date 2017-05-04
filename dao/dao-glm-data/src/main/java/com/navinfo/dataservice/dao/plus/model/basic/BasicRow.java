@@ -123,6 +123,10 @@ public abstract class BasicRow{
 	 * 持久化后理论上应该所有删除的记录，不会再进入下一操作阶段
 	 */
 	public void afterPersist(){
+		//如果是pre_delete的话，状态不变更
+		if(opType.equals(OperationType.PRE_DELETED)){
+			return ;
+		}
 		//如果之前为删除，修改为已删除
 		if(opType.equals(OperationType.DELETE)){
 			opType=OperationType.PRE_DELETED;
@@ -445,15 +449,12 @@ public abstract class BasicRow{
 	}
 	public boolean checkValue(String colName,Object oldValue,Object newValue){
 		if(oldValue==null&&newValue==null)return false;
-		if(oldValue!=null&&oldValue.equals(newValue))return false;
-		if(oldValue!=null){
-			if(oldValue.equals(newValue)){
-				return false;
-			}
-			if(oldValue instanceof String 
-					&&StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))
-					){
+		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
+		//处理String的null和""的问题
+		if((oldValue!=null&&oldValue instanceof String)
+				||(newValue!=null&&newValue instanceof String)){
+			if(StringUtils.isEmpty(String.valueOf(oldValue))
+					&&StringUtils.isEmpty(String.valueOf(newValue))){
 				return false;
 			}
 		}

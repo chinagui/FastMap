@@ -42,7 +42,7 @@ public class GLM04007 extends baseRule{
 				if(rdGate.status().equals(ObjStatus.UPDATE)){
 					if(rdGate.changedFields().containsKey("type")){
 						int type = Integer.parseInt(rdGate.changedFields().get("type").toString());
-						if(type==1){
+						if(type==0){
 							checkRdGate(rdGate.getPid());
 						}
 					}

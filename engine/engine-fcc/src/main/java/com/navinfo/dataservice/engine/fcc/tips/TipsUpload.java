@@ -36,10 +36,6 @@ import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.audio.Audio;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-/*import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
-import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
-import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
-import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;*/
 
 /**
  * 保存上传的tips数据
@@ -217,7 +213,7 @@ public class TipsUpload {
 		htab.close();
 
 		// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-		//tipsDiff();
+		TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		// 道路名入元数据库
 		importRoadNameToMeta();
@@ -909,61 +905,8 @@ public class TipsUpload {
 		return put;
 	}
 
-	/**
-	 * @throws Exception
-	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
-	 * @time:2017-2-13上午9:20:52
-	 */
-	/*private void tipsDiff() throws Exception {
-		String errRowkey = null; // 报错时用
-		Connection hbaseConn = null;
-		SolrBulkUpdater solrConn = null;
+	
 
-		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			solrConn = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
-					TipsBuilderUtils.ThreadCount);
-			Set<String> rowkeySet = allNeedDiffRowkeysCodeMap.keySet();
-			if (rowkeySet.size() > 0) {
-				for (String rowkey : rowkeySet) {
-					errRowkey = rowkey;
-					String s_sourceType = allNeedDiffRowkeysCodeMap.get(rowkey);
-
-					BaseTipsProcessor processor = TipsProcessorFactory
-							.getInstance().createProcessor(s_sourceType);
-					// 20170331新增，有新增的robot中没有支持的tips processor返回空
-					if (processor != null) {
-
-						processor.setSolrConn(solrConn);
-
-						processor.diff(rowkey, hbaseConn);
-
-						solrConn.commit();
-					}
-
-				}
-			}
-
-		} catch (Exception e) {
-			logger.error(
-					"tips差分报错：rowkey:" + errRowkey + ";出错原因：" + e.getMessage(),
-					e);
-			throw new Exception("tips差分报错：rowkey:" + errRowkey + ";出错原因："
-					+ e.getMessage(), e);
-		} finally {
-			System.out.println("-----------");
-			// 连接不能关
-
-			
-			 *  * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
-			 * 
-			 * if(solrConn!=null){ solrConn.close(); }
-			 
-
-		}
-
-	}
-*/
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 
 		Photo photo = new Photo();
@@ -1059,7 +1002,7 @@ public class TipsUpload {
 		
 		
 		//2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-			//如果不存在stage=1时，则按以下情况比较（如果存在stage=5且不存在stage=1时，直接覆盖）
+			//如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
 		if(lastDate==null && hasPreStage(tracks)){
 			return 0;
 		}else{
@@ -1084,7 +1027,7 @@ public class TipsUpload {
 			
 			JSONObject info = tracks.getJSONObject(i - 1);
 
-			if (info.getInt("stage") == 5) {
+			if (info.getInt("stage") == 5||info.getInt("stage") == 6) {
 
 				return true;
 			}

@@ -14,17 +14,21 @@ import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.STRUCT;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class NiValExceptionSelector {
 
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	public NiValExceptionSelector(Connection conn) {
@@ -511,7 +515,7 @@ public class NiValExceptionSelector {
 		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
 				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
 		sql.append(" order by created desc,md5_code desc ");
-		System.out.println("listCheckResults sql:  " + sql.toString());
+		log.info("listCheckResults sql:  " + sql.toString());
 
 		QueryRunner run = new QueryRunner();
 
@@ -774,7 +778,7 @@ public class NiValExceptionSelector {
 		sql.append(" select A.*,B.pids from q2 A ,q3 B where A.md5_code = B.md5_code  and A.pid = "
 				+ pid + " order by A.created desc,A.md5_code desc ");
 
-		System.out.println("poiCheckResultList:  " + sql);
+		log.info("poiCheckResultList:  " + sql);
 		return new QueryRunner().query(conn, sql.toString(),
 				new ResultSetHandler<JSONArray>() {
 
@@ -823,8 +827,8 @@ public class NiValExceptionSelector {
 											&& StringUtils.isNotEmpty(pidStr)) {
 										int refPid = Integer.parseInt(pidStr
 												.replaceAll(" ", ""));
-										System.out.println("refPid : "+refPid);
-										System.out.println("rs.getInt(pid) : "+rs.getInt("pid"));
+										log.info("refPid : "+refPid);
+										log.info("rs.getInt(pid) : "+rs.getInt("pid"));
 										
 										if (refPid != rs.getInt("pid") && rs.getInt("pid") != 0) {
 											// 存在关联poi
@@ -865,7 +869,7 @@ public class NiValExceptionSelector {
 		StringBuilder sql = new StringBuilder(
 				" select t.pid,t.kind_code,t.geometry,t.\"LEVEL\" level_,t.u_record,t.link_pid,t.poi_num fid,(select n.name from ix_poi_name n where n.poi_pid = t.pid  and n.name_type = 1 AND n.lang_code =  'CHI' and n.name_class = 1) name "
 						+ "from ix_poi t  where t.pid =" + pid + " ");
-		System.out.println("queryRefFeatures : "+sql);
+		log.info("queryRefFeatures : "+sql);
 		
 		try {
 			return new QueryRunner().query(conn, sql.toString(),
@@ -921,7 +925,7 @@ public class NiValExceptionSelector {
 									trans = new GeoTranslator();
 									geometryStr = trans.jts2Wkt(geometry, 1, 5);
 								} catch (Exception e) {
-									System.out.println("查询结果获取Geometry失败");
+									log.info("查询结果获取Geometry失败");
 									e.printStackTrace();
 								}
 								json.put("geometry", geometryStr);
@@ -989,7 +993,7 @@ public class NiValExceptionSelector {
 		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
 				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
 		//sql.append(" order by created desc,md5_code desc ");
-		System.out.println("listCheckResultsByJobId sql:  " + sql.toString());
+		log.info("listCheckResultsByJobId sql:  " + sql.toString());
 
 		QueryRunner run = new QueryRunner();
 
@@ -1047,25 +1051,16 @@ public class NiValExceptionSelector {
 		long pageEndNum = pageNum * pageSize;
 		
 		String taskName = params.getString("taskName");
-		//int flag = params.getInt("flag");
-//		String nameIds = "";
-		
 		String sql_where_r = "";
 		String sql_where_e = "";
-		/*if(flag > 0){//查询选中数据的检查结果
-			JSONArray dataArr = params.getJSONArray("data");
-			if(dataArr != null &&  dataArr.size() > 0 ){
-				nameIds = dataArr.join(",");
-				sql_where_r = " and r.name_id in("+nameIds+")";
-			}
-		}else{*///根据查询条件查询检查结果
+		//根据查询条件查询检查结果
 			JSONObject paramsObj = params.getJSONObject("params");
 			if(paramsObj != null ){
 				if(paramsObj.containsKey("name") && paramsObj.getString("name") != null && StringUtils.isNotEmpty(paramsObj.getString("name")) ){
 					sql_where_r+=" and  r.name like '%"+paramsObj.getString("name")+"%' ";
 				}
 				if(paramsObj.containsKey("nameId") && paramsObj.getString("nameId") != null && StringUtils.isNotEmpty(paramsObj.getString("nameId")) ){
-					sql_where_r+=" and  r.nameId = "+paramsObj.getString("nameId")+" ";
+					sql_where_r+=" and  r.name_id = "+paramsObj.getString("nameId")+" ";
 				}
 				if(paramsObj.containsKey("adminId") && paramsObj.getString("adminId") != null && StringUtils.isNotEmpty(paramsObj.getString("adminId")) ){
 					sql_where_r+=" and r.admin_id =  "+paramsObj.getString("adminId")+" ";
@@ -1081,8 +1076,6 @@ public class NiValExceptionSelector {
 				}
 				
 			}
-			
-//		}
 		
 		StringBuilder sql = new StringBuilder();
 		
@@ -1118,7 +1111,7 @@ public class NiValExceptionSelector {
 		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
 				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
 		
-		System.out.println("listCheckResultsBytaskName sql:  " + sql.toString());
+		log.info("listCheckResultsBytaskName sql:  " + sql.toString());
 
 		QueryRunner run = new QueryRunner();
 
@@ -1136,8 +1129,6 @@ public class NiValExceptionSelector {
 
 					JSONObject json = new JSONObject();
 
-					//json.put("jobId", rs.getInt("jobId"));
-					
 					json.put("id", rs.getString("md5_code"));
 
 					json.put("ruleid", rs.getString("ruleid"));
@@ -1146,23 +1137,15 @@ public class NiValExceptionSelector {
 
 					json.put("rank", rs.getInt("level_"));
 
-//					json.put("targets", rs.getString("targets"));
-
 					json.put("information", rs.getString("information"));
-
-//					json.put("geometry",
-//							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
-//									+ ")");
 
 					json.put("create_date", rs.getString("created"));
 
-//					json.put("worker", rs.getString("worker"));
 					json.put("nameId", rs.getInt("name_id"));
 					json.put("name", rs.getString("name"));
 					json.put("namePhonetic", rs.getString("name_phonetic"));
 					json.put("roadType", rs.getInt("road_type"));
 					int adminId = rs.getInt("admin_id");
-//					json.put("adminId", adminId);
 					if(adminId == 214){
 						json.put("adminName","全国");
 					}else{
@@ -1174,7 +1157,6 @@ public class NiValExceptionSelector {
 							}
 						}
 					}
-					
 					results.add(json);
 				}
 				page.setTotalCount(total);
@@ -1204,7 +1186,6 @@ public class NiValExceptionSelector {
 					while (rs.next()){
 						JSONObject jobRuleObj = new JSONObject();
 						jobRuleObj.put("ruleId", rs.getString("ruleid"));
-//						jobRuleObj.put("count", rs.getString("numb"));
 						jobRuleArr.add(jobRuleObj);
 					}
 					return jobRuleArr;
@@ -1275,8 +1256,7 @@ public class NiValExceptionSelector {
 				sql_adminId+= groupBy;
 				sql_adminId+= " ) ";
 			}
-			System.out.println("sql : "+sql);
-			System.out.println("sql_adminId : "+sql_adminId);
+			log.info("sql : "+sql);
 			if(groupList.contains("adminName")){
 				jobRuleObjs = run.query(conn, sql_adminId, new ResultSetHandler<JSONArray>(){
 					@Override
@@ -1284,10 +1264,9 @@ public class NiValExceptionSelector {
 						JSONArray jobRuleArr = new JSONArray();
 						ResultSetMetaData rsmd = rs.getMetaData();
 						int columnCount = rsmd.getColumnCount();
-						System.out.println(columnCount);
+						log.info(columnCount);
 						List<String> columns = new ArrayList<String>();
 						for(int i=1;i<=columnCount;i++){
-						    System.out.println(rsmd.getColumnName(i));
 						    columns.add(rsmd.getColumnName(i));
 						}
 						while (rs.next()){
@@ -1321,10 +1300,8 @@ public class NiValExceptionSelector {
 						JSONArray jobRuleArr = new JSONArray();
 						ResultSetMetaData rsmd = rs.getMetaData();
 						int columnCount = rsmd.getColumnCount();
-						System.out.println(columnCount);
 						List<String> columns = new ArrayList<String>();
 						for(int i=1;i<=columnCount;i++){
-						    System.out.println(rsmd.getColumnName(i));
 						    columns.add(rsmd.getColumnName(i));
 						}
 						while (rs.next()){
@@ -1349,8 +1326,6 @@ public class NiValExceptionSelector {
 					
 				});
 			}
-				
-				
 			return jobRuleObjs;
 		
 		} catch (SQLException e) {

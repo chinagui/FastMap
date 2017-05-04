@@ -36,7 +36,7 @@ public class GLM60335 extends BasicCheckRule {
 				for(String str:scPointNameckType9){
 					if(str==null||str.length()==0){continue;}
 					if(fullname.contains(str)){
-						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"log英文地址格式错误：英文地址中含有："+str);
+						setCheckResult(poi.getGeometry(), "[IX_POI,"+poi.getPid()+"]", poi.getMeshId(),"英文地址格式错误：英文地址中含有："+str);
 					}
 				}
 			}

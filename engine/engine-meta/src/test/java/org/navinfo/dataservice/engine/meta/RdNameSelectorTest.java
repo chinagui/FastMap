@@ -12,6 +12,7 @@ import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
@@ -80,7 +81,7 @@ public class RdNameSelectorTest {
 	public void testGetRdNameAll()
 	{
 		//{"pageNum":1,"pageSize":20,"sortby":"","flag":0,"params":{"name":"","nameGroupid":"","adminId":"","roadTypes":[]}}
-		String parameter = "{'pageNum':1,'pageSize':20,'flag':0,'sortby':'','params':{'name':'定武高速','nameGroupid':'','adminId':214,'roadTypes':[1]}}";//
+		String parameter = "{'pageNum':1,'pageSize':20,'flag':0,'sortby':'-name','params':{'name':'定武高速','nameGroupid':'','adminId':214,'roadTypes':[1]}}";//
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -151,7 +152,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void searchRdNameFix(){
 		RdNameSelector a = new RdNameSelector();
 		/*JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':206000028,'nameGroupid':208000027,'langCode':'CHI','name':'巴拿马高速公路','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':3,'adminId':214,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'全国','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'ENG','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':3,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
@@ -159,6 +160,13 @@ public class RdNameSelectorTest {
 		JSONObject data = jsonReq.getJSONObject("data");
 		*/
 		try {
+	            JSONObject jsonReq = JSONObject.fromObject("{'langCode':''}");
+
+	            String langCode = jsonReq.getString("langCode");
+	            if(langCode==null || StringUtils.isEmpty(langCode)){
+					throw new IllegalArgumentException("langCode参数不能为空。");
+				}
+		
 			JSONObject jobj =a.searchRdNameFix("CHI");
 			System.out.println(jobj);
 		} catch (Exception e) {
@@ -167,7 +175,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void autoConvert() throws Exception{
 		String word = "ｗ２４５";
 

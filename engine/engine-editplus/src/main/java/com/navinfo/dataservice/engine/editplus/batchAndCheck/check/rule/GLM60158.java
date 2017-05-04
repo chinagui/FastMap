@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckUtil;
 /**
  * 	GLM60158		地铁、磁悬浮名称检查		DHM
 	检查条件：
@@ -35,21 +36,35 @@ public class GLM60158 extends BasicCheckRule {
 			IxPoiName br=poiObj.getOfficeStandardCHName();
 			if(br==null){return;}
 			String name=br.getName();
-			String kindCode= poi.getKindCode();
-			if(kindCode.equals("230111")||kindCode.equals("230114")){
-				String[] words = {"一","二","三","四","五","六","七","八","九","十","百"};
-				List<String> errorList = new ArrayList<String>();
-				for (String word:words) {
-					if(name.contains(word)){
-						errorList.add(word);
+			boolean flag = false;
+			if(name.contains("（")||name.contains("）")){
+				 flag = true;
+				 name = name.substring(name.indexOf("（")+1, name.indexOf("）"));
+			}else if(name.contains("［")||name.contains("］")){
+				 flag = true;
+				 name = name.substring(name.indexOf("［")+1, name.indexOf("］"));
+			}else if(name.contains("｛")||name.contains("｝")){
+				 flag = true;
+				 name = name.substring(name.indexOf("｛")+1, name.indexOf("｝"));
+			} 
+
+			if(flag){
+				String kindCode= poi.getKindCode();
+				if(kindCode.equals("230111")||kindCode.equals("230114")){
+					String[] words = {"一","二","三","四","五","六","七","八","九","十","百"};
+					List<String> errorList = new ArrayList<String>();
+					for (String word:words) {
+						if(name.contains(word)){
+							errorList.add(word);
+						}
 					}
+					if(errorList!=null&&errorList.size()>0){
+						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "地铁、磁悬浮名称括号内不能出现:“"
+								+errorList.toString().replace("[", "").replace("]", "")+"”的汉字！");
+						return;
+					}
+						
 				}
-				if(errorList!=null&&errorList.size()>0){
-					setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), "地铁、磁悬浮名称括号内不能出现:“"
-							+errorList.toString().replace("[", "").replace("]", "")+"”的汉字！");
-					return;
-				}
-					
 			}
 		}
 	}

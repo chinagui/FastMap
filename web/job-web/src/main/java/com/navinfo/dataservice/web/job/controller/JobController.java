@@ -117,4 +117,24 @@ public class JobController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/getByTask")
+	public ModelAndView getByTask(HttpServletRequest request){
+		try{
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int taskId = paraJson.getInt("taskId");
+			long userId = tokenObj.getUserId();
+			String jobType = paraJson.getString("jobType");
+			Map<String,Object> data = JobService.getInstance().getJobByTask(taskId,userId,jobType);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("job查询失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 }

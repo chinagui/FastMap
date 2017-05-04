@@ -18,8 +18,8 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  * 查询条件：如果POI为重要分类POI(重要分类见【备注】sheet页)，英文原始官方名称name字段大于35个字符的记录，
  * 且未制作标准化官方英文名的记录或标准化官方英文名为空时：
  * 将官方原始英文名称name中单词（前后存在空格的作为一个单词，首尾单词只需要判断一侧）从右往左在元数据库SC_ENGSHORT_LIST中与full_name字段匹配，
- * 如果存在，将其用Short_name替换。如果替换后，长度小于等于35个字符，当标准化官方英文名name为空时，将替换的结果更新到标准化官方英文名中；
- * 当没有标准化官方英文名时，则在names中新增一条记录；如果从右往左替换后仍超过35个字符，则不用批处理。
+ * 如果存在，将其用Short_name替换。当标准化官方英文名name为空时，将替换的结果更新到标准化官方英文名中；
+ * 当没有标准化官方英文名时，则在names中新增一条记录；
  *
  */
 public class FMBAT20147 extends BasicBatchRule {
@@ -53,9 +53,8 @@ public class FMBAT20147 extends BasicBatchRule {
 				if (officialNameStr == null) {
 					return;
 				}
-				if (officialNameStr.length()>35) {
-					transName(standarEngName,officialNameStr,poiObj,officialEngName);
-				}
+				transName(standarEngName,officialNameStr,poiObj,officialEngName);
+
 			}
 		}
 	}
@@ -77,10 +76,7 @@ public class FMBAT20147 extends BasicBatchRule {
 			if (engshortList.containsKey(fullName)) {
 				String shortName = engshortList.get(fullName);
 				officialNameStr = officialNameStr.replace(fullName, shortName);
-				if (officialNameStr.length()<=35) {
-					hasShort = true;
-					break;
-				}
+				hasShort = true;
 			}
 		}
 		if (hasShort) {

@@ -261,7 +261,7 @@ public class RdNameImportor {
 	private boolean isIgnoreName(String name) {
 		for (String rn : ignoreNames) {
 			if (rn.equals(name) || ExcelReader.h2f(rn).equals(name)) {
-				System.out.println("name:"+name+"不满足入库名称条件");
+				log.info("name:"+name+"不满足入库名称条件");
 				return true;
 			}
 		}

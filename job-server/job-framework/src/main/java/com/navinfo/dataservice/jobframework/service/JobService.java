@@ -1,14 +1,14 @@
 package com.navinfo.dataservice.jobframework.service;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -26,7 +26,8 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-import com.sun.source.tree.WhileLoopTree;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: JobService 
@@ -111,6 +112,55 @@ public class JobService {
 	}
 	public JobInfo getJobByType(String jobType)throws ServiceException{
 		return null;
+	}
+	
+	public Map<String,Object> getJobByTask(int taskId, long userId, String jobType) throws Exception {
+		Map<String,Object> retMap = null;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet ret = null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select a.*");
+		sb.append(" from (");
+		sb.append(" select t.job_id,t.job_type,t.create_time,t.status,t.job_request,t.result_msg,t.step_count,s.step_seq,s.step_msg");
+		sb.append(" from job_info t,job_step s");
+		sb.append(" where t.job_id=s.job_id(+)");
+		sb.append(" and t.job_type=:1");
+		sb.append(" and t.task_id=:2");
+		sb.append(" and t.user_id=:3");
+		sb.append(" and t.status in (1,2)");
+		sb.append(" order by t.create_time desc");
+		sb.append(" ) a");
+		sb.append(" where rownum = 1");
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, jobType);
+			pstmt.setInt(2, taskId);
+			pstmt.setLong(3, userId);
+			ret = pstmt.executeQuery();
+			if (ret.next()) {
+				retMap = new HashMap<String,Object>();
+				retMap.put("jobId", ret.getInt("job_id"));
+				retMap.put("jobType", ret.getString("job_type"));
+				retMap.put("createTime", ret.getTimestamp("create_time"));
+				retMap.put("status", ret.getInt("status"));
+				retMap.put("jobRequest", ret.getString("job_request"));
+				retMap.put("resultMsg", ret.getString("result_msg"));
+				retMap.put("stepCount", ret.getInt("step_count"));
+				retMap.put("stepSeq", ret.getInt("step_seq"));
+				retMap.put("stepMsg",ret.getString("step_msg"));
+			}
+			return retMap;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		} finally {
+			DbUtils.close(ret);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
+		}
 	}
 	
 	/* resultset handler */
@@ -328,8 +378,8 @@ public class JobService {
 				
 				Timestamp beginTime = DateUtilsEx.getDayOfDelayMonths(curTime, -1);
 				
-				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd");
-				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd");
+				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd HH:mm:ss");
+				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd HH:mm:ss");
 				log.info("startDate : "+startDate+"  "+" endDate :"+endDate);
 			}
 			jobInfoSql+=" and (j.end_time "

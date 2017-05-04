@@ -1,8 +1,16 @@
 package com.navinfo.dataservice.engine.meta.model;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.commons.dbutils.DbUtils;
+
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 
 import net.sf.json.JSONObject;
 
@@ -19,7 +27,17 @@ public class ScRoadnameHwInfo  {
 	private String memo ;
 	private Integer uRecord ;
 	private String uFields ;
+	//*888
+	private String uRecords;
 	
+	public String getuRecords() {
+		return uRecords;
+	}
+
+	public void setuRecords(String uRecords) {
+		this.uRecords = uRecords;
+	}
+
 	public ScRoadnameHwInfo (){
 	}
 	
@@ -55,16 +73,16 @@ public class ScRoadnameHwInfo  {
 	public void setMemo(String memo) {
 		this.memo = memo;
 	}
-	public Integer getURecord() {
+	public Integer getuRecord() {
 		return uRecord;
 	}
-	public void setURecord(Integer uRecord) {
+	public void setuRecord(Integer uRecord) {
 		this.uRecord = uRecord;
 	}
-	public String getUFields() {
+	public String getuFields() {
 		return uFields;
 	}
-	public void setUFields(String uFields) {
+	public void setuFields(String uFields) {
 		this.uFields = uFields;
 	}
 	/* (non-Javadoc)
@@ -137,7 +155,6 @@ public class ScRoadnameHwInfo  {
 			return false;
 		return true;
 	}
-	
 	
 	
 }

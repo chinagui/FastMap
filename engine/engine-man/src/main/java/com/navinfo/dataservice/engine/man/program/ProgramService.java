@@ -38,6 +38,7 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
+import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
@@ -46,8 +47,6 @@ import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
-
-import infor.InforService;
 
 public class ProgramService {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
@@ -103,9 +102,9 @@ public class ProgramService {
 		int programId=getNewProgramId(conn);
 		bean.setProgramId(programId);
 		//情报项目为空时，需要后台自动创建名称
-		if(StringUtils.isNotEmpty(bean.getName())&&bean.getType()==4){
+		if(!StringUtils.isNotEmpty(bean.getName())&&bean.getType()==4){
 			Infor infor = InforService.getInstance().getInforByInforId(conn, bean.getInforId());
-			bean.setName(infor.getInforName()+"_"+infor.getPublishDate()+"_"+programId);
+			bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd")+"_"+programId);
 		}
 			
 		String insertPart="";
@@ -1505,6 +1504,147 @@ public class ProgramService {
 		}
 	}
 	
+	//查询情报项目
+	public Map<String, Object> queryIntelligence(JSONObject dataJson) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+	    	return queryIntelligence(conn, dataJson);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String, Object> queryIntelligence(Connection conn,JSONObject dataJson) throws Exception {
+		try{
+			String appendSql="";
+			if(dataJson.containsKey("programId")){
+				appendSql=appendSql+" AND T.PROGRAM_ID="+dataJson.getInt("programId");
+			}
+			if(dataJson.containsKey("inforId")){
+				appendSql=appendSql+" AND T.INFOR_ID="+dataJson.getInt("inforId");
+			}
+			String sql="WITH T AS"
+					+ " (SELECT P.PROGRAM_ID,"
+					+ "         P.NAME                     PROGRAM_NAME,"
+					+ "         P.DESCP                    PROGRAM_DESCP,"
+					+ "         P.TYPE,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"		
+					+ "         I.EXPECT_DATE,"
+					+ "         P.CREATE_USER_ID,"
+					+ "         U.USER_REAL_NAME           CREATE_USER_NAME,"
+					+ "         P.PLAN_START_DATE,"
+					+ "         P.PLAN_END_DATE,"
+					+ "         P.COLLECT_PLAN_START_DATE,"
+					+ "         P.COLLECT_PLAN_END_DATE,"
+					+ "         P.DAY_EDIT_PLAN_START_DATE,"
+					+ "         P.DAY_EDIT_PLAN_END_DATE,"
+					+ "         P.PRODUCE_PLAN_START_DATE,"
+					+ "         P.PRODUCE_PLAN_END_DATE"
+					+ "    FROM PROGRAM P, USER_INFO U, INFOR I"
+					+ "   WHERE I.INFOR_ID = P.INFOR_ID"
+					+ "     AND P.LATEST = 1"
+					+ "     AND P.CREATE_USER_ID = U.USER_ID(+)"
+					+ "  UNION ALL"
+					+ "  SELECT 0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         4,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"
+					+ "         I.EXPECT_DATE,"
+					+ "         0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL"
+					+ "    FROM INFOR I"
+					+ "   WHERE I.PLAN_STATUS = 0)"
+					+ "SELECT *"
+					+ "  FROM T"
+					+ " WHERE 1=1"+appendSql;
+			log.info("program query sql :" + sql);
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("programId", rs.getInt("PROGRAM_ID"));
+						map.put("name", rs.getString("PROGRAM_NAME"));
+						map.put("descp", rs.getString("PROGRAM_DESCP"));
+						map.put("type", rs.getInt("TYPE"));
+						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
+						
+						map.put("method", rs.getString("METHOD"));	
+						map.put("adminName", rs.getString("ADMIN_NAME"));	
+						map.put("inforCode", rs.getString("INFOR_CODE"));	
+						map.put("sourceCode", rs.getInt("SOURCE_CODE"));	
+						map.put("infoTypeName", rs.getString("INFO_TYPE_NAME"));	
+						map.put("topicName", rs.getString("TOPIC_NAME"));	
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));	
+						map.put("publishDate", DateUtils.dateToString(rs.getTimestamp("PUBLISH_DATE")));
+						map.put("newsDate", DateUtils.dateToString(rs.getTimestamp("NEWS_DATE")));
+						map.put("expectDate",DateUtils.dateToString(rs.getTimestamp("EXPECT_DATE")));	
+						
+						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						map.put("collectPlanStartDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
+						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return map;
+					}
+					return map;
+				}
+	    	};
+	    	QueryRunner run = new QueryRunner();
+	    	Map<String, Object> programMap = run.query(conn, sql, rsHandler);
+	    	return programMap;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
 	public Map<String, Object> query(Connection conn,int programId) throws Exception {
 		try{
 			StringBuilder sb = new StringBuilder();
@@ -1534,7 +1674,7 @@ public class ProgramService {
 			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
 			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
 			sb.append("      AND P.LATEST = 1                                     ");
-			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID(+)                     ");
 			sb.append("      AND P.PROGRAM_ID = "+programId);
 			
 			String sql = sb.toString();
@@ -1967,7 +2107,7 @@ public class ProgramService {
 		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
 				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date,"
 				+ "P.MONTH_EDIT_PLAN_START_DATE,P.MONTH_EDIT_PLAN_END_DATE,"
-				+ "P.PLAN_START_DATE,P.PLAN_END_DATE  "
+				+ "P.PLAN_START_DATE,P.PLAN_END_DATE,P.PRODUCE_PLAN_START_DATE,P.PRODUCE_PLAN_END_DATE  "
 				+ "FROM PROGRAM P where p.latest=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
@@ -1987,6 +2127,8 @@ public class ProgramService {
 					map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
 					map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 					map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+					map.setProducePlanStartDate(rs.getTimestamp("PRODUCE_PLAN_START_DATE"));
+					map.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 					list.add(map);
 				}
 				return list;

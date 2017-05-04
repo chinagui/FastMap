@@ -45,7 +45,7 @@ public class RdNameAndPatternImageTest {
 //	@Test
 	public void saveUpdataTest()
 	{
-		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':20170162137,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士222','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
+		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士222','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name11','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 		//String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'00','convOut':'2','kind':'3e1'}}";
 //		String parameter = "{'tableName':'scVectorMatch','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士2','specification':null,'type':'2D','panel':'b2p4|b2p1|b2p2|b1p1','fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-03-21 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/16夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 //		String parameter = "{'tableName':'scBranchCommc','data':{'branch1':'0','branch2':'2','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''}}";
@@ -98,7 +98,7 @@ public class RdNameAndPatternImageTest {
 	
 //	@Test
 	public void deleteTest(){
-			String parameter = "{'tableName':'scMdelMatchG','ids':[20170162141,20170162140]}";
+			String parameter = "{'tableName':'scMdelMatchG','ids':[20170162139]}";
 			//String parameter = "{'tableName':'scModelRepdelG','ids':['0','00']}";
 			//String parameter = "{'tableName':'scVectorMatch','ids':[20170162142 ,201705002116]}";
 		    //String parameter = "{'tableName':'scBranchCommc','ids':[{'branch1':'0','branch2':'0','branch3':'','branch4':'','branch5':'','seriesbranch1':'01','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''},{'branch1':'0','branch2':'1','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''}]}";
@@ -145,9 +145,9 @@ public class RdNameAndPatternImageTest {
 	}
 
 	
-//	@Test
+	@Test
 	public void searchTest(){
-				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':20170162137,'productLine':'','version':'','projectNm':'','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','impDate':'2017-03-21 13:55:00','urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
+				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'','version':'','projectNm':'博','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
 //				String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'83180890','convOut':'83180800','kind':'3d'},'sortby':'-convBefore','pageSize':20,'pageNum':1}";
 //				String parameter = "{'tableName':'scVectorMatch','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士2','specification':null,'type':'2D','panel':'b2p4|b2p1|b2p2|b1p1','fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':null,'urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/16夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'},'sortby':'-fileId','pageSize':20,'pageNum':1}";
 //				String parameter = "{'tableName':'scBranchCommc','data':{'branch1':'0','branch2':'','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''},'sortby':'+branch1','pageSize':20,'pageNum':1}";
@@ -212,7 +212,7 @@ public class RdNameAndPatternImageTest {
 				}
 	}
 	
-	@Test
+//	@Test
 	public void getImageTest() throws ServiceException{
 		
 		String parameter = "{'tableName':'scMdelMatchG','id':'201400000165'}";
@@ -253,7 +253,7 @@ public class RdNameAndPatternImageTest {
 	
 //	@Test
 	public void deleteTestRdname(){
-			String parameter = "{'tableName':'scRoadnameHwInfo','ids':[0]}";
+			String parameter = "{'tableName':'scRoadnameHwInfo','ids':[1400015]}";
 		
 		try{			
 			JSONObject parameterJson = JSONObject.fromObject(parameter);			
@@ -298,9 +298,9 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-//	@Test
+	//@Test
 	public void searchTestRdname(){
-				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':'','uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
+				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[0,3],'uRecords':[0,1,2],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
 				
 				try{	
 					if (StringUtils.isEmpty(parameter)){
@@ -357,5 +357,39 @@ public class RdNameAndPatternImageTest {
 				}catch(Exception e){
 					throw new IllegalArgumentException("查询失败  "+e.getMessage());
 				}
+	}
+
+//	@Test
+	public void saveUpdataRdNameTest()
+	{
+		String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':18490713,'hwPidDw':18490714,'nameGroupid':408000002,'memo':'3','uRecord':2,'uFields':'顶顶顶'}}";
+		
+		
+		try{	
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject parameterJson = JSONObject.fromObject(parameter);			
+			if(parameterJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			JSONObject dataJson = parameterJson.getJSONObject("data");
+			if(dataJson==null || dataJson.isEmpty()){
+				throw new IllegalArgumentException("data参数不能为空。");
+			}
+			if(tableName.equals("scRoadnameHwInfo")){
+				ScRoadnameHwInfoService scRoadnameHwInfoService=new ScRoadnameHwInfoService();
+				scRoadnameHwInfoService.update(dataJson);
+			}else{
+				throw new IllegalArgumentException("不识别的表: "+tableName);
+			}
+		
+		}catch(Exception e){
+			throw new IllegalArgumentException("保存失败  "+e.getMessage());
+		}
 	}
 }

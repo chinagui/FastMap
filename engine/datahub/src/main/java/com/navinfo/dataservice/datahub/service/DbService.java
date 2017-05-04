@@ -494,7 +494,7 @@ public class DbService {
 			//DbInfo db = dbMan.createDb("TEMP_BJ_01", "prjRoad", "4TEST","240+");
 //			DbInfo db = DbService.getInstance().createOracleDb(null, null, "copVersion", "descp", "250+", null, null);
 			DbInfo db = DbService.getInstance().getDbById(8);
-			System.out.println(db.getConnectParam());
+//			System.out.println(db.getConnectParam());
 //			DbInfo su = DbService.getInstance().getSuperDb(db);
 //			System.out.println(su.toString());
 			

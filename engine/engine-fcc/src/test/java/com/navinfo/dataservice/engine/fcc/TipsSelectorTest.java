@@ -592,7 +592,6 @@ public class TipsSelectorTest extends InitApplication {
 			
 			put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
 					.getBytes());
-
 */
 
 			JSONObject track = JSONObject.fromObject(new String(result.getValue(
@@ -654,21 +653,17 @@ public class TipsSelectorTest extends InitApplication {
 			htab.close();
 			
 			/*JSONObject solrIndex = conn.getById(rowkey);
-
 			solrIndex.put("s_qSubTaskId", 0);
-
 			solrIndex.put("s_mSubTaskId", 0);
 			
 			solrIndex.put("wktLocation",solrIndex.getString("wkt"));
 			
 			if(!solrIndex.containsKey("s_mTaskId")){
 				solrIndex.put("s_mTaskId", 0);
-
 				solrIndex.put("s_qTaskId", 0);
 				
 				solrIndex.put("t_fStatus", 0);
 			}
-
 			conn.addTips(solrIndex);*/
 			}catch (Exception e) {
 				System.out.println("error:"+rowkey);
@@ -692,9 +687,8 @@ public class TipsSelectorTest extends InitApplication {
 					Connection hbaseConn = HBaseConnector.getInstance().getConnection();
 
 					Table htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-
+					
 					Put put = new Put(rowkey.getBytes());
-
 
 					put.addColumn("data".getBytes(), "old".getBytes(),"{}".getBytes());
 
@@ -746,7 +740,7 @@ public class TipsSelectorTest extends InitApplication {
 		}
 		
 		//修改一下solr中的所有数据的wkt
-		public static void main(String[] args) {
+		public static void main2(String[] args) {
 			
 			
 			int fetchNum = Integer.MAX_VALUE;
@@ -922,7 +916,7 @@ public class TipsSelectorTest extends InitApplication {
 		
 		 @Test
 			public void testImport() {
-				String parameter = "{\"jobId\":548,\"subtaskid\":27}";
+				String parameter = "{\"jobId\":1217,\"subtaskId\":415}";
 				try {
 
 					JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -932,9 +926,9 @@ public class TipsSelectorTest extends InitApplication {
 					int subtaskid = 0;
 					
 					//外业，有可能没有任务号
-					if(jsonReq.containsKey("subtaskid")){
+					if(jsonReq.containsKey("subtaskId")){
 						
-						subtaskid=jsonReq.getInt("subtaskid");
+						subtaskid=jsonReq.getInt("subtaskId");
 					}
 
 					//UploadService upload = UploadService.getInstance();
@@ -942,7 +936,7 @@ public class TipsSelectorTest extends InitApplication {
 					// String filePath = upload.unzipByJobId(jobId); //服务测试
 
 					//E:\03 ni_robot\Nav_Robot\10测试数据\01上传下载\音频测试数据\2677  2677道路名
-					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\nana0420"; // 本地测试用
+					String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\音频测试数据\\1217"; // 本地测试用
 					
 				//	String filePath = "E:\\03 ni_robot\\Nav_Robot\\10测试数据\\01上传下载\\模式图测试数据\\548"; // 本地测试用
 
@@ -1029,6 +1023,45 @@ public class TipsSelectorTest extends InitApplication {
 				e.printStackTrace();
 			}
 		 }
+		 
+		 public static void main(String[] args) {
+			 
+			 TipsSelectorTest t=new TipsSelectorTest();
+			 
+			 try{
+			 t.updateOld2Null("022001A2C0E7831C8C4C0699BAA8CC4F08B702");
+			 t.updateOld2Null("0220017123EA6859E84566AE72B7058B366467");
+			 t.updateOld2Null("02200146D339648F224EC8A4A6352E3472C61A");
+			 t.updateOld2Null("02200125F29A320BC949CB8E9D70C8E1C2FF5F");
+			 t.updateOld2Null("02200127892B41A2A5495A8A7CDDA21245DDA8");
+			 t.updateOld2Null("022001A63B1B60F59245AC89546AE53363815D");
+			 t.updateOld2Null("0220013603D1856C9649FB8662DB05D88B8CF4");
+			 t.updateOld2Null("022001EF202DB44A73436EB9BB2F69EBA0C79E");
+			 t.updateOld2Null("022001564ECA95B24B47C982F62F769F017438");
+			 t.updateOld2Null("022001225E04332E9C423F804467C183969A1F");
+			 t.updateOld2Null("022001DE7AF5158F2647FFB02B4E6B8FAF293D");
+			 t.updateOld2Null("022001121BA3EC40874B62A3BF9948CE9EBC22");
+			 t.updateOld2Null("022001B552721C48FE466D8B868B42154F7291");
+			 t.updateOld2Null("022001A7E62AB367304E31850D8DF7E8CAB5E7");
+			 t.updateOld2Null("022001A6C9EF6746C14295B1C0FCD6535377FC");
+			 t.updateOld2Null("0220010DB186904E4D418FB95702141349F9FC");
+			 t.updateOld2Null("022001D4FE76FF544F4937AFBECB7E6135288E");
+			 t.updateOld2Null("022001083A12495E144138AA6FBBDF43E4F520");
+			 t.updateOld2Null("022001083A12495E144138AA6FBBDF43E4F520");
+			 t.updateOld2Null("02200100F5331EB0044B3BA3021BD039BB6653");
+			 t.updateOld2Null("0220016A54CC1989CD4633BD1B8FC7CAE22452");
+			 t.updateOld2Null("02200144980BB18C9B47E1BB1FA148BF6085CF");
+			 t.updateOld2Null("022001A4C9D4493BAF41C5BD00184A6F36C514");
+			 t.updateOld2Null("022001794791602C44485FB994989F57B16D52");
+			 t.updateOld2Null("022001E578359DD084411290FE08DF424F5F13");
+			 t.updateOld2Null("02200149019B5204B9484D9973D3621327260E");
+			 t.updateOld2Null("02200164EE3A45BB364FE7B03EEBFAFB87CF46");
+			 t.updateOld2Null("0220011ABF6D39A919403BA4F159EDC2532491");
+			 }catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
 
 
 }

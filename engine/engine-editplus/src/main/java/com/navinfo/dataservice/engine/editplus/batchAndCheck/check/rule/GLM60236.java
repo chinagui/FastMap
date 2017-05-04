@@ -172,6 +172,7 @@ public class GLM60236 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
+		log.info("start loadRefer");
 		Set<Long> pidList=new HashSet<Long>();
 		for(BasicObj obj:batchDataList){
 			IxPoiObj poiObj=(IxPoiObj) obj;
@@ -180,6 +181,7 @@ public class GLM60236 extends BasicCheckRule {
 			for(IxPoiChildren c:childs){pidList.add(c.getChildPoiPid());}
 		}
 		parentMap = IxPoiSelector.getAllParentChildByPids(getCheckRuleCommand().getConn(), pidList);
+		log.info("end loadRefer");
 	}
 
 }

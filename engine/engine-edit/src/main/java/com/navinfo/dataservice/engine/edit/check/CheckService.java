@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
@@ -16,6 +18,7 @@ import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.selector.CkRuleSelector;
@@ -28,7 +31,7 @@ public class CheckService {
 	public CheckService() {
 		// TODO Auto-generated constructor stub
 	}
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static class SingletonHolder{
 		private static final CheckService INSTANCE =new CheckService();
 	}
@@ -81,11 +84,11 @@ public class CheckService {
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
                 JSONArray tips = apiFcc.searchDataBySpatial(subtaskObj.getGeometry(), 1901, new JSONArray());
                 
-                System.out.println("tips: "+tips);
+                log.info("tips: "+tips);
                 //获取当前子任务下所有的道路名id
                 List<Integer> nameIds = getNameIds(subtaskId, tips);
 				
-				System.out.println(" begin 道路名子版本检查 ");
+                log.info(" begin 子任务范围内 道路名子版本检查 ");
 				
 				String jobName = "";
 				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
@@ -198,7 +201,7 @@ public class CheckService {
 		}
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		if(checkType == 7){  //道路名检查 ,直接调元数据库 全表检查		
+		/*if(checkType == 7){  //道路名检查 ,直接调元数据库 全表检查		
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
@@ -221,9 +224,10 @@ public class CheckService {
 			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, 0, jobName);
 			//System.out.println("jobId == "+jobId);
 			}
-		}else if(checkType == 5){//道路名子版本检查
+		}else*/ 
+		if(checkType == 5){//道路名子版本检查+全库检查
 			
-			System.out.println(" begin 道路名子版本检查 ");
+			log.info(" begin 道路名子版本检查+全库检查 ");
 			JSONObject paramsObj = new JSONObject();
 			if(jsonReq.containsKey("params") && jsonReq.getJSONObject("params") != null ){
 				paramsObj = jsonReq.getJSONObject("params");
@@ -264,7 +268,7 @@ public class CheckService {
 				jobName = "rdName:"+jsonReq.getString("jobName");
 			}
 			
-			System.out.println("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" nameIds: "+nameIds+" jobName: "+jobName);
+			log.info("name :"+name+" nameGroupid: "+nameGroupid+" adminId:"+adminId+" roadTypes:"+roadTypes+" nameIds: "+nameIds+" jobName: "+jobName);
 			JSONObject validationRequestJSON=new JSONObject();
 			validationRequestJSON.put("name", name);
 			validationRequestJSON.put("nameGroupid", nameGroupid);
@@ -361,27 +365,24 @@ public class CheckService {
 	 * @Title: getCkSuites
 	 * @Description: 获取某类检查的所有 suite
 	 * @param type
+	 * @param flag 
 	 * @return
 	 * @throws Exception  JSONArray
 	 * @throws 
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年4月19日 下午2:01:13 
 	 */
-	public JSONArray getCkSuites(int type) throws Exception {
+	public JSONArray getCkSuites(int type, int flag) throws Exception {
 		
 		Connection conn = null;
 		
 		try {
 			
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource().getConnection();
-			System.out.println(conn);
 			CkSuiteSelector suiteSelector = new CkSuiteSelector(conn);
 			
-			JSONArray suiteArray = suiteSelector.getSuite(type);
+			JSONArray suiteArray = suiteSelector.getSuite(type,flag);
 			
-//			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
-			
-			//return ckRuleSelector.getRules(suiteArray);
 			return suiteArray;
 		} catch (Exception e) {
 			throw e;
@@ -446,7 +447,7 @@ public class CheckService {
 				sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
 			}
 			sql.append(" )  ");
-			System.out.println(" getNameIds :"+sql.toString());
+			log.info(" getNameIds :"+sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
 			pstmt.setClob(1, pidClod);
 			resultSet = pstmt.executeQuery();

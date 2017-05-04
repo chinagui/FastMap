@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.dao.plus.operation.AbstractCommand;
 
 /** 
@@ -13,17 +12,17 @@ public class MultiSrcPoiDayImportorCommand extends AbstractCommand {
 	
 	private int dbId;
 	
-	protected UploadPois pois;
+	protected MultiSrcUploadPois pois;
 
-	public MultiSrcPoiDayImportorCommand(int dbId,UploadPois pois){
+	public MultiSrcPoiDayImportorCommand(int dbId,MultiSrcUploadPois pois){
 		this.dbId=dbId;
 		this.pois=pois;
 	}
 	
-	public UploadPois getPois() {
+	public MultiSrcUploadPois getPois() {
 		return pois;
 	}
-	public void setPois(UploadPois pois) {
+	public void setPois(MultiSrcUploadPois pois) {
 		this.pois = pois;
 	}
 

@@ -1051,7 +1051,7 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiName getAliasCHIName(long nameGroupId){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")&&(br.getNameGroupid()==nameGroupId)){
 				return br;}
 			}
 		return null;
@@ -1130,8 +1130,7 @@ public class IxPoiObj extends AbstractIxObj {
 					while(rs1.next()){
 						return rs1.getString("name");
 					}
-				}
-				if(rs.getInt("total")>1){
+				}else if(rs.getInt("total")>1){
 					ResultSet rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);
 				    while(rs2.next()){
 				    	if(rs2.getInt("total")==0){
@@ -1139,14 +1138,12 @@ public class IxPoiObj extends AbstractIxObj {
 				    	    while(rs3.next()){
 				    	    	return rs3.getString("name");
 				    	    }
-				    	}
-				    	else if (rs2.getInt("total")==1){
+				    	} else if (rs2.getInt("total")==1){
 				    		ResultSet rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
 				    	    while(rs4.next()){
 				    	    	return rs4.getString("name");
 				    	    }
-				    	}
-				    	else if(rs2.getInt("total")>1){
+				    	} else if(rs2.getInt("total")>1){
 				    		ResultSet rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);	
 				    		while(rs5.next()){
 				    	    	ResultSet rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid")+" and ad.poi_pid="+pid);	

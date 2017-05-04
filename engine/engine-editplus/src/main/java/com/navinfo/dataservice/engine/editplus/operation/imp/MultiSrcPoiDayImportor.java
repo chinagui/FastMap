@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 
 import sun.tools.tree.ThisExpression;
 
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -75,7 +74,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
-		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
+		MultiSrcUploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		this.dbId= ((MultiSrcPoiDayImportorCommand)cmd).getDbId();
 		if(pois!=null){
 			//新增

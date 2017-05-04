@@ -6,14 +6,16 @@ import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class CkRuleSelector extends AbstractSelector {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	public CkRuleSelector(Connection conn) {
@@ -108,13 +110,10 @@ public class CkRuleSelector extends AbstractSelector {
 			sb.append(" where c.rule_status=1 and c.suite_id in (");
 			sb.append(" select a.suite_id from ck_suite_cop a  ");
 			if(type != null && StringUtils.isNotEmpty(type.toString())){
-				//System.out.println("type: " +type);
 				sb.append("where a.feature="+type+"");
 			}
 			sb.append(") order by c.rule_code ");
 			
-			//sb.append("order by c.suite_id");
-			//System.out.println("getRulesByType: "+sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
@@ -173,7 +172,7 @@ public class CkRuleSelector extends AbstractSelector {
 				sb.append("and c.suite_id = '"+suiteId+"'");
 			}
 
-			System.out.println("rules sql : "+sb.toString());
+			log.info("rules sql : "+sb.toString());
 			pstmt = conn.prepareStatement(sb.toString());
 			resultSet = pstmt.executeQuery();
 			

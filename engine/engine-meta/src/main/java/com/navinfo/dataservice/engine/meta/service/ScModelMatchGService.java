@@ -494,7 +494,7 @@ public class ScModelMatchGService {
 						model.setImpWorker(rs.getString("IMP_WORKER"));
 						
 						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
-						System.out.println(impDateStr);
+//						System.out.println(impDateStr);
 						model.setImpDate(impDateStr);
 						model.setImpDate(impDateStr);
 						model.setUrlDb(rs.getString("URL_DB"));
@@ -624,7 +624,7 @@ public class ScModelMatchGService {
 						model.setImpWorker(rs.getString("IMP_WORKER"));
 						
 						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
-						System.out.println(impDateStr);
+						log.info(impDateStr);
 						model.setImpDate(impDateStr);
 						
 						model.setUrlDb(rs.getString("URL_DB"));
@@ -753,7 +753,7 @@ public class ScModelMatchGService {
 						model.setImpWorker(rs.getString("IMP_WORKER"));
 						
 						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
-						System.out.println(impDateStr);
+//						System.out.println(impDateStr);
 						model.setImpDate(impDateStr);
 						
 						model.setUrlDb(rs.getString("URL_DB"));
@@ -799,7 +799,7 @@ public class ScModelMatchGService {
 				bean.setFileId(fileId);
 				create(bean);
 			}catch(Exception e){
-				System.out.println("bean : "+e.getMessage());
+				log.error("bean : "+e.getMessage());
 			}
 			
 		}
@@ -851,8 +851,8 @@ public class ScModelMatchGService {
 				values.add(bean.getVersion());
 			};
 			if (bean!=null&&bean.getProjectNm()!=null && StringUtils.isNotEmpty(bean.getProjectNm().toString())){
-				selectSql+=" and PROJECT_NM=? ";
-				values.add(bean.getProjectNm());
+				selectSql+=" and PROJECT_NM like ? ";
+				values.add("%"+bean.getProjectNm()+"%");
 			};
 			if (bean!=null&&bean.getSpecification()!=null && StringUtils.isNotEmpty(bean.getSpecification().toString())){
 				selectSql+=" and SPECIFICATION=? ";
@@ -953,7 +953,7 @@ public class ScModelMatchGService {
 						model.setImpWorker(rs.getString("IMP_WORKER"));
 						
 						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
-						System.out.println(impDateStr);
+						log.info(impDateStr);
 						model.setImpDate(impDateStr);
 						model.setUrlDb(rs.getString("URL_DB"));
 						model.setUrlFile(rs.getString("URL_FILE"));
@@ -1076,7 +1076,7 @@ public class ScModelMatchGService {
 						model.setImpWorker(rs.getString("IMP_WORKER"));
 						
 						String impDateStr = DateUtilsEx.getTimeStr(rs.getTimestamp("IMP_DATE"), "yyyy-MM-dd HH:mm:ss");
-						System.out.println(impDateStr);
+						log.info(impDateStr);
 						model.setImpDate(impDateStr);
 						
 						model.setUrlDb(rs.getString("URL_DB"));

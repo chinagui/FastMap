@@ -2,11 +2,11 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
@@ -52,9 +52,6 @@ public class FMBAT20186 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")) {
 			return;
 		}
@@ -66,8 +63,8 @@ public class FMBAT20186 extends BasicBatchRule {
 		// 地址
 		List<IxPoiAddress> parentAddressList = parentPoiObj.getIxPoiAddresses();
 		List<IxPoiAddress> addressList = poiObj.getIxPoiAddresses();
-		for (IxPoiAddress address:addressList) {
-			poiObj.deleteSubrow(address);
+		for(int i=addressList.size()-1;i>=0;i--){
+			poiObj.deleteSubrow(addressList.get(i));
 		}
 		for (IxPoiAddress parentAddress:parentAddressList) {
 			IxPoiAddress newAddress = poiObj.createIxPoiAddress();
@@ -82,8 +79,8 @@ public class FMBAT20186 extends BasicBatchRule {
 		// 电话
 		List<IxPoiContact> parentContactList = parentPoiObj.getIxPoiContacts();
 		List<IxPoiContact> contactList = poiObj.getIxPoiContacts();
-		for (IxPoiContact contact:contactList) {
-			poiObj.deleteSubrow(contact);
+		for(int i=contactList.size()-1;i>=0;i--){
+			poiObj.deleteSubrow(contactList.get(i));
 		}
 		for (IxPoiContact parentContact:parentContactList) {
 			IxPoiContact newContact = poiObj.createIxPoiContact();

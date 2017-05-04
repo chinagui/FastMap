@@ -22,10 +22,8 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildface(){
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.5281629562378,39.74002111583855]," +
-                "[116.52935385704039,39.740252114686754],[116.52893543243408,39.7395508657908],[116.52809858322144,39.739616865991074]," +
-                "[116.5281629562378,39.74002111583855]]}}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":1," +
+                "\"data\":{\"linkType\":\"CMGBUILDLINK\",\"linkPids\":[501000112,408000007,504000109,502000011]}}";
         TestUtil.run(requester);
     }
 

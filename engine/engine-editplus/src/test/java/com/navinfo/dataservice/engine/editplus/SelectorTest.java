@@ -242,10 +242,10 @@ public class SelectorTest {
 	public void test10(){
 		try{
 			Connection conn = null;
-			conn = DBConnector.getInstance().getConnectionById(84);
+			conn = DBConnector.getInstance().getConnectionById(13);
 			String objType = "IX_POI";
 			Collection<Long> pids = new ArrayList<Long>();
-			pids.add((long) 1);
+			pids.add((long) 402000003);
 //			pids.add((long) 316);
 //			pids.add((long) 317);
 			boolean isLock = false;
@@ -261,6 +261,7 @@ public class SelectorTest {
 			tabNames.add("IX_POI_FLAG");
 			
 			Map<Long,BasicObj> objs = ObjBatchSelector.selectByPids(conn, objType, tabNames,false, pids, isLock,isNowait);
+			IxPoiObj obj = (IxPoiObj)objs.get(402000003L);
 			System.out.println("Over.");
 		}catch(Exception e){
 			System.out.println("Oops, something wrong...");

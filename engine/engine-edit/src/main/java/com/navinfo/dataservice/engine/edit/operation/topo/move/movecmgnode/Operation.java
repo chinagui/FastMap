@@ -64,7 +64,7 @@ public class Operation implements IOperation {
                     coordinate.y = command.getLatitude();
                 }
             }
-            if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
+            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersection(geometry).isEmpty()) {
                 int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);
@@ -112,7 +112,7 @@ public class Operation implements IOperation {
         if (!CollectionUtils.isEmpty(faceMeshIds)) {
             for (IRow row : command.getCmgnode().getMeshes()) {
                 CmgBuildnodeMesh cmgnodeMesh = (CmgBuildnodeMesh) row;
-                if (faceMeshIds.keySet().contains(cmgnodeMesh.getMeshId())) {
+                if (faceMeshIds.values().contains(cmgnodeMesh.getMeshId())) {
                     faceMeshIds.remove(cmgnodeMesh.getMeshId());
                 } else {
                     result.insertObject(cmgnodeMesh, ObjStatus.DELETE, cmgnodeMesh.parentPKValue());

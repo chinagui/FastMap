@@ -101,6 +101,34 @@ public class IxPoiSelector {
 		}
 		return null;
 	}
+	/**
+	 * 查询父POI的Pid
+	 * @param conn
+	 * @param pids
+	 * @return
+	 * @throws Exception
+	 */
+	public static Map<Long,Long> getParentPidByPids(Connection conn,Set<Long> pids)throws Exception{
+		if(pids!=null&&pids.size()>0){
+			if(pids.size()>1000){
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ "FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I "
+						+ "WHERE C.GROUP_ID=P.GROUP_ID AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN  "
+						+ "(SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 ";
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pids, ","));
+				return new QueryRunner().query(conn, sql, new PoiParentPidSelHandler(),clob);
+			}else{
+				String sql= "SELECT C.GROUP_ID,C.CHILD_POI_PID,P.PARENT_POI_PID,I.PID,I.POI_NUM "
+						+ " FROM IX_POI_CHILDREN C,IX_POI_PARENT P,IX_POI I WHERE C.GROUP_ID=P.GROUP_ID "
+						+ " AND C.U_RECORD <>2 AND P.U_RECORD <>2 AND I.U_RECORD <>2 "
+						+ " AND P.PARENT_POI_PID=I.PID AND C.CHILD_POI_PID IN ("+StringUtils.join(pids, ",")+")";
+				return new QueryRunner().query(conn,sql,new PoiParentPidSelHandler());
+			}
+		}
+		return null;
+	}
 	public static List<Long> getChildrenPidsByParentPid(Connection conn,Set<Long> pidList) throws ServiceException{
 		List<Long> childPids = new ArrayList<Long>();
 		if(pidList.isEmpty()){
@@ -298,17 +326,6 @@ public class IxPoiSelector {
 			return childPidParentPid;
 		}
 		try{
-			Clob clob = ConnectionUtil.createClob(conn);
-			clob.setString(1, StringUtils.join(pidList, ","));
-			
-			String sql = "SELECT DISTINCT P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
-					+ " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ "   AND P.U_RECORD != 2"
-					+ "   AND C.U_RECORD != 2"
-					+ "   AND (P.PARENT_POI_PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))) "
-					+ "      OR C.CHILD_POI_PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?))))";
-			
 			ResultSetHandler<Map<Long, Long>> rsHandler = new ResultSetHandler<Map<Long, Long>>() {
 				public Map<Long, Long> handle(ResultSet rs) throws SQLException {
 					Map<Long, Long> result = new HashMap<Long, Long>();
@@ -318,9 +335,48 @@ public class IxPoiSelector {
 					return result;
 				}
 			};
+			if (pidList.size()>100) {
+				Clob clob = ConnectionUtil.createClob(conn);
+				clob.setString(1, StringUtils.join(pidList, ","));
+				log.info(StringUtils.join(pidList, ","));
+				//效率问题。。修改
+				String sql = "WITH T AS"
+						+ " (SELECT TO_NUMBER(COLUMN_VALUE) PIDS"
+						+ "    FROM TABLE(CLOB_TO_TABLE(?)))"
+						+ " SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+						+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
+						+ " WHERE P.GROUP_ID = C.GROUP_ID"
+						+ "   AND P.U_RECORD != 2"
+						+ "   AND C.U_RECORD != 2"
+						+ "   AND EXISTS (SELECT 1 FROM T WHERE P.PARENT_POI_PID=T.PIDS)"
+						+ "   UNION "
+						+ "  SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+						+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
+						+ " WHERE P.GROUP_ID = C.GROUP_ID"
+						+ "   AND P.U_RECORD != 2"
+						+ "   AND C.U_RECORD != 2"
+						+ "   AND EXISTS (SELECT 1 FROM T WHERE C.CHILD_POI_PID=T.PIDS)";		
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob);
+			} else {
+				//效率问题。。修改
+				String sql = " SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+						+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
+						+ " WHERE P.GROUP_ID = C.GROUP_ID"
+						+ "   AND P.U_RECORD != 2"
+						+ "   AND C.U_RECORD != 2"
+						+ "   AND P.PARENT_POI_PID in (" + StringUtils.join(pidList.toArray(),",") + ")"
+						+ "   UNION "
+						+ "  SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
+						+ "  FROM IX_POI_PARENT P, IX_POI_CHILDREN C"
+						+ " WHERE P.GROUP_ID = C.GROUP_ID"
+						+ "   AND P.U_RECORD != 2"
+						+ "   AND C.U_RECORD != 2"
+						+ "   AND C.CHILD_POI_PID in (" + StringUtils.join(pidList.toArray(),",") + ")";		
+				log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
+				childPidParentPid = new QueryRunner().query(conn,sql, rsHandler);
+			}
 			
-			log.info("getIxPoiParentMapByChildrenPidList查询主表："+sql);
-			childPidParentPid = new QueryRunner().query(conn,sql, rsHandler,clob,clob);
 			return childPidParentPid;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

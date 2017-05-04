@@ -52,9 +52,6 @@ public class FMBAT20185 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")) {
 			return;
 		}
@@ -63,15 +60,17 @@ public class FMBAT20185 extends BasicBatchRule {
 			return;
 		}
 		List<Long> childrenList = childrenMap.get(poi.getPid());
-		List<IxPoiChargingplot> plotList = new ArrayList<IxPoiChargingplot>();
-		
+		/*List<IxPoiChargingplot> plotList = new ArrayList<IxPoiChargingplot>();
 		for (Long childPid:childrenList) {
 			BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
 			IxPoiObj child = (IxPoiObj) childObj;
 			plotList.addAll(child.getIxPoiChargingplots());
-		}
+		}*/
 		for (IxPoiChargingstation station:charginstions) {
-			station.setChargingNum(plotList.size());
+			int size =  childrenList.size();
+			if(size!=station.getChargingNum()){
+				station.setChargingNum(size);
+			}
 		}
 
 	}

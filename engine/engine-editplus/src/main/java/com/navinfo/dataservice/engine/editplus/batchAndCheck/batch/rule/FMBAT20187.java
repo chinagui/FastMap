@@ -60,9 +60,6 @@ public class FMBAT20187 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")) {
 			return;
 		}
@@ -87,7 +84,7 @@ public class FMBAT20187 extends BasicBatchRule {
 	 * @return
 	 * @throws Exception
 	 */
-	private void detealNewData(List<IxPoiChargingplot> newPlotsList) throws Exception {
+	public static void detealNewData(List<IxPoiChargingplot> newPlotsList) throws Exception {
 		Map<Integer,List<IxPoiChargingplot>> newPlotsMap = new HashMap<Integer,List<IxPoiChargingplot>>();
 		int maxGroupId = 1;
 		// 将新增的数据分组

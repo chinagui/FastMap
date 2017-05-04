@@ -214,6 +214,80 @@ public class LuLinkSearch implements ISearch {
 
 		return list;
 	}
+	
+	
+	public List<SearchSnapshot> searchDataByLinkPids(List<Integer> pids)
+			throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0 || pids.size() > 1000) {
+			return list;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, S_NODE_PID, E_NODE_PID FROM LU_LINK WHERE LINK_PID IN ("
+				+ ids
+				+ ") AND U_RECORD != 2) SELECT A.*, (SELECT COUNT(1) FROM LU_LINK_KIND L WHERE L.LINK_PID = A.LINK_PID AND L.U_RECORD != 2 AND L.KIND = 21) BUA, (SELECT COUNT(1) FROM LU_LINK_KIND L WHERE L.LINK_PID = A.LINK_PID AND L.U_RECORD != 2 AND L.KIND IN (1, 2, 3, 4, 5, 6, 7, 22, 23, 40)) SAMEKIND FROM TMP1 A";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("s_node_pid"));
+
+				m.put("b", resultSet.getInt("e_node_pid"));
+
+				int sameLinkKind = 1;
+
+				if (resultSet.getInt("bua") > 0) {
+
+					sameLinkKind = 2;
+
+				} else if (resultSet.getInt("samekind") > 0) {
+
+					sameLinkKind = 3;
+				}
+
+				m.put("c", sameLinkKind);
+
+				snapshot.setM(m);
+
+				snapshot.setT(29);
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+		
+		return list;
+	}
 
 	public static void main(String[] args) throws Exception {
 		Connection conn = DBConnector.getInstance().getConnectionById(11);

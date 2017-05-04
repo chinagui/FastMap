@@ -1674,7 +1674,7 @@ public class ProgramService {
 			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
 			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
 			sb.append("      AND P.LATEST = 1                                     ");
-			sb.append("      AND P.CREATE_USER_ID = U.USER_ID                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID(+)                     ");
 			sb.append("      AND P.PROGRAM_ID = "+programId);
 			
 			String sql = sb.toString();

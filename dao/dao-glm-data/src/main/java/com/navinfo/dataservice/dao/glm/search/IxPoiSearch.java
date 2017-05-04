@@ -1181,16 +1181,22 @@ public class IxPoiSearch implements ISearch {
 					if (!result.isEmpty()){
 						
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldStdEngName)){
-								oldStandardEngName = oldStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldStandardEngName="";
+							}else{
+								oldStandardEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newStdEngName)){
-								newStandardEngName = newStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newStandardEngName="";
+							}else{
+								newStandardEngName = jo.getString("NAME");
 							}
+							
 						}
 					}
 				}

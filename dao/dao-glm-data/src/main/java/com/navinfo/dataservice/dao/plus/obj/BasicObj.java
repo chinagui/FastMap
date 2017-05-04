@@ -386,6 +386,7 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){}
 		return false;
 	}
+	public abstract BasicRow createSubRowByTableName(String tableName)throws Exception;
 	
 	//根据json中的key创建二级对象
 	public abstract BasicRow createSubRowByName(String subRowName) throws Exception;

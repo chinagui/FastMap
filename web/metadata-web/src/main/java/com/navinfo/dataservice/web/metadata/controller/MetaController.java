@@ -50,7 +50,7 @@ import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+//import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 import net.sf.json.JSONArray;

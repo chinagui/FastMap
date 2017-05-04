@@ -23,6 +23,7 @@ import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
@@ -62,6 +63,8 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	// 获取当前做业季
 	String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+	Map<String,String> attrTableMap;
+	Set<String> tabNames;
 	
 	protected List<ErrorLog> errLogs = new ArrayList<ErrorLog>();
 	protected List<PoiRelation> addPcRelations = new ArrayList<PoiRelation>();
@@ -86,12 +89,13 @@ public class CollectorPoiImportor extends AbstractOperation {
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		CollectorUploadPois uploadPois = ((CollectorPoiImportorCommand)cmd).getPois();
+		init();
 		//处理修改的数据
 		Map<String,JSONObject> updatePois = uploadPois.getUpdatePois();
 		if(updatePois!=null&&updatePois.size()>0){
 			//根据fid查询poi
 			//key:fid
-			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,getTabNames(),updatePois.keySet(),true,true);
+			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,updatePois.keySet(),true,true);
 			
 			for(Entry<String, JSONObject> entry:updatePois.entrySet()){
 				IxPoiObj poiObj = null;
@@ -123,7 +127,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		if(deletePois!=null&&deletePois.size()>0){
 			//根据fid查询poi
 			//key:fid
-			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,getTabNames(),deletePois.keySet(),true,true);
+			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,deletePois.keySet(),true,true);
 			if(objs!=null&&objs.size()>0){
 				Set<String> keys = objs.keySet();
 				Collection<BasicObj> values = objs.values();
@@ -238,7 +242,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		
 		/*** 子表  ***/
 		//hotel
-		setHotelAttr(poiObj,jo);
+		setSubrow(poiObj,jo,"hotel");
 		//name
 		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
 			setNameAttr(poiObj);
@@ -248,7 +252,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 			setAddressAttr(poiObj);
 		}
 		//photo
-		setPhotoAttr(poiObj,jo);
+		setPhotoAndAttr(poiObj,jo);
 		//contacts
 		setContactAttr(poiObj,jo);
 		//relateChildren
@@ -256,8 +260,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//gasStation
 		setGasStationAttr(poiObj,jo);
 		//parkings
+		setSubrow(poiObj,jo,"parkings");
 		//foodtypes
+		setSubrow(poiObj,jo,"foodtypes");
 		//chargingStation
+		setSubrow(poiObj,jo,"chargingStation");
 		//chargingPole
 		
 		//处理日志类字段
@@ -285,21 +292,61 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//outDoorLog
 		
 	}
-	private void setHotelAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
+	
+	private void setSubrow(IxPoiObj poiObj,JSONObject jo,String keyName)throws Exception{
+		String tableName = attrTableMap.get(keyName);
 		//获取原始
-		if(JSONUtils.isNull(jo.get("hotel"))){
-			JSONObject hotel = jo.getJSONObject("hotel");
+		if(JSONUtils.isNull(jo.get(keyName))){
+			JSONObject subJo = jo.getJSONObject(keyName);
+			String rowid = subJo.getString("rowId");
+			rowid = rowid.toUpperCase();
 			//
 			boolean exists = false;
 			
-			List<IxPoiHotel> ixPoihotels = poiObj.getIxPoiHotels();
-			if(ixPoihotels!=null){
-				
+			List<BasicRow> rows = poiObj.getRowsByName(tableName);
+			if(rows!=null){
+				for(BasicRow r:rows){//遍历删除非上传的记录
+					if(r.getRowId().equals(rowid)){
+						exists = true;
+						setSubrowAttr(r,subJo,keyName);
+					}else{
+						poiObj.deleteSubrow(r);
+					}
+				}
+				//在库中不存在，则新增
+				if(!exists){
+					BasicRow nr = poiObj.createSubRowByTableName(tableName);
+					nr.setRowId(rowid);
+					setSubrowAttr(nr,subJo,keyName);
+				}
 			}
 			
-		}else{//上传中没有hotel信息，删除原有的
-			poiObj.deleteSubrow("IX_POI_HOTEL");
+		}else{//上传中没有子表信息，删除所有原有的记录
+			poiObj.deleteSubrow(tableName);
 		}
+		
+	}
+	private void setSubrowAttr(BasicRow row,JSONObject jo,String keyName)throws Exception{
+		if("hotel".equals(keyName)){
+			setHotelAttr((IxPoiHotel)row,jo);
+		}else{
+			
+		}
+	}
+	
+	private void setHotelAttr(IxPoiHotel row,JSONObject jo)throws Exception{
+		row.setCreditCard(jo.getString("creditCards"));
+		row.setRating(jo.getInt("rating"));
+		row.setCheckinTime(jo.getString("checkInTime"));
+		row.setCheckoutTime(jo.getString("checkOutTime"));
+		row.setRoomCount(jo.getInt("roomCount"));
+		row.setRoomType(jo.getString("roomType"));
+		row.setRoomPrice(jo.getString("roomPrice"));
+		row.setBreakfast(jo.getInt("breakfast"));
+		row.setService(jo.getString("service"));
+		row.setParking(jo.getInt("parking"));
+		row.setLongDescription(jo.getString("description"));
+		row.setOpenHour(jo.getString("openHour"));
 	}
 	private void setNameAttr(IxPoiObj poiObj)throws Exception{
 		
@@ -308,12 +355,13 @@ public class CollectorPoiImportor extends AbstractOperation {
 		
 	}
 	/**
+	 * 照片
 	 * 判断不存在就增加，只增不删
 	 * @param poiObj
 	 * @param jo
 	 * @throws Exception
 	 */
-	private void setPhotoAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
+	private void setPhotoAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		JSONArray photos = jo.getJSONArray("attachments");
 		List<IxPoiPhoto> objPhotos = poiObj.getIxPoiPhotos();
 		Collection<String> objPhotoPIds = null;
@@ -356,13 +404,13 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	
 	/**
-	 * 获取查询所需子表
+	 * 初始化所需子表、属性和子表名的映射关系
 	 * @author Han Shaoming
 	 * @return
 	 */
-	public Set<String> getTabNames(){
+	public void init(){
 		//添加所需的子表
-		Set<String> tabNames = new HashSet<>();
+		tabNames = new HashSet<>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_CONTACT");
 		tabNames.add("IX_POI_ADDRESS");
@@ -376,7 +424,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 		tabNames.add("IX_POI_HOTEL");
 		tabNames.add("IX_POI_CHARGINGSTATION");
 		tabNames.add("IX_POI_CHARGINGPLOT");
-		return tabNames;
+		//属性和表名映射
+		attrTableMap.put("hotel", "IX_POI_PHOTO");
+		//...
 	}
 	
 	

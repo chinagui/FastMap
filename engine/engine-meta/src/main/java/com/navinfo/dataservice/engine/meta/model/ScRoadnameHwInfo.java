@@ -27,7 +27,17 @@ public class ScRoadnameHwInfo  {
 	private String memo ;
 	private Integer uRecord ;
 	private String uFields ;
+	//*888
+	private String uRecords;
 	
+	public String getuRecords() {
+		return uRecords;
+	}
+
+	public void setuRecords(String uRecords) {
+		this.uRecords = uRecords;
+	}
+
 	public ScRoadnameHwInfo (){
 	}
 	

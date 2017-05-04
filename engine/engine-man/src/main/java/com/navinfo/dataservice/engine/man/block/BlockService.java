@@ -1715,10 +1715,10 @@ public class BlockService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "SELECT B.BLOCK_ID,B.COUNTY_NAME FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
-			if(jsonObject.containsKey("countyName")){
+			if(jsonObject.containsKey("countyName") && jsonObject.getString("countyName").length() > 0){
 				String countyName = "\'"+ "%" + jsonObject.getString("countyName").toString() + "%" +"\'";
 				String selectCountyName = " AND B.COUNTY_NAME LIKE " + countyName;
-				selectSql += selectCountyName;;
+				selectSql += selectCountyName;
 			}
 			
 			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){

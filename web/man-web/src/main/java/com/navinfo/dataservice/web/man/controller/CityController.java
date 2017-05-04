@@ -97,6 +97,7 @@ public class CityController extends BaseController {
 	}*/
 	
 	/**
+	 * city列表
 	 * @author songhe
 	 * @return List
 	 * 

@@ -2152,8 +2152,8 @@ public class SubtaskService {
 					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
 					+ "like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
-			if(jsonObject.containsKey("name")){
-				String name = " AND st.NAME like " + "\'"+ "%" + jsonObject.getString("name").toString() + "%" +"\'";
+			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){
+				String name = " AND st.NAME like " + "\'"+ "%" + jsonObject.getString("name") + "%" +"\'";
 				selectSql += name;;
 			}
 			

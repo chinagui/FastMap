@@ -1,5 +1,8 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -11,9 +14,10 @@ public class TipsLineRelateQuery {
 
 	public static final String LINK_SEPARATOR = "|";
 
-	public static String getRelateLine(String s_sourceType, JSONObject deep) {
+	public static Map<String, String> getRelateLine(String s_sourceType,
+			JSONObject deep) {
 
-		String result = "";
+		Map<String, String> result = new HashMap<String, String>();
 
 		if (TipsLineRelateConstant.simpleF.contains(s_sourceType)) {
 			result = getLine1(deep);
@@ -39,6 +43,11 @@ public class TipsLineRelateQuery {
 			result = getLine11(deep);
 		} else if (TipsLineRelateConstant.complex_6.contains(s_sourceType)) {
 			result = getLine12(deep);
+		}else{
+			
+			result.put("relate_nodes", "");
+
+			result.put("relate_links", "");
 		}
 
 		return result;
@@ -51,21 +60,43 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine1(JSONObject deep) {
+	private static Map<String, String> getLine1(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
 
 		String linkStr = "";
 
+		String nodeStr = "";
+
 		JSONObject f = deep.getJSONObject("f");
 
-		if (StringUtils.isNotEmpty(f.getString("id"))) {
-			linkStr =f.getString("id") + LINK_SEPARATOR;
+		if (f != null && f.containsKey("id")) {
+
+			if (StringUtils.isNotEmpty(f.getString("id"))) {
+
+				// 3 道路NODE；
+				if (f.getInt("type") == 3) {
+
+					nodeStr = f.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr = f.getString("id") + LINK_SEPARATOR;
+				}
+			}
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		
-		return linkStr;
+
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 
 	}
 
@@ -75,20 +106,41 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine2(JSONObject deep) {
+	private static Map<String, String> getLine2(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		JSONObject in = deep.getJSONObject("in");
 
-		if (StringUtils.isNotEmpty(in.getString("id"))) {
-			linkStr =in.getString("id") + LINK_SEPARATOR;
-		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+		if (in != null && in.containsKey("id")) {
+
+			// 3 道路NODE；
+			if (in.getInt("type") == 3) {
+
+				nodeStr = in.getString("id") + LINK_SEPARATOR;
+			} else {
+				linkStr = in.getString("id") + LINK_SEPARATOR;
+			}
+
 		}
 
-		return linkStr;
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
+		}
+
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -97,19 +149,39 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine3(JSONObject deep) {
+	private static Map<String, String> getLine3(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		JSONObject out = deep.getJSONObject("out");
 
-		if (StringUtils.isNotEmpty(out.getString("id"))) {
-			linkStr =out.getString("id") + LINK_SEPARATOR;
+		if (out != null && out.containsKey("id")) {
+
+			// 3 道路NODE；
+			if (out.getInt("type") == 3) {
+
+				nodeStr = out.getString("id") + LINK_SEPARATOR;
+			} else {
+				linkStr = out.getString("id") + LINK_SEPARATOR;
+			}
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		return linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -118,19 +190,43 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine4(JSONObject deep) {
+	private static Map<String, String> getLine4(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		JSONObject exp = deep.getJSONObject("exp");
 
-		if (StringUtils.isNotEmpty(exp.getString("id"))) {
-			linkStr =exp.getString("id") + LINK_SEPARATOR;
+		if (exp != null && exp.containsKey("id")) {
+
+			if (StringUtils.isNotEmpty(exp.getString("id"))) {
+
+				// 3 道路NODE；
+				if (exp.getInt("type") == 3) {
+
+					nodeStr = exp.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr = exp.getString("id") + LINK_SEPARATOR;
+				}
+			}
+
 		}
 
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		return linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -139,26 +235,52 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine5(JSONObject deep) {
+	private static Map<String, String> getLine5(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
 
+		String nodeStr = "";
+
 		JSONArray f_array = deep.getJSONArray("f_array");
-		for (Object obj : f_array) {
 
-			JSONObject fInfo = JSONObject.fromObject(obj);
+		if (f_array != null) {
 
-			if (StringUtils.isNotEmpty(fInfo.getString("id"))) {
-				linkStr +=fInfo.getString("id")
-						+ LINK_SEPARATOR;
+			for (Object obj : f_array) {
+
+				JSONObject fInfo = JSONObject.fromObject(obj);
+
+				if (fInfo != null && fInfo.containsKey("id")) {
+
+					if (StringUtils.isNotEmpty(fInfo.getString("id"))) {
+
+						// 3 道路NODE；
+						if (fInfo.getInt("type") == 3) {
+
+							nodeStr = fInfo.getString("id") + LINK_SEPARATOR;
+						} else {
+							linkStr = fInfo.getString("id") + LINK_SEPARATOR;
+						}
+					}
+				}
+
 			}
-
-		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
 		}
 
-		return linkStr;
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
+		}
+
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -167,26 +289,54 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine6(JSONObject deep) {
+	private static Map<String, String> getLine6(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
 
+		String nodeStr = "";
+
 		JSONArray f_array = deep.getJSONArray("f_array");
-		for (Object obj : f_array) {
 
-			JSONObject fInfo = JSONObject.fromObject(obj);
+		if (f_array != null) {
 
-			JSONObject f = fInfo.getJSONObject("f");
+			for (Object obj : f_array) {
 
-			if (StringUtils.isNotEmpty(f.getString("id"))) {
-				linkStr +=f.getString("id") + LINK_SEPARATOR;
+				JSONObject fInfo = JSONObject.fromObject(obj);
+
+				JSONObject f = fInfo.getJSONObject("f");
+
+				if (f != null && f.containsKey("id")) {
+
+					if (StringUtils.isNotEmpty(f.getString("id"))) {
+						
+						// 3 道路NODE；
+						if (fInfo.getInt("type") == 3) {
+
+							nodeStr = fInfo.getString("id") + LINK_SEPARATOR;
+						} else {
+							linkStr = fInfo.getString("id") + LINK_SEPARATOR;
+						}
+					}
+				}
+
 			}
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
 
-		return linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -195,35 +345,78 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine7(JSONObject deep) {
+	private static Map<String, String> getLine7(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		// in.id
 		JSONObject in = deep.getJSONObject("in");
 
-		if (StringUtils.isNotEmpty(in.getString("id"))) {
-			linkStr +=in.getString("id") + LINK_SEPARATOR;
+		if (in != null && in.containsKey("id")) {
+
+			if (StringUtils.isNotEmpty(in.getString("id"))) {
+				
+				// 3 道路NODE；
+				if (in.getInt("type") == 3) {
+
+					nodeStr = in.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr = in.getString("id") + LINK_SEPARATOR;
+				}
+			}
 		}
 
 		// [o_array].out.id
 		JSONArray o_array = deep.getJSONArray("o_array");
-		for (Object obj : o_array) {
 
-			JSONObject oInfo = JSONObject.fromObject(obj);
+		if (o_array != null) {
 
-			JSONObject out = oInfo.getJSONObject("out");
+			for (Object obj : o_array) {
 
-			if (StringUtils.isNotEmpty(out.getString("id"))) {
-				linkStr +=out.getString("id")
-						+ LINK_SEPARATOR;
+				JSONObject oInfo = JSONObject.fromObject(obj);
+
+				if (oInfo != null && oInfo.containsKey("out")) {
+
+					JSONObject out = oInfo.getJSONObject("out");
+
+					if (out != null && out.containsKey("id")) {
+
+						if (StringUtils.isNotEmpty(out.getString("id"))) {
+							
+							
+							// 3 道路NODE；
+							if (out.getInt("type") == 3) {
+
+								nodeStr = out.getString("id") + LINK_SEPARATOR;
+							} else {
+								linkStr = out.getString("id") + LINK_SEPARATOR;
+							}
+						}
+					}
+
+				}
+
 			}
+
 		}
 
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		
-		return linkStr;
+
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
 
 	/**
@@ -232,270 +425,494 @@ public class TipsLineRelateQuery {
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine8(JSONObject deep) {
+	private static Map<String, String> getLine8(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		// in.id
 		JSONObject in = deep.getJSONObject("in");
 
-		if (StringUtils.isNotEmpty(in.getString("id"))) {
-			linkStr +=in.getString("id") + LINK_SEPARATOR;
-		}
+		if (in != null && in.containsKey("id")) {
 
-		// [o_array].out.id
-		JSONArray o_array = deep.getJSONArray("o_array");
-		for (Object obj : o_array) {
-
-			JSONObject oInfo = JSONObject.fromObject(obj);
-
-			JSONArray d_array = oInfo.getJSONArray("d_array");
-
-			for (Object object : d_array) {
+			if (StringUtils.isNotEmpty(in.getString("id"))) {
 				
-				JSONObject dInfo = JSONObject.fromObject(object);
-				
-				JSONObject out = dInfo.getJSONObject("out");
-				
-				if (StringUtils.isNotEmpty(out.getString("id"))) {
-					
-					linkStr +=out.getString("id")
-							+ LINK_SEPARATOR;
+				// 3 道路NODE；
+				if (in.getInt("type") == 3) {
+
+					nodeStr = in.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr = in.getString("id") + LINK_SEPARATOR;
 				}
 			}
 
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		// [o_array].out.id
+		JSONArray o_array = deep.getJSONArray("o_array");
+
+		if (o_array != null) {
+
+			for (Object obj : o_array) {
+
+				JSONObject oInfo = JSONObject.fromObject(obj);
+
+				if (oInfo != null && oInfo.containsKey("d_array")) {
+
+					JSONArray d_array = oInfo.getJSONArray("d_array");
+
+					if (d_array != null) {
+
+						for (Object object : d_array) {
+
+							JSONObject dInfo = JSONObject.fromObject(object);
+
+							if (dInfo != null && dInfo.containsKey("out")) {
+
+								JSONObject out = dInfo.getJSONObject("out");
+
+								if (out != null && out.containsKey("id")) {
+
+									if (StringUtils.isNotEmpty(out
+											.getString("id"))) {
+
+										// 3 道路NODE；
+										if (out.getInt("type") == 3) {
+
+											nodeStr = out.getString("id") + LINK_SEPARATOR;
+										} else {
+											linkStr = out.getString("id") + LINK_SEPARATOR;
+										}
+
+									}
+								}
+
+							}
+						}
+					}
+
+				}
+
+			}
+
 		}
-		return linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
+		}
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
-	
-	
+
 	/**
 	 * 9.复杂关系-公交车道（[ln].[o_array].id+[f_array].id)
 	 * 
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine9(JSONObject deep) {
+	private static Map<String, String> getLine9(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		// [ln].[o_array].id
 		JSONArray ln = deep.getJSONArray("ln");
-		
-		for (Object obj : ln) {
 
-			JSONObject lnInfo = JSONObject.fromObject(obj);
-			
-			JSONArray o_array = lnInfo.getJSONArray("o_array");
-			
-			for (Object object : o_array) {
-				
+		if (ln != null) {
 
-				JSONObject oInfo = JSONObject.fromObject(object);
+			for (Object obj : ln) {
 
-				if (StringUtils.isNotEmpty(oInfo.getString("id"))) {
-					
-					linkStr +=oInfo.getString("id")
-							+ LINK_SEPARATOR;
+				JSONObject lnInfo = JSONObject.fromObject(obj);
+
+				if (lnInfo != null && lnInfo.containsKey("o_array")) {
+
+					JSONArray o_array = lnInfo.getJSONArray("o_array");
+
+					if (o_array != null) {
+						for (Object object : o_array) {
+
+							JSONObject oInfo = JSONObject.fromObject(object);
+
+							if (oInfo != null && oInfo.containsKey("id")) {
+								if (StringUtils.isNotEmpty(oInfo
+										.getString("id"))) {
+
+									// 3 道路NODE；
+									if (oInfo.getInt("type") == 3) {
+
+										nodeStr = oInfo.getString("id") + LINK_SEPARATOR;
+									} else {
+										linkStr = oInfo.getString("id") + LINK_SEPARATOR;
+									}
+								}
+							}
+
+						}
+					}
+
 				}
-			}
 
+			}
 		}
 		// [f_array].id
 		JSONArray f_array = deep.getJSONArray("f_array");
-		for (Object obj : f_array) {
 
-			JSONObject oInfo = JSONObject.fromObject(obj);
+		if (f_array != null) {
 
-			if (StringUtils.isNotEmpty(oInfo.getString("id"))) {
-				
-				linkStr +=oInfo.getString("id")
-						+ LINK_SEPARATOR;
+			for (Object obj : f_array) {
+
+				JSONObject oInfo = JSONObject.fromObject(obj);
+
+				if (oInfo != null && oInfo.containsKey("id")) {
+
+					if (StringUtils.isNotEmpty(oInfo.getString("id"))) {
+						
+						// 3 道路NODE；
+						if (oInfo.getInt("type") == 3) {
+
+							nodeStr = oInfo.getString("id") + LINK_SEPARATOR;
+						} else {
+							linkStr = oInfo.getString("id") + LINK_SEPARATOR;
+						}
+
+					}
+				}
+
 			}
+		}
 
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
 		}
-		return linkStr;
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
-	
-	
+
 	/**
 	 * 10.复杂关系-可变导向车道（f.id+[ln].[o_array].out.id)
 	 * 
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine10(JSONObject deep) {
+	private static Map<String, String> getLine10(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
-		
-		//f.id
-		
+
+		String nodeStr = "";
+
+		// f.id
+
 		JSONObject f = deep.getJSONObject("f");
 
-		if (StringUtils.isNotEmpty(f.getString("id"))) {
-			linkStr =f.getString("id") + LINK_SEPARATOR;
-		}
+		if (f != null && f.containsKey("id")) {
 
-		// [ln].[o_array].out.id
-		JSONArray ln = deep.getJSONArray("ln");
-		
-		for (Object obj : ln) {
-
-			JSONObject lnInfo = JSONObject.fromObject(obj);
-			
-			JSONArray o_array = lnInfo.getJSONArray("o_array");
-			
-			for (Object object : o_array) {
+			if (StringUtils.isNotEmpty(f.getString("id"))) {
 				
+				// 3 道路NODE；
+				if (f.getInt("type") == 3) {
 
-				JSONObject oInfo = JSONObject.fromObject(object);
-				
-				JSONObject out=oInfo.getJSONObject("out");
-
-				if (StringUtils.isNotEmpty(out.getString("id"))) {
-					
-					linkStr +=out.getString("id")
-							+ LINK_SEPARATOR;
+					nodeStr = f.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr = f.getString("id") + LINK_SEPARATOR;
 				}
 			}
 
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		// [ln].[o_array].out.id
+		JSONArray ln = deep.getJSONArray("ln");
+
+		if (ln != null) {
+
+			for (Object obj : ln) {
+
+				JSONObject lnInfo = JSONObject.fromObject(obj);
+
+				if (lnInfo != null && lnInfo.containsKey("o_array")) {
+
+					JSONArray o_array = lnInfo.getJSONArray("o_array");
+
+					if (o_array != null) {
+
+						for (Object object : o_array) {
+
+							JSONObject oInfo = JSONObject.fromObject(object);
+
+							if (oInfo != null && oInfo.containsKey("out")) {
+
+								JSONObject out = oInfo.getJSONObject("out");
+
+								if (out != null && out.containsKey("id")) {
+
+									if (StringUtils.isNotEmpty(out
+											.getString("id"))) {
+										
+										// 3 道路NODE；
+										if (out.getInt("type") == 3) {
+
+											nodeStr = out.getString("id") + LINK_SEPARATOR;
+										} else {
+											linkStr =out.getString("id") + LINK_SEPARATOR;
+										}
+									}
+								}
+
+							}
+
+						}
+					}
+
+				}
+
+			}
+
 		}
-		return linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
+		}
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
-	
-	
-	
+
 	/**
 	 * 11.复杂关系（in.id+out.id)
 	 * 
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine11(JSONObject deep) {
-		
+	private static Map<String, String> getLine11(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
+
 		String linkStr = "";
-		
-		//in.id
+
+		String nodeStr = "";
+
+		// in.id
 		JSONObject in = deep.getJSONObject("in");
 
-		if (StringUtils.isNotEmpty(in.getString("id"))) {
-			linkStr =in.getString("id") + LINK_SEPARATOR;
+		if (in != null && in.containsKey("id")) {
+
+			if (StringUtils.isNotEmpty(in.getString("id"))) {
+				
+				// 3 道路NODE；
+				if (in.getInt("type") == 3) {
+
+					nodeStr = in.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr =in.getString("id") + LINK_SEPARATOR;
+				}
+			}
 		}
-		//out.id
+
+		// out.id
 		JSONObject out = deep.getJSONObject("out");
 
-		if (out.containsKey("id")&&StringUtils.isNotEmpty(out.getString("id"))) {
-			linkStr =out.getString("id") + LINK_SEPARATOR;
+		if (out != null && out.containsKey("id")) {
+
+			if (out.containsKey("id")
+					&& StringUtils.isNotEmpty(out.getString("id"))) {
+				// 3 道路NODE；
+				if (out.getInt("type") == 3) {
+
+					nodeStr = out.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr =out.getString("id") + LINK_SEPARATOR;
+				}
+			}
+
 		}
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		return linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
-	
+
 	/**
 	 * 12.复杂关系in.id+[o_array].[out].id 【out是数组】
 	 * 
 	 * @param deep
 	 * @return
 	 */
-	private static String getLine12(JSONObject deep) {
+	private static Map<String, String> getLine12(JSONObject deep) {
+
+		Map<String, String> relateMap = new HashMap<String, String>();
 
 		String linkStr = "";
+
+		String nodeStr = "";
 
 		// in.id
 		JSONObject in = deep.getJSONObject("in");
 
-		if (StringUtils.isNotEmpty(in.getString("id"))) {
-			linkStr =in.getString("id") + LINK_SEPARATOR;
+		if (in != null && in.containsKey("id")) {
+
+			if (StringUtils.isNotEmpty(in.getString("id"))) {
+				
+				
+				// 3 道路NODE；
+				if (in.getInt("type") == 3) {
+
+					nodeStr = in.getString("id") + LINK_SEPARATOR;
+				} else {
+					linkStr =in.getString("id") + LINK_SEPARATOR;
+				}
+			}
 		}
 
 		// [o_array].[out].id 【out是数组】
 
 		JSONArray o_array = deep.getJSONArray("o_array");
+		if (o_array != null) {
+			for (Object object : o_array) {
 
-		for (Object object : o_array) {
+				JSONObject oInfo = JSONObject.fromObject(object);
 
-			JSONObject oInfo = JSONObject.fromObject(object);
+				if (oInfo != null && oInfo.containsKey("out")) {
 
-			JSONArray out = oInfo.getJSONArray("out"); //是数组哦
-			
-			for (Object object2 : out) {
-				
-				JSONObject outInfo = JSONObject.fromObject(object2);
-				
-				if (StringUtils.isNotEmpty(outInfo.getString("id"))) {
+					JSONArray out = oInfo.getJSONArray("out"); // 是数组哦
 
-					linkStr +=outInfo.getString("id")
-							+ LINK_SEPARATOR;
+					if (out != null) {
+
+						for (Object object2 : out) {
+
+							JSONObject outInfo = JSONObject.fromObject(object2);
+
+							if (outInfo != null && outInfo.containsKey("id")) {
+
+								if (StringUtils.isNotEmpty(outInfo
+										.getString("id"))) {
+
+									
+									// 3 道路NODE；
+									if (outInfo.getInt("type") == 3) {
+
+										nodeStr = outInfo.getString("id") + LINK_SEPARATOR;
+									} else {
+										linkStr =outInfo.getString("id") + LINK_SEPARATOR;
+									}
+								}
+							}
+
+						}
+					}
+
 				}
+
 			}
+
 		}
 
-		
-		if(StringUtils.isNotEmpty(linkStr)){
-			linkStr=LINK_SEPARATOR+linkStr;
+		if (StringUtils.isNotEmpty(linkStr)) {
+			linkStr = LINK_SEPARATOR + linkStr;
 		}
-		return linkStr;
+		if (StringUtils.isNotEmpty(nodeStr)) {
+			nodeStr = LINK_SEPARATOR + nodeStr;
+		}
+
+		relateMap.put("relate_nodes", nodeStr);
+
+		relateMap.put("relate_links", linkStr);
+
+		return relateMap;
 	}
-	
-	//测试link id获取
+
+	// 测试link id获取
 	public static void main(String[] args) {
-		
+
 		SolrController solr = new SolrController();
-		
-		try{
-		JSONObject  json=solr.getById("0212013727709be42a43c79763dde3286891e7"); // 1. f.id 1201   |19361676|
-		
-		json=solr.getById("11110315691"); // 2. in.id 1103   |13677571|
 
-		json=solr.getById("111106264"); // 3. out.id  1106   |246625|
-		
-		json=solr.getById("111703469213"); // 4.复杂关系-in out (in.id+[o_array].out.id) 1703   |578700||601561||49101284|
-		
-		json=solr.getById("1113016921617"); // 5.复杂关系-车信（in.id+[o_array].[d_array].out.id(out是对象)） 1301  |20152891||7729087||7753658|
-		
-		json=solr.getById("021310aedee6fac94f4b89bc73a1f151088470"); // 6.复杂关系-公交车道（[ln].[o_array].id+[f_array].id)  1310  |88026245||19613249|
-		
-		json=solr.getById("02131124edfa0a1f674511879a4ac289287c83"); // 7.in.id+out.id  1112  |1297433||1360730|
-		
-		json=solr.getById("02160496eb93ca12d4471fb9a9f5a34924dbc7"); // 8. [f_array].id 1604  |667570|
-		
-		json=solr.getById("021302B2BE0D2A81CE49F2A9C577BC46F4795B"); // 9. 	in.id+[o_array].[out].id 【out是数组】  1302  |17230727|
+		try {
+			JSONObject json = solr
+					.getById("0212013727709be42a43c79763dde3286891e7"); // 1.
+																		// f.id
+																		// 1201
+																		// |19361676|
+			/*
+			 * json = solr.getById("11110315691"); // 2. in.id 1103 |13677571|
+			 * 
+			 * json = solr.getById("111106264"); // 3. out.id 1106 |246625|
+			 * 
+			 * json = solr.getById("111703469213"); // 4.复杂关系-in out //
+			 * (in.id+[o_array].out.id) // 1703 // |578700||601561||49101284|
+			 * 
+			 * json = solr.getById("1113016921617"); //
+			 * 5.复杂关系-车信（in.id+[o_array].[d_array].out.id(out是对象)） // 1301 //
+			 * |20152891||7729087||7753658|
+			 * 
+			 * json = solr.getById("021310aedee6fac94f4b89bc73a1f151088470"); //
+			 * 6.复杂关系-公交车道（[ln].[o_array].id+[f_array].id) // 1310 //
+			 * |88026245||19613249|
+			 * 
+			 * json = solr.getById("02131124edfa0a1f674511879a4ac289287c83"); //
+			 * 7.in.id+out.id // 1112 // |1297433||1360730|
+			 * 
+			 * json = solr.getById("02160496eb93ca12d4471fb9a9f5a34924dbc7"); //
+			 * 8. // [f_array].id // 1604 // |667570|
+			 * 
+			 * json = solr.getById("021302B2BE0D2A81CE49F2A9C577BC46F4795B"); //
+			 * 9. // in.id+[o_array].[out].id // 【out是数组】 // 1302 // |17230727|
+			 * 
+			 * json = solr.getById("123"); // 10. exp.id 1307 【没数据】
+			 * 
+			 * json = solr.getById("0211028C17499F2BA14CD4AD301065EC5F3EFE"); //
+			 * 10. // [f_array].f.id // (f唯一是对象) // 1102 // 数据中[f_array]为空
+			 */
+			String s_sourceType = json.getString("s_sourceType");
 
-		json=solr.getById("123"); // 10. exp.id  1307   【没数据】
+			JSONObject deep = JSONObject.fromObject(json.get("deep"));
 
-		json=solr.getById("0211028C17499F2BA14CD4AD301065EC5F3EFE"); // 10. [f_array].f.id  (f唯一是对象) 1102   数据中[f_array]为空
-		
-		String s_sourceType=json.getString("s_sourceType");
-		
-		JSONObject deep=JSONObject.fromObject(json.get("deep"));
-		
-		String result=TipsLineRelateQuery.getRelateLine(s_sourceType, deep);
-		
-		System.out.println(result);
-		
-		}catch (Exception e) {
-			
+			Map<String, String> result = TipsLineRelateQuery.getRelateLine(
+					s_sourceType, deep);
+
+			System.out.println("relate_links:" + result.get("relate_links"));
+
+			System.out.println("relate_nodes:" + result.get("relate_nodes"));
+
+		} catch (Exception e) {
+
 			e.printStackTrace();
 		}
-		
-		
-		
+
 	}
-	
-	
-	
-	
 
 }

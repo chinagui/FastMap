@@ -71,10 +71,7 @@ public final class CmgfaceUtil {
         int count = 1;
         // 防止产生死循环导致OOM
         while (firstNodePid != nextNodePid && count <= 99) {
-            if (count != map.size()) {
-                throw new Exception("所选线无法构成闭合面");
-            }
-            for (int i = count; i < cmglinks.size(); i++) {
+            for (int i = 1; i < cmglinks.size(); i++) {
                 CmgBuildlink cmglink = (CmgBuildlink) cmglinks.get(i);
                 if (nextNodePid == cmglink.getsNodePid()) {
                     nextNodePid = cmglink.geteNodePid();

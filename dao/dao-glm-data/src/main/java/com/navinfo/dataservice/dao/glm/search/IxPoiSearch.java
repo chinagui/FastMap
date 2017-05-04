@@ -41,6 +41,7 @@ import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
@@ -1154,16 +1155,22 @@ public class IxPoiSearch implements ISearch {
 					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldOriEngName = JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldOriEngName)){
-								oldOriginalEngName = oldOriEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldOriginalEngName="";
+							}else{
+								oldOriginalEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newOriEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newOriEngName)){
-								newOriginalEngName = newOriEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newOriginalEngName="";
+							}else{
+								newOriginalEngName = jo.getString("NAME");
 							}
+
 						}
 					}
 				}
@@ -1174,16 +1181,22 @@ public class IxPoiSearch implements ISearch {
 					if (!result.isEmpty()){
 						
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldStdEngName)){
-								oldStandardEngName = oldStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldStandardEngName="";
+							}else{
+								oldStandardEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newStdEngName)){
-								newStandardEngName = newStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newStandardEngName="";
+							}else{
+								newStandardEngName = jo.getString("NAME");
 							}
+							
 						}
 					}
 				}

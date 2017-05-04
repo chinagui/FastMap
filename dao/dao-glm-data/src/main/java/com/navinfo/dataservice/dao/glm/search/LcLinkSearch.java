@@ -178,6 +178,68 @@ public class LcLinkSearch implements ISearch {
 
 		return list;
 	}
+	
+	
+	public List<SearchSnapshot> searchDataByLinkPids(List<Integer> pids)
+			throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0||pids.size() > 1000)
+		{
+			return list;
+		}
+		
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "WITH TMP AS (SELECT A.LINK_PID, MAX(B.KIND) AS KIND FROM LC_LINK A, LC_LINK_KIND B WHERE  A.LINK_PID IN ("
+				+ ids
+				+ ") AND A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 AND B.U_RECORD != 2 GROUP BY A.LINK_PID) SELECT T2.LINK_PID, T2.GEOMETRY, T2.S_NODE_PID, T2.E_NODE_PID, T1.KIND FROM TMP T1, LC_LINK T2 WHERE T1.LINK_PID = t2.link_pid";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("s_node_pid"));
+
+				m.put("b", resultSet.getInt("e_node_pid"));
+
+				m.put("c", resultSet.getInt("kind"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(31);
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return list;
+	}
 
 	public static void main(String[] args) throws Exception {
 		Connection conn = DBConnector.getInstance().getConnectionById(11);

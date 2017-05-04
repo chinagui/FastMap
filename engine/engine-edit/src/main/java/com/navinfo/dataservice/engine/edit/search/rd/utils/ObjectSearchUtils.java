@@ -12,8 +12,18 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.search.AdLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.AdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.CmgBuildlinkSearch;
+import com.navinfo.dataservice.dao.glm.search.CmgBuildnodeSearch;
+import com.navinfo.dataservice.dao.glm.search.LcLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.LcNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.LuLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.LuNodeSearch;
 import com.navinfo.dataservice.dao.glm.search.RdLinkSearch;
 import com.navinfo.dataservice.dao.glm.search.RdNodeSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneLinkSearch;
+import com.navinfo.dataservice.dao.glm.search.ZoneNodeSearch;
 
 public class ObjectSearchUtils {
 	
@@ -117,9 +127,45 @@ public class ObjectSearchUtils {
 
 			case RDLINK:
 
-				RdLinkSearch linkSearch = new RdLinkSearch(conn);
+				RdLinkSearch rdLinkSearch = new RdLinkSearch(conn);
 
-				list = linkSearch.searchDataByLinkPids(pidList);
+				list = rdLinkSearch.searchDataByLinkPids(pidList);
+
+				break;
+			case ADLINK:
+
+				AdLinkSearch adLinkSearch = new AdLinkSearch(conn);
+
+				list = adLinkSearch.searchDataByLinkPids(pidList);
+
+				break;
+			case LULINK:
+
+				LuLinkSearch luLinkSearch = new LuLinkSearch(conn);
+
+				list = luLinkSearch.searchDataByLinkPids(pidList);
+
+				break;
+			case LCLINK:
+
+				LcLinkSearch lcLinkSearch = new LcLinkSearch(conn);
+
+				list = lcLinkSearch.searchDataByLinkPids(pidList);
+
+				break;
+			case ZONELINK:
+
+				ZoneLinkSearch zoneLinkSearch = new ZoneLinkSearch(conn);
+
+				list = zoneLinkSearch.searchDataByLinkPids(pidList);
+
+				break;
+			case CMGBUILDLINK:
+
+				CmgBuildlinkSearch cmgBuildlinkSearch = new CmgBuildlinkSearch(
+						conn);
+
+				list = cmgBuildlinkSearch.searchDataByLinkPids(pidList);
 
 				break;
 
@@ -131,10 +177,51 @@ public class ObjectSearchUtils {
 
 				break;
 
+			case ADNODE:
+
+				AdNodeSearch adNodeSearch = new AdNodeSearch(conn);
+
+				list = adNodeSearch.searchDataByNodePids(pidList);
+
+				break;
+
+			case LUNODE:
+
+				LuNodeSearch luNodeSearch = new LuNodeSearch(conn);
+
+				list = luNodeSearch.searchDataByNodePids(pidList);
+
+				break;
+
+			case LCNODE:
+
+				LcNodeSearch lcNodeSearch = new LcNodeSearch(conn);
+
+				list = lcNodeSearch.searchDataByNodePids(pidList);
+
+				break;
+
+			case ZONENODE:
+
+				ZoneNodeSearch zoneNodeSearch = new ZoneNodeSearch(conn);
+
+				list = zoneNodeSearch.searchDataByNodePids(pidList);
+
+				break;
+
+			case CMGBUILDNODE:
+
+				CmgBuildnodeSearch cmgBuildnodeSearch = new CmgBuildnodeSearch(
+						conn);
+
+				list = cmgBuildnodeSearch.searchDataByNodePids(pidList);
+
+				break;
+
 			default:
 				break;
-			}			
-			
+			}
+
 			JSONArray array = new JSONArray();
 
 			for (SearchSnapshot snap : list) {
@@ -143,7 +230,7 @@ public class ObjectSearchUtils {
 			}
 
 			json.accumulate(type.toString(), array, jsonConfig);
-			
+
 		} catch (Exception e) {
 
 			throw e;

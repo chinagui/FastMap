@@ -194,7 +194,11 @@ public class PretreatmentTipsController extends BaseController {
 
 			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
 
-			return new ModelAndView("jsonView", success());
+			JSONObject  data=new JSONObject();
+			
+			data.put("rowkey", rowkey);
+
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 

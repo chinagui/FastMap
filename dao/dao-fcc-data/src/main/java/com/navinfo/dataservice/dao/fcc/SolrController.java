@@ -109,6 +109,8 @@ public class SolrController {
 		}
 
 		doc.addField("relate_links", json.getString("relate_links"));
+		
+		doc.addField("relate_nodes", json.getString("relate_nodes"));
 
 		client.add(doc);
 

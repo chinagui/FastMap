@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -1043,6 +1044,18 @@ public class NiValExceptionSelector {
 		return p;
 	}
 
+	
+	/**
+	 * @Title: listCheckResultsByTaskName
+	 * @Description: 元数据库编辑平台 根据taskname 查询检查结果
+	 * @param params
+	 * @param adminMap
+	 * @return
+	 * @throws SQLException  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月4日 下午6:09:44 
+	 */
 	public Page listCheckResultsByTaskName(JSONObject params, final Map<String, String> adminMap) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
@@ -1083,26 +1096,29 @@ public class NiValExceptionSelector {
 		// **********************
 		// 获取子任务范围内的所有 rdName 的nameId
 		sql.append("q1 as ( ");
-		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
+//		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
+		sql.append("select  n.name_id, n.name, n.name_phonetic, n.road_type, n.admin_id from rd_name n where 1=1 ");
 		
 		sql.append(sql_where_r);
 		
 		sql.append(" ),");
 		// **********************
 		sql.append("q2 as ( ");
-		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
-				+ "NVL(to_char(d.addition_info),'') targets,"
-				+ "NVL(d.information,'') information, "
-				+ "NVL(d.location.sdo_point.x,0) x, "
-				+ "NVL(d.location.sdo_point.y,0) y,"
-				+ "d.created,NVL(d.worker,'') worker  "
-				+ "from ni_val_exception d  where d.task_name = '"+taskName+"' ");
+		sql.append(" select NVL(d.MD5_CODE,0) md5_code,NVL(d.RULEID,0) ruleid,NVL(d.SITUATION,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.ADDITION_INFO),'') targets,"
+				+ "substr(to_char(d.ADDITION_INFO),1,instr(to_char(d.ADDITION_INFO),']')) target,"
+				+ "NVL(d.INFORMATION,'') information, "
+				+ "NVL(d.LOCATION.SDO_POINT.X,0) x, "
+				+ "NVL(d.LOCATION.SDO_POINT.Y,0) y,"
+				+ "d.created,NVL(d.WORKER,'') worker  "
+				+ "from ni_val_exception d  where d.TASK_NAME = '"+taskName+"' and to_char(d.ADDITION_INFO) like '[NAME_ID,%'");
 		
 		sql.append(sql_where_e);
 		
 		sql.append(" ), ");
 		sql.append("q3 as ( ");
-		sql.append(" select e.*,n.name_id,n.name,n.name_phonetic,n.road_type,n.admin_id from q1 n ,q2 e where   e.targets like '%'||n.targets||'%'  ");
+		sql.append(" select e.md5_code,e.ruleid,e.situation,e.level_,e.targets,e.information,e.x,e.y,e.created,e.worker,n.name_id,n.name,n.name_phonetic,n.road_type,n.admin_id from q1 n ,q2 e "
+				+ " where   e.target =  '[NAME_ID,' || n.name_id || ']'  ");
 		sql.append(") ");
 		
 		// ************************
@@ -1140,6 +1156,8 @@ public class NiValExceptionSelector {
 					json.put("information", rs.getString("information"));
 
 					json.put("create_date", rs.getString("created"));
+					
+					json.put("targets", rs.getString("targets"));
 
 					json.put("nameId", rs.getInt("name_id"));
 					json.put("name", rs.getString("name"));
@@ -1167,7 +1185,8 @@ public class NiValExceptionSelector {
 		Page p = run.query(conn, sql.toString(), rsHandler3);
 		return p;
 	}
-
+	
+	
 	public JSONArray listCheckResultsRuleIds(JSONObject params) {
 		JSONArray jobRuleObjs = null;
 		try{

@@ -569,5 +569,89 @@ alter table TY_NAVICOVPY_PY
   add constraint CK_NAVICOVPY_TONE1
   check (TONE1_FREQUENCY IN(1,2,3));
   
+--20170504
+-- Create table
+create table TY_CHARACTER_FULL2HALF
+(
+  half_width VARCHAR2(10),
+  h_unicode  NUMBER(10),
+  h_ansi     NUMBER(10),
+  full_width VARCHAR2(10) not null,
+  f_unicode  NUMBER(10),
+  f_ansi     NUMBER(10),
+  serial_id  NUMBER not null
+);
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table TY_CHARACTER_FULL2HALF
+  add constraint PK_TY_CHARACTER_FULL2HALF primary key (SERIAL_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );  
   
+ -- Create table
+create table TY_NAVICOVPY_KEYWORD
+(
+  keyword   VARCHAR2(255) not null,
+  keywordpy VARCHAR2(255) not null,
+  adminarea VARCHAR2(255),
+  priority  VARCHAR2(255) not null,
+  id        NUMBER not null,
+  frequency NUMBER,
+  kind      VARCHAR2(255),
+  type      VARCHAR2(2),
+  chain     VARCHAR2(4)
+);
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table TY_NAVICOVPY_KEYWORD
+  add constraint METADATA_TY_KEYWORD_02 primary key (ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate check constraints 
+alter table TY_NAVICOVPY_KEYWORD
+  add constraint CKC_TYPE_TY_NAVIC
+  check (TYPE is null or (TYPE in ('1'))); 
+  
+ 
+-- Create table
+create table TY_NAVICOVPY_KEYWORD_KIND
+(
+  kind       VARCHAR2(255),
+  keyword_id NUMBER not null,
+  chain      VARCHAR2(4)
+);
+ 
+-- Create table
+create table SC_POINT_NAMECK
+(
+  id         VARCHAR2(255),
+  pre_key    VARCHAR2(255),
+  result_key VARCHAR2(255),
+  ref_key    VARCHAR2(255),
+  type       VARCHAR2(2),
+  kg_flag    VARCHAR2(255),
+  hm_flag    VARCHAR2(255),
+  memo       VARCHAR2(50),
+  kind       VARCHAR2(255),
+  adminarea  VARCHAR2(255),
+  chain      VARCHAR2(255)
+);
  commit;

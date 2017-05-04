@@ -219,6 +219,12 @@ public class ReflectionAttrUtils {
 			return "RD_BRANCH_SCHEMATIC";
 		case RDSIGNASREAL:
 			return "RD_SIGNASREAL";
+        case CMGBUILDNODE:
+            return "CMG_BUILDNODE";
+        case CMGBUILDLINK:
+            return "CMG_BUILDLINK";
+        case CMGBUILDFACE:
+            return "CMG_BUILDFACE";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}
@@ -253,6 +259,8 @@ public class ReflectionAttrUtils {
 			return ObjType.LULINK;
 		case "RW_LINK":
 			return ObjType.RWLINK;
+		case "CMG_BUILDLINK":
+			return ObjType.CMGBUILDLINK;
 		default:
 			throw new Exception("不支持的表名转对象名称:" + tableName);
 		}

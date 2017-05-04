@@ -7,7 +7,6 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
@@ -18,18 +17,14 @@ import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.GeometryFactory;
-import com.vividsolutions.jts.geom.Point;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -103,12 +98,12 @@ public class Operation implements IOperation {
             // 通过坐标点构成面
             Geometry geometry = GeoTranslator.getPolygonToPoints(coordinates);
             // 计算CMG-FACE的图幅号
-            int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry);
+            int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(GeoTranslator.transform(geometry, Constant.BASE_SHRINK, Constant.BASE_PRECISION));
             // 创建CMG-FACE
             CmgBuildface cmgface = createCmgface(result, geometry, cmgfaceMeshId);
             // 创建CMG-FACE-TOPO
-            for (int seq = 1; seq < command.getLinkPids().size(); seq++) {
-                CmgfaceUtil.createCmgfaceTopo(result, command.getLinkPids().get(seq), cmgface.pid(), seq);
+            for (int seq = 0; seq < command.getLinkPids().size();) {
+                CmgfaceUtil.createCmgfaceTopo(result, command.getLinkPids().get(seq), cmgface.pid(), ++seq);
             }
             // 初始化CMG-NODE-SELECTOR
             AbstractSelector cmgnodeSelector = new AbstractSelector(CmgBuildnode.class, conn);

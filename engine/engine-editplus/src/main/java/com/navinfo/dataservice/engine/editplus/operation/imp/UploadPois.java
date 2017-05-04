@@ -2,31 +2,43 @@ package com.navinfo.dataservice.engine.editplus.operation.imp;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
-public class UploadPois {
+/** 
+ * @ClassName: UploadPois
+ * @author xiaoxiaowen4127
+ * @date 2017年4月26日
+ * @Description: UploadPois.java
+ */
+public abstract class UploadPois {
+
 	protected Map<String,JSONObject> addPois;//key:fid
 	protected Map<String,JSONObject> deletePois;//key:fid
 	protected Map<String,JSONObject> updatePois;//key:fid
+	
 	public void addJsonPoi(JSONObject jo){
-		if(jo.getInt("addFlag")==1){
-			if(addPois==null){
-				addPois=new HashMap<String,JSONObject>();
+		addJsonPoi(jo.getString("fid"),jo);
+	}
+	public abstract void addJsonPoi(String fid,JSONObject jo);
+	
+	public void addJsonPois(JSONArray ja){
+		if(ja!=null&&ja.size()>0){
+			for(Object jo:ja){
+				addJsonPoi((JSONObject)jo);
 			}
-			addPois.put(jo.getString("fid"), jo);
-		}else if(jo.getInt("delFlag")==1){
-			if(deletePois==null){
-				deletePois=new HashMap<String,JSONObject>();
-			}
-			deletePois.put(jo.getString("fid"), jo);
-		}else{
-			if(updatePois==null){
-				updatePois= new HashMap<String,JSONObject>();
-			}
-			updatePois.put(jo.getString("fid"), jo);
 		}
 	}
+	public void addJsonPois(Map<String,JSONObject> ja){
+		if(ja!=null){
+			for(Entry<String,JSONObject> entry:ja.entrySet()){
+				addJsonPoi(entry.getKey(),entry.getValue());
+			}
+		}
+	}
+	
 	public Map<String, JSONObject> getAddPois() {
 		return addPois;
 	}
@@ -36,5 +48,4 @@ public class UploadPois {
 	public Map<String, JSONObject> getUpdatePois() {
 		return updatePois;
 	}
-	
 }

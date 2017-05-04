@@ -43,6 +43,7 @@ import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ADLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.CmgLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.LcLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.LuLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
@@ -710,6 +711,17 @@ public class SearchProcess {
                         array.add(link.Serialize(ObjLevel.BRIEF));
                     }
                 }
+                
+            	//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					CmgLinkSearchUtils linkSearchUtils = new CmgLinkSearchUtils(conn);
+					List<CmgBuildlink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (CmgBuildlink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 			}
 			return array;
 		} catch (Exception e) {

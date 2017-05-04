@@ -1,4 +1,5 @@
-﻿1. fm_man/update_fm_man.sh
-	功能：过渡期管理规格升级
-	目标库：fm_man
-	author：宋冬燕
+﻿1. fm_sys/xx.sql
+	功能：xxxx
+	目标库：fm_sys
+	author：xxx
+

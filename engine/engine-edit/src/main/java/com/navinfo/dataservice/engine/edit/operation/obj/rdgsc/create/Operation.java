@@ -170,7 +170,21 @@ public class Operation implements IOperation {
 
 			for (Map.Entry<Integer, RdGscLink> entry : group.entrySet()) {
 
-				entry.getValue().setShpSeqNum(shpSeqNumList.get(index++));
+				RdGscLink gscLink=entry.getValue();
+				
+				gscLink.setShpSeqNum(shpSeqNumList.get(index++));
+			
+				// 0 形状点1 起点2 终点
+				gscLink.setStartEnd(0);
+
+				if (gscLink.getShpSeqNum() == 0) {
+
+					gscLink.setStartEnd(1);
+
+				} else if (gscLink.getShpSeqNum() == linkCoor.length - 1) {
+
+					gscLink.setStartEnd(2);
+				}
 			}
 		}
 	}
@@ -184,7 +198,7 @@ public class Operation implements IOperation {
 	 * @throws Exception
 	 */
 	private void handleGscLink(RdGscLink gscLink, Geometry gscGeo, String type)
-			throws Exception {
+			throws Exception {	
 
 		IRow linkRow = getLink(gscLink, type);
 
@@ -214,6 +228,18 @@ public class Operation implements IOperation {
 		} else {
 		    return;
         }
+
+		// 数据表名
+		gscLink.setTableName(linkRow.tableName().toUpperCase());
+
+		String linkFlag = getLinkFlag(gscLink);
+
+		// 过滤已经处理过的自相交link
+		if (linkCoorMap.containsKey(linkFlag)) {
+			
+			return;
+		}
+		
 		LineString linkNewGeo = lineStringInsertPoint(linkGeometry, gscGeo);
 
 		Geometry newGeo = GeoTranslator.transform(linkNewGeo,
@@ -242,16 +268,11 @@ public class Operation implements IOperation {
 			}
 		}
 
-		// 数据表名
-		gscLink.setTableName(linkRow.tableName().toUpperCase());
-
 		Coordinate[] linkCoor = linkNewGeo.getCoordinates();
-		
-		String linkFlag = getLinkFlag( gscLink);
 
 		linkCoorMap.put(linkFlag, linkCoor);
 
-		// 计算立交点序号和起终点标识
+		// 计算立交点序号和起终点标识，自相交link后续会在再次计算
 		calShpSeqNum(gscLink, gscGeo, linkCoor);
 
 		// 更新线上其他立交的形状点号
@@ -336,11 +357,6 @@ public class Operation implements IOperation {
 
 		Coordinate newCoordinate = pointGeo.getCoordinate();
 
-		// 扩大100000倍保持精度
-		double lon = pointGeo.getCoordinate().x;
-
-		double lat = pointGeo.getCoordinate().y;
-
 		for (int i = 0; i < linkGeo.getCoordinates().length - 1; i++) {
 
 			Coordinate cs = linkGeo.getCoordinates()[i];
@@ -350,13 +366,13 @@ public class Operation implements IOperation {
 			coordinates.add(cs);
 
 			// 是否在线段上
-			if (GeoTranslator.isIntersectionInLine(new double[] { cs.x, cs.y },
-					new double[] { ce.x, ce.y }, new double[] { lon, lat })) {
+			if (GeoTranslator.isIntersectionInLine(cs, ce, newCoordinate)) {
 
 				coordinates.add(newCoordinate);
 			}
 
 			if (i == linkGeo.getCoordinates().length - 2) {
+
 				coordinates.add(ce);
 			}
 		}

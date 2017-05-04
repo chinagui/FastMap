@@ -225,7 +225,7 @@ public class PoiSaveTest {
 	
 	@Test
 	public void testPoiSave() throws Exception{
-		String parameter = "{\"command\":\"DELETE\",\"dbId\":17,\"type\":\"IXPOIPARENT\",\"objId\":305000048}";
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"IXPOI\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"longitude\":116.53563993930817,\"latitude\":40.12263193681172,\"x_guide\":116.47556321879917,\"y_guide\":40.012627581597485,\"linkPid\":88026353,\"name\":\"555\",\"kindCode\":\"110200\"}}";
 		PoiSave ps = new PoiSave();
 		JSONObject res = ps.save(parameter, 2);
 		System.out.println(res);

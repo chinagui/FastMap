@@ -12,17 +12,17 @@ public class MultiSrcPoiDayImportorCommand extends AbstractCommand {
 	
 	private int dbId;
 	
-	protected UploadPois pois;
+	protected MultiSrcUploadPois pois;
 
-	public MultiSrcPoiDayImportorCommand(int dbId,UploadPois pois){
+	public MultiSrcPoiDayImportorCommand(int dbId,MultiSrcUploadPois pois){
 		this.dbId=dbId;
 		this.pois=pois;
 	}
 	
-	public UploadPois getPois() {
+	public MultiSrcUploadPois getPois() {
 		return pois;
 	}
-	public void setPois(UploadPois pois) {
+	public void setPois(MultiSrcUploadPois pois) {
 		this.pois = pois;
 	}
 

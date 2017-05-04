@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.vividsolutions.jts.geom.Geometry;
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +41,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	//@Test
+	@Test
 	public  void nameImportTest() {
 		/*ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "dubbo-consumer.xml"});
@@ -66,9 +68,22 @@ public class RdNameImportTest {
 			
 			importor.importName("测试1#路", 116.49266, 40.20926, "test_imp1");
 			importor.importName("测试2＃路", 116.49266, 40.20926, "test_imp1");*/
-			
-			importor.importName("测试罗马 V 路", 116.49266, 40.20926, "test_imp1");
-			importor.importName("测试123c东2路", 116.49266, 40.20926, "test_imp1");
+			String s = "{\"type\":\"MultiLineString\",\"coordinates\":[[[116.36948,40.1675],[116.37251,40.16732]],[[116.37368,40.16667],[116.37436,40.16565]]]}";
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("g_location", s);
+//			Geometry geoLocation = GeoTranslator.geojson2Jts(jsonObject.getJSONObject("g_location"));
+			String exitStr = "３３18";
+			if(exitStr.length() > 8) {
+				String[] exitArray = exitStr.split("/");
+				for(String perExit : exitArray) {
+					importor.importName(perExit, jsonObject.getJSONObject("g_location"), "test_imp1","1407");
+				}
+			}else {
+				importor.importName(exitStr, jsonObject.getJSONObject("g_location"), "test_imp1","1407");
+			}
+
+			//importor.importName("３３０１/３８７Ａ", jsonObject.getJSONObject("g_location"), "test_imp1","1407");
+//			importor.importName("测试123c东2路", 116.49266, 40.20926, "test_imp1");
 			
 			System.out.println("测试完成");
 			
@@ -145,7 +160,7 @@ public class RdNameImportTest {
 		System.out.println(data);
 	}
 	
-//	@Test
+	@Test
 	public void teilenName () {
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589343,\"nameGroupid\":40589344,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":0,\"nameGroupid\":11111111,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
@@ -170,7 +185,7 @@ public class RdNameImportTest {
 		//火龙沟线
 //		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589341,\"nameGroupid\":40589342,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 	
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":308000029,\"nameGroupid\":304000029,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":76}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":657226,\"nameGroupid\":329208,\"langCode\":\"CHI\",\"roadType\":4}],\"flag\":1,\"subtaskId\":76}";
 		
 		Connection conn = null;
 		try {
@@ -211,10 +226,11 @@ public class RdNameImportTest {
 		}
 	}
 	
-	@Test
+
+	//@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
-		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'嘿嘿嘿嘿','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':110000,'codeType':0,'voiceFile':'wwww','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'杨柳高速333','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'hwInfoFlag':1 ,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'哈哈哈','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
 		
 		JSONObject data = jsonReq.getJSONObject("data");
 		

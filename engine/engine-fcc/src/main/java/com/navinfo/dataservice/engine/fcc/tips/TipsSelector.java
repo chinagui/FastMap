@@ -135,10 +135,6 @@ public class TipsSelector {
 
 				rowkey = json.getString("id");
 				
-				if(rowkey.equals("028002921a855f54c94990ab034c1fe4862d83")){
-					System.out.println("");
-				}
-
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				snapshot.setI(json.getString("id"));
@@ -777,19 +773,19 @@ public class TipsSelector {
 
 					JSONObject dInfo = JSONObject.fromObject(object2);
 
-					JSONArray outArr = dInfo.getJSONArray("out");
+					JSONObject out = dInfo.getJSONObject("out");
 
-					if (outArr != null && !outArr.isEmpty()) {
+				/*	if (outArr != null && !outArr.isEmpty()) {
 
 						for (Object object3 : outArr) {
-
+*/
 							JSONObject obj = assembleOutNumAndGeoResultFromObj(
-									z, px, py, object3);
+									z, px, py, out);
 
 							reusltArr.add(obj);
-						}
+						//}
 
-					}
+				//	}
 				}
 			}
 		}

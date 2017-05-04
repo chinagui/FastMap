@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -108,6 +110,10 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
+	}
+	@Override
+	public List<RegionMesh> queryRegionWithMeshes(Collection<String> meshes) throws Exception{
+		return RegionService.getInstance().queryRegionWithMeshes(meshes);
 	}
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.api.man.iface.ManApi#queryCityIdByTaskId(int)

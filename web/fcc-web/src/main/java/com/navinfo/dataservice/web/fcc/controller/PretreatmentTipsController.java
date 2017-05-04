@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.EdgeMatchTipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.PretreatmentTipsOperator;
 
@@ -168,9 +169,18 @@ public class PretreatmentTipsController extends BaseController {
 			
 			JSONObject pointGeo=jsonReq.getJSONObject("pointGeo");
 			
-			int subTaskId=jsonReq.getInt("subTaskId"); //任务号
+			int subTaskId=jsonReq.getInt("subtaskId"); //任务号
 			
-			int jobType=jsonReq.getInt("jobType"); //任务类型（中线或者是快线的任务号）
+			int taskType=jsonReq.getInt("taskType"); //任务类型（中线或者是快线的任务号）
+			
+			//web传递的是1，或4，需要转成子任务类型
+			if(taskType == TaskType.Q_TASK_TYPE){
+				taskType=TaskType.Q_SUB_TASK_TYPE;
+			}
+			
+			else if(taskType == TaskType.M_TASK_TYPE){
+				taskType=TaskType.M_SUB_TASK_TYPE;
+			}
 
 			if (StringUtils.isEmpty(rowkey)) {
 				throw new IllegalArgumentException("参数错误：rowkey不能为空。");
@@ -182,7 +192,7 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,jobType);
+			op.cutMeasuringLineCut(rowkey,pointGeo,user,subTaskId,taskType);
 
 			return new ModelAndView("jsonView", success());
 
@@ -545,7 +555,9 @@ public class PretreatmentTipsController extends BaseController {
 
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.batchSave(jsonInfoArr,user); //新增多个tips
+			int command=PretreatmentTipsOperator.COMMAND_INSERT;
+			
+			op.batchSaveOrUpdate(jsonInfoArr,user,command); //新增多个tips
 
 			return new ModelAndView("jsonView", success());
 

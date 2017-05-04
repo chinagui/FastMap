@@ -1,30 +1,31 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
-import com.navinfo.dataservice.engine.meta.translate.TranslateDictData;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @Title: ConvertUtil
  * @Package: com.navinfo.dataservice.engine.meta.translates
- * @Description: ${TODO}
+ * @Description: 翻译-工具类
  * @Author: Crayeres
  * @Date: 2017/3/30
  * @Version: V1.0
  */
 public class ConvertUtil {
 
-    static Integer HALF_TO_FULL = 1;
 
-    static Integer FULL_TO_HALF = 2;
+    public static String convertNoWord(String sourceText){
+        String regex = "[Ｎｎ]+[ｏＯ]+(/。)+";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(sourceText);
+        while (matcher.find()) {
+            sourceText = sourceText.replace(sourceText.substring(matcher.start(), matcher.end()), "Ｎｏ．");
+            matcher = pattern.matcher(sourceText);
+        }
 
-    static Map<String, String> HALF_FULL_MAP = TranslateDictData.getInstance().getDictFhWidth();
-
-    static Map<String, String> SYMBOL_MAP = TranslateDictData.getInstance().getDictSymbolMap();
-
-    public static String[] delNoChinese(String sourceText){
-
-        return new String[]{};
+        return sourceText;
     }
 
     public static String removeRepeatBackSlash(String sourceText){
@@ -117,7 +118,7 @@ public class ConvertUtil {
     }
 
     public static String removeSymbolWord(String sourceText) {
-        for (Map.Entry<String, String> entry : SYMBOL_MAP.entrySet()) {
+        for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
             if (sourceText.indexOf(entry.getKey()) >= 0) {
                 sourceText = sourceText.replaceAll(entry.getKey(), entry.getValue() + " ");
             }
@@ -126,28 +127,28 @@ public class ConvertUtil {
     }
 
     public static String convertHalf2Full(String sourceText) {
-        return convFullHashWidth(sourceText, HALF_TO_FULL);
+        return convFullHashWidth(sourceText, TranslateConstant.HALF_TO_FULL);
     }
 
     public static String convertFull2Half(String sourceText) {
-        return convFullHashWidth(sourceText, FULL_TO_HALF);
+        return convFullHashWidth(sourceText, TranslateConstant.FULL_TO_HALF);
     }
 
     private static String convFullHashWidth(String sourceText, Integer convertType) {
         StringBuffer result = new StringBuffer();
         String wordValue = "";
-        if (HALF_TO_FULL == convertType) {
+        if (TranslateConstant.HALF_TO_FULL == convertType) {
             for (Character c : sourceText.toCharArray()) {
                 wordValue = c.toString();
-                if (HALF_FULL_MAP.containsKey(wordValue)) {
-                    wordValue = HALF_FULL_MAP.get(wordValue);
+                if (TranslateDictData.getInstance().getDictFhWidth().containsKey(wordValue)) {
+                    wordValue = TranslateDictData.getInstance().getDictFhWidth().get(wordValue);
                 }
                 result.append(wordValue);
             }
-        } else if(FULL_TO_HALF == convertType) {
+        } else if(TranslateConstant.FULL_TO_HALF == convertType) {
             for (Character c : sourceText.toCharArray()) {
                 wordValue = c.toString();
-                for (Map.Entry<String, String> e : HALF_FULL_MAP.entrySet()) {
+                for (Map.Entry<String, String> e : TranslateDictData.getInstance().getDictFhWidth().entrySet()) {
                     if(e.getValue().equals(wordValue)){
                         wordValue = e.getKey();
                     }

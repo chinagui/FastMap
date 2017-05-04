@@ -48,7 +48,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	static String FC_SOURCE_TYPE = "8001"; // FC预处理理tips
 
 	static int FC_DEFAULT_STAGE = 2;
-
+	
+	public static int COMMAND_INSERT=0;
+	
+	public static int COMMAND_UPADATE=1;
+	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
 
@@ -237,6 +241,44 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		Geometry midGeo = GeometryUtils.getMidPointByLine(GeoTranslator
 				.geojson2Jts(lineGeometry));
 		pointGeo = GeoTranslator.jts2Geojson(midGeo);
+		return pointGeo;
+	}
+	
+	
+	/**
+	 * @Description:获得坐标的几何中心点（线）或
+	 * 1.如果只有两个形状点，则取几何中心点，否则取第二个形状点
+	 * @param lineGeometry
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-11-18 下午4:18:43
+	 */
+	private JSONObject getMidPointByGeometry2(JSONObject lineGeometry)
+			throws Exception {
+		JSONObject pointGeo;
+		
+		Geometry geo= GeoTranslator
+		.geojson2Jts(lineGeometry);
+		
+		Coordinate[] cs = geo.getCoordinates();
+		
+		if(cs.length==2){
+			
+			Geometry midGeo = GeometryUtils.getMidPointByLine(GeoTranslator
+					.geojson2Jts(lineGeometry));
+			pointGeo = GeoTranslator.jts2Geojson(midGeo);
+		}else{
+			
+				double x = cs[1].x; //取第二个形状点
+				double y = cs[1].y;
+
+			Geometry secondPoint = GeoTranslator.point2Jts(x, y);
+			
+			pointGeo = GeoTranslator.jts2Geojson(secondPoint);
+			
+		}
+	
 		return pointGeo;
 	}
 
@@ -514,13 +556,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
+					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
 					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
 					feedbackObj));
 
-			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
 					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
 					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
+					feedbackObj));
+
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
@@ -1143,7 +1196,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			String sourceType = source.getString("s_sourceType");
 			// 新增
-			if (command == 0) {
+			if (command == COMMAND_INSERT) {
 
 				rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
@@ -1235,7 +1288,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			dataTrack.put("t_lifecycle", newlifeCycle);
 			jsonInfo.put("track", dataTrack);
 
-			insertOneTips(jsonInfo, user, htab, rowkey); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			insertOneTips(jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());
@@ -1394,10 +1447,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 *            :tips数组
 	 * @param user
 	 * @author: y
+	 * @param command   ：操作指令，0:新增一个tips;1：修改tips
 	 * @throws Exception
 	 * @time:2017-3-13 下午3:57:32
 	 */
-	public void batchSave(JSONArray jsonInfoArr, int user) throws Exception {
+	public void batchSaveOrUpdate(JSONArray jsonInfoArr, int user, int command) throws Exception {
 
 		Connection hbaseConn;
 		
@@ -1414,14 +1468,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			for (Object jsonInfo : jsonInfoArr) {
 
 				JSONObject tipsInfo = JSONObject.fromObject(jsonInfo);
-
+				
+				String rowkey=tipsInfo.getString("rowkey");
+				
 				JSONObject source = tipsInfo.getJSONObject("source");
-
+				
 				String sourceType = source.getString("s_sourceType");
+				
+				//如果是新增，则生成rowkey
+				
+				if(command==COMMAND_INSERT){
+					
+					rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
-				String rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
-
-				tipsInfo.put("rowkey", rowkey);
+					tipsInfo.put("rowkey", rowkey);
+				}
 
 				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
 				puts.add(put);
@@ -1500,6 +1561,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		JSONObject line2=resultArr.get(1);
 		
+		logger.debug("打断后line1:"+line1.getString("id"));
+		
+		logger.debug("打断后line2:"+line2.getString("id"));
+		
 		// 第二步：更新测线关联的tips
 		TipsSelector selector = new TipsSelector();
 		JSONArray souceTypes = new JSONArray();
@@ -1508,7 +1573,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		List<JSONObject> snapotList = selector.getTipsByTaskIdAndSourceTypes(
 				souceTypes, subTaskId, jobType);
 		
-		List<JSONObject> updateList=new ArrayList<JSONObject>();
+		JSONArray updateArray=new JSONArray();//维护后的tips （json） List
 
 		for (JSONObject json : snapotList) {
 
@@ -1516,12 +1581,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			if(result!=null){
 				
-				updateList.add(result);
+				updateArray.add(result);
 			}
 
 		}
-		//更新后的数据进行报错 ？？待补充
+		//更新后的数据进行更新
+		saveUpdateData(updateArray,user);
 
+	}
+
+	
+	/**
+	 * 保存测线打断后维护的数据结果
+	 * @param updateArray
+	 * @param user 
+	 * @throws Exception 
+	 */
+	private void saveUpdateData(JSONArray updateArray, int user) throws Exception {
+		try {
+			batchSaveOrUpdate(updateArray, user, COMMAND_UPADATE);
+		} catch (Exception e) {
+		logger.error("测线打断，批量修改出错，"+e.getMessage());
+		throw new Exception("测线打断，批量修改出错，"+e.getMessage(), e);
+		}
 	}
 
 	/**
@@ -1629,16 +1711,26 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solrIndex.put("g_guide", g_guide1);
 
 			newSolrIndex.put("g_guide", g_guide2);
-
+			
+			
 			// 更新wkt
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
 					"2001", null, g_location1,
 					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", null, g_location1,
+					feedbackObj));
 
-			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+					"2001", null, g_location2,
+					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
 					"2001", null, g_location2,
 					feedbackObj));
 
@@ -1657,6 +1749,22 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
 
 			deep2.put("geo", g_guide2);
+			
+			
+			//更新deep.len
+			
+			double len1=GeoTranslator.geojson2Jts(g_location1).getLength();
+			
+			
+			double len2=GeoTranslator.geojson2Jts(g_location2).getLength();
+			
+			deep1.put("len", len1);
+			
+			deep2.put("len", len2);
+			
+			solrIndex.put("deep", deep1.toString());
+
+			newSolrIndex.put("deep", deep2.toString());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep1.toString()
 					.getBytes());
@@ -1745,8 +1853,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	/**
 	 * @Description:根据tips类型，修改tips的关联测线
 	 * @param json：被修改的tips solr
-	 * @param line1
-	 * @param line2
+	 * @param line1:打断后的第一条link
+	 * @param line2:打断后的第二条link
 	 * @author: y
 	 * @return 
 	 * @time:2017-4-12 下午8:37:30
@@ -1781,6 +1889,19 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			TipsSelector selector = new TipsSelector();
 			
 			int taskType=getTaskType(taskId);
+			
+			
+			if(taskType == TaskType.Q_TASK_TYPE){
+				taskType=TaskType.Q_SUB_TASK_TYPE;
+			}
+			
+			else if(taskType == TaskType.M_TASK_TYPE){
+				taskType=TaskType.M_SUB_TASK_TYPE;
+			}
+			
+			else {
+				throw new Exception("不支持的任务类型：" + taskType);
+			}
 
 			List<JSONObject> tipsList = selector.getTipsByTaskId(taskId,
 					taskType);

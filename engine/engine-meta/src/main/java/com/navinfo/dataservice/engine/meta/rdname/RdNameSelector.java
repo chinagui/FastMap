@@ -176,13 +176,14 @@ public class RdNameSelector {
 	/**
 	 * @Description:判断名称是否存在--查询大区库
 	 * @param name
-	 * @param adminId
+	 * @param adminIdList
+     * @param sourceType
 	 * @return 所在行政区划
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-6-28 下午3:42:20
 	 */
-	public int isNameExists(String name, int adminId) throws Exception {
+	public int isNameExists(String name, List<Integer> adminIdList, String sourceType) throws Exception {
 		int resultAdmin = 0;
 
 		PreparedStatement pstmt = null;
@@ -190,11 +191,21 @@ public class RdNameSelector {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
-
+        StringBuffer subSF = new StringBuffer();
+		for(int adminId : adminIdList) {
+			if(subSF.length() > 0)
+                subSF.append(",");
+            subSF.append("?");
+		}
 		String sql = "SELECT N.ADMIN_ID									\n"
 				+ "  FROM RD_NAME N                                      \n"
 				+ " WHERE N.NAME = ?                                     \n"
-				+ "   AND (N.ADMIN_ID = ? OR N.ADMIN_ID = 214)           \n";
+				+ "   AND (N.ADMIN_ID in(" + subSF.toString() + ") OR N.ADMIN_ID = 214)           \n";
+        if(sourceType.equals("1407")) {//出口编号
+            sql += " AND N.ROAD_TYPE = 4";
+        }else if(sourceType.equals("8006")) {
+            sql += " AND N.ROAD_TYPE = 1";
+        }
 
 		try {
 
@@ -213,7 +224,10 @@ public class RdNameSelector {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
-			pstmt.setInt(2, adminId);
+            for(int i = 0; i < adminIdList.size(); i++) {
+                pstmt.setInt(i + 2, adminIdList.get(i));
+            }
+
 
 			resultSet = pstmt.executeQuery();
 
@@ -240,7 +254,7 @@ public class RdNameSelector {
 		arr.add(3);
 		
 		String types = arr.join(",");
-		System.out.println(types);
+//		System.out.println(types);
 		
 		
 		
@@ -535,77 +549,80 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 		
 		StringBuilder sql = new StringBuilder();
 		
-			sql.append("SELECT * ");
-			sql.append(" FROM (SELECT c.*, rownum rn");
-			sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-			sql.append(" ,( select substr(replace(src_resume,'\"',''),instr(replace(src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) tipid from rd_name where src_resume like '%tips%' and name_id = a.name_id) as tipid  ");
-			sql.append(" from rd_name a where 1=1");
-			// 添加过滤器条件
-			Iterator<String> keys = param.keys();
-			while (keys.hasNext()) {
-				String key = keys.next();
-				if (key.equals("name")) {
-					if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
-						sql.append(" and a.name like '%");
-						sql.append(param.getString(key));
-						sql.append("%'");
-					}
-					
-				} else if(key.equals("nameGroupid") ){
-					if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+			sql.append("with q1 as(");
+			sql.append(" select distinct a.NAME_GROUPID  from rd_name a where 1=1 ");
+				// 添加过滤器条件
+				Iterator<String> keys = param.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					if (key.equals("name")) {
+						if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
+							sql.append(" and a.name like '%");
+							sql.append(param.getString(key));
+							sql.append("%'");
+						}
+						
+					} else if(key.equals("nameGroupid") ){
+						if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("adminId") ){
+						if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("roadTypes")){
+						if(StringUtils.isNotEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
+							String columnName = "road_type";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("  in( ");
+							sql.append(roadTypes);
+							sql.append(") ");
+						}
+						
+					}else {
 						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append(" = ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}
-					
-				}else if(key.equals("adminId") ){
-					if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append(" = ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}
-					
-				}else if(key.equals("roadTypes")){
-					if(StringUtils.isNotEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
-						String columnName = "road_type";
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("  in( ");
-						sql.append(roadTypes);
-						sql.append(") ");
-					}
-					
-				}else {
-					String columnName = sUtils.toColumnName(key);
-					if (!param.getString(key).isEmpty()) {
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("='");
-						sql.append(param.getString(key));
-						sql.append("'");
+						if (!param.getString(key).isEmpty()) {
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("='");
+							sql.append(param.getString(key));
+							sql.append("'");
+						}
 					}
 				}
-			}
+
+			sql.append(") ");
+			sql.append("SELECT * ");
+			sql.append(" FROM (SELECT c.*, rownum rn");
+			sql.append(" FROM (select distinct COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+			sql.append(" from rd_name a , q1 q  where 1=1 and a.name_groupid = q.NAME_GROUPID ");
 		
 		// 添加排序条件
 		if (sortby.length()>0) {
 			int index = sortby.indexOf("-");
 			if (index != -1) {
-				sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
+				sql.append(" ORDER BY ");
 				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" , a.");
+				sql.append("  a.");
 				sql.append(sortbyName);
 				sql.append(" DESC");
 			} else {
-				sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+				sql.append(" ORDER BY ");
 				String sortbyName = sUtils.toColumnName(sortby.substring(1));
-				sql.append(" , a.");
+				sql.append("  a.");
 				sql.append(sortbyName);
 			}
 		} else {
@@ -799,7 +816,6 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 				rdNameObj.put("hwInfoFlag", 0);
 			}
 			//*************************
-			
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;

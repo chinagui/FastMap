@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,9 +53,6 @@ public class FMBAT20186_1 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")) {
 			return;
 		}
@@ -66,8 +64,8 @@ public class FMBAT20186_1 extends BasicBatchRule {
 		// 电话
 		List<IxPoiContact> parentContactList = poiObj.getIxPoiContacts();
 		if(parentAddressList.size()==0&&parentContactList.size()==0){return;}
-		boolean addressFlag=true;
-		boolean contactFlag=true;
+		boolean addressFlag=false;
+		boolean contactFlag=false;
 		for(IxPoiAddress parentAdd:parentAddressList){
 			if(parentAdd.getHisOpType().equals(OperationType.INSERT)||parentAdd.getHisOpType().equals(OperationType.UPDATE)){
 				addressFlag=true;
@@ -89,9 +87,10 @@ public class FMBAT20186_1 extends BasicBatchRule {
 			List<IxPoiContact> childContactList = child.getIxPoiContacts();
 			if(addressFlag){
 				// 地址
-				for (IxPoiAddress address:childAddressList) {
-					child.deleteSubrow(address);
+				for(int i=childAddressList.size()-1;i>=0;i--){
+					child.deleteSubrow(childAddressList.get(i));
 				}
+				
 				for (IxPoiAddress parentAddress:parentAddressList) {
 					IxPoiAddress newAddress = child.createIxPoiAddress();
 					newAddress.setPoiPid(childPoi.getPid());
@@ -105,8 +104,8 @@ public class FMBAT20186_1 extends BasicBatchRule {
 			
 			if(contactFlag){
 				// 电话
-				for (IxPoiContact contact:childContactList) {
-					child.deleteSubrow(contact);
+				for(int i=childContactList.size()-1;i>=0;i--){
+					child.deleteSubrow(childContactList.get(i));
 				}
 				for (IxPoiContact parentContact:parentContactList) {
 					IxPoiContact newContact = child.createIxPoiContact();

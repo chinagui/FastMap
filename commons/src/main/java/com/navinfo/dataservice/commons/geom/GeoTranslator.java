@@ -177,6 +177,40 @@ public class GeoTranslator {
 
 		return flag;
 	}
+	
+	/**
+	 * 点p0是否在点c1和c2的线上，不包含端点
+	 * 
+	 * @param c1
+	 *            线起点
+	 * @param c2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersectionInLine(Coordinate c1, Coordinate c2,
+			Coordinate p0) throws Exception {
+
+		if (isPointEquals(c1, p0) || isPointEquals(c2, p0)) {
+
+			return false;
+		}
+
+		Coordinate[] coordinates = { c1, c2 };
+
+		Geometry line = createLineString(coordinates);
+
+		Geometry point = createPoint(p0);
+
+		if (line.distance(point) <= 1) {
+			
+			return true;
+		}
+
+		return false;
+	}
 
 	/**
 	 * 点p0是否在点p1和p2的线上(墨卡托坐标)

@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.json.JSONObject;
 
@@ -144,7 +146,7 @@ public class MeshSelector {
 	 * @author: y
 	 * @time:2016-6-28 下午1:53:19
 	 */
-	public int getAdminIdByMesh(String meshId)
+	public List<Integer> getAdminIdByMesh(String meshId)
 			throws ServiceException {
 
 		Connection conn = null;
@@ -156,23 +158,23 @@ public class MeshSelector {
 
 			conn = DBConnector.getInstance().getMetaConnection();
 			
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					if (rs.next()) {
-						return rs.getInt("admincode");
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+                    List<Integer> rsList = new ArrayList<>();
+					while (rs.next()) {
+                        rsList.add(rs.getInt("admincode"));
 					}
-					return 0;
+                    return rsList;
 				}
-
 			};
+
+            List<Integer> rsList = run.query(conn, selectSql, rsHandler, meshId);
 			
-			int adminId = run.query(conn, selectSql, rsHandler, meshId);
-			
-			if(adminId == 0){
+			if(rsList == null || rsList.size() == 0){
 				throw new ServiceException("未找到对应的省市");
 			}
 
-			return adminId;
+			return rsList;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);

@@ -5,26 +5,31 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
+import com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.CmglinkUtil;
 import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import net.sf.json.JSONObject;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +87,10 @@ public class Operation implements IOperation {
             // 创建CMG-FACE子表TOPO
             CmgfaceUtil.createCmgfaceTopo(result, cmglink.pid(), cmgface.pid(), 1);
         } else {
+            if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
+                // 依据RdLink几何生成CmgLink几何
+                createCmglinkRefRdlink(result);
+            }
             // 重新计算线构面LINK顺序
             Map<Integer, Geometry> map = CmgfaceUtil.calcCmglinkSequence(command.getCmglinks());
             // 更新参数LINK
@@ -113,14 +122,70 @@ public class Operation implements IOperation {
                 // 重新计算CMG-LINK-MESH信息
                 calcCmglinkMesh(result, cmgfaceMeshId, cmglink);
                 // 重新计算START点的MESH信息
-                CmgBuildnode cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.getsNodePid(), false);
+                CmgBuildnode cmgnode = null;
+                if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
+                    for (IRow r : result.getAddObjects()) {
+                        if (r instanceof CmgBuildnode && ((CmgBuildnode)r).pid() == cmglink.getsNodePid()) {
+                            cmgnode = (CmgBuildnode) r;
+                        }
+                    }
+                } else {
+                    cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.getsNodePid(), false);
+                }
                 calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
                 // 重新计算END点的MESH信息
-                cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.geteNodePid(), false);
+                if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
+                    for (IRow r : result.getAddObjects()) {
+                        if (r instanceof CmgBuildnode && ((CmgBuildnode)r).pid() == cmglink.geteNodePid()) {
+                            cmgnode = (CmgBuildnode) r;
+                        }
+                    }
+                } else {
+                    cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.getsNodePid(), false);
+                }
                 calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
             }
         }
         return null;
+    }
+
+    /**
+     * 依据RdLink几何生成CmgLink
+     * @param result 结果集
+     * @throws Exception 线构面出错
+     */
+    private void createCmglinkRefRdlink(Result result) throws Exception {
+        List<IRow> cmglinks = new ArrayList<>();
+        Map<Coordinate, Integer> map = new HashMap<>();
+        for (IRow row : command.getCmglinks()) {
+            Geometry geometry = GeoTranslator.transform(((RdLink)row).getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+            int sNodePid = 0;
+            int eNodePid = 0;
+            Coordinate firstCoor = geometry.getCoordinates()[0];
+            Coordinate lastCoor = geometry.getCoordinates()[geometry.getCoordinates().length - 1];
+            for (Map.Entry<Coordinate, Integer> entry : map.entrySet()) {
+                if (entry.getKey().equals(firstCoor)) {
+                    sNodePid = entry.getValue();
+                }
+                if (entry.getKey().equals(lastCoor)) {
+                    eNodePid = entry.getValue();
+                }
+            }
+            JSONObject json = CmgLinkOperateUtils.createCmglinkEndpoint(geometry, sNodePid, eNodePid, result);
+            if (0 == sNodePid) {
+                sNodePid = json.getInt("s");
+                map.put(firstCoor, sNodePid);
+            }
+            if (0 == eNodePid) {
+                eNodePid = json.getInt("e");
+                map.put(lastCoor, eNodePid);
+            }
+
+
+            CmgBuildlink cmglink = CmgLinkOperateUtils.createCmglink(geometry, sNodePid, eNodePid, result, false);
+            cmglinks.add(cmglink);
+        }
+        command.setCmglinks(cmglinks);
     }
 
     /**

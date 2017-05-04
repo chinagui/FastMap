@@ -591,4 +591,35 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 子任务查询列表
+	 * @author songhe
+	 * @param  cityName
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/listAllInforByCity")
+	public ModelAndView listAllInforByCity(HttpServletRequest request) {
+		try {
+//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//TODO 这里编码集需要确认
+			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			String cityName = dataJson.getString("cityName");
+			JSONObject condition = new JSONObject();
+			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			List<Map<String, Object>> data = SubtaskService.getInstance().listAllInforByCity(cityName, condition);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("根据cityId获取block失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

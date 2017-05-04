@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -233,23 +234,19 @@ public class TipsUpload {
 			String rowkey = en.getKey();
 			// 坐标
 			JSONObject nameTipJson = en.getValue();
-			JSONObject deep = JSONObject.fromObject(nameTipJson.get("deep"));
-			JSONObject geo = deep.getJSONObject("geo");
-			JSONArray jaCoords = geo.getJSONArray("coordinates");
-			double longitude = jaCoords.getDouble(0);
-			double latitude = jaCoords.getDouble(1);
+			JSONObject gLocation = JSONObject.fromObject(nameTipJson.get("g_location"));
+            String sourceType = nameTipJson.getString("s_sourceType");
 
 			// 名称,调用元数据库接口入库
 			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil
 					.getBean("metaApi");
-			JSONArray names = deep.getJSONArray("n_array");
+			JSONArray names = nameTipJson.getJSONArray("n_array");
 			for (Object name : names) {
 				// 修改 20170308，道路名去除空格，否则转英文报错
 				if (name != null
 						&& StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
-						metaApi.nameImport(name.toString().trim(), longitude,
-								latitude, rowkey);
+						metaApi.nameImport(name.toString().trim(), gLocation, rowkey, sourceType);
 					} catch (Exception e) {
 						// reasons.add(newReasonObject(rowkey,
 						// ErrorType.InvalidData));
@@ -373,15 +370,13 @@ public class TipsUpload {
 				json.put("feedback", feedbackObj);
 
 				String sourceType = json.getString("s_sourceType");
-
+                JSONObject gLocation = json.getJSONObject("g_location");
+                JSONObject deep = JSONObject.fromObject(json
+                        .getString("deep"));
 				if (sourceType.equals("2001")) {
-					JSONObject glocation = json.getJSONObject("g_location");
 
 					double length = GeometryUtils.getLinkLength(GeoTranslator
-							.geojson2Jts(glocation));
-
-					JSONObject deep = JSONObject.fromObject(json
-							.getString("deep"));
+							.geojson2Jts(gLocation));
 
 					deep.put("len", length);
 
@@ -409,9 +404,42 @@ public class TipsUpload {
 				updateTaskIds(json);
 
 				// 道路名测线
+                JSONObject rdNameObject = new JSONObject();
+                rdNameObject.put("g_location", gLocation);
+                rdNameObject.put("s_sourceType", sourceType);
 				if (sourceType.equals("1901")) {
-					roadNameTips.put(rowkey, json);
-				}
+                    JSONArray names = deep.getJSONArray("n_array");
+                    rdNameObject.put("n_array",names);
+					roadNameTips.put(rowkey, rdNameObject);
+				}else if(sourceType.equals("1407")) {//高速分歧
+                    JSONArray infoArray = deep.getJSONArray("info");
+                    JSONArray names = new JSONArray();
+                    for(int i = 0; i < infoArray.size(); i++) {
+                        JSONObject infoObj = infoArray.getJSONObject(i);
+                        String exitStr = infoObj.getString("exit");
+                        if(exitStr.length() > 8) {
+                            String[] exitArray = exitStr.split("/");
+                            for(String perExit : exitArray) {
+                                names.add(perExit);
+                            }
+                        }else {
+                            names.add(exitStr);
+                        }
+                    }
+                    rdNameObject.put("n_array",names);
+                    roadNameTips.put(rowkey, rdNameObject);
+                    //桥、隧道、跨线立交桥、步行街、环岛、风景路线、立交桥、航线、Highway道路名
+                }else if(sourceType.equals("1510") || sourceType.equals("1511")
+                        || sourceType.equals("1509") || sourceType.equals("1507")
+                        || sourceType.equals("1601") || sourceType.equals("1607")
+                        || sourceType.equals("1705") || sourceType.equals("1209")
+                        || sourceType.equals("8006")) {
+                    JSONArray names = new JSONArray();
+                    String nameStr = deep.getString("name");
+                    names.add(nameStr);
+                    rdNameObject.put("n_array",names);
+                    roadNameTips.put(rowkey, rdNameObject);
+                }
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);

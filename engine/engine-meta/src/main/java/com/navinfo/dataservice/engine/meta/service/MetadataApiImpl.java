@@ -290,9 +290,9 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public void nameImport(String name, double longitude, double latitude, String rowkey) throws Exception {
+	public void nameImport(String name, JSONObject gLocation, String rowkey, String sourceType) throws Exception {
 		RdNameImportor nameImportor = new RdNameImportor();
-		nameImportor.importName(name, longitude, latitude, rowkey);
+		nameImportor.importName(name, gLocation, rowkey, sourceType);
 
 	}
 

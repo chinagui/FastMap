@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.Map;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -183,7 +185,12 @@ public class TipsUtils {
 		
 		index.put("s_mSubTaskId", json.getInt("s_mSubTaskId"));
 		
-		index.put("relate_links", TipsLineRelateQuery.getRelateLine(json.getString("s_sourceType"), deep));
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(json.getString("s_sourceType"), deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
+		
 		
 		return index;
 		
@@ -312,7 +319,12 @@ public class TipsUtils {
 		
 		index.put("s_mSubTaskId", s_mSubTaskId);
 		
-		index.put("relate_links", TipsLineRelateQuery.getRelateLine(sourceType, deep));
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(sourceType, deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
+		
 		
 
 		return index;
@@ -498,7 +510,12 @@ public class TipsUtils {
 	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
 	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
 	   
-		index.put("relate_links", TipsLineRelateQuery.getRelateLine(sourceType, deep));
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(sourceType, deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
+	   
 		
 	   return index;
 	}

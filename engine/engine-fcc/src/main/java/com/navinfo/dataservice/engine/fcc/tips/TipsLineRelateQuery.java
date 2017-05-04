@@ -393,7 +393,7 @@ public class TipsLineRelateQuery {
 		//out.id
 		JSONObject out = deep.getJSONObject("out");
 
-		if (StringUtils.isNotEmpty(out.getString("id"))) {
+		if (out.containsKey("id")&&StringUtils.isNotEmpty(out.getString("id"))) {
 			linkStr =out.getString("id") + LINK_SEPARATOR;
 		}
 		

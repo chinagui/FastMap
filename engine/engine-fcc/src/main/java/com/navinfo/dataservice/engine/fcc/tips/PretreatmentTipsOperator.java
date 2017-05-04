@@ -1239,7 +1239,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			dataTrack.put("t_lifecycle", newlifeCycle);
 			jsonInfo.put("track", dataTrack);
 
-			insertOneTips(jsonInfo, user, htab, rowkey); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			insertOneTips(jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());

@@ -1558,6 +1558,7 @@ public class StaticsService {
 						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND P.STATUS = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
@@ -1596,6 +1597,7 @@ public class StaticsService {
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS in (0,1)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.CITY_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
@@ -1631,6 +1633,7 @@ public class StaticsService {
 						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND P.STATUS = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
@@ -1670,6 +1673,7 @@ public class StaticsService {
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
 						+ "   AND P.STATUS in (1,0)"
+						+ "   AND P.LATEST = 1"
 						+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 						+ "   AND T.LATEST = 1"
 						+ " GROUP BY P.PROGRAM_ID, C.INFOR_ID, C.PLAN_STATUS, P.STATUS,F.DIFF_DATE,"
@@ -2710,12 +2714,12 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", planStartDate);
+							overView.put("actualStartDate", null);
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", planEndDate);
+							overView.put("actualEndDate", null);
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");

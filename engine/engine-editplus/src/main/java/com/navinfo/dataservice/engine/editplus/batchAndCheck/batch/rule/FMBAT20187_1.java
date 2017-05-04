@@ -73,7 +73,7 @@ public class FMBAT20187_1 extends BasicBatchRule{
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (!"230227".equals(poi.getKindCode()) || (poiObj.getIxPoiChildrens().size()<1)){
+		if (!"230227".equals(poi.getKindCode()) || !(pidParentPidMap.containsKey(poi.getPid()))){
 			return;
 		}
 		// 条件1，2，3，4都不满足，则不批

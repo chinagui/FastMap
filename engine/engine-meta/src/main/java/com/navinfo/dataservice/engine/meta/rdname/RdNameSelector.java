@@ -176,13 +176,14 @@ public class RdNameSelector {
 	/**
 	 * @Description:判断名称是否存在--查询大区库
 	 * @param name
-	 * @param adminId
+	 * @param adminIdList
+     * @param sourceType
 	 * @return 所在行政区划
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-6-28 下午3:42:20
 	 */
-	public int isNameExists(String name, int adminId) throws Exception {
+	public int isNameExists(String name, List<Integer> adminIdList, String sourceType) throws Exception {
 		int resultAdmin = 0;
 
 		PreparedStatement pstmt = null;
@@ -190,11 +191,21 @@ public class RdNameSelector {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
-
+        StringBuffer subSF = new StringBuffer();
+		for(int adminId : adminIdList) {
+			if(subSF.length() > 0)
+                subSF.append(",");
+            subSF.append("?");
+		}
 		String sql = "SELECT N.ADMIN_ID									\n"
 				+ "  FROM RD_NAME N                                      \n"
 				+ " WHERE N.NAME = ?                                     \n"
-				+ "   AND (N.ADMIN_ID = ? OR N.ADMIN_ID = 214)           \n";
+				+ "   AND (N.ADMIN_ID in(" + subSF.toString() + ") OR N.ADMIN_ID = 214)           \n";
+        if(sourceType.equals("1407")) {//出口编号
+            sql += " AND N.ROAD_TYPE = 4";
+        }else if(sourceType.equals("8006")) {
+            sql += " AND N.ROAD_TYPE = 1";
+        }
 
 		try {
 
@@ -213,7 +224,10 @@ public class RdNameSelector {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
-			pstmt.setInt(2, adminId);
+            for(int i = 0; i < adminIdList.size(); i++) {
+                pstmt.setInt(i + 2, adminIdList.get(i));
+            }
+
 
 			resultSet = pstmt.executeQuery();
 

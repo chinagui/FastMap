@@ -52,7 +52,7 @@ public class RdGscExporter {
 		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
-
+		
 		int count = 0;
 
 		while (resultSet.next()) {
@@ -62,14 +62,16 @@ public class RdGscExporter {
 
 			Geometry linkGeo = GeoTranslator.struct2Jts(struct);
 			Coordinate[] coords = linkGeo.getCoordinates();
+			System.out.println(" pid :"+ resultSet.getInt("pid"));
+			
 			System.out.println("coords.length/2 : "+coords.length/2 +" seqNum: "+seqNum);
-			if(coords.length/2 >= seqNum){
+			//if(coords.length/2 >= seqNum){
 				JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
 
 				prep.setString(1, json.getString("uuid"));
 
 				prep.setInt(2, json.getInt("gscPid"));
-
+				
 				prep.setString(3, json.getString("geometry"));
 
 				prep.setString(4, json.getString("display_style"));
@@ -87,7 +89,7 @@ public class RdGscExporter {
 				if (count % 5000 == 0) {
 					sqliteConn.commit();
 				}
-			}
+		//	}
 			//****************
 
 			/*JSONObject json = enclosingRdLineGsc(resultSet, operateDate);

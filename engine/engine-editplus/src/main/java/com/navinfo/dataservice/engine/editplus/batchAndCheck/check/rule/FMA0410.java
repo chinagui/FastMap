@@ -82,10 +82,14 @@ public class FMA0410 extends BasicCheckRule {
 			}
 			
 			// ④ 名称包含“Ｎｏ．”、“Ｎ０．”、“ｎｏ．”、“ｎＯ．”
-			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ|ＮＯ：)+．+.*");
+			Pattern p6 = Pattern.compile(".*(Ｎｏ|Ｎ０|ｎｏ|ｎＯ)+．+.*");
 			Matcher m6 = p6.matcher(nameStrF);
 
 			if (m6.matches()) {
+				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
+			}
+			
+			if(nameStrF.contains("ＮＯ：")){
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 			}
 		}

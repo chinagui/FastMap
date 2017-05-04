@@ -50,7 +50,7 @@ public class FMD0180 extends BasicCheckRule {
 						boolean flag = false;
 						if(name.contains(".")){
 							for (String engShortName : engshortListMap.values()) {
-								if(name.equals(engShortName)){
+								if(name.contains(engShortName)){
 									flag = true;
 									break;
 								}

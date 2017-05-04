@@ -1625,7 +1625,7 @@ public class TaskService {
 								program.setProducePlanStartDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),1));
 								program.setProducePlanEndDate(TimestampUtils.addDays(program.getProducePlanEndDate(),10));
 								program.setPlanStartDate(quickProgram.getCollectPlanStartDate());
-								program.setPlanEndDate(program.getProducePlanEndDate());
+								program.setPlanEndDate(quickProgram.getProducePlanEndDate());
 								program.setCreateUserId(0);
 								programId=ProgramService.getInstance().create(conn,program);
 								JSONArray openProgramIds=new JSONArray();
@@ -1826,7 +1826,7 @@ public class TaskService {
 					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
 					+ "   AND P.INFOR_ID = I.INFOR_ID(+)"
 					+ "   AND T.GROUP_ID = UG.GROUP_ID(+)"
-					+ "   AND T.CREATE_USER_ID = U.USER_ID"
+					+ "   AND T.CREATE_USER_ID = U.USER_ID(+)"
 					+ "   AND T.TASK_ID = "+taskId;
 			
 			log.info("queryByTaskId sql:" + sql);

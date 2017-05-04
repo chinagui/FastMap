@@ -7,12 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.sql.DataSource;
-
 import org.apache.commons.dbutils.ResultSetHandler;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
 import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;

@@ -75,7 +75,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
-		String path="f:/gdb/11/";
+		String path="f:/gdb/";
 		String type="month";
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();

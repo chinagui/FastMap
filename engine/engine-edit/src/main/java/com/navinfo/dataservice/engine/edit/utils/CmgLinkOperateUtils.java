@@ -7,19 +7,20 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
-import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
+import com.navinfo.navicommons.geo.computation.MyGeoConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @Title: CmgLinkOperateUtils
@@ -210,7 +211,10 @@ public final class CmgLinkOperateUtils {
      */
     private static void createCmglinkChild(CmgBuildlink cmglink, Geometry geometry, Result result) throws Exception {
         cmglink.getMeshes().clear();
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geometry);
+        Coordinate[] coordinates = geometry.getCoordinates();
+        double[] rect = MyGeoConvertor.lineArr2RectArr(new double[]{
+                coordinates[0].x, coordinates[0].y, coordinates[coordinates.length - 1].x, coordinates[coordinates.length - 1].y});
+        List<String> meshes = new ArrayList<>(Arrays.asList(MeshUtils.rect2Meshes(rect[0], rect[1], rect[2], rect[3])));
         Iterator<String> iterator = meshes.iterator();
         if (meshes.size() > 1) {
             while (iterator.hasNext()) {

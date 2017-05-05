@@ -1,23 +1,14 @@
 package com.navinfo.dataservice.web.collector.controller;
 
-
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.control.service.PoiServiceNew;
-import com.navinfo.dataservice.control.service.UploadResult;
-
 import net.sf.json.JSONObject;
 
 /** 
@@ -53,9 +44,9 @@ public class PoiController extends BaseController {
 			}
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
-			UploadResult res=PoiServiceNew.getInstance().upload(jobId, subtaskId,userId);
-			return new ModelAndView("jsonView", success(res));
+			Long userId = tokenObj.getUserId();
+//			JSONObject res=PoiService.getInstance().importPoi(jobId, subtaskId,userId);
+			return new ModelAndView("jsonView", success(null));
 		}catch(Exception e){
 			logger.error(e.getMessage(),e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

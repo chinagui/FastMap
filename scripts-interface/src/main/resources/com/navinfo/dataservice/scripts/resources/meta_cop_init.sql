@@ -476,4 +476,98 @@ alter table M_PARAMETER
     maxextents unlimited
   ); 
  
+-- Create table
+create table TY_NAVICOVPY_WORD
+(
+  serial_id NUMBER not null,
+  word      VARCHAR2(50) not null,
+  py        VARCHAR2(200) not null,
+  py2       VARCHAR2(200),
+  adminarea VARCHAR2(6),
+  py3       VARCHAR2(200),
+  version   VARCHAR2(10),
+  mark      NUMBER(1),
+  memo      VARCHAR2(100)
+);
+
+-- Create/Recreate indexes 
+create index IDX_B_WORD_CONVMW on TY_NAVICOVPY_WORD (WORD, PY, ADMINAREA)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table TY_NAVICOVPY_WORD
+  add constraint METADATA_TY_WORD_01 primary key (SERIAL_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate check constraints 
+alter table TY_NAVICOVPY_WORD
+  add constraint CKC_MARK_TY_NAVIC
+  check (MARK in (0,1));
+  
+-- Create table
+create table TY_NAVICOVPY_PY
+(
+  serial_id       NUMBER not null,
+  jt              VARCHAR2(10) not null,
+  py              VARCHAR2(10) not null,
+  pyorder         NUMBER(2) not null,
+  py2             VARCHAR2(10),
+  ft              VARCHAR2(10),
+  tone            VARCHAR2(10),
+  toneorder       NUMBER(2),
+  tone1_frequency NUMBER(1)
+);
+-- Create/Recreate indexes 
+create index IDX_B_PY_IDXTMP1 on TY_NAVICOVPY_PY (JT, PYORDER)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate primary, unique and foreign key constraints 
+alter table TY_NAVICOVPY_PY
+  add constraint METADATA_TY_PY_01 primary key (SERIAL_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+-- Create/Recreate check constraints 
+alter table TY_NAVICOVPY_PY
+  add constraint CK_NAVICOVPY_TONE1
+  check (TONE1_FREQUENCY IN(1,2,3));
+  
+  
  commit;

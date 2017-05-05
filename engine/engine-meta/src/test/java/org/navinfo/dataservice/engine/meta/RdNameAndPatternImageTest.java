@@ -42,7 +42,7 @@ public class RdNameAndPatternImageTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-	@Test
+//	@Test
 	public void saveUpdataTest()
 	{
 		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士222','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name11','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
@@ -145,7 +145,7 @@ public class RdNameAndPatternImageTest {
 	}
 
 	
-//	@Test
+	@Test
 	public void searchTest(){
 				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'','version':'','projectNm':'博','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
 //				String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'83180890','convOut':'83180800','kind':'3d'},'sortby':'-convBefore','pageSize':20,'pageNum':1}";
@@ -298,9 +298,9 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-//	@Test
+	//@Test
 	public void searchTestRdname(){
-				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[],'uRecords':[],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
+				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[0,3],'uRecords':[0,1,2],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
 				
 				try{	
 					if (StringUtils.isEmpty(parameter)){

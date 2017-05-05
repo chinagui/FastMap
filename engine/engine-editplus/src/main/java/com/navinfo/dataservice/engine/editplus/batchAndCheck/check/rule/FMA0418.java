@@ -41,7 +41,7 @@ public class FMA0418 extends BasicCheckRule {
 			// 存在IX_POI_NAME新增或者修改履历
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			for (IxPoiName name : names) {
-				if (name.isCH()&&name.isOfficeName()&&(name.isAliasName()||name.isStandardName()||name.isShortName())) {
+				if (name.isCH()&&name.isStandardName()&&(name.isAliasName()||name.isOfficeName()||name.isShortName())) {
 					if (name.getHisOpType().equals(OperationType.INSERT)
 							|| (name.getHisOpType().equals(OperationType.UPDATE)
 									&& name.hisOldValueContains(IxPoiName.NAME))) {

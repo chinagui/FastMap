@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.fcc;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -68,7 +69,7 @@ public class SolrTest  {
 
 	}
 	
-	//批量增加solr字段
+	//批量增加solr字段relate_links
 	
 	@Test
 	public void testUpdate() {
@@ -77,12 +78,12 @@ public class SolrTest  {
 		String rowkey="";
 		String s_sourceType="";
 		try {
-			String queryBuilder = new String("stage: (1 2 5 6) ");
+			String queryBuilder = new String("stage: (1 2 5 6)  ");
 			String filterQueryBuilder = "";
 			List<JSONObject> datas=solr.queryTips(queryBuilder, filterQueryBuilder);
 			for (JSONObject jsonObject : datas) {
 				
-				if(jsonObject.containsKey("relate_links")){
+				if(jsonObject.containsKey("relate_nodes")){
 					
 					continue;
 				}
@@ -93,9 +94,16 @@ public class SolrTest  {
 				JSONObject deep=JSONObject.fromObject(jsonObject.get("deep"));
 				
 				try{
-					jsonObject.put("relate_links", TipsLineRelateQuery.getRelateLine(s_sourceType, deep));
+					
+					Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(s_sourceType, deep);
+					
+					jsonObject.put("relate_links", relateMap.get("relate_links"));
+					
+					jsonObject.put("relate_nodes", relateMap.get("relate_nodes"));
+					
 				}catch (Exception e) {
 					System.out.println("转换出错："+s_sourceType+":"+rowkey);
+					e.printStackTrace();
 				}
 				
 	
@@ -111,8 +119,14 @@ public class SolrTest  {
 					jsonObject.put("s_mSubTaskId",0);
 				}
 				
+				try{
 			
 				solr.addTips(jsonObject);
+				}catch (Exception e) {
+					System.out.println(jsonObject+":"+jsonObject);
+					System.out.println("转换出错："+s_sourceType+":"+rowkey);
+					e.printStackTrace();
+				}
 				
 				System.out.println(rowkey+"处理完毕");
 			}

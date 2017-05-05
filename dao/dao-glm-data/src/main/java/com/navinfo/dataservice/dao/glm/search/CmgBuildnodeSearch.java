@@ -131,4 +131,66 @@ public class CmgBuildnodeSearch implements ISearch {
         }
         return list;
     }
+    
+    
+	public List<SearchSnapshot> searchDataByNodePids(List<Integer> pids) throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0 || pids.size() > 1000) {
+			
+			return list;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");
+
+		String sql = "WITH TMP1 AS (SELECT NODE_PID, GEOMETRY FROM CMG_BUILDNODE WHERE NODE_PID IN ("
+				+ ids
+				+ ") AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ B.NODE_PID, LISTAGG(A.LINK_PID, ',') WITHIN GROUP(ORDER BY B.NODE_PID) LINKPIDS FROM CMG_BUILDLINK A, TMP1 B WHERE A.U_RECORD <> 2 AND (A.S_NODE_PID = B.NODE_PID OR A.E_NODE_PID = B.NODE_PID) GROUP BY B.NODE_PID) SELECT A.NODE_PID, A.GEOMETRY, B.LINKPIDS FROM TMP1 A, TMP2 B WHERE A.NODE_PID = B.NODE_PID";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				
+				SearchSnapshot snapshot = new SearchSnapshot();
+				
+				JSONObject m = new JSONObject();
+				
+				m.put("a", resultSet.getString("linkpids"));
+				
+				snapshot.setM(m);
+				
+				snapshot.setT(52);
+				
+				snapshot.setI(resultSet.getInt("node_pid"));
+				
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+				
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+				
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+				
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+			
+			throw new Exception(e);
+			
+		} finally {
+			
+			DbUtils.closeQuietly(resultSet);
+			
+			DbUtils.closeQuietly(pstmt);
+		}
+
+		return list;
+	}
+
 }

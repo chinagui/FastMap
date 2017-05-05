@@ -185,8 +185,11 @@ public class MetaValidationJob extends AbstractJob {
 						}
 						nameIdsStr+=nameId+str;
 					}
+					if(nameIdsStr.endsWith(",")){
+						nameIdsStr=nameIdsStr.substring(0, nameIdsStr.length()-1);
+					}
 					System.out.println("nameIdsStr: "+nameIdsStr);
-					insertRdnameDataSql.append(" and nameid ");
+					insertRdnameDataSql.append(" and name_id ");
 					insertRdnameDataSql.append("  in( ");
 					insertRdnameDataSql.append(nameIdsStr);
 					insertRdnameDataSql.append(") ");

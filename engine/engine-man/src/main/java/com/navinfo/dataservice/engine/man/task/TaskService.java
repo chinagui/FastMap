@@ -2990,4 +2990,29 @@ public class TaskService {
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * poi批快线任务号
+	 * @param dailyConn
+	 * @param poiTaskMap
+	 * @throws SQLException 
+	 * @author songhe
+	 */
+	@SuppressWarnings("unused")
+	private void batchPoiQuickTask(Connection dailyConn, int taskId, int subtaskId, List<Long> PoiQuickT) throws SQLException {
+		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? AND QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
+		QueryRunner run = new QueryRunner();
+		Object[][] params = new Object[PoiQuickT.size()][3] ;
+		
+		int i = 0;
+		for(int j = 0; j < PoiQuickT.size(); j++){
+			Object[] pidMap = new Object[3];
+			pidMap[0] = taskId;
+			pidMap[1] = subtaskId;
+			pidMap[2] = PoiQuickT.get(j);
+			params[i] = pidMap;
+			i++;
+		}
+		run.batch(dailyConn, updateSql, params);
+	}
 }

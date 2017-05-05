@@ -155,7 +155,8 @@ public abstract class BasicObj {
 	}
 	
 	/**
-	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * 如果是新增状态，物理删除，刚新增进来的子表记录，如果要删除，不能从子表list中循环获取然后传入
+	 * 其他状态打删除标识
 	 * 注意：对于新增的子表，又通过此方法进行删除，存在异常可能：当外面使用for循环删除表的list时，会出现java.util.ConcurrentModificationException
 	 * @param subrow
 	 */

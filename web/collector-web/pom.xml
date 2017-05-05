@@ -134,7 +134,6 @@
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>api-datahub</artifactId>
 	</dependency>
-	
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>edit-control-app</artifactId>

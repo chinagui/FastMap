@@ -63,6 +63,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	// 获取当前做业季
 	String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
+	String langCode = "CHI";//FIXME:为什么这里是CHI。CHT呢？默认返回简体中文; 港澳的后续在增加逻辑吧。
 	Map<String,String> attrTableMap;
 	Set<String> tabNames;
 	
@@ -72,6 +73,10 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	public CollectorPoiImportor(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
+	}
+	
+	public void setLangCode(String langCode){
+		this.langCode=langCode;
 	}
 
 	public List<ErrorLog> getErrLogs() {
@@ -84,6 +89,40 @@ public class CollectorPoiImportor extends AbstractOperation {
 
 	public List<PoiRelation> getDeletePcRelations() {
 		return deletePcRelations;
+	}
+	
+
+	/**
+	 * 初始化所需子表、属性和子表名的映射关系
+	 * @author Han Shaoming
+	 * @return
+	 */
+	public void init(){
+		//添加所需的子表
+		tabNames = new HashSet<>();
+		tabNames.add("IX_POI_NAME");
+		tabNames.add("IX_POI_CONTACT");
+		tabNames.add("IX_POI_ADDRESS");
+		tabNames.add("IX_POI_RESTAURANT");
+		tabNames.add("IX_POI_CHILDREN");
+		tabNames.add("IX_POI_PARENT");
+		tabNames.add("IX_POI_DETAIL");
+		tabNames.add("IX_POI_PHOTO");
+		tabNames.add(IxPoiObj.IX_POI_GASSTATION);
+		tabNames.add(IxPoiObj.IX_POI_PARKING);
+		tabNames.add(IxPoiObj.IX_POI_HOTEL);
+		tabNames.add(IxPoiObj.IX_POI_CHARGINGSTATION);
+		tabNames.add(IxPoiObj.IX_POI_CHARGINGPLOT);
+		//属性和表名映射
+		attrTableMap.put("hotel", IxPoiObj.IX_POI_PHOTO);
+		attrTableMap.put("contacts", IxPoiObj.IX_POI_CONTACT);
+		//...
+	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "CollectorUpload";
 	}
 
 	@Override
@@ -196,9 +235,18 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//postCode,默认空字符串
 		ixPoi.setPostCode(jo.getString("postCode"));
 		//name
-		ixPoi.setOldName(jo.getString("name"));
+		String name = jo.getString("name");
+		ixPoi.setOldName(name);
+		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
+			setNameAndAttr(poiObj,name);
+		}
 		//address
-		ixPoi.setOldAddress(jo.getString("address"));
+		//address
+		String addr = jo.getString("address");
+		ixPoi.setOldAddress(addr);
+		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
+			setAddressAndAttr(poiObj,addr);
+		}
 		//fid
 		ixPoi.setPoiNum(jo.getString("fid"));
 		//season version
@@ -239,26 +287,19 @@ public class CollectorPoiImportor extends AbstractOperation {
 			pr.setPid(poiObj.objPid());
 			addPcRelations.add(pr);
 		}
+		//relateChildren
+
+		setChildrenAndAttr(poiObj,jo);
 		
 		/*** 子表  ***/
 		//hotel
 		setSubrow(poiObj,jo,"hotel");
-		//name
-		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
-			setNameAttr(poiObj);
-		}
-		//address
-		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
-			setAddressAttr(poiObj);
-		}
 		//photo
 		setPhotoAndAttr(poiObj,jo);
 		//contacts
-		setContactAttr(poiObj,jo);
-		//relateChildren
-		setChildrenAttr(poiObj,jo);
+		setSubrows(poiObj,jo,"contacts");
 		//gasStation
-		setGasStationAttr(poiObj,jo);
+		setSubrow(poiObj,jo,"gasStation");
 		//parkings
 		setSubrow(poiObj,jo,"parkings");
 		//foodtypes
@@ -266,6 +307,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//chargingStation
 		setSubrow(poiObj,jo,"chargingStation");
 		//chargingPole
+		setSubrows(poiObj,jo,"chargingPole");
 		
 		//处理日志类字段
 		//fieldState
@@ -293,10 +335,20 @@ public class CollectorPoiImportor extends AbstractOperation {
 		
 	}
 	
+	/**
+	 * 属性是唯一的对象，并且根据rowId差分
+	 * hotel|gasStation|parkings|foodtypes|chargingStation
+	 * @param poiObj
+	 * @param jo
+	 * @param keyName：
+	 * @throws Exception
+	 */
 	private void setSubrow(IxPoiObj poiObj,JSONObject jo,String keyName)throws Exception{
 		String tableName = attrTableMap.get(keyName);
 		//获取原始
-		if(JSONUtils.isNull(jo.get(keyName))){
+		if(JSONUtils.isNull(jo.get(keyName))){//上传中没有子表信息，删除所有原有的记录
+			poiObj.deleteSubrow(tableName);
+		}else{
 			JSONObject subJo = jo.getJSONObject(keyName);
 			String rowid = subJo.getString("rowId");
 			rowid = rowid.toUpperCase();
@@ -313,50 +365,164 @@ public class CollectorPoiImportor extends AbstractOperation {
 						poiObj.deleteSubrow(r);
 					}
 				}
-				//在库中不存在，则新增
-				if(!exists){
-					BasicRow nr = poiObj.createSubRowByTableName(tableName);
-					nr.setRowId(rowid);
-					setSubrowAttr(nr,subJo,keyName);
-				}
 			}
-			
-		}else{//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrow(tableName);
+			//在库中不存在，则新增
+			if(!exists){
+				BasicRow nr = poiObj.createSubRowByTableName(tableName);
+				nr.setRowId(rowid);
+				setSubrowAttr(nr,subJo,keyName);
+			}
 		}
 		
 	}
-	private void setSubrowAttr(BasicRow row,JSONObject jo,String keyName)throws Exception{
-		if("hotel".equals(keyName)){
-			setHotelAttr((IxPoiHotel)row,jo);
+
+	/**
+	 * 属性是对象的数组，并且数组内的对象根据rowId差分
+	 * contacts|chargingPole
+	 * @param poiObj
+	 * @param jo：raw poi json
+	 * @param keyName：contacts|chargingPole
+	 * @throws Exception
+	 */
+	private void setSubrows(IxPoiObj poiObj,JSONObject jo,String keyName)throws Exception{
+		String tableName = attrTableMap.get(keyName);
+		//获取原始
+		if(JSONUtils.isNull(jo.get(keyName))){//上传中没有子表信息，删除所有原有的记录
+			poiObj.deleteSubrow(tableName);
 		}else{
-			
+			JSONArray subJos = jo.getJSONArray(keyName);
+			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
+				poiObj.deleteSubrow(tableName);
+			}else{
+				//转map
+				Map<String,JSONObject> subJoMap = new HashMap<String,JSONObject>();
+				for(Object so:subJos){
+					JSONObject j = (JSONObject)so;
+					subJoMap.put(j.getString("rowId").toUpperCase(), j);
+				}
+				List<BasicRow> rows = poiObj.getRowsByName(tableName);
+				if(rows!=null&&rows.size()>0){
+					//开始差分
+					//获取已存在的rowId
+					Map<String,BasicRow> exists = null;
+					Set<BasicRow> notExists = null; 
+					for(BasicRow r:rows){
+						if(subJoMap.keySet().contains(r.getRowId())){
+							if(exists==null){
+								exists = new HashMap<String,BasicRow>();
+							}
+							exists.put(r.getRowId(),r);
+						}else{
+							if(notExists==null){
+								notExists = new HashSet<BasicRow>();
+							}
+							notExists.add(r);
+						}
+					}
+					//删除rows中存在，exists中不存在的
+					if(notExists!=null){
+						for(BasicRow c:notExists){
+							poiObj.deleteSubrow(c);
+						}
+					}
+					//修改exists中存在
+					if(exists!=null){
+						for(Entry<String,BasicRow> e:exists.entrySet()){
+							setSubrowAttr(e.getValue(),subJoMap.get(e.getKey()),keyName);
+							subJoMap.remove(e.getKey());
+						}
+					}
+					//
+					//在库中不存在，则新增
+					if(subJoMap!=null&&subJoMap.size()>0){
+						for(Entry<String,JSONObject> e : subJoMap.entrySet()){//经过修改中删除，剩下的都是要新增入库的
+							BasicRow br = poiObj.createSubRowByTableName(tableName);
+							br.setRowId(e.getKey());
+							setSubrowAttr(br,e.getValue(),keyName);
+						}
+					}
+				}else{
+					for(Entry<String,JSONObject> e : subJoMap.entrySet()){//全部新增
+						BasicRow br = poiObj.createSubRowByTableName(tableName);
+						br.setRowId(e.getKey());
+						setSubrowAttr(br,e.getValue(),keyName);
+					}
+				}
+			}
 		}
 	}
 	
-	private void setHotelAttr(IxPoiHotel row,JSONObject jo)throws Exception{
-		row.setCreditCard(jo.getString("creditCards"));
-		row.setRating(jo.getInt("rating"));
-		row.setCheckinTime(jo.getString("checkInTime"));
-		row.setCheckoutTime(jo.getString("checkOutTime"));
-		row.setRoomCount(jo.getInt("roomCount"));
-		row.setRoomType(jo.getString("roomType"));
-		row.setRoomPrice(jo.getString("roomPrice"));
-		row.setBreakfast(jo.getInt("breakfast"));
-		row.setService(jo.getString("service"));
-		row.setParking(jo.getInt("parking"));
-		row.setLongDescription(jo.getString("description"));
-		row.setOpenHour(jo.getString("openHour"));
+	private void setSubrowAttr(BasicRow row,JSONObject jo,String keyName)throws Exception{
+		if("hotel".equals(keyName)){
+			setHotelAttr((IxPoiHotel)row,jo);
+		}else if("gasStation".equals(keyName)){
+			setGasStationAttr((IxPoiGasstation)row,jo);
+		}else if("parkings".equals(keyName)){
+			setParkingAttr((IxPoiParking)row,jo);
+		}else if("foodtypes".equals(keyName)){
+			setRestaurantAttr((IxPoiRestaurant)row,jo);
+		}else if("chargingStation".equals(keyName)){
+			setChargingstationAttr((IxPoiChargingstation)row,jo);
+		}else if("contacts".equals(keyName)){
+			setContactAttr((IxPoiContact)row,jo);
+		}else if("chargingPole".equals(keyName)){
+			setChargingPlotAttr((IxPoiChargingplot)row,jo);
+		}
 	}
-	private void setNameAttr(IxPoiObj poiObj)throws Exception{
-		
+
+	/**
+	 * 名称特殊处理
+	 * @param poiObj
+	 * @param name
+	 * @throws Exception
+	 */
+	private void setNameAndAttr(IxPoiObj poiObj,String name)throws Exception{
+		//获取原始
+		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有原有的记录
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME_FLAG);
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME_TONE);
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME);
+		}else{
+			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
+			if(r!=null){
+				r.setName(name);
+			}else{
+				//在库中不存在，则新增
+				//IX_POI_NAME表
+				IxPoiName ixPoiName = poiObj.createIxPoiName();
+				ixPoiName.setName(name);
+				ixPoiName.setNameClass(1);
+				ixPoiName.setNameType(2);
+				ixPoiName.setLangCode(langCode);
+			}
+		}
 	}
-	private void setAddressAttr(IxPoiObj poiObj)throws Exception{
-		
+	
+	/**
+	 * 地址特殊处理
+	 * @param poiObj
+	 * @param addr
+	 * @throws Exception
+	 */
+	private void setAddressAndAttr(IxPoiObj poiObj,String addr)throws Exception{
+		//获取原始
+		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除所有原有的记录
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_ADDRESS);
+		}else{
+			IxPoiAddress r = poiObj.getCHAddress();
+			if(r!=null){
+				r.setFullname(addr);
+			}else{
+				//在库中不存在，则新增
+				//IX_POI_ADDRESS表
+				IxPoiAddress ixPoiAddress = poiObj.createIxPoiAddress();
+				ixPoiAddress.setFullname(addr);
+				ixPoiAddress.setLangCode(langCode);
+			}
+		}
 	}
 	/**
-	 * 照片
-	 * 判断不存在就增加，只增不删
+	 * 照片特殊处理，只增不删
 	 * @param poiObj
 	 * @param jo
 	 * @throws Exception
@@ -389,57 +555,163 @@ public class CollectorPoiImportor extends AbstractOperation {
 			ixPoi.setPoiMemo(memo);
 		}
 	}
-
-	private void setContactAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
-		
-	}
-	private void setChildrenAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
-		
-	}
-
-	private void setGasStationAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
-		
-	}
-	
-
 	
 	/**
-	 * 初始化所需子表、属性和子表名的映射关系
-	 * @author Han Shaoming
-	 * @return
+	 * 父子关系特殊处理
+	 * @param poiObj
+	 * @param jo
+	 * @throws Exception
 	 */
-	public void init(){
-		//添加所需的子表
-		tabNames = new HashSet<>();
-		tabNames.add("IX_POI_NAME");
-		tabNames.add("IX_POI_CONTACT");
-		tabNames.add("IX_POI_ADDRESS");
-		tabNames.add("IX_POI_RESTAURANT");
-		tabNames.add("IX_POI_CHILDREN");
-		tabNames.add("IX_POI_PARENT");
-		tabNames.add("IX_POI_DETAIL");
-		tabNames.add("IX_POI_PHOTO");
-		tabNames.add("IX_POI_GASSTATION");
-		tabNames.add("IX_POI_PARKING");
-		tabNames.add("IX_POI_HOTEL");
-		tabNames.add("IX_POI_CHARGINGSTATION");
-		tabNames.add("IX_POI_CHARGINGPLOT");
-		//属性和表名映射
-		attrTableMap.put("hotel", "IX_POI_PHOTO");
-		//...
+	private void setChildrenAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
+		if(JSONUtils.isNull(jo.get("relateChildren"))){
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_CHILDREN);
+			poiObj.deleteSubrow(IxPoiObj.IX_POI_PARENT);
+		}else{
+			JSONArray subJos = jo.getJSONArray("relateChildren");
+			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
+				poiObj.deleteSubrow(IxPoiObj.IX_POI_CHILDREN);
+				poiObj.deleteSubrow(IxPoiObj.IX_POI_PARENT);
+			}else{
+				//...
+			}
+		}
 	}
 	
-	
-
-	@Override
-	public String getName() {
-		// TODO Auto-generated method stub
-		return "CollectorUpload";
+	/** 表属性转换 **/
+	private void setHotelAttr(IxPoiHotel row,JSONObject jo)throws Exception{
+		row.setCreditCard(jo.getString("creditCards"));
+		row.setRating(jo.getInt("rating"));
+		row.setCheckinTime(jo.getString("checkInTime"));
+		row.setCheckoutTime(jo.getString("checkOutTime"));
+		row.setRoomCount(jo.getInt("roomCount"));
+		row.setRoomType(jo.getString("roomType"));
+		row.setRoomPrice(jo.getString("roomPrice"));
+		row.setBreakfast(jo.getInt("breakfast"));
+		row.setService(jo.getString("service"));
+		row.setParking(jo.getInt("parking"));
+		row.setLongDescription(jo.getString("description"));
+		row.setOpenHour(jo.getString("openHour"));
+	}
+	private void setContactAttr(IxPoiContact row,JSONObject jo)throws Exception{
+		String linkman = jo.getString("linkman");
+		String linkmanNum = "";
+		if (linkman.indexOf("总机") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		if (linkman.indexOf("客服") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		if (linkman.indexOf("预订") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		if (linkman.indexOf("销售") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		if (linkman.indexOf("维修") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		if (linkman.indexOf("其他") >= 0) {
+			linkmanNum = "1" + linkmanNum;
+		} else {
+			linkmanNum = "0" + linkmanNum;
+		}
+		int contactInt = Integer.parseInt(linkmanNum, 2);
+		row.setContactDepart(contactInt);
+		row.setContact(jo.getString("number"));
+		row.setPriority(jo.getInt("priority"));
+		row.setContactType(jo.getInt("type"));
 	}
 	
+	private void setChargingPlotAttr(IxPoiChargingplot row,JSONObject jo)throws Exception{
+		row.setGroupId(jo.getInt("groupId"));
+		row.setCount(jo.getInt("count"));
+		row.setAcdc(jo.getInt("acdc"));
+		row.setPlugType(jo.getString("plugType"));
+		row.setPower(jo.getString("power"));
+		row.setVoltage(jo.getString("voltage"));
+		row.setCurrent(jo.getString("current"));
+		row.setMode(jo.getInt("mode"));
+		row.setPlugNum(jo.getInt("plugNum"));
+		row.setPrices(jo.getString("prices"));
+		row.setOpenType(jo.getString("openType"));
+		row.setAvailableState(jo.getInt("availableState"));
+		row.setManufacturer(jo.getString("manufacturer"));
+		row.setFactoryNum(jo.getString("factoryNum"));
+		row.setPlotNum(jo.getString("plotNum"));
+		row.setProductNum(jo.getString("productNum"));
+		row.setParkingNum(jo.getString("parkingNum"));
+		row.setFloor(jo.getInt("floor"));
+		row.setLocationType(jo.getInt("locationType"));
+		row.setPayment(jo.getString("payment"));
+	}
+	
+	private void setGasStationAttr(IxPoiGasstation row,JSONObject jo)throws Exception{
+		row.setServiceProv(jo.getString("servicePro"));
+		row.setFuelType(jo.getString("fuelType"));
+		row.setOilType(jo.getString("oilType"));
+		row.setEgType(jo.getString("egType"));
+		row.setMgType(jo.getString("mgType"));
+		row.setPayment(jo.getString("payment"));
+		row.setService(jo.getString("service"));
+		row.setOpenHour(jo.getString("openHour"));
+	}
+	private void setParkingAttr(IxPoiParking row,JSONObject jo)throws Exception{
+		row.setParkingType(jo.getString("buildingType"));
+		row.setTollStd(jo.getString("tollStd"));
+		row.setTollDes(jo.getString("tollDes"));
+		row.setTollWay(jo.getString("tollWay"));
+		row.setPayment(jo.getString("payment"));
+		row.setRemark(jo.getString("remark"));
+		row.setOpenTiime(jo.getString("openTime"));
+		row.setTotalNum(jo.getLong("totalNum"));
+		row.setResHigh(jo.getDouble("resHigh"));
+		row.setResWidth(jo.getDouble("resWidth"));
+		row.setResWeigh(jo.getDouble("resWeigh"));
+		row.setCertificate(jo.getInt("certificate"));
+		row.setVehicle(jo.getInt("vehicle"));
+		row.setHaveSpecialplace(jo.getString("haveSpecialPlace"));
+		row.setWomenNum(jo.getInt("womenNum"));
+		row.setHandicapNum(jo.getInt("handicapNum"));
+		row.setMiniNum(jo.getInt("miniNum"));
+		row.setVipNum(jo.getInt("vipNum"));
+	}
+	
+	private void setRestaurantAttr(IxPoiRestaurant row,JSONObject jo)throws Exception{
+		row.setFoodType(jo.getString("foodtype"));
+		row.setCreditCard(jo.getString("creditCards"));
+		row.setAvgCost(jo.getInt("avgCost"));
+		row.setParking(jo.getInt("parking"));
+		row.setOpenHour(jo.getString("openHour"));
+	}
+	
+	private void setChargingstationAttr(IxPoiChargingstation row,JSONObject jo)throws Exception{
+		row.setChargingType(jo.getInt("type"));
+		row.setChangeBrands(jo.getString("changeBrands"));
+		row.setChangeOpenType(jo.getString("changeOpenType"));
+		row.setChargingNum(jo.getInt("chargingNum"));
+		row.setServiceProv(jo.getString("servicePro"));
+		row.setOpenHour(jo.getString("openHour"));
+		row.setParkingFees(jo.getInt("parkingFees"));
+		row.setParkingInfo(jo.getString("parkingInfo"));
+		row.setAvailableState(jo.getInt("availableState"));
+	}
 	public static void main(String[] args) {
 
 //		JSONObject obj = JSONObject.fromObject("{\"key1\":\"\",\"key2\":null,\"key3\":[]}");
+//		JSONArray ja = new JSONArray();
+//		ja.add(obj);
+//		System.out.println(ja.toString());
+
 //		System.out.println(JSONUtils.isNull(obj.get("key1")));
 //		System.out.println(JSONUtils.isNull(obj.get("key2")));
 //		System.out.println(obj.has("key2"));
@@ -452,18 +724,27 @@ public class CollectorPoiImportor extends AbstractOperation {
 		for(int i=0;i<10;i++){
 			list1.add(String.valueOf(i));
 		}
-		List<String> list2 = list1;
+		List<String> list2 = new ArrayList<String>();
+		for(int i=0;i<5;i++){
+			list2.add(list1.get(i));
+		}
+		System.out.println(StringUtils.join(list1,","));
 		for(String s:list2){
-			if(s.equals("7")){
-				list1.remove(s);
-			}
+			list1.remove(s);
 		}
-		for(Iterator<String> it = list2.iterator();it.hasNext();){
-			String s = it.next();
-			if(s.equals("7")){
-				list1.remove(s);
-			}
-		}
+		System.out.println(StringUtils.join(list1,","));
+//		List<String> list2 = list1;
+//		for(String s:list2){
+//			if(s.equals("7")){
+//				list1.remove(s);
+//			}
+//		}
+//		for(Iterator<String> it = list2.iterator();it.hasNext();){
+//			String s = it.next();
+//			if(s.equals("7")){
+//				list1.remove(s);
+//			}
+//		}
 	}
 	
 }

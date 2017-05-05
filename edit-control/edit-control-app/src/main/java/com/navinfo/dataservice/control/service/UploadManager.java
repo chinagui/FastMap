@@ -66,6 +66,7 @@ public class UploadManager {
 			log.warn("从文件中未读取到有效poi,导入0条数据。");
 			return result;
 		}
+		log.info("从文件中读取poi："+rawPois.size()+"条。");
 		//2.将pois分发到各个大区
 		Map<Integer,CollectorUploadPois> pois = distribute(rawPois);//key:大区库id
 		//3.开始导入数据
@@ -153,7 +154,7 @@ public class UploadManager {
 				log.error(e.getMessage(),e);
 			}
 		}
-		log.info("计算poi所属的图幅号："+StringUtils.join(meshPoiMap.keySet(),","));
+		log.info("所有poi所属的图幅号："+StringUtils.join(meshPoiMap.keySet(),","));
 		//映射到对应的大区库上
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshPoiMap.keySet());

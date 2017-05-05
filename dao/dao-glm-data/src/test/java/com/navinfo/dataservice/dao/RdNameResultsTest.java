@@ -72,7 +72,7 @@ public class RdNameResultsTest {
 				Page page = null;
 				//List<JSONObject> page =null;
 				try {
-					page = a.listCheckResultsByJobId(jsonReq, jobId, jobUuid, 78, tips);
+				//	page = a.listCheckResultsByJobId(jsonReq, jobId, jobUuid, 78, tips);
 					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
 					 System.out.println(page.getResult());
 					 System.out.println(page.getTotalCount());
@@ -99,7 +99,7 @@ public class RdNameResultsTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void checkResultListByTask(){
 		Connection conn =null;
 		try{
@@ -131,6 +131,38 @@ public class RdNameResultsTest {
 		}
 	}
 	
+	
+	@Test
+	public void checkResultListByJobId(){
+		Connection conn =null;
+		try{
+			conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+			
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			
+				NiValExceptionSelector a = new NiValExceptionSelector(conn);
+				
+				
+				Page page = null;
+				//List<JSONObject> page =null;
+				try {
+					Map adminMap = new HashMap();
+					page = a.listCheckResultsByJobId(jsonReq, 29, "692d413cb6ce407b813fb2dfc80e9417");
+					 //page =a.listCheckResults(jsonReq, tips,ruleCodes);
+					 System.out.println("哈哈哈: "+page.getResult());
+					 System.out.println(page.getTotalCount());
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}catch(Exception e){
+			e.printStackTrace();
+		}finally{
+			DbUtils.closeQuietly(conn);
+		}
+	}
 	
 	//@Test
 	public void listCheckResultsRuleIds(){

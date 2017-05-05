@@ -91,14 +91,14 @@ public class CheckService {
                 log.info(" nameIds.size():  "+nameIds.size());
                 log.info(" begin 子任务范围内 道路名子版本检查 ");
 				
-				String jobName = "";
-				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+				String jobName = "元数据库检查";
+				/*if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
 						&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
 					jobName = "webrdName:"+jsonReq.getString("jobName");
 				}else{
 					jobName = "webrdName:"+"元数据库检查";
 				}
-			
+			*/
 				JSONObject validationRequestJSON=new JSONObject();
 				validationRequestJSON.put("name", "");
 				validationRequestJSON.put("nameGroupid", "");

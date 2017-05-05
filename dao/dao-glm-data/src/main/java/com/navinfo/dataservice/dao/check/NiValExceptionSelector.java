@@ -941,7 +941,7 @@ public class NiValExceptionSelector {
 		}
 	}
 
-	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
+	/*public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
 			JSONArray tips) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
@@ -986,6 +986,82 @@ public class NiValExceptionSelector {
 		sql.append("), ");
 		sql.append("q3 as ( ");
 		sql.append(" select e.* from q1 n ,q2 e where   e.targets like '%'||n.nameId||'%'  ");
+		sql.append(") ");
+		
+		// ************************
+		sql.append(" SELECT "+jobId+" jobId,A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
+		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
+				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		//sql.append(" order by created desc,md5_code desc ");
+		log.info("listCheckResultsByJobId sql:  " + sql.toString());
+
+		QueryRunner run = new QueryRunner();
+
+		// ****************************************
+		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while (rs.next()) {
+					if (total == 0) {
+						total = rs.getInt("TOTAL_RECORD_NUM_");
+					}
+
+					JSONObject json = new JSONObject();
+
+					json.put("jobId", rs.getInt("jobId"));
+					
+					json.put("id", rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
+									+ ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		};
+
+		Page p = run.query(conn, sql.toString(), rsHandler3);
+		return p;
+	}*/
+	
+	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid) throws SQLException {
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("with ");
+		
+		sql.append("q3 as ( ");
+		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d  where d.task_name = '"+jobUuid+"' ");
 		sql.append(") ");
 		
 		// ************************

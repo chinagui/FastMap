@@ -6,6 +6,8 @@ import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.app.upload.UploadOperation;
+import com.navinfo.dataservice.control.service.UploadManager;
+import com.navinfo.dataservice.control.service.UploadResult;
 import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
 
 import net.sf.json.JSONArray;
@@ -39,9 +41,10 @@ public class UploadTest {
 	@Test
 	public void testUpload() {
 		try {
-			UploadOperationByGather op = new UploadOperationByGather(4127L,24);
-			JSONObject retArray = op.importPoi("F:\\data\\collector\\poi.txt");
-			System.out.println(retArray.toString());
+			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi.txt");
+			upMan.setSubtaskId(26);
+			UploadResult result = upMan.upload();
+			System.out.println(result);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

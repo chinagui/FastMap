@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.dao.glm.iface.ISerializable;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
@@ -99,30 +100,36 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	public void init(){
 		//添加所需的子表
-		tabNames = new HashSet<>();
-		tabNames.add("IX_POI_NAME");
-		tabNames.add("IX_POI_CONTACT");
-		tabNames.add("IX_POI_ADDRESS");
-		tabNames.add("IX_POI_RESTAURANT");
-		tabNames.add("IX_POI_CHILDREN");
-		tabNames.add("IX_POI_PARENT");
-		tabNames.add("IX_POI_DETAIL");
-		tabNames.add("IX_POI_PHOTO");
+		tabNames = new HashSet<String>();
+		tabNames.add(IxPoiObj.IX_POI_NAME);
+		tabNames.add(IxPoiObj.IX_POI_CONTACT);
+		tabNames.add(IxPoiObj.IX_POI_ADDRESS);
+		tabNames.add(IxPoiObj.IX_POI_RESTAURANT);
+		tabNames.add(IxPoiObj.IX_POI_CHILDREN);
+		tabNames.add(IxPoiObj.IX_POI_PARENT);
+		tabNames.add(IxPoiObj.IX_POI_DETAIL);
+		tabNames.add(IxPoiObj.IX_POI_PHOTO);
 		tabNames.add(IxPoiObj.IX_POI_GASSTATION);
 		tabNames.add(IxPoiObj.IX_POI_PARKING);
 		tabNames.add(IxPoiObj.IX_POI_HOTEL);
 		tabNames.add(IxPoiObj.IX_POI_CHARGINGSTATION);
 		tabNames.add(IxPoiObj.IX_POI_CHARGINGPLOT);
 		//属性和表名映射
+		//hotel|gasStation|parkings|foodtypes|chargingStation
+		attrTableMap = new HashMap<String,String>();
 		attrTableMap.put("hotel", IxPoiObj.IX_POI_PHOTO);
+		attrTableMap.put("gasStation", IxPoiObj.IX_POI_GASSTATION);
+		attrTableMap.put("parkings", IxPoiObj.IX_POI_PARKING);
+		attrTableMap.put("foodtypes", IxPoiObj.IX_POI_RESTAURANT);
+		attrTableMap.put("chargingStation", IxPoiObj.IX_POI_CHARGINGSTATION);
 		attrTableMap.put("contacts", IxPoiObj.IX_POI_CONTACT);
+		attrTableMap.put("chargingPole", IxPoiObj.IX_POI_CHARGINGPLOT);
 		//...
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return "CollectorUpload";
+		return "CollectorPoiImportor";
 	}
 
 	@Override
@@ -140,8 +147,14 @@ public class CollectorPoiImportor extends AbstractOperation {
 				IxPoiObj poiObj = null;
 				if(objs!=null&&objs.keySet().contains(entry.getKey())){
 					//处理未修改
-					log.info("fid:"+entry.getKey()+"在库中存在，作为修改处理");
 					poiObj = (IxPoiObj)objs.get(entry.getKey());
+					if(poiObj.opType().equals(OperationType.PRE_DELETED)){
+						log.info("fid:"+entry.getKey()+"在库中已删除");
+						errLogs.add(new ErrorLog(entry.getKey(),"poi在库中已删除"));
+						continue;
+					}else{
+						log.info("fid:"+entry.getKey()+"在库中存在，作为修改处理");
+					}
 				}else{
 					//库中未找到数据，处理为新增
 					log.info("fid:"+entry.getKey()+"在库中未找到，作为新增处理");
@@ -151,12 +164,6 @@ public class CollectorPoiImportor extends AbstractOperation {
 				result.putObj(poiObj);
 				//关系处理
 				//...
-			}
-			
-			if(objs!=null&&objs.size()>0){
-				
-			}else{
-				log.info("");
 			}
 		}else{
 			log.info("无修改的poi数据需要导入");
@@ -347,7 +354,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		String tableName = attrTableMap.get(keyName);
 		//获取原始
 		if(JSONUtils.isNull(jo.get(keyName))){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrow(tableName);
+			poiObj.deleteSubrows(tableName);
 		}else{
 			JSONObject subJo = jo.getJSONObject(keyName);
 			String rowid = subJo.getString("rowId");
@@ -388,11 +395,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 		String tableName = attrTableMap.get(keyName);
 		//获取原始
 		if(JSONUtils.isNull(jo.get(keyName))){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrow(tableName);
+			poiObj.deleteSubrows(tableName);
 		}else{
 			JSONArray subJos = jo.getJSONArray(keyName);
 			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
-				poiObj.deleteSubrow(tableName);
+				poiObj.deleteSubrows(tableName);
 			}else{
 				//转map
 				Map<String,JSONObject> subJoMap = new HashMap<String,JSONObject>();
@@ -479,9 +486,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setNameAndAttr(IxPoiObj poiObj,String name)throws Exception{
 		//获取原始
 		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME_FLAG);
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME_TONE);
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_NAME);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_FLAG);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_TONE);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME);
 		}else{
 			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
 			if(r!=null){
@@ -507,7 +514,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setAddressAndAttr(IxPoiObj poiObj,String addr)throws Exception{
 		//获取原始
 		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_ADDRESS);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_ADDRESS);
 		}else{
 			IxPoiAddress r = poiObj.getCHAddress();
 			if(r!=null){
@@ -564,13 +571,13 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	private void setChildrenAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		if(JSONUtils.isNull(jo.get("relateChildren"))){
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_CHILDREN);
-			poiObj.deleteSubrow(IxPoiObj.IX_POI_PARENT);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 		}else{
 			JSONArray subJos = jo.getJSONArray("relateChildren");
 			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
-				poiObj.deleteSubrow(IxPoiObj.IX_POI_CHILDREN);
-				poiObj.deleteSubrow(IxPoiObj.IX_POI_PARENT);
+				poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
+				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 			}else{
 				//...
 			}

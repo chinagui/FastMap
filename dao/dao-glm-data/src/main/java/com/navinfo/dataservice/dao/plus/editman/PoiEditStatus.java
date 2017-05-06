@@ -303,9 +303,8 @@ public class PoiEditStatus {
 		Map<Long,String> freshVerPois = new HashMap<Long,String>();
 		for(Entry<Long, BasicObj> entry:pois.entrySet()){
 			IxPoiObj poiObj = (IxPoiObj)entry.getValue();
-			IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
-			if(poiObj.opType().equals(OperationType.UPDATE)&&ixPoi.isFreshFlag()){
-				freshVerPois.put(poiObj.objPid(), ixPoi.getRawFields());
+			if(poiObj.opType().equals(OperationType.UPDATE)&&poiObj.isFreshFlag()){
+				freshVerPois.put(poiObj.objPid(), poiObj.getRawFields());
 			}
 		}
 		freshVerifiedPoi(conn,freshVerPois);

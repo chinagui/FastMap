@@ -17,7 +17,7 @@ public class UploadTest {
 	@Before
 	public void before() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub-test.xml" });
+				new String[] { "dubbo-consumer-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 		
@@ -28,7 +28,7 @@ public class UploadTest {
 		UploadOperation operation = new UploadOperation(11L);
 		try {
 			Date startTime = new Date();
-			JSONObject ret = operation.importPoi("F://poi3.txt");
+			JSONObject ret = operation.importPoi("");
 			System.out.println(ret);
 			Date endTime = new Date();
 			System.out.println("total time:"+ (endTime.getTime() - startTime.getTime()));

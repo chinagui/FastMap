@@ -174,7 +174,7 @@ public abstract class BasicObj {
 	 * 如果是新增状态，物理删除，其他状态打删除标识
 	 * @param subrow
 	 */
-	public void deleteSubrow(String tableName){
+	public void deleteSubrows(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
 		if(rows!=null){
 			for(Iterator<BasicRow> it= rows.iterator();it.hasNext();){

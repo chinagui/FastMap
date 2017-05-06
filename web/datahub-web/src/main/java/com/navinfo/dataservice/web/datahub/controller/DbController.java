@@ -56,7 +56,7 @@ public class DbController extends BaseController {
 			//省份代码，使用按省份分配策略
 			//String provCode = URLDecode(request.getParameter("provcode"));
 			
-			DbInfo db = DbService.getInstance().createDb(serverType,dbName,userName,userPasswd,type, descp,gdbVersion,refDbId);
+			DbInfo db = DbService.getInstance().createDb(serverType,dbName,userName,userPasswd,type, descp,gdbVersion,refDbId,0);
 
 			return new ModelAndView("jsonView", success(db.getConnectParam()));
 		}catch(Exception e){

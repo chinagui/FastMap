@@ -75,6 +75,7 @@ public class CheckService {
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 		if(checkType == 5){  //道路名检查 ,直接调元数据库 子版本检查		
+			log.info(" begion 道路名检查 ");
 			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 					.getBean("datahubApi");
 			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
@@ -87,17 +88,17 @@ public class CheckService {
                 log.info("tips: "+tips);
                 //获取当前子任务下所有的道路名id
                 List<Integer> nameIds = getNameIds(subtaskId, tips);
-				
+                log.info(" nameIds.size():  "+nameIds.size());
                 log.info(" begin 子任务范围内 道路名子版本检查 ");
 				
-				String jobName = "";
-				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
+				String jobName = "元数据库检查";
+				/*if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
 						&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
-					jobName = "rdName:"+jsonReq.getString("jobName");
+					jobName = "webrdName:"+jsonReq.getString("jobName");
 				}else{
-					jobName = "rdName:"+"元数据库检查";
+					jobName = "webrdName:"+"元数据库检查";
 				}
-			
+			*/
 				JSONObject validationRequestJSON=new JSONObject();
 				validationRequestJSON.put("name", "");
 				validationRequestJSON.put("nameGroupid", "");
@@ -449,7 +450,9 @@ public class CheckService {
 			sql.append(" )  ");
 			log.info(" getNameIds :"+sql.toString());
 			pstmt = conn.prepareStatement(sql.toString());
-			pstmt.setClob(1, pidClod);
+			if (tips.size()>0) {
+				pstmt.setClob(1, pidClod);
+			}
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				nameIds.add(resultSet.getInt("name_id"));

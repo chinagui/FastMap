@@ -182,8 +182,8 @@ public class PoiGuideLinkBatch {
 	}
 	private void diff(OracleSchema copVersionSchema) throws Exception {
 		//完成数据差分，及履历写入
-		diffData(copVersionSchema,"IX_POI");
-		//diffData(copVersionConn,"IX_POI_FLAG");
+		diffPoiGData(copVersionSchema);
+		diffPoiFlagGData(copVersionSchema);
 		//更新LOG_DETAIL_GRID
 		updateLogGrid(copVersionSchema);
 	}
@@ -213,7 +213,7 @@ public class PoiGuideLinkBatch {
 		return grids;
 	}
 
-	private void diffData(OracleSchema copVersionSchema,String tabName) throws Exception {
+	private void diffPoiGData(OracleSchema copVersionSchema) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		StringBuilder sb = new StringBuilder();
         //该sql语句功能：实现对子版本库中数据进行差分，且将差分履历写入到5张履历表中
@@ -263,6 +263,39 @@ public class PoiGuideLinkBatch {
 			DBUtils.closeStatement(pstmt);
 		}
 		
+	}
+	private void diffPoiFlagGData(OracleSchema copVersionSchema) throws Exception {
+		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
+		StringBuilder sb = new StringBuilder();
+        //该sql语句功能：实现对子版本库中数据进行差分，且将差分履历写入到5张履历表中
+		sb.append(" INSERT ALL ");
+		sb.append("     INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD) VALUES (ACT_ID,0,'FM-BAT-M01-07') ");
+		sb.append(" 	INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (OP_ID,ACT_ID,SYSTIMESTAMP,LOG_OP_SEQ.NEXTVAL)");
+		sb.append(" 	INTO LOG_DAY_RELEASE (OP_ID) VALUES (OP_ID)");
+		sb.append(" 	INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID)VALUES (OP_ID,S_GUID,'IX_POI',PID,'IX_POI',PID,'IX_POI_FLAG',OLD_VALUE,NEW_VALUE,PD_LST,3,RN)");
+		sb.append(" 	INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (S_GUID,0,1)");
+		sb.append(" WITH TAB1 AS");
+		sb.append("  (SELECT IX.PID,IX.ROW_ID RN,");
+		sb.append(" 	'\"FLAG_CODE\"' PD_LST,");
+		sb.append(" 	'\"FLAG_CODE\":' || BAK.FLAG_CODE OLD_VALUE,");
+		sb.append(" 	'\"FLAG_CODE\":' || IX.FLAG_CODE NEW_VALUE");
+		sb.append(" 	FROM IX_POI_FLAG IX, IX_POI_FLAG_BACK BAK");
+		sb.append(" 	WHERE IX.POI_PID = BAK.POI_PID");
+		sb.append(" 	 AND IX.FLAG_CODE <> BAK.FLAG_CODE),");
+		sb.append(" TAB2 AS");
+		sb.append("  (SELECT PID,RN,'['||PD_LST||']' PD_LST ,'{'||OLD_VALUE||'}' OLD_VALUE,'{'||NEW_VALUE||'}' NEW_VALUE FROM TAB1)");
+		sb.append("SELECT tab2.rn,s.S_GUID,ac.S_GUID ACT_ID,op.S_GUID OP_ID,tab2.PID,tab2.OLD_VALUE,tab2.NEW_VALUE,tab2.PD_LST FROM tab2,(SELECT SYS_GUID() S_GUID FROM DUAL) S,(SELECT SYS_GUID() S_GUID FROM DUAL) ac,(SELECT SYS_GUID() S_GUID FROM DUAL) op");
+
+		PreparedStatement pstmt = null;
+		try {
+			pstmt = copVersionConn.prepareStatement(sb.toString());
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			DBUtils.rollBack(copVersionConn);
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
 	}
 	private void callCopPackage(OracleSchema copVersionSchema) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();

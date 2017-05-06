@@ -40,6 +40,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.RandomUtil;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -58,6 +59,7 @@ import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.dataservice.impcore.flushbylog.FlushResult;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.navicommons.database.sql.SqlExec;
 
 
@@ -500,28 +502,27 @@ public class PoiGuideLinkBatch {
 		}
 	}
 	
-	private String createDbLink(OracleSchema copVersionSchema) throws SQLException{
-		
-		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
-		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
-		String dbLinkName = "DBLINK_GDB_M_1";
+	/**
+	 * 子版本库上创建月库的db_link
+	 * @param copVersionSchema
+	 * @return dbLinkName
+	 * @throws Exception
+	 */
+	public String createDbLink(OracleSchema copVersionSchema) throws Exception{
+		DbLinkCreator cr = new DbLinkCreator();
+		String dbLinkName = "";
 		try{
-			String userName = monthDbSchema.getConnConfig().getUserName();
-			String userPassWord = monthDbSchema.getConnConfig().getUserPasswd();
-			String URL = monthDbSchema.getConnConfig().toConnectString();
-			String sql = "CREATE DATABASE LINK "+ dbLinkName +" CONNECT TO "+ userName +" IDENTIFIED BY "+ userPassWord +" USING '"+ URL +"';";
-			new QueryRunner().update(copVersionConn, sql);
+			dbLinkName = monthDbSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, copVersionSchema.getPoolDataSource(), monthDbSchema.getConnConfig().getUserName(),
+					monthDbSchema.getConnConfig().getUserPasswd(), monthDbSchema.getConnConfig().getServerIp(), 
+					String.valueOf(monthDbSchema.getConnConfig().getServerPort()), monthDbSchema.getConnConfig().getServiceName());
 			return dbLinkName;
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
-		}finally{
-			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
-		
 	}
-	private DbInfo createCopVersion() throws Exception {
+	public DbInfo createCopVersion() throws Exception {
 		//创建cop子版本库
 		DatahubApi datahub = (DatahubApi)ApplicationContextUtil.getBean("datahubApi");
 		int copDbId = 0;

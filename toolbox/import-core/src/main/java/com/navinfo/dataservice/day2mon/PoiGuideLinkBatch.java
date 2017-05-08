@@ -1,15 +1,14 @@
 package com.navinfo.dataservice.day2mon;
 
 import java.sql.CallableStatement;
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -24,7 +23,6 @@ import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculator;
 import com.navinfo.dataservice.bizcommons.glm.GlmGridCalculatorFactory;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.DbServerType;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
@@ -40,7 +38,6 @@ import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 import com.navinfo.dataservice.jobframework.runjob.JobCreateStrategy;
 import com.navinfo.navicommons.database.QueryRunner;
-import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.DbLinkCreator;
 import com.navinfo.navicommons.database.sql.SqlExec;
 
@@ -81,8 +78,8 @@ public class PoiGuideLinkBatch {
 			String dbLinkName = createDbLink(copVersionSchema);
 			//4.2创建需要的表结构:ix_poi,ix_poi_address,ix_poi_flag,rd_link,rd_link_form,rd_link_name,ni_rd_name
 			exeTabelCreateSql(copVersionSchema);
-			//导入cop的point_feature_batch包
-			importCopPck(copVersionSchema);
+			/*//导入cop的point_feature_batch包
+			importCopPck(copVersionSchema);*/
 			//4.3导入ix_poi:根据tempPoiGLinkTab 进行关联
 			initIxPoi(copVersionSchema,dbLinkName);
 			//4.4导入ix_poi_address:根据tempPoiGLinkTab 进行关联
@@ -101,12 +98,12 @@ public class PoiGuideLinkBatch {
 			backupIxPoi(copVersionSchema);
 			//4.9备份ix_poi为ix_poi_flag_back；
 			backupIxPoiFlag(copVersionSchema);
-			//5.调用cop的批处理程序；
+			/*//5.调用cop的批处理程序；
 			callCopPackage(copVersionSchema);
 			//6.差分ix_poi和ix_poi_back;生成差分履历；
 			diff(copVersionSchema);
 			//7.根据6的差分履历刷新月库,把6生成的履历搬移到月库；
-			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);
+			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);*/
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			DbUtils.rollbackAndCloseQuietly(monthConn);
@@ -302,7 +299,7 @@ public class PoiGuideLinkBatch {
 		
 	}
 	
-	public void backupIxPoi(OracleSchema copVersionSchema) throws Exception{
+	private void backupIxPoi(OracleSchema copVersionSchema) throws Exception{
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "INSERT /*+append*/ INTO ix_poi_back "+
@@ -317,7 +314,7 @@ public class PoiGuideLinkBatch {
 		}	
 	}
 	
-	public void backupIxPoiFlag(OracleSchema copVersionSchema) throws Exception{
+	private void backupIxPoiFlag(OracleSchema copVersionSchema) throws Exception{
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "INSERT /*+append*/ INTO ix_poi_flag_back SELECT p.* FROM ix_poi_flag p";
@@ -332,7 +329,7 @@ public class PoiGuideLinkBatch {
 
 	}
 	
-	public void initRdName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
+	private void initRdName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "insert /*+append*/ into ni_rd_name "
@@ -347,7 +344,7 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
-	public void initRdLinkName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException{
+	private void initRdLinkName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException{
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "insert /*+append*/ into rd_link_name "
@@ -362,7 +359,7 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
-	public void initRdLinkForm(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
+	private void initRdLinkForm(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "insert /*+append*/ into rd_link_form "
@@ -377,28 +374,28 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
-	public void initRdLink(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
+	private String createTempLinkGLinkTable(Connection conn) throws Exception {
+		String tableName = "temp_poi_glink"+(new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()));
+		String sql ="create table "+tableName+" (link_pid number(10))";
+		new QueryRunner().update(conn, sql);
+		return tableName;
+	}
+	private void initRdLink(OracleSchema copVersionSchema, String dbLinkName) throws Exception {
 		
 		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
-		List<Long> linkPids = new ArrayList<Long>();
+		String tempLinkGLinkTab  = createTempLinkGLinkTable(conn);
+		
 		StringBuilder sb = new StringBuilder();
-		sb.append("SELECT L.link_pid FROM ix_poi P,rd_link L ");
+		sb.append(" INSERT /*+append*/ INTO "+tempLinkGLinkTab+" SELECT L.link_pid FROM ix_poi P,rd_link L ");
 		sb.append(" WHERE P.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+" t)");
 		sb.append(" AND SDO_NN(L.GEOMETRY,");
-		sb.append("  NAVI_GEOM.CREATEPOINT(P.X_GUIDE, P.Y_GUIDE),");
+		sb.append(" NAVI_GEOM.CREATEPOINT(P.X_GUIDE, P.Y_GUIDE),");
 		sb.append(" 'SDO_NUM_RES=4 DISTANCE=80000 UNIT=METER') = 'TRUE'");
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
 			rs = pstmt.executeQuery();
-			while(rs.next()){
-				long linkPid = rs.getLong("link_pid");
-				if (!linkPids.contains(linkPid)){
-					linkPids.add(linkPid);
-				}
-			}
-		
 		}catch(Exception e){
 			log.error(e.getMessage());
 			e.printStackTrace();
@@ -410,15 +407,12 @@ public class PoiGuideLinkBatch {
 		}
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
-			if (linkPids.size()>0){
-				String sql = "insert /*+append*/ into RD_LINK "
-						+ "select r.* from RD_LINK@"+dbLinkName+" r  "
-						+ "where r.link_pid in (select column_value from table(clob_to_table(?))) ";
-				this.log.debug("sql:"+sql);
-				Clob clobLinkPids=ConnectionUtil.createClob(copVersionConn);
-				clobLinkPids.setString(1, StringUtils.join(linkPids, ","));
-				new QueryRunner().update(copVersionConn, sql, clobLinkPids);
-			}
+			String sql = "INSERT /*+append*/ INTO RD_LINK "
+					+ "SELECT r.* FROM RD_LINK@"+dbLinkName+" r  "
+					+ "WHERE r.link_pid IN (SELECT t.link_pid FROM "+tempLinkGLinkTab+"@"+dbLinkName+" t) ";
+			this.log.debug("sql:"+sql);
+			new QueryRunner().update(copVersionConn, sql);
+		
 		}catch (Exception e){
 			DbUtils.rollback(copVersionConn);
 			log.error(e.getMessage(), e);
@@ -428,12 +422,12 @@ public class PoiGuideLinkBatch {
 		}
 		
 	}
-	public void initIxPoiAddress(OracleSchema copVersionSchema, String dbLinkName) throws Exception {
+	private void initIxPoiAddress(OracleSchema copVersionSchema, String dbLinkName) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "INSERT /*+append*/ INTO ix_poi_address "+
-					"SELECT q.* FROM (SELECT * FROM ix_poi_address@"+dbLinkName+" p "+
-					"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
+					"SELECT * FROM ix_poi_address@"+dbLinkName+" p "+
+					"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t) ";
 					new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
@@ -443,12 +437,12 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
-	public void initIxPoi(OracleSchema copVersionSchema,String dbLinkName) throws Exception {
+	private void initIxPoi(OracleSchema copVersionSchema,String dbLinkName) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "INSERT /*+append*/ INTO ix_poi "+
-					"SELECT q.* FROM (SELECT * FROM ix_poi@"+dbLinkName+" p "+
-					"WHERE p.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
+					"SELECT * FROM ix_poi@"+dbLinkName+" p "+
+					"WHERE p.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)";
 					new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
@@ -458,10 +452,10 @@ public class PoiGuideLinkBatch {
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}	
 	}
-	public void importCopPck(OracleSchema copVersionSchema) throws Exception{
+	private void importCopPck(OracleSchema copVersionSchema) throws Exception{
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
-			String pckFile = "/point_feature_batch.pck";
+			String pckFile = "/com/navinfo/dataservice/importcore/resources/point_feature_batch.pck";
 			SqlExec sqlExec = new SqlExec(copVersionConn);
 			sqlExec.execute(pckFile);
 		}catch (Exception e){
@@ -473,7 +467,7 @@ public class PoiGuideLinkBatch {
 		}
 	}
 	
-	public void exeTabelCreateSql(OracleSchema copVersionSchema) throws Exception {
+	private void exeTabelCreateSql(OracleSchema copVersionSchema) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sqlFile = "/com/navinfo/dataservice/importcore/resources/poi_guide_link_batch_db_create.sql";

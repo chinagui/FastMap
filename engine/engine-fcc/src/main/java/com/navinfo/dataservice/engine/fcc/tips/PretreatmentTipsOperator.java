@@ -243,6 +243,44 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		pointGeo = GeoTranslator.jts2Geojson(midGeo);
 		return pointGeo;
 	}
+	
+	
+	/**
+	 * @Description:获得坐标的几何中心点（线）或
+	 * 1.如果只有两个形状点，则取几何中心点，否则取第二个形状点
+	 * @param lineGeometry
+	 * @return
+	 * @throws Exception
+	 * @author: y
+	 * @time:2016-11-18 下午4:18:43
+	 */
+	private JSONObject getMidPointByGeometry2(JSONObject lineGeometry)
+			throws Exception {
+		JSONObject pointGeo;
+		
+		Geometry geo= GeoTranslator
+		.geojson2Jts(lineGeometry);
+		
+		Coordinate[] cs = geo.getCoordinates();
+		
+		if(cs.length==2){
+			
+			Geometry midGeo = GeometryUtils.getMidPointByLine(GeoTranslator
+					.geojson2Jts(lineGeometry));
+			pointGeo = GeoTranslator.jts2Geojson(midGeo);
+		}else{
+			
+				double x = cs[1].x; //取第二个形状点
+				double y = cs[1].y;
+
+			Geometry secondPoint = GeoTranslator.point2Jts(x, y);
+			
+			pointGeo = GeoTranslator.jts2Geojson(secondPoint);
+			
+		}
+	
+		return pointGeo;
+	}
 
 	/**
 	 * @Description:修改tips的几何
@@ -518,13 +556,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
+					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
 					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
 					feedbackObj));
 
-			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
 					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
 					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
+					feedbackObj));
+
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
@@ -1239,7 +1288,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			dataTrack.put("t_lifecycle", newlifeCycle);
 			jsonInfo.put("track", dataTrack);
 
-			insertOneTips(jsonInfo, user, htab, rowkey); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
+			insertOneTips(jsonInfo, user, htab, date); // solr信息和hbase数据都直接覆盖（operate_date要不要覆盖？）
 
 		} catch (Exception e) {
 			logger.error("修改tips出错,rowkey:" + rowkey + "\n原因：" + e.getMessage());
@@ -1512,6 +1561,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		
 		JSONObject line2=resultArr.get(1);
 		
+		logger.debug("打断后line1:"+line1.getString("id"));
+		
+		logger.debug("打断后line2:"+line2.getString("id"));
+		
 		// 第二步：更新测线关联的tips
 		TipsSelector selector = new TipsSelector();
 		JSONArray souceTypes = new JSONArray();
@@ -1658,16 +1711,26 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solrIndex.put("g_guide", g_guide1);
 
 			newSolrIndex.put("g_guide", g_guide2);
-
+			
+			
 			// 更新wkt
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
 					"2001", null, g_location1,
 					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", null, g_location1,
+					feedbackObj));
 
-			newSolrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
+			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+					"2001", null, g_location2,
+					feedbackObj));
+			
+			//这个主要是g_location:目前只用于tips的下载和渲染
+			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
 					"2001", null, g_location2,
 					feedbackObj));
 
@@ -1686,6 +1749,22 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject deep2 = JSONObject.fromObject(solrIndex.get("deep"));
 
 			deep2.put("geo", g_guide2);
+			
+			
+			//更新deep.len
+			
+			double len1=GeoTranslator.geojson2Jts(g_location1).getLength();
+			
+			
+			double len2=GeoTranslator.geojson2Jts(g_location2).getLength();
+			
+			deep1.put("len", len1);
+			
+			deep2.put("len", len2);
+			
+			solrIndex.put("deep", deep1.toString());
+
+			newSolrIndex.put("deep", deep2.toString());
 
 			put.addColumn("data".getBytes(), "deep".getBytes(), deep1.toString()
 					.getBytes());

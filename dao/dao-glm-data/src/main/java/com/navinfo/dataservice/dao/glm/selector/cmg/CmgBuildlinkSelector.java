@@ -5,6 +5,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.DAOException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -123,4 +124,52 @@ public class CmgBuildlinkSelector extends AbstractSelector {
             result.add(cmgBuildlink);
         }
     }
+    /***
+   	 * 加载联通link不考虑方向
+   	 * 
+   	 * @param linkPid
+   	 * @param nodePidDir
+   	 * @param isLock
+   	 * @return
+   	 * @throws Exception
+   	 */
+
+   	public List<CmgBuildlink> loadTrackLinkNoDirect(int linkPid, int nodePidDir,
+   			boolean isLock) throws Exception {
+   		List<CmgBuildlink> list = new ArrayList<CmgBuildlink>();
+   		StringBuilder sb = new StringBuilder();
+   		sb.append(" select rl.* from cmg_buildlink rl  where (rl.s_node_pid = :1 or rl.e_node_pid = :2) and rl.link_pid <> :3 and rl.u_record !=2 ");
+   		if (isLock) {
+   			sb.append(" for update nowait");
+   		}
+
+   		PreparedStatement pstmt = null;
+
+   		ResultSet resultSet = null;
+
+   		try {
+   			pstmt = getConn().prepareStatement(sb.toString());
+
+   			pstmt.setInt(1, nodePidDir);
+   			pstmt.setInt(2, nodePidDir);
+   			pstmt.setInt(3, linkPid);
+
+   			resultSet = pstmt.executeQuery();
+
+   			while (resultSet.next()) {
+   				CmgBuildlink cmgLink = new CmgBuildlink();
+   				ReflectionAttrUtils.executeResultSet(cmgLink, resultSet);
+   				list.add(cmgLink);
+
+   			}
+   			return list;
+   		} catch (Exception e) {
+
+   			throw e;
+
+   		} finally {
+   			DBUtils.closeResultSet(resultSet);
+   			DBUtils.closeStatement(pstmt);
+   		}
+   	}
 }

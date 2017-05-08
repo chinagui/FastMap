@@ -1,7 +1,11 @@
 package com.navinfo.dataservice.engine.edit.xiaolong.rd;
 
+import java.sql.Connection;
 import java.util.Calendar;
 
+import com.navinfo.dataservice.dao.glm.search.RdGscSearch;
+import com.navinfo.dataservice.datahub.api.Db;
+import com.navinfo.dataservice.engine.edit.zhangyuntao.eleceye.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -174,4 +178,15 @@ public class RdGscTest extends InitApplication{
 			e.printStackTrace();
 		}
 	}
+
+	@Test
+    public void testRender(){
+        try {
+            Connection conn = DBConnector.getInstance().getConnectionById(13);
+            RdGscSearch search = new RdGscSearch(conn);
+            search.searchDataByTileWithGap(431856, 198975, 19, 80);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -112,6 +112,17 @@ public class IxSamePoiObj extends AbstractIxObj {
 		}
 	}
 	
+	@Override
+	public BasicRow createSubRowByTableName(String tableName) throws Exception {
+		if(IX_SAMEPOI_PART.equals(tableName)){
+			return this.createIxSamepoiPart();
+		}else{
+			throw new Exception("未知的子表名:"+tableName);
+		}
+	}
 	
+
+	public static final String IX_SAMEPOI = "IX_SAMEPOI";
+	public static final String IX_SAMEPOI_PART = "IX_SAMEPOI_PART";
 
 }

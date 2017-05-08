@@ -204,6 +204,15 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
+
+	public boolean isChanged(String colName){
+		if(opType.equals(OperationType.INSERT)
+				||opType.equals(OperationType.DELETE)
+				||(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.containsKey(colName))){
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
 	 * @return
@@ -494,6 +503,8 @@ public abstract class BasicRow{
 				argtypes= new Class[]{float.class};
 			}else if(newValue instanceof Long){
 				argtypes= new Class[]{long.class};
+			}else if(newValue instanceof Geometry){
+				argtypes= new Class[]{Geometry.class};
 			}else{
 				argtypes = new Class[]{newValue.getClass()};
 			}

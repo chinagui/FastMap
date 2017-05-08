@@ -79,10 +79,10 @@ public class JobServiceTest {
 		System.out.println(StringUtils.join(tableNames,","));
 		System.out.println("Over.");
 	}
-	//@Test
+	@Test
 		public void testSearch(){
 			try{
-				JSONObject obj = JobService.getInstance().getLatestJob(6);
+				JSONObject obj = JobService.getInstance().getLatestJob(6,"metaValidation","元数据库检查");
 				System.out.println(obj);
 			}catch(Exception e){
 				e.printStackTrace();

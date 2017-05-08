@@ -240,16 +240,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param secondWorkItem
 	 * @param userId
 	 * @param type
+	 * @param subtaskId
 	 * @return
 	 * @throws Exception
 	 */
-	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type) throws Exception {
+	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
 		sb.append(" WHERE s.work_item_id = w.work_item_id");
 		sb.append(" AND s.handler = :1");
 		sb.append(" AND w.type = :2");
+		sb.append(" AND s.TASK_ID = :3 ");
 
 		if (StringUtils.isNotEmpty(firstWorkItem)) {
 			sb.append(" AND w.FIRST_WORK_ITEM='" + firstWorkItem + "'");
@@ -270,6 +272,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setLong(1, userId);
 
 			pstmt.setInt(2, type);
+			
+			pstmt.setInt(3, subtaskId);
 
 			resultSet = pstmt.executeQuery();
 

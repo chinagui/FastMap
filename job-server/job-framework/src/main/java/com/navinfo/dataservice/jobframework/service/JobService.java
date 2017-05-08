@@ -210,14 +210,14 @@ public class JobService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public JSONObject getLatestJob(int subtaskId)throws ServiceException{
+	public JSONObject getLatestJob(int subtaskId,String jobType, String jobDescp)throws ServiceException{
 		Connection conn = null;
 		JSONObject jobObj = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = '"+jobType+"' and j.descp = '"+jobDescp+"' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
 			log.info("getLatestJob jobInfoSql: "+jobInfoSql);
 			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
 				

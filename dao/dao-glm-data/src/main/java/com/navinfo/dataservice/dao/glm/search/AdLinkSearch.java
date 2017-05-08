@@ -201,6 +201,70 @@ public class AdLinkSearch implements ISearch {
 
 		return list;
 	}
+	
+	public List<SearchSnapshot> searchDataByLinkPids(List<Integer> pids)
+			throws Exception {
+
+		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+		if (null == pids || pids.size() == 0||pids.size() > 1000)
+		{
+			return list;
+		}
+		
+		String ids = org.apache.commons.lang.StringUtils.join(pids, ",");		
+		
+		String sql = "SELECT A.LINK_PID, A.GEOMETRY, A.KIND, A.S_NODE_PID, A.E_NODE_PID FROM AD_LINK A WHERE LINK_PID IN (" + ids + ") AND U_RECORD != 2";
+		
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				SearchSnapshot snapshot = new SearchSnapshot();
+
+				JSONObject m = new JSONObject();
+
+				m.put("a", resultSet.getInt("s_node_pid"));
+
+				m.put("b", resultSet.getInt("e_node_pid"));
+				
+				m.put("c", resultSet.getInt("kind"));
+
+				snapshot.setM(m);
+
+				snapshot.setT(12);
+
+				snapshot.setI(resultSet.getInt("link_pid"));
+
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+				snapshot.setG(geojson.getJSONArray("coordinates"));
+
+				list.add(snapshot);
+			}
+		} catch (Exception e) {
+
+			throw new Exception(e);
+		} finally {
+			
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+
+		}
+
+		return list;
+	
+	}
 
 	public static void main(String[] args) throws Exception {
 		Connection conn = DBConnector.getInstance().getConnectionById(11);

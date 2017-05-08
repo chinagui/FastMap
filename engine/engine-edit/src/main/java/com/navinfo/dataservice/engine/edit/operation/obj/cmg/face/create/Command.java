@@ -41,6 +41,11 @@ public class Command extends AbstractCommand {
     private List<IRow> cmglinks = new ArrayList<>();
 
     /**
+     * 线构面所用线类别
+     */
+    private String linkType;
+
+    /**
      * @return 操作类型
      */
     @Override
@@ -72,6 +77,7 @@ public class Command extends AbstractCommand {
         if (data.containsKey("geometry")) {
             this.geometry = data.getJSONObject("geometry");
         } else {
+            this.linkType = data.getString("linkType");
             for (Object linkPid : data.getJSONArray("linkPids")) {
                 linkPids.add(Integer.valueOf(linkPid.toString()));
             }
@@ -121,5 +127,14 @@ public class Command extends AbstractCommand {
      */
     public void setLinkPids(List<Integer> linkPids) {
         this.linkPids = linkPids;
+    }
+
+    /**
+     * Getter method for property <tt>linkType</tt>.
+     *
+     * @return property value of linkType
+     */
+    public String getLinkType() {
+        return linkType;
     }
 }

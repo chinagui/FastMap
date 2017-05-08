@@ -17,6 +17,10 @@ public class PoiRelation {
 	protected String sameFid;
 	protected PoiRelationType poiRelationType;
 	
+	public PoiRelation(){}
+	public PoiRelation(PoiRelationType type){
+		this.poiRelationType=type;
+	}
 	
 	public PoiRelationType getPoiRelationType() {
 		return poiRelationType;

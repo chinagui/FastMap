@@ -3027,7 +3027,10 @@ public class TaskService {
 			conn=DBConnector.getInstance().getConnectionById(dbId);
 			if(pois!=null&&pois.size()>0){//批poi的快线任务号
 				List<Long> poiPids=new ArrayList<Long>();
-				poiPids.addAll(pois);
+				for(Object poiPid:pois){
+					poiPids.add(Long.valueOf(poiPid.toString()));
+				}
+				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
 			if(tips!=null&&tips.size()>0){//批tips的快线任务号
 				

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.city;
 
+import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -266,6 +267,51 @@ public class CityService {
 							log.error(e1.getMessage(),e1);
 						}
 						cityMap.put("planStatus", rs.getInt("PLAN_STATUS"));
+						res.add(cityMap);
+					}
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 模糊查询城市列表
+	 * @author songhe
+	 * @param  condition
+	 * @return 
+	 * @throws Exception 
+	 */
+	public List<Map<String, Object>> queryListAll(JSONObject obj) throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String cityName = "";
+			if(obj.containsKey("cityName")){
+				cityName = obj.getString("cityName");
+			}
+			
+			String queryListAllSql = "select c.city_id, r.daily_db_id, c.city_name from city c, region r where c.city_name like '%" + cityName + "%' and c.region_id = r.region_id";
+
+			return run.query(conn, queryListAllSql, new ResultSetHandler<List<Map<String, Object>>>(){
+
+				@Override
+				public List<Map<String, Object>> handle(ResultSet result)
+						throws SQLException {
+					List<Map<String, Object>> res = new ArrayList<Map<String,Object>>();
+					while(result.next()){
+						Map<String, Object> cityMap = new HashMap<String, Object>();
+						cityMap.put("cityId", result.getInt("CITY_ID"));
+						cityMap.put("cityName", result.getObject("CITY_NAME"));
+						cityMap.put("dbId", result.getInt("DAILY_DB_ID"));
 						res.add(cityMap);
 					}
 					return res;

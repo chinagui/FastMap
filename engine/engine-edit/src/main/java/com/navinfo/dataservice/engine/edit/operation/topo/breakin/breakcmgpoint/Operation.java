@@ -157,8 +157,9 @@ public class Operation implements IOperation {
             JSONObject geojson = new JSONObject();
             geojson.put("type", "LineString");
             geojson.put("coordinates", array);
-            CmgBuildlink link = CmgLinkOperateUtils.createCmglinkBySource(GeoTranslator.geojson2Jts(
-                    geojson, Constant.BASE_SHRINK, Constant.BASE_PRECISION), 0, 0, result, command.getCmglink());
+            CmgBuildlink link = CmgLinkOperateUtils.createCmglinkBySource(
+                    GeoTranslator.geojson2Jts(geojson, Constant.BASE_SHRINK, Constant.BASE_PRECISION),
+                    command.getCmglink().getsNodePid(), command.getCmglink().geteNodePid(), result, command.getCmglink());
             this.command.getNewCmglinks().add(link);
         }
     }

@@ -504,5 +504,28 @@ public class TaskController extends BaseController {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
+	}	
+	
+	/**
+	 * 成果调节--批快线任务号
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/batchQuickTask")
+	public ModelAndView batchQuickTask(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int dbId= dataJson.getInt("dbId");
+			JSONArray pois = dataJson.getJSONArray("pois");
+			JSONArray tips = dataJson.getJSONArray("tips");
+			int subtaskId=dataJson.getInt("subtaskId");
+			int taskId=dataJson.getInt("taskId");
+			
+			TaskService.getInstance().batchQuickTask(dbId,subtaskId,taskId,pois,tips);
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
 	}
 }

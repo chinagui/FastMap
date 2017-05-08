@@ -294,9 +294,15 @@ public class CityService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String cityName = "\'"+ "%" + Object.get("cityName").toString() + "%" +"\'";
+			String cityName = "";
+			if(Object.containsKey("condition")){
+				JSONObject cityPrame = JSONObject.fromObject(Object.getString("condition"));
+				if(cityPrame.containsKey("cityName")){
+					cityName = cityPrame.get("cityName").toString();
+				}
+			}
 			
-			String queryListAllSql = "select c.city_id, r.daily_db_id, c.city_name from city c, region r where c.city_name like " + cityName + " and c.region_id = r.region_id";
+			String queryListAllSql = "select c.city_id, r.daily_db_id, c.city_name from city c, region r where c.city_name like '%" + cityName + "%' and c.region_id = r.region_id";
 
 			return run.query(conn, queryListAllSql, new ResultSetHandler<List<Map<String, Object>>>(){
 

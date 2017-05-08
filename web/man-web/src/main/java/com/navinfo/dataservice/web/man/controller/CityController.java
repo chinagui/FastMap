@@ -108,15 +108,13 @@ public class CityController extends BaseController {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			//TODO 这里编码集需要确认
 //			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
-			String cityName = "";
+			JSONObject parame = new JSONObject();
+			
 			if(dataJson.containsKey("condition")){
-				JSONObject cityPrame = JSONObject.fromObject(dataJson.getString("condition"));
-				if(cityPrame.containsKey("cityName")){
-					cityName = cityPrame.get("cityName").toString();
-				}
+				parame = JSONObject.fromObject(dataJson.getString("condition"));
 			}
 			
-			List<Map<String,Object>> data = service.queryListAll(cityName);
+			List<Map<String,Object>> data = service.queryListAll(parame);
 			
 			return new ModelAndView("jsonView", success(data));
 		}catch (Exception e){

@@ -126,12 +126,12 @@ public class PoiGuideLinkBatch {
 			//7.根据6的差分履历刷新月库,把6生成的履历搬移到月库；
 			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);
 		}catch(Exception e){
-			DbUtils.rollback(copVersionConn);
-			DbUtils.rollback(monthConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(monthConn);
 			log.error(e.getMessage());
 		}finally{
-			DbUtils.commitAndClose(copVersionConn);
-			DbUtils.commitAndClose(monthConn);
+			DbUtils.commitAndCloseQuietly(copVersionConn);
+			DbUtils.commitAndCloseQuietly(monthConn);
 		}
 		
 	}
@@ -140,8 +140,8 @@ public class PoiGuideLinkBatch {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "INSERT /*+append*/ INTO ix_poi_flag "+
-					"SELECT q.* FROM (SELECT * FROM ix_poi_flag@"+dbLinkName+" p "+
-					"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
+					"SELECT * FROM ix_poi_flag@"+dbLinkName+" p "+
+					"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t) ";
 			new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
 			DbUtils.rollback(copVersionConn);
@@ -195,9 +195,17 @@ public class PoiGuideLinkBatch {
 		//查询需要赋值的数据
 		Map<Long,String> grids = getLogDetailDridData(copVersionConn);
 		QueryRunner run = new QueryRunner();
-		for (long pid : grids.keySet()) {
-			String sql = "UPDATE LOG_DETAIL_GRID SET GRID_ID= "+grids.get(pid)+" WHERE log_row_id IN (SELECT ROW_ID FROM LOG_DETAIL WHERE OB_PID="+pid+")";
-			run.execute(copVersionConn, sql);
+
+		try {
+			for (long pid : grids.keySet()) {
+				String sql = "UPDATE LOG_DETAIL_GRID SET GRID_ID= "+grids.get(pid)+" WHERE log_row_id IN (SELECT ROW_ID FROM LOG_DETAIL WHERE OB_PID="+pid+")";
+				run.execute(copVersionConn, sql);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
 	private Map<Long,String> getLogDetailDridData(Connection conn) throws Exception {
@@ -251,18 +259,16 @@ public class PoiGuideLinkBatch {
 		sb.append(" 		IX.LINK_PID <> BAK.LINK_PID OR IX.NAME_GROUPID <> BAK.NAME_GROUPID OR");
 		sb.append(" 		IX.SIDE <> BAK.SIDE OR IX.PMESH_ID <> BAK.PMESH_ID)),");
 		sb.append(" TAB2 AS");
-		sb.append("  (SELECT PID,RN,'['||SUBSTR(PD_LST,2,LENGTH(PD_LST)-1)||']' PD_LST ,'{'||SUBSTR(OLD_VALUE,2,LENGTH(OLD_VALUE)-1)||'}' OLD_VALUE,'{'||SUBSTR(NEW_VALUE,2,LENGTH(NEW_VALUE)-1)||'}' NEW_VALUE FROM TAB1) ");
-		sb.append("SELECT tab2.rn,s.S_GUID,ac.S_GUID ACT_ID,op.S_GUID OP_ID,tab2.PID,tab2.OLD_VALUE,tab2.NEW_VALUE,tab2.PD_LST FROM tab2,(SELECT SYS_GUID() S_GUID FROM DUAL) S,(SELECT SYS_GUID() S_GUID FROM DUAL) ac,(SELECT SYS_GUID() S_GUID FROM DUAL) op");
-
-		PreparedStatement pstmt = null;
+		sb.append("  (SELECT /*+ no_merge */ PID,RN,'['||SUBSTR(PD_LST,2,LENGTH(PD_LST)-1)||']' PD_LST ,'{'||SUBSTR(OLD_VALUE,2,LENGTH(OLD_VALUE)-1)||'}' OLD_VALUE,'{'||SUBSTR(NEW_VALUE,2,LENGTH(NEW_VALUE)-1)||'}' NEW_VALUE,SYS_GUID() S_GUID,SYS_GUID() ACT_ID ,SYS_GUID() OP_ID FROM TAB1) ");
+		sb.append("SELECT rn,S_GUID,ACT_ID,OP_ID,PID,OLD_VALUE,NEW_VALUE,PD_LST FROM tab2");
+		
 		try {
-			pstmt = copVersionConn.prepareStatement(sb.toString());
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			DBUtils.rollBack(copVersionConn);
+			new QueryRunner().update(copVersionConn, sb.toString()); 
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			throw e;
-		} finally {
-			DBUtils.closeStatement(pstmt);
+		}finally{
+			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 		
 	}
@@ -274,29 +280,27 @@ public class PoiGuideLinkBatch {
 		sb.append("     INTO LOG_ACTION (ACT_ID,US_ID,OP_CMD) VALUES (ACT_ID,0,'FM-BAT-M01-07') ");
 		sb.append(" 	INTO LOG_OPERATION (OP_ID,ACT_ID,OP_DT,OP_SEQ) VALUES (OP_ID,ACT_ID,SYSTIMESTAMP,LOG_OP_SEQ.NEXTVAL)");
 		sb.append(" 	INTO LOG_DAY_RELEASE (OP_ID) VALUES (OP_ID)");
-		sb.append(" 	INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID)VALUES (OP_ID,S_GUID,'IX_POI',PID,'IX_POI',PID,'IX_POI_FLAG',OLD_VALUE,NEW_VALUE,PD_LST,3,RN)");
+		sb.append(" 	INTO LOG_DETAIL (OP_ID,ROW_ID,OB_NM,OB_PID,GEO_NM,GEO_PID,TB_NM,OLD,NEW,FD_LST,OP_TP,TB_ROW_ID)VALUES (OP_ID,S_GUID,'IX_POI',POI_PID,'IX_POI',POI_PID,'IX_POI_FLAG',OLD_VALUE,NEW_VALUE,PD_LST,3,RN)");
 		sb.append(" 	INTO LOG_DETAIL_GRID (LOG_ROW_ID,GRID_ID,GRID_TYPE) VALUES (S_GUID,0,1)");
 		sb.append(" WITH TAB1 AS");
-		sb.append("  (SELECT IX.PID,IX.ROW_ID RN,");
+		sb.append("  (SELECT IX.POI_PID,IX.ROW_ID RN,");
 		sb.append(" 	'\"FLAG_CODE\"' PD_LST,");
 		sb.append(" 	'\"FLAG_CODE\":' || BAK.FLAG_CODE OLD_VALUE,");
 		sb.append(" 	'\"FLAG_CODE\":' || IX.FLAG_CODE NEW_VALUE");
 		sb.append(" 	FROM IX_POI_FLAG IX, IX_POI_FLAG_BACK BAK");
 		sb.append(" 	WHERE IX.POI_PID = BAK.POI_PID");
-		sb.append(" 	 AND IX.FLAG_CODE <> BAK.FLAG_CODE),");
+		sb.append(" 	 AND IX.FLAG_CODE <> BAK.FLAG_CODE AND IX.ROW_ID = BAK.ROW_ID),");
 		sb.append(" TAB2 AS");
-		sb.append("  (SELECT PID,RN,'['||PD_LST||']' PD_LST ,'{'||OLD_VALUE||'}' OLD_VALUE,'{'||NEW_VALUE||'}' NEW_VALUE FROM TAB1)");
-		sb.append("SELECT tab2.rn,s.S_GUID,ac.S_GUID ACT_ID,op.S_GUID OP_ID,tab2.PID,tab2.OLD_VALUE,tab2.NEW_VALUE,tab2.PD_LST FROM tab2,(SELECT SYS_GUID() S_GUID FROM DUAL) S,(SELECT SYS_GUID() S_GUID FROM DUAL) ac,(SELECT SYS_GUID() S_GUID FROM DUAL) op");
+		sb.append("  (SELECT /*+ no_merge */  POI_PID,RN,'['||PD_LST||']' PD_LST ,'{'||OLD_VALUE||'}' OLD_VALUE,'{'||NEW_VALUE||'}' NEW_VALUE,SYS_GUID() S_GUID,SYS_GUID() ACT_ID ,SYS_GUID() OP_ID FROM TAB1) ");
+		sb.append(" SELECT rn,S_GUID, ACT_ID,OP_ID,POI_PID,OLD_VALUE,NEW_VALUE,PD_LST FROM tab2");
 
-		PreparedStatement pstmt = null;
 		try {
-			pstmt = copVersionConn.prepareStatement(sb.toString());
-			pstmt.executeUpdate();
-		} catch (Exception e) {
-			DBUtils.rollBack(copVersionConn);
+			new QueryRunner().update(copVersionConn, sb.toString()); 
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			throw e;
-		} finally {
-			DBUtils.closeStatement(pstmt);
+		}finally{
+			DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 	}
 	private void callCopPackage(OracleSchema copVersionSchema) throws Exception {
@@ -323,7 +327,7 @@ public class PoiGuideLinkBatch {
 					"SELECT p.PID,p.X_GUIDE,p.Y_GUIDE,p.LINK_PID,p.SIDE,p.NAME_GROUPID,p.PMESH_ID FROM ix_poi p";
 			new QueryRunner().update(copVersionConn, sql); 	
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -337,7 +341,7 @@ public class PoiGuideLinkBatch {
 			String sql = "INSERT /*+append*/ INTO ix_poi_flag_back SELECT p.* FROM ix_poi_flag p";
 			new QueryRunner().update(copVersionConn, sql);
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -354,7 +358,7 @@ public class PoiGuideLinkBatch {
 					+ " where n.name_groupid in (select r.name_groupid from rd_link l,rd_link_name r where l.link_pid=r.link_pid )";
 			new QueryRunner().update(copVersionConn, sql);
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -369,7 +373,7 @@ public class PoiGuideLinkBatch {
 					+ " where n.link_pid in (select r.link_pid from rd_link r)";
 			new QueryRunner().update(copVersionConn, sql);
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -384,7 +388,7 @@ public class PoiGuideLinkBatch {
 					+ " where f.link_pid in (select r.link_pid from rd_link r)";
 			new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -450,7 +454,7 @@ public class PoiGuideLinkBatch {
 					"WHERE p.poi_pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
 					new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -465,7 +469,7 @@ public class PoiGuideLinkBatch {
 					"WHERE p.pid IN (SELECT t.pid FROM "+tempPoiGLinkTab+"@"+dbLinkName+" t)) q ";
 					new QueryRunner().update(copVersionConn, sql); 
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -479,7 +483,7 @@ public class PoiGuideLinkBatch {
 			SqlExec sqlExec = new SqlExec(copVersionConn);
 			sqlExec.execute(pckFile);
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -494,7 +498,7 @@ public class PoiGuideLinkBatch {
 			SqlExec sqlExec = new SqlExec(copVersionConn);
 			sqlExec.execute(sqlFile);
 		}catch (Exception e){
-			DbUtils.rollback(copVersionConn);
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			log.error(e.getMessage(), e);
 			throw e;
 		}finally{
@@ -552,7 +556,7 @@ public class PoiGuideLinkBatch {
 			//根据返回的自版本库的dbid 获取子版本库的DbInfo
 			copDb = datahub.getDbById(copDbId);
 		}catch (Exception e){
-			DbUtils.rollback(sysConn);
+			DbUtils.rollbackAndCloseQuietly(sysConn);
 			log.error(e.getMessage(), e);
 			throw new JobException(e.getMessage(), e);
 		}finally{

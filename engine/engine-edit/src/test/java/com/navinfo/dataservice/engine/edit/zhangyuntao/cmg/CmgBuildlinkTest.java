@@ -20,9 +20,11 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildlink() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"sNodePid\":0," +
-                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.6247533261776,39.74999873540115]," +
-                "[116.62516370415688,39.75000079759563]]},\"catchLinks\":[]}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"sNodePid\":402000042,\"eNodePid\":403000032,\"geometry\":{\"type\":\"LineString\"," +
+                "\"coordinates\":[[116.99396878480911,39.99996079681034],[116.99401035904886,40.00013339076144],[116.9936241209507," +
+                "40.0001354454487],[116.99362948536873,39.9999505233471]]},\"catchLinks\":[{\"nodePid\":402000042,\"seqNum\":0}," +
+                "{\"nodePid\":403000032,\"seqNum\":3}]}}";
         TestUtil.run(requester);
     }
 

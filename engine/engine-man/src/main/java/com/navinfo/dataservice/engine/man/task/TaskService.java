@@ -54,6 +54,7 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -3013,6 +3014,30 @@ public class TaskService {
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	public void batchQuickTask(int dbId, int subtaskId,
+			int taskId, JSONArray pois, JSONArray tips) throws Exception{
+		log.info("batchQuickTask:dbId="+dbId+",subtaskId="+subtaskId+",taskId="+taskId);
+		log.info("pois="+pois);
+		log.info("tips="+tips);
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getConnectionById(dbId);
+			if(pois!=null&&pois.size()>0){//批poi的快线任务号
+				List<Long> poiPids=new ArrayList<Long>();
+				poiPids.addAll(pois);
+			}
+			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+				
+			}
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	

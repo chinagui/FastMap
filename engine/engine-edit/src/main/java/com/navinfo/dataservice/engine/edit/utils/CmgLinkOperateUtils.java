@@ -251,8 +251,8 @@ public final class CmgLinkOperateUtils {
     /*
     * 创建生成一条LCLINK返回
     */
-    public static CmgBuildlink createCmglinkBySource(Geometry geometry, int sNodePid, int eNodePid, Result result, CmgBuildlink sourceLink) throws
-            Exception {
+    public static CmgBuildlink createCmglinkBySource(Geometry geometry, int sNodePid, int eNodePid, Result result, CmgBuildlink sourceLink)
+            throws Exception {
         CmgBuildlink cmglink = new CmgBuildlink();
         cmglink.setPid(PidUtil.getInstance().applyCmgBuildlinkPid());
         cmglink.copy(sourceLink);

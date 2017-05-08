@@ -45,6 +45,12 @@ public interface MetadataApi {
 	 */
 	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception;
 	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception;
+	/**
 	 * select pid,name from sc_point_nomingan_list
 	 * @return List<String>: pid|name 所拼字符串列表
 	 * @throws Exception
@@ -106,14 +112,13 @@ public interface MetadataApi {
 	/**
 	 * @Description:名称导入，将名称写入元数据库
 	 * @param name
-	 * @param longitude
-	 * @param latitude
+	 * @param gLocation
 	 * @param rowkey
 	 * @author: y
 	 * @time:2016-6-28 下午2:49:30
 	 */
 	
-	public void nameImport(String name,double longitude, double latitude,String rowkey)throws Exception ;
+	public void nameImport(String name,JSONObject gLocation,String rowkey, String sourceType)throws Exception ;
 	
 	public MetadataMap getMetadataMap() throws Exception;
 	
@@ -345,6 +350,11 @@ public interface MetadataApi {
 	public List<Mesh4Partition> queryMeshes4PartitionByAdmincodes(Set<Integer> admincodes)throws Exception;
 	
 	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getCloseMeshs(List<Integer> admincodes)throws Exception;
+	
+	/**
 	 * 根据错别字获取行政区划管理表：SC_POINT_ ADMINAREA记录
 	 * @param name
 	 * @return List<Map<String, Object>>
@@ -404,5 +414,13 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointCode2Level() throws Exception;
+	/**
+	 * 多源导入时，批level
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
+	public JSONObject getAdminMap()throws Exception;
 
 }

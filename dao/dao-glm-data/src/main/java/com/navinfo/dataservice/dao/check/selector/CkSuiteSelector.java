@@ -5,14 +5,16 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 public class CkSuiteSelector extends AbstractSelector {
-	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private Connection conn;
 
 	public CkSuiteSelector(Connection conn) {
@@ -65,6 +67,49 @@ public class CkSuiteSelector extends AbstractSelector {
 				data.put("suiteRange", resultSet.getString("suite_range"));
 				data.put("feature", resultSet.getString("feature"));
 				data.put("total", resultSet.getInt("total"));
+				result.add(data);
+			}
+			
+			return result;
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+		
+	}
+	public JSONArray getSuite(int type, int flag) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+		
+		try {
+			JSONArray result = new JSONArray();
+			
+			sb.append("select a.* from ck_suite_cop a  where a.feature=:1 ");
+			
+			if(flag == 0 && type ==5 ){//如果不是道路名全表检查并且检查类型不是 元数据检查
+				sb.append(" and a.suite_id not in('suite1') ");//
+			}
+			log.info("getSuite :"+sb.toString());
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, type);
+
+			
+			resultSet = pstmt.executeQuery();
+			
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("suiteId", resultSet.getString("suite_id"));
+				data.put("suiteName", resultSet.getString("suite_name"));
+				data.put("suiteRange", resultSet.getString("suite_range"));
+				data.put("feature", resultSet.getString("feature"));
+//				data.put("total", resultSet.getInt("total"));
 				result.add(data);
 			}
 			

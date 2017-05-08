@@ -5,21 +5,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.log4j.Logger;
-
-import sun.tools.tree.ThisExpression;
-
+//import sun.tools.tree.ThisExpression;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.util.StringUtils;
-import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
-import com.navinfo.dataservice.dao.plus.glm.GlmObject;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
-import com.navinfo.dataservice.dao.plus.obj.ObjectName;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
-import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRuleCommand;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.CheckRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.NiValException;

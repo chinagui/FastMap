@@ -68,7 +68,8 @@
             <sql><![CDATA[SELECT P.* FROM RD_NAME P,TEMP_RD_LINK_NAMEID T WHERE P.NAME_ID=T.PID; ]]></sql>
              <!--RD_LINK_SPEEDLIMIT-->
             <sql><![CDATA[SELECT P.* FROM RD_LINK_SPEEDLIMIT P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
-
+			<!--RD_LINK_SPEED_TRUCK-->
+            <sql><![CDATA[SELECT P.* FROM RD_LINK_SPEED_TRUCK P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
 
         </step>
 

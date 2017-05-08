@@ -203,20 +203,20 @@ public class OverviewTaskMain {
 		int progress = 1;
 		int percent = 0;
 		
-		Integer programId = null;
-		Integer status = null;
-		Integer groupId = null;
-		Integer type = null;
-		Integer poiPlanTotal = null;
-		Integer roadPlanTotal = null;
+		Integer programId = 0;
+		Integer status = 0;
+		Integer groupId = 0;
+		Integer type = 0;
+		Integer poiPlanTotal = 0;
+		Integer roadPlanTotal = 0;
 		
 		String planStartDate = null;
 		String planEndDate = null;
-		Integer planDate = null;
+		Integer planDate = 0;
 		
 		String actualStartDate = null;
 		String actualEndDate = null;
-		Integer diffDate = null;
+		Integer diffDate = 0;
 		Document doc = null;
 		try {
 			doc = new Document();
@@ -307,7 +307,7 @@ public class OverviewTaskMain {
 			md.insertMany(col_name_task, taskList);
 			
 			log.info("-- end stat:" + col_name_task);
-			System.exit(0);
+			//System.exit(0);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

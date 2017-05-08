@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 

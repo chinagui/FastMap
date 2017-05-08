@@ -4,15 +4,12 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
@@ -23,16 +20,12 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
-import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchDetail;
-import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.edit.operation.Transaction;
 import com.navinfo.dataservice.engine.edit.search.SearchProcess;
 import com.navinfo.dataservice.engine.release.Release;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -61,8 +54,8 @@ public class EditController extends BaseController {
 			// 加载用户ID
 			t.setUserId(tokenObj.getUserId());
 			// 加载用户taskId
-			if (paraJson.containsKey("taskId")) {
-				t.setTaskId(paraJson.getInt("taskId"));
+			if (paraJson.containsKey("subtaskId")) {
+				t.setSubTaskId(paraJson.getInt("subtaskId"));
 			}
 			// 加载数据库类型
 			if (paraJson.containsKey("dbType")) {
@@ -323,14 +316,14 @@ public class EditController extends BaseController {
 
 				SearchProcess p = new SearchProcess(conn);
 
-				List<? extends IObj> objList = p.searchDataByPids(
+				List<? extends IRow> objList = p.searchDataByPids(
 						ObjType.valueOf(objType), pidArray);
 
 				JSONArray array = new JSONArray();
 
 				if (objList != null) {
 
-					for (IObj obj : objList) {
+					for (IRow obj : objList) {
 						JSONObject json = obj.Serialize(ObjLevel.FULL);
 						json.put("geoLiveType", objType);
 						array.add(json);
@@ -498,6 +491,95 @@ public class EditController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * 查询以渲染格式返回的数据
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/getObject")
+	public ModelAndView getObject(HttpServletRequest request)
+			throws ServletException, IOException {	
+		
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject condition = JSONObject.fromObject(parameter);
+
+			int dbId = condition.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONObject array = p.searchDataByObject(condition);
+
+			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}		
+	}
+	
+	/**
+	 * 根据node查询以渲染格式返回的link
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/getLinkByNode")
+	public ModelAndView getLinkByNode(HttpServletRequest request)
+			throws ServletException, IOException {	
+		
+		String parameter = request.getParameter("parameter");
+
+		Connection conn = null;
+
+		try {
+			JSONObject condition = JSONObject.fromObject(parameter);
+
+			int dbId = condition.getInt("dbId");
+			
+			conn = DBConnector.getInstance().getConnectionById(dbId);
+
+			SearchProcess p = new SearchProcess(conn);
+
+			JSONObject array = p.searchLinkByNode(condition);
+
+			return new ModelAndView("jsonView", success(array));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 }

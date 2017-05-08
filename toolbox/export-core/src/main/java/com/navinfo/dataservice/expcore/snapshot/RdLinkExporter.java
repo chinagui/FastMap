@@ -12,13 +12,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
-
 import org.apache.commons.lang.StringUtils;
 
 public class RdLinkExporter {
@@ -54,9 +52,13 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add names Blob;");
 		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
 		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
+		//********zl 2017.04.11 *************
+		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		//***********************************
 
 		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -90,6 +92,40 @@ public class RdLinkExporter {
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
+		String sql3 = " select * from rd_link a where a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+//		
+		PreparedStatement stmt3 = conn.prepareStatement(sql3);
+
+		stmt3.setClob(1, clob);
+		
+		ResultSet resultSet3 = stmt3.executeQuery();
+
+		resultSet3.setFetchSize(5000);
+
+		System.out.println("sql3: "+sql3);
+		//****************************************
+		List<Integer> sNodePidList=new ArrayList<Integer>();//所有sNodePid 的集合 有重复
+		List<Integer> eNodePidList=new ArrayList<Integer>();//所有eNodePid 的集合 有重复
+		List<Map<String,Object>> listLinkMap = new ArrayList<Map<String,Object>>();//所有link的list集合
+		
+		
+		while (resultSet3.next()) {
+			if(resultSet3.getInt("kind") != 10){//排除十级路
+				Map<String, Object> linkMap = new HashMap<String,Object>();// 所有每条记录的 linkPid,sNode,eNode 的map集合
+				sNodePidList.add(resultSet3.getInt("S_NODE_PID"));
+				eNodePidList.add(resultSet3.getInt("E_NODE_PID"));
+					linkMap.put("linkPid", resultSet3.getInt("link_pid"));
+					linkMap.put("sNode", resultSet3.getInt("S_NODE_PID"));
+					linkMap.put("eNode", resultSet3.getInt("E_NODE_PID"));
+					linkMap.put("kind", resultSet3.getInt("kind"));
+					linkMap.put("length", resultSet3.getDouble("length"));
+				listLinkMap.add(linkMap);
+			}
+		}
+		System.out.println("sNodePidList :"+sNodePidList.size());
+		System.out.println("eNodePidList :"+eNodePidList.size());
+		System.out.println("listLinkMap :"+listLinkMap.size());
+		//****************************************
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
 
 		stmt2.setClob(1, clob);
@@ -97,14 +133,15 @@ public class RdLinkExporter {
 		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
-
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		int count = 0;
 
 		while (resultSet.next()) {
 
-			JSONObject json = enclosingRdLine(resultSet, operateDate);
+			JSONObject json = enclosingRdLine(resultSet, operateDate,
+					sNodePidList,eNodePidList,
+					listLinkMap);
 
 			int pid = json.getInt("pid");
 
@@ -117,6 +154,7 @@ public class RdLinkExporter {
 			prep.setInt(1, pid);
 
 			prep.setString(2, json.getString("geometry"));
+//			prep.setInt(2, json.getInt("isADAS"));
 
 			prep.setString(3, json.getString("display_style"));
 
@@ -175,6 +213,8 @@ public class RdLinkExporter {
 			//
 			prep.setLong(24, json.getLong("sNodePid"));
 			prep.setLong(25, json.getLong("eNodePid"));
+			
+			prep.setInt(26, json.getInt("isADAS"));
 
 			prep.executeUpdate();
 
@@ -188,7 +228,9 @@ public class RdLinkExporter {
 		sqliteConn.commit();
 	}
 
-	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate)
+	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, 
+			List<Integer> sNodePidList, List<Integer> eNodePidList, 
+			List<Map<String, Object>> listLinkMap)
 			throws Exception {
 
 		JSONObject json = new JSONObject();
@@ -384,6 +426,119 @@ public class RdLinkExporter {
 		//s,enodpis
 		json.put("sNodePid",rs.getLong("S_NODE_PID"));
 		json.put("eNodePid",rs.getLong("E_NODE_PID"));
+		
+		//****zl 2017.04.11 *********
+		int adasFlag = rs.getInt("ADAS_FLAG");
+		double linkLength = rs.getDouble("LENGTH");
+		int isADAS  = 2;
+		if(adasFlag == 1){
+			isADAS = 1;
+		}else if(adasFlag == 0 || adasFlag == 2){
+			List<Integer> formList = new ArrayList<>();
+			for (int i = 0; i < formsArray.size(); i++) {
+				JSONObject formsJson = formsArray.getJSONObject(i);
+				formList.add(formsJson.getInt("form"));
+			}
+			if(kind > 7){//7级以下道路
+				isADAS = 3;
+			}else if(formList.contains(35) && direct == 1){//双向调头口
+				isADAS = 3;
+			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
+				System.out.println("begin kind == 7 && linkLength < 1000  linkPid :"+pid);
+				//计算此link 的sNode和eNode 出现的次数
+				List<Integer> nodeList = new ArrayList<>();//获取 snode 和 enode 的总集合
+				nodeList.addAll(sNodePidList);
+				nodeList.addAll(eNodePidList);
+				
+				Integer sNodePid = rs.getInt("S_NODE_PID");
+				Integer eNodePid = rs.getInt("E_NODE_PID");
+				int nextNode = 0;
+				int oldNode = 0;
+				//计算断头路 
+				double length = linkLength;
+				
+				int  nextFlag =0;//0 :初始状态  ;1 :nextNode 是 起点 ;2 :nextNode 是 终点
+				
+				for(int i=0; i<nodeList.size() ;i++){
+					int nextNodeCount = 1;
+					 System.out.println("nextFlag: "+nextFlag+" nextNode:"+ nextNode);
+					if(nextFlag == 1){//nextNode 是 起点 
+						/*nextNode = sNodePid;
+						oldNode = eNodePid;*/
+						if(nextNode > 0 ){
+							nextNodeCount =getNodeCount(nextNode,nodeList);
+						}
+					}else if(nextFlag == 2){//nextNode 是 终点
+						/*nextNode = eNodePid;
+						oldNode = sNodePid;*/
+						if(nextNode > 0 ){
+							nextNodeCount =getNodeCount(nextNode,nodeList);
+						}
+					}else{
+						int sNodeCount = 1;
+						int eNodeCount = 1;
+						if(sNodePid > 0){
+							sNodeCount =getNodeCount(sNodePid,nodeList);
+						}
+						if(eNodePid > 0){
+							eNodeCount =getNodeCount(eNodePid,nodeList);
+						}
+						if((sNodeCount ==2 && eNodeCount ==1)){//追踪起点
+							//追踪sNode  返回的是7级路的总长度
+							System.out.println("追踪sNode enode是唯一点    sNodePid: "+sNodePid);
+							nextNode = sNodePid;
+							oldNode = eNodePid;
+							nextNodeCount =sNodeCount;
+						}
+						if((sNodeCount ==1 && eNodeCount ==2)){//追踪 终点
+							//追踪eNode  返回的是7级路的总长度
+							nextNode = eNodePid;
+							oldNode = sNodePid;
+							System.out.println("追踪eNode snode是唯一点    eNodePid: "+eNodePid);
+							nextNodeCount =sNodeCount;
+						}
+						
+					}
+					
+					System.out.println("nextNodeCount: "+ nextNode+":"+nextNodeCount);
+					Map<String,Object> map = new HashMap<String,Object>();
+					
+					if(nextNodeCount == 2){//继续追踪
+						//追踪eNode  返回的是7级路的总长度
+						System.out.println("追踪eNode snode是唯一点    eNodePid: "+eNodePid);
+						map = traceNode(nextNode,oldNode,listLinkMap);
+					}
+					
+					if(map != null && map.size() > 0){//判断是否存在断头路迟勋跟踪
+							if(map.containsKey("nextNode")){
+								nextNode=(Integer) map.get("nextNode");
+							}else{
+								nextNode=0;
+							}
+							if(map.containsKey("oldNode")){
+								oldNode=(Integer) map.get("oldNode");
+							}else{
+								oldNode=0;
+							}
+							if(map.containsKey("nextFlag")){
+								nextFlag = (int) map.get("nextFlag");
+							}
+							double len = 0;
+							if(map.containsKey("length")){
+								len =(double) map.get("length");
+							}
+							length+= len;
+					}else{
+						break;
+					}
+				}
+				if(length < 1000){
+					isADAS =3;
+				}
+				System.out.println(" end  length: "+length+" isADAS:"+isADAS);
+			}
+		}
+		json.put("isADAS", isADAS);
 
 		return json;
 	}
@@ -397,8 +552,8 @@ public class RdLinkExporter {
 			style = 32;
 			count+=1;
 		}
-
-		List<Integer> formList = new ArrayList<>();
+		System.out.println("forms : "+forms);
+		List<Integer> formList = new ArrayList<Integer>();
 
 		for (int i = 0; i < forms.size(); i++) {
 			JSONObject json = forms.getJSONObject(i);
@@ -422,6 +577,10 @@ public class RdLinkExporter {
 			count+=1;
 		}
 
+		if (formList.contains(34) && (!formList.contains(35) || !formList.contains(39))) {
+			style = 12;
+			count+=1;
+		}
 		/*if (formList.contains(22)) {
 			style = 14;
 			count+=1;
@@ -443,6 +602,7 @@ public class RdLinkExporter {
 		}*/
 
 		List<Integer> styleList = new ArrayList<>();
+		System.out.println("styleFactors:  "+styleFactors);
 		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
 
@@ -450,6 +610,7 @@ public class RdLinkExporter {
 		}
 
 		if (styleList.contains(98)) {
+			System.out.println(" type = 98");
 			style = 29;
 			count+=1;
 		}
@@ -476,8 +637,85 @@ public class RdLinkExporter {
 		if (count == 0) {
 			style = 255;
 		}
-		System.out.println("style: "+style);
-		System.out.println("count: "+count);
+		System.out.println("style: "+style+" ,count: "+count);
 		return style;
+	}	
+	
+	/**
+	 * @Title: getNodeCount
+	 * @Description: 
+	 * @param nodePid
+	 * @param nodeList
+	 * @return  int
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月26日 上午10:15:10 
+	 */
+	private static int getNodeCount(int nodePid,List<Integer> nodeList){
+		int nodeCount = 0;
+		if(nodeList != null && nodeList.size() >0 ){
+			for(int i=0;i < nodeList.size();i++ ){
+				if(nodeList.get(i) == nodePid){
+					nodeCount++;
+				}
+			}
+		}
+		return nodeCount;
 	}
+
+
+	/**
+	 * @Title: traceNode
+	 * @Description: 追踪下一个 节点
+	 * @param nextNode
+	 * @param oldNode
+	 * @param listLinkMap
+	 * @return  Map<String,Object>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月2日 上午10:41:43 
+	 */
+	private static Map<String,Object> traceNode(int nextNode, int oldNode, List<Map<String, Object>> listLinkMap) {
+		int nextFlag = 0;
+		double length = 0;
+		Map<String,Object> map = new HashMap<String,Object>();
+		System.out.println(" begin traceNode : nextNode :"+nextNode+" oldNode:"+oldNode);	
+		for(Map<String, Object> linkMap : listLinkMap){
+			int snode = 0;
+			if(linkMap.containsKey("sNode")){
+				snode=(int) linkMap.get("sNode");
+			}
+			int enode = 0;
+			if(linkMap.containsKey("eNode")){
+				enode=(int) linkMap.get("eNode");
+			}
+			if(snode == nextNode  && enode != oldNode){//下一个 是终点
+				System.out.println("下一个 是终点");
+				if((int)linkMap.get("kind") == 7){
+					length = (double) linkMap.get("length");
+				}
+				nextFlag = 2;
+				map.put("length", length);
+				map.put("nexteNode", enode);
+				map.put("oldNode", snode);
+				map.put("nextFlag", nextFlag);
+				break;
+			}
+			if(enode == nextNode  && snode != oldNode){//下一个 是起点
+				System.out.println("下一个 是起点 ");
+				if((int)linkMap.get("kind") == 7){
+					length = (double) linkMap.get("length");
+				}
+				nextFlag = 1;
+				map.put("length", length);
+				map.put("nextNode", snode);
+				map.put("oldNode", enode);
+				map.put("nextFlag", nextFlag);
+				break;
+			}
+		}
+		System.out.println(" end traceNode : nextNode :"+nextNode+" oldNode:"+oldNode+" nextFlag:"+nextFlag+" length: "+length);
+		return map;
+	}
+	
 }

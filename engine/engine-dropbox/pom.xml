@@ -143,6 +143,11 @@
 	       <artifactId>dubbo</artifactId>
 			<scope>test</scope>
 	   </dependency>
+	   
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>api-dropbox</artifactId>
+	</dependency>
 	
 </dependencies>
 </project>

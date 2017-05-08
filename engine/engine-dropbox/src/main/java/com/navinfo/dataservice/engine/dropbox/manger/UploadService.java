@@ -4,12 +4,15 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -23,10 +26,14 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.photo.RotateImageUtils;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.photo.HBaseController;
@@ -35,6 +42,7 @@ import com.navinfo.dataservice.engine.dropbox.util.DropboxUtil;
 
 public class UploadService {
 
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	private static class SingletonHolder {
 		private static final UploadService INSTANCE = new UploadService();;
 	}
@@ -165,22 +173,18 @@ public class UploadService {
 	 * @throws UnsupportedEncodingException 
 	 */
 	public HashMap<Object,Object>  uploadResource(HttpServletRequest request) throws Exception {
-		// TODO Auto-generated method stub
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		
 		List<FileItem> items = upload.parseRequest(request);
-		
 		Iterator<FileItem> it = items.iterator();
 		
 		int pid = 0;
 		int dbId = 0;
 		String fileType = "";
-		
-//		int pid = 1;
-//		int dbId = 43;	
-//		String fileType = "photo";
+		String userName = "";
+		String userId = "";
 		
 		FileItem uploadItem = null;
 			
@@ -188,13 +192,24 @@ public class UploadService {
 			FileItem item = it.next();
 			
 			if (item.isFormField()){
-				
 				if ("parameter".equals(item.getFieldName())) {
 					String param = item.getString("UTF-8");
 					JSONObject jsonParam = JSONObject.fromObject(param);
-					pid = jsonParam.getInt("pid");
-					dbId = jsonParam.getInt("dbId");
-					fileType = jsonParam.getString("filetype");
+					if(jsonParam.containsKey("pid")){
+						pid = jsonParam.getInt("pid");
+					}
+					if(jsonParam.containsKey("dbId")){
+						dbId = jsonParam.getInt("dbId");
+					}
+					if(jsonParam.containsKey("filetype")){
+						fileType = jsonParam.getString("filetype");
+					}
+					if(jsonParam.containsKey("userName")){
+						userName = jsonParam.getString("userName");
+					}
+					if(jsonParam.containsKey("userId")){
+						userId = jsonParam.getString("userId");
+					}
 				}
 				
 			}else{
@@ -205,7 +220,6 @@ public class UploadService {
 				}
 			}
 		}
-		
 		if(fileType.equals("photo")){
 			InputStream fileStream = uploadItem.getInputStream();
 			DBController dbController = new DBController();
@@ -221,9 +235,56 @@ public class UploadService {
 			
 			data.put("PID", photoId);
 			return data;
-		};
+		}else if(fileType.equals("android_log")){//安卓端日志
+			HashMap<Object,Object> data = new HashMap<Object,Object>();
+			//"dropbox.upload.path"
+			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/android_log";  //服务器部署路径 /data/resources/upload
+			logUploadDir+="/"+userName+"_"+userId;
+			File tempFile = new File(uploadItem.getName());
+			File file = new File(logUploadDir,tempFile.getName());
+			File fileParent = file.getParentFile();
+			if(!fileParent.exists()){
+				fileParent.mkdirs();
+			}
+			if(!file.exists()){
+			    file.createNewFile(); 
+			}
+			uploadItem.write(file);
+			
+			data.put("url", logUploadDir+"/"+tempFile.getName());
+			return data;
+		}
+		
 		return null;
 
+	}
+	
+	
+	
+	public String uploadFile(String urlString, String fileName, InputStream fileStream) throws IOException{
+		File file = new File(urlString);
+		
+		if (!file.exists()) {
+			file.mkdirs();
+		}
+		
+	    //读取文件上传到服务器
+	    byte[]bytes=new byte[1024];
+	    
+	  //选择你要存放的文件
+        FileOutputStream out=new FileOutputStream("f:\\poi00333.txt");
+	    int numReadByte=0;
+	    while((numReadByte=fileStream.read(bytes,0,1024))>0)
+	    {
+	        out.write(bytes, 0, numReadByte);
+	    }
+	
+	    out.flush();
+	    fileStream.close();
+	    
+	    String result = null ;
+	    return result;
 	}
 	
 	public String uploadFile(String urlString, String fileName, String filePath) throws IOException{
@@ -261,13 +322,26 @@ public class UploadService {
 	    
 	    return result;
 	}
-	
 	public static void main(String[] args) throws IOException {
-		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
-		String fileName = "infor.txt";
-		String filePath = "c:/infor.txt";
+		
+		/*FileItem uploadItem = new 
+		
+		File file = new File("f:/","hhhh.txt");
+		
+		uploadItem.write(file);
+		
+		String zipFileName =userName+"_"+userId+"_log_"+ new SimpleDateFormat("yyyyMMddHHmmss").format(new Date())+".zip";
+		System.out.println("zipFileName: "+zipFileName);
+		ZipUtils.zipFile(logUploadDir,logUploadDir+"/"+zipFileName);
+        System.exit(0);*/
+	}
+	/*public static void main(String[] args) throws IOException {
+//		String url = SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforUploadUrl);
+		String url = "f:";
+		String fileName = "poi003.txt";
+		String filePath = "f:/poi004.txt";
 		System.out.println(UploadService.getInstance().uploadFile(url, fileName, filePath));
 		
 		System.exit(0);
-	}
+	}*/
 }

@@ -21,6 +21,8 @@
         <step value="34">
             <!--RD_LINK去重 -->
             <sql><![CDATA[TRUNCATE TABLE TEMP_FILTER_RD_LINK]]></sql>
+            <sql><![CDATA[DELETE FROM TEMP_RD_LINK WHERE PID=0; ]]></sql>
+            
         </step>
         <step value="37">
             <!--RD_LINK去重 -->
@@ -159,7 +161,7 @@
             <!--RD_LINK_ADDRESS -->
             <sql><![CDATA[SELECT P.* FROM RD_LINK_ADDRESS P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
             <!--RD_NAME -->
-            <sql><![CDATA[SELECT P.* FROM RD_NAME P WHERE 1=1; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_NAME P,TEMP_RD_LINK_NAMEID T WHERE P.NAME_ID=T.PID; ]]></sql>
             <!--RD_NAME_PHOTO -->
 
             <!-- RD_NAME_PHOTO取消导出，需求来自于老王 2012/8/27 -->
@@ -177,12 +179,13 @@
              -->
             <!--点限速 -->
             <sql><![CDATA[SELECT P.* FROM RD_SPEEDLIMIT P,TEMP_RD_SPEEDLIMIT T WHERE P.PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_SPEEDLIMIT_TRUCK P,TEMP_RD_SPEEDLIMIT_TRUCK T WHERE P.PID=T.PID; ]]></sql>
             <!--警示标牌 -->
             <sql><![CDATA[SELECT P.* FROM RD_WARNINGINFO P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
             <!--交通信号灯 -->
             <sql><![CDATA[SELECT P.* FROM RD_TRAFFICSIGNAL P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
             <!--限高限重表-->
-            <sql><![CDATA[SELECT P.* FROM RD_HGWG_LIMIT  P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <sql><![CDATA[SELECT P.* FROM RD_HGWG_LIMIT  P,TEMP_RD_HGWG_LIMIT T WHERE P.PID=T.PID; ]]></sql>
 
 
             <!--电子眼  240新增区间测速电子眼表： RD_ELECEYE_PAIR RD_ELECEYE_PART-->
@@ -206,7 +209,10 @@
 
             <!--RD_LINK_SPEEDLIMIT-->
             <sql><![CDATA[SELECT P.* FROM RD_LINK_SPEEDLIMIT P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
-
+			
+			<!--RD_LINK_SPEED_TRUCK-->
+            <sql><![CDATA[SELECT P.* FROM RD_LINK_SPEED_TRUCK P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            
             <!--RD_TMCLOCATION_LINK-->
             <sql><![CDATA[SELECT P.* FROM RD_TMCLOCATION_LINK P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
 
@@ -228,6 +234,8 @@
             <sql><![CDATA[SELECT P.* FROM ADAS_ITPLINK_GEOMETRY P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
             <!--ADAS_RDLINK_GEOMETRY_DTM-->
             <sql><![CDATA[SELECT P.* FROM ADAS_RDLINK_GEOMETRY_DTM P,TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID; ]]></sql>
+            <!-- 250新增 里程桩表 -->
+            <sql><![CDATA[SELECT P.* FROM RD_MILEAGEPILE P WHERE  EXISTS  (  SELECT 1 FROM TEMP_RD_MILEAGEPILE T WHERE P.PID=T.PID); ]]></sql>
         </step>
 
 
@@ -260,6 +268,7 @@
             <!--坡度 -->
             <!--<sql><![CDATA[DELETE FROM RD_SLOPE P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>-->
             <sql><![CDATA[DELETE FROM RD_SPEEDLIMIT P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_SPEEDLIMIT T ); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_SPEEDLIMIT_TRUCK P WHERE P.PID IN (SELECT T.PID FROM TEMP_RD_SPEEDLIMIT_TRUCK T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_WARNINGINFO P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_TRAFFICSIGNAL P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
             <!-- 电子眼 -->
@@ -275,10 +284,16 @@
             <sql><![CDATA[DELETE FROM RD_LANE P WHERE EXISTS ( SELECT 1 FROM TEMP_FILTER_RD_LINK T WHERE P.LINK_PID=T.PID ) ; ]]></sql>
             <sql><![CDATA[DELETE FROM RD_LANE_TOPO_DETAIL P WHERE P.TOPO_ID IN (SELECT T.PID FROM TEMP_RD_LANE_TOPO_DETAIL T ); ]]></sql>
             <sql><![CDATA[DELETE FROM RD_LANE_TOPO_VIA P WHERE P.TOPO_ID IN (SELECT T.PID FROM TEMP_RD_LANE_TOPO_DETAIL T ); ]]></sql>
-            <sql><![CDATA[DELETE FROM RD_LANE_CONDITION P WHERE EXISTS(SELECT 1 FROM RD_LANE LA,TEMP_FILTER_RD_LINK T WHERE LA.LINK_PID=T.PID AND P.LANE_PID=LA.LANE_PID); ]]></sql>
+            <!-- 20151208修改 为了解决小范围数据删除问题 -->
+            <!--<sql><![CDATA[DELETE FROM RD_LANE_CONDITION P WHERE EXISTS(SELECT 1 FROM RD_LANE LA,TEMP_FILTER_RD_LINK T WHERE LA.LINK_PID=T.PID AND P.LANE_PID=LA.LANE_PID); ]]></sql>-->
+			<sql><![CDATA[DELETE FROM RD_LANE_CONDITION P
+							 WHERE EXISTS
+							 (SELECT 1 FROM TEMP_RD_LANE2 LA WHERE P.LANE_PID = LA.LANE_PID); ]]></sql>
 
             <!--RD_LINK_SPEEDLIMIT-->
             <sql><![CDATA[DELETE FROM RD_LINK_SPEEDLIMIT P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
+             <!--RD_LINK_SPEED_TRUCK-->
+            <sql><![CDATA[DELETE FROM RD_LINK_SPEED_TRUCK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
             <!--RD_TMCLOCATION_LINK-->
             <sql><![CDATA[DELETE FROM RD_TMCLOCATION_LINK P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
             <!--RD_TMCLOCATION-->
@@ -299,11 +314,14 @@
            <sql><![CDATA[DELETE FROM RD_SPEEDBUMP P WHERE P.LINK_PID IN (SELECT T.PID FROM  TEMP_FILTER_RD_LINK T); ]]></sql>
 
 			 <!--限高限重表-->
-            <sql><![CDATA[DELETE FROM RD_HGWG_LIMIT P WHERE P.LINK_PID IN (SELECT T.PID FROM  TEMP_FILTER_RD_LINK T); ]]></sql>
+            <sql><![CDATA[DELETE FROM RD_HGWG_LIMIT P WHERE P.PID IN (SELECT T.PID FROM  TEMP_RD_HGWG_LIMIT T); ]]></sql>
             <!--ADAS_ITPLINK_GEOMETRY-->
             <sql><![CDATA[DELETE FROM ADAS_ITPLINK_GEOMETRY P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
             <!--ADAS_RDLINK_GEOMETRY_DTM-->
             <sql><![CDATA[DELETE FROM ADAS_RDLINK_GEOMETRY_DTM P WHERE P.LINK_PID IN (SELECT T.PID FROM TEMP_FILTER_RD_LINK T ); ]]></sql>
+            
+             <!-- 250新增 里程桩表 -->
+            <sql><![CDATA[DELETE FROM RD_MILEAGEPILE P WHERE  P.PID IN (SELECT T.PID FROM TEMP_RD_MILEAGEPILE T); ]]></sql>
         </step>
 
         <step value="102">
@@ -338,6 +356,16 @@
 					         (SELECT MAX(B.ROWID) FROM RD_LANE  B WHERE A.LANE_PID = B.LANE_PID);
 				]]></sql>
 
+
+			  <!--查找重复信息：
+            -->
+            <sql><![CDATA[
+					INSERT /*+ append */ INTO TEMP_RD_MILEAGEPILE
+					  SELECT PID
+					    FROM RD_MILEAGEPILE A
+					   WHERE A.ROWID !=
+					         (SELECT MAX(B.ROWID) FROM RD_MILEAGEPILE  B WHERE A.PID = B.PID);
+				]]></sql>
         </step>
         <step value="103">
         	<sql><![CDATA[

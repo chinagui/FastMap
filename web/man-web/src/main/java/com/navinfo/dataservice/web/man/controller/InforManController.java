@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.web.man.controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.alibaba.dubbo.monitor.Monitor;
+import com.alibaba.dubbo.remoting.Server;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.json.JsonOperation;
@@ -102,7 +105,7 @@ public class InforManController extends BaseController {
 			}
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
-			if (service.query(dataJson.getString("inforId"))==null){
+			if (service.query(dataJson.getInt("inforId"))==null){
 				service.create(dataJson, userId);
 			}else{
 				service.update(dataJson);
@@ -150,27 +153,42 @@ public class InforManController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			HashMap<String,Object> data = service.query(dataJson.getString("inforId"));
-			
-			if(data!=null){
-				return new ModelAndView("jsonView", success(data));
-			}
-			else{
-				return new ModelAndView("jsonView", success(null));
-			}
+			HashMap<String,Object> data = service.query(dataJson.getInt("inforId"));			
+			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
-	
 	/**
-	 * 情报管理--查看及编辑情报信息
-	 * 
+	 * 一级情报监控
+	 * 原则： 
+	 * 根据wkt（可选）筛选全国一级情报数据。
+	 * 1.	将wkt转成gridList
+	 * 2.	与infor_grid_mapping关联可获取与wkt交叉的情报数据列表
+	 * 使用场景：管理平台-一级情报监控
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/inforMan/queryByTaskId")
+	@RequestMapping(value="/inforMan/monitor")
+	public ModelAndView monitor(HttpServletRequest request){
+		try{
+			String parStr=URLDecode(request.getParameter("parameter"));
+			List<Map<String, Object>> res=service.monitor(JSONObject.fromObject(parStr));
+			return new ModelAndView("jsonView",success(res));
+		}catch(Exception e){
+			log.error("", e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 情报管理--查看及编辑情报信息
+	 * 结构变更，删除
+	 * @param request
+	 * @return
+	 */
+	/*@RequestMapping(value = "/inforMan/queryByTaskId")
 	public ModelAndView queryByTaskId(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -189,7 +207,7 @@ public class InforManController extends BaseController {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
-	}
+	}*/
 
 	/**
 	 * 情报管理--查看及编辑情报信息

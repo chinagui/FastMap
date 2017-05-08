@@ -5,29 +5,29 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
+
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.Log4jUtils;
-import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.app.download.PoiDownloadOperation;
 import com.navinfo.dataservice.control.app.search.Operation;
-import com.navinfo.dataservice.control.app.upload.UploadOperation;
-import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
-//import com.navinfo.dataservice.engine.editplus.operation.imp.UploadOperationByGather;
-import com.navinfo.dataservice.engine.photo.CollectorImport;
+import com.navinfo.dataservice.control.service.PoiService;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 @Controller
 public class PoiController extends BaseController{
-	private static final Logger logger = Logger.getLogger(EditController.class);
+	private static final Logger logger = Logger.getLogger(PoiController.class);
 	
 
 	/**
@@ -91,33 +91,27 @@ public class PoiController extends BaseController{
 	@RequestMapping(value = "/poi/base/upload")
 	public ModelAndView importPoi(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
-		String parameter = request.getParameter("parameter");
-		
 		try{
-			Date startTime = new Date();
+			JSONObject paraJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (paraJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(paraJson.get("jobId")==null){
+				throw new IllegalArgumentException("jobId参数不能为空。");
+			}
+			int jobId = paraJson.getInt("jobId");
+
+			int subtaskId = 0;
+			if(paraJson.containsKey("subtaskId")){
+				subtaskId = paraJson.getInt("subtaskId");
+			}
+
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			JSONObject json = JSONObject.fromObject(parameter);
-
-			int jobId = json.getInt("jobId");
-			logger.info("/poi/base/upload jobId : "+ jobId);
 			Long userId = tokenObj.getUserId();
-			
-			String filePath = unzipByJobId(jobId,userId);
-			UploadOperationByGather operation = new UploadOperationByGather(userId);
-			//UploadOperation operation = new UploadOperation(userId);
-			JSONObject retArray = operation.importPoi(filePath + "/poi.txt");
-			Date endTime = new Date();
-			logger.info("poi import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
-			startTime = new Date();
-			CollectorImport.importPhoto(filePath);
-			endTime = new Date();
-			logger.info("photo import total time:"+ (endTime.getTime() - startTime.getTime())+"ms");
-			return new ModelAndView("jsonView", success(retArray));
+			JSONObject res=PoiService.getInstance().importPoi(jobId, subtaskId,userId);
+			return new ModelAndView("jsonView", success(res));
 		}catch(Exception e){
-			String logid = Log4jUtils.genLogid();
-
-			Log4jUtils.error(logger, logid, parameter, e);
-
+			logger.error(e.getMessage(),e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 		
@@ -191,22 +185,4 @@ public class PoiController extends BaseController{
 //		}
 //	}
 //	
-	
-	
-	private String unzipByJobId(int jobId,Long userId) throws Exception{
-		
-		UploadOperation operation = new UploadOperation(userId);
-		
-		JSONObject uploadInfo = operation.getUploadInfo(jobId);
-
-		String fileName = uploadInfo.getString("fileName");
-
-		String filePath = uploadInfo.getString("filePath") + "/" + jobId;
-
-		ZipUtils.unzipFile(filePath + "/" + fileName, filePath);
-		
-		return filePath;
-	}
-	
-
 }

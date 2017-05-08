@@ -1,8 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdrestriction.update;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,8 +11,6 @@ import java.util.TreeMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -30,9 +26,6 @@ import com.navinfo.dataservice.dao.glm.model.rd.restrict.RdRestrictionVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.cross.RdCrossNodeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.restrict.RdRestrictionSelector;
-import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.LineSegment;
 
 public class Operation implements IOperation {
 
@@ -41,349 +34,308 @@ public class Operation implements IOperation {
 	private RdRestriction restrict;
 
 	private Connection conn;
-	
-	private LineSegment inLinkSegment;
 
 	/**
-	 * key为退出线pid，value为退出线线段
+	 * 被动维护交限调用
+	 * @param conn
 	 */
-	private Map<Integer, LineSegment> outLinkSegmentMap = new HashMap<Integer, LineSegment>();
-
-	/**
-	 * key为退出线pid， value为经过线pid列表
-	 */
-	private Map<Integer, List<Integer>> viaLinkPidMap = new HashMap<Integer, List<Integer>>();
-
-	/**
-	 * key为退出线pid，value为交限类型
-	 */
-	private Map<Integer, Integer> relationTypeMap = new HashMap<Integer, Integer>();
-
-	/**
-	 * 退出线pid
-	 */
-	private List<Integer> outLinkPidList = new ArrayList<>();
-
-	private List<RdRestrictionDetail> calOutLinkPidDetails = new ArrayList<>();
-
 	public Operation(Connection conn) {
 
 		this.conn = conn;
 	}
 
+	/**
+	 * 更新交限调用
+	 * @param command
+	 * @param conn
+	 * @param restrict
+	 */
 	public Operation(Command command, Connection conn, RdRestriction restrict) {
 		this.command = command;
 
 		this.conn = conn;
 
 		this.restrict = restrict;
-
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
 
-		JSONObject content = command.getContent();
+		String msg = null;
 
-		// 判断是否存在交限进入线
+		msg = update(result);
+
+		return msg;
+	}
+	
+	private String update(Result result)throws Exception
+	{
+		JSONObject content = command.getContent();
+		
+		//主表
 		if (content.containsKey("objStatus")) {
-			// 修改主表属性
+
 			boolean isChanged = restrict.fillChangeFields(content);
 
 			if (isChanged) {
+				
 				result.insertObject(restrict, ObjStatus.UPDATE, restrict.pid());
 			}
 		}
 
-		// 修改拓补结构数据
-		if (content.containsKey("details")) {
-
-			// 获取交限所有的退出线，自动计算退出线需要排除这些link
-			getAllOutLinkPidForRes();
-
-			JSONArray details = content.getJSONArray("details");
-
-			for (int i = 0; i < details.size(); i++) {
-
-				JSONObject detailJson = details.getJSONObject(i);
-
-				// 定义交限详细信息PID，新增经过线，交限详细信息也新增的话取该pid赋值给经过线对象
-				int detailId = 0;
-
-				if (detailJson.containsKey("objStatus")) {
-
-					if (!ObjStatus.INSERT.toString().equals(detailJson.getString("objStatus"))) {
-
-						RdRestrictionDetail detail = restrict.detailMap.get(detailJson.getInt("pid"));
-
-						if (detail == null) {
-							throw new Exception("detailId=" + detailJson.getInt("pid") + "的交限detail不存在");
-						}
-						// 删除拓补结构
-						if (ObjStatus.DELETE.toString().equals(detailJson.getString("objStatus"))) {
-							outLinkPidList.remove(Integer.valueOf(detail.getOutLinkPid()));
-							result.insertObject(detail, ObjStatus.DELETE, restrict.pid());
-							continue;
-						} else if (ObjStatus.UPDATE.toString().equals(detailJson.getString("objStatus"))) {
-							detail.fillChangeFields(detailJson);
-							// 修改拓补结构，修改退出线，需要重新计算关系类型
-							if (detail.changedFields().containsKey("outLinkPid")) {
-								int inNodePid = restrict.getNodePid();
-
-								int outLinkPid = detailJson.getInt("outLinkPid");
-
-								if (outLinkPid == 0) {
-									outLinkPidList.remove(Integer.valueOf(detail.getOutLinkPid()));
-									calOutLinkPidDetails.add(detail);
-								} else {
-									outLinkPidList.add(outLinkPid);
-									CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-
-									int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid,
-											outLinkPid);
-
-									detail.changedFields().put("relationshipType", relationShipType);
-								}
-							}
-							if (!detail.changedFields().isEmpty()) {
-								result.insertObject(detail, ObjStatus.UPDATE, restrict.pid());
-							}
-						}
-					} else {
-						// 新增拓补结构
-						RdRestrictionDetail detail = new RdRestrictionDetail();
-
-						detail.Unserialize(detailJson);
-
-						detail.setPid(PidUtil.getInstance().applyRestrictionDetailPid());
-
-						detailId = detail.getPid();
-
-						detail.setRestricPid(restrict.getPid());
-
-						if (detail.getOutLinkPid() == 0) {
-							calOutLinkPidDetails.add(detail);
-						} else {
-
-							outLinkPidList.add(detail.getOutLinkPid());
-
-							CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-
-							int relationShipType = calLinkOperateUtils.getRelationShipType(restrict.getNodePid(),
-									detail.getOutLinkPid());
-
-							detail.setRelationshipType(relationShipType);
-
-							// 线线关系类型的，记录经过线
-							if (relationShipType == 2) {
-
-								List<IRow> vias = new ArrayList<IRow>();
-
-								List<Integer> viaLinkPids = calLinkOperateUtils.calViaLinks(conn,
-										restrict.getInLinkPid(), restrict.getNodePid(), detail.getOutLinkPid());
-
-								if (CollectionUtils.isNotEmpty(viaLinkPids)) {
-									for (int j = 0; j < viaLinkPids.size(); j++) {
-										RdRestrictionVia via = new RdRestrictionVia();
-
-										via.setDetailId(detail.getPid());
-
-										via.setSeqNum(j + 1);
-
-										via.setLinkPid(viaLinkPids.get(j));
-
-										vias.add(via);
-									}
-								}
-
-								detail.setVias(vias);
-							}
-						}
-						result.insertObject(detail, ObjStatus.INSERT, restrict.getPid());
-					}
-				}
-				// 修改拓补结构，新增或者修改经过线
-				if (detailJson.containsKey("vias")) {
-
-					RdRestrictionDetail detail = restrict.detailMap.get(detailJson.getInt("pid"));
-
-					JSONArray vias = detailJson.getJSONArray("vias");
-
-					for (int j = 0; j < vias.size(); j++) {
-
-						JSONObject viajson = vias.getJSONObject(j);
-
-						if (viajson.containsKey("objStatus")) {
-
-							if (!ObjStatus.INSERT.toString().equals(viajson.getString("objStatus"))) {
-
-								RdRestrictionVia via = detail.viaMap.get(viajson.getString("rowId"));
-
-								if (via == null) {
-									throw new Exception(
-											"rowId=" + viajson.getString("rowId") + "的rd_restriction_via不存在");
-								}
-
-								if (ObjStatus.DELETE.toString().equals(viajson.getString("objStatus"))) {
-									result.insertObject(via, ObjStatus.DELETE, restrict.pid());
-
-									continue;
-								} else if (ObjStatus.UPDATE.toString().equals(viajson.getString("objStatus"))) {
-
-									boolean isChanged = via.fillChangeFields(viajson);
-
-									if (isChanged) {
-										result.insertObject(via, ObjStatus.UPDATE, restrict.pid());
-									}
-								}
-							} else {
-								RdRestrictionVia via = new RdRestrictionVia();
-
-								via.setSeqNum(viajson.getInt("seqNum"));
-
-								via.setGroupId(viajson.getInt("groupId"));
-
-								via.setLinkPid(viajson.getInt("linkPid"));
-
-								// 赋值经过线的detailId,分三种情况：1.前台传递
-								// 2.后台从拓补信息中获取3.新增拓补后生成的detialId
-								if (viajson.containsKey("detailId") && viajson.getInt("detailId") != 0) {
-									via.setDetailId(viajson.getInt("detailId"));
-								} else if (detailJson.containsKey("pid") && detailJson.getInt("pid") != 0) {
-									via.setDetailId(detailJson.getInt("pid"));
-								} else {
-									via.setDetailId(detailId);
-								}
-								result.insertObject(via, ObjStatus.INSERT, restrict.pid());
-								continue;
-							}
-						}
-
-					}
-				}
-
-				// 卡车交限
-				if (detailJson.containsKey("conditions")) {
-
-					int conditionDetailId = detailJson.getInt("pid");
-
-					if (conditionDetailId == 0)
-						conditionDetailId = detailId;
-
-					JSONArray conds = detailJson.getJSONArray("conditions");
-
-					for (int j = 0; j < conds.size(); j++) {
-						JSONObject cond = conds.getJSONObject(j);
-
-						if (!cond.containsKey("objStatus")) {
-							throw new Exception("传入请求内容格式错误，conditions不存在操作类型objType");
-						}
-
-						if (!ObjStatus.INSERT.toString().equals(cond.getString("objStatus"))) {
-
-							RdRestrictionCondition condition = restrict.conditionMap.get(cond.getString("rowId"));
-
-							if (condition == null) {
-								throw new Exception("rowId=" + cond.getString("rowId") + "的交限condition不存在");
-							}
-
-							if (ObjStatus.DELETE.toString().equals(cond.getString("objStatus"))) {
-								result.insertObject(condition, ObjStatus.DELETE, restrict.pid());
-
-							} else if (ObjStatus.UPDATE.toString().equals(cond.getString("objStatus"))) {
-
-								boolean isChanged = condition.fillChangeFields(cond);
-
-								if (isChanged) {
-									result.insertObject(condition, ObjStatus.UPDATE, restrict.pid());
-								}
-							}
-						} else {
-							RdRestrictionCondition condition = new RdRestrictionCondition();
-
-							condition.Unserialize(cond);
-
-							condition.setDetailId(conditionDetailId);
-
-							result.insertObject(condition, ObjStatus.INSERT, restrict.pid());
-						}
-					}
-				}
-			}
-		}
-		// 处理需要自动计算退出线的交限详细信息
-		handleCalOutLinkRes(calOutLinkPidDetails, restrict.getNodePid(), restrict.getInLinkPid());
-
+		result.setPrimaryPid(restrict.pid());
+		
+		updateDetail( result, content);
+		
 		return null;
 	}
+	
+	private void updateDetail(Result result, JSONObject content)
+			throws Exception {
+		// 详细信息无变化 不处理
+		if (!content.containsKey("details")) {
 
-	/**
-	 * 获取交限所有的退出线
-	 */
-	private void getAllOutLinkPidForRes() {
-		for (IRow row : restrict.getDetails()) {
-			RdRestrictionDetail detail = (RdRestrictionDetail) row;
+			return;
+		}
 
-			outLinkPidList.add(detail.getOutLinkPid());
+		JSONArray details = content.getJSONArray("details");
+
+		int detailCount = restrict.getDetails().size();
+
+		for (int i = 0; i < details.size(); i++) {
+
+			JSONObject json = details.getJSONObject(i);
+
+			if (!json.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			if (ObjStatus.DELETE.toString().equals(json.getString("objStatus"))) {
+
+				detailCount -= 1;
+			}
+
+			if (ObjStatus.INSERT.toString().equals(json.getString("objStatus"))) {
+
+				detailCount += 1;
+			}
+		}
+
+		if (detailCount < 1) {
+
+			throw new Exception("更新后无 交限详细信息表");
+		}
+
+		for (int i = 0; i < details.size(); i++) {
+
+			JSONObject json = details.getJSONObject(i);
+
+			String objStatus = "";
+
+			if (json.containsKey("objStatus")) {
+
+				objStatus = json.getString("objStatus");
+			}
+
+			RdRestrictionDetail detail = new RdRestrictionDetail();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				detail = restrict.detailMap.get(json.getInt("pid"));
+
+				if (detail == null) {
+					
+					throw new Exception("detailId=" + json.getInt("pid") + "的交限detail不存在");
+				}
+			}
+
+			// 删除 详细信息表
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(detail, ObjStatus.DELETE, restrict.pid());
+
+				continue;
+			}
+			// 更新 详细信息表
+			if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = detail.fillChangeFields(json);
+
+				if (isChanged) {
+
+					result.insertObject(detail, ObjStatus.UPDATE,
+							restrict.pid());
+				}
+			}
+			// 新增 详细信息表
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				detail.Unserialize(json);
+
+				detail.setPid(PidUtil.getInstance()
+						.applyRestrictionDetailPid());
+
+				detail.setRestricPid(restrict.pid());
+
+				detail.setMesh(restrict.mesh());
+
+				result.insertObject(detail, ObjStatus.INSERT, restrict.pid());
+			}
+
+			updateCondition(result, json, detail);
+
+			updateVia(result, json, detail);
 		}
 	}
-
+	
 	/**
-	 * 自动计算退出线
-	 * @param inLinkPid 进入线
-	 * @param nodePid 进入点
-	 * @param calOutLinkPidDetails 需要自动计算退出线的detail对象
+	 * 更新 交限时间段和车辆限制表
+	 * 
+	 * @param result
+	 * @param json
+	 * @param detail
 	 * @throws Exception
 	 */
-	private void handleCalOutLinkRes(List<RdRestrictionDetail> details, int nodePid, int inLinkPid) throws Exception {
-		for (RdRestrictionDetail detail : details) {
-			
-			int info = detail.getRestricInfo();
-			
-			if(detail.changedFields().containsKey("restricInfo"))
-			{
-				info = (int) detail.changedFields().get("restricInfo");
-			}
-			
-			int flag = detail.getFlag();
-			
-			if(detail.changedFields().containsKey("flag"))
-			{
-				flag = (int) detail.changedFields().get("flag");
-			}
+	private void updateCondition(Result result, JSONObject content,
+			RdRestrictionDetail detail) throws Exception {
 
-			String resInfo = String.valueOf(info);
+		if (!content.containsKey("conditions")) {
 
-			if (flag != 1) {
-				resInfo = "[" + info + "]";
+			return;
+		}
+
+		JSONArray conditions = content.getJSONArray("conditions");
+
+		for (int j = 0; j < conditions.size(); j++) {
+
+			JSONObject conditionjson = conditions.getJSONObject(j);
+
+			if (!conditionjson.containsKey("objStatus")) {
+
+				continue;
 			}
 
-			CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+			String objStatus = conditionjson.getString("objStatus");
 
-			List<Integer> outLinkPids = calLinkOperateUtils.getInNodeLinkPids(nodePid, inLinkPid, outLinkPidList);
+			RdRestrictionCondition condition = new RdRestrictionCondition();
 
-			if (CollectionUtils.isEmpty(outLinkPids)) {
-				throw new Exception("进入点挂接的link没有合适的退出线");
-			} else {
-				this.calViaLinks(inLinkPid, nodePid, outLinkPids);
-				
-				// 选取正北或者正南方向夹角最小的退出线
-				int outLinkPid = CalLinkOperateUtils.getMinAngleOutLinkPidOnArrowDir(outLinkPids, CalLinkOperateUtils.calIntInfo(resInfo),outLinkSegmentMap,inLinkSegment);
-				
-				if (outLinkPid == 0) {
-					throw new Exception("交限限制信息为:" + resInfo + "未自动计算出退出线，修改交限失败，请手动指定退出线");
-				} else {
-					//新增
-					if(detail.status() == ObjStatus.INSERT)
-					{
-						detail.setOutLinkPid(outLinkPid);
-					}
-					else
-					{
-						//修改
-						detail.changedFields().put("outLinkPid", outLinkPid);
-					}
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				condition = detail.conditionMap.get(conditionjson
+						.getString("rowId"));
+
+				if (condition == null) {
+
+					throw new Exception("rowId="
+							+ conditionjson.getString("rowId") + "condition不存在");
 				}
+			}
+
+			// 删除condition
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(condition, ObjStatus.DELETE,
+						detail.getRestricPid());
+			}
+			// 更新condition
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = condition.fillChangeFields(conditionjson);
+
+				if (isChanged) {
+
+					result.insertObject(condition, ObjStatus.UPDATE,
+							detail.getRestricPid());
+				}
+			}
+			// 新增condition
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				condition.Unserialize(conditionjson);
+
+				condition.setDetailId(detail.getPid());
+
+				condition.setMesh(detail.mesh());
+
+				result.insertObject(condition, ObjStatus.INSERT,
+						detail.getRestricPid());
+			}
+		}
+	}
+	
+	/**
+	 * 更新经过线
+	 * 
+	 * @param result
+	 * @param json
+	 * @param detail
+	 * @throws Exception
+	 */
+	private void updateVia(Result result, JSONObject content,
+			RdRestrictionDetail detail) throws Exception {
+
+		if (!content.containsKey("vias")) {
+
+			return;
+		}
+
+		JSONArray vias = content.getJSONArray("vias");
+
+		for (int j = 0; j < vias.size(); j++) {
+
+			JSONObject jsonVia = vias.getJSONObject(j);
+
+			if (!jsonVia.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			String objStatus = jsonVia.getString("objStatus");
+
+			RdRestrictionVia via = new RdRestrictionVia();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+				via = detail.viaMap.get(jsonVia.getString("rowId"));
+
+				if (via == null) {
+
+					throw new Exception("rowId=" + jsonVia.getString("rowId")
+							+ "via不存在");
+				}
+			}
+
+			// 删除via
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(via, ObjStatus.DELETE,
+						detail.getRestricPid());
+			}
+			// 更新via
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = via.fillChangeFields(jsonVia);
+
+				if (isChanged) {
+
+					result.insertObject(via, ObjStatus.UPDATE,
+							detail.getRestricPid());
+				}
+			}
+			// 新增via
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				via.Unserialize(jsonVia);
+
+				via.setDetailId(detail.getPid());
+
+				via.setMesh(detail.mesh());
+
+				result.insertObject(via, ObjStatus.INSERT,
+						detail.getRestricPid());
 			}
 		}
 	}
@@ -895,122 +847,487 @@ public class Operation implements IOperation {
 		}
 	}
 	
-	/**
-	 * 计算经过线
-	 *
-	 * @param inLinkPid
-	 * @param nodePid
-	 * @param outLinkPids
-	 * @throws Exception
-	 */
-	private void calViaLinks(int inLinkPid, int nodePid, List<Integer> outLinkPids) throws Exception {
+	/******************************* 第8迭代--更新交限重构且稳定后再删除 luyao *******************************/
 
-		String sql = "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
+	// private LineSegment inLinkSegment;
+	//
+	// /**
+	// * key为退出线pid，value为退出线线段
+	// */
+	// private Map<Integer, LineSegment> outLinkSegmentMap = new
+	// HashMap<Integer, LineSegment>();
+	//
+	// /**
+	// * key为退出线pid， value为经过线pid列表
+	// */
+	// private Map<Integer, List<Integer>> viaLinkPidMap = new HashMap<Integer,
+	// List<Integer>>();
+	//
+	// /**
+	// * key为退出线pid，value为交限类型
+	// */
+	// private Map<Integer, Integer> relationTypeMap = new HashMap<Integer,
+	// Integer>();
+	//
+	// /**
+	// * 退出线pid
+	// */
+	// private List<Integer> outLinkPidList = new ArrayList<>();
+	//
+	// private List<RdRestrictionDetail> calOutLinkPidDetails = new
+	// ArrayList<>();
+	
+	// @Override
+	// public String run(Result result) throws Exception {
+	//
+	// JSONObject content = command.getContent();
+	//
+	// // 判断是否存在交限进入线
+	// if (content.containsKey("objStatus")) {
+	// // 修改主表属性
+	// boolean isChanged = restrict.fillChangeFields(content);
+	//
+	// if (isChanged) {
+	// result.insertObject(restrict, ObjStatus.UPDATE, restrict.pid());
+	// }
+	// }
+	//
+	// // 修改拓补结构数据
+	// if (content.containsKey("details")) {
+	//
+	// // 获取交限所有的退出线，自动计算退出线需要排除这些link
+	// getAllOutLinkPidForRes();
+	//
+	// JSONArray details = content.getJSONArray("details");
+	//
+	// for (int i = 0; i < details.size(); i++) {
+	//
+	// JSONObject detailJson = details.getJSONObject(i);
+	//
+	// // 定义交限详细信息PID，新增经过线，交限详细信息也新增的话取该pid赋值给经过线对象
+	// int detailId = 0;
+	//
+	// if (detailJson.containsKey("objStatus")) {
+	//
+	// if
+	// (!ObjStatus.INSERT.toString().equals(detailJson.getString("objStatus")))
+	// {
+	//
+	// RdRestrictionDetail detail =
+	// restrict.detailMap.get(detailJson.getInt("pid"));
+	//
+	// if (detail == null) {
+	// throw new Exception("detailId=" + detailJson.getInt("pid") +
+	// "的交限detail不存在");
+	// }
+	// // 删除拓补结构
+	// if
+	// (ObjStatus.DELETE.toString().equals(detailJson.getString("objStatus"))) {
+	// outLinkPidList.remove(Integer.valueOf(detail.getOutLinkPid()));
+	// result.insertObject(detail, ObjStatus.DELETE, restrict.pid());
+	// continue;
+	// } else if
+	// (ObjStatus.UPDATE.toString().equals(detailJson.getString("objStatus"))) {
+	// detail.fillChangeFields(detailJson);
+	// // 修改拓补结构，修改退出线，需要重新计算关系类型
+	// if (detail.changedFields().containsKey("outLinkPid")) {
+	// int inNodePid = restrict.getNodePid();
+	//
+	// int outLinkPid = detailJson.getInt("outLinkPid");
+	//
+	// if (outLinkPid == 0) {
+	// outLinkPidList.remove(Integer.valueOf(detail.getOutLinkPid()));
+	// calOutLinkPidDetails.add(detail);
+	// } else {
+	// outLinkPidList.add(outLinkPid);
+	// CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+	//
+	// int relationShipType = calLinkOperateUtils.getRelationShipType(inNodePid,
+	// outLinkPid);
+	//
+	// detail.changedFields().put("relationshipType", relationShipType);
+	// }
+	// }
+	// if (!detail.changedFields().isEmpty()) {
+	// result.insertObject(detail, ObjStatus.UPDATE, restrict.pid());
+	// }
+	// }
+	// } else {
+	// // 新增拓补结构
+	// RdRestrictionDetail detail = new RdRestrictionDetail();
+	//
+	// detail.Unserialize(detailJson);
+	//
+	// detail.setPid(PidUtil.getInstance().applyRestrictionDetailPid());
+	//
+	// detailId = detail.getPid();
+	//
+	// detail.setRestricPid(restrict.getPid());
+	//
+	// if (detail.getOutLinkPid() == 0) {
+	// calOutLinkPidDetails.add(detail);
+	// } else {
+	//
+	// outLinkPidList.add(detail.getOutLinkPid());
+	//
+	// CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+	//
+	// int relationShipType =
+	// calLinkOperateUtils.getRelationShipType(restrict.getNodePid(),
+	// detail.getOutLinkPid());
+	//
+	// detail.setRelationshipType(relationShipType);
+	//
+	// // 线线关系类型的，记录经过线
+	// if (relationShipType == 2) {
+	//
+	// List<IRow> vias = new ArrayList<IRow>();
+	//
+	// List<Integer> viaLinkPids = calLinkOperateUtils.calViaLinks(conn,
+	// restrict.getInLinkPid(), restrict.getNodePid(), detail.getOutLinkPid());
+	//
+	// if (CollectionUtils.isNotEmpty(viaLinkPids)) {
+	// for (int j = 0; j < viaLinkPids.size(); j++) {
+	// RdRestrictionVia via = new RdRestrictionVia();
+	//
+	// via.setDetailId(detail.getPid());
+	//
+	// via.setSeqNum(j + 1);
+	//
+	// via.setLinkPid(viaLinkPids.get(j));
+	//
+	// vias.add(via);
+	// }
+	// }
+	//
+	// detail.setVias(vias);
+	// }
+	// }
+	// result.insertObject(detail, ObjStatus.INSERT, restrict.getPid());
+	// }
+	// }
+	// // 修改拓补结构，新增或者修改经过线
+	// if (detailJson.containsKey("vias")) {
+	//
+	// RdRestrictionDetail detail =
+	// restrict.detailMap.get(detailJson.getInt("pid"));
+	//
+	// JSONArray vias = detailJson.getJSONArray("vias");
+	//
+	// for (int j = 0; j < vias.size(); j++) {
+	//
+	// JSONObject viajson = vias.getJSONObject(j);
+	//
+	// if (viajson.containsKey("objStatus")) {
+	//
+	// if (!ObjStatus.INSERT.toString().equals(viajson.getString("objStatus")))
+	// {
+	//
+	// RdRestrictionVia via = detail.viaMap.get(viajson.getString("rowId"));
+	//
+	// if (via == null) {
+	// throw new Exception(
+	// "rowId=" + viajson.getString("rowId") + "的rd_restriction_via不存在");
+	// }
+	//
+	// if (ObjStatus.DELETE.toString().equals(viajson.getString("objStatus"))) {
+	// result.insertObject(via, ObjStatus.DELETE, restrict.pid());
+	//
+	// continue;
+	// } else if
+	// (ObjStatus.UPDATE.toString().equals(viajson.getString("objStatus"))) {
+	//
+	// boolean isChanged = via.fillChangeFields(viajson);
+	//
+	// if (isChanged) {
+	// result.insertObject(via, ObjStatus.UPDATE, restrict.pid());
+	// }
+	// }
+	// } else {
+	// RdRestrictionVia via = new RdRestrictionVia();
+	//
+	// via.setSeqNum(viajson.getInt("seqNum"));
+	//
+	// via.setGroupId(viajson.getInt("groupId"));
+	//
+	// via.setLinkPid(viajson.getInt("linkPid"));
+	//
+	// // 赋值经过线的detailId,分三种情况：1.前台传递
+	// // 2.后台从拓补信息中获取3.新增拓补后生成的detialId
+	// if (viajson.containsKey("detailId") && viajson.getInt("detailId") != 0) {
+	// via.setDetailId(viajson.getInt("detailId"));
+	// } else if (detailJson.containsKey("pid") && detailJson.getInt("pid") !=
+	// 0) {
+	// via.setDetailId(detailJson.getInt("pid"));
+	// } else {
+	// via.setDetailId(detailId);
+	// }
+	// result.insertObject(via, ObjStatus.INSERT, restrict.pid());
+	// continue;
+	// }
+	// }
+	//
+	// }
+	// }
+	//
+	// // 卡车交限
+	// if (detailJson.containsKey("conditions")) {
+	//
+	// int conditionDetailId = detailJson.getInt("pid");
+	//
+	// if (conditionDetailId == 0)
+	// conditionDetailId = detailId;
+	//
+	// JSONArray conds = detailJson.getJSONArray("conditions");
+	//
+	// for (int j = 0; j < conds.size(); j++) {
+	// JSONObject cond = conds.getJSONObject(j);
+	//
+	// if (!cond.containsKey("objStatus")) {
+	// throw new Exception("传入请求内容格式错误，conditions不存在操作类型objType");
+	// }
+	//
+	// if (!ObjStatus.INSERT.toString().equals(cond.getString("objStatus"))) {
+	//
+	// RdRestrictionCondition condition =
+	// restrict.conditionMap.get(cond.getString("rowId"));
+	//
+	// if (condition == null) {
+	// throw new Exception("rowId=" + cond.getString("rowId") +
+	// "的交限condition不存在");
+	// }
+	//
+	// if (ObjStatus.DELETE.toString().equals(cond.getString("objStatus"))) {
+	// result.insertObject(condition, ObjStatus.DELETE, restrict.pid());
+	//
+	// } else if
+	// (ObjStatus.UPDATE.toString().equals(cond.getString("objStatus"))) {
+	//
+	// boolean isChanged = condition.fillChangeFields(cond);
+	//
+	// if (isChanged) {
+	// result.insertObject(condition, ObjStatus.UPDATE, restrict.pid());
+	// }
+	// }
+	// } else {
+	// RdRestrictionCondition condition = new RdRestrictionCondition();
+	//
+	// condition.Unserialize(cond);
+	//
+	// condition.setDetailId(conditionDetailId);
+	//
+	// result.insertObject(condition, ObjStatus.INSERT, restrict.pid());
+	// }
+	// }
+	// }
+	// }
+	// }
+	// // 处理需要自动计算退出线的交限详细信息
+	// handleCalOutLinkRes(calOutLinkPidDetails, restrict.getNodePid(),
+	// restrict.getInLinkPid());
+	//
+	// return null;
+	// }
+	
+	// /**
+	// * 获取交限所有的退出线
+	// */
+	// private void getAllOutLinkPidForRes() {
+	// for (IRow row : restrict.getDetails()) {
+	// RdRestrictionDetail detail = (RdRestrictionDetail) row;
+	//
+	// outLinkPidList.add(detail.getOutLinkPid());
+	// }
+	// }
+	
+	// /**
+	// * 自动计算退出线
+	// * @param inLinkPid 进入线
+	// * @param nodePid 进入点
+	// * @param calOutLinkPidDetails 需要自动计算退出线的detail对象
+	// * @throws Exception
+	// */
+	// private void handleCalOutLinkRes(List<RdRestrictionDetail> details, int
+	// nodePid, int inLinkPid) throws Exception {
+	// for (RdRestrictionDetail detail : details) {
+	//
+	// int info = detail.getRestricInfo();
+	//
+	// if(detail.changedFields().containsKey("restricInfo"))
+	// {
+	// info = (int) detail.changedFields().get("restricInfo");
+	// }
+	//
+	// int flag = detail.getFlag();
+	//
+	// if(detail.changedFields().containsKey("flag"))
+	// {
+	// flag = (int) detail.changedFields().get("flag");
+	// }
+	//
+	// String resInfo = String.valueOf(info);
+	//
+	// if (flag != 1) {
+	// resInfo = "[" + info + "]";
+	// }
+	//
+	// CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
+	//
+	// List<Integer> outLinkPids =
+	// calLinkOperateUtils.getInNodeLinkPids(nodePid, inLinkPid,
+	// outLinkPidList);
+	//
+	// if (CollectionUtils.isEmpty(outLinkPids)) {
+	// throw new Exception("进入点挂接的link没有合适的退出线");
+	// } else {
+	// this.calViaLinks(inLinkPid, nodePid, outLinkPids);
+	//
+	// // 选取正北或者正南方向夹角最小的退出线
+	// int outLinkPid =
+	// CalLinkOperateUtils.getMinAngleOutLinkPidOnArrowDir(outLinkPids,
+	// CalLinkOperateUtils.calIntInfo(resInfo),outLinkSegmentMap,inLinkSegment);
+	//
+	// if (outLinkPid == 0) {
+	// throw new Exception("交限限制信息为:" + resInfo + "未自动计算出退出线，修改交限失败，请手动指定退出线");
+	// } else {
+	// //新增
+	// if(detail.status() == ObjStatus.INSERT)
+	// {
+	// detail.setOutLinkPid(outLinkPid);
+	// }
+	// else
+	// {
+	// //修改
+	// detail.changedFields().put("outLinkPid", outLinkPid);
+	// }
+	// }
+	// }
+	// }
+	// }
+	
+	
+	// /**
+	// * 计算经过线
+	// *
+	// * @param inLinkPid
+	// * @param nodePid
+	// * @param outLinkPids
+	// * @throws Exception
+	// */
+	// private void calViaLinks(int inLinkPid, int nodePid, List<Integer>
+	// outLinkPids) throws Exception {
+	//
+	// String sql =
+	// "select * from table(package_utils.get_restrict_points(:1,:2,:3))";
+	//
+	// PreparedStatement pstmt = null;
+	//
+	// ResultSet resultSet = null;
+	//
+	// try {
+	// pstmt = conn.prepareStatement(sql);
+	//
+	// pstmt.setInt(1, inLinkPid);
+	//
+	// pstmt.setInt(2, nodePid);
+	//
+	// StringBuilder sb = new StringBuilder();
+	//
+	// for (int pid : outLinkPids) {
+	//
+	// sb.append(pid);
+	//
+	// sb.append(",");
+	// }
+	//
+	// sb.deleteCharAt(sb.length() - 1);
+	//
+	// pstmt.setString(3, sb.toString());
+	//
+	// resultSet = pstmt.executeQuery();
+	//
+	// while (resultSet.next()) {
+	//
+	// if (inLinkSegment == null) {
+	// String inNode1 = resultSet.getString("in_node1");
+	//
+	// String inNode2 = resultSet.getString("in_node2");
+	//
+	// String[] splits = inNode1.split(",");
+	//
+	// Coordinate p1 = new Coordinate(Double.valueOf(splits[0]),
+	// Double.valueOf(splits[1]));
+	//
+	// splits = inNode2.split(",");
+	//
+	// Coordinate p2 = new Coordinate(Double.valueOf(splits[0]),
+	// Double.valueOf(splits[1]));
+	//
+	// inLinkSegment = new LineSegment(p1, p2);
+	// }
+	//
+	// int outLinkPid = resultSet.getInt("link_pid");
+	//
+	// int relationType = resultSet.getInt("relation_type");
+	//
+	// relationTypeMap.put(outLinkPid, relationType);
+	//
+	// String outNode1 = resultSet.getString("out_node1");
+	//
+	// String outNode2 = resultSet.getString("out_node2");
+	//
+	// String[] splits = outNode1.split(",");
+	//
+	// Coordinate p1 = new Coordinate(Double.valueOf(splits[0]),
+	// Double.valueOf(splits[1]));
+	//
+	// splits = outNode2.split(",");
+	//
+	// Coordinate p2 = new Coordinate(Double.valueOf(splits[0]),
+	// Double.valueOf(splits[1]));
+	//
+	// LineSegment line = new LineSegment(p1, p2);
+	//
+	// outLinkSegmentMap.put(outLinkPid, line);
+	//
+	// String viaPath = resultSet.getString("via_path");
+	//
+	// List<Integer> viaLinks = new ArrayList<Integer>();
+	//
+	// if (viaPath != null) {
+	//
+	// splits = viaPath.split(",");
+	//
+	// for (String s : splits) {
+	// if (!s.equals("")) {
+	//
+	// int viaPid = Integer.valueOf(s);
+	//
+	// if (viaPid == outLinkPid || viaPid == inLinkPid) {
+	// continue;
+	// }
+	//
+	// viaLinks.add(viaPid);
+	// }
+	// }
+	//
+	// }
+	//
+	// viaLinkPidMap.put(outLinkPid, viaLinks);
+	// }
+	//
+	// } catch (Exception e) {
+	// throw e;
+	//
+	// } finally {
+	// try {
+	// if (pstmt != null) {
+	// pstmt.close();
+	// }
+	// } catch (Exception e) {
+	// }
+	//
+	// }
+	// }
 
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			pstmt.setInt(1, inLinkPid);
-
-			pstmt.setInt(2, nodePid);
-
-			StringBuilder sb = new StringBuilder();
-
-			for (int pid : outLinkPids) {
-
-				sb.append(pid);
-
-				sb.append(",");
-			}
-
-			sb.deleteCharAt(sb.length() - 1);
-
-			pstmt.setString(3, sb.toString());
-
-			resultSet = pstmt.executeQuery();
-
-			while (resultSet.next()) {
-
-				if (inLinkSegment == null) {
-					String inNode1 = resultSet.getString("in_node1");
-
-					String inNode2 = resultSet.getString("in_node2");
-
-					String[] splits = inNode1.split(",");
-
-					Coordinate p1 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
-
-					splits = inNode2.split(",");
-
-					Coordinate p2 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
-
-					inLinkSegment = new LineSegment(p1, p2);
-				}
-
-				int outLinkPid = resultSet.getInt("link_pid");
-
-				int relationType = resultSet.getInt("relation_type");
-
-				relationTypeMap.put(outLinkPid, relationType);
-
-				String outNode1 = resultSet.getString("out_node1");
-
-				String outNode2 = resultSet.getString("out_node2");
-
-				String[] splits = outNode1.split(",");
-
-				Coordinate p1 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
-
-				splits = outNode2.split(",");
-
-				Coordinate p2 = new Coordinate(Double.valueOf(splits[0]), Double.valueOf(splits[1]));
-
-				LineSegment line = new LineSegment(p1, p2);
-
-				outLinkSegmentMap.put(outLinkPid, line);
-
-				String viaPath = resultSet.getString("via_path");
-
-				List<Integer> viaLinks = new ArrayList<Integer>();
-
-				if (viaPath != null) {
-
-					splits = viaPath.split(",");
-
-					for (String s : splits) {
-						if (!s.equals("")) {
-
-							int viaPid = Integer.valueOf(s);
-
-							if (viaPid == outLinkPid || viaPid == inLinkPid) {
-								continue;
-							}
-
-							viaLinks.add(viaPid);
-						}
-					}
-
-				}
-
-				viaLinkPidMap.put(outLinkPid, viaLinks);
-			}
-
-		} catch (Exception e) {
-			throw e;
-
-		} finally {
-			try {
-				if (pstmt != null) {
-					pstmt.close();
-				}
-			} catch (Exception e) {
-			}
-
-		}
-
-	}
 }

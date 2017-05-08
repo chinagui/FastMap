@@ -32,7 +32,7 @@ public abstract class AbstractOperation {
 	protected OperationResult result;
 	protected Connection conn;
 	protected boolean unionOperation=false;//设置true，会在生成履历时把所有有几何修改的对象合并到一个operation
-	protected int subtaskId;
+	protected int subtaskId=0;
 	protected boolean physiDelete=false; 
 	
 	public int getSubtaskId() {
@@ -82,9 +82,6 @@ public abstract class AbstractOperation {
 		//删除对象删除其所有子表
 		deleteObjHandler();
 
-		//新增IX_POI对象向poi_edit_status表中插入记录
-//		PoiEditStatus.insertPoiEditStatus(conn,result);
-		PoiEditStatus.insertOrUpdatePoiEditStatus(conn,result);
 		//持久化履历
 		new LogGenerator().writeLog(conn,unionOperation,result,getName(), opSg, userId,subtaskId);
 		//持久化数据

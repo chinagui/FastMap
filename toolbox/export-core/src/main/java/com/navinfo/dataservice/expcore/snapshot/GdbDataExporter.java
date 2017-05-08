@@ -5,10 +5,8 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.Set;
-
 import org.apache.uima.pear.util.FileUtil;
 import org.sqlite.SQLiteConfig;
-
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 
@@ -95,7 +93,7 @@ public class GdbDataExporter {
 
 	}
 	public static void main(String[] args) {
-		String sql = "select a.*, display_text.name, styleFactors1.types,styleFactors2.lane_types,"
+		/*String sql = "select a.*, display_text.name, styleFactors1.types,styleFactors2.lane_types,"
 				+ "speedlimits.from_speed_limit,speedlimits.to_speed_limit,forms.forms   "
 				+ "from rd_link a,"
 				+ "(select a.link_pid,listagg(B.NAME,'/') within group(order by name_class,seq_num) name "
@@ -117,6 +115,6 @@ public class GdbDataExporter {
 							+ " and a.link_pid = styleFactors2.link_pid(+)    and a.link_pid = speedlimits.link_pid(+)    and a.link_pid = forms.link_pid(+) "
 							+ " and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 		
-		System.out.println(sql);
+		System.out.println(sql);*/
 	}
 }

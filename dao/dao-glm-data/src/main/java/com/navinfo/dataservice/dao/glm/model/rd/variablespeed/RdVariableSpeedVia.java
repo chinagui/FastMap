@@ -33,12 +33,20 @@ public class RdVariableSpeedVia implements IRow,IVia{
 
 	private int seqNum =1 ;//LINK 序号;
 	private String rowId;
+	
+	protected ObjStatus status;
 
 	private Map<String, Object> changedFields = new HashMap<String, Object>();
 
 	@Override
 	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+//		return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+		JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+		
+		if (objLevel == ObjLevel.HISTORY) {
+			json.remove("status");
+		}
+		return json;
 	}
 
 	@Override
@@ -81,12 +89,12 @@ public class RdVariableSpeedVia implements IRow,IVia{
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+		status = os;
 	}
 
 	@Override

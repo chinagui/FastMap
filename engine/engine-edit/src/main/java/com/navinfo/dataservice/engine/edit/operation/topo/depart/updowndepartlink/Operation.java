@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.navinfo.dataservice.engine.edit.utils.batch.SpeedUtils;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import net.sf.json.JSONObject;
 
@@ -305,6 +306,8 @@ public class Operation implements IOperation {
             AdminIDBatchUtils.updateAdminID(link, null, conn);
             ZoneIDBatchUtils.updateZoneID(link, null, conn, result);
             UrbanBatchUtils.updateUrban(link, null, conn, result);
+            // 计算内部新增线的限速值
+            SpeedUtils.updateLinkSpeed(link);
             if (link.changedFields().containsKey("leftRegionId")) {
                 link.setLeftRegionId(Integer.valueOf(link.changedFields().get("leftRegionId").toString()));
             }
@@ -429,6 +432,8 @@ public class Operation implements IOperation {
             link.setDirect(2);
             // 19. 维护AdminId、ZoneId
             this.updateAdminIdAndZoneId(link, result);
+            // 20. 维护Rdlink的限速信息
+            SpeedUtils.updateLinkSpeed(link);
             result.insertObject(link, ObjStatus.INSERT, link.getPid());
         }
     }
@@ -1050,6 +1055,8 @@ public class Operation implements IOperation {
         opRefRelationObj.handleRdGsc(command, result);
 
         opRefRelationObj.handlerRdSe(command, result);
+        
+        opRefRelationObj.handCRF(command, result);
     }
 
     /**

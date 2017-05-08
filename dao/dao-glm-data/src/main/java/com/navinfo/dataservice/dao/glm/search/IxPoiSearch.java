@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +18,9 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -35,12 +32,12 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 import oracle.sql.STRUCT;
 
 public class IxPoiSearch implements ISearch {
@@ -81,9 +78,13 @@ public class IxPoiSearch implements ISearch {
 	}
 	
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+		
+		IxPoiSelector selector = new IxPoiSelector(conn);
+		
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 	
 	@Override
@@ -114,7 +115,7 @@ public class IxPoiSearch implements ISearch {
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
-				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS FROM TMP1 A LEFT JOIN "
+				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_SUBTASK_ID,0) QUICK_SUBTASK_ID ,nvl(B.MEDIUM_SUBTASK_ID,0) MEDIUM_SUBTASK_ID  FROM TMP1 A LEFT JOIN "
 				+ "POI_EDIT_STATUS B ON A.PID = B.PID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
 
@@ -147,6 +148,8 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 				
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
+				m.put("quickFlag", resultSet.getInt("quick_subtask_id") == 0 ? 0:1);
+				m.put("mediumFlag", resultSet.getInt("medium_subtask_id") == 0 ? 0:1);
 
 				Double xGuide = resultSet.getDouble("x_guide");
 
@@ -1057,11 +1060,8 @@ public class IxPoiSearch implements ISearch {
 					//地址组:当一级作业项=poi_address或poi_englishaddress时，pid关联ix_poi_address，将多组名称记录转换为json格式的名称组；
 					IxPoiAddress address = (IxPoiAddress) aRow;
 					JSONObject addrObj = address.Serialize(null);
-					/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
-					 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
 					//由于现在数据addrname和roadname本身为空，因此给前台组合addrnameStr和roadnameStr返回
-					if (secondWorkItem.equals("addrPinyin")){
-						
+					if (address.getLangCode().equals("CHI")) {
 						String addrnameStr = stringIsNull(address.getProvince())+"|"+stringIsNull(address.getCity())+"|"+stringIsNull(address.getCounty())+"|"+stringIsNull(address.getTown())+"|"+
 								stringIsNull(address.getPlace())+"|"+stringIsNull(address.getStreet());
 						
@@ -1081,7 +1081,10 @@ public class IxPoiSearch implements ISearch {
 						addrObj.put("addrnamePhoneticStr", addrnamePhoneticStr);
 						addrObj.put("roadnamePhoneticStr", roadnamePhoneticStr);
 						
-						if (address.getLangCode().equals("CHI")) {
+						/**特殊处理：特殊处理：当二级作业项为：addrPinyin时，对'langCode'== 'CHI'的记录，添加字段addrNameMultiPinyin、roadNameMultiPinyin、fullNameMultiPinyin，
+						 取值原则：对address中字段addrName、roadName、fullName存在多音字分别获取其对应的拼音*/
+						if (secondWorkItem.equals("addrPinyin")){
+							
 							if (addrnameStr!=null && !addrnameStr.isEmpty()) {
 								List<List<String>> addrnameMultiPinyin = pyConvertor(addrnameStr);
 								addrObj.put("addrNameMultiPinyin", addrnameMultiPinyin);
@@ -1094,8 +1097,11 @@ public class IxPoiSearch implements ISearch {
 //								List<List<String>> fullNameMultiPinyin = pyConvertor(address.getFullname());
 //								addrObj.put("fullNameMultiPinyin", fullNameMultiPinyin);
 //							}
-						}	
+					
+						}
 					}
+					
+					
 					addrArray.add(addrObj);
 					//addressList赋值
 					
@@ -1147,16 +1153,22 @@ public class IxPoiSearch implements ISearch {
 					result=logReader.getHisByOperate("FM-BAT-20-115","IX_POI_NAME",rowId);
 					if (!result.isEmpty()){
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldOriEngName = JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldOriEngName)){
-								oldOriginalEngName = oldOriEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldOriginalEngName="";
+							}else{
+								oldOriginalEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newOriEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newOriEngName)){
-								newOriginalEngName = newOriEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newOriginalEngName="";
+							}else{
+								newOriginalEngName = jo.getString("NAME");
 							}
+
 						}
 					}
 				}
@@ -1167,16 +1179,22 @@ public class IxPoiSearch implements ISearch {
 					if (!result.isEmpty()){
 						
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldStdEngName)){
-								oldStandardEngName = oldStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldStandardEngName="";
+							}else{
+								oldStandardEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newStdEngName)){
-								newStandardEngName = newStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newStandardEngName="";
+							}else{
+								newStandardEngName = jo.getString("NAME");
 							}
+							
 						}
 					}
 				}

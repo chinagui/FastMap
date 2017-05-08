@@ -263,4 +263,33 @@ public class TipsImportUtils {
 		}
 
 	}
+
+	/**
+	 * @Description:生成统计坐标wkt
+	 * @param sourceType
+	 * @param deep
+	 * @param g_location
+	 * @param feedback
+	 * @return
+	 * @author: y
+	 * @time:2017-4-19 下午7:16:38
+	 */
+	public static Object generateSolrStatisticsWkt(String sourceType,
+			JSONObject deep, JSONObject g_location, JSONObject feedback) {
+		
+		  JSONObject geometry=g_location; //默认的是显示坐标
+		  
+		  if (TipsStatConstant.gLocationTipsType.contains(sourceType)) {
+              //显示坐标
+			   geometry = g_location;
+          }else if (TipsStatConstant.gSLocTipsType.contains(sourceType)) {
+        	   geometry = deep.getJSONObject("gSLoc");
+          }else if (TipsStatConstant.gGeoTipsType.contains(sourceType)) {
+               geometry = deep.getJSONObject("geo");
+          }
+		  
+		  Geometry geo= GeoTranslator.geojson2Jts(geometry);
+		
+		 return GeoTranslator.jts2Wkt(geo);
+	}
 }

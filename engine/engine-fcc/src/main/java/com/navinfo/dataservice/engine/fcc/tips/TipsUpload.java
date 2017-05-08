@@ -4,7 +4,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +11,7 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.Set;
 
+import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -33,15 +33,9 @@ import com.navinfo.dataservice.commons.util.MD5Utils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.audio.Audio;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
-/*import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
-import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
-import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
-import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;*/
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * 保存上传的tips数据
@@ -62,6 +56,8 @@ class ErrorType {
 	static int FreshnessVerificationData = 6; // 鲜度验证tips(不入库)
 
 }
+
+
 
 public class TipsUpload {
 
@@ -90,7 +86,65 @@ public class TipsUpload {
 
 	private SolrController solr;
 
-	private Map<String, Map<String, Integer>> gridTaskMap = new HashMap<String, Map<String, Integer>>();
+	private int subTaskId = 0;
+
+	private int s_qTaskId = 0; // 快线任务号
+	private int s_qSubTaskId = 0; // 快线子任务号
+	private int s_mTaskId = 0;// 中线任务号
+	private int s_mSubTaskId = 0; // 中线子任务号
+
+	/**
+	 * @param subtaskid
+	 * @throws Exception
+	 */
+	public TipsUpload(int subtaskid) throws Exception {
+
+		this.subTaskId = subtaskid;
+
+		initTaskId();
+	}
+
+	/**
+	 * @Description:根据采集端上传的子任务号，获取对应的任务号
+	 * @author: y
+	 * @throws Exception
+	 * @time:2017-4-19 上午10:35:33
+	 */
+	private void initTaskId() throws Exception {
+
+		// 外业采集任务号，可能为空，或者没有，没有则全赋值为0
+		if (subTaskId == 0)
+			return;
+
+		// 调用 manapi 获取 任务类型、及任务号
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		try {
+			Map<String, Integer> taskMap = manApi.getTaskBySubtaskId(subTaskId);
+			if (taskMap != null) {
+				int taskId = taskMap.get("taskId");
+				// 1，中线 4，快线
+				int taskType = taskMap.get("programType");
+
+				if (TaskType.M_TASK_TYPE == taskType) {
+
+					s_mTaskId = taskId;// 中线任务号
+					s_mSubTaskId = subTaskId; // 中线子任务号
+				}
+
+				if (TaskType.Q_TASK_TYPE == taskType) {
+					s_qTaskId = taskId; // 快线任务号
+					s_qSubTaskId = subTaskId; // 快线子任务号
+				}
+			}else{
+				throw new Exception("根据子任务号，没查到对应的任务号，sutaskid:"+subTaskId);
+			}
+
+		} catch (Exception e) {
+			logger.error("根据子任务号，获取任务任务号及任务类型出错：" + e.getMessage(), e);
+			throw e;
+		}
+
+	}
 
 	public JSONArray getReasons() {
 		return reasons;
@@ -159,7 +213,7 @@ public class TipsUpload {
 		htab.close();
 
 		// tips差分 （新增、修改的都差分） 放在写入hbase之后在更新
-		//tipsDiff();
+		TipsDiffer.tipsDiff(allNeedDiffRowkeysCodeMap);
 
 		// 道路名入元数据库
 		importRoadNameToMeta();
@@ -180,22 +234,19 @@ public class TipsUpload {
 			String rowkey = en.getKey();
 			// 坐标
 			JSONObject nameTipJson = en.getValue();
-			JSONObject deep = JSONObject.fromObject(nameTipJson.get("deep"));
-			JSONObject geo = deep.getJSONObject("geo");
-			JSONArray jaCoords = geo.getJSONArray("coordinates");
-			double longitude = jaCoords.getDouble(0);
-			double latitude = jaCoords.getDouble(1);
+			JSONObject gLocation = JSONObject.fromObject(nameTipJson.get("g_location"));
+            String sourceType = nameTipJson.getString("s_sourceType");
 
 			// 名称,调用元数据库接口入库
 			MetadataApi metaApi = (MetadataApi) ApplicationContextUtil
 					.getBean("metaApi");
-			JSONArray names = deep.getJSONArray("n_array");
+			JSONArray names = nameTipJson.getJSONArray("n_array");
 			for (Object name : names) {
-				//修改 20170308，道路名去除空格，否则转英文报错
-				if (name != null && StringUtils.isNotEmpty(name.toString().trim())) {
+				// 修改 20170308，道路名去除空格，否则转英文报错
+				if (name != null
+						&& StringUtils.isNotEmpty(name.toString().trim())) {
 					try {
-						metaApi.nameImport(name.toString().trim(), longitude,
-								latitude, rowkey);
+						metaApi.nameImport(name.toString().trim(), gLocation, rowkey, sourceType);
 					} catch (Exception e) {
 						// reasons.add(newReasonObject(rowkey,
 						// ErrorType.InvalidData));
@@ -319,15 +370,13 @@ public class TipsUpload {
 				json.put("feedback", feedbackObj);
 
 				String sourceType = json.getString("s_sourceType");
-
+                JSONObject gLocation = json.getJSONObject("g_location");
+                JSONObject deep = JSONObject.fromObject(json
+                        .getString("deep"));
 				if (sourceType.equals("2001")) {
-					JSONObject glocation = json.getJSONObject("g_location");
 
 					double length = GeometryUtils.getLinkLength(GeoTranslator
-							.geojson2Jts(glocation));
-
-					JSONObject deep = JSONObject.fromObject(json
-							.getString("deep"));
+							.geojson2Jts(gLocation));
 
 					deep.put("len", length);
 
@@ -347,17 +396,50 @@ public class TipsUpload {
 				json.put("t_dInProc", 0);
 
 				json.put("t_mInProc", 0);
-				
-				json.put("t_fStatus", 0);
-				
-				//20170223添加：增加快线、中线任务号
 
-				getTaskIdByGuide(json);
+				json.put("t_fStatus", 0);
+
+				// 20170223添加：增加快线、中线任务号
+
+				updateTaskIds(json);
 
 				// 道路名测线
+                JSONObject rdNameObject = new JSONObject();
+                rdNameObject.put("g_location", gLocation);
+                rdNameObject.put("s_sourceType", sourceType);
 				if (sourceType.equals("1901")) {
-					roadNameTips.put(rowkey, json);
-				}
+                    JSONArray names = deep.getJSONArray("n_array");
+                    rdNameObject.put("n_array",names);
+					roadNameTips.put(rowkey, rdNameObject);
+				}else if(sourceType.equals("1407")) {//高速分歧
+                    JSONArray infoArray = deep.getJSONArray("info");
+                    JSONArray names = new JSONArray();
+                    for(int i = 0; i < infoArray.size(); i++) {
+                        JSONObject infoObj = infoArray.getJSONObject(i);
+                        String exitStr = infoObj.getString("exit");
+                        if(exitStr.length() > 8) {
+                            String[] exitArray = exitStr.split("/");
+                            for(String perExit : exitArray) {
+                                names.add(perExit);
+                            }
+                        }else {
+                            names.add(exitStr);
+                        }
+                    }
+                    rdNameObject.put("n_array",names);
+                    roadNameTips.put(rowkey, rdNameObject);
+                    //桥、隧道、跨线立交桥、步行街、环岛、风景路线、立交桥、航线、Highway道路名
+                }else if(sourceType.equals("1510") || sourceType.equals("1511")
+                        || sourceType.equals("1509") || sourceType.equals("1507")
+                        || sourceType.equals("1601") || sourceType.equals("1607")
+                        || sourceType.equals("1705") || sourceType.equals("1209")
+                        || sourceType.equals("8006")) {
+                    JSONArray names = new JSONArray();
+                    String nameStr = deep.getString("name");
+                    names.add(nameStr);
+                    rdNameObject.put("n_array",names);
+                    roadNameTips.put(rowkey, rdNameObject);
+                }
 
 				if (3 == lifecycle) {
 					insertTips.put(rowkey, json);
@@ -382,6 +464,8 @@ public class TipsUpload {
 
 				reasons.add(newReasonObject(rowkey, ErrorType.InvalidData));
 
+				logger.error(e.getMessage(), e);
+				
 				e.printStackTrace();
 			}
 
@@ -397,52 +481,15 @@ public class TipsUpload {
 	 * @throws Exception
 	 * @time:2017-2-23 上午9:40:53
 	 */
-	private void getTaskIdByGuide(JSONObject json) throws Exception {
-		try {
-			// 获取中线快线任务号
-			JSONObject g_guide = json.getJSONObject("g_guide");
-			// 通过 geo 获取 grid
-			Geometry geo = GeoTranslator.geojson2Jts(g_guide);
-			Coordinate[] coordinate = geo.getCoordinates();
-			String grid = CompGridUtil.point2Grids(coordinate[0].x,
-					coordinate[0].y)[0];
+	public void updateTaskIds(JSONObject json) throws Exception {
 
-			Map<String, Integer> taskMap = gridTaskMap.get(grid);
-			
-			if (taskMap != null && taskMap.containsKey("quickTaskId")
-					&& taskMap.containsKey("centreTaskId")) {
-
-				json.put("s_qTaskId", taskMap.get("quickTaskId"));
-
-				json.put("s_mTaskId", taskMap.get("centreTaskId"));
-
-			} else {
-				// 调用 manapi 获取 对应的 快线任务id,及中线任务id
-				ManApi manApi = (ManApi) ApplicationContextUtil
-						.getBean("manApi");
-				taskMap = manApi.queryTaskIdsByGrid(grid);
-				// 每次查询一个grid放在map中，下次如果是相同的grid，则无需再查询
-				gridTaskMap.put(grid, taskMap);
-
-				if (taskMap != null && taskMap.containsKey("quickTaskId")
-						&& taskMap.containsKey("centreTaskId")) {
-
-					json.put("s_qTaskId", taskMap.get("quickTaskId"));
-
-					json.put("s_mTaskId", taskMap.get("centreTaskId"));
-				}
-				//查不到值赋值0
-				else{
-					
-					json.put("s_qTaskId", 0);
-
-					json.put("s_mTaskId", 0);
-				}
-			}
-		} catch (Exception e) {
-			logger.error("获取中线、快线任务号失败：" + e.getMessage(), e);
-			throw new Exception("获取中线、快线任务号失败：" + e.getMessage(), e);
-		}
+		json.put("s_qTaskId", s_qTaskId);
+	
+		json.put("s_qSubTaskId", s_qSubTaskId);
+	
+		json.put("s_mTaskId", s_mTaskId);
+	
+		json.put("s_mSubTaskId", s_mSubTaskId);
 
 	}
 
@@ -601,7 +648,7 @@ public class TipsUpload {
 						currentDate);
 
 				solr.addTips(solrIndex);
-
+				
 				puts.add(put);
 
 			} catch (Exception e) {
@@ -671,7 +718,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
+				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -747,8 +794,10 @@ public class TipsUpload {
 
 				JSONObject json = en.getValue();
 
-				// 是否是鲜度验证的tips
-				if (isFreshnessVerification(oldTip, json)) {
+				
+				int lifecycle = json.getInt("t_lifecycle");
+				// 是否是鲜度验证的tips  lifecycle==1删除的，不进行鲜度验证
+				if (lifecycle!=1&&isFreshnessVerification(oldTip, json)) {
 
 					reasons.add(newReasonObject(rowkey,
 							ErrorType.FreshnessVerificationData));
@@ -810,7 +859,7 @@ public class TipsUpload {
 				json.getInt("t_cStatus"), json.getInt("t_dStatus"),
 				json.getInt("t_mStatus"), json.getInt("t_inMeth"),
 				json.getInt("t_pStatus"), json.getInt("t_dInProc"),
-				json.getInt("t_mInProc"),json.getInt("t_fStatus"));
+				json.getInt("t_mInProc"), json.getInt("t_fStatus"));
 
 		put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
 				.toString().getBytes());
@@ -856,55 +905,7 @@ public class TipsUpload {
 		return put;
 	}
 
-	 /**
-	 * @throws Exception
-	 * @Description:tips差分，当前上传结果和old差分，生成tipsDiff
-	 * @time:2017-2-13上午9:20:52
-	 */
-/*	private void tipsDiff() throws Exception {
-		String errRowkey = null; // 报错时用
-		Connection hbaseConn = null;
-		SolrBulkUpdater solrConn = null;
-
-		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			solrConn = new SolrBulkUpdater(TipsBuilderUtils.QueueSize,
-					TipsBuilderUtils.ThreadCount);
-			Set<String> rowkeySet = allNeedDiffRowkeysCodeMap.keySet();
-			if (rowkeySet.size() > 0) {
-				for (String rowkey : rowkeySet) {
-					errRowkey = rowkey;
-					String s_sourceType = allNeedDiffRowkeysCodeMap.get(rowkey);
-
-					BaseTipsProcessor processor = TipsProcessorFactory
-							.getInstance().createProcessor(s_sourceType);
-
-					processor.setSolrConn(solrConn);
-
-					processor.diff(rowkey, hbaseConn);
-
-					solrConn.commit();
-
-				}
-			}
-
-		} catch (Exception e) {
-			logger.error(
-					"tips差分报错：rowkey:" + errRowkey + ";出错原因：" + e.getMessage(),
-					e);
-			throw new Exception("tips差分报错：rowkey:" + errRowkey + ";出错原因："
-					+ e.getMessage(), e);
-		} finally {
-			System.out.println("-----------");
-			// 连接不能关
-			
-			 * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
-			 
-				 * if(solrConn!=null){ solrConn.close(); }
-				 
-		}
-
-	}*/
+	
 
 	private Photo getPhoto(JSONObject attachment, JSONObject tip) {
 
@@ -962,7 +963,7 @@ public class TipsUpload {
 		int lifecycle = oldTrack.getInt("t_lifecycle");
 
 		JSONArray tracks = oldTrack.getJSONArray("t_trackInfo");
-
+	
 		String lastDate = null;
 
 		// 入库仅与上次stage=1的数组data进行比较. 最后一条stage=1的数据
@@ -981,20 +982,57 @@ public class TipsUpload {
 		JSONObject lastTrack = tracks.getJSONObject(tracks.size() - 1);
 
 		int lastStage = lastTrack.getInt("stage");
-
+		
 		// lifecycle:0（无） 1（删除）2（修改）3（新增） ;
-		// stage:0 初始化；1 外业采集；2 内业日编；3 内业月编 ；4 GDB增量
-		// 库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新
+		// 0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量；5 内业预处理；6 多源融合；
+		//1)是增量更新删除：不对比时间。  库里最后最状态是不是增量更新删除：lifecycle=1（删除），t_stage=4（增量更新）,是，则不更新 : -1表示old已删除
 		if (lifecycle == 1 && lastStage == 4) {
-
 			return -1;
 		}
-		// 最后一条数据stage!=0需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
-		if (lastStage != 0 && operateDate.compareTo(lastDate) <= 0) {
-			return -2;
+		
+		//增量的：新增修改的和stage=0的一样处理，不判断时间
+		if(lifecycle!=1&&lastStage==4){
+			return 0;
 		}
-
+		
+		
+		if(lastStage==0){
+			return 0;
+		}
+		
+		
+		//2) 需要用stage=1的最后一条数据和采集端对比（stage=0是初始化数据，不进行时间对比）
+			//如果不存在stage=1时，则按以下情况比较（如果存在（stage=5或者stage=6）且不存在stage=1时，直接覆盖）
+		if(lastDate==null && hasPreStage(tracks)){
+			return 0;
+		}else{
+			if (operateDate.compareTo(lastDate) <= 0){
+				return -2;
+			}
+		}
+		//其他情况都返回0，包括 stage=0 、stage=4(除了增量更新删除的)
 		return 0;
+	}
+
+	/**
+	 * @Description:是否存在stage=5的
+	 * @param tracks
+	 * @return
+	 * @author: y
+	 * @time:2017-4-19 下午12:56:35
+	 */
+	private boolean hasPreStage(JSONArray tracks) {
+		
+		for (int i = 0; i <  tracks.size(); i++) {
+			
+			JSONObject info = tracks.getJSONObject(i - 1);
+
+			if (info.getInt("stage") == 5||info.getInt("stage") == 6) {
+
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private JSONObject newReasonObject(String rowkey, int type) {
@@ -1010,14 +1048,21 @@ public class TipsUpload {
 
 	public static void main(String[] args) throws Exception {
 
-		Map<String, Photo> photoMap = new HashMap<String, Photo>();
-
-		Map<String, Audio> audioMap = new HashMap<String, Audio>();
-
-		TipsUpload a = new TipsUpload();
-
-		a.run("D:/4.txt", photoMap, audioMap);
-
-		System.out.println("成功");
+		/*
+		 * Map<String, Photo> photoMap = new HashMap<String, Photo>();
+		 * 
+		 * Map<String, Audio> audioMap = new HashMap<String, Audio>();
+		 * 
+		 * TipsUpload a = new TipsUpload();
+		 * 
+		 * a.run("D:/4.txt", photoMap, audioMap);
+		 * 
+		 * System.out.println("成功");
+		 */
+		JSONObject json = new JSONObject();
+		json.put("g_guide",
+				"{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
+		TipsUpload l = new TipsUpload(0);
+		l.updateTaskIds(json);
 	}
 }

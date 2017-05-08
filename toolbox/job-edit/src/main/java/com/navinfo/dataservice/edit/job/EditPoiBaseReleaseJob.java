@@ -12,13 +12,8 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
-import net.sf.json.JSONArray;
-
-import com.navinfo.dataservice.api.edit.iface.DatalockApi;
-import com.navinfo.dataservice.api.edit.model.FmEditLock;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -27,19 +22,24 @@ import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
 import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.log.SamepoiLogDetailStat;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.Batch;
+import com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.BatchCommand;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.Check;
 import com.navinfo.dataservice.engine.editplus.batchAndCheck.check.CheckCommand;
-import com.navinfo.dataservice.engine.editplus.batchAndCheck.common.CheckRuleFactory;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.exception.LockException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+
+import net.sf.json.JSONArray;
 
 /**
  * 
@@ -89,12 +89,21 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 			//将poi对象与履历合并起来
 			ObjHisLogParser.parse(sameobjs, samelogs);
 			log.info("EditPoiBaseReleaseJob:执行检查");
-			//构造检查参数，执行检查
+			//构造检查参数，执行批处理检查
 			OperationResult operationResult=new OperationResult();
+			OperationResult changeReferData=new OperationResult();
 			Map<String,Map<Long,BasicObj>> objsMap=new HashMap<String, Map<Long,BasicObj>>();
 			objsMap.put(ObjectName.IX_POI, objs);
 			objsMap.put(ObjectName.IX_SAMEPOI, sameobjs);
 			operationResult.putAll(objsMap);
+			
+			log.info("执行批处理");
+			BatchCommand batchCommand=new BatchCommand();		
+			batchCommand.setOperationName("BATCH_POI_RELEASE");
+			Batch batch=new Batch(conn,operationResult);
+			batch.operate(batchCommand);
+			changeReferData= batch.getChangeReferData();
+			batch.persistChangeLog(OperationSegment.SG_ROW, 0);
 			
 			CheckCommand checkCommand=new CheckCommand();
 			checkCommand.setOperationName(getOperationName());
@@ -136,13 +145,16 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //				throw new Exception("执行批处理job内部发生"+msg);
 //			}
 //			log.info("end gdb batch");
+			
+			//修改父子关系关联批到的数据任务号及状态
+			if(changeReferData!=null){changeRefeDataStatus(changeReferData,conn);}
 			//修改数据提交状态:将没有检查错误的已作业poi进行提交
 			log.info("start change poi_edit_status=3 commit");
-			commitPoi(conn,myRequest);
+			commitPoi(conn);
 			log.info("end change poi_edit_status=3 commit");
 			super.response("POI行编提交成功！",null);
 		}catch(Exception e){
-			log.error("PoiRowValidationJob错误", e);
+			log.error("EditPoiBaseReleaseJob错误", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
 			throw new JobException(e);
 		}finally{
@@ -206,7 +218,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 		try{
 			ManApi apiService = (ManApi) ApplicationContextUtil
 					.getBean("manApi");
-			Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
+			//Subtask subtask = apiService.queryBySubtaskId((int)jobInfo.getTaskId());
 			//行编提交由针对删除数据的检查，此处要全部加载
 			String sql="SELECT ip.pid"
 					+ "  FROM ix_poi ip, poi_edit_status ps"
@@ -214,9 +226,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "   AND ps.status =2"
 					+ "   AND ps.FRESH_VERIFIED=0"
 					//+ "   and ip.u_record!=2"
-					+ "   AND sdo_within_distance(ip.geometry,"
-					+ "                           sdo_geometry('"+subtask.getGeometry()+"', 8307),"
-					+ "                           'mask=anyinteract') = 'TRUE'";
+					+ " AND (ps.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or ps.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			QueryRunner run=new QueryRunner();
 			return run.query(conn, sql,new ResultSetHandler<List<Long>>(){
 
@@ -240,10 +250,10 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 	 * @param releaseJobRequest
 	 * @throws Exception
 	 */
-	public void commitPoi(Connection conn,EditPoiBaseReleaseJobRequest releaseJobRequest) throws Exception{
+	public void commitPoi(Connection conn) throws Exception{
 		//Connection conn = null;
 		try{
-			String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.getGridIds());
+			//String wkt = GridUtils.grids2Wkt((JSONArray) releaseJobRequest.GET);
 			String sql="UPDATE POI_EDIT_STATUS E"
 					+ "   SET E.STATUS = 3,E.SUBMIT_DATE=SYSDATE,E.COMMIT_HIS_STATUS = 1 "
 					+ " WHERE E.STATUS = 2"
@@ -251,12 +261,7 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 					+ "          FROM CK_RESULT_OBJECT R"
 					+ "         WHERE R.TABLE_NAME = 'IX_POI'"
 					+ "           AND R.PID = E.PID)"
-					+ "   AND EXISTS (SELECT 1"
-					+ "          FROM IX_POI P"
-					+ "         WHERE SDO_WITHIN_DISTANCE(P.GEOMETRY,"
-					+ "                                   SDO_GEOMETRY('"+wkt+"', 8307),"
-					+ "                                   'MASK=ANYINTERACT') = 'TRUE'"
-					+ "           AND P.PID = E.PID)";
+					+ "    AND (E.QUICK_SUBTASK_ID="+(int)jobInfo.getTaskId()+" or E.MEDIUM_SUBTASK_ID="+(int)jobInfo.getTaskId()+") ";
 			
 			//conn = DBConnector.getInstance().getConnectionById(releaseJobRequest.getTargetDbId());
 	    	QueryRunner run = new QueryRunner();		
@@ -269,6 +274,78 @@ public class EditPoiBaseReleaseJob extends AbstractJob{
 //		} finally {
 //			DbUtils.commitAndCloseQuietly(conn);
 //		}
+	}
+	
+	/**
+	 * 将status=0且subtaskId=0的数据(采集端无任务数据)，改为status=3 且subtaskIs=当前任务号
+	 * 将status=3且subtaskId=“别的任务号” 的数据，改为status=3 且subtaskIs=“当前任务号”
+	 * @param releaseJobRequest
+	 * @throws Exception
+	 */
+	public void changeRefeDataStatus(OperationResult data, Connection conn) throws Exception{
+		try{
+			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+			Map<String, Integer> taskInfo = apiService.getTaskBySubtaskId((int)jobInfo.getTaskId());
+			Map<String, Integer> newTaskInfo= changeTaskInfo((int)jobInfo.getTaskId(),taskInfo);
+			
+			StringBuffer sb = new StringBuffer();
+			List<BasicObj> objList =data.getAllObjs();
+			if(objList==null||objList.size()==0){return;}
+			int i=0;
+			for(BasicObj obj:objList){
+				IxPoi poi = (IxPoi) obj.getMainrow();
+				i++;
+				if(i==1){
+					sb.append(poi.getPid());
+				}else{
+					sb.append(",").append(poi.getPid());
+				}
+			}
+			
+			int qst=newTaskInfo.get("QUICK_SUBTASK_ID");
+			int qt=newTaskInfo.get("QUICK_TASK_ID");
+			int mst=newTaskInfo.get("MEDIUM_SUBTASK_ID");
+			int mt=newTaskInfo.get("MEDIUM_TASK_ID");
+			
+			String sql="MERGE INTO poi_edit_status T1 "
+					+ "USING (SELECT "
+					+ "	(CASE WHEN "+mst+" = 0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS=1 AND T.MEDIUM_SUBTASK_ID=0 THEN T.MEDIUM_SUBTASK_ID WHEN T.STATUS=3 AND T.MEDIUM_SUBTASK_ID NOT IN (0,"+mst+") THEN "+mst+" WHEN T.STATUS=0 AND T.MEDIUM_SUBTASK_ID =0 THEN "+mst+" ELSE T.MEDIUM_SUBTASK_ID END) MST, "
+					+ "	(CASE WHEN "+mt+" = 0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS=1 AND T.MEDIUM_TASK_ID=0 THEN T.MEDIUM_TASK_ID WHEN T.STATUS=3 AND T.MEDIUM_TASK_ID NOT IN (0,"+mt+") THEN "+mt+" WHEN T.STATUS=0 AND T.MEDIUM_TASK_ID=0 THEN "+mt+" ELSE T.MEDIUM_TASK_ID END) MT, "
+					+ "	(CASE WHEN "+qst+" = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=1 AND T.QUICK_SUBTASK_ID=0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=3 AND T.QUICK_SUBTASK_ID NOT IN (0,"+qst+") THEN "+qst+" WHEN T.STATUS=0 AND T.QUICK_SUBTASK_ID=0 THEN "+qst+" ELSE T.QUICK_SUBTASK_ID END) QST,"
+					+ "	(CASE WHEN "+qt+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS=1 AND T.QUICK_TASK_ID=0 THEN T.QUICK_TASK_ID WHEN T.STATUS=3 AND T.QUICK_TASK_ID NOT IN (0,"+qt+") THEN "+qt+" WHEN T.STATUS=0 AND T.QUICK_TASK_ID=0 THEN "+qt+" ELSE T.QUICK_TASK_ID END) QT,"
+					+ "	(CASE WHEN "+mst+" <> 0 AND T.STATUS=0 AND T.MEDIUM_SUBTASK_ID= 0 THEN 3 "
+					+ "		  WHEN "+qst+" <> 0 AND T.STATUS=0 AND T.QUICK_SUBTASK_ID= 0 THEN 3 "
+					+ "		  ELSE T.STATUS END) B, "
+					+ "	0 AS C, "
+					+ "	IX.PID AS D "
+					+ "	FROM IX_POI IX, POI_EDIT_STATUS T WHERE IX.PID = T.PID(+) AND IX.PID IN ("+ sb.toString() + ")) T2 "
+					+ "ON ( T1.pid=T2.d) "
+					+ "WHEN MATCHED THEN  "
+					+ "UPDATE SET T1.status = T2.b,T1.fresh_verified= T2.c,T1.QUICK_SUBTASK_ID=T2.QST,T1.QUICK_TASK_ID=T2.QT,T1.MEDIUM_SUBTASK_ID=T2.MST,T1.MEDIUM_TASK_ID=T2.MT ";
+
+	    	QueryRunner run = new QueryRunner();		
+	    	run.execute(conn, sql);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}
+	}
+	private Map<String, Integer> changeTaskInfo(int subtaskId,Map<String, Integer> taskInfo) throws Exception {
+		Map<String, Integer> newTaskInfo =new HashMap<String, Integer>();
+		if(taskInfo.get("programType")==1){
+			newTaskInfo.put("MEDIUM_SUBTASK_ID",subtaskId);
+			newTaskInfo.put("MEDIUM_TASK_ID",taskInfo.get("taskId"));
+			newTaskInfo.put("QUICK_SUBTASK_ID",0);
+			newTaskInfo.put("QUICK_TASK_ID",0);
+		}else{
+			newTaskInfo.put("MEDIUM_SUBTASK_ID",0);
+			newTaskInfo.put("MEDIUM_TASK_ID",0);
+			newTaskInfo.put("QUICK_SUBTASK_ID",subtaskId);
+			newTaskInfo.put("QUICK_TASK_ID",taskInfo.get("taskId"));
+		}
+		
+		return newTaskInfo;
 	}
 
 }

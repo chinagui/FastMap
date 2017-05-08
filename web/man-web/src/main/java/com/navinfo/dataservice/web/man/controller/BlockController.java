@@ -153,14 +153,14 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))) {
-				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
-			}
-			String wkt = dataJson.getString("wkt");
-			if (StringUtils.isEmpty(wkt)) {
-				throw new IllegalArgumentException("wkt参数值不能为空");
-			}
-			List<HashMap> data = service.listByWkt(dataJson);
+//			if (!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))) {
+//				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
+//			}
+//			String wkt = dataJson.getString("wkt");
+//			if (StringUtils.isEmpty(wkt)) {
+//				throw new IllegalArgumentException("wkt参数值不能为空");
+//			}
+			List<Map<String,Object>> data = service.listByWkt(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);

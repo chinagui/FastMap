@@ -499,40 +499,17 @@ public class RdLinkOperateUtils {
      * @param link
      */
     private static void setLinkChildren(RdLink link) {
-
         RdLinkForm form = new RdLinkForm();
-
         form.setLinkPid(link.getPid());
-
         form.setMesh(link.mesh());
-
-        List<IRow> forms = new ArrayList<IRow>();
-
+        List<IRow> forms = new ArrayList<>();
         forms.add(form);
-
         link.setForms(forms);
 
         RdLinkSpeedlimit speedlimit = new RdLinkSpeedlimit();
-
-        // 新创建道路默认为7级路，2车道，限速值为50km/h
-        speedlimit.setFromSpeedLimit(500);
-        speedlimit.setToSpeedLimit(500);
-
-        // 新建link限速来源均赋值为未调查
-        speedlimit.setFromLimitSrc(9);
-        speedlimit.setToLimitSrc(9);
-
-        // 新建link限速等级赋值为5
-        speedlimit.setSpeedClass(5);
-
-        speedlimit.setMesh(link.mesh());
-
         speedlimit.setLinkPid(link.getPid());
-
-        List<IRow> speedlimits = new ArrayList<IRow>();
-
+        List<IRow> speedlimits = new ArrayList<>();
         speedlimits.add(speedlimit);
-
         link.setSpeedlimits(speedlimits);
     }
 

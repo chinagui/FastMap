@@ -10,17 +10,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
-import com.sun.tools.internal.xjc.model.SymbolSpace;
-
+import com.navinfo.dataservice.engine.meta.model.ScRoadnameHwInfo;
+import com.navinfo.dataservice.engine.meta.service.ScRoadnameHwInfoService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -178,13 +176,14 @@ public class RdNameSelector {
 	/**
 	 * @Description:判断名称是否存在--查询大区库
 	 * @param name
-	 * @param adminId
+	 * @param adminIdList
+     * @param sourceType
 	 * @return 所在行政区划
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-6-28 下午3:42:20
 	 */
-	public int isNameExists(String name, int adminId) throws Exception {
+	public int isNameExists(String name, List<Integer> adminIdList, String sourceType) throws Exception {
 		int resultAdmin = 0;
 
 		PreparedStatement pstmt = null;
@@ -192,11 +191,21 @@ public class RdNameSelector {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
-
+        StringBuffer subSF = new StringBuffer();
+		for(int adminId : adminIdList) {
+			if(subSF.length() > 0)
+                subSF.append(",");
+            subSF.append("?");
+		}
 		String sql = "SELECT N.ADMIN_ID									\n"
 				+ "  FROM RD_NAME N                                      \n"
 				+ " WHERE N.NAME = ?                                     \n"
-				+ "   AND (N.ADMIN_ID = ? OR N.ADMIN_ID = 214)           \n";
+				+ "   AND (N.ADMIN_ID in(" + subSF.toString() + ") OR N.ADMIN_ID = 214)           \n";
+        if(sourceType.equals("1407")) {//出口编号
+            sql += " AND N.ROAD_TYPE = 4";
+        }else if(sourceType.equals("8006")) {
+            sql += " AND N.ROAD_TYPE = 1";
+        }
 
 		try {
 
@@ -215,7 +224,10 @@ public class RdNameSelector {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
-			pstmt.setInt(2, adminId);
+            for(int i = 0; i < adminIdList.size(); i++) {
+                pstmt.setInt(i + 2, adminIdList.get(i));
+            }
+
 
 			resultSet = pstmt.executeQuery();
 
@@ -236,10 +248,19 @@ public class RdNameSelector {
 	}
 
 	public static void main(String[] args) throws Exception {
+		JSONArray arr = new JSONArray();
+		arr.add(1);
+		arr.add(2);
+		arr.add(3);
 		
-		RdNameSelector selector = new RdNameSelector();
-
-		System.out.println(selector.searchByName("", 10, 1));
+		String types = arr.join(",");
+//		System.out.println(types);
+		
+		
+		
+//		RdNameSelector selector = new RdNameSelector();
+//
+//		System.out.println(selector.searchByName("", 10, 1));
 	}
 	
 	/**
@@ -265,9 +286,8 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			conn = DBConnector.getInstance().getMetaConnection();
 			
 			ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
-			log.info(scPointAdminArea);		
 			Map<String,String> adminMap = scPointAdminArea.getAdminMap();
-			log.info(adminMap);	
+//			log.info(adminMap);	
 			JSONObject param =  params.getJSONObject("params");
 			String name = "" ;
 			if(param.containsKey("name") && param.getString("name") != null){
@@ -470,6 +490,181 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			DbUtils.closeQuietly(conn);
 		}
 	}
+
+/**
+ * @Title: searchForWeb
+ * @Description: 查全库的道路名
+ * @param params
+ * @return
+ * @throws Exception  JSONObject
+ * @throws 
+ * @author zl zhangli5174@navinfo.com
+ * @date 2017年4月9日 下午4:56:39 
+ */
+public JSONObject searchForWeb(JSONObject params) throws Exception {
+	
+	PreparedStatement pstmt = null;
+
+	ResultSet resultSet = null;
+
+	Connection conn = null;
+	
+	try {
+		JSONObject result = new JSONObject();
+		
+		conn = DBConnector.getInstance().getMetaConnection();
+		
+		ScPointAdminArea scPointAdminArea = new ScPointAdminArea(conn);
+		//log.info(scPointAdminArea);		
+		Map<String,String> adminMap = scPointAdminArea.getAdminMap();
+		//log.info(adminMap);	
+		JSONObject param =  params.getJSONObject("params");
+		String name = "" ;
+		if(param.containsKey("name") && param.getString("name") != null 
+				&& StringUtils.isNotEmpty(param.getString("name")) && !param.getString("name").equals("null")){
+			name = param.getString("name");
+		}
+		String nameGroupid = "";
+		if(param.containsKey("nameGroupid") && param.getString("nameGroupid") != null 
+				&& StringUtils.isNotEmpty(param.getString("nameGroupid")) && !param.getString("nameGroupid").equals("null")){
+			nameGroupid = param.getString("nameGroupid");
+		}	
+		String adminId = "";
+		if(param.containsKey("adminId") && param.getString("adminId") != null 
+				&& StringUtils.isNotEmpty(param.getString("adminId")) && !param.getString("adminId").equals("null")){
+			adminId = param.getString("adminId");
+		}
+		String roadTypes = "";
+		if(param.containsKey("roadTypes") && param.getJSONArray("roadTypes") != null && param.getJSONArray("roadTypes").size() > 0 ){
+			JSONArray arr = param.getJSONArray("roadTypes");
+			roadTypes = arr.join(",");
+		}
+		
+		log.info("name: "+name+" nameGroupid: "+nameGroupid+" adminId: "+adminId);
+		String sortby = params.getString("sortby");
+		int pageSize = params.getInt("pageSize");
+		int pageNum = params.getInt("pageNum");
+		
+		StringUtils sUtils = new StringUtils();
+		
+		StringBuilder sql = new StringBuilder();
+		
+			sql.append("with q1 as(");
+			sql.append(" select distinct a.NAME_GROUPID  from rd_name a where 1=1 ");
+				// 添加过滤器条件
+				Iterator<String> keys = param.keys();
+				while (keys.hasNext()) {
+					String key = keys.next();
+					if (key.equals("name")) {
+						if((!param.getString(key).isEmpty()) && !param.getString("name").equals("null")){
+							sql.append(" and a.name like '%");
+							sql.append(param.getString(key));
+							sql.append("%'");
+						}
+						
+					} else if(key.equals("nameGroupid") ){
+						if(!param.getString(key).isEmpty() && !param.getString("nameGroupid").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("adminId") ){
+						if(!param.getString(key).isEmpty() && !param.getString("adminId").equals("null")){
+							String columnName = sUtils.toColumnName(key);
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append(" = ");
+							sql.append(param.getString(key));
+							sql.append(" ");
+						}
+						
+					}else if(key.equals("roadTypes")){
+						if(StringUtils.isNotEmpty(roadTypes) && !param.getString("roadTypes").equals("null")){
+							String columnName = "road_type";
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("  in( ");
+							sql.append(roadTypes);
+							sql.append(") ");
+						}
+						
+					}else {
+						String columnName = sUtils.toColumnName(key);
+						if (!param.getString(key).isEmpty()) {
+							sql.append(" and a.");
+							sql.append(columnName);
+							sql.append("='");
+							sql.append(param.getString(key));
+							sql.append("'");
+						}
+					}
+				}
+
+			sql.append(") ");
+			sql.append("SELECT * ");
+			sql.append(" FROM (SELECT c.*, rownum rn");
+			sql.append(" FROM (select distinct COUNT (1) OVER (PARTITION BY 1) total,a.* ");
+			sql.append(" from rd_name a , q1 q  where 1=1 and a.name_groupid = q.NAME_GROUPID ");
+		
+		// 添加排序条件
+		if (sortby.length()>0) {
+			int index = sortby.indexOf("-");
+			if (index != -1) {
+				sql.append(" ORDER BY ");
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				sql.append("  a.");
+				sql.append(sortbyName);
+				sql.append(" DESC");
+			} else {
+				sql.append(" ORDER BY ");
+				String sortbyName = sUtils.toColumnName(sortby.substring(1));
+				sql.append("  a.");
+				sql.append(sortbyName);
+			}
+		} else {
+			sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
+		}
+		
+		sql.append(" ) c");
+		sql.append(" WHERE rownum <= ?)  WHERE rn >= ?");
+		
+		int startRow = (pageNum-1) * pageSize + 1;
+
+		int endRow = pageNum * pageSize;
+		log.info("rdname/websearch sql : " +sql.toString());
+		pstmt = conn.prepareStatement(sql.toString());
+		
+		pstmt.setInt(1, endRow);
+
+		pstmt.setInt(2, startRow);
+			
+		resultSet = pstmt.executeQuery();
+		
+		int total = 0;
+		
+		List<JSONObject> data = new ArrayList<JSONObject>();
+		
+		while (resultSet.next()) {
+			if (total == 0) {
+				total = resultSet.getInt("total");
+			}
+			data.add(result2Json(resultSet, adminMap));
+		}
+		result.put("total", total);
+		result.put("data", data);
+		return result;
+	} catch (Exception e) {
+		throw e;
+	} finally {
+		DbUtils.closeQuietly(resultSet);
+		DbUtils.closeQuietly(pstmt);
+		DbUtils.closeQuietly(conn);
+	}
+}
 	
 	/**
 	 * 判断是否存在重复的名称
@@ -608,6 +803,19 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				rdNameObj.put("city", "");
 			}
 			
+			//******zl 2017.04.09******
+			//hw 信息标识
+			Integer nameGroupId = resultSet.getInt("NAME_GROUPID");
+			ScRoadnameHwInfoService scRoadnameHwInfoService = new ScRoadnameHwInfoService();
+			ScRoadnameHwInfo scRoadnameHwInfo = new ScRoadnameHwInfo();
+			scRoadnameHwInfo.setNameGroupid(nameGroupId);
+			ScRoadnameHwInfo newScRoadnameHwInfo = scRoadnameHwInfoService.query(scRoadnameHwInfo);
+			if(newScRoadnameHwInfo != null){
+				rdNameObj.put("hwInfoFlag", 1);
+			}else{
+				rdNameObj.put("hwInfoFlag", 0);
+			}
+			//*************************
 			return rdNameObj;
 		} catch (Exception e) {
 			throw e;
@@ -671,6 +879,19 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			}else{
 				rdNameObj.put("city", "");
 			}
+			//******zl 2017.04.09******
+			//hw 信息标识
+			Integer nameGroupId = resultSet.getInt("NAME_GROUPID");
+			ScRoadnameHwInfoService scRoadnameHwInfoService = new ScRoadnameHwInfoService();
+			ScRoadnameHwInfo scRoadnameHwInfo = new ScRoadnameHwInfo();
+			scRoadnameHwInfo.setNameGroupid(nameGroupId);
+			ScRoadnameHwInfo newScRoadnameHwInfo = scRoadnameHwInfoService.query(scRoadnameHwInfo);
+			if(newScRoadnameHwInfo != null){
+				rdNameObj.put("hwInfoFlag", 1);
+			}else{
+				rdNameObj.put("hwInfoFlag", 0);
+			}
+			//*************************
 			
 			return rdNameObj;
 		} catch (Exception e) {
@@ -839,5 +1060,6 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			DbUtils.closeQuietly(conn);
 		}
 	}
+
 
 }

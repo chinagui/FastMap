@@ -123,6 +123,10 @@ public abstract class BasicRow{
 	 * 持久化后理论上应该所有删除的记录，不会再进入下一操作阶段
 	 */
 	public void afterPersist(){
+		//如果是pre_delete的话，状态不变更
+		if(opType.equals(OperationType.PRE_DELETED)){
+			return ;
+		}
 		//如果之前为删除，修改为已删除
 		if(opType.equals(OperationType.DELETE)){
 			opType=OperationType.PRE_DELETED;
@@ -200,6 +204,15 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
+
+	public boolean isChanged(String colName){
+		if(opType.equals(OperationType.INSERT)
+				||opType.equals(OperationType.DELETE)
+				||(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.containsKey(colName))){
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
 	 * @return
@@ -219,10 +232,11 @@ public abstract class BasicRow{
 		String tbName = tableName();
 		System.out.println("tbName  :"+tbName);
 		GlmTable tab = GlmFactory.getInstance().getTableByName(tbName);
-		System.out.println("tbName2  :"+tbName);
+		System.out.println("tbName2 tab :"+tab.getName()+"tab.Columns"+tab.getColumns());
 		List<String> columnName = new ArrayList<String>();
 		List<String> columnPlaceholder = new ArrayList<String>();
 		List<Object> columnValues = new ArrayList<Object>();
+		System.out.println("this.opType: "+this.opType);
 		if(OperationType.INSERT.equals(this.opType)){
 			sb.append("INSERT INTO "+tbName);
 			//字段信息
@@ -284,9 +298,12 @@ public abstract class BasicRow{
 	 */
 	private void assembleColumnInfo(Map<String, GlmColumn> columns, List<String> columnNames,
 			List<String> columnPlaceholder, List<Object> columnValues, OperationType operationType) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+		System.out.println("columns :"+columns.size());
 		for(Map.Entry<String, GlmColumn> entry:columns.entrySet()){
 			GlmColumn glmColumn = entry.getValue();	
+			System.out.println("entry.getKey(): "+entry.getKey());
 			Object columnValue = getAttrByColName(entry.getKey());
+			System.out.println("columnValue: "+columnValue);
 			//如果字段为空,则不拼入sql
 			if(columnValue==null){
 				continue;
@@ -441,15 +458,12 @@ public abstract class BasicRow{
 	}
 	public boolean checkValue(String colName,Object oldValue,Object newValue){
 		if(oldValue==null&&newValue==null)return false;
-		if(oldValue!=null&&oldValue.equals(newValue))return false;
-		if(oldValue!=null){
-			if(oldValue.equals(newValue)){
-				return false;
-			}
-			if(oldValue instanceof String 
-					&&StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))
-					){
+		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
+		//处理String的null和""的问题
+		if((oldValue!=null&&oldValue instanceof String)
+				||(newValue!=null&&newValue instanceof String)){
+			if(StringUtils.isEmpty(String.valueOf(oldValue))
+					&&StringUtils.isEmpty(String.valueOf(newValue))){
 				return false;
 			}
 		}
@@ -489,6 +503,8 @@ public abstract class BasicRow{
 				argtypes= new Class[]{float.class};
 			}else if(newValue instanceof Long){
 				argtypes= new Class[]{long.class};
+			}else if(newValue instanceof Geometry){
+				argtypes= new Class[]{Geometry.class};
 			}else{
 				argtypes = new Class[]{newValue.getClass()};
 			}

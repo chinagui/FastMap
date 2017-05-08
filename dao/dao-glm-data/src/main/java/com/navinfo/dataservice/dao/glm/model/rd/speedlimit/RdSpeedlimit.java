@@ -19,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdSpeedlimit implements IObj {
@@ -395,24 +396,20 @@ public class RdSpeedlimit implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else if ("longitude".equals(key)) {
-				
-				JSONObject geojson = new JSONObject();
-				
-				double longitude = json.getDouble("longitude");
-				
-				double latitude = json.getDouble("latitude");
-				
-				geojson.put("type", "Point");
-				
-				geojson.put("coordinates", new double[] { longitude, latitude });
-				
-				String wkt = Geojson.geojson2Wkt(geojson.toString());
 
-				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+                double longitude = json.getDouble("longitude");
 
-				if (!wkt.equals(oldwkt)) {
-					changedFields.put("geometry", geojson);
-				}
+                double latitude = json.getDouble("latitude");
+
+                Geometry geometry  = GeoTranslator.transform(GeoTranslator.createPoint(new Coordinate(longitude, latitude)), 1, 5);
+
+                String wkt = GeoTranslator.jts2Wkt(geometry);
+
+                String oldwkt = GeoTranslator.jts2Wkt(this.geometry, 0.00001, 5);
+
+                if (!wkt.equals(oldwkt)) {
+                    changedFields.put("geometry", GeoTranslator.jts2Geojson(geometry));
+                }
 			} else {
 				if (!"objStatus".equals(key) && !"latitude".equals(key)) {
 

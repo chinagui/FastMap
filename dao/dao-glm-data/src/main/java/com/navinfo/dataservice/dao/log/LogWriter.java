@@ -34,10 +34,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCrossName;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLink;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNode;
-import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameNodePart;
+
 import com.navinfo.dataservice.dao.glm.selector.SelectorUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.vividsolutions.jts.geom.Geometry;
@@ -46,849 +43,883 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 class Status {
-    public static int INSERT = 1;
-    public static int DELETE = 2;
-    public static int UPDATE = 3;
+	public static int INSERT = 1;
+	public static int DELETE = 2;
+	public static int UPDATE = 3;
 }
 
 public class LogWriter {
-    Logger logger = Logger.getLogger(LogWriter.class);
-    private static final String[] poiExcludeColumns = new String[]{"EDIT_FLAG", "DIF_GROUPID", "RESERVED",
-            "FIELD_STATE", "STATE", "EDITION_FLAG", "TASK_ID", "COLLECT_TIME", "DATA_VERSION", "LOG", "U_RECORD",
-            "U_DATE", "U_FIELDS", "OLD_ADDRESS", "OLD_BLOCKCODE", "OLD_NAME", "OLD_KIND", "POI_NUM"};
-    private Connection conn;
-
-    private LogOperation geoLogOperation;// 修改拓扑相关的履历记一个operation
-
-    private List<LogOperation> operations = new ArrayList<LogOperation>();
-
-    private GlmGridCalculator gridCalculator;
-
-    private long userId;
-    private int taskId;
-    private int dbType;
-    private String actId;
-
-    public String getActId() {
-        return actId;
-    }
-
-    public void setActId(String actId) {
-        this.actId = actId;
-    }
-
-    public int getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(int taskId) {
-        this.taskId = taskId;
-    }
-
-    public int getDbType() {
-        return dbType;
-    }
-
-    public void setDbType(int dbType) {
-        this.dbType = dbType;
-    }
-
-    public long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(long userId) {
-        this.userId = userId;
-    }
-
-    public LogWriter() {
-
-    }
-
-    public LogWriter(Connection conn) throws Exception {
-        this.conn = conn;
-
-        String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
-
-        this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
-    }
-
-    public List<LogOperation> getOperations() {
-        return operations;
-    }
-
-    /***
-     * 添加logoperation信息
-     *
-     * @throws Exception
-     */
-    private void insertRow() throws Exception {
-
-        PreparedStatement pstmt = null;
-
-        String sql = "insert into log_operation (op_id,act_id, op_dt,op_seq, com_sta, com_dt,lock_sta) values (?,?,"
-                + "to_date(?,'yyyymmddhh24miss'),log_op_seq.nextval,?,?,?)";
+	Logger logger = Logger.getLogger(LogWriter.class);
+	private static final String[] poiExcludeColumns = new String[] {
+			"EDIT_FLAG", "DIF_GROUPID", "RESERVED", "FIELD_STATE", "STATE",
+			"EDITION_FLAG", "TASK_ID", "COLLECT_TIME", "DATA_VERSION", "LOG",
+			"U_RECORD", "U_DATE", "U_FIELDS", "OLD_ADDRESS", "OLD_BLOCKCODE",
+			"OLD_NAME", "OLD_KIND", "POI_NUM" };
+	private Connection conn;
+
+	private LogOperation geoLogOperation;// 修改拓扑相关的履历记一个operation
+
+	private List<LogOperation> operations = new ArrayList<LogOperation>();
+
+	private GlmGridCalculator gridCalculator;
+
+	private long userId;
+	private int taskId;
+	private int dbType;
+	private String actId;
+
+	public String getActId() {
+		return actId;
+	}
+
+	public void setActId(String actId) {
+		this.actId = actId;
+	}
+
+	public int getTaskId() {
+		return taskId;
+	}
+
+	public void setTaskId(int taskId) {
+		this.taskId = taskId;
+	}
+
+	public int getDbType() {
+		return dbType;
+	}
+
+	public void setDbType(int dbType) {
+		this.dbType = dbType;
+	}
+
+	public long getUserId() {
+		return userId;
+	}
+
+	public void setUserId(long userId) {
+		this.userId = userId;
+	}
+
+	public LogWriter() {
+
+	}
+
+	public LogWriter(Connection conn) throws Exception {
+		this.conn = conn;
+
+		String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(
+				PropConstant.gdbVersion);
+
+		this.gridCalculator = GlmGridCalculatorFactory.getInstance().create(
+				gdbVersion);
+	}
+
+	public List<LogOperation> getOperations() {
+		return operations;
+	}
+
+	/***
+	 * 添加logoperation信息
+	 * 
+	 * @throws Exception
+	 */
+	private void insertRow() throws Exception {
+
+		PreparedStatement pstmt = null;
+
+		String sql = "insert into log_operation (op_id,act_id, op_dt,op_seq, com_sta, com_dt,lock_sta) values (?,?,"
+				+ "SYSTIMESTAMP,log_op_seq.nextval,?,?,?)";
+
+		try {
+			for (LogOperation logOperation : operations) {
+				pstmt = this.conn.prepareStatement(sql);
+				pstmt.setString(1, logOperation.getOpId());
+				pstmt.setString(2, this.getActId());
+				/* pstmt.setString(3, logOperation.getOpDt()); */
+				pstmt.setInt(3, logOperation.getComSta());
+				pstmt.setString(4, logOperation.getComDt());
+				pstmt.setInt(5, logOperation.getLockSta());
+				pstmt.execute();
+				pstmt.close();
+				this.insertLogdayRelease(logOperation.getOpId());
+				for (LogDetail r : logOperation.getDetails()) {
+					this.insertLogDetail(r);
+				}
+			}
+		} catch (Exception e) {
+			throw e;
+
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
 
-        try {
-            for (LogOperation logOperation : operations) {
-                pstmt = this.conn.prepareStatement(sql);
-                pstmt.setString(1, logOperation.getOpId());
-                pstmt.setString(2, this.getActId());
-                pstmt.setString(3, logOperation.getOpDt());
-                pstmt.setInt(4, logOperation.getComSta());
-                pstmt.setString(5, logOperation.getComDt());
-                pstmt.setInt(6, logOperation.getLockSta());
-                pstmt.execute();
-                pstmt.close();
-                this.insertLogdayRelease(logOperation.getOpId());
-                for (LogDetail r : logOperation.getDetails()) {
-                    this.insertLogDetail(r);
-                }
-            }
-        } catch (Exception e) {
-            throw e;
+			}
 
-        } finally {
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (Exception e) {
+		}
+	}
 
-            }
+	/**
+	 * zhaokk 增加日出品信息
+	 * 
+	 * @param opId
+	 * @throws Exception
+	 */
+	private void insertLogdayRelease(String opId) throws Exception {
 
-        }
-    }
+		String sql = "insert into log_day_release (op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,"
+				+ ""
+				+ ""
+				+ ""
+				+ ""
+				+ ""
+				+ ""
+				+ "rel_all_lock) values (?,?,?,?,?,?,?)";
+		try {
+			QueryRunner run = new QueryRunner();
+			LogDayRelease release = new LogDayRelease(opId);
+			run.update(conn, sql, opId, release.getRelPoiSta(),
+					release.getRelPoiDt(), release.getRelAllSta(),
+					release.getRelAllDt(), release.getRelPoiLock(),
+					release.getRelAllLock());
 
-    /**
-     * zhaokk 增加日出品信息
-     *
-     * @param opId
-     * @throws Exception
-     */
-    private void insertLogdayRelease(String opId) throws Exception {
+		} catch (Exception e) {
+			throw new Exception("增加日出品信息SQL错误，" + e.getMessage(), e);
+		}
+	}
 
-        String sql = "insert into log_day_release (op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock," +
-                "" + "" + "" + "" + "" + "" + "rel_all_lock) values (?,?,?,?,?,?,?)";
-        try {
-            QueryRunner run = new QueryRunner();
-            LogDayRelease release = new LogDayRelease(opId);
-            run.update(conn, sql, opId, release.getRelPoiSta(), release.getRelPoiDt(), release.getRelAllSta(),
-                    release.getRelAllDt(), release.getRelPoiLock(), release.getRelAllLock());
+	/***
+	 * 增加log_detail信息
+	 * 
+	 * @param detail
+	 * @throws Exception
+	 */
+	private void insertLogDetail(LogDetail detail) throws Exception {
 
-        } catch (Exception e) {
-            throw new Exception("增加日出品信息SQL错误，" + e.getMessage(), e);
-        }
-    }
+		PreparedStatement pstmt = null;
 
-    /***
-     * 增加log_detail信息
-     *
-     * @param detail
-     * @throws Exception
-     */
-    private void insertLogDetail(LogDetail detail) throws Exception {
+		String sql = "insert into log_detail (op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,ob_nm,"
+				+ "ob_pid,geo_nm,geo_pid) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			pstmt = this.conn.prepareStatement(sql);
 
-        PreparedStatement pstmt = null;
+			pstmt.setString(1, detail.getOpId());
 
-        String sql = "insert into log_detail (op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id,ob_nm,"
-                + "ob_pid,geo_nm,geo_pid) values (?,?,?,?,?,?,?,?,?,?,?,?,?)";
-        try {
-            pstmt = this.conn.prepareStatement(sql);
+			pstmt.setString(2, detail.getTbNm());
 
-            pstmt.setString(1, detail.getOpId());
+			Clob oldclob = conn.createClob();
 
-            pstmt.setString(2, detail.getTbNm());
+			oldclob.setString(1, detail.getOldValue());
 
-            Clob oldclob = conn.createClob();
+			if (oldclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
+				com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) oldclob;
+				oldclob = impl.getRawClob(); // 获取原生的这个 Clob
+			}
 
-            oldclob.setString(1, detail.getOldValue());
+			pstmt.setClob(3, oldclob);
 
-            if (oldclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
-                com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) oldclob;
-                oldclob = impl.getRawClob(); // 获取原生的这个 Clob
-            }
+			Clob newclob = conn.createClob();
 
-            pstmt.setClob(3, oldclob);
+			newclob.setString(1, detail.getNewValue());
 
-            Clob newclob = conn.createClob();
+			if (newclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
+				com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) newclob;
+				newclob = impl.getRawClob(); // 获取原生的这个 Clob
+			}
 
-            newclob.setString(1, detail.getNewValue());
+			pstmt.setClob(4, newclob);
 
-            if (newclob instanceof com.alibaba.druid.proxy.jdbc.ClobProxyImpl) {
-                com.alibaba.druid.proxy.jdbc.ClobProxyImpl impl = (com.alibaba.druid.proxy.jdbc.ClobProxyImpl) newclob;
-                newclob = impl.getRawClob(); // 获取原生的这个 Clob
-            }
+			pstmt.setString(5, detail.getFdLst());
 
-            pstmt.setClob(4, newclob);
+			pstmt.setInt(6, detail.getOpTp());
 
-            pstmt.setString(5, detail.getFdLst());
+			pstmt.setString(7, detail.getRowId());
 
-            pstmt.setInt(6, detail.getOpTp());
+			pstmt.setInt(8, detail.getIsCk());
 
-            pstmt.setString(7, detail.getRowId());
+			pstmt.setString(9, detail.getTbRowId());
 
-            pstmt.setInt(8, detail.getIsCk());
+			pstmt.setString(10, detail.getObNm());
 
-            pstmt.setString(9, detail.getTbRowId());
+			pstmt.setInt(11, detail.getObPid());
+			pstmt.setString(12, detail.getGeoNm());
+			pstmt.setInt(13, detail.getGeoPid());
 
-            pstmt.setString(10, detail.getObNm());
+			pstmt.execute();
 
-            pstmt.setInt(11, detail.getObPid());
-            pstmt.setString(12, detail.getGeoNm());
-            pstmt.setInt(13, detail.getGeoPid());
+			pstmt.close();
 
-            pstmt.execute();
+			for (LogDetailGrid r : detail.getGrids()) {
+				this.insertLogDetailGrid(r);
+			}
 
-            pstmt.close();
+		} catch (Exception e) {
+			throw e;
 
-            for (LogDetailGrid r : detail.getGrids()) {
-                this.insertLogDetailGrid(r);
-            }
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
 
-        } catch (Exception e) {
-            throw e;
+			}
 
-        } finally {
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (Exception e) {
+		}
+	}
 
-            }
+	/***
+	 * 增加logDetailGRid信息
+	 * 
+	 * @param grid
+	 * @throws Exception
+	 */
+	private void insertLogDetailGrid(LogDetailGrid grid) throws Exception {
 
-        }
-    }
+		PreparedStatement pstmt = null;
 
-    /***
-     * 增加logDetailGRid信息
-     *
-     * @param grid
-     * @throws Exception
-     */
-    private void insertLogDetailGrid(LogDetailGrid grid) throws Exception {
+		String sql = "insert into log_detail_grid (log_row_id,grid_id,grid_type) values (?,?,?)";
 
-        PreparedStatement pstmt = null;
+		try {
+			pstmt = this.conn.prepareStatement(sql);
 
-        String sql = "insert into log_detail_grid (log_row_id,grid_id,grid_type) values (?,?,?)";
+			pstmt.setString(1, grid.getLogRowId());
 
-        try {
-            pstmt = this.conn.prepareStatement(sql);
+			pstmt.setInt(2, grid.getGridId());
 
-            pstmt.setString(1, grid.getLogRowId());
+			pstmt.setInt(3, grid.getGridType());
 
-            pstmt.setInt(2, grid.getGridId());
+			pstmt.execute();
 
-            pstmt.setInt(3, grid.getGridType());
+			pstmt.close();
 
-            pstmt.execute();
+		} catch (Exception e) {
+			throw e;
 
-            pstmt.close();
+		} finally {
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
 
-        } catch (Exception e) {
-            throw e;
+			}
 
-        } finally {
-            try {
-                if (pstmt != null) {
-                    pstmt.close();
-                }
-            } catch (Exception e) {
+		}
 
-            }
+	}
 
-        }
+	public void insertLogOperation2Sql(LogOperation op, Statement stmt)
+			throws Exception {
 
-    }
+		StringBuilder sb = new StringBuilder("insert into ");
 
-    public void insertLogOperation2Sql(LogOperation op, Statement stmt) throws Exception {
+		sb.append(op.tableName());
 
-        StringBuilder sb = new StringBuilder("insert into ");
+		sb.append("(op_id,op_dt,com_sta, com_dt, lock_sta) values (");
 
-        sb.append(op.tableName());
+		sb.append("hextoraw('" + op.getOpId() + "')");
 
-        sb.append("(op_id,op_dt,com_sta, com_dt, lock_sta) values (");
+		if (op.getOpDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + op.getOpDt() + "','yyyymmddhh24miss')");
+		}
 
-        sb.append("hextoraw('" + op.getOpId() + "')");
+		sb.append("," + op.getComSta());
 
-        if (op.getOpDt() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",to_date('" + op.getOpDt() + "','yyyymmddhh24miss')");
-        }
+		if (op.getComDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + op.getComDt() + "','yyyymmddhh24miss')");
+		}
 
-        sb.append("," + op.getComSta());
+		sb.append("," + op.getLockSta());
 
-        if (op.getComDt() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",to_date('" + op.getComDt() + "','yyyymmddhh24miss')");
-        }
+		sb.append(")");
 
-        sb.append("," + op.getLockSta());
+		stmt.addBatch(sb.toString());
 
-        sb.append(")");
+		for (LogDetail r : op.getDetails()) {
+			this.insertLogDetail2Sql(r, stmt);
+		}
 
-        stmt.addBatch(sb.toString());
+		this.insertLogDayRelease2Sql(op.getRelease(), stmt);
 
-        for (LogDetail r : op.getDetails()) {
-            this.insertLogDetail2Sql(r, stmt);
-        }
+	}
 
-        this.insertLogDayRelease2Sql(op.getRelease(), stmt);
+	private void insertLogDetail2Sql(LogDetail detail, Statement stmt)
+			throws Exception {
+		StringBuilder sb = new StringBuilder("insert into ");
 
-    }
+		sb.append(detail.tableName());
 
-    private void insertLogDetail2Sql(LogDetail detail, Statement stmt) throws Exception {
-        StringBuilder sb = new StringBuilder("insert into ");
+		sb.append("(op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (");
 
-        sb.append(detail.tableName());
+		sb.append("'" + detail.getOpId() + "'");
 
-        sb.append("(op_id, tb_nm, old, new, fd_lst, op_tp, row_id, is_ck,tb_row_id) values (");
+		if (detail.getTbNm() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + detail.getTbNm() + "'");
+		}
 
-        sb.append("'" + detail.getOpId() + "'");
+		if (detail.getOldValue() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + detail.getOldValue() + "'");
+		}
 
-        if (detail.getTbNm() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",'" + detail.getTbNm() + "'");
-        }
+		if (detail.getNewValue() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + detail.getNewValue() + "'");
+		}
 
-        if (detail.getOldValue() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",'" + detail.getOldValue() + "'");
-        }
+		if (detail.getFdLst() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + detail.getFdLst() + "'");
+		}
 
-        if (detail.getNewValue() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",'" + detail.getNewValue() + "'");
-        }
+		sb.append("," + detail.getOpTp());
 
-        if (detail.getFdLst() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",'" + detail.getFdLst() + "'");
-        }
+		if (detail.getRowId() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",'" + detail.getRowId() + "'");
+		}
 
-        sb.append("," + detail.getOpTp());
+		sb.append("," + detail.getIsCk());
 
-        if (detail.getRowId() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",'" + detail.getRowId() + "'");
-        }
+		sb.append(",hextoraw('" + detail.getTbRowId() + "')");
 
-        sb.append("," + detail.getIsCk());
+		sb.append(")");
 
-        sb.append(",hextoraw('" + detail.getTbRowId() + "')");
+		stmt.addBatch(sb.toString());
 
-        sb.append(")");
+		for (LogDetailGrid r : detail.getGrids()) {
+			this.insertLogDetailGrid2Sql(r, stmt);
+		}
+	}
 
-        stmt.addBatch(sb.toString());
+	private void insertLogDetailGrid2Sql(LogDetailGrid grid, Statement stmt)
+			throws Exception {
+		StringBuilder sb = new StringBuilder("insert into ");
 
-        for (LogDetailGrid r : detail.getGrids()) {
-            this.insertLogDetailGrid2Sql(r, stmt);
-        }
-    }
+		sb.append(grid.tableName());
 
-    private void insertLogDetailGrid2Sql(LogDetailGrid grid, Statement stmt) throws Exception {
-        StringBuilder sb = new StringBuilder("insert into ");
+		sb.append("(log_row_id, grid_id, grid_type) values (");
 
-        sb.append(grid.tableName());
+		sb.append("hextoraw('" + grid.getLogRowId() + "')");
 
-        sb.append("(log_row_id, grid_id, grid_type) values (");
+		sb.append("," + grid.getGridId());
 
-        sb.append("hextoraw('" + grid.getLogRowId() + "')");
+		sb.append("," + grid.getGridType());
 
-        sb.append("," + grid.getGridId());
+		sb.append(")");
 
-        sb.append("," + grid.getGridType());
+		stmt.addBatch(sb.toString());
 
-        sb.append(")");
+	}
 
-        stmt.addBatch(sb.toString());
+	private void insertLogDayRelease2Sql(LogDayRelease release, Statement stmt)
+			throws Exception {
 
-    }
+		StringBuilder sb = new StringBuilder("insert into ");
 
-    private void insertLogDayRelease2Sql(LogDayRelease release, Statement stmt) throws Exception {
+		sb.append(release.tableName());
 
-        StringBuilder sb = new StringBuilder("insert into ");
+		sb.append("(op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,rel_all_lock) values (");
 
-        sb.append(release.tableName());
+		sb.append("hextoraw('" + release.getOpId() + "')");
 
-        sb.append("(op_id, rel_poi_sta,rel_poi_dt,rel_all_sta,rel_all_dt,rel_poi_lock,rel_all_lock) values (");
+		sb.append("," + release.getRelPoiSta());
 
-        sb.append("hextoraw('" + release.getOpId() + "')");
+		if (release.getRelPoiDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + release.getRelPoiDt()
+					+ "','yyyymmddhh24miss')");
+		}
 
-        sb.append("," + release.getRelPoiSta());
+		sb.append("," + release.getRelAllSta());
 
-        if (release.getRelPoiDt() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",to_date('" + release.getRelPoiDt() + "','yyyymmddhh24miss')");
-        }
+		if (release.getRelAllDt() == null) {
+			sb.append(",null");
+		} else {
+			sb.append(",to_date('" + release.getRelAllDt()
+					+ "','yyyymmddhh24miss')");
+		}
 
-        sb.append("," + release.getRelAllSta());
+		sb.append("," + release.getRelPoiLock());
 
-        if (release.getRelAllDt() == null) {
-            sb.append(",null");
-        } else {
-            sb.append(",to_date('" + release.getRelAllDt() + "','yyyymmddhh24miss')");
-        }
+		sb.append("," + release.getRelAllLock());
 
-        sb.append("," + release.getRelPoiLock());
+		sb.append(")");
 
-        sb.append("," + release.getRelAllLock());
+		stmt.addBatch(sb.toString());
 
-        sb.append(")");
+	}
 
-        stmt.addBatch(sb.toString());
+	private boolean addToOperation(ICommand command, IRow r, LogDetail ld) {
+		boolean flag = false;
+		if (r.objType() == ObjType.RDNODE || r.objType() == ObjType.RDLINK
+				|| r.objType() == ObjType.ADLINK
+				|| r.objType() == ObjType.ADNODE
+				|| r.objType() == ObjType.ADFACE) {
 
-    }
+			if (r.status() == ObjStatus.INSERT
+					|| r.status() == ObjStatus.DELETE) {
+				flag = true;
+			} else if (r.changedFields().containsKey("geometry")
+					|| r.changedFields().containsKey("sNodePid")
+					|| r.changedFields().containsKey("eNodePid")) {
+				flag = true;
+			}
+		}
 
-    private boolean addToOperation(ICommand command, IRow r, LogDetail ld) {
-        boolean flag = false;
-        if (r.objType() == ObjType.RDNODE || r.objType() == ObjType.RDLINK || r.objType() == ObjType.ADLINK || r
-                .objType() == ObjType.ADNODE || r.objType() == ObjType.ADFACE) {
+		if (flag) {
+			ld.setOpId(geoLogOperation.getOpId());
 
-            if (r.status() == ObjStatus.INSERT || r.status() == ObjStatus.DELETE) {
-                flag = true;
-            } else if (r.changedFields().containsKey("geometry") || r.changedFields().containsKey("sNodePid") || r
-                    .changedFields().containsKey("eNodePid")) {
-                flag = true;
-            }
-        }
+			geoLogOperation.getDetails().add(ld);
+		} else {
+			LogOperation op = new LogOperation(UuidUtils.genUuid(), 1);
 
-        if (flag) {
-            ld.setOpId(geoLogOperation.getOpId());
+			ld.setOpId(op.getOpId());
 
-            geoLogOperation.getDetails().add(ld);
-        } else {
-            LogOperation op = new LogOperation(UuidUtils.genUuid(), 1);
+			op.getDetails().add(ld);
 
-            ld.setOpId(op.getOpId());
+			operations.add(op);
+		}
 
-            op.getDetails().add(ld);
+		return flag;
+	}
 
-            operations.add(op);
-        }
+	public void generateLog(ICommand command, Result result) throws Exception {
 
-        return flag;
-    }
+		geoLogOperation = new LogOperation(UuidUtils.genUuid(), 1);
 
-    public void generateLog(ICommand command, Result result) throws Exception {
+		// 处理修改的对象
+		List<IRow> list = result.getUpdateObjects();
 
-        geoLogOperation = new LogOperation(UuidUtils.genUuid(), 1);
+		List<Integer> listObPidList = result.getListUpdateIRowObPid();
 
-        // 处理修改的对象
-        List<IRow> list = result.getUpdateObjects();
+		for (int i = 0; i < list.size(); i++) {
+			IRow r = list.get(i);
+			LogDetail ld = new LogDetail();
 
-        List<Integer> listObPidList = result.getListUpdateIRowObPid();
+			ld.setOpTp(Status.UPDATE);
 
-        for (int i = 0; i < list.size(); i++) {
-            IRow r = list.get(i);
-            LogDetail ld = new LogDetail();
+			String upperCaseTbName = r.tableName().toUpperCase();
+			ld.setTbNm(upperCaseTbName);
 
-            ld.setOpTp(Status.UPDATE);
+			// 设置对象id和tbName
+			ld.setObPid(listObPidList.get(i));
 
-            String upperCaseTbName = r.tableName().toUpperCase();
-            ld.setTbNm(upperCaseTbName);
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 
-            // 设置对象id和tbName
-            ld.setObPid(listObPidList.get(i));
+			ld.setIsCk(0);
 
-            ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
+			ld.setRowId(UuidUtils.genUuid());
 
-            ld.setIsCk(0);
+			ld.setTbRowId(r.rowId());
 
-            ld.setRowId(UuidUtils.genUuid());
+			Set<Entry<String, Object>> set = r.changedFields().entrySet();
 
-            ld.setTbRowId(r.rowId());
+			Iterator<Entry<String, Object>> it = set.iterator();
 
-            Set<Entry<String, Object>> set = r.changedFields().entrySet();
+			JSONArray fieldList = new JSONArray();
 
-            Iterator<Entry<String, Object>> it = set.iterator();
+			JSONObject oldValue = new JSONObject();
 
-            JSONArray fieldList = new JSONArray();
+			JSONObject newValue = new JSONObject();
 
-            JSONObject oldValue = new JSONObject();
+			while (it.hasNext()) {
+				Entry<String, Object> en = it.next();
 
-            JSONObject newValue = new JSONObject();
+				String column = en.getKey();
+				logger.info("column:" + column);
+				String tableColumn = StringUtils.toColumnNameLog(column)
+						.toUpperCase();
 
-            while (it.hasNext()) {
-                Entry<String, Object> en = it.next();
+				// 如果是IX_POI，并且不是作业字段，那么不写入fd_list
+				if ("IX_POI".equals(upperCaseTbName)
+						&& ArrayUtils.contains(poiExcludeColumns, tableColumn)) {
+					continue;
+				}
+				Object columnValue = en.getValue();
 
-                String column = en.getKey();
-                logger.info("column:" + column);
-                String tableColumn = StringUtils.toColumnNameLog(column).toUpperCase();
+				Field field = r.getClass().getDeclaredField(column);
 
-                // 如果是IX_POI，并且不是作业字段，那么不写入fd_list
-                if ("IX_POI".equals(upperCaseTbName) && ArrayUtils.contains(poiExcludeColumns, tableColumn)) {
-                    continue;
-                }
-                Object columnValue = en.getValue();
+				field.setAccessible(true);
 
-                Field field = r.getClass().getDeclaredField(column);
+				Object value = field.get(r);
 
-                field.setAccessible(true);
+				fieldList.add(tableColumn);
 
-                Object value = field.get(r);
+				if (value instanceof Geometry) {
+					// 先降级转WKT
 
-                fieldList.add(tableColumn);
+					String oldWkt = GeoTranslator.jts2Wkt((Geometry) value,
+							0.00001, 5);
 
-                if (value instanceof Geometry) {
-                    // 先降级转WKT
+					String newWkt = Geojson.geojson2Wkt(columnValue.toString());
 
-                    String oldWkt = GeoTranslator.jts2Wkt((Geometry) value, 0.00001, 5);
+					oldValue.put(tableColumn, oldWkt);
 
-                    String newWkt = Geojson.geojson2Wkt(columnValue.toString());
+					newValue.put(tableColumn, newWkt);
 
-                    oldValue.put(tableColumn, oldWkt);
+				} else {
+					logger.info("value:" + value);
+					if (value instanceof String) {
+						String v = ((String) value).replaceAll("\\[", "&lt")
+								.replaceAll("\\]", "&rt");
+						oldValue.put(tableColumn, v.replace("'", "''"));
+					} else {
+						if (value == null) {
+							oldValue.put(tableColumn, "");
+						} else {
+							oldValue.put(tableColumn, value);
+						}
+						logger.info("oldValue:" + oldValue);
+					}
+					if (columnValue instanceof String) {
+						String v = ((String) columnValue).replaceAll("\\[",
+								"&lt").replaceAll("\\]", "&rt");
+						newValue.put(tableColumn, v);
+					} else
+						newValue.put(tableColumn, columnValue);
+				}
+			}
+			if (CollectionUtils.isEmpty(fieldList))
+				continue;// 修改但是没有变更字段，不写履历
 
-                    newValue.put(tableColumn, newWkt);
+			ld.setFdLst(fieldList.toString());
+			ld.setOldValue(oldValue.toString().replaceAll("&lt", "[")
+					.replaceAll("&rt", "]"));
 
-                } else {
-                    logger.info("value:" + value);
-                    if (value instanceof String) {
-                        String v = ((String) value).replaceAll("\\[", "&lt").replaceAll("\\]", "&rt");
-                        oldValue.put(tableColumn, v.replace("'", "''"));
-                    } else {
-                        if (value == null) {
-                            oldValue.put(tableColumn, "");
-                        } else {
-                            oldValue.put(tableColumn, value);
-                        }
-                        logger.info("oldValue:" + oldValue);
-                    }
-                    if (columnValue instanceof String) {
-                        String v = ((String) columnValue).replaceAll("\\[", "&lt").replaceAll("\\]", "&rt");
-                        newValue.put(tableColumn, v);
-                    } else
-                        newValue.put(tableColumn, columnValue);
-                }
-            }
-            if (CollectionUtils.isEmpty(fieldList))
-                continue;// 修改但是没有变更字段，不写履历
+			ld.setNewValue(newValue.toString().replaceAll("&lt", "[")
+					.replaceAll("&rt", "]"));
+			// 查询对象的grid，并生成LogDetailGrid
+			LogGeoInfo geoInfo = gridCalculator.calc(
+					ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
+			ld.setGeoNm(geoInfo.getGeoName());
+			ld.setGeoPid(geoInfo.getGeoPid());
 
-            ld.setFdLst(fieldList.toString());
-            ld.setOldValue(oldValue.toString().replaceAll("&lt", "[").replaceAll("&rt", "]"));
+			for (String gridId : geoInfo.getGrids()) {
+				LogDetailGrid grid = new LogDetailGrid();
 
-            ld.setNewValue(newValue.toString().replaceAll("&lt", "[").replaceAll("&rt", "]"));
-            // 查询对象的grid，并生成LogDetailGrid
-            LogGeoInfo geoInfo = gridCalculator.calc(ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
-            ld.setGeoNm(geoInfo.getGeoName());
-            ld.setGeoPid(geoInfo.getGeoPid());
+				grid.setGridId(Integer.valueOf(gridId));
 
-            for (String gridId : geoInfo.getGrids()) {
-                LogDetailGrid grid = new LogDetailGrid();
+				grid.setLogRowId(ld.getRowId());
 
-                grid.setGridId(Integer.valueOf(gridId));
+				grid.setGridType(0);
 
-                grid.setLogRowId(ld.getRowId());
+				ld.getGrids().add(grid);
+			}
 
-                grid.setGridType(0);
+			addToOperation(command, r, ld);
 
-                ld.getGrids().add(grid);
-            }
+		}
 
-            addToOperation(command, r, ld);
+		list = result.getDelObjects();
 
-        }
+		listObPidList = result.getListDelIRowObPid();
 
-        list = result.getDelObjects();
+		for (int i = 0; i < list.size(); i++) {
+			IRow r = list.get(i);
 
-        listObPidList = result.getListDelIRowObPid();
+			LogDetail ld = new LogDetail();
 
-        for (int i = 0; i < list.size(); i++) {
-            IRow r = list.get(i);
+			// 设置对象id和tbName
+			ld.setObPid(listObPidList.get(i));
 
-            LogDetail ld = new LogDetail();
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 
-            // 设置对象id和tbName
-            ld.setObPid(listObPidList.get(i));
+			ld.setOpTp(Status.DELETE);
 
-            ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
+			ld.setTbNm(r.tableName().toUpperCase());
 
-            ld.setOpTp(Status.DELETE);
+			ld.setIsCk(0);
 
-            ld.setTbNm(r.tableName().toUpperCase());
+			ld.setRowId(UuidUtils.genUuid());
 
-            ld.setIsCk(0);
+			ld.setTbRowId(r.rowId());
 
-            ld.setRowId(UuidUtils.genUuid());
+			// 查询对象的grid，并生成LogDetailGrid
+			LogGeoInfo geoInfo = gridCalculator.calc(
+					ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
+			ld.setGeoNm(geoInfo.getGeoName());
+			ld.setGeoPid(geoInfo.getGeoPid());
 
-            ld.setTbRowId(r.rowId());
+			for (String gridId : geoInfo.getGrids()) {
+				LogDetailGrid grid = new LogDetailGrid();
 
-            // 查询对象的grid，并生成LogDetailGrid
-            LogGeoInfo geoInfo = gridCalculator.calc(ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
-            ld.setGeoNm(geoInfo.getGeoName());
-            ld.setGeoPid(geoInfo.getGeoPid());
+				grid.setGridId(Integer.valueOf(gridId));
 
-            for (String gridId : geoInfo.getGrids()) {
-                LogDetailGrid grid = new LogDetailGrid();
+				grid.setLogRowId(ld.getRowId());
 
-                grid.setGridId(Integer.valueOf(gridId));
+				grid.setGridType(0);
 
-                grid.setLogRowId(ld.getRowId());
+				ld.getGrids().add(grid);
+			}
+			// 循环子表处理子表履历
+			handleChildren(command, r, ld, Status.DELETE);
+		}
+	}
 
-                grid.setGridType(0);
+	public void recordLog(ICommand command, Result result) throws Exception {
+		// 处理新增的对象
+		List<IRow> list = result.getAddObjects();
 
-                ld.getGrids().add(grid);
-            }
-            // 循环子表处理子表履历
-            handleChildren(command, r, ld, Status.DELETE);
-        }
-    }
+		List<Integer> listAddObjPidList = result.getListAddIRowObPid();
 
-    public void recordLog(ICommand command, Result result) throws Exception {
-        // 处理新增的对象
-        List<IRow> list = result.getAddObjects();
+		for (int i = 0; i < list.size(); i++) {
+			IRow r = list.get(i);
 
-        List<Integer> listAddObjPidList = result.getListAddIRowObPid();
+			LogDetail ld = new LogDetail();
 
-        for (int i = 0; i < list.size(); i++) {
-            IRow r = list.get(i);
+			// 设置对象id和tbName
+			ld.setObPid(listAddObjPidList.get(i));
 
-            LogDetail ld = new LogDetail();
+			ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
 
-            // 设置对象id和tbName
-            ld.setObPid(listAddObjPidList.get(i));
+			ld.setOpTp(Status.INSERT);
 
-            ld.setObNm(SelectorUtils.getObjTableName(r).toUpperCase());
+			ld.setTbNm(r.tableName().toUpperCase());
 
-            ld.setOpTp(Status.INSERT);
+			ld.setIsCk(0);
 
-            ld.setTbNm(r.tableName().toUpperCase());
+			ld.setNewValue(convertObj2NewValue(r).toString());
 
-            ld.setIsCk(0);
+			ld.setRowId(UuidUtils.genUuid());
 
-            ld.setNewValue(convertObj2NewValue(r).toString());
+			ld.setTbRowId(r.rowId());
 
-            ld.setRowId(UuidUtils.genUuid());
+			// 查询对象的grid，并生成LogDetailGrid
 
-            ld.setTbRowId(r.rowId());
+			LogGeoInfo geoInfo = gridCalculator.calc(
+					ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
+			ld.setGeoNm(geoInfo.getGeoName());
+			ld.setGeoPid(geoInfo.getGeoPid());
 
-            String sameTableName = null;
+			for (String gridId : geoInfo.getGrids()) {
+				LogDetailGrid grid = new LogDetailGrid();
 
-            if (r.objType() == ObjType.RDSAMENODE) {
-                RdSameNode sameNode = (RdSameNode) r;
-                RdSameNodePart part = (RdSameNodePart) sameNode.getParts().get(0);
-                sameTableName = part.getTableName().toUpperCase();
-            }
+				grid.setGridId(Integer.valueOf(gridId));
 
-            if (r.objType() == ObjType.RDSAMELINK) {
-                RdSameLink sameLink = (RdSameLink) r;
-                RdSameLinkPart part = (RdSameLinkPart) sameLink.getParts().get(0);
-                sameTableName = part.getTableName().toUpperCase();
-            }
+				grid.setLogRowId(ld.getRowId());
 
-            // 查询对象的grid，并生成LogDetailGrid
+				grid.setGridType(1);
 
-            LogGeoInfo geoInfo = gridCalculator.calc(ld.getTbNm().toUpperCase(), ld.getTbRowId(), conn);
-            ld.setGeoNm(geoInfo.getGeoName());
-            ld.setGeoPid(geoInfo.getGeoPid());
+				ld.getGrids().add(grid);
+			}
 
-            for (String gridId : geoInfo.getGrids()) {
-                LogDetailGrid grid = new LogDetailGrid();
+			// 循环子表处理子表履历
+			handleChildren(command, r, ld, Status.INSERT);
+		}
+		// 添加操作日志
+		if (geoLogOperation.getDetails().size() > 0) {
+			operations.add(geoLogOperation);
+		}
+		// 增加log_action
+		this.insertLogAction(command);
+		// 计算修改的对象的改后grid
+		for (LogOperation op : operations) {
+			for (LogDetail detail : op.getDetails()) {
 
-                grid.setGridId(Integer.valueOf(gridId));
+				if (detail.getOpTp() == Status.UPDATE) {
+					// 查询对象的grid，并生成LogDetailGrid
+					LogGeoInfo geoInfo = gridCalculator.calc(detail.getTbNm()
+							.toUpperCase(), detail.getTbRowId(), conn);
+					detail.setGeoNm(geoInfo.getGeoName());
+					detail.setGeoPid(geoInfo.getGeoPid());
 
-                grid.setLogRowId(ld.getRowId());
+					for (String gridId : geoInfo.getGrids()) {
+						LogDetailGrid grid = new LogDetailGrid();
 
-                grid.setGridType(1);
+						grid.setGridId(Integer.valueOf(gridId));
 
-                ld.getGrids().add(grid);
-            }
+						grid.setLogRowId(detail.getRowId());
 
-            // 循环子表处理子表履历
-            handleChildren(command, r, ld, Status.INSERT);
-        }
-        // 添加操作日志
-        if (geoLogOperation.getDetails().size() > 0) {
-            operations.add(geoLogOperation);
-        }
-        // 增加log_action
-        this.insertLogAction(command);
-        // 计算修改的对象的改后grid
-        for (LogOperation op : operations) {
-            for (LogDetail detail : op.getDetails()) {
+						grid.setGridType(1);
 
-                if (detail.getOpTp() == Status.UPDATE) {
-                    // 查询对象的grid，并生成LogDetailGrid
-                    LogGeoInfo geoInfo = gridCalculator.calc(detail.getTbNm().toUpperCase(), detail.getTbRowId(), conn);
-                    detail.setGeoNm(geoInfo.getGeoName());
-                    detail.setGeoPid(geoInfo.getGeoPid());
+						detail.getGrids().add(grid);
+					}
+				}
+			}
+		}
+		// 增加操作日志
+		this.insertRow();
+		// 删除关联的检查结果
+		NiValExceptionOperator operator = new NiValExceptionOperator(conn);
 
-                    for (String gridId : geoInfo.getGrids()) {
-                        LogDetailGrid grid = new LogDetailGrid();
+		for (IRow r : result.getDelObjects()) {
+			if (r instanceof IObj) {
+				operator.deleteNiValException(r.tableName().toUpperCase(),
+						((IObj) r).pid());
+			}
+		}
+	}
 
-                        grid.setGridId(Integer.valueOf(gridId));
+	/***
+	 * zhaokk 增加一次操作信息
+	 * 
+	 * @param command
+	 * 
+	 * @throws Exception
+	 */
+	private void insertLogAction(ICommand command) throws Exception {
+		String actId = UuidUtils.genUuid();
+		this.setActId(actId);
+		String opCmd = command.getObjType().name()
+				.concat(command.getOperType().name());
+		String sql = "insert into log_action (act_id, us_id,op_cmd,src_db,stk_id) values (?,?,?,?,?)";
+		try {
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, actId, this.getUserId(), opCmd,
+					this.getDbType(), this.getTaskId());
 
-                        grid.setLogRowId(detail.getRowId());
+		} catch (Exception e) {
+			throw new Exception("增加日出品信息SQL错误，" + e.getMessage(), e);
+		}
+	}
 
-                        grid.setGridType(1);
+	private static String convertObj2NewValue(IRow row) throws Exception {
+		JSONObject json = new JSONObject();
 
-                        detail.getGrids().add(grid);
-                    }
-                }
-            }
-        }
-        // 增加操作日志
-        this.insertRow();
-        // 删除关联的检查结果
-        NiValExceptionOperator operator = new NiValExceptionOperator(conn);
+		JSONObject rowJson = row.Serialize(ObjLevel.HISTORY);
 
-        for (IRow r : result.getDelObjects()) {
-            if (r instanceof IObj) {
-                operator.deleteNiValException(r.tableName().toUpperCase(), ((IObj) r).pid());
-            }
-        }
-    }
+		Iterator<String> keys = rowJson.keys();
 
-    /***
-     * zhaokk 增加一次操作信息
-     *
-     * @param command
-     *
-     * @throws Exception
-     */
-    private void insertLogAction(ICommand command) throws Exception {
-        String actId = UuidUtils.genUuid();
-        this.setActId(actId);
-        String opCmd = command.getObjType().name().concat(command.getOperType().name());
-        String sql = "insert into log_action (act_id, us_id,op_cmd,src_db,stk_id) values (?,?,?,?,?)";
-        try {
-            QueryRunner run = new QueryRunner();
-            run.update(conn, sql, actId, this.getUserId(), opCmd, this.getDbType(), this.getTaskId());
+		while (keys.hasNext()) {
+			String key = keys.next();
 
-        } catch (Exception e) {
-            throw new Exception("增加日出品信息SQL错误，" + e.getMessage(), e);
-        }
-    }
+			if (!(rowJson.get(key) instanceof JSONArray)) {
+				if ("pid".equals(key)) {
+					if (row instanceof IObj) {
+						if (row instanceof RdCrossName) {
+							json.put(key.toUpperCase(), rowJson.get(key));
+						} else {
+							json.put(((IObj) row).primaryKey().toUpperCase(),
+									rowJson.get(key));
+						}
+					} else {
+						json.put(key.toUpperCase(), rowJson.get(key));
+					}
 
-    private static String convertObj2NewValue(IRow row) throws Exception {
-        JSONObject json = new JSONObject();
+				} else if ("geometry".equals(key)) {
 
-        JSONObject rowJson = row.Serialize(ObjLevel.HISTORY);
+					if (row.objType() == ObjType.CKEXCEPTION) {
+						json.put(
+								StringUtils.toColumnNameLog(key).toUpperCase(),
+								rowJson.get(key));
+					} else {
+						if (StringUtils.isNotEmpty(rowJson
+								.getString("geometry"))) {
+							json.put("geometry".toUpperCase(), Geojson
+									.geojson2Wkt(rowJson.getString("geometry")));
+						}
+					}
+				} else {
 
-        Iterator<String> keys = rowJson.keys();
+					Object value = rowJson.get(key);
 
-        while (keys.hasNext()) {
-            String key = keys.next();
+					if (value instanceof String) {
+						String v = ((String) value).replaceAll("\\[", "&lt")
+								.replaceAll("\\]", "&rt");
+						json.put(
+								StringUtils.toColumnNameLog(key).toUpperCase(),
+								v.replace("'", "''"));
+					} else {
+						json.put(
+								StringUtils.toColumnNameLog(key).toUpperCase(),
+								value);
+					}
 
-            if (!(rowJson.get(key) instanceof JSONArray)) {
-                if ("pid".equals(key)) {
-                    if (row instanceof IObj) {
-                        if (row instanceof RdCrossName) {
-                            json.put(key.toUpperCase(), rowJson.get(key));
-                        } else {
-                            json.put(((IObj) row).primaryKey().toUpperCase(), rowJson.get(key));
-                        }
-                    } else {
-                        json.put(key.toUpperCase(), rowJson.get(key));
-                    }
+				}
+			}
+		}
 
-                } else if ("geometry".equals(key)) {
+		json.put("row_id".toUpperCase(), row.rowId());
 
-                    if (row.objType() == ObjType.CKEXCEPTION) {
-                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), rowJson.get(key));
-                    } else {
-                        if (StringUtils.isNotEmpty(rowJson.getString("geometry"))) {
-                            json.put("geometry".toUpperCase(), Geojson.geojson2Wkt(rowJson.getString("geometry")));
-                        }
-                    }
-                } else {
+		return json.toString().replaceAll("&lt", "[").replaceAll("&rt", "]");
+	}
 
-                    Object value = rowJson.get(key);
+	private void handleChildren(ICommand command, IRow r, LogDetail ld,
+			int status) throws Exception {
+		addToOperation(command, r, ld);
 
-                    if (value instanceof String) {
-                        String v = ((String) value).replaceAll("\\[", "&lt").replaceAll("\\]", "&rt");
-                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), v.replace("'", "''"));
-                    } else {
-                        json.put(StringUtils.toColumnNameLog(key).toUpperCase(), value);
-                    }
+		List<List<IRow>> children = r.children();
 
-                }
-            }
-        }
+		if (children != null) {
+			for (List<IRow> list1 : children) {
+				for (IRow row : list1) {
+					LogDetail ldC = new LogDetail();
 
-        json.put("row_id".toUpperCase(), row.rowId());
+					// 设置对象id和tbName
+					ldC.setObPid(ld.getObPid());
 
-        return json.toString().replaceAll("&lt", "[").replaceAll("&rt", "]");
-    }
+					ldC.setObNm(ld.getObNm());
 
-    private void handleChildren(ICommand command, IRow r, LogDetail ld, int status) throws Exception {
-        addToOperation(command, r, ld);
+					ldC.setOpTp(status);
 
-        List<List<IRow>> children = r.children();
+					ldC.setTbNm(row.tableName().toUpperCase());
 
-        if (children != null) {
-            for (List<IRow> list1 : children) {
-                for (IRow row : list1) {
-                    LogDetail ldC = new LogDetail();
+					ldC.setIsCk(0);
 
-                    // 设置对象id和tbName
-                    ldC.setObPid(ld.getObPid());
+					if (status != Status.DELETE) {
+						ldC.setNewValue(convertObj2NewValue(row).toString());
+					}
 
-                    ldC.setObNm(ld.getObNm());
+					ldC.setRowId(UuidUtils.genUuid());
 
-                    ldC.setOpTp(status);
+					ldC.setTbRowId(row.rowId());
 
-                    ldC.setTbNm(row.tableName().toUpperCase());
+					// 查询对象的grid，并生成LogDetailGrid
+					LogGeoInfo geoInfo = gridCalculator.calc(ldC.getTbNm()
+							.toUpperCase(), ldC.getTbRowId(), conn);
+					ldC.setGeoNm(geoInfo.getGeoName());
+					ldC.setGeoPid(geoInfo.getGeoPid());
 
-                    ldC.setIsCk(0);
+					for (String gridId : geoInfo.getGrids()) {
+						LogDetailGrid grid = new LogDetailGrid();
 
-                    if (status != Status.DELETE) {
-                        ldC.setNewValue(convertObj2NewValue(row).toString());
-                    }
+						grid.setGridId(Integer.valueOf(gridId));
 
-                    ldC.setRowId(UuidUtils.genUuid());
+						grid.setLogRowId(ldC.getRowId());
 
-                    ldC.setTbRowId(row.rowId());
+						if (status != Status.DELETE) {
+							grid.setGridType(1);
+						} else {
+							grid.setGridType(0);
+						}
 
-                    // 查询对象的grid，并生成LogDetailGrid
-                    LogGeoInfo geoInfo = gridCalculator.calc(ldC.getTbNm().toUpperCase(), ldC.getTbRowId(), conn);
-                    ldC.setGeoNm(geoInfo.getGeoName());
-                    ldC.setGeoPid(geoInfo.getGeoPid());
+						ldC.getGrids().add(grid);
+					}
+					if (CollectionUtils.isNotEmpty(row.children())) {
+						handleChildren(command, row, ldC, status);
+					} else {
+						addToOperation(command, row, ldC);
+					}
+				}
+			}
+		}
+	}
 
-                    for (String gridId : geoInfo.getGrids()) {
-                        LogDetailGrid grid = new LogDetailGrid();
-
-                        grid.setGridId(Integer.valueOf(gridId));
-
-                        grid.setLogRowId(ldC.getRowId());
-
-                        if (status != Status.DELETE) {
-                            grid.setGridType(1);
-                        } else {
-                            grid.setGridType(0);
-                        }
-
-                        ldC.getGrids().add(grid);
-                    }
-                    if (CollectionUtils.isNotEmpty(row.children())) {
-                        handleChildren(command, row, ldC, status);
-                    } else {
-                        addToOperation(command, row, ldC);
-                    }
-                }
-            }
-        }
-    }
-
-    public static void main(String[] args) throws Exception {
-        RdRestriction restriction = new RdRestriction();
-        restriction.setInLinkPid(503000001);
-        restriction.setKgFlag(0);
-        restriction.setNodePid(408000001);
-        restriction.setPid(400000002);
-        restriction.setRestricInfo("[4]");
-        restriction.setRowId("8c231d092156418ea9e415bd779a0bad");
-        String ss = convertObj2NewValue(restriction).toString();
-        System.out.println(ss);
-    }
+	public static void main(String[] args) throws Exception {
+		RdRestriction restriction = new RdRestriction();
+		restriction.setInLinkPid(503000001);
+		restriction.setKgFlag(0);
+		restriction.setNodePid(408000001);
+		restriction.setPid(400000002);
+		restriction.setRestricInfo("[4]");
+		restriction.setRowId("8c231d092156418ea9e415bd779a0bad");
+		String ss = convertObj2NewValue(restriction).toString();
+		System.out.println(ss);
+	}
 
 }

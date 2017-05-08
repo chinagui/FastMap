@@ -77,13 +77,13 @@ public class FMM0101 extends BasicCheckRule {
 			}
 			if(onlyDigitLetter){return;}
 			//(5)如果该POI官方标准化中文名称中包含3个及以上连续中文数字(包含零，O，一，二、三、四、五、六、七、八、九、十)，则报log：别名需作业！
-			Pattern p = Pattern.compile(".*[零一二三四五六七八九十０]{3,}");
+			Pattern p = Pattern.compile(".*[零一二三四五六七八九十０]{3,}.*");
 			Matcher m = p.matcher(officeNameStr);
 			if (m.matches()) {
 				setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 				return;
 			}
-			//(2)如果poi的分类为停车场230210，且父分类为230103,230126,160105其中之一，且该POI的官方标准化名称中包含其父的官方标准化名称，则报log：别名需作业！
+			/*//(2)如果poi的分类为停车场230210，且父分类为230103,230126,160105其中之一，且该POI的官方标准化名称中包含其父的官方标准化名称，则报log：别名需作业！
 			String kindCode=poi.getKindCode();
 			IxPoiObj parentObj=getParentObj(poi.getPid());
 			if(kindCode.equals("230210")&&parentObj!=null){
@@ -203,7 +203,7 @@ public class FMM0101 extends BasicCheckRule {
 					setCheckResult(childPoi.getGeometry(),childObj,childPoi.getMeshId(),null);
 					return;
 				}
-			}
+			}*/
 		}
 	}
 	/**

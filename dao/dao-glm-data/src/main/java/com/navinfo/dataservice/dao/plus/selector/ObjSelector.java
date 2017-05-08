@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,8 +58,12 @@ public class ObjSelector {
 		if(isLock){
 			sql += " FOR UPDATE NOWAIT";
 		}
-		logger.info("selectByPid查询主表："+sql);
-		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
+		logger.info("selectByPid查询主表："+sql+",参数："+pid);
+//		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSelRsHandler(mainTable,pid),pid);
+		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),pid);
+		if(mainrow==null){
+			return null;
+		}
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		
 		//加载子表
@@ -67,17 +72,19 @@ public class ObjSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(obj.getMainrow().tableName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
+//				tabNames = glmObj.getTables().keySet();
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			logger.info("selectByPid开始加载子表");
-//			selectChildren(conn,obj,tabNames);
-//			logger.info("selectByPid加载子表结束");
-//		}
 		return obj;
 	}
 
@@ -177,6 +184,9 @@ public class ObjSelector {
 		logger.info("selectBySpecColumn查询主表："+sql);
 		
 		BasicRow mainrow = new QueryRunner().query(conn, sql, new SingleSpecColumnSelRsHandler(mainTable),colValue);
+		if(mainrow==null){
+			return null;
+		}
 		BasicObj obj = ObjFactory.getInstance().create4Select(mainrow);
 		
 		if(isMainOnly){
@@ -184,17 +194,19 @@ public class ObjSelector {
 		}else{
 			if(tabNames==null||tabNames.isEmpty()){
 				//加载所有子表
-				tabNames = glmObj.getTables().keySet();
+				tabNames = new HashSet<String>();
+				for(Map.Entry<String, GlmTable> entry:glmObj.getTables().entrySet()){
+					if(entry.getKey().equals(obj.getMainrow().tableName())){
+						continue;
+					}
+					tabNames.add(entry.getKey());
+				}
+//				tabNames = glmObj.getTables().keySet();
 			}
 			logger.info("selectByPid开始加载子表");
 			selectChildren(conn,obj,tabNames);
 			logger.info("selectByPid加载子表结束");
 		}
-//		if(tabNames!=null&&!tabNames.isEmpty()){
-//			logger.info("selectBySpecColumn开始加载子表");
-//			selectChildren(conn,obj,tabNames);
-//			logger.info("selectBySpecColumn开始加载子表");
-//		}
 		return obj;	
 	}
 

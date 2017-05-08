@@ -227,7 +227,7 @@ public class GLM02257 extends baseRule {
 		sb.append(" '隧道link上有多个隧道名' AS LOG FROM N_S_NAME_NUM SN WHERE SN.NUM > 1");
 		sb.append(" UNION");
 		sb.append(" SELECT DISTINCT 0 AS GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET,0 AS MESH_ID,");
-		sb.append(" '官方名称中有多个隧道类型名称类型为“隧道”的道路不含隧道属性' AS LOG");
+		sb.append(" '官方名称中有多个隧道类型' AS LOG");
 		sb.append(" FROM RD_LINK RL,RD_LINK_FORM RLF,RD_LINK_NAME RLN");
 		sb.append(" WHERE RL.LINK_PID ="+pid);
 		sb.append(" AND RL.LINK_PID = RLF.LINK_PID AND RLF.FORM_OF_WAY = 31");

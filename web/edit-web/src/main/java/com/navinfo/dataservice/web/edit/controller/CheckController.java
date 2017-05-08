@@ -6,21 +6,22 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.google.gson.JsonObject;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
@@ -199,6 +200,8 @@ public class CheckController extends BaseController {
 			Integer type = jsonReq.getInt("type");
 			Integer jobId = jsonReq.getInt("jobId");
 			logger.info("jobId : "+jobId);
+			String jobType = "metaValidation";
+			String jobDescp = "元数据库检查";
 			String jobUuid = "";
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			if(jobId != null && jobId >0){
@@ -206,7 +209,7 @@ public class CheckController extends BaseController {
 				JobInfo jobInfo = jobApiService.getJobById(jobId);
 				jobUuid = jobInfo.getGuid();
 			}else{
-				JSONObject jobObj = jobApiService.getLatestJob(subtaskId);
+				JSONObject jobObj = jobApiService.getLatestJob(subtaskId,jobType,jobDescp);
 				if(jobObj != null && jobObj.size() >0){
 					jobUuid= jobObj.getString("jobGuid");
 					jobId = jobObj.getInt("jobId");
@@ -214,11 +217,12 @@ public class CheckController extends BaseController {
 			}
 			logger.info("jobId 2: "+jobId);
 			logger.info("jobUuid 2: "+jobUuid);
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			conn = DBConnector.getInstance().getMetaConnection();
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			/*ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+			
 			if (subtask == null) {
 				throw new Exception("subtaskid未找到数据");
 			}
@@ -226,9 +230,9 @@ public class CheckController extends BaseController {
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
 			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
+			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);*/
 			//获取规则号
-			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
+			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());
@@ -502,6 +506,38 @@ public class CheckController extends BaseController {
 		}
 	}
 	
+	
+	/**
+	 * @Title: checkMetadataEditRun
+	 * @Description: 元数据编辑平台检查
+	 * @param  type	是	检查类型 ( 5道路名子版本; 7 道路名全表检查 ;)
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月20日 下午3:19:19 
+	 */
+	@RequestMapping(value = "/check/metadataEdit/run")
+	public ModelAndView checkMetadataEditRun(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int checkType=jsonReq.getInt("checkType");			
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			//long userId=2;
+			long jobId=CheckService.getInstance().metaCheckRun(userId, checkType, jsonReq);				
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
 	/**
 	 * 执行检查引擎 前检查
 	 * 应用场景：测试
@@ -726,6 +762,89 @@ public class CheckController extends BaseController {
 	}
 	
 	/**
+	 * @Title: getCkSuites
+	 * @Description: 获取某一类检查中所有的suiteId
+	 * @param request   type	是	类型(1 poi粗编 ;2 poi精编 ; 3 道路粗编 ; 4道路精编 ; 5道路名 ; 6 其他)
+	 * 					flag    0:范围检查 ; 1:全表检查
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月19日 下午1:57:35 
+	 */
+	@RequestMapping(value = "/check/getCkSuites")
+	public ModelAndView getCkSuites(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn =null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int flag = 0;
+			if(jsonReq.containsKey("flag") && jsonReq.getInt("flag") >0 ){
+				flag =jsonReq.getInt("flag");
+			}
+			int type = jsonReq.getInt("type");
+			logger.info("type:"+type);
+			JSONArray result = CheckService.getInstance().getCkSuites(type,flag);
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * @Title: getCkRulesBySuiteId
+	 * @Description: 根据一个 suiteId获取此suite下所有检查检查项
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月19日 下午1:58:06 
+	 */
+	@RequestMapping(value = "/check/getCkRulesBySuiteId")
+	public ModelAndView getCkRulesBySuiteId(HttpServletRequest request)
+			throws ServletException, IOException {
+		String parameter = request.getParameter("parameter");
+		Connection conn =null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			String suiteId = jsonReq.getString("suiteId");
+			JSONArray result  = new JSONArray();
+			if(suiteId != null && StringUtils.isNotEmpty(suiteId) && !suiteId.equals("null")){
+				logger.info("suiteId : "+suiteId);
+				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+			}
+			
+			return new ModelAndView("jsonView", success(result));
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	/**
 	 * 清检查结果接口
 	 * @param request
 	 * @return
@@ -737,7 +856,6 @@ public class CheckController extends BaseController {
 			throws ServletException, IOException {
 		String parameter = request.getParameter("parameter");
 		try {
-			
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
 			
@@ -750,6 +868,282 @@ public class CheckController extends BaseController {
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	//查询某个时间段内元数据检查job
+	@RequestMapping(value = "/check/metadataEdit/searchCheckJobList")
+	public ModelAndView searchCheckJobList(HttpServletRequest request){
+		try{			
+			JSONObject parameterJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));			
+			logger.info("parameterJson : "+parameterJson.toString());
+			
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			
+			List<JobInfo> jobList = null;
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			jobList = jobApiService.getJobInfoList(parameterJson);
+			logger.info("jobList"+jobList+" jobList.size() : "+jobList.size());
+			JSONArray data = new JSONArray();
+			if(jobList != null && jobList.size() >0 ){
+				for(JobInfo job : jobList){
+					logger.info("job.getDescp(): "+job.getDescp()+"  "+" job.getGuid(): "+job.getGuid() );
+					JSONObject jobObj = new JSONObject();
+					jobObj.put("jobName", job.getDescp());
+					jobObj.put("taskName", job.getGuid());
+					data.add(jobObj);
+				}
+			}
+			
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+		}
+	}
+	
+	@RequestMapping(value = "/check/getResultsByTaskName")
+	public ModelAndView getResultsByTaskName(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.info("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			logger.info("jobApiService : "+ jobApiService);
+			logger.info("taskName : "+jsonReq.getString("taskName"));
+			logger.info(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName")));
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
+				String tableName  = jsonReq.getString("tableName");
+				logger.info("tableName :"+tableName);
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				//根据jobId 查询jobUuid 获取最新的一个任务
+				JobInfo jobInfo = jobApiService.getLatestJobByDescp(tableName);
+				logger.info("jobInfo : "+jobInfo);
+				if(jobInfo != null && jobInfo.getGuid() != null && StringUtils.isNotEmpty(jobInfo.getGuid())){
+					logger.info("jobInfo.getGuid() :"+ jobInfo.getGuid());
+					jsonReq.put("taskName", jobInfo.getGuid());
+				}
+			}
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+			Map<String,String> adminMap = metadataApiService.getAdminMap();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			Page page = new Page();
+			page = niValExceptionSelector.listCheckResultsByTaskName(jsonReq,adminMap);
+			
+			logger.info("end check/getResultsByTaskName"+" :"+jsonReq.getString("taskName"));
+			logger.debug(page.getResult());
+			logger.debug(page.getTotalCount());
+			return new ModelAndView("jsonView", success(page));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: getruleIdsByTaskName
+	 * @Description: 获取当前任务下的所有规则号
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月12日 下午5:47:39 
+	 */
+	@RequestMapping(value = "/check/getruleIdsByTaskName")
+	public ModelAndView getruleIdsByTaskName(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.info("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			logger.info("taskName : "+ jsonReq.getString("taskName"));
+			
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
+				String tableName  = jsonReq.getString("tableName");
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				//根据jobId 查询jobUuid 获取最新的一个任务
+				JobInfo jobInfo = jobApiService.getLatestJobByDescp(tableName);
+				logger.info("jobInfo.getGuid() :"+jobInfo.getGuid());
+				if(jobInfo != null && jobInfo.getGuid() != null && StringUtils.isNotEmpty(jobInfo.getGuid())){
+					jsonReq.put("taskName", jobInfo.getGuid());
+				}
+			}
+			
+			conn = DBConnector.getInstance().getMetaConnection();
+			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			JSONArray data = new JSONArray();
+			data = niValExceptionSelector.listCheckResultsRuleIds(jsonReq);
+			logger.info("end check/getruleIdsByTaskName"+" :"+jsonReq.getString("taskName"));
+			logger.debug(data);
+			return new ModelAndView("jsonView", success(data));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @Title: checkResultsStatis
+	 * @Description: 道路名检查结果统计
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException  ModelAndView
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月17日 下午8:00:56 
+	 */
+	@RequestMapping(value = "/check/metadata/checkResultsStatis")
+	public ModelAndView checkResultsStatis(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("listRdnResult:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONArray newdata = new JSONArray();
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String taskName = "";
+			if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
+					throw new IllegalArgumentException("taskName参数不能为空。");
+			}else{
+				taskName = jsonReq.getString("taskName");
+			}
+			List<String> groupList = new ArrayList<String>();
+			JSONArray groupDate = jsonReq.getJSONArray("data");
+			if(groupDate != null && groupDate.size() > 0){
+				groupList = (List<String>) JSONArray.toCollection(groupDate);
+			
+				conn = DBConnector.getInstance().getMetaConnection();
+				NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
+			
+				JSONArray data = niValExceptionSelector.checkResultsStatis(taskName,groupList);
+			
+				Map<String,String> adminMap =null;
+				if(groupList.contains("adminName")){
+					MetadataApi metadataApiService = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
+					adminMap = metadataApiService.getAdminMap();
+				}
+				if(data != null && data.size() >0){
+					for(Object obj : data){
+						JSONObject jobj = (JSONObject) obj;
+						
+						if(jobj.containsKey("ruleid")){
+							//查询ruleName
+							String ruleName =CheckService.getInstance().getRuleNameById(jobj.getString("ruleid"));
+							jobj.put("ruleName", ruleName);
+						}
+						if(jobj.containsKey("admin_id")){
+							int adminId = jobj.getInt("admin_id"); 
+							jobj.remove("admin_id");
+							logger.info("jobj.containsKey('admin_id'):"+jobj.containsKey("admin_id"));
+							if(adminId == 214){
+								jobj.put("adminName","全国");
+							}else{
+								if (!adminMap.isEmpty()) {
+									if (adminMap.containsKey(String.valueOf(adminId))) {
+										jobj.put("adminName", adminMap.get(String.valueOf(adminId)));
+									} else {
+										jobj.put("adminName", "");
+									}
+								}
+							}
+						}
+						newdata.add(jobj);
+					}
+				}
+			}
+			
+			logger.info("end check/checkResultsStatis"+" :"+jsonReq.getString("taskName")+"  newdata.size(): "+newdata.size());
+			logger.debug(newdata);
+			return new ModelAndView("jsonView", success(newdata));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
+		}
+	}
+	
+	@RequestMapping(value = "/check/metadata/checkJobNameExists")
+	public ModelAndView checkJobNameExists(HttpServletRequest request)
+			throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+		logger.debug("checkJobNameExists:道路名检查结果查询接口:parameter:"+parameter);
+		Connection conn = null;
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			String jobName = jsonReq.getString("jobName");
+			logger.info("jobName: "+jobName);
+			if(jsonReq.getString("jobName") == null || StringUtils.isEmpty(jsonReq.getString("jobName"))){
+					throw new IllegalArgumentException("jobName参数不能为空。");
+			}
+			String tableName  = jsonReq.getString("tableName");
+			logger.info("tableName : "+tableName );
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			
+			String descp = tableName+":"+jobName;
+			logger.info("checkJobNameExists descp :"+descp);
+			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			logger.info("jobApiService: "+jobApiService);
+			JobInfo job = jobApiService.getJobByDescp(descp);
+			logger.info("job :"+job);
+			int flag = 0;
+			if(job != null){
+				flag = 1;
+			}
+			JSONObject isExistsflag = new JSONObject();
+			isExistsflag.put("isExistsflag", flag);
+			logger.info("end check/checkJobNameExists"+" : "+jsonReq.getString("jobName")+":  "+jsonReq.getString("tableName")+" ");
+			return new ModelAndView("jsonView", success(isExistsflag));
+
+		} catch (Exception e) {
+			
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			DbUtils.closeQuietly(conn);
 		}
 	}
 }

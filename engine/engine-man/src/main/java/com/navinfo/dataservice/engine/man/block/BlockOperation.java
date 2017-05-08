@@ -44,14 +44,14 @@ public class BlockOperation {
 		// TODO Auto-generated constructor stub
 	}
 
-	public static List<HashMap> queryBlockBySql(Connection conn, String selectSql) throws Exception {
+	public static List<Map<String,Object>> queryBlockBySql(Connection conn, String selectSql) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap>> rsHandler = new ResultSetHandler<List<HashMap>>() {
-				public List<HashMap> handle(ResultSet rs) throws SQLException {
-					List<HashMap> list = new ArrayList<HashMap>();
+			ResultSetHandler<List<Map<String,Object>>> rsHandler = new ResultSetHandler<List<Map<String,Object>>>() {
+				public List<Map<String,Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String,Object>> list = new ArrayList<Map<String,Object>>();
 					while (rs.next()) {
-						HashMap map = new HashMap<String, Integer>();
+						Map<String,Object> map = new HashMap<String,Object>();
 						map.put("blockId", rs.getInt("BLOCK_ID"));
 						map.put("blockName", rs.getString("BLOCK_NAME"));
 						map.put("planStatus", rs.getInt("PLAN_STATUS"));
@@ -59,6 +59,7 @@ public class BlockOperation {
 						//完成度
 						//map.put("percent", rs.getInt("PERCENT"));
 						//map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						map.put("geometry", null);
 						try {
 							STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 							String clobStr = GeoTranslator.struct2Wkt(struct);

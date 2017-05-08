@@ -19,6 +19,8 @@ import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleComm
 
 public class Batch extends AbstractOperation{
 	private BatchCommand batchCommand;
+	
+	private OperationResult changeReferData;
 
 	public BatchCommand getBatchCommand() {
 		return batchCommand;
@@ -31,6 +33,11 @@ public class Batch extends AbstractOperation{
 	public Batch(Connection conn,  OperationResult preResult) {
 		super(conn,  preResult);
 		// TODO Auto-generated constructor stub
+	}
+	
+	//获取批处理关联批到的数据
+	public OperationResult getChangeReferData() {
+		return changeReferData;
 	}
 
 	//执行批处理
@@ -78,10 +85,12 @@ public class Batch extends AbstractOperation{
 		/*若存在修改参考数据的规则，则遍历batchRuleCommand中的referDatas将修改的数据put入result中；
 		 * 调用batch的调用方，通过batch.persistChangeLog将变更持久化*/
 		//if(changeReferData){
+		changeReferData = new OperationResult();
 		for(Map<Long, BasicObj> referMap:batchRuleCommand.getReferDatas().values()){
 			for(BasicObj obj:referMap.values()){
 				if (obj.isChanged()) {
 					result.putObj(obj);
+					changeReferData.putObj(obj);
 				}
 			}
 		}

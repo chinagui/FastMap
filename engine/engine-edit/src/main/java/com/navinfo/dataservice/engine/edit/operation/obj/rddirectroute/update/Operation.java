@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -28,19 +29,16 @@ public class Operation implements IOperation {
 
 	public Operation(Command command) {
 		this.command = command;
-
 	}
 
 	public Operation(Connection conn) {
 		this.conn = conn;
-
 	}
 
 	@Override
 	public String run(Result result) throws Exception {
 
 		return this.update(result);
-
 	}
 
 	private String update(Result result) throws Exception {
@@ -49,22 +47,24 @@ public class Operation implements IOperation {
 
 		JSONObject content = command.getContent();
 
+		String objStatus = "";
+
 		if (!content.containsKey("objStatus")) {
 
-			return null;
+			objStatus = content.getString("objStatus");
 		}
 
 		result.setPrimaryPid(directroute.pid());
 
-		if (ObjStatus.DELETE.toString().equals(content.getString("objStatus"))) {
+		if (ObjStatus.DELETE.toString().equals(objStatus)) {
 
 			result.insertObject(directroute, ObjStatus.DELETE,
 					directroute.pid());
 
 			return null;
+		}
 
-		} else if (ObjStatus.UPDATE.toString().equals(
-				content.getString("objStatus"))) {
+		if (ObjStatus.UPDATE.toString().equals(objStatus)) {
 
 			boolean isChanged = directroute.fillChangeFields(content);
 
@@ -75,11 +75,85 @@ public class Operation implements IOperation {
 			}
 		}
 
+		updateViaLink(result, content, directroute);
+
 		return null;
+	}
+	
+	
+	/**
+	 * 更新经过线
+	 * @param content
+	 * @param result
+	 * @throws Exception
+	 */
+	private void updateViaLink( Result result,JSONObject content,RdDirectroute directroute)throws Exception
+	{
+		if (!content.containsKey("vias")) {
+
+			return;
+		}
+
+		JSONArray vias = content.getJSONArray("vias");
+
+		for (int i = 0; i < vias.size(); i++) {
+
+			JSONObject jsonVia = vias.getJSONObject(i);
+
+			if (!jsonVia.containsKey("objStatus")) {
+
+				continue;
+			}
+
+			String objStatus = jsonVia.getString("objStatus");
+
+			RdDirectrouteVia via = new RdDirectrouteVia();
+
+			if (ObjStatus.DELETE.toString().equals(objStatus)
+					|| ObjStatus.UPDATE.toString().equals(objStatus)) {
+				
+				via = directroute.directrouteViaMap
+						.get(jsonVia.getString("rowId"));
+
+				if (via == null) {
+
+					throw new Exception("rowId=" + jsonVia.getString("rowId")
+							+ "的via不存在");
+				}
+			}
+
+			// 删除via
+			if (ObjStatus.DELETE.toString().equals(objStatus)) {
+
+				result.insertObject(via, ObjStatus.DELETE, directroute.getPid());
+			}
+			// 更新via
+			else if (ObjStatus.UPDATE.toString().equals(objStatus)) {
+
+				boolean isChanged = via.fillChangeFields(jsonVia);
+
+				if (isChanged) {
+
+					result.insertObject(via, ObjStatus.UPDATE,
+							directroute.pid());
+				}
+			}
+			// 新增via
+			else if (ObjStatus.INSERT.toString().equals(objStatus)) {
+
+				via.Unserialize(jsonVia);
+
+				via.setPid(directroute.getPid());
+
+				via.setMesh(directroute.mesh());
+
+				result.insertObject(via, ObjStatus.INSERT, directroute.pid());
+			}
+		}
 	}
 
 	/**
-	 * 打断link维护警示信息
+	 * 打断link维护
 	 * 
 	 * @param oldLinkPid
 	 *            被打断的link

@@ -1051,7 +1051,7 @@ public class IxPoiObj extends AbstractIxObj {
 	public IxPoiName getAliasCHIName(long nameGroupId){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){
-			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")){
+			if(br.getNameClass()==3&&br.getLangCode().equals("CHI")&&(br.getNameGroupid()==nameGroupId)){
 				return br;}
 			}
 		return null;
@@ -1130,8 +1130,7 @@ public class IxPoiObj extends AbstractIxObj {
 					while(rs1.next()){
 						return rs1.getString("name");
 					}
-				}
-				if(rs.getInt("total")>1){
+				}else if(rs.getInt("total")>1){
 					ResultSet rs2=stmt.executeQuery("SELECT COUNT(1) total FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);
 				    while(rs2.next()){
 				    	if(rs2.getInt("total")==0){
@@ -1139,14 +1138,12 @@ public class IxPoiObj extends AbstractIxObj {
 				    	    while(rs3.next()){
 				    	    	return rs3.getString("name");
 				    	    }
-				    	}
-				    	else if (rs2.getInt("total")==1){
+				    	} else if (rs2.getInt("total")==1){
 				    		ResultSet rs4=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid=(SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid+") ");	
 				    	    while(rs4.next()){
 				    	    	return rs4.getString("name");
 				    	    }
-				    	}
-				    	else if(rs2.getInt("total")>1){
+				    	} else if(rs2.getInt("total")>1){
 				    		ResultSet rs5=stmt.executeQuery("SELECT r.name_groupid FROM ix_poi_address ad,rd_name r WHERE r.lang_code='CHI' AND ad.STREET_PHONETIC=r.name_phonetic AND ad.lang_code='CHI' and r.src_flag=1 AND ad.name_groupid="+nameGroupId+" and ad.poi_pid="+pid);	
 				    		while(rs5.next()){
 				    	    	ResultSet rs6=stmt.executeQuery("SELECT r.name FROM rd_name r WHERE r.lang_code='ENG' AND r.name_groupid="+rs5.getInt("name_groupid")+" and ad.poi_pid="+pid);	
@@ -1341,7 +1338,97 @@ catch (Exception e) {
 			throw new Exception("字段名为:"+subRowName+"的子表未找到");
 		}
 	}
-	
-	
+
+	/**
+	 * 只包含一级子表
+	 */
+	@Override
+	public BasicRow createSubRowByTableName(String tableName) throws Exception {
+		if(IX_POI_ADDRESS.equals(tableName)){
+			return this.createIxPoiAddress();
+		}else if(IX_POI_AUDIO.equals(tableName)){
+			return this.createIxPoiAudio();
+		}else if(IX_POI_CONTACT.equals(tableName)){
+			return this.createIxPoiContact();
+		}else if(IX_POI_ENTRYIMAGE.equals(tableName)){
+			return this.createIxPoiEntryimage();
+		}else if(IX_POI_FLAG.equals(tableName)){
+			return this.createIxPoiFlag();
+		}else if(IX_POI_ICON.equals(tableName)){
+			return this.createIxPoiIcon();
+		}else if(IX_POI_NAME.equals(tableName)){
+			return this.createIxPoiName();
+		}else if(IX_POI_PARENT.equals(tableName)){
+			return this.createIxPoiParent();
+		}else if(IX_POI_PHOTO.equals(tableName)){
+			return this.createIxPoiPhoto();
+		}else if(IX_POI_VIDEO.equals(tableName)){
+			return this.createIxPoiVideo();
+		}else if(IX_POI_PARKING.equals(tableName)){
+			return this.createIxPoiParking();
+		}else if(IX_POI_TOURROUTE.equals(tableName)){
+			return this.createIxPoiTourroute();
+		}else if(IX_POI_EVENT.equals(tableName)){
+			return this.createIxPoiEvent();
+		}else if(IX_POI_DETAIL.equals(tableName)){
+			return this.createIxPoiDetail();
+		}else if(IX_POI_BUSINESSTIME.equals(tableName)){
+			return this.createIxPoiBusinesstime();
+		}else if(IX_POI_CHARGINGSTATION.equals(tableName)){
+			return this.createIxPoiChargingstation();
+		}else if(IX_POI_CHARGINGPLOT.equals(tableName)){
+			return this.createIxPoiChargingplot();
+		}else if(IX_POI_CHARGINGPLOT_PH.equals(tableName)){
+			return this.createIxPoiChargingplotPh();
+		}else if(IX_POI_BUILDING.equals(tableName)){
+			return this.createIxPoiBuilding();
+		}else if(IX_POI_ADVERTISEMENT.equals(tableName)){
+			return this.createIxPoiAdvertisement();
+		}else if(IX_POI_GASSTATION.equals(tableName)){
+			return this.createIxPoiGasstation();
+		}else if(IX_POI_INTRODUCTION.equals(tableName)){
+			return this.createIxPoiIntroduction();
+		}else if(IX_POI_ATTRACTION.equals(tableName)){
+			return this.createIxPoiAttraction();
+		}else if(IX_POI_HOTEL.equals(tableName)){
+			return this.createIxPoiHotel();
+		}else if(IX_POI_RESTAURANT.equals(tableName)){
+			return this.createIxPoiRestaurant();
+		}else if(IX_POI_CARRENTAL.equals(tableName)){
+			return this.createIxPoiCarrental();
+		}else{
+			throw new Exception("未知的子表名:"+tableName);
+		}
+	}
+	public static final String IX_POI = "IX_POI";
+	public static final String IX_POI_NAME = "IX_POI_NAME";
+	public static final String IX_POI_NAME_FLAG = "IX_POI_NAME_FLAG";
+	public static final String IX_POI_NAME_TONE = "IX_POI_NAME_TONE";
+	public static final String IX_POI_ADDRESS = "IX_POI_ADDRESS";
+	public static final String IX_POI_CONTACT = "IX_POI_CONTACT";
+	public static final String IX_POI_FLAG = "IX_POI_FLAG";
+	public static final String IX_POI_ENTRYIMAGE = "IX_POI_ENTRYIMAGE";
+	public static final String IX_POI_ICON = "IX_POI_ICON";
+	public static final String IX_POI_PHOTO = "IX_POI_PHOTO";
+	public static final String IX_POI_AUDIO = "IX_POI_AUDIO";
+	public static final String IX_POI_VIDEO = "IX_POI_VIDEO";
+	public static final String IX_POI_PARENT = "IX_POI_PARENT";
+	public static final String IX_POI_CHILDREN = "IX_POI_CHILDREN";
+	public static final String IX_POI_BUILDING = "IX_POI_BUILDING";
+	public static final String IX_POI_DETAIL = "IX_POI_DETAIL";
+	public static final String IX_POI_BUSINESSTIME = "IX_POI_BUSINESSTIME";
+	public static final String IX_POI_INTRODUCTION = "IX_POI_INTRODUCTION";
+	public static final String IX_POI_ADVERTISEMENT = "IX_POI_ADVERTISEMENT";
+	public static final String IX_POI_GASSTATION = "IX_POI_GASSTATION";
+	public static final String IX_POI_CHARGINGSTATION = "IX_POI_CHARGINGSTATION";
+	public static final String IX_POI_CHARGINGPLOT = "IX_POI_CHARGINGPLOT";
+	public static final String IX_POI_CHARGINGPLOT_PH = "IX_POI_CHARGINGPLOT_PH";
+	public static final String IX_POI_PARKING = "IX_POI_PARKING";
+	public static final String IX_POI_ATTRACTION = "IX_POI_ATTRACTION";
+	public static final String IX_POI_HOTEL = "IX_POI_HOTEL";
+	public static final String IX_POI_RESTAURANT = "IX_POI_RESTAURANT";
+	public static final String IX_POI_TOURROUTE = "IX_POI_TOURROUTE";
+	public static final String IX_POI_EVENT = "IX_POI_EVENT";
+	public static final String IX_POI_CARRENTAL = "IX_POI_CARRENTAL";
 
 }

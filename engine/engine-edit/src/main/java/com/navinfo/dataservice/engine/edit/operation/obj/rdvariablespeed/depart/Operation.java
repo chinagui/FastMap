@@ -1,13 +1,19 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvariablespeed.depart;
 
 import java.sql.Connection;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeed;
+import com.navinfo.dataservice.dao.glm.model.rd.variablespeed.RdVariableSpeedVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.variablespeed.RdVariableSpeedSelector;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
 
@@ -21,6 +27,7 @@ public class Operation {
         this.conn = conn;
     }
 
+    
     /**
      * 维护上下线分离对可变限速的影响
      *
@@ -31,41 +38,88 @@ public class Operation {
      * @return
      * @throws Exception
      */
-    public String updownDepart(List<RdLink> links, Map<Integer, RdLink> leftLinks, Map<Integer, RdLink> rightLinks, Result result) throws Exception {
+    public String updownDepart(List<RdLink> links, Result result) throws Exception {
+    	
         RdVariableSpeedSelector selector = new RdVariableSpeedSelector(conn);
-        for (RdLink link : links) {
-            Set<RdVariableSpeed> variableSpeeds = new LinkedHashSet<>();
-            // 1.当已经参与可变限速制作的单线link变为上下线分离时，将整组可变限速信息删除(进入线或退出线)
-            variableSpeeds.addAll(selector.loadRdVariableSpeedByLinkPid(link.pid(), true));
-            if (!variableSpeeds.isEmpty()) {
-                for (RdVariableSpeed variableSpeed : variableSpeeds)
-                    result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
-                variableSpeeds.clear();
-            }
-            // 2.当目标link上的点已经参与制作可变限速
-            List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
-            if (!nodePids.isEmpty()) {
-                variableSpeeds.addAll(selector.loadRdVariableSpeedByNodePids(nodePids, true));
-                if (!variableSpeeds.isEmpty()) {
-                    for (RdVariableSpeed variableSpeed : variableSpeeds) {
-                        if (!result.getDelObjects().contains(variableSpeeds))
-                            result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
-                    }
-                    variableSpeeds.clear();
-                }
-            }
-            // 3.经过线为目标link
-            variableSpeeds.addAll(selector.loadRdVariableSpeedByViaLinkPid(link.pid(), true));
-            // 4.经过线的起始点为目标link的经过点（未确认暂不放开）
-//            variableSpeeds.addAll(selector.loadRdVariableSpeedByVianodeIds(nodePids,true));
-            if (!variableSpeeds.isEmpty()) {
-                for (RdVariableSpeed variableSpeed : variableSpeeds) {
-                    for (IRow row : variableSpeed.getVias()) {
-                        result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
-                    }
-                }
-            }
-        }
+
+		Map<Integer, RdVariableSpeed> delRdVariableSpeeds = new HashMap<Integer, RdVariableSpeed>();
+
+		Map<Integer, RdVariableSpeed> updateRdVariableSpeeds = new HashMap<Integer, RdVariableSpeed>();
+		
+		Set<Integer> linkPids=new HashSet<Integer>();
+
+		for (RdLink link : links) {
+			
+			linkPids.add(link.getPid());
+			// 进入线或退出线
+			List<RdVariableSpeed> variableSpeeds = selector
+					.loadRdVariableSpeedByLinkPid(link.pid(), true);
+
+			for (RdVariableSpeed variableSpeed : variableSpeeds) {
+				
+				delRdVariableSpeeds.put(variableSpeed.getPid(), variableSpeed);
+			}
+			
+			// 接续link
+			variableSpeeds = selector.loadRdVariableSpeedByViaLinkPid(
+					link.pid(), true);
+
+			for (RdVariableSpeed variableSpeed : variableSpeeds) {
+				
+				updateRdVariableSpeeds.put(variableSpeed.getPid(),
+						variableSpeed);
+			}
+		}
+
+		// 2.当目标link上的点已经参与制作可变限速
+		List<Integer> nodePids = CalLinkOperateUtils.calNodePids(links);
+
+		if (!nodePids.isEmpty()) {
+
+			List<RdVariableSpeed> variableSpeeds = selector
+					.loadRdVariableSpeedByNodePids(nodePids, true);
+
+			for (RdVariableSpeed variableSpeed : variableSpeeds) {
+				delRdVariableSpeeds.put(variableSpeed.getPid(), variableSpeed);
+			}
+		}		
+		
+		for (RdVariableSpeed variableSpeed : delRdVariableSpeeds.values())
+		{
+            result.insertObject(variableSpeed, ObjStatus.DELETE, variableSpeed.pid());
+		}
+		
+		for (RdVariableSpeed variableSpeed : updateRdVariableSpeeds.values()) {
+			
+			if (delRdVariableSpeeds.containsKey(variableSpeed.pid())) {
+				continue;
+			}
+			
+			int minDelSeqNum = Integer.MAX_VALUE;
+
+			for (IRow row : variableSpeed.getVias()) {
+
+				RdVariableSpeedVia via = (RdVariableSpeedVia) row;
+
+				if (linkPids.contains(via.getLinkPid())
+						&& via.getSeqNum() < minDelSeqNum) {
+					
+					minDelSeqNum = via.getSeqNum();
+				}
+			}
+
+			for (IRow row : variableSpeed.getVias()) {
+
+				RdVariableSpeedVia via = (RdVariableSpeedVia) row;
+
+				if (via.getSeqNum() >= minDelSeqNum) {
+
+					result.insertObject(via, ObjStatus.DELETE,
+							variableSpeed.pid());
+				}
+			}
+		}
+	
         return "";
     }
 }

@@ -6,8 +6,7 @@
 <sqls>
 
 	<feature name="REMOVE_DUP_DATA">
-	   
-        <step value="109">
+	   <step value="109">
                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI','PID='||PID ,mesh_id from  IX_POI a
                 where a.rowid !=
                 (select max(b.rowid) from IX_POI b where 1=1
@@ -914,11 +913,31 @@
                 where a.rowid !=
                 (select max(b.rowid) from RD_LINK_SIDEWALK b where 1=1
 				and a.LINK_PID = b.LINK_PID
+                );]]></sql>               
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_MILEAGEPILE','PID='||PID ,null from  RD_MILEAGEPILE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MILEAGEPILE b where 1=1
+				and a.PID = b.PID
                 );]]></sql>
+                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'IX_POI_CHARGINGPLOT_PH','POI_PID='||POI_PID ,null from  IX_POI_CHARGINGPLOT_PH a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CHARGINGPLOT_PH b where 1=1
+				and a.POI_PID = b.POI_PID and a.PHOTO_NAME=b.PHOTO_NAME
+                );]]></sql>                
                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SPEEDLIMIT','LINK_PID='||LINK_PID ,null from  RD_LINK_SPEEDLIMIT a
                 where a.rowid !=
                 (select max(b.rowid) from RD_LINK_SPEEDLIMIT b where 1=1
 				and a.LINK_PID = b.LINK_PID and a.SPEED_TYPE=b.SPEED_TYPE and a.SPEED_DEPENDENT=b.SPEED_DEPENDENT
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_SPEEDLIMIT_TRUCK','PID='||PID ,null from  RD_SPEEDLIMIT_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDLIMIT_TRUCK b where 1=1
+				and a.PID = b.PID
+                );]]></sql>
+                <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_SPEED_TRUCK','LINK_PID='||LINK_PID ,null from  RD_LINK_SPEED_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SPEED_TRUCK b where 1=1
+				and a.LINK_PID = b.LINK_PID
                 );]]></sql>
                 <sql><![CDATA[insert into DUP_PK_DELETE_RECORD_MESH  select 'RD_LINK_WALKSTAIR','LINK_PID='||LINK_PID ,null from  RD_LINK_WALKSTAIR a
                 where a.rowid !=
@@ -2279,11 +2298,31 @@
                 where a.rowid !=
                 (select max(b.rowid) from RD_LINK_SIDEWALK b where 1=1
                 and a.LINK_PID = b.LINK_PID
+                );]]></sql>               
+                <sql><![CDATA[delete from RD_MILEAGEPILE a
+                where a.rowid !=
+                (select max(b.rowid) from RD_MILEAGEPILE b where 1=1
+                and a.PID = b.PID
                 );]]></sql>
+                 <sql><![CDATA[delete from IX_POI_CHARGINGPLOT_PH a
+                where a.rowid !=
+                (select max(b.rowid) from IX_POI_CHARGINGPLOT_PH b where 1=1
+                and a.POI_PID = b.POI_PID and a.PHOTO_NAME=b.PHOTO_NAME
+                );]]></sql>               
                 <sql><![CDATA[delete from RD_LINK_SPEEDLIMIT a
                 where a.rowid !=
                 (select max(b.rowid) from RD_LINK_SPEEDLIMIT b where 1=1
                 and a.LINK_PID = b.LINK_PID and a.SPEED_TYPE=b.SPEED_TYPE and a.SPEED_DEPENDENT=b.SPEED_DEPENDENT
+                );]]></sql>
+                <sql><![CDATA[delete from RD_SPEEDLIMIT_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_SPEEDLIMIT_TRUCK b where 1=1
+                and a.PID = b.PID
+                );]]></sql>
+                 <sql><![CDATA[delete from RD_LINK_SPEED_TRUCK a
+                where a.rowid !=
+                (select max(b.rowid) from RD_LINK_SPEED_TRUCK b where 1=1
+                and a.LINK_PID = b.LINK_PID
                 );]]></sql>
                 <sql><![CDATA[delete from RD_LINK_WALKSTAIR a
                 where a.rowid !=

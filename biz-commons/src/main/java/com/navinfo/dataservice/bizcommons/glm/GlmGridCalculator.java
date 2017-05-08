@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import oracle.spatial.geometry.JGeometry;
+import oracle.spatial.util.WKT;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -18,10 +21,9 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.JGeometryUtil;
-
-import oracle.spatial.geometry.JGeometry;
-import oracle.spatial.util.WKT;
+import com.vividsolutions.jts.io.WKTReader;
 
 /**
  * @ClassName: GlmGridCalculator
@@ -144,15 +146,165 @@ public class GlmGridCalculator {
 			String... sameTableName) throws Exception {
 		log.debug("calc :" + tableName + "-" + rowId);
 		String sql = assembleQueryGeoSql(tableName, rowId);
-		if (tableName.equals("RD_SAMENODE") && sameTableName.length > 0) {
-			sql = sql.replaceAll("RD_NODE", sameTableName[0]);
-		}
-		if (tableName.equals("RD_SAMELINK") && sameTableName.length > 0) {
-			sql = sql.replaceAll("RD_LINK", sameTableName[0]);
+		String realName = this.caleTableName(dataConn, tableName, rowId);
+		if (StringUtils.isNotEmpty(realName)) {
+
+			if (tableName.equals("RD_SAMENODE")) {
+				sql = sql.replaceAll("RD_NODE", realName)
+						+ " AND R2.TABLE_NAME = '" + realName + "' ";
+			}
+			if (tableName.equals("RD_SAMELINK")) {
+				sql = sql.replaceAll("RD_LINK", realName)
+						+ " AND R2.TABLE_NAME = '" + realName + "' ";
+			}
+
 		}
 		LogGeoInfo geoInfo = run.query(dataConn, sql, new SingleRowGridHandler(
 				tableName));
 		return geoInfo;
+	}
+
+	/**
+	 * 处理统一关系特殊的几何依赖对象表
+	 * 
+	 * @param dataConn
+	 * @param tableName
+	 * @param rowId
+	 * @return
+	 * @throws Exception
+	 */
+	private String caleTableName(Connection dataConn, String tableName,
+			String rowId) throws Exception {
+		if (tableName.equals("RD_SAMENODE") || tableName.equals("RD_SAMELINK")) {
+			return this.loadRealNameForSame(dataConn, rowId, tableName);
+		}
+		if (tableName.equals("RD_SAMENODE_PART")
+				|| tableName.equals("RD_SAMELINK_PART")) {
+			return this.loadRealNameForSamePart(dataConn, rowId, tableName);
+
+		}
+		return "";
+	}
+
+	/***
+	 * 处理同一点 同一线特殊几何依赖对象表
+	 * 
+	 * @param dataConn
+	 * @param rowId
+	 * @param tableName
+	 * @return
+	 * @throws Exception
+	 */
+	private String loadRealNameForSame(Connection dataConn, String rowId,
+			String tableName) throws Exception {
+		StringBuilder sqlBuilder = new StringBuilder("SELECT T.table_name ");
+		sqlBuilder.append(" FROM (  SELECT table_name ");
+		if (tableName.equals("RD_SAMENODE")) {
+			sqlBuilder.append(" FROM RD_SAMENODE rs, RD_SAMENODE_PART rp ");
+		}
+		if (tableName.equals("RD_SAMELINK")) {
+			sqlBuilder.append(" FROM RD_SAMELINK rs, RD_SAMELINK_PART rp ");
+		}
+		sqlBuilder.append(" WHERE     RS.GROUP_ID = rp.GROUP_ID ");
+		sqlBuilder.append(" AND rs.row_id = hextoraw('" + rowId + "') ");
+		if (tableName.equals("RD_SAMENODE")) {
+			sqlBuilder
+					.append(" ORDER BY DECODE (RP.TABLE_NAME, 'RD_NODE', '1',  'LU_NODE', '2','AD_NODE', '3',");
+			sqlBuilder.append(" 'ZONE_NODE', '4')) T");
+		}
+		if (tableName.equals("RD_SAMELINK")) {
+			sqlBuilder
+					.append(" ORDER BY DECODE (RP.TABLE_NAME, 'RD_LINK', '1',  'LU_LINK', '2','AD_LINK', '3',");
+			sqlBuilder.append(" 'ZONE_LINK', '4')) T");
+		}
+
+		sqlBuilder.append(" WHERE ROWNUM = 1  ");
+		log.info("sql ====" + sqlBuilder.toString());
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+			@Override
+			public String handle(ResultSet resultSet) throws SQLException {
+				String realName = "";
+				if (resultSet.next()) {
+					realName = resultSet.getString("table_name");
+				}
+				return realName;
+
+			}
+		};
+		return run.query(dataConn, sqlBuilder.toString(), rsHandler);
+
+	}
+
+	/***
+	 * 处理同一点 同一线特殊几何依赖对象表
+	 * 
+	 * @param dataConn
+	 * @param pid
+	 * @param tableName
+	 * @return
+	 * @throws Exception
+	 */
+	public String loadRealNameForSame(Connection dataConn, int pid,
+			String tableName) throws Exception {
+		StringBuilder sqlBuilder = new StringBuilder("SELECT T.table_name ");
+		sqlBuilder.append(" FROM (  SELECT table_name ");
+		if (tableName.equals("RD_SAMENODE")) {
+			sqlBuilder.append(" FROM RD_SAMENODE rs, RD_SAMENODE_PART rp ");
+		}
+		if (tableName.equals("RD_SAMELINK")) {
+			sqlBuilder.append(" FROM RD_SAMELINK rs, RD_SAMELINK_PART rp ");
+		}
+		sqlBuilder.append(" WHERE     RS.GROUP_ID = rp.GROUP_ID ");
+		sqlBuilder.append(" AND rs.group_id = " + pid + " ");
+		if (tableName.equals("RD_SAMENODE")) {
+			sqlBuilder
+					.append(" ORDER BY DECODE (RP.TABLE_NAME, 'RD_NODE', '1',  'LU_NODE', '2','AD_NODE', '3',");
+			sqlBuilder.append(" 'ZONE_NODE', '4')) T");
+		}
+		if (tableName.equals("RD_SAMELINK")) {
+			sqlBuilder
+					.append(" ORDER BY DECODE (RP.TABLE_NAME, 'RD_LINK', '1',  'LU_LINK', '2','AD_LINK', '3',");
+			sqlBuilder.append(" 'ZONE_LINK', '4')) T");
+		}
+
+		sqlBuilder.append(" WHERE ROWNUM = 1  ");
+		log.info("sql ====" + sqlBuilder.toString());
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+			@Override
+			public String handle(ResultSet resultSet) throws SQLException {
+				String realName = "";
+				if (resultSet.next()) {
+					realName = resultSet.getString("table_name");
+				}
+				return realName;
+
+			}
+		};
+		return run.query(dataConn, sqlBuilder.toString(), rsHandler);
+
+	}
+
+	private String loadRealNameForSamePart(Connection dataConn, String rowId,
+			String tableName) throws Exception {
+		StringBuilder sqlBuilder = new StringBuilder("SELECT T.table_name ");
+		sqlBuilder.append(" FROM  " + tableName + " T ");
+		sqlBuilder.append(" WHERE T.row_id = hextoraw('" + rowId + "') ");
+		QueryRunner run = new QueryRunner();
+		ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+			@Override
+			public String handle(ResultSet resultSet) throws SQLException {
+				String realName = "";
+				if (resultSet.next()) {
+					realName = resultSet.getString("table_name");
+				}
+				return realName;
+
+			}
+		};
+		return run.query(dataConn, sqlBuilder.toString(), rsHandler);
+
 	}
 
 	/**
@@ -343,9 +495,21 @@ public class GlmGridCalculator {
 									.intersectGeometryGrid(geo,
 											String.valueOf(meshId)));
 						} else {
-							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							rowGrids.addAll(JGeometryUtil
-									.intersectGeometryGrid(geo, meshes));
+							// 由于CMG_BUILDLINK跨图幅不需要打断在此处添加特殊处理
+							if (StringUtils.equals("CMG_BUILDLINK", tableName)
+									|| StringUtils.equals("CMG_BUILDLINK_MESH",
+											tableName)) {
+								String w = new String(
+										new WKT().fromJGeometry(geo));
+								WKTReader reader = new WKTReader();
+								rowGrids.addAll(CompGeometryUtil
+										.geo2GridsWithoutBreak(reader.read(w)));
+							} else {
+								String[] meshes = JGeometryUtil
+										.geo2MeshIds(geo);
+								rowGrids.addAll(JGeometryUtil
+										.intersectGeometryGrid(geo, meshes));
+							}
 						}
 					}
 				}
@@ -391,21 +555,22 @@ public class GlmGridCalculator {
 						}
 						geoInfo.setGeoName(rs.getString("GEO_NM"));
 						geoInfo.setGeoPid(rs.getInt("GEO_PID"));
-						//grid
+						// grid
 						JGeometry geo = wkt
 								.toJGeometry(rs.getBytes("GEOMETRY"));
 						int meshId = rs.getInt("MESH_ID");
 						if (meshId > 0) {
-							Set<String> grids=JGeometryUtil
+							Set<String> grids = JGeometryUtil
 									.intersectGeometryGrid(geo,
 											String.valueOf(meshId));
-							if(grids!=null){
+							if (grids != null) {
 								geoInfo.setGrids(grids.toArray(new String[0]));
 							}
 						} else {
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							Set<String> grids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
-							if(grids!=null){
+							Set<String> grids = JGeometryUtil
+									.intersectGeometryGrid(geo, meshes);
+							if (grids != null) {
 								geoInfo.setGrids(grids.toArray(new String[0]));
 							}
 						}
@@ -420,21 +585,22 @@ public class GlmGridCalculator {
 						}
 						geoInfo.setGeoName(rs.getString("GEO_NM"));
 						geoInfo.setGeoPid(rs.getInt("GEO_PID"));
-						//grids
+						// grids
 						JGeometry geo = null;
 						geo = JGeometry.load(rs.getBytes("GEOMETRY"));
 						int meshId = rs.getInt("MESH_ID");
 						if (meshId > 0) {
-							Set<String> grids=JGeometryUtil
+							Set<String> grids = JGeometryUtil
 									.intersectGeometryGrid(geo,
 											String.valueOf(meshId));
-							if(grids!=null){
+							if (grids != null) {
 								geoInfo.setGrids(grids.toArray(new String[0]));
 							}
 						} else {
 							String[] meshes = JGeometryUtil.geo2MeshIds(geo);
-							Set<String> grids = JGeometryUtil.intersectGeometryGrid(geo, meshes);
-							if(grids!=null){
+							Set<String> grids = JGeometryUtil
+									.intersectGeometryGrid(geo, meshes);
+							if (grids != null) {
 								geoInfo.setGrids(grids.toArray(new String[0]));
 							}
 						}
@@ -442,7 +608,7 @@ public class GlmGridCalculator {
 				}
 				return results;
 			} catch (Exception e) {
-				log.info(e.getMessage(),e);
+				log.info(e.getMessage(), e);
 				throw new SQLException("查询的geometry可能格式错误，无法转换为object。row_id:"
 						+ rowId, e);
 			}

@@ -15,6 +15,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.util.DisplayUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.selector.rd.speedlimit.RdSpeedlimitSelector;
@@ -27,13 +28,13 @@ import oracle.sql.STRUCT;
 public class RdSpeedlimitSearch implements ISearch {
 
 	private Connection conn;
-	
-	String queryType="";
+
+	String queryType = "";
 
 	public RdSpeedlimitSearch(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	public RdSpeedlimitSearch(Connection conn, String queryType) {
 		this.conn = conn;
 		this.queryType = queryType;
@@ -49,8 +50,13 @@ public class RdSpeedlimitSearch implements ISearch {
 	}
 
 	@Override
-	public List<IObj> searchDataByPids(List<Integer> pidList) throws Exception {
-		return null;
+	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
+
+		RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
+
+		List<IRow> rows = selector.loadByIds(pidList, false, true);
+
+		return rows;
 	}
 
 	@Override
@@ -70,20 +76,20 @@ public class RdSpeedlimitSearch implements ISearch {
 	@Override
 	public List<SearchSnapshot> searchDataByTileWithGap(int x, int y, int z,
 			int gap) throws Exception {
-		
+
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "SELECT A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
-		
+		String sql = "SELECT A.TIME_DOMAIN , A.PID, A.LINK_PID, A.SPEED_TYPE, A.DIRECT, A.CAPTURE_FLAG, A.SPEED_FLAG, A.SPEED_VALUE, A.LANE_SPEED_VALUE, A.SPEED_DEPENDENT, B.GEOMETRY         LINK_GEOM, A.GEOMETRY         POINT_GEOM, A.DESCRIPT, A.LIMIT_SRC FROM RD_SPEEDLIMIT A LEFT JOIN RD_LINK B ON A.LINK_PID = B.LINK_PID WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.U_RECORD != 2  ";
+
 		if (queryType.equals("DEPENDENT")) {
-			
+
 			sql += " AND A.SPEED_TYPE = 3 ";
-			
+
 		} else {
-			
+
 			sql += " AND A.SPEED_TYPE IN (0,1,4)";
 		}
-		
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -123,7 +129,8 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				int speedDependent = resultSet.getInt("speed_dependent");
 
-				jsonM.put("a", String.valueOf(speedType));
+				String timedomain = resultSet.getString("time_domain");
+				jsonM.put("a", speedType);
 
 				StringBuilder sb = new StringBuilder();
 
@@ -177,7 +184,7 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				double angle = calAngle(resultSet);
 
-				jsonM.put("c", String.valueOf((int) angle));
+				jsonM.put("c", angle);
 
 				snapshot.setG(Geojson.lonlat2Pixel(geom2.getFirstPoint()[0],
 						geom2.getFirstPoint()[1], z, px, py));
@@ -188,8 +195,9 @@ public class RdSpeedlimitSearch implements ISearch {
 
 				jsonM.put("f", resultSet.getString("descript") == null ? ""
 						: resultSet.getString("descript"));
-				
+
 				jsonM.put("h", resultSet.getInt("LIMIT_SRC"));
+				jsonM.put("j", timedomain);
 
 				snapshot.setM(jsonM);
 
@@ -205,8 +213,6 @@ public class RdSpeedlimitSearch implements ISearch {
 
 		return list;
 	}
-	
-	
 
 	// 计算角度
 	private double calAngle(ResultSet resultSet) throws Exception {

@@ -94,11 +94,11 @@ public class TaskController extends BaseController {
 			//long userId=2;
 			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
 			
-//			if((message!=null)&&(!message.isEmpty())){
-//				return new ModelAndView("jsonView", exception(message));
-//			}else{
-			return new ModelAndView("jsonView", success(message));
-			//}
+			if(message!=null&&!message.isEmpty()&&message.equals("二代编辑任务发布失败，存在未关闭的采集任务")){
+				return new ModelAndView("jsonView", fail(message));
+			}else{
+				return new ModelAndView("jsonView", success(message));
+			}
 		}catch(Exception e){
 			log.error("发布失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
@@ -476,6 +476,30 @@ public class TaskController extends BaseController {
 
 			Map<Integer,Map<String, Integer>> map = GridService.getInstance().queryCollectTaskIdsByGridIdList(gridIdList);
 			return new ModelAndView("jsonView", success(map));
+		} catch (Exception e) {
+			log.error("获取明细失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	/**
+	 * 任务关闭再开启，需要对应：任务关闭再开启后，生成一条新的任务记录，属性全部复制，状态=草稿。原来任务关联的子任务不继承到新任务中
+	 * 应用场景：管理平台-生管角色
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/reOpen")
+	public ModelAndView reOpen(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId=dataJson.getInt("taskId");
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			TaskService.getInstance().reOpen(userId,taskId);
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

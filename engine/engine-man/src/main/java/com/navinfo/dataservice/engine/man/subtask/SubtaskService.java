@@ -8,9 +8,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,12 +25,11 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -43,7 +44,9 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
+import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
@@ -122,18 +125,18 @@ public class SubtaskService {
 				dataJson.discard("qualityPlanStartDate");
 				dataJson.discard("qualityPlanEndDate");}
 			
-			//自采自录子任务
-			int isSelfRecord = 0;//是否进行自采自录，0否1是
-			int selfRecordType = 0;//自采自录日编子任务作业类型
-			String selfRecordName = "";//自采自录日编子任务名称
-			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
-				isSelfRecord = dataJson.getInt("isSelfRecord");
-				selfRecordType = dataJson.getInt("selfRecordType");
-				selfRecordName = dataJson.getString("selfRecordName");
-				//删除传入参数的对应键值对,因为bean中没有这些字段
-				dataJson.discard("isSelfRecord");
-				dataJson.discard("selfRecordType");
-				dataJson.discard("selfRecordName");}
+//			//自采自录子任务
+//			int isSelfRecord = 0;//是否进行自采自录，0否1是
+//			int selfRecordType = 0;//自采自录日编子任务作业类型
+//			String selfRecordName = "";//自采自录日编子任务名称
+//			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
+//				isSelfRecord = dataJson.getInt("isSelfRecord");
+//				selfRecordType = dataJson.getInt("selfRecordType");
+//				selfRecordName = dataJson.getString("selfRecordName");
+//				//删除传入参数的对应键值对,因为bean中没有这些字段
+//				dataJson.discard("isSelfRecord");
+//				dataJson.discard("selfRecordType");
+//				dataJson.discard("selfRecordName");}
 			
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 			
@@ -150,19 +153,19 @@ public class SubtaskService {
 				//创建质检子任务 subtask	
 				qualitySubtaskId = createSubtask(qualityBean);	
 			}
-			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
-				//根据参数生成日编子任务 subtask dailyBean
-				Subtask dailyBean = createSubtaskBean(userId,dataJson);
-				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
-				dailyBean.setTaskId(taskId);
-				dailyBean.setStage(1);
-				dailyBean.setName(selfRecordName);
-				dailyBean.setIsQuality(0);
-				dailyBean.setStatus(2);
-				dailyBean.setType(selfRecordType);
-				//创建质检子任务 subtask	
-				createSubtask(dailyBean);	
-			}
+//			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
+//				//根据参数生成日编子任务 subtask dailyBean
+//				Subtask dailyBean = createSubtaskBean(userId,dataJson);
+//				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
+//				dailyBean.setTaskId(taskId);
+//				dailyBean.setStage(1);
+//				dailyBean.setName(selfRecordName);
+//				dailyBean.setIsQuality(0);
+//				dailyBean.setStatus(2);
+//				dailyBean.setType(selfRecordType);
+//				//创建质检子任务 subtask	
+//				createSubtask(dailyBean);	
+//			}
 
 			
 			//根据参数生成subtask bean
@@ -200,6 +203,19 @@ public class SubtaskService {
 			if(bean.getStatus()== null){
 				bean.setStatus(2);
 			}
+			//情报项目为空时，需要后台自动创建名称
+			if(!StringUtils.isNotEmpty(bean.getName())){
+				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
+				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+				if(infor!=null){
+					bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
+					if(bean.getExeUserId()!=0){
+						UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(bean.getExeUserId());
+						bean.setName(bean.getName()+"_"+userInfo.getUserRealName()+"_"+bean.getSubtaskId());
+					}
+					
+				}
+			}
 			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
@@ -208,7 +224,10 @@ public class SubtaskService {
 			if(bean.getGridIds() != null){
 				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
 				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
-				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+				List<Integer> deleteGrids = SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+				if(deleteGrids!=null&&deleteGrids.size()>0){
+					updateSubtaskGeo(conn,bean.getSubtaskId());
+				}
 			}
 			
 			//消息发布
@@ -223,6 +242,19 @@ public class SubtaskService {
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	private void updateSubtaskGeo(Connection conn,int subtaskId)throws Exception{
+		try{
+			Map<Integer, Integer> gridMap = SubtaskOperation.getGridIdsBySubtaskIdWithConn(conn, subtaskId);
+			JSONArray newGrids=new JSONArray();
+			newGrids.addAll(gridMap.keySet());
+			SubtaskOperation.updateSubtaskGeo(conn, GridUtils.grids2Wkt(newGrids), subtaskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
 	/*
@@ -393,8 +425,20 @@ public class SubtaskService {
 
 			List<Integer> updatedSubtaskIdList = new ArrayList<Integer>();
 			for (int i = 0; i < subtaskList.size(); i++) {
-				SubtaskOperation.updateSubtask(conn, subtaskList.get(i));
-				updatedSubtaskIdList.add(subtaskList.get(i).getSubtaskId());
+				Subtask subtask = subtaskList.get(i);
+				//情报子任务修改时，若填入执行人，则需修改子任务名称
+				if(subtask.getExeUserId()!=0){
+					int programType=getTaskBySubtaskId(conn,subtask.getSubtaskId()).get("programType");
+					if(programType==4){
+						Subtask oldSubtask = queryBySubtaskIdS(conn,subtask.getSubtaskId());
+						if(oldSubtask.getExeUserId()==0){
+							UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(subtask.getExeUserId());
+							subtask.setName(subtask.getName()+"_"+userInfo.getUserRealName()+"_"+subtask.getSubtaskId());
+						}
+					}
+				}
+				SubtaskOperation.updateSubtask(conn, subtask);
+				updatedSubtaskIdList.add(subtask.getSubtaskId());
 				
 			}
 			//发送消息
@@ -441,6 +485,22 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return queryBySubtaskIdS(conn,subtaskId);		
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/*
+	 * 根据subtaskId查询一个任务的详细信息。 参数为Subtask对象
+	 */
+	
+	public Subtask queryBySubtaskIdS(Connection conn,Integer subtaskId) throws ServiceException {
+		try {
 			QueryRunner run = new QueryRunner();
 			
 			StringBuilder sb = new StringBuilder();
@@ -515,9 +575,25 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
+		} 
+	}
+	
+	/**
+	 * 获取subtask详情
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException
+	 */
+	
+	public Map<String,Object> query(Integer subtaskId,int platform) throws ServiceException {
+		Map<String,Object> subtaskMap= queryBySubtaskId(subtaskId); 
+		if(platform==0||platform==1){
+			if(subtaskMap!=null&&subtaskMap.containsKey("gridIds")){
+				Map<Integer,Integer> gridIds=(Map<Integer, Integer>) subtaskMap.get("gridIds");
+				subtaskMap.put("gridIds",gridIds.keySet());
+			}
 		}
+		return subtaskMap;
 	}
 	
 	/**
@@ -535,14 +611,33 @@ public class SubtaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
-			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID,ST.QUALITY_SUBTASK_ID,ST.IS_QUALITY");
-			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID,t.name task_name");
-			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
-			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append(" AND T.REGION_ID = R.REGION_ID");
-			sb.append(" AND ST.SUBTASK_ID = " + subtaskId);
-	
+			sb.append(" SELECT ST.SUBTASK_ID,                           ");
+			sb.append("        ST.NAME,                                 ");
+			sb.append("        ST.STATUS,                               ");
+			sb.append("        ST.STAGE,                                ");
+			sb.append("        ST.DESCP,                                ");
+			sb.append("        ST.PLAN_START_DATE,                      ");
+			sb.append("        ST.PLAN_END_DATE,                        ");
+			sb.append("        ST.TYPE,                                 ");
+			sb.append("        ST.GEOMETRY,                             ");
+			sb.append("        ST.REFER_ID,                             ");
+			sb.append("        ST.EXE_USER_ID,                          ");
+			sb.append("        ST.EXE_GROUP_ID,                         ");
+			sb.append("        ST.QUALITY_SUBTASK_ID,                   ");
+			sb.append("        ST.IS_QUALITY,                           ");
+			sb.append("        T.TASK_ID,                               ");
+			sb.append("        T.TYPE                TASK_TYPE,         ");
+			sb.append("        R.DAILY_DB_ID,                           ");
+			sb.append("        R.MONTHLY_DB_ID,                         ");
+			sb.append("        T.NAME                TASK_NAME,         ");
+			sb.append("        T.TASK_ID,                               ");
+			sb.append("        P.TYPE PROGRAM_TYPE                      ");
+			sb.append("   FROM SUBTASK ST, TASK T, REGION R,PROGRAM P   ");
+			sb.append("  WHERE ST.TASK_ID = T.TASK_ID                   ");
+			sb.append("    AND T.REGION_ID = R.REGION_ID                ");
+			sb.append("    AND T.PROGRAM_ID = P.PROGRAM_ID              ");
+			sb.append("    AND ST.SUBTASK_ID = " + subtaskId);
+
 			String selectSql = sb.toString();
 
 			ResultSetHandler<Map<String,Object>> rsHandler = new ResultSetHandler<Map<String,Object>>() {
@@ -560,6 +655,8 @@ public class SubtaskService {
 						subtask.put("status",rs.getInt("STATUS"));
 						subtask.put("stage",rs.getInt("STAGE"));
 						subtask.put("referId",rs.getInt("REFER_ID"));
+						subtask.put("taskId",rs.getInt("TASK_ID"));
+						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");
@@ -617,7 +714,7 @@ public class SubtaskService {
 						
 						try {
 							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.put("gridIds",gridIds.keySet());
+							subtask.put("gridIds",gridIds);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -1276,7 +1373,7 @@ public class SubtaskService {
 				SubtaskOperation.pushMessage(conn, subtask, userId);
 				success ++;
 			}
-			return "子任务批量发布"+success+"个成功，"+(subtaskList.size()-success)+"个失败";
+			return "子任务发布成功"+success+"个，失败"+(subtaskList.size()-success)+"个";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -1455,7 +1552,7 @@ public class SubtaskService {
 					+ "  FROM SUBTASK T"
 					+ " WHERE (T.EXE_USER_ID = "+userId+groupSql+")"
 					+ "   AND T.STATUS = 1"
-					+ "   AND T.STAGE != 0"
+//					+ "   AND T.STAGE != 0"
 					+ " GROUP BY T.STAGE, T.TYPE"
 					+ " ORDER BY T.STAGE, T.TYPE";
 			QueryRunner run=new QueryRunner();
@@ -1475,6 +1572,7 @@ public class SubtaskService {
 						int typeCount=rs.getInt("TYPE_COUNT");
 						String name="";
 						if(stage==1){name+="日编 - ";}
+						else if(stage==0){name+="采集 - ";}
 						else{name+="月编 - ";}
 						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
 						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项
@@ -1582,34 +1680,51 @@ public class SubtaskService {
 		log.info("=================closeBySubtaskId==========================");
 
 		//动态调整子任务范围
-		//日编子任务关闭，调整日编任务本身，调整日编任务,调整日编区域子任务
-		if(subtask.getStage()==1){
+		//20170330 by zxy若是快线子任务，则需调整对应的快线项目
+		if(subtask.getStage()==0||subtask.getStage()==1){
 			//获取规划外GRID信息
-			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask);
-//			log.info("=================getGridIdMapBySubtaskFromLog==========================");
+			log.info("调整子任务本身范围");
+			int programType=1;
+			if(subtask.getStage()==0){
+				programType=getTaskBySubtaskId(subtask.getSubtaskId()).get("programType");	
+			}
+			Map<Integer,Integer> gridIdsToInsert = SubtaskOperation.getGridIdMapBySubtaskFromLog(subtask,programType);
 			//调整子任务范围
 			SubtaskOperation.insertSubtaskGridMapping(conn,subtask.getSubtaskId(),gridIdsToInsert);
-//			log.info("=================insertSubtaskGridMapping==========================");
-
-			//调整任务范围
-			TaskOperation.insertTaskGridMapping(conn,subtask.getTaskId(),gridIdsToInsert);
-//			log.info("=================insertTaskGridMapping==========================");
-
-			//调整区域子任务范围
-			List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,subtask.getTaskId(),4);
-//			log.info("=================getSubTaskListByType==========================");
-
-//			log.info("=================subtaskList==========================" + subtaskList);
-//			log.info("=================gridIdsToInsert==========================" + gridIdsToInsert);
-			if(subtaskList.size()!=0){
-				for(Subtask subtaskType4:subtaskList){
-//					log.info("=================insertSubtaskGridMapping==========================");
-					SubtaskOperation.insertSubtaskGridMapping(conn, subtaskType4.getSubtaskId(), gridIdsToInsert);
-				}
+			if(gridIdsToInsert!=null&&gridIdsToInsert.size()>0){
+				updateSubtaskGeo(conn,subtask.getSubtaskId());
+				//调整任务范围
+				log.info("调整子任务对应任务范围");
+				int taskChangeNum=TaskOperation.changeTaskGridBySubtask(conn, subtask.getSubtaskId());
+				if(taskChangeNum>0){					
+					//20170330 by zxy若是快线子任务，则需调整对应的快线项目
+					log.info("调整子任务对应快线项目范围");
+					ProgramService.getInstance().changeProgramGridByTask(conn,subtask.getTaskId());
+					if(subtask.getStage()==1){
+						//调整区域子任务范围
+						log.info("日编子任务 调整区域子任务范围");
+						int regionChange=SubtaskOperation.changeRegionSubtaskGridByTask(conn, subtask.getTaskId());
+						if(regionChange>0){
+							List<Integer> regionSubtaskIds = SubtaskOperation.getRegionSubtaskByTask(conn, subtask.getTaskId());
+							for(int tmpSubtaskId:regionSubtaskIds){
+								updateSubtaskGeo(conn,tmpSubtaskId);}
+						}
+					}else if(subtask.getStage()==0){
+						//调整日编任务，二代编辑任务
+						log.info("采集子任务 调整日编任务，二代编辑任务范围");
+						TaskOperation.changeDayCmsTaskGridByCollectTask(conn,subtask.getTaskId());
+						//调整日编区域子任务范围		
+						log.info("采集子任务 调整日编区域子任务范围");
+						int regionChange=SubtaskOperation.changeDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());
+						if(regionChange>0){
+							List<Integer> regionSubtaskIds = SubtaskOperation.getDayRegionSubtaskByCollectTask(conn, subtask.getTaskId());
+							for(int tmpSubtaskId:regionSubtaskIds){
+								updateSubtaskGeo(conn,tmpSubtaskId);}
+						}
+					}
+				}					
 			}
-			
-		}
-		
+		}		
 		
 		//发送消息
 		try {
@@ -1888,5 +2003,137 @@ public class SubtaskService {
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，programType：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	public Map<String, Integer> getTaskBySubtaskId(int subtaskId)
+			throws Exception {
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getManConnection();
+			return getTaskBySubtaskId(conn,subtaskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，programType：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	public Map<String, Integer> getTaskBySubtaskId(Connection conn,int subtaskId)
+			throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql="SELECT T.TASK_ID, P.TYPE"
+					+ "  FROM SUBTASK S, TASK T, PROGRAM P"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND T.PROGRAM_ID = P.PROGRAM_ID"
+					+ "   AND S.SUBTASK_ID = "+subtaskId;
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Integer>>(){
+
+				@Override
+				public Map<String, Integer> handle(ResultSet rs)
+						throws SQLException {
+					Map<String, Integer> taskMap=new HashMap<String, Integer>();
+					if(rs.next()){
+						taskMap.put("taskId", rs.getInt("TASK_ID"));
+						taskMap.put("programType", rs.getInt("TYPE"));
+					}
+					return taskMap;
+				}
+				
+			});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}
+	}
+
+	/**
+	 * @param subtaskId
+	 * @throws ServiceException 
+	 */
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT TT.TASK_ID                   ");
+			sb.append("   FROM SUBTASK S, TASK T, TASK TT   ");
+			sb.append("  WHERE S.TASK_ID = T.TASK_ID        ");
+			sb.append("    AND TT.BLOCK_ID = T.BLOCK_ID     ");
+			sb.append("    AND TT.TYPE = 0                  ");
+			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
+			
+			String sql = sb.toString();
+			
+			log.info("getCollectTaskIdByDaySubtask sql :" + sql);
+			
+			
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> result = new HashSet<Integer>();
+					while(rs.next()) {
+						result.add(rs.getInt("TASK_ID"));
+					}
+					return result;
+				}
+			};
+			Set<Integer> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getCollectTaskIdByDaySubtask失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param subtask
+	 * @throws ServiceException 
+	 */
+	public void createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
+		try {
+			//默认subtask状态为草稿2
+			if(bean.getStatus()== null){
+				bean.setStatus(2);
+			}
+			
+			// 插入subtask
+			SubtaskOperation.insertSubtask(conn, bean);
+			
+			// 插入SUBTASK_GRID_MAPPING
+			if(bean.getGridIds() != null){
+				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
+				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
+				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
+			}
+			log.debug("子任务创建成功!");
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} 
 	}
 }

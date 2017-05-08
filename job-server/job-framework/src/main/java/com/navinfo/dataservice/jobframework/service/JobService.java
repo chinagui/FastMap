@@ -1,15 +1,18 @@
 package com.navinfo.dataservice.jobframework.service;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-
-import net.sf.json.JSONObject;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
@@ -18,10 +21,13 @@ import com.navinfo.dataservice.api.job.model.JobStep;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONObject;
 
 /** 
 * @ClassName: JobService 
@@ -108,6 +114,55 @@ public class JobService {
 		return null;
 	}
 	
+	public Map<String,Object> getJobByTask(int taskId, long userId, String jobType) throws Exception {
+		Map<String,Object> retMap = null;
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		ResultSet ret = null;
+		StringBuilder sb = new StringBuilder();
+		sb.append("select a.*");
+		sb.append(" from (");
+		sb.append(" select t.job_id,t.job_type,t.create_time,t.status,t.job_request,t.result_msg,t.step_count,s.step_seq,s.step_msg");
+		sb.append(" from job_info t,job_step s");
+		sb.append(" where t.job_id=s.job_id(+)");
+		sb.append(" and t.job_type=:1");
+		sb.append(" and t.task_id=:2");
+		sb.append(" and t.user_id=:3");
+		sb.append(" and t.status in (1,2)");
+		sb.append(" order by t.create_time desc");
+		sb.append(" ) a");
+		sb.append(" where rownum = 1");
+		try{
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setString(1, jobType);
+			pstmt.setInt(2, taskId);
+			pstmt.setLong(3, userId);
+			ret = pstmt.executeQuery();
+			if (ret.next()) {
+				retMap = new HashMap<String,Object>();
+				retMap.put("jobId", ret.getInt("job_id"));
+				retMap.put("jobType", ret.getString("job_type"));
+				retMap.put("createTime", ret.getTimestamp("create_time"));
+				retMap.put("status", ret.getInt("status"));
+				retMap.put("jobRequest", ret.getString("job_request"));
+				retMap.put("resultMsg", ret.getString("result_msg"));
+				retMap.put("stepCount", ret.getInt("step_count"));
+				retMap.put("stepSeq", ret.getInt("step_seq"));
+				retMap.put("stepMsg",ret.getString("step_msg"));
+			}
+			return retMap;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		} finally {
+			DbUtils.close(ret);
+			DbUtils.close(pstmt);
+			DbUtils.close(conn);
+		}
+	}
+	
 	/* resultset handler */
 	class FullHandler implements ResultSetHandler<JobInfo>{
 		@Override
@@ -155,15 +210,15 @@ public class JobService {
 			DbUtils.closeQuietly(conn);
 		}
 	}
-	public JSONObject getLatestJob(int subtaskId)throws ServiceException{
+	public JSONObject getLatestJob(int subtaskId,String jobType, String jobDescp)throws ServiceException{
 		Connection conn = null;
 		JSONObject jobObj = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
 					.getConnection();
-			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
-			System.out.println(jobInfoSql);
+			String jobInfoSql = "select * from ( select j.job_id , j.job_guid  from job_info j where j.job_type = '"+jobType+"' and j.descp = '"+jobDescp+"' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+			log.info("getLatestJob jobInfoSql: "+jobInfoSql);
 			jobObj = run.query(conn, jobInfoSql, new ResultSetHandler<JSONObject>(){
 				
 				@Override
@@ -186,5 +241,190 @@ public class JobService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 		//return jobObj;
+	}
+	
+	
+	/**
+	 * @Title: getLatestJobByDescp
+	 * @Description: 根据任务描述获取最新一次检查任务的 job_guid
+	 * @param descp
+	 * @return
+	 * @throws ServiceException  JSONObject
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月12日 下午5:26:55 
+	 */
+	public JobInfo getLatestJobByDescp(String descp)throws ServiceException{
+		log.info("begin getLatestJobByDescp descp:"+descp);
+		Connection conn = null;
+		JobInfo jobInfo = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "select * from ( select  j.job_id , j.job_guid  from job_info j where  1=1 ";
+					if(descp != null && StringUtils.isNotEmpty(descp)){
+						jobInfoSql += " and  j.descp like '%"+descp+"%'  ";
+					}
+					
+					jobInfoSql +=  "and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+					log.info("getLatestJobByDescp: "+jobInfoSql);
+			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
+				
+				@Override
+				public JobInfo handle(ResultSet rs) throws SQLException {
+					JobInfo jobInfo = null;
+					if(rs.next()){
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						log.info("id : "+id+ " guid: "+guid);
+						 jobInfo = new JobInfo(id,guid);
+						
+					}
+					return jobInfo;
+				}
+				
+			});
+			return jobInfo;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//return jobObj;
+	}
+	
+	public JobInfo getJobByDescp(String descp)throws ServiceException{
+		log.info("begin getJobByDescp descp:"+descp);
+		Connection conn = null;
+		JobInfo jobInfo = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = "select * from ( select  j.job_id , j.job_guid  from job_info j where  1=1 ";
+					if(descp != null && StringUtils.isNotEmpty(descp)){
+						jobInfoSql += " and  j.descp = '"+descp+"'  ";
+					}
+					
+					jobInfoSql +=  "and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+					log.info("getJobByDescp jobInfoSql: "+jobInfoSql);
+			jobInfo = run.query(conn, jobInfoSql, new ResultSetHandler<JobInfo>(){
+				
+				@Override
+				public JobInfo handle(ResultSet rs) throws SQLException {
+					JobInfo jobInfo = null;
+					if(rs.next()){
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						log.info("id : "+id+ " guid: "+guid);
+						 jobInfo = new JobInfo(id,guid);
+						
+					}
+					return jobInfo;
+				}
+				
+			});
+			return jobInfo;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		//return jobObj;
+	}
+
+	/**
+	 * @Title: getJobObjList
+	 * @Description: 根据查询条件获取 job 相关信息集合
+	 * @param parameterJson
+	 * @return  JSONArray
+	 * @throws ServiceException 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年4月12日 上午10:44:14 
+	 */
+	public List<JobInfo> getJobInfoList(JSONObject parameterJson) throws ServiceException {
+		System.out.println("begin getJobInfoList parameterJson :"+parameterJson);
+		Connection conn = null;
+		List<JobInfo> jobInfos = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = MultiDataSourceFactory.getInstance().getSysDataSource()
+					.getConnection();
+			String jobInfoSql = " select distinct j.job_id , j.job_guid, j.descp  from job_info j where 1=1 ";
+// "j.job_type = 'checkCore' and j.descp = '元数据库检查' and j.task_id = "+subtaskId+" and j.end_time is not null  order by j.end_time desc ) where rownum=1 ";
+			
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName!=null || StringUtils.isNotEmpty(tableName)){
+				jobInfoSql+=" and j.descp like '%"+tableName+"%'";
+			}
+			String startDate = "";
+			if(parameterJson.containsKey("startDate") && parameterJson.getString("startDate") != null){
+				startDate = parameterJson.getString("startDate");
+			}
+			String endDate = "";
+			if(parameterJson.containsKey("endDate") && parameterJson.getString("endDate") != null){
+				endDate = parameterJson.getString("endDate");
+			}
+			if(startDate == null || StringUtils.isEmpty(startDate) 
+					|| endDate == null || StringUtils.isEmpty(endDate) ){
+				//默认最近一个月内
+				Timestamp curTime = DateUtilsEx.getCurTime();
+				
+				Timestamp beginTime = DateUtilsEx.getDayOfDelayMonths(curTime, -1);
+				
+				startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd HH:mm:ss");
+				endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd HH:mm:ss");
+				log.info("startDate : "+startDate+"  "+" endDate :"+endDate);
+			}
+			jobInfoSql+=" and (j.end_time "
+					+ "between to_date('"+startDate+"','yyyy-mm-dd hh24:mi:ss') "
+					+ "and to_date('"+endDate+"','yyyy-mm-dd hh24:mi:ss') "
+					+ ") ";
+			
+			String jobName = "";
+			if(parameterJson.containsKey("jobName") && parameterJson.getString("jobName") != null 
+					&& StringUtils.isNotEmpty(parameterJson.getString("jobName")) && !parameterJson.getString("jobName").equals("null")){
+				jobName = parameterJson.getString("jobName");
+				jobInfoSql+=" and j.descp like '%"+jobName+"%'";
+				
+			}
+			
+			jobInfoSql+=" order by j.end_time desc ";
+			
+			log.info(jobInfoSql);
+			jobInfos = run.query(conn, jobInfoSql, new ResultSetHandler<List<JobInfo>>(){
+				
+				@Override
+				public List<JobInfo> handle(ResultSet rs) throws SQLException {
+					List<JobInfo> jobArr = new ArrayList<JobInfo>();
+					while(rs.next()){
+						log.info("job_id: "+rs.getLong("job_id")+" job_guid: "+rs.getString("job_guid")+" descp: "+rs.getString("descp"));
+						long id = rs.getLong("job_id");
+						String guid = rs.getString("job_guid");
+						JobInfo jobInfo = new JobInfo(id,guid);
+						jobInfo.setDescp(rs.getString("descp"));
+						//jobInfo.setGuid(rs.getString("job_guid"));
+						
+						jobArr.add(jobInfo);
+					}
+					log.info("jobArr : "+ jobArr.size());
+					return jobArr;
+				}
+				
+			});
+			return jobInfos;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("job查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

@@ -4,8 +4,7 @@
         <step value="100">
 	<sql><![CDATA[SELECT P.* FROM CK_EXCEPTION P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_ADMIN_POIDOWNLOAD P;]]></sql>
-<sql><![CDATA[SELECT P.* FROM CP_BORDERLINE P;]]></sql>
-<sql><![CDATA[SELECT P.* FROM CP_BORDERLINE_100W P;]]></sql>
+<sql><![CDATA[SELECT P.* FROM CP_BORDERLINE P;]]></sql>1
 <sql><![CDATA[SELECT P.* FROM CP_CLASS_BUILDINGTYPE_GDFG P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_CLASS_CHAIN_GDFG P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_CLASS_CHAIN_MIFG P;]]></sql>
@@ -57,7 +56,6 @@
 <sql><![CDATA[SELECT P.* FROM CP_PT_RELATION_STOP P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_PT_STOP P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_RETENTION_NOKIA P;]]></sql>
-<sql><![CDATA[SELECT P.* FROM CP_SEA_100W P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_SETTING P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_SPEEDCAMERA_METADATA P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM CP_VOICEGUIDE_2D P;]]></sql>
@@ -102,7 +100,6 @@
 <sql><![CDATA[SELECT P.* FROM SC_IPT_STRAND_POI P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_IPT_STRAND_POI_SRC P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_IPT_STRAND P;]]></sql>
-<sql><![CDATA[SELECT P.* FROM SC_INT_RTIC_CODE P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_MODEL_MATCH_G P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_MODEL_REPDEL_13CY P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_MODEL_REPDEL_G P;]]></sql>
@@ -153,7 +150,6 @@
 <sql><![CDATA[SELECT P.* FROM SC_ROADNAME_SPLIT_PREFIX P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_ROADNAME_SUFFIX P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_ROADNAME_TYPENAME P;]]></sql>
-<sql><![CDATA[SELECT P.* FROM SC_RTIC_CODE P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_SENSITIVE_WORDS P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_TOLLCOST P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM SC_TOLL_COST P;]]></sql>
@@ -259,6 +255,11 @@
 <sql><![CDATA[SELECT P.* FROM MG_METADATA_MAINTAIN P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM NI_VAL_EXCEPTION P;]]></sql>
 <sql><![CDATA[SELECT P.* FROM M_PARAMETER P;]]></sql>	
+
+<sql><![CDATA[SELECT P.* FROM SC_POINT_CHARGING_CHAIN P;]]></sql>	
+<sql><![CDATA[SELECT P.* FROM TY_NAVICOVPY_JYUTP P;]]></sql>	
+<sql><![CDATA[SELECT P.* FROM SC_POINT_GUIDE P;]]></sql>	
+
         </step>
     </feature>
 

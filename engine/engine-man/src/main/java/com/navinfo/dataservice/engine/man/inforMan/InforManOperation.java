@@ -39,7 +39,7 @@ public class InforManOperation {
 		run.update(conn,sql);
 	}*/
 	
-	public static void updatePlanStatus(Connection conn,String inforId,int planStatus) throws Exception{
+	public static void updatePlanStatus(Connection conn,int inforId,int planStatus) throws Exception{
 		String sql="update infor set plan_status="+planStatus+" where infor_id='"+inforId+"'";
 		QueryRunner run = new QueryRunner();
 		run.update(conn,sql);
@@ -62,15 +62,14 @@ public class InforManOperation {
 	private Integer taskId;
 	private Timestamp insertTime;
 	 */
-	public static List<HashMap<String,Object>> selectTaskBySql2(Connection conn,String selectSql,List<Object> values) throws Exception{
+	public static HashMap<String,Object> selectTaskBySql2(Connection conn,String selectSql) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
-				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
-					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
-					while(rs.next()){
+			ResultSetHandler<HashMap<String,Object>> rsHandler = new ResultSetHandler<HashMap<String,Object>>(){
+				public HashMap<String,Object> handle(ResultSet rs) throws SQLException {
+					if(rs.next()){
 						HashMap<String,Object> map = new HashMap<String,Object>();
-						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforId", rs.getInt("INFOR_ID"));
 						map.put("inforName", rs.getString("INFOR_NAME"));
 						JSONArray geoList = new JSONArray();
 						String inforGeo=rs.getString("GEOMETRY");
@@ -89,19 +88,16 @@ public class InforManOperation {
 						map.put("geometry", geoList);
 						map.put("inforLevel",rs.getInt("INFOR_LEVEL"));
 						map.put("planStatus",rs.getInt("PLAN_STATUS"));
-						map.put("inforContent",rs.getString("INFOR_CONTENT"));
+						//map.put("inforContent",rs.getString("INFOR_CONTENT"));
+						
 						//map.put("taskId",rs.getInt("TASK_ID"));						
 						map.put("insertTime",rs.getTimestamp("INSERT_TIME"));
-						list.add(map);
+						return map;
 					}
-					return list;
+					return null;
 				}
-	    		
-	    	}		;
-	    	if (null==values || values.size()==0){
-	    		return run.query( conn, selectSql, rsHandler);
-	    	}
-	    	return run.query(conn, selectSql, rsHandler,values.toArray());
+	    	};
+	    	return run.query( conn, selectSql, rsHandler);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

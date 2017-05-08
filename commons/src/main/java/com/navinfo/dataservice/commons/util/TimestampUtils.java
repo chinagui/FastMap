@@ -29,6 +29,9 @@ public class TimestampUtils {
 	}
 	
 	public static Timestamp addDays(Timestamp ts, int days){
+		if(ts==null){
+			return ts;
+		}
 		return new Timestamp(ts.getTime()+ dayToMiliseconds(days));
 	}
 }

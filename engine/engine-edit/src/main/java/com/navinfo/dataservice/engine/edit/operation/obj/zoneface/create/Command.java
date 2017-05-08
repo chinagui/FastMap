@@ -80,7 +80,7 @@ public class Command extends AbstractCommand implements ICommand {
 	 
 		}
 		if (data.containsKey("linkPids")){
-			this.linkType = json.getString("linkType");
+			this.linkType = data.getString("linkType");
 			JSONArray array = data.getJSONArray("linkPids");
 			linkPids = new ArrayList<Integer>();
 			for( int i= 0 ;i < array.size();i++){

@@ -21,6 +21,7 @@ import com.vividsolutions.jts.io.ParseException;
 * @Description: TODO
 */
 public class CompGridUtil {
+	
 
 	/**
 	 * 计算line在图幅范围内所属的grid
@@ -440,6 +441,11 @@ public class CompGridUtil {
 		return grids;
 	}
 	
+	public static boolean gridInMesh(String meshId,String gridId){
+		if(meshId==null&&gridId==null)return false;
+		return meshId.equals(gridId.substring(0, gridId.length()-2));
+	}
+	
 	/**
 	 * 判断grid是否被一个面包含
 	 * @param face
@@ -492,4 +498,11 @@ public class CompGridUtil {
 		}
 		return geometry;
 	}
+	
+	public static void main(String[] args) {
+		String[] grids = point2Grids(116.27896,40.12822);
+		for(String g:grids){
+			System.out.println(g);
+		}
+	}	
 }

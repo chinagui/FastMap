@@ -16,7 +16,7 @@ import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
 
-public class BkFaceExporter {
+public class BkFaceExporterSp9 {
 	public static void run(Connection sqliteConn,
 			Statement stmt, Connection conn, String operateDate, Set<Integer> meshes)
 			throws Exception {
@@ -33,15 +33,18 @@ public class BkFaceExporter {
 
 		String insertSql = "insert into gdb_bkFace values("
 				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
 //		String sql = "select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 
-		//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 
+		//******zl 2017.02.17 增加查询 lu_face表中  kind = 6 的数据 //****zl 2017.05.04 增加了 cmg_buildface 中数据
 		String sql = " select a.face_pid,a.geometry,a.mesh_id,a.kind from lc_face a where a.scale=0 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
 					+ " union all "
-					+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) ";
+					+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
+					+ " union all  "
+					+ " select a.face_pid,a.geometry,a.mesh_id,201 kind from cmg_buildface a where  a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
@@ -49,6 +52,7 @@ public class BkFaceExporter {
 
 		stmt2.setClob(1, clob);
 		stmt2.setClob(2, clob);
+		stmt2.setClob(3, clob);
 		
 		ResultSet resultSet = stmt2.executeQuery();
 
@@ -84,6 +88,7 @@ public class BkFaceExporter {
 			prep.setString(7, json.getString("op_date"));
 
 			prep.setInt(8, json.getInt("op_lifecycle"));
+			
 
 			prep.executeUpdate();
 

@@ -65,7 +65,7 @@ public class DeepInfoImporter {
 
 		conn.setAutoCommit(false);
 
-		clearDeepInfoTables(conn);
+//		clearDeepInfoTables(conn);
 
 		String querySql = "select 1 from ix_poi where pid=?";
 

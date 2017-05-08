@@ -936,9 +936,12 @@ public class ScModelMatchGService {
 		            Page page = new Page();
 		            page.setPageNum(curPageNum);
 		            page.setPageSize(pageSize);
+		            int total = 0;
 					while(rs.next()){
 						ScModelMatchG model = new ScModelMatchG();
-						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
+						if(total == 0){
+							total=rs.getInt(QueryRunner.TOTAL_RECORD_NUM);
+						}
 						model.setFileId(rs.getLong("FILE_ID"));
 						model.setProductLine(rs.getString("PRODUCT_LINE"));
 						model.setVersion(rs.getString("VERSION"));
@@ -964,6 +967,7 @@ public class ScModelMatchGService {
 						model.setUpdateTime(rs.getString("UPDATE_TIME"));
 						list.add(model);
 					}
+					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}

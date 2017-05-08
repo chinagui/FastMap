@@ -315,10 +315,15 @@ public class ScRoadnameHwInfoService {
 		            Page page = new Page();
 		            page.setPageNum(curPageNum);
 		            page.setPageSize(pageSize);
+		            int total = 0;
 					while(rs.next()){
 						ScRoadnameHwInfo model = new ScRoadnameHwInfo();
-						page.setTotalCount(rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
-						log.info(" total : "+rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
+						if(total == 0){
+							total=rs.getInt(QueryRunner.TOTAL_RECORD_NUM);
+							log.info(" total : "+rs.getInt(QueryRunner.TOTAL_RECORD_NUM));
+						}
+						
+						
 						model.setHwPidUp(rs.getInt("HW_PID_UP"));
 						model.setHwPidDw(rs.getInt("HW_PID_DW"));
 						model.setNameGroupid(rs.getInt("NAME_GROUPID"));
@@ -327,6 +332,7 @@ public class ScRoadnameHwInfoService {
 						model.setuFields(rs.getString("U_FIELDS"));
 						list.add(model);
 					}
+					page.setTotalCount(total);
 					page.setResult(list);
 					return page;
 				}

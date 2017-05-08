@@ -365,7 +365,7 @@ public class PoiGuideLinkBatch {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
 			String sql = "insert /*+append*/ into rd_link_name "
-					+ " select n.* from rd_link_name@"+dbLinkName +" d "
+					+ " select n.* from rd_link_name@"+dbLinkName +" n "
 					+ " where n.link_pid in (select r.link_pid from rd_link r)";
 			new QueryRunner().update(copVersionConn, sql);
 		}catch (Exception e){
@@ -475,7 +475,7 @@ public class PoiGuideLinkBatch {
 	private void importCopPck(OracleSchema copVersionSchema) throws Exception{
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
-			String pckFile = "/com/navinfo/dataservice/scripts/resources/point_feature_batch.pck";
+			String pckFile = "/point_feature_batch.pck";
 			SqlExec sqlExec = new SqlExec(copVersionConn);
 			sqlExec.execute(pckFile);
 		}catch (Exception e){
@@ -490,7 +490,7 @@ public class PoiGuideLinkBatch {
 	private void exeTabelCreateSql(OracleSchema copVersionSchema) throws Exception {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
-			String sqlFile = "/com/navinfo/dataservice/scripts/resources/poi_guide_link_batch_db_create.sql";
+			String sqlFile = "/poi_guide_link_batch_db_create.sql";
 			SqlExec sqlExec = new SqlExec(copVersionConn);
 			sqlExec.execute(sqlFile);
 		}catch (Exception e){

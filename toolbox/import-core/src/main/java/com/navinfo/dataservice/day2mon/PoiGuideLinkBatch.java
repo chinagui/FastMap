@@ -94,6 +94,8 @@ public class PoiGuideLinkBatch {
 			initRdLinkName(copVersionSchema, dbLinkName);
 			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
 			initRdName(copVersionSchema,dbLinkName);
+			//导入rd_link_limit:按照4.5得到的rd_link导入rd_link_limit;
+			initRdLinkLimit(copVersionSchema, dbLinkName);
 			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
 			backupIxPoi(copVersionSchema);
 			//4.9备份ix_poi为ix_poi_flag_back；
@@ -329,6 +331,22 @@ public class PoiGuideLinkBatch {
 
 	}
 	
+	
+	private void initRdLinkLimit(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
+		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
+		try{
+			String sql = "insert /*+append*/ into rd_link_limit "
+					+ " select l.* from rd_link_limit@"+dbLinkName +" l "
+					+ " where l.link_pid in (select r.link_pid from rd_link r)";
+			new QueryRunner().update(copVersionConn, sql); 
+		}catch (Exception e){
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(copVersionConn);
+		}
+	}
 	private void initRdName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{

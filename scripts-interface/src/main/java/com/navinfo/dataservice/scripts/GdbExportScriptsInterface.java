@@ -94,7 +94,7 @@ public class GdbExportScriptsInterface {
 				path += "/";
 			}
 			String type="month";
-			if(args.length==2){
+			if(args.length>1){
 				type = args[1];
 			}
 			

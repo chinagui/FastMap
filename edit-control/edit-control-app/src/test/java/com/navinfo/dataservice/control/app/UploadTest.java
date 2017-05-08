@@ -41,7 +41,7 @@ public class UploadTest {
 	@Test
 	public void testUpload() {
 		try {
-			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi.txt");
+			UploadManager upMan = new UploadManager(4127L,"F:\\data\\collector\\poi20_1.txt");
 			upMan.setSubtaskId(26);
 			UploadResult result = upMan.upload();
 			System.out.println(result);

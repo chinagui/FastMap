@@ -19,9 +19,15 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorUploadPois;
 import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -66,7 +72,8 @@ public class UploadManager {
 			log.warn("从文件中未读取到有效poi,导入0条数据。");
 			return result;
 		}
-		log.info("从文件中读取poi："+rawPois.size()+"条。");
+		result.setTotal(rawPois.size());
+		log.info("从文件中读取poi："+result.getTotal()+"条。");
 		//2.将pois分发到各个大区
 		Map<Integer,CollectorUploadPois> pois = distribute(rawPois);//key:大区库id
 		//3.开始导入数据
@@ -93,13 +100,35 @@ public class UploadManager {
 				imp.operate(cmd);
 				//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
 				PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
+				Map<Long,String> freshVerPois = imp.getFreshVerPois();
 				//写入数据库
 				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
+				//父子关系
+				CollectorPoiPcRelationImportorCommand pcCmd = new CollectorPoiPcRelationImportorCommand(dbId,imp.getPcs());
+				CollectorPoiPcRelationImportor pcImp = new CollectorPoiPcRelationImportor(conn,imp.getResult());
+				pcImp.setSubtaskId(subtaskId);
+				pcImp.operate(pcCmd);
+				for(Long l:pcImp.getChangedPids()){
+					freshVerPois.remove(l);
+				}
+				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				//同一关系
+				CollectorPoiSpRelationImportorCommand spCmd = new CollectorPoiSpRelationImportorCommand(dbId,imp.getSps());
+				CollectorPoiSpRelationImportor spImp = new CollectorPoiSpRelationImportor(conn,null);
+				spImp.setSubtaskId(subtaskId);
+				spImp.operate(spCmd);
+				for(Long l:spImp.getChangedPids()){
+					freshVerPois.remove(l);
+				}
+				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				//鲜度验证
+				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);
 				//如果发生异常，整个db的poi都未入库
-				result.addResults(0, uPois.allFail("Db("+dbId+")连接异常"));
+				result.addResults(0, uPois.allFail("Db("+dbId+")入库异常："+e.getMessage()));
 			}finally{
 				DbUtils.commitAndCloseQuietly(conn);
 			}

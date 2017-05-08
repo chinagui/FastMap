@@ -1,28 +1,21 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import org.apache.commons.lang.StringUtils;
 
-import com.ctc.wstx.util.DataUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
-import com.navinfo.dataservice.dao.glm.iface.ISerializable;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
@@ -34,7 +27,6 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -48,7 +40,7 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.WKTReader;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -68,9 +60,12 @@ public class CollectorPoiImportor extends AbstractOperation {
 	Map<String,String> attrTableMap;
 	Set<String> tabNames;
 	
+	protected int successNum = 0;
 	protected List<ErrorLog> errLogs = new ArrayList<ErrorLog>();
-	protected List<PoiRelation> addPcRelations = new ArrayList<PoiRelation>();
-	protected List<PoiRelation> deletePcRelations = new ArrayList<PoiRelation>();
+	protected CollectorUploadPoiSpRelation sps = new CollectorUploadPoiSpRelation();
+	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
+	protected Map<Long,String> freshVerPois = new HashMap<Long,String>();
+	//父子关系暂时不处理
 
 	public CollectorPoiImportor(Connection conn,OperationResult preResult) {
 		super(conn,preResult);
@@ -80,23 +75,29 @@ public class CollectorPoiImportor extends AbstractOperation {
 		this.langCode=langCode;
 	}
 
+	public int getSuccessNum(){
+		return this.successNum;
+	}
+	
 	public List<ErrorLog> getErrLogs() {
 		return errLogs;
 	}
-	
-	public List<PoiRelation> getAddPcRelations() {
-		return addPcRelations;
-	}
 
-	public List<PoiRelation> getDeletePcRelations() {
-		return deletePcRelations;
+	public CollectorUploadPoiSpRelation getSps() {
+		return sps;
 	}
 	
 
+	public CollectorUploadPoiPcRelation getPcs() {
+		return pcs;
+	}
+	
+	public Map<Long,String> getFreshVerPois(){
+		return freshVerPois;
+	}
+	
 	/**
 	 * 初始化所需子表、属性和子表名的映射关系
-	 * @author Han Shaoming
-	 * @return
 	 */
 	public void init(){
 		//添加所需的子表
@@ -117,13 +118,14 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//属性和表名映射
 		//hotel|gasStation|parkings|foodtypes|chargingStation
 		attrTableMap = new HashMap<String,String>();
-		attrTableMap.put("hotel", IxPoiObj.IX_POI_PHOTO);
+		attrTableMap.put("hotel", IxPoiObj.IX_POI_HOTEL);
 		attrTableMap.put("gasStation", IxPoiObj.IX_POI_GASSTATION);
 		attrTableMap.put("parkings", IxPoiObj.IX_POI_PARKING);
 		attrTableMap.put("foodtypes", IxPoiObj.IX_POI_RESTAURANT);
 		attrTableMap.put("chargingStation", IxPoiObj.IX_POI_CHARGINGSTATION);
 		attrTableMap.put("contacts", IxPoiObj.IX_POI_CONTACT);
 		attrTableMap.put("chargingPole", IxPoiObj.IX_POI_CHARGINGPLOT);
+		attrTableMap.put("relateChildren", IxPoiObj.IX_POI_CHILDREN);
 		//...
 	}
 
@@ -144,26 +146,39 @@ public class CollectorPoiImportor extends AbstractOperation {
 			Map<String,BasicObj> objs = IxPoiSelector.selectByFids(conn,tabNames,updatePois.keySet(),true,true);
 			
 			for(Entry<String, JSONObject> entry:updatePois.entrySet()){
-				IxPoiObj poiObj = null;
-				if(objs!=null&&objs.keySet().contains(entry.getKey())){
-					//处理未修改
-					poiObj = (IxPoiObj)objs.get(entry.getKey());
-					if(poiObj.opType().equals(OperationType.PRE_DELETED)){
-						log.info("fid:"+entry.getKey()+"在库中已删除");
-						errLogs.add(new ErrorLog(entry.getKey(),"poi在库中已删除"));
-						continue;
+				String fid = entry.getKey();
+				try{
+					IxPoiObj poiObj = null;
+					if(objs!=null&&objs.keySet().contains(fid)){
+						//处理未修改
+						poiObj = (IxPoiObj)objs.get(fid);
+						if(poiObj.opType().equals(OperationType.PRE_DELETED)){
+							log.info("fid:"+fid+"在库中已删除");
+							errLogs.add(new ErrorLog(fid,"poi在库中已删除"));
+							continue;
+						}else{
+							log.info("fid:"+fid+"在库中存在，作为修改处理");
+						}
 					}else{
-						log.info("fid:"+entry.getKey()+"在库中存在，作为修改处理");
+						//库中未找到数据，处理为新增
+						log.info("fid:"+fid+"在库中未找到，作为新增处理");
+						poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
 					}
-				}else{
-					//库中未找到数据，处理为新增
-					log.info("fid:"+entry.getKey()+"在库中未找到，作为新增处理");
-					poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
+					setPoiAttr(poiObj,entry.getValue());
+					//计算鲜度验证
+					if(poiObj.isFreshFlag()){
+						freshVerPois.put(poiObj.objPid(), poiObj.getRawFields());
+					}
+					result.putObj(poiObj);
+					successNum++;
+					//同一关系处理
+					//sameFid
+					sps.addUpdatePoiSp(entry.getValue().getString("fid"), entry.getValue().getString("sameFid"));
+				}catch(Exception e){
+					errLogs.add(new ErrorLog(fid,"未分类错误："+e.getMessage()));
+					log.warn("fid（"+fid+"）入库发生错误："+e.getMessage());
+					log.warn(e.getMessage(),e);
 				}
-				setPoiAttr(poiObj,entry.getValue());
-				result.putObj(poiObj);
-				//关系处理
-				//...
 			}
 		}else{
 			log.info("无修改的poi数据需要导入");
@@ -181,8 +196,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 					//删除
 					obj.deleteObj();
 					result.putObj(obj);
+					successNum++;
 					//关系数据处理
-					//...
+					//同一关系处理
+					//sameFid
+					sps.deletePoiSp(((IxPoi)obj.getMainrow()).getPoiNum());
 				}
 				for(String fid:deletePois.keySet()){
 					if(!keys.contains(fid)){
@@ -281,22 +299,19 @@ public class CollectorPoiImportor extends AbstractOperation {
 		ixPoi.setTruckFlag(jo.getInt("truck"));
 		//parentFid
 		/**
+		 * ???只有当父子关系的poi分开不同时上传，才可能需要考虑parentFid入库
+		 * 本次暂时不考虑
 		 * 父子关系采集端双向维护，两个POI同时上传（两个POI同时在库中存在），那么只需维护relateChildren即可
 		 * 但有特殊情况，当父子不同时存在（没有同时上传，或者其中有一个入库失败）
 		 * 那么父存在，子不存在，然后当子后续上传时，不处理parentFid会丢失父子关系，
 		 * 当子存在，父不存在，然后当父上传时，不处理parentFid，父子关系同时是维护正确
 		 * 所以只需处理poi的parentFid有值的情况即可
 		 */
-		PoiRelation pr = new PoiRelation(PoiRelationType.FATHER_AND_SON);
-		String parentFid = jo.getString("parentFid");
-		if(StringUtils.isEmpty(parentFid)){
-			pr.setFatherFid(parentFid);
-			pr.setPid(poiObj.objPid());
-			addPcRelations.add(pr);
-		}
+		
 		//relateChildren
-
 		setChildrenAndAttr(poiObj,jo);
+		//sameFid
+		sps.addUpdatePoiSp(jo.getString("fid"), jo.getString("sameFid"));
 		
 		/*** 子表  ***/
 		//hotel
@@ -572,14 +587,17 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setChildrenAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		if(JSONUtils.isNull(jo.get("relateChildren"))){
 			poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+			//可以孤父
+//			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 		}else{
 			JSONArray subJos = jo.getJSONArray("relateChildren");
 			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
 				poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+				//可以孤父
+//				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 			}else{
-				//...
+				//交给差分
+				pcs.addUpdateChildren(poiObj.objPid(), subJos);
 			}
 		}
 	}
@@ -712,6 +730,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		row.setParkingInfo(jo.getString("parkingInfo"));
 		row.setAvailableState(jo.getInt("availableState"));
 	}
+	
 	public static void main(String[] args) {
 
 //		JSONObject obj = JSONObject.fromObject("{\"key1\":\"\",\"key2\":null,\"key3\":[]}");

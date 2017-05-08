@@ -1702,4 +1702,43 @@ public class BlockService {
 		}
 		
 	}
+
+	/**
+	 * @param 
+	 * @param listAllByCity
+	 * @throws Exception 
+	 */
+	public List<Map<String,Object>> listAllByCity(int cityId, JSONObject jsonObject) throws Exception{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "SELECT B.BLOCK_ID,B.COUNTY_NAME FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
+			if(jsonObject.containsKey("countyName") && jsonObject.getString("countyName").length() > 0){
+				String countyName = "\'"+ "%" + jsonObject.getString("countyName").toString() + "%" +"\'";
+				String selectCountyName = " AND B.COUNTY_NAME LIKE " + countyName;
+				selectSql += selectCountyName;
+			}
+			
+			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
+				@Override
+				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
+					List<Map<String, Object>> res = new ArrayList<Map<String,Object>>();
+					while(result.next()){
+						Map<String, Object> blockMap = new HashMap<String, Object>();
+						blockMap.put("blockId", result.getInt("BLOCK_ID"));
+						blockMap.put("countyName", result.getObject("COUNTY_NAME"));
+						res.add(blockMap);
+					}
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

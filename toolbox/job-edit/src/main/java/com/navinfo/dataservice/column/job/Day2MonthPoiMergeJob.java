@@ -364,7 +364,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		new QueryRunner().update(conn, sql, clobPids);
 	}
 	private String createTempPoiGLinkTable(Connection conn) throws Exception {
-		String tableName = "temp_poi_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));
+		String tableName = "tmp_p_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));
 		String sql ="create table "+tableName+" (pid number(10))";
 		new QueryRunner().update(conn, sql);
 		return tableName;

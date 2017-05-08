@@ -288,19 +288,11 @@ public class CityService {
 	 * @return 
 	 * @throws Exception 
 	 */
-	public List<Map<String, Object>> queryListAll(JSONObject Object) throws Exception {
+	public List<Map<String, Object>> queryListAll(String cityName) throws Exception {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			
-			String cityName = "";
-			if(Object.containsKey("condition")){
-				JSONObject cityPrame = JSONObject.fromObject(Object.getString("condition"));
-				if(cityPrame.containsKey("cityName")){
-					cityName = cityPrame.get("cityName").toString();
-				}
-			}
 			
 			String queryListAllSql = "select c.city_id, r.daily_db_id, c.city_name from city c, region r where c.city_name like '%" + cityName + "%' and c.region_id = r.region_id";
 

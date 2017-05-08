@@ -296,7 +296,7 @@ public class CityService {
 			
 			String cityName = "\'"+ "%" + Object.get("cityName").toString() + "%" +"\'";
 			
-			String queryListAllSql = "select c.city_id, c.city_name, c.admin_id from city c where c.city_name like " + cityName;
+			String queryListAllSql = "select c.city_id, r.daily_db_id, c.city_name from city c, region r where c.city_name like " + cityName + " and c.region_id = r.region_id";
 
 			return run.query(conn, queryListAllSql, new ResultSetHandler<List<Map<String, Object>>>(){
 
@@ -308,7 +308,7 @@ public class CityService {
 						Map<String, Object> cityMap = new HashMap<String, Object>();
 						cityMap.put("cityId", result.getInt("CITY_ID"));
 						cityMap.put("cityName", result.getObject("CITY_NAME"));
-						cityMap.put("dbId", result.getInt("ADMIN_ID"));
+						cityMap.put("dbId", result.getInt("DAILY_DB_ID"));
 						res.add(cityMap);
 					}
 					return res;

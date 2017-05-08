@@ -204,6 +204,15 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
+	
+	public boolean isHisChanged(){
+
+		if(hisChangeLogs!=null && !hisChangeLogs.isEmpty()){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	public boolean isChanged(String colName){
 		if(opType.equals(OperationType.INSERT)

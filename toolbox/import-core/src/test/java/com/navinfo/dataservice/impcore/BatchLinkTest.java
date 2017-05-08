@@ -27,14 +27,9 @@ public class BatchLinkTest {
 		DbInfo monthDbInfo = datahubApi.getDbById(12);
 		OracleSchema monthDbSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(monthDbInfo.getConnectParam()));
-		PoiGuideLinkBatch batch = new PoiGuideLinkBatch(null,monthDbSchema);
-		
-		DbInfo copVersionDbInfo = batch.createCopVersion();
-		OracleSchema copVersionSchema = new OracleSchema(
-				DbConnectConfig.createConnectConfig(copVersionDbInfo.getConnectParam()));
-		
-		String DbLinkName = batch.createDbLink(copVersionSchema);
-		System.out.print(DbLinkName);
+		PoiGuideLinkBatch batch = new PoiGuideLinkBatch("temp_poi_glink_1",monthDbSchema);
+		batch.execute();
+
 	}
 	
 }

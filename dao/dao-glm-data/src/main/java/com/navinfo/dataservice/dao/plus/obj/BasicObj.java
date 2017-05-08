@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -395,5 +396,27 @@ public abstract class BasicObj {
 	public abstract BasicRow createSubSubRowByName(String subRowName,long subId) throws Exception;
 	//根据json中的key获取对象
 	public abstract List<BasicRow> getSubRowByName(String subRowName) throws Exception;
+	
+	public boolean hisOldValueContains(String tableName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hisOldValueContains(String tableName,String columnName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				if(basicRow.hisOldValueContains(columnName)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 }

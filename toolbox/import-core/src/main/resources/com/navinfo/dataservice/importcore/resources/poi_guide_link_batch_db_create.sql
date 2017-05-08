@@ -969,5 +969,1205 @@ create unique index IDX_20170411032911_R on RD_LINK_NAME (ROW_ID)
     minextents 1
     maxextents unlimited
   );
-
   
+create table RD_LINK_LIMIT
+(
+  LINK_PID     NUMBER(10) not null,
+  TYPE         NUMBER(2) default 3 not null,
+  LIMIT_DIR    NUMBER(1) default 0 not null,
+  TIME_DOMAIN  VARCHAR2(1000),
+  VEHICLE      NUMBER(10) default 0 not null,
+  TOLL_TYPE    NUMBER(1) default 9 not null,
+  WEATHER      NUMBER(1) default 9 not null,
+  INPUT_TIME   VARCHAR2(32),
+  PROCESS_FLAG NUMBER(1) default 0 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table RD_LINK_LIMIT
+  add constraint RDLINK_LIMIT foreign key (LINK_PID)
+  references RD_LINK (LINK_PID)
+  disable;
+
+alter table RD_LINK_LIMIT
+  add check (TYPE in (0,1,2,3,4,5,6,7,8,9,10));
+alter table RD_LINK_LIMIT
+  add check (LIMIT_DIR in (0,1,2,3,9));
+alter table RD_LINK_LIMIT
+  add check (TOLL_TYPE in (0,1,2,3,4,5,6,9));
+alter table RD_LINK_LIMIT
+  add check (WEATHER in (0,1,2,3,9));
+alter table RD_LINK_LIMIT
+  add check (PROCESS_FLAG in (0,1,2));
+alter table RD_LINK_LIMIT
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_RD_110 on RD_LINK_LIMIT (LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_RD_D07 on RD_LINK_LIMIT (TYPE, LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032909_R on RD_LINK_LIMIT (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+create sequence LOG_OP_SEQ
+minvalue 1
+maxvalue 99999999999
+start with 101
+increment by 1
+cache 20; 
+
+create table SHD_MESH
+(
+  PID       NUMBER(10) not null,
+  MESHID    NUMBER(10),
+  MESHID_5K VARCHAR2(10)
+);
+
+
+create table PT_POI
+(
+  PID           NUMBER(10) not null,
+  POI_KIND      VARCHAR2(4),
+  GEOMETRY      SDO_GEOMETRY,
+  X_GUIDE       NUMBER(10,5) default 0 not null,
+  Y_GUIDE       NUMBER(10,5) default 0 not null,
+  LINK_PID      NUMBER(10) default 0 not null,
+  SIDE          NUMBER(1) default 0 not null,
+  NAME_GROUPID  NUMBER(10) default 0 not null,
+  ROAD_FLAG     NUMBER(1) default 0 not null,
+  PMESH_ID      NUMBER(8) default 0 not null,
+  CITY_CODE     NUMBER(6) default 0 not null,
+  ACCESS_CODE   VARCHAR2(32),
+  ACCESS_TYPE   VARCHAR2(10) default '0' not null,
+  ACCESS_METH   NUMBER(3) default 0 not null,
+  MESH_ID_5K    VARCHAR2(10),
+  MESH_ID       NUMBER(8) default 0 not null,
+  REGION_ID     NUMBER(10) default 0 not null,
+  EDIT_FLAG     NUMBER(1) default 1 not null,
+  POI_MEMO      VARCHAR2(200),
+  OPERATOR      VARCHAR2(30),
+  UPDATE_TIME   VARCHAR2(200),
+  LOG           VARCHAR2(255),
+  EDITION_FLAG  VARCHAR2(12),
+  STATE         NUMBER(1) default 0 not null,
+  POI_NUM       VARCHAR2(100),
+  TASK_ID       NUMBER(10) default 0 not null,
+  DATA_VERSION  VARCHAR2(128),
+  FIELD_TASK_ID NUMBER(10) default 0 not null,
+  U_RECORD      NUMBER(2) default 0 not null,
+  U_FIELDS      VARCHAR2(1000),
+  U_DATE        VARCHAR2(14),
+  ROW_ID        RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table PT_POI
+  add constraint PK_PT_POI primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table PT_POI
+  add check (SIDE in (0,1,2,3));
+alter table PT_POI
+  add check (ROAD_FLAG in (0,1,2,3));
+alter table PT_POI
+  add check (ACCESS_TYPE in ('0','1','2','3'));
+alter table PT_POI
+  add check (EDIT_FLAG in (0,1));
+alter table PT_POI
+  add check (STATE in (0,1,2,3));
+alter table PT_POI
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_PT_01 on PT_POI (CITY_CODE, LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_RD_57 on PT_POI (LINK_PID, PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032975_R on PT_POI (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+  
+
+create table IX_POSTCODE
+(
+  POST_ID      NUMBER(10) not null,
+  POST_CODE    VARCHAR2(6),
+  GEOMETRY     SDO_GEOMETRY,
+  LINK_PID     NUMBER(10) default 0 not null,
+  SIDE         NUMBER(1) default 0 not null,
+  NAME_GROUPID NUMBER(10) default 0 not null,
+  MESH_ID_5K   VARCHAR2(10),
+  MESH_ID      NUMBER(8) default 0 not null,
+  REGION_ID    NUMBER(10) default 0 not null,
+  EDIT_FLAG    NUMBER(1) default 1 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_POSTCODE
+  add constraint PK_IX_POSTCODE primary key (POST_ID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_POSTCODE
+  add check (SIDE in (0,1,2,3));
+alter table IX_POSTCODE
+  add check (EDIT_FLAG in (0,1));
+alter table IX_POSTCODE
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_IX_22 on IX_POSTCODE (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411033058_R on IX_POSTCODE (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+create table AD_FACE
+(
+  FACE_PID  NUMBER(10) not null,
+  REGION_ID NUMBER(10) not null,
+  GEOMETRY  SDO_GEOMETRY,
+  AREA      NUMBER(30,6) default 0,
+  PERIMETER NUMBER(15,3) default 0,
+  MESH_ID   NUMBER(8) default 0 not null,
+  EDIT_FLAG NUMBER(1) default 1 not null,
+  U_RECORD  NUMBER(2) default 0 not null,
+  U_FIELDS  VARCHAR2(1000),
+  U_DATE    VARCHAR2(14),
+  ROW_ID    RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table AD_FACE
+  add constraint PK_AD_FACE primary key (FACE_PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+alter table AD_FACE
+  add check (EDIT_FLAG in (0,1));
+alter table AD_FACE
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_AD_01 on AD_FACE (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_AD_04 on AD_FACE (REGION_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032926_R on AD_FACE (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create table SHD_IX_HAMLET_32774
+(
+  PID      NUMBER(10) not null,
+  GEOMETRY SDO_GEOMETRY
+);
+create table SHD_AD_FACE_32774
+(
+  FACE_PID  NUMBER(10) not null,
+  REGION_ID NUMBER(10) not null,
+  GEOMETRY  SDO_GEOMETRY
+);
+create table SHD_IX_POI_32774
+(
+  PID      NUMBER(10) not null,
+  GEOMETRY SDO_GEOMETRY
+);
+
+create table IX_HAMLET
+(
+  PID          NUMBER(10) not null,
+  KIND_CODE    VARCHAR2(8),
+  GEOMETRY     SDO_GEOMETRY,
+  X_GUIDE      NUMBER(10,5) default 0 not null,
+  Y_GUIDE      NUMBER(10,5) default 0 not null,
+  LINK_PID     NUMBER(10) default 0 not null,
+  SIDE         VARCHAR2(1) default '0' not null,
+  NAME_GROUPID NUMBER(10) default 0 not null,
+  ROAD_FLAG    NUMBER(1) default 0 not null,
+  PMESH_ID     NUMBER(8) default 0 not null,
+  MESH_ID_5K   VARCHAR2(10),
+  MESH_ID      NUMBER(8) default 0 not null,
+  REGION_ID    NUMBER(10) default 0 not null,
+  POI_PID      NUMBER(10) default 0 not null,
+  POI_NUM      VARCHAR2(36),
+  EDIT_FLAG    NUMBER(1) default 1 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_HAMLET
+  add constraint PK_IX_HAMLET primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_HAMLET
+  add check (KIND_CODE is null or (KIND_CODE in ('260100','260200','260000')));
+alter table IX_HAMLET
+  add check (SIDE in ('0','1','2','3'));
+alter table IX_HAMLET
+  add check (ROAD_FLAG in (0,1,2,3));
+alter table IX_HAMLET
+  add check (EDIT_FLAG in (0,1));
+alter table IX_HAMLET
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_IX_15 on IX_HAMLET (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_31 on IX_HAMLET (LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032949_R on IX_HAMLET (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+  
+
+create table IX_ROADNAME
+(
+  PID        NUMBER(10) not null,
+  GEOMETRY   SDO_GEOMETRY,
+  NAME       VARCHAR2(60),
+  PINYIN     VARCHAR2(1000),
+  NAME_ENG   VARCHAR2(200),
+  MESH_ID_5K VARCHAR2(10),
+  MESH_ID    NUMBER(8) default 0 not null,
+  REGION_ID  NUMBER(10) default 0 not null,
+  EDIT_FLAG  NUMBER(1) default 1 not null,
+  U_RECORD   NUMBER(2) default 0 not null,
+  U_FIELDS   VARCHAR2(1000),
+  U_DATE     VARCHAR2(14),
+  ROW_ID     RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ROADNAME
+  add constraint PK_IX_ROADNAME primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ROADNAME
+  add check (EDIT_FLAG in (0,1));
+alter table IX_ROADNAME
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_IX_21 on IX_ROADNAME (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411033059_R on IX_ROADNAME (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+
+create table IX_POINTADDRESS
+(
+  PID                 NUMBER(10) not null,
+  GEOMETRY            SDO_GEOMETRY,
+  X_GUIDE             NUMBER(10,5) default 0 not null,
+  Y_GUIDE             NUMBER(10,5) default 0 not null,
+  GUIDE_LINK_PID      NUMBER(10) default 0 not null,
+  LOCATE_LINK_PID     NUMBER(10) default 0 not null,
+  LOCATE_NAME_GROUPID NUMBER(10) default 0 not null,
+  GUIDE_LINK_SIDE     NUMBER(1) default 0 not null,
+  LOCATE_LINK_SIDE    NUMBER(1) default 0 not null,
+  SRC_PID             NUMBER(10) default 0 not null,
+  REGION_ID           NUMBER(10) default 0 not null,
+  MESH_ID             NUMBER(8) default 0 not null,
+  EDIT_FLAG           NUMBER(1) default 1 not null,
+  IDCODE              VARCHAR2(36),
+  DPR_NAME            VARCHAR2(100),
+  DP_NAME             VARCHAR2(35),
+  OPERATOR            VARCHAR2(32),
+  MEMOIRE             VARCHAR2(200),
+  DPF_NAME            VARCHAR2(500),
+  POSTER_ID           VARCHAR2(100),
+  ADDRESS_FLAG        NUMBER(1) default 0 not null,
+  VERIFED             VARCHAR2(1) default 'F' not null,
+  LOG                 VARCHAR2(1000),
+  MEMO                VARCHAR2(500),
+  RESERVED            VARCHAR2(1000),
+  TASK_ID             NUMBER(10) default 0 not null,
+  SRC_TYPE            VARCHAR2(100),
+  DATA_VERSION        VARCHAR2(128),
+  FIELD_TASK_ID       NUMBER(10) default 0 not null,
+  U_RECORD            NUMBER(2) default 0 not null,
+  U_FIELDS            VARCHAR2(1000),
+  STATE               NUMBER(1) default 0 not null,
+  U_DATE              VARCHAR2(14),
+  ROW_ID              RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_POINTADDRESS
+  add constraint PK_IX_POINTADDRESS primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_POINTADDRESS
+  add check (GUIDE_LINK_SIDE in (0,1,2,3));
+alter table IX_POINTADDRESS
+  add check (LOCATE_LINK_SIDE in (0,1,2,3));
+alter table IX_POINTADDRESS
+  add check (EDIT_FLAG in (0,1));
+alter table IX_POINTADDRESS
+  add check (ADDRESS_FLAG in (0,1,2));
+alter table IX_POINTADDRESS
+  add check (VERIFED in ('T','F'));
+alter table IX_POINTADDRESS
+  add check (U_RECORD in (0,1,2,3));
+alter table IX_POINTADDRESS
+  add check (STATE in (0,1,2,3));
+
+create index EXP_IX_11 on IX_POINTADDRESS (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_29 on IX_POINTADDRESS (GUIDE_LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create index EXP_IX_30 on IX_POINTADDRESS (LOCATE_LINK_PID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411033056_R on IX_POINTADDRESS (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+create table IX_ANNOTATION
+(
+  PID               NUMBER(10) not null,
+  KIND_CODE         VARCHAR2(8),
+  GEOMETRY          SDO_GEOMETRY,
+  RANK              NUMBER(10) default 1 not null,
+  SRC_FLAG          NUMBER(1) default 0 not null,
+  SRC_PID           NUMBER(10) default 0 not null,
+  CLIENT_FLAG       VARCHAR2(100),
+  SPECTIAL_FLAG     NUMBER(10) default 0 not null,
+  REGION_ID         NUMBER(10) default 0 not null,
+  MESH_ID           NUMBER(8) default 0 not null,
+  EDIT_FLAG         NUMBER(1) default 1 not null,
+  DIF_GROUPID       VARCHAR2(200),
+  RESERVED          VARCHAR2(1000),
+  MODIFY_FLAG       VARCHAR2(200),
+  FIELD_MODIFY_FLAG VARCHAR2(200),
+  EXTRACT_INFO      VARCHAR2(64),
+  EXTRACT_PRIORITY  VARCHAR2(10),
+  REMARK            VARCHAR2(64),
+  DETAIL_FLAG       NUMBER(1) default 0 not null,
+  TASK_ID           NUMBER(10) default 0 not null,
+  DATA_VERSION      VARCHAR2(128),
+  FIELD_TASK_ID     NUMBER(10) default 0 not null,
+  U_RECORD          NUMBER(2) default 0 not null,
+  U_FIELDS          VARCHAR2(1000),
+  U_DATE            VARCHAR2(14),
+  ROW_ID            RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ANNOTATION
+  add constraint PK_IX_ANNOTATION primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ANNOTATION
+  add check (SRC_FLAG in (0,1,2,3,4,5));
+alter table IX_ANNOTATION
+  add check (EDIT_FLAG in (0,1));
+alter table IX_ANNOTATION
+  add check (DETAIL_FLAG in (0,1,2,3));
+alter table IX_ANNOTATION
+  add check (U_RECORD in (0,1,2,3));
+
+create index EXP_IX_13 on IX_ANNOTATION (MESH_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create bitmap index EXP_IX_D03 on IX_ANNOTATION (KIND_CODE)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create bitmap index EXP_IX_D04 on IX_ANNOTATION (RANK)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create unique index IDX_20170411032946_R on IX_ANNOTATION (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+create table IX_ANNOTATION_100W
+(
+  PID               NUMBER(10) not null,
+  KIND_CODE         VARCHAR2(8),
+  GEOMETRY          SDO_GEOMETRY,
+  RANK              NUMBER(10) default 1 not null,
+  SRC_FLAG          NUMBER(1) default 0 not null,
+  SRC_PID           NUMBER(10) default 0 not null,
+  CLIENT_FLAG       VARCHAR2(100),
+  SPECTIAL_FLAG     NUMBER(10) default 0 not null,
+  REGION_ID         NUMBER(10) default 0 not null,
+  MESH_ID           NUMBER(6) default 0 not null,
+  EDIT_FLAG         NUMBER(1) default 1 not null,
+  DIF_GROUPID       VARCHAR2(200),
+  RESERVED          VARCHAR2(1000),
+  MODIFY_FLAG       VARCHAR2(200),
+  FIELD_MODIFY_FLAG VARCHAR2(200),
+  EXTRACT_INFO      VARCHAR2(64),
+  EXTRACT_PRIORITY  VARCHAR2(10),
+  REMARK            VARCHAR2(64),
+  DETAIL_FLAG       NUMBER(1) default 0 not null,
+  TASK_ID           NUMBER(10) default 0 not null,
+  DATA_VERSION      VARCHAR2(128),
+  FIELD_TASK_ID     NUMBER(10) default 0 not null,
+  U_RECORD          NUMBER(2) default 0 not null,
+  U_FIELDS          VARCHAR2(1000),
+  U_DATE            VARCHAR2(14),
+  ROW_ID            RAW(16)
+)
+tablespace GDB_DATA
+  pctfree 10
+  initrans 1
+  maxtrans 255
+  storage
+  (
+    initial 80
+    next 1
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ANNOTATION_100W
+  add constraint PK_IX_ANNOTATION_100W primary key (PID)
+  using index 
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 80K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+
+alter table IX_ANNOTATION_100W
+  add check (SRC_FLAG in (0,1,2,3,4,5));
+alter table IX_ANNOTATION_100W
+  add check (EDIT_FLAG in (0,1));
+alter table IX_ANNOTATION_100W
+  add check (DETAIL_FLAG in (0,1,2,3));
+alter table IX_ANNOTATION_100W
+  add check (U_RECORD in (0,1,2,3));
+
+create unique index IDX_20170411032947_R on IX_ANNOTATION_100W (ROW_ID)
+  tablespace GDB_DATA
+  pctfree 10
+  initrans 2
+  maxtrans 255
+  storage
+  (
+    initial 64K
+    next 1M
+    minextents 1
+    maxextents unlimited
+  );
+create table SHD_IX_POSTCODE_32774
+(
+  pid      NUMBER(10) not null,
+  geometry SDO_GEOMETRY
+);
+
+create table SHD_IX_ANN_32774
+(
+  pid      NUMBER(10) not null,
+  geometry SDO_GEOMETRY
+);
+
+create table SHD_IX_PA_32774
+(
+  pid      NUMBER(10) not null,
+  geometry SDO_GEOMETRY
+);
+
+create table SHD_PT_POI_32774
+(
+  pid      NUMBER(10) not null,
+  geometry SDO_GEOMETRY
+);
+
+create table SHD_RD_FILTER_LINK
+(
+  link_pid NUMBER(10),
+  geometry MDSYS.SDO_GEOMETRY,
+  poi_pid  NUMBER(10),
+  x_guide  NUMBER(10,5),
+  y_guide  NUMBER(10,5),
+  flag     NUMBER(1)
+);
+
+create table SHD_IX_POI_TEMP
+(
+  pid          NUMBER(10),
+  kind_code    VARCHAR2(8),
+  geometry     SDO_GEOMETRY,
+  name_groupid NUMBER(10),
+  link_pid     NUMBER(10),
+  side         NUMBER(1),
+  x_guide      NUMBER(10,5),
+  y_guide      NUMBER(10,5),
+  pmesh_id     NUMBER(8)
+);
+create table SHD_POI_RELATELINK
+(
+  POI_PID   NUMBER(10),
+  LINK_PID  NUMBER(10),
+  X_GUIDE   NUMBER(10,5),
+  Y_GUIDE   NUMBER(10,5),
+  DIST      NUMBER(8,1),
+  DISTCOUNT NUMBER(2)
+);
+create table SHD_POI_RD_LINK
+(
+  POI_PID  NUMBER(10),
+  LINK_PID NUMBER(10),
+  OLD_LINK NUMBER(10),
+  X_GUIDE  NUMBER(10,5),
+  Y_GUIDE  NUMBER(10,5),
+  GEOMETRY MDSYS.SDO_GEOMETRY,
+  FLAG     VARCHAR2(50)
+);
+create table SHD_POI_MULTI_RDLINK
+(
+  POI_PID    NUMBER(10),
+  LINK_PID   NUMBER(10),
+  X_GUIDE    NUMBER(10,5),
+  Y_GUIDE    NUMBER(10,5),
+  DIST       NUMBER(8,1),
+  PROPFILTER NUMBER(1) default 0,
+  PROPCOUNT  NUMBER(2)
+);
+create table SHD_ADDRROAD_LINK
+(
+  POI_PID   NUMBER(10),
+  ADDRROAD  VARCHAR2(600),
+  LINK_PID  NUMBER(10),
+  X_GUIDE   NUMBER(10,5),
+  Y_GUIDE   NUMBER(10,5),
+  DIST      NUMBER(8,1),
+  PROPMARK  NUMBER(1),
+  FNAMEMARK NUMBER(1) default 0,
+  GFNAME    NUMBER(1) default 0,
+  BNAME     NUMBER(1) default 0,
+  NAMEMARK  NUMBER(1) default 0,
+  LDNUM     NUMBER(1) default 0
+);
+create table AD_ADMIN
+(
+  REGION_ID    NUMBER(10) not null,
+  ADMIN_ID     NUMBER(6) default 0 not null,
+  EXTEND_ID    NUMBER(4) default 0 not null,
+  ADMIN_TYPE   NUMBER(3,1) default 0 not null,
+  CAPITAL      NUMBER(1) default 0 not null,
+  POPULATION   VARCHAR2(8),
+  GEOMETRY     SDO_GEOMETRY,
+  LINK_PID     NUMBER(10) default 0 not null,
+  NAME_GROUPID NUMBER(10) default 0 not null,
+  SIDE         NUMBER(1) default 0 not null,
+  ROAD_FLAG    NUMBER(1) default 0 not null,
+  PMESH_ID     NUMBER(8) default 0 not null,
+  JIS_CODE     NUMBER(5) default 0 not null,
+  MESH_ID      NUMBER(8) default 0 not null,
+  EDIT_FLAG    NUMBER(1) default 1 not null,
+  MEMO         VARCHAR2(200),
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+);
+create table IX_POI_NAME
+(
+  NAME_ID       NUMBER(10) not null,
+  POI_PID       NUMBER(10) not null,
+  NAME_GROUPID  NUMBER(10) default 0 not null,
+  NAME_CLASS    NUMBER(1) default 1 not null,
+  NAME_TYPE     NUMBER(2) default 1 not null,
+  LANG_CODE     VARCHAR2(3) default 'CHI' not null,
+  NAME          VARCHAR2(200),
+  NAME_PHONETIC VARCHAR2(1000),
+  KEYWORDS      VARCHAR2(254),
+  NIDB_PID      VARCHAR2(32),
+  U_RECORD      NUMBER(2) default 0 not null,
+  U_FIELDS      VARCHAR2(1000),
+  U_DATE        VARCHAR2(14),
+  ROW_ID        RAW(16)
+);
+create table TMP_PN_MAINDB
+(
+  GEOMETRY  MDSYS.SDO_GEOMETRY,
+  NAME      VARCHAR2(200),
+  PID       NUMBER(10) not null,
+  REGION_ID NUMBER(10) not null
+);
+create table IX_POINTADDRESS_FLAG
+(
+  PID       NUMBER(10) not null,
+  FLAG_CODE VARCHAR2(12),
+  U_RECORD  NUMBER(2) default 0 not null,
+  U_FIELDS  VARCHAR2(1000),
+  U_DATE    VARCHAR2(14),
+  ROW_ID    RAW(16)
+);
+create table TMP_PA_AUDB
+(
+  RID       ROWID,
+  PID       NUMBER(10) not null,
+  GEOMETRY  MDSYS.SDO_GEOMETRY,
+  PLACE     VARCHAR2(100),
+  REGION_ID NUMBER(10) not null
+);
+create table TMP_DIS
+(
+  RID ROWID,
+  PID NUMBER(10),
+  DIS NUMBER
+);
+create table TMP_PA_MAINDB
+(
+  GEOMETRY  MDSYS.SDO_GEOMETRY,
+  PLACE     VARCHAR2(100),
+  ESTAB     VARCHAR2(64),
+  PID       NUMBER(10) not null,
+  REGION_ID NUMBER(10) not null
+);
+create table IX_POINTADDRESS_NAME
+(
+  NAME_ID           NUMBER(10) not null,
+  NAME_GROUPID      NUMBER(10) default 0 not null,
+  PID               NUMBER(10) not null,
+  LANG_CODE         VARCHAR2(3) default 'CHI' not null,
+  SUM_CHAR          NUMBER(1) default 0 not null,
+  SPLIT_FLAG        VARCHAR2(1000),
+  FULLNAME          VARCHAR2(500),
+  FULLNAME_PHONETIC VARCHAR2(1000),
+  ROADNAME          VARCHAR2(500),
+  ROADNAME_PHONETIC VARCHAR2(1000),
+  ADDRNAME          VARCHAR2(500),
+  ADDRNAME_PHONETIC VARCHAR2(1000),
+  PROVINCE          VARCHAR2(64),
+  CITY              VARCHAR2(64),
+  COUNTY            VARCHAR2(64),
+  TOWN              VARCHAR2(200),
+  PLACE             VARCHAR2(100),
+  STREET            VARCHAR2(100),
+  LANDMARK          VARCHAR2(100),
+  PREFIX            VARCHAR2(64),
+  HOUSENUM          VARCHAR2(64),
+  TYPE              VARCHAR2(32),
+  SUBNUM            VARCHAR2(64),
+  SURFIX            VARCHAR2(64),
+  ESTAB             VARCHAR2(64),
+  BUILDING          VARCHAR2(100),
+  UNIT              VARCHAR2(64),
+  FLOOR             VARCHAR2(64),
+  ROOM              VARCHAR2(64),
+  ADDONS            VARCHAR2(200),
+  PROV_PHONETIC     VARCHAR2(1000),
+  CITY_PHONETIC     VARCHAR2(1000),
+  COUNTY_PHONETIC   VARCHAR2(1000),
+  TOWN_PHONETIC     VARCHAR2(1000),
+  STREET_PHONETIC   VARCHAR2(1000),
+  PLACE_PHONETIC    VARCHAR2(1000),
+  LANDMARK_PHONETIC VARCHAR2(1000),
+  PREFIX_PHONETIC   VARCHAR2(1000),
+  HOUSENUM_PHONETIC VARCHAR2(1000),
+  TYPE_PHONETIC     VARCHAR2(1000),
+  SUBNUM_PHONETIC   VARCHAR2(1000),
+  SURFIX_PHONETIC   VARCHAR2(1000),
+  ESTAB_PHONETIC    VARCHAR2(1000),
+  BUILDING_PHONETIC VARCHAR2(1000),
+  FLOOR_PHONETIC    VARCHAR2(1000),
+  UNIT_PHONETIC     VARCHAR2(1000),
+  ROOM_PHONETIC     VARCHAR2(1000),
+  ADDONS_PHONETIC   VARCHAR2(1000),
+  U_RECORD          NUMBER(2) default 0 not null,
+  U_FIELDS          VARCHAR2(1000),
+  U_DATE            VARCHAR2(14),
+  ROW_ID            RAW(16)
+);
+create table SHD_LINK_NODE_GD
+(
+  NODE_PID NUMBER(10),
+  GEOMETRY SDO_GEOMETRY
+);
+create table RD_GATE
+(
+  PID          NUMBER(10) not null,
+  IN_LINK_PID  NUMBER(10) not null,
+  NODE_PID     NUMBER(10) not null,
+  OUT_LINK_PID NUMBER(10) not null,
+  TYPE         NUMBER(1) default 2 not null,
+  DIR          NUMBER(1) default 2 not null,
+  FEE          NUMBER(1) default 0 not null,
+  U_RECORD     NUMBER(2) default 0 not null,
+  U_FIELDS     VARCHAR2(1000),
+  U_DATE       VARCHAR2(14),
+  ROW_ID       RAW(16)
+);
+create table M_MESH_TYPE
+(
+  MESH_ID NUMBER(8) not null,
+  TYPE    NUMBER(2) default 0 not null,
+  MEMO    VARCHAR2(500)
+);
+create table SHD_CROSS_TEMP
+(
+  PID NUMBER(10)
+);
+create table SHD_HAMLET_TAB
+(
+  PID        NUMBER(10),
+  KIND_CODE  VARCHAR2(8),
+  GEOMETRY   SDO_GEOMETRY,
+  NAME       VARCHAR2(200),
+  ENGNAME_QC VARCHAR2(200),
+  ENGNAME_JC VARCHAR2(200),
+  PY         VARCHAR2(1000),
+  FLAG_CODE  VARCHAR2(12)
+);
+create table SHD_HAMLET_TAB_FILE
+(
+  KIND       VARCHAR2(8),
+  GEOMETRY   SDO_GEOMETRY,
+  NAME       VARCHAR2(200),
+  ENGNAME_QC VARCHAR2(200),
+  ENGNAME_JC VARCHAR2(200),
+  PY         VARCHAR2(1000),
+  FLAG_CODE  VARCHAR2(12)
+);
+create table M_PARAMETER
+(
+  NAME        VARCHAR2(32),
+  PARAMETER   VARCHAR2(32),
+  DESCRIPTION VARCHAR2(200)
+);
+create table IX_HAMLET_FLAG
+(
+  PID       NUMBER(10) not null,
+  FLAG_CODE VARCHAR2(12),
+  U_RECORD  NUMBER(2) default 0 not null,
+  U_FIELDS  VARCHAR2(1000),
+  U_DATE    VARCHAR2(14),
+  ROW_ID    RAW(16)
+);
+create table GDU_SUCCESS_LIST
+(
+  PID  NUMBER(10),
+  FLAG VARCHAR2(50)
+);
+create table GDU_ERROR_LIST
+(
+  PID  NUMBER(10),
+  MEMO VARCHAR2(1000),
+  FLAG VARCHAR2(50)
+);
+create table SHD_FOCUS_POI_LINK
+(
+  PID        NUMBER(10),
+  LINK_PID   NUMBER(10),
+  KIND_CODE  VARCHAR2(8),
+  SIDE       NUMBER(1),
+  P_GEOM     SDO_GEOMETRY,
+  L_GEOM     SDO_GEOMETRY,
+  LINK_DIR   NUMBER(1),
+  IS_RELLINK NUMBER(1)
+);
+create table SHD_MOVE_POI
+(
+  PID        NUMBER(10),
+  LINK_PID   NUMBER(10),
+  P_GEOM     SDO_GEOMETRY,
+  L_GEOM     SDO_GEOMETRY,
+  SIDE       NUMBER(1),
+  MOVED_GEOM SDO_GEOMETRY
+);
+
+

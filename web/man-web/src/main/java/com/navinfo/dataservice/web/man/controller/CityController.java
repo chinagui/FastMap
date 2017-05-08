@@ -105,9 +105,9 @@ public class CityController extends BaseController {
 	@RequestMapping(value = "/city/listAll")
 	public ModelAndView queryListAll(HttpServletRequest request){
 		try{
-//			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			//TODO 这里编码集需要确认
-			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
+//			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
 			String cityName = "";
 			if(dataJson.containsKey("condition")){
 				JSONObject cityPrame = JSONObject.fromObject(dataJson.getString("condition"));

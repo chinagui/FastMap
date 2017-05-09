@@ -168,7 +168,8 @@ public class PoiGuideLinkBatch {
 	private void diff(OracleSchema copVersionSchema) throws Exception {
 		//完成数据差分，及履历写入
 		diffPoiGData(copVersionSchema);
-		diffPoiFlagGData(copVersionSchema);
+		//待确认，是否需要差分处理
+		//diffPoiFlagGData(copVersionSchema);
 		//更新LOG_DETAIL_GRID
 		updateLogGrid(copVersionSchema);
 	}

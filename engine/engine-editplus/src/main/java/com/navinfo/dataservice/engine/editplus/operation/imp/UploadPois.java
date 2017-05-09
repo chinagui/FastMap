@@ -17,9 +17,9 @@ import net.sf.json.JSONObject;
  */
 public abstract class UploadPois {
 
-	protected Map<String,JSONObject> addPois;//key:fid
-	protected Map<String,JSONObject> deletePois;//key:fid
-	protected Map<String,JSONObject> updatePois;//key:fid
+	protected Map<String,JSONObject> addPois = new HashMap<String,JSONObject>();//key:fid
+	protected Map<String,JSONObject> deletePois = new HashMap<String,JSONObject>();//key:fid
+	protected Map<String,JSONObject> updatePois = new HashMap<String,JSONObject>();//key:fid
 	
 	public void addJsonPoi(JSONObject jo){
 		addJsonPoi(jo.getString("fid"),jo);

@@ -11,6 +11,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAdvertisement;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAttraction;
@@ -76,10 +77,11 @@ public class IxPoiObj extends AbstractIxObj {
 		this.childFids = childFids;
 	}
 	
-	
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
 	}
+	
+	
 	public List<IxPoiName> getIxPoiNames(){
 		return (List)subrows.get("IX_POI_NAME");
 	}
@@ -1059,6 +1061,7 @@ public class IxPoiObj extends AbstractIxObj {
 	
 	public IxPoiAddress getCHAddress(){
 		List<IxPoiAddress> subRows=getIxPoiAddresses();
+		if(subRows==null) return null;
 		for(IxPoiAddress br:subRows){
 			if(br.getLangCode().equals("CHI")||br.getLangCode().equals("CHT")){
 				return br;}
@@ -1400,6 +1403,37 @@ catch (Exception e) {
 			throw new Exception("未知的子表名:"+tableName);
 		}
 	}
+	
+	public boolean isFreshFlag() {
+		IxPoi ixPoi = (IxPoi)this.mainrow;
+		if(!(ixPoi.getOpType().equals(OperationType.UPDATE)))return false;
+		Map<String,Object> ixPoiOldValues = ixPoi.getOldValues();
+		if(ixPoiOldValues!=null){
+			for(String key:ixPoiOldValues.keySet()){
+				if(key.equals(IxPoi.POI_MEMO)||key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)){
+					continue;
+				}else{
+					return false;
+				}
+			}
+		}
+		//是否有任何子表变更
+		for(Map.Entry<String, List<BasicRow>> entry:this.subrows.entrySet()){
+			//过滤ix_poi_photo
+			if(IxPoiObj.IX_POI_PHOTO.equals(entry.getKey())){
+				continue;
+			}
+			List<BasicRow> subrowList = entry.getValue();
+			if(subrowList==null){continue;}
+			for(BasicRow basicRow:subrowList){
+				if(basicRow.isChanged()){
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+	
 	public static final String IX_POI = "IX_POI";
 	public static final String IX_POI_NAME = "IX_POI_NAME";
 	public static final String IX_POI_NAME_FLAG = "IX_POI_NAME_FLAG";

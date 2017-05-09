@@ -44,7 +44,7 @@ public class BkFaceExporterSp9 {
 					+ " union all "
 					+ " select a.face_pid,a.geometry,a.mesh_id,106 kind from lu_face a where a.kind=6 and a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?))) "
 					+ " union all  "
-					+ " select a.face_pid,a.geometry,a.mesh_id,201 kind from cmg_buildface a where  a.u_record != 2 and a.mesh_id in (select to_number(column_value) from table(clob_to_table(?)))";
+					+ " select a.face_pid,a.geometry,a.mesh_id,201 kind from cmg_buildface a where  a.u_record != 2 and A.MESH_ID=0";
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
@@ -52,7 +52,6 @@ public class BkFaceExporterSp9 {
 
 		stmt2.setClob(1, clob);
 		stmt2.setClob(2, clob);
-		stmt2.setClob(3, clob);
 		
 		ResultSet resultSet = stmt2.executeQuery();
 

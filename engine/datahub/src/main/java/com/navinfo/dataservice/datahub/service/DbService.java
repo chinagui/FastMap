@@ -56,19 +56,18 @@ public class DbService {
 	
 	protected String mainSql = "SELECT D.DB_ID,D.DB_NAME,D.DB_USER_NAME,D.DB_USER_PASSWD,D.DB_ROLE,D.BIZ_TYPE,D.TABLESPACE_NAME,D.GDB_VERSION,D.DB_STATUS,D.CREATE_TIME,D.DESCP,S.SERVER_ID,S.SERVER_TYPE,S.SERVER_IP,S.SERVER_PORT,S.SERVICE_NAME FROM DB_HUB D,DB_SERVER S ";
 
-	public DbInfo createOracleDb(String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId)throws DataHubException{
+	public DbInfo createOracleDb(String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId,int specSvrId)throws DataHubException{
 		String strategyType = null;
 		Map<String,Object> strategyParam = new HashMap<String,Object>();
-		if(refDbId>0){
+		if(specSvrId>0){
+			strategyType = DbServerStrategy.USE_SPEC_SVR;
+			strategyParam.put("specSvrId", specSvrId);
+			log.debug("使用指定服务器策略创建新库。");
+		}else if(refDbId>0){
 			strategyType = DbServerStrategy.USE_REF_DB;
 			strategyParam.put("refDbId", refDbId);
 			log.debug("使用参考策略创建新库。");
-		}
-//		else if(StringUtils.isNotEmpty(provCode)){
-//			strategyType = DbServerStrategy.BY_PROVINCE;
-//			strategyParam.put("provinceCode", provCode);
-//		}
-		else{
+		}else{
 			//strategyType = DbServerStrategy.RANDOM;
 			strategyParam = null;
 			log.debug("使用随机策略创建新库。");
@@ -111,9 +110,9 @@ public class DbService {
 		
 		return createDb(DbServerType.TYPE_MONGODB,dbName,null,null,bizType,descp, gdbVersion, strategyType, strategyParam);
 	}
-	public  DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId)throws DataHubException{
+	public  DbInfo createDb(String serverType,String dbName,String userName,String userPasswd,String bizType,String descp,String gdbVersion,int refDbId,int specSvrId)throws DataHubException{
 		if(DbServerType.TYPE_ORACLE.equals(serverType)){
-			return createOracleDb(userName,userPasswd, bizType, descp, gdbVersion,refDbId);
+			return createOracleDb(userName,userPasswd, bizType, descp, gdbVersion,refDbId,specSvrId);
 		}else if(DbServerType.TYPE_MONGODB.equals(serverType)){
 			return createMongoDb(dbName,bizType,descp,gdbVersion,refDbId);
 		}else{

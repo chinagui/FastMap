@@ -167,13 +167,18 @@ public class CollectorPoiImportor extends AbstractOperation {
 					setPoiAttr(poiObj,entry.getValue());
 					//计算鲜度验证
 					if(poiObj.isFreshFlag()){
-						freshVerPois.put(poiObj.objPid(), poiObj.getRawFields());
+						freshVerPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
 					}
 					result.putObj(poiObj);
 					successNum++;
 					//同一关系处理
 					//sameFid
-					sps.addUpdatePoiSp(entry.getValue().getString("fid"), entry.getValue().getString("sameFid"));
+					String sFid = entry.getValue().getString("sameFid");
+					if(StringUtils.isEmpty(sFid)){
+						sps.deletePoiSp(entry.getValue().getString("fid"));
+					}else{
+						sps.addUpdatePoiSp(entry.getValue().getString("fid"),sFid);
+					}
 				}catch(Exception e){
 					errLogs.add(new ErrorLog(fid,"未分类错误："+e.getMessage()));
 					log.warn("fid（"+fid+"）入库发生错误："+e.getMessage());
@@ -310,8 +315,6 @@ public class CollectorPoiImportor extends AbstractOperation {
 		
 		//relateChildren
 		setChildrenAndAttr(poiObj,jo);
-		//sameFid
-		sps.addUpdatePoiSp(jo.getString("fid"), jo.getString("sameFid"));
 		
 		/*** 子表  ***/
 		//hotel
@@ -333,28 +336,27 @@ public class CollectorPoiImportor extends AbstractOperation {
 		
 		//处理日志类字段
 		//fieldState
-		if(ixPoi.isChanged(IxPoi.KIND_CODE)){
-			if(StringUtils.isEmpty(ixPoi.getFieldState())){
-				ixPoi.setFieldState("改种别代码");
-			}else{
-				if(ixPoi.getFieldState().indexOf("改种别代码")==-1){
-					ixPoi.setFieldState(ixPoi.getFieldState()+"|改种别代码");
-				}
-			}
-		}
-		if(ixPoi.isChanged(IxPoi.CHAIN)){
-			if(StringUtils.isEmpty(ixPoi.getFieldState())){
-				ixPoi.setFieldState("改连锁品牌");
-			}else{
-				if(ixPoi.getFieldState().indexOf("改连锁品牌")==-1){
-					ixPoi.setFieldState(ixPoi.getFieldState()+"|改连锁品牌");
-				}
-			}
-		}
+//		if(ixPoi.isChanged(IxPoi.KIND_CODE)){
+//			if(StringUtils.isEmpty(ixPoi.getFieldState())){
+//				ixPoi.setFieldState("改种别代码");
+//			}else{
+//				if(ixPoi.getFieldState().indexOf("改种别代码")==-1){
+//					ixPoi.setFieldState(ixPoi.getFieldState()+"|改种别代码");
+//				}
+//			}
+//		}
+//		if(ixPoi.isChanged(IxPoi.CHAIN)){
+//			if(StringUtils.isEmpty(ixPoi.getFieldState())){
+//				ixPoi.setFieldState("改连锁品牌");
+//			}else{
+//				if(ixPoi.getFieldState().indexOf("改连锁品牌")==-1){
+//					ixPoi.setFieldState(ixPoi.getFieldState()+"|改连锁品牌");
+//				}
+//			}
+//		}
 		//hotel.rating
 		//...
 		//outDoorLog
-		
 	}
 	
 	/**

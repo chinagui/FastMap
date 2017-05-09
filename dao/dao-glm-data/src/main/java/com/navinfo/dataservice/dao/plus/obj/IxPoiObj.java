@@ -58,7 +58,6 @@ public class IxPoiObj extends AbstractIxObj {
 	protected String parentFid;
 	protected List<Map<Long,Object>> childFids;
 	protected long adminId=0L;
-	protected String rawFields ;
 	public long getAdminId() {
 		return adminId;
 	}
@@ -77,14 +76,6 @@ public class IxPoiObj extends AbstractIxObj {
 	public void setChildFid(List<Map<Long, Object>> childFids) {
 		this.childFids = childFids;
 	}
-	public String getRawFields() {
-		return rawFields;
-	}
-
-	public void setRawFields(String rawFields) {
-		this.rawFields = rawFields;
-	}
-	
 	
 	public IxPoiObj(BasicRow mainrow) {
 		super(mainrow);
@@ -1419,7 +1410,9 @@ catch (Exception e) {
 		Map<String,Object> ixPoiOldValues = ixPoi.getOldValues();
 		if(ixPoiOldValues!=null){
 			for(String key:ixPoiOldValues.keySet()){
-				if(!key.equals(IxPoi.POI_MEMO)){
+				if(key.equals(IxPoi.POI_MEMO)||key.equals(IxPoi.COLLECT_TIME)||key.equals(IxPoi.DATA_VERSION)){
+					continue;
+				}else{
 					return false;
 				}
 			}

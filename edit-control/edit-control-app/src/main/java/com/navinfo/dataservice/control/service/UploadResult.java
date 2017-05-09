@@ -20,6 +20,10 @@ public class UploadResult implements Serializable{
 	
 	private List<ErrorLog> fail = new ArrayList<ErrorLog>();
 	
+	private List<ErrorLog> warnPc = new ArrayList<ErrorLog>();
+	
+	private List<ErrorLog> warnSp = new ArrayList<ErrorLog>();
+	
 	public int getTotal() {
 		return total;
 	}
@@ -45,5 +49,17 @@ public class UploadResult implements Serializable{
 	public void addResults(int successNum,List<ErrorLog> failList){
 		this.success+=successNum;
 		this.fail.addAll(failList);
+	}
+	public List<ErrorLog> getWarnPc(){
+		return warnPc;
+	}
+	public List<ErrorLog> getWarnSp(){
+		return warnSp;
+	}
+	public void addWarnPcs(List<ErrorLog> wPcs){
+		this.warnPc.addAll(wPcs);
+	}
+	public void addWarnSps(List<ErrorLog> wSps){
+		this.warnSp.addAll(wSps);
 	}
 }

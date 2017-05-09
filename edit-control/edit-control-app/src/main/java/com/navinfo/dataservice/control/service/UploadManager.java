@@ -113,6 +113,7 @@ public class UploadManager {
 					freshVerPois.remove(l);
 				}
 				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addWarnPcs(pcImp.getErrLogs());
 				//同一关系
 				CollectorPoiSpRelationImportorCommand spCmd = new CollectorPoiSpRelationImportorCommand(dbId,imp.getSps());
 				CollectorPoiSpRelationImportor spImp = new CollectorPoiSpRelationImportor(conn,null);
@@ -122,6 +123,7 @@ public class UploadManager {
 					freshVerPois.remove(l);
 				}
 				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addWarnSps(spImp.getErrLogs());
 				//鲜度验证
 				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
 			}catch(Exception e){

@@ -29,7 +29,7 @@ public class CollectorUploadPoiSpRelation{
 	}
 	public void deletePoiSps(Collection<String> fids){
 		if(fids!=null){
-			deleteSp.removeAll(fids);
+			deleteSp.addAll(fids);
 		}
 	}
 	public void addUpdatePoiSp(String fid,String sameFid){

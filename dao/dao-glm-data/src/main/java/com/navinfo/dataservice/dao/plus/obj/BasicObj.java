@@ -198,6 +198,11 @@ public abstract class BasicObj {
 			subrows.clear();
 			return;
 		}
+		//如果是已删除，则忽略
+		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)
+				||mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
+			return;
+		}
 		this.mainrow.setOpType(OperationType.DELETE);
 		for(List<BasicRow> rows:subrows.values()){
 			if(rows!=null){

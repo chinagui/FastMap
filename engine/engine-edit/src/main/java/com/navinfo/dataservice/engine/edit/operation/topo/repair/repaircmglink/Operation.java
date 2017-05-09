@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildnodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
+import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -284,6 +285,8 @@ public class Operation implements IOperation {
                 result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
             }
         }
+        // 验证LINK长度
+        CmgLinkOperateUtils.validateLength(command.getGeometry());
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(command.getGeometry()));
         command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(command.getGeometry()));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());

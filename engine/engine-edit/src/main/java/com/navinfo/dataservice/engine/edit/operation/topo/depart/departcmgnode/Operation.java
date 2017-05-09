@@ -6,8 +6,10 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
@@ -119,6 +121,8 @@ public class Operation implements IOperation {
             cmglinkGeo.getCoordinates()[cmglinkGeo.getCoordinates().length - 1].y = cmgnodeGeo.getCoordinate().y;
                 command.getCmglink().changedFields().put("eNodePid", cmgnode.pid());
         }
+        // 验证LINK长度
+        CmgLinkOperateUtils.validateLength(cmglinkGeo);
         command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(cmglinkGeo));
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(cmglinkGeo));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());
@@ -139,7 +143,7 @@ public class Operation implements IOperation {
      * @param result 结果集
      * @throws org.json.JSONException 修形出错
      */
-    private void moveCmgBuildlink(Result result) throws org.json.JSONException {
+    private void moveCmgBuildlink(Result result) throws org.json.JSONException, ServiceException {
         Geometry cmglinkGeo = GeoTranslator.transform(
                 command.getCmglink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
         if (command.getCmglink().getsNodePid() == command.getCmgnode().pid()) {
@@ -149,6 +153,8 @@ public class Operation implements IOperation {
             cmglinkGeo.getCoordinates()[cmglinkGeo.getCoordinates().length - 1].x = command.getPoint().getX();
             cmglinkGeo.getCoordinates()[cmglinkGeo.getCoordinates().length - 1].y = command.getPoint().getY();
         }
+        // 验证LINK长度
+        CmgLinkOperateUtils.validateLength(cmglinkGeo);
         command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(cmglinkGeo));
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(cmglinkGeo));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());

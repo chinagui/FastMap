@@ -284,7 +284,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			}
 			
 			log.info("开始筛选需要批引导LINK的POI");
-			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthConn);
+			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
 			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
 			
 		}catch(Exception e){
@@ -330,38 +330,42 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 	}
 	
 
-	private String createPoiTabForBatchGL(OperationResult opResult, Connection monthConn) throws Exception{
+	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
+		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
 		try{
 			//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
-			Map<Long, BasicObj> changedPois = opResult.getChangedObjsByName(ObjectName.IX_POI);
-			if(MapUtils.isEmpty(changedPois)) {
+			if(opResult.getAllObjs().size()==0){
 				log.info("没有获取到有变更的poi数据");
-				return "";	
-			}
+				return "";
+				}
+			
+			List<Long> pids=new ArrayList<Long>();
 			//2.把精选的POI.pid放在临时表temp_poi_glink_yyyyMMddhhmmss（临时表不存在则新建）；
-			String tempPoiGLinkTab = createTempPoiGLinkTable(monthConn);
+			String tempPoiGLinkTab = createTempPoiGLinkTable(conn);
 			//3.精选POI:根据粗选的结果，进一步过滤得到(新增POI或修改引导坐标或引导link为0的POI对象或对应引导link不存在rd_link表中)
 			Set<Long> refinedPois = new HashSet<Long>();
-			for(Long pid :changedPois.keySet()){
-				BasicObj poiObj = changedPois.get(pid);
-				if(OperationType.INSERT==poiObj.getMainrow().getOpType()
-						||poiObj.getMainrow().getChangedColumns().contains("Y_GUIDE")
-						||poiObj.getMainrow().getChangedColumns().contains("X_GUIDE")
-						||Integer.valueOf(0).equals(poiObj.getMainrow().getAttrByColName("LINK_PID"))
-						){
-					refinedPois.add(pid);
+			for(BasicObj poiObj:opResult.getAllObjs()){
+				pids.add(poiObj.objPid());
+				if(OperationType.INSERT==poiObj.getMainrow().getHisOpType()||
+						(OperationType.UPDATE==poiObj.getMainrow().getHisOpType()&&(poiObj.getMainrow().hisOldValueContains(IxPoi.Y_GUIDE)
+								||poiObj.getMainrow().hisOldValueContains(IxPoi.X_GUIDE)||
+								Integer.valueOf(0).equals(poiObj.getMainrow().getAttrByColName("LINK_PID"))))){
+					refinedPois.add(poiObj.objPid());
 				}
 			}
-			insertPois2TempTab(refinedPois,tempPoiGLinkTab,monthConn);
-			insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(changedPois.keySet(), refinedPois),tempPoiGLinkTab,monthConn);
+			insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
+			insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
 			return tempPoiGLinkTab;
 		}catch(Exception e){
 			log.info(e.getMessage());
 			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
+		
 	}
 	private void insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
-		String sql = "insert /*+append*/ into "+tempPoiTable
+		String sql = "insert  into "+tempPoiTable
 				+ " select pid from ix_poi t  "
 				+ " where t.pid in (select column_value from table(clob_to_table(?))) "
 				+ " and not exists(select 1 from rd_link r where r.link_pid=t.link_pid)";
@@ -371,7 +375,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		new QueryRunner().update(conn, sql, clobPids);
 	}
 	private void insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
-		String sql = "insert /*+append*/ into "+tempPoiTable
+		String sql = "insert into "+tempPoiTable
 				+ " select column_value from table(clob_to_table(?)) ";
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);

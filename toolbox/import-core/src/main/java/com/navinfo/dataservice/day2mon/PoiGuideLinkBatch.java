@@ -235,7 +235,7 @@ public class PoiGuideLinkBatch {
 		sb.append(" 	(CASE WHEN IX.LINK_PID <> BAK.LINK_PID THEN ',\"LINK_PID\":' || IX.LINK_PID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.NAME_GROUPID <> BAK.NAME_GROUPID THEN ',\"NAME_GROUPID\":' || IX.NAME_GROUPID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.SIDE <> BAK.SIDE THEN ',\"SIDE\":' || IX.SIDE ELSE NULL END) ||");
-		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || BAK.PMESH_ID ELSE NULL END) NEW_VALUE");
+		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || IX.PMESH_ID ELSE NULL END) NEW_VALUE");
 		sb.append("  FROM IX_POI IX, IX_POI_BACK BAK ");
 		sb.append("  WHERE IX.PID = BAK.PID ");
 		sb.append(" 	AND (IX.X_GUIDE <> BAK.X_GUIDE OR IX.Y_GUIDE <> BAK.Y_GUIDE OR");

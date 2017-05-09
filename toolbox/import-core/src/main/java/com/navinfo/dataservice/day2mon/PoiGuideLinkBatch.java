@@ -76,38 +76,42 @@ public class PoiGuideLinkBatch {
 		try{
 			// 在子版本库上建立月库的db_link
 			String dbLinkName = createDbLink(copVersionSchema);
-			//4.2创建需要的表结构:ix_poi,ix_poi_address,ix_poi_flag,rd_link,rd_link_form,rd_link_name,ni_rd_name
+			//4.1创建需要的表结构:ix_poi,ix_poi_address,ix_poi_flag,rd_link,rd_link_form,rd_link_name,ni_rd_name
 			exeTabelCreateSql(copVersionSchema);
-			/*//导入cop的point_feature_batch包
-			importCopPck(copVersionSchema);*/
-			//4.3导入ix_poi:根据tempPoiGLinkTab 进行关联
+			//导入cop的point_feature_batch包(不用导入，直接使用navisys上的包)
+			//importCopPck(copVersionSchema);
+			//4.2导入ix_poi:根据tempPoiGLinkTab 进行关联
 			initIxPoi(copVersionSchema,dbLinkName);
-			//4.4导入ix_poi_address:根据tempPoiGLinkTab 进行关联
+			//4.3导入ix_poi_address:根据tempPoiGLinkTab 进行关联
 			initIxPoiAddress(copVersionSchema,dbLinkName);
-			//导入ix_poi_flag:根据tempPoiGLinkTab 进行关联
+			//4.4导入ix_poi_flag:根据tempPoiGLinkTab 进行关联
 			initIxPoiFlag(copVersionSchema,dbLinkName);
-			//4.5导入rd_link:按照4.3的poi进行扩圈，计算要导入的rd_link的pid
+			//4.5导入rd_link:按照4.2的poi进行扩圈，计算要导入的rd_link的pid
 			initRdLink(copVersionSchema,dbLinkName);
 			//4.6导入rd_link_form :按照4.5得到的rd_link导入rd_link_form;
 			initRdLinkForm(copVersionSchema,dbLinkName);
-			//导入rd_link_name:按照4.5得到的rd_link导入rd_link_name;
+			//4.7导入rd_link_name:按照4.5得到的rd_link导入rd_link_name;
 			initRdLinkName(copVersionSchema, dbLinkName);
-			//4.7导入rd_name:按照4.5得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
+			//4.8导入rd_name:按照4.7得到的rd_link和rd_link_name 进行关联，得到要导入的rd_name的group_id；再关联月库的rd_name； 得到要导出的rd_name
 			initRdName(copVersionSchema,dbLinkName);
-			//4.8备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
+			//4.9导入rd_link_limit:按照4.5得到的rd_link导入rd_link_limit;
+			initRdLinkLimit(copVersionSchema, dbLinkName);
+			//4.10备份ix_poi为ix_poi_back(可以只备份pid,x_guid,y_guid,link_pid,name_groupid,side,pmesh_id),为后续的差分及生成履历做准备；
 			backupIxPoi(copVersionSchema);
-			//4.9备份ix_poi为ix_poi_flag_back；
+			//4.11备份ix_poi为ix_poi_flag_back；
 			backupIxPoiFlag(copVersionSchema);
-			/*//5.调用cop的批处理程序；
+			//5.调用cop的批处理程序；
 			callCopPackage(copVersionSchema);
 			//6.差分ix_poi和ix_poi_back;生成差分履历；
 			diff(copVersionSchema);
 			//7.根据6的差分履历刷新月库,把6生成的履历搬移到月库；
-			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);*/
+			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);
+			log.info("flushGlinkDataLog over!");
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			DbUtils.rollbackAndCloseQuietly(monthConn);
 			log.error(e.getMessage());
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(copVersionConn);
 			DbUtils.commitAndCloseQuietly(monthConn);
@@ -164,7 +168,8 @@ public class PoiGuideLinkBatch {
 	private void diff(OracleSchema copVersionSchema) throws Exception {
 		//完成数据差分，及履历写入
 		diffPoiGData(copVersionSchema);
-		diffPoiFlagGData(copVersionSchema);
+		//待确认，是否需要差分处理
+		//diffPoiFlagGData(copVersionSchema);
 		//更新LOG_DETAIL_GRID
 		updateLogGrid(copVersionSchema);
 	}
@@ -231,7 +236,7 @@ public class PoiGuideLinkBatch {
 		sb.append(" 	(CASE WHEN IX.LINK_PID <> BAK.LINK_PID THEN ',\"LINK_PID\":' || IX.LINK_PID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.NAME_GROUPID <> BAK.NAME_GROUPID THEN ',\"NAME_GROUPID\":' || IX.NAME_GROUPID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.SIDE <> BAK.SIDE THEN ',\"SIDE\":' || IX.SIDE ELSE NULL END) ||");
-		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || BAK.PMESH_ID ELSE NULL END) NEW_VALUE");
+		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || IX.PMESH_ID ELSE NULL END) NEW_VALUE");
 		sb.append("  FROM IX_POI IX, IX_POI_BACK BAK ");
 		sb.append("  WHERE IX.PID = BAK.PID ");
 		sb.append(" 	AND (IX.X_GUIDE <> BAK.X_GUIDE OR IX.Y_GUIDE <> BAK.Y_GUIDE OR");
@@ -293,8 +298,10 @@ public class PoiGuideLinkBatch {
 		}catch(Exception e){
 			log.error(e);
     		DbUtils.closeQuietly(cs);
+    		DbUtils.rollbackAndCloseQuietly(copVersionConn);
 		}finally{
     		DbUtils.closeQuietly(cs);
+    		DbUtils.commitAndCloseQuietly(copVersionConn);
 		}
 		
 	}
@@ -329,6 +336,22 @@ public class PoiGuideLinkBatch {
 
 	}
 	
+	
+	private void initRdLinkLimit(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
+		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
+		try{
+			String sql = "insert /*+append*/ into rd_link_limit "
+					+ " select l.* from rd_link_limit@"+dbLinkName +" l "
+					+ " where l.link_pid in (select r.link_pid from rd_link r)";
+			new QueryRunner().update(copVersionConn, sql); 
+		}catch (Exception e){
+			DbUtils.rollbackAndCloseQuietly(copVersionConn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(copVersionConn);
+		}
+	}
 	private void initRdName(OracleSchema copVersionSchema, String dbLinkName) throws SQLException {
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		try{
@@ -375,7 +398,7 @@ public class PoiGuideLinkBatch {
 		}
 	}
 	private String createTempLinkGLinkTable(Connection conn) throws Exception {
-		String tableName = "temp_poi_glink"+(new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()));
+		String tableName = "tmp_l_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));
 		String sql ="create table "+tableName+" (link_pid number(10))";
 		new QueryRunner().update(conn, sql);
 		return tableName;

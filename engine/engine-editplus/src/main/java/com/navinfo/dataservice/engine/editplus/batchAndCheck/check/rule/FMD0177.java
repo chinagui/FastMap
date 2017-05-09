@@ -43,16 +43,12 @@ public class FMD0177 extends BasicCheckRule {
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 						return;
 					}
-					
-					Pattern p = Pattern.compile(".*[^ ]+\\(.+");
+
+					Pattern p = Pattern.compile(".*[^ 　]+\\(.+");
 					Matcher m = p.matcher(name);
-					Pattern p1 = Pattern.compile(".+\\)[^ ]+.*");
+					Pattern p1 = Pattern.compile(".+\\)[^ 　]+.*");
 					Matcher m1 = p1.matcher(name);
-					Pattern p2 = Pattern.compile(".+\\)[^　]+.*");
-					Matcher m2 = p2.matcher(name);
-					Pattern p3 = Pattern.compile(".*[^　]+\\(.+");
-					Matcher m3 = p3.matcher(name);
-					if(m.matches()||m1.matches()||m2.matches()||m3.matches()){
+					if(m.matches()||m1.matches()){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 						return;
 					}

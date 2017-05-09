@@ -17,6 +17,7 @@ public abstract class DbServerStrategy {
 	public static final String USE_REF_DB = "use_ref_db";
 	public static final String RELATIVELY_IDLE = "relatively_idle";
 	public static final String RANDOM = "random";
+	public static final String USE_SPEC_SVR = "use_spec_svr";
 
 	public DbServerStrategy(AbstractStrategyLock strategyLock){
 		

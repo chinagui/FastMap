@@ -92,7 +92,7 @@ public class FMBAT20188_1 extends BasicBatchRule {
 				return;
 			}
 			List<IxPoiChargingstation> chargingStationList = parentPoiObj.getIxPoiChargingstations();
-			if (chargingStationList.size() == 0) {
+			if (chargingStationList==null||chargingStationList.isEmpty()) {
 				return;
 			}
 			IxPoiChargingstation chargingStation = chargingStationList.get(0);

@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.util.JSONUtils;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -65,6 +66,10 @@ public class InitRegiondb {
 			Assert.notNull(regionIds, "regionIds不能为空");
 			String userNamePrefix = (String) request.get("userNamePrefix");
 			Assert.notNull(userNamePrefix, "userNamePrefix不能为空");
+			int specSvrId = 0;
+			if(!JSONUtils.isNull(request.get("specSvrId"))){
+				specSvrId = request.getInt("specSvrId");
+			}
 			
 			int meshExtendCount = 1;
 			if(request.containsKey("meshExtendCount")){
@@ -97,6 +102,7 @@ public class InitRegiondb {
 				req1.put("bizType", "regionRoad");
 				req1.put("descp", "region db");
 				req1.put("gdbVersion", gdbVersion);
+				req1.put("specSvrId", specSvrId);
 				info1.setRequest(req1);
 				AbstractJob job1 = JobCreateStrategy.createAsMethod(info1);
 				job1.run();

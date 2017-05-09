@@ -19,6 +19,7 @@ import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
+import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
@@ -33,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @Title: Operation
@@ -72,7 +74,7 @@ public class Operation implements IOperation {
         this.caleCatchs(result);
         // 处理修形线
         this.updateLink(result);
-        // 处理受影响线
+        // 处理受影响面
         this.updateFace(result);
         // 处理立交
         this.handleGsc(result);
@@ -263,6 +265,25 @@ public class Operation implements IOperation {
      * @throws Exception 更新线的几何
      */
     private void updateLink(Result result) throws Exception {
+        // 修行线不是面组成线时, 更新线的图幅
+        if (CollectionUtils.isEmpty(command.getCmgfaces())) {
+            Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(command.getGeometry());
+            Iterator<IRow> iterator = command.getCmglink().getMeshes().iterator();
+            while (iterator.hasNext()) {
+                CmgBuildlinkMesh mesh = (CmgBuildlinkMesh) iterator.next();
+                if (meshes.contains(String.valueOf(mesh.getMeshId()))) {
+                    meshes.remove(String.valueOf(mesh.getMeshId()));
+                } else {
+                    result.insertObject(mesh, ObjStatus.DELETE, mesh.parentPKValue());
+                }
+            }
+            for (String str : meshes) {
+                CmgBuildlinkMesh mesh = new CmgBuildlinkMesh();
+                mesh.setLinkPid(command.getCmglink().pid());
+                mesh.setMeshId(Integer.parseInt(str));
+                result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
+            }
+        }
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(command.getGeometry()));
         command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(command.getGeometry()));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());

@@ -34,15 +34,15 @@ public final class CmgnodeUtil {
     /**
      * 删除CMG-FACE时处理CMG-NODE图幅
      * @param cmgnodes 待处理CMG-NODE
-     * @param cmgfaceMeshId 修形后CMG-FACE的图符号
+     * @param cmgface 修形后CMG-FACE的图符号
      * @param result 结果集
      * @param conn 数据库链接
      */
-    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, int cmgfaceMeshId, Connection conn, Result result) {
+    public static void handleCmgnodeMesh(List<CmgBuildnode> cmgnodes, CmgBuildface cmgface, Connection conn, Result result) {
         for (CmgBuildnode cmgnode : cmgnodes) {
             if (cmgnode.getMeshes().size() > 1) {
                 for (IRow row : cmgnode.getMeshes()) {
-                    if (cmgfaceMeshId == row.mesh()) {
+                    if (cmgface.getMeshId() == row.mesh()) {
                         result.insertObject(row, ObjStatus.DELETE, row.parentPKValue());
                         break;
                     }

@@ -273,10 +273,10 @@ public final class CmgLinkOperateUtils {
      * @param geometry LINK几何
      * @throws ServiceException 不能打断过短的link（2M)
      */
-    private static void validateLength(Geometry geometry) throws ServiceException {
+    public static void validateLength(Geometry geometry) throws ServiceException {
         double length = GeometryUtils.getLinkLength(geometry);
         if (length <= Constant.MIN_LINK_LENGTH) {
-            throw new ServiceException("不能打断过短的link（2M)");
+            throw new ServiceException("CMG_BUILDLINK的长度必须大于2M.");
         }
     }
 }

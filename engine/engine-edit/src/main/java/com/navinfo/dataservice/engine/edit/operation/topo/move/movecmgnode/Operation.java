@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
+import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -90,6 +91,8 @@ public class Operation implements IOperation {
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].y = command.getLatitude();
             }
             cmglink.changedFields().put("length", GeometryUtils.getLinkLength(geometry));
+            // 验证LINK长度
+            CmgLinkOperateUtils.validateLength(geometry);
             cmglink.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             result.insertObject(cmglink, ObjStatus.UPDATE, cmglink.pid());
 

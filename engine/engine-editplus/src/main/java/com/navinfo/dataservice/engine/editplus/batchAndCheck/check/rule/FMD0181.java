@@ -39,14 +39,20 @@ public class FMD0181 extends BasicCheckRule {
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			if(names==null||names.size()==0){return;}
 			Pattern p = Pattern.compile(".*[^ ]+[\\-_/:;'\"~^.,?!*<>$%&#@+]+ .*");
+			Pattern p2 = Pattern.compile("^(?! )[\\-_/:;'\"~^.,?!*<>$%&#@+]+ .*");
+			Pattern p3 = Pattern.compile(".*[^ ]+[\\-_/:;'\"~^.,?!*<>$%&#@+]+ $");
 			Pattern p1 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
+			Pattern p4 = Pattern.compile("^ +[\\-_/:;'\"~^.,?!*<>$%&#@+]+[^ ]+.*");
+			Pattern p5 = Pattern.compile(".* +[\\-_/:;'\"~^.,?!*<>$%&#@+]+(?! )+$");
 			Map<String,String> engshortListMap = metadataApi.scEngshortListMap();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isEng()&&nameTmp.isOfficeName()
 						&&nameTmp.isStandardName()){
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
-					if(p.matcher(name).matches()||p1.matcher(name).matches()){
+					if(p.matcher(name).matches()||p1.matcher(name).matches()
+							||p2.matcher(name).matches()||p3.matcher(name).matches()
+							||p4.matcher(name).matches()||p5.matcher(name).matches()){
 						boolean flag = false;
 						if(name.contains(".")){
 							for (String engShortName : engshortListMap.values()) {

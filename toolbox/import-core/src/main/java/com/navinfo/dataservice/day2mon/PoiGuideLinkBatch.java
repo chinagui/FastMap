@@ -106,7 +106,7 @@ public class PoiGuideLinkBatch {
 			diff(copVersionSchema);
 			//7.根据6的差分履历刷新月库,把6生成的履历搬移到月库；
 			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);
-			log.info("flushDiffLog over!");
+			log.info("flushGlinkDataLog over!");
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			DbUtils.rollbackAndCloseQuietly(monthConn);

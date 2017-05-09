@@ -88,7 +88,7 @@ public class FMBAT20188 extends BasicBatchRule {
 			List<Long> childrenList  =  childrenMap.get(poi.getPid());
 			
 			List<IxPoiChargingstation> chargingStationList = poiObj.getIxPoiChargingstations();
-			if (chargingStationList.size() == 0) {
+			if (chargingStationList==null||chargingStationList.isEmpty()) {
 				return;
 			}
 			IxPoiChargingstation chargingStation = chargingStationList.get(0);

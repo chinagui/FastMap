@@ -106,7 +106,7 @@ public class PoiGuideLinkBatch {
 			diff(copVersionSchema);
 			//7.根据6的差分履历刷新月库,把6生成的履历搬移到月库；
 			flushDiffLog(copVersionSchema,copVersionConn,dbLinkName,monthConn);
-			log.info("flushDiffLog over!");
+			log.info("flushGlinkDataLog over!");
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(copVersionConn);
 			DbUtils.rollbackAndCloseQuietly(monthConn);
@@ -168,7 +168,8 @@ public class PoiGuideLinkBatch {
 	private void diff(OracleSchema copVersionSchema) throws Exception {
 		//完成数据差分，及履历写入
 		diffPoiGData(copVersionSchema);
-		diffPoiFlagGData(copVersionSchema);
+		//待确认，是否需要差分处理
+		//diffPoiFlagGData(copVersionSchema);
 		//更新LOG_DETAIL_GRID
 		updateLogGrid(copVersionSchema);
 	}
@@ -235,7 +236,7 @@ public class PoiGuideLinkBatch {
 		sb.append(" 	(CASE WHEN IX.LINK_PID <> BAK.LINK_PID THEN ',\"LINK_PID\":' || IX.LINK_PID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.NAME_GROUPID <> BAK.NAME_GROUPID THEN ',\"NAME_GROUPID\":' || IX.NAME_GROUPID ELSE NULL END) ||");
 		sb.append(" 	(CASE WHEN IX.SIDE <> BAK.SIDE THEN ',\"SIDE\":' || IX.SIDE ELSE NULL END) ||");
-		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || BAK.PMESH_ID ELSE NULL END) NEW_VALUE");
+		sb.append(" 	(CASE WHEN IX.PMESH_ID <> BAK.PMESH_ID THEN ',\"PMESH_ID\":' || IX.PMESH_ID ELSE NULL END) NEW_VALUE");
 		sb.append("  FROM IX_POI IX, IX_POI_BACK BAK ");
 		sb.append("  WHERE IX.PID = BAK.PID ");
 		sb.append(" 	AND (IX.X_GUIDE <> BAK.X_GUIDE OR IX.Y_GUIDE <> BAK.Y_GUIDE OR");

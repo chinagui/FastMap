@@ -229,6 +229,8 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		if(grids!=null&&grids.size()>0){allGrids = grids;}
 		List<Integer> meshs =grids2meshs(allGrids);
 		String tempPoiGLinkTab ="";
+		boolean isbatch = true;
+		OperationResult result=new OperationResult();
 		try{
 			
 			log.info("处理日落月和DMS的数据读写锁");
@@ -248,13 +250,14 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			FlushResult flushResult= new Day2MonLogFlusher(dailyDbSchema,dailyConn,monthConn,true,tempOpTable,"day2MonSync").flush();
 			if(0==flushResult.getTotal()){
 				log.info("没有符合条件的履历，不执行日落月，返回");
+				isbatch = false;
 			}else{
 				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
 				logMover = new Day2MonMover(dailyDbSchema, monthDbSchema, tempOpTable, flushResult.getTempFailLogTable());
 				LogMoveResult logMoveResult = logMover.move();
 				log.info("开始进行履历分析");
-				OperationResult result = parseLog(logMoveResult, monthConn);
-				if(result.getAllObjs().isEmpty()){throw new LockException("可落的履历全部刷库失败，请查看："+flushResult.getTempFailLogTable());}
+				result = parseLog(logMoveResult, monthConn);
+				if(result.getAllObjs().size()==0){throw new LockException("可落的履历全部刷库失败，请查看："+flushResult.getTempFailLogTable());}
 				log.info("开始进行深度信息打标记");
 				new DeepInfoMarker(result,monthConn).execute();
 				log.info("开始执行前批");
@@ -266,8 +269,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				new PostBatch(result,monthConn).execute();
 				log.info("开始批处理MESH_ID_5K、ROAD_FLAG、PMESH_ID");
 				updateField(result, monthConn);
-				log.info("开始筛选需要批引导LINK的POI");
-				tempPoiGLinkTab=createPoiTabForBatchGL(result,monthConn);
 				
 				updateLogCommitStatus(dailyConn,tempOpTable);
 				
@@ -282,7 +283,12 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				manApi.taskUpdateCmsProgress(phaseId,2,null);
 			}
 			
+			log.info("开始筛选需要批引导LINK的POI");
+			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
+			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+			
 		}catch(Exception e){
+			isbatch = false;
 			if(monthConn!=null)monthConn.rollback();
 			if(dailyConn!=null)dailyConn.rollback();
 			log.info("rollback db");
@@ -313,40 +319,53 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				log.info("释放履历锁");
 				logSelector.unselect(false);
 			}
-			log.info("开始执行引导LINK批处理");
-			new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+				log.info("开始执行引导LINK批处理");
+				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+				log.info("引导LINK批处理执行完成");
+			}
+			
 		}
 		
 	}
 	
 
-	private String createPoiTabForBatchGL(OperationResult opResult, Connection monthConn) throws Exception{
-		//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
-		Map<Long, BasicObj> changedPois = opResult.getChangedObjsByName(ObjectName.IX_POI);
-		if(MapUtils.isEmpty(changedPois)) {
-			log.info("没有获取到有变更的poi数据");
-			return "";	
-		}
-		//2.把精选的POI.pid放在临时表temp_poi_glink_yyyyMMddhhmmss（临时表不存在则新建）；
-		String tempPoiGLinkTab = createTempPoiGLinkTable(monthConn);
-		//3.精选POI:根据粗选的结果，进一步过滤得到(新增POI或修改引导坐标或引导link为0的POI对象或对应引导link不存在rd_link表中)
-		Set<Long> refinedPois = new HashSet<Long>();
-		for(Long pid :changedPois.keySet()){
-			BasicObj poiObj = changedPois.get(pid);
-			if(OperationType.INSERT==poiObj.getMainrow().getOpType()
-					||poiObj.getMainrow().getChangedColumns().contains("Y_GUIDE")
-					||poiObj.getMainrow().getChangedColumns().contains("X_GUIDE")
-					||Integer.valueOf(0).equals(poiObj.getMainrow().getAttrByColName("LINK_PID"))
-					){
-				refinedPois.add(pid);
+	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
+		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
+		try{
+			//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
+			if(opResult.getAllObjs().size()==0){
+				log.info("没有获取到有变更的poi数据");
+				return "";
+				}
+			
+			List<Long> pids=new ArrayList<Long>();
+			//2.把精选的POI.pid放在临时表temp_poi_glink_yyyyMMddhhmmss（临时表不存在则新建）；
+			String tempPoiGLinkTab = createTempPoiGLinkTable(conn);
+			//3.精选POI:根据粗选的结果，进一步过滤得到(新增POI或修改引导坐标或引导link为0的POI对象或对应引导link不存在rd_link表中)
+			Set<Long> refinedPois = new HashSet<Long>();
+			for(BasicObj poiObj:opResult.getAllObjs()){
+				pids.add(poiObj.objPid());
+				if(OperationType.INSERT==poiObj.getMainrow().getHisOpType()||
+						(OperationType.UPDATE==poiObj.getMainrow().getHisOpType()&&(poiObj.getMainrow().hisOldValueContains(IxPoi.Y_GUIDE)
+								||poiObj.getMainrow().hisOldValueContains(IxPoi.X_GUIDE)||
+								Integer.valueOf(0).equals(poiObj.getMainrow().getAttrByColName("LINK_PID"))))){
+					refinedPois.add(poiObj.objPid());
+				}
 			}
+			insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
+			insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			return tempPoiGLinkTab;
+		}catch(Exception e){
+			log.info(e.getMessage());
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
-		insertPois2TempTab(refinedPois,tempPoiGLinkTab,monthConn);
-		insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(changedPois.keySet(), refinedPois),tempPoiGLinkTab,monthConn);
-		return tempPoiGLinkTab;
+		
 	}
 	private void insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
-		String sql = "insert /*+append*/ into "+tempPoiTable
+		String sql = "insert  into "+tempPoiTable
 				+ " select pid from ix_poi t  "
 				+ " where t.pid in (select column_value from table(clob_to_table(?))) "
 				+ " and not exists(select 1 from rd_link r where r.link_pid=t.link_pid)";
@@ -356,7 +375,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		new QueryRunner().update(conn, sql, clobPids);
 	}
 	private void insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
-		String sql = "insert /*+append*/ into "+tempPoiTable
+		String sql = "insert into "+tempPoiTable
 				+ " select column_value from table(clob_to_table(?)) ";
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);

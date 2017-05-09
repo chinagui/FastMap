@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -56,7 +53,7 @@ public class FMBAT20185 extends BasicBatchRule {
 			return;
 		}
 		List<IxPoiChargingstation>  charginstions = poiObj.getIxPoiChargingstations();
-		if (charginstions.size() == 0) {
+		if (charginstions==null || charginstions.isEmpty()) {
 			return;
 		}
 		List<Long> childrenList = childrenMap.get(poi.getPid());

@@ -81,7 +81,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
-		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type);
+		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,0);
 
 		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 				.getBean("datahubApi");
@@ -142,7 +142,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
-		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type);
+		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,0);
 
 		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 				.getBean("datahubApi");

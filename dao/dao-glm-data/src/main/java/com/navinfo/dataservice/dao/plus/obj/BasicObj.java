@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -174,7 +175,7 @@ public abstract class BasicObj {
 	 * 如果是新增状态，物理删除，其他状态打删除标识
 	 * @param subrow
 	 */
-	public void deleteSubrow(String tableName){
+	public void deleteSubrows(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
 		if(rows!=null){
 			for(Iterator<BasicRow> it= rows.iterator();it.hasNext();){
@@ -195,6 +196,11 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){
 			mainrow.setOpType(OperationType.INSERT_DELETE);
 			subrows.clear();
+			return;
+		}
+		//如果是已删除，则忽略
+		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)
+				||mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
 			return;
 		}
 		this.mainrow.setOpType(OperationType.DELETE);
@@ -395,5 +401,27 @@ public abstract class BasicObj {
 	public abstract BasicRow createSubSubRowByName(String subRowName,long subId) throws Exception;
 	//根据json中的key获取对象
 	public abstract List<BasicRow> getSubRowByName(String subRowName) throws Exception;
+	
+	public boolean hisOldValueContains(String tableName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hisOldValueContains(String tableName,String columnName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				if(basicRow.hisOldValueContains(columnName)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 }

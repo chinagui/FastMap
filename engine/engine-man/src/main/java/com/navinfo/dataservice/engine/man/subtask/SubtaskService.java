@@ -2136,4 +2136,46 @@ public class SubtaskService {
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		} 
 	}
+	
+	/**
+	 * @param 
+	 * @param listAllInforByCity
+	 * @throws Exception 
+	 */
+	public List<Map<String,Object>> listAllInforByCity(String cityName, JSONObject jsonObject) throws Exception{
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
+					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
+					+ "like " +  "\'"+ "%" + cityName + "%" +"\'";
+			
+			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){
+				String name = " AND st.NAME like " + "\'"+ "%" + jsonObject.getString("name") + "%" +"\'";
+				selectSql += name;;
+			}
+			
+			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
+				@Override
+				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
+					List<Map<String, Object>> res = new ArrayList<Map<String,Object>>();
+					while(result.next()){
+						Map<String, Object> sTaskMap = new HashMap<String, Object>();
+						sTaskMap.put("subtaskId", result.getInt("SUBTASK_ID"));
+						sTaskMap.put("name", result.getObject("NAME"));
+						sTaskMap.put("taskId", result.getObject("TASK_ID"));
+						res.add(sTaskMap);
+					}
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

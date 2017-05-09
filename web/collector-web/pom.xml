@@ -150,6 +150,6 @@
 	</dependency>
   </dependencies>
   <build>
-    <finalName>collector-web</finalName>
+    <finalName>collector</finalName>
   </build>
 </project>

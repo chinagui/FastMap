@@ -24,4 +24,9 @@ public class Constant {
      * 基本缩小系数
      */
     public final static double BASE_SHRINK = 0.00001;
+
+    /**
+     * 最短允许LINK长度
+     */
+    public final static double MIN_LINK_LENGTH = 2L;
 }

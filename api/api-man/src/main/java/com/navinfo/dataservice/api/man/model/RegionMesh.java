@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /** 
@@ -8,7 +9,7 @@ import java.util.Set;
  * @date 2017年4月25日
  * @Description: RegionMesh.java
  */
-public class RegionMesh {
+public class RegionMesh implements Serializable{
 	int regionId=0;
 	int dailyDbId=0;
 	int monthlyDbId=0;

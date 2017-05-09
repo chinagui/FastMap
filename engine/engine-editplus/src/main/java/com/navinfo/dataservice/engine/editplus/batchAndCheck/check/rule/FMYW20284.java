@@ -32,9 +32,11 @@ public class FMYW20284 extends BasicCheckRule {
 			if("230105".equals(kindCode)||"230103".equals(kindCode)
 					||"230126".equals(kindCode)||"230127".equals(kindCode)){
 				Map<Long, Integer> rdLink = CheckUtil.searchRdLink(linkPid, this.getCheckRuleCommand().getConn());
-				if(rdLink.get(linkPid) == 10){
-					setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
-					return;
+				if(rdLink != null && rdLink.containsKey(linkPid)){
+					if(rdLink.get(linkPid) == 10){
+						setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
+						return;
+					}
 				}
 			}
 		}

@@ -202,30 +202,7 @@ public class CheckService {
 		}
 		
 		JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
-		/*if(checkType == 7){  //道路名检查 ,直接调元数据库 全表检查		
-			DatahubApi datahub = (DatahubApi) ApplicationContextUtil
-					.getBean("datahubApi");
-			DbInfo metaDb = datahub.getOnlyDbByType("metaRoad");
-			Integer metaDbid = metaDb.getDbId();
-			if(metaDbid != null && metaDbid >0){
-				String jobName = "";
-				if(jsonReq.containsKey("jobName") && jsonReq.getString("jobName") != null 
-						&& StringUtils.isNotEmpty(jsonReq.getString("jobName")) && !jsonReq.getString("jobName").equals("null")){
-					jobName = "rdName:"+jsonReq.getString("jobName");
-				}else{
-					jobName = "rdName:"+"元数据库检查";
-				}
-				
-			//System.out.println("metaDbid: "+metaDbid);
-			JSONObject metaValidationRequestJSON=new JSONObject();
-			metaValidationRequestJSON.put("executeDBId", metaDbid);//元数据库dbId
-			metaValidationRequestJSON.put("kdbDBId", metaDbid);//元数据库dbId
-			metaValidationRequestJSON.put("ruleIds", ruleList);
-			metaValidationRequestJSON.put("timeOut", 600);
-			jobId=apiService.createJob("checkCore", metaValidationRequestJSON, userId, 0, jobName);
-			//System.out.println("jobId == "+jobId);
-			}
-		}else*/ 
+		
 		if(checkType == 5){//道路名子版本检查+全库检查
 			
 			log.info(" begin 道路名子版本检查+全库检查 ");
@@ -255,11 +232,14 @@ public class CheckService {
 				roadTypes = arr.join(",");
 			}
 			List<Integer> nameIds = new ArrayList<Integer>();
-			if(paramsObj.containsKey("nameIds") && paramsObj.getJSONArray("nameIds") != null && paramsObj.getJSONArray("nameIds").size() > 0 ){
-				JSONArray arr = paramsObj.getJSONArray("nameIds");
+			if(jsonReq.containsKey("nameIds") && jsonReq.getJSONArray("nameIds") != null && jsonReq.getJSONArray("nameIds").size() > 0 ){
+				log.info("meta check selectdata : nameIds:"+jsonReq.getJSONArray("nameIds"));
+				JSONArray arr = jsonReq.getJSONArray("nameIds");
 				nameIds = (List<Integer>) JSONArray.toCollection(arr);
+				log.info("nameIds list:"+nameIds.size());
 //				nameIds = arr.join(",");
 			}
+			
 			
 			
 			

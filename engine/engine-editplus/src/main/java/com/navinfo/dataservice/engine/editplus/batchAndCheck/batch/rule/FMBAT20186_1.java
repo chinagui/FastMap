@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +62,7 @@ public class FMBAT20186_1 extends BasicBatchRule {
 		List<IxPoiAddress> parentAddressList = poiObj.getIxPoiAddresses();
 		// 电话
 		List<IxPoiContact> parentContactList = poiObj.getIxPoiContacts();
-		if(parentAddressList.size()==0&&parentContactList.size()==0){return;}
+		if((parentAddressList==null||parentAddressList.isEmpty())&&(parentContactList==null||parentContactList.isEmpty())){return;}
 		boolean addressFlag=false;
 		boolean contactFlag=false;
 		for(IxPoiAddress parentAdd:parentAddressList){
@@ -86,34 +85,38 @@ public class FMBAT20186_1 extends BasicBatchRule {
 			List<IxPoiAddress> childAddressList = child.getIxPoiAddresses();
 			List<IxPoiContact> childContactList = child.getIxPoiContacts();
 			if(addressFlag){
-				// 地址
-				for(int i=childAddressList.size()-1;i>=0;i--){
-					child.deleteSubrow(childAddressList.get(i));
-				}
-				
-				for (IxPoiAddress parentAddress:parentAddressList) {
-					IxPoiAddress newAddress = child.createIxPoiAddress();
-					newAddress.setPoiPid(childPoi.getPid());
-					newAddress.setNameGroupid(parentAddress.getNameGroupid());
-					newAddress.setLangCode(parentAddress.getLangCode());
-					newAddress.setSrcFlag(parentAddress.getSrcFlag());
-					newAddress.setFullname(parentAddress.getFullname());
-					newAddress.setFullnamePhonetic(parentAddress.getFullnamePhonetic());
+				if(childAddressList!=null && !childAddressList.isEmpty()){
+					// 地址
+					for(int i=childAddressList.size()-1;i>=0;i--){
+						child.deleteSubrow(childAddressList.get(i));
+					}
+					
+					for (IxPoiAddress parentAddress:parentAddressList) {
+						IxPoiAddress newAddress = child.createIxPoiAddress();
+						newAddress.setPoiPid(childPoi.getPid());
+						newAddress.setNameGroupid(parentAddress.getNameGroupid());
+						newAddress.setLangCode(parentAddress.getLangCode());
+						newAddress.setSrcFlag(parentAddress.getSrcFlag());
+						newAddress.setFullname(parentAddress.getFullname());
+						newAddress.setFullnamePhonetic(parentAddress.getFullnamePhonetic());
+					}
 				}
 			}
 			
 			if(contactFlag){
-				// 电话
-				for(int i=childContactList.size()-1;i>=0;i--){
-					child.deleteSubrow(childContactList.get(i));
-				}
-				for (IxPoiContact parentContact:parentContactList) {
-					IxPoiContact newContact = child.createIxPoiContact();
-					newContact.setPoiPid(childPoi.getPid());
-					newContact.setContactType(parentContact.getContactType());
-					newContact.setContact(parentContact.getContact());
-					newContact.setContactDepart(parentContact.getContactDepart());
-					newContact.setPriority(parentContact.getPriority());
+				if(childContactList!=null && !childContactList.isEmpty()){
+					// 电话
+					for(int i=childContactList.size()-1;i>=0;i--){
+						child.deleteSubrow(childContactList.get(i));
+					}
+					for (IxPoiContact parentContact:parentContactList) {
+						IxPoiContact newContact = child.createIxPoiContact();
+						newContact.setPoiPid(childPoi.getPid());
+						newContact.setContactType(parentContact.getContactType());
+						newContact.setContact(parentContact.getContact());
+						newContact.setContactDepart(parentContact.getContactDepart());
+						newContact.setPriority(parentContact.getPriority());
+					}
 				}
 			}
 		}

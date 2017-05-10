@@ -2493,4 +2493,22 @@ public class TaskOperation {
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	/**
+	 * task的workKind字段，特定值域改成1,例如：原work_Kind='1|0|0|0'，参数subtaskWorkKind=3，则修改后work_Kind='1|0|1|0'
+	 * @param conn
+	 * @param taskId
+	 * @param subtaskWorkKind:1外业采集，2众包，3情报矢量，4多源,将任务的对应修改为1
+	 * @throws Exception
+	 */
+	public static void updateWorkKind(Connection conn, int taskId, int subtaskWorkKind) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",work_kind) WHERE task_id="+taskId;
+			run.update(conn,updateSql);			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+	}
 }

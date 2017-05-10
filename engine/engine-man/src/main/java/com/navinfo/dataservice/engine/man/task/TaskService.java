@@ -118,8 +118,31 @@ public class TaskService {
 					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
 					bean.setRegionId(regionId);
 				}
+				
 				//添加workKind参数，并根据情况调用组赋值方法
-				updateUserGroup(taskJson);
+				int type = 0;
+				JSONArray workKindArray = taskJson.getJSONArray("workKind");
+				int programID = taskJson.getInt("programId");
+				
+				if(workKindArray.size() > 1){
+					type = 4;
+				}else{
+					type = workKindArray.getInt(0);
+				}
+				String adminCode = selectAdminCode(type, programID);
+				
+				if(adminCode != null && !"".equals(adminCode)){
+					UserGroup userGroup = getGroupByAminCode(adminCode, type);
+					Integer userGroupID = userGroup.getGroupId();
+					bean.setGroupId(userGroupID);
+				}
+
+				String workKind = "";
+				for(int j = 0; j < workKindArray.size(); j++){
+					workKind += workKindArray.get(j) + "|";
+					String result = workKind.substring(0, workKind.length() - 1);
+					bean.setWorkKind(result);
+				}
 				
 				taskList.add(bean);
 			}
@@ -134,52 +157,52 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
-	/**
-	 * 添加workKind并保存userGroupID到TASK表
-	 * @param JSONObject json
-	 * @throws Exception
-	 * @author songhe
-	 * @return 
-	 */
-	public void updateUserGroup(JSONObject json) throws Exception{
-		Connection conn = null;
-		try{
-			int type = 0;
-			JSONArray taskArray = json.getJSONArray("tasks");
-			for(int i = 0; i < taskArray.size(); i++){
-				JSONObject taskJson = taskArray.getJSONObject(i);
-				JSONArray workKindArray = taskJson.getJSONArray("workKind");
-					
-				String workKind = "";
-				for(int j = 0; j < workKindArray.size(); j++){
-					workKind += workKindArray.get(j) + "|";
-				}
-				String result = workKind.substring(0, workKind.length() - 1);
-					
-				int programID = taskJson.getInt("programId");
-				if(workKindArray.size() > 1){
-					type = 4;
-				}else{
-					type = workKindArray.getInt(0);
-				}
-				if(type != 3){
-					String adminCode = selectAdminCode(type, programID);
-					if(!"".equals(adminCode) && adminCode != null){
-						UserGroup userGroup = getGroupByAminCode(adminCode, type);
-						Integer userGroupID = userGroup.getGroupId();
-						updateAdminGroupMapping(result, userGroupID, programID);
-					}
-				}
-			}
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new Exception("保存userGroup失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
+//	
+//	/**
+//	 * 添加workKind并保存userGroupID到TASK表
+//	 * @param JSONObject json
+//	 * @throws Exception
+//	 * @author songhe
+//	 * @return 
+//	 */
+//	public void updateUserGroup(JSONObject json) throws Exception{
+//		Connection conn = null;
+//		try{
+//			int type = 0;
+//			JSONArray taskArray = json.getJSONArray("tasks");
+//			for(int i = 0; i < taskArray.size(); i++){
+//				JSONObject taskJson = taskArray.getJSONObject(i);
+//				JSONArray workKindArray = taskJson.getJSONArray("workKind");
+//					
+//				String workKind = "";
+//				for(int j = 0; j < workKindArray.size(); j++){
+//					workKind += workKindArray.get(j) + "|";
+//				}
+//				String result = workKind.substring(0, workKind.length() - 1);
+//					
+//				int programID = taskJson.getInt("programId");
+//				if(workKindArray.size() > 1){
+//					type = 4;
+//				}else{
+//					type = workKindArray.getInt(0);
+//				}
+//				if(type != 3){
+//					String adminCode = selectAdminCode(type, programID);
+//					if(!"".equals(adminCode) && adminCode != null){
+//						UserGroup userGroup = getGroupByAminCode(adminCode, type);
+//						Integer userGroupID = userGroup.getGroupId();
+//						updateAdminGroupMapping(result, userGroupID, programID);
+//					}
+//				}
+//			}
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			log.error(e.getMessage(), e);
+//			throw new Exception("保存userGroup失败，原因为:"+e.getMessage(),e);
+//		}finally{
+//			DbUtils.commitAndCloseQuietly(conn);
+//		}
+//	}
 	
 	
 	/**

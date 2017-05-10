@@ -45,6 +45,18 @@ public class Task implements Serializable{
 	private Integer groupLeader =0; 
 	private String workProperty ;
 	
+	private String workKind;
+	
+	public String getWorkKind() {
+		return workKind;
+	}
+
+
+	public void setWorkKind(String workKind) {
+		this.workKind = workKind;
+	}
+
+
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;
 	

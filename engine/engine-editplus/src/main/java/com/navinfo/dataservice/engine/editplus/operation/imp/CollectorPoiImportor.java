@@ -65,6 +65,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 	protected CollectorUploadPoiSpRelation sps = new CollectorUploadPoiSpRelation();
 	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
 	protected Map<Long,String> freshVerPois = new HashMap<Long,String>();
+	protected Set<Long> noChangedPois = new HashSet<Long>();
 	//父子关系暂时不处理
 
 	public CollectorPoiImportor(Connection conn,OperationResult preResult) {
@@ -94,6 +95,10 @@ public class CollectorPoiImportor extends AbstractOperation {
 	
 	public Map<Long,String> getFreshVerPois(){
 		return freshVerPois;
+	}
+	
+	public Set<Long> getNoChangedPois(){
+		return noChangedPois;
 	}
 	
 	/**
@@ -168,6 +173,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 					//计算鲜度验证
 					if(poiObj.isFreshFlag()){
 						freshVerPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
+						if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
+							noChangedPois.add(poiObj.objPid());
+						}
 					}
 					result.putObj(poiObj);
 					successNum++;

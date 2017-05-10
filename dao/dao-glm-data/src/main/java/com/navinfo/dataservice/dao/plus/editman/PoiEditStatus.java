@@ -38,6 +38,9 @@ import com.navinfo.navicommons.database.sql.DBUtils;
  * @Description: PoiEditStatus.java
  */
 public class PoiEditStatus {
+	
+	public static int TO_BE_PRODUCE = 1;
+	public static int PRODUCED = 2;
 
 	private static final Logger logger = Logger.getLogger(PoiEditStatus.class);
 	/**

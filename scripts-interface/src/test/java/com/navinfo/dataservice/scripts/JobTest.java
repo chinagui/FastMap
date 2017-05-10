@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.scripts;
 
-
 import org.junit.Test;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.job.model.JobInfo;

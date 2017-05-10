@@ -40,7 +40,7 @@ public class PoiServiceNew {
 		//1.2 解压文件
 		String filePath = upInfo.getFilePath()+File.separator+upInfo.getUploadId();
 		ZipUtils.unzipFile(filePath+ File.separator + upInfo.getFileName(), filePath);
-		UploadManager upMan = new UploadManager(userId,filePath);
+		UploadManager upMan = new UploadManager(userId,filePath + "/poi.txt");
 		upMan.setSubtaskId(subtaskId);
 		UploadResult result = upMan.upload();
 		//读取poi文件，导入...

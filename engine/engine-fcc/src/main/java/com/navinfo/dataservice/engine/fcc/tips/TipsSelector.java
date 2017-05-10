@@ -519,6 +519,19 @@ public class TipsSelector {
 				// 3.1   4.1 判断是否有线编号同时返回线编号和坐标
 				getOutNumAndGeo(type, z, px, py, m, deep);
 				
+                //20170508 tips渲染接口增加2个返回值：
+                // 中线状态（1是中线成果0不是中线成果），快线状态（1是快线成果0不是快线成果）
+                int s_qTaskId = json.getInt("s_qTaskId");//快线任务号
+                if(s_qTaskId != 0) {
+                    s_qTaskId = 1;
+                }
+                m.put("quickFlag", s_qTaskId);
+
+                int s_mTaskId = json.getInt("s_mTaskId");//快线任务号
+                if(s_mTaskId != 0) {
+                    s_mTaskId = 1;
+                }
+                m.put("mediumFlag", s_mTaskId);
 
 				snapshot.setM(m);
 
@@ -1828,12 +1841,14 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages)
+	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type, JSONArray stages)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
+		//查询日编或者月编任务对应的采集任务ID
+		Set<Integer> taskList = getTaskIdsUnderSameProject(editTaskId);
 		List<JSONObject> snapshots = conn
-				.queryTipsWeb(wkt, type, stages, false);
+				.queryTipsWeb(wkt, type, stages, false, taskList);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -2037,4 +2052,10 @@ public class TipsSelector {
 		}
 		return list;
 	}
+    public static void main(String[] args) throws Exception {
+        TipsSelector solrSelector = new TipsSelector();
+        JSONArray types = new JSONArray();
+        System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
+                40, types,"d","wktLocation"));
+    }
 }

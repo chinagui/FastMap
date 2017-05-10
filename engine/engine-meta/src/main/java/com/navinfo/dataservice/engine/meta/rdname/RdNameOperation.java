@@ -457,7 +457,11 @@ public RdName saveName(RdName rdName) throws Exception {
 		try {
 			for (int i=0;i<dataList.size();i++) {
 				JSONObject data = dataList.getJSONObject(i);
-				teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"));
+				if(data.containsKey("splitFlag") && data.getInt("splitFlag") != 1){//2017.05.09 zl 拆分标识为人工拆分  不再拆分
+					teilen.teilenName(data.getInt("nameId"), data.getInt("nameGroupid"), data.getString("langCode"), data.getInt("roadType"));
+				}else{
+					log.info("人工拆分: "+data.getInt("nameId")+" "+data.getInt("nameGroupid"));
+				}
 			}
 		} catch (Exception e) {
 			throw e;

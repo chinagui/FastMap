@@ -63,6 +63,7 @@ public class FMBAT20186 extends BasicBatchRule {
 		// 地址
 		List<IxPoiAddress> parentAddressList = parentPoiObj.getIxPoiAddresses();
 		List<IxPoiAddress> addressList = poiObj.getIxPoiAddresses();
+		if(addressList==null||addressList.isEmpty()){return;}
 		for(int i=addressList.size()-1;i>=0;i--){
 			poiObj.deleteSubrow(addressList.get(i));
 		}

@@ -20,6 +20,7 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 	protected String bizType;
 	protected String descp;
 	protected int refDbId;
+	protected int specSvrId;
 
 	public String getServerType() {
 		return serverType;
@@ -76,6 +77,14 @@ public class CreateDbJobRequest extends AbstractJobRequest {
 
 	public void setRefDbId(int refDbId) {
 		this.refDbId = refDbId;
+	}
+
+	public int getSpecSvrId() {
+		return specSvrId;
+	}
+
+	public void setSpecSvrId(int specSvrId) {
+		this.specSvrId = specSvrId;
 	}
 
 	/* (non-Javadoc)

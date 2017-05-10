@@ -167,7 +167,7 @@ public class CheckController extends BaseController {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
@@ -219,18 +219,7 @@ public class CheckController extends BaseController {
 			logger.info("jobUuid 2: "+jobUuid);
 			conn = DBConnector.getInstance().getMetaConnection();
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
-			/*ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
-			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);*/
+
 			//获取规则号
 			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid);
 			logger.info("end check/listRdnResult");

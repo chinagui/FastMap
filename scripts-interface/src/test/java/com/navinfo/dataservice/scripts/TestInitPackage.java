@@ -72,12 +72,12 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	//@Test
+	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
 		String path="f:/gdb/";
-		String type="month";
+		String type="day";
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
@@ -133,7 +133,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testgdbDonwnloadSp9() throws Exception{
 		JobScriptsInterface.initContext();
 

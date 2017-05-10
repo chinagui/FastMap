@@ -112,6 +112,12 @@ public class TaskService {
 					gridIds.put(gridId, 1);
 				}
 				bean.setGridIds(gridIds);
+				
+				//常规项目根据blockId获取region信息
+				if(bean.getBlockId() != 0){
+					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
+					bean.setRegionId(regionId);
+				}
 				//添加workKind参数，并根据情况调用组赋值方法
 				updateUserGroup(taskJson);
 				

@@ -523,7 +523,7 @@ public class DefaultObjImportor extends AbstractOperation{
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return "DefaultObjImportor";
+		return "IXPOICOLUMNSAVE";
 	}
 	
 	public String camelToUnderline(String param) {

@@ -234,8 +234,8 @@ public class RefinementLogDependent {
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
 		RefinementLogDependent RefinementLogDependent = new RefinementLogDependent();
-		RefinementLogDependent.refinementLogDependentMain(13);
-//		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));
+//		RefinementLogDependent.refinementLogDependentMain(13);
+		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));
 	}
 	
 

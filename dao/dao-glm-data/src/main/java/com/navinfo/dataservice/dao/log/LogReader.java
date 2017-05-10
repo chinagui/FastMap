@@ -391,9 +391,11 @@ public class LogReader {
 		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A\n");
 		sb.append("   WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)\n");
 		sb.append("     AND EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
-		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
+		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)\n");
+		sb.append("     AND NOT EXISTS (SELECT 1 FROM LOG_DETAIL D\n");
+		sb.append("           WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 2)),\n");
 		sb.append("D AS\n");
-		sb.append("(SELECT B.* FROM B WHERE B.OP_TP!=3),\n");
+		sb.append("(SELECT B.* FROM B WHERE B.OP_TP=1 UNION ALL SELECT B.* FROM B WHERE B.OP_TP=2 AND NOT EXISTS (SELECT 1 FROM LOG_DETAIL D,A WHERE D.OB_PID = A.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)),\n");
 		sb.append("E AS\n");
 		sb.append("(SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
 		sb.append("WHERE D.OB_PID = B.OB_PID AND D.TB_NM = ? AND D.OP_TP = 1)), \n");       
@@ -402,7 +404,7 @@ public class LogReader {
 		sb.append("SELECT * FROM F \n");
 		sb.append("UNION ALL \n");
 		sb.append("SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID)");
-		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName);
+		return new QueryRunner().query(conn, sb.toString(), new ObjStatusHandler(),mainTabName,mainTabName,mainTabName,mainTabName);
 	}
 	/**
 	 * 根据操作，查询某张表某条记录的新旧值变化

@@ -68,6 +68,7 @@ public class PostBatch {
 		operationResult.putAll(changeSourceFlag("FM-YW-20-014","110020060000"));
 		operationResult.putAll(changeSourceFlag("FM-YW-20-017","110020090000"));
 		PostBatchOperation postBatchOp = new PostBatchOperation(conn, operationResult);
+		postBatchOp.setName("day2mon");
 		postBatchOp.persistChangeLog(OperationSegment.SG_COLUMN, 0);
 	}
 	

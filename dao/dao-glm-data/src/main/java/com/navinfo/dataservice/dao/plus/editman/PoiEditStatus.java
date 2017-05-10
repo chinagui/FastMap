@@ -380,6 +380,28 @@ public class PoiEditStatus {
 			DbUtils.closeQuietly(stmt);
 		}
 	}
+
+	/**
+	 * 
+	 * @param conn
+	 * @param pids：只包含鲜度验证的POI
+	 * @throws Exception
+	 */
+	public static void updateStatus(Connection conn,Collection<Long> pids,int status)throws Exception{
+		try{
+			if(pids==null||pids.size()==0){
+				return;
+			}
+			String sql = "UPDATE POI_EDIT_STATUS SET STATUS=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pids, ","));
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, status,pidsClob);
+		}catch(Exception e){
+			logger.error(e.getMessage(),e);
+			throw e;
+		}
+	}
 	/**
 	 * poi操作修改poi状态为待作业
 	 * 

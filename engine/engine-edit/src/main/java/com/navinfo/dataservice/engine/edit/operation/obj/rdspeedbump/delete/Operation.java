@@ -91,4 +91,30 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+
+	/**
+	 * 删除RdLink是维护减速带信息
+	 *
+	 * @param result
+	 *            结果集
+	 * @param linkPids
+	 *            待删除RdLinkPids
+	 * @return
+	 * @throws Exception
+	 */
+	public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		RdSpeedbumpSelector selector = new RdSpeedbumpSelector(this.conn);
+
+		List<RdSpeedbump> speedbumps = selector.loadByLinkPids(linkPids, true);
+
+		// 根据RdLinkPid查找出关联的减速带并将之删除
+		for (RdSpeedbump speedbump : speedbumps) {
+
+			result.insertObject(speedbump, ObjStatus.DELETE, speedbump.pid());
+		}
+
+		return null;
+	}
 }

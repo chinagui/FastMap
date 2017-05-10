@@ -362,7 +362,7 @@ public class RdDirectrouteSelector extends AbstractSelector {
 	}
 	
 	
-	public List<RdDirectroute> loadByLinkPids(List<Integer> linkPids, int linkType,
+	private List<RdDirectroute> loadByLinkPids(List<Integer> linkPids, int linkType,
 			boolean isLock) throws Exception {
 		
 		List<RdDirectroute> rows = new ArrayList<RdDirectroute>();

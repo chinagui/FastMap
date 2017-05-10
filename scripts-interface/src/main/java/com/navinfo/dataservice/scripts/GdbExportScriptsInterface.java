@@ -3,6 +3,7 @@ package com.navinfo.dataservice.scripts;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,6 +16,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -103,7 +105,8 @@ public class GdbExportScriptsInterface {
 				regionId = Integer.valueOf(args[2]);
 			}
 			
-
+			System.out.println("gdb begin time :"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+			
 			JobScriptsInterface.initContext();
 
 			Map<Integer, Map<Integer, Set<Integer>>> map = getProvinceMeshList(type,regionId);
@@ -149,6 +152,7 @@ public class GdbExportScriptsInterface {
 				}
 			}
 
+			System.out.println("gdb end time :"+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
 			System.out.println("Over.");
 			System.exit(0);
 		} catch (Exception e) {

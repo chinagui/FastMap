@@ -264,6 +264,11 @@ public class TaskOperation {
 			
 			String insertPart="";
 			String valuePart="";
+			if (bean!=null && bean.getWorkResult()!=null && StringUtils.isNotEmpty(bean.getWorkResult().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" WORK_KIND ";
+				valuePart+= "'" + bean.getWorkResult() + "'";
+			};
 			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TASK_ID ";

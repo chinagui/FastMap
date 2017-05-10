@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.json.JSONObject;
@@ -45,14 +46,27 @@ public class Task implements Serializable{
 	private Integer groupLeader =0; 
 	private String workProperty ;
 	
-	private String workKind;
+	private List<?> workKind;
 	
-	public String getWorkKind() {
+	private String workResult;
+	
+
+	public String getWorkResult() {
+		return workResult;
+	}
+
+
+	public void setWorkResult(String workResult) {
+		this.workResult = workResult;
+	}
+
+
+	public List<?> getWorkKind() {
 		return workKind;
 	}
 
 
-	public void setWorkKind(String workKind) {
+	public void setWorkKind(List<?> workKind) {
 		this.workKind = workKind;
 	}
 

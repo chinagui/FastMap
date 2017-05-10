@@ -102,9 +102,10 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
+				
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
-
+				
 				//获取grid信息
 				List<Integer> gridList = GridService.getInstance().getGridListByBlockId(conn,bean.getBlockId());
 				Map<Integer, Integer> gridIds = new HashMap<Integer, Integer>();
@@ -121,8 +122,17 @@ public class TaskService {
 				
 				//添加workKind参数，并根据情况调用组赋值方法
 				int type = 0;
-				JSONArray workKindArray = taskJson.getJSONArray("workKind");
 				int programID = taskJson.getInt("programId");
+				
+				JSONArray workKindArray = taskJson.getJSONArray("workKind");
+				String workKind = "";
+				String result = "";
+				for(int j = 0; j < workKindArray.size(); j++){
+					workKind += workKindArray.get(j) + "|";
+				}
+				
+				result = workKind.substring(0, workKind.length() - 1);
+				bean.setWorkResult(result);;
 				
 				if(workKindArray.size() > 1){
 					type = 4;
@@ -137,13 +147,6 @@ public class TaskService {
 					bean.setGroupId(userGroupID);
 				}
 
-				String workKind = "";
-				for(int j = 0; j < workKindArray.size(); j++){
-					workKind += workKindArray.get(j) + "|";
-					String result = workKind.substring(0, workKind.length() - 1);
-					bean.setWorkKind(result);
-				}
-				
 				taskList.add(bean);
 			}
 			
@@ -157,53 +160,6 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-//	
-//	/**
-//	 * 添加workKind并保存userGroupID到TASK表
-//	 * @param JSONObject json
-//	 * @throws Exception
-//	 * @author songhe
-//	 * @return 
-//	 */
-//	public void updateUserGroup(JSONObject json) throws Exception{
-//		Connection conn = null;
-//		try{
-//			int type = 0;
-//			JSONArray taskArray = json.getJSONArray("tasks");
-//			for(int i = 0; i < taskArray.size(); i++){
-//				JSONObject taskJson = taskArray.getJSONObject(i);
-//				JSONArray workKindArray = taskJson.getJSONArray("workKind");
-//					
-//				String workKind = "";
-//				for(int j = 0; j < workKindArray.size(); j++){
-//					workKind += workKindArray.get(j) + "|";
-//				}
-//				String result = workKind.substring(0, workKind.length() - 1);
-//					
-//				int programID = taskJson.getInt("programId");
-//				if(workKindArray.size() > 1){
-//					type = 4;
-//				}else{
-//					type = workKindArray.getInt(0);
-//				}
-//				if(type != 3){
-//					String adminCode = selectAdminCode(type, programID);
-//					if(!"".equals(adminCode) && adminCode != null){
-//						UserGroup userGroup = getGroupByAminCode(adminCode, type);
-//						Integer userGroupID = userGroup.getGroupId();
-//						updateAdminGroupMapping(result, userGroupID, programID);
-//					}
-//				}
-//			}
-//		}catch(Exception e){
-//			DbUtils.rollbackAndCloseQuietly(conn);
-//			log.error(e.getMessage(), e);
-//			throw new Exception("保存userGroup失败，原因为:"+e.getMessage(),e);
-//		}finally{
-//			DbUtils.commitAndCloseQuietly(conn);
-//		}
-//	}
-	
 	
 	/**
 	 * 查询adminCode
@@ -217,12 +173,13 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = null;
-			if(type == 1){
+			if(type == 1 || type == 2 || type == 3){
 				selectSql = "select c.ADMIN_ID from CITY c, PROGRAM p where c.CITY_ID = p.CITY_ID and p.PROGRAM_ID = '" + programID + "'";
 			}else if(type == 4){
 				selectSql = "select i.admin_code from INFOR i, PROGRAM p where p.infor_id = i.infor_id and p.PROGRAM_ID = '" + programID + "'";
 			}else{
-				throw new Exception("type类型不匹配");
+				//TODO 这里需要确认一下2,3的时候应该如何处理
+				return null;
 			}
 			
 			Map<String, String> adminCodeMap = run.query(conn, selectSql, new ResultSetHandler<Map<String, String>>(){
@@ -3159,7 +3116,6 @@ public class TaskService {
 				name = "MULTISOURCE_GROUP_NAME";
 			}
 			
-			//TODO 这里还需要添加一个根据ADMIn表中的对应类型的name查询条件
 			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
 					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
 					+ "and u.group_name = t." + name;
@@ -3187,30 +3143,4 @@ public class TaskService {
 		}
 		return null;
 	}
-	
-	
-	/**
-	 * group对象插入数据库
-	 * @param adminCode
-	 * @param type
-	 * @throws Exception 
-	 * @author songhe
-	 */
-	public void updateAdminGroupMapping(String workKind, Integer userGroupID, int programID) throws Exception{
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			String updateSql = "update TASK t set t.GROUP_ID = '" + userGroupID + "', t.WORK_KIND = '" + workKind
-					+ "' where t.PROGRAM_ID = '" + programID + "'";
-					
-			run.update(conn,updateSql);
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-		
 }

@@ -43,6 +43,16 @@ public class Transaction {
 	private long userId;
 	private int subtaskId;
 	private int dbType;
+	
+	private int infect = 0;
+
+	public int getInfect() {
+		return infect;
+	}
+
+	public void setInfect(int infect) {
+		this.infect = infect;
+	}
 
 	public long getUserId() {
 		return userId;
@@ -106,6 +116,9 @@ public class Transaction {
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
 
 		objType = Enum.valueOf(ObjType.class, json.getString("type"));
+		if(json.containsKey("infect")){
+			this.setInfect(json.getInt("infect"));
+		}
 
 		switch (objType) {
 		case RDLINK:
@@ -1779,6 +1792,7 @@ public class Transaction {
 		command.setUserId(userId);
 		command.setTaskId(subtaskId);
 		command.setDbType(dbType);
+		command.setInfect(infect);
 		process = this.createProcess(command);
 
 		return process.run();
@@ -1797,13 +1811,13 @@ public class Transaction {
 		command.setUserId(userId);
 		command.setTaskId(subtaskId);
 		command.setDbType(dbType);
-
+		command.setInfect(infect);
 		if (conn != null) {
 			command.setHasConn(true);
 		}
 		process = this.createProcess(command);
 		process.setConn(conn);
-
+		
 		return process.innerRun();
 
 	}

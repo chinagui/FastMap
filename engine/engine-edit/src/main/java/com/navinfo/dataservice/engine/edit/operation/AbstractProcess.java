@@ -2,7 +2,15 @@ package com.navinfo.dataservice.engine.edit.operation;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -10,9 +18,13 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.exception.DataNotChangeException;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.check.CheckCommand;
+import com.navinfo.dataservice.dao.glm.iface.AlertObject;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IProcess;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
@@ -25,7 +37,8 @@ import com.navinfo.dataservice.engine.check.CheckEngine;
  * @date 上午10:54:43
  * @Description: Abstractprocess.java
  */
-public abstract class AbstractProcess<T extends AbstractCommand> implements IProcess {
+public abstract class AbstractProcess<T extends AbstractCommand> implements
+		IProcess {
 	private T command;
 	private Result result;
 	private Connection conn;
@@ -55,7 +68,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.log = LoggerRepos.getLogger(this.log);
 	}
 
-	public AbstractProcess(AbstractCommand command, Result result, Connection conn) throws Exception {
+	public AbstractProcess(AbstractCommand command, Result result,
+			Connection conn) throws Exception {
 		this.command = (T) command;
 		if (conn != null) {
 			this.conn = conn;
@@ -73,7 +87,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		this.command = (T) command;
 		this.result = new Result();
 		if (!command.isHasConn()) {
-			this.conn = DBConnector.getInstance().getConnectionById(this.command.getDbId());
+			this.conn = DBConnector.getInstance().getConnectionById(
+					this.command.getDbId());
 		}
 		// 初始化检查参数
 		this.initCheckCommand();
@@ -176,28 +191,36 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			if (!this.getCommand().getOperType().equals(OperType.DELETE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
-					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+					&& !this.getCommand().getObjType()
+							.equals(ObjType.RDELECEYEPAIR)
 					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
-				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
 			}
-			
-			String preCheckMsg = this.preCheck();
+			handleResult(this.getCommand().getObjType(), this.getCommand()
+					.getOperType(), result);
 
+			log.info("BEGIN  PRECHECK ");
+			String preCheckMsg = this.preCheck();
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+			log.info("END  PRECHECK ");
+			// 维护车道信息
 			this.updateRdLane();
+			// 处理提示信息
+			if (this.command.getInfect() == 1) {
+				return this.delPrompt(this.getResult(), this.getCommand());
+			}
 			this.recordData();
 			long startPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
 			this.postCheck();
 			long endPostCheckTime = System.currentTimeMillis();
 			log.info("BEGIN  POSTCHECK ");
-			log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+			log.info("post check use time   "
+					+ String.valueOf(endPostCheckTime - startPostCheckTime));
 			conn.commit();
-
-			System.out.print("操作成功\r\n");
+			log.info("操作成功");
 
 		} catch (Exception e) {
 
@@ -217,6 +240,78 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		return msg;
 	}
 
+	/**
+	 * 操作結果排序
+	 * 
+	 * @param objs
+	 * @param status
+	 * @return
+	 */
+	private Map<String, List<AlertObject>> sort(List<IObj> objs,
+			ObjStatus status) {
+		Map<String, List<AlertObject>> tm = new HashMap<String, List<AlertObject>>();
+		for (IObj obj : objs) {
+
+			if (tm.containsKey(ObjStatus.getCHIName(status).concat(
+					obj.objType().toString()))) {
+
+				AlertObject object = new AlertObject(obj.objType(), obj.pid(),
+						status);
+
+				List<AlertObject> list = tm.get(obj.objType().toString());
+				list.add(object);
+			} else {
+				AlertObject object = new AlertObject(obj.objType(), obj.pid(),
+						status);
+				List<AlertObject> tem = new ArrayList<AlertObject>();
+				tem.add(object);
+				tm.put(ObjStatus.getCHIName(status).concat(
+						obj.objType().toString()), tem);
+			}
+
+		}
+		return tm;
+	}
+
+	/**
+	 * 对象转化
+	 * 
+	 * @param rows
+	 * @param objs
+	 */
+	private void convertObj(List<IRow> rows, List<IObj> objs) {
+		for (IRow row : rows) {
+			if (row instanceof IObj) {
+				IObj obj = (IObj) row;
+				objs.add(obj);
+			}
+		}
+	}
+
+	/**
+	 * 删除要素提示 zhaokk
+	 * 
+	 * @param result
+	 * @param command
+	 */
+	private String delPrompt(Result result, T command) {
+		Map<String, List<AlertObject>> infects = new HashMap<String, List<AlertObject>>();
+		List<IRow> addList = result.getAddObjects();
+		List<IRow> delList = result.getDelObjects();
+		List<IRow> updateList = result.getUpdateObjects();
+		List<IObj> addObj = new ArrayList<IObj>();
+		List<IObj> delObj = new ArrayList<IObj>();
+		List<IObj> updateObj = new ArrayList<IObj>();
+		// 添加对新增要素的影响
+		this.convertObj(addList, addObj);
+		this.convertObj(updateList, updateObj);
+		this.convertObj(delList, delObj);
+		infects.putAll(this.sort(addObj, ObjStatus.INSERT));
+		infects.putAll(this.sort(updateObj, ObjStatus.UPDATE));
+		infects.putAll(this.sort(delObj, ObjStatus.DELETE));
+		return JSONObject.fromObject(infects).toString();
+	}
+
 	public String innerRun() throws Exception {
 		String msg;
 		try {
@@ -229,10 +324,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			if (!this.getCommand().getOperType().equals(OperType.DELETE)
 					&& !this.getCommand().getObjType().equals(ObjType.RDBRANCH)
-					&& !this.getCommand().getObjType().equals(ObjType.RDELECEYEPAIR)
+					&& !this.getCommand().getObjType()
+							.equals(ObjType.RDELECEYEPAIR)
 					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
-				handleResult(this.getCommand().getObjType(), this.getCommand().getOperType(), result);
+				handleResult(this.getCommand().getObjType(), this.getCommand()
+						.getOperType(), result);
 			}
 
 			String preCheckMsg = this.preCheck();
@@ -241,7 +338,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 				throw new Exception(preCheckMsg);
 			}
 			this.updateRdLane();
-			
 			this.recordData();
 
 			this.postCheck();
@@ -261,6 +357,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 	/**
 	 * 被动维护详细车道
+	 * 
 	 * @throws Exception
 	 */
 	public void updateRdLane() throws Exception {
@@ -278,7 +375,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 	private void checkResult() throws Exception {
 		if (this.getCommand().getObjType().equals(ObjType.IXPOI)) {
 			return;
-		} else if (CollectionUtils.isEmpty(result.getAddObjects()) && CollectionUtils.isEmpty(result.getUpdateObjects())
+		} else if (CollectionUtils.isEmpty(result.getAddObjects())
+				&& CollectionUtils.isEmpty(result.getUpdateObjects())
 				&& CollectionUtils.isEmpty(result.getDelObjects())) {
 			throw new DataNotChangeException("属性值未发生变化");
 		}
@@ -296,7 +394,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		List<IRow> glmList = new ArrayList<IRow>();
 		glmList.addAll(this.getResult().getAddObjects());
 		glmList.addAll(this.getResult().getUpdateObjects());
-//		glmList.addAll(this.getResult().getDelObjects());
+		// glmList.addAll(this.getResult().getDelObjects());
 		this.checkCommand.setGlmList(glmList);
 		this.checkEngine.postCheck();
 
@@ -328,9 +426,9 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		lw.generateLog(command, result);
 		OperatorFactory.recordData(conn, result);
 		lw.recordLog(command, result);
-		try{
+		try {
 			PoiMsgPublisher.publish(result);
-		}catch(Exception e){
+		} catch (Exception e) {
 			log.error(e, e);
 		}
 		return true;
@@ -397,5 +495,12 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 		default:
 			break;
 		}
+	}
+
+	public static void main(String[] args) {
+		if (ObjStatus.INSERT.equals(ObjStatus.INSERT)) {
+			System.out.println(12423);
+		}
+
 	}
 }

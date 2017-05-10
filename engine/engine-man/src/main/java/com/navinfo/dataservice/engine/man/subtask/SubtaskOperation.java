@@ -3093,7 +3093,7 @@ public class SubtaskOperation {
 					+ " WHERE A.ACT_ID = O.ACT_ID"
 					+ "   AND G.LOG_ROW_ID = D.ROW_ID"
 					+ "   AND D.OP_ID = O.OP_ID"
-					+ "   AND A.STK_ID = "+subtask.getTaskId();
+					+ "   AND A.STK_ID = "+subtask.getSubtaskId();
 			
 			log.info("loadPoiGeoBySubtaskFromLog SQL："+sqlString);
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {

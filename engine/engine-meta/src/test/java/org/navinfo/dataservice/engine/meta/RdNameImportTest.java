@@ -134,7 +134,7 @@ public class RdNameImportTest {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
@@ -215,7 +215,7 @@ public class RdNameImportTest {
 				
 				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				
-				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 				
 				operation.teilenRdNameByTask(tips);
 			}

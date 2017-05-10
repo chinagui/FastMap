@@ -274,6 +274,13 @@ public class SolrController {
 		return queryWebTips(wkt, type, stages, isPre, null);
 	}
 
+	public List<JSONObject> queryTipsWeb(String wkt, int type,
+										 JSONArray stages, boolean isPre, Set<Integer> taskList) throws SolrServerException,
+			IOException {
+		// 没有任务号过滤的 默认为null
+		return queryWebTips(wkt, type, stages, isPre, taskList);
+	}
+
 	/**
 	 * @Description:查询满足条件的tips(预处理用)
 	 * @return
@@ -660,6 +667,7 @@ public class SolrController {
 			}
 		}
 
+//20170510 开发环境屯屯让暂时屏蔽
 		// 过滤315 web不显示的tips 20170118
 		if (!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
 			if ("".equals(builder.toString())) {

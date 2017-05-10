@@ -54,6 +54,7 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
+import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -3014,5 +3015,57 @@ public class TaskService {
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	public void batchQuickTask(int dbId, int subtaskId,
+			int taskId, JSONArray pois, JSONArray tips) throws Exception{
+		log.info("batchQuickTask:dbId="+dbId+",subtaskId="+subtaskId+",taskId="+taskId);
+		log.info("pois="+pois);
+		log.info("tips="+tips);
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getConnectionById(dbId);
+			if(pois!=null&&pois.size()>0){//批poi的快线任务号
+				List<Long> poiPids=new ArrayList<Long>();
+				for(Object poiPid:pois){
+					poiPids.add(Long.valueOf(poiPid.toString()));
+				}
+				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
+			}
+			if(tips!=null&&tips.size()>0){//批tips的快线任务号
+				
+			}
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * poi批快线任务号
+	 * @param dailyConn
+	 * @param poiTaskMap
+	 * @throws SQLException 
+	 * @author songhe
+	 */
+	@SuppressWarnings("unused")
+	private void batchPoiQuickTask(Connection dailyConn, int taskId, int subtaskId, List<Long> PoiQuickT) throws SQLException {
+		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? AND QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
+		QueryRunner run = new QueryRunner();
+		Object[][] params = new Object[PoiQuickT.size()][3] ;
+		
+		int i = 0;
+		for(int j = 0; j < PoiQuickT.size(); j++){
+			Object[] pidMap = new Object[3];
+			pidMap[0] = taskId;
+			pidMap[1] = subtaskId;
+			pidMap[2] = PoiQuickT.get(j);
+			params[i] = pidMap;
+			i++;
+		}
+		run.batch(dailyConn, updateSql, params);
 	}
 }

@@ -87,4 +87,24 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 删除link维护poi的引导link，引导坐标和side不维护
+	 * @param linkPids 引导link
+	 * @param result 结果集
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		IxPoiSelector selector = new IxPoiSelector(conn);
+
+		List<IxPoi> poiList = selector.loadIxPoiByLinkPids(linkPids, true);
+
+		for(IxPoi poi : poiList)
+		{
+			poi.changedFields().put("linkPid", 0);
+
+			result.insertObject(poi, ObjStatus.UPDATE, poi.getPid());
+		}
+	}
 }

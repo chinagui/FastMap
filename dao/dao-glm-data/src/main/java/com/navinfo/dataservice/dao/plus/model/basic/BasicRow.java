@@ -204,6 +204,15 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
+	
+	public boolean isHisChanged(){
+
+		if(hisChangeLogs!=null && !hisChangeLogs.isEmpty()){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	public boolean isChanged(String colName){
 		if(opType.equals(OperationType.INSERT)
@@ -460,12 +469,9 @@ public abstract class BasicRow{
 		if(oldValue==null&&newValue==null)return false;
 		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
 		//处理String的null和""的问题
-		if((oldValue!=null&&oldValue instanceof String)
-				||(newValue!=null&&newValue instanceof String)){
-			if(StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))){
-				return false;
-			}
+		if((oldValue==null&&newValue.equals(""))
+				||(newValue==null&&oldValue.equals(""))){
+			return false;
 		}
 		
 		if(opType.equals(OperationType.UPDATE)){//update的row才需要记录old值

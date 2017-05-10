@@ -32,6 +32,8 @@ public class DbServerStrategyFactory {
 				strategy = new RandomStrategy(strategyLock);
 			}else if(DbServerStrategy.USE_REF_DB.equals(type)){
 				strategy = new UseRefDbStrategy(strategyLock);
+			}else if(DbServerStrategy.USE_SPEC_SVR.equals(type)){
+				strategy = new UseSpecSvrStrategy(strategyLock);
 			}
 			else{
 				throw new DataHubException("不支持的dbServerStrategy类型："+type);

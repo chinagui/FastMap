@@ -62,9 +62,9 @@ public class RdGscExporter {
 
 			Geometry linkGeo = GeoTranslator.struct2Jts(struct);
 			Coordinate[] coords = linkGeo.getCoordinates();
-			System.out.println(" pid :"+ resultSet.getInt("pid"));
+		//	System.out.println(" pid :"+ resultSet.getInt("pid"));
 			
-			System.out.println("coords.length/2 : "+coords.length/2 +" seqNum: "+seqNum);
+			//System.out.println("coords.length/2 : "+coords.length/2 +" seqNum: "+seqNum);
 			//if(coords.length/2 >= seqNum){
 				JSONObject json = enclosingRdLineGsc(resultSet, operateDate);
 
@@ -127,9 +127,9 @@ public class RdGscExporter {
 
 		json.put("uuid", UuidUtils.genUuid());
 
-		log.debug("***rdlinegsc:"+rs.getInt("pid"));
+		//log.debug("***rdlinegsc:"+rs.getInt("pid"));
 		
-		System.out.println("rdlinegsc:"+rs.getInt("pid"));
+	//	System.out.println("rdlinegsc:"+rs.getInt("pid"));
 
 		json.put("gscPid", rs.getInt("pid"));
 

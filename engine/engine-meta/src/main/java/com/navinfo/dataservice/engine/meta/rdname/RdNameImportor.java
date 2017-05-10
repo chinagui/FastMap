@@ -310,6 +310,16 @@ public class RdNameImportor {
 			}
 			// 新增或更新一条道路名
 			RdName rdNameNew = operation.saveOrUpdate(rdName);
+			
+			//处理完数据自动进行拆分
+			//**********zl 2017.05.08***
+			if(rdNameNew != null && rdNameNew.getSplitFlag() != 1){
+				log.info("auto RdNameTeilen ");
+				RdNameTeilen teilen = new RdNameTeilen(conn);
+				teilen.teilenName(rdNameNew.getNameId(), rdNameNew.getNameGroupid(),rdNameNew.getLangCode(),rdNameNew.getRoadType());
+			}
+			//**************************
+			
 			JSONObject json = JSONObject.fromObject(rdNameNew);
 			
 			result.put("flag", 1);

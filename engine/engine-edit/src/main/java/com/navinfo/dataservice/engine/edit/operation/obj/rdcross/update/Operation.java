@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdcross.update;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -448,6 +445,103 @@ public class Operation implements IOperation {
 
 		return null;
 	}
+
+	public void updateCrossByNodeLink(Result result, List<Integer> nodePids, List<Integer> linkPids) throws Exception {
+
+		RdCrossSelector selector = new RdCrossSelector(conn);
+
+		List<RdCross> crosses = selector.loadRdCrossByNodeOrLink(nodePids, new ArrayList<Integer>(), true);
+
+		Map<Integer, RdCross> delCrosses = new HashMap<>();
+
+		Map<Integer, RdCross> updateCrosses = new HashMap<>();
+
+		for (RdCross cross : crosses) {
+
+			int delNodeCount = 0;
+
+			for (IRow row : cross.getNodes()) {
+
+				RdCrossNode crossNode = (RdCrossNode) row;
+
+				if (nodePids.contains(crossNode.getNodePid())) {
+
+					delNodeCount += 1;
+				}
+			}
+
+			//组成路口的node均被删除，删除路口对象；
+			if (delNodeCount == cross.getNodes().size()) {
+
+				delCrosses.put(cross.getPid(), cross);
+
+			} else {
+
+				updateCrosses.put(cross.getPid(), cross);
+			}
+		}
+
+		//删除路口
+		for (RdCross cross : delCrosses.values()) {
+			result.insertObject(cross, ObjStatus.DELETE, cross.pid());
+		}
+
+		for (RdCross cross : updateCrosses.values()) {
+
+			//删除对应RdCrossLink
+			for (IRow row : cross.getLinks()) {
+
+				RdCrossLink link = (RdCrossLink) row;
+
+				if (linkPids.contains(link.getLinkPid())) {
+
+					result.insertObject(link, ObjStatus.DELETE, cross.pid());
+				}
+			}
+
+			List<RdCrossNode> noDelNodes = new ArrayList<>();
+
+			boolean delMainNode = false;
+
+			for (IRow row : cross.getNodes()) {
+
+				RdCrossNode crossNode = (RdCrossNode) row;
+
+				if (nodePids.contains(crossNode.getNodePid())) {
+
+					result.insertObject(crossNode, ObjStatus.DELETE, cross.pid());
+
+					if (crossNode.getIsMain() == 1) {
+
+						delMainNode = true;
+					}
+
+				} else {
+
+					noDelNodes.add(crossNode);
+				}
+			}
+
+			//只剩一个node，则将路口维护为简单路口
+			if (noDelNodes.size() == 1) {
+
+				cross.changedFields().put("type", 0);
+
+				result.insertObject(cross, ObjStatus.UPDATE, cross.pid());
+			}
+
+			//node主点被删，剩余NODE中选取一个node作为主点
+			if (delMainNode) {
+
+				RdCrossNode crossNode = noDelNodes.get(0);
+
+				crossNode.changedFields().put("isMain", 1);
+
+				result.insertObject(crossNode, ObjStatus.UPDATE, cross.pid());
+			}
+		}
+	}
+
 
 	@Override
 	public String run(Result result) throws Exception {

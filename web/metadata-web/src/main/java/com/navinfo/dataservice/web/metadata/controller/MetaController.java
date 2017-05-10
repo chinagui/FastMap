@@ -750,7 +750,7 @@ public class MetaController extends BaseController {
 //    			int dbId = subtask.getDbId();
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), subtaskId, 1901, new JSONArray());
 
                 logger.info("tips: "+tips);
                  data = selector.searchForWeb(jsonReq, tips);
@@ -919,7 +919,7 @@ public class MetaController extends BaseController {
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId, 1901, new JSONArray());
 
                 operation.teilenRdNameByTask(tips);
             }

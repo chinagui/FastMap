@@ -42,8 +42,9 @@ public class TipsOperator {
 	 * 修改tips
 	 * 
 	 * @param rowkey
+	 * @param handler
+	 * @param pid
 	 * @param mdFlag
-	 * @param content
 	 * @return
 	 * @throws Exception
 	 */
@@ -663,5 +664,95 @@ public class TipsOperator {
 		
 		
 	}
+
+//    /**
+//     * 根据rowkey列表批快线的任务，子任务号
+//     * @param taskId
+//     * @param subtaskId
+//     * @param tips
+//     * @throws Exception
+//     */
+//    public void batchQuickTask(int taskId, int subtaskId, List<String> tips)
+//            throws Exception {
+//        Connection hbaseConn = null;
+//        Table htab = null;
+//        List<Put> puts = new ArrayList<>();
+//        try {
+//            hbaseConn = HBaseConnector.getInstance().getConnection();
+//            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+//            for (String rowkey : tips) {
+//                //更新hbase
+//                Get get = new Get(rowkey.getBytes());
+//                Result result = htab.get(get);
+//                JSONObject source = JSONObject.fromObject(new String(result.getValue(
+//                        "data".getBytes(), "source".getBytes())));
+//                Put put = new Put(rowkey.getBytes());
+//                source.put("s_qTaskId", taskId);
+//                source.put("s_qSubTaskId", subtaskId);
+//                put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
+//                        .getBytes());
+//                puts.add(put);
+//
+//                //更新solr
+//                JSONObject solrIndex = solr.getById(rowkey);
+//                solrIndex.put("s_qTaskId", taskId);
+//                solrIndex.put("s_qSubTaskId", subtaskId);
+//                solr.addTips(solrIndex);
+//            }
+//            htab.put(puts);
+//            htab.close();
+//        }catch (Exception e) {
+//            logger.error("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
+//            throw new Exception("根据rowkey列表批快线的任务，子任务号出错："+e.getMessage(), e);
+//        }
+//    }
+//
+//    /**
+//     * 根据rowkey列表批中线任务号
+//     * @param taskId
+//     * @param tips
+//     * @throws Exception
+//     */
+//    public void batchMidTask(int taskId, List<String> tips)
+//            throws Exception {
+//        Connection hbaseConn = null;
+//        Table htab = null;
+//        List<Put> puts = new ArrayList<>();
+//        try {
+//            hbaseConn = HBaseConnector.getInstance().getConnection();
+//            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+//            for (String rowkey : tips) {
+//                //更新hbase
+//                Get get = new Get(rowkey.getBytes());
+//                Result result = htab.get(get);
+//                JSONObject source = JSONObject.fromObject(new String(result.getValue(
+//                        "data".getBytes(), "source".getBytes())));
+//                Put put = new Put(rowkey.getBytes());
+//                source.put("s_mTaskId", taskId);
+//                put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
+//                        .getBytes());
+//                puts.add(put);
+//
+//                //更新solr
+//                JSONObject solrIndex = solr.getById(rowkey);
+//                solrIndex.put("s_mTaskId", taskId);
+//                solr.addTips(solrIndex);
+//            }
+//            htab.put(puts);
+//            htab.close();
+//        }catch (Exception e) {
+//            logger.error("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
+//            throw new Exception("根据rowkey列表批中线任务号出错："+e.getMessage(), e);
+//        }
+//    }
+
+    public static void main(String[] args) throws Exception {
+        TipsOperator tipsOperator = new TipsOperator();
+        List<String> tips = new ArrayList<>();
+        tips.add("111601213315");
+//        tipsOperator.batchQuickTask(1, 12, tips);
+//        tipsOperator.batchMidTask(888, tips);
+
+    }
 
 }

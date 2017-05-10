@@ -82,7 +82,7 @@ public class CheckService {
 			if(metaDbid != null && metaDbid >0){
 				//根据subtask_id 获取rd_name 的nameIds
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-                JSONArray tips = apiFcc.searchDataBySpatial(subtaskObj.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtaskObj.getGeometry(), subtaskId, 1901, new JSONArray());
                 
                 log.info("tips: "+tips);
                 //获取当前子任务下所有的道路名id

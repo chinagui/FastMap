@@ -46,6 +46,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -111,12 +112,8 @@ public class TaskService {
 					gridIds.put(gridId, 1);
 				}
 				bean.setGridIds(gridIds);
-				
-				//常规项目根据blockId获取region信息
-				if(bean.getBlockId() != 0){
-					int regionId = TaskOperation.getRegionIdByBlockId(bean.getBlockId());
-					bean.setRegionId(regionId);
-				}
+				//添加workKind参数，并根据情况调用组赋值方法
+				updateUserGroup(taskJson);
 				
 				taskList.add(bean);
 			}
@@ -130,6 +127,101 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 添加workKind并保存userGroupID到TASK表
+	 * @param JSONObject json
+	 * @throws Exception
+	 * @author songhe
+	 * @return 
+	 */
+	public void updateUserGroup(JSONObject json) throws Exception{
+		Connection conn = null;
+		try{
+			int type = 0;
+			JSONArray taskArray = json.getJSONArray("tasks");
+			for(int i = 0; i < taskArray.size(); i++){
+				JSONObject taskJson = taskArray.getJSONObject(i);
+				JSONArray workKindArray = taskJson.getJSONArray("workKind");
+					
+				String workKind = "";
+				for(int j = 0; j < workKindArray.size(); j++){
+					workKind += workKindArray.get(j) + "|";
+				}
+				String result = workKind.substring(0, workKind.length() - 1);
+					
+				int programID = taskJson.getInt("programId");
+				if(workKindArray.size() > 1){
+					type = 4;
+				}else{
+					type = workKindArray.getInt(0);
+				}
+				if(type != 3){
+					String adminCode = selectAdminCode(type, programID);
+					if(!"".equals(adminCode) && adminCode != null){
+						UserGroup userGroup = getGroupByAminCode(adminCode, type);
+						Integer userGroupID = userGroup.getGroupId();
+						updateAdminGroupMapping(result, userGroupID, programID);
+					}
+				}
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("保存userGroup失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	/**
+	 * 查询adminCode
+	 * @param int,String
+	 * @throws Exception
+	 * @author songhe
+	 */
+	public String selectAdminCode(final int type, int programID){
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = null;
+			if(type == 1){
+				selectSql = "select c.ADMIN_ID from CITY c, PROGRAM p where c.CITY_ID = p.CITY_ID and p.PROGRAM_ID = '" + programID + "'";
+			}else if(type == 4){
+				selectSql = "select i.admin_code from INFOR i, PROGRAM p where p.infor_id = i.infor_id and p.PROGRAM_ID = '" + programID + "'";
+			}else{
+				throw new Exception("type类型不匹配");
+			}
+			
+			Map<String, String> adminCodeMap = run.query(conn, selectSql, new ResultSetHandler<Map<String, String>>(){
+				@Override
+				public Map<String, String> handle(ResultSet rs)
+						throws SQLException {
+					Map<String, String> map = new HashMap<String, String>();
+						while(rs.next()){
+							if(type == 4){
+								map.put("adminCode", String.valueOf(rs.getString("ADMIN_CODE")));
+							}else{
+								map.put("adminCode", String.valueOf(rs.getInt("ADMIN_ID")));
+							}
+						}
+					return map;
+				}
+			});
+			
+			return adminCodeMap.get("adminCode");
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+		return null;
 	}
 	
 
@@ -3015,4 +3107,81 @@ public class TaskService {
 		}
 		run.batch(dailyConn, updateSql, params);
 	}
+	
+	/**
+	 * 组赋值方法
+	 * @param adminCode
+	 * @param type
+	 * @throws Exception 
+	 * @author songhe
+	 */
+	public UserGroup getGroupByAminCode(String adminCode, int type){
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String name = "";
+			if(type == 1 || type == 2){
+				name = "CROWD_GROUP_NAME";
+			}else if(type == 3){
+				name = "INFOR_GROUP_NAME";
+			}else{
+				name = "MULTISOURCE_GROUP_NAME";
+			}
+			
+			//TODO 这里还需要添加一个根据ADMIn表中的对应类型的name查询条件
+			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
+					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
+					+ "and u.group_name = t." + name;
+			
+			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
+				UserGroup  userGroup = new UserGroup();
+				@Override
+				public UserGroup handle(ResultSet result) throws SQLException {
+					while(result.next()){
+						userGroup.setGroupId(result.getInt("GROUP_ID"));
+						userGroup.setGroupName(result.getString("GROUP_NAME"));
+						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
+						userGroup.setLeaderId(result.getInt("LEADER_ID"));
+						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
+					}
+					return userGroup;
+				}});
+			return group;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * group对象插入数据库
+	 * @param adminCode
+	 * @param type
+	 * @throws Exception 
+	 * @author songhe
+	 */
+	public void updateAdminGroupMapping(String workKind, Integer userGroupID, int programID) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String updateSql = "update TASK t set t.GROUP_ID = '" + userGroupID + "', t.WORK_KIND = '" + workKind
+					+ "' where t.PROGRAM_ID = '" + programID + "'";
+					
+			run.update(conn,updateSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+		
 }

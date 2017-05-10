@@ -283,10 +283,6 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				manApi.taskUpdateCmsProgress(phaseId,2,null);
 			}
 			
-			log.info("开始筛选需要批引导LINK的POI");
-			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
-			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
-			
 		}catch(Exception e){
 			isbatch = false;
 			if(monthConn!=null)monthConn.rollback();
@@ -310,21 +306,31 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			throw e;
 			
 		}finally{
-			log.info("释放加锁图幅");
-			releaseMeshLock(monthConn,meshs);
-			DbUtils.commitAndCloseQuietly(monthConn);
-			DbUtils.commitAndCloseQuietly(dailyConn);
-			log.info("commit db");
-			if(logSelector!=null){
-				log.info("释放履历锁");
-				logSelector.unselect(false);
-			}
-			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
-				log.info("开始执行引导LINK批处理");
-				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
-				log.info("引导LINK批处理执行完成");
-			}
 			
+			try{
+				log.info("开始筛选需要批引导LINK的POI");
+				tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
+				log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+				
+				if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+					log.info("开始执行引导LINK批处理");
+					new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+					log.info("引导LINK批处理执行完成");
+				}
+			}catch(Exception ee){
+				log.info("回滚任务状态报错："+ee.getMessage());
+				throw ee;
+			}finally{
+				log.info("释放加锁图幅");
+				releaseMeshLock(monthConn,meshs);
+				DbUtils.commitAndCloseQuietly(monthConn);
+				DbUtils.commitAndCloseQuietly(dailyConn);
+				log.info("commit db");
+				if(logSelector!=null){
+					log.info("释放履历锁");
+					logSelector.unselect(false);
+				}
+			}
 		}
 		
 	}
@@ -332,6 +338,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
 		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
+		int count=0;
 		try{
 			//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
 			if(opResult.getAllObjs().size()==0){
@@ -353,8 +360,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					refinedPois.add(poiObj.objPid());
 				}
 			}
-			insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
-			insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			count=count+insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
+			count=count+insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			if(count==0){return "";}
 			return tempPoiGLinkTab;
 		}catch(Exception e){
 			log.info(e.getMessage());
@@ -364,7 +372,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 		
 	}
-	private void insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
+	private int insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
 		String sql = "insert  into "+tempPoiTable
 				+ " select pid from ix_poi t  "
 				+ " where t.pid in (select column_value from table(clob_to_table(?))) "
@@ -372,15 +380,15 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		clobPids.setString(1, StringUtils.join(pids, ","));
-		new QueryRunner().update(conn, sql, clobPids);
+		return new QueryRunner().update(conn, sql, clobPids);
 	}
-	private void insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
+	private int insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
 		String sql = "insert into "+tempPoiTable
 				+ " select column_value from table(clob_to_table(?)) ";
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		clobPids.setString(1, StringUtils.join(pids, ","));
-		new QueryRunner().update(conn, sql, clobPids);
+		return new  QueryRunner().update(conn, sql, clobPids);
 	}
 	private String createTempPoiGLinkTable(Connection conn) throws Exception {
 		String tableName = "tmp_p_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));

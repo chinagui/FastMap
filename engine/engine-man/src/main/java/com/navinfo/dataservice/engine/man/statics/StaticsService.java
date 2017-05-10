@@ -2672,7 +2672,7 @@ public class StaticsService {
 			sb.append("SELECT ST.SUBTASK_ID,");
 			sb.append("       ST.STAGE,");
 			sb.append("       ST.TYPE,");
-			sb.append("       S.PERCENT,");
+			sb.append("       S.PERCENT,S.TOTAL_POI, S.FINISHED_POI, S.TOTAL_ROAD, S.FINISHED_ROAD,");
 			sb.append("       S.DIFF_DATE,");
 			sb.append("       S.PLAN_DATE,");
 			sb.append("       ST.PLAN_START_DATE,");
@@ -2697,6 +2697,11 @@ public class StaticsService {
 						overView.put("type", rs.getInt("TYPE")); 
 						overView.put("percent", rs.getInt("PERCENT")); 
 						
+						overView.put("totalPoi", rs.getInt("TOTAL_POI")); 
+						overView.put("finishedPoi", rs.getInt("FINISHED_POI")); 
+						overView.put("totalRoad", rs.getInt("TOTAL_ROAD")); 
+						overView.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
+						
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
 						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
 						Timestamp actualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
@@ -2714,12 +2719,12 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", planStartDate);
+							overView.put("actualStartDate", null);
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", planEndDate);
+							overView.put("actualEndDate", null);
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");
@@ -2727,11 +2732,12 @@ public class StaticsService {
 						//如果计划时间为0，则计算计划时间与距离计划结束时间天数，此种情况一般是还没有子任务统计信息
 						if((planDate==0)&&(planStartDate != null)&&(planEndDate != null)){
 							planDate = daysOfTwo(planEndDate,planStartDate);
-							diffDate = daysOfTwo(planEndDate,new Date());;
+							diffDate = daysOfTwo(planEndDate,new Date());
 						}
 						overView.put("planDate", planDate);
 						overView.put("diffDate", diffDate); 
 						overView.put("actualDate", planDate - diffDate);
+						
 
 					}
 					else{

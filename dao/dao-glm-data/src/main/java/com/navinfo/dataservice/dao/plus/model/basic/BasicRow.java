@@ -204,6 +204,24 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
 	}
+	
+	public boolean isHisChanged(){
+
+		if(hisChangeLogs!=null && !hisChangeLogs.isEmpty()){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	public boolean isChanged(String colName){
+		if(opType.equals(OperationType.INSERT)
+				||opType.equals(OperationType.DELETE)
+				||(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.containsKey(colName))){
+			return true;
+		}
+		return false;
+	}
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
 	 * @return
@@ -451,12 +469,9 @@ public abstract class BasicRow{
 		if(oldValue==null&&newValue==null)return false;
 		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
 		//处理String的null和""的问题
-		if((oldValue!=null&&oldValue instanceof String)
-				||(newValue!=null&&newValue instanceof String)){
-			if(StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))){
-				return false;
-			}
+		if((oldValue==null&&newValue.equals(""))
+				||(newValue==null&&oldValue.equals(""))){
+			return false;
 		}
 		
 		if(opType.equals(OperationType.UPDATE)){//update的row才需要记录old值
@@ -494,6 +509,8 @@ public abstract class BasicRow{
 				argtypes= new Class[]{float.class};
 			}else if(newValue instanceof Long){
 				argtypes= new Class[]{long.class};
+			}else if(newValue instanceof Geometry){
+				argtypes= new Class[]{Geometry.class};
 			}else{
 				argtypes = new Class[]{newValue.getClass()};
 			}

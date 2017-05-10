@@ -74,7 +74,7 @@ public class Operation implements IOperation {
         result.insertObject(command.getCmglink(), ObjStatus.DELETE, command.getCmglink().pid());
 
         if (CollectionUtils.isEmpty(command.getBreakNodes())) {
-            this.breakPoint();
+            this.breakPoint(result);
             this.createBreakNode(result);
         } else {
             this.seriesBreak(result);
@@ -141,9 +141,9 @@ public class Operation implements IOperation {
      * 2.打断点不是CMG-LINK的形状点
      * @throws Exception 打断操作出错
      */
-    private void breakPoint() throws Exception {
+    private void breakPoint(Result result) throws Exception {
         List<JSONArray> arrays = BasicServiceUtils.breakpoint(command.getCmglink().getGeometry(), (Point) command.getCmgnode().getGeometry());
-        this.create2NewLink(arrays);
+        this.create2NewLink(arrays, result);
     }
 
     /**
@@ -151,21 +151,15 @@ public class Operation implements IOperation {
      * @param arrays 打断后重组几何
      * @throws Exception 生成CMG-LINK出错
      */
-    private void create2NewLink(List<JSONArray> arrays) throws Exception {
+    private void create2NewLink(List<JSONArray> arrays, Result result) throws Exception {
         for (JSONArray array : arrays) {
             // 组装几何
             JSONObject geojson = new JSONObject();
             geojson.put("type", "LineString");
             geojson.put("coordinates", array);
-            CmgBuildlink link = new CmgBuildlink();
-            // 申請pid
-            link.setPid(PidUtil.getInstance().applyLinkPid());
-            link.copy(this.command.getCmglink());
-            link.setGeometry(GeoTranslator.geojson2Jts(geojson));
-            // 计算长度
-            double length = GeometryUtils.getLinkLength(
-                    GeoTranslator.transform(link.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
-            link.setLength(length);
+            CmgBuildlink link = CmgLinkOperateUtils.createCmglinkBySource(
+                    GeoTranslator.geojson2Jts(geojson, Constant.BASE_SHRINK, Constant.BASE_PRECISION),
+                    command.getCmglink().getsNodePid(), command.getCmglink().geteNodePid(), result, command.getCmglink());
             this.command.getNewCmglinks().add(link);
         }
     }
@@ -213,9 +207,9 @@ public class Operation implements IOperation {
         result.setPrimaryPid(command.getCmgnode().pid());
         command.getNewCmglinks().get(0).seteNodePid(command.getCmgnode().pid());
         command.getNewCmglinks().get(1).setsNodePid(command.getCmgnode().pid());
-        for (CmgBuildlink link : command.getNewCmglinks()) {
-            result.insertObject(link, ObjStatus.INSERT, link.pid());
-        }
+        //for (CmgBuildlink link : command.getNewCmglinks()) {
+        //    result.insertObject(link, ObjStatus.INSERT, link.pid());
+        //}
     }
 
     /***

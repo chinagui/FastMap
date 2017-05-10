@@ -141,4 +141,9 @@ public class CompGridUtilTest{
 			System.out.println(String.format("%s%s%s%s%s%s%s%s%s", "LINESTRING (",String.valueOf(sLon)," ",String.valueOf(initLat),",",String.valueOf(eLon)," ",String.valueOf(initLat),")"));
 		}
 	}
+	
+	@Test
+	public void gridInMesh_01(){
+		System.out.println(CompGridUtil.gridInMesh("35671", "3567100"));
+	}
 }

@@ -10,6 +10,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.ResultSetHandler;
@@ -35,6 +36,114 @@ public class NiValExceptionSelector {
 		this.conn = conn;
 	}
 
+	public NiValException loadByExId(String id, boolean isLock) throws Exception {
+
+		NiValException exception = new NiValException();
+
+		String sql = "select * from ni_val_exception where val_exception_id=:1";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			pstmt.setString(1, id);
+
+			resultSet = pstmt.executeQuery();
+
+			if (resultSet.next()) {
+
+				exception.setValExceptionId(resultSet
+						.getInt("val_exception_id"));
+
+				exception.setRuleid(resultSet.getString("ruleid"));
+
+				exception.setTaskName(resultSet.getString("task_name"));
+
+				exception.setGroupid(resultSet.getInt("groupid"));
+
+				exception.setLevel(resultSet.getInt("level"));
+
+				exception.setSituation(resultSet.getString("situation"));
+
+				exception.setInformation(resultSet.getString("information"));
+
+				exception.setSuggestion(resultSet.getString("suggestion"));
+				if (resultSet.getObject("location") != null) {
+					STRUCT struct = (STRUCT) resultSet.getObject("location");
+
+					exception.setLocation(GeoTranslator.struct2Jts(struct));
+				}
+
+				exception.setTargets(resultSet.getString("targets"));
+
+				exception.setAdditionInfo(resultSet.getString("addition_info"));
+
+				exception.setDelFlag(resultSet.getInt("del_flag"));
+
+				exception.setCreated(resultSet.getString("created"));
+
+				exception.setUpdated(resultSet.getString("updated"));
+
+				exception.setMeshId(resultSet.getInt("mesh_id"));
+
+				exception.setScopeFlag(resultSet.getInt("scope_flag"));
+
+				exception.setProvinceName(resultSet.getString("province_name"));
+
+				exception.setMapScale(resultSet.getInt("map_scale"));
+
+				exception.setReserved(resultSet.getString("reserved"));
+
+				exception.setExtended(resultSet.getString("extended"));
+
+				exception.setTaskId(resultSet.getString("task_id"));
+
+				exception.setQaTaskId(resultSet.getString("qa_task_id"));
+
+				exception.setQaStatus(resultSet.getInt("qa_status"));
+
+				exception.setWorker(resultSet.getString("worker"));
+
+				exception.setQaWorker(resultSet.getString("qa_worker"));
+
+				exception.setLogType(resultSet.getInt("log_type"));
+
+				exception.setMd5Code(resultSet.getString("md5_code"));
+
+			} 
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			try {
+				if (resultSet != null) {
+					resultSet.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+			try {
+				if (pstmt != null) {
+					pstmt.close();
+				}
+			} catch (Exception e) {
+
+			}
+
+		}
+
+		return exception;
+
+	}
 	public NiValException loadById(String id, boolean isLock) throws Exception {
 
 		NiValException exception = new NiValException();
@@ -940,7 +1049,7 @@ public class NiValExceptionSelector {
 		}
 	}
 
-	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
+	/*public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid, int subtaskId,
 			JSONArray tips) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
@@ -1041,8 +1150,98 @@ public class NiValExceptionSelector {
 
 		Page p = run.query(conn, sql.toString(), rsHandler3);
 		return p;
+	}*/
+	
+	public Page listCheckResultsByJobId(JSONObject params, Integer jobId, String jobUuid) throws SQLException {
+		final int pageSize = params.getInt("pageSize");
+		final int pageNum = params.getInt("pageNum");
+		
+		long pageStartNum = (pageNum - 1) * pageSize + 1;
+		long pageEndNum = pageNum * pageSize;
+		StringBuilder sql = new StringBuilder();
+		
+		sql.append("with ");
+		
+		sql.append("q3 as ( ");
+		sql.append(" select val_exception_id id,NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.addition_info),'') targets,"
+				+ "NVL(d.information,'') information, "
+				+ "NVL(d.location.sdo_point.x,0) x, "
+				+ "NVL(d.location.sdo_point.y,0) y,"
+				+ "d.created,NVL(d.worker,'') worker  "
+				+ "from ni_val_exception d  where d.task_name = '"+jobUuid+"' ");
+		sql.append(") ");
+		
+		// ************************
+		sql.append(" SELECT "+jobId+" jobId,A.*,(SELECT COUNT(1) FROM q3) AS TOTAL_RECORD_NUM_  "
+				+ "FROM " + "(SELECT T.*, ROWNUM AS ROWNO FROM q3 T ");
+		sql.append(" WHERE ROWNUM <= " + pageEndNum + ") A "
+				+ "WHERE A.ROWNO >= " + pageStartNum + " ");
+		//sql.append(" order by created desc,md5_code desc ");
+		log.info("listCheckResultsByJobId sql:  " + sql.toString());
+
+		QueryRunner run = new QueryRunner();
+
+		// ****************************************
+		ResultSetHandler<Page> rsHandler3 = new ResultSetHandler<Page>() {
+			public Page handle(ResultSet rs) throws SQLException {
+				Page page = new Page();
+				int total = 0;
+				JSONArray results = new JSONArray();
+				while (rs.next()) {
+					if (total == 0) {
+						total = rs.getInt("TOTAL_RECORD_NUM_");
+					}
+
+					JSONObject json = new JSONObject();
+
+					json.put("jobId", rs.getInt("jobId"));
+					
+					json.put("id", rs.getString("id"));
+					
+					json.put("md5_code", rs.getString("md5_code"));
+
+					json.put("ruleid", rs.getString("ruleid"));
+
+					json.put("situation", rs.getString("situation"));
+
+					json.put("rank", rs.getInt("level_"));
+
+					json.put("targets", rs.getString("targets"));
+
+					json.put("information", rs.getString("information"));
+
+					json.put("geometry",
+							"(" + rs.getDouble("x") + "," + rs.getDouble("y")
+									+ ")");
+
+					json.put("create_date", rs.getString("created"));
+
+					json.put("worker", rs.getString("worker"));
+					results.add(json);
+				}
+				page.setTotalCount(total);
+				page.setResult(results);
+				return page;
+			}
+		};
+
+		Page p = run.query(conn, sql.toString(), rsHandler3);
+		return p;
 	}
 
+	
+	/**
+	 * @Title: listCheckResultsByTaskName
+	 * @Description: 元数据库编辑平台 根据taskname 查询检查结果
+	 * @param params
+	 * @param adminMap
+	 * @return
+	 * @throws SQLException  Page
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月4日 下午6:09:44 
+	 */
 	public Page listCheckResultsByTaskName(JSONObject params, final Map<String, String> adminMap) throws SQLException {
 		final int pageSize = params.getInt("pageSize");
 		final int pageNum = params.getInt("pageNum");
@@ -1057,16 +1256,16 @@ public class NiValExceptionSelector {
 			JSONObject paramsObj = params.getJSONObject("params");
 			if(paramsObj != null ){
 				if(paramsObj.containsKey("name") && paramsObj.getString("name") != null && StringUtils.isNotEmpty(paramsObj.getString("name")) ){
-					sql_where_r+=" and  r.name like '%"+paramsObj.getString("name")+"%' ";
+					sql_where_r+=" and  n.name like '%"+paramsObj.getString("name")+"%' ";
 				}
 				if(paramsObj.containsKey("nameId") && paramsObj.getString("nameId") != null && StringUtils.isNotEmpty(paramsObj.getString("nameId")) ){
-					sql_where_r+=" and  r.name_id = "+paramsObj.getString("nameId")+" ";
+					sql_where_r+=" and  n.name_id = "+paramsObj.getString("nameId")+" ";
 				}
 				if(paramsObj.containsKey("adminId") && paramsObj.getString("adminId") != null && StringUtils.isNotEmpty(paramsObj.getString("adminId")) ){
-					sql_where_r+=" and r.admin_id =  "+paramsObj.getString("adminId")+" ";
+					sql_where_r+=" and n.admin_id =  "+paramsObj.getString("adminId")+" ";
 				}
 				if(paramsObj.containsKey("namePhonetic") && paramsObj.getString("namePhonetic") != null && StringUtils.isNotEmpty(paramsObj.getString("namePhonetic")) ){
-					sql_where_r+=" and  r.name_phonetic like '%"+paramsObj.getString("namePhonetic")+"%' ";
+					sql_where_r+=" and  n.name_phonetic like '%"+paramsObj.getString("namePhonetic")+"%' ";
 				}
 				if(paramsObj.containsKey("ruleCode") && paramsObj.getString("ruleCode") != null && StringUtils.isNotEmpty(paramsObj.getString("ruleCode")) ){
 					sql_where_e+=" and  d.ruleid like '%"+paramsObj.getString("ruleCode")+"%' ";
@@ -1083,26 +1282,29 @@ public class NiValExceptionSelector {
 		// **********************
 		// 获取子任务范围内的所有 rdName 的nameId
 		sql.append("q1 as ( ");
-		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
+//		sql.append("select '[NAME_ID,'||r.name_id||']' targets,r.* from rd_name r where 1=1 ");
+		sql.append("select  n.name_id, n.name, n.name_phonetic, n.road_type, n.admin_id from rd_name n where 1=1 ");
 		
 		sql.append(sql_where_r);
 		
 		sql.append(" ),");
 		// **********************
 		sql.append("q2 as ( ");
-		sql.append(" select NVL(d.md5_code,0) md5_code,NVL(d.ruleid,0) ruleid,NVL(d.situation,'') situation,\"LEVEL\" level_,"
-				+ "NVL(to_char(d.addition_info),'') targets,"
-				+ "NVL(d.information,'') information, "
-				+ "NVL(d.location.sdo_point.x,0) x, "
-				+ "NVL(d.location.sdo_point.y,0) y,"
-				+ "d.created,NVL(d.worker,'') worker  "
-				+ "from ni_val_exception d  where d.task_name = '"+taskName+"' ");
+		sql.append(" select val_exception_id id,NVL(d.MD5_CODE,0) md5_code,NVL(d.RULEID,0) ruleid,NVL(d.SITUATION,'') situation,\"LEVEL\" level_,"
+				+ "NVL(to_char(d.ADDITION_INFO),'') targets,"
+				+ "substr(to_char(d.ADDITION_INFO),1,instr(to_char(d.ADDITION_INFO),']')) target,"
+				+ "NVL(d.INFORMATION,'') information, "
+				+ "NVL(d.LOCATION.SDO_POINT.X,0) x, "
+				+ "NVL(d.LOCATION.SDO_POINT.Y,0) y,"
+				+ "d.created,NVL(d.WORKER,'') worker  "
+				+ "from ni_val_exception d  where d.TASK_NAME = '"+taskName+"' and to_char(d.ADDITION_INFO) like '[NAME_ID,%'");
 		
 		sql.append(sql_where_e);
 		
 		sql.append(" ), ");
 		sql.append("q3 as ( ");
-		sql.append(" select e.*,n.name_id,n.name,n.name_phonetic,n.road_type,n.admin_id from q1 n ,q2 e where   e.targets like '%'||n.targets||'%'  ");
+		sql.append(" select e.id,e.md5_code,e.ruleid,e.situation,e.level_,e.targets,e.information,e.x,e.y,e.created,e.worker,n.name_id,n.name,n.name_phonetic,n.road_type,n.admin_id from q1 n ,q2 e "
+				+ " where   e.target =  '[NAME_ID,' || n.name_id || ']'  ");
 		sql.append(") ");
 		
 		// ************************
@@ -1129,7 +1331,9 @@ public class NiValExceptionSelector {
 
 					JSONObject json = new JSONObject();
 
-					json.put("id", rs.getString("md5_code"));
+					json.put("id", rs.getString("id"));
+					
+					json.put("md5_code", rs.getString("md5_code"));
 
 					json.put("ruleid", rs.getString("ruleid"));
 
@@ -1140,6 +1344,8 @@ public class NiValExceptionSelector {
 					json.put("information", rs.getString("information"));
 
 					json.put("create_date", rs.getString("created"));
+					
+					json.put("targets", rs.getString("targets"));
 
 					json.put("nameId", rs.getInt("name_id"));
 					json.put("name", rs.getString("name"));
@@ -1167,7 +1373,8 @@ public class NiValExceptionSelector {
 		Page p = run.query(conn, sql.toString(), rsHandler3);
 		return p;
 	}
-
+	
+	
 	public JSONArray listCheckResultsRuleIds(JSONObject params) {
 		JSONArray jobRuleObjs = null;
 		try{
@@ -1237,13 +1444,18 @@ public class NiValExceptionSelector {
 			}
 			
 			String sql = "select count(1) numb "+columSql+"   from ni_val_exception   where task_name = '"+taskName+"' ";
-			String sql_adminId  = " with  q1 as ( ";
-				sql_adminId  += " select '[NAME_ID,'||r.name_id||']' targets,r.admin_id  from rd_name r where 1=1 ), ";
+			String sql_adminId  = " with  ";
+				//sql_adminId  += " select '[NAME_ID,'||r.name_id||']' targets,r.admin_id  from rd_name r where 1=1 ), ";
 				sql_adminId  += " q2 as ( "
-						+ " select NVL(d.ruleid,0) ruleid,\"LEVEL\" , NVL(to_char(d.addition_info),'') targets,NVL(d.information,'') information "
-						+ " from ni_val_exception d  where d.task_name = '"+taskName+"' "
+						+ " select NVL(d.ruleid,0) ruleid,\"LEVEL\" , "
+//						+ "NVL(to_char(d.addition_info),'') targets,"
+						+ "substr(to_char(d.ADDITION_INFO),1,instr(to_char(d.ADDITION_INFO),']')) target,"
+						+ "NVL(d.information,'') information "
+						+ " from ni_val_exception d  "
+						+ " where d.task_name = '"+taskName+"' and to_char(d.ADDITION_INFO) like '[NAME_ID,%' "
 								+ "), ";
-				sql_adminId  += " q3 as ( select e.*,n.admin_id from q1 n, q2 e where   e.targets like '%'||n.targets||'%' ) ";
+				sql_adminId  += " q3 as ( select e.*,n.admin_id from rd_name n, q2 e "
+						+ " where   e.target =  '[NAME_ID,' || n.name_id || ']' ) ";
 				
 				sql_adminId  +="  select count(1) numb"+columSql+" from q3 q  ";
 			if(StringUtils.isNotEmpty(groupBy)){
@@ -1257,6 +1469,7 @@ public class NiValExceptionSelector {
 				sql_adminId+= " ) ";
 			}
 			log.info("sql : "+sql);
+			log.info("sql_adminId : "+sql_adminId);
 			if(groupList.contains("adminName")){
 				jobRuleObjs = run.query(conn, sql_adminId, new ResultSetHandler<JSONArray>(){
 					@Override

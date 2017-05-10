@@ -12,6 +12,7 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -600,9 +601,14 @@ public class Operation implements IOperation {
 	
 	public String repairLink(IObj repairLink, String requester, Result result)
 			throws Exception {
+		
+		com.alibaba.fastjson.JSONObject fastJson = com.alibaba.fastjson.JSONObject
+				.parseObject(requester);
+
+		JSONObject repairJson = JsonUtils.fastJson2netJson(fastJson);
 
 		// link的修形requester可用信息相同，可共用。
-		JSONObject repairJson = JSONObject.fromObject(requester);
+		// JSONObject repairJson = JSONObject.fromObject(requester);
 
 		return repairLink(repairLink, repairJson, result);
 

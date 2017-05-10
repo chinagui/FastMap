@@ -59,6 +59,11 @@ public final class SpeedUtils {
      */
     private final static Integer BASIC_SPEED = 150;
 
+    /**
+     * 默认限速来源
+     */
+    private final static Integer SPEED_LIMIT_SRC = 9;
+
     private SpeedUtils(){
     }
 
@@ -145,6 +150,8 @@ public final class SpeedUtils {
         LOGGER.debug("updateData:[FROM_SPEED_LIMIT:" + FROM_SPEED_LIMIT + ", TO_SPEED_LIMIT:" + TO_SPEED_LIMIT + "]");
         speedlimit.setFromSpeedLimit(FROM_SPEED_LIMIT);
         speedlimit.setToSpeedLimit(TO_SPEED_LIMIT);
+        speedlimit.setFromLimitSrc(SPEED_LIMIT_SRC);
+        speedlimit.setToLimitSrc(SPEED_LIMIT_SRC);
 
         int minSpeedlimit = FROM_SPEED_LIMIT < TO_SPEED_LIMIT ?
                 0 == FROM_SPEED_LIMIT ? TO_SPEED_LIMIT : FROM_SPEED_LIMIT :

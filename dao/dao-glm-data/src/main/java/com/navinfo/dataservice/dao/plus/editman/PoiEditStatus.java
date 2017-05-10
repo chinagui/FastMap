@@ -292,23 +292,14 @@ public class PoiEditStatus {
 	}
 
 	public static void forCollector(Connection conn, OperationResult result,int subtaskId,int taskId,int taskType)  throws Exception {
-		Map<Long, BasicObj> pois = result.getChangedObjsByName(ObjectName.IX_POI);
+		Map<Long, BasicObj> pois = result.getObjsMapByType(ObjectName.IX_POI);
 		if(pois==null||pois.size()==0){
 			return ;
 		}
 		//upload part
 		//先全部按常规作业上传处理
 		normalPoi(conn,pois.keySet(),subtaskId,taskId,taskType);
-		//处理鲜度验证
-		Map<Long,String> freshVerPois = new HashMap<Long,String>();
-		for(Entry<Long, BasicObj> entry:pois.entrySet()){
-			IxPoiObj poiObj = (IxPoiObj)entry.getValue();
-			IxPoi ixPoi = (IxPoi)poiObj.getMainrow();
-			if(poiObj.opType().equals(OperationType.UPDATE)&&ixPoi.isFreshFlag()){
-				freshVerPois.put(poiObj.objPid(), ixPoi.getRawFields());
-			}
-		}
-		freshVerifiedPoi(conn,freshVerPois);
+//		freshVerifiedPoi(conn,freshVerPois);
 	}
 	/**
 	 * 所有上传的POI，包含鲜度验证的
@@ -367,7 +358,7 @@ public class PoiEditStatus {
 	 * @param pids：只包含鲜度验证的POI
 	 * @throws Exception
 	 */
-	private static void freshVerifiedPoi(Connection conn,Map<Long,String> pids)throws Exception{
+	public static void freshVerifiedPoi(Connection conn,Map<Long,String> pids)throws Exception{
 		PreparedStatement stmt = null;
 		try{
 			if(pids==null||pids.size()==0){

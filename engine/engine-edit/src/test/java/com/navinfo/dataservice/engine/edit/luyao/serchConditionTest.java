@@ -664,7 +664,28 @@ public class serchConditionTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			String parameter = "{\"dbId\":13,\"type\":\"RDNODE\",\"pids\":[13064669,14880768]}";
+			String parameter = "{\"dbId\":13,\"type\":\"CMGBUILDNODE\",\"pids\":[504000026,509000042]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
+			
+			System.out.println(p.searchDataByObject(jsonReq));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void searchDataByObject2() {
+		
+		Connection conn = null;
+		
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			String parameter = "{\"dbId\":13,\"type\":\"CMGBUILDLINK\",\"pids\":[500000015]}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);			
 			

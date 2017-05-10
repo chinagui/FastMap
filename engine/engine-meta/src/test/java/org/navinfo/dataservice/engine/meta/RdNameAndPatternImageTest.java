@@ -145,7 +145,7 @@ public class RdNameAndPatternImageTest {
 	}
 
 	
-	@Test
+//	@Test
 	public void searchTest(){
 				String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'','version':'','projectNm':'博','specification':null,'bType':'','mType':'','sType':null,'fileName':'','size':'','format':'','impWorker':'','urlDb':'','urlFile':'','memo':''},'sortby':'','pageSize':10,'pageNum':1}";
 //				String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'83180890','convOut':'83180800','kind':'3d'},'sortby':'-convBefore','pageSize':20,'pageNum':1}";
@@ -207,6 +207,7 @@ public class RdNameAndPatternImageTest {
 						throw new IllegalArgumentException("不识别的表: "+tableName);
 					}
 				System.out.println(data.getResult());
+				System.out.println(data.getTotalCount());
 				}catch(Exception e){
 					throw new IllegalArgumentException("查询失败  "+e.getMessage());
 				}
@@ -298,9 +299,9 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-	//@Test
+	@Test
 	public void searchTestRdname(){
-				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[0,3],'uRecords':[0,1,2],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
+				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[5],'uRecords':[6],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
 				
 				try{	
 					if (StringUtils.isEmpty(parameter)){
@@ -354,6 +355,7 @@ public class RdNameAndPatternImageTest {
 						throw new IllegalArgumentException("不识别的表: "+tableName);
 					}
 				System.out.println(data.getResult());
+				System.out.println(data.getTotalCount());
 				}catch(Exception e){
 					throw new IllegalArgumentException("查询失败  "+e.getMessage());
 				}

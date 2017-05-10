@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.editplus.operation.imp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -15,9 +17,9 @@ import net.sf.json.JSONObject;
  */
 public abstract class UploadPois {
 
-	protected Map<String,JSONObject> addPois;//key:fid
-	protected Map<String,JSONObject> deletePois;//key:fid
-	protected Map<String,JSONObject> updatePois;//key:fid
+	protected Map<String,JSONObject> addPois = new HashMap<String,JSONObject>();//key:fid
+	protected Map<String,JSONObject> deletePois = new HashMap<String,JSONObject>();//key:fid
+	protected Map<String,JSONObject> updatePois = new HashMap<String,JSONObject>();//key:fid
 	
 	public void addJsonPoi(JSONObject jo){
 		addJsonPoi(jo.getString("fid"),jo);
@@ -47,5 +49,25 @@ public abstract class UploadPois {
 	}
 	public Map<String, JSONObject> getUpdatePois() {
 		return updatePois;
+	}
+	
+	public List<ErrorLog> allFail(String reason){
+		List<ErrorLog> logs = new ArrayList<ErrorLog>();
+		if(addPois!=null){
+			for(String f:addPois.keySet()){
+				logs.add(new ErrorLog(f,reason));
+			}
+		}
+		if(updatePois!=null){
+			for(String f:updatePois.keySet()){
+				logs.add(new ErrorLog(f,reason));
+			}
+		}
+		if(deletePois!=null){
+			for(String f:deletePois.keySet()){
+				logs.add(new ErrorLog(f,reason));
+			}
+		}
+		return logs;
 	}
 }

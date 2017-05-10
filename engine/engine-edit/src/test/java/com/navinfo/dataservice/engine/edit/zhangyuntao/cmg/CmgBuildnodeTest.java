@@ -21,8 +21,8 @@ public class CmgBuildnodeTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildnode() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":508000016," +
-                "\"data\":{\"longitude\":116.52638664822061,\"latitude\":39.740536435428126}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":510000137," +
+                "\"data\":{\"longitude\":116.53250521156434,\"latitude\":39.73986262543881}}";
         TestUtil.run(requester);
     }
 

@@ -852,6 +852,21 @@
                 <artifactId>edit-control-column</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
             </dependency>
+			<dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>edit-control-app</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+			<dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>edit-control-row</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+			<dependency>
+                <groupId>com.navinfo.dataservice</groupId>
+                <artifactId>edit-control-column</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
+            </dependency>
 			<!-- dataservice module start -->
 			<dependency>
                 <groupId>org.apache.maven</groupId>

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,11 +18,9 @@ import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.poi.deep.IxPoiParking;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
-import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiNameFlag;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiPhoto;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
@@ -35,7 +32,6 @@ import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiNameSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiParentSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.glm.search.AdAdminSearch;
 import com.vividsolutions.jts.geom.Geometry;
 
@@ -119,7 +115,7 @@ public class IxPoiSearch implements ISearch {
 				+ "LEFT JOIN IX_POI_NAME PN ON PN.POI_PID = A.PID "
 				+ "WHERE PN.POI_PID = A.PID AND PN.LANG_CODE = 'CHI' "
 				+ "AND PN.NAME_CLASS = 1 AND PN.NAME_TYPE = 2 AND PN.U_RECORD != 2) "
-				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS FROM TMP1 A LEFT JOIN "
+				+ "SELECT TMP.*, T . NAME FROM (SELECT A.*, B.STATUS,nvl(B.QUICK_SUBTASK_ID,0) QUICK_SUBTASK_ID ,nvl(B.MEDIUM_SUBTASK_ID,0) MEDIUM_SUBTASK_ID  FROM TMP1 A LEFT JOIN "
 				+ "POI_EDIT_STATUS B ON A.PID = B.PID) TMP LEFT JOIN TMP2 T ON T.POI_PID = TMP.PID ");
 		PreparedStatement pstmt = null;
 
@@ -152,6 +148,8 @@ public class IxPoiSearch implements ISearch {
 				m.put("e", resultSet.getString("name"));
 				
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
+				m.put("quickFlag", resultSet.getInt("quick_subtask_id") == 0 ? 0:1);
+				m.put("mediumFlag", resultSet.getInt("medium_subtask_id") == 0 ? 0:1);
 
 				Double xGuide = resultSet.getDouble("x_guide");
 
@@ -1181,16 +1179,22 @@ public class IxPoiSearch implements ISearch {
 					if (!result.isEmpty()){
 						
 						if(result.containsKey("old") && StringUtils.isNotEmpty(result.getString("old")) && JSONObject.fromObject(result.getString("old")).containsKey("NAME")){
-							String oldStdEngName=JSONObject.fromObject(result.getString("old")).getString("NAME");
-							if (StringUtils.isNotEmpty(oldStdEngName)){
-								oldStandardEngName = oldStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("old"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								oldStandardEngName="";
+							}else{
+								oldStandardEngName = jo.getString("NAME");
 							}
+
 						}
 						if(result.containsKey("new") && StringUtils.isNotEmpty(result.getString("new")) && JSONObject.fromObject(result.getString("new")).containsKey("NAME")){
-							String newStdEngName=JSONObject.fromObject(result.getString("new")).getString("NAME");
-							if (StringUtils.isNotEmpty(newStdEngName)){
-								newStandardEngName = newStdEngName;
+							JSONObject jo= JSONObject.fromObject(result.getString("new"));
+							if(JSONUtils.isNull(jo.get("NAME"))){
+								newStandardEngName="";
+							}else{
+								newStandardEngName = jo.getString("NAME");
 							}
+							
 						}
 					}
 				}

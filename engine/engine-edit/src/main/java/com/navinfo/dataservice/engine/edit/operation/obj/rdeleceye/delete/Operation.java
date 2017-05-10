@@ -85,4 +85,29 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+
+	/**
+	 * 删除links维护电子眼
+	 * @param result
+	 * @param linkPids
+	 * @return
+	 * @throws Exception
+	 */
+	public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		RdElectroniceyeSelector selector = new RdElectroniceyeSelector(this.conn);
+
+		List<RdElectroniceye> eleceyes = selector.loadListByRdLinkIds(linkPids, true);
+
+		//被删link上关联的电子眼的关联link号码维护为0
+		for (RdElectroniceye eleceye : eleceyes) {
+
+			eleceye.changedFields().put("linkPid", 0);
+
+			result.insertObject(eleceye, ObjStatus.UPDATE, eleceye.pid());
+		}
+
+		return null;
+	}
 }

@@ -228,4 +228,73 @@ public class Operation implements IOperation {
 		}
 		return alertList;
 	}
+
+
+	/**
+	 * 删除link维护同一线
+	 * @param linkPids
+	 * @param tableName
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids,String tableName, Result result) throws Exception {
+
+		if (linkPids.size() < 1) {
+
+			return;
+		}
+
+		tableName = tableName.toUpperCase();
+
+		RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(this.conn);
+
+		List<RdSameLinkPart> sameLinkParts = sameLinkSelector.loadLinkPartByLinks(
+				linkPids, tableName, true);
+
+		if (sameLinkParts.size() < 1) {
+
+			return;
+		}
+
+		List<Integer> groupIds = new ArrayList<>();
+
+		for (RdSameLinkPart part : sameLinkParts) {
+
+			if (!groupIds.contains(part.getGroupId())) {
+
+				groupIds.add(part.getGroupId());
+			}
+		}
+
+		List<IRow> rowsSameLink = sameLinkSelector.loadByIds(
+				groupIds, true, true);
+
+		for (IRow rowLink : rowsSameLink) {
+
+			RdSameLink sameLink = (RdSameLink) rowLink;
+
+			List<RdSameLinkPart> delPark = new ArrayList<>();
+
+			for (IRow rowPark : sameLink.getParts()) {
+
+				RdSameLinkPart part = (RdSameLinkPart) rowPark;
+
+				if (linkPids.contains(part.getLinkPid()) && tableName.equals(part.getTableName().toUpperCase())) {
+
+					delPark.add(part);
+				}
+			}
+			if (2 > sameLink.getParts().size() - delPark.size()) {
+
+				result.insertObject(sameLink, ObjStatus.DELETE, sameLink.pid());
+
+				continue;
+			}
+
+			for (RdSameLinkPart part : delPark) {
+
+				result.insertObject(part, ObjStatus.DELETE, part.getGroupId());
+			}
+		}
+	}
 }

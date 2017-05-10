@@ -170,7 +170,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 
 			this.prepareData();
 
+			long startPostCheckTime = System.currentTimeMillis();
+
 			msg = exeOperation();
+
+			long endPostCheckTime = System.currentTimeMillis();
+
+			log.info("exeOperation use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
 
 			checkResult();
 
@@ -187,14 +193,29 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements IPro
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+
 			this.updateRdLane();
+
+			startPostCheckTime = System.currentTimeMillis();
+
 			this.recordData();
-			long startPostCheckTime = System.currentTimeMillis();
+
+			endPostCheckTime = System.currentTimeMillis();
+
+			log.info("recordData use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+
+			startPostCheckTime = System.currentTimeMillis();
+
 			log.info("BEGIN  POSTCHECK ");
+
 			this.postCheck();
-			long endPostCheckTime = System.currentTimeMillis();
+
+			endPostCheckTime = System.currentTimeMillis();
+
 			log.info("BEGIN  POSTCHECK ");
+
 			log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+
 			conn.commit();
 
 			System.out.print("操作成功\r\n");

@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.apache.commons.collections.CollectionUtils;
 
+import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
@@ -21,6 +22,7 @@ public class Process extends AbstractProcess<Command> {
 	public Process(AbstractCommand command) throws Exception {
 		super(command);
 	}
+
 	public Process(Command command, Result result, Connection conn)
 			throws Exception {
 		super();
@@ -71,11 +73,36 @@ public class Process extends AbstractProcess<Command> {
 		return false;
 	}
 
+	public String innerRun() throws Exception {
+		String msg;
+		try {
+			this.prepareData();
+
+			IOperation operation = new Operation(this.getCommand(), updateNode,
+					this.getConn());
+
+			msg = operation.run(this.getResult());
+
+			String preCheckMsg = this.preCheck();
+
+			if (preCheckMsg != null) {
+				throw new Exception(preCheckMsg);
+			}
+		} catch (Exception e) {
+
+			this.getConn().rollback();
+
+			throw e;
+		}
+
+		return msg;
+	}
+
 	@Override
 	public String exeOperation() throws Exception {
-		
-		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(), this.getConn(),
-				updateNode);
+
+		RdGscOperateUtils.checkIsMoveGscNodePoint(this.getCommand().getLinks(),
+				this.getConn(), updateNode);
 		return new Operation(this.getCommand(), updateNode, this.getConn())
 				.run(this.getResult());
 	}

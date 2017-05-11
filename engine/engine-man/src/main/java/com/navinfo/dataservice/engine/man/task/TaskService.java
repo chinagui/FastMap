@@ -3037,8 +3037,8 @@ public class TaskService {
  				for(Object tipRowkey:tips){ 
  					tipsPids.add(tipRowkey.toString()); 
  				}
-				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				api.batchQuickTask(taskId, subtaskId,tipsPids); 
+				//FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+				//api.batchQuickTask(taskId, subtaskId,tipsPids); 
  			}
 		}catch(Exception e){
 			log.error("", e);

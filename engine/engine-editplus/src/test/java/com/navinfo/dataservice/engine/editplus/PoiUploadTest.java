@@ -51,4 +51,14 @@ public class PoiUploadTest {
 		}
 	}
 	
+	private  boolean stringEquals(String a,String b){
+		System.out.println("newValue="+a+",oldValue="+b);
+		return com.navinfo.dataservice.commons.util.StringUtils.equals(a, b);
+	}
+	public static void main(String[] args) {
+		
+//		boolean a = stringEquals("",null);
+		
+	}
+	
 }

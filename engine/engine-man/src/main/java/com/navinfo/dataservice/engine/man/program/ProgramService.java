@@ -3,7 +3,9 @@ package com.navinfo.dataservice.engine.man.program;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,8 +24,10 @@ import org.apache.commons.dbutils.handlers.MapHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
@@ -34,8 +38,11 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
+import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -58,125 +65,12 @@ public class ProgramService {
 	public void create(long userId, JSONObject dataJson) throws ServiceException {
 		Connection conn = null;
 		try {
-			QueryRunner run = new QueryRunner();
+			
 			conn = DBConnector.getInstance().getManConnection();
 			Program bean = (Program) JsonOperation.jsonToBean(dataJson,Program.class);
 			bean.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
-			
-			String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
-			if (bean!=null&&bean.getCityId()!=0){
-				updateSql+=" CITY_ID ="+bean.getCityId();
-			};
-			
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				updateSql+=" infor_id ='" + bean.getInforId() + "'";
-			};
-			run.update(conn,updateSql);
-			
-			bean.setProgramId(getNewProgramId(conn));
-			
-			String insertPart="";
-			String valuePart="";
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" PROGRAM_ID ";
-			valuePart+=bean.getProgramId();			
-			
-			if (bean!=null&&bean.getCityId()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" CITY_ID ";
-				valuePart+=bean.getCityId();
-			};
-			
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" infor_id ";
-				valuePart+= "'" + bean.getInforId() + "'";
-			};
-			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-			insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
-			valuePart+=bean.getCreateUserId()+",sysdate,2,1";
-			
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" name ";
-				valuePart+="'"+bean.getName()+"'";
-			};
-			if (bean!=null&&bean.getType()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" type ";
-				valuePart+=bean.getType();
-			};
-			
-			if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" DESCP ";
-				valuePart+="'"+bean.getDescp()+"'";
-			};
-			if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" PLAN_END_DATE ";
-				valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" Collect_PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" Collect_PLAN_END_DATE";
-				valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" day_EDIT_PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" Day_EDIT_PLAN_END_DATE";
-				valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
-				valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" MONTH_EDIT_PLAN_END_DATE";
-				valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" Produce_Plan_Start_Date ";
-				valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" Produce_Plan_End_Date";
-				valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
-			};
-			if (bean!=null&&bean.getLot()!=0){
-				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
-				insertPart+=" lot ";
-				valuePart+=bean.getLot();
-			};
-			String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
-			run.update(conn,createSql);
-			
-			if (bean!=null&&bean.getCityId()!=0){
-				CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
-			};
-			
-			if (bean!=null&&bean.getInforId()!=null && StringUtils.isNotEmpty(bean.getInforId().toString())){
-				InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
-			};		
+			//创建项目，并维护相关状态
+			create(conn, bean);					
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -186,6 +80,133 @@ public class ProgramService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/**
+	 * 创建新项目，并维护相关状态
+	 * @param conn
+	 * @param bean
+	 * @return int 项目id
+	 */
+	public int create(Connection conn,Program bean) throws Exception{
+		QueryRunner run = new QueryRunner();
+		//将旧项目状态修改为失效
+		String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
+		if (bean!=null&&bean.getCityId()!=0){
+			updateSql+=" CITY_ID ="+bean.getCityId();
+		};
+		
+		if (bean!=null&&bean.getInforId()!=0){
+			updateSql+=" infor_id ='" + bean.getInforId() + "'";
+		};
+		run.update(conn,updateSql);
+		//创建项目		
+		int programId=getNewProgramId(conn);
+		bean.setProgramId(programId);
+		//情报项目为空时，需要后台自动创建名称
+		if(!StringUtils.isNotEmpty(bean.getName())&&bean.getType()==4){
+			Infor infor = InforService.getInstance().getInforByInforId(conn, bean.getInforId());
+			bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd")+"_"+programId);
+		}
+			
+		String insertPart="";
+		String valuePart="";
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" PROGRAM_ID ";
+		valuePart+=bean.getProgramId();			
+		
+		if (bean!=null&&bean.getCityId()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" CITY_ID ";
+			valuePart+=bean.getCityId();
+		};
+		
+		if (bean!=null&&bean.getInforId()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" infor_id ";
+			valuePart+= "'" + bean.getInforId() + "'";
+		};
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
+		valuePart+=bean.getCreateUserId()+",sysdate,2,1";
+		
+		if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" name ";
+			valuePart+="'"+bean.getName()+"'";
+		};
+		if (bean!=null&&bean.getType()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" type ";
+			valuePart+=bean.getType();
+		};
+		
+		if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" DESCP ";
+			valuePart+="'"+bean.getDescp()+"'";
+		};
+		if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_END_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" day_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Day_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_Start_Date ";
+			valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_End_Date";
+			valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+
+		String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
+		run.update(conn,createSql);
+	//修改项目对应city的状态为已规划
+		if (bean!=null&&bean.getCityId()!=0){
+			CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
+		};
+	//修改项目对应情报为已规划
+		if (bean!=null&&bean.getInforId()!=0){
+			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
+		};	
+		return programId;
+		}
 	
 	public void update(long userId,JSONObject dataJson) throws ServiceException {
 		Connection conn = null;
@@ -245,10 +266,7 @@ public class ProgramService {
 				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
 				setPart+=" Produce_Plan_End_Date=to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
 			};
-			if (bean!=null&&bean.getLot()!=0){
-				if(StringUtils.isNotEmpty(setPart)){setPart+=" , ";}
-				setPart+=" lot ="+bean.getLot();
-			};
+
 			String updateSql = "update program set "+setPart+" where program_id="+bean.getProgramId();
 			run.update(conn,updateSql);
 			
@@ -1476,34 +1494,106 @@ public class ProgramService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			String sql="SELECT P.PROGRAM_ID,"
-					+ "         P.NAME                       PROGRAM_NAME,"
-					+ "         P.DESCP                      PROGRAM_DESCP,"
+	    	return query(conn, programId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	//查询情报项目
+	public Map<String, Object> queryIntelligence(JSONObject dataJson) throws Exception {
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+	    	return queryIntelligence(conn, dataJson);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String, Object> queryIntelligence(Connection conn,JSONObject dataJson) throws Exception {
+		try{
+			String appendSql="";
+			if(dataJson.containsKey("programId")){
+				appendSql=appendSql+" AND T.PROGRAM_ID="+dataJson.getInt("programId");
+			}
+			if(dataJson.containsKey("inforId")){
+				appendSql=appendSql+" AND T.INFOR_ID="+dataJson.getInt("inforId");
+			}
+			String sql="WITH T AS"
+					+ " (SELECT P.PROGRAM_ID,"
+					+ "         P.NAME                     PROGRAM_NAME,"
+					+ "         P.DESCP                    PROGRAM_DESCP,"
 					+ "         P.TYPE,"
-					+ "         P.LOT,"
-					+ "         C.CITY_NAME,"
-					+ "         C.CITY_ID,"
 					+ "         I.INFOR_ID,"
 					+ "         I.INFOR_NAME,"
 					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"		
+					+ "         I.EXPECT_DATE,"
 					+ "         P.CREATE_USER_ID,"
-					+ "         U.USER_REAL_NAME             CREATE_USER_NAME,"
+					+ "         U.USER_REAL_NAME           CREATE_USER_NAME,"
 					+ "         P.PLAN_START_DATE,"
 					+ "         P.PLAN_END_DATE,"
 					+ "         P.COLLECT_PLAN_START_DATE,"
 					+ "         P.COLLECT_PLAN_END_DATE,"
 					+ "         P.DAY_EDIT_PLAN_START_DATE,"
 					+ "         P.DAY_EDIT_PLAN_END_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_START_DATE,"
-					+ "         P.MONTH_EDIT_PLAN_END_DATE,"
 					+ "         P.PRODUCE_PLAN_START_DATE,"
 					+ "         P.PRODUCE_PLAN_END_DATE"
-					+ "    FROM CITY C, PROGRAM P, USER_INFO U, INFOR I"
-					+ "   WHERE C.CITY_ID(+) = P.CITY_ID"
-					+ "     AND I.INFOR_ID(+) = P.INFOR_ID"
+					+ "    FROM PROGRAM P, USER_INFO U, INFOR I"
+					+ "   WHERE I.INFOR_ID = P.INFOR_ID"
 					+ "     AND P.LATEST = 1"
-					+ "     AND P.CREATE_USER_ID = U.USER_ID"
-					+ "     AND P.PROGRAM_ID = "+programId;
+					+ "     AND P.CREATE_USER_ID = U.USER_ID(+)"
+					+ "  UNION ALL"
+					+ "  SELECT 0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         4,"
+					+ "         I.INFOR_ID,"
+					+ "         I.INFOR_NAME,"
+					+ "         I.FEATURE_KIND,"
+					+ "         I.METHOD,"
+					+ "         I.ADMIN_NAME,"
+					+ "         I.INFOR_CODE,"
+					+ "         I.SOURCE_CODE,"
+					+ "         I.INFO_TYPE_NAME,"
+					+ "         I.TOPIC_NAME,"
+					+ "         I.PUBLISH_DATE,"
+					+ "         I.PLAN_STATUS,"
+					+ "         I.NEWS_DATE,"
+					+ "         I.EXPECT_DATE,"
+					+ "         0,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL,"
+					+ "         NULL"
+					+ "    FROM INFOR I"
+					+ "   WHERE I.PLAN_STATUS = 0)"
+					+ "SELECT *"
+					+ "  FROM T"
+					+ " WHERE 1=1"+appendSql;
+			log.info("program query sql :" + sql);
 			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
 				public Map<String, Object> handle(ResultSet rs) throws SQLException {
 					Map<String, Object> map = new HashMap<String, Object>();
@@ -1512,7 +1602,92 @@ public class ProgramService {
 						map.put("name", rs.getString("PROGRAM_NAME"));
 						map.put("descp", rs.getString("PROGRAM_DESCP"));
 						map.put("type", rs.getInt("TYPE"));
-						map.put("lot", rs.getInt("LOT"));
+						map.put("inforId", rs.getString("INFOR_ID"));
+						map.put("inforName", rs.getString("INFOR_NAME"));
+						map.put("featureKind", rs.getInt("FEATURE_KIND"));	
+						
+						map.put("method", rs.getString("METHOD"));	
+						map.put("adminName", rs.getString("ADMIN_NAME"));	
+						map.put("inforCode", rs.getString("INFOR_CODE"));	
+						map.put("sourceCode", rs.getInt("SOURCE_CODE"));	
+						map.put("infoTypeName", rs.getString("INFO_TYPE_NAME"));	
+						map.put("topicName", rs.getString("TOPIC_NAME"));	
+						map.put("planStatus", rs.getInt("PLAN_STATUS"));	
+						map.put("publishDate", DateUtils.dateToString(rs.getTimestamp("PUBLISH_DATE")));
+						map.put("newsDate", DateUtils.dateToString(rs.getTimestamp("NEWS_DATE")));
+						map.put("expectDate",DateUtils.dateToString(rs.getTimestamp("EXPECT_DATE")));	
+						
+						map.put("createUserId", rs.getInt("CREATE_USER_ID"));
+						map.put("createUserName", rs.getString("CREATE_USER_NAME"));
+						map.put("planStartDate", DateUtils.dateToString(rs.getTimestamp("PLAN_START_DATE")));
+						map.put("planEndDate", DateUtils.dateToString(rs.getTimestamp("PLAN_END_DATE")));
+						map.put("collectPlanStartDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_START_DATE")));
+						map.put("collectPlanEndDate", DateUtils.dateToString(rs.getTimestamp("COLLECT_PLAN_END_DATE")));
+						map.put("dayEditPlanStartDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_START_DATE")));
+						map.put("dayEditPlanEndDate", DateUtils.dateToString(rs.getTimestamp("DAY_EDIT_PLAN_END_DATE")));
+						map.put("producePlanStartDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_START_DATE")));
+						map.put("producePlanEndDate", DateUtils.dateToString(rs.getTimestamp("PRODUCE_PLAN_END_DATE")));
+						map.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
+						return map;
+					}
+					return map;
+				}
+	    	};
+	    	QueryRunner run = new QueryRunner();
+	    	Map<String, Object> programMap = run.query(conn, sql, rsHandler);
+	    	return programMap;
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<String, Object> query(Connection conn,int programId) throws Exception {
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT P.PROGRAM_ID,                                      ");
+			sb.append("          P.NAME                       PROGRAM_NAME,       ");
+			sb.append("          P.DESCP                      PROGRAM_DESCP,      ");
+			sb.append("          P.TYPE,                                          ");
+//			sb.append("          P.LOT,                                           ");
+			sb.append("          C.CITY_NAME,                                     ");
+			sb.append("          C.CITY_ID,                                       ");
+			sb.append("          I.INFOR_ID,                                      ");
+			sb.append("          I.INFOR_NAME,                                    ");
+			sb.append("          I.FEATURE_KIND,                                  ");
+			sb.append("          P.CREATE_USER_ID,                                ");
+			sb.append("          U.USER_REAL_NAME             CREATE_USER_NAME,   ");
+			sb.append("          P.PLAN_START_DATE,                               ");
+			sb.append("          P.PLAN_END_DATE,                                 ");
+			sb.append("          P.COLLECT_PLAN_START_DATE,                       ");
+			sb.append("          P.COLLECT_PLAN_END_DATE,                         ");
+			sb.append("          P.DAY_EDIT_PLAN_START_DATE,                      ");
+			sb.append("          P.DAY_EDIT_PLAN_END_DATE,                        ");
+			sb.append("          P.MONTH_EDIT_PLAN_START_DATE,                    ");
+			sb.append("          P.MONTH_EDIT_PLAN_END_DATE,                      ");
+			sb.append("          P.PRODUCE_PLAN_START_DATE,                       ");
+			sb.append("          P.PRODUCE_PLAN_END_DATE                          ");
+			sb.append("     FROM CITY C, PROGRAM P, USER_INFO U, INFOR I          ");
+			sb.append("    WHERE C.CITY_ID(+) = P.CITY_ID                         ");
+			sb.append("      AND I.INFOR_ID(+) = P.INFOR_ID                       ");
+			sb.append("      AND P.LATEST = 1                                     ");
+			sb.append("      AND P.CREATE_USER_ID = U.USER_ID(+)                     ");
+			sb.append("      AND P.PROGRAM_ID = "+programId);
+			
+			String sql = sb.toString();
+			log.info("program query sql :" + sql);
+			ResultSetHandler<Map<String, Object>> rsHandler = new ResultSetHandler<Map<String, Object>>(){
+				public Map<String, Object> handle(ResultSet rs) throws SQLException {
+					Map<String, Object> map = new HashMap<String, Object>();
+					while(rs.next()){
+						map.put("programId", rs.getInt("PROGRAM_ID"));
+						map.put("name", rs.getString("PROGRAM_NAME"));
+						map.put("descp", rs.getString("PROGRAM_DESCP"));
+						map.put("type", rs.getInt("TYPE"));
+//						map.put("lot", rs.getInt("LOT"));
 						map.put("cityId", rs.getInt("CITY_ID"));
 						map.put("cityName", rs.getString("CITY_NAME"));
 						map.put("inforId", rs.getString("INFOR_ID"));
@@ -1579,21 +1754,12 @@ public class ProgramService {
 		}
 	}
 	
-	public String pushMsg(long userId,JSONArray programIds) throws Exception{
-		Connection conn = null;
+	public void pushMsgWithConnection(Connection conn,long userId,List<Program> programs, JSONArray programIds) throws Exception{
 		try{
-			conn = DBConnector.getInstance().getManConnection();
-			//发送消息
-			JSONObject condition=new JSONObject();
-			condition.put("programIds",programIds);
-			JSONArray status=new JSONArray();
-			status.add(2);
-			condition.put("status",status);
-			List<Program> programs = queryProgramTable(conn, condition);
-			List<Integer> inforPrograms=new ArrayList<Integer>();
+			Map<Integer,Program> inforPrograms=new HashMap<Integer,Program>();
 			for(Program p:programs){
 				if(p.getType()==4){
-					inforPrograms.add(p.getProgramId());
+					inforPrograms.put(p.getProgramId(), p);
 				}
 			}
 			splitInforTasks(conn,inforPrograms,userId);
@@ -1616,6 +1782,51 @@ public class ProgramService {
 			}		
 			openStatus(conn,programIds);
 		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public String pushMsg(long userId,JSONArray programIds) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			//发送消息
+			JSONObject condition=new JSONObject();
+			condition.put("programIds",programIds);
+			JSONArray status=new JSONArray();
+			status.add(2);
+			condition.put("status",status);
+			List<Program> programs = queryProgramTable(conn, condition);
+			
+			pushMsgWithConnection( conn, userId, programs,programIds);
+			
+//			Map<Integer,Program> inforPrograms=new HashMap<Integer,Program>();
+//			for(Program p:programs){
+//				if(p.getType()==4){
+//					inforPrograms.put(p.getProgramId(), p);
+//				}
+//			}
+//			splitInforTasks(conn,inforPrograms,userId);
+//			/*项目发布1.所有生管角色 新增项目：XXX(项目名称)，请关注*/			
+//			String msgTitle="项目发布";
+//			List<Map<String,Object>> msgContentList=new ArrayList<Map<String,Object>>();
+//			for(Program program:programs){
+//				Map<String,Object> map = new HashMap<String, Object>();
+//				String msgContent = "新增项目:"+program.getName()+",请关注";
+//				map.put("msgContent", msgContent);
+//				//关联要素
+//				JSONObject msgParam = new JSONObject();
+//				msgParam.put("relateObject", "PROGRAM");
+//				msgParam.put("relateObjectId", program.getProgramId());
+//				map.put("msgParam", msgParam.toString());
+//				msgContentList.add(map);
+//			}
+//			if(msgContentList.size()>0){
+//				programPushMsg(conn,msgTitle,msgContentList,null,userId);
+//			}		
+//			openStatus(conn,programIds);
+		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
@@ -1628,27 +1839,22 @@ public class ProgramService {
 	/**
 	 * 情报项目发布时，自动创建两条任务：采集任务和日编任务，均为草稿状态（若情报跨大区，则按照大区拆分成多个任务）
 	 * @param conn
-	 * @param programIds
+	 * @param inforPrograms
 	 * @param userId
 	 * @throws Exception
 	 */
-	private void splitInforTasks(Connection conn,List<Integer> programIds,final Long userId)throws Exception{
+	private void splitInforTasks(Connection conn,final Map<Integer, Program> inforPrograms,final Long userId)throws Exception{
 		try{
-			if(programIds==null||programIds.size()==0){return;}
+			if(inforPrograms==null||inforPrograms.size()==0){return;}
 			String selectSql="SELECT P.PROGRAM_ID, M.GRID_ID, G.REGION_ID,r.region_name"
 					+ "  FROM PROGRAM P, INFOR_GRID_MAPPING M, GRID G,region r"
 					+ " WHERE P.INFOR_ID = M.INFOR_ID"
 					+ "   AND M.GRID_ID = G.GRID_ID"
 					+ "   AND g.region_ID = r.region_ID"
-					+ "   AND P.PROGRAM_ID IN "+programIds.toString().replace("[", "(").replace("]", ")")
+					+ "   AND P.PROGRAM_ID IN (" + StringUtils.join(inforPrograms.keySet().toArray(),",") + ")"
 					+ " ORDER BY P.PROGRAM_ID, G.REGION_ID";
-			JSONObject condition=new JSONObject();
-			condition.put("programIds", programIds);
-			List<Program> programs = queryProgramTable(conn, condition);
-			final Map<Integer, Program> programMap=new HashMap<Integer, Program>();
-			for(Program p:programs){
-				programMap.put(p.getProgramId(), p);
-			}
+			log.info("splitInforTasks sql:" + selectSql);
+
 			ResultSetHandler<List<Task>> rsHandler = new ResultSetHandler<List<Task>>(){
 				public List<Task> handle(ResultSet rs) throws SQLException {
 					List<Task> list = new ArrayList<Task>();
@@ -1672,9 +1878,10 @@ public class ProgramService {
 							collectTask.setGridIds(gridMap);
 							collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							collectTask.setType(0);
-							collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
-							collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-							collectTask.setName(programMap.get(programId).getName() + regionId);
+							collectTask.setPlanStartDate(inforPrograms.get(programId).getCollectPlanStartDate());
+							collectTask.setPlanEndDate(inforPrograms.get(programId).getCollectPlanEndDate());
+//							collectTask.setName(inforPrograms.get(programId).getName() + regionId);
+							
 							list.add(collectTask);
 							Task dailyTask=new Task();
 							dailyTask.setProgramId(programId);
@@ -1682,9 +1889,9 @@ public class ProgramService {
 							dailyTask.setGridIds(gridMap);
 							dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 							dailyTask.setType(1);
-							dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
-							dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-							dailyTask.setName(programMap.get(programId).getName() +regionId);
+							dailyTask.setPlanStartDate(inforPrograms.get(programId).getDayEditPlanStartDate());
+							dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
+//							dailyTask.setName(inforPrograms.get(programId).getName() +regionId);
 							list.add(dailyTask);
 							gridMap =new HashMap<Integer, Integer>();
 							programId=programIdTmp;
@@ -1700,9 +1907,9 @@ public class ProgramService {
 						collectTask.setGridIds(gridMap);
 						collectTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						collectTask.setType(0);
-						collectTask.setPlanStartDate(programMap.get(programId).getCollectPlanStartDate());
-						collectTask.setPlanEndDate(programMap.get(programId).getCollectPlanEndDate());
-						collectTask.setName(programMap.get(programId).getName() + regionId);
+						collectTask.setPlanStartDate(inforPrograms.get(programId).getCollectPlanStartDate());
+						collectTask.setPlanEndDate(inforPrograms.get(programId).getCollectPlanEndDate());
+//						collectTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(collectTask);
 						Task dailyTask=new Task();
 						dailyTask.setProgramId(programId);
@@ -1710,9 +1917,9 @@ public class ProgramService {
 						dailyTask.setGridIds(gridMap);
 						dailyTask.setCreateUserId(Integer.valueOf(userId.toString()));
 						dailyTask.setType(1);
-						dailyTask.setPlanStartDate(programMap.get(programId).getDayEditPlanStartDate());
-						dailyTask.setPlanEndDate(programMap.get(programId).getDayEditPlanEndDate());
-						dailyTask.setName(programMap.get(programId).getName() + regionId);
+						dailyTask.setPlanStartDate(inforPrograms.get(programId).getDayEditPlanStartDate());
+						dailyTask.setPlanEndDate(inforPrograms.get(programId).getDayEditPlanEndDate());
+//						dailyTask.setName(inforPrograms.get(programId).getName() + regionId);
 						list.add(dailyTask);
 					}
 					return list;
@@ -1721,15 +1928,74 @@ public class ProgramService {
 			QueryRunner run=new QueryRunner();
 			List<Task> list=run.query(conn, selectSql, rsHandler);
 			if(list!=null&&list.size()>0){
-				for(Task t:list){TaskService.getInstance().createWithBean(conn, t);}
+				SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				for(Task t:list){
+//					TaskService.getInstance().createWithBean(conn, t);
+					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
+					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(conn,infor.getAdminName());
+					int taskId=TaskOperation.getNewTaskId(conn);
+					t.setTaskId(taskId);
+					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
+
+					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
+						t.setGroupId(userGroupMap.get(0).getGroupId());
+					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
+						t.setGroupId(userGroupMap.get(1).getGroupId());
+					}
+					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
+				}
 			}
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("任务发布消息发送失败，原因为:"+e.getMessage(),e);
 		}
 	}
 	
+	/**
+	 * @param programId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	private Map<String,String> getInforByProgramId(Integer programId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME");
+			sb.append("   FROM PROGRAM P, INFOR I       ");
+			sb.append("  WHERE P.INFOR_ID = I.INFOR_ID  ");
+			sb.append("    AND P.PROGRAM_ID = " + programId);
+			
+			String sql = sb.toString();
+			
+			log.info("getInforNameByProgramId sql :" + sql);
+			
+			
+			ResultSetHandler<Map<String,String>> rsHandler = new ResultSetHandler<Map<String,String>>() {
+				public Map<String,String> handle(ResultSet rs) throws SQLException {
+					Map<String,String> result = new HashMap<String,String>();
+					if(rs.next()) {
+						result.put("inforName", rs.getString("INFOR_NAME"));
+						result.put("adminName", rs.getString("ADMIN_NAME"));
+					}
+					return result;
+				}
+			};
+			Map<String,String> result =  run.query(conn, sql,rsHandler);
+			return result;
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getInforNameByProgramId失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
 	/*项目创建/编辑/关闭
 	 * 1.所有生管角色
 	 * 2.2.项目包含的所有任务作业组组长
@@ -1839,8 +2105,10 @@ public class ProgramService {
 		}
 		
 		String selectSql="SELECT P.PROGRAM_ID, P.NAME,P.INFOR_ID,P.TYPE,p.collect_plan_start_date,"
-				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date  "
-				+ "FROM PROGRAM P where 1=1 "+conditionSql;
+				+ "p.collect_plan_end_date,p.day_edit_plan_start_date,p.day_edit_plan_end_date,"
+				+ "P.MONTH_EDIT_PLAN_START_DATE,P.MONTH_EDIT_PLAN_END_DATE,"
+				+ "P.PLAN_START_DATE,P.PLAN_END_DATE,P.PRODUCE_PLAN_START_DATE,P.PRODUCE_PLAN_END_DATE  "
+				+ "FROM PROGRAM P where p.latest=1 "+conditionSql;
 		
 		ResultSetHandler<List<Program>> rsHandler = new ResultSetHandler<List<Program>>(){
 			public List<Program> handle(ResultSet rs) throws SQLException {
@@ -1849,12 +2117,18 @@ public class ProgramService {
 					Program map = new Program();
 					map.setProgramId(rs.getInt("PROGRAM_ID"));
 					map.setName(rs.getString("NAME"));
-					map.setInforId(rs.getString("INFOR_ID"));
+					map.setInforId(rs.getInt("INFOR_ID"));
 					map.setType(rs.getInt("TYPE"));
 					map.setCollectPlanStartDate(rs.getTimestamp("collect_plan_start_date"));
 					map.setCollectPlanEndDate(rs.getTimestamp("collect_plan_end_date"));
 					map.setDayEditPlanStartDate(rs.getTimestamp("day_edit_plan_start_date"));
 					map.setDayEditPlanEndDate(rs.getTimestamp("day_edit_plan_end_date"));
+					map.setMonthEditPlanStartDate(rs.getTimestamp("MONTH_EDIT_PLAN_START_DATE"));
+					map.setMonthEditPlanEndDate(rs.getTimestamp("MONTH_EDIT_PLAN_END_DATE"));
+					map.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+					map.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+					map.setProducePlanStartDate(rs.getTimestamp("PRODUCE_PLAN_START_DATE"));
+					map.setProducePlanEndDate(rs.getTimestamp("PRODUCE_PLAN_END_DATE"));
 					list.add(map);
 				}
 				return list;
@@ -2007,5 +2281,157 @@ public class ProgramService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	/**
+	 * 调整子任务对应快线项目范围.若子任务非快线项目，则不进行调整
+	 * @param conn
+	 * @param taskId
+	 * @throws Exception
+	 */
+	public void changeProgramGridByTask(Connection conn, int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="INSERT INTO PROGRAM_GRID_MAPPING"
+					+ "  (PROGRAM_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.PROGRAM_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND S.BLOCK_ID = 0"
+					+ "  MINUS (SELECT P.PROGRAM_ID, M.GRID_ID, 2"
+					+ "           FROM INFOR_GRID_MAPPING M, TASK T, PROGRAM P"
+					+ "          WHERE M.INFOR_ID = P.INFOR_ID"
+					+ "            AND P.PROGRAM_ID = T.PROGRAM_ID"
+					+ "            AND T.TASK_ID = "+taskId
+					+ "         UNION ALL"
+					+ "         SELECT T.PROGRAM_ID, M.GRID_ID, 2"
+					+ "           FROM PROGRAM_GRID_MAPPING M, TASK T"
+					+ "          WHERE M.PROGRAM_ID = T.PROGRAM_ID"
+					+ "            AND T.TASK_ID = "+taskId+")";
+			run.update(conn, sql);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param program
+	 * @throws Exception 
+	 */
+	public void createWithProgramId(Connection conn, Program bean) throws Exception {
+		QueryRunner run = new QueryRunner();
+		//将旧项目状态修改为失效
+		String updateSql = "UPDATE PROGRAM SET LATEST=0 WHERE ";
+		if (bean!=null&&bean.getCityId()!=0){
+			updateSql+=" CITY_ID ="+bean.getCityId();
+		};
+
+		if (bean!=null&&bean.getInforId()!=0){
+			updateSql+=" infor_id ='" + bean.getInforId() + "'";
+		};
+		run.update(conn,updateSql);
+		
+		//创建项目		
+		String insertPart="";
+		String valuePart="";
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" PROGRAM_ID ";
+		valuePart+=bean.getProgramId();			
+
+		if (bean!=null&&bean.getCityId()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" CITY_ID ";
+			valuePart+=bean.getCityId();
+		};
+
+		if (bean!=null&&bean.getInforId()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" infor_id ";
+			valuePart+= "'" + bean.getInforId() + "'";
+		};
+		if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+		insertPart+=" CREATE_USER_ID,CREATE_DATE,STATUS,LATEST ";
+		valuePart+=bean.getCreateUserId()+",sysdate,2,1";
+
+		if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" name ";
+			valuePart+="'"+bean.getName()+"'";
+		};
+		if (bean!=null&&bean.getType()!=0){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" type ";
+			valuePart+=bean.getType();
+		};
+
+		if (bean!=null&&bean.getDescp()!=null && StringUtils.isNotEmpty(bean.getDescp())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" DESCP ";
+			valuePart+="'"+bean.getDescp()+"'";
+		};
+		if (bean!=null&&bean.getPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" PLAN_END_DATE ";
+			valuePart+="to_timestamp('"+ bean.getPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getCollectPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getCollectPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Collect_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getCollectPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" day_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getDayEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getDayEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Day_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getDayEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanStartDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_START_DATE ";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getMonthEditPlanEndDate()!=null && StringUtils.isNotEmpty(bean.getMonthEditPlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" MONTH_EDIT_PLAN_END_DATE";
+			valuePart+="to_timestamp('"+ bean.getMonthEditPlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanStartDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanStartDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_Start_Date ";
+			valuePart+="to_timestamp('"+ bean.getProducePlanStartDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+		if (bean!=null&&bean.getProducePlanEndDate()!=null && StringUtils.isNotEmpty(bean.getProducePlanEndDate().toString())){
+			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+			insertPart+=" Produce_Plan_End_Date";
+			valuePart+="to_timestamp('"+ bean.getProducePlanEndDate()+"','yyyy-mm-dd hh24:mi:ss.ff')";
+		};
+
+		String createSql = "insert into program ("+insertPart+") values("+valuePart+")";
+		run.update(conn,createSql);
+		//修改项目对应city的状态为已规划
+		if (bean!=null&&bean.getCityId()!=0){
+			CityOperation.updatePlanStatus(conn, bean.getCityId(), 1);
+		};
+		//修改项目对应情报为已规划
+		if (bean!=null&&bean.getInforId()!=0){
+			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
+		};	
 	}
 }

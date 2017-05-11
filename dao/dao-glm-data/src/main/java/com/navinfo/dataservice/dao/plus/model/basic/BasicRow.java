@@ -123,6 +123,10 @@ public abstract class BasicRow{
 	 * 持久化后理论上应该所有删除的记录，不会再进入下一操作阶段
 	 */
 	public void afterPersist(){
+		//如果是pre_delete的话，状态不变更
+		if(opType.equals(OperationType.PRE_DELETED)){
+			return ;
+		}
 		//如果之前为删除，修改为已删除
 		if(opType.equals(OperationType.DELETE)){
 			opType=OperationType.PRE_DELETED;
@@ -199,6 +203,24 @@ public abstract class BasicRow{
 		if(opType.equals(OperationType.PRE_DELETED))return false;
 		if(opType.equals(OperationType.UPDATE)&&(oldValues==null||oldValues.size()==0))return false;
 		return true;
+	}
+	
+	public boolean isHisChanged(){
+
+		if(hisChangeLogs!=null && !hisChangeLogs.isEmpty()){
+			return true;
+		}else{
+			return false;
+		}
+	}
+
+	public boolean isChanged(String colName){
+		if(opType.equals(OperationType.INSERT)
+				||opType.equals(OperationType.DELETE)
+				||(opType.equals(OperationType.UPDATE)&&oldValues!=null&&oldValues.containsKey(colName))){
+			return true;
+		}
+		return false;
 	}
 	/**
 	 * 根据OperationType生成相应的新增、删除和修改sql
@@ -445,17 +467,11 @@ public abstract class BasicRow{
 	}
 	public boolean checkValue(String colName,Object oldValue,Object newValue){
 		if(oldValue==null&&newValue==null)return false;
-		if(oldValue!=null&&oldValue.equals(newValue))return false;
-		if(oldValue!=null){
-			if(oldValue.equals(newValue)){
-				return false;
-			}
-			if(oldValue instanceof String 
-					&&StringUtils.isEmpty(String.valueOf(oldValue))
-					&&StringUtils.isEmpty(String.valueOf(newValue))
-					){
-				return false;
-			}
+		if(oldValue!=null&&oldValue.equals(newValue))return false;//所有Object类型都通用
+		//处理String的null和""的问题
+		if((oldValue==null&&newValue.equals(""))
+				||(newValue==null&&oldValue.equals(""))){
+			return false;
 		}
 		
 		if(opType.equals(OperationType.UPDATE)){//update的row才需要记录old值
@@ -493,6 +509,8 @@ public abstract class BasicRow{
 				argtypes= new Class[]{float.class};
 			}else if(newValue instanceof Long){
 				argtypes= new Class[]{long.class};
+			}else if(newValue instanceof Geometry){
+				argtypes= new Class[]{Geometry.class};
 			}else{
 				argtypes = new Class[]{newValue.getClass()};
 			}

@@ -99,6 +99,9 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			int s_qTaskId=0;
 			int s_mTaskId=0;
 			int t_fStatus=0;
+			
+			int s_qSubTaskId=0;
+			int s_mSubTaskId=0;
 
 			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,stage,
 					user, t_command, null, currentDate,currentDate,t_cStatus, t_dStatus,
@@ -153,7 +156,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
 					currentDate, currentDate, t_lifecycle, t_command, user,
 					t_cStatus, t_dStatus, t_mStatus, S_SOURCETYPE, s_sourceCode,
-					g_guide, g_location, null, feedbackObj , s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc,s_qTaskId,s_mTaskId,t_fStatus);
+					g_guide, g_location, null, feedbackObj , s_reliability,t_inMeth,t_pStatus,t_dInProc,t_mInProc,s_qTaskId,s_mTaskId,t_fStatus,s_qSubTaskId,s_mSubTaskId);
 
 			solr.addTips(solrIndex);
 
@@ -178,40 +181,6 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 
 	
 
-	/**
-	 * @Description:删除tips
-	 * @param rowkey
-	 * @author: y
-	 * @throws Exception
-	 * @time:2016-11-16 下午5:21:09
-	 */
-	public void deleteByRowkey(String rowkey) throws Exception {
-		Connection hbaseConn;
-		try {
-			// delete solr
-			solr.deleteByRowkey(rowkey);
 
-			// delete hbase
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-			
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-			
-			List list = new ArrayList();
-			Delete d1 = new Delete(rowkey.getBytes());
-			list.add(d1);
-			
-			htab.delete(list);
-			
-			htab.close();
-		} catch (SolrServerException e) {
-
-			logger.error("删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
-			
-			throw new Exception(
-					"删除tips失败，rowkey：" + rowkey + "\n" + e.getMessage(), e);
-		}
-
-	}
 
 }

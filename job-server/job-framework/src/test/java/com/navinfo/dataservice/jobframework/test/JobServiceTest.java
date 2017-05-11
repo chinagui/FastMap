@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.jobframework.test;
 
 import java.sql.Connection;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -11,13 +13,18 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.bizcommons.glm.Glm;
 import com.navinfo.dataservice.bizcommons.glm.GlmCache;
 import com.navinfo.dataservice.bizcommons.glm.GlmTable;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.jobframework.service.JobService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -75,10 +82,114 @@ public class JobServiceTest {
 	@Test
 		public void testSearch(){
 			try{
-				JSONObject obj = JobService.getInstance().getLatestJob(6);
+				JSONObject obj = JobService.getInstance().getLatestJob(6,"metaValidation","元数据库检查");
 				System.out.println(obj);
 			}catch(Exception e){
 				e.printStackTrace();
+			}
+		}
+		//@Test
+		public void testSearchJobList(){
+			try{
+				JSONObject jsonReq = JSONObject.fromObject("{'tableName':'rdName','jobName':''}");	
+				
+				List<JobInfo> obj = JobService.getInstance().getJobInfoList(jsonReq);
+				System.out.println(obj);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		
+		//@Test
+		public void getLatestJobByDescp(){
+			try{
+				
+				JobInfo obj = JobService.getInstance().getLatestJobByDescp("rdName");
+				System.out.println(obj);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+//		@Test
+		public void getLatestJobByDescp2(){
+			try{
+				JSONObject jsonReq = JSONObject.fromObject("{'tableName':'rdName','taskName':''}");	
+		
+				System.out.println("taskName : "+ jsonReq.getString("taskName"));
+				
+				if(jsonReq.getString("taskName") == null || StringUtils.isEmpty(jsonReq.getString("taskName"))){
+					String tableName  = jsonReq.getString("tableName");
+					JobInfo obj = JobService.getInstance().getLatestJobByDescp("rdName");
+					System.out.println(obj);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		@Test
+		public void getJobByDescp2(){
+			try{
+				JSONObject jsonReq = JSONObject.fromObject("{'tableName':'rdName','jobName':'元数据库检查7'}");	
+		
+				String jobName = jsonReq.getString("jobName");
+				if( jobName == null || StringUtils.isEmpty(jobName)){
+					throw new IllegalArgumentException("jobName参数不能为空。");
+				}
+				String tableName  = jsonReq.getString("tableName");
+				if(tableName==null || StringUtils.isEmpty(tableName)){
+					throw new IllegalArgumentException("tableName参数不能为空。");
+				}
+				
+				String descp = tableName+":"+jobName;
+				System.out.println("descp :" +descp);
+				if(descp != null && StringUtils.isNotEmpty(descp)){
+					JobInfo obj = JobService.getInstance().getJobByDescp(descp);
+					System.out.println(obj);
+					int flag = 0;
+					if(obj != null){
+						flag = 1;
+					}
+					
+					System.out.println(flag);
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+			}
+		}
+		
+		
+		
+		
+		public static void main(String[] args) {
+			/*String startDate= "";
+			String endDate= "";
+			Timestamp curTime = DateUtilsEx.getCurTime();
+			
+			Timestamp beginTime = DateUtilsEx.getDayOfDelayMonths(curTime, -1);
+			
+			 SimpleDateFormat df = new java.text.SimpleDateFormat("yyyy-MM-dd");
+		        if (null == beginTime) //modified by dengfasheng 2006-08-01
+		        return df.format(getDate(time));
+			
+			
+			startDate=DateUtilsEx.getTimeStr(beginTime, "yyyy-MM-dd");
+			endDate = DateUtilsEx.getTimeStr(curTime, "yyyy-MM-dd");
+			System.out.println(startDate+" "+endDate);*/
+			
+			JSONArray groupDate = new JSONArray();
+			groupDate.add("rdName");
+			groupDate.add("rdName2");
+			groupDate.add("rdName3");
+			List<String> groupList = new ArrayList<String>();
+			List<String> groupList2 = new ArrayList<String>();
+			
+			if(groupDate != null && groupDate.size() > 0){
+				groupList = (List<String>) JSONArray.toCollection(groupDate);
+				for(Object obj : groupDate){
+					groupList2.add((String) obj);
+				}
 			}
 		}
 	

@@ -98,22 +98,25 @@ public class Operation implements IOperation {
 			}
 
 		} else {
-			int sourceSize = this.command.getSlope().getSlopeVias().size();
-			int currentSize = this.command.getSeriesLinkPids().size();
+			if (this.command.getJson().containsKey("linkPids")) {
+				int sourceSize = this.command.getSlope().getSlopeVias().size();
+				int currentSize = this.command.getSeriesLinkPids().size();
 
-			if (sourceSize > currentSize) {
-				for (int i = currentSize; i < sourceSize; i++) {
-					result.insertObject(this.command.getSlope().getSlopeVias()
-							.get(i), ObjStatus.DELETE, this.command.getPid());
+				if (sourceSize > currentSize) {
+					for (int i = currentSize; i < sourceSize; i++) {
+						result.insertObject(this.command.getSlope()
+								.getSlopeVias().get(i), ObjStatus.DELETE,
+								this.command.getPid());
 
+					}
 				}
-			}
-			if (sourceSize < currentSize) {
-				for (int i = sourceSize; i < currentSize; i++) {
-					this.addRdSlope(result, i);
+				if (sourceSize < currentSize) {
+					for (int i = sourceSize; i < currentSize; i++) {
+						this.addRdSlope(result, i);
+					}
 				}
-			}
 
+			}
 		}
 	}
 
@@ -218,15 +221,13 @@ public class Operation implements IOperation {
 			}
 
 		}
-		
-
 
 		for (RdSlope slope : slopes) {
-			
+
 			TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
 
 			TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
-			
+
 			RdLink preLink = null;
 			List<RdLink> slinks = new ArrayList<RdLink>();
 			for (RdLink link : newLinks) {
@@ -246,34 +247,32 @@ public class Operation implements IOperation {
 					result.insertObject(slope, ObjStatus.UPDATE, slope.getPid());
 					continue;
 				}
-				RdSlopeVia newVia=	this.addRdslopeVia(slope.getPid(), slinks.get(i).getPid(), i,
-						result);
+				RdSlopeVia newVia = this.addRdslopeVia(slope.getPid(), slinks
+						.get(i).getPid(), i, result);
 				newVias.put(newVia.getSeqNum(), newVia);
 
 			}
 			// 维护原有的link信息
-			nextVias = 	this.caleRdSlopeVia(slope, 0, newLinks.size(), result);
-			
+			nextVias = this.caleRdSlopeVia(slope, 0, newLinks.size(), result);
+
 			if (newVias.size() > 0) {
-				
-				RdSlopeVia newVia=(RdSlopeVia) newVias.firstEntry().getValue();
-				String tableNamePid = newVia.tableName()
-						+ slope.getPid();
+
+				RdSlopeVia newVia = (RdSlopeVia) newVias.firstEntry()
+						.getValue();
+				String tableNamePid = newVia.tableName() + slope.getPid();
 
 				result.breakVia(tableNamePid, 0, newVias, nextVias);
 			}
 
 		}
-		
 
-		
 		// 如果打断的是接续线link
 		for (RdSlopeVia via : rdSlopeVias) {
-			
+
 			TreeMap<Integer, IVia> newVias = new TreeMap<Integer, IVia>();
 
 			TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
-			
+
 			RdLink preLink = selector.loadBySeriesRelationLink(
 					via.getSlopePid(), via.getSeqNum() - 1, true);
 			RdSlope slope = (RdSlope) selector
@@ -294,8 +293,8 @@ public class Operation implements IOperation {
 					newVias.put(via.getSeqNum(), via);
 					continue;
 				}
-				RdSlopeVia newVia=	this.addRdslopeVia(via.getSlopePid(), links.get(i).getPid(),
-						via.getSeqNum() + i, result);
+				RdSlopeVia newVia = this.addRdslopeVia(via.getSlopePid(), links
+						.get(i).getPid(), via.getSeqNum() + i, result);
 				newVias.put(newVia.getSeqNum(), newVia);
 			}
 			// 当link.size() == 0 时说明发生了节点分离 根据节点分离原则 分离点之后的接续link全部删除
@@ -313,12 +312,10 @@ public class Operation implements IOperation {
 			// 维护原有的link信息
 			nextVias = this.caleRdSlopeVia(slope, via.getSeqNum(),
 					newLinks.size(), result);
-			
-			
-			String tableNamePid  = via.tableName()
-					+ via.getSlopePid() ;
-			
-			result.breakVia( tableNamePid,via.getSeqNum(), newVias,nextVias);
+
+			String tableNamePid = via.tableName() + via.getSlopePid();
+
+			result.breakVia(tableNamePid, via.getSeqNum(), newVias, nextVias);
 
 		}
 	}
@@ -349,10 +346,10 @@ public class Operation implements IOperation {
 	 * @param size
 	 * @param result
 	 */
-	private TreeMap<Integer, IVia> caleRdSlopeVia(RdSlope slope, int seqNum, int size,
-			Result result) {
-		
-		TreeMap<Integer, IVia> nextVias=new TreeMap<Integer,IVia>();
+	private TreeMap<Integer, IVia> caleRdSlopeVia(RdSlope slope, int seqNum,
+			int size, Result result) {
+
+		TreeMap<Integer, IVia> nextVias = new TreeMap<Integer, IVia>();
 		for (IRow row : slope.getSlopeVias()) {
 			RdSlopeVia rdSlopeVia = (RdSlopeVia) row;
 			if (rdSlopeVia.getSeqNum() > seqNum) {
@@ -408,21 +405,20 @@ public class Operation implements IOperation {
 
 		int linkPid = link.getPid();
 		RdSlopeSelector selector = new RdSlopeSelector(this.conn);
-		
-		//node关联的RdSlope
+
+		// node关联的RdSlope
 		List<RdSlope> slopes = selector.loadByNode(nodePid, true);
 
 		for (RdSlope slope : slopes) {
 
 			result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
 		}
-		
-		
+
 		// link为退出线的RdSlope
 		slopes = selector.loadByOutLink(linkPid, true);
 
 		for (RdSlope slope : slopes) {
-			
+
 			if (slope.getNodePid() == nodePid) {
 				continue;
 			}
@@ -432,7 +428,7 @@ public class Operation implements IOperation {
 				result.insertObject(row, ObjStatus.DELETE, slope.getPid());
 			}
 		}
-		
+
 		// link为接续link的RdSlope
 		slopes = selector.loadByViaLink(linkPid, true);
 		if (slopes.size() == 0) {

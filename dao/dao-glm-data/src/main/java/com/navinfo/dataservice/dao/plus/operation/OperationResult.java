@@ -25,7 +25,7 @@ public class OperationResult{
 	
 	//key:对象d
 //	private List<BasicObj> allObjs=new ArrayList<BasicObj>();
-	private Map<String,Map<Long,BasicObj>> allObjs= new HashMap<String,Map<Long,BasicObj>>();
+	private Map<String,Map<Long,BasicObj>> allObjs= new HashMap<String,Map<Long,BasicObj>>();//key:objName,value:key:objPid,obj
 	
 	public boolean isObjExist(BasicObj obj){
 		Map<Long,BasicObj> objs = getObjsMapByType(obj.objName());
@@ -57,6 +57,22 @@ public class OperationResult{
 	}
 	public Map<Long,BasicObj> getObjsMapByType(String objType){
 		return allObjs.get(objType);
+	}
+	/**
+	 * 
+	 * @param objName
+	 * @return 返回不为null的map，没有对象map.size==0
+	 */
+	public Map<Long,BasicObj> getChangedObjsByName(String objName){
+		Map<Long,BasicObj> objs = allObjs.get(objName);
+		if(objs==null||objs.size()==0) return null;
+		Map<Long,BasicObj> changedObjs = new HashMap<Long,BasicObj>();
+		for(Map.Entry<Long,BasicObj> entry:objs.entrySet()){
+			if(entry.getValue().isChanged()){
+				changedObjs.put(entry.getKey(), entry.getValue());
+			}
+		}
+		return changedObjs;
 	}
 
 //	private JSONArray logs = new JSONArray();//操作业务逻辑完成后统一计算

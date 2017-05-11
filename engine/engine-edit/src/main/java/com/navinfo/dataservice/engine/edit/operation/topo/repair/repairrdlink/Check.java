@@ -18,7 +18,6 @@ import com.navinfo.dataservice.engine.edit.utils.RdGscOperateUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.geom.Point;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -123,7 +122,7 @@ public class Check {
 	}
 
 	/**
-	 * 
+	 * 创建或修改link，节点不能到已有的立交点处，请先删除立交关系
 	 * @param conn
 	 * @param catchInfos
 	 * @throws Exception

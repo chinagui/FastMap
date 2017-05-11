@@ -26,12 +26,14 @@ public class FMYW20236 extends BasicCheckRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
 			String chain = poi.getChain(); 
+			if(!StringUtils.equals(chain, "6203")){return;}
 			IxPoiName ixPoiName = poiObj.getOfficeOriginCHName();
 			boolean check = false;
-			if(ixPoiName == null&&StringUtils.equals(chain, "6203")){check = true;}
-			String name = ixPoiName.getName();
-			if(name == null&&StringUtils.equals(chain, "6203")){check = true;}
-			if(!name.contains("太平洋") &&StringUtils.equals(chain, "6203")){check = true;}
+			if(ixPoiName == null){check = true;}
+			if(ixPoiName != null){
+				String name = ixPoiName.getName();
+				if(name == null||!name.contains("太平洋")){check = true;}
+			}
 			if(check){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;

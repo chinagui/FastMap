@@ -380,16 +380,17 @@ public class NiValExceptionOperator {
 	}
 
 	/**
-	 * 修改检查结果状态为例外、确认已修改、确认不修改 确认已修改进ni_val_exception_history表
+	 * 修改检查结果状态为例外、确认已修改、确认不修改 确认已修改
+	 * 
 	 * 例外、确认不修改就ck_exception表
 	 * 
-	 * @param md5
+	 * @param id
 	 * @param projectId
 	 * @param type
 	 *            1例外，2确认不修改，3确认已修改
 	 * @throws Exception
 	 */
-	public void updateCheckLogStatusForRd(String md5, int type)
+	public void updateCheckLogStatusForRd(String id, int type)
 			throws Exception {
 
 		conn.setAutoCommit(false);
@@ -403,13 +404,14 @@ public class NiValExceptionOperator {
 			String sql = "";
 
 			if (type == 3) {
-				sql = "delete from ni_val_exception a where a.MD5_CODE=:1";
+//				sql = "delete from ni_val_exception a where a.MD5_CODE=:1";
+				sql = "delete from ni_val_exception a where a.val_exception_id=:1";
 				pstmt = conn.prepareStatement(sql);
-				pstmt.setString(1, md5);
+				pstmt.setString(1, id);
 				pstmt.executeUpdate();
 				pstmt.close();
 
-				sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
+				/*sql = "delete from ni_val_exception_grid a where a.MD5_CODE=:1";
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, md5);
 				pstmt.executeUpdate();
@@ -419,13 +421,14 @@ public class NiValExceptionOperator {
 				pstmt = conn.prepareStatement(sql);
 				pstmt.setString(1, md5);
 				pstmt.executeUpdate();
-				pstmt.close();
+				pstmt.close();*/
 			} else {
 
 				NiValExceptionSelector selector = new NiValExceptionSelector(
 						conn);
 
-				NiValException exception = selector.loadById(md5, false);
+//				NiValException exception = selector.loadById(md5, false);
+				NiValException exception = selector.loadByExId(id, false);
 
 				CkException ckexception = new CkException();
 
@@ -439,7 +442,9 @@ public class NiValExceptionOperator {
 
 				ckexception.setRowId(UuidUtils.genUuid());
 
-				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, nvl(mesh_id,0), scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a where a.MD5_CODE=:4";
+				sql = "insert into ck_exception(exception_id, rule_id, task_name, status, group_id, rank, situation, information, suggestion, geometry, targets, addition_info, memo, create_date, update_date, mesh_id, scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker, row_id, u_record) select :1,ruleid, task_name,:2,groupid, \"LEVEL\" level_, situation, information, suggestion,sdo_util.to_wktgeometry(location), targets, addition_info, '',created, updated, nvl(mesh_id,0), scope_flag, province_name, map_scale, MD5_CODE, extended, task_id, qa_task_id, qa_status, worker, qa_worker,:3,1 from ni_val_exception a "
+//						+ "where a.MD5_CODE=:4";
+						+ "where a.val_exception_id=:4";
 
 				pstmt = conn.prepareStatement(sql);
 
@@ -449,13 +454,13 @@ public class NiValExceptionOperator {
 
 				pstmt.setString(3, ckexception.rowId());
 
-				pstmt.setString(4, md5);
+				pstmt.setString(4, id);
 
 				pstmt.executeUpdate();
 
 				pstmt.close();
 
-				sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=:2";
+				/*sql = "insert into ck_exception_grid select :1,grid_id from NI_VAL_EXCEPTION_GRID where md5_code=:2";
 
 				pstmt = conn.prepareStatement(sql);
 
@@ -465,7 +470,7 @@ public class NiValExceptionOperator {
 
 				pstmt.executeUpdate();
 
-				pstmt.close();
+				pstmt.close();*/
 
 				result = new Result();
 
@@ -474,17 +479,18 @@ public class NiValExceptionOperator {
 
 			}
 
-			sql = "delete from ni_val_exception where MD5_CODE=:1";
+//			sql = "delete from ni_val_exception where MD5_CODE=:1";
+			sql = "delete from ni_val_exception where val_exception_id=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
-			pstmt.setString(1, md5);
+			pstmt.setString(1, id);
 
 			pstmt.executeUpdate();
 
 			pstmt.close();
 
-			sql = "delete from ck_result_object where md5_code=:1";
+			/*sql = "delete from ck_result_object where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
@@ -492,25 +498,24 @@ public class NiValExceptionOperator {
 
 			pstmt.executeUpdate();
 
-			pstmt.close();
+			pstmt.close();*/
 
-			sql = "delete from NI_VAL_EXCEPTION_GRID where md5_code=:1";
+			/*sql = "delete from NI_VAL_EXCEPTION_GRID where md5_code=:1";
 
 			pstmt = conn.prepareStatement(sql);
 
 			pstmt.setString(1, md5);
 
-			pstmt.executeUpdate();
+			pstmt.executeUpdate();*/
 
-			if (result != null) {
+			/*if (result != null) {
 				LogWriter writer = new LogWriter(conn);
 
 				Command command = new Command();
 
 				writer.generateLog(command, result);
 
-				writer.recordLog(command, result);
-			}
+			}*/
 
 			conn.commit();
 

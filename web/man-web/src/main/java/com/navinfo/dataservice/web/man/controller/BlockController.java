@@ -153,14 +153,14 @@ public class BlockController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			if (!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))) {
-				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
-			}
-			String wkt = dataJson.getString("wkt");
-			if (StringUtils.isEmpty(wkt)) {
-				throw new IllegalArgumentException("wkt参数值不能为空");
-			}
-			List<HashMap> data = service.listByWkt(dataJson);
+//			if (!(dataJson.containsKey("wkt")) || !(dataJson.containsKey("planningStatus"))) {
+//				throw new IllegalArgumentException("wkt、planningStatus参数是必须的。");
+//			}
+//			String wkt = dataJson.getString("wkt");
+//			if (StringUtils.isEmpty(wkt)) {
+//				throw new IllegalArgumentException("wkt参数值不能为空");
+//			}
+			List<Map<String,Object>> data = service.listByWkt(dataJson);
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取block列表失败，原因：" + e.getMessage(), e);
@@ -483,5 +483,32 @@ public class BlockController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 查询某个城市下的block列表
+	 * @author songhe
+	 * @param  cityId
+	 * @return List
+	 */
+	@RequestMapping(value = "/block/listAllByCity")
+	public ModelAndView listAllByCity(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int cityId = dataJson.getInt("cityId");
+			JSONObject condition = new JSONObject();
+			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			List<Map<String, Object>> data = service.listAllByCity(cityId, condition);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("根据cityId获取block失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 	
 }

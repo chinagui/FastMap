@@ -93,9 +93,11 @@ public class FMA0405 extends BasicCheckRule {
 				
 				//取官方原始英中文
 				IxPoiName originName=poiObj.getOfficeOriginCHIName();
+				if(originName==null){return;}
 				String originNameStr=originName.getName();
 				//取官方标准化中文
 				IxPoiName standardName=poiObj.getOfficeStandardCHIName();
+				if(standardName==null){return;}
 				String standardNameStr=standardName.getName();
 				
 				if(originNameStr.isEmpty()&&standardNameStr.isEmpty()){return;}

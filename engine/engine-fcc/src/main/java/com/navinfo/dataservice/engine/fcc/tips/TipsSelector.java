@@ -1,19 +1,30 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.JsonUtils;
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.dataservice.dao.fcc.HBaseController;
+import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
+import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-
+import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -24,17 +35,9 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 import org.hbase.async.KeyValue;
 
-import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.constant.HBaseConstant;
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.HBaseController;
-import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
-import com.navinfo.dataservice.dao.fcc.SolrController;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.navinfo.navicommons.geo.computation.GridUtils;
+import java.sql.Connection;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Tips查询
@@ -84,7 +87,7 @@ public class TipsSelector {
 	 * @time:2016-7-2 上午10:08:16
 	 */
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-			JSONArray types, String mdFlag) throws Exception {
+			JSONArray types, String mdFlag, String wktIndexName) throws Exception {
 		JSONArray array = new JSONArray();
 
 		String rowkey = null;
@@ -106,6 +109,8 @@ public class TipsSelector {
 				stages.add(2);
 
 				stages.add(5);
+				
+				stages.add(6);
 
 			} else if ("m".equals(mdFlag)) {
 
@@ -115,7 +120,6 @@ public class TipsSelector {
 
 				stages.add(3);
 
-				stages.add(5);
 			}
 			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre = false;
@@ -125,12 +129,12 @@ public class TipsSelector {
 			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false, isPre);
+					stages, false, isPre, wktIndexName);
 
 			for (JSONObject json : snapshots) {
 
 				rowkey = json.getString("id");
-
+				
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				snapshot.setI(json.getString("id"));
@@ -187,8 +191,10 @@ public class TipsSelector {
 					m.put("b", json.getString("t_lifecycle"));
 				}
 
+				//20170412赵航输入，转为屏幕坐标
 				JSONObject g_guide = JSONObject.fromObject(json
 						.getString("g_guide"));
+				Geojson.coord2Pixel(g_guide, z, px, py);
 
 				// 8001和8002的的数据，新增guide已经赋值，无需特殊处理了
 				m.put("h", g_guide.getJSONArray("coordinates"));
@@ -513,6 +519,19 @@ public class TipsSelector {
 				// 3.1   4.1 判断是否有线编号同时返回线编号和坐标
 				getOutNumAndGeo(type, z, px, py, m, deep);
 				
+                //20170508 tips渲染接口增加2个返回值：
+                // 中线状态（1是中线成果0不是中线成果），快线状态（1是快线成果0不是快线成果）
+                int s_qTaskId = json.getInt("s_qTaskId");//快线任务号
+                if(s_qTaskId != 0) {
+                    s_qTaskId = 1;
+                }
+                m.put("quickFlag", s_qTaskId);
+
+                int s_mTaskId = json.getInt("s_mTaskId");//快线任务号
+                if(s_mTaskId != 0) {
+                    s_mTaskId = 1;
+                }
+                m.put("mediumFlag", s_mTaskId);
 
 				snapshot.setM(m);
 
@@ -737,6 +756,7 @@ public class TipsSelector {
 
 	/**
 	 * @Description:获取线编号和线编号坐标,同时判断是否有线编号
+     * @param type
 	 * @param z
 	 * @param px
 	 * @param py
@@ -744,7 +764,6 @@ public class TipsSelector {
 	 *            ：渲染返回值中的m
 	 * @param deep
 	 * @author: y
-	 * @param py2
 	 * @time:2017-2-20 下午2:02:17
 	 */
 	private void getOutNumAndGeo(int type, int z, double px, double py,
@@ -767,19 +786,19 @@ public class TipsSelector {
 
 					JSONObject dInfo = JSONObject.fromObject(object2);
 
-					JSONArray outArr = dInfo.getJSONArray("out");
+					JSONObject out = dInfo.getJSONObject("out");
 
-					if (outArr != null && !outArr.isEmpty()) {
+				/*	if (outArr != null && !outArr.isEmpty()) {
 
 						for (Object object3 : outArr) {
-
+*/
 							JSONObject obj = assembleOutNumAndGeoResultFromObj(
-									z, px, py, object3);
+									z, px, py, out);
 
 							reusltArr.add(obj);
-						}
+						//}
 
-					}
+				//	}
 				}
 			}
 		}
@@ -917,7 +936,6 @@ public class TipsSelector {
 	 * @param z
 	 * @param px
 	 * @param py
-	 * @param reusltArr
 	 * @param object3
 	 * @author: y
 	 * @time:2017-2-20 下午2:06:29
@@ -987,7 +1005,7 @@ public class TipsSelector {
 		return tipdiff;
 	}
 
-	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag)
+	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag, String wktIndexName)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
@@ -996,7 +1014,7 @@ public class TipsSelector {
 			JSONArray stages = new JSONArray();
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, true);
+					stages, true, wktIndexName);
 
 			for (JSONObject json : snapshots) {
 				JSONObject result = new JSONObject();
@@ -1104,6 +1122,56 @@ public class TipsSelector {
 
 		return json;
 	}
+	
+	
+	/**
+	 * 通过rowkey获取Tips(返回符合规格模型的数据)
+	 * 
+	 * @param rowkey
+	 * @return Tips JSON对象
+	 * @throws Exception
+	 */
+	public JSONObject searchDataByRowkeyNew(String rowkey) throws Exception {
+		JSONObject json = new JSONObject();
+
+		try {
+
+			HBaseController controller = new HBaseController();
+
+			ArrayList<KeyValue> list = controller.getTipsByRowkey(rowkey);
+
+			if (list.isEmpty()) {
+				throw new Exception("未找到rowkey对应的数据!");
+			}
+
+			json.put("rowkey", rowkey);
+
+			for (KeyValue kv : list) {
+				System.out.println(kv);
+				JSONObject injson = JSONObject
+						.fromObject(new String(kv.value()));
+
+				String key = new String(kv.qualifier());
+				
+				System.out.println("key:"+key);
+
+			/*	if (key.equals("feedback")) {
+					json.put("feedback", injson);
+				} else {
+					json.putAll(injson);
+				}*/
+				json.put(key, injson);
+				
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+		}
+
+		return json;
+	}
+
 
 	/**
 	 * 通过条件查询Tips
@@ -1124,18 +1192,21 @@ public class TipsSelector {
 	 * 
 	 * @param grids
 	 * @param stages
+	 * @param subtaskId :日编任务号
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getStats(JSONArray grids, JSONArray stages)
+	public JSONObject getStats(JSONArray grids, JSONArray stages, int subtaskId)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
+		
+		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskId); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		String wkt = GridUtils.grids2Wkt(grids);
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages, taskSet);
 
 		for (JSONObject json : tips) {
 			int type = Integer.valueOf(json.getInt("s_sourceType"));
@@ -1192,7 +1263,7 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
 	 * 
-	 * @param grids
+	 * @param wkt
 	 * @param stages
 	 * @return
 	 * @throws Exception
@@ -1230,8 +1301,9 @@ public class TipsSelector {
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
 	 * 
-	 * @param grids
+	 * @param wkt
 	 * @param stages
+     * @param tdStatus
 	 * @return
 	 * @throws Exception
 	 */
@@ -1253,11 +1325,12 @@ public class TipsSelector {
 	 * @param type
 	 * @param mdFlag
 	 *            d:日编，m:月编。
+	 * @param subtaskid :日编任务号
 	 * @return
 	 * @throws Exception
 	 */
 	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-			int dbId, String mdFlag) throws Exception {
+			int dbId, String mdFlag, int subtaskid) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -1268,8 +1341,10 @@ public class TipsSelector {
 		if ("f".equals(mdFlag)) {
 			isPre = true;
 		}
+		
+		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskid); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages, isPre);
+		List<JSONObject> tips = conn.queryWebTips(wkt, type, stages, isPre,taskSet);
 
 		Map<Integer, String> map = null;
 
@@ -1666,7 +1741,7 @@ public class TipsSelector {
 					JSONArray a = deep.getJSONArray("n_array");
 
 					if (a.size() > 0) {
-						m.put("e", a.get(0));
+						m.put("e", a.get(0).toString());
 					}
 				}
 				// 里程桩
@@ -1722,6 +1797,22 @@ public class TipsSelector {
 	}
 
 	/**
+	 * @Description:调用任务管理api，获取该任务所对应项目下的所有快线任务号
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-4-19 下午1:32:21
+	 */
+	private Set<Integer> getTaskIdsUnderSameProject(int subtaskId) throws Exception {
+		// 调用 manapi 获取 任务类型、及任务号
+		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+		
+		Set<Integer>  taskSet = manApi.getCollectTaskIdByDaySubtask(subtaskId);
+		
+		return taskSet;
+	}
+
+	/**
 	 * 根据grid和时间戳查询是否有可下载的数据
 	 * 
 	 * @param grid
@@ -1750,12 +1841,14 @@ public class TipsSelector {
 	 * @return Tips JSON数组
 	 * @throws Exception
 	 */
-	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages)
+	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type, JSONArray stages)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
+		//查询日编或者月编任务对应的采集任务ID
+		Set<Integer> taskList = getTaskIdsUnderSameProject(editTaskId);
 		List<JSONObject> snapshots = conn
-				.queryTipsWeb(wkt, type, stages, false);
+				.queryTipsWeb(wkt, type, stages, false, taskList);
 
 		for (JSONObject snapshot : snapshots) {
 
@@ -1841,4 +1934,128 @@ public class TipsSelector {
 		return resultArr;
 	}
 
+	/**
+	 * @Description:根据任务号+tips类型返回任务号范围内的tips
+	 * @param souceTypes:tips类型
+	 * @param taskId:任务号
+	 * @param taskType：任务类型
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-4-13 上午9:07:15
+	 */
+	public List<JSONObject> getTipsByTaskIdAndSourceTypes(JSONArray souceTypes,
+			int taskId, int taskType) throws Exception {
+		
+		List<JSONObject> snapshots=conn.queryTipsByTaskTaskSourceTypes(souceTypes,taskId,taskType);
+		
+		return snapshots;
+	}
+
+	/**
+	 * @Description:按照任务号查找tips
+	 * @param taskId
+	 * @param taskType
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-4-14 下午4:55:04
+	 */
+	public List<JSONObject> getTipsByTaskId(int taskId, int taskType) throws Exception {
+		
+		List<JSONObject> snapshots=conn.queryTipsByTask(taskId,taskType);
+		
+		return snapshots;
+		
+	}
+
+	/**
+	 * @Description:根据任务查询tips，返回tips的所有grids
+	 * @param collectTaskid
+	 * @param q_TASK_TYPE
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-4-19 下午8:51:14
+	 */
+	public Set<Integer> getGridsListByTask(int collectTaskid, int q_TASK_TYPE) throws Exception {
+		
+		List<JSONObject> tipsList=conn.queryTipsByTask(collectTaskid, q_TASK_TYPE);
+		
+		Set<Integer> gridsSet= new HashSet<Integer>();
+		
+		Set<String> grids=new  HashSet<String>();
+		
+		for (JSONObject json : tipsList) {
+			
+			String wkt=json.getString("wkt");
+			
+			Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
+			
+			Set<String> grid=TipsGridCalculate.calculate(geo);
+			
+			grids.addAll(grid);
+			
+            }
+		
+		for (String str : grids) {
+			
+			Integer grid=Integer.valueOf(str);
+			
+			gridsSet.add(grid);
+		}
+		
+		return gridsSet;
+	}
+
+	/**
+	 * 快线tips日编状态实时统计
+	 * @param collectTaskIds
+	 * @return
+	 */
+	public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception {
+		List<Map> list = new ArrayList<>();
+		List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskIds);
+		Map<String,int[]> statsMap = new HashMap<>();
+		for(JSONObject snapshot : snapshots) {
+			String wkt = snapshot.getString("wkt");//统计坐标
+			Point point = GeometryUtils.getPointByWKT(wkt);
+			Coordinate coordinate = point.getCoordinates()[0];
+			String gridId = CompGridUtil.point2Grids(coordinate.x, coordinate.y)[0];
+			int dStatus = snapshot.getInt("t_dStatus");
+			if(statsMap.containsKey(gridId)) {
+				int[] statsArray = statsMap.get(gridId);
+				if(dStatus == 0) {//未完成
+					statsArray[0] += 1;
+				}else if(dStatus == 1) {//已完成
+					statsArray[1] += 1;
+				}
+			} else {
+				int[] statsArray = new int[]{0,0};
+				if(dStatus == 0) {//未完成
+					statsArray[0] += 1;
+				}else if(dStatus == 1) {//已完成
+					statsArray[1] += 1;
+				}
+				statsMap.put(gridId, statsArray);
+			}
+		}
+		if(statsMap.size() > 0) {
+			for(String gridId : statsMap.keySet()) {
+				Map<String, Integer> map = new HashMap<>();
+				map.put("gridId", Integer.valueOf(gridId));
+				int[] statsArray = statsMap.get(gridId);
+				map.put("finished",statsArray[1]);
+				map.put("unfinished",statsArray[0]);
+				list.add(map);
+			}
+		}
+		return list;
+	}
+    public static void main(String[] args) throws Exception {
+        TipsSelector solrSelector = new TipsSelector();
+        JSONArray types = new JSONArray();
+        System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
+                40, types,"d","wktLocation"));
+    }
 }

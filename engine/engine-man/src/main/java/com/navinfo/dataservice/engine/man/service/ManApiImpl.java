@@ -2,9 +2,11 @@ package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.springframework.stereotype.Service;
@@ -13,6 +15,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Region;
+import com.navinfo.dataservice.api.man.model.RegionMesh;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserInfo;
@@ -32,6 +35,7 @@ import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.engine.man.version.VersionService;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 /*
@@ -106,6 +110,10 @@ public class ManApiImpl implements ManApi {
 	@Override
 	public List<Region> queryRegionWithGrids(List<Integer> grids) throws Exception {
 		return RegionService.getInstance().queryRegionWithGrids(grids);
+	}
+	@Override
+	public List<RegionMesh> queryRegionWithMeshes(Collection<String> meshes) throws Exception{
+		return RegionService.getInstance().queryRegionWithMeshes(meshes);
 	}
 	/* (non-Javadoc)
 	 * @see com.navinfo.dataservice.api.man.iface.ManApi#queryCityIdByTaskId(int)
@@ -257,6 +265,28 @@ public class ManApiImpl implements ManApi {
 	public void closeSubtask(int subtaskId, long userId) throws Exception {
 		SubtaskService.getInstance().closeSubtask(subtaskId,userId);
 		
+	}
+	/**
+	 * 返回值Map<Integer,Integer> key：taskId，type：1，中线4，快线
+	 * 原则：根据子任务id获取对应的任务id以及任务类型（快线/中线），任务类型和子任务类型相同
+	 * 应用场景：采集（poi，tips）成果批任务号
+	 * @param subtaskId
+	 * @return Map<String,Integer> {taskId:12,programType:1} (programType：1，中线4，快线)
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, Integer> getTaskBySubtaskId(int subtaskId)
+			throws Exception {
+		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)
+	 */
+	@Override
+	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
+		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
+		return taskIdSet;
 	}
 	
 }

@@ -543,4 +543,11 @@ public class IxPoi extends AbstractIx {
 	public static final String CHAIN = "CHAIN";
 	public static final String AIRPORT_CODE = "AIRPORT_CODE";
 	public static final String ACCESS_FLAG = "ACCESS_FLAG";
+	
+	public static void main(String[] args) {
+		IxPoi p = new IxPoi(0L);
+		p.setSportsVenue("");
+		p.setSportsVenue("");
+		p.setSportsVenue(null);
+	}
 }

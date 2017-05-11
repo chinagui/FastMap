@@ -53,8 +53,8 @@ public class IxPoiSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject loadPids(boolean isLock, String pidName, int type,
-			String g, int pageSize, int pageNum) throws Exception {
+	public JSONObject loadPids(boolean isLock, String pidName,
+			int type, int subtaskId, int pageSize, int pageNum) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -77,9 +77,8 @@ public class IxPoiSelector extends AbstractSelector {
 		// buffer.append(" AND ipn.name_class = 1");
 
 		buffer.append(" AND ps.work_type=1 AND ps.status = " + type + "");
-		buffer.append(" AND sdo_within_distance(ip.geometry, sdo_geometry(    '"
-				+ g + "'  , 8307), 'mask=anyinteract') = 'TRUE' ");
-
+		buffer.append(" AND (ps.QUICK_SUBTASK_ID="+subtaskId+" or ps.MEDIUM_SUBTASK_ID="+subtaskId+") ");
+		
 		if (!pidName.isEmpty()) {
 			Pattern pattern = Pattern.compile("[0-9]*");
 			Matcher isNum = pattern.matcher(pidName);
@@ -434,6 +433,8 @@ public class IxPoiSelector extends AbstractSelector {
 
 		poi.setSamepoiParts(parts);
 		String rawFields = null;
+		
+		//这个接口日编和月编都调用了，而月编没有这些字段，所以要加判断（RAW_FIELDS，STATUS，FRESH_VERIFIED）
 		if (poiEditStatus.containsKey("RAW_FIELDS")) {
 			if (poiEditStatus.get("RAW_FIELDS") == null) {
 				poi.setRawFields(rawFields);
@@ -443,12 +444,14 @@ public class IxPoiSelector extends AbstractSelector {
 			}
 		}
 		poi.setState(logRead.getObjectState(poi.pid(), "IX_POI"));
-		if (poiEditStatus.containsKey("STATUS")) {
-			poi.setStatus(poiEditStatus.getInt("STATUS"));
-		}
-		if (poiEditStatus.containsKey("FRESH_VERIFIED")) {
+		if(poiEditStatus.containsKey("STATUS")){
+		poi.setStatus(poiEditStatus.getInt("STATUS"));}
+		
+		if(poiEditStatus.containsKey("FRESH_VERIFIED")){
 			poi.setFreshVerified(poiEditStatus.getInt("FRESH_VERIFIED"));
 		}
+		
+		
 		return poi;
 	}
 

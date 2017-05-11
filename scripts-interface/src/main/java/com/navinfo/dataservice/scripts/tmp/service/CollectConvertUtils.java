@@ -23,24 +23,19 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-
 import org.apache.solr.common.StringUtils;
-
 import java.util.Map;
 
 import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
-
 import net.sf.json.JSONNull;
-
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
-import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
@@ -57,7 +52,7 @@ import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonValueProcessor;
 
 public class CollectConvertUtils {
-	private static Logger log = LoggerRepos.getLogger(CollectConvertUtils.class);
+	private static Logger log = LogManager.getLogger(CollectConvert.class);
 
 	/**
 	 * 输入的zip包路径排序list

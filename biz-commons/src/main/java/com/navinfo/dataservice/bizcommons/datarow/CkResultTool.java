@@ -229,4 +229,33 @@ public class CkResultTool {
 			DbUtils.commitAndCloseQuietly(tarConn);
 		}
 	}
+	
+	public static void moveNiValMeta(OracleSchema srcSchema,OracleSchema targetSchema)throws Exception{
+		Connection tarConn=null;
+		Connection srcConn=null;
+		try{
+			tarConn = targetSchema.getDriverManagerDataSource().getConnection();
+			srcConn = srcSchema.getDriverManagerDataSource().getConnection();
+			//create db link
+			DbLinkCreator cr = new DbLinkCreator();
+			String dbLinkName = srcSchema.getConnConfig().getUserName()+"_"+RandomUtil.nextNumberStr(4);
+			cr.create(dbLinkName, false, targetSchema.getDriverManagerDataSource(), srcSchema.getConnConfig().getUserName(), srcSchema.getConnConfig().getUserPasswd()
+					, srcSchema.getConnConfig().getServerIp(), String.valueOf(srcSchema.getConnConfig().getServerPort()), srcSchema.getConnConfig().getServiceName());
+			
+			QueryRunner runner = new QueryRunner();
+			String sql = " ";
+			sql = "INSERT INTO NI_VAL_EXCEPTION SELECT "+DataRowTool.getSelectColumnString(tarConn,"NI_VAL_EXCEPTION")+" FROM NI_VAL_EXCEPTION@"+dbLinkName ;
+			runner.execute(tarConn, sql);
+			//删除dblink
+			cr.drop(dbLinkName, false, targetSchema.getDriverManagerDataSource());
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(srcConn);
+			DbUtils.rollbackAndCloseQuietly(tarConn);
+			log.error(e.getMessage(), e);
+			throw new Exception("搬检查结果错误，原因："+e.getMessage(),e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(srcConn);
+			DbUtils.commitAndCloseQuietly(tarConn);
+		}
+	}
 }

@@ -240,16 +240,18 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param secondWorkItem
 	 * @param userId
 	 * @param type
+	 * @param subtaskId
 	 * @return
 	 * @throws Exception
 	 */
-	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type) throws Exception {
+	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
 		sb.append(" WHERE s.work_item_id = w.work_item_id");
 		sb.append(" AND s.handler = :1");
 		sb.append(" AND w.type = :2");
+		sb.append(" AND s.TASK_ID = :3 ");
 
 		if (StringUtils.isNotEmpty(firstWorkItem)) {
 			sb.append(" AND w.FIRST_WORK_ITEM='" + firstWorkItem + "'");
@@ -270,6 +272,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setLong(1, userId);
 
 			pstmt.setInt(2, type);
+			
+			pstmt.setInt(3, subtaskId);
 
 			resultSet = pstmt.executeQuery();
 
@@ -464,10 +468,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" AND CO.TABLE_NAME = :1");
 		sb.append(" AND NE.RULEID IN (SELECT W.WORK_ITEM_ID");
 		sb.append(" FROM POI_COLUMN_WORKITEM_CONF W");
-		sb.append(" WHERE W.FIRST_WORK_ITEM = :2");
-		if (firstWorkItem.equals("poi_deep")){
-			sb.append(" AND W.SECOND_WORK_ITEM = :3");
-		}
+		sb.append(" WHERE W.SECOND_WORK_ITEM = :2");
+//		if (firstWorkItem.equals("poi_deep")){
+//			sb.append(" AND W.SECOND_WORK_ITEM = :3");
+//		}
 		sb.append(" AND W.TYPE = 1)");
 		sb.append("   AND CO.PID in (");
 		
@@ -488,10 +492,10 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt = conn.prepareStatement(sb.toString());
 			
 			pstmt.setString(1, tbNm);
-			pstmt.setString(2, firstWorkItem);
-			if (firstWorkItem.equals("poi_deep")){
-				pstmt.setString(3, secondWorkItem);
-			}
+			pstmt.setString(2, secondWorkItem);
+//			if (firstWorkItem.equals("poi_deep")){
+//				pstmt.setString(3, secondWorkItem);
+//			}
 			resultSet = pstmt.executeQuery();
 			while (resultSet.next()) {
 				String keyPid=String.valueOf(resultSet.getInt("PID"));
@@ -748,7 +752,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		sql.append("         GROUP BY CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS) TT,");
 		sql.append("       (SELECT DISTINCT CF.SECOND_WORK_ITEM");
 		sql.append("          FROM POI_COLUMN_WORKITEM_CONF CF");
-		sql.append("         WHERE CF.SECOND_WORK_ITEM <> 'nonImportantEngAddress' AND CF.FIRST_WORK_ITEM = '" + firstWorkItem + "'");
+		sql.append("         WHERE CF.SECOND_WORK_ITEM not in ('nonImportantEngAddress','netEngName','aliasOriEngName','aliasStdEngName') AND CF.FIRST_WORK_ITEM = '" + firstWorkItem + "'");
 		sql.append("           AND CF.CHECK_FLAG IN (1, 3)) AA");
 		sql.append(" WHERE TT.SECOND_WORK_ITEM(+) = AA.SECOND_WORK_ITEM");
 

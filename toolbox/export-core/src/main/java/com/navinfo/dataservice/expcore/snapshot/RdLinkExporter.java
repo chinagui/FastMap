@@ -1,25 +1,34 @@
 package com.navinfo.dataservice.expcore.snapshot;
 
 import java.io.ByteArrayInputStream;
+import java.lang.reflect.Field;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import oracle.spatial.geometry.JGeometry;
 import oracle.spatial.util.WKT;
 import oracle.sql.STRUCT;
-
 import org.apache.commons.lang.StringUtils;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.vividsolutions.jts.geom.Geometry;
 
 public class RdLinkExporter {
 
@@ -54,9 +63,13 @@ public class RdLinkExporter {
 		stmt.execute("alter table gdb_rdLine add names Blob;");
 		stmt.execute("alter table gdb_rdLine add sNodePid integer;");
 		stmt.execute("alter table gdb_rdLine add eNodePid integer;");
+		//********zl 2017.04.11 *************
+		stmt.execute("alter table gdb_rdLine add isADAS integer;");
+		//***********************************
 
 		String insertSql = "insert into gdb_rdLine values("
-				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)";
+				+ "?, GeomFromText(?, 4326), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+//				+ "?,  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 		PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
 
@@ -90,6 +103,7 @@ public class RdLinkExporter {
 		Clob clob = conn.createClob();
 		clob.setString(1, StringUtils.join(meshes, ","));
 
+		
 		PreparedStatement stmt2 = conn.prepareStatement(sql);
 
 		stmt2.setClob(1, clob);
@@ -97,14 +111,13 @@ public class RdLinkExporter {
 		ResultSet resultSet = stmt2.executeQuery();
 
 		resultSet.setFetchSize(5000);
-
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 
 		int count = 0;
 
 		while (resultSet.next()) {
 
-			JSONObject json = enclosingRdLine(resultSet, operateDate);
+			JSONObject json = enclosingRdLine(resultSet, operateDate,conn);
 
 			int pid = json.getInt("pid");
 
@@ -117,6 +130,7 @@ public class RdLinkExporter {
 			prep.setInt(1, pid);
 
 			prep.setString(2, json.getString("geometry"));
+//			prep.setInt(2, json.getInt("isADAS"));
 
 			prep.setString(3, json.getString("display_style"));
 
@@ -175,6 +189,8 @@ public class RdLinkExporter {
 			//
 			prep.setLong(24, json.getLong("sNodePid"));
 			prep.setLong(25, json.getLong("eNodePid"));
+			
+			prep.setInt(26, json.getInt("isADAS"));
 
 			prep.executeUpdate();
 
@@ -188,7 +204,7 @@ public class RdLinkExporter {
 		sqliteConn.commit();
 	}
 
-	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate)
+	private static JSONObject enclosingRdLine(ResultSet rs, String operateDate, Connection conn)
 			throws Exception {
 
 		JSONObject json = new JSONObject();
@@ -384,9 +400,81 @@ public class RdLinkExporter {
 		//s,enodpis
 		json.put("sNodePid",rs.getLong("S_NODE_PID"));
 		json.put("eNodePid",rs.getLong("E_NODE_PID"));
+		
+		//****zl 2017.04.11 *********
+		int adasFlag = rs.getInt("ADAS_FLAG");
+		double linkLength = rs.getDouble("LENGTH");
+		int isADAS  = 2;
+		if(adasFlag == 1){
+			isADAS = 1;
+		}else if(adasFlag == 0 || adasFlag == 2){
+			List<Integer> formList = new ArrayList<>();
+			for (int i = 0; i < formsArray.size(); i++) {
+				JSONObject formsJson = formsArray.getJSONObject(i);
+				formList.add(formsJson.getInt("form"));
+			}
+			if(kind > 7){//7级以下道路
+				isADAS = 3;
+			}else if(formList.contains(35) && direct == 1){//双向调头口
+				isADAS = 3;
+			}else if(kind == 7 && linkLength < 1000 ){//RD_LINK.KIND=7且link的长度小于1公里且为断头路
+//				System.out.println("begin kind == 7 && linkLength < 1000  linkPid :"+pid);
+//				System.out.println(" begin time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+				//计算此link 的sNode和eNode 出现的次数
+				//*****************2017.05.09 zl*************
+				Integer sNodePid = rs.getInt("S_NODE_PID");
+				Integer eNodePid = rs.getInt("E_NODE_PID");
+				//计算断头路 
+				double length = linkLength;
+				//根据当前snode 和 enode 获取下一个link
+				List<RdLink> nextLinks_s = loadNextLink(sNodePid ,pid,conn);
+				List<RdLink> nextLinks_e = loadNextLink(eNodePid ,pid,conn);
+				List<RdLink> nextLinks = new ArrayList<RdLink>();
+				int nextNodePid =0;
+				if(nextLinks_s.size() == 0 && nextLinks_e.size() == 1){//追踪eNode
+					nextLinks=nextLinks_e;
+					nextNodePid=eNodePid;
+				}else if(nextLinks_e.size() == 0 && nextLinks_s.size() == 1){//追踪sNode
+					nextLinks_e=nextLinks_s;
+					nextNodePid=sNodePid;
+				}
+				
+				while (nextLinks.size() == 1) {
+					RdLink nextLink = nextLinks.get(0);
+					
+					if(nextLink.getKind() == 7){
+						length+=nextLink.getLength();
+					}
+					if(length >= 1000){
+						break;
+					}
+					
+					nextNodePid = (nextNodePid == nextLink.getsNodePid()) ? nextLink
+							.geteNodePid() : nextLink.getsNodePid();
+					
+					List<RdLink> nextLinkList = loadNextLink(nextNodePid ,nextLink.getPid(),conn);
+					if (nextLinkList.size() == 1) {
+						// 赋值查找下一组联通links  继续循环
+						nextLinks=nextLinkList;
+					}else{
+						break;
+					}
+				}
+				
+				
+				if(length < 1000){
+					isADAS =3;
+				}
+//				System.out.println(" end  length: "+length+" isADAS:"+isADAS);
+//				System.out.println(" end time : "+DateUtils.dateToString(new Date(),DateUtils.DATE_DEFAULT_FORMAT));
+			}
+		}
+		json.put("isADAS", isADAS);
 
 		return json;
 	}
+
+	
 
 	private static int computeStyle(JSONArray forms, 
 			JSONArray styleFactors, int multiDigitized) {
@@ -397,8 +485,8 @@ public class RdLinkExporter {
 			style = 32;
 			count+=1;
 		}
-
-		List<Integer> formList = new ArrayList<>();
+//		System.out.println("forms : "+forms);
+		List<Integer> formList = new ArrayList<Integer>();
 
 		for (int i = 0; i < forms.size(); i++) {
 			JSONObject json = forms.getJSONObject(i);
@@ -422,6 +510,10 @@ public class RdLinkExporter {
 			count+=1;
 		}
 
+		if (formList.contains(34) && (!formList.contains(35) || !formList.contains(39))) {
+			style = 12;
+			count+=1;
+		}
 		/*if (formList.contains(22)) {
 			style = 14;
 			count+=1;
@@ -443,6 +535,7 @@ public class RdLinkExporter {
 		}*/
 
 		List<Integer> styleList = new ArrayList<>();
+//		System.out.println("styleFactors:  "+styleFactors);
 		for (int i = 0; i < styleFactors.size(); i++) {
 			JSONObject json = styleFactors.getJSONObject(i);
 
@@ -450,6 +543,7 @@ public class RdLinkExporter {
 		}
 
 		if (styleList.contains(98)) {
+//			System.out.println(" type = 98");
 			style = 29;
 			count+=1;
 		}
@@ -476,8 +570,128 @@ public class RdLinkExporter {
 		if (count == 0) {
 			style = 255;
 		}
-		System.out.println("style: "+style);
-		System.out.println("count: "+count);
+//		System.out.println("style: "+style+" ,count: "+count);
 		return style;
+	}	
+	
+	
+	/**
+	 * @author zhangli5174
+	 *
+	 *	RdLink
+	 */
+	private static class RdLink{
+
+		private int pid;
+
+	    private int sNodePid;
+
+	    private int eNodePid;
+
+	    private int kind = 7;
+
+	    private double length;
+
+
+	    public RdLink() {
+
+	    }
+
+	
+	    public int getPid() {
+	        return pid;
+	    }
+
+	    public void setPid(int linkPid) {
+	        this.pid = linkPid;
+	    }
+
+	    public int getsNodePid() {
+	        return sNodePid;
+	    }
+
+	    public void setsNodePid(int sNodePid) {
+	        this.sNodePid = sNodePid;
+	    }
+
+	    public int geteNodePid() {
+	        return eNodePid;
+	    }
+
+	    public void seteNodePid(int eNodePid) {
+	        this.eNodePid = eNodePid;
+	    }
+
+	    public int getKind() {
+	        return kind;
+	    }
+
+	    public void setKind(int kind) {
+	        this.kind = kind;
+	    }
+
+	    public double getLength() {
+	        return length;
+	    }
+
+	    public void setLength(double length) {
+	        this.length = length;
+	    }
+
+	}
+	
+	
+
+	/**
+	 * @Title: loadNextLink
+	 * @Description: 根据nodePid 和 pid  获取nextlink 的集合
+	 * @param sNodePid
+	 * @param pid
+	 * @param conn 
+	 * @return  List<RdLink>
+	 * @throws SQLException 
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月9日 下午5:00:07 
+	 */
+	private static List<RdLink> loadNextLink(Integer nodePid, int pid, Connection conn) throws SQLException  {
+		
+		String sql = " select l.link_pid,l.s_node_pid,l.e_node_pid,l.length,l.kind from rd_link l where l.u_record != 2 "
+					+ " and l.kind != 10 "
+					+" and  l.link_pid != "+pid+" "
+                    +"  and (l.s_node_pid = "+nodePid+" or l.e_node_pid = "+nodePid+" )";
+//		
+		PreparedStatement stmt = null;
+		List<RdLink> rdLinkList=null;
+		try {
+			stmt = conn.prepareStatement(sql);
+			ResultSet resultSet = stmt.executeQuery();
+
+			resultSet.setFetchSize(5000);
+
+//			System.out.println("sql: "+sql);
+			//****************************************
+			rdLinkList=new ArrayList<RdLink>();
+			
+			while (resultSet.next()) {
+				if(resultSet.getInt("kind") != 10){//排除十级路
+					RdLink rdLink  = new RdLink();// 所有每条记录的 linkPid,sNode,eNode 的map集合
+					rdLink.setKind(resultSet.getInt("kind"));
+					rdLink.seteNodePid(resultSet.getInt("E_NODE_PID"));
+					rdLink.setsNodePid(resultSet.getInt("S_NODE_PID"));
+					rdLink.setPid(resultSet.getInt("link_pid"));
+					rdLink.setLength(resultSet.getDouble("length"));
+					rdLinkList.add(rdLink);
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			if(stmt != null){
+				stmt.close();
+			}
+		}
+		//****************************************
+		return rdLinkList;
 	}
 }

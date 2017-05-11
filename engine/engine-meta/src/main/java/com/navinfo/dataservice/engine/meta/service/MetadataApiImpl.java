@@ -1,15 +1,5 @@
 package com.navinfo.dataservice.engine.meta.service;
 
-import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.dbutils.DbUtils;
-import org.springframework.stereotype.Service;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
@@ -17,6 +7,7 @@ import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.engine.meta.area.ScPointAdminArea;
@@ -30,6 +21,7 @@ import com.navinfo.dataservice.engine.meta.ciParaKindword.CiParaKindKeyword;
 import com.navinfo.dataservice.engine.meta.engshort.ScEngshortSelector;
 import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
+import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
@@ -56,18 +48,48 @@ import com.navinfo.dataservice.engine.meta.scPointPoiCodeNew.ScPointPoiCodeNew;
 import com.navinfo.dataservice.engine.meta.scPointSpecKindcode.ScPointSpecKindcode;
 import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
-import com.navinfo.dataservice.engine.meta.translate.ConvertUtil;
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.translates.ConvertUtil;
+import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author wangshishuai3966
  */
 @Service("metadataApi")
 public class MetadataApiImpl implements MetadataApi {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
+	/**
+	 * 多源导入时，批level
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public String getLevelForMulti(JSONObject jsonObj) throws Exception{
+		Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getMetaConnection();
+            LevelSelector selector = new LevelSelector(conn);
+			String res = selector.getLevelForMulti(jsonObj);
+            return res;
+        } catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        	throw e;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+	}
 	/**
 	 * SELECT FOODTYPE,FOODTYPENAME FROM SC_POINT_FOODTYPE
 	 * @return  Map<String, String> key：foodtype value:FOODTYPENAME
@@ -101,6 +123,15 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, List<String>> scPointAdminareaContactMap() throws Exception{
 		return ScPointAdminarea.getInstance().scPointAdminareaContactMap();
+	}
+	/**
+	 * 查询省市区名称
+	 * @return Map<String, List<String>> :key,省市区;value,对应的名称列表
+	 * @throws Exception
+	 */
+	@Override
+	public Map<String, List<String>> scPointAdminareaDataMap() throws Exception{
+		return ScPointAdminarea.getInstance().scPointAdminareaDataMap();
 	}
 	/**
 	 * select pid,name from sc_point_nomingan_list
@@ -259,9 +290,9 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 
 	@Override
-	public void nameImport(String name, double longitude, double latitude, String rowkey) throws Exception {
+	public void nameImport(String name, JSONObject gLocation, String rowkey, String sourceType) throws Exception {
 		RdNameImportor nameImportor = new RdNameImportor();
-		nameImportor.importName(name, longitude, latitude, rowkey);
+		nameImportor.importName(name, gLocation, rowkey, sourceType);
 
 	}
 
@@ -275,10 +306,7 @@ public class MetadataApiImpl implements MetadataApi {
 		return kindCodeSelector.getKindCodeMap();
 	}
 
-	private JSONObject getAdminMap(Connection conn) throws Exception {
-		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
-		return areaSelector.getAdminMap();
-	}
+	
 
 	@Override
 	public JSONObject getTyCharacterFjtHmCheckMap(Connection conn,int type) throws Exception {
@@ -509,10 +537,8 @@ public class MetadataApiImpl implements MetadataApi {
 	
 	@Override
 	public String convertEng(String word) throws Exception {
-		
-		 EngConverterHelper converterHelper = new EngConverterHelper();
-         String result = converterHelper.chiToEng(word);
-		return result;
+        EnglishConvert convert = new EnglishConvert();
+		return convert.convert(word);
 	}
 	
 	@Override
@@ -556,7 +582,7 @@ public class MetadataApiImpl implements MetadataApi {
 
 	@Override
 	public String convFull2Half(String word) throws Exception {
-		 return ConvertUtil.convFull2Half(word);
+		 return ConvertUtil.convertFull2Half(word);
 	}
 	/**
 	 * 返回“TY_CHARACTER_EGALCHAR_EXT”表中数据。
@@ -698,6 +724,15 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	/**
+	 * sc_partition_meshlist查询关闭的图幅
+	 */
+	public List<Integer> getCloseMeshs(List<Integer> meshs)throws Exception{
+		ScPartitionMeshlistSelector scPartitionMeshlist = new ScPartitionMeshlistSelector();
+		return scPartitionMeshlist.getCloseMeshs(meshs);
+	}
+	
+	
+	/**
      * sc_point_poicode_new.KIND_USE= 1
      * @author Han Shaoming
      * @return Map<String, Integer> key:KIND_CODE value:KIND_USE
@@ -768,6 +803,15 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, String> scPointCode2Level() throws Exception{
 		return ScPointCode2Level.getInstance().scPointCode2Level();
+	}
+	@Override
+	public JSONObject getAdminMap() throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea();
+		return areaSelector.getAdminMap();
+	}
+	private JSONObject getAdminMap(Connection conn) throws Exception {
+		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
+		return areaSelector.getAdminMap();
 	}
 
 }

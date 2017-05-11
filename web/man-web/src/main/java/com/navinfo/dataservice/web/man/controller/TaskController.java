@@ -94,7 +94,7 @@ public class TaskController extends BaseController {
 			//long userId=2;
 			String message = TaskService.getInstance().taskPushMsg(userId, taskIds);
 			
-			if(message!=null&&!message.isEmpty()&&message.equals("二代编辑任务发布失败，存在未关闭的采集或日编任务")){
+			if(message!=null&&!message.isEmpty()&&message.equals("二代编辑任务发布失败，存在未关闭的采集任务")){
 				return new ModelAndView("jsonView", fail(message));
 			}else{
 				return new ModelAndView("jsonView", success(message));
@@ -503,6 +503,29 @@ public class TaskController extends BaseController {
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
+		}
+	}	
+	
+	/**
+	 * 成果调节--批快线任务号
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/batchQuickTask")
+	public ModelAndView batchQuickTask(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int dbId= dataJson.getInt("dbId");
+			JSONArray pois = dataJson.getJSONArray("pois");
+			JSONArray tips = dataJson.getJSONArray("tips");
+			int subtaskId=dataJson.getInt("subtaskId");
+			int taskId=dataJson.getInt("taskId");
+			
+			TaskService.getInstance().batchQuickTask(dbId,subtaskId,taskId,pois,tips);
+			return new ModelAndView("jsonView", success());
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
 		}
 	}
 }

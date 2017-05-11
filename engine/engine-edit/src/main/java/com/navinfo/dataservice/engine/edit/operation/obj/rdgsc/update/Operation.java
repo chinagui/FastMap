@@ -12,6 +12,7 @@ import com.navinfo.dataservice.dao.glm.iface.IOperation;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGsc;
 import com.navinfo.dataservice.dao.glm.model.rd.gsc.RdGscLink;
@@ -155,7 +156,15 @@ public class Operation implements IOperation {
 
 			linkPid = link.pid();
 
-		} else {
+		} else if (oldLink instanceof CmgBuildlink) {
+
+            CmgBuildlink link = (CmgBuildlink) oldLink;
+
+            linkTableName = link.tableName().toUpperCase();
+
+            linkPid = link.pid();
+
+        } else {
 
 			return;
 		}
@@ -294,7 +303,9 @@ public class Operation implements IOperation {
 			pid = ((RwLink) oldLink).getPid();
 		} else if (oldLink instanceof LcLink) {
 			pid = ((LcLink) oldLink).getPid();
-		}
+		} else if (oldLink instanceof CmgBuildlink) {
+		    pid = ((CmgBuildlink) oldLink).getPid();
+        }
 
 		// 获取由该link组成的立交（RDGSC）
 		RdGscSelector selector = new RdGscSelector(conn);
@@ -348,11 +359,16 @@ public class Operation implements IOperation {
 					linkGeoMap.put(linkOjb.pid(), linkOjb.getGeometry());
 				}
 			} else if (tableName.equalsIgnoreCase("RW_LINK")) {
-				RwLink linkOjb = (RwLink) link;
-				if (linkOjb.getGeometry().distance(gscGeo) < 1) {
-					linkGeoMap.put(linkOjb.pid(), linkOjb.getGeometry());
-				}
-			}
+                RwLink linkOjb = (RwLink) link;
+                if (linkOjb.getGeometry().distance(gscGeo) < 1) {
+                    linkGeoMap.put(linkOjb.pid(), linkOjb.getGeometry());
+                }
+            } else if (tableName.equalsIgnoreCase("CMG_BUILDLINK")) {
+                CmgBuildlink linkOjb = (CmgBuildlink) link;
+                if (linkOjb.getGeometry().distance(gscGeo) < 1) {
+                    linkGeoMap.put(linkOjb.pid(), linkOjb.getGeometry());
+                }
+            }
 		}
 
 		// 打断link后还是自相交立交
@@ -472,7 +488,13 @@ public class Operation implements IOperation {
 						distance = rdGsc.getGeometry().distance(tmpLink.getGeometry());
 
 						tmpGeo = tmpLink.getGeometry();
-					}
+					} else if (newLink instanceof CmgBuildlink) {
+                        CmgBuildlink tmpLink = (CmgBuildlink) newLink;
+
+                        distance = rdGsc.getGeometry().distance(tmpLink.getGeometry());
+
+                        tmpGeo = tmpLink.getGeometry();
+                    }
 					// 计算代表点和生成的线最近的link
 					if (distance < 1) {
 						newGscLinkMap.put(newLink.pid(), tmpGeo);

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,9 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
@@ -52,26 +49,25 @@ public class FMBAT20185 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (poi.getHisOpType().equals(OperationType.DELETE)) {
-			return;
-		}
 		if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")) {
 			return;
 		}
 		List<IxPoiChargingstation>  charginstions = poiObj.getIxPoiChargingstations();
-		if (charginstions.size() == 0) {
+		if (charginstions==null || charginstions.isEmpty()) {
 			return;
 		}
 		List<Long> childrenList = childrenMap.get(poi.getPid());
-		List<IxPoiChargingplot> plotList = new ArrayList<IxPoiChargingplot>();
-		
+		/*List<IxPoiChargingplot> plotList = new ArrayList<IxPoiChargingplot>();
 		for (Long childPid:childrenList) {
 			BasicObj childObj = myReferDataMap.get(ObjectName.IX_POI).get(childPid);
 			IxPoiObj child = (IxPoiObj) childObj;
 			plotList.addAll(child.getIxPoiChargingplots());
-		}
+		}*/
 		for (IxPoiChargingstation station:charginstions) {
-			station.setChargingNum(plotList.size());
+			int size =  childrenList.size();
+			if(size!=station.getChargingNum()){
+				station.setChargingNum(size);
+			}
 		}
 
 	}

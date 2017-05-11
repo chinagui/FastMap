@@ -569,7 +569,9 @@ public final class DateUtilsEx {
     
     
     public static void main(String[] arg) {
-        System.out.println(DateUtilsEx.getDiffPeriod(DateUtilsEx.getTimeOfDateStr("2004-11-02"), DateUtilsEx.getTimeOfDateStr("2004-12-31")));
+    	System.out.println(getCurTime());
+    	System.out.println(DateUtilsEx.getDayOfDelayMonths(DateUtilsEx.getTimeOfDateStr("2017-03-30"), -1));
+       // System.out.println(DateUtilsEx.getDiffPeriod(DateUtilsEx.getTimeOfDateStr("2004-11-02"), DateUtilsEx.getTimeOfDateStr("2004-12-31")));
         //System.out.println(DateUtil.getDayOfDelaySomeday(DateUtil.getTimeOfDateStr("2004-07-01"),1,0,0));
 	}
     

@@ -221,6 +221,7 @@ public class ScPointAdminArea {
 	
 	
 	public JSONObject getAdminMap() throws Exception {
+		Connection conn = DBConnector.getInstance().getMetaConnection();
 		
 		PreparedStatement pstmt = null;
 
@@ -246,6 +247,7 @@ public class ScPointAdminArea {
 		} finally {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
 		
 	}

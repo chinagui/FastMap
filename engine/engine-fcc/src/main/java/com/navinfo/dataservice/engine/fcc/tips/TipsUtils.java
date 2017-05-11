@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
+import java.util.Map;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
@@ -13,15 +15,17 @@ import com.navinfo.dataservice.commons.util.UuidUtils;
  * @Description: TODO
  * 
  */
-public class TipsUtils {
 
-	public static int[] notExpSourceType = { 8001, 8002 }; // 不下载的tips
+
+public class TipsUtils {
+	
+
+	public static int[] notExpSourceType = { 8001, 8002, 8003, 8004, 8005, 8006, 8007, 8008, 8009, 8010, 1211 }; // 不下载的tips
 	
 	//关于空值得定义：对象NULL,数据[]，字符串""
 	static Object OBJECT_NULL_DEFAULT_VALUE=JSONNull.getInstance();
 
 	static String STRING_NULL_DEFAULT_VALUE="";
-	
 	
 	
 	/**
@@ -151,7 +155,12 @@ public class TipsUtils {
 
 		index.put("feedback", feedbacks.toString());
 
-		index.put("wkt", TipsImportUtils.generateSolrWkt(sourceType, deep,
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedbacks));
+		
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
 				g_location, feedbacks));
 
 		index.put("s_reliability", 100);
@@ -171,6 +180,16 @@ public class TipsUtils {
 		index.put("s_mTaskId", json.getInt("s_mTaskId"));
 		
 		index.put("t_fStatus", json.getInt("t_fStatus"));
+		
+		index.put("s_qSubTaskId", json.getInt("s_qSubTaskId"));
+		
+		index.put("s_mSubTaskId", json.getInt("s_mSubTaskId"));
+		
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(json.getString("s_sourceType"), deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
 		
 		
 		return index;
@@ -199,6 +218,8 @@ public class TipsUtils {
 	 * @author: y
 	 * @param currentDate
 	 * @param s_reliability
+	 * @param s_mSubTaskId 
+	 * @param s_qSubTaskId 
 	 * @throws Exception
 	 * @time:2016-11-16 上午10:46:38
 	 */
@@ -208,7 +229,7 @@ public class TipsUtils {
 			int t_mStatus, String sourceType, int s_sourceCode,
 			JSONObject g_guide, JSONObject g_location, JSONObject deep,
 			JSONObject feedbackObj, int s_reliability,int t_inMeth,
-			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus) throws Exception {
+			int t_pStatus,int t_dInProc,int t_mInProc,int s_qTaskId,int s_mTaskId,int t_fStatus, int s_qSubTaskId, int s_mSubTaskId) throws Exception {
 		JSONObject index = new JSONObject();
 
 		index.put("id", rowkey);
@@ -276,8 +297,13 @@ public class TipsUtils {
 
 		index.put("feedback", feedbackObj);
 
-		index.put("wkt", TipsImportUtils.generateSolrWkt(
-				String.valueOf(sourceType), deep, g_location, feedbackObj));
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedbackObj));
+		
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
+				g_location, feedbackObj));
 
 		index.put("s_reliability", s_reliability);
 		
@@ -288,6 +314,17 @@ public class TipsUtils {
 		index.put("s_mTaskId", s_mTaskId);
 		
 		index.put("t_fStatus", t_fStatus);
+		
+		index.put("s_qSubTaskId", s_qSubTaskId);
+		
+		index.put("s_mSubTaskId", s_mSubTaskId);
+		
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(sourceType, deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
+		
 		
 
 		return index;
@@ -344,11 +381,15 @@ public class TipsUtils {
 	 * @param s_sourceProvider
 	 * @return
 	 * @author: y
+	 * @param s_mSubTaskId 
+	 * @param s_mTaskId 
+	 * @param s_qSubTaskId 
+	 * @param s_qTaskId 
 	 * @time:2016-11-17 下午8:30:29
 	 */
 	public static JSONObject newSource(int s_featureKind, String s_project,
 			int s_sourceCode, String s_sourceId, String s_sourceType,
-			int s_reliability, int s_sourceProvider) {
+			int s_reliability, int s_sourceProvider, int s_qTaskId, int s_qSubTaskId, int s_mTaskId, int s_mSubTaskId) {
 		JSONObject source = new JSONObject();
 		source.put("s_featureKind", s_featureKind);
 		source.put("s_project", s_project);
@@ -357,6 +398,10 @@ public class TipsUtils {
 		source.put("s_sourceType", s_sourceType);
 		source.put("s_reliability", s_reliability);
 		source.put("s_sourceProvider", s_sourceProvider);
+		source.put("s_qTaskId", s_qTaskId);
+		source.put("s_qSubTaskId", s_qSubTaskId);
+		source.put("s_mTaskId", s_mTaskId);
+		source.put("s_mSubTaskId", s_mSubTaskId);
 		return source;
 	}
 
@@ -383,6 +428,96 @@ public class TipsUtils {
 
 		return jsonTrackInfo;
 
+	}
+
+	/**
+	 * @Description:通过tips的json生成Solr索引
+	 * @param jsonInfo：和规格完全一直的json数据
+	 * @param currentDate
+	 * @return
+	 * @author: y
+	 * @param user 
+	 * @throws Exception 
+	 * @time:2017-3-13 下午5:03:43
+	 */
+	public static JSONObject generateSolrIndexFromTipsJson(JSONObject jsonInfo,
+			String currentDate) throws Exception {
+		
+		JSONObject index = new JSONObject();
+		JSONObject track=jsonInfo.getJSONObject("track");
+		JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
+		int size=trackInfoArr.size();
+		JSONObject lastTrackInfo=trackInfoArr.getJSONObject(size-1);
+		
+		String sourceType=jsonInfo.getJSONObject("source").getString("s_sourceType");
+		JSONObject g_location=jsonInfo.getJSONObject("geometry").getJSONObject("g_location");
+		JSONObject deep=jsonInfo.getJSONObject("deep");
+		JSONObject feedback=null;
+	    if(jsonInfo.containsKey("feedback")){
+	    	feedback=jsonInfo.getJSONObject("feedback");
+	    }
+		
+		index.put("id", jsonInfo.getString("rowkey"));
+		index.put("stage", lastTrackInfo.getInt("stage"));
+		index.put("t_date", currentDate);
+		index.put("t_operateDate", currentDate);
+		index.put("t_lifecycle", track.getInt("t_lifecycle"));
+		index.put("t_command", track.getInt("t_command"));
+		index.put("handler",lastTrackInfo.getInt("handler"));
+		index.put("s_sourceType",sourceType);
+		index.put("s_sourceCode",jsonInfo.getJSONObject("source").getInt("s_sourceCode"));
+		index.put("g_location",g_location);
+		index.put("g_guide",jsonInfo.getJSONObject("geometry").getJSONObject("g_guide").toString());
+		
+		//这个主要是g_location:目前只用于tips的下载和渲染
+		index.put("wktLocation", TipsImportUtils.generateSolrWkt(sourceType, deep,
+				g_location, feedback));
+		
+		//统计坐标，用于其他的：tips的查询、统计等
+		index.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(sourceType, deep,
+				g_location, feedback));
+	   
+	   index.put("deep",jsonInfo.getJSONObject("deep").toString());
+	   
+	   if(feedback!=null){
+		   index.put("feedback",feedback);
+	   }else{
+		   JSONArray  infoArr=new JSONArray();
+		   feedback=new JSONObject();
+		   feedback.put("f_array", infoArr);
+		   index.put("feedback",feedback);
+	   }
+	   
+	   index.put("s_reliability",jsonInfo.getJSONObject("source").getInt("s_reliability"));
+	   index.put("t_cStatus", track.getInt("t_cStatus"));
+	   index.put("t_dStatus", track.getInt("t_dStatus"));
+	   index.put("t_mStatus", track.getInt("t_mStatus"));
+	   index.put("t_inMeth", track.getInt("t_inMeth"));
+	   index.put("t_pStatus", track.getInt("t_pStatus"));
+	   index.put("t_dInProc", track.getInt("t_dInProc"));
+	   index.put("t_mInProc", track.getInt("t_mInProc"));
+	   System.out.println(jsonInfo.getJSONObject("source"));
+	   index.put("s_qTaskId", jsonInfo.getJSONObject("source").getInt("s_qTaskId"));
+	   index.put("s_mTaskId", jsonInfo.getJSONObject("source").getInt("s_mTaskId"));
+	   index.put("t_fStatus", track.getInt("t_fStatus"));
+	   
+	   if(jsonInfo.containsKey("tipdiff")){
+		   index.put("tipdiff", jsonInfo.getJSONObject("tipdiff").toString());
+	   }else{
+		   index.put("tipdiff", "{}");
+	   }
+	   
+	   index.put("s_qSubTaskId", jsonInfo.getJSONObject("source").getInt("s_qSubTaskId"));
+	   index.put("s_mSubTaskId", jsonInfo.getJSONObject("source").getInt("s_mSubTaskId"));
+	   
+		Map<String,String >relateMap=TipsLineRelateQuery.getRelateLine(sourceType, deep);
+		
+		index.put("relate_links", relateMap.get("relate_links"));
+		
+		index.put("relate_nodes", relateMap.get("relate_nodes"));
+	   
+		
+	   return index;
 	}
 
 }

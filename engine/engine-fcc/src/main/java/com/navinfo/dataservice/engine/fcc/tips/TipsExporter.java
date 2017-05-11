@@ -20,6 +20,7 @@ import org.apache.hadoop.hbase.client.Connection;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.photo.Photo;
@@ -36,6 +37,7 @@ public class TipsExporter {
 
 	private SolrController solr = new SolrController();
 
+	private static final Logger logger = Logger.getLogger(TipsExporter.class);
 	private String folderName;
 	public TipsExporter() {
 	}
@@ -375,11 +377,15 @@ public class TipsExporter {
 		List<Get> photoGets = new ArrayList<Get>();
 		List<Get> audioGets = new ArrayList<Get>(); 
 		
+		String rowkey="";
+		try{
 		for (Result result : results) {
 
 			if (result.isEmpty()) {
 				continue;
 			}
+			
+			 rowkey = new String(result.getRow());
 			JSONObject track= JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
 			
@@ -426,6 +432,8 @@ public class TipsExporter {
 					
 					expPhotoInfoMap.put(id, info);
 					
+					System.out.println(id+"----------tips-rowkey:"+new String(result.getRow()));
+					
 					
 					
 					}
@@ -444,6 +452,12 @@ public class TipsExporter {
 					}
 				}
 			}
+		}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error----"+rowkey);
+			throw new Exception(e.getMessage(),e);
 			
 		}
 		
@@ -560,13 +574,16 @@ public class TipsExporter {
 				.valueOf(HBaseConstant.photoTab));
 
 		Result[] results = htab.get(gets);
+		
+		String rowkey="";
+		try{
 
 		for (Result result : results) {
 			if (result.isEmpty()) {
 				continue;
 			}
 
-			String rowkey = new String(result.getRow());
+			 rowkey = new String(result.getRow());
 
 			byte[] data = result.getValue("data".getBytes(),
 					"origin".getBytes());
@@ -610,6 +627,10 @@ public class TipsExporter {
 				downloadPhoto(data, fileName,tipsSourceType);
 			}
 
+		}
+		}catch (Exception e) {
+			logger.error("照片导出出错：rowkey:"+rowkey+"\n"+e.getMessage(), e);
+			throw e;
 		}
 
 		return photoMap;

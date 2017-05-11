@@ -124,7 +124,7 @@ public class ExpMeta2SqliteScriptsInterface {
 		//4.POI Icon表
 		sqliteList.add("CREATE TABLE CI_PARA_ICON (id integer ,idcode text,name_in_nav text,type integer)");
 		//5.POI分类表：
-		sqliteList.add("CREATE TABLE CI_PARA_KIND (id integer PRIMARY KEY,medium_id integer,name text,code integer,kind_code text,description text,region integer,type integer)");
+		sqliteList.add("CREATE TABLE CI_PARA_KIND (id integer PRIMARY KEY,medium_id integer,name text,code text,kind_code text,description text,region integer,type integer)");
 		//6.品牌分类表：
 		sqliteList.add("CREATE TABLE CI_PARA_KIND_CHAIN (id integer PRIMARY KEY,kind_code text,chain text,chain_name text,foodtype text,level text,chain_type integer)");
 		//7.POI中分类代码表：
@@ -410,7 +410,8 @@ public class ExpMeta2SqliteScriptsInterface {
 				prep.setInt(2, Integer.parseInt(resultSet.getString("class_code")+resultSet.getString("sub_class_code")));
 				prep.setString(3, resultSet.getString("kind_name"));
 				String code = resultSet.getString("kind_code").substring(resultSet.getString("kind_code").length()-2);
-				prep.setInt(4, Integer.parseInt(code));
+//				prep.setInt(4, Integer.parseInt(code));
+				prep.setString(4, code);
 				prep.setString(5, resultSet.getString("kind_code"));
 				prep.setString(6, resultSet.getString("descript"));
 				int region = 0;
@@ -1056,6 +1057,8 @@ public class ExpMeta2SqliteScriptsInterface {
 			
 			String dir = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.downloadFilePathRoot);  //服务器部署路径
+			
+//			String dir = "f:";
 			File metaSqliteFile = new File(dir+"/metadata.sqlite");
 			if(metaSqliteFile.exists()){
 				metaSqliteFile.delete();

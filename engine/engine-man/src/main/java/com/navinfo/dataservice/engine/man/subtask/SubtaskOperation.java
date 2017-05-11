@@ -31,7 +31,6 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
-import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
@@ -52,7 +51,7 @@ import oracle.sql.STRUCT;
  * @Description: SubtaskOperation.java
  */
 public class SubtaskOperation {
-	private static Logger log = LoggerRepos.getLogger(TaskOperation.class);
+	private static Logger log = LoggerRepos.getLogger(SubtaskOperation.class);
 	
 	public SubtaskOperation() {
 		// TODO Auto-generated constructor stub
@@ -144,6 +143,29 @@ public class SubtaskOperation {
 				}
 				run.update(conn,baseSql+updateSql,valueObjects);}
 			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("更新失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * @Title: updateSubtask
+	 * @Description: 修改子任务(修)(第七迭代)
+	 * @param conn
+	 * @param bean
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2016年11月7日 下午2:21:21 
+	 */
+	public static void updateSubtaskGeo(Connection conn,String geoStr,int subtaskId) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String baseSql = "update SUBTASK set GEOMETRY=? where SUBTASK_ID="+subtaskId;			
+			log.info("updateSubtask sql:" + baseSql);
+			run.update(conn,baseSql,GeoTranslator.wkt2Struct(conn,geoStr));			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -620,7 +642,7 @@ public class SubtaskOperation {
 	 * @param gridIdsToInsert
 	 * @throws Exception 
 	 */
-	public static void checkSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
+	public static List<Integer> checkSubtaskGridMapping(Connection conn, Subtask bean) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -632,22 +654,23 @@ public class SubtaskOperation {
 					+ "   AND T.BLOCK_ID != 0"
 					+ " MINUS"
 					+ " SELECT GRID_ID FROM TASK_GRID_MAPPING WHERE TASK_ID = "+bean.getTaskId();
-			ResultSetHandler<List<Long>> rsHandler = new ResultSetHandler<List<Long>>() {
-				public List<Long> handle(ResultSet rs) throws SQLException {
-					List<Long> grids=new ArrayList<Long>();
+			ResultSetHandler<List<Integer>> rsHandler = new ResultSetHandler<List<Integer>>() {
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> grids=new ArrayList<Integer>();
 					while (rs.next()) {
-						grids.add(rs.getLong("GRID_ID"));
+						grids.add(rs.getInt("GRID_ID"));
 					}
 					return grids;
 				}
 
 			};
 			log.info("checkSubtaskGridMapping-sql:"+sql);
-			List<Long> grids= run.query(conn, sql, rsHandler);
-			if(grids==null||grids.size()==0){return;}
+			List<Integer> grids= run.query(conn, sql, rsHandler);
+			if(grids==null||grids.size()==0){return grids;}
 			//存在block外的grid，需删除
 			sql="DELETE FROM SUBTASK_GRID_MAPPING WHERE GRID_ID IN "+grids.toString().replace("[", "(").replace("]", ")");
 			run.execute(conn, sql);
+			return grids;
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
@@ -850,10 +873,11 @@ public class SubtaskOperation {
 				if(0 == platForm){
 					//采集端
 					sb.append(" and st.STAGE in (0) ");
-				}else if(1 == platForm){
-					//编辑端
-					sb.append(" and st.STAGE in (1,2) ");
 				}
+//				else if(1 == platForm){
+//					//编辑端
+//					sb.append(" and st.STAGE in (1,2) ");
+//				}
 			}
 
 			if (dataJson.containsKey("type")) {
@@ -1001,9 +1025,10 @@ public class SubtaskOperation {
 			}else{
 				if(0 == platForm){//采集端
 					sb.append(" AND ST.STAGE = 0");
-				}else if(1 == platForm){//编辑端
-					sb.append(" AND ST.STAGE IN (1,2) ");
 				}
+//				else if(1 == platForm){//编辑端
+//					sb.append(" AND ST.STAGE IN (1,2) ");
+//				}
 			}
 
 			if (dataJson.containsKey("type")) {
@@ -3068,7 +3093,7 @@ public class SubtaskOperation {
 					+ " WHERE A.ACT_ID = O.ACT_ID"
 					+ "   AND G.LOG_ROW_ID = D.ROW_ID"
 					+ "   AND D.OP_ID = O.OP_ID"
-					+ "   AND A.STK_ID = "+subtask.getTaskId();
+					+ "   AND A.STK_ID = "+subtask.getSubtaskId();
 			
 			log.info("loadPoiGeoBySubtaskFromLog SQL："+sqlString);
 			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
@@ -3090,6 +3115,51 @@ public class SubtaskOperation {
 		}
 		
 	}
+	
+	/*
+	 * 查询大区库履历，获取子任务修改的POI几何列表
+	 */
+	public static Set<Integer> loadPoiGeoBySubtaskFromEdit(Subtask subtask)throws Exception{
+		Connection conn=null;
+		try{
+			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
+			String sql="SELECT I.GEOMETRY"
+					+ "  FROM POI_EDIT_STATUS S, IX_POI I"
+					+ " WHERE S.PID = I.PID"
+					+ "   AND (S.QUICK_SUBTASK_ID = "+subtask.getSubtaskId()+" OR S.MEDIUM_SUBTASK_ID = "+subtask.getSubtaskId()+")";
+			
+			log.info("loadPoiGeoBySubtaskFromEdit SQL："+sql);
+			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
+				public Set<Integer> handle(ResultSet rs) throws SQLException {
+					Set<Integer> gridIdList = new HashSet<Integer>();
+					while (rs.next()) {
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							String wkt = GeoTranslator.struct2Wkt(struct);
+							Geometry geo = GeoTranslator.wkt2Geometry(wkt);
+							String[] grids = CompGridUtil.point2Grids(geo.getCoordinate().x, geo.getCoordinate().y);
+							for(String grid:grids){
+								gridIdList.add(Integer.parseInt(grid));
+							}
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+					return gridIdList;
+				}
+			};
+			return new QueryRunner().query(conn, sql, rsHandler);
+		}catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+	}
 
 
 	/**
@@ -3098,9 +3168,18 @@ public class SubtaskOperation {
 	 * 根据subtask查询大区库，获取gridList
 	 * @throws Exception 
 	 */
-	public static Map<Integer,Integer> getGridIdMapBySubtaskFromLog(Subtask subtask) throws Exception {
+	public static Map<Integer,Integer> getGridIdMapBySubtaskFromLog(Subtask subtask,int programType) throws Exception {
 		//查询大区库履历，获取子任务数据几何列表
-		Set<Integer> gridIdList = loadPoiGeoBySubtaskFromLog(subtask);
+		Set<Integer> gridIdList = new HashSet<Integer>();
+		if(subtask.getStage()==0){
+			gridIdList = loadPoiGeoBySubtaskFromEdit(subtask);
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");			
+			Set<Integer> tipsGrids=api.getTipsGridsBySubtaskId(subtask.getSubtaskId(), programType);
+			if(tipsGrids!=null&&tipsGrids.size()>0){
+				log.info("子任务"+subtask.getSubtaskId()+"对应tips所在grid范围："+tipsGrids);
+				gridIdList.addAll(tipsGrids);
+			}
+		}else{gridIdList = loadPoiGeoBySubtaskFromLog(subtask);}
 		
 		///获得需要调整的gridMap
 		Map<Integer,Integer> gridIdsBefore = subtask.gridIdMap();
@@ -3113,6 +3192,131 @@ public class SubtaskOperation {
 			}
 		}
 		return gridIdsToInsert;
+	}
+
+	public static int changeRegionSubtaskGridByTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND S.STATUS!=0"
+					+ "     AND S.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT S.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND S.SUBTASK_ID = M.SUBTASK_ID"
+					+ "     AND S.STATUS!=0"
+					+ "     AND S.TYPE = 4";
+			return run.update(conn, sql);	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static List<Integer> getRegionSubtaskByTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT S.SUBTASK_ID"
+					+ "    FROM SUBTASK S"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND S.STATUS!=0"
+					+ "     AND S.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	public static int changeDayRegionSubtaskByCollectTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO SUBTASK_GRID_MAPPING"
+					+ "  (SUBTASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT T.SUBTASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND UT.TASK_ID = M.TASK_ID"
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
+					+ "     AND T.TYPE = 4"
+					+ "  MINUS"
+					+ "  SELECT T.SUBTASK_ID, M.GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND M.SUBTASK_ID = T.SUBTASK_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
+					+ "     AND T.TYPE = 4";
+			return run.update(conn, createMappingSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+	
+	public static List<Integer> getDayRegionSubtaskByCollectTask(Connection conn,
+			int taskId) throws Exception {
+		try{
+			QueryRunner run=new QueryRunner();
+			String sql="  SELECT T.SUBTASK_ID"
+					+ "    FROM TASK S, TASK UT, SUBTASK T"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.LATEST = 1"
+					+ "     AND UT.TYPE = 1"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND T.STATUS!=0"
+					+ "     AND T.TYPE = 4";
+			return run.query(conn, sql, new ResultSetHandler<List<Integer>>(){
+
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> subtaskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						subtaskIds.add(rs.getInt("SUBTASK_ID"));
+					}
+					return subtaskIds;
+				}
+				
+			});	
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
 	}
 	
 	

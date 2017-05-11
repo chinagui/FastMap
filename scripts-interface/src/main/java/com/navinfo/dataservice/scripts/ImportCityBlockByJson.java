@@ -16,12 +16,19 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.util.JtsGeometryFactory;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.scripts.model.Block4Imp;
 import com.navinfo.dataservice.scripts.model.City4Imp;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.database.sql.DbLinkCreator;
+import com.navinfo.navicommons.database.sql.SqlExec;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -50,11 +57,11 @@ public class ImportCityBlockByJson {
 
 			String cityFile = args[0];
 			String blockFile = args[1];
+//			String cityFile = "F:\\data\\blocksImp\\CITYS.JSON";
+//			String blockFile = "F:\\data\\blocksImp\\BLOCKS.JSON";
 
-			JobScriptsInterface.initContext();
-			
 			imp(cityFile,blockFile);
-
+			
 			System.out.println("Over.");
 			System.exit(0);
 		} catch (Exception e) {
@@ -77,7 +84,12 @@ public class ImportCityBlockByJson {
 		Connection conn = null;
 		PreparedStatement stmt = null;
 		try{
-			conn = DBConnector.getInstance().getManConnection();
+
+			DbInfo manInfo = DbService.getInstance().getOnlyDbByBizType("fmMan");
+
+			OracleSchema manSchema = new OracleSchema(
+					DbConnectConfig.createConnectConfig(manInfo.getConnectParam()));
+			conn = manSchema.getPoolDataSource().getConnection();
 			QueryRunner run = new QueryRunner();
 			Map<String,City4Imp> citys = parseCity(cityFile);
 			//write citys
@@ -116,6 +128,17 @@ public class ImportCityBlockByJson {
 				clob2.setString(1, StringUtils.join(block.getGrids(),","));
 				run.update(conn, updBlockGridSql,blockId, clob2);
 			}
+
+			//update city admin geo
+			//初始化脚本，忽略事务一致了
+			DbInfo gdbInfo = DbService.getInstance().getOnlyDbByBizType("nationRoad");
+			DbConnectConfig gdbConfig = DbConnectConfig.createConnectConfig(gdbInfo.getConnectParam());
+			DbLinkCreator cr = new DbLinkCreator();
+			cr.create("FMGDB_LINK", false, manSchema.getPoolDataSource(), 
+					gdbConfig.getUserName(), gdbConfig.getUserPasswd(), gdbConfig.getServerIp(), String.valueOf(gdbConfig.getServerPort()), gdbConfig.getServiceName());
+			SqlExec sqlExec = new SqlExec(conn);
+			String sqlFile = "/com/navinfo/dataservice/scripts/resources/update_man_city_admingeo.sql";
+			sqlExec.execute(sqlFile);
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

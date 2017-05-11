@@ -151,7 +151,13 @@ public class GeoTranslator {
 			double[] p0) throws Exception {
 		boolean flag = false;
 
+		
 		if (p1 == p0 || p2 == p0) {
+			return flag;
+		}
+		
+		if(Arrays.equals(p1, p0)||Arrays.equals(p2, p0))
+		{
 			return flag;
 		}
 
@@ -170,6 +176,40 @@ public class GeoTranslator {
 		}
 
 		return flag;
+	}
+	
+	/**
+	 * 点p0是否在点c1和c2的线上，不包含端点
+	 * 
+	 * @param c1
+	 *            线起点
+	 * @param c2
+	 *            线终点
+	 * @param p0
+	 *            点
+	 * @return True 在线上； False 不在线上
+	 * @throws Exception
+	 */
+	public static boolean isIntersectionInLine(Coordinate c1, Coordinate c2,
+			Coordinate p0) throws Exception {
+
+		if (isPointEquals(c1, p0) || isPointEquals(c2, p0)) {
+
+			return false;
+		}
+
+		Coordinate[] coordinates = { c1, c2 };
+
+		Geometry line = createLineString(coordinates);
+
+		Geometry point = createPoint(p0);
+
+		if (line.distance(point) <= 1) {
+			
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -611,6 +651,21 @@ public class GeoTranslator {
 		Point point = geoFactory.createPoint(coordinate);
 
 		return point;
+	}	
+	
+	public static LineString createLineString(List<Coordinate> coordinates)
+			throws JSONException {
+
+		Coordinate[] c = (Coordinate[]) coordinates
+				.toArray(new Coordinate[coordinates.size()]);
+
+		return createLineString(c);
+	}
+
+	public static LineString createLineString(Coordinate[] coordinates)
+			throws JSONException {
+
+		return geoFactory.createLineString(coordinates);
 	}
 
 	public static double calAngle(double x11, double y11, double x12,

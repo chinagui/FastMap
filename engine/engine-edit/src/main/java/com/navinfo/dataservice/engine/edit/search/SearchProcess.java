@@ -4,11 +4,16 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
+import net.sf.json.util.JSONUtils;
+
 import org.apache.commons.collections.CollectionUtils;
 
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ISearch;
@@ -17,6 +22,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.model.ad.geo.AdLink;
 import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.lc.LcLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
@@ -26,6 +32,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lc.LcLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.lu.LuLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
@@ -35,14 +42,14 @@ import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.lane.RdLaneTopoDetailSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rw.RwLinkSelector;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.ADLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.CmgLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.LcLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.LuLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.ObjectSearchUtils;
 import com.navinfo.dataservice.engine.edit.search.rd.utils.RdLinkSearchUtils;
+import com.navinfo.dataservice.engine.edit.search.rd.utils.ZoneLinkSearchUtils;
 import com.navinfo.dataservice.engine.edit.utils.CalLinkOperateUtils;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonValueProcessor;
-import net.sf.json.util.JSONUtils;
 
 /**
  * 查询进程
@@ -111,9 +118,9 @@ public class SearchProcess {
 			for (ObjType type : types) {
 
 				ISearch search = factory.createSearch(type);
-				
+
 				String wkt = Geojson.geojson2Wkt(box);
-				
+
 				List<SearchSnapshot> list = search.searchDataBySpatial(wkt);
 
 				JSONArray array = new JSONArray();
@@ -206,7 +213,7 @@ public class SearchProcess {
 	 * @return 查询结果
 	 * @throws Exception
 	 */
-	public List<? extends IObj> searchDataByPids(ObjType type, JSONArray pids)
+	public List<? extends IRow> searchDataByPids(ObjType type, JSONArray pids)
 			throws Exception {
 
 		try {
@@ -218,7 +225,7 @@ public class SearchProcess {
 			List<Integer> pidList = JSONArray.toList(pids, Integer.class,
 					JsonUtils.getJsonConfig());
 
-			List<? extends IObj> objList = search.searchDataByPids(pidList);
+			List<? extends IRow> objList = search.searchDataByPids(pidList);
 
 			return objList;
 		} catch (Exception e) {
@@ -256,25 +263,24 @@ public class SearchProcess {
 				break;
 
 			case RDLINK:
-			
+
 				if (condition.containsKey("queryType")) {
-					
+
 					String queryType = condition.getString("queryType");
-					
+
 					// 批量编辑限速link追踪
 					if (queryType.equals("RDSPEEDLIMIT")) {
-						
+
 						int linkPid = condition.getInt("linkPid");
-						
-						int direct = condition.getInt("direct");						
-						
+
+						int direct = condition.getInt("direct");
+
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
-						
+
 						int speedDependnt = -1;
-						
-						if(condition.containsKey("speedDependnt"))
-						{
+
+						if (condition.containsKey("speedDependnt")) {
 							speedDependnt = condition.getInt("speedDependnt");
 						}
 
@@ -290,22 +296,23 @@ public class SearchProcess {
 						array.add(linkPidsArray);
 
 						JSONArray speedlimitArray = searchUtils
-								.getRdLinkSpeedlimit(nextLinkPids,speedDependnt);
+								.getRdLinkSpeedlimit(nextLinkPids,
+										speedDependnt);
 
 						array.add(speedlimitArray);
 					}
-					//可变限速link追踪
-					if(queryType.equals("RDVARIABLESPEED"))
-					{
+					// 可变限速link追踪
+					if (queryType.equals("RDVARIABLESPEED")) {
 						int linkPid = condition.getInt("linkPid");
-						
+
 						int nodePid = condition.getInt("nodePid");
-						
+
 						RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(
 								conn);
-						
-						List<RdLink> links  = searchUtils.variableSpeedNextLinks( linkPid,  nodePid);						
-						
+
+						List<RdLink> links = searchUtils
+								.variableSpeedNextLinks(linkPid, nodePid);
+
 						for (RdLink link : links) {
 							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
@@ -325,6 +332,16 @@ public class SearchProcess {
 					}
 
 					return array;
+				}
+				//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					RdLinkSearchUtils linkSearchUtils = new RdLinkSearchUtils(conn);
+					List<RdLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (RdLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
 				}
 				// node追踪原则
 				if (condition.containsKey("nodePid")) {
@@ -348,25 +365,21 @@ public class SearchProcess {
 					if (condition.containsKey("maxNum")) {
 						maxNum = condition.getInt("maxNum");
 					}
-					if(condition.containsKey("loadChild"))
-					{
+					if (condition.containsKey("loadChild")) {
 						int flag = condition.getInt("loadChild");
-						
-						if(flag == 1)
-						{
+
+						if (flag == 1) {
 							loadChild = true;
 						}
 					}
 					RdLinkSearchUtils searchUtils = new RdLinkSearchUtils(conn);
 					List<RdLink> links = searchUtils.getNextTrackLinks(
-							cuurentLinkPid, cruuentNodePidDir, maxNum,loadChild);
+							cuurentLinkPid, cruuentNodePidDir, maxNum,
+							loadChild);
 					for (RdLink link : links) {
-						if(loadChild)
-						{
+						if (loadChild) {
 							array.add(link.Serialize(ObjLevel.FULL));
-						}
-						else
-						{
+						} else {
 							array.add(link.Serialize(ObjLevel.BRIEF));
 						}
 					}
@@ -428,6 +441,16 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					ADLinkSearchUtils linkSearchUtils = new ADLinkSearchUtils(conn);
+					List<AdLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (AdLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 				break;
 			case RWLINK:
 				if (condition.containsKey("nodePid")) {
@@ -453,6 +476,16 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					ZoneLinkSearchUtils linkSearchUtils = new ZoneLinkSearchUtils(conn);
+					List<ZoneLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (ZoneLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 				break;
 			case LULINK:
 				if (condition.containsKey("nodePid")) {
@@ -467,6 +500,16 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
+				//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					LuLinkSearchUtils linkSearchUtils = new LuLinkSearchUtils(conn);
+					List<LuLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (LuLink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 				break;
 			case LCLINK:
 				if (condition.containsKey("nodePid")) {
@@ -478,6 +521,16 @@ public class SearchProcess {
 							false);
 
 					for (LcLink link : lcLinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+				//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					LcLinkSearchUtils linkSearchUtils = new LcLinkSearchUtils(conn);
+					List<LcLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (LcLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
@@ -496,28 +549,22 @@ public class SearchProcess {
 				}
 				break;
 			case RDLANEVIA:
+				CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
+						conn);
 				if (condition.containsKey("inLinkPid")
 						&& condition.containsKey("nodePid")
 						&& condition.containsKey("outLinkPid")) {
 
 					int inLinkPid = condition.getInt("inLinkPid");
 
-					// 要素类型
-					String objType = null;
-					if (condition.containsKey("type")) {
-						objType = condition.getString("type");
-					}
-
 					int nodePid = condition.getInt("nodePid");
 
 					int outLinkPid = condition.getInt("outLinkPid");
 
-					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(conn);
-
 					// 计算经过线
 					List<Integer> viaList = calLinkOperateUtils.calViaLinks(
 							this.conn, inLinkPid, nodePid, outLinkPid);
-					
+
 					// 计算关系类型
 					int relationShipType = calLinkOperateUtils
 							.getRelationShipType(nodePid, outLinkPid);
@@ -525,7 +572,7 @@ public class SearchProcess {
 					JSONObject obj = new JSONObject();
 
 					obj.put("relationshipType", relationShipType);
-					
+
 					List<Integer> linkpids = new ArrayList<Integer>();
 
 					linkpids.add(inLinkPid);
@@ -536,7 +583,7 @@ public class SearchProcess {
 
 					if (!calLinkOperateUtils.isConnect(linkpids, nodePid)) {
 						obj.put("errInfo", "所选进入线、进入点、退出线不连通");
-					}					
+					}
 
 					JSONArray viaArray = new JSONArray();
 
@@ -544,28 +591,63 @@ public class SearchProcess {
 						for (Integer via : viaList) {
 							viaArray.add(via);
 						}
-						// 路口关系交限不记经过link
-						if (StringUtils.isNotEmpty(objType)
-								&& ObjType.valueOf(objType) == ObjType.RDRESTRICTION) {
-							RdLinkSelector selector = new RdLinkSelector(conn);
 
-							List<Integer> kinds = selector.loadRdLinkKindByIds(
-									viaList, false);
-
-							if (relationShipType != 1 && kinds.get(0) < 10) {
-								obj.put("links", viaArray);
-							} else {
-								obj.put("links", new JSONArray());
-							}
-						} else {
-							obj.put("links", viaArray);
-						}
-					} else {
-						obj.put("links", new JSONArray());
 					}
+					obj.put("links", viaArray);
 					array.add(obj);
 
 					return array;
+				}
+				if (!condition.containsKey("nodePid")) {
+					int inLinkPid = condition.getInt("inLinkPid");
+					int outLinkPid = condition.getInt("outLinkPid");
+					int nodePid = 0;
+					RdLinkSelector linkSelector = new RdLinkSelector(conn);
+					IRow row = linkSelector.loadById(inLinkPid, true, true);
+					RdLink link = (RdLink) row;
+					List<Integer> viaList = new ArrayList<Integer>();
+					if (link.getDirect() == 2) {
+						nodePid = link.geteNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 3) {
+						nodePid = link.getsNodePid();
+						viaList = calLinkOperateUtils.calViaLinks(this.conn,
+								inLinkPid, nodePid, outLinkPid);
+					}
+					if (link.getDirect() == 1) {
+						List<Integer> sviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.getsNodePid(), outLinkPid);
+						List<Integer> eviaList = calLinkOperateUtils
+								.calViaLinks(this.conn, inLinkPid,
+										link.geteNodePid(), outLinkPid);
+						if (sviaList.size() == 0 && eviaList.size() == 0) {
+							viaList = sviaList;
+						}
+						if (sviaList.size() == 0 && eviaList.size() > 0) {
+							viaList = eviaList;
+						}
+						if (eviaList.size() == 0 && sviaList.size() > 0) {
+							viaList = sviaList;
+						}
+						if (eviaList.size() > 0 && sviaList.size() > 0) {
+							double eLength = linkSelector.loadByPidsLength(
+									eviaList);
+							double sLength = linkSelector.loadByPidsLength(
+									eviaList);
+							viaList = (eLength >= sLength) ? sviaList
+									: eviaList;
+
+						}
+
+					}
+					// 计算经过线
+
+					for (Integer pid : viaList) {
+						array.add(pid);
+					}
 				}
 				break;
 			case RDLANE:
@@ -620,7 +702,26 @@ public class SearchProcess {
 					array.add(object);
 
 				}
-
+            case CMGBUILDLINK:
+                if (condition.containsKey("nodePid")) {
+                    int nodePid = condition.getInt("nodePid");
+                    CmgBuildlinkSelector selector = new CmgBuildlinkSelector(this.conn);
+                    List<CmgBuildlink> cmglinks = selector.listTheAssociatedLinkOfTheNode(nodePid, false);
+                    for (CmgBuildlink link : cmglinks) {
+                        array.add(link.Serialize(ObjLevel.BRIEF));
+                    }
+                }
+                
+            	//追踪闭合的面 1 顺时针 2 逆时针
+				if(condition.containsKey("cisFlag")){
+					int cisFlag  = condition.getInt("cisFlag");
+					int linkPid =  condition.getInt("linkPid");
+					CmgLinkSearchUtils linkSearchUtils = new CmgLinkSearchUtils(conn);
+					List<CmgBuildlink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+					for (CmgBuildlink link : links) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
 			}
 			return array;
 		} catch (Exception e) {
@@ -631,5 +732,26 @@ public class SearchProcess {
 
 		}
 	}
+	
+	public JSONObject searchDataByObject(JSONObject condition) throws Exception {
 
+		ObjectSearchUtils objectSearchUtils = new ObjectSearchUtils(conn,
+				getJsonConfig());
+
+		JSONObject json = objectSearchUtils.searchObject(condition);
+
+		return json;
+
+	}
+
+	public JSONObject searchLinkByNode(JSONObject condition) throws Exception {
+
+		ObjectSearchUtils objectSearchUtils = new ObjectSearchUtils(conn,
+				getJsonConfig());
+
+		JSONObject json = objectSearchUtils.searchLinkByNode(condition);
+
+		return json;
+
+	}
 }

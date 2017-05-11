@@ -13,7 +13,6 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 
 import com.ctc.wstx.util.DataUtil;
-import com.navinfo.dataservice.api.edit.upload.UploadPois;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -50,10 +49,10 @@ import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
 
 /** 
- * @ClassName: MultiSrcPoiImportorByGather
+ * @ClassName: CollectorUploadOperation
  * @author xiaoxiaowen4127
  * @date 2016年11月17日
- * @Description: MultiSrcPoiImportorByGather.java
+ * @Description: CollectorUploadOperation.java
  */
 public class CollectorUploadOperation extends AbstractOperation {
 
@@ -84,7 +83,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 	public void operate(AbstractCommand cmd) throws Exception {
 		// 获取当前做业季
 		String version = SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion);
-		UploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
+		MultiSrcUploadPois pois = ((MultiSrcPoiDayImportorCommand)cmd).getPois();
 		if(pois!=null){
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();
@@ -255,7 +254,6 @@ public class CollectorUploadOperation extends AbstractOperation {
 	public boolean importAddByJson(IxPoiObj poi,JSONObject jo, String version)throws Exception {
 		if(poi!=null&&jo!=null){
 			if(poi instanceof IxPoiObj){
-				
 				//*************zl 2016.12.20*******************
 				//POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
@@ -708,6 +706,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 				//查询的POI主表
 				IxPoi ixPoi = (IxPoi) poi.getMainrow();
 				long pid = ixPoi.getPid();
+				
 				//改分类
 				String newKindCode = null;
 				if(!JSONUtils.isNull(jo.get("kindCode"))){
@@ -821,6 +820,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 					}
 					this.usdateAddress(poi, jo, getLangCode());
 				}
+				
 				
 				
 				ixPoi.setPoiNum(jo.getString("fid"));
@@ -2399,9 +2399,6 @@ public class CollectorUploadOperation extends AbstractOperation {
 		Map<String,Long> exists = IxPoiSelector.getPidByFids(conn,addPois.keySet());
 		if(exists==null)return;
 		for(String fid:exists.keySet()){
-			if(fid.equals("0010130518WMH00081")){
-				log.info("");
-			}
 			JSONObject errObj = new JSONObject();
 			errObj.put("fid", fid);
 			errObj.put("reason",  "fid库中已存在");

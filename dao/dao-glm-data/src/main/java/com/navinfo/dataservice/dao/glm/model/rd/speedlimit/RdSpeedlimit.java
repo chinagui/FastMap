@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.vividsolutions.jts.geom.Coordinate;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -20,6 +19,7 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
 public class RdSpeedlimit implements IObj {
@@ -396,6 +396,7 @@ public class RdSpeedlimit implements IObj {
 			if (json.get(key) instanceof JSONArray) {
 				continue;
 			} else if ("longitude".equals(key)) {
+
                 double longitude = json.getDouble("longitude");
 
                 double latitude = json.getDouble("latitude");

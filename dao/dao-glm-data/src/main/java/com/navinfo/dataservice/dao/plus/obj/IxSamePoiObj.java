@@ -1,8 +1,11 @@
 package com.navinfo.dataservice.dao.plus.obj;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxSamepoiPart;
 
@@ -112,6 +115,41 @@ public class IxSamePoiObj extends AbstractIxObj {
 		}
 	}
 	
+	@Override
+	public BasicRow createSubRowByTableName(String tableName) throws Exception {
+		if(IX_SAMEPOI_PART.equals(tableName)){
+			return this.createIxSamepoiPart();
+		}else{
+			throw new Exception("未知的子表名:"+tableName);
+		}
+	}
 	
+	public boolean containsPoi(long poiPid){
+		List<IxSamepoiPart> parts = getIxSamepoiParts();
+		if(parts!=null){
+			for(IxSamepoiPart sp:parts){
+				if(sp.getPoiPid()==poiPid){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public Set<Long> getPoiPids(){
+		List<IxSamepoiPart> parts = getIxSamepoiParts();
+		if(parts!=null){
+			Set<Long> pids = new HashSet<Long>();
+			for(IxSamepoiPart sp:parts){
+				pids.add(sp.getPoiPid());
+			}
+			return pids;
+		}
+		return null;
+	}
+	
+
+	public static final String IX_SAMEPOI = "IX_SAMEPOI";
+	public static final String IX_SAMEPOI_PART = "IX_SAMEPOI_PART";
 
 }

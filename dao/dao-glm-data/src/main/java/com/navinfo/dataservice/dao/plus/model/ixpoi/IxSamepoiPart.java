@@ -15,6 +15,7 @@ public class IxSamepoiPart extends BasicRow {
 	
 	public IxSamepoiPart (long objPid){
 		super(objPid);
+		setGroupId(objPid);
 	}
 	
 	public long getGroupId() {

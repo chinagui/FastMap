@@ -3,14 +3,11 @@ package com.navinfo.dataservice.engine.man.task;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -26,19 +23,15 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.engine.man.block.BlockOperation;
-import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class TaskOperation {
 	private static Logger log = LoggerRepos.getLogger(TaskOperation.class);
 	
 	public TaskOperation() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public static int getNewTaskId(Connection conn) throws Exception {
-		// TODO Auto-generated method stub
 		try{
 			QueryRunner run = new QueryRunner();
 
@@ -1576,6 +1569,14 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LOT= " + bean.getLot();
 			};
+			if (bean!=null&&bean.getPoiPlanTotal()!=null && bean.getPoiPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" poi_plan_total= " + bean.getPoiPlanTotal();
+			};
+			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" road_plan_total= " + bean.getRoadPlanTotal();
+			};
 			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GROUP_ID= "+bean.getGroupId();
@@ -2062,7 +2063,6 @@ public class TaskOperation {
 			ResultSetHandler<Map<String,Object>> rsh = new ResultSetHandler<Map<String,Object>>() {
 				@Override
 				public Map<String,Object> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					Map<String,Object> map = new HashMap<String, Object>();
 					while(rs.next()){
 						map.put("blockManId", rs.getLong("BLOCK_MAN_ID"));
@@ -2100,11 +2100,10 @@ public class TaskOperation {
 					+ "         WHERE T.BLOCK_ID = T2.BLOCK_ID"
 					+ "           AND T2.LATEST = 1"
 					+ "           AND T2.STATUS != 0"
-					+ "           AND T2.TYPE in (0, 1))";	
+					+ "           AND T2.TYPE in (0))";	
 			ResultSetHandler<List<Integer>> rsh = new ResultSetHandler<List<Integer>>() {
 				@Override
 				public List<Integer> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					List<Integer> map = new ArrayList<Integer>();
 					while(rs.next()){
 						map.add(rs.getInt("TASK_ID"));
@@ -2137,7 +2136,6 @@ public class TaskOperation {
 			ResultSetHandler<List<Map<String, Object>>> rsh = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
 				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					// TODO Auto-generated method stub
 					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
 					while(rs.next()){
 						Map<String, Object> map = new HashMap<String, Object>();
@@ -2170,6 +2168,35 @@ public class TaskOperation {
 			
 			insertTaskGridMapping(conn,bean.getTaskId(),gridIds);
 
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
+	}
+	
+	/**
+	 * @param conn
+	 * @param taskId
+	 * @param gridIds
+	 * @throws Exception 
+	 */
+	public static int changeTaskGridBySubtask(Connection conn, int subtaskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT S.TASK_ID, GRID_ID, 2"
+					+ "    FROM SUBTASK_GRID_MAPPING M, SUBTASK S"
+					+ "   WHERE M.SUBTASK_ID = "+subtaskId
+					+ "     AND S.SUBTASK_ID = M.SUBTASK_ID"
+					+ "  MINUS"
+					+ "  SELECT S.TASK_ID, T.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING T, SUBTASK S"
+					+ "   WHERE S.SUBTASK_ID = "+subtaskId
+					+ "     AND S.TASK_ID = T.TASK_ID";
+			return run.update(conn, createMappingSql);
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
 			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
@@ -2350,6 +2377,7 @@ public class TaskOperation {
 	}
 
 	/**
+	 * 获取block对应的regionid
 	 * @param blockId
 	 * @return
 	 * @throws Exception 
@@ -2415,6 +2443,35 @@ public class TaskOperation {
 			log.error(e.getMessage(), e);
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}
+	}
+
+	public static void changeDayCmsTaskGridByCollectTask(Connection conn,int taskId) throws Exception {
+		try{
+			QueryRunner run = new QueryRunner();
+
+			String createMappingSql = "INSERT INTO TASK_GRID_MAPPING"
+					+ "  (TASK_ID, GRID_ID, TYPE)"
+					+ "  SELECT UT.TASK_ID, GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING M, TASK S, TASK UT"
+					+ "   WHERE M.TASK_ID = "+taskId
+					+ "     AND S.TASK_ID = M.TASK_ID"
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.TYPE IN (1, 3)"
+					+ "  MINUS"
+					+ "  SELECT UT.TASK_ID, T.GRID_ID, 2"
+					+ "    FROM TASK_GRID_MAPPING T, TASK S, TASK UT"
+					+ "   WHERE S.TASK_ID = "+taskId
+					+ "     AND UT.BLOCK_ID = S.BLOCK_ID"
+					+ "     AND UT.PROGRAM_ID = S.PROGRAM_ID"
+					+ "     AND UT.TASK_ID = T.TASK_ID"
+					+ "     AND UT.TYPE IN (1, 3)";
+			run.update(conn, createMappingSql);
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
+		}
+		
 	}
 	
 	/**

@@ -237,6 +237,14 @@ public class TipsController extends BaseController {
 			JSONObject json = JSONObject.fromObject(parameter);
 
 			int jobId = json.getInt("jobId");
+			
+			int subtaskId = 0;
+			
+			//外业，有可能没有任务号
+			if(json.containsKey("subtaskId")){
+				
+				subtaskId=json.getInt("subtaskId");
+			}
 
 			UploadService upload = UploadService.getInstance();
 
@@ -244,7 +252,7 @@ public class TipsController extends BaseController {
 			
 			logger.info("jobId"+jobId+"\tfilePath:"+filePath);
 			
-			TipsUpload tipsUploader = new TipsUpload();
+			TipsUpload tipsUploader = new TipsUpload(subtaskId);
 			
 			Map<String, Photo> photoMap=new HashMap<String, Photo>();
 			
@@ -411,6 +419,41 @@ public class TipsController extends BaseController {
 	}
 	
 	
+	@RequestMapping(value = "/tip/getByRowkeyNew")
+	public void getByRowkeyNew(HttpServletRequest request,HttpServletResponse response
+			) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+		    
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String rowkey = jsonReq.getString("rowkey");
+			
+			 if (StringUtils.isEmpty(rowkey)) {
+                 throw new IllegalArgumentException("参数错误：rowkey不能为空");
+             }
+
+
+			TipsSelector selector = new TipsSelector();
+
+			JSONObject data = selector.searchDataByRowkeyNew(rowkey);
+
+			response.getWriter().println(
+					ResponseUtils.assembleRegularResult(data));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			response.getWriter().println(
+					ResponseUtils.assembleFailResult(e.getMessage()));
+		}
+	}
+	
 	
 	
 	@RequestMapping(value = "/tip/getByRowkeys")
@@ -508,6 +551,8 @@ public class TipsController extends BaseController {
 
 			int dbId = jsonReq.getInt("dbId");
 			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
 			String mdFlag = jsonReq.getString("mdFlag");
 			
 			if (grids==null||grids.size()==0) {
@@ -529,12 +574,9 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			//加上stage=5的是预处理的tips
-			
-			stage.add(5);
 
 			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
-					dbId,mdFlag);
+					dbId,mdFlag,subtaskId);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -561,6 +603,8 @@ public class TipsController extends BaseController {
 
 			JSONArray stages = jsonReq.getJSONArray("stage");
 			
+			int subtaskId = jsonReq.getInt("subtaskId");
+			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
@@ -571,9 +615,7 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			stages.add(5);
-
-			JSONObject data = selector.getStats(grids, stages);
+			JSONObject data = selector.getStats(grids, stages,subtaskId);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -603,7 +645,7 @@ public class TipsController extends BaseController {
 			TipsSelector selector = new TipsSelector();
 
 			JSONArray array = selector.searchDataByWkt(wkt,
-					types, flag);
+					types, flag, "wkt");
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

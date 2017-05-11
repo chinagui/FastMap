@@ -1,9 +1,6 @@
 
 package com.navinfo.dataservice.web.man.controller;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,38 +9,16 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.ModelAndView;
-
-import com.navinfo.dataservice.api.man.model.Subtask;
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskList;
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByUser;
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskListByWkt;
-import com.navinfo.dataservice.api.man.model.subtask.SubtaskQuery;
-import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
-import com.navinfo.dataservice.web.man.page.SubtaskListByUserPage;
-import com.navinfo.dataservice.web.man.page.SubtaskListPage;
-import com.navinfo.dataservice.web.man.response.NullResponse;
-import com.navinfo.dataservice.web.man.response.SubtaskListByUserResponse;
-import com.navinfo.dataservice.web.man.response.SubtaskListByWktResponse;
-import com.navinfo.dataservice.web.man.response.SubtaskListResponse;
-import com.navinfo.dataservice.web.man.response.SubtaskQueryResponse;
 import com.navinfo.navicommons.database.Page;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 
@@ -588,6 +563,36 @@ public class SubtaskController extends BaseController {
 			return new ModelAndView("jsonView", success(data));
 		} catch (Exception e) {
 			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 子任务查询列表
+	 * @author songhe
+	 * @param  cityName
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/subtask/listAllInforByCity")
+	public ModelAndView listAllInforByCity(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+//			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			String cityName = dataJson.getString("cityName");
+			JSONObject condition = new JSONObject();
+			
+			if (dataJson.containsKey("condition")) {
+				condition = JSONObject.fromObject(dataJson.get("condition"));
+			}
+			List<Map<String, Object>> data = SubtaskService.getInstance().listAllInforByCity(cityName, condition);
+			return new ModelAndView("jsonView", success(data));
+		} catch (Exception e) {
+			log.error("子任务查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}

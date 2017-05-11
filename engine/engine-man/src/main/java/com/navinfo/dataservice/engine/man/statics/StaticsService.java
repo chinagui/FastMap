@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.springframework.stereotype.Service;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.statics.iface.StaticsApi;
@@ -40,6 +41,7 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.city.CityService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -88,7 +90,7 @@ public class StaticsService {
 		return api.getChangeStatByGrids(grids, type, stage, date);
 	}
 	
-	public List<HashMap> blockExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<Map<String,Object>> blockExpectStatQuery(String wkt) throws JSONException, Exception{
 		BlockService service = BlockService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -105,11 +107,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.listByWkt(json);
+		List<Map<String,Object>> data = service.listByWkt(json);
 		
 		Set<Integer> blocks = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			int blockId = (int) map.get("blockId");
 			
 			blocks.add(blockId);
@@ -119,7 +121,7 @@ public class StaticsService {
 		
 		Map<Integer,Integer> statusMap = api.getExpectStatusByBlocks(blocks);
 		
-		for(HashMap map : data){
+		for(Map<String,Object> map : data){
 			map.put("expectStatus", statusMap.get(map.get("blockId")));
 		}
 		
@@ -142,7 +144,7 @@ public class StaticsService {
 		return data;
 	}
 	
-	public List<HashMap> cityExpectStatQuery(String wkt) throws JSONException, Exception{
+	public List<HashMap<String, Object>> cityExpectStatQuery(String wkt) throws JSONException, Exception{
 		CityService service = CityService.getInstance();
 		
 		JSONObject json = new JSONObject();
@@ -157,11 +159,11 @@ public class StaticsService {
 		
 		json.put("planningStatus", status);
 		
-		List<HashMap> data = service.queryListByWkt(json);
+		List<HashMap<String, Object>> data = service.queryListByWkt(json);
 		
 		Set<Integer> citys = new HashSet<Integer>();
 		
-		for(HashMap map : data){
+		for(HashMap<String, Object> map : data){
 			int blockId = (int) map.get("cityId");
 			
 			citys.add(blockId);
@@ -754,7 +756,6 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS IN (0, 1)"
 					+ "     AND T.TASK_ID = S.TASK_ID"
-					+ "   AND T.LATEST = 1"
 					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = F.TASK_ID(+)"
 					+ "   GROUP BY T.TASK_ID, T.GROUP_ID, T.STATUS, F.DIFF_DATE, F.PROGRESS"
@@ -769,7 +770,6 @@ public class StaticsService {
 					+ "         NVL(F.PROGRESS,1) PROGRESS"
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.STATUS = 1"
-					+ "   AND T.LATEST = 1"
 					+ "     AND NOT EXISTS"
 					+ "   (SELECT 1 FROM SUBTASK S WHERE S.TASK_ID = T.TASK_ID AND S.IS_QUALITY=0)"
 					+ "     AND T.TASK_ID = F.TASK_ID(+))"
@@ -987,7 +987,6 @@ public class StaticsService {
 						+ "    FROM BLOCK B, PROGRAM P"
 						+ "   WHERE B.PLAN_STATUS = 0"
 						+ "     AND B.CITY_ID = P.CITY_ID"
-						+ "   AND P.LATEST = 1"
 						+ "  UNION ALL"
 						+ "  SELECT T.TASK_ID,"
 						+ "         T.PROGRAM_ID,"
@@ -1001,7 +1000,6 @@ public class StaticsService {
 						+ "    FROM TASK T, BLOCK B, FM_STAT_OVERVIEW_TASK F"
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
-						+ "   AND T.LATEST = 1"
 						+ "     AND NOT EXISTS"
 						+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 						+ "  UNION ALL"
@@ -1023,7 +1021,6 @@ public class StaticsService {
 						+ "   WHERE T.BLOCK_ID = B.BLOCK_ID"
 						+ "     AND T.TASK_ID = F.TASK_ID(+)"
 						+ "     AND T.TASK_ID = S.TASK_ID"
-						+ "   AND T.LATEST = 1"
 						+ "     AND S.IS_QUALITY=0"
 						+ "   GROUP BY T.TASK_ID,"
 						+ "            T.PROGRAM_ID,"
@@ -1048,7 +1045,6 @@ public class StaticsService {
 					+ "    FROM TASK T, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
-					+ "   AND T.LATEST = 1"
 					+ "     AND NOT EXISTS"
 					+ "   (SELECT 1 FROM SUBTASK S WHERE T.TASK_ID = S.TASK_ID AND S.IS_QUALITY=0)"
 					+ "  UNION ALL"
@@ -1068,7 +1064,6 @@ public class StaticsService {
 					+ "    FROM TASK T, SUBTASK S, FM_STAT_OVERVIEW_TASK F"
 					+ "   WHERE T.TASK_ID = F.TASK_ID(+)"
 					+ "     AND T.BLOCK_ID=0"
-					+ "   AND T.LATEST = 1"
 					+ "     AND S.IS_QUALITY=0"
 					+ "     AND T.TASK_ID = S.TASK_ID"
 					+ "   GROUP BY T.TASK_ID,"
@@ -1563,8 +1558,8 @@ public class StaticsService {
 						+ "  FROM CITY C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.CITY_ID = P.CITY_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
-						+ "   AND P.STATUS = 1"
 						+ "   AND P.LATEST = 1"
+						+ "   AND P.STATUS = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
 						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
@@ -1638,8 +1633,8 @@ public class StaticsService {
 						+ "  FROM INFOR C, PROGRAM P, FM_STAT_OVERVIEW_PROGRAM F"
 						+ " WHERE C.INFOR_ID = P.INFOR_ID"
 						+ "   AND P.PROGRAM_ID = F.PROGRAM_ID(+)"
-						+ "   AND P.STATUS = 1"
 						+ "   AND P.LATEST = 1"
+						+ "   AND P.STATUS = 1"
 						+ "   AND NOT EXISTS (SELECT 1"
 						+ "          FROM TASK T"
 						+ "         WHERE T.PROGRAM_ID = P.PROGRAM_ID"
@@ -2677,7 +2672,7 @@ public class StaticsService {
 			sb.append("SELECT ST.SUBTASK_ID,");
 			sb.append("       ST.STAGE,");
 			sb.append("       ST.TYPE,");
-			sb.append("       S.PERCENT,");
+			sb.append("       S.PERCENT,S.TOTAL_POI, S.FINISHED_POI, S.TOTAL_ROAD, S.FINISHED_ROAD,");
 			sb.append("       S.DIFF_DATE,");
 			sb.append("       S.PLAN_DATE,");
 			sb.append("       ST.PLAN_START_DATE,");
@@ -2702,6 +2697,11 @@ public class StaticsService {
 						overView.put("type", rs.getInt("TYPE")); 
 						overView.put("percent", rs.getInt("PERCENT")); 
 						
+						overView.put("totalPoi", rs.getInt("TOTAL_POI")); 
+						overView.put("finishedPoi", rs.getInt("FINISHED_POI")); 
+						overView.put("totalRoad", rs.getInt("TOTAL_ROAD")); 
+						overView.put("finishedRoad", rs.getInt("FINISHED_ROAD"));
+						
 						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
 						Timestamp planEndDate = rs.getTimestamp("PLAN_END_DATE");
 						Timestamp actualStartDate = rs.getTimestamp("ACTUAL_START_DATE");
@@ -2719,12 +2719,12 @@ public class StaticsService {
 						if(actualStartDate != null){
 							overView.put("actualStartDate", df.format(actualStartDate));
 						}else{
-							overView.put("actualStartDate", planStartDate);
+							overView.put("actualStartDate", null);
 						}
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", planEndDate);
+							overView.put("actualEndDate", null);
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");
@@ -2732,11 +2732,12 @@ public class StaticsService {
 						//如果计划时间为0，则计算计划时间与距离计划结束时间天数，此种情况一般是还没有子任务统计信息
 						if((planDate==0)&&(planStartDate != null)&&(planEndDate != null)){
 							planDate = daysOfTwo(planEndDate,planStartDate);
-							diffDate = daysOfTwo(planEndDate,new Date());;
+							diffDate = daysOfTwo(planEndDate,new Date());
 						}
 						overView.put("planDate", planDate);
 						overView.put("diffDate", diffDate); 
 						overView.put("actualDate", planDate - diffDate);
+						
 
 					}
 					else{
@@ -2790,5 +2791,21 @@ public class StaticsService {
 	       return day2 - day1;
 
 	    }
+
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map> getDayTaskTipsStatics(int taskId) throws Exception {
+		List<Map> result = new ArrayList<Map>();
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
+		//调用fccApi
+		FccApi fccApi = (FccApi) ApplicationContextUtil
+				.getBean("fccApi");
+		result = fccApi.getCollectTaskTipsStats(collectTaskIdSet);
+		
+		return result;
+	}
 
 }

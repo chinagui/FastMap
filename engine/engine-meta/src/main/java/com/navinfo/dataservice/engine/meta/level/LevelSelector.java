@@ -3,6 +3,10 @@ package com.navinfo.dataservice.engine.meta.level;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -212,6 +216,126 @@ public class LevelSelector {
 	    	
 	    	return result;
     	} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(regionConn);
+			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(resultSet);
+		}
+    	
+    }
+	/**
+	 * 多源导入时，批level
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	public String getLevelForMulti(JSONObject jsonObj) throws Exception{    	
+    	int dbId = jsonObj.getInt("dbId");
+    	Connection regionConn =null; 
+    	
+        PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+    	try{
+    		regionConn = DBConnector.getInstance().getConnectionById(dbId);
+		    int pid = jsonObj.getInt("pid");
+		    String poi_num = jsonObj.getString("poi_num");
+		    
+		    //(8) 如果该POI是重要车场POI，则POI等级赋值A：
+		    //判断条件：POI.POI_NUM的值与元数据库表sc_point_focus.type=1且与sc_point_focus.poi_num一致，则该poi.level=A;
+		    boolean isImpCarPoiFlag = false;
+		    if (StringUtils.isNotEmpty(poi_num)){
+		    	isImpCarPoiFlag	= isImpCarPoi(poi_num);
+		    }
+		    if (isImpCarPoiFlag){
+		    	return "A";
+		    }
+		    //(7) 如果该POI是3Dlandmark或3Dicon，则POI等级赋值A：
+		    //判断条件：POI.pid的值存在ix_poi_icon.poi_pid或cmg_building_poi.poi_pid中(2个表只要存在一个即可认为存在)，则该poi.level=A;
+		    boolean is3DPoiFlag = is3DPoi(regionConn, pid);
+		    if (is3DPoiFlag){
+		    	return "A";
+		    }
+		    
+	        String kindCode = jsonObj.getString("kindCode");
+	        String chainCode = jsonObj.getString("chainCode");
+	        String level = jsonObj.getString("level");
+	        String name = jsonObj.getString("name");
+	        int rating = jsonObj.getInt("rating");
+	        
+	        // 查询scPointCode2level
+	        String sql = "select l.category,l.new_poi_level,l.rating,l.chain from sc_point_code2level l where l.kind_code=:1";
+
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, kindCode);
+			resultSet = pstmt.executeQuery();
+			List<Map<String, String>> code2levelList=new ArrayList<Map<String,String>>();
+			while (resultSet.next()) {
+	            int category = resultSet.getInt("category");
+                String new_level = resultSet.getString("new_poi_level");
+                int codeRating = resultSet.getInt("rating");
+                String chain = resultSet.getString("chain");
+                Map<String, String> code2levelMap=new HashMap<String, String>();
+                code2levelMap.put("category", String.valueOf(category));
+                code2levelMap.put("newLevel", new_level);
+                code2levelMap.put("rating", String.valueOf(codeRating));
+                code2levelMap.put("chain", chain);
+                code2levelList.add(code2levelMap);
+			}
+			//(6) 如果POI.KIND_CODE=200200且官方原始名称包含“自行车租赁点”(港澳官方原始名称包含“自行車租賃點”)则POI.level=C；
+		    //如果官方原始名称不包含“自行车租赁点”(港澳官方原始名称不包含“自行車租賃點”)则POI.level= sc_point_code2level.new_poi_level；    
+            if ("200200".equals(kindCode) && StringUtils.isNotEmpty(name)){
+            	// poi.name包含“自行车租赁点”(港澳数据name包含“自行車租賃點”)则POI.level=C
+        		if (name.contains("自行车租赁点") || name.contains("自行車租賃點")){
+    		    	return "C";
+        		}
+        		//poi.name不包含“自行车租赁点”(港澳数据name不包含“自行車租賃點”)则POI.level= sc_point_code2level.old_poi_level
+        		if (!name.contains("自行车租赁点") && !name.contains("自行車租賃點")&&code2levelList.size()>0){
+        			return code2levelList.get(0).get("newLevel");
+        		}
+            }
+            //(5) 如果poi.chain有值且poi.level<>A则poi.level= B1；    
+            if (StringUtils.isNotEmpty(chainCode)&&!"A".equals(level)){
+		    	return "B1";
+			}
+            //(4) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=3，
+            //且sc_point_code2level.rating=ix_poi_hotel.rating，则poi.level= sc_point_code2level.new_poi_level； 
+            for(Map<String, String> code2levelMap:code2levelList){
+            	String category=code2levelMap.get("category");
+            	String codeRating=code2levelMap.get("rating");
+            	if("3".equals(category)&&String.valueOf(rating).equals(codeRating)){
+            		return code2levelMap.get("newLevel");
+            	}
+            }
+            //(3) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=2，
+            //且poi.chain无值,则poi.level= sc_point_code2level.chain为null时对应的记录的new_poi_level；
+            String nullLevel=null;
+            for(Map<String, String> code2levelMap:code2levelList){
+            	String category=code2levelMap.get("category");
+            	if(!"2".equals(category)){continue;}
+            	if(!StringUtils.isNotEmpty(code2levelMap.get("chain"))){
+            		nullLevel=code2levelMap.get("newLevel");
+	            	if(!StringUtils.isNotEmpty(chainCode)){
+	            		return code2levelMap.get("newLevel");
+	            	}
+	            }else if(code2levelMap.get("chain").equals(chainCode)){
+	            	//(2) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=2
+	            	//且poi.chain有值且poi.chain= sc_point_code2level.chain，则poi.level= sc_point_code2level.new_poi_level；
+	            	return code2levelMap.get("newLevel");
+	            }
+            }
+            //(3) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=2，
+            //且poi.chain有值poi.chain <> sc_point_code2level.chain，则poi.level= sc_point_code2level.chain为null时对应的记录的new_poi_level； 
+            if(StringUtils.isNotEmpty(nullLevel)){return nullLevel;}
+            //(1) 如果POI.KIND_CODE=sc_point_code2level.kind_code且sc_point_code2level.category=1，
+            //则poi.level= sc_point_code2level.new_poi_level；
+            for(Map<String, String> code2levelMap:code2levelList){
+            	String category=code2levelMap.get("category");
+            	if("1".equals(category)){return code2levelMap.get("newLevel");}
+            }
+	    	return null;
+    	} catch (Exception e) {
+    		log.error(e.getMessage(), e);
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(regionConn);

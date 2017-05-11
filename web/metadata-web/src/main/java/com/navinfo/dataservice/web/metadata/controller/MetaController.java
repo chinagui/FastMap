@@ -1,19 +1,5 @@
 package com.navinfo.dataservice.web.metadata.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.Connection;
-import java.util.HashSet;
-import java.util.Set;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.dbutils.DbUtils;
-import org.apache.log4j.Logger;
-import org.apache.uima.pear.util.FileUtil;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.servlet.ModelAndView;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -50,11 +36,26 @@ import com.navinfo.dataservice.engine.meta.tmc.model.TmcPoint;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcLineSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcPointSelector;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
-import com.navinfo.dataservice.engine.meta.translate.EngConverterHelper;
+import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.workitem.Workitem;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.log4j.Logger;
+import org.apache.uima.pear.util.FileUtil;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.sql.Connection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Controller
 public class MetaController extends BaseController {
@@ -123,6 +124,53 @@ public class MetaController extends BaseController {
             return new ModelAndView("jsonView", fail(e.getMessage()));
         }
     }
+    
+    /**
+     * @Title: autoConvertPinyin
+     * @Description: 自动生成语音及拼音
+     * 备注: 和道路名保存生成语音及拼音规则是一致的
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年4月21日 下午3:12:36 
+     */
+    @RequestMapping(value = "/pinyin/autoConvert")
+    public ModelAndView autoConvertPinyin(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            PinyinConverter py = new PinyinConverter();
+
+            String[] result = py.autoConvert(word);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("voicefile", result[1]);
+
+                json.put("phonetic", result[0]);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转拼音失败");
+            }
+
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
 
     @RequestMapping(value = "/eng/convert")
     public ModelAndView convertEng(HttpServletRequest request) throws ServletException, IOException {
@@ -131,8 +179,8 @@ public class MetaController extends BaseController {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
             String languageType = jsonReq.getString("languageType");
             String word = jsonReq.getString("word");
-            EngConverterHelper converterHelper = new EngConverterHelper();
-            String result = converterHelper.chiToEng(word);
+            EnglishConvert englishConvert = new EnglishConvert();
+            String result = englishConvert.convert(word);
             if (result != null) {
                 JSONObject json = new JSONObject();
                 json.put("eng", result);
@@ -687,22 +735,29 @@ public class MetaController extends BaseController {
 
             RdNameSelector selector = new RdNameSelector();
 
-            int subtaskId = jsonReq.getInt("subtaskId");
-            logger.info("subtaskId: "+subtaskId);
-            ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-            Subtask subtask = apiService.queryBySubtaskId(subtaskId);
+            int flag = jsonReq.getInt("flag");//1是任务查，0是全库查
+            JSONObject data = new JSONObject();
+            if(flag > 0){
+            	int subtaskId = jsonReq.getInt("subtaskId");
+                logger.info("subtaskId: "+subtaskId);
+                ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
+                Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 
-            if (subtask == null) {
-                throw new Exception("subtaskid未找到数据");
+                if (subtask == null) {
+                    throw new Exception("subtaskid未找到数据");
+                }
+
+//    			int dbId = subtask.getDbId();
+
+                FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), subtaskId, 1901, new JSONArray());
+
+                logger.info("tips: "+tips);
+                 data = selector.searchForWeb(jsonReq, tips);
+            }else{
+            	logger.info("全库范围内查询! ");
+            	data = selector.searchForWeb(jsonReq);
             }
-
-//			int dbId = subtask.getDbId();
-
-            FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-            JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
-
-            logger.info("tips: "+tips);
-            JSONObject data = selector.searchForWeb(jsonReq, tips);
 
             return new ModelAndView("jsonView", success(data));
 
@@ -773,7 +828,10 @@ public class MetaController extends BaseController {
 
             JSONObject data = jsonReq.getJSONObject("data");
 
-            int subtaskId = jsonReq.getInt("subtaskId");
+            int subtaskId = 0 ;
+            if(jsonReq.containsKey("subtaskId")){
+            	subtaskId = jsonReq.getInt("subtaskId");
+            }
 
 //			int dbId = jsonReq.getInt("dbId");
 
@@ -861,7 +919,7 @@ public class MetaController extends BaseController {
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId, 1901, new JSONArray());
 
                 operation.teilenRdNameByTask(tips);
             }
@@ -1223,6 +1281,9 @@ public class MetaController extends BaseController {
             RdNameSelector selector = new RdNameSelector();
 
             String langCode = jsonReq.getString("langCode");
+            if(langCode==null || StringUtils.isEmpty(langCode)){
+				throw new IllegalArgumentException("langCode参数不能为空。");
+			}
             logger.info("langCode: "+langCode);
            
             JSONObject data = selector.searchRdNameFix(langCode);
@@ -1234,6 +1295,55 @@ public class MetaController extends BaseController {
             logger.error(e.getMessage(), e);
 
             return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+    
+    
+    /**
+     * @Title: metadataTeilen
+     * @Description: 道路名拆分,元数据编辑平台
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年4月11日 下午7:02:16 
+     */
+    @RequestMapping(value = "/rdname/metadataTeilen")
+    public ModelAndView metadataTeilen(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int flag = jsonReq.getInt("flag");
+
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            RdNameOperation operation = new RdNameOperation(conn);
+
+            if (flag > 0) {//拆分指定数据
+                JSONArray dataList = jsonReq.getJSONArray("data");
+
+                operation.teilenRdName(dataList);
+            } else {//拆分特定范围内数据
+            	JSONObject params = jsonReq.getJSONObject("params");
+
+                operation.teilenRdNameByParams(params);
+            }
+
+            return new ModelAndView("jsonView", success());
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
         }
     }
 

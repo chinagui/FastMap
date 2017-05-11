@@ -62,23 +62,25 @@ public class Classifier {
 			// poi_englishname
 			Set<String> workItemIdEngName = new HashSet<String>();
 			int engNameHandler = 1;
-			if (ruleList.contains("FM-M01-02")) {
-				workItemIdEngName.add("FM-M01-02");
-				ruleList.remove("FM-M01-02");
-				if (ruleList.contains("FM-YW-20-013")) {
-					ruleList.remove("FM-YW-20-013");
-				}
-				if (ruleList.contains("FM-YW-20-012")) {
-					ruleList.remove("FM-YW-20-012");
-				}
-				if (ruleList.contains("FM-YW-20-014")) {
-					ruleList.remove("FM-YW-20-014");
-				}
-				if (ruleList.contains("FM-YW-20-017")) {
-					ruleList.remove("FM-YW-20-017");
-				}
- 				isEng = true;
-			}else if (ruleList.contains("FM-YW-20-013")) {
+			//删除网络英文作业项
+//			if (ruleList.contains("FM-M01-02")) {
+//				workItemIdEngName.add("FM-M01-02");
+//				ruleList.remove("FM-M01-02");
+//				if (ruleList.contains("FM-YW-20-013")) {
+//					ruleList.remove("FM-YW-20-013");
+//				}
+//				if (ruleList.contains("FM-YW-20-012")) {
+//					ruleList.remove("FM-YW-20-012");
+//				}
+//				if (ruleList.contains("FM-YW-20-014")) {
+//					ruleList.remove("FM-YW-20-014");
+//				}
+//				if (ruleList.contains("FM-YW-20-017")) {
+//					ruleList.remove("FM-YW-20-017");
+//				}
+// 				isEng = true;
+//			}else 
+			if (ruleList.contains("FM-YW-20-013")) {
 				workItemIdEngName.add("FM-YW-20-013");
 				ruleList.remove("FM-YW-20-013");
 				if (ruleList.contains("FM-YW-20-012")) {

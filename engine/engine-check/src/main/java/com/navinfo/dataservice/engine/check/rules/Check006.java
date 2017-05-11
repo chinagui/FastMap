@@ -18,11 +18,11 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
  * @category 土地覆盖
- * @rule_desc 当土地覆盖的大种别面（水系、绿地）不同并且共边时，该link上应该有两个种别
+ * @rule_desc 两个水系种别的面的公共边必须是水系假想线
  * @author fhx
  * @since 2017/5/10
  */
-public class Check005 extends baseRule {
+public class Check006 extends baseRule {
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 	}
 
@@ -46,6 +46,7 @@ public class Check005 extends baseRule {
 
 	/**
 	 * 检查LC_LINK
+	 * 
 	 * @param lcLinkKind
 	 * @throws Exception
 	 */
@@ -65,10 +66,8 @@ public class Check005 extends baseRule {
 			return;
 		}
 
-		if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 2)
-				|| (faceProperty(lcFaces.get(0)) == 2 && faceProperty(lcFaces.get(1)) == 1)) {
-			if (isLinkHasTwoKind(lcLink) == false) {
-
+		if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 1)) {
+			if (isLinkImaged(lcLink) == false) {
 				this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
 						((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
 			}
@@ -77,6 +76,7 @@ public class Check005 extends baseRule {
 
 	/**
 	 * 检查LC_FACE
+	 * 
 	 * @param lcFace
 	 * @throws Exception
 	 */
@@ -87,7 +87,6 @@ public class Check005 extends baseRule {
 			LcFaceTopo topo = (LcFaceTopo) row;
 			LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
 			LcLink lcLink = (LcLink) lcLinkSelector.loadById(topo.getLinkPid(), false);
-
 			LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
 			List<LcFace> lcFaces = lcFaceTopo.loadLcFaceByLinkId(topo.getLinkPid(), false);
 
@@ -95,10 +94,8 @@ public class Check005 extends baseRule {
 				continue;
 			}
 
-			if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 2)
-					|| (faceProperty(lcFaces.get(0)) == 2 && faceProperty(lcFaces.get(1)) == 1)) {
-				if (isLinkHasTwoKind(lcLink) == false) {
-
+			if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 1)) {
+				if (isLinkImaged(lcLink) == false) {
 					this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
 							((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
 				}
@@ -117,38 +114,27 @@ public class Check005 extends baseRule {
 			return 1;
 		}
 
-		if (lcFace.getKind() > 10 && lcFace.getKind() < 18) {
-			return 2;
-		}
 		return 0;
 	}
 
 	/**
-	 * 判断两个大种别面
+	 * 判断两个大种别面的共用线是否为假想线
 	 * 
 	 * @param lcLink
 	 * @return
 	 */
-	private boolean isLinkHasTwoKind(LcLink lcLink) {
+	private boolean isLinkImaged(LcLink lcLink) {
 		List<IRow> linkKinds = lcLink.getKinds();
 		boolean isWaterLink = false;
-		boolean isGreenLink = false;
 
 		for (IRow row : linkKinds) {
 			LcLinkKind linkKind = (LcLinkKind) row;
 
-			if (linkKind.getKind() >= 1 && linkKind.getKind() <= 8) {
+			if (linkKind.getKind() == 8) {
 				isWaterLink = true;
 			}
-
-			if (linkKind.getKind() >= 11 && linkKind.getKind() <= 18) {
-				isGreenLink = true;
-			}
 		}
 
-		if (isWaterLink && isGreenLink) {
-			return true;
-		}
-		return false;
+		return isWaterLink;
 	}
 }

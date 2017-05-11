@@ -3033,7 +3033,12 @@ public class TaskService {
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
 			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-				
+				List<String> tipsPids=new ArrayList<String>();
+				for(Object tipRowkey:tips){
+					tipsPids.add(tipRowkey.toString());
+				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi");
+//				api.batchQuickTask(taskId, subtaskId,tipsPids);
 			}
 		}catch(Exception e){
 			log.error("", e);
@@ -3053,7 +3058,7 @@ public class TaskService {
 	 */
 	@SuppressWarnings("unused")
 	private void batchPoiQuickTask(Connection dailyConn, int taskId, int subtaskId, List<Long> PoiQuickT) throws SQLException {
-		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? AND QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
+		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? , QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
 		QueryRunner run = new QueryRunner();
 		Object[][] params = new Object[PoiQuickT.size()][3] ;
 		

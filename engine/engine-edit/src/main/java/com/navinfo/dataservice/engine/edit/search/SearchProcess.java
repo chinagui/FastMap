@@ -29,6 +29,7 @@ import com.navinfo.dataservice.dao.glm.model.rd.cross.RdCross;
 import com.navinfo.dataservice.dao.glm.model.rd.lane.RdLane;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
+import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminTreeSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
@@ -62,6 +63,16 @@ public class SearchProcess {
 
 		this.conn = conn;
 
+	}
+
+	private JSONArray array;
+
+	public JSONArray getArray() {
+		return array;
+	}
+
+	public void setArray(JSONArray array) {
+		this.array = array;
 	}
 
 	/**
@@ -157,12 +168,15 @@ public class SearchProcess {
 		try {
 
 			for (ObjType type : types) {
-
-				ISearch search = factory.createSearch(type);
-
-				List<SearchSnapshot> list = search.searchDataByTileWithGap(x,
-						y, z, gap);
-
+				List<SearchSnapshot> list = null;
+			
+				if (type == ObjType.IXPOI) {
+					IxPoiSearch ixPoiSearch = new  IxPoiSearch(conn);
+					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap, this.getArray());
+				} else {
+					ISearch search = factory.createSearch(type);
+					list = search.searchDataByTileWithGap(x, y, z, gap);
+				}
 				JSONArray array = new JSONArray();
 
 				for (SearchSnapshot snap : list) {
@@ -333,12 +347,14 @@ public class SearchProcess {
 
 					return array;
 				}
-				//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					RdLinkSearchUtils linkSearchUtils = new RdLinkSearchUtils(conn);
-					List<RdLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					RdLinkSearchUtils linkSearchUtils = new RdLinkSearchUtils(
+							conn);
+					List<RdLink> links = linkSearchUtils.getCloseTrackLinks(
+							linkPid, cisFlag);
 					for (RdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -441,12 +457,14 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-				//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					ADLinkSearchUtils linkSearchUtils = new ADLinkSearchUtils(conn);
-					List<AdLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					ADLinkSearchUtils linkSearchUtils = new ADLinkSearchUtils(
+							conn);
+					List<AdLink> links = linkSearchUtils.getCloseTrackLinks(
+							linkPid, cisFlag);
 					for (AdLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -476,12 +494,14 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-				//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					ZoneLinkSearchUtils linkSearchUtils = new ZoneLinkSearchUtils(conn);
-					List<ZoneLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					ZoneLinkSearchUtils linkSearchUtils = new ZoneLinkSearchUtils(
+							conn);
+					List<ZoneLink> links = linkSearchUtils.getCloseTrackLinks(
+							linkPid, cisFlag);
 					for (ZoneLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -500,12 +520,14 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-				//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					LuLinkSearchUtils linkSearchUtils = new LuLinkSearchUtils(conn);
-					List<LuLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					LuLinkSearchUtils linkSearchUtils = new LuLinkSearchUtils(
+							conn);
+					List<LuLink> links = linkSearchUtils.getCloseTrackLinks(
+							linkPid, cisFlag);
 					for (LuLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -524,12 +546,14 @@ public class SearchProcess {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
 				}
-				//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					LcLinkSearchUtils linkSearchUtils = new LcLinkSearchUtils(conn);
-					List<LcLink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					LcLinkSearchUtils linkSearchUtils = new LcLinkSearchUtils(
+							conn);
+					List<LcLink> links = linkSearchUtils.getCloseTrackLinks(
+							linkPid, cisFlag);
 					for (LcLink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -633,10 +657,10 @@ public class SearchProcess {
 							viaList = sviaList;
 						}
 						if (eviaList.size() > 0 && sviaList.size() > 0) {
-							double eLength = linkSelector.loadByPidsLength(
-									eviaList);
-							double sLength = linkSelector.loadByPidsLength(
-									eviaList);
+							double eLength = linkSelector
+									.loadByPidsLength(eviaList);
+							double sLength = linkSelector
+									.loadByPidsLength(eviaList);
 							viaList = (eLength >= sLength) ? sviaList
 									: eviaList;
 
@@ -702,22 +726,26 @@ public class SearchProcess {
 					array.add(object);
 
 				}
-            case CMGBUILDLINK:
-                if (condition.containsKey("nodePid")) {
-                    int nodePid = condition.getInt("nodePid");
-                    CmgBuildlinkSelector selector = new CmgBuildlinkSelector(this.conn);
-                    List<CmgBuildlink> cmglinks = selector.listTheAssociatedLinkOfTheNode(nodePid, false);
-                    for (CmgBuildlink link : cmglinks) {
-                        array.add(link.Serialize(ObjLevel.BRIEF));
-                    }
-                }
-                
-            	//追踪闭合的面 1 顺时针 2 逆时针
-				if(condition.containsKey("cisFlag")){
-					int cisFlag  = condition.getInt("cisFlag");
-					int linkPid =  condition.getInt("linkPid");
-					CmgLinkSearchUtils linkSearchUtils = new CmgLinkSearchUtils(conn);
-					List<CmgBuildlink> links = linkSearchUtils.getCloseTrackLinks(linkPid, cisFlag);
+			case CMGBUILDLINK:
+				if (condition.containsKey("nodePid")) {
+					int nodePid = condition.getInt("nodePid");
+					CmgBuildlinkSelector selector = new CmgBuildlinkSelector(
+							this.conn);
+					List<CmgBuildlink> cmglinks = selector
+							.listTheAssociatedLinkOfTheNode(nodePid, false);
+					for (CmgBuildlink link : cmglinks) {
+						array.add(link.Serialize(ObjLevel.BRIEF));
+					}
+				}
+
+				// 追踪闭合的面 1 顺时针 2 逆时针
+				if (condition.containsKey("cisFlag")) {
+					int cisFlag = condition.getInt("cisFlag");
+					int linkPid = condition.getInt("linkPid");
+					CmgLinkSearchUtils linkSearchUtils = new CmgLinkSearchUtils(
+							conn);
+					List<CmgBuildlink> links = linkSearchUtils
+							.getCloseTrackLinks(linkPid, cisFlag);
 					for (CmgBuildlink link : links) {
 						array.add(link.Serialize(ObjLevel.BRIEF));
 					}
@@ -732,7 +760,7 @@ public class SearchProcess {
 
 		}
 	}
-	
+
 	public JSONObject searchDataByObject(JSONObject condition) throws Exception {
 
 		ObjectSearchUtils objectSearchUtils = new ObjectSearchUtils(conn,

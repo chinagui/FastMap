@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rddirectroute.delete;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -71,7 +68,7 @@ public class Operation implements IOperation {
 
 	/**
 	 * 根据路口pid删除路口关系的顺行
-	 * 
+	 *
 	 * @param crossPid
 	 * @param result
 	 * @throws Exception
@@ -195,5 +192,36 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		if (conn == null) {
+
+			return;
+		}
+
+		RdDirectrouteSelector selector = new RdDirectrouteSelector(conn);
+
+		//被删link作为进入线，删除link删除顺行
+		List<RdDirectroute> storageTmp = selector.loadByLinks(linkPids, 1, true);
+
+		//被删link作为退出线，删除link删除顺行
+		storageTmp.addAll(selector.loadByLinks(linkPids, 2, true));
+
+		//被删link作为经过线，删除link删除顺行
+		storageTmp.addAll(selector.loadByLinks(linkPids, 3, true));
+
+		Map<Integer, RdDirectroute> storage = new HashMap<>();
+
+		for (RdDirectroute directroute : storageTmp) {
+
+			storage.put(directroute.getPid(), directroute);
+		}
+
+		for (RdDirectroute directroute : storage.values()) {
+
+			result.insertObject(directroute, ObjStatus.DELETE, directroute.getPid());
+		}
 	}
 }

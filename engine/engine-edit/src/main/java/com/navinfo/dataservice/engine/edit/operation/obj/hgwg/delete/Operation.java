@@ -78,4 +78,28 @@ public class Operation implements IOperation {
         }
         return alertList;
     }
+
+    /**
+     * 用于删除RdLink时维护限高限重
+     *
+     * @param result   结果集
+     * @param linkPids 待删除线
+     * @return
+     * @throws Exception
+     */
+    public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+        RdHgwgLimitSelector selector = new RdHgwgLimitSelector(conn);
+        // 存储待删除限高限重信息
+        List<RdHgwgLimit> hgwgLimits = selector.loadByLinkPids(linkPids, true);
+
+
+        // 删除限高限重
+        for (RdHgwgLimit hgwgLimit : hgwgLimits) {
+
+            result.insertObject(hgwgLimit, ObjStatus.DELETE, hgwgLimit.pid());
+
+        }
+        return null;
+    }
 }

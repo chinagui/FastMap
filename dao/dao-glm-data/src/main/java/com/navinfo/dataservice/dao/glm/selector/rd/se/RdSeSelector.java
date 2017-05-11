@@ -98,4 +98,53 @@ public class RdSeSelector extends AbstractSelector {
         return rdSes;
     }
 
+    /**
+     * 根据linkPid加载
+     *
+     * @param linkPids
+     * @return
+     * @throws Exception
+     */
+    public List<RdSe> loadByLinks(List<Integer> linkPids, boolean isLock)
+            throws Exception {
+
+        List<RdSe> rows = new ArrayList<>();
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+        try {
+
+            String sql = "SELECT  pid, row_id, node_pid, in_link_pid, out_link_pid FROM rd_se  WHERE (in_link_pid in ("
+                    + ids + ") or out_link_pid in (" + ids + ")) and u_record!=2";
+
+            if (isLock) {
+                sql += " for update nowait";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                RdSe rdSe = new RdSe();
+
+                ReflectionAttrUtils.executeResultSet(rdSe, resultSet);
+
+                rows.add(rdSe);
+            }
+
+            return rows;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+    }
+
 }

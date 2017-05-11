@@ -27,6 +27,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameTone;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -282,7 +284,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//address
 		String addr = jo.getString("address");
 		ixPoi.setOldAddress(addr);
-		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
+		if(ixPoi.isChanged(IxPoi.OLD_ADDRESS)){
 			setAddressAndAttr(poiObj,addr);
 		}
 		//fid
@@ -510,10 +512,28 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	private void setNameAndAttr(IxPoiObj poiObj,String name)throws Exception{
 		//获取原始
-		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_FLAG);
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_TONE);
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME);
+		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有官方原始中文
+			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
+			if(r!=null){
+				long nameId = r.getNameId();
+				List<BasicRow> flags = poiObj.getSubRowByName(IxPoiObj.IX_POI_NAME_FLAG);
+				if(flags!=null){
+					for(BasicRow row:flags){
+						if(((IxPoiNameFlag)row).getNameId()==nameId){
+							poiObj.deleteSubrow(row);
+						}
+					}
+				}
+				List<BasicRow> tones = poiObj.getSubRowByName(IxPoiObj.IX_POI_NAME_TONE);
+				if(tones!=null){
+					for(BasicRow row:tones){
+						if(((IxPoiNameTone)row).getNameId()==nameId){
+							poiObj.deleteSubrow(row);
+						}
+					}
+				}
+				poiObj.deleteSubrow(r);
+			}
 		}else{
 			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
 			if(r!=null){
@@ -538,8 +558,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	private void setAddressAndAttr(IxPoiObj poiObj,String addr)throws Exception{
 		//获取原始
-		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_ADDRESS);
+		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除官方原始中文
+			IxPoiAddress r = poiObj.getCHAddress();
+			if(r!=null){
+				poiObj.deleteSubrow(r);
+			}
 		}else{
 			IxPoiAddress r = poiObj.getCHAddress();
 			if(r!=null){
@@ -597,14 +620,12 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setChildrenAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		if(JSONUtils.isNull(jo.get("relateChildren"))){
 			poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-			//可以孤父
-//			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 		}else{
 			JSONArray subJos = jo.getJSONArray("relateChildren");
 			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
 				poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-				//可以孤父
-//				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 			}else{
 				//交给差分
 				pcs.addUpdateChildren(poiObj.objPid(), subJos);

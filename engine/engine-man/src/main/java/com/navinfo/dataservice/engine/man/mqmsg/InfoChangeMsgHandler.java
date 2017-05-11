@@ -180,7 +180,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		int programId = ProgramService.getInstance().getNewProgramId(conn);
 		program.setProgramId(programId);
-		program.setName(infor.getInforName() + df.format(infor.getPublishDate()) + programId);
+		program.setName(infor.getInforName()+"_" + df.format(infor.getPublishDate())+"_" +  programId);
 		program.setType(4);
 
 		program.setCollectPlanStartDate((Timestamp)getCalculatedDate(infor.getPublishDate(),1));

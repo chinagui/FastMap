@@ -416,7 +416,7 @@ public class RdNameTeilen {
 		engRdName.setNamePhonetic("");
 		//********zl 2017.05.10 **********
 		if(chiRdName.getRoadType() == 3){
-			engRdName.setBase("");
+			engRdName.setBase(chiRdName.getBase());
 		}else{
 			engRdName.setBase(engBaseName);
 		}

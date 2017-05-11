@@ -742,7 +742,7 @@ public class RdBranchSelector extends AbstractSelector {
 		return rows;
 	}
 
-	public List<RdBranch> loadByLinkPids(List<Integer> linkPids, int linkType,
+	private List<RdBranch> loadByLinkPids(List<Integer> linkPids, int linkType,
 			boolean isLock) throws Exception {
 		List<RdBranch> branchs = new ArrayList<RdBranch>();
 

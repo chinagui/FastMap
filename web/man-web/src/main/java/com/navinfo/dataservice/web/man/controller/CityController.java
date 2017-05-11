@@ -95,4 +95,32 @@ public class CityController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}*/
+	
+	/**
+	 * city列表
+	 * @author songhe
+	 * @return List
+	 * 
+	 */
+	@RequestMapping(value = "/city/listAll")
+	public ModelAndView queryListAll(HttpServletRequest request){
+		try{
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//TODO 这里编码集需要确认
+//			JSONObject dataJson = JSONObject.fromObject(new String(request.getParameter("parameter").getBytes("iso8859-1"),"utf-8"));
+			JSONObject parame = new JSONObject();
+			
+			if(dataJson.containsKey("condition")){
+				parame = JSONObject.fromObject(dataJson.getString("condition"));
+			}
+			
+			List<Map<String,Object>> data = service.queryListAll(parame);
+			
+			return new ModelAndView("jsonView", success(data));
+		}catch (Exception e){
+			log.error("获取城市列表失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	 }
+	
 }

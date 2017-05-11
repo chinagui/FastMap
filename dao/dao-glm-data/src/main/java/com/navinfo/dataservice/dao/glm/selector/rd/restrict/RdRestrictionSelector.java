@@ -541,7 +541,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 
 		pidTemp.addAll(linkPids);
 
-		int dataLimit = 100;
+		int dataLimit = 500;
 
 		while (pidTemp.size() >= dataLimit) {
 
@@ -569,7 +569,7 @@ public class RdRestrictionSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<RdRestriction> loadByLinkPids(List<Integer> linkPids,
+	private List<RdRestriction> loadByLinkPids(List<Integer> linkPids,
 			int linkType, boolean isLock) throws Exception {
 
 		List<RdRestriction> restrictions = new ArrayList<RdRestriction>();

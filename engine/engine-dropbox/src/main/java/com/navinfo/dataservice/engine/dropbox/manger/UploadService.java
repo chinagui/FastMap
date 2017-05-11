@@ -239,7 +239,7 @@ public class UploadService {
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			//"dropbox.upload.path"
 			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath)+"/android_log";  //服务器部署路径 /data/resources/upload
+					PropConstant.uploadPath)+"/log";  //服务器部署路径 /data/resources/upload
 			logUploadDir+="/"+userName+"_"+userId;
 			File tempFile = new File(uploadItem.getName());
 			File file = new File(logUploadDir,tempFile.getName());

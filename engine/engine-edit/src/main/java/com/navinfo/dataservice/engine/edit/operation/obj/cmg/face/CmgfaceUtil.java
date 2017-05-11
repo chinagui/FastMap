@@ -126,7 +126,7 @@ public final class CmgfaceUtil {
                     nodeIterator.remove();
                 }
             }
-            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface.getMeshId(), conn, result);
+            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface, conn, result);
             List<CmgBuildlink> cmglinks = cmglinkSelector.listTheAssociatedLinkOfTheFace(cmgface.pid(), false);
             Iterator<CmgBuildlink> linkIterator = cmglinks.iterator();
             while (linkIterator.hasNext()) {
@@ -134,7 +134,7 @@ public final class CmgfaceUtil {
                     linkIterator.remove();
                 }
             }
-            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface.getMeshId(), conn, result);
+            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface, conn, result);
         }
     }
 }

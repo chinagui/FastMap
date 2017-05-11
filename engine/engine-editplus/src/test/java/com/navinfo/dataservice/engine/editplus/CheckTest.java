@@ -68,7 +68,8 @@ public class CheckTest {
 		CheckTest test=new CheckTest();
 		test.init();
 //		Connection conn = DBConnector.getInstance().getConnectionById(17);
-		Connection conn = DBConnector.getInstance().getConnectionById(84);
+		Connection conn = DBConnector.getInstance().getConnectionById(13);
+//		Connection conn = DBConnector.getInstance().getConnectionById(84);
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
@@ -131,7 +132,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("GLM60143");
+		ruleIdList.add("FM-YW-20-284");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

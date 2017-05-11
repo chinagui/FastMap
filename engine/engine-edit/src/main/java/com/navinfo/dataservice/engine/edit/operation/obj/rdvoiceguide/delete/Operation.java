@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdvoiceguide.delete;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -253,5 +250,80 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+
+	/**
+	 * 根据link数组维护 RdVoiceguide
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids,Result result) throws Exception {
+
+		RdVoiceguideSelector selector = new RdVoiceguideSelector(conn);
+
+		List<RdVoiceguide> storageTmp = selector.loadByLinks(linkPids, 1, true);
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 2, true));
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 3, true));
+
+		Map<Integer, RdVoiceguide> storage = new HashMap<>();
+
+		for (RdVoiceguide voiceguide : storageTmp) {
+
+			storage.put(voiceguide.getPid(), voiceguide);
+		}
+
+		for (RdVoiceguide voiceguide : storage.values()) {
+			//被删link作为进入线，删除RdVoiceguide
+			if (linkPids.contains(voiceguide.getInLinkPid())) {
+
+				result.insertObject(voiceguide, ObjStatus.DELETE, voiceguide.getPid());
+
+				continue;
+			}
+
+			List<RdVoiceguideDetail> delDetail = new ArrayList<>();
+
+			for (IRow rowDetail : voiceguide.getDetails()) {
+
+				RdVoiceguideDetail detail = (RdVoiceguideDetail) rowDetail;
+
+				//被删link作为退出线，删除该Link会对应删除此组关系
+				if (linkPids.contains(detail.getOutLinkPid())) {
+
+					delDetail.add(detail);
+
+					continue;
+				}
+
+				for (IRow rowVia : detail.getVias()) {
+
+					RdVoiceguideVia via = (RdVoiceguideVia) rowVia;
+
+					//被删link作为经过线，删除该link会对应删除次组关系
+					if (linkPids.contains(via.getLinkPid())) {
+
+						delDetail.add(detail);
+
+						break;
+					}
+				}
+			}
+
+			//退出线全被删除，删除RdVoiceguide
+			if (delDetail.size() == voiceguide.getDetails().size()) {
+
+				result.insertObject(voiceguide, ObjStatus.DELETE, voiceguide.getPid());
+
+				break;
+			}
+
+			for (RdVoiceguideDetail detail : delDetail) {
+
+				result.insertObject(detail, ObjStatus.DELETE, detail.getVoiceguidePid());
+			}
+		}
 	}
 }

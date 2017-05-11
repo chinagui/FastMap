@@ -185,7 +185,13 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 
 			this.prepareData();
 
+			long startPostCheckTime = System.currentTimeMillis();
+
 			msg = exeOperation();
+
+			long endPostCheckTime = System.currentTimeMillis();
+
+			log.info("exeOperation use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
 
 			checkResult();
 
@@ -204,6 +210,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 			if (preCheckMsg != null) {
 				throw new Exception(preCheckMsg);
 			}
+
 			log.info("END  PRECHECK ");
 			// 维护车道信息
 			this.updateRdLane();
@@ -211,14 +218,32 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 			if (this.command.getInfect() == 1) {
 				return this.delPrompt(this.getResult(), this.getCommand());
 			}
+
+
+			
+
+			startPostCheckTime = System.currentTimeMillis();
+
+
 			this.recordData();
-			long startPostCheckTime = System.currentTimeMillis();
+
+			endPostCheckTime = System.currentTimeMillis();
+
+			log.info("recordData use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+
+			startPostCheckTime = System.currentTimeMillis();
+
 			log.info("BEGIN  POSTCHECK ");
+
 			this.postCheck();
-			long endPostCheckTime = System.currentTimeMillis();
+
+			endPostCheckTime = System.currentTimeMillis();
+
 			log.info("BEGIN  POSTCHECK ");
-			log.info("post check use time   "
-					+ String.valueOf(endPostCheckTime - startPostCheckTime));
+
+
+			log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+
 			conn.commit();
 			log.info("操作成功");
 

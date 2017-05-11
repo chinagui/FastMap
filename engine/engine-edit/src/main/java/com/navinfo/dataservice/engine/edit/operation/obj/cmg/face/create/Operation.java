@@ -14,6 +14,8 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.link.CmglinkUtil;
 import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
@@ -23,6 +25,7 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
@@ -30,9 +33,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @Title: Operation
@@ -43,6 +48,11 @@ import java.util.Map;
  * @Version: V1.0
  */
 public class Operation implements IOperation {
+
+    /**
+     * 日志记录
+     */
+    private static Logger logger = Logger.getLogger(Operation.class);
 
     /**
      * 参数
@@ -116,6 +126,8 @@ public class Operation implements IOperation {
             }
             // 初始化CMG-NODE-SELECTOR
             AbstractSelector cmgnodeSelector = new AbstractSelector(CmgBuildnode.class, conn);
+            // 用于避免CMG-NODE重复处理
+            Set<Integer> nodes = new HashSet<>();
             // 重新计算CMG-LINK-MESH信息、CMG-NODE-MESH信息
             for (IRow row : command.getCmglinks()) {
                 CmgBuildlink cmglink = (CmgBuildlink) row;
@@ -132,7 +144,10 @@ public class Operation implements IOperation {
                 } else {
                     cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.getsNodePid(), false);
                 }
-                calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
+                if (!nodes.contains(cmgnode.pid())) {
+                    nodes.add(cmgnode.pid());
+                    calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
+                }
                 // 重新计算END点的MESH信息
                 if (command.getLinkType().equals(ObjType.RDLINK.toString())) {
                     for (IRow r : result.getAddObjects()) {
@@ -141,9 +156,12 @@ public class Operation implements IOperation {
                         }
                     }
                 } else {
-                    cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.getsNodePid(), false);
+                    cmgnode = (CmgBuildnode) cmgnodeSelector.loadById(cmglink.geteNodePid(), false);
                 }
-                calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
+                if (!nodes.contains(cmgnode.pid())) {
+                    nodes.add(cmgnode.pid());
+                    calcCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
+                }
             }
         }
         return null;
@@ -241,16 +259,26 @@ public class Operation implements IOperation {
      * @param cmglink CMG-LINK
      */
     private void calcCmglinkMesh(Result result, int cmgfaceMeshId, CmgBuildlink cmglink) {
-        Iterator<IRow> iterator = cmglink.getMeshes().iterator();
-        while (iterator.hasNext()) {
-            CmgBuildlinkMesh cmglinkMesh = (CmgBuildlinkMesh) iterator.next();
-            if (cmgfaceMeshId != cmglinkMesh.getMeshId()) {
-                iterator.remove();
-                result.insertObject(cmglinkMesh, ObjStatus.DELETE, cmglink.pid());
+        CmgBuildfaceSelector selector = new CmgBuildfaceSelector(conn);
+        try {
+            List<CmgBuildface> cmgfaces = selector.listTheAssociatedFaceOfTheLink(cmglink.pid(), false);
+            if (CollectionUtils.isEmpty(cmgfaces)) {
+                Iterator<IRow> iterator = cmglink.getMeshes().iterator();
+                while (iterator.hasNext()) {
+                    CmgBuildlinkMesh cmglinkMesh = (CmgBuildlinkMesh) iterator.next();
+                    if (cmgfaceMeshId != cmglinkMesh.getMeshId()) {
+                        iterator.remove();
+                        result.insertObject(cmglinkMesh, ObjStatus.DELETE, cmglink.pid());
+                    }
+                }
+                if (CollectionUtils.isEmpty(cmglink.getMeshes())) {
+                    createCmglinkMesh(result, cmgfaceMeshId, cmglink);
+                }
+            } else {
+                createCmglinkMesh(result, cmgfaceMeshId, cmglink);
             }
-        }
-        if (CollectionUtils.isEmpty(cmglink.getMeshes())) {
-            createCmglinkMesh(result, cmgfaceMeshId, cmglink);
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e.fillInStackTrace());
         }
     }
 
@@ -262,21 +290,41 @@ public class Operation implements IOperation {
      * @param cmgnode CMG-NODE
      */
     private void calcCmgnodeMesh(Result result, int cmgfaceMeshId, CmgBuildlink cmglink, CmgBuildnode cmgnode) {
-        Iterator<IRow> iterator;
-        iterator = cmgnode.getMeshes().iterator();
-        while (iterator.hasNext()) {
-            CmgBuildnodeMesh cmgnodeMesh = (CmgBuildnodeMesh) iterator.next();
-            if (cmgfaceMeshId != cmgnodeMesh.getMeshId()) {
-                iterator.remove();
-                result.insertObject(cmgnodeMesh, ObjStatus.DELETE, cmgnode.pid());
+        CmgBuildfaceSelector selector = new CmgBuildfaceSelector(conn);
+        try {
+            List<CmgBuildface> cmgfaces = selector.listTheAssociatedFaceOfTheNode(cmgnode.pid(), false);
+            if (CollectionUtils.isEmpty(cmgfaces)) {
+                Iterator<IRow> iterator = cmgnode.getMeshes().iterator();
+                while (iterator.hasNext()) {
+                    CmgBuildnodeMesh cmgnodeMesh = (CmgBuildnodeMesh) iterator.next();
+                    if (cmgfaceMeshId != cmgnodeMesh.getMeshId()) {
+                        iterator.remove();
+                        result.insertObject(cmgnodeMesh, ObjStatus.DELETE, cmgnode.pid());
+                    }
+                }
+                if (CollectionUtils.isEmpty(cmgnode.getMeshes())) {
+                    createCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
+                }
+            } else {
+                createCmgnodeMesh(result, cmgfaceMeshId, cmglink, cmgnode);
             }
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e.fillInStackTrace());
         }
-        if (CollectionUtils.isEmpty(cmgnode.getMeshes())) {
-            CmgBuildnodeMesh cmgnodeMesh = new CmgBuildnodeMesh();
-            cmgnodeMesh.setNodePid(cmgnode.pid());
-            cmgnodeMesh.setMeshId(cmgfaceMeshId);
-            result.insertObject(cmgnodeMesh, ObjStatus.INSERT, cmglink.pid());
-        }
+    }
+
+    /**
+     * 创建CMG-LINK-MESH
+     * @param result 结果集
+     * @param cmgfaceMeshId 关联面的图幅号
+     * @param cmglink CMG-LINK
+     * @param cmgnode CMG-NODE
+     */
+    private void createCmgnodeMesh(Result result, int cmgfaceMeshId, CmgBuildlink cmglink, CmgBuildnode cmgnode) {
+        CmgBuildnodeMesh cmgnodeMesh = new CmgBuildnodeMesh();
+        cmgnodeMesh.setNodePid(cmgnode.pid());
+        cmgnodeMesh.setMeshId(cmgfaceMeshId);
+        result.insertObject(cmgnodeMesh, ObjStatus.INSERT, cmglink.pid());
     }
 
 

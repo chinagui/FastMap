@@ -10,6 +10,7 @@ import org.junit.Test;
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.check.NiValExceptionOperator;
 import com.navinfo.dataservice.dao.check.NiValExceptionSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.rdname.RdNameSelector;
 import com.navinfo.navicommons.database.Page;
@@ -99,7 +100,7 @@ public class RdNameResultsTest {
 	}
 	
 	
-//	@Test
+	@Test
 	public void checkResultListByTask(){
 		Connection conn =null;
 		try{
@@ -107,7 +108,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','tableName':'rdName','params':{'name':'','nameId':'','adminId':'','namePhonetic':'','ruleCode':'','information':''}}");	
+			JSONObject jsonReq = JSONObject.fromObject("{'pageSize':20,'pageNum':1,'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','tableName':'rdName','params':{'name':'东河沿南','nameId':'3862625','adminId':'320000','namePhonetic':'Dong He Yan Nan Lu','ruleCode':'CHR60010','information':'汉字与'}}");	
 			
 				NiValExceptionSelector a = new NiValExceptionSelector(conn);
 				
@@ -132,7 +133,7 @@ public class RdNameResultsTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public void checkResultListByJobId(){
 		Connection conn =null;
 		try{
@@ -203,7 +204,7 @@ public class RdNameResultsTest {
 					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
 					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
 			
-			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['rule','level','information','adminName']}");
+			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'b8764b6d6a0e4ada802c36f07ac9af45','data':['rule','level','information','adminName']}");
 //			JSONObject jsonReq = JSONObject.fromObject("{'taskName':'2d6475dcd01a41d6b3b8588544d83db6','data':['ruleid']}");
 				String taskName = "";
 				taskName = jsonReq.getString("taskName");
@@ -296,5 +297,34 @@ public class RdNameResultsTest {
 		}
 	}
 	
+//	@Test
+	public void updateCheckLogStatusForRdTest(){
+			Connection conn =null;
+			try{
+				conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+						"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.3.227:1521/orcl", "metadata_pd_17sum", "metadata_pd_17sum").getConnection();
+						//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+				
+				JSONObject jsonReq = JSONObject.fromObject("{'id':'4554635','type':3}");	//
+				
+				String id = jsonReq.getString("id");
+
+				int type = jsonReq.getInt("type");
+					NiValExceptionOperator selector = new NiValExceptionOperator(conn);
+					
+					try {
+						selector.updateCheckLogStatusForRd(id, type);
+
+						 System.out.println(" end ");
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+			}catch(Exception e){
+				e.printStackTrace();
+			}finally{
+				DbUtils.closeQuietly(conn);
+			}
+		}
 	
 }

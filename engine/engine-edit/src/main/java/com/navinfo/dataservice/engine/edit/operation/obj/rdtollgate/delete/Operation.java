@@ -91,4 +91,27 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 根据删除线的PID查询出与之相关的收费站并删除
+	 *
+	 * @param result
+	 *            存放待处理的结果集
+	 * @param linkPids
+	 *            将删除线的PID
+	 * @return
+	 * @throws Exception
+	 */
+	public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		RdTollgateSelector selector = new RdTollgateSelector(this.conn);
+
+		List<RdTollgate> rdTollgates = selector.loadByLinks(linkPids, true);
+
+		for (RdTollgate rdTollgate : rdTollgates) {
+
+			result.insertObject(rdTollgate, ObjStatus.DELETE, rdTollgate.pid());
+		}
+		return null;
+	}
 }

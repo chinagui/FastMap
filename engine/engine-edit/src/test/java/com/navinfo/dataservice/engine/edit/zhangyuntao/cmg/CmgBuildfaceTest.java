@@ -22,8 +22,8 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildface(){
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":29," +
-                "\"data\":{\"linkType\":\"CMGBUILDLINK\",\"linkPids\":[507000145,407000024,507000144,506000014]}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"linkType\":\"CMGBUILDLINK\",\"linkPids\":[406000158,506000018]}}";
         TestUtil.run(requester);
     }
 
@@ -41,7 +41,7 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testDeleteCmgBuildface() {
-        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":507000005}";
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":509000006}";
         TestUtil.run(requester);
     }
 }

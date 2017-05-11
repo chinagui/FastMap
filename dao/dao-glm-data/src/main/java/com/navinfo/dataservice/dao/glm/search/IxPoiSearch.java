@@ -266,9 +266,9 @@ public class IxPoiSearch implements ISearch {
 
 				m.put("g", resultSet.getInt("indoor") == 0 ? 0 : 1);
 				m.put("quickFlag",
-						resultSet.getInt("quick_subtask_id") == 0 ? 0 : 1);
+						resultSet.getInt("quick_task_id") == 0 ? 0 : 1);
 				m.put("mediumFlag",
-						resultSet.getInt("medium_subtask_id") == 0 ? 0 : 1);
+						resultSet.getInt("medium_task_id") == 0 ? 0 : 1);
 
 				Double xGuide = resultSet.getDouble("x_guide");
 

@@ -172,8 +172,7 @@ public class SearchProcess {
 			
 				if (type == ObjType.IXPOI) {
 					IxPoiSearch ixPoiSearch = new  IxPoiSearch(conn);
-					
-					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap);
+					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap, this.getArray());
 				} else {
 					ISearch search = factory.createSearch(type);
 					list = search.searchDataByTileWithGap(x, y, z, gap);

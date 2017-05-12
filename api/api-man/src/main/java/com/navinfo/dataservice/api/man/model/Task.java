@@ -86,7 +86,7 @@ public class Task implements Serializable{
 		String result = "0|0|0|0";
 		for(Object kind:workKindArray){
 			int t=Integer.valueOf(kind.toString());
-			result=result.substring(1,(t-1)*2)+"1"+result.substring(t*2,result.length());
+			result=result.substring(0,(t-1)*2)+"1"+result.substring((t-1)*2+1,result.length());
 		}
 		this.workKind= result;
 	}
@@ -98,7 +98,7 @@ public class Task implements Serializable{
 	 */
 	public int getSubWorkKind(int num){
 		if(StringUtils.isEmpty(this.workKind)){return 0;}
-		return Integer.valueOf(this.workKind.substring((num-1)*2+1, 1));
+		return Integer.valueOf(this.workKind.substring((num-1)*2, (num-1)*2+1));
 	}
 
 	private JSONObject geometry;

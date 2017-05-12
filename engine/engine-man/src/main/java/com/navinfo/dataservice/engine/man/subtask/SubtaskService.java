@@ -388,7 +388,7 @@ public class SubtaskService {
 	 * @throws Exception
 	 */
 	private Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
-		if(newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
+		if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
 		if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
 		
 		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());

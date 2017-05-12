@@ -1586,6 +1586,10 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GROUP_ID= "+bean.getGroupId();
 			};
+			if (bean!=null&&bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
+			};
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				updateSql+=" where TASK_ID=" + bean.getTaskId();
 			};

@@ -74,8 +74,6 @@ public class GLM60437 extends BasicCheckRule {
 				if(nameTmp.isCH()&&nameTmp.isOfficeName()&&nameTmp.isStandardName()){
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
-
-					if(nameTmp.isUsedName()){continue;}
 					
 					Pattern p = Pattern.compile(".*[〇零一二三四五六七八九十]{3,}.*"); //三个及三个以上连续的中文数字零到九（包含中文数字〇）
 					boolean flag = false;
@@ -84,19 +82,19 @@ public class GLM60437 extends BasicCheckRule {
 					}
 					
 					if(flag){
-						IxPoiName aliasCHIName = poiObj.getAliasCHIName(nameTmp.getNameGroupid());
-						if(aliasCHIName==null){//没有别名
+						List<IxPoiName> aliasCHINames = poiObj.getAliasCHIName();
+						if(aliasCHINames==null||aliasCHINames.isEmpty()){	//没有别名
 							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
 							return;
 						}
-						
-						Pattern p1 = Pattern.compile(".*[\uFF10-\uFF19]{3,}.*"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
-						String aliasName = aliasCHIName.getName();
-						if(!p1.matcher(aliasName).matches()){
-							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-							return;
+						for (IxPoiName aliasCHIName : aliasCHINames) {
+							Pattern p1 = Pattern.compile(".*[\uFF10-\uFF19]{3,}.*"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
+							String aliasName = aliasCHIName.getName();
+							if(!p1.matcher(aliasName).matches()){
+								setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+								return;
+							}
 						}
-						
 					}
 				}
 			}

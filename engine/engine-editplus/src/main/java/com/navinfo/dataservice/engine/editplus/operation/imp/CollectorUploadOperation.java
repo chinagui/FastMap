@@ -809,6 +809,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 					}
 					this.usdateName(poi, jo, getLangCode());
 				}
+				
 				//改地址
 				String outDoorAddress = jo.getString("address");
 				if(outDoorAddress != null){
@@ -819,6 +820,7 @@ public class CollectorUploadOperation extends AbstractOperation {
 					}
 					this.usdateAddress(poi, jo, getLangCode());
 				}
+				
 				
 				
 				ixPoi.setPoiNum(jo.getString("fid"));

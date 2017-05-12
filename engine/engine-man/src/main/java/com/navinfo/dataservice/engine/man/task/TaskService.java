@@ -2177,6 +2177,23 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return getGridListByTaskId(conn, taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONArray getGridListByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
 			
@@ -2194,8 +2211,6 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -2926,9 +2941,10 @@ public class TaskService {
 			TaskOperation.reOpenBlockByTask(conn,newTaskId);
 			
 			//修改打开二代编辑任务对应的日落月配置表图幅
-			Task task = queryByTaskId(newTaskId);
-			if(task.getType() == 2){
-				updateDayToMonthMesh(newTaskId);
+			Task task = queryByTaskId(conn,taskId);
+			//Task task = queryByTaskId(newTaskId);
+			if(task.getType() == 3){
+				updateDayToMonthMesh(conn,newTaskId);
 			}
 			
 		} catch (Exception e) {
@@ -2944,8 +2960,8 @@ public class TaskService {
 	 * @param taskId
 	 * @throws Exception 
 	 */
-	private void updateDayToMonthMesh(int taskId) throws Exception {
-		JSONArray gridList = getGridListByTaskId(taskId);
+	private void updateDayToMonthMesh(Connection conn,int taskId) throws Exception {
+		JSONArray gridList = getGridListByTaskId(conn,taskId);
 		Set<Integer> meshIdSet = new HashSet<Integer>();
 		for(Object gridId:gridList.toArray()){
 			meshIdSet.add(Integer.parseInt(gridId.toString().substring(0, gridId.toString().length()-3)));
@@ -3111,7 +3127,12 @@ public class TaskService {
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
 			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-				
+				List<String> tipsPids=new ArrayList<String>();
+				for(Object tipRowkey:tips){
+					tipsPids.add(tipRowkey.toString());
+				}
+//				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi");
+//				api.batchQuickTask(taskId, subtaskId,tipsPids);
 			}
 		}catch(Exception e){
 			log.error("", e);
@@ -3131,7 +3152,7 @@ public class TaskService {
 	 */
 	@SuppressWarnings("unused")
 	private void batchPoiQuickTask(Connection dailyConn, int taskId, int subtaskId, List<Long> PoiQuickT) throws SQLException {
-		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? AND QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
+		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? , QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
 		QueryRunner run = new QueryRunner();
 		Object[][] params = new Object[PoiQuickT.size()][3] ;
 		

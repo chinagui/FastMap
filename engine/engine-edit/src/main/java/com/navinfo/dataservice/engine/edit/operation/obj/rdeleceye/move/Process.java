@@ -1,11 +1,16 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdeleceye.move;
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.model.rd.eleceye.RdElectroniceye;
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
 import com.navinfo.dataservice.dao.glm.selector.rd.eleceye.RdElectroniceyeSelector;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
+import com.navinfo.dataservice.engine.edit.operation.obj.hgwg.move.CheckConnectivity;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.geom.Geometry;
 
 /**
  * @author zhangyt
@@ -32,8 +37,16 @@ public class Process extends AbstractProcess<Command> {
                 .getCommand().getPid(), true));
         this.getCommand().setLink((RdLink) selector.loadById(getCommand().getContent().getInt("linkPid"), true));
         RdLink sourceLink = (RdLink) selector.loadById(getCommand().getEleceye().getLinkPid(), true);
-        Check check = new Check(getCommand(), getConn(), sourceLink, getCommand().getLink());
-        check.precheck();
+        RdLink targetLink = getCommand().getLink();
+
+        Geometry sourceGeometry =  GeoTranslator.transform(
+                getCommand().getEleceye().getGeometry(), Constant.BASE_SHRINK,Constant.BASE_PRECISION);
+        Geometry targetGeometry = GeoTranslator.geojson2Jts(getCommand().getContent().getJSONObject("geometry"));
+
+        CheckConnectivity checkConnectivity =
+                new CheckConnectivity(getConn(), "电子眼", sourceLink, sourceGeometry, targetLink, targetGeometry);
+        checkConnectivity.check();
+
         return false;
     }
 

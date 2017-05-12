@@ -83,6 +83,11 @@ public class CollectorPoiPcRelationImportor extends AbstractOperation {
 		//获取父的obj
 		Map<Long, BasicObj> pois = result.getObjsMapByType(ObjectName.IX_POI);
 		//开始差分
+		/**
+		 * 差分逻辑
+		 * 1. 父POI库中不存在，报错误
+		 * 2. 
+		 */
 		for(Entry<Long,Set<Long>> en : pRels.entrySet()){
 
 			

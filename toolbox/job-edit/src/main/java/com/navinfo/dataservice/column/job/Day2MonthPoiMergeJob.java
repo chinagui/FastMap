@@ -283,6 +283,10 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 				manApi.taskUpdateCmsProgress(phaseId,2,null);
 			}
 			
+			log.info("开始筛选需要批引导LINK的POI");
+			tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
+			log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
+			
 		}catch(Exception e){
 			isbatch = false;
 			if(monthConn!=null)monthConn.rollback();
@@ -306,31 +310,21 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 			throw e;
 			
 		}finally{
-			
-			try{
-				log.info("开始筛选需要批引导LINK的POI");
-				tempPoiGLinkTab=createPoiTabForBatchGL(result,monthDbSchema);
-				log.info("需要执行引导LINK批处理的POI在临时表中："+tempPoiGLinkTab);
-				
-				if(isbatch&&!tempPoiGLinkTab.isEmpty()){
-					log.info("开始执行引导LINK批处理");
-					new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
-					log.info("引导LINK批处理执行完成");
-				}
-			}catch(Exception ee){
-				log.info("回滚任务状态报错："+ee.getMessage());
-				throw ee;
-			}finally{
-				log.info("释放加锁图幅");
-				releaseMeshLock(monthConn,meshs);
-				DbUtils.commitAndCloseQuietly(monthConn);
-				DbUtils.commitAndCloseQuietly(dailyConn);
-				log.info("commit db");
-				if(logSelector!=null){
-					log.info("释放履历锁");
-					logSelector.unselect(false);
-				}
+			log.info("释放加锁图幅");
+			releaseMeshLock(monthConn,meshs);
+			DbUtils.commitAndCloseQuietly(monthConn);
+			DbUtils.commitAndCloseQuietly(dailyConn);
+			log.info("commit db");
+			if(logSelector!=null){
+				log.info("释放履历锁");
+				logSelector.unselect(false);
 			}
+			if(isbatch&&!tempPoiGLinkTab.isEmpty()){
+				log.info("开始执行引导LINK批处理");
+				new PoiGuideLinkBatch(tempPoiGLinkTab,monthDbSchema).execute();
+				log.info("引导LINK批处理执行完成");
+			}
+			
 		}
 		
 	}

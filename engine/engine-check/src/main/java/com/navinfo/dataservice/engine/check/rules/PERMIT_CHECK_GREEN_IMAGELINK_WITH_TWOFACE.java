@@ -18,11 +18,13 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 
 /**
  * @category 土地覆盖
- * @rule_desc 当土地覆盖的大种别面（水系、绿地）不同并且共边时，该link上应该有两个种别
+ * @rule_desc 绿地假想线必须对应两个绿地种别的面；两个绿地种别的面的公共边必须是绿地假想线
+ *            特殊说明：当岛屿与其他非岛屿（公园、绿化带、滑雪场、高尔夫、绿林林地、草地）类绿地共边时，共边线种别应该为岛屿与非岛屿类绿地的种别，
+ *            否则报log
  * @author fhx
  * @since 2017/5/10
  */
-public class Check005 extends baseRule {
+public class PERMIT_CHECK_GREEN_IMAGELINK_WITH_TWOFACE extends baseRule {
 	public void preCheck(CheckCommand checkCommand) throws Exception {
 	}
 
@@ -46,6 +48,7 @@ public class Check005 extends baseRule {
 
 	/**
 	 * 检查LC_LINK
+	 * 
 	 * @param lcLinkKind
 	 * @throws Exception
 	 */
@@ -65,18 +68,16 @@ public class Check005 extends baseRule {
 			return;
 		}
 
-		if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 2)
-				|| (faceProperty(lcFaces.get(0)) == 2 && faceProperty(lcFaces.get(1)) == 1)) {
-			if (isLinkHasTwoKind(lcLink) == false) {
-
-				this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
-						((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
-			}
+		if (faceProperty(lcFaces.get(0), lcFaces.get(1), lcLink) == false) {
+			this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
+					((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
 		}
+
 	}
 
 	/**
 	 * 检查LC_FACE
+	 * 
 	 * @param lcFace
 	 * @throws Exception
 	 */
@@ -95,13 +96,9 @@ public class Check005 extends baseRule {
 				continue;
 			}
 
-			if ((faceProperty(lcFaces.get(0)) == 1 && faceProperty(lcFaces.get(1)) == 2)
-					|| (faceProperty(lcFaces.get(0)) == 2 && faceProperty(lcFaces.get(1)) == 1)) {
-				if (isLinkHasTwoKind(lcLink) == false) {
-
-					this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
-							((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
-				}
+			if (faceProperty(lcFaces.get(0), lcFaces.get(1), lcLink) == false) {
+				this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",
+						((LcLinkMesh) lcLink.getMeshes().get(0)).getMeshId());
 			}
 		} // for
 	}
@@ -110,45 +107,73 @@ public class Check005 extends baseRule {
 	 * 判断LC_FACE的大种别的共边线是否有两个种别
 	 * 
 	 * @param lcFace
-	 * @return 1→水系；2→绿地
+	 * @return 1→绿地
 	 */
-	private int faceProperty(LcFace lcFace) {
-		if (lcFace.getKind() > 0 && lcFace.getKind() < 7) {
-			return 1;
+	private boolean faceProperty(LcFace lcFace1, LcFace lcFace2, LcLink lcLink) throws Exception {
+		// 如果是“岛屿”与“其他绿地”的组合，不许face种别与link种别一致
+		if ((lcFace1.getKind() == 17 && lcFace2.getKind() > 10 && lcFace2.getKind() < 18)
+				|| (lcFace2.getKind() == 17 && lcFace1.getKind() > 10 && lcFace1.getKind() < 18)) {
+			return isKindEqualFaceKinds(lcLink, lcFace1.getKind(), lcFace2.getKind());
 		}
+		// 如果是非"岛屿"与“其他绿地”的组合，link必须为绿地假想线
 
-		if (lcFace.getKind() > 10 && lcFace.getKind() < 18) {
-			return 2;
+		if ((lcFace1.getKind() != 17 && lcFace1.getKind() > 10 && lcFace1.getKind() < 18)
+				&& (lcFace2.getKind() != 17 && lcFace2.getKind() > 10 && lcFace2.getKind() < 18)) {
+			return isImageKind(lcLink);
 		}
-		return 0;
+		return false;
 	}
 
 	/**
-	 * 判断两个大种别面
+	 * 判断两个大种别面的共用线是否与face的种别一致
 	 * 
 	 * @param lcLink
 	 * @return
 	 */
-	private boolean isLinkHasTwoKind(LcLink lcLink) {
+	private boolean isKindEqualFaceKinds(LcLink lcLink, int face1kind, int face2kind) {
 		List<IRow> linkKinds = lcLink.getKinds();
-		boolean isWaterLink = false;
-		boolean isGreenLink = false;
+		boolean isEqualFaceKind = false;
+
+		if (lcLink.getKinds().size() != 2) {
+			return isEqualFaceKind;
+		}
+
+		boolean isEqualFace1 = false;
+		boolean isEqualFace2 = false;
 
 		for (IRow row : linkKinds) {
 			LcLinkKind linkKind = (LcLinkKind) row;
 
-			if (linkKind.getKind() >= 1 && linkKind.getKind() <= 8) {
-				isWaterLink = true;
+			if (linkKind.getKind() == face1kind) {
+				isEqualFace1 = true;
 			}
+			if (linkKind.getKind() == face2kind) {
+				isEqualFace2 = true;
+			}
+		}
 
-			if (linkKind.getKind() >= 11 && linkKind.getKind() <= 18) {
+		isEqualFaceKind = isEqualFace1 & isEqualFace2;
+		return isEqualFaceKind;
+	}
+
+	/**
+	 * 判断两个大种别面的共用线是否为“绿地假想线”
+	 * 
+	 * @param lcLink
+	 * @return
+	 */
+	private boolean isImageKind(LcLink lcLink) {
+		List<IRow> linkKinds = lcLink.getKinds();
+		boolean isGreenLink = false;
+
+		for (IRow row : linkKinds) {
+			LcLinkKind linkKind = (LcLinkKind) row;
+			
+			if (linkKind.getKind() == 18) {
 				isGreenLink = true;
 			}
 		}
 
-		if (isWaterLink && isGreenLink) {
-			return true;
-		}
-		return false;
+		return isGreenLink;
 	}
 }

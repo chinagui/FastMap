@@ -42,7 +42,7 @@ public class check004 extends baseRule {
 			LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
 			List<LcFace> lcFaces = lcFaceTopo.loadLcFaceByLinkId(kind.getLinkPid(), false);
 			LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
-			LcLink lcLink = (LcLink) lcLinkSelector.loadAllById(kind.getLinkPid(), false);
+			LcLink lcLink = (LcLink) lcLinkSelector.loadById(kind.getLinkPid(), false);
 
 			if (lcFaces.size() > 0) {
 				this.setCheckResult(lcLink.getGeometry(), "[LC_LINK," + lcLink.getPid() + "]",

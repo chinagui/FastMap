@@ -372,7 +372,7 @@ public class CheckService {
 		}
 	}
 
-	public JSONArray getCkRulesBySuiteId(String suiteId) throws Exception {
+	public JSONArray getCkRulesBySuiteId(String suiteId, String ruleCode) throws Exception {
 		
 		Connection conn = null;
 		
@@ -382,7 +382,7 @@ public class CheckService {
 			
 			CkRuleSelector ckRuleSelector = new CkRuleSelector(conn);
 			
-			return ckRuleSelector.getCkRulesBySuiteId(suiteId);
+			return ckRuleSelector.getCkRulesBySuiteId(suiteId,ruleCode);
 		} catch (Exception e) {
 			throw e;
 		} finally {

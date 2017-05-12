@@ -812,10 +812,16 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			String suiteId = jsonReq.getString("suiteId");
+			String ruleCode = "";
+			if(jsonReq.containsKey("ruleCode") && jsonReq.getString("ruleCode") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("ruleCode"))){
+				ruleCode = jsonReq.getString("ruleCode");
+			}
 			JSONArray result  = new JSONArray();
 			if(suiteId != null && StringUtils.isNotEmpty(suiteId) && !suiteId.equals("null")){
 				logger.info("suiteId : "+suiteId);
-				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+				logger.info("ruleCode : "+ruleCode);
+				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId,ruleCode);
 			}
 			
 			return new ModelAndView("jsonView", success(result));

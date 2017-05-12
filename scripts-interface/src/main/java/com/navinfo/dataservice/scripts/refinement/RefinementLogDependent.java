@@ -97,7 +97,13 @@ public class RefinementLogDependent {
 		try{
 			//读履历获取增删改的pid
 			LogReader logReader = new LogReader(conn);
+			List<String> a = new ArrayList<String>();
+			a.add("1");
+			a.add("2");
 			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, null, null);
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000", "201704120000");
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000");
+
 			//新增
 			Collection<Long> inserted = pidMap.get(1);
 			if(inserted!=null&&!inserted.isEmpty()){
@@ -113,7 +119,9 @@ public class RefinementLogDependent {
 
 			//修改
 			Collection<Long> updated = pidMap.get(3);
-			perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			if(updated!=null&&!updated.isEmpty()){
+				perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			}
 			
 			//删除
 			Collection<Long> deleted = pidMap.get(2);

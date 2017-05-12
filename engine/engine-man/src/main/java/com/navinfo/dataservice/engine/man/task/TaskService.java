@@ -105,9 +105,9 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-				JSONArray workKindArray = null;
-				if(taskJson.containsKey("workKind")){
-					taskJson.getJSONArray("workKind");}
+//				JSONArray workKindArray = null;
+//				if(taskJson.containsKey("workKind")){
+//					taskJson.getJSONArray("workKind");}
 //				//采集任务解析处理workKind
 //				if(taskJson.getInt("type")==0){
 //					//JSONArray workKindArray = taskJson.getJSONArray("workKind");
@@ -139,8 +139,7 @@ public class TaskService {
 					bean.setRegionId(regionId);
 				}
 				
-				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法
-				
+				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
 				if(bean.getType()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
 					String adminCode = selectAdminCode(taskJson.getInt("programId"));
 					
@@ -594,6 +593,18 @@ public class TaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			JSONObject json2 = new JSONObject();
 			Task bean=(Task) JsonOperation.jsonToBean(json,Task.class);
+			
+			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
+			if(bean.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+				String adminCode = selectAdminCode(bean.getProgramId());
+				
+				if(adminCode != null && !"".equals(adminCode)){
+					UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+					Integer userGroupID = userGroup.getGroupId();
+					bean.setGroupId(userGroupID);
+				}
+			}
+			
 			TaskOperation.updateTask(conn, bean);
 			
 			//需要发消息的task列表

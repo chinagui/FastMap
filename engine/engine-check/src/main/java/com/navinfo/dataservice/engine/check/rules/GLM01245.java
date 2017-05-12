@@ -111,7 +111,7 @@ public class GLM01245 extends baseRule {
 			StringBuilder sb = new StringBuilder();
 
 			sb.append(
-					"SELECT RL.GEOMETRY, '[RL_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID, '9级路的速度限制必须等于15KM/H' AS LOG FROM RD_LINK RL, RD_LINK_SPEEDLIMIT RLS WHERE RL.LINK_PID = RLS.LINK_PID AND RL.LINK_PID = ");
+					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID, '9级路的速度限制必须等于15KM/H' AS LOG FROM RD_LINK RL, RD_LINK_SPEEDLIMIT RLS WHERE RL.LINK_PID = RLS.LINK_PID AND RL.LINK_PID = ");
 
 			sb.append(linkPid);
 

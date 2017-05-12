@@ -46,6 +46,7 @@ import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.TaskCmsProgress;
+import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -102,9 +103,10 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
+				
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
-
+				
 				//获取grid信息
 				List<Integer> gridList = GridService.getInstance().getGridListByBlockId(conn,bean.getBlockId());
 				Map<Integer, Integer> gridIds = new HashMap<Integer, Integer>();
@@ -119,6 +121,33 @@ public class TaskService {
 					bean.setRegionId(regionId);
 				}
 				
+				//添加workKind参数，并根据情况调用组赋值方法
+				int type = 0;
+				int programID = taskJson.getInt("programId");
+				
+				JSONArray workKindArray = taskJson.getJSONArray("workKind");
+				String workKind = "";
+				String result = "";
+				for(int j = 0; j < workKindArray.size(); j++){
+					workKind += workKindArray.get(j) + "|";
+				}
+				
+				result = workKind.substring(0, workKind.length() - 1);
+				bean.setWorkResult(result);;
+				
+				if(workKindArray.size() > 1){
+					type = 4;
+				}else{
+					type = workKindArray.getInt(0);
+				}
+				String adminCode = selectAdminCode(type, programID);
+				
+				if(adminCode != null && !"".equals(adminCode)){
+					UserGroup userGroup = getGroupByAminCode(adminCode, type);
+					Integer userGroupID = userGroup.getGroupId();
+					bean.setGroupId(userGroupID);
+				}
+
 				taskList.add(bean);
 			}
 			
@@ -131,6 +160,55 @@ public class TaskService {
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 查询adminCode
+	 * @param int,String
+	 * @throws Exception
+	 * @author songhe
+	 */
+	public String selectAdminCode(final int type, int programID){
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			String selectSql = null;
+			if(type == 1 || type == 2 || type == 3){
+				selectSql = "select c.ADMIN_ID from CITY c, PROGRAM p where c.CITY_ID = p.CITY_ID and p.PROGRAM_ID = '" + programID + "'";
+			}else if(type == 4){
+				selectSql = "select i.admin_code from INFOR i, PROGRAM p where p.infor_id = i.infor_id and p.PROGRAM_ID = '" + programID + "'";
+			}else{
+				//TODO 这里需要确认一下2,3的时候应该如何处理
+				return null;
+			}
+			
+			Map<String, String> adminCodeMap = run.query(conn, selectSql, new ResultSetHandler<Map<String, String>>(){
+				@Override
+				public Map<String, String> handle(ResultSet rs)
+						throws SQLException {
+					Map<String, String> map = new HashMap<String, String>();
+						while(rs.next()){
+							if(type == 4){
+								map.put("adminCode", String.valueOf(rs.getString("ADMIN_CODE")));
+							}else{
+								map.put("adminCode", String.valueOf(rs.getInt("ADMIN_ID")));
+							}
+						}
+					return map;
+				}
+			});
+			
+			return adminCodeMap.get("adminCode");
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+		return null;
 	}
 	
 
@@ -2099,6 +2177,23 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return getGridListByTaskId(conn, taskId);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param taskId
+	 * @return
+	 * @throws Exception 
+	 */
+	public JSONArray getGridListByTaskId(Connection conn,int taskId) throws Exception {
+		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT M.GRID_ID FROM TASK_GRID_MAPPING M WHERE M.TASK_ID = " + taskId;
 			
@@ -2116,8 +2211,6 @@ public class TaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("查询task下grid列表失败，原因为:"+e.getMessage(),e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -2848,9 +2941,10 @@ public class TaskService {
 			TaskOperation.reOpenBlockByTask(conn,newTaskId);
 			
 			//修改打开二代编辑任务对应的日落月配置表图幅
-			Task task = queryByTaskId(newTaskId);
-			if(task.getType() == 2){
-				updateDayToMonthMesh(newTaskId);
+			Task task = queryByTaskId(conn,taskId);
+			//Task task = queryByTaskId(newTaskId);
+			if(task.getType() == 3){
+				updateDayToMonthMesh(conn,newTaskId);
 			}
 			
 		} catch (Exception e) {
@@ -2866,8 +2960,8 @@ public class TaskService {
 	 * @param taskId
 	 * @throws Exception 
 	 */
-	private void updateDayToMonthMesh(int taskId) throws Exception {
-		JSONArray gridList = getGridListByTaskId(taskId);
+	private void updateDayToMonthMesh(Connection conn,int taskId) throws Exception {
+		JSONArray gridList = getGridListByTaskId(conn,taskId);
 		Set<Integer> meshIdSet = new HashSet<Integer>();
 		for(Object gridId:gridList.toArray()){
 			meshIdSet.add(Integer.parseInt(gridId.toString().substring(0, gridId.toString().length()-3)));
@@ -3072,5 +3166,55 @@ public class TaskService {
 			i++;
 		}
 		run.batch(dailyConn, updateSql, params);
+	}
+	
+	/**
+	 * 组赋值方法
+	 * @param adminCode
+	 * @param type
+	 * @throws Exception 
+	 * @author songhe
+	 */
+	public UserGroup getGroupByAminCode(String adminCode, int type){
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String name = "";
+			if(type == 1 || type == 2){
+				name = "CROWD_GROUP_NAME";
+			}else if(type == 3){
+				name = "INFOR_GROUP_NAME";
+			}else{
+				name = "MULTISOURCE_GROUP_NAME";
+			}
+			
+			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
+					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
+					+ "and u.group_name = t." + name;
+			
+			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
+				UserGroup  userGroup = new UserGroup();
+				@Override
+				public UserGroup handle(ResultSet result) throws SQLException {
+					while(result.next()){
+						userGroup.setGroupId(result.getInt("GROUP_ID"));
+						userGroup.setGroupName(result.getString("GROUP_NAME"));
+						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
+						userGroup.setLeaderId(result.getInt("LEADER_ID"));
+						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
+					}
+					return userGroup;
+				}});
+			return group;
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return null;
 	}
 }

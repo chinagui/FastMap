@@ -94,5 +94,12 @@
 			<groupId>org.apache.uima</groupId>
 			<artifactId>uimaj-core</artifactId>
 		</dependency>
+
+		<dependency>
+
+			<groupId>com.navinfo.nirobot</groupId>
+			<artifactId>nirobot-main</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
 		</dependencies>
 </project>

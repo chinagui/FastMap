@@ -10,12 +10,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
-
-import sun.tools.tree.ThisExpression;
-
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -38,7 +34,6 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;

@@ -318,131 +318,95 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String ids = "";
 			String tmep = "";
 			Clob pidClod = null;
-			if (flag>0) {
 				if (tips.size()>0 || subtaskId >0) {
 					//添加根据子任务id直接查询的sql 
-					sql.append("SELECT * ");
-					sql.append(" FROM (SELECT c.*, rownum rn");
-					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from (");
-					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
-					// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
-							sql.append(" and r.name like '%");
-							sql.append(name);
-							sql.append("%'");
-						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
-							sql.append(" and r.name_groupid ");
-							sql.append("= ");
-							sql.append(nameGroupid);
-							sql.append(" ");
-						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
-							sql.append(" and r.admin_id ");
-							sql.append("= ");
-							sql.append(adminId);
-							sql.append(" ");
-						}
+					sql.append(" with q1 as ( ");
 					
-					if (tips.size()>0) {
-						sql.append(" union all  ");
-						sql.append(" SELECT tt.* FROM ");
-						sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
-						sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
-						
-						sql.append(" where 1=1");
-						
-						// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
-							sql.append(" and tt.name like '%");
-							sql.append(name);
-							sql.append("%'");
-						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
-							sql.append(" and tt.name_groupid ");
-							sql.append("= ");
-							sql.append(nameGroupid);
-							sql.append(" ");
-						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
-							sql.append(" and tt.admin_id ");
-							sql.append("= ");
-							sql.append(adminId);
-							sql.append(" ");
-						}
-						
-						for (int i=0;i<tips.size();i++) {
-							JSONObject tipsObj = tips.getJSONObject(i);
-							ids += tmep;
-							tmep = ",";
-							ids +=tipsObj.getString("id");
-						}
-						pidClod = ConnectionUtil.createClob(conn);
-						pidClod.setString(1, ids);
-						sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
-					}
-					sql.append(" ) a ");
+						sql.append("  SELECT  distinct r.NAME_GROUPID from rd_name r where r.src_resume = '\"task\":"+ subtaskId +"' ");
+							// 添加过滤器条件
+							if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
+								sql.append(" and r.name like '%");
+								sql.append(name);
+								sql.append("%'");
+							}
+							if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
+								sql.append(" and r.name_groupid ");
+								sql.append("= ");
+								sql.append(nameGroupid);
+								sql.append(" ");
+							}
+							if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
+								sql.append(" and r.admin_id ");
+								sql.append("= ");
+								sql.append(adminId);
+								sql.append(" ");
+							}
+							
+							if (tips.size()>0) {
+								sql.append(" union all  ");
+								sql.append(" SELECT distinct tt.NAME_GROUPID FROM ");
+								sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.name,t.name_groupid,t.admin_id ");
+								sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+								
+								sql.append(" where 1=1");
+								
+								// 添加过滤器条件
+								if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
+									sql.append(" and tt.name like '%");
+									sql.append(name);
+									sql.append("%'");
+								}
+								if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
+									sql.append(" and tt.name_groupid ");
+									sql.append("= ");
+									sql.append(nameGroupid);
+									sql.append(" ");
+								}
+								if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
+									sql.append(" and tt.admin_id ");
+									sql.append("= ");
+									sql.append(adminId);
+									sql.append(" ");
+								}
+								
+								for (int i=0;i<tips.size();i++) {
+									JSONObject tipsObj = tips.getJSONObject(i);
+									ids += tmep;
+									tmep = ",";
+									ids +=tipsObj.getString("id");
+								}
+								pidClod = ConnectionUtil.createClob(conn);
+								pidClod.setString(1, ids);
+								sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
+							}
+							
+					sql.append(" ) ");
+					
+					sql.append("  SELECT * FROM (SELECT c.*, rownum rn FROM (select distinct COUNT(1) OVER(PARTITION BY 1) total, a.* from rd_name a, q1 q where 1 = 1  ");
+							sql.append(" and a.name_groupid = q.NAME_GROUPID ");
+							/*sql.append("  ORDER BY a.NAME_GROUPID DESC, a.NAME_ID DESC) c ");
+					sql.append(" WHERE rownum <= ?)  WHERE rn >= ?");*/
+			
 					
 				} else {
 					result.put("total", 0);
 					result.put("data", new JSONArray());
 					return result;
 				}
-			} else {
-				sql.append("SELECT * ");
-				sql.append(" FROM (SELECT c.*, rownum rn");
-				sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-				sql.append(" ,( select substr(replace(src_resume,'\"',''),instr(replace(src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) tipid from rd_name where src_resume like '%tips%' and name_id = a.name_id) as tipid  ");
-				sql.append(" from rd_name a where 1=1");
-				// 添加过滤器条件
-				Iterator<String> keys = param.keys();
-				while (keys.hasNext()) {
-					String key = keys.next();
-					if (key.equals("name") && (!param.getString(key).isEmpty())) {
-						sql.append(" and a.name like '%");
-						sql.append(param.getString(key));
-						sql.append("%'");
-					} else if(key.equals("nameGroupid") && (!param.getString(key).isEmpty())){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("= ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}else if(key.equals("adminId") && (!param.getString(key).isEmpty())){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("= ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}else {
-						String columnName = sUtils.toColumnName(key);
-						if (!param.getString(key).isEmpty()) {
-							sql.append(" and a.");
-							sql.append(columnName);
-							sql.append("='");
-							sql.append(param.getString(key));
-							sql.append("'");
-						}
-					}
-				}
-			}
 			
 			// 添加排序条件
 			if (sortby.length()>0) {
 				int index = sortby.indexOf("-");
 				if (index != -1) {
-					sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
+					sql.append(" ORDER BY ");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					sql.append(" , a.");
+					sql.append("  a.");
 					sql.append(sortbyName);
 					sql.append(" DESC");
 				} else {
-					sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+					sql.append(" ORDER BY ");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					sql.append(" , a.");
+					sql.append("  a.");
 					sql.append(sortbyName);
 				}
 			} else {
@@ -477,7 +441,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				data.add(result2JsonByTaskOrTips(resultSet, adminMap));
+				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -791,7 +755,7 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
+//			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
 			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
 			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
 			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
@@ -851,15 +815,18 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 			
 			int adminId = resultSet.getInt("ADMIN_ID");
 			rdNameObj.put("adminId", adminId);
-			if (!adminMap.isEmpty()) {
-				if (adminMap.containsKey(String.valueOf(adminId))) {
-					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
-				} else {
-					rdNameObj.put("adminName","");
+			if(adminId == 214){
+				rdNameObj.put("adminName","全国");
+			}else{
+				if (!adminMap.isEmpty()) {
+					if (adminMap.containsKey(String.valueOf(adminId))) {
+						rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+					} else {
+						rdNameObj.put("adminName","");
+					}
+					
 				}
-				
 			}
-			
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));

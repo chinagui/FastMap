@@ -515,24 +515,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有官方原始中文
 			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
 			if(r!=null){
-				long nameId = r.getNameId();
-				List<BasicRow> flags = poiObj.getSubRowByName(IxPoiObj.IX_POI_NAME_FLAG);
-				if(flags!=null){
-					for(BasicRow row:flags){
-						if(((IxPoiNameFlag)row).getNameId()==nameId){
-							poiObj.deleteSubrow(row);
-						}
-					}
-				}
-				List<BasicRow> tones = poiObj.getSubRowByName(IxPoiObj.IX_POI_NAME_TONE);
-				if(tones!=null){
-					for(BasicRow row:tones){
-						if(((IxPoiNameTone)row).getNameId()==nameId){
-							poiObj.deleteSubrow(row);
-						}
-					}
-				}
-				poiObj.deleteSubrow(r);
+				r.setName(name);
 			}
 		}else{
 			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
@@ -601,6 +584,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 				IxPoiPhoto ixPoiPhoto = poiObj.createIxPoiPhoto();//poi_pid,row_id已经赋值
 				ixPoiPhoto.setPid(fccpid);
 				ixPoiPhoto.setTag(pJo.getInt("tag"));
+				ixPoiPhoto.setRowId(fccpid);
 			}else if(type==3){
 				memo = pJo.getString("content");
 			}

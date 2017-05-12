@@ -129,9 +129,9 @@ public class UploadManager {
 				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnSps(spImp.getErrLogs());
 				//鲜度验证
-				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
+//				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
 				//未修改的数据状态变为已作业
-				PoiEditStatus.updateStatus(conn, nochangedPois, PoiEditStatus.PRODUCED);
+//				PoiEditStatus.updateStatus(conn, nochangedPois, PoiEditStatus.PRODUCED);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

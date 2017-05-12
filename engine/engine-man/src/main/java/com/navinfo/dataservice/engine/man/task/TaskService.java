@@ -591,8 +591,10 @@ public class TaskService {
 		int total=0;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject json2 = new JSONObject();
 			Task bean=(Task) JsonOperation.jsonToBean(json,Task.class);
+			
+			//获取旧任务信息
+			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
 			
 			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
 			if(bean.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
@@ -607,6 +609,47 @@ public class TaskService {
 			
 			TaskOperation.updateTask(conn, bean);
 			
+			//状态status为开启时，参数workKind与库中workKind是否有变更，若情报矢量或多源由0变为1了，
+			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
+			if(oldTask.getStatus()==1&&oldTask.getType()==0){
+				if(bean.getSubWorkKind(3)==1&&oldTask.getSubWorkKind(3)==0){
+					Subtask subtask = new Subtask();
+					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					subtask.setName(oldTask.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setExeGroupId(task.getGroupId());
+					subtask.setGridIds(getGridMapByTaskId(oldTask.getTaskId()));
+					subtask.setPlanStartDate(task.getPlanStartDate());
+					subtask.setPlanEndDate(task.getPlanEndDate());
+					subtask.setStatus(2);//草稿
+					subtask.setStage(2);
+					subtask.setType(7);
+					subtask.setTaskId(task.getTaskId());
+					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					subtask.setGeometry(wkt);
+
+					SubtaskService.getInstance().createSubtask(subtask);
+				}
+				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
+					Subtask subtask = new Subtask();
+					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
+					subtask.setExeGroupId(task.getGroupId());
+					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
+					subtask.setPlanStartDate(task.getPlanStartDate());
+					subtask.setPlanEndDate(task.getPlanEndDate());
+					subtask.setStatus(2);//草稿
+					subtask.setStage(2);
+					subtask.setType(7);
+					subtask.setTaskId(task.getTaskId());
+					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+					String wkt = GridUtils.grids2Wkt(gridIds);
+					subtask.setGeometry(wkt);
+
+					SubtaskService.getInstance().createSubtask(subtask);
+				}
+			}
+			
 			//需要发消息的task列表
 			List<Task> openTaskList = new ArrayList<Task>();
 			Task task1 = queryByTaskId(bean.getTaskId());
@@ -615,6 +658,7 @@ public class TaskService {
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
+			JSONObject json2 = new JSONObject();
 			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));

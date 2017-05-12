@@ -344,7 +344,13 @@ public class RdNameTeilen {
 				engType = "*";
 			}
 
-			engRdName.setType(engType);
+			//********zl 2017.05.10 铁路类型为 '' 不为 '*'
+			if(chiRdName.getRoadType() == 3){
+				engRdName.setType("");
+			}else{
+				engRdName.setType(engType);
+			}
+			
 			engRdName.setTypePhonetic("");
 
 		} catch (Exception e) {
@@ -408,7 +414,12 @@ public class RdNameTeilen {
 
 		engRdName.setName(engName);
 		engRdName.setNamePhonetic("");
-		engRdName.setBase(engBaseName);
+		//********zl 2017.05.10 **********
+		if(chiRdName.getRoadType() == 3){
+			engRdName.setBase(chiRdName.getBase());
+		}else{
+			engRdName.setBase(engBaseName);
+		}
 		engRdName.setBasePhonetic("");
 		// 英文名
 		engRdName.setLangCode("ENG");

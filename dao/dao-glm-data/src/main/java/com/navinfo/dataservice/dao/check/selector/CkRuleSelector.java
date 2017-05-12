@@ -157,7 +157,7 @@ public class CkRuleSelector extends AbstractSelector {
 		}
 	}
 
-	public JSONArray getCkRulesBySuiteId(String suiteId) throws Exception {
+	public JSONArray getCkRulesBySuiteId(String suiteId, String ruleCode) throws Exception {
 		JSONArray result = new JSONArray();
 		
 		PreparedStatement pstmt = null;
@@ -170,6 +170,9 @@ public class CkRuleSelector extends AbstractSelector {
 			sb.append("where c.rule_status=1 ");
 			if(suiteId != null && StringUtils.isNotEmpty(suiteId)){
 				sb.append("and c.suite_id = '"+suiteId+"'");
+			}
+			if(ruleCode != null && StringUtils.isNotEmpty(ruleCode)){
+				sb.append("and c.rule_code = '"+ruleCode+"'");
 			}
 
 			log.info("rules sql : "+sb.toString());

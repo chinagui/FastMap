@@ -184,6 +184,7 @@ public class SubtaskService {
 	}
 	
 	/**
+	 * 子任务创建的时候，若没有名称，会默认为情报子任务，并自动按照情报原则进行赋值
 	 * @Title: createSubtask
 	 * @Description: 创建一个子任务。
 	 * @param Subtask对象
@@ -204,18 +205,7 @@ public class SubtaskService {
 				bean.setStatus(2);
 			}
 			//情报项目为空时，需要后台自动创建名称
-			if(!StringUtils.isNotEmpty(bean.getName())){
-				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
-				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
-				if(infor!=null){
-					bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
-					if(bean.getExeUserId()!=0){
-						UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(bean.getExeUserId());
-						bean.setName(bean.getName()+"_"+userInfo.getUserRealName()+"_"+bean.getSubtaskId());
-					}
-					
-				}
-			}
+			bean=autoInforName(conn,bean);
 			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
@@ -257,82 +247,6 @@ public class SubtaskService {
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
-	/*
-	 * 根据几何范围,任务类型，作业阶段查询任务列表 参数1：几何范围，String wkt
-	 */
-	/*public List<Subtask> listByWkt(String wkt) throws ServiceException {
-		Connection conn = null;
-		try {
-			// 持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			String querySql = "select "
-					+ "s.subtask_id"
-					+ ",s.name"
-					+ ",s.type"
-					+ ",s.stage"
-					+ ",s.status"
-					+ ", s.geometry"
-					+ ", s.refer_geometry"
-					+ ",s.descp"
-					+ " from subtask s "
-					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
-					+ "sdo_geometry("
-					+ "'"
-					+ wkt
-					+ "',8307)"
-					+ ", 0.000005) ='TRUE'";
-			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-					while (rs.next()) {
-						Map<String, Object> subtask = new HashMap<String, Object>();
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						STRUCT referStruct = (STRUCT) rs.getObject("REFER_GEOMETRY");
-						try {
-							subtask.setReferGeometry(GeoTranslator.struct2Wkt(referStruct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						subtask.setDescp(rs.getString("DESCP"));
-						subtask.setName(rs.getString("name"));
-						subtask.setType(rs.getInt("type"));
-						subtask.setStage(rs.getInt("stage"));
-						subtask.setStatus(rs.getInt("status"));
-						
-						try {
-							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-						list.add(subtask);
-					}
-					return list;
-				}
-			};
-			return run.query(conn, querySql, rsHandler);
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}*/
 	
 	/*
 	 * 修改子任务详细信息。 
@@ -373,15 +287,15 @@ public class SubtaskService {
 			dataJson.discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
 			dataJson.discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
 		}				
-			
 		//正常修改子任务
 		Subtask subtask = createSubtaskBean(userId,dataJson);
 		//创建或者修改常规任务时，均要调用修改质检任务的代码
 		if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
-			Subtask qualitySubtask = createSubtaskBean(userId,dataJson);//生成质检子任务的bean
+			Subtask qualitySubtask = new Subtask();//生成质检子任务的bean
 			qualitySubtask.setSubtaskId(qualitySubtaskId);
 			qualitySubtask.setExeUserId(qualityExeUserId);
-			qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+			qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+			//qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 			qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 			qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 			subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
@@ -394,12 +308,6 @@ public class SubtaskService {
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 				qualitySubtask.setExeUserId(qualityExeUserId);
-//				if(dataJson.containsKey("gridIds")){
-//					qualitySubtask.setGridIds(subtask.getGridIds());
-//					//根据gridIds获取wkt
-//					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
-//					qualitySubtask.setGeometry(wkt);
-//				}
 					
 				//创建质检子任务 subtask	
 				Integer newQualitySubtaskId = createSubtask(qualitySubtask);	
@@ -427,16 +335,7 @@ public class SubtaskService {
 			for (int i = 0; i < subtaskList.size(); i++) {
 				Subtask subtask = subtaskList.get(i);
 				//情报子任务修改时，若填入执行人，则需修改子任务名称
-				if(subtask.getExeUserId()!=0){
-					int programType=getTaskBySubtaskId(conn,subtask.getSubtaskId()).get("programType");
-					if(programType==4){
-						Subtask oldSubtask = queryBySubtaskIdS(conn,subtask.getSubtaskId());
-						if(oldSubtask.getExeUserId()==0){
-							UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(subtask.getExeUserId());
-							subtask.setName(subtask.getName()+"_"+userInfo.getUserRealName()+"_"+subtask.getSubtaskId());
-						}
-					}
-				}
+				subtask=autoInforName(conn,subtask);
 				SubtaskOperation.updateSubtask(conn, subtask);
 				updatedSubtaskIdList.add(subtask.getSubtaskId());
 				
@@ -475,6 +374,54 @@ public class SubtaskService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	/**
+	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
+	 * 1.质检子任务名称不维护
+	 * 1.判断是否情报子任务，不是则返回
+	 * 2.判断是否新建子任务，若是，名称若为空，自动赋值
+	 * 3.修改子任务，若作业员或组是修改时加的，则自动维护名称
+	 * 
+	 * @param conn
+	 * @param newSubtask
+	 * @return
+	 * @throws Exception
+	 */
+	private Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
+		if(newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
+		if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
+		
+		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());
+		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+		if(infor==null){return newSubtask;}
+		
+		Subtask oldSubtask=null;
+		if(newSubtask.getSubtaskId()!=0){
+			oldSubtask = queryBySubtaskIdS(conn,newSubtask.getSubtaskId());
+		}
+		
+		if(oldSubtask==null){//新建子任务
+			if(StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
+			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
+			if(newSubtask.getExeUserId()!=0){
+				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+			}
+			if(newSubtask.getExeGroupId()!=0){
+				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+			}	
+		}else{
+			if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+			}
+			if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+			}
+		}
+		return newSubtask;
 	}
 
 	/*

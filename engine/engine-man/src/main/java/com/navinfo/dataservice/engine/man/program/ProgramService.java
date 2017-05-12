@@ -681,7 +681,7 @@ public class ProgramService {
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));}
 						else if(rs.getInt("TYPE")==4){
-							map.put("inforId", rs.getString("INFOR_ID"));
+							map.put("inforId", rs.getInt("INFOR_ID"));
 							map.put("inforName", rs.getString("INFOR_NAME"));}
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					

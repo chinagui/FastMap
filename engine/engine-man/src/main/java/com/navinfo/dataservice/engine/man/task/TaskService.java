@@ -23,7 +23,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
@@ -55,7 +54,6 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -103,6 +101,22 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
+//				JSONArray workKindArray = null;
+//				if(taskJson.containsKey("workKind")){
+//					taskJson.getJSONArray("workKind");}
+//				//采集任务解析处理workKind
+//				if(taskJson.getInt("type")==0){
+//					//JSONArray workKindArray = taskJson.getJSONArray("workKind");
+//					String workKind = "";
+//					String result = "0|0|0|0";
+//					for(Object kind:workKindArray){
+//						int t=Integer.valueOf(kind.toString());
+//						result=result.substring(1,(t-1)*2)+"1"+result.substring(t*2,result.length());
+//					}
+//					taskJson.put("workKind", result);
+//				}else{
+//					taskJson.remove("workKind");
+//				}
 				
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
@@ -121,31 +135,15 @@ public class TaskService {
 					bean.setRegionId(regionId);
 				}
 				
-				//添加workKind参数，并根据情况调用组赋值方法
-				int type = 0;
-				int programID = taskJson.getInt("programId");
-				
-				JSONArray workKindArray = taskJson.getJSONArray("workKind");
-				String workKind = "";
-				String result = "";
-				for(int j = 0; j < workKindArray.size(); j++){
-					workKind += workKindArray.get(j) + "|";
-				}
-				
-				result = workKind.substring(0, workKind.length() - 1);
-				bean.setWorkResult(result);;
-				
-				if(workKindArray.size() > 1){
-					type = 4;
-				}else{
-					type = workKindArray.getInt(0);
-				}
-				String adminCode = selectAdminCode(type, programID);
-				
-				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = getGroupByAminCode(adminCode, type);
-					Integer userGroupID = userGroup.getGroupId();
-					bean.setGroupId(userGroupID);
+				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
+				if(bean.getType()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+					String adminCode = selectAdminCode(taskJson.getInt("programId"));
+					
+					if(adminCode != null && !"".equals(adminCode)){
+						UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+						Integer userGroupID = userGroup.getGroupId();
+						bean.setGroupId(userGroupID);
+					}
 				}
 
 				taskList.add(bean);
@@ -168,38 +166,33 @@ public class TaskService {
 	 * @throws Exception
 	 * @author songhe
 	 */
-	public String selectAdminCode(final int type, int programID){
+	public String selectAdminCode(int programID){
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = null;
-			if(type == 1 || type == 2 || type == 3){
-				selectSql = "select c.ADMIN_ID from CITY c, PROGRAM p where c.CITY_ID = p.CITY_ID and p.PROGRAM_ID = '" + programID + "'";
-			}else if(type == 4){
-				selectSql = "select i.admin_code from INFOR i, PROGRAM p where p.infor_id = i.infor_id and p.PROGRAM_ID = '" + programID + "'";
-			}else{
-				//TODO 这里需要确认一下2,3的时候应该如何处理
-				return null;
-			}
+			String selectSql = "SELECT TO_CHAR(C.ADMIN_ID) ADMIN_CODE"
+					+ "  FROM CITY C, PROGRAM P"
+					+ " WHERE C.CITY_ID = P.CITY_ID"
+					+ "   AND P.PROGRAM_ID = "+programID
+					+ " UNION ALL"
+					+ " SELECT I.ADMIN_CODE"
+					+ "  FROM INFOR I, PROGRAM P"
+					+ " WHERE P.INFOR_ID = I.INFOR_ID"
+					+ "   AND P.PROGRAM_ID = "+programID;
 			
-			Map<String, String> adminCodeMap = run.query(conn, selectSql, new ResultSetHandler<Map<String, String>>(){
+			String adminCode = run.query(conn, selectSql, new ResultSetHandler<String>(){
 				@Override
-				public Map<String, String> handle(ResultSet rs)
+				public String handle(ResultSet rs)
 						throws SQLException {
-					Map<String, String> map = new HashMap<String, String>();
-						while(rs.next()){
-							if(type == 4){
-								map.put("adminCode", String.valueOf(rs.getString("ADMIN_CODE")));
-							}else{
-								map.put("adminCode", String.valueOf(rs.getInt("ADMIN_ID")));
-							}
+						if(rs.next()){
+							return String.valueOf(rs.getString("ADMIN_CODE"));
 						}
-					return map;
+					return "";
 				}
 			});
 			
-			return adminCodeMap.get("adminCode");
+			return adminCode;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -594,9 +587,33 @@ public class TaskService {
 		int total=0;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			JSONObject json2 = new JSONObject();
 			Task bean=(Task) JsonOperation.jsonToBean(json,Task.class);
+			
+			//获取旧任务信息
+			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
+			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
+			if(bean.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+				String adminCode = selectAdminCode(oldTask.getProgramId());
+				
+				if(adminCode != null && !"".equals(adminCode)){
+					UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+					Integer userGroupID = userGroup.getGroupId();
+					bean.setGroupId(userGroupID);
+				}
+			}
+			
 			TaskOperation.updateTask(conn, bean);
+			
+			//状态status为开启时，参数workKind与库中workKind是否有变更，若情报矢量或多源由0变为1了，
+			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
+			if(oldTask.getStatus()==1&&oldTask.getType()==0){
+				if(bean.getSubWorkKind(3)==1&&oldTask.getSubWorkKind(3)==0){
+					createCollectSubtaskByTask(3, bean);
+				}
+				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
+					createCollectSubtaskByTask(4, bean);
+				}
+			}
 			
 			//需要发消息的task列表
 			List<Task> openTaskList = new ArrayList<Task>();
@@ -606,6 +623,7 @@ public class TaskService {
 			}
 			
 			//常规采集任务修改了出品时间或批次，其他常规任务同步更新
+			JSONObject json2 = new JSONObject();
 			if((task1.getBlockId()!=0)&&(task1.getType()==0)){
 				if(json.containsKey("lot")){
 					json2.put("lot", json.getString("lot"));
@@ -666,6 +684,70 @@ public class TaskService {
 			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 3情报矢量，4多源
+	 * 快线：情报名称_发布时间_作业员_子任务ID
+	 * 中线：任务名称_作业组
+	 * @param num
+	 * @throws Exception 
+	 */
+	private void createCollectSubtaskByTask(int num,Task task) throws Exception{
+		int programType=1;
+		if(task.getBlockId()==0){//情报任务
+			programType=4;
+		}
+		//情报子任务
+		if(num==3){
+			Subtask subtask = new Subtask();
+			if(programType==1){
+				subtask.setName(task.getName());
+			}
+			//subtask.setExeGroupId(task.getGroupId());
+			subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setStatus(2);//草稿
+			subtask.setStage(0);
+			subtask.setType(2);
+			subtask.setWorkKind(3);
+			subtask.setTaskId(task.getTaskId());
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			subtask.setGeometry(wkt);
+			SubtaskService.getInstance().createSubtask(subtask);
+		}
+		//多源子任务
+		if(num==4){
+			Subtask subtask = new Subtask();
+			String adminCode = selectAdminCode(task.getProgramId());
+			//* 快线：情报名称_发布时间_作业员_子任务ID
+			// * 中线：任务名称_作业组
+			if(adminCode != null && !"".equals(adminCode)){
+				UserGroup userGroup = getGroupByAminCode(adminCode, 5);
+				if(userGroup!=null){
+					subtask.setExeGroupId(userGroup.getGroupId());
+					if(programType==1){
+						subtask.setName(task.getName()+"_"+userGroup.getGroupName());
+					}//任务名称+_作业组
+				}
+			}
+			subtask.setExeGroupId(task.getGroupId());
+			subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setStatus(2);//草稿
+			subtask.setStage(0);
+			subtask.setType(0);
+			subtask.setWorkKind(4);
+			subtask.setTaskId(task.getTaskId());
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			subtask.setGeometry(wkt);
+
+			SubtaskService.getInstance().createSubtask(subtask);
 		}
 	}
 	
@@ -1752,6 +1834,7 @@ public class TaskService {
 							collectTask.setGroupId(quickTask.getGroupId());
 							collectTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
 							collectTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
+							collectTask.setWorkKind(quickTask.getWorkKind());
 							if(myProgram!=null){
 								collectTask.setPlanStartDate(myProgram.getCollectPlanStartDate());
 								collectTask.setPlanEndDate(myProgram.getCollectPlanEndDate());
@@ -3111,8 +3194,13 @@ public class TaskService {
 				batchPoiQuickTask(conn, taskId, subtaskId, poiPids);
 			}
 			if(tips!=null&&tips.size()>0){//批tips的快线任务号
-				
-			}
+			List<String> tipsPids=new ArrayList<String>(); 
+ 				for(Object tipRowkey:tips){ 
+ 					tipsPids.add(tipRowkey.toString()); 
+ 				}
+				//FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+				//api.batchQuickTask(taskId, subtaskId,tipsPids); 
+ 			}
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -3131,7 +3219,7 @@ public class TaskService {
 	 */
 	@SuppressWarnings("unused")
 	private void batchPoiQuickTask(Connection dailyConn, int taskId, int subtaskId, List<Long> PoiQuickT) throws SQLException {
-		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? AND QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
+		String updateSql = "update POI_EDIT_STATUS set QUICK_TASK_ID=? , QUICK_SUBTASK_ID=? where PID=? and QUICK_TASK_ID = 0";
 		QueryRunner run = new QueryRunner();
 		Object[][] params = new Object[PoiQuickT.size()][3] ;
 		
@@ -3148,7 +3236,7 @@ public class TaskService {
 	}
 	
 	/**
-	 * 组赋值方法
+	 * 组赋值方法 1采集2编辑3众包4情报5多源
 	 * @param adminCode
 	 * @param type
 	 * @throws Exception 
@@ -3161,11 +3249,15 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			
 			String name = "";
-			if(type == 1 || type == 2){
-				name = "CROWD_GROUP_NAME";
+			if(type == 1){
+				name = "COLLECT_GROUP_NAME";
+			}else if(type == 2){
+				name="EDIT_GROUP_NAME";
 			}else if(type == 3){
+				name = "CROWD_GROUP_NAME";
+			}else if(type == 4){
 				name = "INFOR_GROUP_NAME";
-			}else{
+			}else if(type == 5){
 				name = "MULTISOURCE_GROUP_NAME";
 			}
 			
@@ -3174,17 +3266,19 @@ public class TaskService {
 					+ "and u.group_name = t." + name;
 			
 			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
-				UserGroup  userGroup = new UserGroup();
+				
 				@Override
 				public UserGroup handle(ResultSet result) throws SQLException {
+					UserGroup  userGroup = new UserGroup();
 					while(result.next()){
 						userGroup.setGroupId(result.getInt("GROUP_ID"));
 						userGroup.setGroupName(result.getString("GROUP_NAME"));
 						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
 						userGroup.setLeaderId(result.getInt("LEADER_ID"));
 						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
+						return userGroup;
 					}
-					return userGroup;
+					return null;
 				}});
 			return group;
 			

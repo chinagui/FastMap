@@ -264,10 +264,10 @@ public class TaskOperation {
 			
 			String insertPart="";
 			String valuePart="";
-			if (bean!=null && bean.getWorkResult()!=null && StringUtils.isNotEmpty(bean.getWorkResult().toString())){
+			if (bean!=null && bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" WORK_KIND ";
-				valuePart+= "'" + bean.getWorkResult() + "'";
+				valuePart+= "'" + bean.getWorkKind() + "'";
 			};
 			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
@@ -2430,10 +2430,10 @@ public class TaskOperation {
 			String insertTask="INSERT INTO TASK  (TASK_ID,CREATE_USER_ID,CREATE_DATE,STATUS,NAME,"
 					+ "   DESCP,PLAN_START_DATE,PLAN_END_DATE,LATEST,PROGRAM_ID,BLOCK_ID,REGION_ID,"
 					+ "   PRODUCE_PLAN_START_DATE,PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,"
-					+ "   POI_PLAN_TOTAL)"
+					+ "   POI_PLAN_TOTAL,WORK_KIND)"
 					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,NAME,DESCP,PLAN_START_DATE,"
 					+ "         PLAN_END_DATE,1,PROGRAM_ID,BLOCK_ID,REGION_ID,PRODUCE_PLAN_START_DATE,"
-					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL"
+					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL,WORK_KIND"
 					+ "    FROM TASK"
 					+ "   WHERE TASK_ID = "+taskId;
 			String insertTaskGrid="INSERT INTO TASK_GRID_MAPPING"
@@ -2509,7 +2509,7 @@ public class TaskOperation {
 	public static void updateWorkKind(Connection conn, int taskId, int subtaskWorkKind) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",work_kind) WHERE task_id="+taskId;
+			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",len(work_kind)) WHERE task_id="+taskId;
 			run.update(conn,updateSql);			
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

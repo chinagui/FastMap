@@ -5,6 +5,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
+
+import org.apache.commons.lang.StringUtils;
+
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 
@@ -46,30 +51,55 @@ public class Task implements Serializable{
 	private Integer groupLeader =0; 
 	private String workProperty ;
 	
-	private List<?> workKind;
+	private String workKind;
 	
-	private String workResult;
+	//private String workResult;
 	
 
-	public String getWorkResult() {
-		return workResult;
-	}
+//	public String getWorkResult() {
+//		return workResult;
+//	}
+//
+//
+//	public void setWorkResult(String workResult) {
+//		this.workResult = workResult;
+//	}
 
 
-	public void setWorkResult(String workResult) {
-		this.workResult = workResult;
-	}
-
-
-	public List<?> getWorkKind() {
+	public String getWorkKind() {
 		return workKind;
 	}
 
 
-	public void setWorkKind(List<?> workKind) {
+	public void setWorkKind(String workKind) {
 		this.workKind = workKind;
 	}
-
+	/**
+	 * 将JSONArray转成workKind，例如workKindArray=[1，2，3]，workKind=1|1|1|0
+	 * @param workKindArray
+	 */
+	public void setWorkKind(JSONArray workKindArray){
+		if(workKindArray==null||workKindArray.size()==0){
+			this.workKind="0|0|0|0";
+			return;
+		}
+		String result = "0|0|0|0";
+		for(Object kind:workKindArray){
+			int t=Integer.valueOf(kind.toString());
+			result=result.substring(1,(t-1)*2)+"1"+result.substring(t*2,result.length());
+		}
+		this.workKind= result;
+	}
+	
+	/**
+	 * workKind=0|1|0|0,num=2,则返回1，num=1，则返回0
+	 * @param num
+	 * @return
+	 */
+	public int getSubWorkKind(int num){
+		if(StringUtils.isEmpty(this.workKind)){return 0;}
+		return Integer.valueOf(this.workKind.substring((num-1)*2+1, 1));
+	}
 
 	private JSONObject geometry;
 	private Map<Integer,Integer> gridIds;

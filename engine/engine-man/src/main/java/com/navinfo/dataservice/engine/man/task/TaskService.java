@@ -23,7 +23,9 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.context.annotation.Bean;
 
+import com.alibaba.druid.sql.visitor.functions.Length;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
@@ -103,6 +105,22 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
+				JSONArray workKindArray = null;
+				if(taskJson.containsKey("workKind")){
+					taskJson.getJSONArray("workKind");}
+//				//采集任务解析处理workKind
+//				if(taskJson.getInt("type")==0){
+//					//JSONArray workKindArray = taskJson.getJSONArray("workKind");
+//					String workKind = "";
+//					String result = "0|0|0|0";
+//					for(Object kind:workKindArray){
+//						int t=Integer.valueOf(kind.toString());
+//						result=result.substring(1,(t-1)*2)+"1"+result.substring(t*2,result.length());
+//					}
+//					taskJson.put("workKind", result);
+//				}else{
+//					taskJson.remove("workKind");
+//				}
 				
 				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setCreateUserId((int) userId);
@@ -121,31 +139,16 @@ public class TaskService {
 					bean.setRegionId(regionId);
 				}
 				
-				//添加workKind参数，并根据情况调用组赋值方法
-				int type = 0;
-				int programID = taskJson.getInt("programId");
+				//采集任务 ,workKind外业采集或众包为1,调用组赋值方法
 				
-				JSONArray workKindArray = taskJson.getJSONArray("workKind");
-				String workKind = "";
-				String result = "";
-				for(int j = 0; j < workKindArray.size(); j++){
-					workKind += workKindArray.get(j) + "|";
-				}
-				
-				result = workKind.substring(0, workKind.length() - 1);
-				bean.setWorkResult(result);;
-				
-				if(workKindArray.size() > 1){
-					type = 4;
-				}else{
-					type = workKindArray.getInt(0);
-				}
-				String adminCode = selectAdminCode(type, programID);
-				
-				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = getGroupByAminCode(adminCode, type);
-					Integer userGroupID = userGroup.getGroupId();
-					bean.setGroupId(userGroupID);
+				if(bean.getType()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+					String adminCode = selectAdminCode(taskJson.getInt("programId"));
+					
+					if(adminCode != null && !"".equals(adminCode)){
+						UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+						Integer userGroupID = userGroup.getGroupId();
+						bean.setGroupId(userGroupID);
+					}
 				}
 
 				taskList.add(bean);
@@ -168,38 +171,33 @@ public class TaskService {
 	 * @throws Exception
 	 * @author songhe
 	 */
-	public String selectAdminCode(final int type, int programID){
+	public String selectAdminCode(int programID){
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			String selectSql = null;
-			if(type == 1 || type == 2 || type == 3){
-				selectSql = "select c.ADMIN_ID from CITY c, PROGRAM p where c.CITY_ID = p.CITY_ID and p.PROGRAM_ID = '" + programID + "'";
-			}else if(type == 4){
-				selectSql = "select i.admin_code from INFOR i, PROGRAM p where p.infor_id = i.infor_id and p.PROGRAM_ID = '" + programID + "'";
-			}else{
-				//TODO 这里需要确认一下2,3的时候应该如何处理
-				return null;
-			}
+			String selectSql = "SELECT TO_CHAR(C.ADMIN_ID) ADMIN_CODE"
+					+ "  FROM CITY C, PROGRAM P"
+					+ " WHERE C.CITY_ID = P.CITY_ID"
+					+ "   AND P.PROGRAM_ID = "+programID
+					+ " UNION ALL"
+					+ " SELECT I.ADMIN_CODE"
+					+ "  FROM INFOR I, PROGRAM P"
+					+ " WHERE P.INFOR_ID = I.INFOR_ID"
+					+ "   AND P.PROGRAM_ID = "+programID;
 			
-			Map<String, String> adminCodeMap = run.query(conn, selectSql, new ResultSetHandler<Map<String, String>>(){
+			String adminCode = run.query(conn, selectSql, new ResultSetHandler<String>(){
 				@Override
-				public Map<String, String> handle(ResultSet rs)
+				public String handle(ResultSet rs)
 						throws SQLException {
-					Map<String, String> map = new HashMap<String, String>();
-						while(rs.next()){
-							if(type == 4){
-								map.put("adminCode", String.valueOf(rs.getString("ADMIN_CODE")));
-							}else{
-								map.put("adminCode", String.valueOf(rs.getInt("ADMIN_ID")));
-							}
+						if(rs.next()){
+							return String.valueOf(rs.getString("ADMIN_CODE"));
 						}
-					return map;
+					return "";
 				}
 			});
 			
-			return adminCodeMap.get("adminCode");
+			return adminCode;
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1752,6 +1750,7 @@ public class TaskService {
 							collectTask.setGroupId(quickTask.getGroupId());
 							collectTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
 							collectTask.setPoiPlanTotal(quickTask.getPoiPlanTotal());
+							collectTask.setWorkKind(quickTask.getWorkKind());
 							if(myProgram!=null){
 								collectTask.setPlanStartDate(myProgram.getCollectPlanStartDate());
 								collectTask.setPlanEndDate(myProgram.getCollectPlanEndDate());

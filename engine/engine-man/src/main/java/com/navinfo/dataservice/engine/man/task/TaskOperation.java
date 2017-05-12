@@ -264,10 +264,10 @@ public class TaskOperation {
 			
 			String insertPart="";
 			String valuePart="";
-			if (bean!=null && bean.getWorkResult()!=null && StringUtils.isNotEmpty(bean.getWorkResult().toString())){
+			if (bean!=null && bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" WORK_KIND ";
-				valuePart+= "'" + bean.getWorkResult() + "'";
+				valuePart+= "'" + bean.getWorkKind() + "'";
 			};
 			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
@@ -2509,7 +2509,7 @@ public class TaskOperation {
 	public static void updateWorkKind(Connection conn, int taskId, int subtaskWorkKind) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",work_kind) WHERE task_id="+taskId;
+			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",len(work_kind)) WHERE task_id="+taskId;
 			run.update(conn,updateSql);			
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

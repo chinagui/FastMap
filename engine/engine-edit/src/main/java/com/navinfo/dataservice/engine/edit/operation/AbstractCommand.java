@@ -13,6 +13,15 @@ public abstract class AbstractCommand implements ICommand {
 	private long userId;
 	private int taskId;
 	private int dbType;
+	private int infect;
+
+	public int getInfect() {
+		return infect;
+	}
+
+	public void setInfect(int infect) {
+		this.infect = infect;
+	}
 
 	public int getTaskId() {
 		return taskId;

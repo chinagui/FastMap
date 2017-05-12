@@ -577,4 +577,64 @@ public class IxPoiSelector extends AbstractSelector {
 		}
 	}
 
+	/**
+	 * 根据引导LINK查询poi对象
+	 *
+	 * @param linkPids
+	 *            引导link
+	 * @param isLock
+	 *            是否加锁
+	 * @return poi主对象
+	 * @throws Exception
+	 */
+	public List<IxPoi> loadIxPoiByLinkPids(List<Integer> linkPids, boolean isLock)
+			throws Exception {
+
+		List<IxPoi> poiList = new ArrayList<>();
+
+		if (linkPids.size() < 1) {
+
+			return poiList;
+		}
+
+		String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String sql = "select * from  ix_poi where link_pid IN (" + ids + ") and u_record !=2";
+
+		if (isLock) {
+			sql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = this.conn.prepareStatement(sql);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				IxPoi ixPoi = new IxPoi();
+
+				ReflectionAttrUtils.executeResultSet(ixPoi, resultSet);
+				
+				poiList.add(ixPoi);
+			}
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return poiList;
+	}
+
 }

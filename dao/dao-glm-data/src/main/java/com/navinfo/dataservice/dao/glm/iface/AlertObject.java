@@ -13,6 +13,16 @@ import net.sf.json.JSONObject;
 * @Description: TODO
 */
 public class AlertObject {
+	public AlertObject(ObjType objType, int pid, ObjStatus status) {
+		this.objType = objType;
+		this.pid = pid;
+		this.status = status;
+	}
+
+	public AlertObject() {
+		super();
+	}
+
 	//对象类型
 	private ObjType objType;
 	

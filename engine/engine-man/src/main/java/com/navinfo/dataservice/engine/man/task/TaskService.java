@@ -23,9 +23,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.context.annotation.Bean;
-
-import com.alibaba.druid.sql.visitor.functions.Length;
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
@@ -57,7 +54,6 @@ import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
-import com.navinfo.navicommons.database.DataBaseUtils;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -595,10 +591,9 @@ public class TaskService {
 			
 			//获取旧任务信息
 			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
-			
 			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
 			if(bean.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
-				String adminCode = selectAdminCode(bean.getProgramId());
+				String adminCode = selectAdminCode(oldTask.getProgramId());
 				
 				if(adminCode != null && !"".equals(adminCode)){
 					UserGroup userGroup = getGroupByAminCode(adminCode, 1);
@@ -613,40 +608,10 @@ public class TaskService {
 			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
 			if(oldTask.getStatus()==1&&oldTask.getType()==0){
 				if(bean.getSubWorkKind(3)==1&&oldTask.getSubWorkKind(3)==0){
-					Subtask subtask = new Subtask();
-					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(oldTask.getName()+"_"+task.getGroupName());//任务名称+_作业组
-					subtask.setExeGroupId(task.getGroupId());
-					subtask.setGridIds(getGridMapByTaskId(oldTask.getTaskId()));
-					subtask.setPlanStartDate(task.getPlanStartDate());
-					subtask.setPlanEndDate(task.getPlanEndDate());
-					subtask.setStatus(2);//草稿
-					subtask.setStage(2);
-					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
-					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
-					String wkt = GridUtils.grids2Wkt(gridIds);
-					subtask.setGeometry(wkt);
-
-					SubtaskService.getInstance().createSubtask(subtask);
+					createCollectSubtaskByTask(3, bean);
 				}
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
-					Subtask subtask = new Subtask();
-					//SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-					subtask.setName(task.getName()+"_"+task.getGroupName());//任务名称+_作业组
-					subtask.setExeGroupId(task.getGroupId());
-					subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
-					subtask.setPlanStartDate(task.getPlanStartDate());
-					subtask.setPlanEndDate(task.getPlanEndDate());
-					subtask.setStatus(2);//草稿
-					subtask.setStage(2);
-					subtask.setType(7);
-					subtask.setTaskId(task.getTaskId());
-					JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
-					String wkt = GridUtils.grids2Wkt(gridIds);
-					subtask.setGeometry(wkt);
-
-					SubtaskService.getInstance().createSubtask(subtask);
+					createCollectSubtaskByTask(4, bean);
 				}
 			}
 			
@@ -719,6 +684,70 @@ public class TaskService {
 			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 3情报矢量，4多源
+	 * 快线：情报名称_发布时间_作业员_子任务ID
+	 * 中线：任务名称_作业组
+	 * @param num
+	 * @throws Exception 
+	 */
+	private void createCollectSubtaskByTask(int num,Task task) throws Exception{
+		int programType=1;
+		if(task.getBlockId()==0){//情报任务
+			programType=4;
+		}
+		//情报子任务
+		if(num==3){
+			Subtask subtask = new Subtask();
+			if(programType==1){
+				subtask.setName(task.getName());
+			}
+			//subtask.setExeGroupId(task.getGroupId());
+			subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setStatus(2);//草稿
+			subtask.setStage(0);
+			subtask.setType(2);
+			subtask.setWorkKind(3);
+			subtask.setTaskId(task.getTaskId());
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			subtask.setGeometry(wkt);
+			SubtaskService.getInstance().createSubtask(subtask);
+		}
+		//多源子任务
+		if(num==4){
+			Subtask subtask = new Subtask();
+			String adminCode = selectAdminCode(task.getProgramId());
+			//* 快线：情报名称_发布时间_作业员_子任务ID
+			// * 中线：任务名称_作业组
+			if(adminCode != null && !"".equals(adminCode)){
+				UserGroup userGroup = getGroupByAminCode(adminCode, 5);
+				if(userGroup!=null){
+					subtask.setExeGroupId(userGroup.getGroupId());
+					if(programType==1){
+						subtask.setName(task.getName()+"_"+userGroup.getGroupName());
+					}//任务名称+_作业组
+				}
+			}
+			subtask.setExeGroupId(task.getGroupId());
+			subtask.setGridIds(getGridMapByTaskId(task.getTaskId()));
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setStatus(2);//草稿
+			subtask.setStage(0);
+			subtask.setType(0);
+			subtask.setWorkKind(4);
+			subtask.setTaskId(task.getTaskId());
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			subtask.setGeometry(wkt);
+
+			SubtaskService.getInstance().createSubtask(subtask);
 		}
 	}
 	
@@ -3207,7 +3236,7 @@ public class TaskService {
 	}
 	
 	/**
-	 * 组赋值方法
+	 * 组赋值方法 1采集2编辑3众包4情报5多源
 	 * @param adminCode
 	 * @param type
 	 * @throws Exception 
@@ -3220,11 +3249,15 @@ public class TaskService {
 			QueryRunner run = new QueryRunner();
 			
 			String name = "";
-			if(type == 1 || type == 2){
-				name = "CROWD_GROUP_NAME";
+			if(type == 1){
+				name = "COLLECT_GROUP_NAME";
+			}else if(type == 2){
+				name="EDIT_GROUP_NAME";
 			}else if(type == 3){
+				name = "CROWD_GROUP_NAME";
+			}else if(type == 4){
 				name = "INFOR_GROUP_NAME";
-			}else{
+			}else if(type == 5){
 				name = "MULTISOURCE_GROUP_NAME";
 			}
 			
@@ -3233,17 +3266,19 @@ public class TaskService {
 					+ "and u.group_name = t." + name;
 			
 			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
-				UserGroup  userGroup = new UserGroup();
+				
 				@Override
 				public UserGroup handle(ResultSet result) throws SQLException {
+					UserGroup  userGroup = new UserGroup();
 					while(result.next()){
 						userGroup.setGroupId(result.getInt("GROUP_ID"));
 						userGroup.setGroupName(result.getString("GROUP_NAME"));
 						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
 						userGroup.setLeaderId(result.getInt("LEADER_ID"));
 						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
+						return userGroup;
 					}
-					return userGroup;
+					return null;
 				}});
 			return group;
 			

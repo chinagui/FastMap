@@ -101,24 +101,15 @@ public class TaskService {
 			List<Task> taskList = new ArrayList<Task>();
 			for (int i = 0; i < taskArray.size(); i++) {
 				JSONObject taskJson = taskArray.getJSONObject(i);
-//				JSONArray workKindArray = null;
-//				if(taskJson.containsKey("workKind")){
-//					taskJson.getJSONArray("workKind");}
-//				//采集任务解析处理workKind
-//				if(taskJson.getInt("type")==0){
-//					//JSONArray workKindArray = taskJson.getJSONArray("workKind");
-//					String workKind = "";
-//					String result = "0|0|0|0";
-//					for(Object kind:workKindArray){
-//						int t=Integer.valueOf(kind.toString());
-//						result=result.substring(1,(t-1)*2)+"1"+result.substring(t*2,result.length());
-//					}
-//					taskJson.put("workKind", result);
-//				}else{
-//					taskJson.remove("workKind");
-//				}
 				
-				Task bean = (Task) JsonOperation.jsonToBean(taskJson,Task.class);
+				JSONArray workKindArray=null;
+				if(json.containsKey("workKind")){
+					workKindArray=json.getJSONArray("workKind");
+					json.remove("workKind");
+				}
+				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
+				bean.setWorkKind(workKindArray);
+				
 				bean.setCreateUserId((int) userId);
 				
 				//获取grid信息
@@ -587,12 +578,18 @@ public class TaskService {
 		int total=0;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			JSONArray workKindArray=null;
+			if(json.containsKey("workKind")){
+				workKindArray=json.getJSONArray("workKind");
+				json.remove("workKind");
+			}
 			Task bean=(Task) JsonOperation.jsonToBean(json,Task.class);
+			bean.setWorkKind(workKindArray);
 			
 			//获取旧任务信息
 			Task oldTask = this.queryByTaskId(conn, bean.getTaskId());
 			//采集任务 ,workKind外业采集或众包为1,调用组赋值方法				
-			if(bean.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
+			if(oldTask.getType()==0&&bean.getGroupId()==0&&(bean.getSubWorkKind(1)==1||bean.getSubWorkKind(2)==1)){
 				String adminCode = selectAdminCode(oldTask.getProgramId());
 				
 				if(adminCode != null && !"".equals(adminCode)){
@@ -608,9 +605,11 @@ public class TaskService {
 			//则需自动创建情报矢量或多源子任务，即subtask里的work_Kind赋对应值
 			if(oldTask.getStatus()==1&&oldTask.getType()==0){
 				if(bean.getSubWorkKind(3)==1&&oldTask.getSubWorkKind(3)==0){
+					log.info("任务修改，变更情报，需自动创建情报子任务");
 					createCollectSubtaskByTask(3, bean);
 				}
 				if(bean.getSubWorkKind(4)==1&&oldTask.getSubWorkKind(4)==0){
+					log.info("任务修改，变更多源，需自动创建多源子任务");
 					createCollectSubtaskByTask(4, bean);
 				}
 			}

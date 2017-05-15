@@ -116,6 +116,11 @@ public class SubtaskOperation {
 				updateSql += " REFER_ID= " + bean.getReferId();
 			};
 			
+			if (bean!=null&&bean.getWorkKind()!=0){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql += " work_kind= " + bean.getWorkKind();
+			};
+			
 			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GEOMETRY=? ";
@@ -180,7 +185,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,S.STATUS,S.TASK_ID"
+			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -197,6 +202,7 @@ public class SubtaskOperation {
 						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
+						subtask.setWorkKind(rs.getInt("WORK_KIND"));
 						list.add(subtask);
 					}
 					return list;
@@ -554,6 +560,12 @@ public class SubtaskOperation {
 				column+=" EXE_USER_ID ";
 				values+=" ? ";
 				value.add(bean.getExeUserId());
+			};
+			if (bean!=null&&bean.getWorkKind()!=0){
+				if(StringUtils.isNotEmpty(column)){column+=" , ";values+=" , ";}
+				column+=" work_kind ";
+				values+=" ? ";
+				value.add(bean.getWorkKind());
 			};
 			
 			String createSql ="insert into subtask ("+ column+") values("+values+")";

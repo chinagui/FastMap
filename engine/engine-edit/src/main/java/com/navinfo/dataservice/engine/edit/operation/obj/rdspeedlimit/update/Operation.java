@@ -157,4 +157,33 @@ public class Operation implements IOperation {
 
         result.insertObject(limit, ObjStatus.UPDATE, limit.pid());
     }
+
+
+    /**
+     * 删除link维护限速关系
+     *
+     * @param linkPids
+     * @param result
+     * @throws Exception
+     */
+    public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+        if (conn == null) {
+
+            return;
+        }
+
+        RdSpeedlimitSelector selector = new RdSpeedlimitSelector(conn);
+
+        List<RdSpeedlimit> limits = selector
+                .loadSpeedlimitByLinkPids(linkPids, true);
+
+        // 更新关联线为零
+        for (RdSpeedlimit limit : limits) {
+
+            limit.changedFields().put("linkPid", 0);
+
+            result.insertObject(limit, ObjStatus.UPDATE, limit.pid());
+        }
+    }
 }

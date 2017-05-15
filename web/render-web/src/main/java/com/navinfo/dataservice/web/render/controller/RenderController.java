@@ -43,10 +43,14 @@ public class RenderController extends BaseController {
 
 		try {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			JSONArray array = new JSONArray();
 
 			JSONArray type = jsonReq.getJSONArray("types");
 
 			int dbId = jsonReq.getInt("dbId");
+			if (jsonReq.containsKey("noQFilter")) {
+				array = jsonReq.getJSONArray("noQFilter");
+			}
 
 			int x = jsonReq.getInt("x");
 
@@ -114,7 +118,7 @@ public class RenderController extends BaseController {
 				conn = DBConnector.getInstance().getConnectionById(dbId);
 
 				SearchProcess p = new SearchProcess(conn);
-
+				p.setArray(array);
 				data = p.searchDataByTileWithGap(types, x, y, z, gap);
 
 			}

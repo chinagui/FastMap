@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
@@ -350,5 +351,104 @@ public class RdSlopeSelector extends AbstractSelector {
            DbUtils.closeQuietly(pstmt);
        }
    }
+
+
+    /***
+     *
+     * 通过退出线查找坡度信息
+     *
+     * @param linkPids
+     * @param isLock
+     * @return
+     * @throws Exception
+     */
+    public List<RdSlope> loadByLinks(List<Integer> linkPids, boolean isLock) throws Exception {
+
+        List<RdSlope> rows = new ArrayList<>();
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        String ids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+        try {
+            List<Integer> pids = new ArrayList<>();
+
+            String sql = "SELECT pid, row_id FROM rd_slope WHERE link_pid  in (" + ids + ") and u_record !=2";
+
+            if (isLock) {
+                sql += " for update nowait";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                int pid = resultSet.getInt("pid");
+
+                pids.add(pid);
+            }
+
+            sql = "SELECT pid, row_id FROM rd_slope WHERE link_pid  in (" + ids + ") and u_record !=2";
+
+            if (isLock) {
+                sql += " for update nowait";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                int pid = resultSet.getInt("pid");
+
+                if (!pids.contains(pid)) {
+
+                    pids.add(pid);
+                }
+            }
+
+            sql = "SELECT pid, row_id FROM RD_SLOPE WHERE U_RECORD != 2 AND PID IN (SELECT DISTINCT (SLOPE_PID) FROM RD_SLOPE_VIA WHERE U_RECORD != 2 AND LINK_PID in (" + ids + "))";
+
+            if (isLock) {
+
+                sql += " for update nowait";
+            }
+
+            pstmt = conn.prepareStatement(sql);
+
+            resultSet = pstmt.executeQuery();
+
+            while (resultSet.next()) {
+
+                int pid = resultSet.getInt("pid");
+
+                if (!pids.contains(pid)) {
+
+                    pids.add(pid);
+                }
+            }
+
+            AbstractSelector abSelector = new AbstractSelector(RdSlope.class, conn);
+
+            List<IRow> rowTollgates = abSelector.loadByIds(pids, true, true);
+
+            for (IRow row : rowTollgates) {
+
+                rows.add((RdSlope) row);
+            }
+
+            return rows;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DbUtils.closeQuietly(resultSet);
+            DbUtils.closeQuietly(pstmt);
+        }
+    }
 
 }

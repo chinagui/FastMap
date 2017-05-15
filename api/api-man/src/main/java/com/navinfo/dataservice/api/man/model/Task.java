@@ -2,6 +2,7 @@ package com.navinfo.dataservice.api.man.model;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -69,6 +70,17 @@ public class Task implements Serializable{
 	public String getWorkKind() {
 		return workKind;
 	}
+	
+	public List<Integer> getWorkKindList(){
+		String[] kindList = this.workKind.split("|");
+		List<Integer> result=new ArrayList<Integer>();
+		for(int i=0;i<kindList.length;i++){
+			if(kindList[i].equals("1")){
+				result.add(i);
+			}
+		}
+		return result;
+	}
 
 
 	public void setWorkKind(String workKind) {
@@ -93,6 +105,7 @@ public class Task implements Serializable{
 	
 	/**
 	 * workKind=0|1|0|0,num=2,则返回1，num=1，则返回0
+	 * 1外业采集，2众包，3情报矢量，4多源
 	 * @param num
 	 * @return
 	 */

@@ -391,6 +391,14 @@ public class TaskService {
 					if(task.getType() == 2){
 						poiMonthlyTask.add(task);
 					}
+					if(task.getType()==0){//采集任务，workKind情报矢量或多源为1，则需自动创建情报矢量或多源采集子任
+						if(task.getSubWorkKind(3)==1){
+							createCollectSubtaskByTask(3, task);
+						}
+						if(task.getSubWorkKind(4)==1){
+							createCollectSubtaskByTask(4, task);
+						}
+					}
 				}
 			}
 			if(commontaskIds.size()>0){
@@ -1979,6 +1987,7 @@ public class TaskService {
 					+ "       T.LOT,"
 					+ "       T.POI_PLAN_TOTAL,"
 					+ "       T.ROAD_PLAN_TOTAL,"
+					+ "       T.WORK_KIND,"
 					+ "       B.BLOCK_ID,"
 					+ "       B.BLOCK_NAME,"
 					+ "       B.WORK_PROPERTY,"
@@ -2011,6 +2020,7 @@ public class TaskService {
 						task.setStatus(rs.getInt("STATUS"));
 						task.setDescp(rs.getString("DESCP"));
 						task.setType(rs.getInt("TYPE"));
+						task.setWorkKind(rs.getString("WORK_KIND"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setProducePlanStartDate(rs.getTimestamp("PRODUCE_PLAN_START_DATE"));
@@ -2030,28 +2040,23 @@ public class TaskService {
 						task.setGroupName(rs.getString("GROUP_NAME"));
 						task.setRegionId(rs.getInt("REGION_ID"));
 						task.setMethod(rs.getString("METHOD"));
-						task.setAdminName(rs.getString("ADMIN_NAME"));
-						
-						Map<Integer, Integer> gridIds;
-						try {
-							gridIds = getGridMapByTaskId(task.getTaskId());
-							task.setGridIds(gridIds);
-							
-							JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
-							String wkt = GridUtils.grids2Wkt(jsonArray);
-							task.setGeometry(Geojson.wkt2Geojson(wkt));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
+						task.setAdminName(rs.getString("ADMIN_NAME"));						
 						task.setVersion(SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion));
 					}
 					return task;
 				}
 
 			};
+			Task task=run.query(conn, sql, rsHandler);
+			//获取任务grid和geo
+			Map<Integer, Integer> gridIds = getGridMapByTaskId(conn,task.getTaskId());
+			task.setGridIds(gridIds);
 			
-			return run.query(conn, sql, rsHandler);	
+			JSONArray jsonArray = JSONArray.fromObject(gridIds.keySet().toArray());
+			String wkt = GridUtils.grids2Wkt(jsonArray);
+			task.setGeometry(Geojson.wkt2Geojson(wkt));
+			
+			return task;	
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -2075,6 +2080,7 @@ public class TaskService {
 			map.put("status", task.getStatus());
 			map.put("descp", task.getDescp());
 			map.put("type", task.getType());
+			map.put("workKind", task.getWorkKindList());
 			
 			Timestamp planStartDate = task.getPlanStartDate();
 			Timestamp planEndDate = task.getPlanEndDate();

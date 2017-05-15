@@ -253,6 +253,32 @@ public class TaskController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 根据workKind判断：
+	 * 1.	外业采集：判断task是否有groupid，有直接返回相关信息；
+	 * 没有，获取admin_group_mapping的对应字段
+	 * 2.	众包，情报，多源：获取admin_group_mapping的对应字段
+	 * 应用场景：采集子任务创建组或者人员列表
+	 * 
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/getCollectGroupByTask")
+	public ModelAndView getCollectGroupByTask(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int taskId= dataJson.getInt("taskId");
+			int workKind= dataJson.getInt("workKind");
+			int snapshot=dataJson.getInt("snapshot");
+			
+			Map<String,Object> data = TaskService.getInstance().getCollectGroupByTask(taskId,workKind,snapshot);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 //	/*
 //	 * 规划管理页面--月编管理
 //	 */

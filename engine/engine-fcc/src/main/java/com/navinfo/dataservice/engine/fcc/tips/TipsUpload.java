@@ -1025,7 +1025,7 @@ public class TipsUpload {
 		
 		for (int i = 0; i <  tracks.size(); i++) {
 			
-			JSONObject info = tracks.getJSONObject(i - 1);
+			JSONObject info = tracks.getJSONObject(i);
 
 			if (info.getInt("stage") == 5||info.getInt("stage") == 6) {
 

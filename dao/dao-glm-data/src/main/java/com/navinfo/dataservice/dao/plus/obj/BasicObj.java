@@ -68,6 +68,23 @@ public abstract class BasicObj {
 		return false;
 	}
 	
+	/**
+	 * 判断某个子表是否有更改
+	 * @param tableName
+	 * @return
+	 */
+	public boolean isSubrowChanged(String tableName){
+		List<BasicRow> subrowList = subrows.get(tableName);
+		if(subrowList!=null){
+			for(BasicRow basicRow:subrowList){
+				if(basicRow.isChanged()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public BasicObjGrid getGrid() throws Exception {
 		if(this.grid==null){
 			//生成grid信息

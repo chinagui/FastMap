@@ -236,6 +236,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
 			subtask.setType(2);
 			subtask.setStage(0);
+			if(task.getSubWorkKind(3)==1){
+				subtask.setWorkKind(3);
+			}
 			subtask.setTaskId(task.getTaskId());
 			subtask.setPlanStartDate(task.getPlanStartDate());
 			subtask.setPlanEndDate(task.getPlanEndDate());

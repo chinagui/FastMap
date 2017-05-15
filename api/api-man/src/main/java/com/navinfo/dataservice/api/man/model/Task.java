@@ -72,11 +72,11 @@ public class Task implements Serializable{
 	}
 	
 	public List<Integer> getWorkKindList(){
-		String[] kindList = this.workKind.split("|");
+		String[] kindList = this.workKind.split("\\|");
 		List<Integer> result=new ArrayList<Integer>();
 		for(int i=0;i<kindList.length;i++){
 			if(kindList[i].equals("1")){
-				result.add(i);
+				result.add(i+1);
 			}
 		}
 		return result;

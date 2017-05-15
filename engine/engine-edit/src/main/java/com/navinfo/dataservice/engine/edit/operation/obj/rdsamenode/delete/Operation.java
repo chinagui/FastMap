@@ -306,4 +306,51 @@ public class Operation implements IOperation {
 
 		return false;
 	}
+
+	/**
+	 * 删除线维护同一关系
+	 * @param nodePids
+	 * @param tableName
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByNodes(List<Integer> nodePids, String tableName, Result result) throws Exception {
+
+		if (conn == null || CollectionUtils.isEmpty(nodePids)) {
+
+			return;
+		}
+
+		RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
+
+		List<RdSameNode> sameNodes = sameNodeSelector.loadSameNodeByNodePids(org.apache.commons.lang.StringUtils.join(nodePids, ","), tableName,
+				true);
+
+		for (RdSameNode sameNode : sameNodes) {
+
+			List<RdSameNodePart> delParts = new ArrayList<>();
+
+			for (IRow row : sameNode.getParts()) {
+
+				RdSameNodePart part = (RdSameNodePart) row;
+
+				if (nodePids.contains(part.getNodePid()) && part.getTableName().equals(tableName)) {
+
+					delParts.add(part);
+				}
+			}
+
+			if (2 > sameNode.getParts().size() - delParts.size()) {
+
+				result.insertObject(sameNode, ObjStatus.DELETE, sameNode.getPid());
+
+				continue;
+			}
+
+			for (RdSameNodePart part : delParts) {
+
+				result.insertObject(part, ObjStatus.DELETE, part.getGroupId());
+			}
+		}
+	}
 }

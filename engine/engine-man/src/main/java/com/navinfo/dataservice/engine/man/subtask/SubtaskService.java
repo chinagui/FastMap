@@ -622,6 +622,7 @@ public class SubtaskService {
 			sb.append("        ST.GEOMETRY,                             ");
 			sb.append("        ST.REFER_ID,                             ");
 			sb.append("        ST.EXE_USER_ID,                          ");
+			sb.append("        ST.work_kind,                          ");
 			sb.append("        ST.EXE_GROUP_ID,                         ");
 			sb.append("        ST.QUALITY_SUBTASK_ID,                   ");
 			sb.append("        ST.IS_QUALITY,                           ");
@@ -656,6 +657,7 @@ public class SubtaskService {
 						subtask.put("stage",rs.getInt("STAGE"));
 						subtask.put("referId",rs.getInt("REFER_ID"));
 						subtask.put("taskId",rs.getInt("TASK_ID"));
+						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						
 						//作业员/作业组信息
@@ -1368,6 +1370,10 @@ public class SubtaskService {
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
+				//采集子任务需要反向维护任务workKind
+				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
+					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
+				}
 				
 				//发送消息
 				SubtaskOperation.pushMessage(conn, subtask, userId);
@@ -1893,6 +1899,7 @@ public class SubtaskService {
 			sb.append(" (SELECT S.SUBTASK_ID,");
 			sb.append(" S.STAGE,");
 			sb.append(" S.NAME,");
+			sb.append(" S.work_kind,");
 			sb.append(" S.TYPE,");
 			sb.append(" S.STATUS,");
 			sb.append(" S.EXE_USER_ID,");
@@ -1957,6 +1964,7 @@ public class SubtaskService {
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("stage", rs.getInt("STAGE"));
+						subtask.put("workKind", rs.getInt("WORK_KIND"));
 						subtask.put("type", rs.getInt("TYPE"));
 						int userid=rs.getInt("EXE_USER_ID");
 						String executer=rs.getString("EXECUTER");

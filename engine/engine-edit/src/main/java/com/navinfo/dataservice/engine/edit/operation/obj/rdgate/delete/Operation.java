@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdgate.delete;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -43,7 +45,6 @@ public class Operation implements IOperation {
 	/**
 	 * 删除link维护大门
 	 * @param linkPid
-	 * @param conn
 	 * @param result
 	 * @throws Exception
 	 */
@@ -64,8 +65,7 @@ public class Operation implements IOperation {
 	
 	/**
 	 * 分离link维护大门
-	 * @param linkPid
-	 * @param conn
+	 * @param linkPids
 	 * @param result
 	 * @throws Exception
 	 */
@@ -113,5 +113,27 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+
+	/**
+	 * 删除link维护大门
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		if (conn == null) {
+			return;
+		}
+
+		RdGateSelector rdSelector = new RdGateSelector(conn);
+
+		List<RdGate> rdGateList = rdSelector.loadByLinks(linkPids, true);
+
+		for (RdGate rdGate : rdGateList) {
+
+			result.insertObject(rdGate, ObjStatus.DELETE, rdGate.getPid());
+		}
 	}
 }

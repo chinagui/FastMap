@@ -285,4 +285,80 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 根据link数组 维护RdLaneConnexity
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids,Result result) throws Exception {
+
+		RdLaneConnexitySelector selector = new RdLaneConnexitySelector(conn);
+
+		List<RdLaneConnexity> storageTmp = selector.loadByLinks(linkPids, 1, true);
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 2, true));
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 3, true));
+
+		Map<Integer, RdLaneConnexity> storage = new HashMap<>();
+
+		for (RdLaneConnexity laneConnexity : storageTmp) {
+
+			storage.put(laneConnexity.getPid(), laneConnexity);
+		}
+
+		for (RdLaneConnexity laneConnexity : storage.values()) {
+
+			//被删link作为进入线，删除RdLaneConnexity
+			if (linkPids.contains(laneConnexity.getInLinkPid())) {
+
+				result.insertObject(laneConnexity, ObjStatus.DELETE, laneConnexity.getPid());
+
+				continue;
+			}
+
+			List<RdLaneTopology> delTopo = new ArrayList<>();
+
+			for (IRow rowTopo : laneConnexity.getTopos()) {
+
+				RdLaneTopology topo = (RdLaneTopology) rowTopo;
+
+				//被删link作为退出线，删除该Link会对应删除此组关系
+				if (linkPids.contains(topo.getOutLinkPid())) {
+
+					delTopo.add(topo);
+
+					continue;
+				}
+
+				for (IRow rowVia : topo.getVias()) {
+
+					RdLaneVia via = (RdLaneVia) rowVia;
+
+					//被删link作为经过线，删除该link会对应删除次组关系
+					if (linkPids.contains(via.getLinkPid())) {
+
+						delTopo.add(topo);
+
+						break;
+					}
+				}
+			}
+
+			//退出线全被删除，删除RdLaneConnexity
+			if (delTopo.size() == laneConnexity.getTopos().size()) {
+
+				result.insertObject(laneConnexity, ObjStatus.DELETE, laneConnexity.getPid());
+
+				break;
+			}
+
+			for (RdLaneTopology topo : delTopo) {
+
+				result.insertObject(topo, ObjStatus.DELETE, topo.getConnexityPid());
+			}
+		}
+	}
 }

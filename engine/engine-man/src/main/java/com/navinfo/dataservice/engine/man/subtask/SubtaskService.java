@@ -415,7 +415,7 @@ public class SubtaskService {
 			qualitySubtask.setExeGroupId(qualityExeGroupId);
 			subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 		}else{
-			if(isQuailty == 1){//qualitySubtaskId=0，且qualityExeUserId为1的时候，表示要创建质检子任务
+			if(isQuailty == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
 				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 				qualitySubtask.setSubtaskId(null);

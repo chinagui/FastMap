@@ -380,19 +380,26 @@ public class SubtaskService {
 		int qualityExeUserId = 0;//是否新建质检子任务标识
 		String qualityPlanStartDate = "";
 		String qualityPlanEndDate ="";
+		int qualityExeGroupId = 0;
+		int isQuailty = 0;
 			
 		if(dataJson.containsKey("qualitySubtaskId")){
 			qualitySubtaskId = dataJson.getInt("qualitySubtaskId");
 			//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
 			dataJson.discard("qualitySubtaskId");
 		}
-		if(dataJson.containsKey("qualityExeUserId")){
+		//是否创建质检子任务，这里更改了创建的标识字段为isQuailty
+		if(dataJson.containsKey("isQuailty")){
 			qualityExeUserId = dataJson.getInt("qualityExeUserId");
 			qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
 			qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+			qualityExeGroupId = dataJson.getInt("qualityExeGroupId");
+			isQuailty = dataJson.getInt("isQuailty");
 			dataJson.discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
 			dataJson.discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
 			dataJson.discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+			dataJson.discard("qualityExeGroupId");
+			dataJson.discard("isQuailty");
 		}				
 			
 		//正常修改子任务
@@ -405,12 +412,14 @@ public class SubtaskService {
 			qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 			qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 			qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+			qualitySubtask.setExeGroupId(qualityExeGroupId);
 			subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 		}else{
-			if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
+			if(isQuailty == 1){//qualitySubtaskId=0，且qualityExeUserId为1的时候，表示要创建质检子任务
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
 				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 				qualitySubtask.setSubtaskId(null);
+				qualitySubtask.setExeGroupId(qualityExeGroupId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务

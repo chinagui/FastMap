@@ -241,6 +241,13 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				value.add(bean.getInfoTypeName());
 			};
 			
+			if (bean!=null&&bean.getAdminCode()!=null && StringUtils.isNotEmpty(bean.getAdminCode().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
+				insertPart+=" ADMIN_CODE ";
+				values+=" ? ";
+				value.add(bean.getAdminCode());
+			};
+			
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 			insertPart+=" PLAN_STATUS ";
 			values+=" ? ";

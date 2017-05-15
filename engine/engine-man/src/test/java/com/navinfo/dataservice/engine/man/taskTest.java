@@ -22,6 +22,7 @@ import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -117,6 +118,12 @@ public class taskTest extends InitApplication{
 //		JSONObject result = JsonOperation.beanToJson(data);
 //		
 //		System.out.println(result);
+	}
+	
+	@Test
+	public void testReOpen() throws ServiceException
+	{
+		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
 	}
 
 	@Override

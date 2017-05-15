@@ -112,18 +112,34 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
-			//质检子任务信息
-			int qualityExeUserId = 0;
-			String qualityPlanStartDate = "";
-			String qualityPlanEndDate = "";
-			if(dataJson.containsKey("qualityExeUserId")){
-				qualityExeUserId = dataJson.getInt("qualityExeUserId");
-				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+			//创建质检子任务
+			//这里变量的创建都放在判断里，减小不必要的内存占用
+			int qualitySubtaskId = 0;
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+			if(dataJson.containsKey("isQuailty") && dataJson.getInt("isQuailty") != 0){
+				int qualityExeUserId = dataJson.getInt("qualityExeUserId");
+				String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+				String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+				int qualityExeGroupId = dataJson.getInt("qualityExeGroupId");
 				//删除传入参数的对应键值对,因为bean中没有这些字段
 				dataJson.discard("qualityExeUserId");
 				dataJson.discard("qualityPlanStartDate");
-				dataJson.discard("qualityPlanEndDate");}
+				dataJson.discard("qualityPlanEndDate");
+				dataJson.discard("isQuailty");
+				dataJson.discard("qualityExeGroupId");
+				
+				Subtask qualityBean = createSubtaskBean(userId,dataJson);
+				qualityBean.setName(qualityBean.getName()+"_质检");
+				qualityBean.setIsQuality(1);
+				qualityBean.setStatus(2);
+				qualityBean.setExeUserId(qualityExeUserId);
+				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
+				qualityBean.setExeGroupId(qualityExeGroupId);
+				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+				//创建质检子任务 subtask	
+				qualitySubtaskId = createSubtask(qualityBean);
+			}
 			
 //			//自采自录子任务
 //			int isSelfRecord = 0;//是否进行自采自录，0否1是
@@ -138,21 +154,26 @@ public class SubtaskService {
 //				dataJson.discard("selfRecordType");
 //				dataJson.discard("selfRecordName");}
 			
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-			
-			int qualitySubtaskId = 0;
-			if(qualityExeUserId != 0 ){//表示要创建质检子任务
-				//根据参数生成质检子任务 subtask qualityBean
-				Subtask qualityBean = createSubtaskBean(userId,dataJson);
-				qualityBean.setName(qualityBean.getName()+"_质检");
-				qualityBean.setIsQuality(1);
-				qualityBean.setStatus(2);
-				qualityBean.setExeUserId(qualityExeUserId);
-				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-				//创建质检子任务 subtask	
-				qualitySubtaskId = createSubtask(qualityBean);	
-			}
+//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+//			
+//			int qualitySubtaskId = 0;
+//			//接口添加了isQuality字段方便判断是否创建月编质检子任务
+//			if(dataJson.containsKey("isQuailty") && isQuailty != 0){
+//				//根据参数生成质检子任务 subtask qualityBean
+//				dataJson.discard("isQuailty");
+//				dataJson.discard("qualityExeGroupId");
+//				Subtask qualityBean = createSubtaskBean(userId,dataJson);
+//				qualityBean.setName(qualityBean.getName()+"_质检");
+//				qualityBean.setIsQuality(1);
+//				qualityBean.setStatus(2);
+//				qualityBean.setExeUserId(qualityExeUserId);
+//				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
+//				qualityBean.setExeGroupId(qualityExeGroupId);
+//				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+//				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+//				//创建质检子任务 subtask	
+//				qualitySubtaskId = createSubtask(qualityBean);	
+//			}
 //			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
 //				//根据参数生成日编子任务 subtask dailyBean
 //				Subtask dailyBean = createSubtaskBean(userId,dataJson);

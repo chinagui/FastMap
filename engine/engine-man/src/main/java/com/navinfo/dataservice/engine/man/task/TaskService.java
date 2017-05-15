@@ -23,13 +23,16 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
+import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
@@ -103,9 +106,9 @@ public class TaskService {
 				JSONObject taskJson = taskArray.getJSONObject(i);
 				
 				JSONArray workKindArray=null;
-				if(json.containsKey("workKind")){
-					workKindArray=json.getJSONArray("workKind");
-					json.remove("workKind");
+				if(taskJson.containsKey("workKind")){
+					workKindArray=taskJson.getJSONArray("workKind");
+					taskJson.remove("workKind");
 				}
 				Task bean=(Task) JsonOperation.jsonToBean(taskJson,Task.class);
 				bean.setWorkKind(workKindArray);
@@ -132,8 +135,10 @@ public class TaskService {
 					
 					if(adminCode != null && !"".equals(adminCode)){
 						UserGroup userGroup = getGroupByAminCode(adminCode, 1);
-						Integer userGroupID = userGroup.getGroupId();
-						bean.setGroupId(userGroupID);
+						if(userGroup!=null){
+							Integer userGroupID = userGroup.getGroupId();
+							bean.setGroupId(userGroupID);
+						}
 					}
 				}
 
@@ -3251,6 +3256,25 @@ public class TaskService {
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
+			return getGroupByAminCode(conn, adminCode, type);			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		return null;
+	}
+	
+	/**
+	 * 组赋值方法 1采集2编辑3众包4情报5多源
+	 * @param adminCode
+	 * @param type
+	 * @throws Exception 
+	 * @author songhe
+	 */
+	public UserGroup getGroupByAminCode(Connection conn,String adminCode, int type){
+		try{
 			QueryRunner run = new QueryRunner();
 			
 			String name = "";
@@ -3287,6 +3311,34 @@ public class TaskService {
 				}});
 			return group;
 			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+		}
+		return null;
+	}
+
+	public Map<String, Object> getCollectGroupByTask(int taskId, int workKind,
+			int snapshot) throws Exception{
+		Connection conn = null;
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			Task task = queryByTaskId(taskId);
+			if(workKind==1&&task.getGroupId()!=0){
+				UserGroup conditionGroup=new UserGroup();
+				conditionGroup.setGroupId(task.getGroupId());
+				UserGroup resultGroup=UserGroupService.getInstance().query(conditionGroup);
+				List<UserInfo> users=UserInfoService.getInstance().list(conditionGroup);
+				JSONObject resultJson = JSONObject.fromObject(resultGroup);
+				resultJson.put("users", JSONObject.fromObject(users));
+				return resultJson;
+			}
+			String admin = selectAdminCode(task.getProgramId());
+			UserGroup resultGroup=getGroupByAminCode(conn, admin, workKind);
+			List<UserInfo> users=UserInfoService.getInstance().list(resultGroup);
+			JSONObject resultJson = JSONObject.fromObject(resultGroup);
+			resultJson.put("users", JSONObject.fromObject(users));
+			return resultJson;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

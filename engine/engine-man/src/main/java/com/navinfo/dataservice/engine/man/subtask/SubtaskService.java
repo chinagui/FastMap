@@ -116,7 +116,7 @@ public class SubtaskService {
 			//这里变量的创建都放在判断里，减小不必要的内存占用
 			int qualitySubtaskId = 0;
 			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-			if(dataJson.containsKey("isQuailty") && dataJson.getInt("isQuailty") != 0){
+			if(dataJson.containsKey("isQuailty") && dataJson.getInt("isQuailty") == 1){
 				int qualityExeUserId = dataJson.getInt("qualityExeUserId");
 				String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
 				String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");

@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -25,6 +24,7 @@ import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -61,13 +61,11 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
 			infor.setInforId(inforId);
-//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			infor.setAdminName(infor.getAdminName().replace("|", ""));
 			
-			infor.setExpectDate(new Timestamp(df.parse(dataJson.getString("expectDate")).getTime()));
-			infor.setPublishDate(new Timestamp(df.parse(dataJson.getString("publishDate")).getTime()));
-			infor.setNewsDate(new Timestamp(df.parse(dataJson.getString("newsDate")).getTime()));
+			infor.setExpectDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("expectDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
+			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
+			infor.setNewsDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("newsDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			
 			Calendar aCalendar = Calendar.getInstance();
 			aCalendar.setTime(infor.getExpectDate());

@@ -31,12 +31,12 @@ public class IxSamePoiSelector {
 		
 		String urecordSql = "AND S.U_RECORD<>2";
 		if(fids.size()>1000){
-			String sql= "SELECT DISTINCT GROUP_ID PID FROM IX_SAMEPOI_PART S,IX_POI P WHERE S.POI_PID=P.PID "+(filtDeleted?urecordSql:"")+" AND P.POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+			String sql= "SELECT DISTINCT S.GROUP_ID PID,P.POI_NUM FROM IX_SAMEPOI_PART S,IX_POI P WHERE S.POI_PID=P.PID "+(filtDeleted?urecordSql:"")+" AND P.POI_NUM IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
 			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(fids, ","));
 			return new QueryRunner().query(conn, sql, new FidPidSelHandler(),clob);
 		}else{
-			String sql= "SELECT DISTINCT GROUP_ID PID FROM IX_SAMEPOI_PART S,IX_POI P WHERE S.POI_PID=P.PID "+(filtDeleted?urecordSql:"")+" AND P.POI_NUM IN ('"+StringUtils.join(fids, "','")+"')";
+			String sql= "SELECT DISTINCT S.GROUP_ID PID,P.POI_NUM FROM IX_SAMEPOI_PART S,IX_POI P WHERE S.POI_PID=P.PID "+(filtDeleted?urecordSql:"")+" AND P.POI_NUM IN ('"+StringUtils.join(fids, "','")+"')";
 			return new QueryRunner().query(conn,sql,new FidPidSelHandler());
 		}
 	}

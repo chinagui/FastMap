@@ -658,11 +658,11 @@ public class SolrController {
 
 			if ("".equals(builder.toString())) {
 				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
-				
+
 				builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
 			} else {
 				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
-				
+
 				builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
 			}
 		}

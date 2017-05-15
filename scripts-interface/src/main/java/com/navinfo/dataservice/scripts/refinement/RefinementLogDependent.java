@@ -3,6 +3,7 @@ package com.navinfo.dataservice.scripts.refinement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -54,12 +55,6 @@ public class RefinementLogDependent {
 	public void refinementLogDependentMain(int dbId) throws Exception{
 		Connection conn = null;
 		try{
-//			DbInfo manInfo = DbService.getInstance().getDbById(dbId);
-//
-//			OracleSchema manSchema = new OracleSchema(
-//					DbConnectConfig.createConnectConfig(manInfo.getConnectParam()));
-//			conn = manSchema.getPoolDataSource().getConnection();
-			
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			createTable(conn);
 			run(conn);
@@ -89,7 +84,6 @@ public class RefinementLogDependent {
 			sb.append("create table REFINED_LOG_DEPENDENT     ");
 			sb.append("(                                      ");
 			sb.append("  pid     NUMBER(10) not null,         ");
-//			sb.append("  poi_num VARCHAR2(100) not null,       ");
 			sb.append("  delflag NUMBER(1) default 0 not null,");
 			sb.append("  moveflag NUMBER(1) default 0 not null,");
 			sb.append("  addflag  NUMBER(1) default 0 not null,");
@@ -103,36 +97,44 @@ public class RefinementLogDependent {
 		try{
 			//读履历获取增删改的pid
 			LogReader logReader = new LogReader(conn);
+			List<String> a = new ArrayList<String>();
+			a.add("1");
+			a.add("2");
 			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, null, null);
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000", "201704120000");
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000");
+
 			//新增
 			Collection<Long> inserted = pidMap.get(1);
-//			Map<Long,BasicObj> updatedObjs = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, inserted, false, true);
-			for(Long pid:inserted){
-				if(perstmtDeleted==null){
-					perstmtDeleted = conn.prepareStatement(insertedSql);
+			if(inserted!=null&&!inserted.isEmpty()){
+				for(Long pid:inserted){
+					if(perstmtInserted==null){
+						perstmtInserted = conn.prepareStatement(insertedSql);
+					}
+					perstmtInserted.setLong(1,pid);
+					perstmtInserted.setInt(2,1);
+					perstmtInserted.addBatch();
 				}
-				perstmtDeleted.setLong(1,pid);
-//				perstmtDeleted.setString(2,updatedObjs.get(pid).getMainrow().getAttrByColName("POI_NUM").toString());
-				perstmtDeleted.setInt(2,1);
-				perstmtDeleted.addBatch();
 			}
+
 			//修改
 			Collection<Long> updated = pidMap.get(3);
-			perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			if(updated!=null&&!updated.isEmpty()){
+				perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			}
 			
 			//删除
 			Collection<Long> deleted = pidMap.get(2);
-//			Map<Long,BasicObj> updatedObjs = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, deleted, false, true);
-			for(Long pid:deleted){
-				if(perstmtDeleted==null){
-					perstmtDeleted = conn.prepareStatement(deletedSql);
+			if(deleted!=null&&!deleted.isEmpty()){
+				for(Long pid:deleted){
+					if(perstmtDeleted==null){
+						perstmtDeleted = conn.prepareStatement(deletedSql);
+					}
+					perstmtDeleted.setLong(1,pid);
+					perstmtDeleted.setInt(2,1);
+					perstmtDeleted.addBatch();
 				}
-				perstmtDeleted.setLong(1,pid);
-//				perstmtDeleted.setString(2,updatedObjs.get(pid).getMainrow().getAttrByColName("POI_NUM").toString());
-				perstmtDeleted.setInt(2,1);
-				perstmtDeleted.addBatch();
 			}
-			
 			
 			if(perstmtDeleted!=null){
 				perstmtDeleted.executeBatch();
@@ -209,11 +211,6 @@ public class RefinementLogDependent {
 				perstmt = conn.prepareStatement(sql);
 			}
 			perstmt.setLong(1,entry.getKey());
-//			if(ixPoi.isGeoChanged()){
-//				perstmt.setInt(2,1);
-//			}else{
-//				perstmt.setInt(2,0);
-//			}
 			if(ixPoi.getMainrow().hisOldValueContains("GEOMETRY")){
 				perstmt.setInt(2,1);
 			}else{
@@ -234,8 +231,8 @@ public class RefinementLogDependent {
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
 		RefinementLogDependent RefinementLogDependent = new RefinementLogDependent();
-		RefinementLogDependent.refinementLogDependentMain(13);
-//		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));
+//		RefinementLogDependent.refinementLogDependentMain(13);
+		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));
 	}
 	
 

@@ -18,6 +18,13 @@ public class Process extends AbstractProcess<Command> {
         super(command);
     }
 
+    private Check check=new Check();
+    
+    public String preCheck() throws Exception{
+    	check.PERMIT_CHECK_NO_REPEAT_FEATURE(this.getCommand(), this.getConn());
+    	return super.preCheck();
+    }
+    
     @Override
     public String exeOperation() throws Exception {
         return new Operation(getCommand(), getConn()).run(getResult());

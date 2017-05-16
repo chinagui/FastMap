@@ -6,12 +6,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildnodeSelector;
@@ -27,11 +25,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -97,8 +94,6 @@ public class Operation implements IOperation {
         operation.repairLink(this.command.getGscs(), newLinkMap, command.getCmglink(), result);
     }
 
-    private Check check = new Check();
-
     /***
      * 修行挂接点和线
      *
@@ -106,7 +101,6 @@ public class Operation implements IOperation {
      * @throws Exception 处理挂接过程出错
      */
     private void caleCatchs(Result result) throws Exception {
-        check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.command, this.conn);
         if (!CollectionUtils.isEmpty(command.getCatchInfos())) {
             CmgBuildnodeSelector nodeSelector = new CmgBuildnodeSelector(conn);
             CmgBuildlinkSelector linkSelector = new CmgBuildlinkSelector(conn);
@@ -443,7 +437,7 @@ public class Operation implements IOperation {
         String newCoors = getCoordinateStr(command.getGeometry());
         String reverseNewCoors = getCoordinateStr(command.getGeometry().reverse());
 
-        if (org.apache.commons.lang.StringUtils.containsIgnoreCase(wkt, sourceCoors)) {
+        if (StringUtils.containsIgnoreCase(wkt, sourceCoors)) {
             wkt = wkt.replace(sourceCoors, newCoors);
         } else {
             wkt = wkt.replace(reverseSourceCoors, reverseNewCoors);

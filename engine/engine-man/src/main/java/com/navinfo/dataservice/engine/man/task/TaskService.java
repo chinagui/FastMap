@@ -1231,10 +1231,29 @@ public class TaskService {
 				}
 
 			};
+			
+			//获取是否有无任务数据
+			ResultSetHandler<HashMap<String,Integer>> noTaskRsHandler = new ResultSetHandler<HashMap<String,Integer>>() {
+				public HashMap<String,Integer> handle(ResultSet rs) throws SQLException {
+					HashMap<String,Integer> noTaskMap = new HashMap<String,Integer>();
+					if(rs.next()) {
+						noTaskMap.put("poi", rs.getInt("NOTASKDATA_POI_NUM"));
+						noTaskMap.put("tips", rs.getInt("NOTASKDATA_TIPS_NUM"));
+					}					
+					return noTaskMap;
+				}
+
+			};
+			String selectNoTask = "select t.NOTASKDATA_POI_NUM, t.NOTASKDATA_TIPS_NUM from FM_STAT_TASK_OVERVIEW t";
+			
+			HashMap<String,Integer> noTaskMap = run.query(conn, selectNoTask, noTaskRsHandler);
+			int hasNoTaskData = noTaskData(noTaskMap);
+			
 			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);
+		    page.setHasNoTaskData(hasNoTaskData);
 		    return page;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1243,6 +1262,21 @@ public class TaskService {
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 判断是否有无任务数据方法
+	 * 默认无
+	 * 
+	 * */
+	public int noTaskData(HashMap<String,Integer> noTaskMap){
+		int  hasData = 0;
+		int poiCount = noTaskMap.get("poi");
+		int tipsCount = noTaskMap.get("tips");
+		if(poiCount > 0 || tipsCount > 0){
+			hasData = 1;
+		}
+		return hasData;
 	}
 	
 	public Page listByCity(JSONObject condition,int curPageNum,int pageSize)throws Exception{

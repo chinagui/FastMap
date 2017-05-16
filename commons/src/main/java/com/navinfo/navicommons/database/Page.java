@@ -18,7 +18,16 @@ public class Page implements java.io.Serializable {
 	private int totalCount = -1;
 	private Object result = null;
 	private int pageNum;
+	private int hasNoTaskData = 0;
 	public Page() {
+	}
+
+	public int getHasNoTaskData() {
+		return hasNoTaskData;
+	}
+
+	public void setHasNoTaskData(int hasNoTaskData) {
+		this.hasNoTaskData = hasNoTaskData;
 	}
 
 	public Page(int pageNum) {

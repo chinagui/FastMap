@@ -97,6 +97,8 @@ public class Operation implements IOperation {
         operation.repairLink(this.command.getGscs(), newLinkMap, command.getCmglink(), result);
     }
 
+    private Check check = new Check();
+
     /***
      * 修行挂接点和线
      *
@@ -104,6 +106,7 @@ public class Operation implements IOperation {
      * @throws Exception 处理挂接过程出错
      */
     private void caleCatchs(Result result) throws Exception {
+        check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.command, this.conn);
         if (!CollectionUtils.isEmpty(command.getCatchInfos())) {
             CmgBuildnodeSelector nodeSelector = new CmgBuildnodeSelector(conn);
             CmgBuildlinkSelector linkSelector = new CmgBuildlinkSelector(conn);
@@ -306,7 +309,7 @@ public class Operation implements IOperation {
             CmgBuildfaceSelector cmgfaceSelector = new CmgBuildfaceSelector(conn);
             for (CmgBuildface cmgface : command.getCmgfaces()) {
                 // 更新面的几何信息
-                Geometry faceGeo = updateFaceGeo(result, cmglinkSelector, cmgface);
+                Geometry faceGeo = updateFaceGeo(result, cmgface);
 
                 if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(faceGeo)) {
                     int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(faceGeo);
@@ -428,12 +431,11 @@ public class Operation implements IOperation {
     /**
      *
      * @param result 结果集
-     * @param cmglinkSelector CMG-FACE
      * @param cmgface 待更新CMG-FACE面
      * @return 更新后面几何
      * @throws Exception 更新面几何出错
      */
-    private Geometry updateFaceGeo(Result result, CmgBuildlinkSelector cmglinkSelector, CmgBuildface cmgface) throws Exception {
+    private Geometry updateFaceGeo(Result result, CmgBuildface cmgface) throws Exception {
         String wkt = GeoTranslator.jts2Wkt(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
         Geometry sourceGeo = GeoTranslator.transform(command.getCmglink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
         String sourceCoors = getCoordinateStr(sourceGeo);
@@ -441,7 +443,7 @@ public class Operation implements IOperation {
         String newCoors = getCoordinateStr(command.getGeometry());
         String reverseNewCoors = getCoordinateStr(command.getGeometry().reverse());
 
-        if (StringUtils.substringMatch(wkt, 0, sourceCoors)) {
+        if (org.apache.commons.lang.StringUtils.containsIgnoreCase(wkt, sourceCoors)) {
             wkt = wkt.replace(sourceCoors, newCoors);
         } else {
             wkt = wkt.replace(reverseSourceCoors, reverseNewCoors);

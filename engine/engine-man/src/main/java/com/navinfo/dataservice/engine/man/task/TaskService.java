@@ -3346,7 +3346,7 @@ public class TaskService {
 				UserGroup resultGroup=UserGroupService.getInstance().query(conditionGroup);
 				List<UserInfo> users=UserInfoService.getInstance().list(conditionGroup);
 				JSONObject resultJson = JSONObject.fromObject(resultGroup);
-				resultJson.put("users", JSONObject.fromObject(users));
+				resultJson.put("users", JSONArray.fromObject(users));
 				return resultJson;
 			}
 			String admin = selectAdminCode(task.getProgramId());

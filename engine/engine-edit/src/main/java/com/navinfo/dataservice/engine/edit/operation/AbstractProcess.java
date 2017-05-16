@@ -191,7 +191,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 
 			long endPostCheckTime = System.currentTimeMillis();
 
-			log.info("exeOperation use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+			log.info("exeOperation use time   "
+					+ String.valueOf(endPostCheckTime - startPostCheckTime));
 
 			checkResult();
 
@@ -219,17 +220,14 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 				return this.delPrompt(this.getResult(), this.getCommand());
 			}
 
-
-			
-
 			startPostCheckTime = System.currentTimeMillis();
-
 
 			this.recordData();
 
 			endPostCheckTime = System.currentTimeMillis();
 
-			log.info("recordData use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+			log.info("recordData use time   "
+					+ String.valueOf(endPostCheckTime - startPostCheckTime));
 
 			startPostCheckTime = System.currentTimeMillis();
 
@@ -241,8 +239,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 
 			log.info("BEGIN  POSTCHECK ");
 
-
-			log.info("post check use time   " + String.valueOf(endPostCheckTime - startPostCheckTime));
+			log.info("post check use time   "
+					+ String.valueOf(endPostCheckTime - startPostCheckTime));
 
 			conn.commit();
 			log.info("操作成功");
@@ -283,7 +281,8 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 				AlertObject object = new AlertObject(obj.objType(), obj.pid(),
 						status);
 
-				List<AlertObject> list = tm.get(obj.objType().toString());
+				List<AlertObject> list = tm.get(ObjStatus.getCHIName(status)
+						.concat(obj.objType().toString()));
 				list.add(object);
 			} else {
 				AlertObject object = new AlertObject(obj.objType(), obj.pid(),
@@ -334,6 +333,7 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 		infects.putAll(this.sort(addObj, ObjStatus.INSERT));
 		infects.putAll(this.sort(updateObj, ObjStatus.UPDATE));
 		infects.putAll(this.sort(delObj, ObjStatus.DELETE));
+		log.info("删除影响：" + JSONObject.fromObject(infects).toString());
 		return JSONObject.fromObject(infects).toString();
 	}
 
@@ -363,6 +363,10 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 				throw new Exception(preCheckMsg);
 			}
 			this.updateRdLane();
+			// 处理提示信息
+			if (this.command.getInfect() == 1) {
+				return this.delPrompt(this.getResult(), this.getCommand());
+			}
 			this.recordData();
 
 			this.postCheck();

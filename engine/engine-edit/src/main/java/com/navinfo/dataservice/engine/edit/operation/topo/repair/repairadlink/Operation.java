@@ -69,6 +69,8 @@ public class Operation implements IOperation {
         return null;
     }
 
+    private Check check =new Check();
+    
     /***
      * 修行挂接点和线
      *
@@ -76,6 +78,7 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     private void caleCatchs(Result result) throws Exception {
+    	check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.command, this.conn);
         if (this.command.getCatchInfos() != null && this.command.getCatchInfos().size() > 0) {
             AdNodeSelector nodeSelector = new AdNodeSelector(conn);
             AdLinkSelector linkSelector = new AdLinkSelector(conn);

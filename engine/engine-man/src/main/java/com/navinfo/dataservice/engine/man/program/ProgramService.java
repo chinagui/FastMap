@@ -681,7 +681,7 @@ public class ProgramService {
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));}
 						else if(rs.getInt("TYPE")==4){
-							map.put("inforId", rs.getString("INFOR_ID"));
+							map.put("inforId", rs.getInt("INFOR_ID"));
 							map.put("inforName", rs.getString("INFOR_NAME"));}
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					
@@ -1936,6 +1936,10 @@ public class ProgramService {
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
 					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
+					
+					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+						t.setWorkKind("0|0|1|0");
+					}
 
 					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
 						t.setGroupId(userGroupMap.get(0).getGroupId());

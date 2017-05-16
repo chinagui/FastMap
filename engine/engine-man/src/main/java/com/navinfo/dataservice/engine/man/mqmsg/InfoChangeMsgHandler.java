@@ -180,7 +180,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 		int programId = ProgramService.getInstance().getNewProgramId(conn);
 		program.setProgramId(programId);
-		program.setName(infor.getInforName() + df.format(infor.getPublishDate()) + programId);
+		program.setName(infor.getInforName()+"_" + df.format(infor.getPublishDate())+"_" +  programId);
 		program.setType(4);
 
 		program.setCollectPlanStartDate((Timestamp)getCalculatedDate(infor.getPublishDate(),1));
@@ -236,6 +236,9 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			subtask.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate()));
 			subtask.setType(2);
 			subtask.setStage(0);
+			if(task.getSubWorkKind(3)==1){
+				subtask.setWorkKind(3);
+			}
 			subtask.setTaskId(task.getTaskId());
 			subtask.setPlanStartDate(task.getPlanStartDate());
 			subtask.setPlanEndDate(task.getPlanEndDate());

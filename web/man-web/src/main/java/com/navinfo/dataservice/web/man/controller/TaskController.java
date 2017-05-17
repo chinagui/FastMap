@@ -521,8 +521,6 @@ public class TaskController extends BaseController {
 			}
 			
 			int taskId = dataJson.getInt("taskId");
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			long userId = tokenObj.getUserId();
 			TaskService.getInstance().batchMidTaskByTaskId(taskId);
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

@@ -395,10 +395,7 @@ public class TaskService {
 			for(Task task:taskList){
 				//采集任务处理无任务POI和TIPS的批中线任务号操作
 				if(task.getType() == 0){
-					List<Map<String, Integer>> TaskDataList = getTaskDataList(conn, task.getTaskId());
-					for(Map<String, Integer> taskMap : TaskDataList){
-						batchNoTaskMidData(conn, userId, taskMap);
-					}
+					batchNoTaskMidData(conn, userId, task);
 				}
 				
 				if(task.getType() == 3){
@@ -522,7 +519,7 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -544,7 +541,7 @@ public class TaskService {
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						
+						task.setRegionId(rs.getInt("REGION_ID"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -1193,8 +1190,6 @@ public class TaskService {
 					Page page = new Page();
 				    int totalCount = 0;
 				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-				    con = DBConnector.getInstance().getManConnection();
-//				    Connection con = null;
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
 						task.put("taskId", rs.getInt("TASK_ID"));
@@ -1236,11 +1231,12 @@ public class TaskService {
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
 						
+						//获取是否有无任务数据
 						try{
+							con = DBConnector.getInstance().getManConnection();
 							QueryRunner runner = new QueryRunner();
 							int taskID = rs.getInt("TASK_ID");
 							String selectNoTask = "select t.NOTASKDATA_POI_NUM, t.NOTASKDATA_TIPS_NUM from FM_STAT_OVERVIEW_TASK t where t.task_id = " + taskID;
-							//获取是否有无任务数据
 							ResultSetHandler<HashMap<String,Integer>> noTaskRsHandler = new ResultSetHandler<HashMap<String,Integer>>() {
 								public HashMap<String,Integer> handle(ResultSet re) throws SQLException {
 									HashMap<String,Integer> noTaskMap = new HashMap<String,Integer>();
@@ -1250,20 +1246,19 @@ public class TaskService {
 									}					
 									return noTaskMap;
 								}
-
 							};
 							HashMap<String,Integer> noTaskMap = runner.query(con, selectNoTask, noTaskRsHandler);
-							int hasNoTaskData = noTaskData(noTaskMap);
-							task.put("hasNoTaskData", hasNoTaskData);
+							task.put("hasNoTaskData", noTaskData(noTaskMap));
 						}catch(Exception e){
 							log.error("根据任务号查询无任务数据异常：" + e.getMessage());
-							DbUtils.rollback(con);
+							DbUtils.rollbackAndCloseQuietly(con);
+						}finally{
+							DbUtils.commitAndCloseQuietly(con);
 						}
 						list.add(task);
 					}					
 					page.setTotalCount(totalCount);
 					page.setResult(list);
-					DbUtils.commitAndCloseQuietly(con);
 					return page;
 				}
 			};
@@ -3204,87 +3199,40 @@ public class TaskService {
 	 * @param 
 	 * @author songhe
 	 */
-	private void batchNoTaskPoiMidTaskId(Connection dailyConn,
-			List<Map<String, Integer>> pidList) throws SQLException {
-		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
+	private void batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID, String wkt) throws SQLException {
+		String selectPid = "select pes.pid"
+				 + " from ix_poi ip, poi_edit_status pes"
+				 + " where ip.pid = pes.pid"
+				 + " and pes.status ！= 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
+		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
-		Object[][] params=new Object[pidList.size()][2] ;
-		int i = 0;
-		for(Map<String, Integer> pidData : pidList){
-			Object[] pidMap = new Object[2];
-			pidMap[0] = pidData.get("medium_task_id");
-			pidMap[1] = pidData.get("pid");
-			params[i] = pidMap;
-			i++;
-		}
-		run.batch(dailyConn, updateSql, params);
+		run.execute(dailyConn, updateSql);
 	}
 	
-	
-	/**
-	 * 获取需要批中线任务号的PID数据
-	 * @param dailyConn
-	 * @param taskId 中线采集任务id
-	 * @return Map<Long, Integer> key：pid value：gridId
-	 * @throws Exception
-	 */
-	private List<Map<String, Integer>> getNoTaskPIDList(Connection dailyConn, final int taskId) throws Exception {
-		try{
-			String sql="SELECT s.PID"
-					+ "  FROM POI_EDIT_STATUS S, IX_POI t"
-					+ " WHERE (s.medium_subtask_id + s.medium_task_id + s.quick_subtask_id + s.quick_task_id) = 0 and t.FIELD_TASK_ID = "+taskId
-					+ "   AND S.PID = t.PID";
-			QueryRunner run=new QueryRunner();
-			return run.query(dailyConn, sql, new ResultSetHandler<List<Map<String, Integer>>>(){
-
-				@Override
-				public List<Map<String, Integer>> handle(ResultSet rs)
-						throws SQLException {
-					List<Map<String, Integer>> PIDList= new ArrayList<>();
-					Map<String, Integer> map = new HashMap<>();
-					while(rs.next()){
-						map.put("medium_task_id", taskId);
-						map.put("pid", rs.getInt("PID"));
-						PIDList.add(map);
-					}
-					return PIDList;
-				}});
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(dailyConn);
-			throw e;
-		}
-	}
 	
 	/**
 	 * 根据中线任务，批无任务数据中线任务号
 	 * @param conn 
 	 * @param task
 	 */
-	private void batchNoTaskMidData(Connection conn, Long userId, Map<String, Integer> task) throws Exception{
+	private void batchNoTaskMidData(Connection conn, Long userId, Task task) throws Exception{
 		Connection dailyConn=null;
 		try{
-			Region region = RegionService.getInstance().query(conn,task.get("REGION_ID"));
+			Region region = RegionService.getInstance().query(conn,task.getRegionId());
 			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
-			List<Map<String, Integer>> noTaskPoiData = getNoTaskPIDList(dailyConn,task.get("TASK_ID"));
-
-			//无任务的poi批中线任务号	
-			if(noTaskPoiData != null && noTaskPoiData.size() > 0){
-				List<Map<String, Integer>> pidList = new ArrayList<>();
-				for(Map<String, Integer> pidMap : noTaskPoiData){
-					pidList.add(pidMap);
-				}
-				batchNoTaskPoiMidTaskId(dailyConn,pidList);
-			}
-			
-			//tips批中线任务号
-			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.get("TASK_ID"));
+			//无任务tips批中线任务号
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-//			batchNoTaskDataByMidTask(wkt, task.get("TASK_ID"));
+			batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			
+			//无任务的poi批中线任务号	
+			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
+			
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);
-			DbUtils.rollbackAndCloseQuietly(conn);
 			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(dailyConn);
@@ -3292,23 +3240,21 @@ public class TaskService {
 	}
 	
 	//查询采集TASK对应的数据
-	public List<Map<String,Integer>> getTaskDataList(Connection conn, final int taskId) throws Exception{
+	public Task getTaskDataObject(Connection conn, final int taskId) throws Exception{
 		
 		try{
 			String selectSql = "select t.REGION_ID from TASK t where t.task_id = " + taskId;
 			QueryRunner run = new QueryRunner();
-			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String,Integer>>>(){
-				List<Map<String,Integer>> noTaskData = new ArrayList<Map<String,Integer>>();
-				//这里开始查询的是一个task对应街区内的所有任务列表，先不做处理，方便后续扩展为多条task数据
+			return run.query(conn, selectSql, new ResultSetHandler<Task>(){
+				
 				@Override
-				public List<Map<String,Integer>> handle(ResultSet rs)throws SQLException {
-					Map<String,Integer> map = new HashMap<>();
-					while(rs.next()){
-						map.put("TASK_ID", taskId);
-						map.put("REGION_ID", rs.getInt("REGION_ID"));
-						noTaskData.add(map);
+				public Task handle(ResultSet rs)throws SQLException {
+					Task task = new Task();
+					if(rs.next()){
+						task.setTaskId(taskId);
+						task.setRegionId(rs.getInt("REGION_ID"));
 					}
-					return noTaskData;
+					return task;
 				}});
 		}catch(Exception e){
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
@@ -3324,10 +3270,8 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			List<Map<String, Integer>> TaskDataList = getTaskDataList(conn, taskId);
-			for(Map<String, Integer> taskMap : TaskDataList){
-				batchNoTaskMidData(conn, userId, taskMap);
-			}
+			Task task = getTaskDataObject(conn, taskId);
+			batchNoTaskMidData(conn, userId, task);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{

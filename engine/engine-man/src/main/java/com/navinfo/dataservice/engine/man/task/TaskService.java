@@ -395,7 +395,7 @@ public class TaskService {
 			for(Task task:taskList){
 				//采集任务处理无任务POI和TIPS的批中线任务号操作
 				if(task.getType() == 0){
-					batchNoTaskMidData(conn, userId, task);
+					batchNoTaskMidData(conn, task);
 				}
 				
 				if(task.getType() == 3){
@@ -3189,7 +3189,7 @@ public class TaskService {
 	 * @param conn 
 	 * @param task
 	 */
-	private void batchNoTaskMidData(Connection conn, Long userId, Task task) throws Exception{
+	private void batchNoTaskMidData(Connection conn, Task task) throws Exception{
 		Connection dailyConn=null;
 		try{
 			Region region = RegionService.getInstance().query(conn,task.getRegionId());
@@ -3198,7 +3198,7 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-			batchNoTaskDataByMidTask(wkt, task.getTaskId());
+//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
 			
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
@@ -3217,12 +3217,12 @@ public class TaskService {
 	 * @param userId 
 	 * @param taskId
 	 */
-	public void batchMidTaskByTaskId(long userId, int taskId){
+	public void batchMidTaskByTaskId(int taskId){
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			Task task = queryByTaskId(conn, taskId);
-			batchNoTaskMidData(conn, userId, task);
+			batchNoTaskMidData(conn, task);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{

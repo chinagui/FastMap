@@ -949,320 +949,79 @@ public class TaskService {
 	
 
 	public Page list(JSONObject condition,int curPageNum,int pageSize)throws Exception{
-		if(condition.containsKey("cityId")){
-			return listByCity(condition,curPageNum,pageSize);
-		}
 		Connection conn = null;
 		try{
 			conn = DBConnector.getInstance().getManConnection();
 			//查询条件
 			String conditionSql = "";
-			Iterator<?> conditionKeys = condition.keys();		
-			List<String> progressList = new ArrayList<String>();
+			Iterator<?> conditionKeys = condition.keys();
+			
 			while (conditionKeys.hasNext()) {
 				String key = (String) conditionKeys.next();
 				//查询条件
-				if ("programId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.PROGRAM_ID="+condition.getInt(key);
+				if ("cityId".equals(key)) {
+					conditionSql+=" AND B.CITY_ID="+condition.getInt(key);
 				}
-				if ("type".equals(key)) {
-					conditionSql+=" AND TASK_LIST.TYPE ="+condition.getInt(key);
-				}
-				//按组查询主要应用场景：采/日/月角色登陆管理平台用，只返回开启任务
-				if ("groupId".equals(key)) {
-					conditionSql+=" AND TASK_LIST.STATUS in (0,1) AND TASK_LIST.GROUP_ID ="+condition.getInt(key);
-				}
-				if("planStatus".equals(key)){
-					int planStatus = condition.getInt(key);
-					//未完成：开启1>待分配2
-					if(planStatus==2){
-						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (1,2)";
-					}
-					//已完成：100%(已完成)5>已关闭6
-					else if(planStatus == 3){
-						conditionSql+=" AND TASK_LIST.ORDER_STATUS IN (5,6)";
-					}
-				}
-				//任务名称模糊查询
-				if ("name".equals(key)) {	
-					conditionSql+=" AND (TASK_LIST.NAME LIKE '%" + condition.getString(key) +"%'"
-							+ " OR TASK_LIST.BLOCK_NAME LIKE '%" + condition.getString(key) +"%')";
-				}
-				//筛选条件
-				//"progress":[1,3] //进度。
-				//1采集正常，2采集异常，3采集完成，4日编正常，5日编异常，6日编完成， 7月编正常，8月编异常，9月编完成，10未规划，11草稿, 12已完成，13已关闭，
-				//14按时完成，15提前完成，16逾期完成,17采集待分配，18日编待分配，19月编待分配
-				if ("progress".equals(key)){
-					JSONArray progress = condition.getJSONArray(key);
-					if(progress.isEmpty()){
-						continue;
-					}
-					
-					for(Object i:progress){
-						int tmp=(int) i;
-						//1采集正常，2采集异常，3采集完成
-						if(tmp==1){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==2){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=0 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==3){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=0)");}
-						//4日编正常，5日编异常，6日编完成
-						if(tmp==4){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");}
-						if(tmp==5){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE=1 AND TASK_LIST.STATUS=1) ");}
-						if(tmp==6){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=1)");}
-						//7月编正常，8月编异常，9月编完成
-						if(tmp==7){progressList.add(" (TASK_LIST.PROGRESS = 1 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");}
-						if(tmp==8){progressList.add(" (TASK_LIST.PROGRESS = 2 AND TASK_LIST.TYPE in (2,3) AND TASK_LIST.STATUS=1) ");}
-						if(tmp==9){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5 AND TASK_LIST.TYPE=2)");}
-						//10未规划，11草稿, 12已完成，13已关闭
-						if(tmp==10){progressList.add(" TASK_LIST.PLAN_STATUS = 0");}
-						if(tmp==11){progressList.add(" TASK_LIST.STATUS = 2 ");}
-						if(tmp==12){progressList.add(" (TASK_LIST.STATUS = 1 AND TASK_LIST.ORDER_STATUS = 5)");}
-						if(tmp==13){progressList.add(" TASK_LIST.STATUS = 0 ");}
-						//14按时完成，15提前完成，16逾期完成
-						if(tmp==14){
-							progressList.add("TASK_LIST.DIFF_DATE = 0");
-						}
-						if(tmp==15){
-							progressList.add("TASK_LIST.DIFF_DATE > 0");
-						}
-						if(tmp==16){
-							progressList.add("TASK_LIST.DIFF_DATE < 0");
-						}
-						if(tmp==17){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=0  AND TASK_LIST.STATUS=1) ");
-						}else if(tmp==18){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE=1  AND TASK_LIST.STATUS=1) ");
-						}else if(tmp==19){
-							progressList.add("(TASK_LIST.order_status=2 AND TASK_LIST.TYPE in (2,3)  AND TASK_LIST.STATUS=1) ");
-						}
-					}
+				if ("name".equals(key)) {
+					conditionSql+=" AND B.block_name like '%"+condition.getString(key)+"%'";
 				}
 			}
 			
-			if(!progressList.isEmpty()){
-				String tempSql = StringUtils.join(progressList," OR ");
-				conditionSql += " AND (" + tempSql + ")";
-			}
+			
 			QueryRunner run = new QueryRunner();
 			long pageStartNum = (curPageNum - 1) * pageSize + 1;
 			long pageEndNum = curPageNum * pageSize;
-			
-			StringBuilder sb = new StringBuilder();
-			
-			/*• 记录默认排序原则：
-			 * ①根据状态排序：开启>待分配>草稿>未规划>100%(已完成)>已关闭
-			 * 用order_status来表示这个排序的先后顺序。分别是开启1>待分配2>草稿3>未规划4>100%(已完成)5>已关闭6
-			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
-			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
-			 */
-			sb.append("WITH FINAL_TABLE AS ( ");
-			sb.append("SELECT TASK_LIST.* FROM (");
-			sb.append("SELECT TASK_LIST1.*,");
-			sb.append("               CASE");
-			sb.append("                 WHEN (TASK_LIST1.STATUS = 2) THEN");
-			sb.append("                  3");
-			sb.append("                 WHEN (TASK_LIST1.STATUS = 0) THEN");
-			sb.append("                  6");
-			sb.append("                 WHEN (TASK_LIST1.STATUS = 4) THEN");
-			sb.append("                  4");
-			sb.append("                 WHEN (TASK_LIST1.STATUS = 1) THEN");
-			sb.append("                  CASE");
-			sb.append("                    WHEN (TASK_LIST1.SUBTASK_NUM = 0) THEN");
-			sb.append("                     2");
-			sb.append("                    ELSE");
-			sb.append("                     CASE");
-			sb.append("                       WHEN (TASK_LIST1.SUBTASK_NUM = TASK_LIST1.SUBTASK_NUM_CLOSED) THEN");
-			sb.append("                        5");
-			sb.append("                       ELSE");
-			sb.append("                        1");
-			sb.append("                     END");
-			sb.append("                  END");
-			sb.append("               END ORDER_STATUS");
-			sb.append("          FROM (SELECT DISTINCT P.PROGRAM_ID,");
-			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
-			sb.append("                       T.NAME,");
-			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
-			sb.append("                       T.GROUP_ID,");
-			sb.append("                       UG.GROUP_NAME,");
-			sb.append("                       T.PLAN_START_DATE,");
-			sb.append("                       T.PLAN_END_DATE,");
-			sb.append("                       T.ROAD_PLAN_TOTAL,");
-			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
-			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
-			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
-			sb.append("                       B.BLOCK_ID,");
-			sb.append("	                      B.BLOCK_NAME,");
-			sb.append("                       B.PLAN_STATUS,");
-			sb.append("                       (SELECT COUNT(1)");
-			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
-			sb.append("                       (SELECT COUNT(1)");
-			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
-			sb.append("                  FROM BLOCK B, PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
-			sb.append("                 WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append("                   AND T.TASK_ID = FSOT.TASK_ID(+)");
-			sb.append("                   AND T.latest=1");
-			sb.append("                   AND P.CITY_ID = B.CITY_ID");
-			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
-			sb.append("	             AND p.latest=1");
-			sb.append("	             AND P.TYPE = 1");
-			sb.append("	          UNION");
-			sb.append("	          SELECT DISTINCT P.PROGRAM_ID,");
-			sb.append("	                          0             TASK_ID,");
-			sb.append("	                          NULL          NAME,");
-			sb.append("	                          4             STATUS,");
-			sb.append("	                          NULL          TYPE,");
-			sb.append("	                          NULL          GROUP_ID,");
-			sb.append("                           NULL          GROUP_NAME,");
-			sb.append("	                          NULL          PLAN_START_DATE,");
-			sb.append("	                          NULL          PLAN_END_DATE,");
-			sb.append("	                          NULL          ROAD_PLAN_TOTAL,");
-			sb.append("	                          NULL          POI_PLAN_TOTAL,");
-			sb.append("	                          1             PROGRESS,");
-			sb.append("	                          0             PERCENT,");
-			sb.append("	                          0             DIFF_DATE,");
-			sb.append("	                          B.BLOCK_ID,");
-			sb.append("	                          B.BLOCK_NAME,");
-			sb.append("	                          B.PLAN_STATUS,");
-			sb.append("	                          0             SUBTASK_NUM,");
-			sb.append("	                          0             SUBTASK_NUM_CLOSED");
-			sb.append("	            FROM BLOCK B, PROGRAM P");
-			sb.append("	           WHERE P.CITY_ID = B.CITY_ID");
-			sb.append("	        	 AND P.LATEST = 1");
-			sb.append("	        	 AND P.TYPE = 1");
-			sb.append("	             AND NOT EXISTS (SELECT 1");
-			sb.append("	                    FROM TASK T");
-			sb.append("	                   WHERE T.BLOCK_ID = B.BLOCK_ID");
-			sb.append("	                     AND T.LATEST = 1)");
-			sb.append("	          UNION");
-			sb.append("           SELECT DISTINCT P.PROGRAM_ID,");
-			sb.append("                       NVL(T.TASK_ID, 0) TASK_ID,");
-			sb.append("                       T.NAME,");
-			sb.append("                       NVL(T.STATUS, 4) STATUS,");
-			sb.append("                       T.TYPE,");
-			sb.append("                       T.GROUP_ID,");
-			sb.append("                       UG.GROUP_NAME,");
-			sb.append("                       T.PLAN_START_DATE,");
-			sb.append("                       T.PLAN_END_DATE,");
-			sb.append("                       T.ROAD_PLAN_TOTAL,");
-			sb.append("                       T.POI_PLAN_TOTAL,");
-			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
-			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
-			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
-			sb.append("                       0 BLOCK_ID,");
-			sb.append("	                      '' BLOCK_NAME,");
-			sb.append("                       1 PLAN_STATUS,");
-			sb.append("                       (SELECT COUNT(1)");
-			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID AND st.IS_QUALITY=0) SUBTASK_NUM,");
-			sb.append("                       (SELECT COUNT(1)");
-			sb.append("                          FROM SUBTASK ST");
-			sb.append("                         WHERE ST.TASK_ID = T.TASK_ID");
-			sb.append("                           AND ST.STATUS = 0 AND st.IS_QUALITY=0) SUBTASK_NUM_CLOSED");
-			sb.append("                  FROM PROGRAM P, TASK T, FM_STAT_OVERVIEW_TASK FSOT,USER_GROUP UG");
-			sb.append("                 WHERE T.TASK_ID = FSOT.TASK_ID(+)");
-			sb.append("                   AND UG.GROUP_ID(+) = T.GROUP_ID");
-			sb.append("                   AND t.latest=1");
-			sb.append("                   AND p.latest=1");
-			sb.append("	             AND T.PROGRAM_ID = P.PROGRAM_ID");
-			sb.append("	             AND P.TYPE = 4) TASK_LIST1");
-			sb.append("	             ) TASK_LIST");
-			sb.append(" WHERE 1=1 ");
-			sb.append(conditionSql);
-			sb.append(" ORDER BY ORDER_STATUS ASC ,DIFF_DATE DESC, PERCENT DESC");
-			sb.append(")");
-			sb.append(" SELECT /*+FIRST_ROWS ORDERED*/");
-			sb.append(" TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM");
-			sb.append("  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_");
-			sb.append(" FROM FINAL_TABLE");
-			sb.append(" WHERE ROWNUM <= "+pageEndNum+") TT");
-			sb.append(" WHERE TT.ROWNUM_ >= "+pageStartNum);
+			String sb="WITH FINAL_TABLE AS ( SELECT B.BLOCK_ID, B.CITY_ID, B.BLOCK_NAME, B.WORK_PROPERTY"
+					+ "  FROM BLOCK B"
+					+ " WHERE 1=1"
+					+conditionSql +")"
+					+" SELECT /*+FIRST_ROWS ORDERED*/"
+					+" TT.*, (SELECT COUNT(1) FROM FINAL_TABLE) AS TOTAL_RECORD_NUM"
+					+"  FROM (SELECT FINAL_TABLE.*, ROWNUM AS ROWNUM_"
+					+" FROM FINAL_TABLE"
+					+" WHERE ROWNUM <= "+pageEndNum					
+					+ ") TT"
+					+" WHERE TT.ROWNUM_ >= "+pageStartNum;
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
-				
-				Connection con = null;
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page();
 				    int totalCount = 0;
-				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				    //SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
-						task.put("taskId", rs.getInt("TASK_ID"));
-						if(rs.getString("NAME")==null){
-							task.put("taskName","");
-						}else{
-							task.put("taskName", rs.getString("NAME"));
-						}
+						task.put("taskId", 0);
+						task.put("taskName","");
+						
 						task.put("blockId", rs.getInt("BLOCK_ID"));
-						if(rs.getString("BLOCK_NAME")==null){
-							task.put("blockName","");
-						}else{
-							task.put("blockName", rs.getString("BLOCK_NAME"));
-						}
-						task.put("status", rs.getInt("STATUS"));
-						task.put("type", rs.getInt("TYPE"));
+						task.put("blockName", rs.getString("BLOCK_NAME"));
+						task.put("workProperty", rs.getString("WORK_PROPERTY"));
+
+						task.put("status", 0);
+						task.put("type", 1);
 						
-						task.put("percent", rs.getInt("PERCENT"));
-						task.put("diffDate", rs.getInt("DIFF_DATE"));
-						task.put("progress", rs.getInt("PROGRESS"));
+						task.put("percent", 0);
+						task.put("diffDate",0);
+						task.put("progress", 0);
 						
-						task.put("groupId", rs.getInt("GROUP_ID"));
-						if(rs.getString("GROUP_NAME")==null){
-							task.put("groupName","");
-						}else{
-							task.put("groupName", rs.getString("GROUP_NAME"));
-						}
-						Timestamp planStartDate = rs.getTimestamp("PLAN_START_DATE");
-						Timestamp planEndDate = rs.getTimestamp("PLAN_START_DATE");
-						if(planStartDate != null){
-							task.put("planStartDate", df.format(planStartDate));
-						}else {task.put("planStartDate", "");}
-						if(planEndDate != null){
-							task.put("planEndDate",df.format(planEndDate));
-						}else{task.put("planEndDate", "");}
+						task.put("groupId",0);
+						task.put("groupName","");
 						
-						task.put("roadPlanTotal", rs.getInt("ROAD_PLAN_TOTAL"));
-						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
-						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
+						task.put("planStartDate", "");
+						task.put("planEndDate", "");
+						task.put("roadPlanTotal", 0);
+						task.put("poiPlanTotal", 0);
+						task.put("orderStatus", 5);
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
-						
-						//获取是否有无任务数据
-						try{
-							con = DBConnector.getInstance().getManConnection();
-							QueryRunner runner = new QueryRunner();
-							int taskID = rs.getInt("TASK_ID");
-							String selectNoTask = "select t.NOTASKDATA_POI_NUM, t.NOTASKDATA_TIPS_NUM from FM_STAT_OVERVIEW_TASK t where t.task_id = " + taskID;
-							ResultSetHandler<HashMap<String,Integer>> noTaskRsHandler = new ResultSetHandler<HashMap<String,Integer>>() {
-								public HashMap<String,Integer> handle(ResultSet re) throws SQLException {
-									HashMap<String,Integer> noTaskMap = new HashMap<String,Integer>();
-									if(re.next()) {
-										noTaskMap.put("poi", re.getInt("NOTASKDATA_POI_NUM"));
-										noTaskMap.put("tips", re.getInt("NOTASKDATA_TIPS_NUM"));
-									}					
-									return noTaskMap;
-								}
-							};
-							HashMap<String,Integer> noTaskMap = runner.query(con, selectNoTask, noTaskRsHandler);
-							task.put("hasNoTaskData", noTaskData(noTaskMap));
-						}catch(Exception e){
-							log.error("根据任务号查询无任务数据异常：" + e.getMessage());
-							DbUtils.rollbackAndCloseQuietly(con);
-						}finally{
-							DbUtils.commitAndCloseQuietly(con);
-						}
 						list.add(task);
 					}					
 					page.setTotalCount(totalCount);
 					page.setResult(list);
 					return page;
 				}
+
 			};
-			
 			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
@@ -3239,28 +2998,6 @@ public class TaskService {
 		}	
 	}
 	
-	//查询采集TASK对应的数据
-	public Task getTaskDataObject(Connection conn, final int taskId) throws Exception{
-		
-		try{
-			String selectSql = "select t.REGION_ID from TASK t where t.task_id = " + taskId;
-			QueryRunner run = new QueryRunner();
-			return run.query(conn, selectSql, new ResultSetHandler<Task>(){
-				
-				@Override
-				public Task handle(ResultSet rs)throws SQLException {
-					Task task = new Task();
-					if(rs.next()){
-						task.setTaskId(taskId);
-						task.setRegionId(rs.getInt("REGION_ID"));
-					}
-					return task;
-				}});
-		}catch(Exception e){
-			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
-		}
-	}
-	
 	/**
 	 * 根据taskId批处理对应该任务的无任务POI和TIPS
 	 * @param userId 
@@ -3270,7 +3007,7 @@ public class TaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			Task task = getTaskDataObject(conn, taskId);
+			Task task = queryByTaskId(conn, taskId);
 			batchNoTaskMidData(conn, userId, task);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

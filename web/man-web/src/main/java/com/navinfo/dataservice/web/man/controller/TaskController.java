@@ -554,4 +554,26 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
+	
+	/**
+	 * 
+	 * 无任务数据(POI，TIPS)批中线任务号
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/batchMidTask")
+	public ModelAndView batchMidTask(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			TaskService.getInstance().batchMidTaskByTaskId(taskId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

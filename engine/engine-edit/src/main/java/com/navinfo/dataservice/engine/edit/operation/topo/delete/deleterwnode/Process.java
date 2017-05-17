@@ -35,6 +35,10 @@ public class Process extends AbstractProcess<Command> {
 	private void updataRelationObj() throws Exception {
 		IOperation opRefRdGsc = new OpRefRwGsc(this.getCommand(), this.getConn());
 		opRefRdGsc.run(this.getResult());
+
+		OpRefRdSameNode opRefRdSameNode=new OpRefRdSameNode(this.getConn());
+
+		opRefRdSameNode.run(this.getResult(), this.getCommand());
 	}
 
 	@Override

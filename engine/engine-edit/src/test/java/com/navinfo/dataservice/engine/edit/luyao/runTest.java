@@ -81,4 +81,49 @@ public class runTest extends InitApplication {
 		String msg = t.run();
 	}
 
+	@Test
+	public void run_0512_2() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSAMENODE\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"nodes\":[{\"nodePid\":420000009,\"isMain\":1,\"type\":\"RWNODE\"},{\"nodePid\":420000014,\"isMain\":0,\"type\":\"ZONENODE\"},{\"nodePid\":505000016,\"isMain\":0,\"type\":\"LUNODE\"}]}}";
+
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+	@Test
+	public void run_0512_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSAMENODE\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"nodes\":[{\"nodePid\":501000150,\"isMain\":1,\"type\":\"RDNODE\"},{\"nodePid\":400000009,\"isMain\":0,\"type\":\"RWNODE\"}]}}";
+
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_0516_1() throws Exception {
+
+		String parameter = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"RWNODE\",\"objId\":506000007,\"infect\":0,\"subtaskId\":1}";
+
+
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+	@Test
+	public void run_0517_1() throws Exception {
+
+		String parameter = "{\"command\":\"CREATE\",\"type\":\"RDSAMELINK\",\"dbId\":13,\"subtaskId\":1,\"data\":{\"links\":[{\"linkPid\":402000009,\"type\":\"ZONELINK\",\"isMain\":1},{\"linkPid\":405000007,\"type\":\"LULINK\",\"isMain\":0}]}}";
+
+
+		Transaction t = new Transaction(parameter);
+
+		String msg = t.run();
+	}
+
+
 }

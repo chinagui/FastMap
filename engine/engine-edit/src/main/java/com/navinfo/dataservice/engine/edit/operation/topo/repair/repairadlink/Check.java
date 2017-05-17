@@ -114,6 +114,9 @@ public class Check {
 		AdFaceSelector selector = new AdFaceSelector(conn);
 		List<AdFace> faces = selector.loadAdFaceByLinkId(linkPid, false);
 
+		if (command.getCatchInfos() == null)
+			return;
+		
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);
 			int nodePid = obj.getInt("nodePid");

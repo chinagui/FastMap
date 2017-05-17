@@ -16,6 +16,10 @@ public class Check {
 		CmgBuildfaceSelector selector = new CmgBuildfaceSelector(conn);
 		List<CmgBuildface> faces = selector.listTheAssociatedFaceOfTheLink(linkPid, false);
 
+		if(command.getCatchInfos()==null){
+			return;
+		}
+		
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);
 			int nodePid = obj.getInt("nodePid");

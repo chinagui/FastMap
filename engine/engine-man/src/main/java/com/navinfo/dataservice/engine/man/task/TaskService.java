@@ -1232,6 +1232,7 @@ public class TaskService {
 				}
 
 			};
+			
 			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);

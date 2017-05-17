@@ -97,8 +97,6 @@ public class Operation implements IOperation {
         operation.repairLink(this.command.getGscs(), newLinkMap, command.getCmglink(), result);
     }
 
-    private Check check = new Check();
-    
     /***
      * 修行挂接点和线
      *
@@ -106,7 +104,6 @@ public class Operation implements IOperation {
      * @throws Exception 处理挂接过程出错
      */
     private void caleCatchs(Result result) throws Exception {
-    	check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.command, this.conn);
         if (!CollectionUtils.isEmpty(command.getCatchInfos())) {
             CmgBuildnodeSelector nodeSelector = new CmgBuildnodeSelector(conn);
             CmgBuildlinkSelector linkSelector = new CmgBuildlinkSelector(conn);

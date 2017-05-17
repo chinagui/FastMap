@@ -42,22 +42,22 @@ public class TipsExporter {
 	public TipsExporter() {
 	}
 
-	private List<Get> generateGets(String gridId, String date)
+	private List<Get> generateGets(String gridId, String date, List<String> rowkeySet)
 			throws Exception {
 		List<Get> gets = new ArrayList<Get>();
 
-		Set<String> set = new HashSet<String>();
+//		Set<String> set = new HashSet<String>();
 
 		String wkt = GridUtils.grid2Wkt(gridId);
 		
 		List<String> rowkeys = solr.queryTipsMobile(wkt, date,TipsUtils.notExpSourceType);
 
 		for (String rowkey : rowkeys) {
-			if (set.contains(rowkey)) {
+			if (rowkeySet.contains(rowkey)) {
 				continue;
 			}
 
-			set.add(rowkey);
+            rowkeySet.add(rowkey);
 
 			Get get = new Get(rowkey.getBytes());
 
@@ -666,7 +666,7 @@ public class TipsExporter {
 	 * 
 	 * @param condition
 	 *            网格 、时间戳对象数组 整型
-	 * @param date
+	 * @param folderName
 	 *            时间
 	 * @param fileName
 	 *            导出文件名
@@ -689,7 +689,8 @@ public class TipsExporter {
 		PrintWriter pw = new PrintWriter(fileName);
 		
 		List<Get> getsAll = new ArrayList<>();
-		
+
+        List<String> rowkeySet = new ArrayList<>();
 		for (Object obj : condition) {
 			
 			JSONObject conJson=JSONObject.fromObject(obj);
@@ -702,7 +703,7 @@ public class TipsExporter {
 			    date=null;
 			}
 			
-			List<Get> gets = generateGets(grid, date);
+			List<Get> gets = generateGets(grid, date, rowkeySet);
 			
 			getsAll.addAll(gets);
 		}
@@ -721,9 +722,9 @@ public class TipsExporter {
 	}
 
 	public static void main(String[] args) throws Exception {
-	/*	JSONArray condition = new JSONArray();
+	    JSONArray condition = new JSONArray();
 
-		String s ="60560301,60560302,60560303,60560311,60560312,60560313,60560322,60560323,60560331,60560332,60560333,60560320,60560330,60560300,60560321,60560310";
+		String s ="60560301,60560301";
 		
 		String[] st = s.split(",");
 		
@@ -738,10 +739,10 @@ public class TipsExporter {
 
 		TipsExporter exporter = new TipsExporter();
 		System.out.println(exporter.export(condition,
-				"F:/07 DataService/test", "1.txt", images));
+				"F:\\FCC\\track", "1.txt", images));
 		System.out.println(images);
-		System.out.println("done");*/
-		Integer a=TipsExportUtils.downloadOriginalPhotoTips.get("122");
-	    System.out.println(a);
+		System.out.println("done");
+//		Integer a=TipsExportUtils.downloadOriginalPhotoTips.get("122");
+//	    System.out.println(a);
 	}
 }

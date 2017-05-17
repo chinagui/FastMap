@@ -1257,7 +1257,7 @@ public class TipsSelector {
 			throws Exception {
 
 		String wkt = GridUtils.grids2Wkt(grids);
-		return getTipsCountByStageAndWkt(wkt, stages);
+		return getTipsCountByStageAndWkt(wkt, stages, null);
 	}
 
 	/**
@@ -1268,7 +1268,7 @@ public class TipsSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int getTipsCountByStageAndWkt(String wkt, int stages)
+	public int getTipsCountByStageAndWkt(String wkt, int stages, Set<Integer> collectTaskIds)
 			throws Exception {
 
 		// String wkt = GridUtils.grids2Wkt(grids);
@@ -1277,7 +1277,7 @@ public class TipsSelector {
 
 		stageJsonArr.add(stages);
 
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, stageJsonArr);
+		List<JSONObject> tips = conn.queryTipsWeb(wkt, stageJsonArr, collectTaskIds);
 
 		int total = tips.size();
 
@@ -1295,7 +1295,7 @@ public class TipsSelector {
 	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages,
 			int tdStatus) throws Exception {
 		String wkt = GridUtils.grids2Wkt(grids);
-		return getTipsCountByStageAndTdStatusAndWkt(wkt, stages, tdStatus);
+		return getTipsCountByStageAndTdStatusAndWkt(wkt, stages, tdStatus, null);
 	}
 
 	/**
@@ -1308,9 +1308,9 @@ public class TipsSelector {
 	 * @throws Exception
 	 */
 	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages,
-			int tdStatus) throws Exception {
+			int tdStatus, Set<Integer> collectTaskIds) throws Exception {
 
-		List<JSONObject> tips = conn.queryTips(wkt, stages, tdStatus);
+		List<JSONObject> tips = conn.queryTips(wkt, stages, tdStatus, collectTaskIds);
 
 		int total = tips.size();
 
@@ -2053,9 +2053,25 @@ public class TipsSelector {
 		return list;
 	}
     public static void main(String[] args) throws Exception {
-        TipsSelector solrSelector = new TipsSelector();
-        JSONArray types = new JSONArray();
-        System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
-                40, types,"d","wktLocation"));
+        TipsSelector selector = new TipsSelector();
+        JSONArray grids = new JSONArray();
+        grids.add(60560302);
+        grids.add(59567332);
+        grids.add(59567322);
+        String wkt = GridUtils.grids2Wkt(grids);
+        //统计日编总量 stage=1
+        Set<Integer> taskSet = new HashSet<>();
+        taskSet.add(1);
+        int total = selector.getTipsCountByStageAndWkt(wkt, 1, taskSet);
+        System.out.println(total);
+
+        //统计日编已完成量stage=2 and t_dStatus=1
+        int finished = selector.getTipsCountByStageAndTdStatusAndWkt(wkt, 2, 1, taskSet);
+        System.out.println(finished);
+
+
+//        JSONArray types = new JSONArray();
+//        System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
+//                40, types,"d","wktLocation"));
     }
 }

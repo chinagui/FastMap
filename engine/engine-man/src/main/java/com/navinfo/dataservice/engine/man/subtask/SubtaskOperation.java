@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.model.Message;
 import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
 import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -31,6 +32,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.man.message.MessageService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
 import com.navinfo.navicommons.database.Page;
@@ -873,7 +875,7 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select st.SUBTASK_ID ,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
+			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
 			sb.append(" from subtask st,task t,region r");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -938,7 +940,7 @@ public class SubtaskOperation {
 						}
 
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((1==rs.getInt("STAGE")&&5==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+						if((0==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
 								STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
 								String wkt="";
@@ -948,9 +950,15 @@ public class SubtaskOperation {
 									// TODO Auto-generated catch block
 									e1.printStackTrace();
 								}
+								Subtask subtaskObj=new Subtask();
+								subtaskObj.setDbId((int)subtask.get("dbId"));
+								subtaskObj.setType(rs.getInt("TYPE"));
+								subtaskObj.setGeometry(wkt);
+								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
+								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
 
 								log.debug("get stat");
-								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),wkt);
+								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
 								if(subtaskStat != null){
 									if(subtaskStat.containsKey("poiFinish")){
 										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
@@ -1019,6 +1027,7 @@ public class SubtaskOperation {
 			sb.append(" ,ST.PLAN_END_DATE");
 			sb.append(" ,ST.STAGE");
 			sb.append(" ,ST.TYPE");
+			sb.append(" ,ST.task_id");
 			sb.append(" ,ST.STATUS");
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
@@ -1128,9 +1137,16 @@ public class SubtaskOperation {
 						}
 						
 						//日编POI,日编一体化GRID粗编完成度，任务量信息
-						if((1==rs.getInt("STAGE")&&5==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
+						if((0==rs.getInt("STAGE")&&0==rs.getInt("TYPE"))||(1==rs.getInt("STAGE")&&3==rs.getInt("TYPE"))){
 							try {
-								Map<String,Integer> subtaskStat = subtaskStatRealtime((int)subtask.get("dbId"),rs.getInt("TYPE"),wkt);
+								Subtask subtaskObj=new Subtask();
+								subtaskObj.setDbId((int)subtask.get("dbId"));
+								subtaskObj.setType(rs.getInt("TYPE"));
+								subtaskObj.setGeometry(wkt);
+								subtaskObj.setSubtaskId((int)subtask.get("subtaskId"));
+								subtaskObj.setTaskId(rs.getInt("TASK_ID"));
+								
+								Map<String,Integer> subtaskStat = subtaskStatRealtime(subtaskObj);
 								if(subtaskStat != null){
 									if(subtaskStat.containsKey("poiFinish")){
 										subtask.put("poiFinish",subtaskStat.get("poiFinish"));
@@ -1178,12 +1194,13 @@ public class SubtaskOperation {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	protected static Map<String, Integer> subtaskStatRealtime(Integer dbId, int type, String wkt) throws ServiceException {
+	protected static Map<String, Integer> subtaskStatRealtime(Subtask subtask) throws ServiceException {
 		// TODO Auto-generated method stub
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(dbId);
+			conn = DBConnector.getInstance().getConnectionById(subtask.getDbId());
 			Map<String, Integer> stat = new HashMap<String, Integer>();
+			//Map<String, Integer> taskAndType = SubtaskService.getInstance().getTaskBySubtaskId(subtask.getSubtaskId());
 
 			log.debug("get poi stat");
 			//查询POI总量
@@ -1192,8 +1209,9 @@ public class SubtaskOperation {
 					+ " from ix_poi ip, poi_edit_status pes"
 					+ " where ip.pid = pes.pid"
 					+ " and pes.status ！= 0"
-					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
-							+ "group by pes.status ";
+					+ " and (pes.quick_subtask_id="+subtask.getSubtaskId()+" or pes.medium_subtask_id="+subtask.getSubtaskId()+")"
+					//+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' "
+					+ "group by pes.status ";
 			//POI待作业
 			stat = run.query(conn, sql,new ResultSetHandler<Map<String, Integer>>() {
 				@Override
@@ -1212,57 +1230,12 @@ public class SubtaskOperation {
 				}
 			}
 			);
-//			String sql_unfinish = "select count(1) unfinish"
-//					+ " from ix_poi ip, poi_edit_status pes"
-//					+ " where ip.pid = pes.pid"
-//					+ " and pes.status = 1"
-//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
-//			//POI待作业
-//			Integer unfinishPOI = run.query(conn, sql_unfinish, new ResultSetHandler<Integer>() {
-//				@Override
-//				public Integer handle(ResultSet rs) throws SQLException {
-//					int unfinish = 0;
-//					if(rs.next()){
-//						unfinish = rs.getInt("unfinish");
-//					}
-//					return unfinish;
-//				}
-//			}
-//			);
-//			log.info("get poi stat2");
-//			
-//			String sql_total = "select count(1) toal"
-//					+ " from ix_poi ip, poi_edit_status pes"
-//					+ " where ip.pid = pes.pid"
-//					+ " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' ";			
-//			//poi总量
-//			Integer totalPOI = run.query(conn, sql_total, new ResultSetHandler<Integer>() {
-//				@Override
-//				public Integer handle(ResultSet rs) throws SQLException {
-//					int toal = 0;
-//					if(rs.next()){
-//						toal = rs.getInt("toal");
-//					}
-//					return toal;
-//				}
-//			}
-//			);
-			//int percent = 0;
-			//int percentPOI = 0;
-			//int percentRoad = 0; 
-			//poi数量及完成度
-//			stat.put("poiFinish", totalPOI-unfinishPOI);
-//			stat.put("poiTotal", totalPOI);
-			/*if(0 != unfinishPOI){
-				percentPOI = (totalPOI-unfinishPOI)*100/totalPOI;
-			}else{
-				percentPOI = 100;
-			}*/
 			//type=3,一体化grid粗编子任务。增加道路数量及完成度
 			log.debug("get tips stat");
-			if(3 == type){
+			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				JSONObject resultRoad = api.getSubTaskStatsByWkt(wkt);
+				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdByTaskId(subtask.getTaskId());
+				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));
 				stat.put("tipsTotal", tips);	

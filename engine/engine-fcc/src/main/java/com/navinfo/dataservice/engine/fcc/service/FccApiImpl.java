@@ -105,7 +105,7 @@ public class FccApiImpl implements FccApi{
 
             newThread.start();
 
-            tips2AuMark.run();
+            //tips2AuMark.run();
 
             logger.debug("进入Api:tips2Aumark,调用run()");
         }catch (Exception e) {

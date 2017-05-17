@@ -529,8 +529,7 @@ public class TaskController extends BaseController {
 	}
 	
 	/**
-	 * 
-	 * 无任务数据(POI，TIPS)批中线任务号
+	 * 采集任务列表
 	 * @param request
 	 * @return
 	 */

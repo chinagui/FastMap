@@ -3242,7 +3242,8 @@ public class TaskService {
 			
 			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
 					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
-					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id";
+					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
+					+ " and t.type = 0 and t.LATEST = 1";
 			
 			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
 				@Override

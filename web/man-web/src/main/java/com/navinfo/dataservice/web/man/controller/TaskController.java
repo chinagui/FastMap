@@ -527,4 +527,20 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 
+	 * 无任务数据(POI，TIPS)批中线任务号
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/midCollectTaskList")
+	public ModelAndView midCollectTaskList(HttpServletRequest request) {
+		try {
+			List<Map<String, Object>> taskList = TaskService.getInstance().midCollectTaskList();
+			return new ModelAndView("jsonView", success(taskList));
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

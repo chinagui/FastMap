@@ -37,6 +37,10 @@ public class GLM08052 extends baseRule {
 	public void postCheck(CheckCommand checkCommand) throws Exception {
 		// TODO Auto-generated method stub
 		for(IRow row:checkCommand.getGlmList()){
+			if(row.status() == ObjStatus.DELETE){
+				continue;
+			}
+			
 			//新增车信,
 			if (row instanceof RdLaneConnexity){
 				RdLaneConnexity rdLaneConnexity = (RdLaneConnexity) row;
@@ -140,7 +144,7 @@ public class GLM08052 extends baseRule {
 		//node属性编辑
 		int nodePid = rdNodeForm.getNodePid();
 		Map<String, Object> changedFields = rdNodeForm.changedFields();
-		int formOfWay = 1;
+		int formOfWay = rdNodeForm.getFormOfWay();
 		if(changedFields.containsKey("formOfWay")){
 			formOfWay = (int) changedFields.get("formOfWay");
 		}

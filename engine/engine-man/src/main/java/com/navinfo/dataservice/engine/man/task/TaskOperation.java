@@ -1574,11 +1574,11 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LOT= " + bean.getLot();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && bean.getPoiPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (bean!=null&&bean.getPoiPlanTotal()!=null && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" poi_plan_total= " + bean.getPoiPlanTotal();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (bean!=null&&bean.getRoadPlanTotal()!=null && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" road_plan_total= " + bean.getRoadPlanTotal();
 			};

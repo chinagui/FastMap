@@ -393,6 +393,14 @@ public class TaskService {
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
 			
 			for(Task task:taskList){
+				//采集任务处理无任务POI和TIPS的批中线任务号操作
+				if(task.getType() == 0){
+					List<Map<String, Integer>> TaskDataList = getTaskDataList(conn, task.getTaskId());
+					for(Map<String, Integer> taskMap : TaskDataList){
+						batchNoTaskMidData(conn, userId, taskMap);
+					}
+				}
+				
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
 					cmsTaskList.add(task.getTaskId());
@@ -3177,4 +3185,143 @@ public class TaskService {
 		}
 		return null;
 	}
+	
+	/**
+	 * 无任务数据批中线任务号
+	 * @param 
+	 * @param 
+	 * @author songhe
+	 */
+	private void batchNoTaskPoiMidTaskId(Connection dailyConn,
+			List<Map<String, Integer>> pidList) throws SQLException {
+		String updateSql="update poi_edit_status set medium_task_id=? where pid=? and medium_task_id=0";
+		QueryRunner run=new QueryRunner();
+		Object[][] params=new Object[pidList.size()][2] ;
+		int i = 0;
+		for(Map<String, Integer> pidData : pidList){
+			Object[] pidMap = new Object[2];
+			pidMap[0] = pidData.get("medium_task_id");
+			pidMap[1] = pidData.get("pid");
+			params[i] = pidMap;
+			i++;
+		}
+		run.batch(dailyConn, updateSql, params);
+	}
+	
+	
+	/**
+	 * 获取需要批中线任务号的PID数据
+	 * @param dailyConn
+	 * @param taskId 中线采集任务id
+	 * @return Map<Long, Integer> key：pid value：gridId
+	 * @throws Exception
+	 */
+	private List<Map<String, Integer>> getNoTaskPIDList(Connection dailyConn, final int taskId) throws Exception {
+		try{
+			String sql="SELECT s.PID"
+					+ "  FROM POI_EDIT_STATUS S, IX_POI t"
+					+ " WHERE (s.medium_subtask_id + s.medium_task_id + s.quick_subtask_id + s.quick_task_id) = 0 and t.FIELD_TASK_ID = "+taskId
+					+ "   AND S.PID = t.PID";
+			QueryRunner run=new QueryRunner();
+			return run.query(dailyConn, sql, new ResultSetHandler<List<Map<String, Integer>>>(){
+
+				@Override
+				public List<Map<String, Integer>> handle(ResultSet rs)
+						throws SQLException {
+					List<Map<String, Integer>> PIDList= new ArrayList<>();
+					Map<String, Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put("medium_task_id", taskId);
+						map.put("pid", rs.getInt("PID"));
+						PIDList.add(map);
+					}
+					return PIDList;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			throw e;
+		}
+	}
+	
+	/**
+	 * 根据中线任务，批无任务数据中线任务号
+	 * @param conn 
+	 * @param task
+	 */
+	private void batchNoTaskMidData(Connection conn, Long userId, Map<String, Integer> task) throws Exception{
+		Connection dailyConn=null;
+		try{
+			Region region = RegionService.getInstance().query(conn,task.get("REGION_ID"));
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			List<Map<String, Integer>> noTaskPoiData = getNoTaskPIDList(dailyConn,task.get("TASK_ID"));
+
+			//无任务的poi批中线任务号	
+			if(noTaskPoiData != null && noTaskPoiData.size() > 0){
+				List<Map<String, Integer>> pidList = new ArrayList<>();
+				for(Map<String, Integer> pidMap : noTaskPoiData){
+					pidList.add(pidMap);
+				}
+				batchNoTaskPoiMidTaskId(dailyConn,pidList);
+			}
+			
+			//tips批中线任务号
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.get("TASK_ID"));
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			//这里待联调，POI已经完成
+			batchNoTaskDataByMidTask(wkt, task.get("TASK_ID"));
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(dailyConn);
+		}	
+	}
+	
+	//查询采集TASK对应的数据
+	public List<Map<String,Integer>> getTaskDataList(Connection conn, final int taskId) throws Exception{
+		
+		try{
+			String selectSql = "select t.REGION_ID from TASK t where t.task_id = " + taskId;
+			QueryRunner run = new QueryRunner();
+			return run.query(conn, selectSql, new ResultSetHandler<List<Map<String,Integer>>>(){
+				List<Map<String,Integer>> noTaskData = new ArrayList<Map<String,Integer>>();
+				//这里开始查询的是一个task对应街区内的所有任务列表，先不做处理，方便后续扩展为多条task数据
+				@Override
+				public List<Map<String,Integer>> handle(ResultSet rs)throws SQLException {
+					Map<String,Integer> map = new HashMap<>();
+					while(rs.next()){
+						map.put("TASK_ID", taskId);
+						map.put("REGION_ID", rs.getInt("REGION_ID"));
+						noTaskData.add(map);
+					}
+					return noTaskData;
+				}});
+		}catch(Exception e){
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * 根据taskId批处理对应该任务的无任务POI和TIPS
+	 * @param userId 
+	 * @param taskId
+	 */
+	public void batchMidTaskByTaskId(long userId, int taskId){
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			List<Map<String, Integer>> TaskDataList = getTaskDataList(conn, taskId);
+			for(Map<String, Integer> taskMap : TaskDataList){
+				batchNoTaskMidData(conn, userId, taskMap);
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

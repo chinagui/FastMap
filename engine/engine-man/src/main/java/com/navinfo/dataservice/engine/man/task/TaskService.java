@@ -1186,11 +1186,15 @@ public class TaskService {
 			sb.append(" WHERE TT.ROWNUM_ >= "+pageStartNum);
 
 			ResultSetHandler<Page> rsHandler = new ResultSetHandler<Page>() {
+				
+				Connection con = null;
 				public Page handle(ResultSet rs) throws SQLException {
 					List<HashMap<Object,Object>> list = new ArrayList<HashMap<Object,Object>>();
 					Page page = new Page();
 				    int totalCount = 0;
 				    SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+				    con = DBConnector.getInstance().getManConnection();
+//				    Connection con = null;
 					while (rs.next()) {
 						HashMap<Object,Object> task = new HashMap<Object,Object>();
 						task.put("taskId", rs.getInt("TASK_ID"));
@@ -1231,37 +1235,43 @@ public class TaskService {
 						task.put("poiPlanTotal", rs.getInt("POI_PLAN_TOTAL"));
 						task.put("orderStatus", rs.getInt("ORDER_STATUS"));
 						totalCount=rs.getInt("TOTAL_RECORD_NUM");
+						
+						try{
+							QueryRunner runner = new QueryRunner();
+							int taskID = rs.getInt("TASK_ID");
+							String selectNoTask = "select t.NOTASKDATA_POI_NUM, t.NOTASKDATA_TIPS_NUM from FM_STAT_OVERVIEW_TASK t where t.task_id = " + taskID;
+							//获取是否有无任务数据
+							ResultSetHandler<HashMap<String,Integer>> noTaskRsHandler = new ResultSetHandler<HashMap<String,Integer>>() {
+								public HashMap<String,Integer> handle(ResultSet re) throws SQLException {
+									HashMap<String,Integer> noTaskMap = new HashMap<String,Integer>();
+									if(re.next()) {
+										noTaskMap.put("poi", re.getInt("NOTASKDATA_POI_NUM"));
+										noTaskMap.put("tips", re.getInt("NOTASKDATA_TIPS_NUM"));
+									}					
+									return noTaskMap;
+								}
+
+							};
+							HashMap<String,Integer> noTaskMap = runner.query(con, selectNoTask, noTaskRsHandler);
+							int hasNoTaskData = noTaskData(noTaskMap);
+							task.put("hasNoTaskData", hasNoTaskData);
+						}catch(Exception e){
+							log.error("根据任务号查询无任务数据异常：" + e.getMessage());
+							DbUtils.rollback(con);
+						}
 						list.add(task);
 					}					
 					page.setTotalCount(totalCount);
 					page.setResult(list);
+					DbUtils.commitAndCloseQuietly(con);
 					return page;
 				}
-
 			};
-			
-			//获取是否有无任务数据
-			ResultSetHandler<HashMap<String,Integer>> noTaskRsHandler = new ResultSetHandler<HashMap<String,Integer>>() {
-				public HashMap<String,Integer> handle(ResultSet rs) throws SQLException {
-					HashMap<String,Integer> noTaskMap = new HashMap<String,Integer>();
-					if(rs.next()) {
-						noTaskMap.put("poi", rs.getInt("NOTASKDATA_POI_NUM"));
-						noTaskMap.put("tips", rs.getInt("NOTASKDATA_TIPS_NUM"));
-					}					
-					return noTaskMap;
-				}
-
-			};
-			String selectNoTask = "select t.NOTASKDATA_POI_NUM, t.NOTASKDATA_TIPS_NUM from FM_STAT_TASK_OVERVIEW t";
-			
-			HashMap<String,Integer> noTaskMap = run.query(conn, selectNoTask, noTaskRsHandler);
-			int hasNoTaskData = noTaskData(noTaskMap);
 			
 			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
 		    page.setPageSize(pageSize);
-		    page.setHasNoTaskData(hasNoTaskData);
 		    return page;
 		}catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1279,10 +1289,12 @@ public class TaskService {
 	 * */
 	public int noTaskData(HashMap<String,Integer> noTaskMap){
 		int  hasData = 0;
-		int poiCount = noTaskMap.get("poi");
-		int tipsCount = noTaskMap.get("tips");
-		if(poiCount > 0 || tipsCount > 0){
-			hasData = 1;
+		if(noTaskMap.containsKey("poi") && noTaskMap.containsKey("tips")){
+			int poiCount = noTaskMap.get("poi");
+			int tipsCount = noTaskMap.get("tips");
+			if(poiCount > 0 || tipsCount > 0){
+				hasData = 1;
+			}
 		}
 		return hasData;
 	}
@@ -3268,7 +3280,7 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.get("TASK_ID"));
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-			batchNoTaskDataByMidTask(wkt, task.get("TASK_ID"));
+//			batchNoTaskDataByMidTask(wkt, task.get("TASK_ID"));
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);

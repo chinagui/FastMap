@@ -227,7 +227,6 @@ public class TaskController extends BaseController {
 			Map<String, Object> returnMap=new HashMap<String, Object>();
 			returnMap.put("result", (List)data.getResult());
 			returnMap.put("totalCount", data.getTotalCount());
-			returnMap.put("hasNoTaskData", data.getHasNoTaskData());
 			return new ModelAndView("jsonView", success(returnMap));
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);

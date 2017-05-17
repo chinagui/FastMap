@@ -97,6 +97,7 @@ public abstract class TrackUpload {
 			}catch (Exception e) {
 				failed ++;
 				resultJsonArr.add(newResultObject(rowkey, FAIL, 0));
+				throw new Exception(e.getMessage());
 			}
 		}
 		htab.put(puts);
@@ -170,9 +171,10 @@ public abstract class TrackUpload {
 		
 		long t1=System.currentTimeMillis();
 
-        TrackLinesUpload trackUploader = new TrackLinesUpload();
-		trackUploader.run("F:\\FCC\\track\\Datum_Track.json","tracklines_sprint5");
+		TrackLinesUpload trackUploader = new TrackLinesUpload();
+		trackUploader.run("F:\\FCC\\track\\new\\track_collection.json","trackpoints_trunk");
         System.out.println(trackUploader.getResultJsonArr().get(0).toString());
+        System.out.println(trackUploader.getFailed());
 
 //		TrackUpload a = new TrackUpload();
 //

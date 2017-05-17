@@ -113,7 +113,11 @@ public class Check {
 		int linkPid = command.getLinkPid();
 		LcFaceSelector selector = new LcFaceSelector(conn);
 		List<LcFace> faces = selector.loadLcFaceByLinkId(linkPid, false);
-
+		
+		if(command.getCatchInfos()==null){
+			return;
+		}
+		
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);
 			int nodePid = obj.getInt("nodePid");

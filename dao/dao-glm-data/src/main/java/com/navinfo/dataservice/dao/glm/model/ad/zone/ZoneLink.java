@@ -43,16 +43,18 @@ public class ZoneLink implements IObj {
 
 	private String rowId;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 
-	private List<IRow> meshes = new ArrayList<IRow>();
-	private List<IRow> kinds = new ArrayList<IRow>();
+	private List<IRow> meshes = new ArrayList<>();
+	private List<IRow> kinds = new ArrayList<>();
 
-	public Map<String, ZoneNode> nodeMap = new HashMap<String, ZoneNode>();
+	public Map<String, ZoneNode> nodeMap = new HashMap<>();
 
-	public Map<String, ZoneLinkMesh> meshMap = new HashMap<String, ZoneLinkMesh>();
+	public Map<String, ZoneLinkMesh> meshMap = new HashMap<>();
 
-	public Map<String, ZoneLinkKind> kindMap = new HashMap<String, ZoneLinkKind>();
+	public Map<String, ZoneLinkKind> kindMap = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public ZoneLink() {
 	}
@@ -74,11 +76,12 @@ public class ZoneLink implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

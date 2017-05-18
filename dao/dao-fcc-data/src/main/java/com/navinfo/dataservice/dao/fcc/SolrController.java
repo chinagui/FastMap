@@ -530,7 +530,7 @@ public class SolrController {
 			JSONArray stages, boolean filterDelete, String wktIndexName) throws SolrServerException,
 			IOException {
 		// 默认不是预处理的tips
-		return queryTipsWebType(wkt, types, stages, filterDelete, false, wktIndexName);
+		return queryTipsWebType(wkt, types, stages, filterDelete, false, wktIndexName, null);
 	}
 
 	public JSONObject getById(String id) throws Exception {
@@ -633,7 +633,7 @@ public class SolrController {
 	 * @time:2017-1-5 下午2:03:57
 	 */
 	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-			JSONArray stages, boolean filterDelete, boolean isPre, String wktIndexName)
+			JSONArray stages, boolean filterDelete, boolean isPre, String wktIndexName, JSONArray noQFilter)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
@@ -652,7 +652,10 @@ public class SolrController {
 
 		addTypesFileterSql(types, builder);
 
-		// 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
+        //20170510 增加中线有无过滤
+        addTaskFilterSql(noQFilter, builder);
+
+        // 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
 
 		if (!isPre) {
 
@@ -756,6 +759,24 @@ public class SolrController {
 			builder.append(")");
 		}
 	}
+
+    /**
+     * 中线有无过滤
+     * @param nQFilter
+     * @param builder
+     */
+    private void addTaskFilterSql(JSONArray nQFilter, StringBuilder builder) {
+        if ((nQFilter != null) && (nQFilter.size() > 0)) {
+            builder.append(" AND s_qTaskId:0");
+            if (nQFilter.size() < 2) {
+                int flag = nQFilter.getInt(0);
+                if (flag == 1)
+                    builder.append(" AND -s_mTaskId:0");
+                else if (flag == 2)
+                    builder.append(" AND s_mTaskId:0");
+            }
+        }
+    }
 
 	/**
 	 * @Description:根据任务号，任务类型查找tips
@@ -1125,5 +1146,25 @@ public class SolrController {
         return snapshots;
     }
 
+	/**
+	 * 根据查询条件查询符合条件的所有Tips
+	 * @param queryBuilder
+	 * @param filterQueryBuilder
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	public SolrDocumentList queryTipsSolrDoc(String queryBuilder, String filterQueryBuilder) throws SolrServerException, IOException {
+		SolrQuery query = new SolrQuery();
+		query.set("q", queryBuilder);
+		if(StringUtils.isNotEmpty(filterQueryBuilder)){
+			query.set("fq", filterQueryBuilder);
+		}
+		query.set("start", 0);
+		query.set("rows", fetchNum);
 
+		QueryResponse response = client.query(query);
+		SolrDocumentList sdList = response.getResults();
+		return sdList;
+	}
 }

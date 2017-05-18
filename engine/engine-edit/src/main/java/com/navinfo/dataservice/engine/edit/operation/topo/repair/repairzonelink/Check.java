@@ -113,6 +113,10 @@ public class Check {
 		ZoneFaceSelector selector = new ZoneFaceSelector(conn);
 		List<ZoneFace> faces = selector.loadZoneFaceByLinkId(linkPid, false);
 
+		if (command.getCatchInfos() == null || faces.size() == 0) {
+			return;
+		}
+
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);
 			int nodePid = obj.getInt("nodePid");

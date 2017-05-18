@@ -75,20 +75,20 @@ public interface FccApi {
      */
     public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception;
 
-//    /**
-//     * 根据rowkey列表批快线的任务，子任务号
-//     * @param taskId
-//     * @param subtaskId
-//     * @param tips
-//     * @throws Exception
-//     */
-//    public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception;
-//
-//    /**
-//     * 根据rowkey列表批中线任务号
-//     * @param taskId
-//     * @param tips
-//     * @throws Exception
-//     */
-//    public void batchMidTask(int taskId, List<String> tips) throws Exception;
+    /**
+     * 根据rowkey列表批快线的任务，子任务号
+     * @param taskId
+     * @param subtaskId
+     * @param tips
+     * @throws Exception
+     */
+    public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception;
+
+    /**
+     * tips无任务批中线任务号api
+     * @param wkt
+     * @param midTaskId
+     * @throws Exception
+     */
+    public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
 }

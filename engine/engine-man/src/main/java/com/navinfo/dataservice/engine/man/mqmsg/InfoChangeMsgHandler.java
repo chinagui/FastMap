@@ -142,6 +142,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 //		}
 //	}
 	public void save(String message) throws Exception {
+		log.info("get infor:"+message);
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();

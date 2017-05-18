@@ -134,7 +134,7 @@ public class TaskService {
 					String adminCode = selectAdminCode(taskJson.getInt("programId"));
 					
 					if(adminCode != null && !"".equals(adminCode)){
-						UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+						UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
 						if(userGroup!=null){
 							Integer userGroupID = userGroup.getGroupId();
 							bean.setGroupId(userGroupID);
@@ -383,6 +383,11 @@ public class TaskService {
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
 			
 			for(Task task:taskList){
+				//采集任务处理无任务POI和TIPS的批中线任务号操作
+				if(task.getType() == 0){
+					batchNoTaskMidData(conn, task);
+				}
+				
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
 					cmsTaskList.add(task.getTaskId());
@@ -512,7 +517,7 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -534,7 +539,7 @@ public class TaskService {
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						
+						task.setRegionId(rs.getInt("REGION_ID"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -606,9 +611,10 @@ public class TaskService {
 				String adminCode = selectAdminCode(oldTask.getProgramId());
 				
 				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = getGroupByAminCode(adminCode, 1);
-					Integer userGroupID = userGroup.getGroupId();
-					bean.setGroupId(userGroupID);
+					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
+					if(userGroup!=null){
+						Integer userGroupID = userGroup.getGroupId();
+						bean.setGroupId(userGroupID);}
 				}
 			}
 			
@@ -738,7 +744,7 @@ public class TaskService {
 			//* 快线：情报名称_发布时间_作业员_子任务ID
 			// * 中线：任务名称_作业组
 			if(adminCode != null && !"".equals(adminCode)){
-				UserGroup userGroup = getGroupByAminCode(adminCode, 5);
+				UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 5);
 				if(userGroup!=null){
 					subtask.setExeGroupId(userGroup.getGroupId());
 					if(programType==1){
@@ -1181,6 +1187,8 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
 			sb.append("                       B.BLOCK_ID,");
 			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
@@ -1215,6 +1223,8 @@ public class TaskService {
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
+			sb.append("                       0 NOTASKDATA_POI_NUM,");
+			sb.append("                       0 NOTASKDATA_TIPS_NUM,");
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
@@ -1243,6 +1253,8 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
 			sb.append("                       0 BLOCK_ID,");
 			sb.append("	                      '' BLOCK_NAME,");
 			sb.append("                       1 PLAN_STATUS,");
@@ -1299,6 +1311,13 @@ public class TaskService {
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
 						
+						//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+						if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+							task.put("hasNoTaskData", 0);
+						}else{
+							task.put("hasNoTaskData", 1);
+						}
+						
 						task.put("groupId", rs.getInt("GROUP_ID"));
 						if(rs.getString("GROUP_NAME")==null){
 							task.put("groupName","");
@@ -1339,6 +1358,23 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+//	/**
+//	 * 判断是否有无任务数据方法
+//	 * 默认无
+//	 * 这里先注释掉吧
+//	 * */
+//	public int noTaskData(HashMap<String,Integer> noTaskMap){
+//		int  hasData = 0;
+//		if(noTaskMap.containsKey("poi") && noTaskMap.containsKey("tips")){
+//			int poiCount = noTaskMap.get("poi");
+//			int tipsCount = noTaskMap.get("tips");
+//			if(poiCount > 0 || tipsCount > 0){
+//				hasData = 1;
+//			}
+//		}
+//		return hasData;
+//	}
 	
 	public Page listByCity(JSONObject condition,int curPageNum,int pageSize)throws Exception{
 		Connection conn = null;
@@ -3224,8 +3260,8 @@ public class TaskService {
  				for(Object tipRowkey:tips){ 
  					tipsPids.add(tipRowkey.toString()); 
  				}
-				//FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				//api.batchQuickTask(taskId, subtaskId,tipsPids); 
+				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+				api.batchQuickTask(taskId, subtaskId,tipsPids); 
  			}
 		}catch(Exception e){
 			log.error("", e);
@@ -3260,79 +3296,6 @@ public class TaskService {
 		}
 		run.batch(dailyConn, updateSql, params);
 	}
-	
-	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
-	 * @param adminCode
-	 * @param type
-	 * @throws Exception 
-	 * @author songhe
-	 */
-	public UserGroup getGroupByAminCode(String adminCode, int type){
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			return getGroupByAminCode(conn, adminCode, type);			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		return null;
-	}
-	
-	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
-	 * @param adminCode
-	 * @param type
-	 * @throws Exception 
-	 * @author songhe
-	 */
-	public UserGroup getGroupByAminCode(Connection conn,String adminCode, int type){
-		try{
-			QueryRunner run = new QueryRunner();
-			
-			String name = "";
-			if(type == 1){
-				name = "COLLECT_GROUP_NAME";
-			}else if(type == 2){
-				name="EDIT_GROUP_NAME";
-			}else if(type == 3){
-				name = "CROWD_GROUP_NAME";
-			}else if(type == 4){
-				name = "INFOR_GROUP_NAME";
-			}else if(type == 5){
-				name = "MULTISOURCE_GROUP_NAME";
-			}
-			
-			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
-					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
-					+ "and u.group_name = t." + name;
-			
-			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
-				
-				@Override
-				public UserGroup handle(ResultSet result) throws SQLException {
-					UserGroup  userGroup = new UserGroup();
-					while(result.next()){
-						userGroup.setGroupId(result.getInt("GROUP_ID"));
-						userGroup.setGroupName(result.getString("GROUP_NAME"));
-						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
-						userGroup.setLeaderId(result.getInt("LEADER_ID"));
-						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
-						return userGroup;
-					}
-					return null;
-				}});
-			return group;
-			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-		}
-		return null;
-	}
 
 	public Map<String, Object> getCollectGroupByTask(int taskId, int workKind,
 			int snapshot) throws Exception{
@@ -3346,21 +3309,151 @@ public class TaskService {
 				UserGroup resultGroup=UserGroupService.getInstance().query(conditionGroup);
 				List<UserInfo> users=UserInfoService.getInstance().list(conditionGroup);
 				JSONObject resultJson = JSONObject.fromObject(resultGroup);
-				resultJson.put("users", JSONObject.fromObject(users));
+				resultJson.put("users", JSONArray.fromObject(users));
 				return resultJson;
 			}
 			String admin = selectAdminCode(task.getProgramId());
-			UserGroup resultGroup=getGroupByAminCode(conn, admin, workKind);
+			int type=workKind+1;
+			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, type);
 			List<UserInfo> users=UserInfoService.getInstance().list(resultGroup);
 			JSONObject resultJson = JSONObject.fromObject(resultGroup);
-			resultJson.put("users", JSONObject.fromObject(users));
+			resultJson.put("users", JSONArray.fromObject(users));
 			return resultJson;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	
+	/**
+	 * 无任务数据批中线任务号
+	 * @param 
+	 * @param 
+	 * @author songhe
+	 */
+	private void batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID, String wkt) throws SQLException {
+		String selectPid = "select pes.pid"
+				 + " from ix_poi ip, poi_edit_status pes"
+				 + " where ip.pid = pes.pid"
+				 + " and pes.status ！= 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
+		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ " where pid in ("+selectPid+")";
+		QueryRunner run=new QueryRunner();
+		run.execute(dailyConn, updateSql);
+	}
+	
+	
+	/**
+	 * 根据中线任务，批无任务数据中线任务号
+	 * @param conn 
+	 * @param task
+	 */
+	private void batchNoTaskMidData(Connection conn, Task task) throws Exception{
+		Connection dailyConn=null;
+		try{
+			Region region = RegionService.getInstance().query(conn,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			//无任务tips批中线任务号
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			//这里待联调，POI已经完成
+//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			
+			//无任务的poi批中线任务号	
+			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
+			
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(dailyConn);
+		}	
+	}
+	
+	/**
+	 * 根据taskId批处理对应该任务的无任务POI和TIPS
+	 * @param userId 
+	 * @param taskId
+	 */
+	public void batchMidTaskByTaskId(int taskId){
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			Task task = queryByTaskId(conn, taskId);
+			batchNoTaskMidData(conn, task);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 采集任务列表
+	 *   
+	 */
+	public List<Map<String, Object>> midCollectTaskList(){
+		Connection con = null;
+		try {
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
+					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
+					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
+					+ " and t.type = 0 and t.LATEST = 1";
+			
+			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
+				@Override
+				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
+					List<Map<String, Object>> taskList = new ArrayList<>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					while(result.next()){
+						Map<String, Object> task = new HashMap<>();
+						task.put("programId", result.getInt("program_id"));
+						task.put("programName", result.getString("p_name"));
+						task.put("programType", result.getInt("p_type"));
+						task.put("programStatus", result.getInt("p_status"));
+						task.put("blockId", result.getInt("block_id"));
+						task.put("taskId", result.getInt("task_id"));
+						task.put("taskStatus", result.getInt("status"));
+						task.put("taskName", result.getString("name"));
+						Timestamp planStartDate = result.getTimestamp("plan_start_date");
+						Timestamp planEndDate = result.getTimestamp("plan_end_date");
+						if(planStartDate != null){
+							task.put("taskPlanStartDate", df.format(planStartDate));
+						}else{
+							task.put("taskPlanStartDate", "");
+						}
+						if(planEndDate != null){
+							task.put("taskPlanEndDate", df.format(planEndDate));
+						}else{
+							task.put("taskPlanEndDate", "");
+						}
+						
+						STRUCT struct = (STRUCT) result.getObject("geometry");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							task.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							log.error("geometry转JSON失败，原因为:" + e.getMessage());
+						}
+						
+						taskList.add(task);
+					}
+					return taskList;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(con);
+			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
+		}
 		return null;
 	}
+	
 }

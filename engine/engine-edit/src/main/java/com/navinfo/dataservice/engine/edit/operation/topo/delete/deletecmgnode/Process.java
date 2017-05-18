@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletecmgnode;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
@@ -11,6 +12,7 @@ import com.navinfo.dataservice.engine.edit.operation.AbstractCommand;
 import com.navinfo.dataservice.engine.edit.operation.AbstractProcess;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,6 +33,19 @@ public class Process extends AbstractProcess<Command> {
 
     public Process(AbstractCommand command) throws Exception {
         super(command);
+    }
+
+    @Override
+    public String preCheck() throws Exception {
+        List<IRow> checkList = new ArrayList<>();
+        checkList.addAll(getResult().getAddObjects());
+        checkList.addAll(getResult().getUpdateObjects());
+        for (IRow row : getResult().getDelObjects()) {
+            if (row instanceof CmgBuildnode) {
+                checkList.add(row);
+            }
+        }
+        return super.preCheck();
     }
 
     @Override

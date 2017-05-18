@@ -33,11 +33,13 @@ public class LuNode implements IObj {
 
 	private int editFlag = 1;
 
-	private List<IRow> meshes = new ArrayList<IRow>();
+	private List<IRow> meshes = new ArrayList<>();
 
-	public Map<String, LuNodeMesh> meshMap = new HashMap<String, LuNodeMesh>();
+	public Map<String, LuNodeMesh> meshMap = new HashMap<>();
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public LuNode() {
 	}
@@ -59,11 +61,12 @@ public class LuNode implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

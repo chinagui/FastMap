@@ -53,7 +53,7 @@ public class TipsSelector {
 
 	/**
 	 * 范围查询Tips
-	 * 
+	 *
 	 * @param wkt
 	 * @return Tips JSON数组
 	 * @throws Exception
@@ -87,7 +87,7 @@ public class TipsSelector {
 	 * @time:2016-7-2 上午10:08:16
 	 */
 	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-			JSONArray types, String mdFlag, String wktIndexName) throws Exception {
+											 JSONArray types, String mdFlag, String wktIndexName, JSONArray noQFilter) throws Exception {
 		JSONArray array = new JSONArray();
 
 		String rowkey = null;
@@ -104,23 +104,24 @@ public class TipsSelector {
 
 			if ("d".equals(mdFlag)) {
 
-				stages.add(1);
+                stages.add(1);
 
-				stages.add(2);
+                stages.add(2);
 
-				stages.add(5);
-				
-				stages.add(6);
+                stages.add(5);
+
+                stages.add(6);
 
 			} else if ("m".equals(mdFlag)) {
 
-				stages.add(1);
+                stages.add(1);
 
-				stages.add(2);
+                stages.add(2);
 
-				stages.add(3);
+                stages.add(3);
 
 			}
+
 			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
 			boolean isPre = false;
 
@@ -129,12 +130,12 @@ public class TipsSelector {
 			}
 
 			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false, isPre, wktIndexName);
+					stages, false, isPre, wktIndexName, noQFilter);
 
 			for (JSONObject json : snapshots) {
 
 				rowkey = json.getString("id");
-				
+
 				SearchSnapshot snapshot = new SearchSnapshot();
 
 				snapshot.setI(json.getString("id"));
@@ -213,13 +214,38 @@ public class TipsSelector {
 
 				if (type == 1201) {
 					m.put("c", String.valueOf(deep.getInt("kind")));
-				} else if (type == 2001 || type == 1901) {
+				} else if (type == 2001 || type == 1901 || type == 2201 || type == 2002) {
 
 					JSONObject geo = deep.getJSONObject("geo");
 
 					Geojson.coord2Pixel(geo, z, px, py);
 
 					m.put("c", geo.getJSONArray("coordinates"));
+
+                    if(type == 2201) {//20170517 地下通道过街天桥
+                        m.put("d", deep.getInt("tp"));
+
+                        JSONArray allGeoPArray = new JSONArray();//geoP
+                        JSONArray allAccessArray = new JSONArray();//access
+                        JSONArray pArray = deep.getJSONArray("p_array");
+                        if (pArray != null && pArray.size() > 0) {
+                            for (Object obj : pArray) {
+                                JSONObject pInfo = JSONObject.fromObject(obj);
+                                //geoP
+                                JSONObject geoP = pInfo.getJSONObject("geoP");
+                                Geojson.coord2Pixel(geoP, z, px, py);
+                                JSONArray geoPArray = geoP.getJSONArray("coordinates");
+                                allGeoPArray.add(geoPArray);
+
+                                //access
+                                String access = pInfo.getString("access");
+                                JSONArray accessArray = TipsSelectorUtils.getCrossStreetAccess(access);
+                                allAccessArray.add(accessArray);
+                            }
+                        }
+                        m.put("e", allGeoPArray);
+                        m.put("f", allAccessArray);
+                    }
 				} else if (type == 1203 || type == 1101 || type == 1407
 						|| type == 1403 || type == 1401 || type == 1402
 						|| type == 1405 || type == 1406 || type == 1409
@@ -332,7 +358,13 @@ public class TipsSelector {
 								m.put("d", 1);
 							}
 						}
-					}
+					} else if(type == 1114) {//20170517 卡车限制Tips渲染接口新增参数
+                        m.put("d", String.valueOf(deep.getInt("se")));
+                        m.put("e", String.valueOf(deep.getInt("value")));
+					}else if(type == 1115) {//20170517 车道变化点Tips渲染接口新增参数
+                        m.put("d", String.valueOf(deep.getInt("inNum")));
+                        m.put("e", String.valueOf(deep.getInt("outNum")));
+                    }
 
 				} else if (type == 1106) {
 					m.put("c", String.valueOf(deep.getInt("tp")));
@@ -349,14 +381,22 @@ public class TipsSelector {
 					m.put("c", deep.getString("rdName"));
 					m.put("d", deep.getString("num"));
 					m.put("e", deep.getString("src"));
-				} else if (type == 1202) {
+				} else if (type == 1709) {//20170517 点位移
+                    JSONObject geoO = deep.getJSONObject("geoO");
+                    Geojson.coord2Pixel(geoO, z, px, py);
+                    m.put("c", geoO.getJSONArray("coordinates"));
+
+                    JSONObject geoN = deep.getJSONObject("geoN");
+                    Geojson.coord2Pixel(geoN, z, px, py);
+                    m.put("d", geoN.getJSONArray("coordinates"));
+                } else if (type == 1202) {
 					m.put("c", String.valueOf(deep.getInt("num")));
 				} else if (type == 1510 || type == 1514 || type == 1501
 						|| type == 1515 || type == 1502 || type == 1503
 						|| type == 1504 || type == 1505 || type == 1506
 						|| type == 1508 || type == 1513 || type == 1512
 						|| type == 1516 || type == 1507 || type == 1511
-						|| type == 1517 || type == 1509) {
+						|| type == 1517 || type == 1509 || type == 1518) {
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 					Geojson.coord2Pixel(gSLoc, z, px, py);
 					JSONObject gELoc = deep.getJSONObject("gELoc");
@@ -368,13 +408,13 @@ public class TipsSelector {
 							|| type == 1509) {
 
 						m.put("e", deep.getString("name"));
-					}
+					}else if(type == 1518) {
+                        m.put("e", deep.getInt("grade"));
+                    }
 					// 20170207修改，需求来源于：赵航——有个需求是，如果上传的步行街有时间段，我们要渲染不同的图标，现在渲染接口没有时间段这个字段
-					if (type == 1507) {
+					else if (type == 1507) {
 						m.put("f", deep.getString("time"));
-					}
-
-					if (type == 1517) {
+					}else if (type == 1517) {
 
 						int tp = deep.getInt("tp");
 
@@ -518,20 +558,20 @@ public class TipsSelector {
 				// 4. 查找线编号
 				// 3.1   4.1 判断是否有线编号同时返回线编号和坐标
 				getOutNumAndGeo(type, z, px, py, m, deep);
-				
-                //20170508 tips渲染接口增加2个返回值：
-                // 中线状态（1是中线成果0不是中线成果），快线状态（1是快线成果0不是快线成果）
-                int s_qTaskId = json.getInt("s_qTaskId");//快线任务号
-                if(s_qTaskId != 0) {
-                    s_qTaskId = 1;
-                }
-                m.put("quickFlag", s_qTaskId);
 
-                int s_mTaskId = json.getInt("s_mTaskId");//快线任务号
-                if(s_mTaskId != 0) {
-                    s_mTaskId = 1;
-                }
-                m.put("mediumFlag", s_mTaskId);
+				//20170508 tips渲染接口增加2个返回值：
+				// 中线状态（1是中线成果0不是中线成果），快线状态（1是快线成果0不是快线成果）
+				int s_qTaskId = json.getInt("s_qTaskId");//快线任务号
+				if(s_qTaskId != 0) {
+					s_qTaskId = 1;
+				}
+				m.put("quickFlag", s_qTaskId);
+
+				int s_mTaskId = json.getInt("s_mTaskId");//快线任务号
+				if(s_mTaskId != 0) {
+					s_mTaskId = 1;
+				}
+				m.put("mediumFlag", s_mTaskId);
 
 				snapshot.setM(m);
 
@@ -756,7 +796,7 @@ public class TipsSelector {
 
 	/**
 	 * @Description:获取线编号和线编号坐标,同时判断是否有线编号
-     * @param type
+	 * @param type
 	 * @param z
 	 * @param px
 	 * @param py
@@ -767,7 +807,7 @@ public class TipsSelector {
 	 * @time:2017-2-20 下午2:02:17
 	 */
 	private void getOutNumAndGeo(int type, int z, double px, double py,
-			JSONObject m, JSONObject deep) {
+								 JSONObject m, JSONObject deep) {
 
 		JSONArray reusltArr = new JSONArray();
 
@@ -792,13 +832,13 @@ public class TipsSelector {
 
 						for (Object object3 : outArr) {
 */
-							JSONObject obj = assembleOutNumAndGeoResultFromObj(
-									z, px, py, out);
+					JSONObject obj = assembleOutNumAndGeoResultFromObj(
+							z, px, py, out);
 
-							reusltArr.add(obj);
-						//}
+					reusltArr.add(obj);
+					//}
 
-				//	}
+					//	}
 				}
 			}
 		}
@@ -847,7 +887,7 @@ public class TipsSelector {
 
 					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
 							py, outObj);
-					
+
 					reusltArr.add(obj);
 
 				}
@@ -869,12 +909,12 @@ public class TipsSelector {
 
 				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
 						py, outObj);
-				
+
 				reusltArr.add(obj);
 
 			}
 		}
-		
+
 		// 1302（普通交限标记） [o_array].[out] num geo
 		// 1303（卡车交限标记）[o_array].[out] num geo
 		// 1306（路口语音引导）[o_array].[out] num geo
@@ -894,15 +934,15 @@ public class TipsSelector {
 
 					JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
 							py, outInfo);
-					
+
 					reusltArr.add(obj);
 
 				}
 			}
 		}
-		
+
 		// 1102  [f_array].f  (f唯一是对象) num geo
-		
+
 		else if (type == 1102 ) {
 
 			JSONArray o_array = deep.getJSONArray("f_array");
@@ -917,12 +957,12 @@ public class TipsSelector {
 
 				JSONObject obj = assembleOutNumAndGeoResultFromObj(z, px,
 						py, outObj);
-				
+
 				reusltArr.add(obj);
 
 			}
 		}
-		
+
 		// ------------公共的
 		if (reusltArr.size() != 0) {
 			m.put("n", 1);  //有线编号
@@ -941,7 +981,7 @@ public class TipsSelector {
 	 * @time:2017-2-20 下午2:06:29
 	 */
 	private JSONObject assembleOutNumAndGeoResultFromObj(int z, double px,
-			double py, Object object3) {
+														 double py, Object object3) {
 		JSONObject outInfo = JSONObject.fromObject(object3);
 
 		int num = outInfo.getInt("num");
@@ -972,7 +1012,7 @@ public class TipsSelector {
 	 * @time:2017-2-13下午1:34:53
 	 */
 	private JSONObject converDiffGeo(int type, JSONObject tipdiff, int z,
-			double px, double py) {
+									 double px, double py) {
 
 		if (tipdiff == null || tipdiff.isEmpty())
 			return null;
@@ -1081,7 +1121,7 @@ public class TipsSelector {
 
 	/**
 	 * 通过rowkey获取Tips
-	 * 
+	 *
 	 * @param rowkey
 	 * @return Tips JSON对象
 	 * @throws Exception
@@ -1122,11 +1162,11 @@ public class TipsSelector {
 
 		return json;
 	}
-	
-	
+
+
 	/**
 	 * 通过rowkey获取Tips(返回符合规格模型的数据)
-	 * 
+	 *
 	 * @param rowkey
 	 * @return Tips JSON对象
 	 * @throws Exception
@@ -1152,7 +1192,7 @@ public class TipsSelector {
 						.fromObject(new String(kv.value()));
 
 				String key = new String(kv.qualifier());
-				
+
 				System.out.println("key:"+key);
 
 			/*	if (key.equals("feedback")) {
@@ -1161,7 +1201,7 @@ public class TipsSelector {
 					json.putAll(injson);
 				}*/
 				json.put(key, injson);
-				
+
 			}
 
 		} catch (Exception e) {
@@ -1175,7 +1215,7 @@ public class TipsSelector {
 
 	/**
 	 * 通过条件查询Tips
-	 * 
+	 *
 	 * @param condition
 	 *            查询条件
 	 * @return Tips JSON数组
@@ -1189,7 +1229,7 @@ public class TipsSelector {
 
 	/**
 	 * 统计tips
-	 * 
+	 *
 	 * @param grids
 	 * @param stages
 	 * @param subtaskId :日编任务号
@@ -1199,7 +1239,7 @@ public class TipsSelector {
 	public JSONObject getStats(JSONArray grids, JSONArray stages, int subtaskId)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
-		
+
 		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskId); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
 
 		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
@@ -1247,7 +1287,7 @@ public class TipsSelector {
 
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
-	 * 
+	 *
 	 * @param grids
 	 * @param stages
 	 * @return
@@ -1262,7 +1302,7 @@ public class TipsSelector {
 
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage的数据条数
-	 * 
+	 *
 	 * @param wkt
 	 * @param stages
 	 * @return
@@ -1286,29 +1326,29 @@ public class TipsSelector {
 
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
-	 * 
+	 *
 	 * @param grids
 	 * @param stages
 	 * @return
 	 * @throws Exception
 	 */
 	public int getTipsCountByStageAndTdStatus(JSONArray grids, int stages,
-			int tdStatus) throws Exception {
+											  int tdStatus) throws Exception {
 		String wkt = GridUtils.grids2Wkt(grids);
 		return getTipsCountByStageAndTdStatusAndWkt(wkt, stages, tdStatus);
 	}
 
 	/**
 	 * 统计子任务的tips总作业量,grid范围内滿足stage、tdStatus的数据条数
-	 * 
+	 *
 	 * @param wkt
 	 * @param stages
-     * @param tdStatus
+	 * @param tdStatus
 	 * @return
 	 * @throws Exception
 	 */
 	public int getTipsCountByStageAndTdStatusAndWkt(String wkt, int stages,
-			int tdStatus) throws Exception {
+													int tdStatus) throws Exception {
 
 		List<JSONObject> tips = conn.queryTips(wkt, stages, tdStatus);
 
@@ -1319,7 +1359,7 @@ public class TipsSelector {
 
 	/**
 	 * 获取单种类型快照
-	 * 
+	 *
 	 * @param grids
 	 * @param stages
 	 * @param type
@@ -1330,7 +1370,7 @@ public class TipsSelector {
 	 * @throws Exception
 	 */
 	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-			int dbId, String mdFlag, int subtaskid) throws Exception {
+								 int dbId, String mdFlag, int subtaskid) throws Exception {
 		JSONArray jsonData = new JSONArray();
 
 		String wkt = GridUtils.grids2Wkt(grids);
@@ -1341,7 +1381,7 @@ public class TipsSelector {
 		if ("f".equals(mdFlag)) {
 			isPre = true;
 		}
-		
+
 		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskid); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
 
 		List<JSONObject> tips = conn.queryWebTips(wkt, type, stages, isPre,taskSet);
@@ -1698,12 +1738,12 @@ public class TipsSelector {
 						// 1515和1514确认了不需要加时间段
 						/*
 						 * if(type == 1515){ String name = m.getString("e");
-						 * 
+						 *
 						 * String time = deep.getString("time");
-						 * 
+						 *
 						 * if(time!=null && !time.isEmpty()){
 						 * name+="("+time+")";
-						 * 
+						 *
 						 * m.put("e", name); } }
 						 */
 					}
@@ -1800,21 +1840,21 @@ public class TipsSelector {
 	 * @Description:调用任务管理api，获取该任务所对应项目下的所有快线任务号
 	 * @return
 	 * @author: y
-	 * @throws Exception 
+	 * @throws Exception
 	 * @time:2017-4-19 下午1:32:21
 	 */
 	private Set<Integer> getTaskIdsUnderSameProject(int subtaskId) throws Exception {
 		// 调用 manapi 获取 任务类型、及任务号
 		ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
-		
+
 		Set<Integer>  taskSet = manApi.getCollectTaskIdByDaySubtask(subtaskId);
-		
+
 		return taskSet;
 	}
 
 	/**
 	 * 根据grid和时间戳查询是否有可下载的数据
-	 * 
+	 *
 	 * @param grid
 	 * @param date
 	 * @return
@@ -1836,7 +1876,7 @@ public class TipsSelector {
 
 	/**
 	 * 范围查询Tips 分类查询
-	 * 
+	 *
 	 * @param wkt
 	 * @return Tips JSON数组
 	 * @throws Exception
@@ -1941,14 +1981,14 @@ public class TipsSelector {
 	 * @param taskType：任务类型
 	 * @return
 	 * @author: y
-	 * @throws Exception 
+	 * @throws Exception
 	 * @time:2017-4-13 上午9:07:15
 	 */
 	public List<JSONObject> getTipsByTaskIdAndSourceTypes(JSONArray souceTypes,
-			int taskId, int taskType) throws Exception {
-		
+														  int taskId, int taskType) throws Exception {
+
 		List<JSONObject> snapshots=conn.queryTipsByTaskTaskSourceTypes(souceTypes,taskId,taskType);
-		
+
 		return snapshots;
 	}
 
@@ -1958,15 +1998,15 @@ public class TipsSelector {
 	 * @param taskType
 	 * @return
 	 * @author: y
-	 * @throws Exception 
+	 * @throws Exception
 	 * @time:2017-4-14 下午4:55:04
 	 */
 	public List<JSONObject> getTipsByTaskId(int taskId, int taskType) throws Exception {
-		
+
 		List<JSONObject> snapshots=conn.queryTipsByTask(taskId,taskType);
-		
+
 		return snapshots;
-		
+
 	}
 
 	/**
@@ -1975,36 +2015,36 @@ public class TipsSelector {
 	 * @param q_TASK_TYPE
 	 * @return
 	 * @author: y
-	 * @throws Exception 
+	 * @throws Exception
 	 * @time:2017-4-19 下午8:51:14
 	 */
 	public Set<Integer> getGridsListByTask(int collectTaskid, int q_TASK_TYPE) throws Exception {
-		
+
 		List<JSONObject> tipsList=conn.queryTipsByTask(collectTaskid, q_TASK_TYPE);
-		
+
 		Set<Integer> gridsSet= new HashSet<Integer>();
-		
+
 		Set<String> grids=new  HashSet<String>();
-		
+
 		for (JSONObject json : tipsList) {
-			
+
 			String wkt=json.getString("wkt");
-			
+
 			Geometry geo =  GeoTranslator.wkt2Geometry(wkt);
-			
+
 			Set<String> grid=TipsGridCalculate.calculate(geo);
-			
+
 			grids.addAll(grid);
-			
-            }
-		
+
+		}
+
 		for (String str : grids) {
-			
+
 			Integer grid=Integer.valueOf(str);
-			
+
 			gridsSet.add(grid);
 		}
-		
+
 		return gridsSet;
 	}
 
@@ -2052,10 +2092,37 @@ public class TipsSelector {
 		}
 		return list;
 	}
-    public static void main(String[] args) throws Exception {
-        TipsSelector solrSelector = new TipsSelector();
-        JSONArray types = new JSONArray();
-        System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(13492, 6201, 14,
-                40, types,"d","wktLocation"));
-    }
+	public static void main(String[] args) throws Exception {
+        String parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";
+
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            int x = jsonReq.getInt("x");
+
+            int y = jsonReq.getInt("y");
+
+            int z = jsonReq.getInt("z");
+
+            int gap = jsonReq.getInt("gap");
+
+            String mdFlag = jsonReq.getString("mdFlag");
+
+            JSONArray types = new JSONArray();
+
+            if (jsonReq.containsKey("types")) {
+                types = jsonReq.getJSONArray("types");
+            }
+
+            JSONArray noQFilter = new JSONArray();
+            if (jsonReq.containsKey("noQFilter")) {
+                noQFilter = jsonReq.getJSONArray("noQFilter");
+            }
+
+            TipsSelector selector = new TipsSelector();
+
+            JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
+                    types, mdFlag, "wktLocation", noQFilter);
+
+        System.out.println("reusut:--------------\n"+array);
+	}
 }

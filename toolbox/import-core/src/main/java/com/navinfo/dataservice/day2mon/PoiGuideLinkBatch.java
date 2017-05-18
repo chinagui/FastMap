@@ -70,6 +70,11 @@ public class PoiGuideLinkBatch {
 		OracleSchema copVersionSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(copVersionDbInfo.getConnectParam()));
 		log.info("子版本库信息 dbId:"+copVersionDbInfo.getDbId());
+		log.info("子版本库信息 用户名:"+copVersionSchema.getConnConfig().getUserName());
+		log.info("子版本库信息 密码:"+copVersionSchema.getConnConfig().getUserPasswd());
+		log.info("子版本库信息 IP:"+copVersionSchema.getConnConfig().getServerIp());
+		log.info("子版本库信息 port:"+copVersionSchema.getConnConfig().getServerPort());
+
 		//子版本链接：用来搬移履历，在最后提交或回滚
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		//子版本链接：用来刷库，在最后提交或回滚

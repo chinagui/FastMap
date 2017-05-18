@@ -69,20 +69,20 @@ public class PermitModificateSamelinkNode extends baseRule {
 
             for (IRow r : checkCommand.getGlmList()) {
                 for (RdSameNodePart part : sameNodeParts) {
-                    if (r.tableName().toUpperCase().equals(row.tableName().toUpperCase()) && row.parentPKValue() == part.getNodePid()) {
+                    if (r.tableName().equalsIgnoreCase(part.getTableName()) && r.parentPKValue() == part.getNodePid()) {
                         flag = true;
                         break;
                     }
                 }
             }
             if (!flag) {
-                setCheckResult("node不是该组同一关系中的主要素，不能进行移动操作", String.format(""), 0);
+                setCheckResult("node不是该组同一关系中的主要素，不能进行移动操作",
+                        String.format("[%s,%d]", row.tableName(), row.parentPKValue()), 0);
             }
         }
     }
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-
     }
 }

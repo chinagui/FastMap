@@ -2513,7 +2513,7 @@ public class TaskOperation {
 	public static void updateWorkKind(Connection conn, int taskId, int subtaskWorkKind) throws Exception{
 		try{
 			QueryRunner run = new QueryRunner();
-			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",len(work_kind)) WHERE task_id="+taskId;
+			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",length(work_kind)) WHERE task_id="+taskId;
 			run.update(conn,updateSql);			
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

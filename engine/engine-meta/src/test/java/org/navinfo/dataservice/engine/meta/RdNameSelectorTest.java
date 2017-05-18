@@ -6,9 +6,6 @@ package org.navinfo.dataservice.engine.meta;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.web.servlet.ModelAndView;
-
-import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -16,7 +13,7 @@ import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
-
+import com.navinfo.dataservice.engine.meta.service.ScPointPoicodeNewService;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -77,7 +74,7 @@ public class RdNameSelectorTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void testSearchRdName()
 	{
 		String parameter = "{'subtaskId':76,'pageNum':1,'pageSize':20,'flag':1,'sortby':'-name','params':{'name':'','nameGroupid':'','adminId':''}}";//
@@ -236,4 +233,25 @@ public class RdNameSelectorTest {
         }
         
 	}
+	
+	
+	@Test
+	public void testSearchScPoint()
+	{
+		String parameter = "{'name':'服务票','code':'210303'}";
+
+		try {
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			ScPointPoicodeNewService selector = new ScPointPoicodeNewService();
+			
+			JSONArray data = selector.list(jsonReq);
+			
+			System.out.println(data);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

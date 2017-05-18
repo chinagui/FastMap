@@ -1716,11 +1716,8 @@ System.out.println(sGeojson2);
 			
 			
 			//更新deep.len
-			
-			double len1=GeoTranslator.geojson2Jts(g_location1).getLength();
-			
-			
-			double len2=GeoTranslator.geojson2Jts(g_location2).getLength();
+			double len1 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location1));
+            double len2 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location2));
 			
 			deep1.put("len", len1);
 			

@@ -6,12 +6,10 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildnodeSelector;
@@ -27,11 +25,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
-import org.springframework.util.StringUtils;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -306,7 +303,7 @@ public class Operation implements IOperation {
             CmgBuildfaceSelector cmgfaceSelector = new CmgBuildfaceSelector(conn);
             for (CmgBuildface cmgface : command.getCmgfaces()) {
                 // 更新面的几何信息
-                Geometry faceGeo = updateFaceGeo(result, cmglinkSelector, cmgface);
+                Geometry faceGeo = updateFaceGeo(result, cmgface);
 
                 if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(faceGeo)) {
                     int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(faceGeo);
@@ -428,12 +425,11 @@ public class Operation implements IOperation {
     /**
      *
      * @param result 结果集
-     * @param cmglinkSelector CMG-FACE
      * @param cmgface 待更新CMG-FACE面
      * @return 更新后面几何
      * @throws Exception 更新面几何出错
      */
-    private Geometry updateFaceGeo(Result result, CmgBuildlinkSelector cmglinkSelector, CmgBuildface cmgface) throws Exception {
+    private Geometry updateFaceGeo(Result result, CmgBuildface cmgface) throws Exception {
         String wkt = GeoTranslator.jts2Wkt(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
         Geometry sourceGeo = GeoTranslator.transform(command.getCmglink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
         String sourceCoors = getCoordinateStr(sourceGeo);
@@ -441,7 +437,7 @@ public class Operation implements IOperation {
         String newCoors = getCoordinateStr(command.getGeometry());
         String reverseNewCoors = getCoordinateStr(command.getGeometry().reverse());
 
-        if (StringUtils.substringMatch(wkt, 0, sourceCoors)) {
+        if (StringUtils.containsIgnoreCase(wkt, sourceCoors)) {
             wkt = wkt.replace(sourceCoors, newCoors);
         } else {
             wkt = wkt.replace(reverseSourceCoors, reverseNewCoors);

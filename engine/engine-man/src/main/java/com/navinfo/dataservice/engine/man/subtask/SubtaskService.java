@@ -683,7 +683,7 @@ public class SubtaskService {
 							subtask.put("hasQuality",1);
 							try {
 								Subtask subtaskQuality = queryBySubtaskIdS((Integer)subtask.get("qualitySubtaskId"));
-								subtask.put("qualityExeUserId",subtaskQuality.getExecuterId());
+								subtask.put("qualityExeUserId",subtaskQuality.getExeUserId());
 								subtask.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
 								subtask.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());

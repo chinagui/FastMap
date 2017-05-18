@@ -69,7 +69,7 @@ public class PermitModificateSamelinkNode extends baseRule {
 
             for (IRow r : checkCommand.getGlmList()) {
                 for (RdSameNodePart part : sameNodeParts) {
-                    if (r.tableName().toUpperCase().equals(row.tableName().toUpperCase()) && row.parentPKValue() == part.getNodePid()) {
+                    if (r.tableName().equalsIgnoreCase(part.getTableName()) && r.parentPKValue() == part.getNodePid()) {
                         flag = true;
                         break;
                     }

@@ -568,9 +568,8 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setPhotoAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		JSONArray photos = jo.getJSONArray("attachments");
 		List<IxPoiPhoto> objPhotos = poiObj.getIxPoiPhotos();
-		Collection<String> objPhotoPIds = null;
+		Collection<String> objPhotoPIds = new HashSet<String>();
 		if(objPhotos!=null){
-			objPhotoPIds = new HashSet<String>();
 			for(IxPoiPhoto ipp:objPhotos){
 				objPhotoPIds.add(ipp.getPid());
 			}
@@ -580,7 +579,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 			JSONObject pJo = (JSONObject)photo;
 			int type = pJo.getInt("type");
 			String fccpid = pJo.getString("id");
-			if(type==1&&objPhotoPIds!=null&&(!objPhotoPIds.contains(fccpid))){
+			if(type==1&&(!objPhotoPIds.contains(fccpid))){
 				IxPoiPhoto ixPoiPhoto = poiObj.createIxPoiPhoto();//poi_pid,row_id已经赋值
 				ixPoiPhoto.setPid(fccpid);
 				ixPoiPhoto.setTag(pJo.getInt("tag"));

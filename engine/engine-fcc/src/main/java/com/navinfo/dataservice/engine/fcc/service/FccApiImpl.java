@@ -62,7 +62,7 @@ public class FccApiImpl implements FccApi{
     }
 
     @Override
-    public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception {
+    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception {
         JSONObject result=new JSONObject();
 
         if (wkt==null||wkt.isEmpty()) {
@@ -73,10 +73,10 @@ public class FccApiImpl implements FccApi{
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量 stage=1
-        int total=selector.getTipsCountByStageAndWkt(wkt, 1);
+        int total=selector.getTipsCountByStageAndWkt(wkt, 1, collectTaskIds);
 
         //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt,2,1);
+        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt, 2, 1, collectTaskIds);
 
         result.put("total", total);
 
@@ -103,7 +103,7 @@ public class FccApiImpl implements FccApi{
 
             newThread.start();
 
-            tips2AuMark.run();
+            //tips2AuMark.run();
 
             logger.debug("进入Api:tips2Aumark,调用run()");
         }catch (Exception e) {

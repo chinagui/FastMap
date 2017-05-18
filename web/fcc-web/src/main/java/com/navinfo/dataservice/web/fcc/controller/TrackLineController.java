@@ -43,7 +43,6 @@ public class TrackLineController extends BaseController {
 
             int total = 0;
             int failed = 0;
-            JSONArray resultJsonArr = new JSONArray();
 
             //普通轨迹点
             File fileLine = new File(filePath + "/"+ "track_collection.json");

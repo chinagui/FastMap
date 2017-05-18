@@ -5,11 +5,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.crypto.dsig.keyinfo.RetrievalMethod;
-
-import org.apache.commons.lang.StringUtils;
-
+import org.springframework.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

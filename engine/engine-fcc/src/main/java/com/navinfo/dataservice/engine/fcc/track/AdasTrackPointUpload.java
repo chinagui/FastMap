@@ -46,14 +46,17 @@ public class AdasTrackPointUpload extends TrackUpload{
                 Bytes.toBytes(json.getDouble("azimuth")));
         put.addColumn("attribute".getBytes(), "a_status".getBytes(),
                 Bytes.toBytes(json.getInt("status")));
-        put.addColumn("attribute".getBytes(), "a_linkId".getBytes(),
-                Bytes.toBytes(json.getInt("linkId")));
+//        20170513 取消linkId
+//        put.addColumn("attribute".getBytes(), "a_linkId".getBytes(),
+//                Bytes.toBytes(json.getInt("linkId")));
         put.addColumn("attribute".getBytes(), "a_satNum".getBytes(),
                 Bytes.toBytes(json.getInt("satNum")));
         put.addColumn("attribute".getBytes(), "a_prjName".getBytes(),
                 json.getString("prjName").getBytes());
         put.addColumn("attribute".getBytes(), "a_user".getBytes(),
                 Bytes.toBytes(json.getInt("userId")));
+        put.addColumn("attribute".getBytes(), "a_processed".getBytes(),
+                Bytes.toBytes(0));
         put.addColumn("attribute".getBytes(), "a_geometry".getBytes(),
                 json.getString("geometry").getBytes());
         return put;

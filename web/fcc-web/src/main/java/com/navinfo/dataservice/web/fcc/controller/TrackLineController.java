@@ -45,17 +45,17 @@ public class TrackLineController extends BaseController {
             int failed = 0;
             JSONArray resultJsonArr = new JSONArray();
 
-            //轨迹线
-            File fileLine = new File(filePath + "/"+ "Datum_Track.json");
+            //普通轨迹点
+            File fileLine = new File(filePath + "/"+ "track_collection.json");
             if(fileLine.exists()) {
                 TrackLinesUpload trackUploader = new TrackLinesUpload();
-                trackUploader.run(filePath + "/"+ "Datum_Track.json",HBaseConstant.trackLineTab);
+                trackUploader.run(filePath + "/"+ "track_collection.json",HBaseConstant.trackLineTab);
                 total += trackUploader.getTotal();
                 failed += trackUploader.getFailed();
                 resultJsonArr.addAll(trackUploader.getResultJsonArr());
             }
 
-            //轨迹点
+            //ADAS轨迹点
 			File filePoint = new File(filePath + "/"+ "adas_track_collect.json");
 			if(filePoint.exists()) {
                 AdasTrackPointUpload trackPointUploader = new AdasTrackPointUpload();

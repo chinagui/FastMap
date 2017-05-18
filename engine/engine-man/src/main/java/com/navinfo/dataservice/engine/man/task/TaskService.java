@@ -612,8 +612,9 @@ public class TaskService {
 				
 				if(adminCode != null && !"".equals(adminCode)){
 					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
-					Integer userGroupID = userGroup.getGroupId();
-					bean.setGroupId(userGroupID);
+					if(userGroup!=null){
+						Integer userGroupID = userGroup.getGroupId();
+						bean.setGroupId(userGroupID);}
 				}
 			}
 			

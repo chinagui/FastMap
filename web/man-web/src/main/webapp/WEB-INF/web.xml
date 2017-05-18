@@ -4,6 +4,14 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
 	version="3.0">
 	<servlet>
+		<servlet-name>SvrDetectorServlet</servlet-name>
+		<servlet-class> com.navinfo.dataservice.commons.env.SvrDetectorServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>SvrDetectorServlet</servlet-name>
+		<url-pattern>/env/isOk/</url-pattern>
+	</servlet-mapping>
+	<servlet>
 		<servlet-name>service</servlet-name>
 		<servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
 		<init-param>
@@ -22,6 +30,7 @@
 		<servlet-name>service</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+	
 	<filter>
 		<filter-name>Spring character encoding filter</filter-name>
 		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
@@ -43,7 +52,7 @@
 		<filter-class>com.navinfo.dataservice.commons.token.TokenValidateFilter</filter-class>
 		<init-param>
 			<param-name>exclude-url-pattern</param-name>
-			<param-value>/login|/druid|/monitoring|/api|/city/monitor|/block/listByWkt|/inforMan/monitor</param-value>
+			<param-value>/login|/druid|/monitoring|/api|/city/monitor|/block/listByWkt|/inforMan/monitor|/env/</param-value>
 		</init-param>
 	</filter>
 	<filter-mapping>

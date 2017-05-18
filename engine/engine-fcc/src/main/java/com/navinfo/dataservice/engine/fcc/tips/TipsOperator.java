@@ -27,11 +27,15 @@ import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 public class TipsOperator {
 
 	private SolrController solr = new SolrController();
-
+    private int fetchNum = Integer.MAX_VALUE;
 	private static final Logger logger = Logger.getLogger(TipsOperator.class);
 
 	public TipsOperator() {
@@ -708,35 +712,50 @@ public class TipsOperator {
     }
 
     /**
-     * 根据rowkey列表批中线任务号
-     * @param taskId
-     * @param tips
+     * tips无任务批中线任务号api
+     * @param wkt
+     * @param midTaskId
      * @throws Exception
      */
-    public void batchMidTask(int taskId, List<String> tips)
+    public void batchNoTaskDataByMidTask(String wkt, int midTaskId)
             throws Exception {
+        StringBuilder builder = new StringBuilder();
+        builder.append("wkt:\"intersects(");
+        builder.append(wkt);
+        builder.append(")\"");
+        builder.append(" AND s_qTaskId:0");
+        builder.append(" AND s_mTaskId:0");
         Connection hbaseConn = null;
         Table htab = null;
         List<Put> puts = new ArrayList<>();
         try {
             hbaseConn = HBaseConnector.getInstance().getConnection();
             htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
-            for (String rowkey : tips) {
-                //更新hbase
-                Get get = new Get(rowkey.getBytes());
-                Result result = htab.get(get);
-                JSONObject source = JSONObject.fromObject(new String(result.getValue(
-                        "data".getBytes(), "source".getBytes())));
-                Put put = new Put(rowkey.getBytes());
-                source.put("s_mTaskId", taskId);
-                put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
-                        .getBytes());
-                puts.add(put);
+            SolrDocumentList sdList = solr.queryTipsSolrDoc(builder.toString(), null);
+            long totalNum = sdList.getNumFound();
+            if (totalNum <= fetchNum) {
+                for (int i = 0; i < totalNum; i++) {
+                    SolrDocument doc = sdList.get(i);
+                    JSONObject snapshot = JSONObject.fromObject(doc);
+                    String rowkey = snapshot.getString("id");
+                    //更新hbase
+                    Get get = new Get(rowkey.getBytes());
+                    Result result = htab.get(get);
+                    JSONObject source = JSONObject.fromObject(new String(result.getValue(
+                            "data".getBytes(), "source".getBytes())));
+                    Put put = new Put(rowkey.getBytes());
+                    source.put("s_mTaskId", midTaskId);
+                    put.addColumn("data".getBytes(), "source".getBytes(), source.toString()
+                            .getBytes());
+                    puts.add(put);
 
-                //更新solr
-                JSONObject solrIndex = solr.getById(rowkey);
-                solrIndex.put("s_mTaskId", taskId);
-                solr.addTips(solrIndex);
+                    //更新solr
+                    JSONObject solrIndex = solr.getById(rowkey);
+                    solrIndex.put("s_mTaskId", midTaskId);
+                    solr.addTips(solrIndex);
+                }
+            } else {
+                // 暂先不处理
             }
             htab.put(puts);
             htab.close();

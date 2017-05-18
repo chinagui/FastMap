@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.fcc.service;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
@@ -446,15 +447,15 @@ public class FccApiImpl implements FccApi{
     }
 
     @Override
-    public void batchMidTask(int taskId, List<String> tips) throws Exception {
-        if (taskId == 0) {
-            throw new IllegalArgumentException("参数错误:taskId不能为空。");
+    public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception {
+        if (midTaskId == 0) {
+            throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
         }
-        if (tips == null || tips.size() == 0) {
-            throw new IllegalArgumentException("参数错误:rowkey列表不能为空。");
+        if (StringUtils.isEmpty(wkt)) {
+            throw new IllegalArgumentException("参数错误:wkt不能为空。");
         }
         TipsOperator tipsOperator = new TipsOperator();
-        tipsOperator.batchMidTask(taskId, tips);
+        tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
     }
 
 }

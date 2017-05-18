@@ -204,7 +204,6 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
 				this.handleResult(this.getCommand().getObjType(), this.getCommand()
 						.getOperType(), result);
-
 			}
 			
 			log.info("BEGIN  PRECHECK ");

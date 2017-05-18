@@ -21,10 +21,7 @@ import java.util.Scanner;
  * 轨迹入库
  */
 public abstract class TrackUpload {
-
-	private static final int FAIL = 0;
-    private static final int SUCESS = 1;
-    private JSONArray resultJsonArr = new JSONArray();
+    private JSONObject result = new JSONObject();
     private int failed = 0;
     private int total = 0;
 
@@ -93,33 +90,12 @@ public abstract class TrackUpload {
 					puts.clear();
 					count = 0;
 				}
-				resultJsonArr.add(newResultObject(rowkey, SUCESS, 1));
 			}catch (Exception e) {
 				failed ++;
-				resultJsonArr.add(newResultObject(rowkey, FAIL, 0));
 				throw new Exception(e.getMessage());
 			}
 		}
 		htab.put(puts);
-	}
-	
-
-	/**
-	 * @Description:入库信息（用于接口返回）
-	 * @param id
-	 * @param result
-	 * @param errorReason
-	 * @return
-	 * @author: y
-	 * @time:2016-6-30 下午4:50:41
-	 */
-	private JSONObject newResultObject(String id, int result,int errorReason) {
-		JSONObject json = new JSONObject();
-		json.put("id", id);
-		json.put("status", result);
-        json.put("trackType", this.getTrackType());
-        json.put("remark", errorReason);
-		return json;
 	}
 
     private static void createTabIfNotExists(Connection connection,
@@ -133,8 +109,6 @@ public abstract class TrackUpload {
             admin.createTable(htd);
         }
     }
-
-
 
     /**
 	 * @return the errCount
@@ -150,40 +124,19 @@ public abstract class TrackUpload {
 	public int getTotal() {
 		return total;
 	}
-	
 
-	/**
-	 * @return the resultJsonArr
-	 */
-	public JSONArray getResultJsonArr() {
-		return resultJsonArr;
+
+	public JSONObject getResult() {
+		return result;
 	}
 
-	/**
-	 * @param resultJsonArr the resultJsonArr to set
-	 */
-	public void setResultJsonArr(JSONArray resultJsonArr) {
-		this.resultJsonArr = resultJsonArr;
+	public void setResult(JSONObject result) {
+		this.result = result;
 	}
 
-	
 	public static void main(String[] args) throws Exception {
-		
-		long t1=System.currentTimeMillis();
-
 		TrackLinesUpload trackUploader = new TrackLinesUpload();
 		trackUploader.run("F:\\FCC\\track\\new\\track_collection.json","trackpoints_trunk");
-        System.out.println(trackUploader.getResultJsonArr().get(0).toString());
         System.out.println(trackUploader.getFailed());
-
-//		TrackUpload a = new TrackUpload();
-//
-//		a.run("D:\\line.txt");
-		
-		long t2=System.currentTimeMillis();
-		
-		System.out.println("耗时："+(t2-t1));
-		
-//		System.out.println(a.getResultJsonArr());
 	}
 }

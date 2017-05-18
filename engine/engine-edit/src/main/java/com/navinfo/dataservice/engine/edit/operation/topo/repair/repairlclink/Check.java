@@ -114,9 +114,10 @@ public class Check {
 		LcFaceSelector selector = new LcFaceSelector(conn);
 		List<LcFace> faces = selector.loadLcFaceByLinkId(linkPid, false);
 		
-		if(command.getCatchInfos()==null){
+		if (command.getCatchInfos() == null || faces.size() == 0) {
 			return;
 		}
+
 		
 		for (int i = 0; i < command.getCatchInfos().size(); i++) {
 			JSONObject obj = command.getCatchInfos().getJSONObject(i);

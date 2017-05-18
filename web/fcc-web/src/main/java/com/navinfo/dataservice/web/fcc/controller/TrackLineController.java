@@ -43,7 +43,6 @@ public class TrackLineController extends BaseController {
 
             int total = 0;
             int failed = 0;
-            JSONArray resultJsonArr = new JSONArray();
 
             //普通轨迹点
             File fileLine = new File(filePath + "/"+ "track_collection.json");
@@ -52,7 +51,6 @@ public class TrackLineController extends BaseController {
                 trackUploader.run(filePath + "/"+ "track_collection.json",HBaseConstant.trackLineTab);
                 total += trackUploader.getTotal();
                 failed += trackUploader.getFailed();
-                resultJsonArr.addAll(trackUploader.getResultJsonArr());
             }
 
             //ADAS轨迹点
@@ -62,13 +60,12 @@ public class TrackLineController extends BaseController {
                 trackPointUploader.run(filePath + "/"+ "adas_track_collect.json", HBaseConstant.adasTrackPointsTab);
                 total += trackPointUploader.getTotal();
                 failed += trackPointUploader.getFailed();
-                resultJsonArr.addAll(trackPointUploader.getResultJsonArr());
             }
 
 			JSONObject result = new JSONObject();
 			result.put("total", total);
 			result.put("failed", failed);
-			result.put("reasons", resultJsonArr);
+			result.put("reason", this.getResultObject(failed));
 
 			return new ModelAndView("jsonView", success(result));
 
@@ -79,5 +76,25 @@ public class TrackLineController extends BaseController {
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 
+	}
+
+	/**
+	 * @Description:入库信息（用于接口返回）
+	 * @param failed
+	 * @return
+	 * @author: y
+	 * @time:2016-6-30 下午4:50:41
+	 */
+	private JSONObject getResultObject(int failed) {
+		JSONObject json = new JSONObject();
+        String status = "成功";
+        int remark = 0;
+        if(failed > 0) {
+            status = "失败";
+            remark = 1;
+        }
+		json.put("status", status);
+		json.put("remark", remark);
+		return json;
 	}
 }

@@ -90,17 +90,17 @@ public class FMBAT20186_1 extends BasicBatchRule {
 					for(int i=childAddressList.size()-1;i>=0;i--){
 						child.deleteSubrow(childAddressList.get(i));
 					}
-					
-					for (IxPoiAddress parentAddress:parentAddressList) {
-						IxPoiAddress newAddress = child.createIxPoiAddress();
-						newAddress.setPoiPid(childPoi.getPid());
-						newAddress.setNameGroupid(parentAddress.getNameGroupid());
-						newAddress.setLangCode(parentAddress.getLangCode());
-						newAddress.setSrcFlag(parentAddress.getSrcFlag());
-						newAddress.setFullname(parentAddress.getFullname());
-						newAddress.setFullnamePhonetic(parentAddress.getFullnamePhonetic());
-					}
 				}
+				for (IxPoiAddress parentAddress:parentAddressList) {
+					IxPoiAddress newAddress = child.createIxPoiAddress();
+					newAddress.setPoiPid(childPoi.getPid());
+					newAddress.setNameGroupid(parentAddress.getNameGroupid());
+					newAddress.setLangCode(parentAddress.getLangCode());
+					newAddress.setSrcFlag(parentAddress.getSrcFlag());
+					newAddress.setFullname(parentAddress.getFullname());
+					newAddress.setFullnamePhonetic(parentAddress.getFullnamePhonetic());
+				}
+				
 			}
 			
 			if(contactFlag){
@@ -109,16 +109,18 @@ public class FMBAT20186_1 extends BasicBatchRule {
 					for(int i=childContactList.size()-1;i>=0;i--){
 						child.deleteSubrow(childContactList.get(i));
 					}
-					for (IxPoiContact parentContact:parentContactList) {
-						IxPoiContact newContact = child.createIxPoiContact();
-						newContact.setPoiPid(childPoi.getPid());
-						newContact.setContactType(parentContact.getContactType());
-						newContact.setContact(parentContact.getContact());
-						newContact.setContactDepart(parentContact.getContactDepart());
-						newContact.setPriority(parentContact.getPriority());
-					}
+				}
+				
+				for (IxPoiContact parentContact:parentContactList) {
+					IxPoiContact newContact = child.createIxPoiContact();
+					newContact.setPoiPid(childPoi.getPid());
+					newContact.setContactType(parentContact.getContactType());
+					newContact.setContact(parentContact.getContact());
+					newContact.setContactDepart(parentContact.getContactDepart());
+					newContact.setPriority(parentContact.getPriority());
 				}
 			}
+			
 		}
 
 	}

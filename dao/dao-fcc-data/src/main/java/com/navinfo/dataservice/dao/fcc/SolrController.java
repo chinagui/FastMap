@@ -1146,5 +1146,25 @@ public class SolrController {
         return snapshots;
     }
 
+	/**
+	 * 根据查询条件查询符合条件的所有Tips
+	 * @param queryBuilder
+	 * @param filterQueryBuilder
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	public SolrDocumentList queryTipsSolrDoc(String queryBuilder, String filterQueryBuilder) throws SolrServerException, IOException {
+		SolrQuery query = new SolrQuery();
+		query.set("q", queryBuilder);
+		if(StringUtils.isNotEmpty(filterQueryBuilder)){
+			query.set("fq", filterQueryBuilder);
+		}
+		query.set("start", 0);
+		query.set("rows", fetchNum);
 
+		QueryResponse response = client.query(query);
+		SolrDocumentList sdList = response.getResults();
+		return sdList;
+	}
 }

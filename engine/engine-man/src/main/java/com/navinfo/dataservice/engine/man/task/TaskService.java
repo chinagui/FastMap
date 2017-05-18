@@ -134,7 +134,7 @@ public class TaskService {
 					String adminCode = selectAdminCode(taskJson.getInt("programId"));
 					
 					if(adminCode != null && !"".equals(adminCode)){
-						UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+						UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
 						if(userGroup!=null){
 							Integer userGroupID = userGroup.getGroupId();
 							bean.setGroupId(userGroupID);
@@ -611,7 +611,7 @@ public class TaskService {
 				String adminCode = selectAdminCode(oldTask.getProgramId());
 				
 				if(adminCode != null && !"".equals(adminCode)){
-					UserGroup userGroup = getGroupByAminCode(adminCode, 1);
+					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
 					Integer userGroupID = userGroup.getGroupId();
 					bean.setGroupId(userGroupID);
 				}
@@ -743,7 +743,7 @@ public class TaskService {
 			//* 快线：情报名称_发布时间_作业员_子任务ID
 			// * 中线：任务名称_作业组
 			if(adminCode != null && !"".equals(adminCode)){
-				UserGroup userGroup = getGroupByAminCode(adminCode, 5);
+				UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 5);
 				if(userGroup!=null){
 					subtask.setExeGroupId(userGroup.getGroupId());
 					if(programType==1){
@@ -3282,79 +3282,6 @@ public class TaskService {
 		}
 		run.batch(dailyConn, updateSql, params);
 	}
-	
-	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
-	 * @param adminCode
-	 * @param type
-	 * @throws Exception 
-	 * @author songhe
-	 */
-	public UserGroup getGroupByAminCode(String adminCode, int type){
-		Connection conn = null;
-		try{
-			conn = DBConnector.getInstance().getManConnection();
-			return getGroupByAminCode(conn, adminCode, type);			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-		return null;
-	}
-	
-	/**
-	 * 组赋值方法 1采集2编辑3众包4情报5多源
-	 * @param adminCode
-	 * @param type
-	 * @throws Exception 
-	 * @author songhe
-	 */
-	public UserGroup getGroupByAminCode(Connection conn,String adminCode, int type){
-		try{
-			QueryRunner run = new QueryRunner();
-			
-			String name = "";
-			if(type == 1){
-				name = "COLLECT_GROUP_NAME";
-			}else if(type == 2){
-				name="EDIT_GROUP_NAME";
-			}else if(type == 3){
-				name = "CROWD_GROUP_NAME";
-			}else if(type == 4){
-				name = "INFOR_GROUP_NAME";
-			}else if(type == 5){
-				name = "MULTISOURCE_GROUP_NAME";
-			}
-			
-			String selectSql = "select u.group_id, u.group_name, u.group_type, u.leader_id, u.parent_group_id"
-					+ " from USER_GROUP u , ADMIN_GROUP_MAPPING t where t.ADMIN_CODE = '"+ adminCode +"'" 
-					+ "and u.group_name = t." + name;
-			
-			UserGroup group = run.query(conn, selectSql, new ResultSetHandler<UserGroup>(){
-				
-				@Override
-				public UserGroup handle(ResultSet result) throws SQLException {
-					UserGroup  userGroup = new UserGroup();
-					while(result.next()){
-						userGroup.setGroupId(result.getInt("GROUP_ID"));
-						userGroup.setGroupName(result.getString("GROUP_NAME"));
-						userGroup.setGroupType(result.getInt("GROUP_TYPE"));
-						userGroup.setLeaderId(result.getInt("LEADER_ID"));
-						userGroup.setParentGroupId(result.getInt("PARENT_GROUP_ID"));
-						return userGroup;
-					}
-					return null;
-				}});
-			return group;
-			
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-		}
-		return null;
-	}
 
 	public Map<String, Object> getCollectGroupByTask(int taskId, int workKind,
 			int snapshot) throws Exception{
@@ -3368,11 +3295,11 @@ public class TaskService {
 				UserGroup resultGroup=UserGroupService.getInstance().query(conditionGroup);
 				List<UserInfo> users=UserInfoService.getInstance().list(conditionGroup);
 				JSONObject resultJson = JSONObject.fromObject(resultGroup);
-				resultJson.put("users", JSONObject.fromObject(users));
+				resultJson.put("users", JSONArray.fromObject(users));
 				return resultJson;
 			}
 			String admin = selectAdminCode(task.getProgramId());
-			UserGroup resultGroup=getGroupByAminCode(conn, admin, workKind);
+			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, workKind);
 			List<UserInfo> users=UserInfoService.getInstance().list(resultGroup);
 			JSONObject resultJson = JSONObject.fromObject(resultGroup);
 			resultJson.put("users", JSONObject.fromObject(users));

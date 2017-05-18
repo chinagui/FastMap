@@ -1932,7 +1932,12 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(conn,infor.getAdminName());
+					UserGroup group =null;
+					if(t.getType()==0){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
+					}else if(t.getType()==1){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
+					}
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
 					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
@@ -1941,10 +1946,8 @@ public class ProgramService {
 						t.setWorkKind("0|0|1|0");
 					}
 
-					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
-						t.setGroupId(userGroupMap.get(0).getGroupId());
-					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
-						t.setGroupId(userGroupMap.get(1).getGroupId());
+					if(group!=null){
+						t.setGroupId(group.getGroupId());
 					}
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}

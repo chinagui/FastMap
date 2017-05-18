@@ -68,7 +68,7 @@ public class Operation implements IOperation {
         this.updateFace(result);
         return null;
     }
-
+    
     /***
      * 修行挂接点和线
      *

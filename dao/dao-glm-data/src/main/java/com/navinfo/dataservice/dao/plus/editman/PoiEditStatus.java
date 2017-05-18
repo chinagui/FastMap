@@ -40,6 +40,9 @@ import com.navinfo.navicommons.database.sql.DBUtils;
  * @Description: PoiEditStatus.java
  */
 public class PoiEditStatus {
+	
+	public static int TO_BE_PRODUCE = 1;
+	public static int PRODUCED = 2;
 
 	private static final Logger logger = Logger.getLogger(PoiEditStatus.class);
 	/**
@@ -380,6 +383,28 @@ public class PoiEditStatus {
 			throw e;
 		}finally{
 			DbUtils.closeQuietly(stmt);
+		}
+	}
+
+	/**
+	 * 
+	 * @param conn
+	 * @param pids：只包含鲜度验证的POI
+	 * @throws Exception
+	 */
+	public static void updateStatus(Connection conn,Collection<Long> pids,int status)throws Exception{
+		try{
+			if(pids==null||pids.size()==0){
+				return;
+			}
+			String sql = "UPDATE POI_EDIT_STATUS SET STATUS=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			pidsClob.setString(1, StringUtils.join(pids, ","));
+			QueryRunner run = new QueryRunner();
+			run.update(conn, sql, status,pidsClob);
+		}catch(Exception e){
+			logger.error(e.getMessage(),e);
+			throw e;
 		}
 	}
 	/**

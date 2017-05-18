@@ -681,7 +681,7 @@ public class ProgramService {
 							map.put("cityId", rs.getInt("CITY_ID"));
 							map.put("cityName", rs.getString("CITY_NAME"));}
 						else if(rs.getInt("TYPE")==4){
-							map.put("inforId", rs.getString("INFOR_ID"));
+							map.put("inforId", rs.getInt("INFOR_ID"));
 							map.put("inforName", rs.getString("INFOR_NAME"));}
 						map.put("type", rs.getInt("TYPE"));
 						map.put("status", 1);					
@@ -1932,15 +1932,22 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					Map<Integer,UserGroup> userGroupMap = UserGroupService.getInstance().getGroupByAdmin(conn,infor.getAdminName());
+					UserGroup group =null;
+					if(t.getType()==0){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
+					}else if(t.getType()==1){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
+					}
 					int taskId=TaskOperation.getNewTaskId(conn);
 					t.setTaskId(taskId);
 					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
+					
+					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
+						t.setWorkKind("0|0|1|0");
+					}
 
-					if((userGroupMap.containsKey(0))&&(t.getType()==0)){
-						t.setGroupId(userGroupMap.get(0).getGroupId());
-					}else if((userGroupMap.containsKey(1))&&(t.getType()==1)){
-						t.setGroupId(userGroupMap.get(1).getGroupId());
+					if(group!=null){
+						t.setGroupId(group.getGroupId());
 					}
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}

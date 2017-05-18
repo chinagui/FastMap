@@ -43,14 +43,15 @@ public class ZoneFace implements IObj {
 
 	private int editFlag = 1;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 
-	private List<IRow> faceTopos = new ArrayList<IRow>();
+	private List<IRow> faceTopos = new ArrayList<>();
 
-	public Map<String, ZoneFaceTopo> zoneFaceTopoMap = new HashMap<String, ZoneFaceTopo>();
+	public Map<String, ZoneFaceTopo> zoneFaceTopoMap = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public ZoneFace() {
-
 	}
 
 	public int getPid() {
@@ -111,19 +112,17 @@ public class ZoneFace implements IObj {
 
 	@Override
 	public String tableName() {
-
 		return "zone_face";
 	}
 
 	@Override
 	public ObjStatus status() {
-
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
-
+        this.status = os;
 	}
 
 	@Override

@@ -4,11 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.json.JSONObject;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdFaceSelector;
+import com.navinfo.dataservice.engine.edit.operation.topo.repair.repairadlink.Command;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -104,6 +108,25 @@ public class Check {
 		}
 	}
 
+	//背景：前检查“不允许对构成面的Link的端点处形状点，进行修形操作”
+	public void PERMIT_MODIFICATE_POLYGON_ENDPOINT(Command command, Connection conn) throws Exception {
+		int linkPid = command.getLinkPid();
+		AdFaceSelector selector = new AdFaceSelector(conn);
+		List<AdFace> faces = selector.loadAdFaceByLinkId(linkPid, false);
+
+		if (command.getCatchInfos() == null || faces.size() == 0) {
+			return;
+		}
+		
+		for (int i = 0; i < command.getCatchInfos().size(); i++) {
+			JSONObject obj = command.getCatchInfos().getJSONObject(i);
+			int nodePid = obj.getInt("nodePid");
+			if (faces.size() > 0 && nodePid != 0) {
+				throwException("不允许对构成面的Link的端点处形状点，进行修形操作");
+			}
+		}
+	}
+	
 	private void throwException(String msg) throws Exception {
 		throw new Exception(msg);
 	}

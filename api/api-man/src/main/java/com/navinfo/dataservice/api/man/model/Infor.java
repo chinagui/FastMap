@@ -32,6 +32,7 @@ public class Infor  {
 	private Integer featureKind;
 	
 	private String adminName;
+	private String adminCode;
 	private String inforCode;
 	
 	private Timestamp publishDate;
@@ -315,6 +316,14 @@ public class Infor  {
 	 */
 	public void setNewsDate(Timestamp newsDate) {
 		this.newsDate = newsDate;
+	}
+
+	public String getAdminCode() {
+		return adminCode;
+	}
+
+	public void setAdminCode(String adminCode) {
+		this.adminCode = adminCode;
 	}
 	
 	

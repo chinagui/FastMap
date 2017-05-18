@@ -141,6 +141,9 @@ public class FMBAT20125 extends BasicBatchRule {
 		String street = metadata.convertEng(chiAddress.getStreet());
 		String place = metadata.convertEng(chiAddress.getPlace());
 		String town = metadata.convertEng(chiAddress.getTown());
+		if (addOns==null){
+			addOns="";
+		}
 		String fullName = addOns;
 		if (roomNum!=null&&!roomNum.isEmpty()) {
 			fullName +=  " " + roomNum;

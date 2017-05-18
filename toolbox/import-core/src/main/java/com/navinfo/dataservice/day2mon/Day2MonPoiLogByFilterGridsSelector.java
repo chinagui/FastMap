@@ -68,7 +68,9 @@ public class Day2MonPoiLogByFilterGridsSelector extends DefaultLogSelector{
 			log.debug("Temp table Created:"+tempTable);
 			logOperationCount+=selectLog(conn);
 			//因为是过滤，所以这块需要减掉过滤的量
-			logOperationCount-=extendLog(conn);
+			if(filterGrids!=null&&filterGrids.size()>0){
+				logOperationCount-=extendLog(conn);
+			}
 			String lockSql = getOperationLockSql();
 			log.debug("logOperationCount:"+logOperationCount);
 			log.debug("lockSql"+lockSql);

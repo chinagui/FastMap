@@ -1,8 +1,7 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.rdbranch.delete;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -11,6 +10,7 @@ import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranch;
+import com.navinfo.dataservice.dao.glm.model.rd.branch.RdBranchVia;
 import com.navinfo.dataservice.dao.glm.selector.rd.branch.RdBranchSelector;
 
 public class Operation implements IOperation {
@@ -21,8 +21,11 @@ public class Operation implements IOperation {
 
 	private IRow row;
 
-	public Operation()
-	{
+	private	Connection conn;
+
+	public Operation(Connection conn) {
+
+		this.conn = conn;
 	}
 
 	public Operation(Command command, RdBranch branch, IRow row) {
@@ -242,5 +245,37 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+
+
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		if (conn == null) {
+
+			return;
+		}
+
+		RdBranchSelector selector = new RdBranchSelector(conn);
+
+		//被删link作为进入线，删除link删除RdBranch
+		List<RdBranch> storageTmp = selector.loadByLinks(linkPids, 1, true);
+
+		//被删link作为退出线，删除link删除RdBranch
+		storageTmp.addAll(selector.loadByLinks(linkPids, 2, true));
+
+		//被删link作为经过线，删除link删除RdBranch
+		storageTmp.addAll(selector.loadByLinks(linkPids, 3, true));
+
+		Map<Integer, RdBranch> storage = new HashMap<>();
+
+		for (RdBranch branch : storageTmp) {
+
+			storage.put(branch.getPid(), branch);
+		}
+
+		for (RdBranch branch : storage.values()) {
+
+			result.insertObject(branch, ObjStatus.DELETE, branch.getPid());
+		}
 	}
 }

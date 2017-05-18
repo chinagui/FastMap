@@ -253,6 +253,32 @@ public class TaskController extends BaseController {
 		}
 	}
 	
+	/**
+	 * 根据workKind判断：
+	 * 1.	外业采集：判断task是否有groupid，有直接返回相关信息；
+	 * 没有，获取admin_group_mapping的对应字段
+	 * 2.	众包，情报，多源：获取admin_group_mapping的对应字段
+	 * 应用场景：采集子任务创建组或者人员列表
+	 * 
+	 */
+	@SuppressWarnings("rawtypes")
+	@RequestMapping(value = "/task/getCollectGroupByTask")
+	public ModelAndView getCollectGroupByTask(HttpServletRequest request){
+		try{	
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			//taskId,taskType
+			int taskId= dataJson.getInt("taskId");
+			int workKind= dataJson.getInt("workKind");
+			int snapshot=dataJson.getInt("snapshot");
+			
+			Map<String,Object> data = TaskService.getInstance().getCollectGroupByTask(taskId,workKind,snapshot);
+			return new ModelAndView("jsonView", success(data));
+		}catch(Exception e){
+			log.error("获取列表失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
 //	/*
 //	 * 规划管理页面--月编管理
 //	 */
@@ -526,6 +552,43 @@ public class TaskController extends BaseController {
 		}catch(Exception e){
 			log.error("获取列表失败，原因："+e.getMessage(), e);
 			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	/**
+	 * 
+	 * 无任务数据(POI，TIPS)批中线任务号
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/batchMidTask")
+	public ModelAndView batchMidTask(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int taskId = dataJson.getInt("taskId");
+			TaskService.getInstance().batchMidTaskByTaskId(taskId);
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 采集任务列表
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/midCollectTaskList")
+	public ModelAndView midCollectTaskList(HttpServletRequest request) {
+		try {
+			List<Map<String, Object>> taskList = TaskService.getInstance().midCollectTaskList();
+			return new ModelAndView("jsonView", success(taskList));
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
 		}
 	}
 }

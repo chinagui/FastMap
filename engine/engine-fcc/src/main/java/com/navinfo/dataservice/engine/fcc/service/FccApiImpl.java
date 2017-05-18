@@ -1,24 +1,22 @@
 package com.navinfo.dataservice.engine.fcc.service;
 
+import com.navinfo.dataservice.api.fcc.iface.FccApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
+import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
+import com.navinfo.nirobot.business.Tips2AuMarkApi;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import com.navinfo.nirobot.business.Tips2AuMarkApi;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.log4j.Logger;
-import org.springframework.stereotype.Service;
-
-import com.navinfo.dataservice.api.fcc.iface.FccApi;
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.fcc.TaskType;
-import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
-import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 /*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
 
 @Service("fccApi")
@@ -64,7 +62,7 @@ public class FccApiImpl implements FccApi{
     }
 
     @Override
-    public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception {
+    public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception {
         JSONObject result=new JSONObject();
 
         if (wkt==null||wkt.isEmpty()) {
@@ -75,10 +73,10 @@ public class FccApiImpl implements FccApi{
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量 stage=1
-        int total=selector.getTipsCountByStageAndWkt(wkt, 1);
+        int total=selector.getTipsCountByStageAndWkt(wkt, 1, collectTaskIds);
 
         //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt,2,1);
+        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt, 2, 1, collectTaskIds);
 
         result.put("total", total);
 
@@ -105,7 +103,7 @@ public class FccApiImpl implements FccApi{
 
             newThread.start();
 
-            tips2AuMark.run();
+            //tips2AuMark.run();
 
             logger.debug("进入Api:tips2Aumark,调用run()");
         }catch (Exception e) {
@@ -433,31 +431,31 @@ public class FccApiImpl implements FccApi{
         return selector.getCollectTaskTipsStats(collectTaskIds);
     }
 
-//    @Override
-//    public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception {
-//        if (taskId == 0) {
-//            throw new IllegalArgumentException("参数错误:taskId不能为空。");
-//        }
-//        if (subtaskId == 0) {
-//            throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
-//        }
-//        if (tips == null || tips.size() == 0) {
-//            throw new IllegalArgumentException("参数错误:rowkey列表不能为空。");
-//        }
-//        TipsOperator tipsOperator = new TipsOperator();
-//        tipsOperator.batchQuickTask(taskId, subtaskId, tips);
-//    }
-//
-//    @Override
-//    public void batchMidTask(int taskId, List<String> tips) throws Exception {
-//        if (taskId == 0) {
-//            throw new IllegalArgumentException("参数错误:taskId不能为空。");
-//        }
-//        if (tips == null || tips.size() == 0) {
-//            throw new IllegalArgumentException("参数错误:rowkey列表不能为空。");
-//        }
-//        TipsOperator tipsOperator = new TipsOperator();
-//        tipsOperator.batchMidTask(taskId, tips);
-//    }
+    @Override
+    public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception {
+        if (taskId == 0) {
+            throw new IllegalArgumentException("参数错误:taskId不能为空。");
+        }
+        if (subtaskId == 0) {
+            throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
+        }
+        if (tips == null || tips.size() == 0) {
+            throw new IllegalArgumentException("参数错误:rowkey列表不能为空。");
+        }
+        TipsOperator tipsOperator = new TipsOperator();
+        tipsOperator.batchQuickTask(taskId, subtaskId, tips);
+    }
+
+    @Override
+    public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception {
+        if (midTaskId == 0) {
+            throw new IllegalArgumentException("参数错误:midTaskId不能为空。");
+        }
+        if (StringUtils.isEmpty(wkt)) {
+            throw new IllegalArgumentException("参数错误:wkt不能为空。");
+        }
+        TipsOperator tipsOperator = new TipsOperator();
+        tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+    }
 
 }

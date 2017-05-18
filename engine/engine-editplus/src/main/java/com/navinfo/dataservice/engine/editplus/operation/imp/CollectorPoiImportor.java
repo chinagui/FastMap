@@ -27,6 +27,8 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameTone;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -65,6 +67,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 	protected CollectorUploadPoiSpRelation sps = new CollectorUploadPoiSpRelation();
 	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
 	protected Map<Long,String> freshVerPois = new HashMap<Long,String>();
+	protected Set<Long> noChangedPois = new HashSet<Long>();
 	//父子关系暂时不处理
 
 	public CollectorPoiImportor(Connection conn,OperationResult preResult) {
@@ -94,6 +97,10 @@ public class CollectorPoiImportor extends AbstractOperation {
 	
 	public Map<Long,String> getFreshVerPois(){
 		return freshVerPois;
+	}
+	
+	public Set<Long> getNoChangedPois(){
+		return noChangedPois;
 	}
 	
 	/**
@@ -168,6 +175,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 					//计算鲜度验证
 					if(poiObj.isFreshFlag()){
 						freshVerPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
+						if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
+							noChangedPois.add(poiObj.objPid());
+						}
 					}
 					result.putObj(poiObj);
 					successNum++;
@@ -274,7 +284,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		//address
 		String addr = jo.getString("address");
 		ixPoi.setOldAddress(addr);
-		if(ixPoi.isChanged(IxPoi.OLD_NAME)){
+		if(ixPoi.isChanged(IxPoi.OLD_ADDRESS)){
 			setAddressAndAttr(poiObj,addr);
 		}
 		//fid
@@ -502,10 +512,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	private void setNameAndAttr(IxPoiObj poiObj,String name)throws Exception{
 		//获取原始
-		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_FLAG);
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME_TONE);
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_NAME);
+		if(StringUtils.isEmpty(name)){//上传中没有子表信息，删除所有官方原始中文
+			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
+			if(r!=null){
+				r.setName(name);
+			}
 		}else{
 			IxPoiName r = poiObj.getNameByLct(langCode, 1, 2);
 			if(r!=null){
@@ -530,8 +541,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 	 */
 	private void setAddressAndAttr(IxPoiObj poiObj,String addr)throws Exception{
 		//获取原始
-		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除所有原有的记录
-			poiObj.deleteSubrows(IxPoiObj.IX_POI_ADDRESS);
+		if(StringUtils.isEmpty(addr)){//上传中没有子表信息，删除官方原始中文
+			IxPoiAddress r = poiObj.getCHAddress();
+			if(r!=null){
+				poiObj.deleteSubrow(r);
+			}
 		}else{
 			IxPoiAddress r = poiObj.getCHAddress();
 			if(r!=null){
@@ -554,9 +568,8 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setPhotoAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		JSONArray photos = jo.getJSONArray("attachments");
 		List<IxPoiPhoto> objPhotos = poiObj.getIxPoiPhotos();
-		Collection<String> objPhotoPIds = null;
+		Collection<String> objPhotoPIds = new HashSet<String>();
 		if(objPhotos!=null){
-			objPhotoPIds = new HashSet<String>();
 			for(IxPoiPhoto ipp:objPhotos){
 				objPhotoPIds.add(ipp.getPid());
 			}
@@ -566,10 +579,11 @@ public class CollectorPoiImportor extends AbstractOperation {
 			JSONObject pJo = (JSONObject)photo;
 			int type = pJo.getInt("type");
 			String fccpid = pJo.getString("id");
-			if(type==1&&objPhotoPIds!=null&&(!objPhotoPIds.contains(fccpid))){
+			if(type==1&&(!objPhotoPIds.contains(fccpid))){
 				IxPoiPhoto ixPoiPhoto = poiObj.createIxPoiPhoto();//poi_pid,row_id已经赋值
 				ixPoiPhoto.setPid(fccpid);
 				ixPoiPhoto.setTag(pJo.getInt("tag"));
+				ixPoiPhoto.setRowId(fccpid);
 			}else if(type==3){
 				memo = pJo.getString("content");
 			}
@@ -589,14 +603,12 @@ public class CollectorPoiImportor extends AbstractOperation {
 	private void setChildrenAndAttr(IxPoiObj poiObj,JSONObject jo)throws Exception{
 		if(JSONUtils.isNull(jo.get("relateChildren"))){
 			poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-			//可以孤父
-//			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+			poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 		}else{
 			JSONArray subJos = jo.getJSONArray("relateChildren");
 			if(subJos.size()==0){//上传中没有子表信息，删除所有原有的记录
 				poiObj.deleteSubrows(IxPoiObj.IX_POI_CHILDREN);
-				//可以孤父
-//				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
+				poiObj.deleteSubrows(IxPoiObj.IX_POI_PARENT);
 			}else{
 				//交给差分
 				pcs.addUpdateChildren(poiObj.objPid(), subJos);

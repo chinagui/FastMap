@@ -171,4 +171,56 @@ public class RdSameLinkSelector extends AbstractSelector {
 		}
 		return sameLinkList;
 	}
+
+	public List<RdSameLinkPart> loadLinkPartByLinks(List<Integer> linkPids, String tableName, boolean isLock) throws Exception {
+
+		List<RdSameLinkPart> parts = new ArrayList<>();
+
+		if (linkPids == null || linkPids.isEmpty()) {
+
+			return parts;
+		}
+
+		String pids = org.apache.commons.lang.StringUtils.join(linkPids, ",");
+
+		String strSql = "SELECT * FROM RD_SAMELINK_PART WHERE LINK_PID IN (" + pids + ") AND TABLE_NAME = :1 AND U_RECORD != 2";
+
+		if (isLock) {
+
+			strSql += " for update nowait";
+		}
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(strSql);
+
+			pstmt.setString(1, tableName.toUpperCase());
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+
+				RdSameLinkPart linkPart = new RdSameLinkPart();
+
+				ReflectionAttrUtils.executeResultSet(linkPart, resultSet);
+
+				parts.add(linkPart);
+			}
+			return parts;
+
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+
+			DBUtils.closeResultSet(resultSet);
+
+			DBUtils.closeStatement(pstmt);
+		}
+	}
 }

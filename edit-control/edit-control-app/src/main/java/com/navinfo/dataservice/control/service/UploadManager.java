@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
@@ -101,6 +102,7 @@ public class UploadManager {
 				//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
 				PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
 				Map<Long,String> freshVerPois = imp.getFreshVerPois();
+				Set<Long> nochangedPois = imp.getNoChangedPois();
 				//写入数据库
 				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
@@ -111,6 +113,7 @@ public class UploadManager {
 				pcImp.operate(pcCmd);
 				for(Long l:pcImp.getChangedPids()){
 					freshVerPois.remove(l);
+					nochangedPois.remove(l);
 				}
 				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnPcs(pcImp.getErrLogs());
@@ -121,11 +124,14 @@ public class UploadManager {
 				spImp.operate(spCmd);
 				for(Long l:spImp.getChangedPids()){
 					freshVerPois.remove(l);
+					nochangedPois.remove(l);
 				}
 				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnSps(spImp.getErrLogs());
 				//鲜度验证
-				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
+//				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
+				//未修改的数据状态变为已作业
+//				PoiEditStatus.updateStatus(conn, nochangedPois, PoiEditStatus.PRODUCED);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

@@ -9,7 +9,9 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRule;
 import com.navinfo.dataservice.engine.editplus.model.batchAndCheck.BatchRuleCommand;
 
@@ -47,6 +49,13 @@ public abstract class BasicBatchRule {
 		loadReferDatas(rows.values());
 		for(Long key:rows.keySet()){
 			BasicObj obj=rows.get(key);
+			//FM-BAT-20-187-1批处理比较特殊，删除的数据也要触发批处理
+			if(obj.objName().equals(ObjectName.IX_POI)){
+				IxPoi poi=(IxPoi) obj.getMainrow();
+				if(poi.getKindCode().equals("230227")){
+					runBatch(obj);
+				}
+			}
 			if(!obj.getMainrow().getOpType().equals(OperationType.PRE_DELETED)){
 				runBatch(obj);
 			}

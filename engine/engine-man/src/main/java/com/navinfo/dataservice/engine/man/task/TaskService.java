@@ -383,6 +383,11 @@ public class TaskService {
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
 			
 			for(Task task:taskList){
+				//采集任务处理无任务POI和TIPS的批中线任务号操作
+				if(task.getType() == 0){
+					batchNoTaskMidData(conn, task);
+				}
+				
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
 					cmsTaskList.add(task.getTaskId());
@@ -512,7 +517,7 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -534,7 +539,7 @@ public class TaskService {
 						task.setBlockId(rs.getInt("BLOCK_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
-						
+						task.setRegionId(rs.getInt("REGION_ID"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -1339,6 +1344,23 @@ public class TaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+//	/**
+//	 * 判断是否有无任务数据方法
+//	 * 默认无
+//	 * 这里先注释掉吧
+//	 * */
+//	public int noTaskData(HashMap<String,Integer> noTaskMap){
+//		int  hasData = 0;
+//		if(noTaskMap.containsKey("poi") && noTaskMap.containsKey("tips")){
+//			int poiCount = noTaskMap.get("poi");
+//			int tipsCount = noTaskMap.get("tips");
+//			if(poiCount > 0 || tipsCount > 0){
+//				hasData = 1;
+//			}
+//		}
+//		return hasData;
+//	}
 	
 	public Page listByCity(JSONObject condition,int curPageNum,int pageSize)throws Exception{
 		Connection conn = null;
@@ -3363,4 +3385,70 @@ public class TaskService {
 		}
 		return null;
 	}
+	
+	/**
+	 * 无任务数据批中线任务号
+	 * @param 
+	 * @param 
+	 * @author songhe
+	 */
+	private void batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID, String wkt) throws SQLException {
+		String selectPid = "select pes.pid"
+				 + " from ix_poi ip, poi_edit_status pes"
+				 + " where ip.pid = pes.pid"
+				 + " and pes.status ！= 0"
+				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
+		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ " where pid in ("+selectPid+")";
+		QueryRunner run=new QueryRunner();
+		run.execute(dailyConn, updateSql);
+	}
+	
+	
+	/**
+	 * 根据中线任务，批无任务数据中线任务号
+	 * @param conn 
+	 * @param task
+	 */
+	private void batchNoTaskMidData(Connection conn, Task task) throws Exception{
+		Connection dailyConn=null;
+		try{
+			Region region = RegionService.getInstance().query(conn,task.getRegionId());
+			dailyConn = DBConnector.getInstance().getConnectionById(region.getDailyDbId());
+			//无任务tips批中线任务号
+			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
+			String wkt = GridUtils.grids2Wkt(gridIds);
+			//这里待联调，POI已经完成
+//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			
+			//无任务的poi批中线任务号	
+			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
+			
+		}catch(Exception e){
+			log.error("", e);
+			DbUtils.rollbackAndCloseQuietly(dailyConn);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(dailyConn);
+		}	
+	}
+	
+	/**
+	 * 根据taskId批处理对应该任务的无任务POI和TIPS
+	 * @param userId 
+	 * @param taskId
+	 */
+	public void batchMidTaskByTaskId(int taskId){
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			Task task = queryByTaskId(conn, taskId);
+			batchNoTaskMidData(conn, task);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
 }

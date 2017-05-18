@@ -52,7 +52,7 @@ public abstract class BasicBatchRule {
 			//FM-BAT-20-187-1批处理比较特殊，删除的数据也要触发批处理
 			if(obj.objName().equals(ObjectName.IX_POI)){
 				IxPoi poi=(IxPoi) obj.getMainrow();
-				if(poi.getKindCode().equals("230227")){
+				if(poi.getKindCode().equals("230227")&&poi.getOpType().equals(OperationType.PRE_DELETED)){
 					runBatch(obj);
 				}
 			}

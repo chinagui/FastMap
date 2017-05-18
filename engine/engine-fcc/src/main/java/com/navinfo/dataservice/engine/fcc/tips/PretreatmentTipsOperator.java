@@ -1189,6 +1189,13 @@ System.out.println(sGeojson2);
 
 				logger.info("apply new rowkey:" + rowkey);
 
+				//20170518 情报矢量化新增7种Tips deep.id赋值 灵芸and赵航
+                if(TipsStatConstant.preTipsDeepIdType.contains(sourceType)) {
+                    JSONObject deepJson = jsonInfo.getJSONObject("deep");
+                    deepJson.put("id", rowkey.substring(6,rowkey.length()));
+                    jsonInfo.put("deep", deepJson);
+                }
+
 				insertOneTips(jsonInfo, user, htab, date);
 
 			}
@@ -1465,6 +1472,13 @@ System.out.println(sGeojson2);
 					rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
 					tipsInfo.put("rowkey", rowkey);
+
+                    //20170518 情报矢量化新增7种Tips deep.id赋值 灵芸and赵航
+                    if(TipsStatConstant.preTipsDeepIdType.contains(sourceType)) {
+                        JSONObject deepJson = tipsInfo.getJSONObject("deep");
+                        deepJson.put("id", rowkey.substring(6, rowkey.length()));
+                        tipsInfo.put("deep", deepJson);
+                    }
 				}
 
 				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低

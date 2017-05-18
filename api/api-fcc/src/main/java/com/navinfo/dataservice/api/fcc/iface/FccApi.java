@@ -28,7 +28,7 @@ public interface FccApi {
 	 * @author: y
 	 * @time:2016-10-25 上午10:57:37
 	 */
-	public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception;
+	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception;
 	
 	
 	public void tips2Aumark(JSONObject parameter) throws Exception;

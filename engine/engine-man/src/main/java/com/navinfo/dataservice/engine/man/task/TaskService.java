@@ -1186,6 +1186,8 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
 			sb.append("                       B.BLOCK_ID,");
 			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
@@ -1220,6 +1222,8 @@ public class TaskService {
 			sb.append("	                          1             PROGRESS,");
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
+			sb.append("                       0 NOTASKDATA_POI_NUM,");
+			sb.append("                       0 NOTASKDATA_TIPS_NUM,");
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
@@ -1248,6 +1252,8 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.PROGRESS, 1) PROGRESS,");
 			sb.append("                       NVL(FSOT.PERCENT, 0) PERCENT,");
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
+			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
 			sb.append("                       0 BLOCK_ID,");
 			sb.append("	                      '' BLOCK_NAME,");
 			sb.append("                       1 PLAN_STATUS,");
@@ -1303,6 +1309,13 @@ public class TaskService {
 						task.put("percent", rs.getInt("PERCENT"));
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
+						
+						//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+						if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+							task.put("hasNoTaskData", 0);
+						}else{
+							task.put("hasNoTaskData", 1);
+						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
 						if(rs.getString("GROUP_NAME")==null){

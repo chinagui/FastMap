@@ -83,13 +83,13 @@ public class PERMIT_CHECK_GREEN_IMAGELINK_WITH_TWOFACE extends baseRule {
 	 */
 	private void checkLcFace(LcFace lcFace) throws Exception {
 		List<IRow> faceTopo = lcFace.getTopos();
+		LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
+		LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
 
 		for (IRow row : faceTopo) {
 			LcFaceTopo topo = (LcFaceTopo) row;
-			LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
+			
 			LcLink lcLink = (LcLink) lcLinkSelector.loadById(topo.getLinkPid(), false);
-
-			LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
 			List<LcFace> lcFaces = lcFaceTopo.loadLcFaceByLinkId(topo.getLinkPid(), false);
 
 			if (lcFaces == null || lcFaces.size() != 2) {
@@ -121,7 +121,7 @@ public class PERMIT_CHECK_GREEN_IMAGELINK_WITH_TWOFACE extends baseRule {
 				&& (lcFace2.getKind() != 17 && lcFace2.getKind() > 10 && lcFace2.getKind() < 18)) {
 			return isImageKind(lcLink);
 		}
-		return false;
+		return true;
 	}
 
 	/**

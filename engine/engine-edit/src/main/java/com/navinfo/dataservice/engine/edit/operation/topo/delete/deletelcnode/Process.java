@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelcnode;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -95,6 +96,19 @@ public class Process extends AbstractProcess<Command> {
 		lw.recordLog(this.getCommand(), this.getResult());
 		return true;
 	}
+
+    @Override
+    public String preCheck() throws Exception {
+        List<IRow> checkList = new ArrayList<>();
+        checkList.addAll(getResult().getAddObjects());
+        checkList.addAll(getResult().getUpdateObjects());
+        for (IRow row : getResult().getDelObjects()) {
+            if (row instanceof LcNode) {
+                checkList.add(row);
+            }
+        }
+        return super.preCheck();
+    }
 
 	@Override
 	public String exeOperation() throws Exception {

@@ -18,6 +18,10 @@ public class Process extends AbstractProcess<Command> {
         super(command);
     }
 
+    public String preCheck() throws Exception{
+    	return super.preCheck();
+    }
+    
     @Override
     public String exeOperation() throws Exception {
         return new Operation(getCommand(), getConn()).run(getResult());

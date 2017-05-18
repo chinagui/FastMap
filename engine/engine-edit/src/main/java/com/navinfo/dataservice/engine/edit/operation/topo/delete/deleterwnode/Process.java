@@ -20,6 +20,19 @@ public class Process extends AbstractProcess<Command> {
 		super(command);
 	}
 
+    @Override
+    public String preCheck() throws Exception {
+        List<IRow> checkList = new ArrayList<>();
+        checkList.addAll(getResult().getAddObjects());
+        checkList.addAll(getResult().getUpdateObjects());
+        for (IRow row : getResult().getDelObjects()) {
+            if (row instanceof RwNode) {
+                checkList.add(row);
+            }
+        }
+        return super.preCheck();
+    }
+
 	@Override
 	public String exeOperation() throws Exception {
 		Operation option = new Operation(this.getCommand(), getConn());

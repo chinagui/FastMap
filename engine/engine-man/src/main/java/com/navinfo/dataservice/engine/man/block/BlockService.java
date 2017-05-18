@@ -1714,10 +1714,10 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT B.BLOCK_ID,B.COUNTY_NAME FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
-			if(jsonObject.containsKey("countyName") && jsonObject.getString("countyName").length() > 0){
-				String countyName = "\'"+ "%" + jsonObject.getString("countyName").toString() + "%" +"\'";
-				String selectCountyName = " AND B.COUNTY_NAME LIKE " + countyName;
+			String selectSql = "SELECT B.BLOCK_ID,B.block_name FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
+			if(jsonObject.containsKey("blockName") && jsonObject.getString("blockName").length() > 0){
+				String blockName = "\'"+ "%" + jsonObject.getString("blockName").toString() + "%" +"\'";
+				String selectCountyName = " AND B.block_name LIKE " + blockName;
 				selectSql += selectCountyName;
 			}
 			
@@ -1728,7 +1728,7 @@ public class BlockService {
 					while(result.next()){
 						Map<String, Object> blockMap = new HashMap<String, Object>();
 						blockMap.put("blockId", result.getInt("BLOCK_ID"));
-						blockMap.put("countyName", result.getObject("COUNTY_NAME"));
+						blockMap.put("blockName", result.getObject("BLOCK_NAME"));
 						res.add(blockMap);
 					}
 					return res;

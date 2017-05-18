@@ -202,10 +202,11 @@ public abstract class AbstractProcess<T extends AbstractCommand> implements
 							.equals(ObjType.RDELECEYEPAIR)
 					&& !this.getCommand().getObjType().equals(ObjType.LUFACE)
 					&& !this.getCommand().getObjType().equals(ObjType.LCFACE)) {
-			}
-			handleResult(this.getCommand().getObjType(), this.getCommand()
-					.getOperType(), result);
+				this.handleResult(this.getCommand().getObjType(), this.getCommand()
+						.getOperType(), result);
 
+			}
+			
 			log.info("BEGIN  PRECHECK ");
 			String preCheckMsg = this.preCheck();
 			if (preCheckMsg != null) {

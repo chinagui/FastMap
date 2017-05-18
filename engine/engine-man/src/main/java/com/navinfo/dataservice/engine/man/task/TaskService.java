@@ -612,8 +612,9 @@ public class TaskService {
 				
 				if(adminCode != null && !"".equals(adminCode)){
 					UserGroup userGroup = UserGroupService.getInstance().getGroupByAminCode(adminCode, 1);
-					Integer userGroupID = userGroup.getGroupId();
-					bean.setGroupId(userGroupID);
+					if(userGroup!=null){
+						Integer userGroupID = userGroup.getGroupId();
+						bean.setGroupId(userGroupID);}
 				}
 			}
 			
@@ -3259,8 +3260,8 @@ public class TaskService {
  				for(Object tipRowkey:tips){ 
  					tipsPids.add(tipRowkey.toString()); 
  				}
-				//FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
-				//api.batchQuickTask(taskId, subtaskId,tipsPids); 
+				FccApi api=(FccApi)ApplicationContextUtil.getBean("fccApi"); 
+				api.batchQuickTask(taskId, subtaskId,tipsPids); 
  			}
 		}catch(Exception e){
 			log.error("", e);
@@ -3312,18 +3313,19 @@ public class TaskService {
 				return resultJson;
 			}
 			String admin = selectAdminCode(task.getProgramId());
-			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, workKind);
+			int type=workKind+1;
+			UserGroup resultGroup=UserGroupService.getInstance().getGroupByAminCode(conn, admin, type);
 			List<UserInfo> users=UserInfoService.getInstance().list(resultGroup);
 			JSONObject resultJson = JSONObject.fromObject(resultGroup);
-			resultJson.put("users", JSONObject.fromObject(users));
+			resultJson.put("users", JSONArray.fromObject(users));
 			return resultJson;
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
-		return null;
 	}
 	
 	/**

@@ -422,5 +422,12 @@ public interface MetadataApi {
 	 */
 	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
 	public JSONObject getAdminMap()throws Exception;
+	/**
+	 * @param kind
+	 * @param chain
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Map<String, Object>> getScPointTruckListByKindOrChain(String kind, String chain) throws Exception;
 
 }

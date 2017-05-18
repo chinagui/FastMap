@@ -2178,4 +2178,93 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+
+	/**
+	 * @param dbId
+	 * @param type
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT S.SUBTASK_ID,SGM.GRID_ID FROM SUBTASK S, SUBTASK_GRID_MAPPING SGM,TASK T,PROGRAM P,REGION R    ");
+			sb.append(" WHERE P.TYPE = " + type);
+			sb.append(" AND P.PROGRAM_ID = T.PROGRAM_ID                                                                       ");
+			sb.append(" AND T.TASK_ID = S.TASK_ID                                                                             ");
+			sb.append(" AND S.SUBTASK_ID = SGM.SUBTASK_ID                                                                     ");
+			sb.append(" AND T.REGION_ID = R.REGION_ID                                                                         ");
+			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ") ");
+			sb.append(" ORDER BY S.SUBTASK_ID                                                                                 ");
+			
+			return run.query(conn, sb.toString(), new ResultSetHandler<Map<Integer, List<Integer>>>(){
+				@Override
+				public Map<Integer, List<Integer>> handle(ResultSet result) throws SQLException {
+					Map<Integer, List<Integer>> res = new HashMap<Integer, List<Integer>>();
+					int subtaskId = 0;
+					List<Integer> list = new ArrayList<Integer>();
+					while(result.next()){
+						if(subtaskId!=result.getInt("SUBTASK_ID")){
+							res.put(subtaskId, list);
+							subtaskId = result.getInt("SUBTASK_ID");
+							list = new ArrayList<Integer>();
+						}
+						list.add(result.getInt("GRID_ID"));
+					}
+					res.remove(0);
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param dbId
+	 * @param statusList
+	 * @param workKind
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT S.SUBTASK_ID FROM SUBTASK S,TASK T,REGION R  ");
+			sb.append(" WHERE T.TASK_ID = S.TASK_ID                         ");
+			sb.append(" AND T.REGION_ID = R.REGION_ID                       ");
+			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ")");
+			sb.append(" AND S.STATUS IN (" + StringUtils.join(statusList,",") + ") ");
+			sb.append(" AND S.WORK_KIND = " + workKind);
+			
+			return run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>(){
+				@Override
+				public List<Integer> handle(ResultSet result) throws SQLException {
+					List<Integer> res = new ArrayList<Integer>();
+					while(result.next()){
+						res.add(result.getInt("SUBTASK_ID"));
+					}
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 }

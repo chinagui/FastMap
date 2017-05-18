@@ -27,5 +27,9 @@
     </bean>
 
 	<bean id="applicationContextUtil" class="com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil"/>
+	<bean id="startupListener" class="com.navinfo.dataservice.web.statics.listener.StartupListener"/>
+	
+	<!-- quartz定时调度组件,要使用时放开 -->
+    <import resource="applicationContext-quartz.xml" />
 	
 </beans>

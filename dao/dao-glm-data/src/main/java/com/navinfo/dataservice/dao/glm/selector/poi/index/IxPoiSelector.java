@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -18,6 +21,7 @@ import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 
@@ -60,6 +64,8 @@ public class IxPoiSelector extends AbstractSelector {
 		JSONObject result = new JSONObject();
 
 		JSONArray array = new JSONArray();
+		
+		Map<Long,JSONObject> objs = new HashMap<Long,JSONObject>();
 
 		int total = 0;
 		int startRow = (pageNum - 1) * pageSize + 1;
@@ -109,17 +115,14 @@ public class IxPoiSelector extends AbstractSelector {
 
 			pstmt.setInt(2, startRow);
 			resultSet = pstmt.executeQuery();
-			LogReader logRead = new LogReader(conn);
 			while (resultSet.next()) {
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
 				JSONObject json = new JSONObject();
-
+				long pid = resultSet.getLong("pid");
 				json.put("poiNum", resultSet.getString("poi_num"));
-				json.put("pid", resultSet.getInt("pid"));
-				json.put("status", logRead.getObjectState(
-						resultSet.getInt("pid"), "IX_POI"));
+				json.put("pid", pid);
 				json.put("name", resultSet.getString("name"));
 				json.put("kindCode", resultSet.getString("kind_code"));
 				String flag = "";
@@ -146,12 +149,21 @@ public class IxPoiSelector extends AbstractSelector {
 				json.put("auditProblem", "");
 				json.put("auditStatus", "");
 
-				array.add(json);
+				objs.put(pid,json);
 			}
 			result.put("total", total);
-
+			//get status
+			if(objs.size()>0){
+				LogReader logRead = new LogReader(conn);
+				Map<Long,Integer> objStatus = logRead.getObjectState(objs.keySet(), ObjectName.IX_POI);
+				for(Entry<Long,JSONObject> entry:objs.entrySet()){
+					Integer status = objStatus.get(entry.getKey());
+					JSONObject jo =entry.getValue();
+					jo.put("status", status==null?0:status);
+					array.add(jo);
+				}
+			}
 			result.put("rows", array);
-
 			return result;
 		} catch (Exception e) {
 

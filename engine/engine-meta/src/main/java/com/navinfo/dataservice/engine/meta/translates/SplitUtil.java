@@ -85,17 +85,20 @@ public class SplitUtil {
                         wordValue = wordValue + "/";
                     }
                 }else {
-                    if(index++ == length){
-                        wordValue = String.valueOf(currentChar);
+                    if(++index == length){
+                        wordValue = currentChar + "/";
                     }else {
                         char nextChar = charArray[index];
-                        if(' ' == currentChar || ' ' == nextChar) {
+                        if(Character.isSpaceChar(currentChar) || Character.isSpaceChar(nextChar)) {
                             wordValue = String.valueOf(currentChar);
                         } else if(ConvertUtil.isLetter(currentChar) && ConvertUtil.isNotLetter(nextChar)){
                             wordValue = currentChar + "/";
                         } else if(ConvertUtil.isChinese(currentChar) && ConvertUtil.isNotChinese(nextChar)){
                             wordValue = currentChar + "/";
                         }else if(Character.isDigit(currentChar) && !Character.isDigit(nextChar)) {
+                            wordValue = currentChar + "/";
+                        }
+                        else if(ConvertUtil.isChinesePunctuation(currentChar)) {
                             wordValue = currentChar + "/";
                         }
                     }

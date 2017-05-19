@@ -29,6 +29,7 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
@@ -1193,6 +1194,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       B.BLOCK_ID,");
 			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
@@ -1228,7 +1230,8 @@ public class TaskService {
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
 			sb.append("                       0 NOTASKDATA_POI_NUM,");
-			sb.append("                       0 NOTASKDATA_TIPS_NUM,");
+			sb.append("                       0 NOTASKDATA_TIPS_NUM,"
+					+ "0 CONVERT_FLAG,");
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
@@ -1259,6 +1262,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       0 BLOCK_ID,");
 			sb.append("	                      '' BLOCK_NAME,");
 			sb.append("                       1 PLAN_STATUS,");
@@ -1315,11 +1319,15 @@ public class TaskService {
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
 						
-						//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-						if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-							task.put("hasNoTaskData", 0);
-						}else{
-							task.put("hasNoTaskData", 1);
+						int convertFlag=rs.getInt("CONVERT_FLAG");
+						if(convertFlag==1){task.put("hasNoTaskData", 0);}
+						else{						
+							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+								task.put("hasNoTaskData", 0);
+							}else{
+								task.put("hasNoTaskData", 1);
+							}
 						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -3370,7 +3378,8 @@ public class TaskService {
 			
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
-			
+			//修改无任务转中操作状态为 1已转
+			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);

@@ -287,7 +287,7 @@ public class UploadService {
 	    return result;
 	}
 	
-	public String uploadFile(String urlString, String fileName, String filePath) throws IOException{
+	public String uploadInfoFile(String urlString, String fileName, String filePath) throws IOException{
 		URL url=new URL(urlString);
 	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
 	    connection.setDoInput(true);

@@ -16,11 +16,19 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
  */
 public abstract class StatJobStarter {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
+	
 	public abstract String jobType();
+	
 	protected abstract boolean isRunning();
+	
+	/**
+	 * 如果不需要启动，RunJobInfo==null
+	 * @return
+	 */
 	protected abstract RunJobInfo startRun();
 	
 	public boolean start(){
+		RunJobInfo info = null;
 		try{
 			//根据配置，是否可以重复启动相同的统计job
 			if(!SystemConfigFactory.getSystemConfig().getBooleanValue("stat.job.parallel")){
@@ -29,12 +37,16 @@ public abstract class StatJobStarter {
 				}
 			}
 			//
-			RunJobInfo info = startRun();
+			info = startRun();
+			if(info==null){
+				return false;
+			}
 			JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");
 			jobApi.createJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());
-			
+			return true;
 		}catch(Exception e){
-			log.warn("jobType");
+			log.warn("jobType:"+jobType()+"，request:"+(info==null||info.getRequest()==null?"null":info.getRequest().toString())+"启动错误:"+e.getMessage());
 		}
+		return false;
 	}
 }

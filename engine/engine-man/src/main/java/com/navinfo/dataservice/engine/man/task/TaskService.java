@@ -1349,6 +1349,7 @@ public class TaskService {
 				}
 
 			};
+			
 			log.info("task list sql:" + sb.toString());
 			Page page= run.query(conn, sb.toString(), rsHandler);
 			page.setPageNum(curPageNum);
@@ -3397,5 +3398,68 @@ public class TaskService {
 		}
 	}
 	
+	/**
+	 * 采集任务列表
+	 *   
+	 */
+	public List<Map<String, Object>> midCollectTaskList(){
+		Connection con = null;
+		try {
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "select b.geometry, p.program_id, p.name as p_name, p.type as p_type, p.status as p_status,"
+					+ "t.block_id, t.task_id, t.status, t.name, t.plan_start_date, t.plan_end_date "
+					+ "from TASK t, program p, block b where t.program_id = p.program_id and t.block_id = b.block_id"
+					+ " and t.type = 0 and t.LATEST = 1";
+			
+			return run.query(con, selectSql, new ResultSetHandler<List<Map<String, Object>>>(){
+				@Override
+				public List<Map<String, Object>> handle(ResultSet result) throws SQLException {
+					List<Map<String, Object>> taskList = new ArrayList<>();
+					SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+					while(result.next()){
+						Map<String, Object> task = new HashMap<>();
+						task.put("programId", result.getInt("program_id"));
+						task.put("programName", result.getString("p_name"));
+						task.put("programType", result.getInt("p_type"));
+						task.put("programStatus", result.getInt("p_status"));
+						task.put("blockId", result.getInt("block_id"));
+						task.put("taskId", result.getInt("task_id"));
+						task.put("taskStatus", result.getInt("status"));
+						task.put("taskName", result.getString("name"));
+						Timestamp planStartDate = result.getTimestamp("plan_start_date");
+						Timestamp planEndDate = result.getTimestamp("plan_end_date");
+						if(planStartDate != null){
+							task.put("taskPlanStartDate", df.format(planStartDate));
+						}else{
+							task.put("taskPlanStartDate", "");
+						}
+						if(planEndDate != null){
+							task.put("taskPlanEndDate", df.format(planEndDate));
+						}else{
+							task.put("taskPlanEndDate", "");
+						}
+						
+						STRUCT struct = (STRUCT) result.getObject("geometry");
+						try {
+							String clobStr = GeoTranslator.struct2Wkt(struct);
+							task.put("geometry", Geojson.wkt2Geojson(clobStr));
+						} catch (Exception e) {
+							log.error("geometry转JSON失败，原因为:" + e.getMessage());
+						}
+						
+						taskList.add(task);
+					}
+					return taskList;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(con);
+			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
+		}finally{
+			DbUtils.commitAndCloseQuietly(con);
+		}
+		return null;
+	}
 	
 }

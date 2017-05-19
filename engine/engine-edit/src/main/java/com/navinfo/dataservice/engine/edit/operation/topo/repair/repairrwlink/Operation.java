@@ -369,22 +369,15 @@ public class Operation implements IOperation {
 
 	/**
 	 * 维护关联要素
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	private void updataRelationObj(RwLink oldLink, List<RwLink> newLinks,
-			Result result) throws Exception {
-		// 立交
-		com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation gscOperation = new com.navinfo.dataservice.engine.edit.operation.obj.rdgsc.update.Operation();
+								   Result result) throws Exception {
 
-		Map<Integer, Geometry> newLinkMap = new HashMap<Integer, Geometry>();
+		OpRefRelationObj opRefRelationObj = new OpRefRelationObj(this.conn);
 
-		for (RwLink link : newLinks) {
-			newLinkMap.put(link.getPid(), link.getGeometry());
-		}
-
-		gscOperation.repairLink(this.command.getGscList(), newLinkMap, oldLink,
-				result);
+		opRefRelationObj.handleRelationObj(this.command, newLinks, oldLink, result);
 	}
 
 }

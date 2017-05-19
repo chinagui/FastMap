@@ -51,8 +51,10 @@ public class Process extends AbstractProcess<Command> {
         return super.prepareData();
     }
 
+    Check check=new Check();
     @Override
     public String exeOperation() throws Exception {
+    	check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.getCommand(), this.getConn());
         return new Operation(getCommand(), getConn()).run(getResult());
     }
 }

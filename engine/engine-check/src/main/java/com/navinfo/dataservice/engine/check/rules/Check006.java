@@ -82,12 +82,14 @@ public class Check006 extends baseRule {
 	 */
 	private void checkLcFace(LcFace lcFace) throws Exception {
 		List<IRow> faceTopo = lcFace.getTopos();
-
+		LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
+		LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
+		
 		for (IRow row : faceTopo) {
 			LcFaceTopo topo = (LcFaceTopo) row;
-			LcLinkSelector lcLinkSelector = new LcLinkSelector(this.getConn());
+			
 			LcLink lcLink = (LcLink) lcLinkSelector.loadById(topo.getLinkPid(), false);
-			LcFaceSelector lcFaceTopo = new LcFaceSelector(this.getConn());
+			
 			List<LcFace> lcFaces = lcFaceTopo.loadLcFaceByLinkId(topo.getLinkPid(), false);
 
 			if (lcFaces == null || lcFaces.size() != 2) {

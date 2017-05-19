@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -49,8 +49,9 @@ public class FMBAT20147 extends BasicBatchRule {
 			}
 			if (officialEngName != null) {
 				standarEngName = poiObj.getOfficeStandardEngName(officialEngName.getNameGroupid());
+				if(standarEngName!=null && StringUtils.isNotBlank(standarEngName.getName())){return;}
 				String officialNameStr = officialEngName.getName();
-				if (officialNameStr == null) {
+				if (officialNameStr == null||officialNameStr.length()<=35) {
 					return;
 				}
 				transName(standarEngName,officialNameStr,poiObj,officialEngName);
@@ -77,6 +78,10 @@ public class FMBAT20147 extends BasicBatchRule {
 				String shortName = engshortList.get(fullName);
 				officialNameStr = officialNameStr.replace(fullName, shortName);
 				hasShort = true;
+				if(officialNameStr.length()<=35){
+					break;
+				}
+				
 			}
 		}
 		if (hasShort) {

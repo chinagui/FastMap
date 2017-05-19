@@ -342,7 +342,7 @@ public class SolrController {
 	 * @author: y
 	 * @time:2016-10-25 下午3:17:22
 	 */
-	public List<JSONObject> queryTips(String wkt, int stage, int t_dStatus)
+	public List<JSONObject> queryTips(String wkt, int stage, int t_dStatus, Set<Integer> collectTaskIds)
 			throws SolrServerException, IOException {
 		List<JSONObject> snapshots = new ArrayList<JSONObject>();
 
@@ -357,6 +357,10 @@ public class SolrController {
 		builder.append(" AND stage:" + stage);
 
 		builder.append(" AND t_dStatus:" + t_dStatus);
+
+		if (collectTaskIds != null) {
+			addTaskIdFilterSql(builder, collectTaskIds);
+		}
 
 		SolrQuery query = new SolrQuery();
 
@@ -1146,5 +1150,25 @@ public class SolrController {
         return snapshots;
     }
 
+	/**
+	 * 根据查询条件查询符合条件的所有Tips
+	 * @param queryBuilder
+	 * @param filterQueryBuilder
+	 * @return
+	 * @throws SolrServerException
+	 * @throws IOException
+	 */
+	public SolrDocumentList queryTipsSolrDoc(String queryBuilder, String filterQueryBuilder) throws SolrServerException, IOException {
+		SolrQuery query = new SolrQuery();
+		query.set("q", queryBuilder);
+		if(StringUtils.isNotEmpty(filterQueryBuilder)){
+			query.set("fq", filterQueryBuilder);
+		}
+		query.set("start", 0);
+		query.set("rows", fetchNum);
 
+		QueryResponse response = client.query(query);
+		SolrDocumentList sdList = response.getResults();
+		return sdList;
+	}
 }

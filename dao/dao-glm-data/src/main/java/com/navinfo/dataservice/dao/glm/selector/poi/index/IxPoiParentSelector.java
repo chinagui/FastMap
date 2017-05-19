@@ -361,7 +361,7 @@ public class IxPoiParentSelector extends AbstractSelector {
 			resultSet = pstmt.executeQuery();
 			List<Integer> childrenPids = new ArrayList<Integer>();
 			
-			if (resultSet.next()) {
+			while (resultSet.next()) {
 				childrenPids.add(resultSet.getInt("child_poi_pid"));
 			}
 			return childrenPids;

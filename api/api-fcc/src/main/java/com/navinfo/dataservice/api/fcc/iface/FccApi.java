@@ -28,7 +28,7 @@ public interface FccApi {
 	 * @author: y
 	 * @time:2016-10-25 上午10:57:37
 	 */
-	public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception;
+	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception;
 	
 	
 	public void tips2Aumark(JSONObject parameter) throws Exception;
@@ -85,10 +85,10 @@ public interface FccApi {
     public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception;
 
     /**
-     * 根据rowkey列表批中线任务号
-     * @param taskId
-     * @param tips
+     * tips无任务批中线任务号api
+     * @param wkt
+     * @param midTaskId
      * @throws Exception
      */
-    public void batchMidTask(int taskId, List<String> tips) throws Exception;
+    public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
 }

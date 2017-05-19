@@ -19,10 +19,14 @@ public abstract class StatJobStarter {
 	
 	public abstract String jobType();
 	
+	/**
+	 * 判断是否已经有相同类型的job正在执行
+	 * @return
+	 */
 	protected abstract boolean isRunning();
 	
 	/**
-	 * 如果不需要启动，RunJobInfo==null
+	 * 如果不需要启动，RunJobInfo==null，配置job启动参数
 	 * @return
 	 */
 	protected abstract RunJobInfo startRun();

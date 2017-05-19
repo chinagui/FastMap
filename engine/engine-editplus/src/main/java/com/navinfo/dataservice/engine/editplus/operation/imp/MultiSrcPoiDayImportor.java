@@ -59,6 +59,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	protected Map<Long,Integer> quickSubtaskIdMap = new HashMap<Long,Integer>();
 	protected Map<Long,Integer> mediumSubtaskIdMap = new HashMap<Long,Integer>();
 	protected List<PoiRelation> samePoiPid = new ArrayList<PoiRelation>();
+	
+	private List<Map<String,Object>> scPointTruckList = new ArrayList<Map<String,Object>>();
 
 	
 	public Map<Long, String> getSourceTypes() {
@@ -125,6 +127,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		Map<Integer,List<Integer>> mediumSubtaskGridMapping = manApi.getSubtaskGridMappingByDbId(this.dbId,1);
 
 		if(pois!=null){
+			//加载元数据库sc_point_truck
+			MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			this.scPointTruckList = metaApi.getScPointTruckList();
 			//新增
 			Map<String, JSONObject> addPois = pois.getAddPois();
 			if(addPois!=null&&addPois.size()>0){
@@ -496,18 +501,14 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				
 //				sourceTypes.put(poi.objPid(), sourceProvider );
 				//truck
-				MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
 				boolean flg = false;
-				List<Map<String,Object>> scPointTruckList = metaApi.getScPointTruckListByKindOrChain(jo.getString("kind"),jo.getString("chain"));
 				for(Map<String,Object> entry:scPointTruckList){
 					if(entry.get("kind").equals(jo.getString("kind"))){
 						flg = true;
 						if(entry.get("type").equals("1")){
-							IxPoi temp = (IxPoi)poi.getMainrow();
-							temp.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 						}else if(entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
-							IxPoi temp = (IxPoi)poi.getMainrow();
-							temp.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 						}
 						break;
 					}
@@ -517,8 +518,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					for(Map<String,Object> entry:scPointTruckList){
 						if(!entry.get("kind").equals(jo.getString("kind"))&&entry.get("chain").equals(jo.getString("chain"))){
 							if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
-								IxPoi temp = (IxPoi)poi.getMainrow();
-								temp.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 							}
 						}
 					}
@@ -648,15 +648,56 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 						||(StringUtils.contains(log,"改名称")&&ixPoi.getKindCode().equals("200200"))){
 					usdateLevel(poi);
 				}
-				//多源类型
-				String sourceProvider = null;
-				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
-					sourceProvider = jo.getString("sourceProvider");
-				}else{
-					throw new Exception("多源类型sourceProvider字段名不存在");
-				}
-				sourceTypes.put(poi.objPid(), sourceProvider );
+//				//多源类型
+//				String sourceProvider = null;
+//				if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+//					sourceProvider = jo.getString("sourceProvider");
+//				}else{
+//					throw new Exception("多源类型sourceProvider字段名不存在");
+//				}
+//				sourceTypes.put(poi.objPid(), sourceProvider );
+				
+				//truck
+				if(StringUtils.contains(log,"改分类")||StringUtils.contains(log,"改品牌")){
+					String kind = ixPoi.getKindCode();
+					String chain =ixPoi.getChain();
+					if(StringUtils.contains(log,"改分类")){
+						if(!JSONUtils.isNull(jo.get("kind"))){
+							kind = jo.getString("kind");
+						}
+					}
+					if(StringUtils.contains(log,"改品牌")){
+						if(!JSONUtils.isNull(jo.get("chain"))){
+							chain = jo.getString("chain");
+						}
+					}
+					
+					boolean flg = false;
+					for(Map<String,Object> entry:scPointTruckList){
+						if(entry.get("kind").equals(jo.getString("kind"))){
+							flg = true;
+							if(entry.get("type").equals("1")){
+								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							}else if(entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
+								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+							}
+							break;
+						}
+					}
+					
+					if(!flg){
+						for(Map<String,Object> entry:scPointTruckList){
+							if(!entry.get("kind").equals(jo.getString("kind"))&&entry.get("chain").equals(jo.getString("chain"))){
+								if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+									ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
+								}
+							}
+						}
+					}
 
+				}
+				
+				
 				return true;
 			}else{
 				throw new ImportException("不支持的对象类型");
@@ -923,13 +964,13 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					pr2.setPoiRelationType(PoiRelationType.SAME_POI);
 					samePoiPid.add(pr);
 					//多源类型
-					String sourceProvider = null;
-					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
-						sourceProvider = jo.getString("sourceProvider");
-					}else{
-						throw new Exception("多源类型sourceProvider字段名不存在");
-					}
-					sourceTypes.put(poi.objPid(), sourceProvider);
+//					String sourceProvider = null;
+//					if(!JSONUtils.isNull(jo.get("sourceProvider"))){
+//						sourceProvider = jo.getString("sourceProvider");
+//					}else{
+//						throw new Exception("多源类型sourceProvider字段名不存在");
+//					}
+//					sourceTypes.put(poi.objPid(), sourceProvider);
 					
 				}
 				return true;

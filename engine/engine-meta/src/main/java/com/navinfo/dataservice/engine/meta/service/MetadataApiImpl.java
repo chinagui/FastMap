@@ -862,5 +862,43 @@ public class MetadataApiImpl implements MetadataApi {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.metadata.iface.MetadataApi#getScPointTruckList()
+	 */
+	@Override
+	public List<Map<String, Object>> getScPointTruckList() throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT T.KIND,T.CHAIN,T.TYPE,T.TRUCK    ");
+			sb.append("   FROM SC_POINT_TRUCK T                 ");
+			
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>> (){
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						map.put("kind", rs.getString("KIND"));
+						map.put("chain", rs.getString("CHAIN"));
+						map.put("type", rs.getString("TYPE"));
+						map.put("truck", rs.getString("TRUCK"));
+						result.add(map);
+					}
+					return result;
+				}	
+	    	};				
+
+	    	return run.query(conn, sb.toString(), rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
 
 }

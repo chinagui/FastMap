@@ -478,7 +478,7 @@ public class PoiEditStatus {
 			
 			Clob clobPids = conn.createClob();
 			clobPids.setString(1, StringUtils.join(fids, ","));
-			sb.append(" AND P.POI_NUM IN (select to_number(column_value) from table(clob_to_table(?)))");
+			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
 			
 			Object[] pra = new Object[3];
 			pra[0] = clobSubtaskIds;
@@ -503,7 +503,7 @@ public class PoiEditStatus {
 			};
 			
 			QueryRunner run = new QueryRunner();
-			return run.query(sb.toString(),pra,rsHandler);
+			return run.query(conn,sb.toString(),pra,rsHandler);
 			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);

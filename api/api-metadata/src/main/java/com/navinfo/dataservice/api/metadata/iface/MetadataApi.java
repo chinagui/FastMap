@@ -429,5 +429,6 @@ public interface MetadataApi {
 	 * @throws Exception 
 	 */
 	public List<Map<String, Object>> getScPointTruckListByKindOrChain(String kind, String chain) throws Exception;
+	public List<Map<String, Object>> getScPointTruckList() throws Exception;
 
 }

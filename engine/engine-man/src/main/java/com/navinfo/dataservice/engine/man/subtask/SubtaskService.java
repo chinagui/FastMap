@@ -28,6 +28,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
+import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
@@ -42,7 +43,9 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
@@ -1369,7 +1372,7 @@ public class SubtaskService {
 				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
 					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
 				}
-				
+				pushMsg2Crowd(conn,userId,subtask);
 				//发送消息
 				SubtaskOperation.pushMessage(conn, subtask, userId);
 				success ++;
@@ -1381,6 +1384,42 @@ public class SubtaskService {
 			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 推送众包信息给mapspotter
+	 * 
+	 * @param conn
+	 * @param subtask
+	 * @throws Exception 
+	 */
+	public void pushMsg2Crowd(Connection conn,Long userId,Subtask subtask) throws Exception{
+		if(subtask.getWorkKind()!=2){return;}
+		Program program=ProgramService.getInstance().queryProgramByTaskId(conn, subtask.getTaskId());
+		if(program==null){throw new Exception("众包子任务发布，通知mapsppotor失败：数据错误，未找到子任务对应项目");}
+		JSONObject par=new JSONObject();
+		par.put("subTaskId", subtask.getSubtaskId());
+		if(program.getType()==1){
+			par.put("priority", 2);
+			par.put("geometryJSON", subtask.getGeometryJSON());			
+		}else{
+			Infor info = InforService.getInstance().getInforByProgramId(conn, program.getProgramId());
+			par.put("priority", 1);
+			par.put("infocode", info.getInforCode());
+		}
+		String mapspotterUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterCrowdUrl);		
+		
+		Map<String,String> parMap = new HashMap<String,String>();
+		parMap.put("parameter", par.toString());
+		parMap.put("access_token", AccessTokenFactory.generate(userId).getTokenString());
+
+		String result = ServiceInvokeUtil.invoke(mapspotterUrl, parMap, 10000);
+		JSONObject res=new JSONObject();
+		res=JSONObject.fromObject(result);
+
+		boolean success=(boolean)res.get("success");
+		if(!success){
+			throw new Exception("众包子任务发布，通知mapsppotor失败："+result);
 		}
 	}
 	

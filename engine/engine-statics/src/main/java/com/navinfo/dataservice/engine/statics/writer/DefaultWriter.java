@@ -12,6 +12,7 @@ import com.mongodb.client.MongoDatabase;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.mq.MsgPublisher;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
 import com.navinfo.navicommons.database.sql.StringUtil;
 
@@ -29,13 +30,15 @@ public class DefaultWriter {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
 	protected String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 	
-	public void write(JSONObject messageJSON){
+	public void write(JSONObject messageJSON) throws Exception{
 		String jobName=messageJSON.getString("jobName");
 		String statDate=messageJSON.getString("statDate");
-		log.info("write:jobName="+jobName+",statDate="+statDate);
+		log.info("start write:jobName="+jobName+",statDate="+statDate);
 		
 		write2Mongo(messageJSON);	
 		write2Other(messageJSON);
+		pushEndMsg(jobName);
+		log.info("end write:jobName="+jobName+",statDate="+statDate);
 	}
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法
@@ -74,6 +77,7 @@ public class DefaultWriter {
 	 * @param collectionName
 	 */
 	public void initMongoDb(String collectionName,String statDate) {
+		log.info("init mongo "+collectionName);
 		MongoDao mdao = new MongoDao(dbName);
 		MongoDatabase md = mdao.getDatabase();
 		// 初始化 col_name_grid
@@ -96,6 +100,7 @@ public class DefaultWriter {
 		}
 		
 		// 删除时间点相同的重复统计数据
+		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",statDate="+statDate);
 		BasicDBObject query = new BasicDBObject();
 		query.put("statDate", statDate);
 		mdao.deleteMany(collectionName, query);
@@ -107,4 +112,13 @@ public class DefaultWriter {
 	 * @param collectionName
 	 */
 	public void  createMongoSelfIndex(MongoDatabase md,String collectionName){}
+	/**
+	 * 发送任务结束消息
+	 * @param jobName
+	 * @throws Exception 
+	 */
+	public void pushEndMsg(String jobName) throws Exception{
+		log.info(jobName+" end(execute+write)");
+		MsgPublisher.publish2WorkQueue("Statics_Job_End", jobName);
+	}
 }

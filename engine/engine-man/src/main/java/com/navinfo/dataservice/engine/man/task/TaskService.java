@@ -517,7 +517,8 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,"
+					+ "UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -540,6 +541,7 @@ public class TaskService {
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setRegionId(rs.getInt("REGION_ID"));
+						task.setWorkKind(rs.getString("work_kind"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -719,6 +721,7 @@ public class TaskService {
 		}
 		//情报子任务
 		if(num==3){
+			log.info("创建情报子任务");
 			Subtask subtask = new Subtask();
 			if(programType==1){
 				subtask.setName(task.getName());
@@ -739,6 +742,7 @@ public class TaskService {
 		}
 		//多源子任务
 		if(num==4){
+			log.info("创建多源子任务");
 			Subtask subtask = new Subtask();
 			String adminCode = selectAdminCode(task.getProgramId());
 			//* 快线：情报名称_发布时间_作业员_子任务ID
@@ -3360,7 +3364,8 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
 			
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);

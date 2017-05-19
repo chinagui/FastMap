@@ -26,8 +26,9 @@ public class StaticsResulthandler implements MsgHandler  {
 	/**
 	 * 处理保存统计结果
 	 * @param message
+	 * @throws Exception 
 	 */
-	private void save(String message) {
+	private void save(String message) throws Exception {
 		JSONObject messageJSON = JSONObject.fromObject(message);
 		String jobName=messageJSON.getString("jobName");
 		String statDate=messageJSON.getString("statDate");

@@ -105,4 +105,6 @@ public class PropConstant {
 	public static final String sendEmail="SEND_EMAil";
 	public static final String sendUser="SEND_USER";
 	public static final String sendPwd="SEND_PWD";
+	
+	public static final String mapspotterCrowdUrl="mapspotter.crowd.url";
 }

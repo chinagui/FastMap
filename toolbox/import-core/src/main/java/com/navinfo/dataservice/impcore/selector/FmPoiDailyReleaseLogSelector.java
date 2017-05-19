@@ -123,7 +123,7 @@ public class FmPoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector
 		sb.append(this.tempTable);
 		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(this.tempTable);
-		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.ROW_ID=L.ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.OP_ID=R.OP_ID AND R.REL_POI_STA=0) TP "
+		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.TB_ROW_ID=L.TB_ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.OP_ID=R.OP_ID AND R.REL_POI_STA=0) TP "
 				+ "ON (T.OP_ID=TP.OP_ID) "
 				+ "WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT,TP.OP_SEQ)");
 		return sb.toString();

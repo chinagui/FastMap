@@ -77,7 +77,7 @@ public class IxPoiSelector extends AbstractSelector {
 		buffer.append(" FROM (SELECT   COUNT (1) OVER (PARTITION BY 1) total,");
 		buffer.append(" ip.pid,ip.kind_code,ip.poi_num,ip.poi_memo,ps.fresh_verified as freshness_vefication,ps.raw_fields as flag,ipn.name,ip.collect_time, ");
 		buffer.append(" (SELECT COUNT (1)  FROM ix_poi_photo iph WHERE ip.pid = iph.poi_pid(+) AND U_RECORD != 2) as photocount  ,");
-		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IXPOI') as checkcount ");
+		buffer.append("  (SELECT COUNT (n.RULEID) FROM ni_val_exception n, ck_result_object c  WHERE     n.MD5_CODE = c.MD5_CODE AND ip.pid = c.pid(+) AND c.TABLE_NAME = 'IX_POI') as checkcount ");
 		buffer.append(" FROM ix_poi ip, (SELECT * FROM ix_poi_name WHERE lang_code = 'CHI' AND name_type = 2 AND name_class = 1) ipn, poi_edit_status ps ");
 		buffer.append(" WHERE  ip.pid = ipn.poi_pid(+) and ip.pid = ps.pid ");
 

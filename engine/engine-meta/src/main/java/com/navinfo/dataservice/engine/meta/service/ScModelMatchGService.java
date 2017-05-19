@@ -1,9 +1,12 @@
 package com.navinfo.dataservice.engine.meta.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -56,6 +59,73 @@ public class ScModelMatchGService {
 			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	public void create(ScModelMatchG  bean,InputStream fileStream)throws ServiceException, SQLException{
+		Connection conn = null;
+		PreparedStatement pstmt = null;
+		try{
+			//持久化
+//			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			
+			String createSql = "insert into SC_MODEL_MATCH_G (FILE_ID, PRODUCT_LINE, VERSION, PROJECT_NM, SPECIFICATION, B_TYPE, M_TYPE, S_TYPE, FILE_NAME, \"SIZE\", FORMAT, IMP_WORKER, IMP_DATE, URL_DB, URL_FILE, MEMO, FILE_CONTENT, UPDATE_TIME) values(?,?,?,?,?,?,?,?,?,?,?,?,TO_DATE(?,'yyyy-MM-dd HH24:MI:ss'),?,?,?,?,?)";			
+			
+			pstmt = conn.prepareStatement(createSql);
+			
+			pstmt.setLong(1, bean.getFileId());//FILE_ID
+
+			pstmt.setString(2, bean.getProductLine());//PRODUCT_LINE  :NIDB-G
+
+			pstmt.setString(3,bean.getVersion());//VERSION  获取sys服务下sys_config表中的当前版本号
+
+			pstmt.setString(4, bean.getProjectNm()); //PROJECT_NM :获取sys服务下sys_config表中的当前版本号
+
+			pstmt.setString(5, bean.getSpecification()); //SPECIFICATION
+
+			pstmt.setString(6,bean.getbType());//B_TYPE
+
+			pstmt.setString(7, bean.getmType());//M_TYPE
+
+			pstmt.setString(8, bean.getsType()); //S_TYPE
+
+			pstmt.setString(9, bean.getFileName());//FILE_NAME
+			
+			pstmt.setString(10, bean.getSize()); //SIZE 空
+
+			pstmt.setString(11, bean.getFormat());//  FORMAT
+
+			pstmt.setString(12, bean.getImpWorker()); //IMP_WORKER   原值导入
+
+			pstmt.setString(13, bean.getImpDate()); //IMP_DATE 在语句中已经赋值
+			
+			pstmt.setString(14, bean.getUrlDb());//URL_DB
+
+			pstmt.setString(15, bean.getUrlFile());//URL_FILE
+			
+			pstmt.setString(16, bean.getMemo());//MEMO 空
+
+			/*ByteArrayInputStream stream = new ByteArrayInputStream(fileContent); //FILE_CONTENT
+
+			pstmt.setBlob(17, stream); */
+			pstmt.setBlob(17, fileStream);
+			
+			pstmt.setString(18,  bean.getUpdateTime()); 
+
+			pstmt.executeUpdate();
+			
+			/*run.update(conn, 
+					   createSql, 
+					   bean.getFileId() , bean.getProductLine(), bean.getVersion(), bean.getProjectNm(), bean.getSpecification(), bean.getbType(), bean.getmType(), bean.getsType(), bean.getFileName(), bean.getSize(), bean.getFormat(), bean.getImpWorker(), bean.getImpDate(), bean.getUrlDb(), bean.getUrlFile(), bean.getMemo(), bean.getFileContent(), bean.getUpdateTime()
+					   );*/
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+			DbUtils.close(pstmt);
 		}
 	}
 	public void updateByFileId(ScModelMatchG bean)throws ServiceException{
@@ -807,6 +877,35 @@ public class ScModelMatchGService {
 		
 	}
 	
+	public void saveUpdate2(JSONObject dataJson, InputStream fileStream) throws Exception {
+		long fileId = 0 ;
+		String[] formats={"yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"}; 
+		JSONUtils.getMorpherRegistry().registerMorpher(new TimestampMorpher(formats));  
+		JSONObject taskJson=JSONObject.fromObject(dataJson); 
+		if(taskJson.get("fileId") != null && !taskJson.get("fileId").equals("null")){//存在 fileId ,更新数据
+			fileId = taskJson.getLong("fileId");
+			
+			ScModelMatchG bean =(ScModelMatchG) JSONObject.toBean(taskJson, ScModelMatchG.class);
+			updateByFileId(bean);
+			//update(bean);
+		}else{//不存在 fileId 执行新增
+			fileId = getFileId();
+			try{
+				ScModelMatchG bean =(ScModelMatchG) JSONObject.toBean(taskJson, ScModelMatchG.class);
+				bean.setFileId(fileId);
+				System.out.println(fileId);
+//				create(bean,b);
+				create(bean,fileStream);
+				
+			}catch(Exception e){
+				log.error("bean : "+e.getMessage());
+			}
+			
+		}
+		
+		
+	}
+	
 	public void deleteByIds(JSONArray idsJson) throws Exception {
 		Connection conn = null;
 		try{
@@ -1035,6 +1134,7 @@ public class ScModelMatchGService {
 		}finally{
 			DbUtils.closeQuietly(rs);
 			DbUtils.closeQuietly(pstmt);
+			DbUtils.closeQuietly(conn);
 		}
 		return 0;
 		

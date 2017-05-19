@@ -566,7 +566,7 @@ public class OpRefRelationObj {
 
 			sameNodeOperation.moveMainNodeForTopo(json, ObjType.RDNODE, result);
 		}
-		
+
 		// link修形跨图幅且移动端点 、移动端点且移动形状点 删除同一线关系
 		
 		Geometry oldGeo = updateLink.getGeometry();
@@ -577,8 +577,10 @@ public class OpRefRelationObj {
 		if (newLinks.size() > 1 || isMoveShapePoint(oldGeo, newGeo)) {
 
 			if (originalSameLink != null) {
-				result.insertObject(originalSameLink, ObjStatus.DELETE,
-						originalSameLink.getPid());
+
+				throw new Exception("不支持：修形跨图幅且移动端点 或 同时移动link端点和形状点");
+//				result.insertObject(originalSameLink, ObjStatus.DELETE,
+//						originalSameLink.getPid());
 			}
 		}
 

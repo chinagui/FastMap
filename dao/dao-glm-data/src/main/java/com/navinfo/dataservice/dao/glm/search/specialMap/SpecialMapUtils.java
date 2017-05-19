@@ -22,2895 +22,2465 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
 import com.navinfo.dataservice.dao.glm.iface.SpecialMapType;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkName;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkNameSelector;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
 public class SpecialMapUtils {
 
-	private Connection conn;
+    private Connection conn;
 
-	public SpecialMapUtils(Connection conn) throws Exception {
+    public SpecialMapUtils(Connection conn) throws Exception {
 
-		this.conn = conn;
-	}
-
-	/**
-	 * 控制输出JSON的格式
-	 * 
-	 * @return JsonConfig
-	 */
-	private JsonConfig getJsonConfig() {
-		JsonConfig jsonConfig = new JsonConfig();
-
-		jsonConfig.registerJsonValueProcessor(String.class,
-				new JsonValueProcessor() {
-
-					@Override
-					public Object processObjectValue(String key, Object value,
-							JsonConfig arg2) {
-						if (value == null) {
-							return null;
-						}
-
-						if (JSONUtils.mayBeJSON(value.toString())) {
-							return "\"" + value + "\"";
-						}
-
-						return value;
-
-					}
-
-					@Override
-					public Object processArrayValue(Object value,
-							JsonConfig arg1) {
-						return value;
-					}
-				});
-
-		return jsonConfig;
-	}
-
-	/**
-	 * 根据瓦片空间查询
-	 * 
-	 * @return 查询结果
-	 * @throws Exception
-	 */
-	public JSONObject searchDataByTileWithGap(List<String> types, int x, int y,
-			int z, int gap) throws Exception {
-
-		JSONObject json = new JSONObject();
-
-		try {
-
-			for (String type : types) {
-
-				List<SearchSnapshot> list = getSearchSnapshot(type, x, y, z,
-						gap);
-
-				JSONArray array = new JSONArray();
-
-				for (SearchSnapshot snap : list) {
-
-					array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
-				}
-
-				json.accumulate(type, array, getJsonConfig());
-			}
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-		}
-		return json;
-	}
-
-	/**
-	 * 根据瓦片空间查询
-	 * 
-	 * @return 查询结果
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> getSearchSnapshot(String type, int x, int y,
-			int z, int gap) throws Exception {
-
-		List<SearchSnapshot> list = null;
-
-		try {
-
-			SpecialMapType specialMapType = SpecialMapType.valueOf(type);
-
-			switch (specialMapType) {
-			case rdLinkLimitTruck:
-				list = rdLinkLimitTruck(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkLimit:
-				list = rdLinkLimit(x, y, z, gap, specialMapType);
-				break;
-			case rdlinkSpeedlimitSpeedClass:
-				list = rdlinkSpeedlimitSpeedClass(x, y, z, gap, specialMapType);
-				break;
-			case rdlinkSpeedlimitSpeedClassWork:
-				list = rdlinkSpeedlimitSpeedClassWork(x, y, z, gap,
-						specialMapType);
-				break;
-			case rdlinkSpeedlimitSpeedLimitSrc:
-				list = rdlinkSpeedlimitSpeedLimitSrc(x, y, z, gap,
-						specialMapType);
-				break;
-			case rdLinkLaneClass:
-				list = rdLinkLaneClass(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkFunctionClass:
-				list = rdLinkFunctionClass(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkLaneNum:
-				list = rdLinkLaneNum(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkDevelopState:
-				list = rdLinkDevelopState(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkMultiDigitized:
-				list = rdLinkMultiDigitized(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkPaveStatus:
-				list = rdLinkPaveStatus(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkTollInfo:
-				list = rdLinkTollInfo(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkSpecialTraffic:
-				list = rdLinkSpecialTraffic(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkIsViaduct:
-				list = rdLinkIsViaduct(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkAppInfo:
-				list = rdLinkAppInfo(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkForm50:
-				list = rdLinkForm50(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkNameContent:
-				list = rdLinkNameContent(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkNameGroupid:
-				list = rdLinkNameGroupid(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkNameType:
-				list = rdLinkNameType(x, y, z, gap, specialMapType);
-				break;
-			case rdlinkSpeedlimitConditionCount:
-				list = rdlinkSpeedlimitConditionCount(x, y, z, gap,
-						specialMapType);
-				break;
-			case rdLinkFormOfWay10:
-			case rdLinkFormOfWay11:
-			case rdLinkFormOfWay12:
-			case rdLinkFormOfWay13:
-			case rdLinkFormOfWay14:
-			case rdLinkFormOfWay15:
-			case rdLinkFormOfWay16:
-			case rdLinkFormOfWay17:
-			case rdLinkFormOfWay20:
-			case rdLinkFormOfWay31:
-			case rdLinkFormOfWay33:
-			case rdLinkFormOfWay34:
-			case rdLinkFormOfWay35:
-			case rdLinkFormOfWay36:
-			case rdLinkFormOfWay37:
-			case rdLinkFormOfWay38:
-			case rdLinkFormOfWay39:
-				list = rdLinkFormOfWay(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkLimitType0:
-			case rdLinkLimitType2:
-			case rdLinkLimitType3:
-			case rdLinkLimitType8:
-			case rdLinkLimitType9:
-			case rdLinkLimitType10:
-				list = rdLinkLimitType(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkLimitType1:
-			case rdLinkLimitType5:
-			case rdLinkLimitType6:
-			case rdLinkLimitType7:
-				list = rdLinkLimitTypeDirect(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkRticRank:
-				list = rdLinkRticRank(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkIntRticRank:
-				list = rdLinkIntRticRank(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkZoneTpye:
-				list = rdLinkZoneTpye(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkZoneCount:
-				list = rdLinkZoneCount(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkZoneSide:
-				list = rdLinkZoneSide(x, y, z, gap, specialMapType);
-				break;
-			case rdLinkProperty:
-				list = rdLinkProperty(x, y, z, gap, specialMapType);
-				break;
-
-			default:
-				list = new ArrayList<SearchSnapshot>();
-			}
-
-		} catch (Exception e) {
-
-			throw e;
-
-		} finally {
-		}
-
-		return list;
-	}
-
-	private JSONArray setLinkGeo(ResultSet resultSet, double px, double py,
-			int z) throws Exception {
-		STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-		JSONObject geojson = Geojson.spatial2Geojson(struct);
-
-		JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-		return jo.getJSONArray("coordinates");
-	}
-
-	/**
-	 * 1 卡车限制信息 业务说明：卡车限制信息按照卡车限制信息的有无来渲染link，卡车限制信息字表有记录和无记录需要对link进行区别选人
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLimitTruck(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID,A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT_TRUCK T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) TRUCKCOUNT FROM TMP1 A";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getInt("TRUCKCOUNT"));
-
-				m.put("d", resultSet.getInt("DIRECT"));
-
-				snapshot.setM(m);
-
-				snapshot.setT(specialMapType.getValue());
-
-				snapshot.setI(resultSet.getInt("LINK_PID"));
-
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-				snapshot.setG(geoArray);
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-
-	/**
-	 * 2 link限制信息数量（普通限制信息） 业务说明：按照限制信息的数量区分渲染显示，限制信息无记录与限制信息存在一条记录和多条记录区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLimit(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) LIMITCOUNT FROM TMP1 A";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getString("LIMITCOUNT"));
-
-				m.put("d", resultSet.getInt("DIRECT"));
-
-				snapshot.setM(m);
-
-				snapshot.setT(specialMapType.getValue());
-
-				snapshot.setI(resultSet.getInt("LINK_PID"));
-
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-				snapshot.setG(geoArray);
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-
-	/**
-	 * 3 普通线限速限速等级 业务说明：按照普通线限速的限速等级不同的值区分渲染link
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdlinkSpeedlimitSpeedClass(int x, int y,
-			int z, int gap, SpecialMapType specialMapType) throws Exception {
+        this.conn = conn;
+    }
+
+    /**
+     * 控制输出JSON的格式
+     *
+     * @return JsonConfig
+     */
+    private JsonConfig getJsonConfig() {
+        JsonConfig jsonConfig = new JsonConfig();
+
+        jsonConfig.registerJsonValueProcessor(String.class,
+                new JsonValueProcessor() {
+
+                    @Override
+                    public Object processObjectValue(String key, Object value,
+                                                     JsonConfig arg2) {
+                        if (value == null) {
+                            return null;
+                        }
+
+                        if (JSONUtils.mayBeJSON(value.toString())) {
+                            return "\"" + value + "\"";
+                        }
+
+                        return value;
+
+                    }
+
+                    @Override
+                    public Object processArrayValue(Object value,
+                                                    JsonConfig arg1) {
+                        return value;
+                    }
+                });
+
+        return jsonConfig;
+    }
+
+    /**
+     * 根据瓦片空间查询
+     *
+     * @return 查询结果
+     * @throws Exception
+     */
+    public JSONObject searchDataByTileWithGap(List<String> types, int x, int y,
+                                              int z, int gap) throws Exception {
+
+        JSONObject json = new JSONObject();
+
+        try {
+
+            for (String type : types) {
+
+                List<SearchSnapshot> list = getSearchSnapshot(type, x, y, z,
+                        gap);
+
+                JSONArray array = new JSONArray();
+
+                for (SearchSnapshot snap : list) {
+
+                    array.add(snap.Serialize(ObjLevel.BRIEF), getJsonConfig());
+                }
+
+                json.accumulate(type, array, getJsonConfig());
+            }
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+        }
+        return json;
+    }
+
+    /**
+     * 根据瓦片空间查询
+     *
+     * @return 查询结果
+     * @throws Exception
+     */
+    private List<SearchSnapshot> getSearchSnapshot(String type, int x, int y,
+                                                   int z, int gap) throws Exception {
+
+        List<SearchSnapshot> list;
+
+        try {
+
+            SpecialMapType specialMapType = SpecialMapType.valueOf(type);
+
+            switch (specialMapType) {
+                case rdLinkLimitTruck:
+                    list = rdLinkLimitTruck(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkLimit:
+                    list = rdLinkLimit(x, y, z, gap, specialMapType);
+                    break;
+                case rdlinkSpeedlimitSpeedClass:
+                    list = rdlinkSpeedlimitSpeedClass(x, y, z, gap, specialMapType);
+                    break;
+                case rdlinkSpeedlimitSpeedClassWork:
+                    list = rdlinkSpeedlimitSpeedClassWork(x, y, z, gap,
+                            specialMapType);
+                    break;
+                case rdlinkSpeedlimitSpeedLimitSrc:
+                    list = rdlinkSpeedlimitSpeedLimitSrc(x, y, z, gap,
+                            specialMapType);
+                    break;
+                case rdLinkLaneClass:
+                    list = rdLinkLaneClass(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkFunctionClass:
+                    list = rdLinkFunctionClass(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkLaneNum:
+                    list = rdLinkLaneNum(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkDevelopState:
+                    list = rdLinkDevelopState(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkMultiDigitized:
+                    list = rdLinkMultiDigitized(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkPaveStatus:
+                    list = rdLinkPaveStatus(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkTollInfo:
+                    list = rdLinkTollInfo(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkSpecialTraffic:
+                    list = rdLinkSpecialTraffic(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkIsViaduct:
+                    list = rdLinkIsViaduct(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkAppInfo:
+                    list = rdLinkAppInfo(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkForm50:
+                    list = rdLinkForm50(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkNameContent:
+                    list = rdLinkNameContent(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkNameGroupid:
+                    list = rdLinkNameGroupid(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkNameType:
+                    list = rdLinkNameType(x, y, z, gap, specialMapType);
+                    break;
+                case rdlinkSpeedlimitConditionCount:
+                    list = rdlinkSpeedlimitConditionCount(x, y, z, gap,
+                            specialMapType);
+                    break;
+                case rdLinkFormOfWay10:
+                case rdLinkFormOfWay11:
+                case rdLinkFormOfWay12:
+                case rdLinkFormOfWay13:
+                case rdLinkFormOfWay14:
+                case rdLinkFormOfWay15:
+                case rdLinkFormOfWay16:
+                case rdLinkFormOfWay17:
+                case rdLinkFormOfWay20:
+                case rdLinkFormOfWay31:
+                case rdLinkFormOfWay33:
+                case rdLinkFormOfWay34:
+                case rdLinkFormOfWay35:
+                case rdLinkFormOfWay36:
+                case rdLinkFormOfWay37:
+                case rdLinkFormOfWay38:
+                case rdLinkFormOfWay39:
+                    list = rdLinkFormOfWay(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkLimitType0:
+                case rdLinkLimitType2:
+                case rdLinkLimitType3:
+                case rdLinkLimitType8:
+                case rdLinkLimitType9:
+                case rdLinkLimitType10:
+                    list = rdLinkLimitType(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkLimitType1:
+                case rdLinkLimitType5:
+                case rdLinkLimitType6:
+                case rdLinkLimitType7:
+                    list = rdLinkLimitTypeDirect(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkRticRank:
+                    list = rdLinkRticRank(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkIntRticRank:
+                    list = rdLinkIntRticRank(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkZoneTpye:
+                    list = rdLinkZoneTpye(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkZoneCount:
+                    list = rdLinkZoneCount(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkZoneSide:
+                    list = rdLinkZoneSide(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkProperty:
+                    list = rdLinkProperty(x, y, z, gap, specialMapType);
+                    break;
+
+                case rdLinkImiCode:
+                    list = rdLinkImiCode(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkUrban:
+                    list = rdLinkUrban(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkWalkFlag:
+                    list = rdLinkWalkFlag(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkSidewalkFlag:
+                    list = rdLinkSidewalkFlag(x, y, z, gap, specialMapType);
+                    break;
+                case rdLinkWalkstairFlag:
+                    list = rdLinkWalkstairFlag(x, y, z, gap, specialMapType);
+                    break;
+                default:
+                    list = new ArrayList<>();
+            }
+
+        } catch (Exception e) {
+
+            throw e;
+
+        } finally {
+        }
+
+        return list;
+    }
+
+    private JSONArray setLinkGeo(ResultSet resultSet, double px, double py,
+                                 int z) throws Exception {
+        STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+
+        JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+        JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+        return jo.getJSONArray("coordinates");
+    }
+
+    /**
+     * 1 卡车限制信息 业务说明：卡车限制信息按照卡车限制信息的有无来渲染link，卡车限制信息字表有记录和无记录需要对link进行区别选人
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLimitTruck(int x, int y, int z, int gap,
+                                                  SpecialMapType specialMapType) throws Exception {
+
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID,A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT_TRUCK T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
+
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 2 link限制信息数量（普通限制信息） 业务说明：按照限制信息的数量区分渲染显示，限制信息无记录与限制信息存在一条记录和多条记录区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLimit(int x, int y, int z, int gap,
+                                             SpecialMapType specialMapType) throws Exception {
+
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
+
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 3 普通线限速限速等级 业务说明：按照普通线限速的限速等级不同的值区分渲染link
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdlinkSpeedlimitSpeedClass(int x, int y,
+                                                            int z, int gap, SpecialMapType specialMapType) throws Exception {
+
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ SPEED_CLASS FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) SPEED_CLASS FROM TMP1 A";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+            pstmt.setString(1, wkt);
+
+            resultSet = pstmt.executeQuery();
+
+            double px = MercatorProjection.tileXToPixelX(x);
+
+            double py = MercatorProjection.tileYToPixelY(y);
+
+            while (resultSet.next()) {
+
+                SearchSnapshot snapshot = new SearchSnapshot();
+
+                JSONObject m = new JSONObject();
+
+                int speedClass = resultSet.getInt("SPEED_CLASS");
+
+                if (resultSet.wasNull()) {
+                    speedClass = 99;
+                }
+
+                m.put("a", speedClass);
+
+                m.put("d", resultSet.getInt("DIRECT"));
+
+                snapshot.setM(m);
+
+                snapshot.setT(specialMapType.getValue());
+
+                snapshot.setI(resultSet.getInt("LINK_PID"));
+
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+
+                snapshot.setG(geoArray);
+
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return list;
+    }
+
+    /**
+     * 4 普通线限速限速等级赋值标识 业务说明：根据等级赋值标识（SPEED_CLASS_WORK）的值区分渲染link
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdlinkSpeedlimitSpeedClassWork(int x, int y,
+                                                                int z, int gap, SpecialMapType specialMapType) throws Exception {
+
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ SPEED_CLASS_WORK FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) SPEED_CLASS_WORK FROM TMP1 A";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+            pstmt.setString(1, wkt);
+
+            resultSet = pstmt.executeQuery();
+
+            double px = MercatorProjection.tileXToPixelX(x);
+
+            double py = MercatorProjection.tileYToPixelY(y);
+
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
+
+                JSONObject m = new JSONObject();
+
+                int speedClassWork = resultSet.getInt("SPEED_CLASS_WORK");
+
+                if (resultSet.wasNull()) {
+                    speedClassWork = 99;
+                }
+
+                m.put("a", speedClassWork);
+
+                m.put("d", resultSet.getInt("direct"));
+
+                snapshot.setM(m);
+
+                snapshot.setT(specialMapType.getValue());
+
+                snapshot.setI(resultSet.getInt("LINK_PID"));
+
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+
+                snapshot.setG(geoArray);
+
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return list;
+    }
+
+    /**
+     * 5 普通线限速限速来源
+     * 业务说明：普通线限速的额限速来源（FROM_LIMIT_SRC、TO_LIMIT_SRC）按照线限速的方向表达，上方向的link
+     * ，顺方向和逆方向的限速来源分别记录，渲染原则如下： A、单方向道路：根据当前link线限速的限速来源值进行渲染； B、双方向道路：
+     * 顺方向和逆方向两侧的限速来源值相同，则按照当前的限速来源值渲染该段link； 顺方向和逆方向两侧的限速来源值不同，则视为“混合”渲染该段link；
+     * *
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdlinkSpeedlimitSpeedLimitSrc(int x, int y,
+                                                               int z, int gap, SpecialMapType specialMapType) throws Exception {
+
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ FROM_LIMIT_SRC||','||TO_LIMIT_SRC FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) LIMIT_SRC FROM TMP1 A ";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+
+            pstmt.setString(1, wkt);
+
+            resultSet = pstmt.executeQuery();
+
+            double px = MercatorProjection.tileXToPixelX(x);
+
+            double py = MercatorProjection.tileYToPixelY(y);
+
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
+
+                JSONObject m = new JSONObject();
+
+                int direct = resultSet.getInt("DIRECT");
+
+                int speedClassWork = 99;
+
+                String strClassWork = resultSet.getString("LIMIT_SRC");
+
+                if (!resultSet.wasNull()) {
+
+                    // 第0位顺向限速来源；第1位逆向限速来源
+                    String[] classWorks = strClassWork.split(",");
+
+                    if (direct == 2) {
+                        speedClassWork = Integer.parseInt(classWorks[0]);
+                    } else if (direct == 3) {
+                        speedClassWork = Integer.parseInt(classWorks[1]);
+                    } else {
+                        if (classWorks[0].equals(classWorks[1])) {
+                            speedClassWork = Integer.parseInt(classWorks[0]);
+                        } else {
+                            // 顺方向和逆方向两侧的限速来源值不同，则视为“混合”值为10
+                            speedClassWork = 10;
+                        }
+
+                    }
+                }
+
+                m.put("a", speedClassWork);
+
+                m.put("d", direct);
+
+                snapshot.setM(m);
+
+                snapshot.setT(specialMapType.getValue());
+
+                snapshot.setI(resultSet.getInt("LINK_PID"));
+
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+
+                snapshot.setG(geoArray);
+
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return list;
+    }
+
+    /**
+     * 6 link车道等级 业务说明：根据车道等级的值区分渲染link
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLaneClass(int x, int y, int z, int gap,
+                                                 SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 7 link功能等级 业务说明：根据功能等级的值区分渲染link
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkFunctionClass(int x, int y, int z,
+                                                     int gap, SpecialMapType specialMapType) throws Exception {
+
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+
+        String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,FUNCTION_CLASS FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+
+        PreparedStatement pstmt = null;
+
+        ResultSet resultSet = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ SPEED_CLASS FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) SPEED_CLASS FROM TMP1 A";
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		PreparedStatement pstmt = null;
+            pstmt.setString(1, wkt);
 
-		ResultSet resultSet = null;
+            resultSet = pstmt.executeQuery();
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			pstmt.setString(1, wkt);
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-			resultSet = pstmt.executeQuery();
+                JSONObject m = new JSONObject();
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                int functionClass = resultSet.getInt("FUNCTION_CLASS");
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                if (z < 14 && functionClass > 3) {
 
-			while (resultSet.next()) {
+                    continue;
+                }
 
-				SearchSnapshot snapshot = new SearchSnapshot();
+                m.put("a", functionClass);
 
-				JSONObject m = new JSONObject();
+                m.put("d", resultSet.getInt("DIRECT"));
 
-				int speedClass = resultSet.getInt("SPEED_CLASS");
+                snapshot.setM(m);
 
-				if (resultSet.wasNull()) {
-					speedClass = 99;
-				}
+                snapshot.setT(specialMapType.getValue());
 
-				m.put("a", speedClass);
+                snapshot.setI(resultSet.getInt("LINK_PID"));
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				snapshot.setM(m);
+                snapshot.setG(geoArray);
 
-				snapshot.setT(specialMapType.getValue());
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        return list;
+    }
 
-				snapshot.setG(geoArray);
+    /**
+     * 8 车道数（总数） 业务说明：根据总车道数的值区分渲染link,如果总车道数为0，根据左右车道数是否有值渲染link
+     * A、总车道数为7以及7以下的，按照车道数的值区分渲染link（7种颜色）； B、总车道数大于7的统一渲染link（1种颜色）；
+     * C、当总车道数为0，左右车道数不为“0”时，需要渲染；（1种颜色） D、如果总车道数、左右车道数都为0，需要渲染；（1种颜色）
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLaneNum(int x, int y, int z, int gap,
+                                               SpecialMapType specialMapType) throws Exception {
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,LANE_NUM,LANE_LEFT,LANE_RIGHT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
 
-		return list;
-	}
+        PreparedStatement pstmt = null;
 
-	/**
-	 * 4 普通线限速限速等级赋值标识 业务说明：根据等级赋值标识（SPEED_CLASS_WORK）的值区分渲染link
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdlinkSpeedlimitSpeedClassWork(int x, int y,
-			int z, int gap, SpecialMapType specialMapType) throws Exception {
+        ResultSet resultSet = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ SPEED_CLASS_WORK FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) SPEED_CLASS_WORK FROM TMP1 A";
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		PreparedStatement pstmt = null;
+            pstmt.setString(1, wkt);
 
-		ResultSet resultSet = null;
+            resultSet = pstmt.executeQuery();
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			pstmt.setString(1, wkt);
+            while (resultSet.next()) {
 
-			resultSet = pstmt.executeQuery();
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                JSONObject m = new JSONObject();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                int laneNum = resultSet.getInt("LANE_NUM");
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                int laneLeft = resultSet.getInt("LANE_LEFT");
 
-				JSONObject m = new JSONObject();
+                int laneRight = resultSet.getInt("LANE_RIGHT");
 
-				int speedClassWork = resultSet.getInt("SPEED_CLASS_WORK");
+                if (laneNum > 0) {
+
+                    if (laneNum < 8) {
+
+                        m.put("a", laneNum);
+
+                    } else {
+
+                        m.put("a", 8);
+                    }
+                } else {
+
+                    if (laneLeft != 0 || laneRight != 0) {
+
+                        m.put("a", 9);
+
+                    } else {
+
+                        m.put("a", 10);
+                    }
+                }
+
+                m.put("d", resultSet.getInt("DIRECT"));
+
+                snapshot.setM(m);
+
+                snapshot.setT(specialMapType.getValue());
+
+                snapshot.setI(resultSet.getInt("LINK_PID"));
+
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+
+                snapshot.setG(geoArray);
+
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+
+        return list;
+    }
+
+    /**
+     * 9 开发状态, 业务说明：按照开发状态的类型特殊渲染link，共三个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkDevelopState(int x, int y, int z,
+                                                    int gap, SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 10 上下线分离, 业务说明：按照是否具有上下分离属性特殊渲染link，共2个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkMultiDigitized(int x, int y, int z,
+                                                      int gap, SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 11 铺设状态, 业务说明：按照铺设状态的类型特殊渲染link，共2个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkPaveStatus(int x, int y, int z, int gap,
+                                                  SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 12 收费信息, 业务说明：按照收费信息的类型特殊渲染link，共2个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkTollInfo(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 13 特殊交通, 业务说明：按照是否具有特殊交通类型的属性特殊渲染link，共2个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkSpecialTraffic(int x, int y, int z,
+                                                      int gap, SpecialMapType specialMapType) throws Exception {
+
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
+
+    /**
+     * 14 高架, 业务说明：按照是否具有高架类型的属性特殊渲染link，共2个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkIsViaduct(int x, int y, int z, int gap,
+                                                 SpecialMapType specialMapType) throws Exception {
 
-				if (resultSet.wasNull()) {
-					speedClassWork = 99;
-				}
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
 
-				m.put("a", speedClassWork);
+    /**
+     * 15 供用信息, 业务说明：按照供用信息的类型特殊渲染link，共5个值域，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkAppInfo(int x, int y, int z, int gap,
+                                               SpecialMapType specialMapType) throws Exception {
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
 
-				m.put("d", resultSet.getInt("direct"));
+    /**
+     * 16 交叉点内道路, 业务说明：按照道路是否具有交叉口内道路形态特殊渲染link
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkForm50(int x, int y, int z, int gap,
+                                              SpecialMapType specialMapType) throws Exception {
 
-				snapshot.setM(m);
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_FORM T WHERE T.LINK_PID = A.LINK_PID AND T.FORM_OF_WAY = 50 AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
 
-				snapshot.setT(specialMapType.getValue());
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+    }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				snapshot.setG(geoArray);
+    /**
+     * 17 道路名内容, 业务说明：按照道路名的顺序该link所有的中文名称标注在link上
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkNameContent(int x, int y, int z,
+                                                   int gap, SpecialMapType specialMapType) throws Exception {
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) ";
 
-		return list;
-	}
+        PreparedStatement pstmt = null;
 
-	/**
-	 * 5 普通线限速限速来源
-	 * 业务说明：普通线限速的额限速来源（FROM_LIMIT_SRC、TO_LIMIT_SRC）按照线限速的方向表达，上方向的link
-	 * ，顺方向和逆方向的限速来源分别记录，渲染原则如下： A、单方向道路：根据当前link线限速的限速来源值进行渲染； B、双方向道路：
-	 * 顺方向和逆方向两侧的限速来源值相同，则按照当前的限速来源值渲染该段link； 顺方向和逆方向两侧的限速来源值不同，则视为“混合”渲染该段link；
-	 * *
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdlinkSpeedlimitSpeedLimitSrc(int x, int y,
-			int z, int gap, SpecialMapType specialMapType) throws Exception {
+        ResultSet resultSet = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        Set<Integer> linkPids = new HashSet<Integer>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ FROM_LIMIT_SRC||','||TO_LIMIT_SRC FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2 AND ROWNUM <= 1) LIMIT_SRC FROM TMP1 A ";
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		PreparedStatement pstmt = null;
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		ResultSet resultSet = null;
+            pstmt.setString(1, wkt);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            resultSet = pstmt.executeQuery();
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			pstmt.setString(1, wkt);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                JSONObject m = new JSONObject();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                m.put("a", resultSet.getInt("kind"));
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                m.put("c", resultSet.getString("limits"));
 
-				JSONObject m = new JSONObject();
+                m.put("d", resultSet.getInt("direct"));
 
-				int direct = resultSet.getInt("DIRECT");
+                m.put("e", resultSet.getInt("s_node_pid"));
 
-				int speedClassWork = 99;
+                m.put("f", resultSet.getInt("e_node_pid"));
 
-				String strClassWork = resultSet.getString("LIMIT_SRC");
+                m.put("h", resultSet.getString("forms"));
 
-				if (!resultSet.wasNull()) {
+                m.put("i", resultSet.getInt("function_class"));
 
-					// 第0位顺向限速来源；第1位逆向限速来源
-					String[] classWorks = strClassWork.split(",");
+                m.put("j", resultSet.getInt("imi_code"));
 
-					if (direct == 2) {
-						speedClassWork = Integer.parseInt(classWorks[0]);
-					} else if (direct == 3) {
-						speedClassWork = Integer.parseInt(classWorks[1]);
-					} else {
-						if (classWorks[0].equals(classWorks[1])) {
-							speedClassWork = Integer.parseInt(classWorks[0]);
-						} else {
-							// 顺方向和逆方向两侧的限速来源值不同，则视为“混合”值为10
-							speedClassWork = 10;
-						}
+                m.put("k", resultSet.getDouble("length"));
 
-					}
-				}
+                snapshot.setM(m);
 
-				m.put("a", speedClassWork);
+                snapshot.setT(specialMapType.getValue());
 
-				m.put("d", direct);
+                int linkPid = resultSet.getInt("link_pid");
 
-				snapshot.setM(m);
+                snapshot.setI(linkPid);
 
-				snapshot.setT(specialMapType.getValue());
+                linkPids.add(linkPid);
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                JSONObject geojson = Geojson.spatial2Geojson(struct);
+
+                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+
+                snapshot.setG(jo.getJSONArray("coordinates"));
+
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
+
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				snapshot.setG(geoArray);
+        RdLinkNameSelector linkNameSelector = new RdLinkNameSelector(this.conn);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        Map<Integer, StringBuilder> nameMap = linkNameSelector
+                .loadAllNameByLinkPids(linkPids);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        for (SearchSnapshot snapshot : list) {
 
-		return list;
-	}
+            String name = "";
 
-	/**
-	 * 6 link车道等级 业务说明：根据车道等级的值区分渲染link
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLaneClass(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+            if (nameMap.containsKey(snapshot.getI())) {
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                name = nameMap.get(snapshot.getI()).toString();
+            }
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,LANE_CLASS FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+            JSONObject m = snapshot.getM();
 
-		PreparedStatement pstmt = null;
+            m.put("b", name);
+        }
 
-		ResultSet resultSet = null;
+        return list;
+    }
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+    /**
+     * 18 道路名组数, 业务说明：根据道路名具有的道路名组数特殊渲染link；0~4分别渲染，4以上统一渲染一个颜色
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkNameGroupid(int x, int y, int z,
+                                                   int gap, SpecialMapType specialMapType) throws Exception {
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(NAME_GROUPID) FROM RD_LINK_NAME T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
 
-			pstmt.setString(1, wkt);
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
+    }
 
-			resultSet = pstmt.executeQuery();
+    /**
+     * 获取名称类型优先级
+     *
+     * @return
+     */
+    private int getPriorityNameType(int type) {
 
-			double px = MercatorProjection.tileXToPixelX(x);
+        switch (type) {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            case 5:
+                return 1;
+            case 1:
+                return 2;
+            case 2:
+                return 3;
+            case 4:
+                return 4;
+            case 15:
+                return 5;
+            case 9:
+                return 6;
+            case 7:
+                return 7;
+            case 0:
+                return 8;
+            case 3:
+                return 9;
+            case 6:
+                return 10;
+            case 8:
+                return 11;
+            case 14:
+                return 12;
+            default:
+                return 99;
+        }
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+    }
 
-				JSONObject m = new JSONObject();
+    /**
+     * 19 名称类型, 业务说明：按照道路名的名称类型特殊渲染link，共12个值，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkNameType(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
 
-				m.put("a", resultSet.getInt("LANE_CLASS"));
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-				m.put("d", resultSet.getInt("DIRECT"));
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.NAME_TYPE FROM TMP1 T LEFT JOIN RD_LINK_NAME N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
 
-				snapshot.setM(m);
+        PreparedStatement pstmt = null;
 
-				snapshot.setT(specialMapType.getValue());
+        ResultSet resultSet = null;
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+        SearchSnapshot snapshot = null;
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-				snapshot.setG(geoArray);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+            pstmt.setString(1, wkt);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+            resultSet = pstmt.executeQuery();
 
-		return list;
-	}
+            double px = MercatorProjection.tileXToPixelX(x);
 
-	/**
-	 * 7 link功能等级 业务说明：根据功能等级的值区分渲染link
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkFunctionClass(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+            double py = MercatorProjection.tileYToPixelY(y);
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+            int flagType = 99;// 优先级最低
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,FUNCTION_CLASS FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+            int flagLinkPid = 0;
 
-		PreparedStatement pstmt = null;
+            int direct = 0;
 
-		ResultSet resultSet = null;
+            while (resultSet.next()) {
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                direct = resultSet.getInt("DIRECT");
 
-			pstmt.setString(1, wkt);
+                if (flagLinkPid != currLinkPid) {
 
-			resultSet = pstmt.executeQuery();
+                    if (snapshot != null) {
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                        JSONObject m = new JSONObject();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                        m.put("a", flagType);
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                        m.put("d", String.valueOf(direct));
 
-				JSONObject m = new JSONObject();
+                        snapshot.setM(m);
 
-				int functionClass = resultSet.getInt("FUNCTION_CLASS");
+                        list.add(snapshot);
+                    }
 
-				if (z < 14 && functionClass > 3) {
+                    snapshot = new SearchSnapshot();
 
-					continue;
-				}
+                    flagType = 99;// 优先级最低
 
-				m.put("a", functionClass);
+                    snapshot.setT(specialMapType.getValue());
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                    snapshot.setI(currLinkPid);
 
-				snapshot.setM(m);
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				snapshot.setT(specialMapType.getValue());
+                    snapshot.setG(geoArray);
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                    flagLinkPid = currLinkPid;
+                }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                int currtype = resultSet.getInt("NAME_TYPE");
 
-				snapshot.setG(geoArray);
+                if (resultSet.wasNull()) {
+                    currtype = 99;
+                }
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                if (getPriorityNameType(flagType) > getPriorityNameType(currtype)) {
+                    flagType = currtype;
+                }
+            }
+            if (snapshot != null) {
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                JSONObject m = new JSONObject();
 
-		return list;
-	}
+                m.put("a", flagType);
 
-	/**
-	 * 8 车道数（总数） 业务说明：根据总车道数的值区分渲染link,如果总车道数为0，根据左右车道数是否有值渲染link
-	 * A、总车道数为7以及7以下的，按照车道数的值区分渲染link（7种颜色）； B、总车道数大于7的统一渲染link（1种颜色）；
-	 * C、当总车道数为0，左右车道数不为“0”时，需要渲染；（1种颜色） D、如果总车道数、左右车道数都为0，需要渲染；（1种颜色）
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLaneNum(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+                m.put("d", direct);
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                snapshot.setM(m);
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,LANE_NUM,LANE_LEFT,LANE_RIGHT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+                list.add(snapshot);
+            }
 
-		PreparedStatement pstmt = null;
+        } catch (Exception e) {
 
-		ResultSet resultSet = null;
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        return list;
+    }
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+    /**
+     * 20 条件线限速个数, 业务说明：按照条件线限速的个数特殊渲染link，共5个值，区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdlinkSpeedlimitConditionCount(int x, int y,
+                                                                int z, int gap, SpecialMapType specialMapType) throws Exception {
 
-			pstmt.setString(1, wkt);
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 3 AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
 
-			resultSet = pstmt.executeQuery();
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
+    }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+    /**
+     * @param specialMapType
+     * @return
+     */
+    private int getLinkLimitType(SpecialMapType specialMapType) {
+        switch (specialMapType) {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            case rdLinkLimitType0:
+                return 0;
+            case rdLinkLimitType1:
+                return 1;
+            case rdLinkLimitType2:
+                return 2;
+            case rdLinkLimitType3:
+                return 3;
+            case rdLinkLimitType5:
+                return 5;
+            case rdLinkLimitType6:
+                return 6;
+            case rdLinkLimitType7:
+                return 7;
+            case rdLinkLimitType8:
+                return 8;
+            case rdLinkLimitType9:
+                return 9;
+            case rdLinkLimitType10:
+                return 10;
+            default:
+                return -1;
+        }
+    }
 
-			while (resultSet.next()) {
+    /**
+     * 普通限制：适用 21 禁止穿行 、22 道路维修中、24 外地车限行、25 尾号限行、26 在建、27 车辆限制
+     * 业务说明：根据RD_LINK_LIMIT限制信息中是否有**记录进行渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLimitType(int x, int y, int z, int gap,
+                                                 SpecialMapType specialMapType) throws Exception {
 
-				SearchSnapshot snapshot = new SearchSnapshot();
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-				JSONObject m = new JSONObject();
+        int tpye = getLinkLimitType(specialMapType);
 
-				int laneNum = resultSet.getInt("LANE_NUM");
+        if (tpye == -1) {
+            return list;
+        }
 
-				int laneLeft = resultSet.getInt("LANE_LEFT");
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.TYPE = :2 AND T.U_RECORD != 2) LIMITCOUNT FROM TMP1 A";
 
-				int laneRight = resultSet.getInt("LANE_RIGHT");
+        PreparedStatement pstmt = null;
 
-				if (laneNum > 0) {
+        ResultSet resultSet = null;
 
-					if (laneNum < 8) {
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-						m.put("a", laneNum);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-					} else {
+            pstmt.setString(1, wkt);
 
-						m.put("a", 8);
-					}
-				} else {
+            pstmt.setInt(2, tpye);
 
-					if (laneLeft != 0 || laneRight != 0) {
+            resultSet = pstmt.executeQuery();
 
-						m.put("a", 9);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-					} else {
+            double py = MercatorProjection.tileYToPixelY(y);
 
-						m.put("a", 10);
-					}
-				}
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                JSONObject m = new JSONObject();
 
-				snapshot.setM(m);
+                m.put("a", resultSet.getString("LIMITCOUNT"));
 
-				snapshot.setT(specialMapType.getValue());
+                m.put("d", resultSet.getInt("DIRECT"));
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                snapshot.setM(m);
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                snapshot.setT(specialMapType.getValue());
 
-				snapshot.setG(geoArray);
+                snapshot.setI(resultSet.getInt("LINK_PID"));
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                snapshot.setG(geoArray);
 
-		return list;
-	}
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-	/**
-	 * 9 开发状态, 业务说明：按照开发状态的类型特殊渲染link，共三个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkDevelopState(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        return list;
+    }
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,DEVELOP_STATE FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+    /**
+     * 根据优先级获取 限制方向
+     *
+     * @param dirs
+     * @return
+     */
+    private int getLimitDir(Set<Integer> dirs) {
 
-		PreparedStatement pstmt = null;
+        if (dirs.contains(1) || (dirs.contains(2) && dirs.contains(3))) {
+            return 1;
+        }
+        if (dirs.contains(2)) {
+            return 2;
+        }
+        if (dirs.contains(3)) {
+            return 2;
+        }
+        if (dirs.contains(0)) {
+            return 3;
+        }
+        if (dirs.contains(9)) {
+            return 3;
+        }
 
-		ResultSet resultSet = null;
+        return 99;
+    }
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+    /**
+     * 普通限制： 适用 28 季节性关闭道路 、29 Usage fee required、30 超车限制、31 单行限制
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkLimitTypeDirect(int x, int y, int z,
+                                                       int gap, SpecialMapType specialMapType) throws Exception {
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-			pstmt.setString(1, wkt);
+        int tpye = getLinkLimitType(specialMapType);
 
-			resultSet = pstmt.executeQuery();
+        if (tpye == -1) {
 
-			double px = MercatorProjection.tileXToPixelX(x);
+            return list;
+        }
 
-			double py = MercatorProjection.tileYToPixelY(y);
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.LIMIT_DIR FROM TMP1 T LEFT JOIN RD_LINK_LIMIT N ON T.LINK_PID = N.LINK_PID AND N.TYPE = :2 AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+        PreparedStatement pstmt = null;
 
-				JSONObject m = new JSONObject();
+        ResultSet resultSet = null;
 
-				m.put("a", resultSet.getInt("DEVELOP_STATE"));
+        SearchSnapshot snapshot = null;
 
-				m.put("d", resultSet.getInt("DIRECT"));
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-				snapshot.setM(m);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-				snapshot.setT(specialMapType.getValue());
+            pstmt.setString(1, wkt);
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+            pstmt.setInt(2, tpye);
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+            resultSet = pstmt.executeQuery();
 
-				snapshot.setG(geoArray);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+            Set<Integer> dirs = new HashSet<Integer>();
 
-		return list;
-	}
+            int flagLinkPid = 0;
 
-	/**
-	 * 10 上下线分离, 业务说明：按照是否具有上下分离属性特殊渲染link，共2个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkMultiDigitized(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+            int direct = 0;
+            while (resultSet.next()) {
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,MULTI_DIGITIZED FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+                direct = resultSet.getInt("DIRECT");
 
-		PreparedStatement pstmt = null;
+                if (flagLinkPid != currLinkPid) {
 
-		ResultSet resultSet = null;
+                    if (snapshot != null) {
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                        JSONObject m = new JSONObject();
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                        int type = getLimitDir(dirs);
 
-			pstmt.setString(1, wkt);
+                        m.put("a", type);
 
-			resultSet = pstmt.executeQuery();
+                        if (dirs.contains(2) && !dirs.contains(3)) {
+                            m.put("d", 2);
+                        } else if (dirs.contains(3) && !dirs.contains(2)) {
+                            m.put("d", 3);
+                        } else {
+                            m.put("d", String.valueOf(direct));
+                        }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                        snapshot.setM(m);
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                        list.add(snapshot);
+                    }
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                    snapshot = new SearchSnapshot();
 
-				JSONObject m = new JSONObject();
+                    dirs = new HashSet<Integer>();
 
-				m.put("a", resultSet.getInt("MULTI_DIGITIZED"));
+                    snapshot.setT(specialMapType.getValue());
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                    snapshot.setI(currLinkPid);
 
-				snapshot.setM(m);
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				snapshot.setT(specialMapType.getValue());
+                    snapshot.setG(geoArray);
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                    flagLinkPid = currLinkPid;
+                }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                int currDir = resultSet.getInt("LIMIT_DIR");
 
-				snapshot.setG(geoArray);
+                if (resultSet.wasNull()) {
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                    continue;
+                }
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                dirs.add(currDir);
+            }
+            if (snapshot != null) {
 
-		return list;
-	}
+                JSONObject m = new JSONObject();
 
-	/**
-	 * 11 铺设状态, 业务说明：按照铺设状态的类型特殊渲染link，共2个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkPaveStatus(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+                int type = getLimitDir(dirs);
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                m.put("a", type);
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,PAVE_STATUS FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+                if (dirs.contains(2) && !dirs.contains(3)) {
+                    m.put("d", 2);
+                } else if (dirs.contains(3) && !dirs.contains(2)) {
+                    m.put("d", 3);
+                } else {
+                    m.put("d", direct);
+                }
 
-		PreparedStatement pstmt = null;
+                snapshot.setM(m);
 
-		ResultSet resultSet = null;
+                list.add(snapshot);
+            }
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        } catch (Exception e) {
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-			pstmt.setString(1, wkt);
+        return list;
 
-			resultSet = pstmt.executeQuery();
+    }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+    /**
+     * 获取形态信息
+     *
+     * @param specialMapType
+     * @return 形态值
+     */
+    private int getFormOfWay(SpecialMapType specialMapType) {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+        switch (specialMapType) {
+            // IC
+            case rdLinkFormOfWay10:
+                return 10;
+            // JCT
+            case rdLinkFormOfWay11:
+                return 11;
+            // SA
+            case rdLinkFormOfWay12:
+                return 12;
+            // PA
+            case rdLinkFormOfWay13:
+                return 13;
+            // 全封闭道路
+            case rdLinkFormOfWay14:
+                return 14;
+            // 匝道
+            case rdLinkFormOfWay15:
+                return 15;
+            // 跨线天桥
+            case rdLinkFormOfWay16:
+                return 16;
+            // 跨线地道
+            case rdLinkFormOfWay17:
+                return 17;
+            // 步行街
+            case rdLinkFormOfWay20:
+                return 20;
+            // 隧道
+            case rdLinkFormOfWay31:
+                return 31;
+            // 环岛
+            case rdLinkFormOfWay33:
+                return 33;
+            // 辅路
+            case rdLinkFormOfWay34:
+                return 34;
+            // 调头口
+            case rdLinkFormOfWay35:
+                return 35;
+            // POI连接路
+            case rdLinkFormOfWay36:
+                return 36;
+            // 提右
+            case rdLinkFormOfWay37:
+                return 37;
+            // 提左
+            case rdLinkFormOfWay38:
+                return 38;
+            // 主辅路出入口
+            case rdLinkFormOfWay39:
+                return 39;
+            default:
+                return -1;
+        }
+    }
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+    /**
+     * 22 按照是否具有某个道路形态值特殊渲染link，每个道路形态区分渲染
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkFormOfWay(int x, int y, int z, int gap,
+                                                 SpecialMapType specialMapType) throws Exception {
 
-				JSONObject m = new JSONObject();
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-				m.put("a", resultSet.getInt("PAVE_STATUS"));
+        int formOfWay = getFormOfWay(specialMapType);
 
-				m.put("d", resultSet.getInt("DIRECT"));
+        if (formOfWay == -1) {
 
-				snapshot.setM(m);
+            return list;
+        }
 
-				snapshot.setT(specialMapType.getValue());
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_FORM T WHERE T.LINK_PID = A.LINK_PID AND T.FORM_OF_WAY = :2 AND T.U_RECORD != 2) FORMCOUNT FROM TMP1 A";
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+        PreparedStatement pstmt = null;
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        ResultSet resultSet = null;
 
-				snapshot.setG(geoArray);
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+            pstmt.setString(1, wkt);
 
-		return list;
-	}
+            pstmt.setInt(2, formOfWay);
 
-	/**
-	 * 12 收费信息, 业务说明：按照收费信息的类型特殊渲染link，共2个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkTollInfo(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+            resultSet = pstmt.executeQuery();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+            double px = MercatorProjection.tileXToPixelX(x);
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,TOLL_INFO FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+            double py = MercatorProjection.tileYToPixelY(y);
 
-		PreparedStatement pstmt = null;
+            while (resultSet.next()) {
 
-		ResultSet resultSet = null;
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                JSONObject m = new JSONObject();
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                m.put("a", resultSet.getString("FORMCOUNT"));
 
-			pstmt.setString(1, wkt);
+                m.put("d", resultSet.getInt("DIRECT"));
 
-			resultSet = pstmt.executeQuery();
+                snapshot.setM(m);
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                snapshot.setT(specialMapType.getValue());
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                snapshot.setI(resultSet.getInt("LINK_PID"));
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				JSONObject m = new JSONObject();
+                snapshot.setG(geoArray);
 
-				m.put("a", resultSet.getInt("TOLL_INFO"));
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-				m.put("d", resultSet.getInt("DIRECT"));
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				snapshot.setM(m);
+        return list;
+    }
 
-				snapshot.setT(specialMapType.getValue());
+    /**
+     * 获取rtic等级
+     *
+     * @param ranks
+     * @return
+     */
+    private int getRticRank(Set<Integer> ranks) {
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+        if (ranks.size() > 1) {
+            return 5;
+        }
+        if (ranks.contains(0)) {
+            return 0;
+        }
+        if (ranks.contains(1)) {
+            return 1;
+        }
+        if (ranks.contains(2)) {
+            return 2;
+        }
+        if (ranks.contains(3)) {
+            return 3;
+        }
+        if (ranks.contains(4)) {
+            return 4;
+        }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        return 99;
+    }
 
-				snapshot.setG(geoArray);
+    /**
+     * RTIC等级
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkRticRank(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.RANK FROM TMP1 T LEFT JOIN RD_LINK_RTIC N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
 
-		return list;
-	}
+        PreparedStatement pstmt = null;
 
-	/**
-	 * 13 特殊交通, 业务说明：按照是否具有特殊交通类型的属性特殊渲染link，共2个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkSpecialTraffic(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+        ResultSet resultSet = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        SearchSnapshot snapshot = null;
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,SPECIAL_TRAFFIC FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		PreparedStatement pstmt = null;
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		ResultSet resultSet = null;
+            pstmt.setString(1, wkt);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            resultSet = pstmt.executeQuery();
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			pstmt.setString(1, wkt);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			resultSet = pstmt.executeQuery();
+            Set<Integer> ranks = new HashSet<Integer>();
 
-			double px = MercatorProjection.tileXToPixelX(x);
+            int flagLinkPid = 0;
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            int direct = 0;
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+            while (resultSet.next()) {
 
-				JSONObject m = new JSONObject();
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-				m.put("a", resultSet.getInt("SPECIAL_TRAFFIC"));
+                direct = resultSet.getInt("DIRECT");
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                if (flagLinkPid != currLinkPid) {
 
-				snapshot.setM(m);
+                    if (snapshot != null) {
 
-				snapshot.setT(specialMapType.getValue());
+                        JSONObject m = new JSONObject();
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                        int type = getRticRank(ranks);
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                        m.put("a", type);
 
-				snapshot.setG(geoArray);
+                        m.put("d", direct);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                        snapshot.setM(m);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                        list.add(snapshot);
+                    }
 
-		return list;
-	}
+                    snapshot = new SearchSnapshot();
 
-	/**
-	 * 14 高架, 业务说明：按照是否具有高架类型的属性特殊渲染link，共2个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkIsViaduct(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+                    ranks = new HashSet<Integer>();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                    snapshot.setT(specialMapType.getValue());
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,IS_VIADUCT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+                    snapshot.setI(currLinkPid);
 
-		PreparedStatement pstmt = null;
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-		ResultSet resultSet = null;
+                    snapshot.setG(geoArray);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                    flagLinkPid = currLinkPid;
+                }
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                int currRank = resultSet.getInt("RANK");
 
-			pstmt.setString(1, wkt);
+                if (resultSet.wasNull()) {
 
-			resultSet = pstmt.executeQuery();
+                    continue;
+                }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                ranks.add(currRank);
+            }
+            if (snapshot != null) {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                JSONObject m = new JSONObject();
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                int type = getRticRank(ranks);
 
-				JSONObject m = new JSONObject();
+                m.put("a", type);
 
-				m.put("a", resultSet.getInt("IS_VIADUCT"));
+                m.put("d", direct);
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                snapshot.setM(m);
 
-				snapshot.setM(m);
+                list.add(snapshot);
+            }
 
-				snapshot.setT(specialMapType.getValue());
+        } catch (Exception e) {
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        return list;
 
-				snapshot.setG(geoArray);
+    }
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+    /**
+     * IntRtic等级
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkIntRticRank(int x, int y, int z,
+                                                   int gap, SpecialMapType specialMapType) throws Exception {
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		return list;
-	}
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.RANK FROM TMP1 T LEFT JOIN RD_LINK_INT_RTIC N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
 
-	/**
-	 * 15 供用信息, 业务说明：按照供用信息的类型特殊渲染link，共5个值域，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkAppInfo(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+        PreparedStatement pstmt = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        ResultSet resultSet = null;
 
-		String sql = "SELECT LINK_PID, GEOMETRY, DIRECT,APP_INFO FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
+        SearchSnapshot snapshot = null;
 
-		PreparedStatement pstmt = null;
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		ResultSet resultSet = null;
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, wkt);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            resultSet = pstmt.executeQuery();
 
-			pstmt.setString(1, wkt);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			resultSet = pstmt.executeQuery();
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			double px = MercatorProjection.tileXToPixelX(x);
+            Set<Integer> ranks = new HashSet<Integer>();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            int flagLinkPid = 0;
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+            int direct = 0;
 
-				JSONObject m = new JSONObject();
+            while (resultSet.next()) {
 
-				m.put("a", resultSet.getInt("APP_INFO"));
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                direct = resultSet.getInt("DIRECT");
 
-				snapshot.setM(m);
+                if (flagLinkPid != currLinkPid) {
 
-				snapshot.setT(specialMapType.getValue());
+                    if (snapshot != null) {
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                        JSONObject m = new JSONObject();
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                        int type = getRticRank(ranks);
 
-				snapshot.setG(geoArray);
+                        m.put("a", type);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                        m.put("d", direct);
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                        snapshot.setM(m);
 
-		return list;
-	}
+                        list.add(snapshot);
+                    }
 
-	/**
-	 * 16 交叉点内道路, 业务说明：按照道路是否具有交叉口内道路形态特殊渲染link
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkForm50(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+                    snapshot = new SearchSnapshot();
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                    ranks = new HashSet<Integer>();
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_FORM T WHERE T.LINK_PID = A.LINK_PID AND T.FORM_OF_WAY = 50 AND T.U_RECORD != 2) FORMCOUNT FROM TMP1 A";
+                    snapshot.setT(specialMapType.getValue());
 
-		PreparedStatement pstmt = null;
+                    snapshot.setI(currLinkPid);
 
-		ResultSet resultSet = null;
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                    snapshot.setG(geoArray);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                    flagLinkPid = currLinkPid;
+                }
 
-			pstmt.setString(1, wkt);
+                int currRank = resultSet.getInt("RANK");
 
-			resultSet = pstmt.executeQuery();
+                if (resultSet.wasNull()) {
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                    continue;
+                }
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                ranks.add(currRank);
+            }
+            if (snapshot != null) {
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+                JSONObject m = new JSONObject();
 
-				JSONObject m = new JSONObject();
+                int type = getRticRank(ranks);
 
-				m.put("a", resultSet.getInt("FORMCOUNT"));
+                m.put("a", type);
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                m.put("d", direct);
 
-				snapshot.setM(m);
+                snapshot.setM(m);
 
-				snapshot.setT(specialMapType.getValue());
+                list.add(snapshot);
+            }
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+        } catch (Exception e) {
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				snapshot.setG(geoArray);
+        return list;
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+    }
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+    /**
+     * 获取zone类型
+     *
+     * @param types
+     * @return
+     */
+    private int getZoneLnkType(Set<Integer> types) {
 
-		return list;
-	}
+        if (types.size() > 1) {
+            return 4;
+        }
+        if (types.contains(0)) {
+            return 0;
+        }
+        if (types.contains(1)) {
+            return 1;
+        }
+        if (types.contains(2)) {
+            return 2;
+        }
+        if (types.contains(3)) {
+            return 3;
+        }
 
-	
-	/**
-	 * 17 道路名内容, 业务说明：按照道路名的顺序该link所有的中文名称标注在link上
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkNameContent(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+        return 99;
+    }
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+    /**
+     * ZONE类型
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkZoneTpye(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS FROM TMP1 A, TMP2 B, TMP3 C WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) ";		
-		
-		PreparedStatement pstmt = null;
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		ResultSet resultSet = null;
-		
-		Set<Integer> linkPids = new HashSet<Integer>();
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.TYPE FROM TMP1 T LEFT JOIN RD_LINK_ZONE N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        PreparedStatement pstmt = null;
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+        ResultSet resultSet = null;
 
-			pstmt.setString(1, wkt);
+        SearchSnapshot snapshot = null;
 
-			resultSet = pstmt.executeQuery();
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-			double px = MercatorProjection.tileXToPixelX(x);
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            pstmt.setString(1, wkt);
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+            resultSet = pstmt.executeQuery();
 
-				JSONObject m = new JSONObject();
+            double px = MercatorProjection.tileXToPixelX(x);
 
-				m.put("a", resultSet.getInt("kind"));
-				
-				m.put("c", resultSet.getString("limits"));
+            double py = MercatorProjection.tileYToPixelY(y);
 
-				m.put("d", resultSet.getInt("direct"));
+            Set<Integer> types = new HashSet<Integer>();
 
-				m.put("e", resultSet.getInt("s_node_pid"));
+            int flagLinkPid = 0;
 
-				m.put("f", resultSet.getInt("e_node_pid"));
+            int direct = 0;
 
-				m.put("h", resultSet.getString("forms"));
+            while (resultSet.next()) {
 
-				m.put("i", resultSet.getInt("function_class"));
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-				m.put("j", resultSet.getInt("imi_code"));
-				
-				m.put("k", resultSet.getDouble("length"));
+                direct = resultSet.getInt("DIRECT");
 
-				snapshot.setM(m);
+                if (flagLinkPid != currLinkPid) {
 
-				snapshot.setT(specialMapType.getValue());
-				
-				int linkPid=resultSet.getInt("link_pid");
+                    if (snapshot != null) {
 
-				snapshot.setI(linkPid);
-				
-				linkPids.add(linkPid);
+                        JSONObject m = new JSONObject();
 
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
+                        int type = getZoneLnkType(types);
 
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
+                        m.put("a", type);
 
-				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
+                        m.put("d", direct);
 
-				snapshot.setG(jo.getJSONArray("coordinates"));
+                        snapshot.setM(m);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                        list.add(snapshot);
+                    }
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-		
-		RdLinkNameSelector linkNameSelector = new RdLinkNameSelector(this.conn);
+                    snapshot = new SearchSnapshot();
 
-		Map<Integer, StringBuilder> nameMap = linkNameSelector
-				.loadAllNameByLinkPids(linkPids);
+                    types = new HashSet<Integer>();
 
-		for (SearchSnapshot snapshot : list) {
+                    snapshot.setT(specialMapType.getValue());
 
-			String name = "";
+                    snapshot.setI(currLinkPid);
 
-			if (nameMap.containsKey(snapshot.getI())) {
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-				name = nameMap.get(snapshot.getI()).toString();
-			}
+                    snapshot.setG(geoArray);
 
-			JSONObject m = snapshot.getM();
+                    flagLinkPid = currLinkPid;
+                }
 
-			m.put("b", name);
-		}
+                int currType = resultSet.getInt("TYPE");
 
-		return list;
-	}
-	/**
-	 * 18 道路名组数, 业务说明：根据道路名具有的道路名组数特殊渲染link；0~4分别渲染，4以上统一渲染一个颜色
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkNameGroupid(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+                if (resultSet.wasNull()) {
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                    continue;
+                }
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(NAME_GROUPID) FROM RD_LINK_NAME T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) GROUPCOUNT FROM TMP1 A";
+                types.add(currType);
+            }
+            if (snapshot != null) {
 
-		PreparedStatement pstmt = null;
+                JSONObject m = new JSONObject();
 
-		ResultSet resultSet = null;
+                int type = getZoneLnkType(types);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                m.put("a", type);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                m.put("d", direct);
 
-			pstmt.setString(1, wkt);
+                snapshot.setM(m);
 
-			resultSet = pstmt.executeQuery();
+                list.add(snapshot);
+            }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+        } catch (Exception e) {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-			while (resultSet.next()) {
+        return list;
+    }
 
-				SearchSnapshot snapshot = new SearchSnapshot();
+    /**
+     * 35 zone个数 :按照link所具有的ZONE的组数渲染link；zone信息个数：0，1，2，三个颜色渲染显示
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkZoneCount(int x, int y, int z, int gap,
+                                                 SpecialMapType specialMapType) throws Exception {
 
-				JSONObject m = new JSONObject();
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_ZONE T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) PropertyCount FROM TMP1 A";
 
-				m.put("a", resultSet.getInt("GROUPCOUNT"));
+        return rdLinkPropertyCount(sql, x, y, z, gap, specialMapType);
+    }
 
-				m.put("d", resultSet.getInt("DIRECT"));
+    /**
+     * 获取zone区划号码位置信息
+     *
+     * @param infos
+     * @return
+     */
+    private int getZoneLnkSide(Map<Integer, Integer> infos) {
 
-				snapshot.setM(m);
+        if (infos.size() == 0) {
+            return 3;
+        }
+        if (infos.size() == 1) {
+            return 4;
+        }
+        if (infos.size() == 2 && infos.containsKey(1) && infos.containsKey(0)) {
+            if (infos.get(0) == infos.get(1)) {
+                return 1;
+            } else {
+                return 2;
+            }
+        }
 
-				snapshot.setT(specialMapType.getValue());
+        return 2;
+    }
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+    /**
+     * link的左右ZONE号码
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkZoneSide(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-				snapshot.setG(geoArray);
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.SIDE, N.REGION_ID FROM TMP1 T LEFT JOIN RD_LINK_ZONE N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        PreparedStatement pstmt = null;
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        ResultSet resultSet = null;
 
-		return list;
-	}
+        SearchSnapshot snapshot = null;
 
-	/**
-	 * 获取名称类型优先级
-	 * 
-	 * @return
-	 */
-	private int getPriorityNameType(int type) {
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		switch (type) {
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		case 5:
-			return 1;
-		case 1:
-			return 2;
-		case 2:
-			return 3;
-		case 4:
-			return 4;
-		case 15:
-			return 5;
-		case 9:
-			return 6;
-		case 7:
-			return 7;
-		case 0:
-			return 8;
-		case 3:
-			return 9;
-		case 6:
-			return 10;
-		case 8:
-			return 11;
-		case 14:
-			return 12;
-		default:
-			return 99;
-		}
+            pstmt.setString(1, wkt);
 
-	}
+            resultSet = pstmt.executeQuery();
 
-	/**
-	 * 19 名称类型, 业务说明：按照道路名的名称类型特殊渲染link，共12个值，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkNameType(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+            double px = MercatorProjection.tileXToPixelX(x);
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+            double py = MercatorProjection.tileYToPixelY(y);
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.NAME_TYPE FROM TMP1 T LEFT JOIN RD_LINK_NAME N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
+            // Map<Integer:SIDE, Integer:REGION_ID>
+            Map<Integer, Integer> infos = new HashMap<Integer, Integer>();
 
-		PreparedStatement pstmt = null;
+            int flagLinkPid = 0;
 
-		ResultSet resultSet = null;
+            int direct = 0;
 
-		SearchSnapshot snapshot = null;
+            while (resultSet.next()) {
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                int currLinkPid = resultSet.getInt("LINK_PID");
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                direct = resultSet.getInt("DIRECT");
 
-			pstmt.setString(1, wkt);
+                if (flagLinkPid != currLinkPid) {
 
-			resultSet = pstmt.executeQuery();
+                    if (snapshot != null) {
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                        JSONObject m = new JSONObject();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                        int regionInfo = getZoneLnkSide(infos);
 
-			int flagType = 99;// 优先级最低
+                        m.put("a", regionInfo);
 
-			int flagLinkPid = 0;
+                        m.put("d", direct);
 
-			int direct = 0;
+                        snapshot.setM(m);
 
-			while (resultSet.next()) {
+                        list.add(snapshot);
+                    }
 
-				int currLinkPid = resultSet.getInt("LINK_PID");
+                    snapshot = new SearchSnapshot();
 
-				direct = resultSet.getInt("DIRECT");
+                    infos = new HashMap<Integer, Integer>();
 
-				if (flagLinkPid != currLinkPid) {
+                    snapshot.setT(specialMapType.getValue());
 
-					if (snapshot != null) {
+                    snapshot.setI(currLinkPid);
 
-						JSONObject m = new JSONObject();
+                    JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-						m.put("a", flagType);
+                    snapshot.setG(geoArray);
 
-						m.put("d", String.valueOf(direct));
+                    flagLinkPid = currLinkPid;
+                }
 
-						snapshot.setM(m);
+                int currSide = resultSet.getInt("SIDE");
 
-						list.add(snapshot);
-					}
+                if (resultSet.wasNull()) {
 
-					snapshot = new SearchSnapshot();
+                    continue;
+                }
 
-					flagType = 99;// 优先级最低
+                int currRegionId = resultSet.getInt("REGION_ID");
 
-					snapshot.setT(specialMapType.getValue());
+                if (resultSet.wasNull()) {
 
-					snapshot.setI(currLinkPid);
+                    continue;
+                }
 
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                infos.put(currSide, currRegionId);
+            }
+            if (snapshot != null) {
 
-					snapshot.setG(geoArray);
+                JSONObject m = new JSONObject();
 
-					flagLinkPid = currLinkPid;
-				}
+                int regionInfo = getZoneLnkSide(infos);
 
-				int currtype = resultSet.getInt("NAME_TYPE");
+                m.put("a", regionInfo);
 
-				if (resultSet.wasNull()) {
-					currtype = 99;
-				}
+                m.put("d", direct);
 
-				if (getPriorityNameType(flagType) > getPriorityNameType(currtype)) {
-					flagType = currtype;
-				}
-			}
-			if (snapshot != null) {
+                snapshot.setM(m);
 
-				JSONObject m = new JSONObject();
+                list.add(snapshot);
+            }
 
-				m.put("a", flagType);
+        } catch (Exception e) {
 
-				m.put("d", direct);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				snapshot.setM(m);
+        return list;
+    }
 
-				list.add(snapshot);
-			}
 
-		} catch (Exception e) {
+    /**
+     * link的左右ZONE号码
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkProperty(int x, int y, int z, int gap,
+                                                SpecialMapType specialMapType) throws Exception {
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		return list;
-	}
+        String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, LANE_NUM, TOLL_INFO, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME, E.SPEED_CLASS FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D, (SELECT /*+ index(t) */ T.SPEED_CLASS, T.LINK_PID FROM RD_LINK_SPEEDLIMIT T,TMP1 WHERE T.LINK_PID = TMP1.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2) E WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+)  ";
 
-	/**
-	 * 20 条件线限速个数, 业务说明：按照条件线限速的个数特殊渲染link，共5个值，区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdlinkSpeedlimitConditionCount(int x, int y,
-			int z, int gap, SpecialMapType specialMapType) throws Exception {
+        PreparedStatement pstmt = null;
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+        ResultSet resultSet = null;
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_SPEEDLIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.SPEED_TYPE = 3 AND T.U_RECORD != 2) CONDITIONCOUNT FROM TMP1 A";
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-		PreparedStatement pstmt = null;
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		ResultSet resultSet = null;
+            pstmt.setString(1, wkt);
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+            resultSet = pstmt.executeQuery();
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+            double px = MercatorProjection.tileXToPixelX(x);
 
-			pstmt.setString(1, wkt);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-			resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-			double px = MercatorProjection.tileXToPixelX(x);
+                JSONObject m = new JSONObject();
 
-			double py = MercatorProjection.tileYToPixelY(y);
+                m.put("a", resultSet.getInt("kind"));
 
-			while (resultSet.next()) {
+                m.put("b", resultSet.getString("name"));
 
-				SearchSnapshot snapshot = new SearchSnapshot();
+                m.put("c", resultSet.getString("limits"));
 
-				JSONObject m = new JSONObject();
+                m.put("d", resultSet.getInt("direct"));
 
-				m.put("a", resultSet.getString("CONDITIONCOUNT"));
+                m.put("e", resultSet.getInt("s_node_pid"));
 
-				m.put("d", resultSet.getInt("DIRECT"));
+                m.put("f", resultSet.getInt("e_node_pid"));
 
-				snapshot.setM(m);
+                m.put("h", resultSet.getString("forms"));
 
-				snapshot.setT(specialMapType.getValue());
+                m.put("i", resultSet.getInt("function_class"));
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+                m.put("j", resultSet.getInt("imi_code"));
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                m.put("k", resultSet.getDouble("length"));
 
-				snapshot.setG(geoArray);
+                m.put("l", resultSet.getInt("lane_num"));
+                m.put("m", resultSet.getInt("toll_info"));
+                m.put("n", resultSet.getInt("speed_class"));
+                snapshot.setM(m);
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+                snapshot.setT(specialMapType.getValue());
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+                snapshot.setI(resultSet.getInt("link_pid"));
 
-		return list;
-	}
+                STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-	/**
-	 * 
-	 * @param specialMapType
-	 * @return
-	 */
-	private int getLinkLimitType(SpecialMapType specialMapType) {
-		switch (specialMapType) {
+                JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-		case rdLinkLimitType0:
-			return 0;
-		case rdLinkLimitType1:
-			return 1;
-		case rdLinkLimitType2:
-			return 2;
-		case rdLinkLimitType3:
-			return 3;
-		case rdLinkLimitType5:
-			return 5;
-		case rdLinkLimitType6:
-			return 6;
-		case rdLinkLimitType7:
-			return 7;
-		case rdLinkLimitType8:
-			return 8;
-		case rdLinkLimitType9:
-			return 9;
-		case rdLinkLimitType10:
-			return 10;
-		default:
-			return -1;
-		}
-	}
+                JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
-	/**
-	 * 普通限制：适用 21 禁止穿行 、22 道路维修中、24 外地车限行、25 尾号限行、26 在建、27 车辆限制
-	 * 业务说明：根据RD_LINK_LIMIT限制信息中是否有**记录进行渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLimitType(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
+                snapshot.setG(jo.getJSONArray("coordinates"));
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-		int tpye = getLinkLimitType(specialMapType);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-		if (tpye == -1) {
-			return list;
-		}
+        return list;
+    }
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_LIMIT T WHERE T.LINK_PID = A.LINK_PID AND T.TYPE = :2 AND T.U_RECORD != 2) LIMITCOUNT FROM TMP1 A";
 
-		PreparedStatement pstmt = null;
+    /**
+     * 37 IMI专题图 根据IMI代码字段（IMI_CODE）的值渲染link；
+     *
+     * @param specialMapType
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkImiCode(int x, int y, int z,
+                                               int gap, SpecialMapType specialMapType) throws Exception {
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
+    }
 
-		ResultSet resultSet = null;
+    /**
+     * 38、城市道路 根据城市道路字段（urban）的值渲染link
+     *
+     * @param specialMapType
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkUrban(int x, int y, int z,
+                                             int gap, SpecialMapType specialMapType) throws Exception {
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+    }
 
-			pstmt.setString(1, wkt);
+    /**
+     * 39、行人步行属性 根据行人步行属性字段（WALK_FLAG）的值渲染link
+     *
+     * @param specialMapType
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkWalkFlag(int x, int y, int z,
+                                                int gap, SpecialMapType specialMapType) throws Exception {
 
-			pstmt.setInt(2, tpye);
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
 
-			resultSet = pstmt.executeQuery();
+    }
 
-			double px = MercatorProjection.tileXToPixelX(x);
+    /**
+     * 40、人行便道标记 根据人行便道标记字段（SIDEWALK_FLAG）的值渲染link
+     *
+     * @param specialMapType
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkSidewalkFlag(int x, int y, int z,
+                                                    int gap, SpecialMapType specialMapType) throws Exception {
 
-			double py = MercatorProjection.tileYToPixelY(y);
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
 
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
+    }
 
-				JSONObject m = new JSONObject();
+    /**
+     * 41、人行阶梯标记 根据人行便道标记字段（WALKSTAIR_FLAG ）的值渲染link
+     *
+     * @param specialMapType
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkWalkstairFlag(int x, int y, int z,
+                                                     int gap, SpecialMapType specialMapType) throws Exception {
+        return rdLinkMainProperty(x, y, z, gap, specialMapType);
 
-				m.put("a", resultSet.getString("LIMITCOUNT"));
+    }
 
-				m.put("d", resultSet.getInt("DIRECT"));
+    /**
+     * link主表字段
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkMainProperty(int x, int y, int z,
+                                                    int gap, SpecialMapType specialMapType) throws Exception {
 
-				snapshot.setM(m);
+        List<SearchSnapshot> list = new ArrayList<>();
 
-				snapshot.setT(specialMapType.getValue());
+        String targetProperty;
 
-				snapshot.setI(resultSet.getInt("LINK_PID"));
+        switch (specialMapType) {
+            case rdLinkImiCode:
+                targetProperty = "IMI_CODE";
+                break;
+            case rdLinkUrban:
+                targetProperty = "URBAN";
+                break;
+            case rdLinkWalkFlag:
+                targetProperty = "WALK_FLAG";
+                break;
+            case rdLinkSidewalkFlag:
+                targetProperty = "SIDEWALK_FLAG";
+                break;
+            case rdLinkWalkstairFlag:
+                targetProperty = "WALKSTAIR_FLAG";
+                break;
+            case rdLinkLaneClass:
+                targetProperty = "LANE_CLASS";
+                break;
+            case rdLinkDevelopState:
+                targetProperty = "DEVELOP_STATE";
+                break;
+            case rdLinkMultiDigitized:
+                targetProperty = "MULTI_DIGITIZED";
+                break;
+            case rdLinkPaveStatus:
+                targetProperty = "PAVE_STATUS";
+                break;
+            case rdLinkTollInfo:
+                targetProperty = "TOLL_INFO";
+                break;
+            case rdLinkSpecialTraffic:
+                targetProperty = "SPECIAL_TRAFFIC";
+                break;
+            case rdLinkIsViaduct:
+                targetProperty = "IS_VIADUCT";
+                break;
+            case rdLinkAppInfo:
+                targetProperty = "APP_INFO";
+                break;
 
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+            default:
+                return list;
+        }
 
-				snapshot.setG(geoArray);
+        String sql = "SELECT LINK_PID, GEOMETRY, DIRECT," + targetProperty + " PropertyValue FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2";
 
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
+        PreparedStatement pstmt = null;
 
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
+        ResultSet resultSet = null;
 
-		return list;
-	}
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-	/**
-	 * 根据优先级获取 限制方向
-	 * 
-	 * @param dirs
-	 * @return
-	 */
-	private int getLimitDir(Set<Integer> dirs) {
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-		if (dirs.contains(1) || (dirs.contains(2) && dirs.contains(3))) {
-			return 1;
-		}
-		if (dirs.contains(2)) {
-			return 2;
-		}
-		if (dirs.contains(3)) {
-			return 2;
-		}
-		if (dirs.contains(0)) {
-			return 3;
-		}
-		if (dirs.contains(9)) {
-			return 3;
-		}
+            pstmt.setString(1, wkt);
 
-		return 99;
-	}
+            resultSet = pstmt.executeQuery();
 
-	/**
-	 * 普通限制： 适用 28 季节性关闭道路 、29 Usage fee required、30 超车限制、31 单行限制
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkLimitTypeDirect(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
+            double px = MercatorProjection.tileXToPixelX(x);
 
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
+            double py = MercatorProjection.tileYToPixelY(y);
 
-		int tpye = getLinkLimitType(specialMapType);
+            while (resultSet.next()) {
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-		if (tpye == -1) {
+                JSONObject m = new JSONObject();
 
-			return list;
-		}
+                m.put("a", resultSet.getInt("PropertyValue"));
 
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.LIMIT_DIR FROM TMP1 T LEFT JOIN RD_LINK_LIMIT N ON T.LINK_PID = N.LINK_PID AND N.TYPE = :2 AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
+                m.put("d", resultSet.getInt("DIRECT"));
 
-		PreparedStatement pstmt = null;
+                snapshot.setM(m);
 
-		ResultSet resultSet = null;
+                snapshot.setT(specialMapType.getValue());
 
-		SearchSnapshot snapshot = null;
+                snapshot.setI(resultSet.getInt("LINK_PID"));
 
-		try {
-			pstmt = conn.prepareStatement(sql);
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+                snapshot.setG(geoArray);
 
-			pstmt.setString(1, wkt);
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-			pstmt.setInt(2, tpye);
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-			resultSet = pstmt.executeQuery();
+        return list;
+    }
 
-			double px = MercatorProjection.tileXToPixelX(x);
 
-			double py = MercatorProjection.tileYToPixelY(y);
+    /**
+     * link属性个数
+     *
+     * @param x
+     * @param y
+     * @param z
+     * @param gap
+     * @return
+     * @throws Exception
+     */
+    private List<SearchSnapshot> rdLinkPropertyCount( String sql ,int x, int y, int z,
+                                                    int gap, SpecialMapType specialMapType) throws Exception {
 
-			Set<Integer> dirs = new HashSet<Integer>();
+        List<SearchSnapshot> list = new ArrayList<>();
 
-			int flagLinkPid = 0;
+        PreparedStatement pstmt = null;
 
-			int direct = 0;
-			while (resultSet.next()) {
+        ResultSet resultSet = null;
 
-				int currLinkPid = resultSet.getInt("LINK_PID");
+        try {
+            pstmt = conn.prepareStatement(sql);
 
-				direct = resultSet.getInt("DIRECT");
+            String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
 
-				if (flagLinkPid != currLinkPid) {
+            pstmt.setString(1, wkt);
 
-					if (snapshot != null) {
+            resultSet = pstmt.executeQuery();
 
-						JSONObject m = new JSONObject();
+            double px = MercatorProjection.tileXToPixelX(x);
 
-						int type = getLimitDir(dirs);
+            double py = MercatorProjection.tileYToPixelY(y);
 
-						m.put("a", type);
+            while (resultSet.next()) {
 
-						if (dirs.contains(2) && !dirs.contains(3)) {
-							m.put("d", 2);
-						} else if (dirs.contains(3) && !dirs.contains(2)) {
-							m.put("d", 3);
-						} else {
-							m.put("d", String.valueOf(direct));
-						}
+                SearchSnapshot snapshot = new SearchSnapshot();
 
-						snapshot.setM(m);
+                JSONObject m = new JSONObject();
 
-						list.add(snapshot);
-					}
+                m.put("a", resultSet.getInt("PropertyCount"));
 
-					snapshot = new SearchSnapshot();
+                m.put("d", resultSet.getInt("DIRECT"));
 
-					dirs = new HashSet<Integer>();
+                snapshot.setM(m);
 
-					snapshot.setT(specialMapType.getValue());
+                snapshot.setT(specialMapType.getValue());
 
-					snapshot.setI(currLinkPid);
+                snapshot.setI(resultSet.getInt("LINK_PID"));
 
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
+                JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
 
-					snapshot.setG(geoArray);
+                snapshot.setG(geoArray);
 
-					flagLinkPid = currLinkPid;
-				}
+                list.add(snapshot);
+            }
+        } catch (Exception e) {
 
-				int currDir = resultSet.getInt("LIMIT_DIR");
+            throw new Exception(e);
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
 
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				dirs.add(currDir);
-			}
-			if (snapshot != null) {
-
-				JSONObject m = new JSONObject();
-
-				int type = getLimitDir(dirs);
-
-				m.put("a", type);
-				
-				if (dirs.contains(2) && !dirs.contains(3)) {
-					m.put("d", 2);
-				} else if (dirs.contains(3) && !dirs.contains(2)) {
-					m.put("d", 3);
-				} else {
-					m.put("d", direct);
-				}
-
-				snapshot.setM(m);
-
-				list.add(snapshot);
-			}
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-
-	}
-
-	/**
-	 * 获取形态信息
-	 * 
-	 * @param specialMapType
-	 * @return 形态值
-	 */
-	private int getFormOfWay(SpecialMapType specialMapType) {
-
-		switch (specialMapType) {
-		// IC
-		case rdLinkFormOfWay10:
-			return 10;
-			// JCT
-		case rdLinkFormOfWay11:
-			return 11;
-			// SA
-		case rdLinkFormOfWay12:
-			return 12;
-			// PA
-		case rdLinkFormOfWay13:
-			return 13;
-			// 全封闭道路
-		case rdLinkFormOfWay14:
-			return 14;
-			// 匝道
-		case rdLinkFormOfWay15:
-			return 15;
-			// 跨线天桥
-		case rdLinkFormOfWay16:
-			return 16;
-			// 跨线地道
-		case rdLinkFormOfWay17:
-			return 17;
-			// 步行街
-		case rdLinkFormOfWay20:
-			return 20;
-			// 隧道
-		case rdLinkFormOfWay31:
-			return 31;
-			// 环岛
-		case rdLinkFormOfWay33:
-			return 33;
-			// 辅路
-		case rdLinkFormOfWay34:
-			return 34;
-			// 调头口
-		case rdLinkFormOfWay35:
-			return 35;
-			// POI连接路
-		case rdLinkFormOfWay36:
-			return 36;
-			// 提右
-		case rdLinkFormOfWay37:
-			return 37;
-			// 提左
-		case rdLinkFormOfWay38:
-			return 38;
-			// 主辅路出入口
-		case rdLinkFormOfWay39:
-			return 39;
-		default:
-			return -1;
-		}
-	}
-
-	/**
-	 * 22 按照是否具有某个道路形态值特殊渲染link，每个道路形态区分渲染
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkFormOfWay(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		int formOfWay = getFormOfWay(specialMapType);
-
-		if (formOfWay == -1) {
-
-			return list;
-		}
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_FORM T WHERE T.LINK_PID = A.LINK_PID AND T.FORM_OF_WAY = :2 AND T.U_RECORD != 2) FORMCOUNT FROM TMP1 A";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			pstmt.setInt(2, formOfWay);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getString("FORMCOUNT"));
-
-				m.put("d", resultSet.getInt("DIRECT"));
-
-				snapshot.setM(m);
-
-				snapshot.setT(specialMapType.getValue());
-
-				snapshot.setI(resultSet.getInt("LINK_PID"));
-
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-				snapshot.setG(geoArray);
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-
-	/**
-	 * 获取rtic等级
-	 * 
-	 * @param dirs
-	 * @return
-	 */
-	private int getRticRank(Set<Integer> ranks) {
-
-		if (ranks.size() > 1) {
-			return 5;
-		}
-		if (ranks.contains(0)) {
-			return 0;
-		}
-		if (ranks.contains(1)) {
-			return 1;
-		}
-		if (ranks.contains(2)) {
-			return 2;
-		}
-		if (ranks.contains(3)) {
-			return 3;
-		}
-		if (ranks.contains(4)) {
-			return 4;
-		}
-
-		return 99;
-	}
-
-	/**
-	 * RTIC等级
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkRticRank(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.RANK FROM TMP1 T LEFT JOIN RD_LINK_RTIC N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		SearchSnapshot snapshot = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			Set<Integer> ranks = new HashSet<Integer>();
-
-			int flagLinkPid = 0;
-
-			int direct = 0;
-
-			while (resultSet.next()) {
-
-				int currLinkPid = resultSet.getInt("LINK_PID");
-
-				direct = resultSet.getInt("DIRECT");
-
-				if (flagLinkPid != currLinkPid) {
-
-					if (snapshot != null) {
-
-						JSONObject m = new JSONObject();
-
-						int type = getRticRank(ranks);
-
-						m.put("a", type);
-
-						m.put("d", direct);
-
-						snapshot.setM(m);
-
-						list.add(snapshot);
-					}
-
-					snapshot = new SearchSnapshot();
-
-					ranks = new HashSet<Integer>();
-
-					snapshot.setT(specialMapType.getValue());
-
-					snapshot.setI(currLinkPid);
-
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-					snapshot.setG(geoArray);
-
-					flagLinkPid = currLinkPid;
-				}
-
-				int currRank = resultSet.getInt("RANK");
-
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				ranks.add(currRank);
-			}
-			if (snapshot != null) {
-
-				JSONObject m = new JSONObject();
-
-				int type = getRticRank(ranks);
-
-				m.put("a", type);
-
-				m.put("d", direct);
-
-				snapshot.setM(m);
-
-				list.add(snapshot);
-			}
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-
-	}
-
-	/**
-	 * IntRtic等级
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkIntRticRank(int x, int y, int z,
-			int gap, SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.RANK FROM TMP1 T LEFT JOIN RD_LINK_INT_RTIC N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID ";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		SearchSnapshot snapshot = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			Set<Integer> ranks = new HashSet<Integer>();
-
-			int flagLinkPid = 0;
-
-			int direct =0;
-
-			while (resultSet.next()) {
-
-				int currLinkPid = resultSet.getInt("LINK_PID");
-
-				direct = resultSet.getInt("DIRECT");
-
-				if (flagLinkPid != currLinkPid) {
-
-					if (snapshot != null) {
-
-						JSONObject m = new JSONObject();
-
-						int type = getRticRank(ranks);
-
-						m.put("a", type);
-
-						m.put("d", direct);
-
-						snapshot.setM(m);
-
-						list.add(snapshot);
-					}
-
-					snapshot = new SearchSnapshot();
-
-					ranks = new HashSet<Integer>();
-
-					snapshot.setT(specialMapType.getValue());
-
-					snapshot.setI(currLinkPid);
-
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-					snapshot.setG(geoArray);
-
-					flagLinkPid = currLinkPid;
-				}
-
-				int currRank = resultSet.getInt("RANK");
-
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				ranks.add(currRank);
-			}
-			if (snapshot != null) {
-
-				JSONObject m = new JSONObject();
-
-				int type = getRticRank(ranks);
-
-				m.put("a", type);
-
-				m.put("d", direct);
-
-				snapshot.setM(m);
-
-				list.add(snapshot);
-			}
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-
-	}
-
-	/**
-	 * 获取zone类型
-	 * 
-	 * @param dirs
-	 * @return
-	 */
-	private int getZoneLnkType(Set<Integer> types) {
-
-		if (types.size() > 1) {
-			return 4;
-		}
-		if (types.contains(0)) {
-			return 0;
-		}
-		if (types.contains(1)) {
-			return 1;
-		}
-		if (types.contains(2)) {
-			return 2;
-		}
-		if (types.contains(3)) {
-			return 3;
-		}
-
-		return 99;
-	}
-
-	/**
-	 * ZONE类型
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkZoneTpye(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2)  SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.TYPE FROM TMP1 T LEFT JOIN RD_LINK_ZONE N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		SearchSnapshot snapshot = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			Set<Integer> types = new HashSet<Integer>();
-
-			int flagLinkPid = 0;
-
-			int  direct = 0;
-
-			while (resultSet.next()) {
-
-				int currLinkPid = resultSet.getInt("LINK_PID");
-
-				direct = resultSet.getInt("DIRECT");
-
-				if (flagLinkPid != currLinkPid) {
-
-					if (snapshot != null) {
-
-						JSONObject m = new JSONObject();
-
-						int type = getZoneLnkType(types);
-
-						m.put("a", type);
-
-						m.put("d", direct);
-
-						snapshot.setM(m);
-
-						list.add(snapshot);
-					}
-
-					snapshot = new SearchSnapshot();
-
-					types = new HashSet<Integer>();
-
-					snapshot.setT(specialMapType.getValue());
-
-					snapshot.setI(currLinkPid);
-
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-					snapshot.setG(geoArray);
-
-					flagLinkPid = currLinkPid;
-				}
-
-				int currType = resultSet.getInt("TYPE");
-
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				types.add(currType);
-			}
-			if (snapshot != null) {
-
-				JSONObject m = new JSONObject();
-
-				int type = getZoneLnkType(types);
-
-				m.put("a", type);
-
-				m.put("d", direct);
-
-				snapshot.setM(m);
-
-				list.add(snapshot);
-			}
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-
-	/**
-	 * 35 zone个数 :按照link所具有的ZONE的组数渲染link；zone信息个数：0，1，2，三个颜色渲染显示
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkZoneCount(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT A.LINK_PID, A.GEOMETRY,A.DIRECT, (SELECT /*+ index(t) */ COUNT(1) FROM RD_LINK_ZONE T WHERE T.LINK_PID = A.LINK_PID AND T.U_RECORD != 2) ZONECOUNT FROM TMP1 A";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getString("ZONECOUNT"));
-
-				m.put("d", resultSet.getInt("DIRECT"));
-
-				snapshot.setM(m);
-
-				snapshot.setT(specialMapType.getValue());
-
-				snapshot.setI(resultSet.getInt("LINK_PID"));
-
-				JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-				snapshot.setG(geoArray);
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-
-	/**
-	 * 获取zone区划号码位置信息
-	 * 
-	 * @param dirs
-	 * @return
-	 */
-	private int getZoneLnkSide(Map<Integer, Integer> infos) {
-
-		if (infos.size() == 0) {
-			return 3;
-		}
-		if (infos.size() == 1) {
-			return 4;
-		}
-		if (infos.size() == 2 && infos.containsKey(1) && infos.containsKey(0)) {
-			if (infos.get(0) == infos.get(1)) {
-				return 1;
-			} else {
-				return 2;
-			}
-		}
-
-		return 2;
-	}
-
-	/**
-	 * link的左右ZONE号码
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkZoneSide(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, GEOMETRY, DIRECT FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2) SELECT /*+ index(N) */ T.LINK_PID, T.GEOMETRY,T.DIRECT, N.SIDE, N.REGION_ID FROM TMP1 T LEFT JOIN RD_LINK_ZONE N ON T.LINK_PID = N.LINK_PID AND N.U_RECORD != 2 ORDER BY N.LINK_PID";
-
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		SearchSnapshot snapshot = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			// Map<Integer:SIDE, Integer:REGION_ID>
-			Map<Integer, Integer> infos = new HashMap<Integer, Integer>();
-
-			int flagLinkPid = 0;
-
-			int direct = 0;
-
-			while (resultSet.next()) {
-
-				int currLinkPid = resultSet.getInt("LINK_PID");
-
-				direct = resultSet.getInt("DIRECT");
-
-				if (flagLinkPid != currLinkPid) {
-
-					if (snapshot != null) {
-
-						JSONObject m = new JSONObject();
-
-						int regionInfo = getZoneLnkSide(infos);
-
-						m.put("a", regionInfo);
-
-						m.put("d", direct);
-
-						snapshot.setM(m);
-
-						list.add(snapshot);
-					}
-
-					snapshot = new SearchSnapshot();
-
-					infos = new HashMap<Integer, Integer>();
-
-					snapshot.setT(specialMapType.getValue());
-
-					snapshot.setI(currLinkPid);
-
-					JSONArray geoArray = setLinkGeo(resultSet, px, py, z);
-
-					snapshot.setG(geoArray);
-
-					flagLinkPid = currLinkPid;
-				}
-
-				int currSide = resultSet.getInt("SIDE");
-
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				int currRegionId = resultSet.getInt("REGION_ID");
-
-				if (resultSet.wasNull()) {
-
-					continue;
-				}
-
-				infos.put(currSide, currRegionId);
-			}
-			if (snapshot != null) {
-
-				JSONObject m = new JSONObject();
-
-				int regionInfo = getZoneLnkSide(infos);
-
-				m.put("a", regionInfo);
-
-				m.put("d", direct);
-
-				snapshot.setM(m);
-
-				list.add(snapshot);
-			}
-
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
-	
-	
-	
-	/**
-	 * link的左右ZONE号码
-	 * 
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @return
-	 * @throws Exception
-	 */
-	private List<SearchSnapshot> rdLinkProperty(int x, int y, int z, int gap,
-			SpecialMapType specialMapType) throws Exception {
-
-		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
-
-		String sql = "WITH TMP1 AS (SELECT LINK_PID, DIRECT, KIND, FUNCTION_CLASS, S_NODE_PID, E_NODE_PID, LENGTH, IMI_CODE, LANE_NUM, TOLL_INFO, GEOMETRY FROM RD_LINK WHERE SDO_RELATE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND U_RECORD != 2), TMP2 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.TYPE, ';') WITHIN GROUP(ORDER BY A.LINK_PID) LIMITS FROM RD_LINK_LIMIT A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID), TMP3 AS (SELECT /*+ index(a) */ A.LINK_PID, LISTAGG(A.FORM_OF_WAY, ';') WITHIN GROUP(ORDER BY A.LINK_PID) FORMS FROM RD_LINK_FORM A, TMP1 B WHERE A.U_RECORD != 2 AND A.LINK_PID = B.LINK_PID GROUP BY A.LINK_PID) SELECT A.*, B.LIMITS, C.FORMS, D.NAME, E.SPEED_CLASS FROM TMP1 A, TMP2 B, TMP3 C, (SELECT /*+ index(b) */ B.LINK_PID, C.NAME FROM RD_LINK_NAME B, RD_NAME C WHERE B.NAME_GROUPID = C.NAME_GROUPID AND B.NAME_CLASS = 1 AND B.SEQ_NUM = 1 AND C.LANG_CODE = 'CHI' AND B.U_RECORD != 2) D, (SELECT /*+ index(t) */ T.SPEED_CLASS, T.LINK_PID FROM RD_LINK_SPEEDLIMIT T,TMP1 WHERE T.LINK_PID = TMP1.LINK_PID AND T.SPEED_TYPE = 0 AND T.U_RECORD != 2) E WHERE A.LINK_PID = B.LINK_PID(+) AND A.LINK_PID = C.LINK_PID(+) AND A.LINK_PID = D.LINK_PID(+) AND A.LINK_PID = E.LINK_PID(+)  ";
-		
-		PreparedStatement pstmt = null;
-
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sql);
-
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
-			pstmt.setString(1, wkt);
-
-			resultSet = pstmt.executeQuery();
-
-			double px = MercatorProjection.tileXToPixelX(x);
-
-			double py = MercatorProjection.tileYToPixelY(y);
-
-			while (resultSet.next()) {
-				SearchSnapshot snapshot = new SearchSnapshot();
-
-				JSONObject m = new JSONObject();
-
-				m.put("a", resultSet.getInt("kind"));
-
-				m.put("b", resultSet.getString("name"));
-
-				m.put("c", resultSet.getString("limits"));
-
-				m.put("d", resultSet.getInt("direct"));
-
-				m.put("e", resultSet.getInt("s_node_pid"));
-
-				m.put("f", resultSet.getInt("e_node_pid"));
-
-				m.put("h", resultSet.getString("forms"));
-
-				m.put("i", resultSet.getInt("function_class"));
-
-				m.put("j", resultSet.getInt("imi_code"));
-				
-				m.put("k", resultSet.getDouble("length"));
-
-				m.put("l", resultSet.getInt("lane_num"));
-				m.put("m", resultSet.getInt("toll_info"));
-				m.put("n", resultSet.getInt("speed_class"));
-				snapshot.setM(m);
-
-				snapshot.setT(specialMapType.getValue());
-
-				snapshot.setI(resultSet.getInt("link_pid"));
-
-				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
-
-				JSONObject geojson = Geojson.spatial2Geojson(struct);
-
-				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
-
-				snapshot.setG(jo.getJSONArray("coordinates"));
-
-				list.add(snapshot);
-			}
-		} catch (Exception e) {
-
-			throw new Exception(e);
-		} finally {
-			DBUtils.closeResultSet(resultSet);
-			DBUtils.closeStatement(pstmt);
-		}
-
-		return list;
-	}
+        return list;
+    }
 
 }

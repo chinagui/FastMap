@@ -107,7 +107,18 @@ public enum SpecialMapType {
 	// link的左右ZONE号码
 	rdLinkZoneSide(552),	
 	// link属性
-	rdLinkProperty(553);
+	rdLinkProperty(553),
+
+	// link IMI代码
+	rdLinkImiCode(554),
+	//城市道路
+	rdLinkUrban(555),
+	//行人步行属性
+	rdLinkWalkFlag(556),
+	//人行便道标记
+	rdLinkSidewalkFlag(557),
+	//人行阶梯标记
+	rdLinkWalkstairFlag(558);
 
 	private int value;
 
@@ -116,7 +127,7 @@ public enum SpecialMapType {
 		return value;
 	}
 
-	private SpecialMapType(int value) {
+	SpecialMapType(int value) {
 		this.value = value;
 	}
 

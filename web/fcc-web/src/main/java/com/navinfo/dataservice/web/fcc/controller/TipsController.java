@@ -615,7 +615,7 @@ public class TipsController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 			
-			JSONObject data = selector.getStats(grids, stages,subtaskId);
+			JSONObject data = selector.getStats(grids, stages, subtaskId);
 
 			return new ModelAndView("jsonView", success(data));
 

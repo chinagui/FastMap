@@ -52,23 +52,7 @@ public class SolrController {
 
 		doc.addField("t_command", json.getInt("t_command"));
 
-		doc.addField("t_cStatus", json.getInt("t_cStatus"));
-
-		doc.addField("t_dStatus", json.getInt("t_dStatus"));
-
-		// doc.addField("t_inStatus", json.getInt("t_inStatus"));
-
-		doc.addField("t_inMeth", json.getInt("t_inMeth"));
-
-		doc.addField("t_pStatus", json.getInt("t_pStatus"));
-
-		doc.addField("t_dInProc", json.getInt("t_dInProc"));
-
-		doc.addField("t_mInProc", json.getInt("t_mInProc"));
-
 		doc.addField("handler", json.getInt("handler"));
-
-		doc.addField("t_mStatus", json.getInt("t_mStatus"));
 
 		doc.addField("s_sourceCode", json.getInt("s_sourceCode"));
 
@@ -84,6 +68,12 @@ public class SolrController {
 
 		doc.addField("s_reliability", json.getInt("s_reliability"));
 
+        doc.addField("t_tipStatus", json.getInt("t_tipStatus"));
+        doc.addField("t_dEditStatus", json.getInt("t_dEditStatus"));
+        doc.addField("t_dEditMeth", json.getInt("t_dEditMeth"));
+        doc.addField("t_mEditStatus", json.getInt("t_mEditStatus"));
+        doc.addField("t_mEditMeth", json.getInt("t_mEditMeth"));
+
 		if (json.containsKey("tipdiff")) {
 
 			doc.addField("tipdiff", json.getString("tipdiff"));
@@ -96,17 +86,6 @@ public class SolrController {
 		doc.addField("s_qSubTaskId", json.getInt("s_qSubTaskId"));
 
 		doc.addField("s_mSubTaskId", json.getInt("s_mSubTaskId"));
-		
-
-
-		// doc.addField("t_fStatus", json.getInt("t_fStatus"));
-
-		// 不是必须的字段
-
-		if (json.containsKey("t_fStatus")) {
-
-			doc.addField("t_fStatus", json.getString("t_fStatus"));
-		}
 
 		doc.addField("relate_links", json.getString("relate_links"));
 		

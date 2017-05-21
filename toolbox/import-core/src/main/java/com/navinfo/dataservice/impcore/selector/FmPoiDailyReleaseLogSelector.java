@@ -117,16 +117,18 @@ public class FmPoiDailyReleaseLogSelector extends DeafultDailyReleaseLogSelector
 		return sqlClause;
 	}
 	
-	protected String getExtendLogSql() {
+	protected SqlClause getExtendLogSql(Connection conn) throws Exception{
 		StringBuilder sb = new StringBuilder();
 		sb.append("MERGE INTO ");
 		sb.append(this.tempTable);
-		sb.append(" T USING (SELECT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
+		sb.append(" T USING (SELECT DISTINCT P.OP_ID,P.OP_DT,P.OP_SEQ FROM LOG_OPERATION P,LOG_DETAIL L,LOG_DAY_RELEASE R WHERE EXISTS (SELECT 1 FROM LOG_DETAIL L1,");
 		sb.append(this.tempTable);
 		sb.append(" T1 WHERE L1.OP_ID=T1.OP_ID AND L1.TB_ROW_ID=L.TB_ROW_ID AND P.OP_DT<=T1.OP_DT) AND P.OP_ID=L.OP_ID AND P.OP_ID=R.OP_ID AND R.REL_POI_STA=0) TP "
 				+ "ON (T.OP_ID=TP.OP_ID) "
 				+ "WHEN NOT MATCHED THEN INSERT VALUES (TP.OP_ID,TP.OP_DT,TP.OP_SEQ)");
-		return sb.toString();
+		List<Object> values = new ArrayList<Object> ();
+		SqlClause sqlClause = new SqlClause(sb.toString(),values);
+		return sqlClause;
 	}
 	
 

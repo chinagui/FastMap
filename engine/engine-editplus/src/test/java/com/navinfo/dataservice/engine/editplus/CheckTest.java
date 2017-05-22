@@ -68,15 +68,15 @@ public class CheckTest {
 		CheckTest test=new CheckTest();
 		test.init();
 //		Connection conn = DBConnector.getInstance().getConnectionById(17);
-		Connection conn = DBConnector.getInstance().getConnectionById(13);
-//		Connection conn = DBConnector.getInstance().getConnectionById(84);
+//		Connection conn = DBConnector.getInstance().getConnectionById(13);
+		Connection conn = DBConnector.getInstance().getConnectionById(84);
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
 //		tabNames.add("IX_POI_CHARGINGSTATION");
 //		tabNames.add("IX_POI_GASSTATION");
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 10301, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");

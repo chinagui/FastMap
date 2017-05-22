@@ -356,7 +356,7 @@ public class PoiEditStatus {
 	}
 
 	/**
-	 * 
+	 * 鲜度验证数据直接进入已作业
 	 * @param conn
 	 * @param pids：只包含鲜度验证的POI
 	 * @throws Exception
@@ -367,7 +367,7 @@ public class PoiEditStatus {
 			if(pids==null||pids.size()==0){
 				return;
 			}
-			String sql = "UPDATE POI_EDIT_STATUS SET FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ?";
+			String sql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ?";
 			stmt = conn.prepareStatement(sql);
 			for(Entry<Long,String> entry:pids.entrySet()){
 				stmt.setString(1, entry.getValue());

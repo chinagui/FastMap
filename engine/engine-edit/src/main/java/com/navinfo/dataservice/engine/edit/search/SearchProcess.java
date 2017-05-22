@@ -3,6 +3,7 @@ package com.navinfo.dataservice.engine.edit.search;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -169,10 +170,11 @@ public class SearchProcess {
 
 			for (ObjType type : types) {
 				List<SearchSnapshot> list = null;
-			
+
 				if (type == ObjType.IXPOI) {
-					IxPoiSearch ixPoiSearch = new  IxPoiSearch(conn);
-					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap, this.getArray());
+					IxPoiSearch ixPoiSearch = new IxPoiSearch(conn);
+					list = ixPoiSearch.searchDataByTileWithGap(x, y, z, gap,
+							this.getArray());
 				} else {
 					ISearch search = factory.createSearch(type);
 					list = search.searchDataByTileWithGap(x, y, z, gap);
@@ -413,6 +415,19 @@ public class SearchProcess {
 					RdLinkSelector selector = new RdLinkSelector(this.conn);
 
 					array = selector.loadGeomtryByLinkPids(pids);
+				} else if (condition.containsKey("arrows")) {
+					@SuppressWarnings("unchecked")
+					List<String> arrows = JSONArray.toList(
+							condition.getJSONArray("arrows"), String.class,
+							JsonUtils.getJsonConfig());
+					int inNodePid = condition.getInt("inNodePid");
+					int inLinkPid = condition.getInt("inLinkPid");
+					CalLinkOperateUtils calLinkOperateUtils = new CalLinkOperateUtils(
+							conn);
+					Map<String, List<Integer>> map = calLinkOperateUtils
+							.getOutLinkForArrow(inNodePid, inLinkPid, arrows);
+					array = JSONArray.fromObject(map);
+
 				}
 
 				break;

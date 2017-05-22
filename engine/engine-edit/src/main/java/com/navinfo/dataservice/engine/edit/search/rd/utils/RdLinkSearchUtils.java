@@ -568,7 +568,7 @@ public class RdLinkSearchUtils {
 	 *            指定端点
 	 * @return 以指定端点为起点的直线几何
 	 */
-	private LineSegment getLineSegment(RdLink link, int nodePidDir) {
+	public static LineSegment getLineSegment(RdLink link, int nodePidDir) {
 		LineSegment lineSegment = null;
 		if (link.getsNodePid() == nodePidDir) {
 			lineSegment = new LineSegment(

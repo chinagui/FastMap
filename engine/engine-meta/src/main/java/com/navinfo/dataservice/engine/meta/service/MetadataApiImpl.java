@@ -813,5 +813,89 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
 	}
+	
+	/**
+	 * @Title: pyConvert
+	 * @Description: 调用cop函数转拼音
+	 * @param word   待翻译的词  必填
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String pyConvert(String word, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.pyConvert(word, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: voiceConvert
+	 * @Description: 调用cop函数转语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String voiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.voiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	
+	/**
+	 * @Title: pyVoiceConvert
+	 * @Description: 调用cop函数转拼音及语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 			result[0] = resultSet.getString("phonetic");
+				result[1] = resultSet.getString("voicefile");
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String[] pyVoiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] result = py.pyVoiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: engConvert
+	 * @Description: 调用cop函数转英文
+	 * @param word   待翻译的词  必填
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String engConvert(String word, String adminId) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.engConvert(word, adminId);
+
+		return result;
+	}
 
 }

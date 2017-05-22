@@ -35,7 +35,12 @@ public class check004 extends baseRule {
 			}
 
 			LcLinkKind kind = (LcLinkKind) row;
-			if (kind.getKind() != 7) {
+			int kindValue = kind.getKind();
+			if (kind.changedFields().containsKey("kind")) {
+				kindValue = (int) kind.changedFields().get("kind");
+			}
+
+			if (kindValue != 7) {
 				continue;
 			}
 

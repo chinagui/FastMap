@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +23,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportorCommand;
@@ -99,10 +101,15 @@ public class UploadManager {
 				CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
 				imp.setSubtaskId(subtaskId);
 				imp.operate(cmd);
-				//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
-				PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
+				//获取所有pois
+				Map<Long, BasicObj> operationPois = imp.getResult().getObjsMapByType(ObjectName.IX_POI);
+				Set<Long> allPois = new HashSet<Long>();
+				if(operationPois!=null&&operationPois.size()>0){
+					for(Long l:operationPois.keySet()){
+						allPois.add(l);
+					}
+				}
 				Map<Long,String> freshVerPois = imp.getFreshVerPois();
-//				Set<Long> nochangedPois = imp.getNoChangedPois();
 				//写入数据库
 				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
@@ -113,7 +120,6 @@ public class UploadManager {
 				pcImp.operate(pcCmd);
 				for(Long l:pcImp.getChangedPids()){
 					freshVerPois.remove(l);
-//					nochangedPois.remove(l);
 				}
 				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnPcs(pcImp.getErrLogs());
@@ -124,14 +130,11 @@ public class UploadManager {
 				spImp.operate(spCmd);
 				for(Long l:spImp.getChangedPids()){
 					freshVerPois.remove(l);
-//					nochangedPois.remove(l);
 				}
 				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnSps(spImp.getErrLogs());
-				//鲜度验证
-				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
-				//未修改的数据状态变为已作业
-//				PoiEditStatus.updateStatus(conn, nochangedPois, PoiEditStatus.PRODUCED);
+				//维护编辑状态
+				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

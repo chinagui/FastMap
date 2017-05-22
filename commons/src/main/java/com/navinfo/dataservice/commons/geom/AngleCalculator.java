@@ -280,7 +280,7 @@ public class AngleCalculator {
 	/**
 	 * 计算大地距离的辅助类
 	 */
-	static class LngLatPoint {
+	public static class LngLatPoint {
 
 		final static double Rc = 6378137;
 		final static double Rj = 6356725;
@@ -316,22 +316,46 @@ public class AngleCalculator {
 		// LINESTRING (116.21916 39.78779, 116.21889 39.78762)
 		// LINESTRING (116.21916 39.78779, 116.21938 39.78764)
 		// LINESTRING (116.21916 39.78779, 116.21930 39.78786)
-		LineSegment lineSegment = new LineSegment(116.21878, 39.78779,
-				116.21916, 39.78779);
-		LineSegment line1 = new LineSegment(116.21884, 39.78796, 116.21916,
-				39.78779);
-		LineSegment line2 = new LineSegment(116.21916, 39.78779, 116.21889,
-				39.78762);
+		
+		//116.53197, 39.73947], [116.53209, 39.73947]]
+		//116.53249, 39.73936], [116.53263, 39.73936
+		//{type: "LineString", coordinates: [[116.53246, 39.73948], [116.53231, 39.73949]]}
+		
+		//1.1653246E7------------3973948.0
+		//1.1653231E7------------3973949.0
+		LngLatPoint latPointa = new LngLatPoint(11653246.0, 3973948.0);
+		LngLatPoint latPointb = new LngLatPoint(11653231.0, 3973949.0);
+	    System.out.println(getAngle(latPointa, latPointb));
+	    
+	    LngLatPoint latPointa1 = new LngLatPoint(116.53246, 39.73948);
+		LngLatPoint latPointb1 = new LngLatPoint(116.53231, 39.73949);
+	    System.out.println(getAngle(latPointa1, latPointb1));
+		
+		LineSegment lineSegment = new LineSegment(116.53197, 39.73947,
+				116.53209, 39.73947);
+		LineSegment line1 = new LineSegment(116.53249, 39.73936, 116.53263, 39.73936);
+		LineSegment line2 = new LineSegment(116.58071, 39.65398, 116.58068, 39.65367);
 
-		LineSegment line3 = new LineSegment(116.21916, 39.78779, 116.21938,
-				39.78764);
-		LineSegment line4 = new LineSegment(116.21916, 39.78779, 116.21930,
-				39.78786);
+		LineSegment line3 = new LineSegment(116.58143, 39.65383, 116.58068, 39.65367);
+		LineSegment line4 = new LineSegment(116.58068, 39.65367, 116.58155, 39.65365);
+		
+		
+		LineSegment line5 = new LineSegment(116.58068, 39.65367, 116.58105, 39.65334);
 
+		LineSegment line6 = new LineSegment(116.58068, 39.65367, 116.58066, 39.65338);
+		LineSegment line7 = new LineSegment(116.58068, 39.65367, 116.58027, 39.65342);
+
+	   /* 直： (angle > 157.5 && angle <= 202.5)；
+	       左：(angle > 247.5 && angle <= 292.5)；
+	       调：(angle > 337.5 && angle <= 360.0)；(angle >= 0 && angle <= 22.5)；
+	       右：(angle > 67.5 && angle < 112.5)*/
 		System.out.println(getConnectLinksAngle(lineSegment, line1,2));
 		System.out.println(getConnectLinksAngle(lineSegment, line2,2));
 		System.out.println(getConnectLinksAngle(lineSegment, line3,2));
 		System.out.println(getConnectLinksAngle(lineSegment, line4,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line5,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line6,2));
+		System.out.println(getConnectLinksAngle(lineSegment, line7,2));
 
 	}
 }

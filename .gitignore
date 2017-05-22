@@ -8,3 +8,11 @@
 .recommenders/
 _pasted_code_/
 /web/edit-web/src/main/webapp/.#webclasspath
+
+*.xml
+*.iml
+*.jar
+/log
+/logs
+/engine/engine-fcc/target
+/web/collector-web/target

@@ -13,34 +13,45 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
  * @author fhx
  * @since 2017/5/9
  */
-public class PERMIT_CHECK_NO_KIND_LCLUFACE extends baseRule{
-	public void preCheck(CheckCommand checkCommand){}
-	
-	public void postCheck(CheckCommand checkCommand) throws Exception{
-		for(IRow row:checkCommand.getGlmList()){
-			if(row.status()==ObjStatus.DELETE){
+public class PERMIT_CHECK_NO_KIND_LCLUFACE extends baseRule {
+	public void preCheck(CheckCommand checkCommand) {
+	}
+
+	public void postCheck(CheckCommand checkCommand) throws Exception {
+		for (IRow row : checkCommand.getGlmList()) {
+			if (row.status() == ObjStatus.DELETE) {
 				continue;
 			}
-			
-			if(row instanceof LuFace){
-				checkLuFaceKind((LuFace)row);
+
+			if (row instanceof LuFace) {
+				checkLuFaceKind((LuFace) row);
 			}
-			
-			if(row instanceof LcFace){
-				checkLcFaceKind((LcFace)row);
+
+			if (row instanceof LcFace) {
+				checkLcFaceKind((LcFace) row);
 			}
-		}//for循环
+		} // for循环
 	}
-	
-	private void checkLuFaceKind(LuFace luFace) throws Exception{
-		if(luFace.getKind()==0){
-			this.setCheckResult(luFace.getGeometry(), "[LU_FACE,"+luFace.getPid()+"]", luFace.getMeshId());
+
+	private void checkLuFaceKind(LuFace luFace) throws Exception {
+		int kind = luFace.getKind();
+		if (luFace.changedFields().containsKey("kind")) {
+			kind = (int) luFace.changedFields().get("kind");
+		}
+
+		if (kind == 0) {
+			this.setCheckResult(luFace.getGeometry(), "[LU_FACE," + luFace.getPid() + "]", luFace.getMeshId());
 		}
 	}
-	
-	private void checkLcFaceKind(LcFace lcFace) throws Exception{
-		if(lcFace.getKind()==0){
-			this.setCheckResult(lcFace.getGeometry(), "[LC_FACE,"+lcFace.getPid()+"]", lcFace.getMeshId());
+
+	private void checkLcFaceKind(LcFace lcFace) throws Exception {
+		int kind = lcFace.getKind();
+		if (lcFace.changedFields().containsKey("kind")) {
+			kind = (int) lcFace.changedFields().get("kind");
+		}
+
+		if (kind == 0) {
+			this.setCheckResult(lcFace.getGeometry(), "[LC_FACE," + lcFace.getPid() + "]", lcFace.getMeshId());
 		}
 	}
 }

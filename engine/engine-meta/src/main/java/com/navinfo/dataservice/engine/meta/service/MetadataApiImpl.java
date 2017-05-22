@@ -813,5 +813,37 @@ public class MetadataApiImpl implements MetadataApi {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
 	}
+	@Override
+	public String pyConvert(String word, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.pyConvert(word, adminId, isRdName);
+
+		return result;
+	}
+	@Override
+	public String voiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.voiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	@Override
+	public String[] pyVoiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] result = py.pyVoiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	@Override
+	public String engConvert(String word, String adminId) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.engConvert(word, adminId);
+
+		return result;
+	}
 
 }

@@ -175,9 +175,9 @@ public class CollectorPoiImportor extends AbstractOperation {
 					//计算鲜度验证
 					if(poiObj.isFreshFlag()){
 						freshVerPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
-						if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
-							noChangedPois.add(poiObj.objPid());
-						}
+//						if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
+//							noChangedPois.add(poiObj.objPid());
+//						}
 					}
 					result.putObj(poiObj);
 					successNum++;

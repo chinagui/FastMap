@@ -419,7 +419,9 @@ public interface MetadataApi {
 	 */
 	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
 	public JSONObject getAdminMap()throws Exception;
-	
+
+	public List<Map<String, Object>> getScPointTruckList() throws Exception;
+
 	public String pyConvert(String word,String adminId,String isRdName) throws Exception ;
 	
 	public String voiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;

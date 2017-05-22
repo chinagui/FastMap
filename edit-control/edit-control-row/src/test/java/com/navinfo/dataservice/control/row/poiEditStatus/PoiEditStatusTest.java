@@ -46,7 +46,7 @@ public class PoiEditStatusTest {
 		map.put((long) 6, "001000030003");//POI挖掘
 		map.put((long) 7, "001000030004");//POI挖掘
 		
-		PoiEditStatus.tagMultiSrcPoi(conn, map);
+//		PoiEditStatus.tagMultiSrcPoi(conn, map);
 		
 	}
 	

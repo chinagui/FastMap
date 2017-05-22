@@ -526,7 +526,7 @@ public class PoiEditStatus {
 				updatePoiEditStatusMultiSrc(conn,uploadDate,quickSubtaskIdMap,1);
 			}
 			if(!mediumSubtaskIdMap.isEmpty()){
-				updatePoiEditStatusMultiSrc(conn,uploadDate,quickSubtaskIdMap,1);
+				updatePoiEditStatusMultiSrc(conn,uploadDate,mediumSubtaskIdMap,2);
 			}
 			
 				
@@ -570,7 +570,7 @@ public class PoiEditStatus {
 			Object[][] inParam = new Object[map.size()][];
 			int i = 0;
 			for(Map.Entry<Long, Integer> entry:map.entrySet()){
-				Object[] temp = new Object[3];
+				Object[] temp = new Object[2];
 				temp[0] = entry.getValue();
 				temp[1] = entry.getKey();
 				inParam[i] = temp;

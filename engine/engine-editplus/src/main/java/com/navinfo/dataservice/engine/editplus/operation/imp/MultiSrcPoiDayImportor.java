@@ -59,6 +59,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	protected Map<Long,Integer> quickSubtaskIdMap = new HashMap<Long,Integer>();
 	protected Map<Long,Integer> mediumSubtaskIdMap = new HashMap<Long,Integer>();
 	protected List<PoiRelation> samePoiPid = new ArrayList<PoiRelation>();
+	protected Set<Long> insertPids = new HashSet<Long>();
+	protected Set<Long> pids = new HashSet<Long>();
 	
 	private List<Map<String,Object>> scPointTruckList = new ArrayList<Map<String,Object>>();
 
@@ -88,6 +90,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 	public List<PoiRelation> getSamePoiPid() {
 		return samePoiPid;
 	}
+	public Set<Long> getInsertPids() {
+		return insertPids;
+	}
+	public Set<Long> getPids() {
+		return pids;
+	}
 
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
@@ -95,6 +103,109 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 		this.dbId= ((MultiSrcPoiDayImportorCommand)cmd).getDbId();
 		
 		//入库时如果常规数据或众包数据未作业完成，即处于"待作业"或"待提交"状态且存在常规子任务或众包子任务号，则多源数据不入大区域库，返回失败信息，失败信息报log：常规(众包)子任务XX正在作业！
+		filterPoiUnderSubtask(pois);
+		
+		if(pois!=null){
+			//加载元数据库sc_point_truck
+			MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
+			this.scPointTruckList = metaApi.getScPointTruckList();
+			//新增
+			Map<String, JSONObject> addPois = pois.getAddPois();
+			if(addPois!=null&&addPois.size()>0){
+				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,addPois);
+				result.putAll(ixPoiObjAdd);
+			}
+			//修改
+			Map<String, JSONObject> updatePois = pois.getUpdatePois();
+			if(updatePois!=null&&updatePois.size()>0){
+				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
+				result.putAll(ixPoiObjUpdate);
+			}
+			//删除
+			Map<String, JSONObject> deletePois = pois.getDeletePois();
+			if(deletePois!=null&&deletePois.size()>0){
+				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
+				result.putAll(ixPoiObjDelete);
+			}
+			
+			//数据所在多源子任务信息
+			multiSubtaskInfo();
+
+		}
+	}
+	
+	/**
+	 * @throws Exception 
+	 * 
+	 */
+	private void multiSubtaskInfo() throws Exception {
+		
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		Map<Integer,List<Integer>> quickSubtaskGridMapping = manApi.getSubtaskGridMappingByDbId(this.dbId,4);
+		Map<Integer,List<Integer>> mediumSubtaskGridMapping = manApi.getSubtaskGridMappingByDbId(this.dbId,1);
+		
+		List<BasicObj> objs = result.getAllObjs();
+		for(BasicObj obj:objs){
+			IxPoi poi = (IxPoi)obj.getMainrow();
+			Set<String> gridSet = CompGeometryUtil.geo2GridsWithoutBreak(poi.getGeometry());
+			for(Entry<Integer, List<Integer>> entry:quickSubtaskGridMapping.entrySet()){
+				boolean flg = false;
+				for(String gridId:gridSet){
+					if(entry.getValue().contains(Integer.parseInt(gridId))){
+						if(quickSubtaskIdMap.containsKey(poi.getPid())){
+							int subtaskId = quickSubtaskIdMap.get(poi.getPid());
+							if(subtaskId<entry.getKey()){
+								quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+								flg = true;
+								break;
+							}
+						}else{
+							quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							flg = true;
+							break;
+						}
+					}
+				}
+				if(flg){
+					break;
+				}
+			}
+			
+			if(quickSubtaskIdMap.containsKey(poi.getPid())){
+				continue;
+			}
+			
+			for(Entry<Integer, List<Integer>> entry:mediumSubtaskGridMapping.entrySet()){
+				boolean flg = false;
+				for(String gridId:gridSet){
+					if(entry.getValue().contains(Integer.parseInt(gridId))){
+						if(mediumSubtaskIdMap.containsKey(poi.getPid())){
+							int subtaskId = mediumSubtaskIdMap.get(poi.getPid());
+							if(subtaskId<entry.getKey()){
+								mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+								flg = true;
+								break;
+							}
+						}else{
+							mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
+							flg = true;
+							break;
+						}
+					}
+				}
+				if(flg){
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param pois 
+	 * @throws Exception 
+	 * 
+	 */
+	private void filterPoiUnderSubtask(MultiSrcUploadPois pois) throws Exception {
 		List<String> fids = new ArrayList<String>();
 		fids.addAll(pois.getAddPois().keySet());
 		fids.addAll(pois.getUpdatePois().keySet());
@@ -121,92 +232,8 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				pois.getDeletePois().remove(entry.getKey());
 			}
 		}
-
-		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
-		Map<Integer,List<Integer>> quickSubtaskGridMapping = manApi.getSubtaskGridMappingByDbId(this.dbId,4);
-		Map<Integer,List<Integer>> mediumSubtaskGridMapping = manApi.getSubtaskGridMappingByDbId(this.dbId,1);
-
-		if(pois!=null){
-			//加载元数据库sc_point_truck
-			MetadataApi metaApi = (MetadataApi)ApplicationContextUtil.getBean("metadataApi");
-			this.scPointTruckList = metaApi.getScPointTruckList();
-			//新增
-			Map<String, JSONObject> addPois = pois.getAddPois();
-			if(addPois!=null&&addPois.size()>0){
-				List<IxPoiObj> ixPoiObjAdd = this.improtAdd(conn,addPois);
-				result.putAll(ixPoiObjAdd);
-			}
-			//修改
-			Map<String, JSONObject> updatePois = pois.getUpdatePois();
-			if(updatePois!=null&&updatePois.size()>0){
-				List<IxPoiObj> ixPoiObjUpdate = this.improtUpdate(conn,updatePois);
-				result.putAll(ixPoiObjUpdate);
-			}
-			//删除
-			Map<String, JSONObject> deletePois = pois.getDeletePois();
-			if(deletePois!=null&&deletePois.size()>0){
-				List<IxPoiObj> ixPoiObjDelete = this.improtDelete(conn, deletePois);
-				result.putAll(ixPoiObjDelete);
-			}
-			
-			List<BasicObj> objs = result.getAllObjs();
-			for(BasicObj obj:objs){
-				IxPoi poi = (IxPoi)obj.getMainrow();
-				Set<String> gridSet = CompGeometryUtil.geo2GridsWithoutBreak(poi.getGeometry());
-				for(Entry<Integer, List<Integer>> entry:quickSubtaskGridMapping.entrySet()){
-					boolean flg = false;
-					for(String gridId:gridSet){
-						if(entry.getValue().contains(Integer.parseInt(gridId))){
-							if(quickSubtaskIdMap.containsKey(poi.getPid())){
-								int subtaskId = quickSubtaskIdMap.get(poi.getPid());
-								if(subtaskId<entry.getKey()){
-									quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
-									flg = true;
-									break;
-								}
-							}else{
-								quickSubtaskIdMap.put(poi.getPid(), entry.getKey());
-								flg = true;
-								break;
-							}
-						}
-					}
-					if(flg){
-						break;
-					}
-				}
-				
-				if(quickSubtaskIdMap.containsKey(poi.getPid())){
-					continue;
-				}
-				
-				for(Entry<Integer, List<Integer>> entry:mediumSubtaskGridMapping.entrySet()){
-					boolean flg = false;
-					for(String gridId:gridSet){
-						if(entry.getValue().contains(Integer.parseInt(gridId))){
-							if(mediumSubtaskIdMap.containsKey(poi.getPid())){
-								int subtaskId = mediumSubtaskIdMap.get(poi.getPid());
-								if(subtaskId<entry.getKey()){
-									mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
-									flg = true;
-									break;
-								}
-							}else{
-								mediumSubtaskIdMap.put(poi.getPid(), entry.getKey());
-								flg = true;
-								break;
-							}
-						}
-					}
-					if(flg){
-						break;
-					}
-				}
-			}
-			
-		}
 	}
-	
+
 	/**
 	 * 新增数据解析
 	 * @author Han Shaoming
@@ -228,6 +255,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				IxPoiObj poiObj = (IxPoiObj) ObjFactory.getInstance().create(ObjectName.IX_POI);
 				importAddByJson(poiObj, jo);
 				ixPoiObjList.add(poiObj);
+				insertPids.add(poiObj.getMainrow().getObjPid());
+				pids.add(poiObj.getMainrow().getObjPid());
+				
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
 				errLog.put(jo.getString("fid"), StringUtils.isEmpty(e.getMessage())?"新增执行成功":e.getMessage());
@@ -268,6 +298,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}else{
 						this.importUpdateByJson(ixPoiObj, jo.getValue());
 						ixPoiObjList.add(ixPoiObj);
+						pids.add(ixPoiObj.getMainrow().getObjPid());
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);
@@ -308,6 +339,7 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					}else{
 						this.importDeleteByJson(ixPoiObj, jo.getValue());
 						ixPoiObjList.add(ixPoiObj);
+						pids.add(ixPoiObj.getMainrow().getObjPid());
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(),e);

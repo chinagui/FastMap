@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -94,29 +95,29 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
 			//String uploadRoot = "D:\\temp\\";
-			return "E:\\data\\resources\\upload\\multisrc\\20170510\\20170510100000_day";
+//			return "E:\\data\\resources\\upload\\multisrc\\20170510\\20170510100000_day";
 			//每个月独立目录
-//			String curYm = DateUtils.getCurYyyymm();
-//			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
-//			File mdirFile = new File(monthDir);
-//			if(!mdirFile.exists()){
-//				mdirFile.mkdirs();
-//			}
-//			//获取zip包名
-//			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
-//			resJson.put("src", fileName);
-//			//下载
-//			String localZipFile = monthDir+fileName;
-//			DownloadUtils.download(remoteZipFile,localZipFile);
-//			log.debug("下载完成");
-//			//解压
-//			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
-//			ZipUtils.unzipFile(localZipFile,localUnzipDir);
-//			log.debug("解压完成");
-//			log.info("保存路径:"+localUnzipDir);
-//			//设置下载成功状态
-//			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
-//			return localUnzipDir;
+			String curYm = DateUtils.getCurYyyymm();
+			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
+			File mdirFile = new File(monthDir);
+			if(!mdirFile.exists()){
+				mdirFile.mkdirs();
+			}
+			//获取zip包名
+			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
+			resJson.put("src", fileName);
+			//下载
+			String localZipFile = monthDir+fileName;
+			DownloadUtils.download(remoteZipFile,localZipFile);
+			log.debug("下载完成");
+			//解压
+			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
+			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			log.debug("解压完成");
+			log.info("保存路径:"+localUnzipDir);
+			//设置下载成功状态
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
+			return localUnzipDir;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置下载失败状态
@@ -341,7 +342,10 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				//数据打多源标识
 //				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
-				PoiEditStatus.tagMultiSrcPoi(conn, imp.getQuickSubtaskIdMap(),imp.getMediumSubtaskIdMap());
+				Date uploadDate = new Date();
+				PoiEditStatus.insertPoiEditStatus(conn, imp.getInsertPids(),1);
+				PoiEditStatus.updatePoiEditStatus(conn, imp.getPids(), 1, 1, uploadDate);
+				PoiEditStatus.tagMultiSrcPoi(conn, imp.getQuickSubtaskIdMap(),imp.getMediumSubtaskIdMap(),uploadDate);
 				//导入父子关系
 				PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 				relCmd.setPoiRels(imp.getParentPid());

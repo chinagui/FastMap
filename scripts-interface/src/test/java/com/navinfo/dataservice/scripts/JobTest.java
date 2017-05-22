@@ -51,7 +51,7 @@ public class JobTest {
 
 	    try{
 			//执行job
-			int jobId=450;
+			int jobId=461;
 			JobApi apiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			JobInfo jobInfo=apiService.getJobById(jobId);
 //			JobInfo jobInfo = JobService.getInstance().getJobById(jobId);

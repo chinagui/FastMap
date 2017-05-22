@@ -116,8 +116,8 @@ public class PoiEditStatus {
 //			int workType = 2;//多源
 //			updatePoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
 //			
-//			//更新poi_edit_multisrc表
-//			updatePoiEditMultiSrc(conn,map);
+////			//更新poi_edit_multisrc表
+////			updatePoiEditMultiSrc(conn,map);
 //				
 //		}catch(Exception e){
 //			DbUtils.rollbackAndCloseQuietly(conn);
@@ -175,7 +175,7 @@ public class PoiEditStatus {
 	 * @param uploadDate
 	 * @throws Exception
 	 */
-	private static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status) throws Exception {
+	public static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status) throws Exception {
 		try{
 			if(pids.isEmpty()){
 				return;
@@ -204,8 +204,8 @@ public class PoiEditStatus {
 	 * @param pidExistsInPoiEditStatus
 	 * @throws Exception 
 	 */
-	private static void updatePoiEditStatus(Connection conn, Set<Long> pids
-			,int status,int isUpload, Date uploadDate,int workType) throws Exception {
+	public static void updatePoiEditStatus(Connection conn, Set<Long> pids
+			,int status,int isUpload, Date uploadDate) throws Exception {
 		try{
 			if(pids.isEmpty()){
 				return;
@@ -215,7 +215,7 @@ public class PoiEditStatus {
 			sb.append("UPDATE POI_EDIT_STATUS T SET STATUS="+status);
 			sb.append(",IS_UPLOAD="+isUpload);
 			sb.append(",UPLOAD_DATE=TO_DATE('" + format.format(uploadDate) + "','yyyy-MM-dd HH24:MI:ss')");
-			sb.append(",WORK_TYPE="+workType);
+//			sb.append(",WORK_TYPE="+workType);
 			Clob clobPids=null;
 			if(pids.size()>1000){
 				clobPids = conn.createClob();
@@ -519,9 +519,8 @@ public class PoiEditStatus {
 	 * @param MediumSubtaskIdMap 
 	 * @throws Exception 
 	 */
-	public static void tagMultiSrcPoi(Connection conn, Map<Long, Integer> quickSubtaskIdMap, Map<Long, Integer> mediumSubtaskIdMap) throws Exception {
+	public static void tagMultiSrcPoi(Connection conn, Map<Long, Integer> quickSubtaskIdMap, Map<Long, Integer> mediumSubtaskIdMap,Date uploadDate) throws Exception {
 		try{
-			Date uploadDate = new Date();
 			if(!quickSubtaskIdMap.isEmpty()){
 				updatePoiEditStatusMultiSrc(conn,uploadDate,quickSubtaskIdMap,1);
 			}
@@ -540,31 +539,27 @@ public class PoiEditStatus {
 	
 	/**
 	 * @param conn
+	 * @param uploadDate2 
 	 * @param map<pid,subtaskId>
 	 * @param type:1快线；2中线
 	 * 入库时该POI数据为无任务数据，多源数据入日库并生成履历，但不标识多源子任务！
 	 * @throws Exception 
 	 */
-	private static void updatePoiEditStatusMultiSrc(Connection conn,Date uploadDate,Map<Long, Integer> map,int type) throws Exception {
+	private static void updatePoiEditStatusMultiSrc(Connection conn,Date uploadDate,Map<Long, Integer> map, int type) throws Exception {
 		try{
 			if(map.isEmpty()){
 				return;
 			}
 			//更新poi_edit_status表
-			int status = 1;//待作业
-			int isUpload = 1;
-//			int workType = 2;//多源
+
 			
 			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE POI_EDIT_STATUS T SET STATUS="+status);
-			sb.append(",IS_UPLOAD="+isUpload);
-			sb.append(",UPLOAD_DATE=TO_DATE('" + format.format(uploadDate) + "','yyyy-MM-dd HH24:MI:ss')");
-//			sb.append(",WORK_TYPE="+workType);
+			sb.append("UPDATE POI_EDIT_STATUS T SET ");
 			if(type==1){
-				sb.append(",QUICK_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
+				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
 			}else if(type==2){
-				sb.append(",MEDIUM_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
+				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
 			}
 			
 			Object[][] inParam = new Object[map.size()][];

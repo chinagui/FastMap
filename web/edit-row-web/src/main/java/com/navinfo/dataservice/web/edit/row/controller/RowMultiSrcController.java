@@ -33,8 +33,9 @@ public class RowMultiSrcController extends BaseController {
 	@RequestMapping(value = "/poi/multisrc/uploadApply")
 	public ModelAndView run(HttpServletRequest request) throws Exception {
 		try {
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			Long userId = tokenObj.getUserId();
+//			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+//			Long userId = tokenObj.getUserId();
+			Long userId = 0L;
 			String parameter = request.getParameter("parameter");
 			if (StringUtils.isEmpty(parameter)) {
 				throw new IllegalArgumentException("parameter参数不能为空。");

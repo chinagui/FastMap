@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,26 +58,56 @@ public class LogReader {
 	 */
 	public int getObjectState(int objPid, String objTable) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(" WITH A AS\n");
-		sb.append(" (SELECT LO.ACT_ID, V.OB_PID, V. DT FROM LOG_OPERATION LO,(SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
-		sb.append(" WHERE T.OP_ID = P.OP_ID  AND T.OB_NM ='"+objTable+"' AND T.OB_PID="+objPid+"\n" );
-		sb.append(" GROUP BY OB_PID) V WHERE LO.OP_DT = V.DT),\n");
-		sb.append(" B AS \n");
-		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A \n");
-		sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.ACT_ID = A.ACT_ID AND L.TB_NM ='"+ objTable+"'), \n");
-		sb.append(" C AS \n"); 
-		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A \n");
-		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID) \n");
-		sb.append(" AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
-		sb.append(" WHERE D.OB_PID = A.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)),\n ");   
-		sb.append(" D AS (SELECT B.* FROM B WHERE B.OP_TP!=3), \n");          
-		sb.append(" E AS (SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n"); 
-		sb.append(" WHERE D.OB_PID = B.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)), \n");
-		sb.append(" F AS \n");
-		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL  SELECT E.* FROM E)\n ");
-		sb.append(" SELECT * FROM F \n");        
-		sb.append(" UNION ALL \n");  
-		sb.append(" SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID) ");  
+		
+		sb.append(" WITH A AS                                                                    ");
+		sb.append("  (SELECT D.OB_PID, MAX(P.OP_DT) DT                                           ");
+		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
+		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
+		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
+		sb.append("      AND D.OB_PID = " + objPid );
+		sb.append("      AND D.OB_NM = '"+objTable+"'");
+		sb.append("    GROUP BY OB_PID),                                                         ");
+		sb.append(" B AS                                                                         ");
+		sb.append("  (SELECT D.OB_PID, D.OP_TP                                                   ");
+		sb.append("     FROM LOG_DETAIL D, LOG_DETAIL_GRID G, LOG_OPERATION P                    ");
+		sb.append("    WHERE D.OP_ID = P.OP_ID                                                   ");
+		sb.append("      AND D.ROW_ID = G.LOG_ROW_ID                                             ");
+		sb.append("      AND D.OB_PID = " + objPid );
+		sb.append("      AND D.OB_NM = '"+objTable+"' ");
+		sb.append("      AND D.TB_NM = '"+objTable+"'),");
+		sb.append(" C AS                                                                         ");
+		sb.append("  (SELECT DISTINCT A.OB_PID, 3 OP_TP                                          ");
+		sb.append("     FROM A                                                                   ");
+		sb.append("    WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID)),            ");
+		sb.append(" D AS                                                                         ");
+		sb.append("  (SELECT DISTINCT B.OB_PID, 1 OP_TP                                          ");
+		sb.append("     FROM B                                                                   ");
+		sb.append("    WHERE B.OP_TP = 1                                                         ");
+		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
+		sb.append("             FROM B BB                                                        ");
+		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
+		sb.append("              AND BB.OP_TP = 2)),                                              ");
+		sb.append(" E AS                                                                         ");
+		sb.append("  (SELECT DISTINCT B.OB_PID, 2 OP_TP                                          ");
+		sb.append("     FROM B                                                                   ");
+		sb.append("    WHERE B.OP_TP = 2                                                         ");
+		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
+		sb.append("             FROM B BB                                                        ");
+		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
+		sb.append("              AND BB.OP_TP = 1)),                                              ");
+		sb.append(" F AS                                                                         ");
+		sb.append("  (SELECT DISTINCT B.OB_PID, 3 OP_TP                                          ");
+		sb.append("     FROM B                                                                   ");
+		sb.append("    WHERE B.OP_TP = 3                                                         ");
+		sb.append("      AND NOT EXISTS (SELECT 1                                                ");
+		sb.append("             FROM B BB                                                        ");
+		sb.append("            WHERE BB.OB_PID = B.OB_PID                                        ");
+		sb.append("              AND BB.OP_TP IN (1, 2)))                                         ");
+		sb.append("                                                                              ");
+		sb.append(" SELECT * FROM C                                                              ");
+		sb.append(" UNION ALL SELECT * FROM D                                                    ");
+		sb.append(" UNION ALL SELECT * FROM E                                                    ");
+		sb.append(" UNION ALL SELECT * FROM F                                                    "); 
 
 		PreparedStatement pstmt = null;
 		ResultSet resultSet = null;
@@ -96,6 +127,47 @@ public class LogReader {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+//	public int getObjectState(int objPid, String objTable) throws Exception {
+//		StringBuilder sb = new StringBuilder();
+//		sb.append(" WITH A AS\n");
+//		sb.append(" (SELECT LO.ACT_ID, V.OB_PID, V. DT FROM LOG_OPERATION LO,(SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
+//		sb.append(" WHERE T.OP_ID = P.OP_ID  AND T.OB_NM ='"+objTable+"' AND T.OB_PID="+objPid+"\n" );
+//		sb.append(" GROUP BY OB_PID) V WHERE LO.OP_DT = V.DT),\n");
+//		sb.append(" B AS \n");
+//		sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A \n");
+//		sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.ACT_ID = A.ACT_ID AND L.TB_NM ='"+ objTable+"'), \n");
+//		sb.append(" C AS \n"); 
+//		sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A \n");
+//		sb.append(" WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID) \n");
+//		sb.append(" AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+//		sb.append(" WHERE D.OB_PID = A.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)),\n ");   
+//		sb.append(" D AS (SELECT B.* FROM B WHERE B.OP_TP!=3), \n");          
+//		sb.append(" E AS (SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n"); 
+//		sb.append(" WHERE D.OB_PID = B.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)), \n");
+//		sb.append(" F AS \n");
+//		sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL  SELECT E.* FROM E)\n ");
+//		sb.append(" SELECT * FROM F \n");        
+//		sb.append(" UNION ALL \n");  
+//		sb.append(" SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID) ");  
+//
+//		PreparedStatement pstmt = null;
+//		ResultSet resultSet = null;
+//		
+//		try {
+//			pstmt = this.conn.prepareStatement(sb.toString());
+//			resultSet = pstmt.executeQuery();
+//			int opStatus = 0;
+//			while (resultSet.next()) {
+//				opStatus=resultSet.getInt("OP_TP");
+//				}
+//			return opStatus;
+//		} catch (Exception e) {
+//			throw e;
+//		} finally {
+//			DBUtils.closeResultSet(resultSet);
+//			DBUtils.closeStatement(pstmt);
+//		}
+//	}
 
 	/**
 	 * 查询是否存在某次履历时间之前的新增履历
@@ -639,16 +711,23 @@ public class LogReader {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.3.103:1521/orcl",
-				"fm260_region_16win_d_1", "fm260_region_16win_d_1");
+		Connection con = DriverManager.getConnection("jdbc:oracle:thin:@192.168.4.61:1521/orcl",
+				"fm_regiondb_trunk_d_1", "fm_regiondb_trunk_d_1");
 //		boolean flag = new LogReader(con).isUpdateforObjFeild(79887714, "IX_POI","IX_POI","LEVEL");
+		System.out.println(new Date());
 		String objName = "IX_POI";
 		String mainTabName = "IX_POI";
 		Collection<String> grids = null;
-		String startDate = "201610220000";
-		String endDate = "201610230000";
-		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate, endDate);
-		System.out.println("ok");
+		String startDate = "201510220000";
+//		String endDate = "201610230000";
+		Map<Integer,Collection<Long>> map = new LogReader(con).getUpdatedObj(objName, mainTabName, grids, startDate);
+		System.out.println(new Date());
+		System.out.println(new Date());
+		String objTable = "IX_POI";
+		int objPid = 503000118;
+		int status = new LogReader(con).getObjectState(objPid, objTable);
+		System.out.println(new Date());
+		System.out.println(status);
 //		System.out.println(flag);
 	}
 }

@@ -760,7 +760,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 //		System.out.println(obj.get("key3").getClass());
 //		System.out.println(JSONUtils.isNull(obj.get("key4")));
 		
-		List<String> list1 = new ArrayList<String>();
+/*		List<String> list1 = new ArrayList<String>();
 		for(int i=0;i<10;i++){
 			list1.add(String.valueOf(i));
 		}
@@ -772,7 +772,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		for(String s:list2){
 			list1.remove(s);
 		}
-		System.out.println(StringUtils.join(list1,","));
+		System.out.println(StringUtils.join(list1,","));*/
 //		List<String> list2 = list1;
 //		for(String s:list2){
 //			if(s.equals("7")){
@@ -785,6 +785,14 @@ public class CollectorPoiImportor extends AbstractOperation {
 //				list1.remove(s);
 //			}
 //		}
+		
+		Map<String,String> map = new HashMap<String,String>();
+		map.put("AA", "AA123");
+		Set<String> maoKey = map.keySet();
+		maoKey.add("BB");
+		for(Entry<String,String> entry:map.entrySet()){
+			System.out.println(entry.getKey()+":"+entry.getValue());
+		}
 	}
 	
 }

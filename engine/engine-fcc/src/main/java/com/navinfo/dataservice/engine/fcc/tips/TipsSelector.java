@@ -8,23 +8,21 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.HBaseController;
 import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
 import com.navinfo.dataservice.dao.fcc.SolrController;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
-import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
-import net.sf.json.util.JSONUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
@@ -75,62 +73,63 @@ public class TipsSelector {
 
 	/**
 	 * @Description:范围瓦片查询Tips
-	 * @param x
-	 * @param y
-	 * @param z
-	 * @param gap
-	 * @param types
-	 * @param mdFlag
+	 * @param parameter
 	 * @return
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-7-2 上午10:08:16
 	 */
-	public JSONArray searchDataByTileWithGap(int x, int y, int z, int gap,
-											 JSONArray types, String mdFlag, String wktIndexName, JSONArray noQFilter) throws Exception {
+	public JSONArray searchDataByTileWithGap(String parameter) throws Exception {
 		JSONArray array = new JSONArray();
 
 		String rowkey = null;
 
 		try {
 
-			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
-
+//			String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
+//
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int x = jsonReq.getInt("x");
+            int y = jsonReq.getInt("y");
+            int z = jsonReq.getInt("z");
 			double px = MercatorProjection.tileXToPixelX(x);
-
 			double py = MercatorProjection.tileYToPixelY(y);
+            String mdFlag = jsonReq.getString("mdFlag");
+//
+//			JSONArray stages = new JSONArray();
+//
+//			if ("d".equals(mdFlag)) {
+//
+//                stages.add(1);
+//
+//                stages.add(2);
+//
+//                stages.add(5);
+//
+//                stages.add(6);
+//
+//			} else if ("m".equals(mdFlag)) {
+//
+//                stages.add(1);
+//
+//                stages.add(2);
+//
+//                stages.add(3);
+//
+//			}
+//
+//			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
+//			boolean isPre = false;
+//
+//			if ("f".equals(mdFlag)) {
+//				isPre = true;
+//			}
 
-			JSONArray stages = new JSONArray();
-
-			if ("d".equals(mdFlag)) {
-
-                stages.add(1);
-
-                stages.add(2);
-
-                stages.add(5);
-
-                stages.add(6);
-
-			} else if ("m".equals(mdFlag)) {
-
-                stages.add(1);
-
-                stages.add(2);
-
-                stages.add(3);
-
-			}
-
-			// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
-			boolean isPre = false;
-
-			if ("f".equals(mdFlag)) {
-				isPre = true;
-			}
-
-			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, false, isPre, wktIndexName, noQFilter);
+//			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
+//					stages, false, isPre, wktIndexName, noQFilter);
+            TipsRequestParam param = new TipsRequestParam();
+            String query = param.getByTileWithGap(parameter, true);
+            List<JSONObject> snapshots = conn.queryTips(query, null);
 
 			for (JSONObject json : snapshots) {
 
@@ -154,29 +153,20 @@ public class TipsSelector {
 				JSONObject m = new JSONObject();
 
 				// 日编月编状态
-
 				if ("d".equals(mdFlag)) {
-
 					// 如果日编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
 					if (json.getInt("t_dInProc") == 1) {
-
 						m.put("a", 2);
-
 					} else {
-
 						m.put("a", json.getString("t_dStatus"));
 					}
-
 				} else if ("m".equals(mdFlag)) {
-
 					// 如果月编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
 					if (json.getInt("t_mInProc") == 1) {
-
 						m.put("a", 2);
 					} else {
 						m.put("a", json.getString("t_mStatus"));
 					}
-
 				}
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
@@ -1045,56 +1035,50 @@ public class TipsSelector {
 		return tipdiff;
 	}
 
-	public JSONArray searchDataByWkt(String wkt, JSONArray types, String mdFlag, String wktIndexName)
+	public JSONArray searchDataByWkt(String parameter, boolean filterDelete)
 			throws Exception {
 		JSONArray array = new JSONArray();
 
 		try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            String mdFlag = jsonReq.getString("flag");
+			TipsRequestParam param = new TipsRequestParam();
+			String query = param.getStatusByWkt(parameter, filterDelete);
 
-			JSONArray stages = new JSONArray();
-
-			List<JSONObject> snapshots = conn.queryTipsWebType(wkt, types,
-					stages, true, wktIndexName);
+			List<JSONObject> snapshots = conn.queryTips(query, null);
 
 			for (JSONObject json : snapshots) {
 				JSONObject result = new JSONObject();
 
-				int type = Integer.valueOf(json.getString("s_sourceType"));
+				String type = json.getString("s_sourceType");
 
 				String geometry = json.getString("g_location");
 
 				// 采集、日编、月编状态
 				if ("c".equals(mdFlag)) {
 
-					result.put("status", json.getString("t_cStatus"));
+					result.put("status", json.getString("t_tipStatus"));
 
 				} else if ("d".equals(mdFlag)) {
 
-					result.put("status", json.getString("t_dStatus"));
+					result.put("status", json.getString("t_dEditStatus"));
 
 				} else if ("m".equals(mdFlag)) {
 
-					result.put("status", json.getString("t_mStatus"));
+					result.put("status", json.getString("t_mEditStatus"));
 
 				}
 
 				JSONObject deep = JSONObject.fromObject(json.getString("deep"));
 
 				// g字段重新赋值的（显示坐标：取Tips的geo）
-				if (type == 1601 || type == 1602 || type == 1603
-						|| type == 1604 || type == 1605 || type == 1606
-						|| type == 1607 || type == 1901 || type == 2001) {
+				if (TipsStatConstant.gGeoTipsType.contains(type)) {
 
 					JSONObject deepGeo = deep.getJSONObject("geo");
 
 					geometry = deepGeo.toString();
 
-				} else if (type == 1501 || type == 1502 || type == 1503
-						|| type == 1504 || type == 1505 || type == 1506
-						|| type == 1507 || type == 1508 || type == 1509
-						|| type == 1510 || type == 1511 || type == 1512
-						|| type == 1513 || type == 1514 || type == 1515
-						|| type == 1516 || type == 1517) {
+				} else if (TipsStatConstant.gSLocTipsType.contains(type)) {
 
 					JSONObject gSLoc = deep.getJSONObject("gSLoc");
 
@@ -1227,27 +1211,21 @@ public class TipsSelector {
 		return array;
 	}
 
-	/**
-	 * 统计tips
-	 *
-	 * @param grids
-	 * @param stages
-	 * @param subtaskId :日编任务号
-	 * @return
-	 * @throws Exception
-	 */
-	public JSONObject getStats(JSONArray grids, JSONArray stages, int subtaskId)
+    /**
+     * 子任务Tips根据类型统计
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+	public JSONObject getStats(String parameter)
 			throws Exception {
 		JSONObject jsonData = new JSONObject();
 
-		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskId); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
+		TipsRequestParam param = new TipsRequestParam();
+        String solrQuery = param.getTipStat(parameter);
+		List<JSONObject> tips = conn.queryTips(solrQuery, null);
 
-		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
-
-		String wkt = GridUtils.grids2Wkt(grids);
-
-		List<JSONObject> tips = conn.queryTipsWeb(wkt, stages, taskSet);
-
+        Map<Integer, Integer> map = new HashMap<Integer, Integer>();
 		for (JSONObject json : tips) {
 			int type = Integer.valueOf(json.getInt("s_sourceType"));
 
@@ -1360,31 +1338,19 @@ public class TipsSelector {
 	/**
 	 * 获取单种类型快照
 	 *
-	 * @param grids
-	 * @param stages
-	 * @param type
-	 * @param mdFlag
-	 *            d:日编，m:月编。
-	 * @param subtaskid :日编任务号
+	 * @param parameter
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray getSnapshot(JSONArray grids, JSONArray stages, int type,
-								 int dbId, String mdFlag, int subtaskid) throws Exception {
+	public JSONArray getSnapshot(String parameter) throws Exception {
 		JSONArray jsonData = new JSONArray();
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int type = Integer.valueOf(jsonReq.getString("type"));
+        int dbId = jsonReq.getInt("dbId");
 
-		String wkt = GridUtils.grids2Wkt(grids);
-
-		// f是预处理渲染，如果不是，则需要过滤没有提交的预处理tips
-		boolean isPre = false;
-
-		if ("f".equals(mdFlag)) {
-			isPre = true;
-		}
-
-		Set<Integer> taskSet = getTaskIdsUnderSameProject(subtaskid); //查询该任务所对应的项目下的所有的任务号（快线任务号），月编作业方式还没定，暂时不管
-
-		List<JSONObject> tips = conn.queryWebTips(wkt, type, stages, isPre,taskSet);
+        TipsRequestParam param = new TipsRequestParam();
+        String query = param.getSnapShot(parameter);
+        List<JSONObject> tips = conn.queryTips(query, null);
 
 		Map<Integer, String> map = null;
 
@@ -1503,14 +1469,14 @@ public class TipsSelector {
 
 				JSONObject m = new JSONObject();
 
-				if ("d".equals(mdFlag)) {
-
-					m.put("a", json.getString("t_dStatus"));
-
-				} else if ("m".equals(mdFlag)) {
-
-					m.put("a", json.getString("t_mStatus"));
-				}
+//				if ("d".equals(mdFlag)) {
+//
+//					m.put("a", json.getString("t_dStatus"));
+//
+//				} else if ("m".equals(mdFlag)) {
+//
+//					m.put("a", json.getString("t_mStatus"));
+//				}
 
 				m.put("b", json.getString("t_lifecycle"));
 
@@ -2121,10 +2087,10 @@ public class TipsSelector {
 
             TipsSelector selector = new TipsSelector();
 
-            JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-                    types, mdFlag, "wktLocation", noQFilter);
+//            JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
+//                    types, mdFlag, "wktLocation", noQFilter);
 
-        System.out.println("reusut:--------------\n"+array);
+//        System.out.println("reusut:--------------\n"+array);
 	}
 
 }

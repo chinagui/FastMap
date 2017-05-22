@@ -509,12 +509,12 @@ public class SolrController {
 		return snapshots;
 	}
 
-	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-			JSONArray stages, boolean filterDelete, String wktIndexName) throws SolrServerException,
-			IOException {
-		// 默认不是预处理的tips
-		return queryTipsWebType(wkt, types, stages, filterDelete, false, wktIndexName, null);
-	}
+//	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
+//			JSONArray stages, boolean filterDelete, String wktIndexName) throws SolrServerException,
+//			IOException {
+//		// 默认不是预处理的tips
+//		return queryTipsWebType(wkt, types, stages, filterDelete, false, wktIndexName, null);
+//	}
 
 	public JSONObject getById(String id) throws Exception {
 
@@ -601,97 +601,97 @@ public class SolrController {
 
 	}
 
-	/**
-	 * @Description:渲染接口
-	 * @param wkt
-	 * @param types
-	 * @param stages
-	 * @param filterDelete
-	 * @param isPre
-	 * @param wktIndexName
-	 * @return
-	 * @author: y
-	 * @throws IOException
-	 * @throws SolrServerException
-	 * @time:2017-1-5 下午2:03:57
-	 */
-	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
-			JSONArray stages, boolean filterDelete, boolean isPre, String wktIndexName, JSONArray noQFilter)
-			throws SolrServerException, IOException {
-		List<JSONObject> snapshots = new ArrayList<JSONObject>();
-
-		StringBuilder builder = new StringBuilder();
-
-		// builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
-
-		builder.append(wktIndexName + ":\"intersects(" + wkt + ")\" ");
-
-		if (filterDelete) {
-			// 过滤删除的数据
-			builder.append(" AND -t_lifecycle:1 ");
-		}
-
-		addStageFilterSql(stages, builder);
-
-		addTypesFileterSql(types, builder);
-
-        //20170510 增加中线有无过滤
-        addTaskFilterSql(noQFilter, builder);
-
-        // 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
-
-		if (!isPre) {
-
-			if ("".equals(builder.toString())) {
-				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
-
-				builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
-			} else {
-				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
-
-				builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
-			}
-		}
-
-//20170510 开发环境屯屯让暂时屏蔽
-		// 过滤315 web不显示的tips 20170118
-		if (!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
-			if ("".equals(builder.toString())) {
-				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
-			} else {
-				builder.append(" AND "
-						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
-			}
-		}
-
-		SolrQuery query = new SolrQuery();
-
-		query.set("q", builder.toString());
-
-		query.set("start", 0);
-
-		query.set("rows", fetchNum);
-
-		QueryResponse response = client.query(query);
-
-		SolrDocumentList sdList = response.getResults();
-
-		long totalNum = sdList.getNumFound();
-
-		if (totalNum <= fetchNum) {
-			for (int i = 0; i < totalNum; i++) {
-				SolrDocument doc = sdList.get(i);
-
-				JSONObject snapshot = JSONObject.fromObject(doc);
-
-				snapshots.add(snapshot);
-			}
-		} else {
-			// 暂先不处理
-		}
-
-		return snapshots;
-	}
+//	/**
+//	 * @Description:渲染接口
+//	 * @param wkt
+//	 * @param types
+//	 * @param stages
+//	 * @param filterDelete
+//	 * @param isPre
+//	 * @param wktIndexName
+//	 * @return
+//	 * @author: y
+//	 * @throws IOException
+//	 * @throws SolrServerException
+//	 * @time:2017-1-5 下午2:03:57
+//	 */
+//	public List<JSONObject> queryTipsWebType(String wkt, JSONArray types,
+//			JSONArray stages, boolean filterDelete, boolean isPre, String wktIndexName, JSONArray noQFilter)
+//			throws SolrServerException, IOException {
+//		List<JSONObject> snapshots = new ArrayList<JSONObject>();
+//
+//		StringBuilder builder = new StringBuilder();
+//
+//		// builder.append("wkt:\"intersects(" + wkt + ")\"  AND stage:(1 2 3)");
+//
+//		builder.append(wktIndexName + ":\"intersects(" + wkt + ")\" ");
+//
+//		if (filterDelete) {
+//			// 过滤删除的数据
+//			builder.append(" AND -t_lifecycle:1 ");
+//		}
+//
+//		addStageFilterSql(stages, builder);
+//
+//		addTypesFileterSql(types, builder);
+//
+//        //20170510 增加中线有无过滤
+//        addTaskFilterSql(noQFilter, builder);
+//
+//        // 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
+//
+//		if (!isPre) {
+//
+//			if ("".equals(builder.toString())) {
+//				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
+//
+//				builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
+//			} else {
+//				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
+//
+//				builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
+//			}
+//		}
+//
+////20170510 开发环境屯屯让暂时屏蔽
+//		// 过滤315 web不显示的tips 20170118
+//		if (!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {
+//			if ("".equals(builder.toString())) {
+//				builder.append(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+//			} else {
+//				builder.append(" AND "
+//						+ SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL);
+//			}
+//		}
+//
+//		SolrQuery query = new SolrQuery();
+//
+//		query.set("q", builder.toString());
+//
+//		query.set("start", 0);
+//
+//		query.set("rows", fetchNum);
+//
+//		QueryResponse response = client.query(query);
+//
+//		SolrDocumentList sdList = response.getResults();
+//
+//		long totalNum = sdList.getNumFound();
+//
+//		if (totalNum <= fetchNum) {
+//			for (int i = 0; i < totalNum; i++) {
+//				SolrDocument doc = sdList.get(i);
+//
+//				JSONObject snapshot = JSONObject.fromObject(doc);
+//
+//				snapshots.add(snapshot);
+//			}
+//		} else {
+//			// 暂先不处理
+//		}
+//
+//		return snapshots;
+//	}
 
 	/**
 	 * @Description:增加stage过滤sql
@@ -742,24 +742,6 @@ public class SolrController {
 			builder.append(")");
 		}
 	}
-
-    /**
-     * 中线有无过滤
-     * @param nQFilter
-     * @param builder
-     */
-    private void addTaskFilterSql(JSONArray nQFilter, StringBuilder builder) {
-        if ((nQFilter != null) && (nQFilter.size() > 0)) {
-            builder.append(" AND s_qTaskId:0");
-            if (nQFilter.size() < 2) {
-                int flag = nQFilter.getInt(0);
-                if (flag == 1)
-                    builder.append(" AND -s_mTaskId:0");
-                else if (flag == 2)
-                    builder.append(" AND s_mTaskId:0");
-            }
-        }
-    }
 
 	/**
 	 * @Description:根据任务号，任务类型查找tips

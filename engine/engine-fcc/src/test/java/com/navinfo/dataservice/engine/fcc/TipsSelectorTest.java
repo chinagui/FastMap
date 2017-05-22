@@ -72,39 +72,10 @@ public class TipsSelectorTest extends InitApplication {
 	//根据网格、类型、作业状态获取tips的snapshot列表（rowkey，点位，类型）
 	@Test
 	public void testGetSnapshot() {
-
-
-		JSONArray grid = JSONArray
-				.fromObject("[59566422]");
-
-		//{"grids":[59566422],"stage":[1,2,3],"mdFlag":"d","type":"2101","dbId":24}
-
-		//parameter=%7B"grids":%5B60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131%5D,"stage":%5B1,2%5D,"mdFlag":"d","type":"1101","dbId":17%7D
-	
-/*	parameter:{"grids":[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133],
-		"stage":[1,2],"mdFlag":"d","type":"2101","dbId":409}  */
-/*		JSONArray grid = JSONArray
-			.fromObject("[59567232,59567233]");*/
-
-
-		//%7B"grids":%5B60566132,60566122,60566120,60566133,60566123,60566112,60566113,60566130,60566131%5D,"stage":%5B1,2%5D%7D
-
-
-		System.out.println(grid.toString());
-		JSONArray stage = new JSONArray();
-		stage.add(1);
-		stage.add(2);
-		stage.add(3);
-
-		//红绿灯、红绿灯方位、大门、坡度、条件限速、车道限速、车道数、匝道、停车场出入口link、禁止穿行、禁止驶入、提左提右、一般道路方面、路面覆盖、测线
-		//1102、1103 、1104、1106、1111、1113、1202
-		int type = 2101;
-		int dbId = 24;
-
-
+		String parameter = "{\"grids\":[59564100,59564101,59564102,59564103,59564110,59564111,59564112,59564113,59564120,59564121,59564122,59564123,59564130,59564131,59564132,59564133],\n" +
+				"\t\t\"stage\":[1,2],\"mdFlag\":\"d\",\"type\":\"2101\",\"dbId\":409}";
 		try {
-			System.out.println(solrSelector.getSnapshot(grid, stage, type,
-					dbId,"d",24));
+			System.out.println(solrSelector.getSnapshot(parameter));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -276,8 +247,8 @@ public class TipsSelectorTest extends InitApplication {
 //			access_token=0000042XJ2MYPIALCDCDC2D9968453C1965F44BB23CA455F
 //					parameter={"mdFlag":"d","gap":10,"types":["1107","1201","1202","1203","1702","2001","1901","2101","1601","1803","1301","1507"],"x":108944,"y":52057,"z":17}
 
-			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(108944, 52057, 17,
-					10, types,"d","wktLocation",null));
+//			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(108944, 52057, 17,
+//					10, types,"d","wktLocation",null));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -299,8 +270,8 @@ public class TipsSelectorTest extends InitApplication {
 			String wkt = "POLYGON ((115.78478246015277 40.3580663376903, 117.06198634219226 40.3580663376903, 117.06198634219226 39.090405904000164, 115.78478246015277 39.090405904000164, 115.78478246015277 40.3580663376903))";
 			wkt = GridUtils.grids2Wkt(grids);
 			System.out.println(wkt);
-			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d","wkt");
-			System.out.println(tips);
+//			JSONArray tips = solrSelector.searchDataByWkt(wkt, types,"d","wkt");
+//			System.out.println(tips);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -351,21 +322,10 @@ public class TipsSelectorTest extends InitApplication {
 	//根据网格获取tips统计
 	@Test
 	public void testGetStats() {
-		/*	JSONArray grid = JSONArray
-					.fromObject("[59567101,59567102,59567103,59567104,59567201,60560301,60560302,60560303,60560304]");*/
-
-		JSONArray grid = JSONArray
-				.fromObject("[[59564420,59564431,59564430,59565401,59565400]");
-		JSONArray stage = new JSONArray();
-
-		stage.add(1);
-		stage.add(2);
-		stage.add(5);
-/*			stage.add(3);
-			stage.add(5);*/
+		String parameter = "{}";
 
 		try {
-			System.out.println(solrSelector.getStats(grid, stage,27));
+			System.out.println(solrSelector.getStats(parameter));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -630,9 +590,9 @@ public class TipsSelectorTest extends InitApplication {
 			}
 
 
-			track =TipsUtils.generateTrackJson(lifecycle, stage, handler, command, trackInfo,
-					t_operateDate, currentDate, t_cStatus,
-					t_dStatus, t_mStatus, t_inMeth, t_pStatus, t_dInProc, t_mInProc, t_fStatus);
+//			track =TipsUtils.generateTrackJson(lifecycle, stage, handler, command, trackInfo,
+//					t_operateDate, currentDate, t_cStatus,
+//					t_dStatus, t_mStatus, t_inMeth, t_pStatus, t_dInProc, t_mInProc, t_fStatus);
 			put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 					.getBytes());
 			

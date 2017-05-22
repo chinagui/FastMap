@@ -8,6 +8,9 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsIndexModel;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsSource;
+import com.navinfo.dataservice.engine.fcc.tips.model.TipsTrack;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -37,12 +40,12 @@ import java.util.*;
 public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 	static String FC_SOURCE_TYPE = "8001"; // FC预处理理tips
-
 	static int FC_DEFAULT_STAGE = 2;
-	
-	public static int COMMAND_INSERT=0;
-	
-	public static int COMMAND_UPADATE=1;
+	public static int COMMAND_INSERT = 0;
+	public static int COMMAND_UPADATE = 1;
+    public static int PRE_TIPS_STAGE = 5;
+    public static int TIP_STATUS_EDIT = 1;
+    public static int TIP_STATUS_COMMIT = 2;
 	
 	private static final Logger logger = Logger
 			.getLogger(PretreatmentTipsOperator.class);
@@ -64,7 +67,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @time:2016-11-15 上午11:03:20
 	 */
 	public void create(String sourceType, JSONObject lineGeometry, int user,
-			JSONObject deep, String memo) throws Exception {
+			JSONObject deep, String memo, int qSubTaskId) throws Exception {
 
 		Connection hbaseConn;
 		try {
@@ -80,9 +83,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					DateUtils.DATE_COMPACTED_FORMAT);
 
 			JSONObject feedbackObj = new JSONObject();
-
 			JSONArray f_array = new JSONArray();
-
 			// memo,如果有，则增加一个备注
 			if (StringUtils.isNotEmpty(memo)) {
 				int type = 3;
@@ -92,51 +93,32 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			}
 			feedbackObj.put("f_array", f_array);
 
-			// 3.track
-			int stage = 5; // 0 初始化；1 外业采集；2 内业日编；3 内业月编；4 GDB增量； 5内业预处理
-
 			int t_lifecycle = 3;
-			int t_command = 0;
-			int t_cStatus = 0;
-			int t_dStatus = 0;
-			int t_mStatus = 0;
-			// int t_inStatus = 0;
-			int t_inMeth = 0;
-			int t_pStatus = 0;
-			int t_dInProc = 0;
-			int t_mInProc = 0;
-			int t_fStatus = 0;
-			int s_qTaskId = 0;
-			int s_mTaskId = 0;
-			int s_qSubTaskId = 0;
-			int s_mSubTaskId = 0;
 
+            // 3.track
+            TipsTrack track = new TipsTrack();
+            track.setT_lifecycle(t_lifecycle);
+            track.setT_date(currentDate);
+            track.setT_tipStatus(PretreatmentTipsOperator.TIP_STATUS_EDIT);
+            track.addTrackInfo(PretreatmentTipsOperator.PRE_TIPS_STAGE, currentDate, user);
 
-			JSONObject jsonTrack = TipsUtils.generateTrackJson(t_lifecycle,
-					stage, user, t_command, null, currentDate, currentDate,
-					t_cStatus, t_dStatus, t_mStatus, t_inMeth, t_pStatus,
-					t_dInProc, t_mInProc, t_fStatus);
+            JSONObject trackJson = JSONObject.fromObject(track);
 
-			// source
-			int s_sourceCode = 14;
-			int s_reliability = 100;
-			int s_featureKind = 2;
-
-			JSONObject source = new JSONObject();
-			source = TipsUtils.newSource(s_featureKind, null, s_sourceCode,
-					null, sourceType, s_reliability, 0,s_qTaskId,s_qSubTaskId,s_mTaskId,s_mSubTaskId);
+            // source
+            int s_sourceCode = 14;
+            TipsSource source = new TipsSource();
+            source.setS_sourceCode(s_sourceCode);
+            source.setS_qSubTaskId(qSubTaskId);//快线子任务ID
+            source.setS_sourceType(sourceType);
+            JSONObject sourceJson = JSONObject.fromObject(source);
 
 			// deep; 生成deep信息
 			JSONObject deepNew = new JSONObject();
-
 			// 根据tips类型生成deep信息
 			if (deep != null && !deep.isNullObject()) {
-
 				// fc预处理tips
 				if (FC_SOURCE_TYPE.equals(sourceType)) {
-
 					deepNew = newFcDeep(lineGeometry, deep);
-
 				}
 			}
 
@@ -148,40 +130,26 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			// put
 			Put put = new Put(rowkey.getBytes());
-
-			put.addColumn("data".getBytes(), "track".getBytes(), jsonTrack
+			put.addColumn("data".getBytes(), "track".getBytes(), trackJson
 					.toString().getBytes());
-
 			put.addColumn("data".getBytes(), "geometry".getBytes(), jsonGeom
 					.toString().getBytes());
-
 			put.addColumn("data".getBytes(), "feedback".getBytes(), feedbackObj
 					.toString().getBytes());
-
-			put.addColumn("data".getBytes(), "source".getBytes(), source
+			put.addColumn("data".getBytes(), "source".getBytes(), sourceJson
 					.toString().getBytes());
-
 			put.addColumn("data".getBytes(), "deep".getBytes(), deepNew
 					.toString().getBytes());
 
 			// solr index json
-			JSONObject solrIndex = TipsUtils.generateSolrIndex(rowkey, stage,
-					currentDate, currentDate, t_lifecycle, t_command, user,
-					t_cStatus, t_dStatus, t_mStatus, sourceType, s_sourceCode,
-					g_guide, lineGeometry, deepNew, feedbackObj, s_reliability,
-					t_inMeth, t_pStatus, t_dInProc, t_mInProc, s_qTaskId,
-					s_mTaskId, t_fStatus,s_qSubTaskId,s_mSubTaskId);
-
-			solr.addTips(solrIndex);
+            TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(rowkey, PretreatmentTipsOperator.PRE_TIPS_STAGE,
+                    currentDate, user, trackJson, sourceJson, jsonGeom, deepNew, feedbackObj);
+            solr.addTips(JSONObject.fromObject(tipsIndexModel));
 
 			List<Put> puts = new ArrayList<Put>();
-
 			puts.add(put);
-
 			htab.put(puts);
-
 			htab.close();
-
 		} catch (IOException e) {
 			logger.error("新增tips出错：原因：" + e.getMessage());
 			throw new Exception("新增tips出错：原因：" + e.getMessage(), e);
@@ -279,7 +247,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-18 下午2:16:09
 	 */
-	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user)
+	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user, int qSubTaskId)
 			throws Exception {
 
 		Connection hbaseConn;
@@ -300,34 +268,29 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			Put put = new Put(rowkey.getBytes());
 
 			// 1.update track
-
 			JSONObject track = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
-
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
-
 			track = addTrackInfo(user, track, date);
-
 			track.put("t_lifecycle", 2);
 
 			// 2.update geometry
-
 			JSONObject geometry = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "geometry".getBytes())));
-
 			geometry.put("g_location", lineGeometry);
-
 			JSONObject guideNew = getMidPointByGeometry(lineGeometry);
-
 			geometry.put("g_guide", guideNew);
 
 			// 2.update deep.geo(根据新的几何信息计算几何中心点)
-
 			JSONObject deep = JSONObject.fromObject(new String(result.getValue(
 					"data".getBytes(), "deep".getBytes())));
-
 			deep.put("geo", guideNew);
+
+            //source 快线子任务
+            JSONObject source = JSONObject.fromObject(new String(result.getValue(
+                    "data".getBytes(), "source".getBytes())));
+            source.put("s_qSubTaskId", qSubTaskId);
 
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
@@ -339,40 +302,31 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					.getBytes());
 
 			// update solr
-
 			JSONObject solrIndex = solr.getById(rowkey);
-
 			solrIndex.put("t_lifecycle", 2);
-
 			solrIndex.put("t_date", date);
-
 			solrIndex.put("handler", user);
-
 			solrIndex.put("g_location", lineGeometry);
-
 			solrIndex.put("g_guide", guideNew);
-
 			solrIndex.put("deep", deep);
-
-			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
-					.get("feedback"));
-
-			solrIndex.put("wkt", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
-					feedbackObj));
-
+            solrIndex.put("s_qSubTaskId", qSubTaskId);
+			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.get("feedback"));
+            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
+                    feedbackObj));
+            Map<String,String >relateMap = TipsLineRelateQuery.getRelateLine(String.valueOf(FC_SOURCE_TYPE), deep);
+            solrIndex.put("relate_links", relateMap.get("relate_links"));
+            solrIndex.put("relate_nodes", relateMap.get("relate_nodes"));
 			solr.addTips(solrIndex);
 
 			htab.put(put);
-
 			htab.close();
-
 			return false;
-
 		} catch (IOException e) {
-
 			logger.error("tips修形出错,rowkey:" + rowkey + "原因：" + e.getMessage());
-
 			throw new Exception("tips修形出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}
@@ -467,77 +421,50 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-18 下午2:16:09
 	 */
-	public boolean breakLine(String rowkey, JSONObject tipGeometry, int user)
+	public boolean breakLine(String rowkey, JSONObject tipGeometry, int user, int qSubTaskId)
 			throws Exception {
-
 		Connection hbaseConn;
 		try {
 
 			JSONObject solrIndex = solr.getById(rowkey);
-
 			String s_sourceType = solrIndex.getString("s_sourceType");
-
 			hbaseConn = HBaseConnector.getInstance().getConnection();
-
 			Table htab = hbaseConn.getTable(TableName
 					.valueOf(HBaseConstant.tipTab));
 
 			Result result = getResultByRowKey(htab, rowkey, null);
-
 			if (result.isEmpty()) {
 				return false;
 			}
 
 			// 0.copy一个新的tips,rowkey重新申请
-
 			String newRowkey = TipsUtils.getNewRowkey(s_sourceType);
-
 			Put newPut = copyNewATips(result, newRowkey);
-
 			Put put = new Put(rowkey.getBytes());
 
 			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
-
 			newSolrIndex.put("id", newRowkey);
 
 			// 1.cut line
-
 			Point point = (Point) GeoTranslator.geojson2Jts(tipGeometry);
-
 			JSONObject oldGeo = JSONObject.fromObject(solrIndex
 					.get("g_location"));
-
 			List<JSONObject> cutGeoResult = cutLineByPoint(point, oldGeo);
-
 			JSONObject geo1 = new JSONObject();
-
 			JSONObject geo2 = new JSONObject();
-
-			JSONObject g_location1 = cutGeoResult.get(0);
-
+            JSONObject g_location1 = cutGeoResult.get(0);
 			JSONObject g_location2 = cutGeoResult.get(1);
-
-			// JSONObject
-			// g_guide=JSONObject.fromObject(solrIndex.get("g_guide"));
-
 			JSONObject g_guide1 = getMidPointByGeometry(g_location1);
-
 			JSONObject g_guide2 = getMidPointByGeometry(g_location2);
 
 			geo1.put("g_location", g_location1);
-
 			geo1.put("g_guide", g_guide1);
-
 			geo2.put("g_location", g_location2);
-
 			geo2.put("g_guide", g_guide2);
 
 			solrIndex.put("g_location", g_location1);
-
 			newSolrIndex.put("g_location", g_location2);
-
 			solrIndex.put("g_guide", g_guide1);
-
 			newSolrIndex.put("g_guide", g_guide2);
 
 			// 旧的feedback两个都是一样的，取一个就好了
@@ -546,17 +473,14 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
-
 			newPut.addColumn("data".getBytes(), "geometry".getBytes(), geo2
 					.toString().getBytes());
 
 			// update deep (重新计算point)
 			// 如果是FC预处理的tips需求更新deep.geo
 			if (FC_SOURCE_TYPE.equals(solrIndex.getString("s_sourceType"))) {
-
 				updateFcTipDeep(solrIndex, newPut, put, newSolrIndex, g_guide1,
 						g_guide2);
-
 			}
 
             solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
@@ -577,48 +501,43 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
                     String.valueOf(FC_SOURCE_TYPE), newSolrIndex.getJSONObject("deep"), g_location2,
                     feedbackObj));
 
-			// 2.update track
-
+			// update track
 			JSONObject track = JSONObject.fromObject(new String(result
 					.getValue("data".getBytes(), "track".getBytes())));
-
 			String date = DateUtils.dateToString(new Date(),
 					DateUtils.DATE_COMPACTED_FORMAT);
-
 			track = addTrackInfo(user, track, date);
-
 			JSONObject newTrack = JSONObject.fromObject(track);
-
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
-
 			newPut.addColumn("data".getBytes(), "track".getBytes(), newTrack
 					.toString().getBytes());
 
+            // update source
+            JSONObject source = JSONObject.fromObject(new String(result
+                    .getValue("data".getBytes(), "source".getBytes())));
+            source.put("s_qSubTaskId", qSubTaskId);
+            JSONObject newSource = JSONObject.fromObject(source);
+            put.addColumn("data".getBytes(), "source".getBytes(), source
+                    .toString().getBytes());
+            newPut.addColumn("data".getBytes(), "source".getBytes(), newSource
+                    .toString().getBytes());
+
 			// update solr
-
 			solrIndex.put("t_date", date);
-
 			solrIndex.put("handler", user);
 
 			solr.addTips(solrIndex);
-
 			solr.addTips(newSolrIndex);
 
 			htab.put(put);
-
 			htab.put(newPut);
-
 			htab.close();
 
 			return false;
-
 		} catch (Exception e) {
-
 			e.printStackTrace();
-
 			logger.error("打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());
-
 			throw new Exception("打断出错,rowkey:" + rowkey + "原因："
 					+ e.getMessage(), e);
 		}
@@ -797,7 +716,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				gets.add(get);
 
-				solrIndex.put("t_pStatus", 1); // 更新t_pStatus=1
+				solrIndex.put("t_tipStatus", 2); // 更新t_pStatus=1
 
 				solrIndex.put("t_date", currentDate); // 更新t_date
 
@@ -838,7 +757,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				track.put("t_lifecycle", 2);
 
-				track.put("t_pStatus", 1); // 已提交
+				track.put("t_tipStatus", 2); // 已提交
 
 				track.put("t_date", currentDate);
 
@@ -1225,22 +1144,18 @@ System.out.println(sGeojson2);
 	/**
 	 * @Description:TOOD
 	 * @param jsonInfo
-	 * @param user
+	 * @param currentDate
 	 * @author: y
 	 * @throws Exception
 	 * @time:2017-3-14 上午9:25:33
 	 */
-	private void addSolr(JSONObject jsonInfo, int user, String currentDate)
+	private void addSolr(JSONObject jsonInfo, String currentDate)
 			throws Exception {
 		try {
-
-			JSONObject solrIndex = TipsUtils.generateSolrIndexFromTipsJson(
-					jsonInfo, currentDate);
-
-			solr.addTips(solrIndex);
-
-			logger.info("solr index:" + solrIndex);
-
+            TipsIndexModel tipsIndexModel = TipsUtils.generateSolrIndex(jsonInfo.getString("rowkey"), currentDate,
+                    jsonInfo.getJSONObject("track"), jsonInfo.getJSONObject("source"), jsonInfo.getJSONObject("geometry"),
+                    jsonInfo.getJSONObject("deep"), jsonInfo.getJSONObject("feedback"));
+			solr.addTips(JSONObject.fromObject(tipsIndexModel));
 		} catch (Exception e) {
 			logger.error("更新索引出错：" + e.getMessage());
 			e.printStackTrace();
@@ -1338,7 +1253,7 @@ System.out.println(sGeojson2);
 
 			htab.put(put);
 
-			addSolr(jsonInfo, user, date);
+			addSolr(jsonInfo, date);
 
 		} catch (Exception e) {
 			logger.error("新增tips出错：" + e.getMessage() + "\n" + jsonInfo, e);
@@ -1396,6 +1311,8 @@ System.out.println(sGeojson2);
 
 		track.put("t_date", date);// 修改时间，为服务的当前时间
 
+        track.put("t_tipStatus", 1);
+
 		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 				.getBytes());
 
@@ -1405,11 +1322,14 @@ System.out.println(sGeojson2);
 					.getJSONObject("recommended").toString().getBytes());
 		}
 
-		if (jsonInfo.containsKey("feedback")) {
-
-			put.addColumn("data".getBytes(), "feedback".getBytes(), jsonInfo
-					.getJSONObject("feedback").toString().getBytes());
-		}
+		if (!jsonInfo.containsKey("feedback")) {
+            JSONArray infoArr = new JSONArray();
+            JSONObject feedback = new JSONObject();
+            feedback.put("f_array", infoArr);
+            jsonInfo.put("feedback",feedback);
+        }
+        put.addColumn("data".getBytes(), "feedback".getBytes(), jsonInfo
+                .getJSONObject("feedback").toString().getBytes());
 
 		if (jsonInfo.containsKey("confirm")) {
 
@@ -1484,7 +1404,8 @@ System.out.println(sGeojson2);
 				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
 				puts.add(put);
 
-				addSolr(tipsInfo, user, date);
+
+				addSolr(tipsInfo, date);
 				
 				//需要进行tips差分
 				allNeedDiffRowkeysCodeMap.put(rowkey, sourceType);

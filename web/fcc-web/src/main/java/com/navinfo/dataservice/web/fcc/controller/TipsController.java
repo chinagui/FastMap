@@ -540,43 +540,32 @@ public class TipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
-			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
 			String type = jsonReq.getString("type");
+            if (StringUtils.isEmpty(type)) {
+                throw new IllegalArgumentException("参数错误:type不能为空。");
+            }
 
 			JSONArray stage = jsonReq.getJSONArray("stage");
-
-			int dbId = jsonReq.getInt("dbId");
-			
-			int subtaskId = jsonReq.getInt("subtaskId");
-			
-			String mdFlag = jsonReq.getString("mdFlag");
-			
-			if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
-            
             if (stage==null||stage.size()==0) {
                 throw new IllegalArgumentException("参数错误:stage不能为空。");
             }
-            
-            if (StringUtils.isEmpty(mdFlag)) {
-                throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
+
+			int dbId = jsonReq.getInt("dbId");
+            if (dbId == 0) {
+                throw new IllegalArgumentException("参数错误:dbId不能为空。");
             }
-            
-            //值域验证
-            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)&&!"f".equals(mdFlag)){
-            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+			
+			int subtaskId = jsonReq.getInt("subtaskId");
+            if (subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
             }
 
 			TipsSelector selector = new TipsSelector();
-			
-
-			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
-					dbId,mdFlag,subtaskId);
+			JSONArray array = selector.getSnapshot(parameter);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -613,9 +602,13 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:stages不能为空。");
             }
 
+            if(subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
+            }
+
 			TipsSelector selector = new TipsSelector();
 			
-			JSONObject data = selector.getStats(grids, stages, subtaskId);
+			JSONObject data = selector.getStats(parameter);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -640,12 +633,17 @@ public class TipsController extends BaseController {
 
 			String flag = jsonReq.getString("flag");
 
-			JSONArray types = new JSONArray();
+            if (StringUtils.isEmpty(wkt)) {
+                throw new IllegalArgumentException("参数错误:wkt不能为空。");
+            }
+
+            if (StringUtils.isNotEmpty(flag)) {
+                throw new IllegalArgumentException("参数错误:flag不能为空。");
+            }
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchDataByWkt(wkt,
-					types, flag, "wkt");
+			JSONArray array = selector.searchDataByWkt(parameter, true);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

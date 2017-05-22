@@ -70,6 +70,8 @@ public class TipsOperateTest2 extends InitApplication{
 
 			int user = jsonReq.getInt("user");
 
+            int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
 			String memo=null;
 			
 			if(jsonReq.containsKey("memo")){
@@ -85,7 +87,7 @@ public class TipsOperateTest2 extends InitApplication{
 			
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			op.create( g_location, content.toString(), user,memo);
+			op.create( g_location, content.toString(), user, memo, qSubTaskId);
 			
 			System.out.println("创建成功");
 		} catch (Exception e) {
@@ -142,7 +144,7 @@ public class TipsOperateTest2 extends InitApplication{
 		//0280017b8ead071595417cb3305ac9d8e49d73
 		
 		try{
-		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} }}";
+		parameter="{\"geometry\":{\"coordinates\":[[116.48153,40.01378],[116.48297,40.01363]],\"type\":\"LineString\"},\"user\":2922,\"sourceType\":\"8001\", \"memo\" :\"testMemo\",\"deep\": {\"fc\":8,\"geo\":null} },\"qSbuTaskId\":1}";
 
 		if (StringUtils.isEmpty(parameter)) {
 			throw new IllegalArgumentException("parameter参数不能为空。");
@@ -168,10 +170,12 @@ public class TipsOperateTest2 extends InitApplication{
 		if (tipsGeometry.isNullObject()||tipsGeometry==null) {
 			throw new IllegalArgumentException("参数错误：geometry不能为空。");
 		}
-		
+
+        int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
 		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-		op.create(sourceType, tipsGeometry, user,deep,memo);
+		op.create(sourceType, tipsGeometry, user,deep, memo, qSubTaskId);
 		
 
 		System.out.println("创建预处理tips成功");
@@ -293,10 +297,12 @@ public class TipsOperateTest2 extends InitApplication{
 		if (pointGeo.isNullObject()||pointGeo==null) {
 			throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 		}
+
+        int qSubTaskId = jsonReq.getInt("qSubTaskId");
 		
 		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-		op.breakLine(rowkey, pointGeo, user);
+		op.breakLine(rowkey, pointGeo, user, qSubTaskId);
 
 		System.out.println("预处理tips打断成功");
 	}
@@ -382,10 +388,12 @@ public class TipsOperateTest2 extends InitApplication{
 		if (tipsGeometry.isNullObject()||tipsGeometry==null) {
 			throw new IllegalArgumentException("参数错误：geometry不能为空。");
 		}
-		
+
+        int qSubTaskId = jsonReq.getInt("qSubTaskId");
+
 		PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-		op.editGeo(rowkey, tipsGeometry, user);
+		op.editGeo(rowkey, tipsGeometry, user, qSubTaskId);
 		
 	}
 	
@@ -474,13 +482,13 @@ public class TipsOperateTest2 extends InitApplication{
 		}
 		
 	}
-	
-	/**
-	 * 参数的验证
-	 * 
-	 * @param response
-	 * @return
-	 */
+
+    /**
+     * 参数验证
+     * @param jsonReq
+     * @param para
+     * @return
+     */
 	public String validatePars(JSONObject jsonReq, String... para) {
 		String notExistsKey = null;
 		for (int i = 0; i < para.length; i++) {

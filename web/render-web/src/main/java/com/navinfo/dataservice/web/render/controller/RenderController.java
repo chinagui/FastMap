@@ -231,10 +231,14 @@ public class RenderController extends BaseController {
 			String mdFlag = jsonReq.getString("mdFlag");
 
 			JSONArray types = new JSONArray();
-
 			if (jsonReq.containsKey("types")) {
 				types = jsonReq.getJSONArray("types");
 			}
+
+            JSONArray stages = new JSONArray();
+            if (jsonReq.containsKey("stage")) {
+                stages = jsonReq.getJSONArray("stage");
+            }
 
 			JSONArray noQFilter = new JSONArray();
 			if (jsonReq.containsKey("noQFilter")) {
@@ -243,8 +247,7 @@ public class RenderController extends BaseController {
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types, mdFlag, "wktLocation", noQFilter);
+			JSONArray array = selector.searchDataByTileWithGap(parameter);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

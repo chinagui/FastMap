@@ -288,6 +288,23 @@ public class ManApiImpl implements ManApi {
 		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
 		return taskIdSet;
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getSubtaskGridMappingByDbId(int, int)
+	 */
+	@Override
+	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getSubtaskIdListByDbId(int, java.util.List, int)
+	 */
+	@Override
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
+		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
+	}
 	
 }
 

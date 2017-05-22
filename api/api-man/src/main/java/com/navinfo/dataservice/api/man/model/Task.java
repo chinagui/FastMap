@@ -5,7 +5,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.springframework.util.StringUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -106,7 +105,7 @@ public class Task implements Serializable{
 	 * @return
 	 */
 	public int getSubWorkKind(int num){
-		if(StringUtils.isEmpty(this.workKind)){return 0;}
+		if(this.workKind==null||this.workKind.equals("")){return 0;}
 		return Integer.valueOf(this.workKind.substring((num-1)*2, (num-1)*2+1));
 	}
 

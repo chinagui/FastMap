@@ -2,6 +2,9 @@ package com.navinfo.dataservice.web.metadata.controller;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,6 +32,10 @@ import com.navinfo.dataservice.engine.meta.service.ScRoadnameSplitPrefixService;
 import com.navinfo.dataservice.engine.meta.service.ScRoadnameSuffixService;
 import com.navinfo.dataservice.engine.meta.service.ScRoadnameTypenameService;
 import com.navinfo.dataservice.engine.meta.service.ScVectorMatchService;
+
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.navicommons.database.Page;
 import net.sf.json.JSONArray;
@@ -89,24 +96,62 @@ public class MetaEditController extends BaseController {
 	@RequestMapping(value = "/metadataEdit/patternImage/saveUpdate")
 	public ModelAndView create(HttpServletRequest request){
 		try{	
-			String parameter = request.getParameter("parameter");
-			if (StringUtils.isEmpty(parameter)){
+			//处理长传参数
+			DiskFileItemFactory factory = new DiskFileItemFactory();
+			
+			ServletFileUpload upload = new ServletFileUpload(factory);
+			
+			List<FileItem> items = upload.parseRequest(request);
+			Iterator<FileItem> it = items.iterator();
+			String tableName  = null;
+			JSONObject dataJson =null;
+			
+			FileItem uploadItem = null;
+				
+			while(it.hasNext()){
+				FileItem item = it.next();
+				
+				if (item.isFormField()){
+					if ("parameter".equals(item.getFieldName())) {
+						String param = item.getString("UTF-8");
+						JSONObject jsonParam = JSONObject.fromObject(param);
+						if(jsonParam.containsKey("tableName")){
+							tableName = jsonParam.getString("tableName");
+						}
+						if(jsonParam.containsKey("data")){
+							dataJson = jsonParam.getJSONObject("data");
+						}
+					}
+				}else{
+						if (item.getName()!= null && !item.getName().equals("")){
+							uploadItem = item;
+						}else{
+							throw new Exception("上传的文件格式有问题！");
+						}
+				}
+			}
+			/*if (StringUtils.isEmpty(parameter)){
 				throw new IllegalArgumentException("parameter参数不能为空。");
-			}		
-			JSONObject parameterJson = JSONObject.fromObject(URLDecode(parameter));			
+			}	*/	
+			/*JSONObject parameterJson = JSONObject.fromObject(URLDecode(parameter));			
 			if(parameterJson==null){
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			String tableName  = parameterJson.getString("tableName");
+			 tableName  = parameterJson.getString("tableName");*/
 			if(tableName==null || StringUtils.isEmpty(tableName)){
 				throw new IllegalArgumentException("tableName参数不能为空。");
 			}
-			JSONObject dataJson = parameterJson.getJSONObject("data");
+			 
 			if(dataJson==null || dataJson.isEmpty()){
 				throw new IllegalArgumentException("data参数不能为空。");
 			}
+			InputStream fileStream =null;
+			if(uploadItem != null){
+				fileStream = uploadItem.getInputStream();
+			}
+			
 			if(tableName.equals("scMdelMatchG")){
-				scModelMatchGService.saveUpdate(dataJson);
+				scModelMatchGService.saveUpdate2(dataJson,fileStream);
 			}else if(tableName.equals("scModelRepdelG")){
 				scModelRepdelGService.saveUpdate(dataJson);
 			}else if(tableName.equals("scVectorMatch")){

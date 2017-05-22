@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.dao.log;
 
 import java.lang.reflect.Field;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -16,7 +17,10 @@ import java.util.Map;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -29,6 +33,8 @@ import net.sf.json.JSONObject;
  * 日志查询类
  */
 public class LogReader {
+	
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 
 	private Connection conn;
 
@@ -90,10 +96,71 @@ public class LogReader {
 				}
 			return opStatus;
 		} catch (Exception e) {
+			log.error(e.getMessage(),e);
 			throw e;
 		} finally {
 			DBUtils.closeResultSet(resultSet);
 			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	/**
+	 * 查询对象状态：1新增，2删除，3修改
+	 * 
+	 * @param objPid
+	 * @param objTable
+	 * @param dbId
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Long,Integer> getObjectState(Collection<Long> objPids, String objTable) throws Exception {
+		
+		if(objPids==null||objPids.size()==0){
+			return null;
+		}
+		
+		try {
+			StringBuilder sb = new StringBuilder();
+			sb.append(" WITH A AS\n");
+			sb.append(" (SELECT LO.ACT_ID, V.OB_PID, V. DT FROM LOG_OPERATION LO,(SELECT T.OB_PID, MAX(P.OP_DT) DT FROM LOG_DETAIL T, LOG_OPERATION P\n ");
+			sb.append(" WHERE T.OP_ID = P.OP_ID  AND T.OB_NM ='"+objTable+"' AND T.OB_PID IN (select to_number(column_value) from table(clob_to_table(?))) \n" );
+			sb.append(" GROUP BY OB_PID) V WHERE LO.OP_DT = V.DT),\n");
+			sb.append(" B AS \n");
+			sb.append(" (SELECT L.OB_PID, L.OP_TP FROM LOG_DETAIL L, LOG_OPERATION OP, A \n");
+			sb.append(" WHERE L.OP_ID = OP.OP_ID AND L.OB_PID = A.OB_PID AND OP.ACT_ID = A.ACT_ID AND L.TB_NM ='"+ objTable+"'), \n");
+			sb.append(" C AS \n"); 
+			sb.append(" (SELECT A.OB_PID, 1 OP_TP FROM A \n");
+			sb.append(" WHERE NOT EXISTS (SELECT 1 FROM B WHERE A.OB_PID = B.OB_PID) \n");
+			sb.append(" AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n");
+			sb.append(" WHERE D.OB_PID = A.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)),\n ");   
+			sb.append(" D AS (SELECT B.* FROM B WHERE B.OP_TP!=3), \n");          
+			sb.append(" E AS (SELECT B.OB_PID,1 FROM B WHERE B.OP_TP=3 AND EXISTS (SELECT 1 FROM LOG_DETAIL D \n"); 
+			sb.append(" WHERE D.OB_PID = B.OB_PID AND D.TB_NM = '"+objTable+"' AND D.OP_TP = 1)), \n");
+			sb.append(" F AS \n");
+			sb.append(" (SELECT C.* FROM C UNION ALL SELECT D.* FROM D UNION ALL  SELECT E.* FROM E)\n ");
+			sb.append(" SELECT * FROM F \n");        
+			sb.append(" UNION ALL \n");  
+			sb.append(" SELECT A.OB_PID, 3 OP_TP FROM A WHERE NOT EXISTS (SELECT 1 FROM F WHERE A.OB_PID = F.OB_PID) ");  
+			
+			Clob clobPids=ConnectionUtil.createClob(conn);
+			clobPids.setString(1, StringUtils.join(objPids, ","));
+			
+			return new QueryRunner().query(conn, sb.toString(), new ResultSetHandler<Map<Long,Integer>>(){
+
+				@Override
+				public Map<Long, Integer> handle(ResultSet rs) throws SQLException {
+
+					Map<Long,Integer> opStatus = new HashMap<Long,Integer>();
+					while (rs.next()) {
+						opStatus.put(rs.getLong("OB_PID"), rs.getInt("OP_TP"));
+					}
+					return opStatus;
+				}
+				
+			},clobPids);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+			throw e;
 		}
 	}
 

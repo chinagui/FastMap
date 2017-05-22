@@ -1,17 +1,14 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 

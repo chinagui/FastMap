@@ -31,7 +31,7 @@ public class FM14Sum0402 extends BasicCheckRule {
 			MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 			Map<String, String> scPointCode2LevelMap = metadataApi.scPointCode2Level();
 			String scPointCode2Level = scPointCode2LevelMap.get(kindCode);
-			if(!"C".equals(scPointCode2Level)&&"C".equals(level)){
+			if(!scPointCode2Level.contains("C")&&"C".equals(level)){
 				setCheckResult(poi.getGeometry(), poiObj,poi.getMeshId(), null);
 				return;
 			}

@@ -19,6 +19,7 @@ public class DateUtils {
 	public static String DATE_YMD = "yyyyMMdd";
 	private static SimpleDateFormat compactedSdf = new SimpleDateFormat(DATE_COMPACTED_FORMAT);
 	private static SimpleDateFormat defaultSdf = new SimpleDateFormat(DATE_DEFAULT_FORMAT);
+	public static String DATE_WITH_SPLIT_YMD="yyyy-MM-dd";
 	private static SimpleDateFormat ymdSdf = new SimpleDateFormat(DATE_YMD);
 
 	/**
@@ -61,11 +62,18 @@ public class DateUtils {
 		return strTime;
 	}
 
-	// string类型转换为date类型
-	// strTime要转换的string类型的时间，formatType要转换的格式yyyy-MM-dd HH:mm:ss//yyyy年MM月dd日
-	// HH时mm分ss秒，
-	// strTime的时间格式必须要与formatType的时间格式相同
-	public static Date stringToDate(String strTime, String formatType) throws ParseException {
+	/**
+	 * string类型转换为date类型
+	 * strTime要转换的string类型的时间，formatType要转换的格式yyyy-MM-dd HH:mm:ss   yyyy年MM月dd日  HH时mm分ss秒，
+	 * strTime的时间格式必须要与formatType的时间格式相同
+	 * @param strTime
+	 * @param formatType
+	 * @return
+	 * @throws ParseException
+	 */
+	public static Date stringToDate(String strTime, String formatType)
+			throws ParseException {
+		if(StringUtils.isEmpty(strTime)){return null;}
 		SimpleDateFormat formatter = new SimpleDateFormat(formatType);
 		Date date = null;
 		date = formatter.parse(strTime);

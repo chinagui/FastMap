@@ -2222,6 +2222,7 @@ public class SubtaskService {
 					return null;
 				}
 			}
+
 			substask.setCreateDate(DateUtils.stringToTimestamp((resultMap.get("create_date").toString()),null));
 			substask.setCreateUserId(Integer.parseInt(resultMap.get("create_user_id").toString()));
 			substask.setDescp(SubtaskService.objetConvertString(resultMap.get("descp")));

@@ -85,4 +85,26 @@ public class JobMsgPublisher {
 		jobMsg.put("durationSeconds", durationSeconds);
 		MsgPublisher.publish2WorkQueue("end_job", jobMsg.toString());
 	}
+
+
+
+	/**
+	 * 用于统计类job发送统计结果
+	 * @param jobType
+	 * @param timestamp
+	 * @param statResult
+	 * @param jobId
+	 * @throws Exception
+	 */
+	public static void sendStatJobResult(String jobType,String timestamp,String statResult,long jobId)throws Exception{
+		if(statResult==null){
+			throw new Exception("statResult不能为空");
+		}
+		JSONObject jobMsg = new JSONObject();
+		jobMsg.put("jobId", jobId);
+		jobMsg.put("statResult", statResult);
+		jobMsg.put("jobTyp", jobType);
+		jobMsg.put("timestamp", timestamp);
+		MsgPublisher.publish2WorkQueue("stat_job_result", jobMsg.toString());
+	}
 }

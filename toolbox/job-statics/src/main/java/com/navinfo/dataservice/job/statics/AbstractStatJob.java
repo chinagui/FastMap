@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.job.statics;
 
 import com.navinfo.dataservice.api.job.model.JobInfo;
+import com.navinfo.dataservice.dao.mq.job.JobMsgPublisher;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 
@@ -25,7 +26,7 @@ public abstract class AbstractStatJob extends AbstractJob{
 		}finally{
 			//send stat result to MQ
 			try{
-				
+//				JobMsgPublisher.sendStatJobResult(request.getJobType(),)
 			}catch(Exception e){
 				log.warn("注意：");
 			}

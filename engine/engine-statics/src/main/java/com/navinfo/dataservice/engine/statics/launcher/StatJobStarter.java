@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.statics.launcher;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.job.iface.JobApi;
@@ -32,6 +33,9 @@ public abstract class StatJobStarter {
 	protected abstract RunJobInfo startRun();
 	
 	public boolean start(){
+		return start(null);
+	}
+	public boolean start(String timestamp){
 		RunJobInfo info = null;
 		try{
 			//根据配置，是否可以重复启动相同的统计job
@@ -44,6 +48,9 @@ public abstract class StatJobStarter {
 			info = startRun();
 			if(info==null){
 				return false;
+			}
+			if(StringUtils.isNotEmpty(timestamp)){
+				info.getRequest().put("timestamp", timestamp);
 			}
 			JobApi jobApi = (JobApi)ApplicationContextUtil.getBean("jobApi");
 			jobApi.createJob(info.getJobType(), info.getRequest(), info.getUserId(), info.getTaskId(), info.getDescp());

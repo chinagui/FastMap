@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.navinfo.dataservice.dao.mq.MsgSubscriber;
+import com.navinfo.dataservice.engine.statics.launcher.StatJobEndHandler;
 import com.navinfo.dataservice.engine.statics.mqmsg.StaticsResulthandler;
 
 /** 
@@ -21,6 +22,17 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				public void run() {
 					try{
 						MsgSubscriber.getInstance().subscribeFromWorkQueue("Statics_Result", new StaticsResulthandler(), null);
+					}catch(Exception e){
+						System.out.println(e.getMessage());
+						e.printStackTrace();
+					}
+				}
+			}.start();
+			new Thread(){
+				@Override
+				public void run() {
+					try{
+						MsgSubscriber.getInstance().subscribeFromWorkQueue("Statics_Job_End", new StatJobEndHandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();

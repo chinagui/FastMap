@@ -298,5 +298,11 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
 	}
 	
+		@Override
+	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().queryByQualitySubtaskId(qualitySubtaskId,stage,isQuality);
+	}
+	
 }
 

@@ -57,13 +57,10 @@ public class ImportPlan {
 	
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
-		
+		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-			String a = "";
-			Subtask s = SubtaskService.getInstance().queryCrowdSubtaskByGrid(a);
 //			String filepath = "/excel/blockPlan.xls";
-			String filepath = "E:/1.xls";
 			ImportPlan blockPlan = new ImportPlan(filepath);	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据

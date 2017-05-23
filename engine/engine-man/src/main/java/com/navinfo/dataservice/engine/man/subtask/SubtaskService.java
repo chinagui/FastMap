@@ -2222,10 +2222,12 @@ public class SubtaskService {
 	 * @author songhe
 	 * 
 	 * */
-	public static Subtask queryCrowdSubtaskByGrid(String grid){
+	public Subtask queryCrowdSubtaskByGrid(String grid){
 		Subtask substask = new Subtask();
 		Connection conn = null;
-		
+		if(StringUtils.isBlank(grid)){
+			return null;
+		}
 		Map<String, Object> resultMap = new HashMap<>();
 		try{
 			conn = DBConnector.getInstance().getManConnection();
@@ -2272,9 +2274,9 @@ public class SubtaskService {
 	 * 
 	 * */
 	public Map<String, Object> queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
-		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st "
-				+ "where t.task_id = st.task_id and t.program_id = p.program_id and "
-				+ "p.type = 4 and st.status = 1 and st.work_kind = 2 order by st.subtask_id desc";
+		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
+				+ " and p.type = 4 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
@@ -2301,8 +2303,9 @@ public class SubtaskService {
 						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
 						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
 						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+						return sTaskMap;
 					}
-					return sTaskMap;
+					return null;
 				}});
 		}catch(Exception e){
 			log.error(e.getMessage(), e);
@@ -2318,9 +2321,9 @@ public class SubtaskService {
 	 * 
 	 * */
 	public Map<String, Object> queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
-		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st "
-				+ "where t.task_id = st.task_id and t.program_id = p.program_id and "
-				+ "p.type = 1 and st.status = 1 and st.work_kind = 2 order by st.subtask_id desc";
+		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
+				+ " and p.type = 1 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
@@ -2347,8 +2350,9 @@ public class SubtaskService {
 						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
 						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
 						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+						return sTaskMap;
 					}
-					return sTaskMap;
+					return null;
 				}});
 		}catch(Exception e){
 			log.error(e.getMessage(), e);

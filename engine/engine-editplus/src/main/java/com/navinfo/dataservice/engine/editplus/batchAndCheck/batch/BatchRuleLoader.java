@@ -33,7 +33,7 @@ public class BatchRuleLoader {
 						
 						String sql = "SELECT RULE_ID, ACCESSOR, ACCESSOR_TYPE, OBJ_NAME_SET, REFER_SUBTABLE_MAP"
 								+ "  FROM BATCH_PLUS"
-								+ "  where RULE_ID = ? AND STATUS='E'";
+								+ "  where RULE_ID = ? AND STATUS='E'  ORDER BY RULE_ID ";
 						PreparedStatement pstmt = null;
 						ResultSet resultSet = null;
 						Connection conn = null;

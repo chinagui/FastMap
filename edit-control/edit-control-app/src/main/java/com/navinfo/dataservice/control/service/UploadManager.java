@@ -1,20 +1,34 @@
 package com.navinfo.dataservice.control.service;
 
 import java.io.FileInputStream;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
+import java.util.Set;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.RegionMesh;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.dao.plus.editman.PoiEditStatus;
+import com.navinfo.dataservice.dao.plus.obj.BasicObj;
+import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiPcRelationImportorCommand;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportor;
+import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorPoiSpRelationImportorCommand;
 import com.navinfo.dataservice.engine.editplus.operation.imp.CollectorUploadPois;
 import com.navinfo.dataservice.engine.editplus.operation.imp.ErrorLog;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -33,13 +47,23 @@ import net.sf.json.JSONObject;
  */
 public class UploadManager {
 	private Logger log = LoggerRepos.getLogger(this.getClass());
+	private Long userId;
 	private String fileName;
+	private int subtaskId=0;
 	private boolean multiThread=false;
 	
 	private UploadResult result;
-	public UploadManager(String fileName){
+	public UploadManager(long userId,String fileName){
+		this.userId=userId;
 		this.fileName=fileName;
 	}
+	public int getSubtaskId(){
+		return subtaskId;
+	}
+	public void setSubtaskId(int subtaskId){
+		this.subtaskId=subtaskId;
+	}
+	
 	public UploadResult upload()throws Exception{
 		result = new UploadResult();
 		//1.读取文件
@@ -49,14 +73,76 @@ public class UploadManager {
 			log.warn("从文件中未读取到有效poi,导入0条数据。");
 			return result;
 		}
+		result.setTotal(rawPois.size());
+		log.info("从文件中读取poi："+result.getTotal()+"条。");
 		//2.将pois分发到各个大区
 		Map<Integer,CollectorUploadPois> pois = distribute(rawPois);//key:大区库id
 		//3.开始导入数据
+		//先获取任务信息
+		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+		Map<String,Integer> taskMap = manApi.getTaskBySubtaskId(subtaskId);
+		int taskId=0;
+		int taskType=0;
+		if(taskMap!=null&&taskMap.size()>0){
+			taskId=taskMap.get("taskId");
+			taskType=taskMap.get("programType");
+		}
+		//开始入库
 		for(Entry<Integer, CollectorUploadPois> entry:pois.entrySet()){
 			int dbId = entry.getKey();
+			CollectorUploadPois uPois = entry.getValue();
 			log.info("start importing pois in dbId:"+dbId);
-			
+			Connection conn=null;
+			try{
+				conn=DBConnector.getInstance().getConnectionById(dbId);
+				CollectorPoiImportorCommand cmd = new CollectorPoiImportorCommand(dbId,uPois);
+				CollectorPoiImportor imp = new CollectorPoiImportor(conn,null);
+				imp.setSubtaskId(subtaskId);
+				imp.operate(cmd);
+				//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
+				PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
+				Map<Long,String> freshVerPois = imp.getFreshVerPois();
+				Set<Long> nochangedPois = imp.getNoChangedPois();
+				//写入数据库
+				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
+				//父子关系
+				CollectorPoiPcRelationImportorCommand pcCmd = new CollectorPoiPcRelationImportorCommand(dbId,imp.getPcs());
+				CollectorPoiPcRelationImportor pcImp = new CollectorPoiPcRelationImportor(conn,imp.getResult());
+				pcImp.setSubtaskId(subtaskId);
+				pcImp.operate(pcCmd);
+				for(Long l:pcImp.getChangedPids()){
+					freshVerPois.remove(l);
+					nochangedPois.remove(l);
+				}
+				pcImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addWarnPcs(pcImp.getErrLogs());
+				//同一关系
+				CollectorPoiSpRelationImportorCommand spCmd = new CollectorPoiSpRelationImportorCommand(dbId,imp.getSps());
+				CollectorPoiSpRelationImportor spImp = new CollectorPoiSpRelationImportor(conn,null);
+				spImp.setSubtaskId(subtaskId);
+				spImp.operate(spCmd);
+				for(Long l:spImp.getChangedPids()){
+					freshVerPois.remove(l);
+					nochangedPois.remove(l);
+				}
+				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
+				result.addWarnSps(spImp.getErrLogs());
+				//鲜度验证
+//				PoiEditStatus.freshVerifiedPoi(conn, freshVerPois);
+				//未修改的数据状态变为已作业
+//				PoiEditStatus.updateStatus(conn, nochangedPois, PoiEditStatus.PRODUCED);
+			}catch(Exception e){
+				log.error(e.getMessage(),e);
+				DbUtils.rollbackAndCloseQuietly(conn);
+				//如果发生异常，整个db的poi都未入库
+				result.addResults(0, uPois.allFail("Db("+dbId+")入库异常："+e.getMessage()));
+			}finally{
+				DbUtils.commitAndCloseQuietly(conn);
+			}
+			log.info("end importing pois in dbId:"+dbId);
 		}
+		log.info("Imported all pois.");
 		return result;
 		
 	}
@@ -105,7 +191,7 @@ public class UploadManager {
 				log.error(e.getMessage(),e);
 			}
 		}
-		log.info("计算poi所属的图幅号："+StringUtils.join(meshPoiMap.keySet(),","));
+		log.info("所有poi所属的图幅号："+StringUtils.join(meshPoiMap.keySet(),","));
 		//映射到对应的大区库上
 		ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
 		List<RegionMesh> regions = manApi.queryRegionWithMeshes(meshPoiMap.keySet());

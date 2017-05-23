@@ -29,10 +29,6 @@
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>dao-glm-data</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.apache.hbase</groupId>
-			<artifactId>hbase-client</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
@@ -43,6 +39,10 @@
 					<artifactId>servlet-api</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.hbase</groupId>
+			<artifactId>hbase-client</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hbase</groupId>
@@ -93,6 +93,45 @@
 		<dependency>
 			<groupId>org.apache.uima</groupId>
 			<artifactId>uimaj-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.navinfo.nirobot</groupId>
+			<artifactId>nirobot-main</artifactId>
+			<version>1.0-SNAPSHOT</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>job-framework</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>diff-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>export-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>import-core</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>cop-waistcoat</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>job-datahub</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.navinfo.dataservice</groupId>
+					<artifactId>engine-meta</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.oracle</groupId>
+					<artifactId>ojdbc14</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		</dependencies>
 </project>

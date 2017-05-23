@@ -74,4 +74,30 @@ public class Operation implements IOperation {
         }
         return alertList;
     }
+
+    /**
+     * 用于删除RdLink时维护里程桩
+     *
+     * @param result   结果集
+     * @param linkPids 待删除线
+     * @return
+     * @throws Exception
+     */
+    public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+        RdMileagepileSelector selector = new RdMileagepileSelector(conn);
+
+        // 存储待更新里程桩信息
+        List<RdMileagepile> mileagepiles = selector.loadByLinkPids(linkPids, true);
+
+        // 更新里程桩关联线为零
+        for (RdMileagepile mileagepile : mileagepiles) {
+
+            mileagepile.changedFields().put("linkPid", 0);
+
+            result.insertObject(mileagepile, ObjStatus.UPDATE, mileagepile.pid());
+
+        }
+        return null;
+    }
 }

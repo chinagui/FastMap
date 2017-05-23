@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.database.MultiDataSourceFactory;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.ClassPathXmlAppContextInit;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
+import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterSp9;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;
 
@@ -75,12 +76,12 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
-		String path="f:/gdb/11/";
-		String type="month";
+		String path="f:/gdb/";
+		String type="day";
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
-		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type);
+		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,0);
 
 		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
 				.getBean("datahubApi");
@@ -112,11 +113,13 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 //				}
 				System.out.println("export admincode "+admincode+" ...");
 				
-				Set<Integer> meshes =new  HashSet<Integer>();
+				Set<Integer> meshes = en.getValue();
+				
+				/*Set<Integer> meshes =new  HashSet<Integer>();
 					meshes.add(625714);
 					meshes.add(625713);
 					meshes.add(625716);
-					meshes.add(625860);
+					meshes.add(625860);*/
 					
 				String output = path + admincode / 10000;
 
@@ -130,5 +133,66 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	
+//	@Test
+	public void testgdbDonwnloadSp9() throws Exception{
+		JobScriptsInterface.initContext();
+
+		String path="f:/gdb/sp9/";
+		String type="month";
+		
+		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
+		
+		Map<Integer, Map<Integer, Set<Integer>>> map = gdbInter.getProvinceMeshList(type,0);
+
+		DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+				.getBean("datahubApi");
+
+		for (Map.Entry<Integer, Map<Integer, Set<Integer>>> entry : map
+				.entrySet()) {
+
+			int dbId = entry.getKey();
+			
+			System.out.println("export dbId : " + dbId);
+
+			Map<Integer, Set<Integer>> data = entry.getValue();
+
+			DbInfo dbinfo = datahub.getDbById(dbId);
+
+			DbConnectConfig connConfig = DbConnectConfig
+					.createConnectConfig(dbinfo.getConnectParam());
+
+			DataSource datasource = MultiDataSourceFactory.getInstance()
+					.getDataSource(connConfig);
+
+			Connection conn = datasource.getConnection();
+
+			for (Map.Entry<Integer, Set<Integer>> en : data.entrySet()) {
+
+				int admincode = en.getKey();
+				System.out.println("admincode : "+admincode);
+				//现在只跑 11 //12 13  &&  admincode != 120000 && admincode != 130000
+				if(admincode != 110000){
+					continue;
+				}
+				System.out.println("export admincode "+admincode+" ...");
+				
+				Set<Integer> meshes = en.getValue();
+				
+				/*Set<Integer> meshes =new  HashSet<Integer>();
+					meshes.add(625714);
+					meshes.add(625713);
+					meshes.add(625716);
+					meshes.add(625860);*/
+					
+				String output = path + admincode / 10000;
+
+				String filename = GdbDataExporterSp9.run(conn, output, meshes);
+				
+				System.out.println("export admincode "+admincode+" success: "+filename);
+			}
+		}
+
+		System.out.println("Over.");
+		System.exit(0);
+	}
 }

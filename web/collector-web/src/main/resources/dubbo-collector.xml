@@ -8,5 +8,6 @@ xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
 	<dubbo:reference id="datahubApi" interface="com.navinfo.dataservice.api.datahub.iface.DatahubApi" />
 	<dubbo:reference id="manApi" interface="com.navinfo.dataservice.api.man.iface.ManApi" />
 	<dubbo:reference id="metadataApi" interface="com.navinfo.dataservice.api.metadata.iface.MetadataApi" /> 
+	<dubbo:reference id="dropboxApi" interface="com.navinfo.dataservice.api.dropbox.iface.DropboxApi" /> 
 
 </beans>

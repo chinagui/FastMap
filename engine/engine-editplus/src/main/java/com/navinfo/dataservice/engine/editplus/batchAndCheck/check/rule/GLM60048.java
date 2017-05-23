@@ -48,7 +48,7 @@ public class GLM60048 extends BasicCheckRule {
 							setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 							return;
 						}
-						counter =  countStr(officeChildName, "医院");
+						counter =  countStr(officeChildName, "医院")+countStr(officeChildName, "醫院");
 						if(counter>1){
 							setCheckResult(poi.getGeometry(),poiObj,poi.getMeshId(),null);
 							return;

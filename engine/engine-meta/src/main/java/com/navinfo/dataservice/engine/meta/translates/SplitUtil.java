@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
-import com.navinfo.dataservice.engine.meta.translate.TranslateDictData;
 
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -8,14 +7,13 @@ import java.util.regex.Pattern;
 /**
  * @Title: SplitUtil
  * @Package: com.navinfo.dataservice.engine.meta.translates
- * @Description: ${TODO}
+ * @Description: 翻译-分词工具类
  * @Author: Crayeres
  * @Date: 2017/3/30
  * @Version: V1.0
  */
 public class SplitUtil {
 
-    static Map<String, String> CHI_TO_ENG_MAP = TranslateDictData.getInstance().getDictChi2Eng();
 
     public static String split(String sourceText){
         sourceText = ConvertUtil.convertHalf2Full(sourceText);
@@ -74,10 +72,12 @@ public class SplitUtil {
                 if(ConvertUtil.isChinese(currentChar)){
                     for(int j = length; j > index; j--){
                         String subStr = subText.substring(index, j);
-                        if(CHI_TO_ENG_MAP.containsKey(subStr)){
-                            wordValue = CHI_TO_ENG_MAP.get(subStr) + "/";
-                            index = index + subStr.length();
-                            flag = false;
+                        for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictChi2Eng().entrySet()) {
+                            if (subStr.equals(entry.getKey())) {
+                                wordValue = entry.getValue() + "/";
+                                index = index + subStr.length();
+                                flag = false;
+                            }
                         }
                     }
                     if(flag){
@@ -102,7 +102,6 @@ public class SplitUtil {
                 }
                 result.append(wordValue);
             }
-            //result.append("/");
         }
 
         return result.substring(0, result.length() - 1);

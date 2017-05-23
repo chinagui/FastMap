@@ -22,10 +22,10 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildface(){
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.62491425871849,39.75007400546041]," +
-                "[116.62509664893149,39.75008328532503],[116.62508994340897,39.74987087922158],[116.62491559982298,39.74991934086596]," +
-                "[116.62491425871849,39.75007400546041]]}}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDFACE\",\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.82802721858023,39.94753884174906]," +
+                "[116.82786494493484,39.94734555218421],[116.8281438946724,39.94727872321825],[116.82823911309242,39.94750285703102]," +
+                "[116.82802721858023,39.94753884174906]]}}}";
         TestUtil.run(requester);
     }
 
@@ -43,7 +43,7 @@ public class CmgBuildfaceTest extends InitApplication {
 
     @Test
     public void testDeleteCmgBuildface() {
-        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":507000005}";
+        String requester = "{\"command\":\"DELETE\",\"dbId\":13,\"type\":\"CMGBUILDFACE\",\"objId\":509000006}";
         TestUtil.run(requester);
     }
 }

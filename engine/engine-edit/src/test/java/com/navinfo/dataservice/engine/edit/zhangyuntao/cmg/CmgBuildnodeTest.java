@@ -21,15 +21,15 @@ public class CmgBuildnodeTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildnode() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":508000016," +
-                "\"data\":{\"longitude\":116.52638664822061,\"latitude\":39.740536435428126}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":510000137," +
+                "\"data\":{\"longitude\":116.53250521156434,\"latitude\":39.73986262543881}}";
         TestUtil.run(requester);
     }
 
     @Test
     public void testMoveCmgBuildnode() {
-        String requester = "{\"command\":\"MOVE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":405000018," +
-                "\"data\":{\"longitude\":116.52737170492552,\"latitude\":39.74154004946846}}";
+        String requester = "{\"command\":\"MOVE\",\"type\":\"CMGBUILDNODE\",\"dbId\":13,\"subtaskId\":1,\"objId\":405000029," +
+                "\"data\":{\"longitude\":116.52350664138794,\"latitude\":39.74985231943386}}";
         TestUtil.run(requester);
     }
 }

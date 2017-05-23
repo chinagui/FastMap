@@ -11,6 +11,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
+import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
@@ -64,7 +65,7 @@ public class Operation implements IOperation {
                     coordinate.y = command.getLatitude();
                 }
             }
-            if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(geometry)) {
+            if (MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersection(geometry).isEmpty()) {
                 int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(geometry.getCentroid());
                 cmgface.changedFields().put("meshId", cmgfaceMeshId);
                 faceMeshIds.put(cmgface.getMeshId(), cmgfaceMeshId);
@@ -90,6 +91,8 @@ public class Operation implements IOperation {
                 geometry.getCoordinates()[geometry.getCoordinates().length - 1].y = command.getLatitude();
             }
             cmglink.changedFields().put("length", GeometryUtils.getLinkLength(geometry));
+            // 验证LINK长度
+            CmgLinkOperateUtils.validateLength(geometry);
             cmglink.changedFields().put("geometry", GeoTranslator.jts2Geojson(geometry));
             result.insertObject(cmglink, ObjStatus.UPDATE, cmglink.pid());
 
@@ -112,7 +115,7 @@ public class Operation implements IOperation {
         if (!CollectionUtils.isEmpty(faceMeshIds)) {
             for (IRow row : command.getCmgnode().getMeshes()) {
                 CmgBuildnodeMesh cmgnodeMesh = (CmgBuildnodeMesh) row;
-                if (faceMeshIds.keySet().contains(cmgnodeMesh.getMeshId())) {
+                if (faceMeshIds.values().contains(cmgnodeMesh.getMeshId())) {
                     faceMeshIds.remove(cmgnodeMesh.getMeshId());
                 } else {
                     result.insertObject(cmgnodeMesh, ObjStatus.DELETE, cmgnodeMesh.parentPKValue());

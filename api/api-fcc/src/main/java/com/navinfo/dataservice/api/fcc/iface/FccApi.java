@@ -9,7 +9,7 @@ import net.sf.json.JSONObject;
 
 public interface FccApi {
 	
-	public JSONArray searchDataBySpatial(String wkt, int type, JSONArray stages) throws Exception;
+	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type, JSONArray stages) throws Exception;
 	
 	/**
 	 * @Description:根据grid，查询子tips的数据总量和已完成量，
@@ -22,13 +22,13 @@ public interface FccApi {
 	public JSONObject getSubTaskStats(JSONArray grids) throws Exception;
 	/**
 	 * @Description:根据wkt，查询子tips的数据总量和已完成量，
-	 * @param grids
+	 * @param wkt
 	 * @return
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-10-25 上午10:57:37
 	 */
-	public JSONObject getSubTaskStatsByWkt(String wkt) throws Exception;
+	public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception;
 	
 	
 	public void tips2Aumark(JSONObject parameter) throws Exception;
@@ -74,4 +74,21 @@ public interface FccApi {
      * @throws Exception
      */
     public List<Map> getCollectTaskTipsStats(Set<Integer> collectTaskIds) throws Exception;
+
+    /**
+     * 根据rowkey列表批快线的任务，子任务号
+     * @param taskId
+     * @param subtaskId
+     * @param tips
+     * @throws Exception
+     */
+    public void batchQuickTask(int taskId, int subtaskId, List<String> tips) throws Exception;
+
+    /**
+     * tips无任务批中线任务号api
+     * @param wkt
+     * @param midTaskId
+     * @throws Exception
+     */
+    public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
 }

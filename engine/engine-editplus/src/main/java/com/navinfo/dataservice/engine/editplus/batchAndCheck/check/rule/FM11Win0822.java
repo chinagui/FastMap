@@ -17,6 +17,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * FM-11Win-08-22
@@ -48,6 +49,13 @@ public class FM11Win0822 extends BasicCheckRule {
 				pidChildren.add(poi.getPid());
 			}
 		}
+		Set<Long> pidAllSet=new HashSet<Long>();
+		pidAllSet.addAll(pidChildren);
+		pidAllSet.addAll(pidParent);
+		//获取已存在的父子关系
+		if(pidAllSet==null||pidAllSet.size()==0){return;}
+		//key:childPid value:parent
+		Map<Long, Long> existsRelateMap = IxPoiSelector.getParentChildByPids(this.getCheckRuleCommand().getConn(), pidAllSet);
 		Map<Long, Set<Long>> errorList=new HashMap<Long, Set<Long>>();
 		if (pidChildren != null && pidChildren.size() > 0) {
 			String pids = pidChildren.toString().replace("[", "").replace("]", "");
@@ -68,18 +76,6 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ "					 WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "					   AND P.KIND_CODE IN ('230215', '230216')"
 					+ "					   AND P1. "+pidString
-					+ "					   AND P.U_RECORD != 2"
-					+ "					MINUS"
-					+ "					SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "					  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
-					+ "					 WHERE P.GROUP_ID = C.GROUP_ID"
-					+ "					   AND C.U_RECORD != 2"
-					+ "					   AND P.U_RECORD != 2"
-					+ "					MINUS"
-					+ "					SELECT C.CHILD_POI_PID, P.PARENT_POI_PID"
-					+ "					  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
-					+ "					 WHERE P.GROUP_ID = C.GROUP_ID"
-					+ "					   AND C.U_RECORD != 2"
 					+ "					   AND P.U_RECORD != 2";
 			log.info("FM-11Win-08-22 sql1:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
@@ -93,6 +89,14 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
+				//这对pid是否已经存在父子关系，已经存在则判断下一对
+				if(existsRelateMap.containsKey(pidTmp1)){
+					if(existsRelateMap.get(pidTmp1).equals(pidTmp2)){continue;}
+				}
+				if(existsRelateMap.containsKey(pidTmp2)){
+					if(existsRelateMap.get(pidTmp2).equals(pidTmp1)){continue;}
+				}
+				//这对pid没有父子关系，则报错
 				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
 				errorList.get(pidTmp1).add(pidTmp2);
 			}
@@ -118,18 +122,6 @@ public class FM11Win0822 extends BasicCheckRule {
 					+ " WHERE SDO_GEOM.SDO_DISTANCE(P.GEOMETRY, P1.GEOMETRY, 0.00000005) < 3"
 					+ "   AND P1.PID != P.PID"
 					+ "   AND P1."+pidString
-					+ "   AND P.U_RECORD != 2"
-					+ " MINUS"
-					+ " SELECT P.PARENT_POI_PID, C.CHILD_POI_PID"
-					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
-					+ " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ "   AND C.U_RECORD != 2"
-					+ "   AND P.U_RECORD != 2"
-					+ " MINUS"
-					+ " SELECT C.CHILD_POI_PID，P.PARENT_POI_PID"
-					+ "  FROM IX_POI_CHILDREN C, IX_POI_PARENT P"
-					+ " WHERE P.GROUP_ID = C.GROUP_ID"
-					+ "   AND C.U_RECORD != 2"
 					+ "   AND P.U_RECORD != 2";
 			log.info("FM-11Win-08-22 sql2:"+sqlStr);
 			PreparedStatement pstmt = conn.prepareStatement(sqlStr);
@@ -143,6 +135,14 @@ public class FM11Win0822 extends BasicCheckRule {
 			while (rs.next()) {
 				Long pidTmp1 = rs.getLong("PID");
 				Long pidTmp2 = rs.getLong("PID2");
+				//这对pid是否已经存在父子关系，已经存在则判断下一对
+				if(existsRelateMap.containsKey(pidTmp1)){
+					if(existsRelateMap.get(pidTmp1).equals(pidTmp2)){continue;}
+				}
+				if(existsRelateMap.containsKey(pidTmp2)){
+					if(existsRelateMap.get(pidTmp2).equals(pidTmp1)){continue;}
+				}
+				//这对pid没有父子关系，则报错
 				if(!errorList.containsKey(pidTmp1)){errorList.put(pidTmp1, new HashSet<Long>());}
 				errorList.get(pidTmp1).add(pidTmp2);
 			}

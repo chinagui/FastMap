@@ -7,16 +7,17 @@ import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
-import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
-import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
+import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.apache.commons.collections.CollectionUtils;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -187,7 +188,11 @@ public final class CmgLinkOperateUtils {
      * @throws Exception 创建CMG-LINK出错
      * @return 创建的CMG-LINK对象
      */
-    public static CmgBuildlink createCmglink(Geometry geometry, int sNodePid, int eNodePid, Result result, boolean createChild) throws Exception {
+    public static CmgBuildlink createCmglink(Geometry geometry, int sNodePid, int eNodePid, Result result, boolean createChild)
+            throws Exception {
+        // 校验LINK长度是否小于2M
+        validateLength(geometry);
+
         CmgBuildlink cmglink = new CmgBuildlink();
         cmglink.setPid(PidUtil.getInstance().applyCmgBuildlinkPid());
         cmglink.setsNodePid(sNodePid);
@@ -210,7 +215,12 @@ public final class CmgLinkOperateUtils {
      */
     private static void createCmglinkChild(CmgBuildlink cmglink, Geometry geometry, Result result) throws Exception {
         cmglink.getMeshes().clear();
-        Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(geometry);
+
+        Set<String> meshes = new HashSet<>();
+        Coordinate[] cs = geometry.getCoordinates();
+        for (int i = 1; i < cs.length; i++) {
+            CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(cs[i - 1].x, cs[i - 1].y, cs[i].x, cs[i].y));
+        }
         Iterator<String> iterator = meshes.iterator();
         if (meshes.size() > 1) {
             while (iterator.hasNext()) {
@@ -240,8 +250,11 @@ public final class CmgLinkOperateUtils {
     /*
     * 创建生成一条LCLINK返回
     */
-    public static CmgBuildlink createCmglinkBySource(Geometry geometry, int sNodePid, int eNodePid, Result result, CmgBuildlink sourceLink) throws
-            Exception {
+    public static CmgBuildlink createCmglinkBySource(Geometry geometry, int sNodePid, int eNodePid, Result result, CmgBuildlink sourceLink)
+            throws Exception {
+        // 校验LINK长度是否小于2M
+        validateLength(geometry);
+
         CmgBuildlink cmglink = new CmgBuildlink();
         cmglink.setPid(PidUtil.getInstance().applyCmgBuildlinkPid());
         cmglink.copy(sourceLink);
@@ -253,5 +266,17 @@ public final class CmgLinkOperateUtils {
 
         createCmglinkChild(cmglink, geometry, result);
         return cmglink;
+    }
+
+    /**
+     * 校验LINK长度是否小于2M
+     * @param geometry LINK几何
+     * @throws ServiceException 不能打断过短的link（2M)
+     */
+    public static void validateLength(Geometry geometry) throws ServiceException {
+        double length = GeometryUtils.getLinkLength(geometry);
+        if (length <= Constant.MIN_LINK_LENGTH) {
+            throw new ServiceException("CMG_BUILDLINK的长度必须大于2M.");
+        }
     }
 }

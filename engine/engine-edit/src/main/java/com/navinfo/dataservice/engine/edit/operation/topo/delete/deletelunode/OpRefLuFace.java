@@ -1,6 +1,8 @@
 package com.navinfo.dataservice.engine.edit.operation.topo.delete.deletelunode;
 
 
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.batch.UrbanBatchUtils;
 import org.apache.log4j.Logger;
 
@@ -30,7 +32,8 @@ public class OpRefLuFace implements IOperation {
         for (LuFace face : command.getFaces()) {
             result.insertObject(face, ObjStatus.DELETE, face.pid());
             if(face.getKind() == 21)
-                UrbanBatchUtils.updateUrban(face.getGeometry(), null, conn, result);
+                UrbanBatchUtils.updateUrban(GeoTranslator.transform(face.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION),
+                        null, conn, result);
             result.setPrimaryPid(face.getPid());
         }
         return msg;

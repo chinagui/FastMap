@@ -2,7 +2,9 @@ package com.navinfo.dataservice.engine.edit.operation.obj.rdslope.delete;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.navinfo.dataservice.dao.glm.iface.AlertObject;
 import com.navinfo.dataservice.dao.glm.iface.IOperation;
@@ -47,10 +49,8 @@ public class Operation implements IOperation {
 
 	/**
 	 * 删除link维护信息
-	 * 
-	 * @param linkPid
 	 * @param result
-	 * @param conn
+	 * @param linkPid
 	 * @throws Exception
 	 */
 	public void deleteByLink(Result result, int linkPid) throws Exception {
@@ -145,5 +145,64 @@ public class Operation implements IOperation {
 		}
 
 		return alertList;
+	}
+
+	/**
+	 * 删除links时 维护坡度
+	 *
+	 * @param result
+	 * @param linkPids
+	 * @throws Exception
+	 */
+	public void deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		if (conn == null || linkPids.size() == 0) {
+
+			return;
+		}
+
+		RdSlopeSelector selector = new RdSlopeSelector(conn);
+
+		List<RdSlope> slopes = selector.loadByLinks(linkPids, true);
+
+		for (RdSlope slope : slopes) {
+			//被删link作为退出线，删除link删除坡度
+			if (linkPids.contains(slope.getLinkPid())) {
+
+				result.insertObject(slope, ObjStatus.DELETE, slope.getPid());
+
+				continue;
+			}
+
+			int minSeqNum = Integer.MAX_VALUE;
+
+			List<RdSlopeVia> vias = new ArrayList<>();
+
+			for (IRow row : slope.getSlopeVias()) {
+
+				RdSlopeVia slopeVia = (RdSlopeVia) row;
+
+				vias.add(slopeVia);
+
+				if (!linkPids.contains(slopeVia.getLinkPid())) {
+
+					continue;
+				}
+
+				if (minSeqNum > slopeVia.getSeqNum()) {
+
+					minSeqNum = slopeVia.getSeqNum();
+				}
+			}
+
+			//被删link作为接续线，删除最小接续线以及后续接续线
+			for (RdSlopeVia via : vias) {
+
+				if (via.getSeqNum() >= minSeqNum) {
+
+					result.insertObject(via, ObjStatus.DELETE, slope.getPid());
+				}
+			}
+		}
 	}
 }

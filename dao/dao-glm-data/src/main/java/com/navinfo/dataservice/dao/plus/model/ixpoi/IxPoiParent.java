@@ -11,7 +11,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
 public class IxPoiParent extends BasicRow {
 	protected long groupId ;
 	protected long parentPoiPid ;
-	protected int tenantFlag ;
+	protected int tenantFlag =0;
 	protected String memo ;
 	
 	

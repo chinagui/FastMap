@@ -1,12 +1,5 @@
 package com.navinfo.dataservice.dao.glm.model.lc;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.dao.glm.iface.IObj;
@@ -15,10 +8,16 @@ import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
+
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Title: LcFace.java
@@ -55,15 +54,17 @@ public class LcFace implements IObj {
 
 	private int editFlag = 1;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 
-	private List<IRow> topos = new ArrayList<IRow>();
+	private List<IRow> topos = new ArrayList<>();
 
-	private List<IRow> names = new ArrayList<IRow>();
+	private List<IRow> names = new ArrayList<>();
 
-	public Map<String, LcFaceName> lcFaceNameMap = new HashMap<String, LcFaceName>();
+	public Map<String, LcFaceName> lcFaceNameMap = new HashMap<>();
 
-	public Map<String, LcFaceTopo> lcFaceTopoMap = new HashMap<String, LcFaceTopo>();
+	public Map<String, LcFaceTopo> lcFaceTopoMap = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public int getPid() {
 		return pid;
@@ -238,11 +239,12 @@ public class LcFace implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

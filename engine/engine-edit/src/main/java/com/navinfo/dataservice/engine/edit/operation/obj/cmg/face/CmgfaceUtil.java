@@ -18,8 +18,10 @@ import com.vividsolutions.jts.geom.Point;
 import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * @Title: CmgfaceUtil
@@ -61,7 +63,7 @@ public final class CmgfaceUtil {
      * @throws Exception 重排序出错
      */
     public static Map<Integer, Geometry> calcCmglinkSequence(List<IRow> cmglinks) throws Exception {
-        Map<Integer, Geometry> map = new HashMap<>();
+        Map<Integer, Geometry> map = new LinkedHashMap<>();
         CmgBuildlink firstLink = (CmgBuildlink) cmglinks.get(0);
         map.put(firstLink.pid(), firstLink.getGeometry());
         int firstNodePid = firstLink.getsNodePid();
@@ -69,19 +71,17 @@ public final class CmgfaceUtil {
         int count = 1;
         // 防止产生死循环导致OOM
         while (firstNodePid != nextNodePid && count <= 99) {
-            if (count != map.size()) {
-                throw new Exception("所选线无法构成闭合面");
-            }
-            for (int i = count; i < cmglinks.size(); i++) {
+            for (int i = 1; i < cmglinks.size(); i++) {
                 CmgBuildlink cmglink = (CmgBuildlink) cmglinks.get(i);
                 if (nextNodePid == cmglink.getsNodePid()) {
                     nextNodePid = cmglink.geteNodePid();
+                    map.put(cmglink.pid(), cmglink.getGeometry());
                 } else if (nextNodePid == cmglink.geteNodePid()) {
                     nextNodePid = cmglink.getsNodePid();
+                    map.put(cmglink.pid(), cmglink.getGeometry().reverse());
                 } else {
                     continue;
                 }
-                map.put(cmglink.pid(), cmglink.getGeometry());
             }
             count++;
         }
@@ -126,7 +126,7 @@ public final class CmgfaceUtil {
                     nodeIterator.remove();
                 }
             }
-            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface.getMeshId(), conn, result);
+            CmgnodeUtil.handleCmgnodeMesh(cmgnodes, cmgface, conn, result);
             List<CmgBuildlink> cmglinks = cmglinkSelector.listTheAssociatedLinkOfTheFace(cmgface.pid(), false);
             Iterator<CmgBuildlink> linkIterator = cmglinks.iterator();
             while (linkIterator.hasNext()) {
@@ -134,7 +134,7 @@ public final class CmgfaceUtil {
                     linkIterator.remove();
                 }
             }
-            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface.getMeshId(), conn, result);
+            CmglinkUtil.handleCmglinkMesh(cmglinks, cmgface, conn, result);
         }
     }
 }

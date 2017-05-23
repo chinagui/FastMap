@@ -64,6 +64,7 @@ public class Subtask implements Serializable  {
 	private JSONObject referGeometryJSON;
 	private JSONArray referSubtasks;
 	private Integer referId;
+	private int workKind;//0无1外业采集，2众包，3情报矢量，4多源
 
 	public Subtask (){
 	}
@@ -646,5 +647,11 @@ public class Subtask implements Serializable  {
 	}
 	public void setReferId(Integer referId) {
 		this.referId = referId;
+	}
+	public int getWorkKind() {
+		return workKind;
+	}
+	public void setWorkKind(int workKind) {
+		this.workKind = workKind;
 	}
 }

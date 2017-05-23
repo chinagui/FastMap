@@ -176,13 +176,14 @@ public class RdNameSelector {
 	/**
 	 * @Description:判断名称是否存在--查询大区库
 	 * @param name
-	 * @param adminId
+	 * @param adminIdList
+     * @param sourceType
 	 * @return 所在行政区划
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-6-28 下午3:42:20
 	 */
-	public int isNameExists(String name, int adminId) throws Exception {
+	public int isNameExists(String name, List<Integer> adminIdList, String sourceType) throws Exception {
 		int resultAdmin = 0;
 
 		PreparedStatement pstmt = null;
@@ -190,11 +191,21 @@ public class RdNameSelector {
 		ResultSet resultSet = null;
 
 		Connection conn = null;
-
+        StringBuffer subSF = new StringBuffer();
+		for(int adminId : adminIdList) {
+			if(subSF.length() > 0)
+                subSF.append(",");
+            subSF.append("?");
+		}
 		String sql = "SELECT N.ADMIN_ID									\n"
 				+ "  FROM RD_NAME N                                      \n"
 				+ " WHERE N.NAME = ?                                     \n"
-				+ "   AND (N.ADMIN_ID = ? OR N.ADMIN_ID = 214)           \n";
+				+ "   AND (N.ADMIN_ID in(" + subSF.toString() + ") OR N.ADMIN_ID = 214)           \n";
+        if(sourceType.equals("1407")) {//出口编号
+            sql += " AND N.ROAD_TYPE = 4";
+        }else if(sourceType.equals("8006")) {
+            sql += " AND N.ROAD_TYPE = 1";
+        }
 
 		try {
 
@@ -213,7 +224,10 @@ public class RdNameSelector {
 			conn = DBConnector.getInstance().getMetaConnection();
 			pstmt = conn.prepareStatement(sql);
 			pstmt.setString(1, name);
-			pstmt.setInt(2, adminId);
+            for(int i = 0; i < adminIdList.size(); i++) {
+                pstmt.setInt(i + 2, adminIdList.get(i));
+            }
+
 
 			resultSet = pstmt.executeQuery();
 
@@ -304,131 +318,95 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 			String ids = "";
 			String tmep = "";
 			Clob pidClod = null;
-			if (flag>0) {
 				if (tips.size()>0 || subtaskId >0) {
 					//添加根据子任务id直接查询的sql 
-					sql.append("SELECT * ");
-					sql.append(" FROM (SELECT c.*, rownum rn");
-					sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-					sql.append(" from (");
-					sql.append("SELECT null tipid,r.*  from rd_name r  where r.src_resume = '\"task\":"+ subtaskId +"' ");
-					// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
-							sql.append(" and r.name like '%");
-							sql.append(name);
-							sql.append("%'");
-						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
-							sql.append(" and r.name_groupid ");
-							sql.append("= ");
-							sql.append(nameGroupid);
-							sql.append(" ");
-						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
-							sql.append(" and r.admin_id ");
-							sql.append("= ");
-							sql.append(adminId);
-							sql.append(" ");
-						}
+					sql.append(" with q1 as ( ");
 					
-					if (tips.size()>0) {
-						sql.append(" union all  ");
-						sql.append(" SELECT tt.* FROM ");
-						sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.* ");
-						sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
-						
-						sql.append(" where 1=1");
-						
-						// 添加过滤器条件
-						if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
-							sql.append(" and tt.name like '%");
-							sql.append(name);
-							sql.append("%'");
-						}
-						if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
-							sql.append(" and tt.name_groupid ");
-							sql.append("= ");
-							sql.append(nameGroupid);
-							sql.append(" ");
-						}
-						if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
-							sql.append(" and tt.admin_id ");
-							sql.append("= ");
-							sql.append(adminId);
-							sql.append(" ");
-						}
-						
-						for (int i=0;i<tips.size();i++) {
-							JSONObject tipsObj = tips.getJSONObject(i);
-							ids += tmep;
-							tmep = ",";
-							ids +=tipsObj.getString("id");
-						}
-						pidClod = ConnectionUtil.createClob(conn);
-						pidClod.setString(1, ids);
-						sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
-					}
-					sql.append(" ) a ");
+						sql.append("  SELECT  distinct r.NAME_GROUPID from rd_name r where r.src_resume = '\"task\":"+ subtaskId +"' ");
+							// 添加过滤器条件
+							if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
+								sql.append(" and r.name like '%");
+								sql.append(name);
+								sql.append("%'");
+							}
+							if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
+								sql.append(" and r.name_groupid ");
+								sql.append("= ");
+								sql.append(nameGroupid);
+								sql.append(" ");
+							}
+							if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
+								sql.append(" and r.admin_id ");
+								sql.append("= ");
+								sql.append(adminId);
+								sql.append(" ");
+							}
+							
+							if (tips.size()>0) {
+								sql.append(" union all  ");
+								sql.append(" SELECT distinct tt.NAME_GROUPID FROM ");
+								sql.append("( select substr(replace(t.src_resume,'\"',''),instr(replace(t.src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) as tipid,t.name,t.name_groupid,t.admin_id ");
+								sql.append(" from rd_name t  where t.src_resume like '%tips%' ) tt");
+								
+								sql.append(" where 1=1");
+								
+								// 添加过滤器条件
+								if (name != null  && StringUtils.isNotEmpty(name) && !name.equals("null")) {
+									sql.append(" and tt.name like '%");
+									sql.append(name);
+									sql.append("%'");
+								}
+								if(nameGroupid != null  && StringUtils.isNotEmpty(nameGroupid) && !nameGroupid.equals("null")){
+									sql.append(" and tt.name_groupid ");
+									sql.append("= ");
+									sql.append(nameGroupid);
+									sql.append(" ");
+								}
+								if(adminId != null  && StringUtils.isNotEmpty(adminId) && !adminId.equals("null")){
+									sql.append(" and tt.admin_id ");
+									sql.append("= ");
+									sql.append(adminId);
+									sql.append(" ");
+								}
+								
+								for (int i=0;i<tips.size();i++) {
+									JSONObject tipsObj = tips.getJSONObject(i);
+									ids += tmep;
+									tmep = ",";
+									ids +=tipsObj.getString("id");
+								}
+								pidClod = ConnectionUtil.createClob(conn);
+								pidClod.setString(1, ids);
+								sql.append(" and tt.tipid in (select column_value from table(clob_to_table(?)))");
+							}
+							
+					sql.append(" ) ");
+					
+					sql.append("  SELECT * FROM (SELECT c.*, rownum rn FROM (select distinct COUNT(1) OVER(PARTITION BY 1) total, a.* from rd_name a, q1 q where 1 = 1  ");
+							sql.append(" and a.name_groupid = q.NAME_GROUPID ");
+							/*sql.append("  ORDER BY a.NAME_GROUPID DESC, a.NAME_ID DESC) c ");
+					sql.append(" WHERE rownum <= ?)  WHERE rn >= ?");*/
+			
 					
 				} else {
 					result.put("total", 0);
 					result.put("data", new JSONArray());
 					return result;
 				}
-			} else {
-				sql.append("SELECT * ");
-				sql.append(" FROM (SELECT c.*, rownum rn");
-				sql.append(" FROM (select COUNT (1) OVER (PARTITION BY 1) total,a.* ");
-				sql.append(" ,( select substr(replace(src_resume,'\"',''),instr(replace(src_resume,'\"',''), ':') + 1,length(replace(src_resume,'\"',''))) tipid from rd_name where src_resume like '%tips%' and name_id = a.name_id) as tipid  ");
-				sql.append(" from rd_name a where 1=1");
-				// 添加过滤器条件
-				Iterator<String> keys = param.keys();
-				while (keys.hasNext()) {
-					String key = keys.next();
-					if (key.equals("name") && (!param.getString(key).isEmpty())) {
-						sql.append(" and a.name like '%");
-						sql.append(param.getString(key));
-						sql.append("%'");
-					} else if(key.equals("nameGroupid") && (!param.getString(key).isEmpty())){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("= ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}else if(key.equals("adminId") && (!param.getString(key).isEmpty())){
-						String columnName = sUtils.toColumnName(key);
-						sql.append(" and a.");
-						sql.append(columnName);
-						sql.append("= ");
-						sql.append(param.getString(key));
-						sql.append(" ");
-					}else {
-						String columnName = sUtils.toColumnName(key);
-						if (!param.getString(key).isEmpty()) {
-							sql.append(" and a.");
-							sql.append(columnName);
-							sql.append("='");
-							sql.append(param.getString(key));
-							sql.append("'");
-						}
-					}
-				}
-			}
 			
 			// 添加排序条件
 			if (sortby.length()>0) {
 				int index = sortby.indexOf("-");
 				if (index != -1) {
-					sql.append(" ORDER BY a.NAME_GROUPID DESC,a.NAME_ID DESC");
+					sql.append(" ORDER BY ");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					sql.append(" , a.");
+					sql.append("  a.");
 					sql.append(sortbyName);
 					sql.append(" DESC");
 				} else {
-					sql.append(" ORDER BY a.NAME_GROUPID,a.NAME_ID");
+					sql.append(" ORDER BY ");
 					String sortbyName = sUtils.toColumnName(sortby.substring(1));
-					sql.append(" , a.");
+					sql.append("  a.");
 					sql.append(sortbyName);
 				}
 			} else {
@@ -463,7 +441,7 @@ public JSONObject searchForWeb(JSONObject params,JSONArray tips) throws Exceptio
 				if (total == 0) {
 					total = resultSet.getInt("total");
 				}
-				data.add(result2JsonByTaskOrTips(resultSet, adminMap));
+				data.add(result2Json(resultSet, adminMap));
 			}
 			result.put("total", total);
 			result.put("data", data);
@@ -724,89 +702,6 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}
-
-	/**
-	 * @Title: result2JsonByTaskOrTips
-	 * @Description: 根据tips 和 task 查询返回的查询结果
-	 * @param resultSet
-	 * @param adminMap
-	 * @return
-	 * @throws Exception  JSONObject
-	 * @throws 
-	 * @author zl zhangli5174@navinfo.com
-	 * @date 2017年3月2日 下午2:16:25 
-	 */
-	private JSONObject result2JsonByTaskOrTips(ResultSet resultSet,Map<String,String> adminMap) throws Exception{
-		JSONObject rdNameObj = new JSONObject();
-		try {//String c = a == null ? "" : a;
-			rdNameObj.put("nameId", resultSet.getInt("NAME_ID"));
-			rdNameObj.put("nameGroupid", resultSet.getInt("NAME_GROUPID"));
-			rdNameObj.put("langCode", resultSet.getString("LANG_CODE") == null ? "" : resultSet.getString("LANG_CODE"));
-			rdNameObj.put("name", resultSet.getString("NAME")  == null ? "" : resultSet.getString("NAME"));
-			rdNameObj.put("type", resultSet.getString("TYPE")  == null ? "" : resultSet.getString("TYPE"));
-			rdNameObj.put("base", resultSet.getString("BASE")  == null ? "" : resultSet.getString("BASE"));
-			rdNameObj.put("prefix", resultSet.getString("PREFIX")  == null ? "" : resultSet.getString("PREFIX"));
-			rdNameObj.put("infix", resultSet.getString("INFIX")  == null ? "" : resultSet.getString("INFIX"));
-			rdNameObj.put("suffix", resultSet.getString("SUFFIX")  == null ? "" : resultSet.getString("SUFFIX"));
-			rdNameObj.put("namePhonetic", resultSet.getString("NAME_PHONETIC")  == null ? "" : resultSet.getString("NAME_PHONETIC"));
-			rdNameObj.put("typePhonetic", resultSet.getString("TYPE_PHONETIC")  == null ? "" : resultSet.getString("TYPE_PHONETIC"));
-			rdNameObj.put("basePhonetic", resultSet.getString("BASE_PHONETIC")  == null ? "" : resultSet.getString("BASE_PHONETIC"));
-			rdNameObj.put("prefixPhonetic", resultSet.getString("PREFIX_PHONETIC")  == null ? "" : resultSet.getString("PREFIX_PHONETIC"));
-			rdNameObj.put("infixPhonetic", resultSet.getString("INFIX_PHONETIC")  == null ? "" : resultSet.getString("INFIX_PHONETIC"));
-			rdNameObj.put("suffixPhonetic", resultSet.getString("SUFFIX_PHONETIC")  == null ? "" : resultSet.getString("SUFFIX_PHONETIC"));
-			rdNameObj.put("srcFlag", resultSet.getInt("SRC_FLAG"));
-			rdNameObj.put("roadType", resultSet.getInt("ROAD_TYPE"));
-			
-			int adminId = resultSet.getInt("ADMIN_ID");
-			rdNameObj.put("adminId", adminId);
-			if(adminId == 214){
-				rdNameObj.put("adminName","全国");
-			}else{
-				if (!adminMap.isEmpty()) {
-					log.info("adminMap.containsKey(String.valueOf(adminId)): "+adminMap.containsKey(String.valueOf(adminId)));
-					if (adminMap.containsKey(String.valueOf(adminId))) {
-						rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
-						log.info("String.valueOf(adminId)): "+String.valueOf(adminId));
-					} else {
-						log.info("空");
-						rdNameObj.put("adminName","");
-					}
-				}
-			}
-			
-			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
-			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
-			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));
-			rdNameObj.put("tipsId", resultSet.getString("tipid")  == null ? "" : resultSet.getString("tipid"));
-			rdNameObj.put("paRegionId", resultSet.getInt("PA_REGION_ID"));
-			rdNameObj.put("splitFlag", resultSet.getInt("SPLIT_FLAG"));
-			rdNameObj.put("memo", resultSet.getString("MEMO")  == null ? "" : resultSet.getString("MEMO"));
-			rdNameObj.put("routeId", resultSet.getInt("ROUTE_ID"));
-//			rdNameObj.put("processFlag", resultSet.getInt("PROCESS_FLAG"));
-			if(resultSet.getString("CITY") != null && StringUtils.isNotEmpty(resultSet.getString("CITY"))){
-				rdNameObj.put("city", resultSet.getString("CITY"));
-			}else{
-				rdNameObj.put("city", "");
-			}
-			
-			//******zl 2017.04.09******
-			//hw 信息标识
-			Integer nameGroupId = resultSet.getInt("NAME_GROUPID");
-			ScRoadnameHwInfoService scRoadnameHwInfoService = new ScRoadnameHwInfoService();
-			ScRoadnameHwInfo scRoadnameHwInfo = new ScRoadnameHwInfo();
-			scRoadnameHwInfo.setNameGroupid(nameGroupId);
-			ScRoadnameHwInfo newScRoadnameHwInfo = scRoadnameHwInfoService.query(scRoadnameHwInfo);
-			if(newScRoadnameHwInfo != null){
-				rdNameObj.put("hwInfoFlag", 1);
-			}else{
-				rdNameObj.put("hwInfoFlag", 0);
-			}
-			//*************************
-			return rdNameObj;
-		} catch (Exception e) {
-			throw e;
-		}
-	}
 	
 	/**
 	 * 将查询结果转为json型
@@ -837,15 +732,18 @@ public JSONObject searchForWeb(JSONObject params) throws Exception {
 			
 			int adminId = resultSet.getInt("ADMIN_ID");
 			rdNameObj.put("adminId", adminId);
-			if (!adminMap.isEmpty()) {
-				if (adminMap.containsKey(String.valueOf(adminId))) {
-					rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
-				} else {
-					rdNameObj.put("adminName","");
+			if(adminId == 214){
+				rdNameObj.put("adminName","全国");
+			}else{
+				if (!adminMap.isEmpty()) {
+					if (adminMap.containsKey(String.valueOf(adminId))) {
+						rdNameObj.put("adminName", adminMap.get(String.valueOf(adminId)));
+					} else {
+						rdNameObj.put("adminName","");
+					}
+					
 				}
-				
 			}
-			
 			rdNameObj.put("codeType", resultSet.getInt("CODE_TYPE"));
 			rdNameObj.put("voiceFile", resultSet.getString("VOICE_FILE")  == null ? "" : resultSet.getString("VOICE_FILE"));
 			rdNameObj.put("srcResume", resultSet.getString("SRC_RESUME")  == null ? "" : resultSet.getString("SRC_RESUME"));

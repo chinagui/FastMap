@@ -141,45 +141,50 @@ public class FMBAT20125 extends BasicBatchRule {
 		String street = metadata.convertEng(chiAddress.getStreet());
 		String place = metadata.convertEng(chiAddress.getPlace());
 		String town = metadata.convertEng(chiAddress.getTown());
+		if (addOns==null){
+			addOns="";
+		}
 		String fullName = addOns;
-		if (!roomNum.isEmpty()) {
+		if (roomNum!=null&&!roomNum.isEmpty()) {
 			fullName +=  " " + roomNum;
 		}
-		if (!floor.isEmpty()) {
+		if (floor!=null&&!floor.isEmpty()) {
 			fullName +=  " " + floor;
 		}
-		if (!unit.isEmpty()) {
+		if (unit!=null&&!unit.isEmpty()) {
 			fullName +=  " " + unit;
 		}
-		if (!building.isEmpty()) {
+		if (building!=null&&!building.isEmpty()) {
 			fullName +=  " " + building;
 		}
-		if (!estab.isEmpty()) {
+		if (estab!=null&&!estab.isEmpty()) {
 			fullName +=  " " + estab;
 		}
-		if (!surfix.isEmpty()) {
+		if (surfix!=null&&!surfix.isEmpty()) {
 			fullName +=  " " + surfix;
 		}
-		if (!houseNumTypeSubNum.isEmpty()) {
+		if (houseNumTypeSubNum!=null&&!houseNumTypeSubNum.isEmpty()) {
 			fullName +=  " " + houseNumTypeSubNum;
 		}
-		if (!prefix.isEmpty()) {
+		if (prefix!=null&&!prefix.isEmpty()) {
 			fullName +=  " " + prefix;
 		}
-		if (!landMark.isEmpty()) {
+		if (landMark!=null&&!landMark.isEmpty()) {
 			fullName +=  " " + landMark;
 		}
-		if (!street.isEmpty()) {
+		if (street!=null&&!street.isEmpty()) {
 			fullName +=  " " + street;
 		}
-		if (!place.isEmpty()) {
+		if (place!=null&&!place.isEmpty()) {
 			fullName +=  " " + place;
 		}
-		if (!town.isEmpty()) {
+		if (town!=null&&!town.isEmpty()) {
 			fullName +=  " " + town;
 		}
-
-		return fullName.trim();
+		if(fullName!=null){
+			return fullName.trim();
+		}
+		return fullName;
 	}
 	
 	private String keyAhead(String word,List<String> keyArr) {

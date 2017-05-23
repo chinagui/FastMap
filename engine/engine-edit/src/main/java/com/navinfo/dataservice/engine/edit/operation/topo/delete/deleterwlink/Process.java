@@ -62,9 +62,18 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		// 删除铁路线有铁路点、线具体操作
 		IOperation op = new OpTopo(this.getCommand());
+
 		op.run(this.getResult());
-		IOperation opRwLink = new OpRefRwGsc(this.getCommand(),this.getConn());
-		return opRwLink.run(this.getResult());
+
+		IOperation opRwLink = new OpRefRwGsc(this.getCommand(), this.getConn());
+
+		opRwLink.run(this.getResult());
+
+		OpRefRdSameNode opRefRdSameNode = new OpRefRdSameNode(this.getConn());
+
+		opRefRdSameNode.run(this.getResult(), this.getCommand());
+
+		return "";
 	}
 
 }

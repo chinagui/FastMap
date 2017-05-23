@@ -20,9 +20,11 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testCreateCmgBuildlink() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"data\":{\"eNodePid\":0,\"sNodePid\":0," +
-                "\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[127.0669363439083,33.9616218843058],[127.06732124090196," +
-                "33.96170864585347]]},\"catchLinks\":[]},\"dbId\":84}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"CMGBUILDLINK\",\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"sNodePid\":402000042,\"eNodePid\":403000032,\"geometry\":{\"type\":\"LineString\"," +
+                "\"coordinates\":[[116.99396878480911,39.99996079681034],[116.99401035904886,40.00013339076144],[116.9936241209507," +
+                "40.0001354454487],[116.99362948536873,39.9999505233471]]},\"catchLinks\":[{\"nodePid\":402000042,\"seqNum\":0}," +
+                "{\"nodePid\":403000032,\"seqNum\":3}]}}";
         TestUtil.run(requester);
     }
 
@@ -34,11 +36,10 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testRepairCmgBuildlink() {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":401000007,\"dbId\":13,\"subtaskId\":1," +
-                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.52590990066528," +
-                "39.74020261499875],[116.52642,39.73992],[116.52611,39.73939],[116.52585,39.7399]]}," +
-                "\"catchInfos\":[{\"nodePid\":510000009,\"longitude\":116.52590990066528,\"latitude\":39.74020261499875}," +
-                "{\"nodePid\":510000009,\"longitude\":116.52585,\"latitude\":39.7399}]}}";
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":520000022,\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.89272,39.9997]," +
+                "[116.89391434192656,40.000325503753466]]},\"catchInfos\":[{\"nodePid\":504000029,\"longitude\":116.89272," +
+                "\"latitude\":39.9997},{\"nodePid\":501000038,\"longitude\":116.89391434192656,\"latitude\":40.000325503753466}]}}";
         TestUtil.run(requester);
     }
 }

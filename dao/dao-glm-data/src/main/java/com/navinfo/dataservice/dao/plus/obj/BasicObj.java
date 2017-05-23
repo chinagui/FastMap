@@ -14,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.glm.GlmFactory;
 import com.navinfo.dataservice.dao.plus.glm.GlmRef;
 import com.navinfo.dataservice.dao.plus.glm.GlmTable;
 import com.navinfo.dataservice.dao.plus.model.basic.BasicRow;
+import com.navinfo.dataservice.dao.plus.model.basic.ChangeLog;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.navicommons.database.sql.RunnableSQL;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -58,6 +59,23 @@ public abstract class BasicObj {
 		for(Map.Entry<String, List<BasicRow>> entry:this.subrows.entrySet()){
 			List<BasicRow> subrowList = entry.getValue();
 			if(subrowList==null){continue;}
+			for(BasicRow basicRow:subrowList){
+				if(basicRow.isChanged()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * 判断某个子表是否有更改
+	 * @param tableName
+	 * @return
+	 */
+	public boolean isSubrowChanged(String tableName){
+		List<BasicRow> subrowList = subrows.get(tableName);
+		if(subrowList!=null){
 			for(BasicRow basicRow:subrowList){
 				if(basicRow.isChanged()){
 					return true;
@@ -155,15 +173,36 @@ public abstract class BasicObj {
 	}
 	
 	/**
-	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * 如果是新增状态，物理删除，刚新增进来的子表记录，如果要删除，不能从子表list中循环获取然后传入
+	 * 其他状态打删除标识
+	 * 注意：对于新增的子表，又通过此方法进行删除，存在异常可能：当外面使用for循环删除表的list时，会出现java.util.ConcurrentModificationException
 	 * @param subrow
 	 */
 	public void deleteSubrow(BasicRow subrow){
 		if(subrow.getOpType().equals(OperationType.INSERT)){
 			String tname = subrow.tableName();
-			subrows.get(tname).remove(subrow);
+			subrows.get(tname).remove(subrow);//当外面使用for循环删除表的list时，会出现java.util.ConcurrentModificationException
 		}else{
 			subrow.setOpType(OperationType.DELETE);
+		}
+	}
+
+	/**
+	 * 根据表名删除，会把该子表全部记录删除
+	 * 如果是新增状态，物理删除，其他状态打删除标识
+	 * @param subrow
+	 */
+	public void deleteSubrows(String tableName){
+		List<BasicRow> rows = subrows.get(tableName);
+		if(rows!=null){
+			for(Iterator<BasicRow> it= rows.iterator();it.hasNext();){
+				BasicRow r = it.next();
+				if(r.getOpType().equals(OperationType.INSERT)){
+					it.remove();
+				}else{
+					r.setOpType(OperationType.DELETE);
+				}
+			}
 		}
 	}
 	/**
@@ -174,6 +213,11 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){
 			mainrow.setOpType(OperationType.INSERT_DELETE);
 			subrows.clear();
+			return;
+		}
+		//如果是已删除，则忽略
+		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)
+				||mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
 			return;
 		}
 		this.mainrow.setOpType(OperationType.DELETE);
@@ -366,6 +410,7 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){}
 		return false;
 	}
+	public abstract BasicRow createSubRowByTableName(String tableName)throws Exception;
 	
 	//根据json中的key创建二级对象
 	public abstract BasicRow createSubRowByName(String subRowName) throws Exception;
@@ -373,5 +418,27 @@ public abstract class BasicObj {
 	public abstract BasicRow createSubSubRowByName(String subRowName,long subId) throws Exception;
 	//根据json中的key获取对象
 	public abstract List<BasicRow> getSubRowByName(String subRowName) throws Exception;
+	
+	public boolean hisOldValueContains(String tableName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hisOldValueContains(String tableName,String columnName){
+		List<BasicRow> rows = getRowsByName(tableName);
+		for(BasicRow basicRow:rows){
+			if(basicRow.isHisChanged()){
+				if(basicRow.hisOldValueContains(columnName)){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 }

@@ -542,18 +542,16 @@ public class serchConditionTest extends InitApplication {
 	public void searchDataBySpatial1() {
 		Connection conn = null;
 		try {
-			conn = DBConnector.getInstance().getConnectionById(17);
+			conn = DBConnector.getInstance().getConnectionById(13);
 
 			SearchProcess p = new SearchProcess(conn);
 
 			List<ObjType> objType = new ArrayList<>();
 
-			objType.add(ObjType.RDLINK);
-			objType.add(ObjType.ADLINK);
-			objType.add(ObjType.ZONELINK);
-			objType.add(ObjType.LULINK);
+
+			objType.add(ObjType.RWNODE);
 			
-			String box="{\"type\": \"Polygon\", \"coordinates\": [[[116.46367192268372, 40.018593287409104], [116.46367192268372, 40.01922184881776], [116.46531879901886, 40.01922184881776], [116.46531879901886, 40.018593287409104], [116.46367192268372, 40.018593287409104]]]}";
+			String box="{\"type\": \"Polygon\", \"coordinates\": [[[116.4638690650463,40.01772233000533],[116.46422848105429,40.01772233000533],[116.46422848105429,40.01803045299908],[116.4638690650463,40.01803045299908],[116.4638690650463,40.01772233000533]]]}";
 
 			System.out.println(p.searchDataBySpatial(objType, box));
 			
@@ -664,7 +662,28 @@ public class serchConditionTest extends InitApplication {
 
 			SearchProcess p = new SearchProcess(conn);
 			
-			String parameter = "{\"dbId\":13,\"type\":\"RDNODE\",\"pids\":[13064669,14880768]}";
+			String parameter = "{\"dbId\":13,\"type\":\"CMGBUILDNODE\",\"pids\":[504000026,509000042]}";
+
+			JSONObject jsonReq = JSONObject.fromObject(parameter);			
+			
+			System.out.println(p.searchDataByObject(jsonReq));
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test
+	public void searchDataByObject2() {
+		
+		Connection conn = null;
+		
+		try {
+			conn = DBConnector.getInstance().getConnectionById(13);
+
+			SearchProcess p = new SearchProcess(conn);
+			
+			String parameter = "{\"dbId\":13,\"type\":\"CMGBUILDLINK\",\"pids\":[500000015]}";
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);			
 			

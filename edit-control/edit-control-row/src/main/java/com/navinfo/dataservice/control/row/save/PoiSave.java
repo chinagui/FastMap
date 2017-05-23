@@ -18,6 +18,7 @@ import com.navinfo.dataservice.commons.util.JsonUtils;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.dao.glm.iface.OperType;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiChildren;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiParent;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoi;
 import com.navinfo.dataservice.dao.glm.model.poi.index.IxSamepoiPart;
@@ -152,14 +153,25 @@ public class PoiSave {
 				}
 				// 其他
 			} else {
+				if(OperType.DELETE == operType){
+					Integer poiPid = json.getInt("objId");
+					IxPoiParentSelector selector = new IxPoiParentSelector(conn);
+					int parentPid = selector.getParentPid(poiPid);
+					if(parentPid!=0){sb.append(",").append(parentPid);}
+					List<Integer> ChildrenPid = selector.getChildrenPids(poiPid);
+					for(int Child:ChildrenPid){
+						sb.append(",").append(Child);
+					}	
+				}
 				result = editApiImpl.runPoi(json);
 				if (OperType.CREATE != operType) {
 					pid = json.getInt("objId");
-					sb.append(String.valueOf(pid));
+					sb.append(",").append(String.valueOf(pid));
 				} else {
 					pid = result.getInt("pid");
-					sb.append(String.valueOf(pid));
+					sb.append(",").append(String.valueOf(pid));
 				}
+				sb.deleteCharAt(0);
 			}
 
 			// if (ObjType.IXSAMEPOI != objType) {
@@ -254,10 +266,10 @@ public class PoiSave {
 			sb.append(" 	(CASE WHEN "+qst+" = 0 THEN T.QUICK_SUBTASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID NOT IN (0,"+qst+") THEN T.QUICK_SUBTASK_ID WHEN T.STATUS=1 AND T.QUICK_SUBTASK_ID =0 THEN T.QUICK_SUBTASK_ID ELSE "+qst+" END) QST,");
 			sb.append(" 	(CASE WHEN "+qt+" = 0 THEN T.QUICK_TASK_ID WHEN T.STATUS IN (1, 2) AND T.QUICK_TASK_ID NOT IN (0,"+qt+") THEN T.QUICK_TASK_ID WHEN T.STATUS=1 AND T.QUICK_TASK_ID =0 THEN T.QUICK_TASK_ID ELSE "+qt+" END) QT,");
 			sb.append(" 	(CASE WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID= 0 THEN 1");
-			sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
+			//sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS=1 AND T.MEDIUM_SUBTASK_ID="+mst+" THEN 1");
 			sb.append(" 		  WHEN "+mst+" <> 0 AND T.STATUS IN (1, 2) AND T.MEDIUM_SUBTASK_ID <> 0 AND "+mst+" <> T.MEDIUM_SUBTASK_ID THEN T.STATUS");
 			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID= 0 THEN 1");
-			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
+			//sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS=1 AND T.QUICK_SUBTASK_ID="+qst+" THEN 1");
 			sb.append(" 		  WHEN "+qst+" <> 0 AND T.STATUS IN (1, 2) AND T.QUICK_SUBTASK_ID <> 0 AND "+qst+" <> T.QUICK_SUBTASK_ID THEN T.STATUS");
 			sb.append(" 		  ELSE 2 END) B,");
 			sb.append(" 	0 AS C,");

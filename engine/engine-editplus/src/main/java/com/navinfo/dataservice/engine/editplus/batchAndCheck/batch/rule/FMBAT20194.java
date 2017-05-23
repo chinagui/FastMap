@@ -9,9 +9,7 @@ import java.util.Set;
 
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -67,7 +65,7 @@ public class FMBAT20194 extends BasicBatchRule {
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (!(poiObj.getIxPoiParents().size()>0)) {
+		if (poiObj.getIxPoiParents()==null||poiObj.getIxPoiParents().isEmpty()) {
 			return;
 		}
 		
@@ -129,7 +127,7 @@ public class FMBAT20194 extends BasicBatchRule {
 		if(!flag){return;}
 		
 		List<IxPoiGasstation> gasstationList = poiObj.getIxPoiGasstations();
-		if (gasstationList.size()>0) {
+		if (gasstationList!=null&&!gasstationList.isEmpty()) {
 			for (IxPoiGasstation gasstation:gasstationList) {
 				String service = gasstation.getService();
 				for (Long childPid:childrenList) {

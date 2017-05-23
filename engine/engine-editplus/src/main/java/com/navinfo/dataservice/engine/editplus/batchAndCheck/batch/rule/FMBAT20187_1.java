@@ -51,17 +51,23 @@ public class FMBAT20187_1 extends BasicBatchRule{
 		for(BasicObj obj:batchDataList){
 			pidList.add(obj.objPid());
 		}
-		pidParentPidMap = IxPoiSelector.getParentPidByPids(getBatchRuleCommand().getConn(), pidList);
+		if (pidList!=null&&pidList.size()>0){
+			pidParentPidMap = IxPoiSelector.getParentPidByPids(getBatchRuleCommand().getConn(), pidList);
+		}
 		Set<Long> parentPidList = new HashSet<Long>();
-		for(Long pid: pidParentPidMap.keySet()){
-			parentPidList.add(pidParentPidMap.get(pid));
+		if(pidParentPidMap != null && pidParentPidMap.size()>0){
+			for(Long pid: pidParentPidMap.keySet()){
+				parentPidList.add(pidParentPidMap.get(pid));
+			}
 		}
 		
 		childrenMap = IxPoiSelector.getChildrenPidsByParentPidList(getBatchRuleCommand().getConn(), parentPidList);
 		
 		Set<Long> childPids = new HashSet<Long>();
-		for (Long parentPid:childrenMap.keySet()) {
-			childPids.addAll(childrenMap.get(parentPid));
+		if (childrenMap != null && childrenMap.size()>0){
+			for (Long parentPid:childrenMap.keySet()) {
+				childPids.addAll(childrenMap.get(parentPid));
+			}
 		}
 		Set<String> referSubrow =  new HashSet<String>();
 		referSubrow.add("IX_POI_CHARGINGPLOT");
@@ -73,7 +79,7 @@ public class FMBAT20187_1 extends BasicBatchRule{
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
-		if (!"230227".equals(poi.getKindCode()) || (poiObj.getIxPoiChildrens().size()<1)){
+		if (!"230227".equals(poi.getKindCode()) || !(pidParentPidMap.containsKey(poi.getPid()))){
 			return;
 		}
 		// 条件1，2，3，4都不满足，则不批

@@ -7,6 +7,8 @@ import com.navinfo.dataservice.dao.plus.operation.AbstractOperation;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 
 public class PostBatchOperation extends AbstractOperation{
+	
+	String actionName=null;
 
 	public PostBatchOperation(Connection conn, OperationResult preResult) {
 		super(conn, preResult);
@@ -16,9 +18,13 @@ public class PostBatchOperation extends AbstractOperation{
 	@Override
 	public String getName() {
 		// TODO Auto-generated method stub
-		return null;
+		return actionName;
 	}
 
+	public void setName(String actName) {
+		// TODO Auto-generated method stub
+		actionName=actName;
+	}
 	@Override
 	public void operate(AbstractCommand cmd) throws Exception {
 		// TODO Auto-generated method stub

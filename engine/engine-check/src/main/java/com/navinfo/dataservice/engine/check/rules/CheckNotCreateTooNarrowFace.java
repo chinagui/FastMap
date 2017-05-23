@@ -4,49 +4,52 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.check.CheckCommand;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.OperType;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFaceTopo;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLink;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneLinkKind;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkForm;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
 import com.navinfo.dataservice.engine.check.core.baseRule;
+import com.navinfo.dataservice.engine.check.model.utils.CheckGeometryUtils;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
+import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by chaixin on 2017/1/19 0019.
+ * @Title: CheckNotCreateTooNarrowFace
+ * @Package: com.navinfo.dataservice.engine.check.rules
+ * @Description: 如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面
+ * @Author: Crayeres
+ * @Date: 05/09/17
+ * @Version: V1.1
  */
 public class CheckNotCreateTooNarrowFace extends baseRule {
 
-    private List<Integer> fictitiousLink = new ArrayList<>();
+    private final static List<ObjType> OBJ_TYPES =
+            Arrays.asList(ObjType.LCLINK, ObjType.LULINK, ObjType.CMGBUILDLINK, ObjType.ADLINK, ObjType.ZONELINK);
+
+    /**
+     * 日志记录
+     */
+    private Logger logger = Logger.getLogger(CheckNotCreateTooNarrowFace.class);
 
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
-        preparData(checkCommand);
-
         for (IRow row : checkCommand.getGlmList()) {
-            if (row instanceof ZoneLink && row.status() != ObjStatus.DELETE) {
-                ZoneLink link = (ZoneLink) row;
+            if (CheckGeometryUtils.notContains(OBJ_TYPES, row.objType()) || row.status() != ObjStatus.INSERT) {
+                continue;
+            }
 
-                if (fictitiousLink.contains(link.pid())) {
-                    Geometry geometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
-                    if (link.changedFields().containsKey("geometry"))
-                        geometry = GeoTranslator.geojson2Jts((JSONObject) link.changedFields().get("geometry"),
-                                0.00001, 5);
+            Geometry geometry = CheckGeometryUtils.getGeometry(row);
 
-                    double length = GeometryUtils.getLinkLength(geometry);
-                    log.info("CheckNotCreateTooNarrowFace:[" + length + "]");
-                    if (length <= 1) {
-                        setCheckResult(link.getGeometry(), "[ZONE_LINK," + link.pid() + "]", link.mesh());
-                    }
+            if (null == geometry) {
+                logger.error(String.format("ObjType: %s, Pid: %d, [对象几何获取过程出错]", row.tableName(), row.parentPKValue()));
+            } else {
+                geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+
+                if (MeshUtils.isMeshLine(geometry) && 1d >= GeometryUtils.getLinkLength(geometry)) {
+                    setCheckResult("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面",
+                            String.format("[%s,%d]", row.tableName().toUpperCase(), row.parentPKValue()), 0);
                 }
             }
         }
@@ -54,42 +57,5 @@ public class CheckNotCreateTooNarrowFace extends baseRule {
 
     @Override
     public void postCheck(CheckCommand checkCommand) throws Exception {
-
-    }
-
-    private void preparData(CheckCommand checkCommand) {
-        for (IRow obj : checkCommand.getGlmList()) {
-            if (obj instanceof ZoneLink) {
-                ZoneLink link = (ZoneLink) obj;
-                if (link.status() == ObjStatus.DELETE)
-                    continue;
-
-                Map<String, Integer> kinds = new HashMap<>();
-                for (IRow f : link.getKinds()) {
-                    ZoneLinkKind kind = (ZoneLinkKind) f;
-                    kinds.put(kind.getRowId(), kind.getKind());
-                }
-
-                for (IRow row : checkCommand.getGlmList()) {
-                    if (row instanceof ZoneLinkKind) {
-                        ZoneLinkKind kind = (ZoneLinkKind) row;
-                        if (kind.getLinkPid() == link.pid()) {
-                            if (kind.status() == ObjStatus.DELETE) {
-                                kinds.remove(kind.getRowId());
-                            } else {
-                                int linkKind = kind.getKind();
-                                if (kind.changedFields().containsKey("kind"))
-                                    linkKind = Integer.valueOf(kind.changedFields().get("kind").toString());
-                                kinds.put(kind.getRowId(), linkKind);
-                            }
-                        }
-                    }
-                }
-
-                if (kinds.containsValue(0)) {
-                    fictitiousLink.add(link.pid());
-                }
-            }
-        }
     }
 }

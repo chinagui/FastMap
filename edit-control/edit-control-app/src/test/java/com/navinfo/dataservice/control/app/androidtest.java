@@ -19,7 +19,7 @@ public class androidtest {
 	@Before
 	public void before() {
 		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
-				new String[] { "dubbo-consumer-datahub-test.xml" });
+				new String[] { "dubbo-consumer-test.xml" });
 		context.start();
 		new ApplicationContextUtil().setApplicationContext(context);
 	}

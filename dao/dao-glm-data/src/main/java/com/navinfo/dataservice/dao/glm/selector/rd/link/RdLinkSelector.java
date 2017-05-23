@@ -1186,4 +1186,77 @@ public class RdLinkSelector extends AbstractSelector {
 			DBUtils.closeStatement(pstmt);
 		}
 	}
+
+	/***
+	 * 根据路口pid 查询所所有路口组成的node挂接的link 排除掉路口内组成link和不是已挂接node为进入点的link
+	 * 
+	 * @param rdCrossId
+	 *            路口pid
+	 * @param isLock
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<RdLink, Integer> getLinksByCrossId(int rdCrossId, int inLinkPid, boolean isLock)
+			throws Exception {
+
+		Map<RdLink, Integer> map = new HashMap<RdLink, Integer>();
+		StringBuilder sb = new StringBuilder(" WITH temp1 ");
+		sb.append(" AS (SELECT node_pid ");
+		sb.append(" FROM rd_cross_node ");
+		sb.append(" WHERE pid = :1 AND u_record != 2), temp2 ");
+		sb.append(" AS (SELECT link_pid FROM rd_cross_link ");
+		sb.append(" WHERE pid = :2 AND u_record != 2), temp3 ");
+		sb.append(" AS (SELECT r.link_pid ");
+		sb.append(" FROM rd_link r, temp1 ");
+		sb.append(" WHERE r.u_record != 2 ");
+		sb.append(" AND (s_node_pid IN (temp1.node_pid) AND r.direct = 3) ");
+		sb.append(" OR (e_node_pid IN (temp1.node_pid) AND r.direct = 2)) ");
+		sb.append(" SELECT temp1.node_pid,rl.link_pid,geometry,rl.s_node_pid, rl.e_node_pid,rl.direct");
+		sb.append(" FROM rd_link rl, temp1 ");
+		sb.append(" WHERE (   rl.s_node_pid IN (temp1.node_Pid) ");
+		sb.append(" OR rl.e_node_pid IN (temp1.node_pid))");
+		sb.append(" AND rl.u_record != 2 ");
+		sb.append(" AND rl.link_pid NOT IN (SELECT link_pid ");
+		sb.append("  FROM temp2) ");
+		sb.append(" AND rl.link_pid != :3 ");
+		sb.append(" AND rl.link_pid NOT IN (SELECT link_pid FROM temp3) ");
+
+		if (isLock) {
+			sb.append(" for update nowait");
+		}
+		System.out.println(sb.toString());
+		System.out.println(rdCrossId);
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setInt(1, rdCrossId);
+
+			pstmt.setInt(2, rdCrossId);
+			pstmt.setInt(3, inLinkPid);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				RdLink rdLink = new RdLink();
+				int nodePid = resultSet.getInt("node_pid");
+				ReflectionAttrUtils.executeResultSet(rdLink, resultSet);
+				map.put(rdLink, nodePid);
+			}
+		} catch (Exception e) {
+
+			throw e;
+
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+
+		return map;
+
+	}
 }

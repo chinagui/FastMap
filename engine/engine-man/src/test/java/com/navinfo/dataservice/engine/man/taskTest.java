@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,13 +11,18 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
+import com.navinfo.dataservice.commons.util.TimestampUtils;
 import com.navinfo.dataservice.engine.man.grid.GridService;
+import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.service.ManApiImpl;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import com.vividsolutions.jts.geom.Geometry;
@@ -113,6 +119,12 @@ public class taskTest extends InitApplication{
 //		
 //		System.out.println(result);
 	}
+	
+	@Test
+	public void testReOpen() throws ServiceException
+	{
+		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
+	}
 
 	@Override
 	@Before
@@ -125,6 +137,34 @@ public class taskTest extends InitApplication{
 		SubtaskService subService = SubtaskService.getInstance(); 
 		
 		subService.queryAdminIdBySubtask(162);
+	}
+	
+	@Test
+	public void quick2Mid()throws Exception{
+		Connection conn= DBConnector.getInstance().getManConnection();
+		int quickProgramId=60;
+		JSONObject condition=new JSONObject();
+		JSONArray programIds=new JSONArray();
+		programIds.add(quickProgramId);
+		condition.put("programIds",programIds);
+		List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
+		Program quickProgram = programList.get(0);
+		Program program=new Program();
+		program.setName("test");
+		program.setCityId(39);
+		program.setType(1);
+		program.setDescp("快线项目："+quickProgram.getName()+"转中线");
+		program.setCollectPlanStartDate(quickProgram.getCollectPlanStartDate());
+		program.setCollectPlanEndDate(quickProgram.getCollectPlanEndDate());
+		program.setMonthEditPlanStartDate(TimestampUtils.addDays(quickProgram.getProducePlanEndDate(),1));
+		program.setMonthEditPlanEndDate(TimestampUtils.addDays(program.getMonthEditPlanStartDate(),1));
+		program.setProducePlanStartDate(TimestampUtils.addDays(program.getMonthEditPlanEndDate(),1));
+		program.setProducePlanEndDate(TimestampUtils.addDays(program.getProducePlanEndDate(),10));
+		program.setPlanStartDate(quickProgram.getCollectPlanStartDate());
+		program.setPlanEndDate(program.getProducePlanEndDate());
+		program.setCreateUserId(0);
+		int now=ProgramService.getInstance().create(conn,program);
+		System.out.println(now);
 	}
 	
 	@Test

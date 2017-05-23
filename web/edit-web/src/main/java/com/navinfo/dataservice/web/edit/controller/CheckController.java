@@ -167,7 +167,7 @@ public class CheckController extends BaseController {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
@@ -200,6 +200,8 @@ public class CheckController extends BaseController {
 			Integer type = jsonReq.getInt("type");
 			Integer jobId = jsonReq.getInt("jobId");
 			logger.info("jobId : "+jobId);
+			String jobType = "metaValidation";
+			String jobDescp = "元数据库检查";
 			String jobUuid = "";
 			JobApi jobApiService=(JobApi) ApplicationContextUtil.getBean("jobApi");
 			if(jobId != null && jobId >0){
@@ -207,7 +209,7 @@ public class CheckController extends BaseController {
 				JobInfo jobInfo = jobApiService.getJobById(jobId);
 				jobUuid = jobInfo.getGuid();
 			}else{
-				JSONObject jobObj = jobApiService.getLatestJob(subtaskId);
+				JSONObject jobObj = jobApiService.getLatestJob(subtaskId,jobType,jobDescp);
 				if(jobObj != null && jobObj.size() >0){
 					jobUuid= jobObj.getString("jobGuid");
 					jobId = jobObj.getInt("jobId");
@@ -215,21 +217,11 @@ public class CheckController extends BaseController {
 			}
 			logger.info("jobId 2: "+jobId);
 			logger.info("jobUuid 2: "+jobUuid);
-			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			conn = DBConnector.getInstance().getMetaConnection();
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
-			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
+
 			//获取规则号
-			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid,subtaskId,tips);
+			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid);
 			logger.info("end check/listRdnResult");
 			logger.debug(page.getResult());
 			logger.debug(page.getTotalCount());
@@ -820,10 +812,16 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			String suiteId = jsonReq.getString("suiteId");
+			String ruleCode = "";
+			if(jsonReq.containsKey("ruleCode") && jsonReq.getString("ruleCode") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("ruleCode"))){
+				ruleCode = jsonReq.getString("ruleCode");
+			}
 			JSONArray result  = new JSONArray();
 			if(suiteId != null && StringUtils.isNotEmpty(suiteId) && !suiteId.equals("null")){
 				logger.info("suiteId : "+suiteId);
-				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+				logger.info("ruleCode : "+ruleCode);
+				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId,ruleCode);
 			}
 			
 			return new ModelAndView("jsonView", success(result));

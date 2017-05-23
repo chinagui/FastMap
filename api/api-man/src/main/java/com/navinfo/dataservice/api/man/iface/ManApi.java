@@ -44,6 +44,7 @@ public interface ManApi{
 	
 	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
+	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId,String stage,String isQuality) throws Exception ;
 //	List<Grid> listGrids()throws Exception;
 	/**
 	

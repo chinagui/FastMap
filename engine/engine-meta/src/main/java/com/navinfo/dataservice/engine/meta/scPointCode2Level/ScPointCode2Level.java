@@ -94,6 +94,6 @@ public class ScPointCode2Level {
 				}
 			}
 		}
-		return kindCodeMap;
+		return kindCodeMapOld;
 	}
 }

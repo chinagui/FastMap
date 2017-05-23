@@ -2239,9 +2239,9 @@ public class SubtaskService {
 	 * 
 	 * */
 	public Subtask queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
-		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
+		String sql = "select st.*, r.DAILY_DB_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm, REGION r "
 				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
-				+ " and p.type = 4 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
+				+ " and t.region_id = r.region_id and p.type = 4 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
@@ -2267,7 +2267,7 @@ public class SubtaskService {
 						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
 						substask.setTaskId(result.getInt("TASK_ID"));
 						substask.setType(result.getInt("TYPE"));
-						substask.setDbId(result.getInt("REGION_ID"));
+						substask.setDbId(result.getInt("DAILY_DB_ID"));
 						
 						return substask;
 					}
@@ -2287,9 +2287,9 @@ public class SubtaskService {
 	 * 
 	 * */
 	public Subtask queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
-		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
+		String sql = "select st.*, r.DAILY_DB_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm, REGION r "
 				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
-				+ " and p.type = 1 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
+				+ " and t.region_id = r.region_id and p.type = 1 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
@@ -2315,7 +2315,7 @@ public class SubtaskService {
 						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
 						substask.setTaskId(result.getInt("TASK_ID"));
 						substask.setType(result.getInt("TYPE"));
-						substask.setDbId(result.getInt("REGION_ID"));
+						substask.setDbId(result.getInt("DAILY_DB_ID"));
 						
 						return substask;
 					}

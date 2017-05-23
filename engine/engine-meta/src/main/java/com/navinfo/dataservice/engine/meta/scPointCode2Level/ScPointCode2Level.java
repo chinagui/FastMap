@@ -15,6 +15,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 public class ScPointCode2Level {
 
 	private Map<String, String> kindCodeMap = new HashMap<String, String>();
+	private Map<String, String> kindCodeMapOld = new HashMap<String, String>();
 	
 	private static class SingletonHolder {
 		private static final ScPointCode2Level INSTANCE = new ScPointCode2Level();
@@ -64,9 +65,9 @@ public class ScPointCode2Level {
 	}
 	
 	public Map<String, String> scPointCode2LevelOld() throws Exception {
-		if (kindCodeMap == null || kindCodeMap.isEmpty()) {
+		if (kindCodeMapOld == null || kindCodeMapOld.isEmpty()) {
 			synchronized (this) {
-				if (kindCodeMap == null || kindCodeMap.isEmpty()) {
+				if (kindCodeMapOld == null || kindCodeMapOld.isEmpty()) {
 					try {
 						String sql = "SELECT DISTINCT KIND_CODE,OLD_POI_LEVEL FROM SC_POINT_CODE2LEVEL";
 
@@ -80,7 +81,7 @@ public class ScPointCode2Level {
 							while (rs.next()) {
 								String kind = rs.getString("KIND_CODE");
 								String level = rs.getString("OLD_POI_LEVEL");
-								kindCodeMap.put(kind, level);
+								kindCodeMapOld.put(kind, level);
 							}
 						} catch (Exception e) {
 							throw new Exception(e);

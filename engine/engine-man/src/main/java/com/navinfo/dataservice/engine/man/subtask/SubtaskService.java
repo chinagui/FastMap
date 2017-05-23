@@ -7,10 +7,12 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -56,6 +58,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.sun.tools.javac.util.Convert;
 
 /**
  * @ClassName: SubtaskService
@@ -2208,4 +2211,158 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * 根据grid查询substask
+	 * 1、优先找快线开启状态的众包子任务，其次是中线；
+	 * 如果快线(中线)存在多个开启的众包子任务，则选择子任务号值最大的众包子任务
+	 * 2、如果没有符合的众包子任务，则返回null
+	 * @param grid
+	 * @return subtask
+	 * @author songhe
+	 * 
+	 * */
+	public static Subtask queryCrowdSubtaskByGrid(String grid){
+		Subtask substask = new Subtask();
+		Connection conn = null;
+		
+		Map<String, Object> resultMap = new HashMap<>();
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			resultMap = SubtaskService.getInstance().queryOpenSubstaskFast(grid, conn);
+			if(resultMap == null){
+				resultMap = SubtaskService.getInstance().queryOpenSubstaskMid(grid, conn);
+				if(resultMap == null){
+					return null;
+				}
+			}
+			substask.setCreateDate(DateUtils.stringToTimestamp((resultMap.get("create_date").toString()),null));
+			substask.setCreateUserId(Integer.parseInt(resultMap.get("create_user_id").toString()));
+			substask.setDescp(SubtaskService.objetConvertString(resultMap.get("descp")));
+			substask.setExeGroupId(Integer.parseInt(resultMap.get("exe_group_id").toString()));
+			substask.setExeUserId(Integer.parseInt(resultMap.get("exe_user_id").toString()));
+			substask.setGeometry(SubtaskService.objetConvertString(resultMap.get("geometry")));
+			substask.setIsQuality(Integer.parseInt(resultMap.get("is_quality").toString()));
+			substask.setName(resultMap.get("name").toString());
+			substask.setPlanEndDate(DateUtils.stringToTimestamp((resultMap.get("plan_end_date").toString()),null));
+			substask.setPlanStartDate(DateUtils.stringToTimestamp((resultMap.get("plan_start_date").toString()),null));
+			substask.setQualitySubtaskId(Integer.parseInt(resultMap.get("quality_subtask_id").toString()));
+			substask.setReferId(Integer.parseInt(resultMap.get("refer_id").toString()));
+			substask.setStage(Integer.parseInt(resultMap.get("stage").toString()));
+			substask.setStatus(Integer.parseInt(resultMap.get("status").toString()));
+			substask.setSubtaskId(Integer.parseInt(resultMap.get("subtask_id").toString()));
+			substask.setTaskId(Integer.parseInt(resultMap.get("task_id").toString()));
+			substask.setType(Integer.parseInt(resultMap.get("type").toString()));
+			substask.setDbId(Integer.parseInt(resultMap.get("db_id").toString()));
+		}catch(Exception e ){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+		return substask;
+	}
+	
+	/**
+	 * 查找快线开启状态的众包子任务
+	 * @param grid
+	 * @return Map
+	 * @author songhe
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<String, Object> queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
+		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and "
+				+ "p.type = 4 and st.status = 1 and st.work_kind = 2 order by st.subtask_id desc";
+		
+		QueryRunner run = new QueryRunner();
+		try{
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+				@Override
+				public Map<String, Object> handle(ResultSet result) throws SQLException {
+					Map<String, Object> sTaskMap = new HashMap<String, Object>();
+					if(result.next()){
+						sTaskMap.put("subtask_id", result.getInt("SUBTASK_ID"));
+						sTaskMap.put("task_id", result.getInt("TASK_ID"));
+						sTaskMap.put("name", result.getObject("NAME"));
+						sTaskMap.put("geometry", result.getObject("GEOMETRY"));
+						sTaskMap.put("stage", result.getInt("STAGE"));
+						sTaskMap.put("type", result.getInt("TYPE"));
+						sTaskMap.put("create_user_id", result.getInt("CREATE_USER_ID"));
+						sTaskMap.put("create_date", result.getTimestamp("CREATE_DATE"));
+						sTaskMap.put("exe_user_id", result.getInt("EXE_USER_ID"));
+						sTaskMap.put("status", result.getInt("STATUS"));
+						sTaskMap.put("plan_start_date", result.getTimestamp("PLAN_START_DATE"));
+						sTaskMap.put("plan_end_date", result.getTimestamp("PLAN_END_DATE"));
+						sTaskMap.put("descp", result.getObject("DESCP"));
+						sTaskMap.put("exe_group_id", result.getInt("EXE_GROUP_ID"));
+						sTaskMap.put("quality_subtask_id", result.getInt("QUALITY_SUBTASK_ID"));
+						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
+						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
+						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+					}
+					return sTaskMap;
+				}});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("快线子任务查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	/**
+	 * 查找中线开启状态的众包子任务
+	 * @param grid
+	 * @return Map
+	 * @author songhe
+	 * @throws Exception 
+	 * 
+	 * */
+	public Map<String, Object> queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
+		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and "
+				+ "p.type = 1 and st.status = 1 and st.work_kind = 2 order by st.subtask_id desc";
+		
+		QueryRunner run = new QueryRunner();
+		try{
+			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+				@Override
+				public Map<String, Object> handle(ResultSet result) throws SQLException {
+					Map<String, Object> sTaskMap = new HashMap<String, Object>();
+					if(result.next()){
+						sTaskMap.put("subtask_id", result.getInt("SUBTASK_ID"));
+						sTaskMap.put("task_id", result.getInt("TASK_ID"));
+						sTaskMap.put("name", result.getObject("NAME"));
+						sTaskMap.put("geometry", result.getObject("GEOMETRY"));
+						sTaskMap.put("stage", result.getInt("STAGE"));
+						sTaskMap.put("type", result.getInt("TYPE"));
+						sTaskMap.put("create_user_id", result.getInt("CREATE_USER_ID"));
+						sTaskMap.put("create_date", result.getTimestamp("CREATE_DATE"));
+						sTaskMap.put("exe_user_id", result.getInt("EXE_USER_ID"));
+						sTaskMap.put("status", result.getInt("STATUS"));
+						sTaskMap.put("plan_start_date", result.getTimestamp("PLAN_START_DATE"));
+						sTaskMap.put("plan_end_date", result.getTimestamp("PLAN_END_DATE"));
+						sTaskMap.put("descp", result.getObject("DESCP"));
+						sTaskMap.put("exe_group_id", result.getInt("EXE_GROUP_ID"));
+						sTaskMap.put("quality_subtask_id", result.getInt("QUALITY_SUBTASK_ID"));
+						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
+						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
+						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+					}
+					return sTaskMap;
+				}});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("中线子任务查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	//Object转String工具
+    public static String objetConvertString(Object a){
+    	String result = "";
+    	if(a == null){
+    		return result;
+    	}
+    	return a.toString();
+    }
+	
 }

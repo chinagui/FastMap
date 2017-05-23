@@ -414,6 +414,7 @@ public interface MetadataApi {
 	 * @throws Exception
 	 */
 	public Map<String, String> scPointCode2Level() throws Exception;
+	public Map<String, String> scPointCode2LevelOld() throws Exception;
 	/**
 	 * 多源导入时，批level
 	 * @param jsonObj

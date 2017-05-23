@@ -2281,4 +2281,102 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+		public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			return queryByQualitySubtaskId(conn,qualitySubtaskId,stage,isQuality);		
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public Subtask queryByQualitySubtaskId(Connection conn, Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
+			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
+			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
+			sb.append(" AND T.REGION_ID = R.REGION_ID");
+			sb.append(" AND ST.QUALITY_SUBTASK_ID = " + qualitySubtaskId);
+			sb.append(" AND ST.STAGE = " + stage);
+			if(stage.equals("2")){
+				sb.append(" AND ST.TYPE = " + "7");
+			}
+			sb.append(" AND ST.IS_QUALITY = " + isQuality);
+	
+			String selectSql = sb.toString();
+			log.info("请求子任务详情SQL："+sb.toString());
+			
+
+			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
+				public Subtask handle(ResultSet rs) throws SQLException {
+					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+					if (rs.next()) {
+						Subtask subtask = new Subtask();						
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						subtask.setDescp(rs.getString("DESCP"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+						
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						try {
+							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+//							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+//								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+//							}
+//							subtask.setGridIds(gridIdMap);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						if (2 == rs.getInt("STAGE")) {
+							//月编子任务
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+						} else {
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+						}				
+						
+						return subtask;
+					}
+					return null;
+				}	
+			};
+			log.info("queryByQualitySubtaskId sql:" + sb.toString());
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		}
+	}
 }

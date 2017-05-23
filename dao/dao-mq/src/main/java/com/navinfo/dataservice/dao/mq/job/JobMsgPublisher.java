@@ -98,7 +98,7 @@ public class JobMsgPublisher {
 	 */
 	public static void sendStatJobResult(String jobType,String timestamp,String statResult,long jobId)throws Exception{
 		if(statResult==null){
-			throw new Exception("statResult不能为空");
+			throw new Exception("空statResult不能写入消息队列");
 		}
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);

@@ -3,9 +3,12 @@ package com.navinfo.dataservice.dao.glm.selector.ad.geo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
 import org.apache.commons.dbutils.DbUtils;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -16,8 +19,11 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.vividsolutions.jts.geom.Geometry;
+import org.apache.log4j.Logger;
 
 public class AdFaceSelector extends AbstractSelector {
+
+    private static Logger logger = Logger.getLogger(AdFaceSelector.class);
 
     private Connection conn;
 
@@ -259,5 +265,39 @@ public class AdFaceSelector extends AbstractSelector {
             DbUtils.closeQuietly(pstmt);
         }
         return faces;
+    }
+
+    /**
+     * 计算与指定几何相交的行政区划面
+     * @param wkt 几何
+     * @param isLock 是否加锁
+     * @return 相交面
+     */
+    public List<AdFace> listAdface(String wkt, boolean isLock) throws ServiceException {
+        List<AdFace> list = new ArrayList<>();
+        String sql = "SELECT T.FACE_PID NUM FROM AD_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
+                + ") = 'TRUE' AND T.U_RECORD <> 2";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                AdFace face = new AdFace();
+                ReflectionAttrUtils.executeResultSet(face, resultSet);
+                list.add(face);
+            }
+        } catch (SQLException e){
+            logger.error("计算与指定几何相交的行政区划面数量出错", e);
+            throw new DAOException(e.getMessage());
+        } catch (Exception e) {
+            logger.error("组装数据失败", e);
+            throw new ServiceException(e.getMessage());
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+        return list;
     }
 }

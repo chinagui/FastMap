@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.glm.selector.lc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,10 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcFaceName;
 import com.navinfo.dataservice.dao.glm.model.lc.LcFaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
+import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
+import org.apache.log4j.Logger;
 
 /**
  * @author zhangyt
@@ -21,6 +26,8 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
  * @version: v1.0
  */
 public class LcFaceSelector extends AbstractSelector {
+
+    private static Logger logger = Logger.getLogger(LcFaceSelector.class);
 
     private Connection conn;
 
@@ -141,5 +148,39 @@ public class LcFaceSelector extends AbstractSelector {
             }
         }
         return faces;
+    }
+
+    /**
+     * 计算与指定几何相交的土地覆盖面
+     * @param wkt 几何
+     * @param isLock 是否加锁
+     * @return 相交面
+     */
+    public List<LcFace> listLcface(String wkt, boolean isLock) throws ServiceException {
+        List<LcFace> list = new ArrayList<>();
+        String sql = "SELECT T.FACE_PID NUM FROM LC_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
+                + ") = 'TRUE' AND T.U_RECORD <> 2";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                LcFace face = new LcFace();
+                ReflectionAttrUtils.executeResultSet(face, resultSet);
+                list.add(face);
+            }
+        } catch (SQLException e){
+            logger.error("计算与指定几何相交的行政区划面数量出错", e);
+            throw new DAOException(e.getMessage());
+        } catch (Exception e) {
+            logger.error("组装数据失败", e);
+            throw new ServiceException(e.getMessage());
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+        return list;
     }
 }

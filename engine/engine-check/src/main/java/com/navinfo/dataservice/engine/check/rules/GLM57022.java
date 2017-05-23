@@ -20,7 +20,7 @@ import java.util.List;
  * @Date: 5/22/2017
  * @Version: V1.0
  */
-public class GLM57002 extends baseRule {
+public class GLM57022 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {

@@ -60,7 +60,7 @@ public class ImportPlan {
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-//			String filepath = "/excel/blockPlan.xls";
+//			String filepath = "E:/2.xls";
 			ImportPlan blockPlan = new ImportPlan(filepath);	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
@@ -74,7 +74,6 @@ public class ImportPlan {
 				int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
 				//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
 				int taskCountInBlock = blockPlan.taskCountInBlock(blockID, conn);
-				taskCountInBlock =0;
 				if(taskCountInBlock == 0){
 					//这里每次一个新的blockPlan都需要重置groupID的查询次数
 					SELECT_TIMES = 0;
@@ -90,7 +89,6 @@ public class ImportPlan {
 				int cityID = blockPlan.getCityId(blockID, conn);
 				//查询对应city下是否已经有项目存在,城市下无项目才创建，否则不创建项目
 				int programCountInCity = blockPlan.programCountInCity(cityID, conn);
-				programCountInCity= 0;
 				if(programCountInCity == 0){
 					programMap.put("CITY_ID", cityID);
 					programList.add(programMap);
@@ -455,7 +453,7 @@ public class ImportPlan {
 					if("0|1".equals(workKind) || "1|0".equals(workKind) || "1|1".equals(workKind)){
 						type = 1;
 					}
-					if(type == 1 && StringUtils.isNotBlank(taskDataMap.get("COLECTION_GROUP_ID").toString())){
+					if(type == 1 && taskDataMap.containsKey("COLECTION_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("COLECTION_GROUP_ID").toString())){
 						task.setGroupId(Integer.parseInt(taskDataMap.get("COLECTION_GROUP_ID").toString()));
 					}
 				}else if(i == 1){
@@ -466,7 +464,7 @@ public class ImportPlan {
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
 						task.setPlanStartDate(Timestamp.valueOf(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString()));
 					}
-					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
+					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
 						task.setGroupId(Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
 					}
 				}else{

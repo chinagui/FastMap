@@ -14,6 +14,7 @@ public class DateUtils {
 
 	private static final String defaultFormat = "yyyyMMddHHmmss";
 	private static final String defaultFormatWithMilis = "yyyyMMddHHmmssSSS";
+	
 	public static String DATE_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static String DATE_COMPACTED_FORMAT = "yyyyMMddHHmmss";
 	public static String DATE_YMD = "yyyyMMdd";

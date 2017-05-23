@@ -2287,6 +2287,7 @@ public class SubtaskService {
 						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
 						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
 						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+						
 						return sTaskMap;
 					}
 					return null;

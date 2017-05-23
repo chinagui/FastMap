@@ -86,8 +86,6 @@ public class JobMsgPublisher {
 		MsgPublisher.publish2WorkQueue("end_job", jobMsg.toString());
 	}
 
-
-
 	/**
 	 * 用于统计类job发送统计结果
 	 * @param jobType

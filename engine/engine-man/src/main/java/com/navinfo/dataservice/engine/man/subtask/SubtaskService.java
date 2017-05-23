@@ -2212,35 +2212,15 @@ public class SubtaskService {
 		if(StringUtils.isBlank(grid)){
 			return null;
 		}
-		Map<String, Object> resultMap = new HashMap<>();
 		try{
 			conn = DBConnector.getInstance().getManConnection();
-			resultMap = SubtaskService.getInstance().queryOpenSubstaskFast(grid, conn);
-			if(resultMap == null){
-				resultMap = SubtaskService.getInstance().queryOpenSubstaskMid(grid, conn);
-				if(resultMap == null){
+			substask = SubtaskService.getInstance().queryOpenSubstaskFast(grid, conn);
+			if(substask == null){
+				substask = SubtaskService.getInstance().queryOpenSubstaskMid(grid, conn);
+				if(substask == null){
 					return null;
 				}
 			}
-
-			substask.setCreateDate(DateUtils.stringToTimestamp((resultMap.get("create_date").toString()),null));
-			substask.setCreateUserId(Integer.parseInt(resultMap.get("create_user_id").toString()));
-			substask.setDescp(SubtaskService.objetConvertString(resultMap.get("descp")));
-			substask.setExeGroupId(Integer.parseInt(resultMap.get("exe_group_id").toString()));
-			substask.setExeUserId(Integer.parseInt(resultMap.get("exe_user_id").toString()));
-			substask.setGeometry(SubtaskService.objetConvertString(resultMap.get("geometry")));
-			substask.setIsQuality(Integer.parseInt(resultMap.get("is_quality").toString()));
-			substask.setName(resultMap.get("name").toString());
-			substask.setPlanEndDate(DateUtils.stringToTimestamp((resultMap.get("plan_end_date").toString()),null));
-			substask.setPlanStartDate(DateUtils.stringToTimestamp((resultMap.get("plan_start_date").toString()),null));
-			substask.setQualitySubtaskId(Integer.parseInt(resultMap.get("quality_subtask_id").toString()));
-			substask.setReferId(Integer.parseInt(resultMap.get("refer_id").toString()));
-			substask.setStage(Integer.parseInt(resultMap.get("stage").toString()));
-			substask.setStatus(Integer.parseInt(resultMap.get("status").toString()));
-			substask.setSubtaskId(Integer.parseInt(resultMap.get("subtask_id").toString()));
-			substask.setTaskId(Integer.parseInt(resultMap.get("task_id").toString()));
-			substask.setType(Integer.parseInt(resultMap.get("type").toString()));
-			substask.setDbId(Integer.parseInt(resultMap.get("db_id").toString()));
 		}catch(Exception e ){
 			DbUtils.rollbackAndCloseQuietly(conn);
 		}finally{
@@ -2258,38 +2238,38 @@ public class SubtaskService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public Map<String, Object> queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
+	public Subtask queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
 		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
 				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
 				+ " and p.type = 4 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
-			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+			return run.query(conn, sql, new ResultSetHandler<Subtask>(){
 				@Override
-				public Map<String, Object> handle(ResultSet result) throws SQLException {
-					Map<String, Object> sTaskMap = new HashMap<String, Object>();
+				public Subtask handle(ResultSet result) throws SQLException {
 					if(result.next()){
-						sTaskMap.put("subtask_id", result.getInt("SUBTASK_ID"));
-						sTaskMap.put("task_id", result.getInt("TASK_ID"));
-						sTaskMap.put("name", result.getObject("NAME"));
-						sTaskMap.put("geometry", result.getObject("GEOMETRY"));
-						sTaskMap.put("stage", result.getInt("STAGE"));
-						sTaskMap.put("type", result.getInt("TYPE"));
-						sTaskMap.put("create_user_id", result.getInt("CREATE_USER_ID"));
-						sTaskMap.put("create_date", result.getTimestamp("CREATE_DATE"));
-						sTaskMap.put("exe_user_id", result.getInt("EXE_USER_ID"));
-						sTaskMap.put("status", result.getInt("STATUS"));
-						sTaskMap.put("plan_start_date", result.getTimestamp("PLAN_START_DATE"));
-						sTaskMap.put("plan_end_date", result.getTimestamp("PLAN_END_DATE"));
-						sTaskMap.put("descp", result.getObject("DESCP"));
-						sTaskMap.put("exe_group_id", result.getInt("EXE_GROUP_ID"));
-						sTaskMap.put("quality_subtask_id", result.getInt("QUALITY_SUBTASK_ID"));
-						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
-						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
-						sTaskMap.put("db_id", result.getObject("REGION_ID"));
+						Subtask substask = new Subtask();
+						substask.setCreateDate(result.getTimestamp("CREATE_DATE"));
+						substask.setCreateUserId(result.getInt("CREATE_USER_ID"));
+						substask.setDescp(result.getString("DESCP"));
+						substask.setExeGroupId(result.getInt("EXE_GROUP_ID"));
+						substask.setExeUserId(result.getInt("EXE_USER_ID"));
+						substask.setGeometry(result.getString("GEOMETRY"));
+						substask.setIsQuality(result.getInt("IS_QUALITY"));
+						substask.setName(result.getString("NAME"));
+						substask.setPlanEndDate(result.getTimestamp("PLAN_END_DATE"));
+						substask.setPlanStartDate(result.getTimestamp("PLAN_START_DATE"));
+						substask.setQualitySubtaskId(result.getInt("QUALITY_SUBTASK_ID"));
+						substask.setReferId(result.getInt("REFER_ID"));
+						substask.setStage(result.getInt("STAGE"));
+						substask.setStatus(result.getInt("STATUS"));
+						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
+						substask.setTaskId(result.getInt("TASK_ID"));
+						substask.setType(result.getInt("TYPE"));
+						substask.setDbId(result.getInt("REGION_ID"));
 						
-						return sTaskMap;
+						return substask;
 					}
 					return null;
 				}});
@@ -2306,37 +2286,38 @@ public class SubtaskService {
 	 * @throws Exception 
 	 * 
 	 * */
-	public Map<String, Object> queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
+	public Subtask queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
 		String sql = "select st.*, t.REGION_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm "
 				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
 				+ " and p.type = 1 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
 		
 		QueryRunner run = new QueryRunner();
 		try{
-			return run.query(conn, sql, new ResultSetHandler<Map<String, Object>>(){
+			return run.query(conn, sql, new ResultSetHandler<Subtask>(){
 				@Override
-				public Map<String, Object> handle(ResultSet result) throws SQLException {
-					Map<String, Object> sTaskMap = new HashMap<String, Object>();
+				public Subtask handle(ResultSet result) throws SQLException {
 					if(result.next()){
-						sTaskMap.put("subtask_id", result.getInt("SUBTASK_ID"));
-						sTaskMap.put("task_id", result.getInt("TASK_ID"));
-						sTaskMap.put("name", result.getObject("NAME"));
-						sTaskMap.put("geometry", result.getObject("GEOMETRY"));
-						sTaskMap.put("stage", result.getInt("STAGE"));
-						sTaskMap.put("type", result.getInt("TYPE"));
-						sTaskMap.put("create_user_id", result.getInt("CREATE_USER_ID"));
-						sTaskMap.put("create_date", result.getTimestamp("CREATE_DATE"));
-						sTaskMap.put("exe_user_id", result.getInt("EXE_USER_ID"));
-						sTaskMap.put("status", result.getInt("STATUS"));
-						sTaskMap.put("plan_start_date", result.getTimestamp("PLAN_START_DATE"));
-						sTaskMap.put("plan_end_date", result.getTimestamp("PLAN_END_DATE"));
-						sTaskMap.put("descp", result.getObject("DESCP"));
-						sTaskMap.put("exe_group_id", result.getInt("EXE_GROUP_ID"));
-						sTaskMap.put("quality_subtask_id", result.getInt("QUALITY_SUBTASK_ID"));
-						sTaskMap.put("is_quality", result.getInt("IS_QUALITY"));
-						sTaskMap.put("refer_id", result.getInt("REFER_ID"));
-						sTaskMap.put("db_id", result.getObject("REGION_ID"));
-						return sTaskMap;
+						Subtask substask = new Subtask();
+						substask.setCreateDate(result.getTimestamp("CREATE_DATE"));
+						substask.setCreateUserId(result.getInt("CREATE_USER_ID"));
+						substask.setDescp(result.getString("DESCP"));
+						substask.setExeGroupId(result.getInt("EXE_GROUP_ID"));
+						substask.setExeUserId(result.getInt("EXE_USER_ID"));
+						substask.setGeometry(result.getString("GEOMETRY"));
+						substask.setIsQuality(result.getInt("IS_QUALITY"));
+						substask.setName(result.getString("NAME"));
+						substask.setPlanEndDate(result.getTimestamp("PLAN_END_DATE"));
+						substask.setPlanStartDate(result.getTimestamp("PLAN_START_DATE"));
+						substask.setQualitySubtaskId(result.getInt("QUALITY_SUBTASK_ID"));
+						substask.setReferId(result.getInt("REFER_ID"));
+						substask.setStage(result.getInt("STAGE"));
+						substask.setStatus(result.getInt("STATUS"));
+						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
+						substask.setTaskId(result.getInt("TASK_ID"));
+						substask.setType(result.getInt("TYPE"));
+						substask.setDbId(result.getInt("REGION_ID"));
+						
+						return substask;
 					}
 					return null;
 				}});

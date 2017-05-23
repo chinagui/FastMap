@@ -8,12 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.navinfo.dataservice.commons.util.StringUtils;
+import com.navinfo.dataservice.dao.plus.log.LogDetail;
+import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParent;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
@@ -26,7 +25,8 @@ import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
  *(2)修改充电桩且修改内容为PLUG_TYPE（插头类型）、ACDC（交直流充电）、MODE（充电模式），OPEN_TYPE（开放状态）其中任何一个字段，且该POI为子：
  *(3)修改充电桩且修改父子关系(新增父子关系或解除父子关系)；
  *(4)修改子充电桩且新增或删除一组桩信息；
- *满足(1)或(2)或(3)或(4) 则进行如下批处理：
+ *(5)子充电桩POI删除(主要用于兄弟批处理)；
+ *满足(1)或(2)或(3)或(4)或(5),则进行如下批处理：
  *定义：桩POI的PLUG_TYPE（插头类型）、ACDC（交直流充电）、MODE（充电模式），OPEN_TYPE（开放状态）与其它兄弟POI的PLUG_TYPE（插头类型）、ACDC（交直流充电）、MODE（充电模式）一致，则定义为同一组规格相同的充电桩；
  *批处理：
  *查询充电桩对应的充电站，根据充电站查询所有的子充电桩，按照同规格充电桩分组，进行如下批处理赋值：
@@ -83,7 +83,7 @@ public class FMBAT20187_1 extends BasicBatchRule{
 			return;
 		}
 		// 条件1，2，3，4都不满足，则不批
-		if (!ConditionOne(poi) && !ConditionTwo(poiObj,poi) && !ConditionThree(poiObj,poi) && !ConditionFour(poiObj,poi)){
+		if (!ConditionOne(poi) && !ConditionTwo(poiObj) && !ConditionThree(poiObj) && !ConditionFour(poiObj)){
 			return ;
 		}
 		List<Long> childrenList = new ArrayList<Long>();
@@ -101,37 +101,40 @@ public class FMBAT20187_1 extends BasicBatchRule{
 	}
 	
 	public boolean ConditionOne(IxPoi poi){
-		//该poi状态为新增
-		if (poi.getHisOpType().equals(OperationType.INSERT)){
+		//该poi状态为新增或者删除
+		if (poi.getHisOpType().equals(OperationType.INSERT)||poi.getHisOpType().equals(OperationType.PRE_DELETED)){
 			return true;
 		}
 		return false;
 	}
-	public boolean ConditionTwo(IxPoiObj poiObj, IxPoi poi){
+	public boolean ConditionTwo(IxPoiObj poiObj){
 		//该poi是修改，且存在IX_POI_CHARGINGPLOT记录修改，且修改内容为PLUG_TYPE（插头类型）、ACDC（交直流充电）、MODE（充电模式），OPEN_TYPE（开放状态）其中任何一个字段的履历
-		if(!poi.getHisOpType().equals(OperationType.UPDATE)){return false;}
-		List<IxPoiChargingplot>  chargePolts = poiObj.getIxPoiChargingplots();
-		for(IxPoiChargingplot plot: chargePolts){
-			if (plot.getHisOpType().equals(OperationType.UPDATE) && (plot.hisOldValueContains(IxPoiChargingplot.PLUG_TYPE) || plot.hisOldValueContains(IxPoiChargingplot.ACDC) || plot.hisOldValueContains(IxPoiChargingplot.MODE) || plot.hisOldValueContains(IxPoiChargingplot.OPEN_TYPE))){
-				return true;
-			}
+		if(poiObj.hisOldValueContains("IX_POI_CHARGINGPLOT",IxPoiChargingplot.PLUG_TYPE)||
+				poiObj.hisOldValueContains("IX_POI_CHARGINGPLOT",IxPoiChargingplot.ACDC)||
+				poiObj.hisOldValueContains("IX_POI_CHARGINGPLOT",IxPoiChargingplot.MODE)||
+				poiObj.hisOldValueContains("IX_POI_CHARGINGPLOT",IxPoiChargingplot.OPEN_TYPE)){
+			return true;
 		}
 		return false;
 	}
-	public boolean ConditionThree(IxPoiObj poiObj, IxPoi poi){
+	public boolean ConditionThree(IxPoiObj poiObj) throws Exception{
 		//该poi是修改，且存在修改父子关系的履历
-		if(!poi.getHisOpType().equals(OperationType.UPDATE)){return false;}
-		List<IxPoiChildren> childrens = poiObj.getIxPoiChildrens();
-		for(IxPoiChildren child: childrens){
-			if(child.getHisOpType().equals(OperationType.INSERT) || child.getHisOpType().equals(OperationType.DELETE)){
-				return true;
+		try{
+			List<Long> poiPids=new ArrayList<Long>();
+			poiPids.add(poiObj.getMainrow().getObjPid());
+			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(getBatchRuleCommand().getConn(), poiPids);
+			List<LogDetail> LogDetails=logs.get(poiObj.getMainrow().getObjPid());
+			for(LogDetail LogDetail:LogDetails){
+				if(LogDetail.getTbNm().equals("IX_POI_CHILDREN")){return true;}
 			}
+		}catch (Exception e) {
+			throw e;
 		}
+		
 		return false;
 	}
-	public boolean ConditionFour(IxPoiObj poiObj, IxPoi poi){
-		//该poi是修改，且存在IX_POI_CHARGINGPLOT记录的新增或删除的履历
-		if(!poi.getHisOpType().equals(OperationType.UPDATE)){return false;}
+	public boolean ConditionFour(IxPoiObj poiObj){
+		//存在IX_POI_CHARGINGPLOT记录的新增或删除的履历
 		List<IxPoiChargingplot>  chargePolts = poiObj.getIxPoiChargingplots();
 		for (IxPoiChargingplot plot: chargePolts){
 			if (plot.getHisOpType().equals(OperationType.INSERT) || plot.getHisOpType().equals(OperationType.DELETE)){

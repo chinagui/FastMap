@@ -27,7 +27,7 @@ public class Fm2MultiSrcSyncScript {
 			FmMultiSrcSync fmMultiSrcSync = syncApi.queryLastSuccessSync();
 			String lastSyncTime = null;
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-			if(fmMultiSrcSync.getSyncTime() != null){
+			if(fmMultiSrcSync!=null&&fmMultiSrcSync.getSyncTime() != null){
 				lastSyncTime = sdf.format(fmMultiSrcSync.getSyncTime());
 			}
 			job.put("lastSyncTime", lastSyncTime);
@@ -36,6 +36,7 @@ public class Fm2MultiSrcSyncScript {
 			job.put("syncTime", syncTime);
 			//查询dbIds
 			List<Region> regionList = RegionService.getInstance().list();
+			
 			List<Integer> dbIds = new ArrayList<Integer>();
 			for (Region region : regionList) {
 				if(region.getDailyDbId() != null){

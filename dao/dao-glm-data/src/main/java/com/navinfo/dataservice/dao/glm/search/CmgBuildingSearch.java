@@ -1,5 +1,17 @@
 package com.navinfo.dataservice.dao.glm.search;
 
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.commons.mercator.MercatorProjection;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.ISearch;
+import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
+import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuilding;
+import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
+import org.apache.commons.dbutils.DbUtils;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,20 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import oracle.sql.STRUCT;
-
-import org.apache.commons.dbutils.DbUtils;
-
-import com.navinfo.dataservice.commons.geom.Geojson;
-import com.navinfo.dataservice.commons.mercator.MercatorProjection;
-import com.navinfo.dataservice.dao.glm.iface.IObj;
-import com.navinfo.dataservice.dao.glm.iface.ISearch;
-import com.navinfo.dataservice.dao.glm.iface.SearchSnapshot;
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 
 public class CmgBuildingSearch  implements ISearch{
 
@@ -42,7 +40,7 @@ public class CmgBuildingSearch  implements ISearch{
      */
     @Override
     public IObj searchDataByPid(int pid) throws Exception {
-        return (IObj) new AbstractSelector(CmgBuildface.class, conn).loadById(pid, false);
+        return (IObj) new AbstractSelector(CmgBuilding.class, conn).loadById(pid, false);
     }
 
     /**

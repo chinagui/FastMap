@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.sql.Connection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -94,7 +95,7 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
 			//String uploadRoot = "D:\\temp\\";
-			//return "D:\\temp\\multisrc\\201703\\20161207103647_day";
+//			return "E:\\data\\resources\\upload\\multisrc\\20170510\\20170510100000_day";
 			//每个月独立目录
 			String curYm = DateUtils.getCurYyyymm();
 			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
@@ -340,13 +341,24 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				//数据打多源标识
-				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
+//				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
+				Date uploadDate = new Date();
+				PoiEditStatus.insertPoiEditStatus(conn, imp.getInsertPids(),1);
+				PoiEditStatus.updatePoiEditStatus(conn, imp.getPids(), 1, 1, uploadDate);
+				PoiEditStatus.tagMultiSrcPoi(conn, imp.getQuickSubtaskIdMap(),imp.getMediumSubtaskIdMap(),uploadDate);
 				//导入父子关系
 				PoiRelationImportorCommand relCmd = new PoiRelationImportorCommand();
 				relCmd.setPoiRels(imp.getParentPid());
 				PoiRelationImportor relImp = new PoiRelationImportor(conn,imp.getResult());
 				relImp.operate(relCmd);
 				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
+				
+				//处理同一关系：删除数据删除同一关系
+				PoiRelationImportorCommand relCmd2 = new PoiRelationImportorCommand();
+				relCmd2.setPoiRels(imp.getSamePoiPid());
+				relImp.operate(relCmd2);
+				relImp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
+				
 				errLog.putAll(imp.getErrLog());
 				log.debug("dbId("+dbId+")转入成功。");
 			}catch(Exception e){

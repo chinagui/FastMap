@@ -1,17 +1,14 @@
 package com.navinfo.dataservice.api.metadata.iface;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import com.navinfo.dataservice.api.metadata.model.Mesh4Partition;
 import com.navinfo.dataservice.api.metadata.model.MetadataMap;
 import com.navinfo.dataservice.api.metadata.model.ScPointNameckObj;
 import com.navinfo.dataservice.api.metadata.model.ScPointSpecKindcodeNewObj;
 import com.navinfo.dataservice.api.metadata.model.ScSensitiveWordsObj;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -422,5 +419,15 @@ public interface MetadataApi {
 	 */
 	public String getLevelForMulti(JSONObject jsonObj) throws Exception;
 	public JSONObject getAdminMap()throws Exception;
+
+	public List<Map<String, Object>> getScPointTruckList() throws Exception;
+
+	public String pyConvert(String word,String adminId,String isRdName) throws Exception ;
+	
+	public String voiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
+	
+	public String[] pyVoiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
+	
+	public String engConvert(String word,String adminId) throws Exception ;
 
 }

@@ -77,7 +77,9 @@ create table POI_COLUMN_STATUS
   SECOND_WORK_STATUS NUMBER(1) default 1,
   HANDLER            NUMBER(10),
   TASK_ID            NUMBER(10),
-  APPLY_DATE		 TIMESTAMP
+  APPLY_DATE		 TIMESTAMP,
+  QC_FLAG            NUMBER(1) default 0,
+  COMMON_HANDLER     NUMBER(10)
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS
@@ -97,6 +99,10 @@ comment on column POI_COLUMN_STATUS.TASK_ID
   is '任务号';
 comment on column POI_COLUMN_STATUS.APPLY_DATE
   is '申请时间';
+comment on column POI_COLUMN_STATUS.QC_FLAG
+  is '质检标识';
+comment on column POI_COLUMN_STATUS.COMMON_HANDLER
+  is '常规作业员hander';
 
 create table POI_COLUMN_WORKITEM_CONF
 (
@@ -132,6 +138,30 @@ create table POI_COLUMN_OP_CONF
   FIRST_SUBMIT_CKRULES       VARCHAR2(500),
   FIRST_SUBMIT_EXECLASSIFY   NUMBER(1) default 0,
   FIRST_SUBMIT_CLASSIFYRULES VARCHAR2(100)
+);
+create table COLUMN_QC_PROBLEM
+(
+ID                    NUMBER(10),
+SUBTASK_ID            NUMBER(10),
+PID                   NUMBER(10),
+FIRST_WORK_ITEM       VARCHAR2(50),
+SECOND_WORK_ITEM      VARCHAR2(50),
+WORK_ITEM_ID          VARCHAR2(50),
+OLD_VALUE             VARCHAR2(500),
+NEW_VALUE             VARCHAR2(500),
+ERROR_TYPE            VARCHAR2(50),
+ERROR_LEVEL           VARCHAR2(10),
+PROBLEM_DESC          VARCHAR2(500),
+TECH_GUIDANCE         VARCHAR2(100),
+TECH_SCHEME           VARCHAR2(100),
+WORK_TIME             TIMESTAMP,
+QC_TIME               TIMESTAMP,
+IS_PROBLEM            NUMBER(1),
+IS_VALID              NUMBER(1),
+WORKER                NUMBER(10),
+QC_WORKER             NUMBER(10),
+ORIGINAL_INFO         VARCHAR2(200),
+    constraint PK_COLUMN_QC_PROBLEM primary key (ID)
 );
   
 /* GDB+ log part */

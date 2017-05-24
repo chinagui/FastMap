@@ -10,6 +10,8 @@ import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
 
+import java.util.List;
+
 /**
  * @Title: GLM57002
  * @Package: com.navinfo.dataservice.engine.check.rules
@@ -18,7 +20,7 @@ import net.sf.json.JSONObject;
  * @Date: 5/22/2017
  * @Version: V1.0
  */
-public class GLM57002 extends baseRule {
+public class GLM57022 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {
@@ -32,9 +34,11 @@ public class GLM57002 extends baseRule {
                 geometry = GeoTranslator.geojson2Jts((JSONObject) row.changedFields().get("geometry"));
             }
             String wkt = GeoTranslator.jts2Wkt(geometry, GeoTranslator.dPrecisionMap,5);
-            int count = new CmgBuildfaceSelector(getConn()).countCmgBuildface(wkt, false);
-            if (0 < count) {
-                setCheckResult("市街图面重合", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()),0);
+            List<CmgBuildface> list = new CmgBuildfaceSelector(getConn()).listCmgBuildface(wkt, false);
+            for (CmgBuildface cmgface : list) {
+                if (face.pid() != cmgface.pid()) {
+                    setCheckResult("市街图面重合", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()),0);
+                }
             }
         }
     }

@@ -83,11 +83,11 @@
         <property name="startDelay" value="10000" />
 		<property name="repeatInterval" value="60000" />
     </bean>-->
-    <!-- 每个整点执行 -->
+    <!-- 每分钟执行一次，整点分钟执行 -->
     <bean id="MONITOR_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="monitor_alert" />
-        <property name="cronExpression" value="0 0 * * * ?" />
+        <property name="cronExpression" value="0 * * * * ?" />
     </bean>
     
     <!--  外业生产时长监控 -->

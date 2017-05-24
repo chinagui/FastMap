@@ -8,12 +8,14 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpStatus;
+import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -185,24 +187,78 @@ public class ServiceInvokeUtil
         }
         return json;
     }
+    
+    public static String invokeByGet(String service_url,Map<String,String> parMap) throws Exception
+    {
+        GetMethod serviceGet = null;
+        String json = null;
+        try
+        {
+            serviceGet = new GetMethod(service_url);
+            serviceGet.setRequestHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+
+            NameValuePair[] params=new NameValuePair[parMap.size()];
+            int i=0;
+            if(parMap!=null){
+                for(String parName : parMap.keySet())
+                {
+                    if(parMap.get(parName) != null)
+                    {
+                    	NameValuePair pair=new NameValuePair();
+                    	pair.setName(parName);
+                    	pair.setValue(parMap.get(parName));
+                    	params[i]=pair;
+                    	i++;
+                    	//params.setParameter(parName,parMap.get(parName));
+                    }
+                }
+            }
+            serviceGet.setQueryString(params);
+			//serviceGet.setParams(params);
+            
+            HttpClient client = new HttpClient();
+            int status = client.executeMethod(serviceGet);
+            if (status == HttpStatus.SC_OK)
+            {
+                json = serviceGet.getResponseBodyAsString();
+            }
+            else
+            {
+                json = "{success : false,msg:'调用服务失败！'}";
+            }
+        } catch (IOException e)
+        {
+            //log.error("调用服务失败",e);
+            throw new Exception("调用服务失败，服务为" + service_url,e.getCause());
+        } finally
+        {
+            if(serviceGet != null)
+            {
+                serviceGet.releaseConnection();
+            }
+        }
+        return json;
+    }
 
     public static void main(String []args) throws Exception
     {
-        String url = "http://localhost:8088/cpub/SysLoginAction.do?operate=logon&operPage=index";
+        String url = "http://fs-road.navinfo.com/dev/trunk/service/mapspotter/data/info/sendtopub/?access_token=000001AGJ33UGHXX420A4ED2D0EE1A3647E44FA1D016DC93";
         Map<String,String> parMap = new HashMap<String, String>();
-        parMap.put("orgUserSearch.id","test");
-        parMap.put("orgUserSearch.password","test");
-        String json = invoke(url,parMap);
+        parMap.put("access_token","000001AGJ33UGHXX420A4ED2D0EE1A3647E44FA1D016DC93");
+        parMap.put("parameter","{\"subTaskId\":66,\"priority\":2,\"geometryJSON\":{\"type\":\"Polygon\",\"coordinates\":[[[116.40625,39.9375],[116.40625,39.95833],[116.4375,39.95833],[116.46875,39.95833],[116.46875,39.9375],[116.4375,39.9375],[116.40625,39.9375]]]}}");
+        //String parMap="access_token=000001AGJ33UGHXX420A4ED2D0EE1A3647E44FA1D016DC93&parameter={\\\"subTaskId\\\":66,\\\"priority\\\":2,\\\"geometryJSON\\\":{\\\"type\\\":\\\"Polygon\\\",\\\"coordinates\\\":[[[116.40625,39.9375],[116.40625,39.95833],[116.4375,39.95833],[116.46875,39.95833],[116.46875,39.9375],[116.4375,39.9375],[116.40625,39.9375]]]}}";
+        //String parMap="access_token=000001AGJ33UGHXX420A4ED2D0EE1A3647E44FA1D016DC93";
+        String json = invokeByGet(url,parMap);
         //System.out.println(json);
 
 
-        String fmeUpload = "http://192.168.8.70:8080/fmedataupload/poi/pretreamentService.fmw";
-        File file = new File("G:\\work\\navinfo\\newsvn\\02生产平台\\01扩展POI生产系统\\document\\04需求开发\\样例数据\\workspace.mdb");
-        parMap.clear();
-        parMap.put("opt_fullpath","true");
-        parMap.put("opt_responseformat","json");
-        parMap.put("opt_pathlevel","10");
-        json = upload(fmeUpload,file,parMap);
+//        String fmeUpload = "http://192.168.8.70:8080/fmedataupload/poi/pretreamentService.fmw";
+//        File file = new File("G:\\work\\navinfo\\newsvn\\02生产平台\\01扩展POI生产系统\\document\\04需求开发\\样例数据\\workspace.mdb");
+//        parMap.clear();
+//        parMap.put("opt_fullpath","true");
+//        parMap.put("opt_responseformat","json");
+//        parMap.put("opt_pathlevel","10");
+//        json = upload(fmeUpload,file,parMap);
         System.out.println(json);
 //        Map map = JSONUtils.toMap(json);
 //        System.out.println(map);

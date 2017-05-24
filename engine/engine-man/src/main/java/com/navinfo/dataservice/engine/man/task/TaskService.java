@@ -29,6 +29,7 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
@@ -517,7 +518,8 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,"
+					+ "UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -540,6 +542,7 @@ public class TaskService {
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setRegionId(rs.getInt("REGION_ID"));
+						task.setWorkKind(rs.getString("work_kind"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -719,6 +722,7 @@ public class TaskService {
 		}
 		//情报子任务
 		if(num==3){
+			log.info("创建情报子任务");
 			Subtask subtask = new Subtask();
 			if(programType==1){
 				subtask.setName(task.getName());
@@ -739,6 +743,7 @@ public class TaskService {
 		}
 		//多源子任务
 		if(num==4){
+			log.info("创建多源子任务");
 			Subtask subtask = new Subtask();
 			String adminCode = selectAdminCode(task.getProgramId());
 			//* 快线：情报名称_发布时间_作业员_子任务ID
@@ -1189,6 +1194,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       B.BLOCK_ID,");
 			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
@@ -1224,7 +1230,8 @@ public class TaskService {
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
 			sb.append("                       0 NOTASKDATA_POI_NUM,");
-			sb.append("                       0 NOTASKDATA_TIPS_NUM,");
+			sb.append("                       0 NOTASKDATA_TIPS_NUM,"
+					+ "0 CONVERT_FLAG,");
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
@@ -1255,6 +1262,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       0 BLOCK_ID,");
 			sb.append("	                      '' BLOCK_NAME,");
 			sb.append("                       1 PLAN_STATUS,");
@@ -1311,11 +1319,15 @@ public class TaskService {
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
 						
-						//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-						if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-							task.put("hasNoTaskData", 0);
-						}else{
-							task.put("hasNoTaskData", 1);
+						int convertFlag=rs.getInt("CONVERT_FLAG");
+						if(convertFlag==1){task.put("hasNoTaskData", 0);}
+						else{						
+							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+								task.put("hasNoTaskData", 0);
+							}else{
+								task.put("hasNoTaskData", 1);
+							}
 						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -3361,11 +3373,14 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
-			
+			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",taskId="+task.getTaskId()+",wkt="+wkt);
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
-			
+			//修改无任务转中操作状态为 1已转
+			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);

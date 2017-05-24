@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.meta.translates;
 
 import com.navinfo.dataservice.commons.util.StringUtils;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
@@ -16,9 +17,13 @@ import java.util.regex.Pattern;
  */
 public class EnglishConvert {
 
+    /**
+     * 日志记录
+     */
+    private Logger logger = Logger.getLogger(EnglishConvert.class);
+
     public EnglishConvert() {
     }
-
 
     /**
      * 是否处理多音字标识,与HANDLE_POLYPHONIC_WORD对应
@@ -50,22 +55,27 @@ public class EnglishConvert {
             return sourceText;
         }
 
-        String result = this.replaceKeyWord(sourceText);
+        String result = sourceText;
+        try {
+            result = this.replaceKeyWord(sourceText);
 
-        result = SplitUtil.split(result);
+            result = SplitUtil.split(result);
 
-        result = ConvertUtil.convertNoWord(result);
+            result = ConvertUtil.convertNoWord(result);
 
-        result = ConvertUtil.removeRepeatBackSlash(result);
+            result = ConvertUtil.removeRepeatBackSlash(result);
 
-        result = this.convertKernel(result);
+            result = this.convertKernel(result);
 
-        result = ConvertUtil.removeRepeatSpace(result);
+            result = ConvertUtil.removeRepeatSpace(result);
 
-        result = ConvertUtil.firstCapital(result);
+            result = ConvertUtil.firstCapital(result);
 
-        result = ConvertUtil.trimSymbolSpace(result);
-
+            result = ConvertUtil.trimSymbolSpace(result);
+        } catch (Exception e) {
+            logger.error(String.format("英文翻译过程出错: [sourceText: %s]", sourceText), e);
+            return result;
+        }
         return result;
     }
 
@@ -88,7 +98,8 @@ public class EnglishConvert {
         // 转英文
         sourceText = this.convertEnglishCharacter(sourceText);
 
-        sourceText = ConvertUtil.removeSymbolWord(sourceText);
+        sourceText = this.convertWordSymbol(sourceText);
+        //sourceText = ConvertUtil.removeSymbolWord(sourceText);
 
         sourceText = ConvertUtil.convertFull2Half(sourceText);
 
@@ -99,6 +110,26 @@ public class EnglishConvert {
         }
 
         return sourceText;
+    }
+
+    /**
+     * 处理特殊字符
+     * @param sourceText 待处理文本
+     * @return 处理后字符串
+     */
+    private String convertWordSymbol(String sourceText) {
+        StringBuffer result = new StringBuffer();
+        for (Character character : sourceText.toCharArray()) {
+            String tmpStr = String.valueOf(character);
+            for (Map.Entry<String, String> entry : TranslateDictData.getInstance().getDictSymbolMap().entrySet()) {
+                if (entry.getKey().equals(tmpStr)) {
+                    tmpStr = StringUtils.isEmpty(entry.getValue()) ? "" : entry.getValue();
+                    break;
+                }
+            }
+            result.append(tmpStr);
+        }
+        return result.toString();
     }
 
     /**

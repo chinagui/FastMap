@@ -3,9 +3,11 @@
  */
 package org.navinfo.dataservice.engine.meta;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,10 +44,10 @@ public class RdNameAndPatternImageTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 	
-//	@Test
+	@Test
 	public void saveUpdataTest()
 	{
-		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士222','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name11','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
+		String parameter = "{'tableName':'scMdelMatchG','data':{'fileId':null,'productLine':'NIDB-G','version':'17夏1','projectNm':'博士33','specification':null,'bType':'2D','mType':'arrow','sType':null,'fileName':'测试name11','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-04-20 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/14夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 		//String parameter = "{'tableName':'scModelRepdelG','data':{'convBefore':'00','convOut':'2','kind':'3e1'}}";
 //		String parameter = "{'tableName':'scVectorMatch','data':{'fileId':null,'productLine':'NIDB-G','version':'14夏1','projectNm':'博士2','specification':null,'type':'2D','panel':'b2p4|b2p1|b2p2|b1p1','fileName':'032a3121','size':'4671','format':'png','impWorker':'wzs','impDate':'2017-03-21 13:55:00','urlDb':'/multimedia/data/2D/arrow/032a3121.png','urlFile':'D:/16夏企划1/多媒体文件1/PatternImg/2D/arrow/032a3121.png','memo':'dd'}}";
 //		String parameter = "{'tableName':'scBranchCommc','data':{'branch1':'0','branch2':'2','branch3':'','branch4':'','branch5':'','seriesbranch1':'11','seriesbranch2':'','seriesbranch3':'','seriesbranch4':''}}";
@@ -71,7 +73,10 @@ public class RdNameAndPatternImageTest {
 			}
 			if(tableName.equals("scMdelMatchG")){
 				ScModelMatchGService scModelMatchGService =new ScModelMatchGService();
-				scModelMatchGService.saveUpdate(dataJson);
+//				byte[] b = getContent("F:/123.png");
+//				InputStream in =getContents("F:/123.png");
+//				scModelMatchGService.saveUpdate2(dataJson,in);
+				scModelMatchGService.saveUpdate2(dataJson,null);
 			}else if(tableName.equals("scModelRepdelG")){
 				ScModelRepdelGService scModelRepdelGService =new ScModelRepdelGService();
 				scModelRepdelGService.saveUpdate(dataJson);
@@ -95,7 +100,40 @@ public class RdNameAndPatternImageTest {
 			throw new IllegalArgumentException("保存失败  "+e.getMessage());
 		}
 	}
-	
+	public byte[] getContent(String filePath) throws IOException {  
+        File file = new File(filePath);  
+        long fileSize = file.length();  
+        if (fileSize > Integer.MAX_VALUE) {  
+            System.out.println("file too big...");  
+            return null;  
+        }  
+        FileInputStream fi = new FileInputStream(file);  
+        byte[] buffer = new byte[(int) fileSize];  
+        int offset = 0;  
+        int numRead = 0;  
+        while (offset < buffer.length  
+        && (numRead = fi.read(buffer, offset, buffer.length - offset)) >= 0) {  
+            offset += numRead;  
+        }  
+        // 确保所有数据均被读取  
+        if (offset != buffer.length) {  
+        throw new IOException("Could not completely read file "  
+                    + file.getName());  
+        }  
+        fi.close();  
+        return buffer;  
+    } 
+	public InputStream getContents(String filePath) throws IOException {  
+        File file = new File(filePath);  
+        long fileSize = file.length();  
+        if (fileSize > Integer.MAX_VALUE) {  
+            System.out.println("file too big...");  
+            return null;  
+        }  
+        InputStream in = new FileInputStream(file); 
+        
+        return in;  
+    } 
 //	@Test
 	public void deleteTest(){
 			String parameter = "{'tableName':'scMdelMatchG','ids':[20170162139]}";
@@ -216,7 +254,7 @@ public class RdNameAndPatternImageTest {
 //	@Test
 	public void getImageTest() throws ServiceException{
 		
-		String parameter = "{'tableName':'scMdelMatchG','id':'201400000165'}";
+		String parameter = "{'tableName':'scMdelMatchG','id':'20170162144'}";
 		JSONObject parameterJson = JSONObject.fromObject(parameter);			
 		BLOB imageBlob = null;
 		String tableName  = parameterJson.getString("tableName");
@@ -232,7 +270,7 @@ public class RdNameAndPatternImageTest {
 			imageBlob =scModelMatchGService.getFileContentById(id);
 		}
 	
-		String filepath = "F:/1111111.png";
+		String filepath = "F:/3211.png";
         System.out.println("输出文件路径为:" + filepath);
         try {
 	         //处理返回的imageBlob 数据
@@ -299,7 +337,7 @@ public class RdNameAndPatternImageTest {
 		}
 	}
 	
-	@Test
+//	@Test
 	public void searchTestRdname(){
 				String parameter = "{'tableName':'scRoadnameHwInfo','data':{'hwPidUp':null,'hwPidDw':null,'memo':[5],'uRecords':[6],'uFields':''},'sortby':'-hwPidUp','pageSize':10,'pageNum':1}";
 				

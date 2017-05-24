@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -293,70 +295,88 @@ public class PoiEditStatus {
 			insertPoiEditStatus(conn,pids,status);
 		}
 	}
-
-	public static void forCollector(Connection conn, OperationResult result,int subtaskId,int taskId,int taskType)  throws Exception {
-		Map<Long, BasicObj> pois = result.getObjsMapByType(ObjectName.IX_POI);
-		if(pois==null||pois.size()==0){
-			return ;
-		}
-		//upload part
-		//先全部按常规作业上传处理
-		normalPoi(conn,pois.keySet(),subtaskId,taskId,taskType);
-//		freshVerifiedPoi(conn,freshVerPois);
-	}
+	
 	/**
-	 * 所有上传的POI，包含鲜度验证的
+	 * 
 	 * @param conn
-	 * @param pids
+	 * @param pids:全部上传的pids
+	 * @param freshPids:本次上传属于鲜度验证的pids
+	 * @param subtaskId
+	 * @param taskId
+	 * @param taskType
 	 * @throws Exception
 	 */
-	private static void normalPoi(Connection conn,Collection<Long> pids,int subtaskId,int taskId,int taskType)throws Exception{
+	public static void forCollector(Connection conn,Collection<Long> pids,Map<Long,String> freshPids,int subtaskId,int taskId,int taskType)throws Exception{
+		PreparedStatement stmt = null;
 		try{
+			//全部pids为空则无上传数据
 			if(pids==null||pids.size()==0){
 				return;
 			}
+			QueryRunner run = new QueryRunner();
+			//normalPois
+			Collection<Long> normalPois = null;
+			//freshPois
+			if(freshPids!=null&&freshPids.size()>0){
+				String freshSql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ? AND STATUS IN (0,3)";
+				stmt = conn.prepareStatement(freshSql);
+				for(Entry<Long,String> entry:freshPids.entrySet()){
+					stmt.setString(1, entry.getValue());
+					stmt.setLong(2, entry.getKey());
+					stmt.addBatch();
+				}
+				stmt.executeBatch();
+				stmt.clearBatch();
+				//计算normal poi
+				normalPois = CollectionUtils.subtract(pids, freshPids.keySet());
+			}else{
+				normalPois = pids;
+			}
+			//normalPois
+			if(normalPois!=null&&normalPois.size()>0){
+				Clob nPidsClob = ConnectionUtil.createClob(conn);
+				nPidsClob.setString(1, StringUtils.join(normalPois,","));
+				//write upload part
+				StringBuilder sb = new StringBuilder();
+				sb.append("MERGE INTO POI_EDIT_STATUS P \n");
+				sb.append("USING (SELECT TO_NUMBER(COLUMN_VALUE) PID \n");
+				sb.append("         FROM TABLE(CLOB_TO_TABLE(?))) T \n");
+				sb.append("ON (P.PID = T.PID) \n");
+				sb.append("WHEN MATCHED THEN \n");
+				sb.append("  UPDATE \n");
+				sb.append("     SET P.STATUS         = 1, \n");
+				sb.append("         P.FRESH_VERIFIED = 0, \n");
+				sb.append("         P.RAW_FIELDS     = NULL, \n");
+				sb.append("         WORK_TYPE        = 1 \n");
+				sb.append("WHEN NOT MATCHED THEN \n");
+				sb.append("  INSERT(P.PID, P.STATUS) VALUES (T.PID, 1)");
+				run.update(conn, sb.toString(), nPidsClob);
+			}
+			//write subtask part
 			Clob pidsClob = ConnectionUtil.createClob(conn);
 			pidsClob.setString(1, StringUtils.join(pids,","));
-			//write upload part
-			QueryRunner run = new QueryRunner();
-			StringBuilder sb = new StringBuilder();
-			sb.append("MERGE INTO POI_EDIT_STATUS P \n");
-			sb.append("USING (SELECT TO_NUMBER(COLUMN_VALUE) PID \n");
-			sb.append("         FROM TABLE(CLOB_TO_TABLE(?))) T \n");
-			sb.append("ON (P.PID = T.PID) \n");
-			sb.append("WHEN MATCHED THEN \n");
-			sb.append("  UPDATE \n");
-			sb.append("     SET P.STATUS         = 1, \n");
-			sb.append("         P.IS_UPLOAD      = 1, \n");
-			sb.append("         P.UPLOAD_DATE    = SYSDATE, \n");
-			sb.append("         P.FRESH_VERIFIED = 0, \n");
-			sb.append("         P.RAW_FIELDS     = NULL, \n");
-			sb.append("         WORK_TYPE        = 1 \n");
-			sb.append("WHEN NOT MATCHED THEN \n");
-			sb.append("  INSERT(P.PID, P.STATUS, P.IS_UPLOAD, P.UPLOAD_DATE) VALUES (T.PID, 1, 1, SYSDATE)");
-			run.update(conn, sb.toString(), pidsClob);
-			
-			//write subtask part
 			if(subtaskId>0){
 				if(taskType==4){//快线任务
-					String sqlQ = "UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=?,QUICK_TASK_ID=?,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					String sqlQ = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=?,QUICK_TASK_ID=?,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
 					run.update(conn, sqlQ, subtaskId,taskId,pidsClob);
 				}else if(taskType==1){//中线任务
-					String sqlM = "UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					String sqlM = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
 					run.update(conn, sqlM, subtaskId,taskId,pidsClob);
 				}
 			}else{
-				String sql4NoTask="UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				String sql4NoTask="UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
 				run.update(conn, sql4NoTask, pidsClob);
 			}
 		}catch(Exception e){
 			logger.error(e.getMessage(),e);
 			throw e;
+		}finally{
+			DbUtils.closeQuietly(stmt);
 		}
 	}
 
 	/**
-	 * 
+	 * 鲜度验证数据直接进入已作业
 	 * @param conn
 	 * @param pids：只包含鲜度验证的POI
 	 * @throws Exception
@@ -367,7 +387,7 @@ public class PoiEditStatus {
 			if(pids==null||pids.size()==0){
 				return;
 			}
-			String sql = "UPDATE POI_EDIT_STATUS SET FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ?";
+			String sql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ? AND STATUS IN (0,3)";
 			stmt = conn.prepareStatement(sql);
 			for(Entry<Long,String> entry:pids.entrySet()){
 				stmt.setString(1, entry.getValue());

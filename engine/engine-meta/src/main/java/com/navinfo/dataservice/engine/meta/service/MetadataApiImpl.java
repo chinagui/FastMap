@@ -805,6 +805,10 @@ public class MetadataApiImpl implements MetadataApi {
 		return ScPointCode2Level.getInstance().scPointCode2Level();
 	}
 	@Override
+	public Map<String, String> scPointCode2LevelOld() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2LevelOld();
+	}
+	@Override
 	public JSONObject getAdminMap() throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea();
 		return areaSelector.getAdminMap();

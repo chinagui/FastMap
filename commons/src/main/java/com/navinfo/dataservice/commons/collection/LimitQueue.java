@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.launcher;
+package com.navinfo.dataservice.commons.collection;
 
 import java.util.Collection; 
 import java.util.Iterator; 

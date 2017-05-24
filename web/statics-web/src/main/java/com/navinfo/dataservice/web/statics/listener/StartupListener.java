@@ -21,7 +21,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				@Override
 				public void run() {
 					try{
-						MsgSubscriber.getInstance().subscribeFromWorkQueue("Statics_Result", new StaticsResulthandler(), null);
+						MsgSubscriber.getInstance().subscribeFromWorkQueue("stat_job_result", new StaticsResulthandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();
@@ -32,7 +32,7 @@ public class StartupListener implements ApplicationListener<ContextRefreshedEven
 				@Override
 				public void run() {
 					try{
-						MsgSubscriber.getInstance().subscribeFromWorkQueue("Statics_Job_End", new StatJobEndHandler(), null);
+						MsgSubscriber.getInstance().subscribeFromWorkQueue("stat_job_end", new StatJobEndHandler(), null);
 					}catch(Exception e){
 						System.out.println(e.getMessage());
 						e.printStackTrace();

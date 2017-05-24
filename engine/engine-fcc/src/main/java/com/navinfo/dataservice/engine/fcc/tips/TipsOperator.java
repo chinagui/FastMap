@@ -206,7 +206,9 @@ public class TipsOperator {
 
 			String rowkey = json.getString("rowkey");
 
-			int status = json.getInt("status");
+//			int status = json.getInt("status");
+//
+//			int oldStatus = json.getInt("oldStatus");
 
 			JSONObject updateKeyValues = new JSONObject(); // 被修改的tips字段的值
 
@@ -214,105 +216,127 @@ public class TipsOperator {
 
 			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
-			JSONObject jsonTrackInfo = new JSONObject();
+			JSONObject jsonTrackInfo = null;
 
 			JSONObject value = new JSONObject();
 
-			// 日编
-			if ((status == 0 || status == 1) && "d".equals(mdFlag)) {
+            int editStatus = json.getInt("editStatus");
+            int editMeth = json.getInt("editMeth");
 
-				if (status == 0) {
-
-					jsonTrackInfo.put("stage", 1);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_dInProc", 0); 
-				}
-				if (status == 1) {
-
-					jsonTrackInfo.put("stage", 2);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_dInProc", 0); 
-
-				}
-
-				value.put("t_dStatus", status);
-
-				value.put("t_date", date);
-
-			}
-			// 月编
-			else if ((status == 0 || status == 1) && "m".equals(mdFlag)) {
-
-				if (status == 0) {
-
-					jsonTrackInfo.put("stage", 2);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_mInProc", 0);
-
-				}
-				if (status == 1) {
-
-					jsonTrackInfo.put("stage", 3);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_mInProc", 0);
-
-				}
-
-				value.put("t_mStatus", status);
-
-			}
-			// 有问题待确认
-			else if (status == 2) {
-
-				if ("d".equals(mdFlag)) {
-
-					jsonTrackInfo.put("stage", 1);// 有问题 则stage需要改为1 未作业(日编)
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-
-					value.put("t_dStatus", 0); // 未作业
-					
-					value.put("t_dInProc", 1); // 有问题待确认
-					
-				} else if ("m".equals(mdFlag)) {
-
-					jsonTrackInfo.put("stage", 2);// 有问题 则stage需要改为2未作业(月编)
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-
-					value.put("t_mStatus", 0); // 未作业
-					
-					value.put("t_mInProc", 1); // 有问题待确认
-				}
-
-
-			}
+            int stage = 2;
+            if(mdFlag.equals("d")) {//日编
+                value.put("t_dEditStatus", editStatus);
+                value.put("t_dEditMeth", editMeth);
+            }else if(mdFlag.equals("m")) {//月编
+                stage = 3;
+                value.put("t_mEditStatus", editStatus);
+                value.put("t_mEditMeth", editMeth);
+            }
+            if(oldStatus == 0) { //未完成,增加一条track记录
+                if(editStatus != 0) {
+                    jsonTrackInfo = new JSONObject();
+                    jsonTrackInfo.put("stage", stage);
+                    jsonTrackInfo.put("date", date);
+                    jsonTrackInfo.put("handler", handler);
+                }
+            }
+//			// 日编
+//			if ((status == 0 || status == 1) && "d".equals(mdFlag)) {
+//
+//				if (status == 0) {
+//
+//					jsonTrackInfo.put("stage", 1);
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_dInProc", 0);
+//				}
+//				if (status == 1) {
+//
+//					jsonTrackInfo.put("stage", 2);
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_dInProc", 0);
+//
+//				}
+//
+//				value.put("t_dStatus", status);
+//
+//				value.put("t_date", date);
+//
+//			}
+//			// 月编
+//			else if ((status == 0 || status == 1) && "m".equals(mdFlag)) {
+//
+//				if (status == 0) {
+//
+//					jsonTrackInfo.put("stage", 2);
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_mInProc", 0);
+//
+//				}
+//				if (status == 1) {
+//
+//					jsonTrackInfo.put("stage", 3);
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_mInProc", 0);
+//
+//				}
+//
+//				value.put("t_mStatus", status);
+//
+//			}
+//			// 有问题待确认
+//			else if (status == 2) {
+//
+//				if ("d".equals(mdFlag)) {
+//
+//					jsonTrackInfo.put("stage", 1);// 有问题 则stage需要改为1 未作业(日编)
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_dStatus", 0); // 未作业
+//
+//					value.put("t_dInProc", 1); // 有问题待确认
+//
+//				} else if ("m".equals(mdFlag)) {
+//
+//					jsonTrackInfo.put("stage", 2);// 有问题 则stage需要改为2未作业(月编)
+//
+//					jsonTrackInfo.put("date", date);
+//
+//					jsonTrackInfo.put("handler", handler);
+//
+//					value.put("t_mStatus", 0); // 未作业
+//
+//					value.put("t_mInProc", 1); // 有问题待确认
+//				}
+//
+//
+//			}
 
 			//value.put("t_lifecycle", 2);  20170302和玉秀确认内业的需改不更新t_lifecycle
 
 			value.put("t_date", date);
 
-			value.put("t_trackInfo", jsonTrackInfo);
+            if(jsonTrackInfo != null) {
+                value.put("t_trackInfo", jsonTrackInfo);
+            }
 
 			updateKeyValues.put("track", value);
 
@@ -363,31 +387,27 @@ public class TipsOperator {
 					Set<String> updateTrackFiledsName = trackValues.keySet(); // 被修改的属性
 
 					// 1.1trackInfo特殊处理
-					JSONObject jsonTrackInfo = trackValues
-							.getJSONObject("t_trackInfo");
+                    if(trackValues.containsKey("t_trackInfo")) {
+                        JSONObject jsonTrackInfo = trackValues
+                                .getJSONObject("t_trackInfo");
+                        JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
 
-					JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-					// 更新hbase 增一个trackInfo
-					trackInfoArr.add(jsonTrackInfo);
-
-					track.put("t_trackInfo", trackInfoArr);
+                        // 更新hbase 增一个trackInfo
+                        trackInfoArr.add(jsonTrackInfo);
+                        track.put("t_trackInfo", trackInfoArr);
+                    }
 
 					// 1.2更新track的其他字段
 					for (String filedName : updateTrackFiledsName) {
-
 						if ("t_trackInfo".equals(filedName)) {
 							continue;
 						}
-
 						track.put(filedName, trackValues.get(filedName));
-
 					}
 
 					// 1.3hbase 更新track
 					put.addColumn("data".getBytes(), "track".getBytes(), track
 							.toString().getBytes());
-
 				}
 
 				// track和feedback外的其他字段直接更新（这个地方需要补充呢，如果是feebback？？）

@@ -7,6 +7,7 @@ import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTenant;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
+import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.DAOException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -135,7 +136,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
             
         } catch (Exception e) {
             logger.error("method loadFaceByBuildingPid error. [ sql : " + sql + " ] ");
-            throw e;
+            throw new DAOException(e.getMessage());
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(pstmt);
@@ -161,5 +162,34 @@ public class CmgBuildfaceSelector extends AbstractSelector {
 
             result.add(cmgBuildface);
         }
+    }
+
+    /**
+     * 计算与指定几何相交的市街图面数量
+     * @param wkt 几何
+     * @param isLock 是否加锁
+     * @return 相交面数量
+     */
+    public int countCmgBuildface(String wkt, boolean isLock) throws SQLException {
+        int count = 0;
+        String sql = "SELECT COUNT(1) NUM FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
+                + "'TRUE' AND T.U_RECORD <> 2";
+        PreparedStatement pstmt = null;
+        ResultSet resultSet = null;
+        try {
+            pstmt = getConn().prepareStatement(sql);
+            pstmt.setString(1, wkt);
+            resultSet = pstmt.executeQuery();
+            while (resultSet.next()) {
+                count = resultSet.getInt("num");
+            }
+        } catch (SQLException e){
+            logger.error("计算与指定几何相交的市街图面数量出错", e);
+            throw new DAOException(e.getMessage());
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+        return count;
     }
 }

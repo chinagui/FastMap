@@ -116,7 +116,10 @@ public class LcLinkSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		String sql = "with tmp as (select a.link_pid, max(b.kind) as kind from lc_link a, lc_link_kind b where sdo_within_distance(a.geometry, sdo_geometry(:1, 8307), 'DISTANCE=0') = 'TRUE' and a.link_pid = b.link_pid and a.u_record != 2 and b.u_record != 2 group by a.link_pid) select t2.link_pid, t2.geometry, t2.s_node_pid, t2.e_node_pid, t1.kind from tmp t1, lc_link t2 where t1.link_pid = t2.link_pid";
+		String sql = "WITH TMP AS (SELECT LL.LINK_PID, WM_CONCAT(LLK.KIND) KIND FROM LC_LINK LL, LC_LINK_KIND LLK WHERE "
+                + "SDO_WITHIN_DISTANCE(LL.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND LL.LINK_PID = LLK.LINK_PID "
+                + "AND LL.U_RECORD <> 2 AND LLK.U_RECORD <> 2 GROUP BY LL.LINK_PID) SELECT T1.LINK_PID, T1.GEOMETRY, T1.S_NODE_PID, "
+                + "T1.E_NODE_PID, T2.KIND FROM LC_LINK T1, TMP T2 WHERE T1.LINK_PID = T2.LINK_PID";
 
 		PreparedStatement pstmt = null;
 
@@ -144,7 +147,7 @@ public class LcLinkSearch implements ISearch {
 
 				m.put("b", resultSet.getInt("e_node_pid"));
 
-				m.put("c", resultSet.getInt("kind"));
+				m.put("c", resultSet.getString("kind"));
 
 				snapshot.setM(m);
 

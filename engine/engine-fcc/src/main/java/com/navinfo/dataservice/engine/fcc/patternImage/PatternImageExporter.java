@@ -175,9 +175,15 @@ public class PatternImageExporter {
         try{
             conn = DBConnector.getInstance().getMetaConnection();
 
-            String namesString = names.toString().replace("[", "").replace("]", "");
+            StringBuilder builder = new StringBuilder();
+            for(String name : names) {
+                if(builder.length() > 0) {
+                    builder.append(",");
+                }
+                builder.append(name);
+            }
             Clob clob = ConnectionUtil.createClob(conn);
-            clob.setString(1, namesString);
+            clob.setString(1, builder.toString());
             sql += " file_name in (select to_char(column_value) from table(clob_to_table(?)))";
 
             PreparedStatement prep = sqliteConn.prepareStatement(insertSql);

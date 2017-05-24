@@ -3373,9 +3373,10 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
+			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
 			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
-			
+			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",taskId="+task.getTaskId()+",wkt="+wkt);
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
 			//修改无任务转中操作状态为 1已转

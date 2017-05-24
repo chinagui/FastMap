@@ -114,11 +114,12 @@ public class DefaultWriter {
 	public void  createMongoSelfIndex(MongoDatabase md,String collectionName){}
 	/**
 	 * 发送任务结束消息
+	 * {'jobType':'','timestamp':'20170523190000'}
 	 * @param jobName
 	 * @throws Exception 
 	 */
 	public void pushEndMsg(String jobName) throws Exception{
 		log.info(jobName+" end(execute+write)");
-		MsgPublisher.publish2WorkQueue("Statics_Job_End", jobName);
+		MsgPublisher.publish2WorkQueue("stat_job_end", jobName);
 	}
 }

@@ -6,7 +6,7 @@ package com.navinfo.dataservice.engine.statics.writer;
  *
  */
 public class WriterFactory {
-	public static DefaultWriter createWriter(String JobName){
+	public static DefaultWriter createWriter(String jobType){
 		return new DefaultWriter();		
 	}
 }

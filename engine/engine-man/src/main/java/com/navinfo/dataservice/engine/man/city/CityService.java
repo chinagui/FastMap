@@ -197,16 +197,50 @@ public class CityService {
 				}
 	    		
 	    	}		;				
-			return run.query(conn, 
-					   selectSql,
-					   rsHandler, 
-					   json.getInt("cityId"));
+	    	HashMap<String,Object> result = run.query(conn, selectSql,rsHandler, json.getInt("cityId"));
+			Map<Integer,Integer> gridMap = getGridMapByCityId(conn,json.getInt("cityId"));
+			result.put("gridIds", gridMap);
+			return result;
+			
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param cityId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<Integer, Integer> getGridMapByCityId(Connection conn, int cityId) throws ServiceException {
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.CITY_ID = " + cityId;
+			log.info("getGridMapByBlockId sql:" + selectSql);
+			
+			ResultSetHandler<Map<Integer, Integer>> rsHandler = new ResultSetHandler<Map<Integer, Integer>>() {
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+					while (rs.next()) {
+						result.put(rs.getInt("GRID_ID"), 1);
+					}
+					return result;
+				}
+
+			};
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getGridMapByCityId:" + e.getMessage(), e);
 		}
 	}
 

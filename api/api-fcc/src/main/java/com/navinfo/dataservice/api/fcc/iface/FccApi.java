@@ -91,4 +91,10 @@ public interface FccApi {
      * @throws Exception
      */
     public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
+
+	/**
+	 * @param collectTaskSet
+	 * @return
+	 */
+	public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet);
 }

@@ -230,8 +230,8 @@ public class BlockController extends BaseController {
 			
 			int blockId = dataJson.getInt("blockId");
 
-			JSONObject geo = service.queryWktByBlockId(blockId);
-			return new ModelAndView("jsonView", success(geo));
+			Map<String,Object> result = service.queryWktByBlockId(blockId);
+			return new ModelAndView("jsonView", success(result));
 		} catch (Exception e) {
 			log.error("获取明细失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

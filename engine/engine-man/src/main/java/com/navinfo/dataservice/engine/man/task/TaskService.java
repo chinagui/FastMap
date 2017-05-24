@@ -44,6 +44,7 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -451,11 +452,26 @@ public class TaskService {
 					for(Integer taskId:pushCmsTask){
 						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 						if(phaseList!=null&&phaseList.size()>0){continue;}
-						createCmsProgress(conn,taskId,1);
-						createCmsProgress(conn,taskId,2);
-						createCmsProgress(conn,taskId,3);
-						createCmsProgress(conn,taskId,4);
+						
+						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
+						Set<Integer> meshIdSet = new HashSet<Integer>();
+//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+						
+						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
+						for(Integer gridId:gridIdList){
+							meshIdSet.add(gridId/100);
+						}
+						
+						JSONObject parameter = new JSONObject();
+						parameter.put("meshIds", meshIdSet);
+						
+						createCmsProgress(conn,taskId,1,parameter);
+						createCmsProgress(conn,taskId,2,parameter);
+						createCmsProgress(conn,taskId,3,parameter);
+						createCmsProgress(conn,taskId,4,parameter);
 						conn.commit();
+						
 						phaseList = queryTaskCmsProgress(taskId);
 						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
 						for(Map<String, Integer> phaseTmp:phaseList){
@@ -2868,18 +2884,29 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
+//			String selectSql = "SELECT T.PHASE_ID,"
+//					+ "       T.TASK_ID,"
+//					+ "       M.GRID_ID,"
+//					+ "       T.PHASE,"
+//					+ "       TS.REGION_ID,"
+//					+ "       TS.CREATE_USER_ID,"
+//					+ "       U.USER_NICK_NAME"
+//					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+//					+ " WHERE T.PHASE_ID = "+phaseId
+//					+ "   AND T.TASK_ID = TS.TASK_ID"
+//					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
+//					+ "   AND T.TASK_ID = M.TASK_ID ";
 			String selectSql = "SELECT T.PHASE_ID,"
 					+ "       T.TASK_ID,"
-					+ "       M.GRID_ID,"
+					+ "       T.PARAMETER,"
 					+ "       T.PHASE,"
 					+ "       TS.REGION_ID,"
 					+ "       TS.CREATE_USER_ID,"
 					+ "       U.USER_NICK_NAME"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK TS, USER_INFO U"
 					+ " WHERE T.PHASE_ID = "+phaseId
 					+ "   AND T.TASK_ID = TS.TASK_ID"
-					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
-					+ "   AND T.TASK_ID = M.TASK_ID ";
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
@@ -2891,17 +2918,25 @@ public class TaskService {
 						progress.setUserNickName(rs.getString("user_nick_name"));
 						progress.setRegionId(rs.getInt("region_id"));
 						
-						if(progress.getGridIds()==null){
-							progress.setGridIds(new HashSet<Integer>());
+						JSONObject parameter = JSONObject.fromObject(rs.getString("PARAMETER"));
+						if(parameter.containsKey("meshIds")){
+							List<Integer> meshIds = (List<Integer>) JSONArray.toCollection((JSONArray) parameter.get("meshIds"));
+							Set<Integer> meshIdSet = new HashSet<Integer>();
+							meshIdSet.addAll(meshIds);
+							progress.setMeshIds(meshIdSet);
 						}
-						int gridId=rs.getInt("GRID_ID");
-						progress.getGridIds().add(gridId);
-						if(progress.getMeshIds()==null){
-							progress.setMeshIds(new HashSet<Integer>());
-						}
-						String gridStr=String.valueOf(gridId);
-						String mesh=gridStr.substring(0,gridStr.length()-2);
-						progress.getMeshIds().add(Integer.valueOf(mesh));
+						
+//						if(progress.getGridIds()==null){
+//							progress.setGridIds(new HashSet<Integer>());
+//						}
+//						int gridId=rs.getInt("GRID_ID");
+//						progress.getGridIds().add(gridId);
+//						if(progress.getMeshIds()==null){
+//							progress.setMeshIds(new HashSet<Integer>());
+//						}
+//						String gridStr=String.valueOf(gridId);
+//						String mesh=gridStr.substring(0,gridStr.length()-2);
+//						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
 					return progress;
 				}
@@ -2947,18 +2982,23 @@ public class TaskService {
 	
 	/**
 	 * 创建cmsProgress
+	 * @param parameter 
 	 * @param phaseId
 	 * @return
 	 * @throws Exception 
 	 */
-	public void createCmsProgress(Connection conn,int taskId,int phase) throws Exception {
+	public void createCmsProgress(Connection conn,int taskId,int phase, JSONObject parameter) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "INSERT INTO TASK_CMS_PROGRESS P"
-					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
+					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID,PARAMETER)"
 					+ "VALUES"
-					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL)" ;
-			run.update(conn, selectSql);
+					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL,?)" ;
+			Clob clob=null;
+			clob = conn.createClob();
+			clob.setString(1, parameter.toString());
+			
+			run.update(conn, selectSql,clob);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);

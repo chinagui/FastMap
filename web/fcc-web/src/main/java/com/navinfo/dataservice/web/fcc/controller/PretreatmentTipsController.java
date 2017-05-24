@@ -348,20 +348,13 @@ public class PretreatmentTipsController extends BaseController {
 
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-		/*	JSONArray grids = jsonReq.getJSONArray("grids");
-
-
-			if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }*/
-
-			//int user = getUserIdFromRequest(request);  //不能用token是应为token需要改web.xml增加token的Filter配置。这样一来 所有的接口都需要token，但是采集端 的几口没有token会报错
-			
 			int user = jsonReq.getInt("user");
-			
+
+			int subTaskId = jsonReq.getInt("subTaskId");
+
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submit2Web( user);
+			op.submit2Web(user, subTaskId);
 
 			return new ModelAndView("jsonView", success());
 

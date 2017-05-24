@@ -112,22 +112,80 @@ public class TipsRequestParam {
         return builder.toString();
     }
 
-    public String getStatusByWkt(String parameter, boolean filterDelete) {
+    public String getTipsDayTotal(String parameter) throws Exception {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        String wkt = jsonReq.getString("wkt");
 
+        //solr查询语句
         StringBuilder builder = new StringBuilder();
-        builder.append("wktLocation:\"intersects(" + wkt + ")\" ");
 
-        if (filterDelete) {
-            // 过滤删除的数据
-            builder.append(" AND -t_lifecycle:1 ");
+        if(jsonReq.containsKey("grids")) {
+            JSONArray grids = jsonReq.getJSONArray("grids");
+            String wkt = GridUtils.grids2Wkt(grids);
+            builder.append("wkt:\"intersects(" + wkt + ")\"");
         }
 
+        if(jsonReq.containsKey("wkt")) {
+            String wkt = jsonReq.getString("wkt");
+            if(builder.length() > 0) {
+                builder.append(" AND wkt:\"intersects(" + wkt + ")\"");
+            } else {
+                builder.append("wkt:\"intersects(" + wkt + ")\"");
+            }
+        }
+
+        if(jsonReq.containsKey("subtaskId")) {
+            int subtaskId = jsonReq.getInt("subtaskId");
+            Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+            if (taskSet != null && taskSet.size() > 0) {
+                this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+            }
+        }else if(jsonReq.containsKey("taskIds")) {
+            JSONArray taskSet = jsonReq.getJSONArray("taskIds");
+            if (taskSet != null && taskSet.size() > 0) {
+                this.getSolrIntArrayQuery(builder, taskSet, "s_qTaskId");
+            }
+        }
+
+        //315过滤
         this.getFilter315(builder);
+
+        String statType = jsonReq.getString("statType");
+        if(statType.equals("total")) {//日编所有Tips
+            if(builder.length() > 0) {
+                builder.append(" AND ");
+            }
+            builder.append("(");
+            builder.append("(stage:(1 5 6) AND t_tipStatus:2)");
+            builder.append(" OR ");
+            builder.append("stage:2");
+            builder.append(")");
+        }else if(statType.equals("dFinished")) {//日编已完成
+            if(builder.length() > 0) {
+                builder.append(" AND ");
+            }
+            builder.append("stage:2 AND t_dEditStatus:2");
+        }
 
         return builder.toString();
     }
+
+//     20170523 和于桐万冲确认该接口取消
+//    public String getStatusByWkt(String parameter, boolean filterDelete) {
+//        JSONObject jsonReq = JSONObject.fromObject(parameter);
+//        String wkt = jsonReq.getString("wkt");
+//
+//        StringBuilder builder = new StringBuilder();
+//        builder.append("wktLocation:\"intersects(" + wkt + ")\" ");
+//
+//        if (filterDelete) {
+//            // 过滤删除的数据
+//            builder.append(" AND -t_lifecycle:1 ");
+//        }
+//
+//        this.getFilter315(builder);
+//
+//        return builder.toString();
+//    }
 
     public String getByTileWithGap(String parameter, boolean filterDelete) {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -135,21 +193,59 @@ public class TipsRequestParam {
         int y = jsonReq.getInt("y");
         int z = jsonReq.getInt("z");
         int gap = jsonReq.getInt("gap");
-        String mdFlag = jsonReq.getString("mdFlag");
+
+        String mdFlag = null;
+        if(jsonReq.containsKey("mdFlag")) {
+            mdFlag = jsonReq.getString("mdFlag");
+        }
+        String pType = null;
+        if(jsonReq.containsKey("pType")){
+            pType = jsonReq.getString("pType");
+        }
 
         JSONArray types = new JSONArray();
         if (jsonReq.containsKey("types")) {
             types = jsonReq.getJSONArray("types");
         }
 
-        JSONArray stages = new JSONArray();
-        if (jsonReq.containsKey("stage")) {
-            stages = jsonReq.getJSONArray("stage");
-        }
-
         JSONArray noQFilter = new JSONArray();
         if (jsonReq.containsKey("noQFilter")) {
             noQFilter = jsonReq.getJSONArray("noQFilter");
+        }
+
+        JSONArray stages = new JSONArray();
+        if(StringUtils.isNotEmpty(pType)) {
+            if(pType.equals("sl")) {//矢量化 赵航
+                stages.add(0);
+                stages.add(1);
+                stages.add(6);
+            }else if(pType.equals("ms")) {//生产管理 万冲
+                stages.add(0);
+                stages.add(1);
+                stages.add(2);
+                stages.add(3);
+                stages.add(6);
+                stages.add(7);
+                stages.add(8);
+            }else if(pType.equals("fc")) {//FC 预处理 钟小明
+                stages.add(1);
+                stages.add(2);
+                stages.add(3);
+                stages.add(5);
+                stages.add(6);
+            }
+        }else {//web 刘哲
+            if ("d".equals(mdFlag)) {//日编
+                stages.add(1);
+                stages.add(2);
+                stages.add(5);
+                stages.add(6);
+            } else if ("m".equals(mdFlag)) {//月编
+                stages.add(1);
+                stages.add(3);
+                stages.add(5);
+                stages.add(6);
+            }
         }
 
         StringBuilder builder = new StringBuilder();
@@ -161,30 +257,37 @@ public class TipsRequestParam {
             builder.append(" AND -t_lifecycle:1 ");
         }
 
-        if (stages.size() > 0) {
-            this.getSolrIntArrayQuery(builder, stages, "stage");
-        }
-
         if (types.size() > 0) {
             this.getSolrStringArrayQuery(builder, types, "s_sourceType");
         }
 
-        //20170510 增加中线有无过滤
-        addTaskFilterSql(noQFilter, builder);
-
-        //TODO 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
-//        if (!isPre) {
-//
-//            if ("".equals(builder.toString())) {
-//                builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
-//
-//                builder.append(" -(t_fStatus:0 AND stage:6 )");  //情报矢量化的  不查询t_fStatus为0的
-//            } else {
-//                builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
-//
-//                builder.append(" AND -(t_fStatus:0 AND stage:6 )"); ////情报矢量化的  不查询t_fStatus为0的
-//            }
-//        }
+        if (stages.size() > 0) {
+            this.getSolrIntArrayQuery(builder, stages, "stage");
+            if(StringUtils.isNotEmpty(pType)) {
+                if(pType.equals("sl")) {//矢量化 赵航
+                }else if(pType.equals("ms")) {//生产管理 万冲
+                    if(builder.length() > 0) {
+                        builder.append(" AND t_tipStatus:2");
+                    }else{
+                        builder.append("t_tipStatus:2");
+                    }
+                    //20170510 增加中线有无过滤
+                    addTaskFilterSql(noQFilter, builder);
+                }else if(pType.equals("fc")) {//FC 预处理 钟小明
+                    if(builder.length() > 0) {
+                        builder.append(" AND t_tipStatus:(1 2)");
+                    }else{
+                        builder.append("t_tipStatus:(1 2)");
+                    }
+                }
+            }else {//web 刘哲
+                if(builder.length() > 0) {
+                    builder.append(" AND t_tipStatus:2");
+                }else{
+                    builder.append("t_tipStatus:2");
+                }
+            }
+        }
 
         // 过滤315 web不显示的tips 20170118
         this.getFilter315(builder);
@@ -192,6 +295,24 @@ public class TipsRequestParam {
         return builder.toString();
     }
 
+    public String getTipsCheck(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        JSONArray grids = jsonReq.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(grids);
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("wkt:\"intersects(" + wkt + ")\"");
+
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        if (taskSet != null && taskSet.size() > 0) {
+            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        }
+
+        return builder.toString();
+    }
 
     /**
      * 根据子任务号获取采集任务ID

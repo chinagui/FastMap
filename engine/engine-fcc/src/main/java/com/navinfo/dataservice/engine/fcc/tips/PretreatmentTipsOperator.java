@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -688,17 +689,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-16 上午11:29:03
 	 */
-	public void submit2Web(int user) throws Exception {
+	public void submit2Web(int user, int subTaskId) throws Exception {
 
 		try {
 
-			// String wkt = GridUtils.grids2Wkt(grids);
+			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 
-			// List<JSONObject>
-			// snapshots=solr.queryHasNotSubmitPreTipsByWktAndUser(wkt,user);
+			Subtask subtask = apiService.queryBySubtaskId(subTaskId);
 
 			List<JSONObject> snapshots = solr
-					.queryHasNotSubmitPreTipsByWktAndUser(user);
+					.queryHasNotSubmitPreTipsByWktAndUser(user, subtask.getGeometry());
 
 			String currentDate = StringUtils.getCurrentTime();
 
@@ -716,11 +716,11 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				gets.add(get);
 
-				solrIndex.put("t_tipStatus", 2); // 更新t_pStatus=1
+				solrIndex.put("t_tipStatus", 2); // 更新t_tipStatus
 
 				solrIndex.put("t_date", currentDate); // 更新t_date
 
-				solrIndex.put("t_lifecycle", 2);
+//				solrIndex.put("t_lifecycle", 2);//不变
 
 				solr.addTips(solrIndex);
 
@@ -755,7 +755,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				track.put("t_trackInfo", trackInfoArr);
 
-				track.put("t_lifecycle", 2);
+//				track.put("t_lifecycle", 2);//不变
 
 				track.put("t_tipStatus", 2); // 已提交
 
@@ -1310,8 +1310,8 @@ System.out.println(sGeojson2);
 		track.put("t_trackInfo", trackInfoArr);
 
 		track.put("t_date", date);// 修改时间，为服务的当前时间
-
-        track.put("t_tipStatus", 1);
+//       前端维护
+//        track.put("t_tipStatus", 1);
 
 		put.addColumn("data".getBytes(), "track".getBytes(), track.toString()
 				.getBytes());
@@ -1811,7 +1811,7 @@ System.out.println(sGeojson2);
 			else if(taskType == TaskType.M_TASK_TYPE){
 				taskType=TaskType.M_SUB_TASK_TYPE;
 			}
-			
+
 			else {
 				throw new Exception("不支持的任务类型：" + taskType);
 			}
@@ -1823,13 +1823,13 @@ System.out.println(sGeojson2);
 
 				String rowkey = json.getString("id");
 
-				json.put("t_fStatus", 1); // 是否完成多源融合 0 否；1 是；
+				json.put("t_tipStatus", 2); // 是否完成多源融合 0 否；1 是；
 
 				JSONObject old = getOldTips(rowkey, htab);
 
 				JSONObject oldTrack = old.getJSONObject("track");
 
-				oldTrack.put("t_fStatus", 1);
+				oldTrack.put("t_tipStatus", 2);
 
 				// put
 				Put put = new Put(rowkey.getBytes());
@@ -1883,19 +1883,20 @@ System.out.println(sGeojson2);
 
     public static void main(String[] args) throws Exception {
         PretreatmentTipsOperator operator = new PretreatmentTipsOperator();
-        String location = "{\"type\":\"LineString\",\"coordinates\":[[116.33056,39.87161],[116.33129,39.87157]]}";
-        JSONObject oldGeo = JSONObject.fromObject(location);
-        String pointStr ="{\"type\":\"Point\",\"coordinates\":[116.33129163010436,39.87157335577523]}";
-        JSONObject pointJson = JSONObject.fromObject(pointStr);
-        Point point = (Point) GeoTranslator.geojson2Jts(pointJson);
-        List<JSONObject> cutGeoResult = operator.cutLineByPoint(point, oldGeo);
-        JSONObject geo1 = new JSONObject();
-
-        JSONObject geo2 = new JSONObject();
-
-        JSONObject g_location1 = cutGeoResult.get(0);
-
-        JSONObject g_location2 = cutGeoResult.get(1);
-        System.out.println(g_location2);
+//        String location = "{\"type\":\"LineString\",\"coordinates\":[[116.33056,39.87161],[116.33129,39.87157]]}";
+//        JSONObject oldGeo = JSONObject.fromObject(location);
+//        String pointStr ="{\"type\":\"Point\",\"coordinates\":[116.33129163010436,39.87157335577523]}";
+//        JSONObject pointJson = JSONObject.fromObject(pointStr);
+//        Point point = (Point) GeoTranslator.geojson2Jts(pointJson);
+//        List<JSONObject> cutGeoResult = operator.cutLineByPoint(point, oldGeo);
+//        JSONObject geo1 = new JSONObject();
+//
+//        JSONObject geo2 = new JSONObject();
+//
+//        JSONObject g_location1 = cutGeoResult.get(0);
+//
+//        JSONObject g_location2 = cutGeoResult.get(1);
+//        System.out.println(g_location2);
+		operator.submitInfoJobTips2Web( 1664,57);
     }
 }

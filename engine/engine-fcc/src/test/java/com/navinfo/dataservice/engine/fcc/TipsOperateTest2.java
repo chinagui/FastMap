@@ -425,7 +425,7 @@ public class TipsOperateTest2 extends InitApplication{
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 			
-			op.submit2Web(user);
+			op.submit2Web(user, 1);
 			
 			System.out.println("提交成功");
 		}catch (Exception e) {

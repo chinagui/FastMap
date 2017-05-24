@@ -1051,10 +1051,10 @@ public class TipsUpload {
 		 * 
 		 * System.out.println("成功");
 		 */
-		JSONObject json = new JSONObject();
-		json.put("g_guide",
-				"{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
+//		JSONObject json = new JSONObject();
+//		json.put("g_guide",
+//				"{\"type\":\"Point\",\"coordinates\":[116.48138,40.01351]}");
 		TipsUpload l = new TipsUpload(0);
-		l.run("F:\\FCC\\tips.txt", null, null);
+		l.run("F:\\FCC\\11151449646061.txt", null, null);
 	}
 }

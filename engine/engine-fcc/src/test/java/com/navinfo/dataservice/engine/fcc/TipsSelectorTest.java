@@ -131,7 +131,7 @@ public class TipsSelectorTest extends InitApplication {
 
 		try{
 			String wkt = GridUtils.grids2Wkt(grids);
-			List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,isPre);
+			List<JSONObject> tips = null;//conn.queryTipsWeb(wkt, type, stages,isPre);
 
 			for (JSONObject jsonObject : tips) {
 				System.out.println("kind:"+jsonObject.getString("s_sourceType")+"-------"+jsonObject.get("id"));
@@ -245,10 +245,9 @@ public class TipsSelectorTest extends InitApplication {
 			//{"gap":40,"mdFlag":"d","z":14,"x":13492,"y":6201}
 
 //			access_token=0000042XJ2MYPIALCDCDC2D9968453C1965F44BB23CA455F
-//					parameter={"mdFlag":"d","gap":10,"types":["1107","1201","1202","1203","1702","2001","1901","2101","1601","1803","1301","1507"],"x":108944,"y":52057,"z":17}
+			String parameter= "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1107\",\"1201\",\"1202\",\"1203\",\"1702\",\"2001\",\"1901\",\"2101\",\"1601\",\"1803\",\"1301\",\"1507\"],\"x\":108944,\"y\":52057,\"z\":17}";
 
-//			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(108944, 52057, 17,
-//					10, types,"d","wktLocation",null));
+			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(parameter));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -484,7 +483,7 @@ public class TipsSelectorTest extends InitApplication {
 			//wkt = GridUtils.grids2Wkt(grids);
 
 			wkt="";
-			List<JSONObject> tips = conn.queryTipsWeb(wkt, type, stages,false);
+			List<JSONObject> tips = null;//conn.queryTipsWeb(wkt, type, stages,false);
 			if(tips==null||tips.size()==0){
 				System.out.println("type:"+type+"在"+grids+"没有找到");
 			}
@@ -685,23 +684,23 @@ public class TipsSelectorTest extends InitApplication {
 		}*/
 
 
-	//@Test
-	public void testSubTaskCount(){
-		FccApiImpl imp=new  FccApiImpl();
-		JSONArray grids=new JSONArray();
-		grids.add(60560302);
-		grids.add(59567332);
-		grids.add(59567322);
-		JSONObject result;
-		try {
-			result = imp.getSubTaskStats(grids);
-			System.out.println(result);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
+//	//@Test
+//	public void testSubTaskCount(){
+//		FccApiImpl imp=new  FccApiImpl();
+//		JSONArray grids=new JSONArray();
+//		grids.add(60560302);
+//		grids.add(59567332);
+//		grids.add(59567322);
+//		JSONObject result;
+//		try {
+//			result = imp.getSubTaskStats(grids);
+//			System.out.println(result);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//
+//	}
 
 	//修改一下solr中的所有数据的wkt
 	public static void main2(String[] args) {

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.statics.job;
+package com.navinfo.dataservice.job.statics.job;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,27 +19,31 @@ import net.sf.json.JSONObject;
 import com.navinfo.dataservice.api.job.model.JobInfo;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.engine.statics.job.model.PoiDailyDbObj;
 import com.navinfo.dataservice.engine.statics.poicollect.PoiCollectStat;
 import com.navinfo.dataservice.engine.statics.tools.OracleDao;
+import com.navinfo.dataservice.job.statics.AbstractStatJob;
+import com.navinfo.dataservice.job.statics.job.model.PoiDailyDbObj;
+import com.navinfo.dataservice.job.statics.job.model.PoiTaskDbObj;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
 import com.navinfo.navicommons.exception.ServiceException;
 
-public class PoiDailyDbJob  extends AbstractJob{
+public class PoiDayStaticsJob  extends AbstractStatJob{
 
-	public PoiDailyDbJob(JobInfo jobInfo) {
+	public PoiDayStaticsJob(JobInfo jobInfo) {
 		super(jobInfo);
 		// TODO Auto-generated constructor stub
 	}
 
 	@Override
-	public void execute() throws JobException{
+	public String stat() throws JobException {
+		
 		String dbName=SystemConfigFactory.getSystemConfig()
 				.getValue(PropConstant.fmStat);
-		String statTime = new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
+		//String statTime = new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
 		
-		PoiDailyDbJobRequest req=(PoiDailyDbJobRequest) request;
+		PoiDayStaticsJobRequest req=(PoiDayStaticsJobRequest) request;
+		log.info("start stat "+req.getJobType());
 		// 获得 大区库的db_id
 		List<Integer> listDbId=null;
 		try {
@@ -51,22 +55,28 @@ public class PoiDailyDbJob  extends AbstractJob{
 
 		//开启3个线程
 		ExecutorService threadPool = Executors.newFixedThreadPool(3); 
-		List<PoiDailyDbObj> staticsResult=new ArrayList<PoiDailyDbObj>();
+		List<JSONObject> staticsResultDaily=new ArrayList<JSONObject>();
+		List<JSONObject> staticsResultTask=new ArrayList<JSONObject>();
+		Map<String, List<JSONObject>> staticsResult=new HashMap<String, List<JSONObject>>();
 		try   
         {   
-			Map<Integer,Future<List<PoiDailyDbObj>>> futureList=new HashMap<Integer,Future<List<PoiDailyDbObj>>>();
+			Map<Integer,Future<Map<String, List<JSONObject>>>> futureList=new HashMap<Integer,Future<Map<String, List<JSONObject>>>>();
 			//添加任务
 	        for(int dbId:listDbId){
-				futureList.put(dbId,threadPool.submit(new SubPoiDailyDb(dbId, dbName,statTime)));
+				futureList.put(dbId,threadPool.submit(new SubPoiDailyDb(dbId, dbName,req.getTimestamp())));
 			}
 	        
 	        for(int dbId:futureList.keySet()){
-	        	Future<List<PoiDailyDbObj>> futureTmp = futureList.get(dbId);
-	        	List<PoiDailyDbObj> returnTmp=futureTmp.get();
+	        	Future<Map<String, List<JSONObject>>> futureTmp = futureList.get(dbId);
+	        	Map<String, List<JSONObject>> returnTmp=futureTmp.get();
 	        	if(returnTmp!=null&&returnTmp.size()>0){
-	        		staticsResult.addAll(returnTmp);
+        			staticsResultDaily.addAll(returnTmp.get("daily"));
+        			staticsResultTask.addAll(returnTmp.get("task"));
 	        	}
 	        }
+	        
+	        staticsResult.put("daily", staticsResultDaily);
+	        staticsResult.put("task", staticsResultTask);
         }  
         catch (Exception e)  
         {   
@@ -78,8 +88,8 @@ public class PoiDailyDbJob  extends AbstractJob{
             threadPool.shutdownNow();  
         }
 		log.info(staticsResult);
-		log.info("-- end stat:" );
-		
+		log.info("end stat "+req.getJobType());
+		return staticsResult.toString();
 	}
 
 }

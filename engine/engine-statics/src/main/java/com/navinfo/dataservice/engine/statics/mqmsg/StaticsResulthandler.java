@@ -30,11 +30,11 @@ public class StaticsResulthandler implements MsgHandler  {
 	 */
 	private void save(String message) throws Exception {
 		JSONObject messageJSON = JSONObject.fromObject(message);
-		String jobName=messageJSON.getString("jobName");
-		String statDate=messageJSON.getString("statDate");
-		log.info("start write:jobName="+jobName+",statDate="+statDate);
-		DefaultWriter writer=WriterFactory.createWriter(jobName);
+		String jobType=messageJSON.getString("jobType");
+		String timestamp=messageJSON.getString("timestamp");
+		log.info("start write:jobType="+jobType+",timestamp="+timestamp);
+		DefaultWriter writer=WriterFactory.createWriter(jobType);
 		writer.write(messageJSON);
-		log.info("end write:jobName="+jobName+",statDate="+statDate);
+		log.info("end write:jobType="+jobType+",timestamp="+timestamp);
 	}
 }

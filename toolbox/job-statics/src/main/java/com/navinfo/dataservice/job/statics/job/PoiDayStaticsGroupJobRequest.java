@@ -1,12 +1,11 @@
-package com.navinfo.dataservice.engine.statics.job;
+package com.navinfo.dataservice.job.statics.job;
 
+import com.navinfo.dataservice.job.statics.AbstractStatJobRequest;
 import com.navinfo.dataservice.jobframework.exception.JobCreateException;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJobRequest;
 
-public class PoiDailyDbJobRequest extends AbstractJobRequest {
-	private String dbName;
-	private String collectName;
+public class PoiDayStaticsGroupJobRequest extends AbstractStatJobRequest {
 
 	@Override
 	public void defineSubJobRequests() throws JobCreateException {
@@ -17,13 +16,13 @@ public class PoiDailyDbJobRequest extends AbstractJobRequest {
 	@Override
 	public String getJobType() {
 		// TODO Auto-generated method stub
-		return "PoiDailyDb";
+		return "poiDayStaticsGroup";
 	}
 
 	@Override
 	public String getJobTypeName() {
 		// TODO Auto-generated method stub
-		return "POI日库统计";
+		return "POI日库组统计";
 	}
 
 	@Override
@@ -37,21 +36,4 @@ public class PoiDailyDbJobRequest extends AbstractJobRequest {
 		// TODO Auto-generated method stub
 		
 	}
-
-	public String getDbName() {
-		return dbName;
-	}
-
-	public void setDbName(String dbName) {
-		this.dbName = dbName;
-	}
-
-	public String getCollectName() {
-		return collectName;
-	}
-
-	public void setCollectName(String collectName) {
-		this.collectName = collectName;
-	}
-	
 }

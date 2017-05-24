@@ -14,7 +14,6 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.mq.MsgPublisher;
 import com.navinfo.dataservice.engine.statics.tools.MongoDao;
-import com.navinfo.navicommons.database.sql.StringUtil;
 
 /**
  * 统计结果，默认格式为
@@ -31,42 +30,38 @@ public class DefaultWriter {
 	protected String dbName=SystemConfigFactory.getSystemConfig().getValue(PropConstant.fmStat);
 	
 	public void write(JSONObject messageJSON) throws Exception{
-		String jobName=messageJSON.getString("jobName");
-		String statDate=messageJSON.getString("statDate");
-		log.info("start write:jobName="+jobName+",statDate="+statDate);
+		String jobType=messageJSON.getString("jobType");
+		String timestamp=messageJSON.getString("timestamp");
+		log.info("start write:jobType="+jobType+",timestamp="+timestamp);
 		
-		write2Mongo(messageJSON);	
-		write2Other(messageJSON);
-		pushEndMsg(jobName);
-		log.info("end write:jobName="+jobName+",statDate="+statDate);
+		write2Mongo(timestamp,messageJSON.getJSONObject("statResult"));	
+		write2Other(timestamp,messageJSON.getJSONObject("statResult"));
+		pushEndMsg(jobType,timestamp);
+		log.info("end write:jobType="+jobType+",timestamp="+timestamp);
 	}
 	/**
 	 * 重写该方法，增加其他数据库的写入。例如调用写入oracle的方法
 	 * @param messageJSON
 	 */
-	public void write2Other(JSONObject messageJSON) {}
+	public void write2Other(String timestamp,JSONObject messageJSON) {}
 
 	/**
 	 * 统计信息写入mongo库
 	 * @param messageJSON
 	 */
-	public void write2Mongo(JSONObject messageJSON){
+	public void write2Mongo(String timestamp,JSONObject messageJSON){
 		log.info("start write2Mongo");
-		String jobName=messageJSON.getString("jobName");
-		String statDate=messageJSON.getString("statDate");
-		JSONObject resultMsg=new JSONObject();
-		resultMsg.putAll(messageJSON);
-		resultMsg.remove("jobName");
-		//根据驼峰获取collectionName jobName="poiNameStat" 返回：poi_name_stat
-		String collectionName=StringUtil.propertyToDB(jobName);
-		//初始化统计collection
-		initMongoDb(collectionName,statDate);
-		//统计信息入库
-		Document resultDoc=new Document();
-		resultDoc.putAll(resultMsg);
-
-		MongoDao md = new MongoDao(dbName);
-		md.insertOne(collectionName, resultDoc);
+		for(Object collectionNameTmp:messageJSON.keySet()){
+			String collectionName=String.valueOf(collectionNameTmp);
+			//初始化统计collection
+			initMongoDb(collectionName,timestamp);
+			//统计信息入库
+			Document resultDoc=new Document();
+			resultDoc.put(timestamp,messageJSON.getJSONArray(collectionName));
+	
+			MongoDao md = new MongoDao(dbName);
+			md.insertOne(collectionName, resultDoc);
+		}
 		log.info("end write2Mongo");
 	}
 	
@@ -118,8 +113,11 @@ public class DefaultWriter {
 	 * @param jobName
 	 * @throws Exception 
 	 */
-	public void pushEndMsg(String jobName) throws Exception{
-		log.info(jobName+" end(execute+write)");
-		MsgPublisher.publish2WorkQueue("stat_job_end", jobName);
+	public void pushEndMsg(String jobType,String timestamp) throws Exception{
+		log.info(jobType+" end(execute+write)");
+		JSONObject msg=new JSONObject();
+		msg.put("jobType", jobType);
+		msg.put("timestamp", timestamp);
+		MsgPublisher.publish2WorkQueue("stat_job_end", msg.toString());
 	}
 }

@@ -63,9 +63,7 @@ public class ImportPlan {
 	
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
-		List<Integer> taskUpdateIDs = new ArrayList<>();
 		JSONArray programUpdateIDs = new JSONArray();
-		List<Integer> blockUpdateIDs = new ArrayList<>();
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
@@ -81,6 +79,8 @@ public class ImportPlan {
 				blockPlan.creatBlockPlan(map, conn);
 				
 				int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
+				//查询reginID
+				int regionId = getRegionIdByBlockID(conn , blockID);
 				//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
 				int taskCountInBlock = blockPlan.taskCountInBlock(blockID, conn);
 				if(taskCountInBlock == 0){
@@ -88,8 +88,7 @@ public class ImportPlan {
 					SELECT_TIMES = 0;
 					Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
 					//创建三个不同类型的任务
-					taskUpdateIDs = blockPlan.creatTaskByBlockPlan(taskDataMap, conn);
-					blockUpdateIDs.add(blockID);
+					blockPlan.creatTaskByBlockPlan(taskDataMap, conn, regionId);
 				}
 			}
 			List<Map<String,Object>> programList = new ArrayList<>();
@@ -122,8 +121,8 @@ public class ImportPlan {
 		}finally{
 			DbUtils.commitAndClose(conn);
 		}
-		//更新task状态，block状态，发布项目
-		ImportPlan.updateAllDate(taskUpdateIDs, programUpdateIDs, blockUpdateIDs);
+		//发布项目
+		ImportPlan.pushProgram(programUpdateIDs);
 	}
 	
 	/**
@@ -132,20 +131,11 @@ public class ImportPlan {
 	 * 发布项目
 	 * 
 	 * */
-	public static void updateAllDate(List<Integer> taskUpdateIDs, JSONArray programUpdateIDs, List<Integer> blockUpdateIDs){
-		//创建完成后发布项目维护任务状态为草稿
-		Connection conn = null;
+	public static void pushProgram(JSONArray programUpdateIDs){
+		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
 		try {
-			
-			conn = DBConnector.getInstance().getManConnection();
 			if(programUpdateIDs.size() > 0){
 				ProgramService.getInstance().pushMsg(userID, programUpdateIDs);
-			}
-			if(taskUpdateIDs.size() > 0){
-				//更新task状态为草稿
-				TaskOperation.updateStatus(conn, taskUpdateIDs, 2);
-				//block状态更新为已规划
-				BlockService.getInstance().updateStatus(conn, blockUpdateIDs, 1);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -464,6 +454,33 @@ public class ImportPlan {
 		}
 		return cellvalue;
 	}
+	
+	/**
+	 * 
+	 * 对应cityID查询RegionId
+	 * @param blokID
+	 * @param conn
+	 * @throws Exception 
+	 * */
+	public static int getRegionIdByBlockID(Connection conn , int blockID) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.region_id from CITY t,block b where t.city_id = b.city_id and b.block_id =" + blockID;
+
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int regionId = 0;
+					if(rs.next()){
+						regionId  = rs.getInt("region_id");
+					}
+					return regionId;
+				}
+			};
+			return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			throw e;
+		}
+	}
 
 	/**
 	 * 
@@ -471,15 +488,14 @@ public class ImportPlan {
 	 * @param taskDataMap
 	 * @param conn
 	 * */
-	public List<Integer> creatTaskByBlockPlan(Map<String, Object> taskDataMap, Connection conn) throws Exception{
+	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap, Connection conn, int regionID) throws Exception{
 		Task task = new Task();
-		List<Integer> taskIdList = new ArrayList<>();
 		try{
 			//一个区县下创建三个任务
 			for(int i = 0; i < 3; i++){
 				task.setName(taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
 				task.setBlockId(Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
-				task.setRegionId(1);
+				task.setRegionId(regionID);
 				//三种type类型分别创建
 				if(i == 0){
 					task.setType(0);
@@ -521,8 +537,6 @@ public class ImportPlan {
 					task.setGroupId(0);
 				}
 				task.setDescp(taskDataMap.get("DESCP").toString());
-				//任务状态赋值为草稿2
-				task.setStatus(2);
 				task.setCreateUserId(null);
 				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){
 					task.setRoadPlanTotal(Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
@@ -534,10 +548,8 @@ public class ImportPlan {
 					task.setWorkKind(taskDataMap.get("WORK_KIND").toString());
 				}
 				
-				int taskID = TaskService.getInstance().createWithBean(conn, task);
-				taskIdList.add(taskID);
+				TaskService.getInstance().createWithBean(conn, task);
 				}
-			return taskIdList;
 			}catch(Exception e){
 				throw new Exception(e);
 			}
@@ -583,7 +595,6 @@ public class ImportPlan {
 			if(StringUtils.isNotBlank(programMap.get("CITY_ID").toString())){
 				program.setCityId(Integer.parseInt(programMap.get("CITY_ID").toString()));
 			}
-			program.setStatus(1);
 			program.setCreateUserId(0);
 			
 			//创建项目

@@ -93,8 +93,8 @@ public class MetaEditController extends BaseController {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年3月27日 下午2:25:02 
 	 */
-	@RequestMapping(value = "/metadataEdit/patternImage/saveUpdate")
-	public ModelAndView create(HttpServletRequest request){
+	@RequestMapping(value = "/metadataEdit/patternImage/save")
+	public ModelAndView imageCreate(HttpServletRequest request){
 		try{	
 			//处理长传参数
 			DiskFileItemFactory factory = new DiskFileItemFactory();
@@ -151,7 +151,49 @@ public class MetaEditController extends BaseController {
 			}
 			
 			if(tableName.equals("scMdelMatchG")){
-				scModelMatchGService.saveUpdate2(dataJson,fileStream);
+				scModelMatchGService.save(dataJson,fileStream);
+			}else if(tableName.equals("scModelRepdelG")){
+				scModelRepdelGService.saveUpdate(dataJson);
+			}else if(tableName.equals("scVectorMatch")){
+				scVectorMatchService.saveUpdate(dataJson);
+			}else if(tableName.equals("scBranchCommc")){
+				scBranchCommcService.saveUpdate(dataJson);
+			}else if(tableName.equals("scBranchSpecc")){
+				scBranchSpeccService.saveUpdate(dataJson);
+			}else if(tableName.equals("scBcrossnodeMatchck")){
+				scBcrossnodeMatchckService.saveUpdate(dataJson);
+			}else{
+				throw new IllegalArgumentException("不识别的表: "+tableName);
+			}
+			return new ModelAndView("jsonView", success("创建成功"));
+		}catch(Exception e){
+			log.error("创建失败，原因："+e.getMessage(), e);
+			return new ModelAndView("jsonView",exception(e));
+		}
+	}
+	
+	
+	@RequestMapping(value = "/metadataEdit/patternImage/update")
+	public ModelAndView imageUpdate(HttpServletRequest request){
+		try{	
+			String parameter = request.getParameter("parameter");
+			if (StringUtils.isEmpty(parameter)){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}		
+			JSONObject parameterJson = JSONObject.fromObject(URLDecode(parameter));			
+			if(parameterJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String tableName  = parameterJson.getString("tableName");
+			if(tableName==null || StringUtils.isEmpty(tableName)){
+				throw new IllegalArgumentException("tableName参数不能为空。");
+			}
+			JSONObject dataJson = parameterJson.getJSONObject("data");
+			if(dataJson==null || dataJson.isEmpty()){
+				throw new IllegalArgumentException("data参数不能为空。");
+			}
+			if(tableName.equals("scMdelMatchG")){
+				scModelMatchGService.update(dataJson);
 			}else if(tableName.equals("scModelRepdelG")){
 				scModelRepdelGService.saveUpdate(dataJson);
 			}else if(tableName.equals("scVectorMatch")){

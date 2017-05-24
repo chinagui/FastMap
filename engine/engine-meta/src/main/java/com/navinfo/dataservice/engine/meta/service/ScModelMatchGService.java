@@ -851,7 +851,7 @@ public class ScModelMatchGService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	public void saveUpdate(JSONObject dataJson) throws Exception {
+	public void update(JSONObject dataJson) throws Exception {
 		long fileId = 0 ;
 		String[] formats={"yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"}; 
 		JSONUtils.getMorpherRegistry().registerMorpher(new TimestampMorpher(formats));  
@@ -863,31 +863,32 @@ public class ScModelMatchGService {
 			updateByFileId(bean);
 			//update(bean);
 		}else{//不存在 fileId 执行新增
-			fileId = getFileId();
+			/*fileId = getFileId();
 			try{
 				ScModelMatchG bean =(ScModelMatchG) JSONObject.toBean(taskJson, ScModelMatchG.class);
 				bean.setFileId(fileId);
 				create(bean);
 			}catch(Exception e){
 				log.error("bean : "+e.getMessage());
-			}
-			
+			}*/
+			log.error("非法修改,本条数据不存在  ");
 		}
 		
 		
 	}
 	
-	public void saveUpdate2(JSONObject dataJson, InputStream fileStream) throws Exception {
+	public void save(JSONObject dataJson, InputStream fileStream) throws Exception {
 		long fileId = 0 ;
 		String[] formats={"yyyy-MM-dd HH:mm:ss","yyyy-MM-dd"}; 
 		JSONUtils.getMorpherRegistry().registerMorpher(new TimestampMorpher(formats));  
 		JSONObject taskJson=JSONObject.fromObject(dataJson); 
 		if(taskJson.get("fileId") != null && !taskJson.get("fileId").equals("null")){//存在 fileId ,更新数据
-			fileId = taskJson.getLong("fileId");
+			/*fileId = taskJson.getLong("fileId");
 			
 			ScModelMatchG bean =(ScModelMatchG) JSONObject.toBean(taskJson, ScModelMatchG.class);
-			updateByFileId(bean);
+			updateByFileId(bean);*/
 			//update(bean);
+			log.error("非法新增,本条数据已存在  ");
 		}else{//不存在 fileId 执行新增
 			fileId = getFileId();
 			try{

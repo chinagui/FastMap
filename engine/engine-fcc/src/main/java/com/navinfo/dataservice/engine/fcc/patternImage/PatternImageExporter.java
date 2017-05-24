@@ -3,15 +3,12 @@ package com.navinfo.dataservice.engine.fcc.patternImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Set;
 
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import oracle.sql.BLOB;
 
 import org.apache.uima.pear.util.FileUtil;
@@ -165,24 +162,121 @@ public class PatternImageExporter {
 
 		Connection sqliteConn = createSqlite(dir);
 
-		String sql = "select * from sc_model_match_g where file_name in (";
+        String insertSql = "insert into meta_JVImage values("
+                + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-		int i=0;
-		for(String name:names){
-			if (i > 0) {
-				sql += ",";
-			}
+        PreparedStatement pstmt = null;
 
-			sql += "'" + name + "'";
-			
-			i++;
-		}
+        ResultSet resultSet = null;
 
-		sql += ")";
+        Connection conn = null;
 
-		exportImage2Sqlite(sqliteConn, sql);
+		String sql = "select * from sc_model_match_g where";
+        try{
+            conn = DBConnector.getInstance().getMetaConnection();
 
-		sqliteConn.close();
+            String namesString = names.toString().replace("[", "").replace("]", "");
+            Clob clob = ConnectionUtil.createClob(conn);
+            clob.setString(1, namesString);
+            sql += " file_name in (select to_char(column_value) from table(clob_to_table(?)))";
+
+            PreparedStatement prep = sqliteConn.prepareStatement(insertSql);
+
+            pstmt=conn.prepareStatement(sql);
+            pstmt.setClob(1, clob);
+
+            resultSet = pstmt.executeQuery();
+
+            resultSet.setFetchSize(5000);
+
+            int count = 0;
+
+            while (resultSet.next()) {
+
+                String name = resultSet.getString("file_name");
+
+                String format = resultSet.getString("format");
+
+                BLOB blob = (BLOB) resultSet.getBlob("file_content");
+
+                if(blob == null){
+                    continue;
+                }
+
+                InputStream is = blob.getBinaryStream();
+                int length = (int) blob.length();
+                byte[] content = new byte[length];
+                is.read(content);
+                is.close();
+
+                String bType = resultSet.getString("b_type");
+
+                String mType = resultSet.getString("m_type");
+
+                prep.setString(1, name);
+
+                prep.setString(2, format);
+
+                prep.setBinaryStream(3, new ByteArrayInputStream(content),
+                        content.length);
+
+                prep.setString(4, bType);
+
+                prep.setString(5, mType);
+
+                prep.setInt(6, 0);
+
+                prep.setString(7, "");
+
+                prep.setString(8, "");
+
+                prep.setString(9, "");
+
+                prep.setInt(10, 0);
+
+                prep.executeUpdate();
+
+                count += 1;
+
+                if (count % 5000 == 0) {
+                    sqliteConn.commit();
+                }
+            }
+
+            sqliteConn.commit();
+        } catch (Exception e) {
+
+            throw new Exception(e);
+
+        } finally {
+            if (resultSet != null) {
+                try {
+                    resultSet.close();
+                } catch (Exception e) {
+
+                }
+            }
+
+            if (pstmt != null) {
+                try {
+                    pstmt.close();
+                } catch (Exception e) {
+
+                }
+            }
+
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (Exception e) {
+
+                }
+            }
+
+            if(sqliteConn != null) {
+                sqliteConn.close();
+            }
+        }
 	}
 	
 	public String export2SqliteByDate(String path, String date)

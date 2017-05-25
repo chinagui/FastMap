@@ -57,7 +57,8 @@ public class DefaultWriter {
 			initMongoDb(collectionName,timestamp);
 			//统计信息入库
 			Document resultDoc=new Document();
-			resultDoc.put(timestamp,messageJSON.getJSONArray(collectionName));
+			resultDoc.put("timestamp",timestamp);
+			resultDoc.put("content",messageJSON.getJSONArray(collectionName));
 	
 			MongoDao md = new MongoDao(dbName);
 			md.insertOne(collectionName, resultDoc);

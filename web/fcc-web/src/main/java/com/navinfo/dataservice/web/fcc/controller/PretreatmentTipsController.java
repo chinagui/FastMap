@@ -249,14 +249,9 @@ public class PretreatmentTipsController extends BaseController {
 				throw new IllegalArgumentException("参数错误：geometry不能为空。");
 			}
 
-            if (!jsonReq.containsKey("qSubTaskId")) {
-                throw new IllegalArgumentException("参数错误：qSubTaskId不能为空。");
-            }
-            int qSubTaskId = jsonReq.getInt("qSubTaskId");
-
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.editGeo(rowkey, tipsGeometry, user, qSubTaskId);
+			op.editGeo(rowkey, tipsGeometry, user);
 
 			return new ModelAndView("jsonView", success());
 
@@ -307,15 +302,15 @@ public class PretreatmentTipsController extends BaseController {
 			if (pointGeo.isNullObject()||pointGeo==null) {
 				throw new IllegalArgumentException("参数错误：pointGeo不能为空。");
 			}
-
-            if (!jsonReq.containsKey("qSubTaskId")) {
-                throw new IllegalArgumentException("参数错误：qSubTaskId不能为空。");
-            }
-            int qSubTaskId = jsonReq.getInt("qSubTaskId");
+//
+//            if (!jsonReq.containsKey("qSubTaskId")) {
+//                throw new IllegalArgumentException("参数错误：qSubTaskId不能为空。");
+//            }
+//            int qSubTaskId = jsonReq.getInt("qSubTaskId");
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.breakLine(rowkey, pointGeo, user, qSubTaskId);
+			op.breakLine(rowkey, pointGeo, user);
 
 			return new ModelAndView("jsonView", success());
 

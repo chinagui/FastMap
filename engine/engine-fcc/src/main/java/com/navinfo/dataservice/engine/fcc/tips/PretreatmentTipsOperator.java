@@ -248,7 +248,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-18 下午2:16:09
 	 */
-	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user, int qSubTaskId)
+	public boolean editGeo(String rowkey, JSONObject lineGeometry, int user)
 			throws Exception {
 
 		Connection hbaseConn;
@@ -291,7 +291,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             //source 快线子任务
             JSONObject source = JSONObject.fromObject(new String(result.getValue(
                     "data".getBytes(), "source".getBytes())));
-            source.put("s_qSubTaskId", qSubTaskId);
+//            source.put("s_qSubTaskId", qSubTaskId);
 
 			put.addColumn("data".getBytes(), "track".getBytes(), track
 					.toString().getBytes());
@@ -310,7 +310,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solrIndex.put("g_location", lineGeometry);
 			solrIndex.put("g_guide", guideNew);
 			solrIndex.put("deep", deep);
-            solrIndex.put("s_qSubTaskId", qSubTaskId);
+//            solrIndex.put("s_qSubTaskId", qSubTaskId);
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex.get("feedback"));
             solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
                     String.valueOf(FC_SOURCE_TYPE), deep, lineGeometry,
@@ -422,7 +422,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-18 下午2:16:09
 	 */
-	public boolean breakLine(String rowkey, JSONObject tipGeometry, int user, int qSubTaskId)
+	public boolean breakLine(String rowkey, JSONObject tipGeometry, int user)
 			throws Exception {
 		Connection hbaseConn;
 		try {
@@ -517,7 +517,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
             // update source
             JSONObject source = JSONObject.fromObject(new String(result
                     .getValue("data".getBytes(), "source".getBytes())));
-            source.put("s_qSubTaskId", qSubTaskId);
+//            source.put("s_qSubTaskId", qSubTaskId);
             JSONObject newSource = JSONObject.fromObject(source);
             put.addColumn("data".getBytes(), "source".getBytes(), source
                     .toString().getBytes());

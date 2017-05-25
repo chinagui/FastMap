@@ -49,7 +49,7 @@ public class TipsOperateTest {
 
 		try {
 			operate.update("021901b0ad67e145be477bb1d2202181edfc84", 0, null,
-					"m");
+					"m", 0 ,0 );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

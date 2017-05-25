@@ -120,6 +120,9 @@ public class TipsController extends BaseController {
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
+
+            int editStatus = jsonReq.getInt("editStatus");
+            int editMeth = jsonReq.getInt("editMeth");
 			
 			 if (StringUtils.isEmpty(rowkey)) {
 	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
@@ -143,7 +146,7 @@ public class TipsController extends BaseController {
 
 			TipsOperator op = new TipsOperator();
 
-			op.update(rowkey,  handler, pid, mdFlag);
+			op.update(rowkey, handler, pid, mdFlag, editStatus, editMeth);
 
 			return new ModelAndView("jsonView", success());
 
@@ -186,6 +189,7 @@ public class TipsController extends BaseController {
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
+
 			
 			 if (data==null||data.size()==0) {
 	                throw new IllegalArgumentException("参数错误:data不能为空");
@@ -202,7 +206,7 @@ public class TipsController extends BaseController {
 
 			TipsOperator op = new TipsOperator();
 
-			op.batchUpdateStatus(data,handler,mdFlag);
+			op.batchUpdateStatus(data, handler, mdFlag);
 
 			return new ModelAndView("jsonView", success());
 

@@ -942,15 +942,15 @@ public class SolrController {
 
 		addStageFilterSql(stages, builder);
 
-		// 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
-		if (!isPre) {
-
-			if ("".equals(builder.toString())) {
-				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
-			} else {
-				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
-			}
-		}
+//		// 不是预处理，则需要过滤预处理没提交的tips,t_pStatus=0是没有提交的
+//		if (!isPre) {
+//
+//			if ("".equals(builder.toString())) {
+//				builder.append(" -(t_pStatus:0 AND s_sourceType:8001)");
+//			} else {
+//				builder.append(" AND -(t_pStatus:0 AND s_sourceType:8001)");
+//			}
+//		}
 
 		// 过滤315 web不显示的tips 20170118
 		if (!"".equals(SolrQueryUtils.NOT_DISPLAY_TIP_FOR_315_TYPES_FILER_SQL)) {

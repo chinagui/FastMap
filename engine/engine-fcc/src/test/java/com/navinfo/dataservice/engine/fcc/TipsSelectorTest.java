@@ -246,7 +246,7 @@ public class TipsSelectorTest extends InitApplication {
 
 //			access_token=0000042XJ2MYPIALCDCDC2D9968453C1965F44BB23CA455F
 			String parameter= "{\"pType\":\"fc\",\"gap\":10,\"types\":[\"1107\",\"1201\",\"1202\",\"1203\",\"1702\",\"2001\",\"1901\",\"2101\",\"1601\",\"1803\",\"1301\",\"1507\"],\"x\":215851,\"y\":99298,\"z\":18}";
-
+parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\"1201\",\"1102\",\"1202\",\"1101\",\"1205\",\"1206\",\"1207\",\"1203\",\"1702\",\"1501\",\"1508\",\"1514\",\"1901\",\"2001\",\"2101\",\"1601\",\"1803\",\"1301\",\"1604\"],\"x\":107901,\"y\":49676,\"z\":17}";
 			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(parameter));
 
 		} catch (Exception e) {

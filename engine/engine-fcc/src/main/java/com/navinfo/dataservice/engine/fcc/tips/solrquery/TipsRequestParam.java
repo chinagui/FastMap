@@ -275,9 +275,9 @@ public class TipsRequestParam {
                     addTaskFilterSql(noQFilter, builder);
                 }else if(pType.equals("fc")) {//FC 预处理 钟小明
                     if(builder.length() > 0) {
-                        builder.append(" AND t_tipStatus:(1 2)");
+                        builder.append(" AND ((s_sourceType:8001 AND t_tipStatus:(1 2)) OR (-s_sourceType:8001 AND t_tipStatus:2))");
                     }else{
-                        builder.append("t_tipStatus:(1 2)");
+                        builder.append("((s_sourceType:8001 AND t_tipStatus:(1 2)) OR (-s_sourceType:8001 AND t_tipStatus:2))");
                     }
                 }
             }else {//web 刘哲

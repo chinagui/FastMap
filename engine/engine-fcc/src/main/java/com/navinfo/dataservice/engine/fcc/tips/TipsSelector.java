@@ -125,11 +125,11 @@ public class TipsSelector {
                     if ("d".equals(mdFlag)) {
                         // 如果日编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
                         int dEditStatus = json.getInt("t_dEditStatus");
-                        m.put("a", dEditStatus);
+                        m.put("a", String.valueOf(dEditStatus));
                     } else if ("m".equals(mdFlag)) {
                         // 如果月编有问题待确认，则直接返回2. 20170208 和王屯 钟晓明确认结果
                         int mEditStatus = json.getInt("t_mEditStatus");
-                        m.put("a", mEditStatus);
+                        m.put("a", String.valueOf(mEditStatus));
                     }
                 }
 

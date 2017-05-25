@@ -70,7 +70,7 @@ public class PingConverterTest {
 	public void testvoiceConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String res = py.voiceConvert("上海弄堂", null, "310000", null);
+		String res = py.voiceConvert("S271", null, null, null);
 				//("上海弄堂", "310000", null);
 
 		System.out.println(res);
@@ -83,7 +83,7 @@ public class PingConverterTest {
 	public void testpyvConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String[] res = py.pyVoiceConvert("上海弄堂", null, "310000", null);
+		String[] res = py.pyVoiceConvert("S271", null, null, null);
 				//("上海弄堂", "310000", null);
 
 		System.out.println(res);
@@ -94,7 +94,7 @@ public class PingConverterTest {
 
 	}
 	
-	@Test
+//	@Test
 	public void testEngConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -103,14 +103,38 @@ public class PingConverterTest {
 		System.out.println(res);
 	}
 	
+	
+	@Test
+	public void testpyPolyphoneConvert() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+//		String res = py.pyConvert("上海弄堂", "310000", null);
+		String res = py.pyPolyphoneConvert("思维差心°", null);
+
+		System.out.println(res);
+		//Shang Hai Nong Tang
+		//带行政区划号后  Shang Hai Long Tang
+
+	}
+	
 	public static void main(String[] args) {
-		String targets = "[IX_POI,500000008];[IX_POI,510000006];[IX_POI,509000015];[IX_POI,504000007]";
+		/*String targets = "[IX_POI,500000008];[IX_POI,510000006];[IX_POI,509000015];[IX_POI,504000007]";
 		System.out.println(targets);
 		String b =targets.replaceAll("[\\[\\]]","").replaceAll("IX_POI,", "").replaceAll(";", ",");  
 		//.replaceAll("]", "");
 		System.out.println(targets);
 		System.out.println(b);
 //		String[] pidsArr = pids.split(",");
+*/	
+		/*String str = "上海弄堂";
+		char[] chars = str.toCharArray();
+		System.out.println("chars: "+chars.toString());*/
+		String str = "shdhfe";
+		str = str.substring(0, 1).toUpperCase() + str.substring(1);
+		
+		System.out.println(str);
+		
+		
 	}
 	
 }

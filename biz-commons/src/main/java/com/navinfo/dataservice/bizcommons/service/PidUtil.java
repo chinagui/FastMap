@@ -602,5 +602,11 @@ public class PidUtil {
 	public int applyCmgBuildingPid() throws Exception {
         return applyPid("CMG_BUILDING");
     }
+    public int applyCmgBuilding3dmodelPid() throws Exception {
+        return applyPid("CMG_BUILDING_3DMODEL");
+    }
+    public int applyCmgBuildingNamePid() throws Exception {
+        return applyPid("CMG_BUILDING_NAME");
+    }
 
 }

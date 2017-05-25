@@ -82,7 +82,7 @@ public class ScPointAdminarea {
 				synchronized (this) {
 					if (dataMap==null||dataMap.isEmpty()) {
 						try {
-							String sql = "SELECT sp.province,sp.province_short,sp.city,sp.city_short,sp.district,sp.district_short,sp.remark FROM SC_POINT_ADMINAREA sp";
+							String sql = "SELECT distinct sp.province,sp.province_short,sp.city,sp.city_short,sp.district,sp.district_short,sp.remark FROM SC_POINT_ADMINAREA sp";
 								
 							PreparedStatement pstmt = null;
 							ResultSet rs = null;
@@ -107,14 +107,46 @@ public class ScPointAdminarea {
 									String district=rs.getString("district");
 									String district_short=rs.getString("district_short");
 									String remark=rs.getString("remark");
-									if(province!=null&&!province.isEmpty()){dataMap.get("province").add(province);}
-									if(province_short!=null&&!province_short.isEmpty()){dataMap.get("province_short").add(province_short);}
-									if(city!=null&&!city.isEmpty()){dataMap.get("city").add(city);}
-									if(city_short!=null&&!city_short.isEmpty()){dataMap.get("city_short").add(city_short);}
-									if(district!=null&&!district.isEmpty()){dataMap.get("district").add(district);}
-									if(district_short!=null&&!district_short.isEmpty()){dataMap.get("district_short").add(district_short);}
-									if(remark.equals("1")&&district!=null&&!district.isEmpty()){dataMap.get("district_remark1").add(district);}
-									if(remark.equals("1")&&district_short!=null&&!district_short.isEmpty()){dataMap.get("district_short_remark1").add(district_short);}
+									if(province!=null&&!province.isEmpty()){
+										if(!dataMap.get("province").contains(province)){
+											dataMap.get("province").add(province);
+										}
+									}
+									if(province_short!=null&&!province_short.isEmpty()){
+										if(!dataMap.get("province_short").contains(province_short)){
+											dataMap.get("province_short").add(province_short);
+										}
+									}
+									if(city!=null&&!city.isEmpty()){
+										if(!dataMap.get("city").contains(city)){
+											dataMap.get("city").add(city);
+										}
+									}
+									if(city_short!=null&&!city_short.isEmpty()){
+										if(!dataMap.get("city_short").contains(city_short)){
+											dataMap.get("city_short").add(city_short);
+										}
+									}
+									if(district!=null&&!district.isEmpty()){
+										if(!dataMap.get("district").contains(district)){
+											dataMap.get("district").add(district);
+										}
+									}
+									if(district_short!=null&&!district_short.isEmpty()){
+										if(!dataMap.get("district_short").contains(district_short)){
+											dataMap.get("district_short").add(district_short);
+										}
+									}
+									if(remark!=null&&remark.equals("1")&&district!=null&&!district.isEmpty()){
+										if(!dataMap.get("district_remark1").contains(district)){
+											dataMap.get("district_remark1").add(district);
+										}
+									}
+									if(remark!=null&&remark.equals("1")&&district_short!=null&&!district_short.isEmpty()){
+										if(!dataMap.get("district_short_remark1").contains(district_short)){
+											dataMap.get("district_short_remark1").add(district_short);
+										}
+									}
 								} 
 							} catch (Exception e) {
 								throw new Exception(e);

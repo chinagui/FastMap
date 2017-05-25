@@ -76,8 +76,7 @@ public class PermitModificateSamelinkNode extends baseRule {
                 }
             }
             if (!flag) {
-                setCheckResult("node不是该组同一关系中的主要素，不能进行移动操作",
-                        String.format("[%s,%d]", row.tableName(), row.parentPKValue()), 0);
+                setCheckResult("", String.format("[%s,%d]", row.tableName(), row.parentPKValue()), 0);
             }
         }
     }

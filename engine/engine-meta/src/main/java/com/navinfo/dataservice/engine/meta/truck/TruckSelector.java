@@ -80,4 +80,38 @@ public class TruckSelector {
             DBUtils.closeStatement(pstmt);
         }
     }
+    
+    /**
+     * 查询众包数据的truck
+     * poi分类在元数据库sc_point_truck.kind中，
+     * 如果sc_point_truck.type=1，则poi.truck赋值sc_point_truck.truck，否则poi.truck赋默认值0；
+     * @param kindCode
+     * @return
+     * @throws Exception 
+     */
+    public int getCrowdTruck(String kindCode) throws Exception{
+        String sql = "SELECT chain,type,truck FROM sc_point_truck t WHERE t.kind=:1";
+        ResultSet resultSet = null;
+        PreparedStatement pstmt = null;
+        int truck = 0;
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, kindCode);
+            resultSet = pstmt.executeQuery();
+            
+            if(resultSet.next()){
+                    String chainCode = resultSet.getString("chain");
+                    int type = resultSet.getInt("type");
+                    if (1 == type){
+                    	return resultSet.getInt("truck");
+                    } 
+                }
+            return truck;
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            DBUtils.closeResultSet(resultSet);
+            DBUtils.closeStatement(pstmt);
+        }
+    }
 }

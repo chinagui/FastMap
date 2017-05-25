@@ -312,7 +312,7 @@ public class PoiEditStatus {
 	 * @param pids
 	 * @throws Exception
 	 */
-	private static void normalPoi(Connection conn,Collection<Long> pids,int subtaskId,int taskId,int taskType)throws Exception{
+	public static void normalPoi(Connection conn,Collection<Long> pids,int subtaskId,int taskId,int taskType)throws Exception{
 		try{
 			if(pids==null||pids.size()==0){
 				return;

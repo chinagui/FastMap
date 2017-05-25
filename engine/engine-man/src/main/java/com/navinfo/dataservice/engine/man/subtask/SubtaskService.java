@@ -2254,7 +2254,7 @@ public class SubtaskService {
 	 * @author songhe
 	 * 
 	 * */
-	public Subtask queryCrowdSubtaskByGrid(String grid){
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
 		Subtask substask = new Subtask();
 		Connection conn = null;
 		if(StringUtils.isBlank(grid)){
@@ -2271,6 +2271,7 @@ public class SubtaskService {
 			}
 		}catch(Exception e ){
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

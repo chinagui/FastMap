@@ -64,6 +64,8 @@ public class AdAdmin implements IObj {
     public Map<String, AdAdminGroup> adAdminGroupMap = new HashMap<String, AdAdminGroup>();
     
     public Map<String, AdAdminDetail> adAdminDetailMap = new HashMap<String, AdAdminDetail>();
+
+    protected ObjStatus status;
     
 	@Override
 	public String rowId() {
@@ -91,11 +93,12 @@ public class AdAdmin implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

@@ -81,4 +81,12 @@
 		class="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJob"
 		request="com.navinfo.dataservice.job.statics.job.PoiDayStaticsJobRequest" >
 	</type>
+	<type name="poiDayStat"
+		class="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJob"
+		request="com.navinfo.dataservice.job.statics.poiJob.PoiDayStatJobRequest" >
+	</type>
+	<type name="poiMonthStat"
+		class="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJob"
+		request="com.navinfo.dataservice.job.statics.poiJob.PoiMonthStatJobRequest" >
+	</type>
 	</mapping>

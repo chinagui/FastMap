@@ -251,7 +251,7 @@ public class RowCrowdsControl {
 	 * @return
 	 * @throws Exception
 	 */
-	private String getDailyDbId(double x,double y) throws Exception {
+	private static String getDailyDbId(double x,double y) throws Exception {
 		String dbId = "";
 		Connection manConn = null;
 		try{
@@ -276,7 +276,7 @@ public class RowCrowdsControl {
 	 * @param y
 	 * @return
 	 */
-	private String getGrid(double x,double y){
+	private static String getGrid(double x,double y){
 		String grid = "";
 		CompGridUtil gridUtil = new CompGridUtil();
 		grid = gridUtil.point2Grids(x, y)[0];
@@ -285,10 +285,9 @@ public class RowCrowdsControl {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		JSONObject data = new JSONObject();
-		if (data == null || data.isNullObject() || data.isEmpty()){
-			System.out.println("参数data数据错误！！");
-		}
+		String phone = "029-8888888";
+		String[] phones = phone.split("\\|");
+		System.out.println(phones[0]);
 	}
 
 }

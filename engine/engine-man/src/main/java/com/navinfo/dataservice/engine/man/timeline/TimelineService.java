@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.engine.man.common;
+package com.navinfo.dataservice.engine.man.timeline;
 
 import java.sql.Connection;
 import java.sql.Timestamp;
@@ -11,13 +11,19 @@ import com.navinfo.navicommons.database.QueryRunner;
  * @version 1.0
  * 
  * */
-public class RecordManTimeline {
+public class TimelineService {
 	
-	public static void recordTimeline(int objectID, String name, Connection conn) throws Exception{
+	/**
+	 * @param 操作对象的ID
+	 * @param 操作对象的name
+	 * @param 操作类型，0关闭
+	 * @param Connection
+	 * 
+	 * */
+	public static void recordTimeline(int objectID, String name, int type, Connection conn) throws Exception{
 		
 		String sql = "insert into MAN_TIMELINE t(t.obj_id,t.obj_type,t.operate_type,t.operate_desc)"
-				+ "values("+objectID+",'"+name+"',0,'')";
-		
+				+ "values("+objectID+",'"+name+"',"+type+",'')";
 		try{
 			QueryRunner run = new QueryRunner();
 			run.execute(conn, sql);

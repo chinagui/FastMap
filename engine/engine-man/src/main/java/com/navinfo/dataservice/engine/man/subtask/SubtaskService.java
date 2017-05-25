@@ -46,12 +46,12 @@ import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
-import com.navinfo.dataservice.engine.man.common.RecordManTimeline;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
@@ -1732,7 +1732,7 @@ public class SubtaskService {
 		}		
 		
 		//记录关闭时间
-		RecordManTimeline.recordTimeline(subtask.getSubtaskId(), "subtask", conn);
+		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
 		
 		//发送消息
 		try {

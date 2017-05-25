@@ -38,11 +38,11 @@ import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.dao.mq.sys.SysMsgPublisher;
 import com.navinfo.dataservice.engine.man.city.CityOperation;
-import com.navinfo.dataservice.engine.man.common.RecordManTimeline;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
@@ -390,7 +390,7 @@ public class ProgramService {
 			run.update(conn,updateSql);
 			
 			//记录关闭时间
-			RecordManTimeline.recordTimeline(programId, "program", conn);
+			TimelineService.recordTimeline(programId, "program", 0, conn);
 			
 			try {
 				//发送消息

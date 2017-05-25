@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.engine.man.block.BlockOperation;
 import com.navinfo.dataservice.engine.man.block.BlockService;
+import com.navinfo.dataservice.engine.man.common.RecordManTimeline;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
@@ -1600,6 +1601,9 @@ public class TaskService {
 					}
 				}
 			}
+			//记录关闭时间
+			RecordManTimeline.recordTimeline(taskId, "task", conn);
+			
 			//发送消息
 			try {
 				List<Object[]> msgContentList=new ArrayList<Object[]>();

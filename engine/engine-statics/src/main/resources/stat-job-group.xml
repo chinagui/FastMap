@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mapping>
+	<group name="poiDayStaticsGroup" starter="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsGroupStarter">
+		<job name="poiDayStatics"/>
+	</group>
+	
+</mapping>

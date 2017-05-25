@@ -648,7 +648,11 @@
 		        <version>1.0.17</version>
 		    </dependency>
 						
-
+			<dependency>
+			  <groupId>com.thoughtworks.future</groupId>
+			  <artifactId>future_2.12</artifactId>
+			  <version>1.0.0-M0</version>
+			</dependency>
 			<!-- jdbc driver end -->
 			
 			<!-- dao start -->
@@ -762,6 +766,12 @@
 			<dependency>
 				<groupId>com.navinfo.dataservice</groupId>
 				<artifactId>job-datahub</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.navinfo.dataservice</groupId>
+				<artifactId>job-statics</artifactId>
 				<version>0.0.1-SNAPSHOT</version>
 			</dependency>
 			

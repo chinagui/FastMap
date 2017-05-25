@@ -225,6 +225,8 @@ public class ReflectionAttrUtils {
             return "CMG_BUILDLINK";
         case CMGBUILDFACE:
             return "CMG_BUILDFACE";
+		case CMGBUILDING:
+			return "CMG_BUILDING";
 		default:
 			throw new Exception("不支持的对象类型:" + objType.toString());
 		}

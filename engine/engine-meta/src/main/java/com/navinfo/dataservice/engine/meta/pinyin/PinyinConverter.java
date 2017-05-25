@@ -210,8 +210,11 @@ public class PinyinConverter {
 	
 			pstmt.setString(1, word);
 			
+			if(phonetic == null || StringUtils.isEmpty(phonetic)){
+				phonetic = pyConvert(word, adminId, isRdName);
+			}
+			System.out.println(phonetic);
 			pstmt.setString(2, phonetic);
-			
 			pstmt.setString(3, adminId);
 			
 			pstmt.setString(4, isRdName);
@@ -312,6 +315,9 @@ public class PinyinConverter {
 	
 			pstmt.setString(4, word);
 			
+			if(phonetic == null || StringUtils.isEmpty(phonetic)){
+				phonetic = pyConvert(word, adminId, isRdName);
+			}
 			pstmt.setString(5, phonetic);
 			
 			pstmt.setString(6, adminId);
@@ -383,10 +389,7 @@ public class PinyinConverter {
 		
 		String initSql = "{call py_utils_word.init_context_param}";
 		
-		//String sql = "select py_utils_word.convert_rd_name_voice (:1,    :2,  :3, :4) voicefile from dual";
-		//String phonetic,
-		//,String isRdName
-		String phonetic = 	pyConvert(word, adminId, null);
+		String phonetic = pyConvert(word, adminId, null);
 		
 		String sqlEng = "SELECT PY_UTILS_WORD.CONVERT_BASE_ENG(:1,:2,:3,:4) engName FROM DUAL";
 		

@@ -44,6 +44,7 @@ public interface ManApi{
 	
 	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
+	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId,String stage,String isQuality) throws Exception ;
 //	List<Grid> listGrids()throws Exception;
 	/**
 	
@@ -154,6 +155,19 @@ public interface ManApi{
 	 */
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
+	/**
+	 * @param dbId
+	 * @param i
+	 * @return
+	 */
+	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type)  throws Exception;
+	/**
+	 * @param dbId
+	 * @param statusList
+	 * @param workKind
+	 * @return
+	 */
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception;
 	
 }
 

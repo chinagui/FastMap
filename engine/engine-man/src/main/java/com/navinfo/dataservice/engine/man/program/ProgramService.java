@@ -5,7 +5,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -2440,5 +2439,26 @@ public class ProgramService {
 		if (bean!=null&&bean.getInforId()!=0){
 			InforManOperation.updatePlanStatus(conn,bean.getInforId(),1);
 		};	
+	}
+	
+	public Program queryProgramByTaskId(Connection conn,int taskId) throws Exception{
+		String sql="select p.* from program p,task t where p.program_id=t.program_id"
+				+ " and t.task_id="+taskId;
+		QueryRunner run = new QueryRunner();
+		log.info("queryProgramByTaskId:"+sql);
+		return run.query(conn, sql, new ResultSetHandler<Program>(){
+
+			@Override
+			public Program handle(ResultSet rs) throws SQLException {
+				if(rs.next()){
+					Program program=new Program();
+					program.setProgramId(rs.getInt("program_id"));
+					program.setInforId(rs.getInt("infor_id"));
+					program.setCityId(rs.getInt("city_id"));
+					program.setType(rs.getInt("type"));
+					return program;
+				}
+				return null;
+			}});
 	}
 }

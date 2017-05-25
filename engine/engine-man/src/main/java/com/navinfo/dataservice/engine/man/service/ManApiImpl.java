@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -280,13 +278,30 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)
-	 */
+	
 	@Override
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
 		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
 		return taskIdSet;
+	}
+
+
+	@Override
+	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
+	}
+
+
+	@Override
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
+		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
+	}
+	
+		@Override
+	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().queryByQualitySubtaskId(qualitySubtaskId,stage,isQuality);
 	}
 	
 }

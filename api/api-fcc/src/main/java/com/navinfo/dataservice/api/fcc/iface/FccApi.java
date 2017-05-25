@@ -91,4 +91,5 @@ public interface FccApi {
      * @throws Exception
      */
     public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
+
 }

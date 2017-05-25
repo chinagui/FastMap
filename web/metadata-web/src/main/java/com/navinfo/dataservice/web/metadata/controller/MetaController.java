@@ -101,22 +101,76 @@ public class MetaController extends BaseController {
 
             String word = jsonReq.getString("word");
 
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
             PinyinConverter py = new PinyinConverter();
 
-            String[] result = py.convert(word);
+//          String[] result = py.convert(word);
+            String[] result = py.pyVoiceConvert(word, null, adminId, null);
 
             if (result != null) {
                 JSONObject json = new JSONObject();
 
-                json.put("voicefile", result[0]);
+                json.put("phonetic", result[0]);
 
-                json.put("phonetic", result[1]);
+                json.put("voicefile", result[1]);
 
                 return new ModelAndView("jsonView", success(json));
             } else {
                 throw new Exception("转拼音失败");
             }
 
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        }
+    }
+    
+    /**
+     * @Title: pyPolyphoneConvert
+     * @Description: 含多音字的转拼音接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年5月24日 下午3:17:26 
+     */
+    @RequestMapping(value = "/pinyin/pyPolyphoneConvert")
+    public ModelAndView pyPolyphoneConvert(HttpServletRequest request)
+            throws ServletException, IOException {
+
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            String word = jsonReq.getString("word");
+
+            String adminId = null;
+            if(jsonReq.containsKey("adminId")){
+            	adminId = jsonReq.getString("adminId");
+            }
+            PinyinConverter py = new PinyinConverter();
+
+//          String[] result = py.pyVoiceConvert(word, null, adminId, null);
+            
+            String result = py.pyPolyphoneConvert(word, adminId);
+
+            if (result != null) {
+                JSONObject json = new JSONObject();
+
+                json.put("phonetic", result);
+
+                return new ModelAndView("jsonView", success(json));
+            } else {
+                throw new Exception("转拼音失败");
+            }
         } catch (Exception e) {
 
             logger.error(e.getMessage(), e);

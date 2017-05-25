@@ -4,6 +4,9 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -597,6 +600,208 @@ public class PinyinConverter {
 			}
 			
 
+		}
+		
+		if (StringUtils.isEmpty(result)){
+			return "";
+		}
+		return result;
+	}
+	
+	/**
+	 * @Title: pyPolyphoneConvert
+	 * @Description: 转换成含多音字的拼音
+	 * @param word
+	 * @param adminId
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月25日 上午10:18:42 
+	 */
+	public String pyPolyphoneConvert(String word,String adminId) throws Exception {
+		
+		Connection conn = null;
+
+		String phonetic = "";
+		try {
+
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			char[] chars = word.toCharArray();
+			
+			for(char strChar : chars){
+				String str = String.valueOf(strChar);
+				
+				List<String> pyList = polyphoneConvert( str, conn);
+				String py ="";
+
+				if(pyList != null && pyList.size() > 0){
+					String polyphone ="";
+					for(String p : pyList){
+						if(polyphone != null && StringUtils.isNotEmpty(polyphone)){
+							polyphone+=" ";
+						}
+						polyphone += p.substring(0, 1).toUpperCase() + p.substring(1);
+					}
+					if(polyphone.contains(" ")){
+						polyphone="{"+polyphone+"}";
+					}
+					if(phonetic !=null && StringUtils.isNotEmpty(phonetic)){
+						phonetic +=" ";
+					}
+					phonetic +=polyphone;
+				}else{
+					py = pyConvert(str, adminId, null, conn);
+					py = py.substring(0, 1).toUpperCase() + py.substring(1);
+					if(phonetic !=null && StringUtils.isNotEmpty(phonetic)){
+						phonetic +=" ";
+					}
+						phonetic += py; 
+				}
+			}
+			return phonetic;
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+	}
+	/**
+	 * @Title: pyConvertPolyphone
+	 * @Description: 获取
+	 * @param word
+	 * @return
+	 * @throws Exception  List<String>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月23日 下午4:41:25 
+	 */
+	public List<String> polyphoneConvert(String word,Connection conn) throws Exception {
+		
+		String sql = "SELECT py FROM TY_NAVICOVPY_PY  where JT = '"+word+"' ";
+
+		PreparedStatement pstmt = null;
+
+		ResultSet resultSet = null;
+
+		String result = "";
+
+		List<String> pys = null;
+		try {
+
+			pys = new ArrayList<String>();
+			pstmt = conn.prepareStatement(sql);
+
+//			pstmt.setString(1, word);
+
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				String py = resultSet.getString("py");
+				pys.add(py);
+			} 
+			
+			return pys;
+			
+		} catch (Exception e) {
+
+			throw new Exception(e);
+
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+
+				}
+			}
+
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+
+				}
+			}
+		}
+	}
+	
+	public String pyConvert(String word,String adminId,String isRdName,Connection conn) throws Exception {
+		CallableStatement cs = null;
+		
+		String initSql = "{call py_utils_word.init_context_param}";
+		
+		String sql = "select py_utils_word.convert_hz_tone(:1,    :2,    :3) phonetic from dual";
+	
+		PreparedStatement pstmt = null;
+	
+		ResultSet resultSet = null;
+	
+		String result = "";
+	
+		try {
+	
+			cs = conn.prepareCall(initSql);
+			
+			cs.execute();
+			
+			pstmt = conn.prepareStatement(sql);
+	
+			pstmt.setString(1, word);
+			
+			pstmt.setString(2, adminId);
+			
+			pstmt.setString(3, isRdName);
+	
+			resultSet = pstmt.executeQuery();
+	
+			if (resultSet.next()) {
+	
+				result = resultSet.getString("phonetic");
+	
+			} else {
+				return "";
+			}
+		} catch (Exception e) {
+	
+			throw new Exception(e);
+	
+		} finally {
+			if (resultSet != null) {
+				try {
+					resultSet.close();
+				} catch (Exception e) {
+	
+				}
+			}
+	
+			if (pstmt != null) {
+				try {
+					pstmt.close();
+				} catch (Exception e) {
+	
+				}
+			}
+			DbUtils.closeQuietly(cs);
+	
+			/*if (conn != null) {
+				try {
+					conn.close();
+				} catch (Exception e) {
+	
+				}
+			}*/
+			
+	
 		}
 		
 		if (StringUtils.isEmpty(result)){

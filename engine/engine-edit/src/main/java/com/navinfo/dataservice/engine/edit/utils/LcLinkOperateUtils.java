@@ -1,14 +1,5 @@
 package com.navinfo.dataservice.engine.edit.utils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.json.JSONException;
-
 import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.dao.glm.iface.IRow;
@@ -23,9 +14,16 @@ import com.navinfo.navicommons.geo.computation.GeometryTypeName;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
+import org.json.JSONException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class LcLinkOperateUtils {
 
@@ -107,6 +105,15 @@ public class LcLinkOperateUtils {
         link.seteNodePid(eNodePid);
         result.setPrimaryPid(link.pid());
         result.insertObject(link, ObjStatus.INSERT, link.pid());
+
+        if (null == sourceLink) {
+            // 创建LcLinkKind
+            LcLinkKind kind = new LcLinkKind();
+            kind.setLinkPid(link.pid());
+            if (meshes.size() > 1)
+                kind.setKind(8);
+            link.getKinds().add(kind);
+        }
         return link;
     }
 

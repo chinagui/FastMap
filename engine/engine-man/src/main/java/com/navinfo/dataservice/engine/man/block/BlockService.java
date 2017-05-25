@@ -1591,7 +1591,7 @@ public class BlockService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public JSONObject queryWktByBlockId(int blockId) throws ServiceException {
+	public Map<String,Object> queryWktByBlockId(int blockId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -1615,8 +1615,15 @@ public class BlockService {
 					}
 					return json;
 				}
+
 			};
-			return run.query(conn, selectSql,rsHandler);
+			
+			Map<Integer,Integer> gridMap = getGridMapByBlockId(conn,blockId);
+			JSONObject geo = run.query(conn, selectSql,rsHandler); 
+			Map<String,Object> result = new HashMap<String,Object>();
+			result.put("geometry", geo);
+			result.put("gridIds", gridMap);
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1624,6 +1631,33 @@ public class BlockService {
 			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<Integer, Integer> getGridMapByBlockId(Connection conn, int blockId) throws ServiceException {
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;
+			log.info("getGridMapByBlockId sql:" + selectSql);
+			
+			ResultSetHandler<Map<Integer, Integer>> rsHandler = new ResultSetHandler<Map<Integer, Integer>>() {
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+					while (rs.next()) {
+						result.put(rs.getInt("GRID_ID"), 1);
+					}
+					return result;
+				}
+
+			};
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getGridMapByBlockId:" + e.getMessage(), e);
 		}
 	}
 
@@ -1714,10 +1748,10 @@ public class BlockService {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
 			
-			String selectSql = "SELECT B.BLOCK_ID,B.COUNTY_NAME FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
-			if(jsonObject.containsKey("countyName") && jsonObject.getString("countyName").length() > 0){
-				String countyName = "\'"+ "%" + jsonObject.getString("countyName").toString() + "%" +"\'";
-				String selectCountyName = " AND B.COUNTY_NAME LIKE " + countyName;
+			String selectSql = "SELECT B.BLOCK_ID,B.block_name FROM BLOCK B WHERE B.CITY_ID = " + "'" + cityId + "'";
+			if(jsonObject.containsKey("blockName") && jsonObject.getString("blockName").length() > 0){
+				String blockName = "\'"+ "%" + jsonObject.getString("blockName").toString() + "%" +"\'";
+				String selectCountyName = " AND B.block_name LIKE " + blockName;
 				selectSql += selectCountyName;
 			}
 			
@@ -1728,7 +1762,7 @@ public class BlockService {
 					while(result.next()){
 						Map<String, Object> blockMap = new HashMap<String, Object>();
 						blockMap.put("blockId", result.getInt("BLOCK_ID"));
-						blockMap.put("countyName", result.getObject("COUNTY_NAME"));
+						blockMap.put("blockName", result.getObject("BLOCK_NAME"));
 						res.add(blockMap);
 					}
 					return res;

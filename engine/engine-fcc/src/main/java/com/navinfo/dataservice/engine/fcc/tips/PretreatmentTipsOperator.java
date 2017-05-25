@@ -1,26 +1,5 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-
-import org.apache.hadoop.hbase.Cell;
-import org.apache.hadoop.hbase.TableName;
-import org.apache.hadoop.hbase.client.Connection;
-import org.apache.hadoop.hbase.client.Get;
-import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
-import org.apache.hadoop.hbase.client.Table;
-import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -33,6 +12,18 @@ import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONString;
+import org.apache.hadoop.hbase.Cell;
+import org.apache.hadoop.hbase.TableName;
+import org.apache.hadoop.hbase.client.*;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.log4j.Logger;
+
+import java.io.IOException;
+import java.util.*;
 
 /**
  * 预处理tips操作类
@@ -63,15 +54,12 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	/**
 	 * @Description:创建一个tips
 	 * @param sourceType
-	 * @param g_location
-	 * @param g_guide
 	 * @param user
 	 *            :feedback.content
 	 * @param user
 	 * @author: y
 	 * @param deep
 	 * @param memo
-	 * @param type
 	 * @throws Exception
 	 * @time:2016-11-15 上午11:03:20
 	 */
@@ -556,25 +544,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
-					feedbackObj));
-			
-			//这个主要是g_location:目前只用于tips的下载和渲染
-			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location1,
-					feedbackObj));
-
-			newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
-					feedbackObj));
-			
-			//这个主要是g_location:目前只用于tips的下载和渲染
-			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-					String.valueOf(FC_SOURCE_TYPE), null, g_location2,
-					feedbackObj));
-
-
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
 
@@ -589,6 +558,24 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 						g_guide2);
 
 			}
+
+            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), solrIndex.getJSONObject("deep"), g_location1,
+                    feedbackObj));
+
+            //这个主要是g_location:目前只用于tips的下载和渲染
+            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), solrIndex.getJSONObject("deep"), g_location1,
+                    feedbackObj));
+
+            newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+                    String.valueOf(FC_SOURCE_TYPE), newSolrIndex.getJSONObject("deep"), g_location2,
+                    feedbackObj));
+
+            //这个主要是g_location:目前只用于tips的下载和渲染
+            newSolrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+                    String.valueOf(FC_SOURCE_TYPE), newSolrIndex.getJSONObject("deep"), g_location2,
+                    feedbackObj));
 
 			// 2.update track
 
@@ -667,8 +654,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param newPut
 	 * @param put
 	 * @param newSolrIndex
-	 * @param g_location1
-	 * @param g_location2
 	 * @throws Exception
 	 * @author: y
 	 * @time:2016-11-18 下午7:58:46
@@ -1009,7 +994,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		// 缩小0.00001倍
 		sGeojson1 = GeoTranslator.jts2Geojson(GeoTranslator.transform(
 				GeoTranslator.geojson2Jts(sGeojson1), 0.00001, 5));
-
+System.out.println(sGeojson2);
 		sGeojson2 = GeoTranslator.jts2Geojson(GeoTranslator.transform(
 				GeoTranslator.geojson2Jts(sGeojson2), 0.00001, 5));
 
@@ -1204,6 +1189,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				logger.info("apply new rowkey:" + rowkey);
 
+				//20170518 情报矢量化新增7种Tips deep.id赋值 灵芸and赵航
+                if(TipsStatConstant.preTipsDeepIdType.contains(sourceType)) {
+                    JSONObject deepJson = jsonInfo.getJSONObject("deep");
+                    deepJson.put("id", rowkey.substring(6,rowkey.length()));
+                    jsonInfo.put("deep", deepJson);
+                }
+
 				insertOneTips(jsonInfo, user, htab, date);
 
 			}
@@ -1235,7 +1227,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @param jsonInfo
 	 * @param user
 	 * @author: y
-	 * @param date
 	 * @throws Exception
 	 * @time:2017-3-14 上午9:25:33
 	 */
@@ -1303,7 +1294,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 *                         判断是情报的原则：lifeCycle=3且最后一条stage=6
 	 * @param data
 	 * @author: y
-	 * @param jsonInfo
 	 * @time:2017-4-10 下午2:53:02
 	 */
 	private int getNewLifeCycle(JSONObject data) {
@@ -1482,6 +1472,13 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 					rowkey = TipsUtils.getNewRowkey(sourceType); // 新增的，需要生成rowkey
 
 					tipsInfo.put("rowkey", rowkey);
+
+                    //20170518 情报矢量化新增7种Tips deep.id赋值 灵芸and赵航
+                    if(TipsStatConstant.preTipsDeepIdType.contains(sourceType)) {
+                        JSONObject deepJson = tipsInfo.getJSONObject("deep");
+                        deepJson.put("id", rowkey.substring(6, rowkey.length()));
+                        tipsInfo.put("deep", deepJson);
+                    }
 				}
 
 				Put put = assembleNewPut(tipsInfo, date); // 未调用insertOneTips，而分开为两部，是避免多次写hbase,效率降低
@@ -1544,8 +1541,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 *            ：用户id
 	 * @param jobType
 	 *            任务类型
-	 * @param jobId
-	 *            任务id
 	 * @author: y
 	 * @throws Exception
 	 * 
@@ -1717,23 +1712,6 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			JSONObject feedbackObj = JSONObject.fromObject(solrIndex
 					.get("feedback"));
 
-			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-					"2001", null, g_location1,
-					feedbackObj));
-			
-			//这个主要是g_location:目前只用于tips的下载和渲染
-			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", null, g_location1,
-					feedbackObj));
-
-			solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
-					"2001", null, g_location2,
-					feedbackObj));
-			
-			//这个主要是g_location:目前只用于tips的下载和渲染
-			solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
-					"2001", null, g_location2,
-					feedbackObj));
-
 			put.addColumn("data".getBytes(), "geometry".getBytes(), geo1
 					.toString().getBytes());
 
@@ -1752,11 +1730,8 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			
 			
 			//更新deep.len
-			
-			double len1=GeoTranslator.geojson2Jts(g_location1).getLength();
-			
-			
-			double len2=GeoTranslator.geojson2Jts(g_location2).getLength();
+			double len1 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location1));
+            double len2 = GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(g_location2));
 			
 			deep1.put("len", len1);
 			
@@ -1775,6 +1750,23 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			solrIndex.put("deep", deep1);
 
 			newSolrIndex.put("deep", deep2);
+
+            solrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+                    "2001", deep1, g_location1,
+                    feedbackObj));
+
+            //这个主要是g_location:目前只用于tips的下载和渲染
+            solrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt("2001", deep1, g_location1,
+                    feedbackObj));
+
+            newSolrIndex.put("wkt", TipsImportUtils.generateSolrStatisticsWkt(
+                    "2001", deep2, g_location2,
+                    feedbackObj));
+
+            //这个主要是g_location:目前只用于tips的下载和渲染
+            newSolrIndex.put("wktLocation", TipsImportUtils.generateSolrWkt(
+                    "2001", deep2, g_location2,
+                    feedbackObj));
 
 			// 2.update track
 
@@ -1968,4 +1960,21 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 		return taskType;
 	}
 
+    public static void main(String[] args) throws Exception {
+        PretreatmentTipsOperator operator = new PretreatmentTipsOperator();
+        String location = "{\"type\":\"LineString\",\"coordinates\":[[116.33056,39.87161],[116.33129,39.87157]]}";
+        JSONObject oldGeo = JSONObject.fromObject(location);
+        String pointStr ="{\"type\":\"Point\",\"coordinates\":[116.33129163010436,39.87157335577523]}";
+        JSONObject pointJson = JSONObject.fromObject(pointStr);
+        Point point = (Point) GeoTranslator.geojson2Jts(pointJson);
+        List<JSONObject> cutGeoResult = operator.cutLineByPoint(point, oldGeo);
+        JSONObject geo1 = new JSONObject();
+
+        JSONObject geo2 = new JSONObject();
+
+        JSONObject g_location1 = cutGeoResult.get(0);
+
+        JSONObject g_location2 = cutGeoResult.get(1);
+        System.out.println(g_location2);
+    }
 }

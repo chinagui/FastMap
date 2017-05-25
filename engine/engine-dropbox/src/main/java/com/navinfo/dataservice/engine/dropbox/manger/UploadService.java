@@ -239,7 +239,7 @@ public class UploadService {
 			HashMap<Object,Object> data = new HashMap<Object,Object>();
 			//"dropbox.upload.path"
 			String logUploadDir = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath)+"/android_log";  //服务器部署路径 /data/resources/upload
+					PropConstant.uploadPath)+"/log";  //服务器部署路径 /data/resources/upload
 			logUploadDir+="/"+userName+"_"+userId;
 			File tempFile = new File(uploadItem.getName());
 			File file = new File(logUploadDir,tempFile.getName());
@@ -287,13 +287,14 @@ public class UploadService {
 	    return result;
 	}
 	
-	public String uploadFile(String urlString, String fileName, String filePath) throws IOException{
+	public String uploadInfoFile(String urlString, String fileName, String filePath) throws IOException{
 		URL url=new URL(urlString);
 	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
 	    connection.setDoInput(true);
 	    connection.setDoOutput(true);
 	    connection.setRequestMethod("POST");
 	    connection.addRequestProperty("FileName", fileName);
+//	    connection.addRequestProperty("subtaskId","123");
 	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
 	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
 	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());

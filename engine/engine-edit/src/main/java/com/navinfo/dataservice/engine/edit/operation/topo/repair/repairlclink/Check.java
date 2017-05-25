@@ -4,9 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.dao.glm.model.lc.LcFace;
+import com.navinfo.dataservice.dao.glm.selector.lc.LcFaceSelector;
+import com.navinfo.dataservice.engine.edit.operation.topo.repair.repairlclink.Command;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
@@ -100,6 +104,26 @@ public class Check {
 
 			if (distance <= 2) {
 				throwException("相邻形状点不可过近，不能小于2m");
+			}
+		}
+	}
+	
+	// 背景：前检查“不允许对构成面的Link的端点处形状点，进行修形操作”
+	public void PERMIT_MODIFICATE_POLYGON_ENDPOINT(Command command, Connection conn) throws Exception {
+		int linkPid = command.getLinkPid();
+		LcFaceSelector selector = new LcFaceSelector(conn);
+		List<LcFace> faces = selector.loadLcFaceByLinkId(linkPid, false);
+		
+		if (command.getCatchInfos() == null || faces.size() == 0) {
+			return;
+		}
+
+		
+		for (int i = 0; i < command.getCatchInfos().size(); i++) {
+			JSONObject obj = command.getCatchInfos().getJSONObject(i);
+			int nodePid = obj.getInt("nodePid");
+			if (faces.size() > 0 && nodePid != 0) {
+				throwException("不允许对构成面的Link的端点处形状点，进行修形操作");
 			}
 		}
 	}

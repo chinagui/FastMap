@@ -3,7 +3,6 @@ package com.navinfo.dataservice.engine.man.inforMan;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,10 +11,6 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
-
-import com.navinfo.dataservice.api.man.model.BlockMan;
-import com.navinfo.dataservice.api.man.model.Infor;
-import com.navinfo.dataservice.api.man.model.InforMan;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
@@ -24,7 +19,6 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 
 public class InforManOperation {
 	private static Logger log = LoggerRepos.getLogger(InforManOperation.class);

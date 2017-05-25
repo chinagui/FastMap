@@ -61,6 +61,7 @@ public class Process extends AbstractProcess<Command> {
 	public String exeOperation() throws Exception {
 		
 		parameterCheck();
+	    check.PERMIT_MODIFICATE_POLYGON_ENDPOINT(this.getCommand(), this.getConn());
 		return new Operation(this.getCommand(), this.getConn()).run(this
 				.getResult());
 	}

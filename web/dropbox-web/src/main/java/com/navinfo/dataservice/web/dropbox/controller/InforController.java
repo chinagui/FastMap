@@ -48,7 +48,7 @@ public class InforController extends BaseController {
 			String url = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.inforUploadUrl);
 
-			String result = upload.uploadFile(url, "infor.json", filePath);
+			String result = upload.uploadInfoFile(url, "infor.json", filePath);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(JSONObject

@@ -1,6 +1,5 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -71,30 +70,31 @@ public class GLM60439 extends BasicCheckRule {
 			if(names==null||names.size()==0){return;}
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isCH()&&nameTmp.isOfficeName()&&nameTmp.isStandardName()){
-					if(nameTmp.isUsedName()){continue;}
-					
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
 					
-					IxPoiName aliaPoiName = poiObj.getAliasCHIName(nameTmp.getNameGroupid());
-					if(aliaPoiName==null){
-						continue;
-					}
+					List<IxPoiName> aliasCHINames = poiObj.getAliasCHIName();
+					for (IxPoiName aliaPoiName : aliasCHINames) {
+						if(aliaPoiName==null){
+							continue;
+						}
 
-					Pattern p = Pattern.compile("([\uFF10-\uFF19]{3,})"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
-					String convertNumber = "";
-					String aliaName = aliaPoiName.getName();
-					Matcher m = p.matcher(aliaName);
-			        while (m.find()) {
-			        	String beforeConvertNumber = m.group(1);
-						convertNumber = SBC2Chinese(beforeConvertNumber); 
-						aliaName = aliaName.replace(beforeConvertNumber,convertNumber);
-			        }
+						Pattern p = Pattern.compile("([\uFF10-\uFF19]{3,})"); //三个及三个以上连续的阿拉伯数字“０到９”（全角）
+						String convertNumber = "";
+						String aliaName = aliaPoiName.getName();
+						Matcher m = p.matcher(aliaName);
+				        while (m.find()) {
+				        	String beforeConvertNumber = m.group(1);
+							convertNumber = SBC2Chinese(beforeConvertNumber); 
+							aliaName = aliaName.replace(beforeConvertNumber,convertNumber);
+				        }
 
-					if(!name.equals(aliaName)){
-						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
-						return;
+						if(!name.equals(aliaName)){
+							setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(), null);
+							return;
+						}
 					}
+					
 				}
 			}
 		}

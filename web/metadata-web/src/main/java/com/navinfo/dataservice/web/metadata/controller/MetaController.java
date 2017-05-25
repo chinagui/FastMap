@@ -29,6 +29,7 @@ import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameOperation;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameSelector;
 import com.navinfo.dataservice.engine.meta.rdname.ScRoadnameTypename;
+import com.navinfo.dataservice.engine.meta.service.ScPointPoicodeNewService;
 import com.navinfo.dataservice.engine.meta.svg.SvgImageSelector;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLine;
 import com.navinfo.dataservice.engine.meta.tmc.model.TmcLineTree;
@@ -47,7 +48,6 @@ import org.apache.uima.pear.util.FileUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -750,7 +750,7 @@ public class MetaController extends BaseController {
 //    			int dbId = subtask.getDbId();
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), subtaskId, 1901, new JSONArray());
 
                 logger.info("tips: "+tips);
                  data = selector.searchForWeb(jsonReq, tips);
@@ -919,7 +919,7 @@ public class MetaController extends BaseController {
 
                 FccApi apiFcc = (FccApi) ApplicationContextUtil.getBean("fccApi");
 
-                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(), 1901, new JSONArray());
+                JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId, 1901, new JSONArray());
 
                 operation.teilenRdNameByTask(tips);
             }
@@ -1347,4 +1347,40 @@ public class MetaController extends BaseController {
         }
     }
 
+    /**
+     * @Title: getCiParaKindTop
+     * @Description: 查询POI分类元数据接口
+     * @param request
+     * @return
+     * @throws ServletException
+     * @throws IOException  ModelAndView
+     * @throws 
+     * @author zl zhangli5174@navinfo.com
+     * @date 2017年5月18日 下午5:18:31 
+     */
+    @RequestMapping(value = "/getCiParaKindTop")
+    public ModelAndView getCiParaKindTop(HttpServletRequest request)
+            throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        Connection conn = null;
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+            conn = DBConnector.getInstance().getMetaConnection();
+
+            ScPointPoicodeNewService scPointPoicodeNewService = new ScPointPoicodeNewService();
+            JSONArray data = scPointPoicodeNewService.list(jsonReq);
+
+            return new ModelAndView("jsonView", success(data));
+        } catch (Exception e) {
+
+            logger.error(e.getMessage(), e);
+
+            return new ModelAndView("jsonView", fail(e.getMessage()));
+        } finally {
+            DbUtils.commitAndCloseQuietly(conn);
+        }
+    }
 }

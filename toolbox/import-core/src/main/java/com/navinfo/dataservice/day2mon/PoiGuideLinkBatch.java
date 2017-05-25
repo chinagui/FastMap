@@ -69,6 +69,12 @@ public class PoiGuideLinkBatch {
 		DbInfo copVersionDbInfo = createCopVersion();
 		OracleSchema copVersionSchema = new OracleSchema(
 				DbConnectConfig.createConnectConfig(copVersionDbInfo.getConnectParam()));
+		log.info("子版本库信息 dbId:"+copVersionDbInfo.getDbId());
+		log.info("子版本库信息 用户名:"+copVersionSchema.getConnConfig().getUserName());
+		log.info("子版本库信息 密码:"+copVersionSchema.getConnConfig().getUserPasswd());
+		log.info("子版本库信息 IP:"+copVersionSchema.getConnConfig().getServerIp());
+		log.info("子版本库信息 port:"+copVersionSchema.getConnConfig().getServerPort());
+
 		//子版本链接：用来搬移履历，在最后提交或回滚
 		Connection copVersionConn = copVersionSchema.getPoolDataSource().getConnection();
 		//子版本链接：用来刷库，在最后提交或回滚
@@ -156,7 +162,7 @@ public class PoiGuideLinkBatch {
 		try{
 			FlushResult flushResult= new CopVersion2MonLogFlusher(copVersionSchema,copVersionConn,monthConn,true,"day2MonSync").flush();
 			if(0==flushResult.getTotal()){
-				log.info("没有符合条件的履历，不执行日落月，返回");
+				log.info("没有符合条件的履历，不执行引导LINK批处理，返回");
 			}else{
 				log.info("开始将履历搬到月库：logtotal:"+flushResult.getTotal());
 				moveDiffLog(copVersionConn,dbLinkName,flushResult.getTempFailLogTable());
@@ -168,7 +174,8 @@ public class PoiGuideLinkBatch {
 	private void diff(OracleSchema copVersionSchema) throws Exception {
 		//完成数据差分，及履历写入
 		diffPoiGData(copVersionSchema);
-		diffPoiFlagGData(copVersionSchema);
+		//待确认，是否需要差分处理
+		//diffPoiFlagGData(copVersionSchema);
 		//更新LOG_DETAIL_GRID
 		updateLogGrid(copVersionSchema);
 	}

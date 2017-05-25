@@ -39,11 +39,13 @@ public class LcNode implements IObj {
 
 	private int editFlag = 1;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 
-	private List<IRow> meshes = new ArrayList<IRow>();
+	private List<IRow> meshes = new ArrayList<>();
 
-	public Map<String, LcNodeMesh> lcNodeMeshMap = new HashMap<String, LcNodeMesh>();
+	public Map<String, LcNodeMesh> lcNodeMeshMap = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public int getPid() {
 		return pid;
@@ -106,11 +108,12 @@ public class LcNode implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

@@ -23,7 +23,7 @@ public class GLM37016 extends baseRule {
                 if (mileagepile.changedFields().containsKey("roadName"))
                     roadName = (String) mileagepile.changedFields().get("roadName");
 
-                String regex = "[0-9a-zA-Z|]{1}";
+                String regex = "[0-9０-９a-zａ-ｚA-ZＡ-Ｚ|]{1}";
                 if (null == roadName || roadName.replaceAll(regex, "").length() == 0) {
                     setCheckResult(mileagepile.getGeometry(), "[RD_MILEAGEPILE," + mileagepile.pid() + "]",
                             mileagepile.getMeshId());

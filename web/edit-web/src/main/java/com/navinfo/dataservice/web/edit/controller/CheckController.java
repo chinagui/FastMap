@@ -167,7 +167,7 @@ public class CheckController extends BaseController {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);
 			//获取规则号
 			JSONArray ruleCodes = CheckService.getInstance().getCkRuleCodes(type);
@@ -219,18 +219,7 @@ public class CheckController extends BaseController {
 			logger.info("jobUuid 2: "+jobUuid);
 			conn = DBConnector.getInstance().getMetaConnection();
 			NiValExceptionSelector niValExceptionSelector = new NiValExceptionSelector(conn);
-			/*ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
-			
-			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
-			
-			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
-			//获取子任务范围内的tips
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
-			logger.debug("listRdnResult 获取子任务范围内的tips: "+tips);*/
+
 			//获取规则号
 			Page page = niValExceptionSelector.listCheckResultsByJobId(jsonReq,jobId,jobUuid);
 			logger.info("end check/listRdnResult");
@@ -823,10 +812,16 @@ public class CheckController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
 			String suiteId = jsonReq.getString("suiteId");
+			String ruleCode = "";
+			if(jsonReq.containsKey("ruleCode") && jsonReq.getString("ruleCode") != null 
+					&& StringUtils.isNotEmpty(jsonReq.getString("ruleCode"))){
+				ruleCode = jsonReq.getString("ruleCode");
+			}
 			JSONArray result  = new JSONArray();
 			if(suiteId != null && StringUtils.isNotEmpty(suiteId) && !suiteId.equals("null")){
 				logger.info("suiteId : "+suiteId);
-				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId);
+				logger.info("ruleCode : "+ruleCode);
+				result = CheckService.getInstance().getCkRulesBySuiteId(suiteId,ruleCode);
 			}
 			
 			return new ModelAndView("jsonView", success(result));

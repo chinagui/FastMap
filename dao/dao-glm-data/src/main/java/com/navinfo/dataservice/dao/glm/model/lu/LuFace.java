@@ -42,15 +42,17 @@ public class LuFace implements IObj {
 
 	private int detailFlag;
 
-	private Map<String, Object> changedFields = new HashMap<String, Object>();
+	private Map<String, Object> changedFields = new HashMap<>();
 
-	private List<IRow> faceTopos = new ArrayList<IRow>();
+	private List<IRow> faceTopos = new ArrayList<>();
 
-	public Map<String, LuFaceTopo> luFaceTopoMap = new HashMap<String, LuFaceTopo>();
+	public Map<String, LuFaceTopo> luFaceTopoMap = new HashMap<>();
 
-	private List<IRow> faceNames = new ArrayList<IRow>();
+	private List<IRow> faceNames = new ArrayList<>();
 
-	public Map<String, LuFaceName> luFaceNameMap = new HashMap<String, LuFaceName>();
+	public Map<String, LuFaceName> luFaceNameMap = new HashMap<>();
+
+	protected ObjStatus status;
 
 	public LuFace() {
 	}
@@ -72,11 +74,12 @@ public class LuFace implements IObj {
 
 	@Override
 	public ObjStatus status() {
-		return null;
+		return this.status;
 	}
 
 	@Override
 	public void setStatus(ObjStatus os) {
+	    this.status = os;
 	}
 
 	@Override

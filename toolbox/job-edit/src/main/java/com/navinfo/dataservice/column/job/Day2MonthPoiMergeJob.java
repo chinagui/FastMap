@@ -332,6 +332,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 
 	private String createPoiTabForBatchGL(OperationResult opResult, OracleSchema monthDbSchema) throws Exception{
 		Connection conn = monthDbSchema.getPoolDataSource().getConnection();
+		int count=0;
 		try{
 			//1.粗选POI:根据operationResult解析获取要批引导link的poi数据
 			if(opResult.getAllObjs().size()==0){
@@ -353,8 +354,9 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 					refinedPois.add(poiObj.objPid());
 				}
 			}
-			insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
-			insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			count=count+insertPois2TempTab(refinedPois,tempPoiGLinkTab,conn);
+			count=count+insertPoisNotInRdLink2TempTab(CollectionUtils.subtract(pids, refinedPois),tempPoiGLinkTab,conn);
+			if(count==0){return "";}
 			return tempPoiGLinkTab;
 		}catch(Exception e){
 			log.info(e.getMessage());
@@ -364,7 +366,7 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		}
 		
 	}
-	private void insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
+	private int insertPoisNotInRdLink2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception {
 		String sql = "insert  into "+tempPoiTable
 				+ " select pid from ix_poi t  "
 				+ " where t.pid in (select column_value from table(clob_to_table(?))) "
@@ -372,15 +374,15 @@ public class Day2MonthPoiMergeJob extends AbstractJob {
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		clobPids.setString(1, StringUtils.join(pids, ","));
-		new QueryRunner().update(conn, sql, clobPids);
+		return new QueryRunner().update(conn, sql, clobPids);
 	}
-	private void insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
+	private int insertPois2TempTab(Collection<Long> pids,String tempPoiTable,Connection conn) throws Exception{
 		String sql = "insert into "+tempPoiTable
 				+ " select column_value from table(clob_to_table(?)) ";
 		this.log.debug("sql:"+sql);
 		Clob clobPids=ConnectionUtil.createClob(conn);
 		clobPids.setString(1, StringUtils.join(pids, ","));
-		new QueryRunner().update(conn, sql, clobPids);
+		return new  QueryRunner().update(conn, sql, clobPids);
 	}
 	private String createTempPoiGLinkTable(Connection conn) throws Exception {
 		String tableName = "tmp_p_glink"+(new SimpleDateFormat("yyyyMMddhhmmssS").format(new Date()));

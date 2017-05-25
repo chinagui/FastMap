@@ -6,17 +6,16 @@ import com.navinfo.dataservice.dao.glm.iface.IRow;
 import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
 import com.navinfo.dataservice.dao.glm.iface.Result;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildface;
-import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildfaceTopo;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlink;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildlinkMesh;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnode;
 import com.navinfo.dataservice.dao.glm.model.cmg.CmgBuildnodeMesh;
-import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildfaceSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildlinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.cmg.CmgBuildnodeSelector;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.face.CmgfaceUtil;
 import com.navinfo.dataservice.engine.edit.operation.obj.cmg.node.CmgnodeUtil;
+import com.navinfo.dataservice.engine.edit.utils.CmgLinkOperateUtils;
 import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.NodeOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
@@ -26,10 +25,10 @@ import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONObject;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.util.CollectionUtils;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -284,6 +283,8 @@ public class Operation implements IOperation {
                 result.insertObject(mesh, ObjStatus.INSERT, mesh.parentPKValue());
             }
         }
+        // 验证LINK长度
+        CmgLinkOperateUtils.validateLength(command.getGeometry());
         command.getCmglink().changedFields().put("geometry", GeoTranslator.jts2Geojson(command.getGeometry()));
         command.getCmglink().changedFields().put("length", GeometryUtils.getLinkLength(command.getGeometry()));
         result.insertObject(command.getCmglink(), ObjStatus.UPDATE, command.getCmglink().pid());
@@ -302,7 +303,7 @@ public class Operation implements IOperation {
             CmgBuildfaceSelector cmgfaceSelector = new CmgBuildfaceSelector(conn);
             for (CmgBuildface cmgface : command.getCmgfaces()) {
                 // 更新面的几何信息
-                Geometry faceGeo = updateFaceGeo(result, cmglinkSelector, cmgface);
+                Geometry faceGeo = updateFaceGeo(result, cmgface);
 
                 if (!MeshUtils.mesh2Jts(String.valueOf(cmgface.getMeshId())).intersects(faceGeo)) {
                     int cmgfaceMeshId = CmgfaceUtil.calcFaceMeshId(faceGeo);
@@ -424,29 +425,43 @@ public class Operation implements IOperation {
     /**
      *
      * @param result 结果集
-     * @param cmglinkSelector CMG-FACE
      * @param cmgface 待更新CMG-FACE面
      * @return 更新后面几何
      * @throws Exception 更新面几何出错
      */
-    private Geometry updateFaceGeo(Result result, CmgBuildlinkSelector cmglinkSelector, CmgBuildface cmgface) throws Exception {
-        List<IRow> cmgfaceTopos = new AbstractSelector(conn).
-                loadRowsByClassParentId(CmgBuildfaceTopo.class, cmgface.pid(), false, "seq_num");
-        List<Geometry> geometries = new ArrayList<>();
-        for (IRow row : cmgfaceTopos) {
-            CmgBuildfaceTopo topo = (CmgBuildfaceTopo) row;
-            if (command.getCmglink().pid() == topo.getLinkPid()) {
-                geometries.add(command.getGeometry());
-                continue;
-            }
-            CmgBuildlink cmglink = (CmgBuildlink) cmglinkSelector.loadById(topo.getLinkPid(), false);
-            geometries.add(GeoTranslator.transform(cmglink.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION));
+    private Geometry updateFaceGeo(Result result, CmgBuildface cmgface) throws Exception {
+        String wkt = GeoTranslator.jts2Wkt(cmgface.getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+        Geometry sourceGeo = GeoTranslator.transform(command.getCmglink().getGeometry(), Constant.BASE_SHRINK, Constant.BASE_PRECISION);
+        String sourceCoors = getCoordinateStr(sourceGeo);
+        String reverseSourceCoors = getCoordinateStr(sourceGeo.reverse());
+        String newCoors = getCoordinateStr(command.getGeometry());
+        String reverseNewCoors = getCoordinateStr(command.getGeometry().reverse());
+
+        if (StringUtils.containsIgnoreCase(wkt, sourceCoors)) {
+            wkt = wkt.replace(sourceCoors, newCoors);
+        } else {
+            wkt = wkt.replace(reverseSourceCoors, reverseNewCoors);
         }
-        Geometry faceGeo = GeoTranslator.getCalLineToPython(geometries);
+
+        Geometry faceGeo = GeoTranslator.wkt2Geometry(wkt);
+
         cmgface.changedFields().put("geometry", GeoTranslator.jts2Geojson(faceGeo));
         cmgface.changedFields().put("perimeter", GeometryUtils.getLinkLength(faceGeo));
         cmgface.changedFields().put("area", GeometryUtils.getCalculateArea(faceGeo));
         result.insertObject(cmgface, ObjStatus.UPDATE, cmgface.pid());
         return faceGeo;
+    }
+
+    /**
+     * 获取坐标字符串
+     * @param sourceGeo 坐标点位
+     * @return
+     */
+    private String getCoordinateStr(Geometry sourceGeo) {
+        StringBuffer tempCoors = new StringBuffer();
+        for (Coordinate coor : sourceGeo.getCoordinates()) {
+            tempCoors.append(coor.x ).append(" ").append(coor.y).append(", ");
+        }
+        return tempCoors.substring(0, tempCoors.length() - 2);
     }
 }

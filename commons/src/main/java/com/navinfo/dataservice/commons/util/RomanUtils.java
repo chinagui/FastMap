@@ -17,7 +17,8 @@ import java.util.regex.Pattern;
 public class RomanUtils {
 	
 	//匹配罗马数字的正则,但是由于每一个都可能是0个 空字符串也会被匹配出来 需要后期在程序里再处理
-	private static	String regex = "(-| +|^)M{0,9}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})( +|$)"; 
+	private static	String regex = "(-| +|^)M{0,9}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})( +|$)";
+    private static String ROMAN_REGEX = "[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ]{1,}";
 	
 	
 	/**
@@ -28,20 +29,46 @@ public class RomanUtils {
 	 * @time:2016-6-24 下午4:15:27
 	 */
 	public static String replaceAllRoman2RrabicNum(String value){
-		Pattern p = Pattern.compile(regex);
+		Pattern p = Pattern.compile(ROMAN_REGEX);
 		Matcher matcher = p.matcher(value);
 		
 		while (matcher.find()) {
 			String srcStr = matcher.group();
-			String num=r2a(srcStr);
+			String num=translateRoman(srcStr);
 			if(!"0".equals(num)){
 				value=value.replace(srcStr,num);
 			}
 		}
+
 		
 		return value;
 	}
-	
+
+    private static String translateRoman(String value) {
+        value = value.replace("Ⅰ", "1");
+        value = value.replace("Ⅱ", "2");
+        value = value.replace("Ⅲ", "3");
+        value = value.replace("Ⅳ", "4");
+        value = value.replace("Ⅴ", "5");
+        value = value.replace("Ⅵ", "6");
+        value = value.replace("Ⅶ", "7");
+        value = value.replace("Ⅷ", "8");
+        value = value.replace("Ⅸ", "9");
+        value = value.replace("Ⅹ", "10");
+        value = value.replace("Ⅺ", "11");
+        value = value.replace("Ⅻ", "12");
+        value = value.replace("ⅰ", "1");
+        value = value.replace("ⅱ", "2");
+        value = value.replace("ⅲ", "3");
+        value = value.replace("ⅳ", "4");
+        value = value.replace("ⅴ", "5");
+        value = value.replace("ⅵ", "6");
+        value = value.replace("ⅶ", "7");
+        value = value.replace("ⅷ", "8");
+        value = value.replace("ⅸ", "9");
+        value = value.replace("ⅹ", "10");
+        return value;
+    }
 	
 	//罗马数字转阿拉伯数字：
     // 从前往后遍历罗马数字，如果某个数比前一个数小，则把该数加入到结果中；
@@ -260,10 +287,20 @@ public class RomanUtils {
    	
 
    }
-    
+
     public static void main(String[] args) {
-		String name="健德门  CI 街道 VI 号";
-		System.out.println(RomanUtils.replaceAllRoman2RrabicNum(name));
-	}
+        String name="健德门  CI 街道 VI 号";
+        name = "ｚｒｍⅠ号ⅡsanⅢⅣⅤⅥⅦⅧⅨⅩⅪⅫⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ测试路";
+//        name="健德门  CI 街道 ⅹ 号";
+        // 全角转半角(先转换成半角)
+        name = ExcelReader.f2h(name);
+        name = name.replace("#", "号");
+        // 将罗马字符转为阿拉伯数字
+        //I V X L C D M
+        name = RomanUtils.replaceAllRoman2RrabicNum(name);
+
+        System.out.println(name);
+//		System.out.println(RomanUtils.replaceAllRoman2RrabicNum(name));
+    }
 
 }

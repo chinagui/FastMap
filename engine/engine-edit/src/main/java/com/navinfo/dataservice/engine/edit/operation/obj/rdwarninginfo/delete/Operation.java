@@ -166,4 +166,28 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 删除link维护警示信息
+	 *
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids, Result result) throws Exception {
+
+		if (conn == null) {
+			return;
+		}
+
+		RdWarninginfoSelector selector = new RdWarninginfoSelector(conn);
+
+		List<RdWarninginfo> warninginfos = selector.loadByLinks(linkPids, true);
+
+		for (RdWarninginfo warninginfo : warninginfos) {
+
+			result.insertObject(warninginfo, ObjStatus.DELETE,
+					warninginfo.getPid());
+		}
+	}
 }

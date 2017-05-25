@@ -23,6 +23,7 @@ import com.navinfo.dataservice.engine.meta.kind.KindSelector;
 import com.navinfo.dataservice.engine.meta.kindcode.KindCodeSelector;
 import com.navinfo.dataservice.engine.meta.level.LevelSelector;
 import com.navinfo.dataservice.engine.meta.mesh.MeshSelector;
+import com.navinfo.dataservice.engine.meta.model.ScBcrossnodeMatchck;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConvertSelector;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
 import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
@@ -51,14 +52,22 @@ import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translates.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
+import com.navinfo.navicommons.database.QueryRunner;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -812,6 +821,130 @@ public class MetadataApiImpl implements MetadataApi {
 	private JSONObject getAdminMap(Connection conn) throws Exception {
 		ScPointAdminArea areaSelector = new ScPointAdminArea(conn);
 		return areaSelector.getAdminMap();
+	}
+
+	
+	/**
+	 * @Title: pyConvert
+	 * @Description: 调用cop函数转拼音
+	 * @param word   待翻译的词  必填
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String pyConvert(String word, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.pyConvert(word, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: voiceConvert
+	 * @Description: 调用cop函数转语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String voiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.voiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	
+	/**
+	 * @Title: pyVoiceConvert
+	 * @Description: 调用cop函数转拼音及语音
+	 * @param word   待翻译的词  必填
+	 * @param phonetic 带翻译词的发音  选填  默认 null
+	 * @param adminId	行政区划号  选填  默认 null
+	 * @param isRdName  是否是道路名: "1"/是  ; "0"/否; 默认 null
+	 * @return 
+	 			result[0] = resultSet.getString("phonetic");
+				result[1] = resultSet.getString("voicefile");
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String[] pyVoiceConvert(String word, String phonetic, String adminId, String isRdName) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] result = py.pyVoiceConvert(word, phonetic, adminId, isRdName);
+
+		return result;
+	}
+	/**
+	 * @Title: engConvert
+	 * @Description: 调用cop函数转英文
+	 * @param word   待翻译的词  必填
+	 * @return
+	 * @throws Exception  String
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月22日  
+	 */
+	@Override
+	public String engConvert(String word, String adminId) throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String result = py.engConvert(word, adminId);
+
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.metadata.iface.MetadataApi#getScPointTruckList()
+	 */
+	@Override
+	public List<Map<String, Object>> getScPointTruckList() throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT T.KIND,T.CHAIN,T.TYPE,T.TRUCK    ");
+			sb.append("   FROM SC_POINT_TRUCK T                 ");
+			
+			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>> (){
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+					while(rs.next()){
+						Map<String, Object> map = new HashMap<String, Object>();
+						map.put("kind", rs.getString("KIND"));
+						map.put("chain", rs.getString("CHAIN"));
+						map.put("type", rs.getString("TYPE"));
+						map.put("truck", rs.getString("TRUCK"));
+						result.add(map);
+					}
+					return result;
+				}	
+	    	};				
+
+	    	return run.query(conn, sb.toString(), rsHandler);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw e;
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 }

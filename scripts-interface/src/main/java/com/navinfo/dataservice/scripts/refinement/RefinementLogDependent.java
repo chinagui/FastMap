@@ -3,6 +3,7 @@ package com.navinfo.dataservice.scripts.refinement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -12,7 +13,10 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.dao.log.LogReader;
 import com.navinfo.dataservice.dao.plus.log.LogDetail;
 import com.navinfo.dataservice.dao.plus.log.ObjHisLogParser;
@@ -20,6 +24,7 @@ import com.navinfo.dataservice.dao.plus.log.PoiLogDetailStat;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.selector.ObjBatchSelector;
+import com.navinfo.dataservice.datahub.service.DbService;
 import com.navinfo.dataservice.scripts.JobScriptsInterface;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -37,9 +42,9 @@ import com.navinfo.navicommons.exception.ServiceException;
  */
 public class RefinementLogDependent {
 
-	String deletedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,POI_NUM,DELFLAG) VALUES (?,?,?)";
-	String updatedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,POI_NUM,DELFLAG,MOVEFLAG,ADDFLAG,LOG) VALUES (?,?,?,?,?,?)";
-	String insertedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,POI_NUM,DELFLAG,MOVEFLAG,ADDFLAG,LOG) VALUES (?,?,?,?,?,?)";
+	String deletedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,DELFLAG) VALUES (?,?)";
+	String updatedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,MOVEFLAG,LOG) VALUES (?,?,?)";
+	String insertedSql = "INSERT INTO REFINED_LOG_DEPENDENT (PID,ADDFLAG) VALUES (?,?)";
 
 	PreparedStatement perstmtDeleted = null;
 	PreparedStatement perstmtUpdated = null;
@@ -79,7 +84,6 @@ public class RefinementLogDependent {
 			sb.append("create table REFINED_LOG_DEPENDENT     ");
 			sb.append("(                                      ");
 			sb.append("  pid     NUMBER(10) not null,         ");
-			sb.append("  poi_num VARCHAR2(100) not null,       ");
 			sb.append("  delflag NUMBER(1) default 0 not null,");
 			sb.append("  moveflag NUMBER(1) default 0 not null,");
 			sb.append("  addflag  NUMBER(1) default 0 not null,");
@@ -93,28 +97,44 @@ public class RefinementLogDependent {
 		try{
 			//读履历获取增删改的pid
 			LogReader logReader = new LogReader(conn);
+			List<String> a = new ArrayList<String>();
+			a.add("1");
+			a.add("2");
 			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", null, null, null);
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000", "201704120000");
+//			Map<Integer,Collection<Long>> pidMap = logReader.getUpdatedObj("IX_POI", "IX_POI", a, "201704050000");
+
 			//新增
 			Collection<Long> inserted = pidMap.get(1);
-			perstmtInserted = generate(conn,OperationType.INSERT,inserted,insertedSql,perstmtInserted);
+			if(inserted!=null&&!inserted.isEmpty()){
+				for(Long pid:inserted){
+					if(perstmtInserted==null){
+						perstmtInserted = conn.prepareStatement(insertedSql);
+					}
+					perstmtInserted.setLong(1,pid);
+					perstmtInserted.setInt(2,1);
+					perstmtInserted.addBatch();
+				}
+			}
+
 			//修改
 			Collection<Long> updated = pidMap.get(3);
-			perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			if(updated!=null&&!updated.isEmpty()){
+				perstmtUpdated = generate(conn,OperationType.UPDATE,updated,updatedSql,perstmtUpdated);
+			}
 			
 			//删除
 			Collection<Long> deleted = pidMap.get(2);
-			Map<Long,BasicObj> updatedObjs = ObjBatchSelector.selectByPids(conn, "IX_POI", null, false, deleted, false, true);
-
-			for(Long pid:deleted){
-				if(perstmtDeleted==null){
-					perstmtDeleted = conn.prepareStatement(deletedSql);
+			if(deleted!=null&&!deleted.isEmpty()){
+				for(Long pid:deleted){
+					if(perstmtDeleted==null){
+						perstmtDeleted = conn.prepareStatement(deletedSql);
+					}
+					perstmtDeleted.setLong(1,pid);
+					perstmtDeleted.setInt(2,1);
+					perstmtDeleted.addBatch();
 				}
-				perstmtDeleted.setLong(1,pid);
-				perstmtDeleted.setString(2,updatedObjs.get(pid).getMainrow().getAttrByColName("POI_NUM").toString());
-				perstmtDeleted.setInt(3,1);
-				perstmtDeleted.addBatch();
 			}
-			
 			
 			if(perstmtDeleted!=null){
 				perstmtDeleted.executeBatch();
@@ -191,22 +211,16 @@ public class RefinementLogDependent {
 				perstmt = conn.prepareStatement(sql);
 			}
 			perstmt.setLong(1,entry.getKey());
-			perstmt.setString(2,ixPoi.getMainrow().getAttrByColName("POI_NUM").toString());
-			perstmt.setInt(3, 0);
-			if(ixPoi.isGeoChanged()){
-				perstmt.setInt(4,1);
+			if(ixPoi.getMainrow().hisOldValueContains("GEOMETRY")){
+				perstmt.setInt(2,1);
 			}else{
-				perstmt.setInt(4,0);
+				perstmt.setInt(2,0);
 			}
-			if(opType.equals(OperationType.INSERT)){
-				perstmt.setInt(5,1);
-			}else{
-				perstmt.setInt(5,0);
-			}
+
 			if(logSet.size() > 0){
-				perstmt.setString(6,StringUtils.join(logSet.toArray(),"|"));
+				perstmt.setString(3,StringUtils.join(logSet.toArray(),"|"));
 			}else{
-				perstmt.setString(6,null);
+				perstmt.setString(3,null);
 			}
 			perstmt.addBatch();
 		}
@@ -217,7 +231,8 @@ public class RefinementLogDependent {
 	public static void main(String[] args) throws Exception{
 		JobScriptsInterface.initContext();
 		RefinementLogDependent RefinementLogDependent = new RefinementLogDependent();
-		RefinementLogDependent.refinementLogDependentMain(12);
+//		RefinementLogDependent.refinementLogDependentMain(13);
+		RefinementLogDependent.refinementLogDependentMain(Integer.parseInt(args[0]));
 	}
 	
 

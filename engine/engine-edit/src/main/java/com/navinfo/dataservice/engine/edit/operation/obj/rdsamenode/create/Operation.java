@@ -117,7 +117,7 @@ public class Operation implements IOperation {
 	 * 维护点的坐标
 	 * 
 	 * @param mainNodePid
-	 * @param nodeMap
+	 * @param tableName
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
@@ -198,6 +198,15 @@ public class Operation implements IOperation {
                         conn);
                 adProcess.innerRun();
                 break;
+
+            case RWNODE:
+                com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command rwCommand = new com
+                        .navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Command(updateContent, null);
+                com.navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process rwProcess = new com
+                        .navinfo.dataservice.engine.edit.operation.topo.move.moverwnode.Process(rwCommand, result,
+                        conn);
+                rwProcess.innerRun();
+                break;
             case ZONENODE:
                 com.navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command zoneCommand = new com
                         .navinfo.dataservice.engine.edit.operation.topo.move.movezonenode.Command(updateContent, null);
@@ -256,6 +265,7 @@ public class Operation implements IOperation {
      * @throws Exception
      */
     public void moveMainNodeForTopo(JSONObject updateContent, ObjType type, Result result) throws Exception {
+
         int nodePid = updateContent.getInt("objId");
 
         RdSameNodeSelector sameNodeSelector = new RdSameNodeSelector(conn);
@@ -265,138 +275,147 @@ public class Operation implements IOperation {
         List<RdSameNode> sameNodeList = sameNodeSelector.loadSameNodeByNodePids(String.valueOf(nodePid), tableName,
                 true);
 
-        if (CollectionUtils.isNotEmpty(sameNodeList)) {
-            if (sameNodeList.size() == 1) {
-                RdSameNode sameNode = sameNodeList.get(0);
+        //不是同一node组成点
+        if (CollectionUtils.isEmpty(sameNodeList)) {
 
-                List<IRow> sameNodePart = sameNode.getParts();
+            return;
+        }
+        if (sameNodeList.size() != 1) {
+            throw new Exception(type.toString() + "点:" + nodePid + "的同一点关系不唯一");
+        }
 
-                // 定义需要移动的partNode
-                Map<ObjType, JSONObject> movePartNodeMap = new HashMap<>();
+        RdSameNode sameNode = sameNodeList.get(0);
 
-                for (IRow row : sameNodePart) {
-                    RdSameNodePart part = (RdSameNodePart) row;
+        List<IRow> sameNodePart = sameNode.getParts();
 
-                    JSONObject updateJson = new JSONObject();
+        // 定义需要移动的partNode
+        Map<ObjType, JSONObject> movePartNodeMap = new HashMap<>();
 
-                    Object obj = JSONObject.toBean(updateContent);
+        for (IRow row : sameNodePart) {
+            RdSameNodePart part = (RdSameNodePart) row;
 
-                    updateJson = JSONObject.fromObject(obj);
+            Object obj = JSONObject.toBean(updateContent);
 
-                    ObjType partType = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
+            JSONObject updateJson = JSONObject.fromObject(obj);
 
-                    updateJson.element("objId", part.getNodePid());
+            ObjType partType = ReflectionAttrUtils.getObjTypeByTableName(part.getTableName());
 
-                    updateJson.element("type", partType);
+            updateJson.element("objId", part.getNodePid());
 
-                    updateJson.put("mainType", type);
+            updateJson.element("type", partType);
 
-                    movePartNodeMap.put(partType, updateJson);
-                }
+            updateJson.put("mainType", type);
 
-                handleMovePartNodeMap(nodePid, type, movePartNodeMap, result);
+            movePartNodeMap.put(partType, updateJson);
+        }
 
-                try {
-                    RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(conn);
-                    Class clazz = result.getClass();
-                    Field[] fields = clazz.getDeclaredFields();
-                    for (Field field : fields) {
-                        if (!"logs".equals(field.getName()))
-                            continue;
-                        field.setAccessible(true);
-                        Object object = field.get(result);
-                        if (object instanceof JSONArray) {
-                            JSONArray logs = (JSONArray) object;
-                            JSONObject log = new JSONObject();
-                            log.put("type", sameNode.objType());
-                            log.put("pid", sameNode.pid());
-                            log.put("op", "修改");
-                            logs.add(log);
+        handleMovePartNodeMap(nodePid, type, movePartNodeMap, result);
 
-                            switch (type) {
-                                case RDNODE:
-                                    List<RdLink> rdLinks = new RdLinkSelector(conn).loadByNodePid(nodePid, false);
-                                    for (RdLink link : rdLinks) {
-                                        RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
-                                                "RD_LINK", false);
-                                        if (null == sameLinkPart)
-                                            continue;
-                                        log = new JSONObject();
-                                        log.put("type", "RDSAMELINK");
-                                        log.put("pid", sameLinkPart.getGroupId());
-                                        log.put("op", "修改");
-                                        logs.add(log);
-                                    }
-                                    break;
-                                case ADNODE:
-                                    List<AdLink> adLinks = new AdLinkSelector(conn).loadByNodePid(nodePid, false);
-                                    for (AdLink link : adLinks) {
-                                        RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
-                                                "AD_LINK", false);
-                                        if (null == sameLinkPart)
-                                            continue;
-                                        log = new JSONObject();
-                                        log.put("type", "RDSAMELINK");
-                                        log.put("pid", sameLinkPart.getGroupId());
-                                        log.put("op", "修改");
-                                        logs.add(log);
-                                    }
-                                    break;
-                                case LUNODE:
-                                    List<LuLink> luLinks = new LuLinkSelector(conn).loadByNodePid(nodePid, false);
-                                    for (LuLink link : luLinks) {
-                                        RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
-                                                "LU_LINK", false);
-                                        if (null == sameLinkPart)
-                                            continue;
-                                        log = new JSONObject();
-                                        log.put("type", "RDSAMELINK");
-                                        log.put("pid", sameLinkPart.getGroupId());
-                                        log.put("op", "修改");
-                                        logs.add(log);
-                                    }
-                                    break;
-                                case ZONENODE:
-                                    List<ZoneLink> zoneLinks = new ZoneLinkSelector(conn).loadByNodePid(nodePid, false);
-                                    for (ZoneLink link : zoneLinks) {
-                                        RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
-                                                "ZONE_LINK", false);
-                                        if (null == sameLinkPart)
-                                            continue;
-                                        log = new JSONObject();
-                                        log.put("type", "RDSAMELINK");
-                                        log.put("pid", sameLinkPart.getGroupId());
-                                        log.put("op", "修改");
-                                        logs.add(log);
-                                    }
-                                    break;
-                                case RWNODE:
-                                    List<RwLink> rwLinks = new RwLinkSelector(conn).loadByNodePid(nodePid, false);
-                                    for (RwLink link : rwLinks) {
-                                        RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
-                                                "RW_LINK", false);
-                                        if (null == sameLinkPart)
-                                            continue;
-                                        log = new JSONObject();
-                                        log.put("type", "RDSAMELINK");
-                                        log.put("pid", sameLinkPart.getGroupId());
-                                        log.put("op", "修改");
-                                        logs.add(log);
-                                    }
-                                    break;
+        editLogs( sameNode, nodePid,  type,  result);
+
+    }
+
+
+    private  void editLogs(RdSameNode sameNode,int nodePid, ObjType type, Result result)
+    {
+        try {
+            RdSameLinkSelector sameLinkSelector = new RdSameLinkSelector(conn);
+            Class clazz = result.getClass();
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                if (!"logs".equals(field.getName()))
+                    continue;
+                field.setAccessible(true);
+                Object object = field.get(result);
+                if (object instanceof JSONArray) {
+                    JSONArray logs = (JSONArray) object;
+                    JSONObject log = new JSONObject();
+                    log.put("type", sameNode.objType());
+                    log.put("pid", sameNode.pid());
+                    log.put("op", "修改");
+                    logs.add(log);
+
+                    switch (type) {
+                        case RDNODE:
+                            List<RdLink> rdLinks = new RdLinkSelector(conn).loadByNodePid(nodePid, false);
+                            for (RdLink link : rdLinks) {
+                                RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
+                                        "RD_LINK", false);
+                                if (null == sameLinkPart)
+                                    continue;
+                                log = new JSONObject();
+                                log.put("type", "RDSAMELINK");
+                                log.put("pid", sameLinkPart.getGroupId());
+                                log.put("op", "修改");
+                                logs.add(log);
                             }
-                        }
-                        break;
+                            break;
+                        case ADNODE:
+                            List<AdLink> adLinks = new AdLinkSelector(conn).loadByNodePid(nodePid, false);
+                            for (AdLink link : adLinks) {
+                                RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
+                                        "AD_LINK", false);
+                                if (null == sameLinkPart)
+                                    continue;
+                                log = new JSONObject();
+                                log.put("type", "RDSAMELINK");
+                                log.put("pid", sameLinkPart.getGroupId());
+                                log.put("op", "修改");
+                                logs.add(log);
+                            }
+                            break;
+                        case LUNODE:
+                            List<LuLink> luLinks = new LuLinkSelector(conn).loadByNodePid(nodePid, false);
+                            for (LuLink link : luLinks) {
+                                RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
+                                        "LU_LINK", false);
+                                if (null == sameLinkPart)
+                                    continue;
+                                log = new JSONObject();
+                                log.put("type", "RDSAMELINK");
+                                log.put("pid", sameLinkPart.getGroupId());
+                                log.put("op", "修改");
+                                logs.add(log);
+                            }
+                            break;
+                        case ZONENODE:
+                            List<ZoneLink> zoneLinks = new ZoneLinkSelector(conn).loadByNodePid(nodePid, false);
+                            for (ZoneLink link : zoneLinks) {
+                                RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
+                                        "ZONE_LINK", false);
+                                if (null == sameLinkPart)
+                                    continue;
+                                log = new JSONObject();
+                                log.put("type", "RDSAMELINK");
+                                log.put("pid", sameLinkPart.getGroupId());
+                                log.put("op", "修改");
+                                logs.add(log);
+                            }
+                            break;
+                        case RWNODE:
+                            List<RwLink> rwLinks = new RwLinkSelector(conn).loadByNodePid(nodePid, false);
+                            for (RwLink link : rwLinks) {
+                                RdSameLinkPart sameLinkPart = sameLinkSelector.loadLinkPartByLink(link.pid(),
+                                        "RW_LINK", false);
+                                if (null == sameLinkPart)
+                                    continue;
+                                log = new JSONObject();
+                                log.put("type", "RDSAMELINK");
+                                log.put("pid", sameLinkPart.getGroupId());
+                                log.put("op", "修改");
+                                logs.add(log);
+                            }
+                            break;
                     }
-                } catch (Exception e) {
-                    log.info("该功能用于移动Node时返回同一点渲染信息，出错部分已忽略");
-                    log.error("错误日志：" + e.getMessage(), e);
                 }
-            } else {
-                throw new Exception(type.toString() + "点:" + nodePid + "的同一点关系不唯一");
+                break;
             }
+        } catch (Exception e) {
+            log.info("该功能用于移动Node时返回同一点渲染信息，出错部分已忽略");
+            log.error("错误日志：" + e.getMessage(), e);
         }
     }
+
 
     /**
      * （RDNODE>ADNODE>RWNODE>ZONENODE>LUNODE）
@@ -416,6 +435,13 @@ public class Operation implements IOperation {
                     break;
                 case ADNODE:
                     if (movePartNodeMap.containsKey(ObjType.RDNODE)) {
+                        throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
+                    } else {
+                        moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);
+                    }
+                    break;
+                case RWNODE:
+                    if (movePartNodeMap.containsKey(ObjType.RDNODE)||movePartNodeMap.containsKey(ObjType.ADNODE)) {
                         throw new Exception("node不是该同一关系中的主要素，不允许移动操作");
                     } else {
                         moveNodeFromNodeMap(type, nodePid, movePartNodeMap, result);

@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.cmg.building.update;
 
+import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -191,6 +192,8 @@ public class Operation implements IOperation {
 
 				name.setMesh(building.mesh());
 
+				name.setPid(PidUtil.getInstance().applyCmgBuildingNamePid());
+
 				result.insertObject(name, ObjStatus.INSERT, building.pid());
 			}
 		}
@@ -325,6 +328,8 @@ public class Operation implements IOperation {
 				build3dmodel.setBuildingPid(building.getPid());
 
 				build3dmodel.setMesh(building.mesh());
+
+				build3dmodel.setPid(PidUtil.getInstance().applyCmgBuilding3dmodelPid());
 
 				result.insertObject(build3dmodel, ObjStatus.INSERT,
 						building.pid());

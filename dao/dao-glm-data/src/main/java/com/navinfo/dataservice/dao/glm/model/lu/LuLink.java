@@ -37,15 +37,17 @@ public class LuLink implements IObj {
 
     private int editFlag = 1;
 
-    private List<IRow> linkKinds = new ArrayList<IRow>();
+    private List<IRow> linkKinds = new ArrayList<>();
 
-    public Map<String, LuLinkKind> linkKindMap = new HashMap<String, LuLinkKind>();
+    public Map<String, LuLinkKind> linkKindMap = new HashMap<>();
 
-    private List<IRow> meshes = new ArrayList<IRow>();
+    private List<IRow> meshes = new ArrayList<>();
 
-    public Map<String, LuLinkMesh> meshMap = new HashMap<String, LuLinkMesh>();
+    public Map<String, LuLinkMesh> meshMap = new HashMap<>();
 
-    private Map<String, Object> changedFields = new HashMap<String, Object>();
+    private Map<String, Object> changedFields = new HashMap<>();
+
+    protected ObjStatus status;
 
     public LuLink() {
     }
@@ -67,11 +69,12 @@ public class LuLink implements IObj {
 
     @Override
     public ObjStatus status() {
-        return null;
+        return this.status;
     }
 
     @Override
     public void setStatus(ObjStatus os) {
+        this.status = os;
     }
 
     @Override

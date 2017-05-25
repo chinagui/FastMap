@@ -43,6 +43,16 @@ public class Transaction {
 	private long userId;
 	private int subtaskId;
 	private int dbType;
+	
+	private int infect = 0;
+
+	public int getInfect() {
+		return infect;
+	}
+
+	public void setInfect(int infect) {
+		this.infect = infect;
+	}
 
 	public long getUserId() {
 		return userId;
@@ -106,6 +116,9 @@ public class Transaction {
 		operType = Enum.valueOf(OperType.class, json.getString("command"));
 
 		objType = Enum.valueOf(ObjType.class, json.getString("type"));
+		if(json.containsKey("infect")){
+			this.setInfect(json.getInt("infect"));
+		}
 
 		switch (objType) {
 		case RDLINK:
@@ -137,6 +150,10 @@ public class Transaction {
 			case BATCH:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Command(
 						json, requester);
+			case BATCHDELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Command(
+						json, requester);
+
 			}
 		case FACE:
 			switch (operType) {
@@ -160,6 +177,9 @@ public class Transaction {
 						json, requester);
 			case BATCH:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Command(
+						json, requester);
+			case BATCHDELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdnode.Command(
 						json, requester);
 			}
 		case RDRESTRICTION:
@@ -969,6 +989,9 @@ public class Transaction {
 			case BATCH:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdlink.Process(
 						command);
+			case BATCHDELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdlink.Process(
+						command);
 			}
 		case FACE:
 			switch (operType) {
@@ -992,6 +1015,9 @@ public class Transaction {
 						command);
 			case BATCH:
 				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.batchrdnode.Process(
+						command);
+			case BATCHDELETE:
+				return new com.navinfo.dataservice.engine.edit.operation.topo.batch.delete.rdnode.Process(
 						command);
 			}
 		case RDRESTRICTION:
@@ -1779,6 +1805,7 @@ public class Transaction {
 		command.setUserId(userId);
 		command.setTaskId(subtaskId);
 		command.setDbType(dbType);
+		command.setInfect(infect);
 		process = this.createProcess(command);
 
 		return process.run();
@@ -1797,13 +1824,13 @@ public class Transaction {
 		command.setUserId(userId);
 		command.setTaskId(subtaskId);
 		command.setDbType(dbType);
-
+		command.setInfect(infect);
 		if (conn != null) {
 			command.setHasConn(true);
 		}
 		process = this.createProcess(command);
 		process.setConn(conn);
-
+		
 		return process.innerRun();
 
 	}

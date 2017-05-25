@@ -264,6 +264,11 @@ public class TaskOperation {
 			
 			String insertPart="";
 			String valuePart="";
+			if (bean!=null && bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
+				insertPart+=" WORK_KIND ";
+				valuePart+= "'" + bean.getWorkKind() + "'";
+			};
 			if (bean!=null&&bean.getTaskId()!=null && bean.getTaskId()!=0 && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" TASK_ID ";
@@ -307,7 +312,7 @@ public class TaskOperation {
 				insertPart+=" TYPE ";
 				valuePart+=bean.getType();
 			};
-			if (bean!=null&&bean.getLot()!=null && bean.getLot()!=0 && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (bean!=null&&bean.getLot()!=null && StringUtils.isNotEmpty(bean.getLot().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" LOT";
 				valuePart+= bean.getLot();
@@ -1569,17 +1574,21 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" LOT= " + bean.getLot();
 			};
-			if (bean!=null&&bean.getPoiPlanTotal()!=null && bean.getPoiPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
+			if (bean!=null&&bean.getPoiPlanTotal()!=null && StringUtils.isNotEmpty(bean.getPoiPlanTotal().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" poi_plan_total= " + bean.getPoiPlanTotal();
 			};
-			if (bean!=null&&bean.getRoadPlanTotal()!=null && bean.getRoadPlanTotal()!=0 && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
+			if (bean!=null&&bean.getRoadPlanTotal()!=null && StringUtils.isNotEmpty(bean.getRoadPlanTotal().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" road_plan_total= " + bean.getRoadPlanTotal();
 			};
 			if (bean!=null&&bean.getGroupId()!=null && bean.getGroupId()!=0 && StringUtils.isNotEmpty(bean.getGroupId().toString())){
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" GROUP_ID= "+bean.getGroupId();
+			};
+			if (bean!=null&&bean.getWorkKind()!=null && StringUtils.isNotEmpty(bean.getWorkKind().toString())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				updateSql+=" where TASK_ID=" + bean.getTaskId();
@@ -2425,10 +2434,10 @@ public class TaskOperation {
 			String insertTask="INSERT INTO TASK  (TASK_ID,CREATE_USER_ID,CREATE_DATE,STATUS,NAME,"
 					+ "   DESCP,PLAN_START_DATE,PLAN_END_DATE,LATEST,PROGRAM_ID,BLOCK_ID,REGION_ID,"
 					+ "   PRODUCE_PLAN_START_DATE,PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,"
-					+ "   POI_PLAN_TOTAL)"
+					+ "   POI_PLAN_TOTAL,WORK_KIND)"
 					+ "  SELECT "+newTaskId+","+userId+",SYSDATE,2,NAME,DESCP,PLAN_START_DATE,"
 					+ "         PLAN_END_DATE,1,PROGRAM_ID,BLOCK_ID,REGION_ID,PRODUCE_PLAN_START_DATE,"
-					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL"
+					+ "         PRODUCE_PLAN_END_DATE,TYPE,LOT,GROUP_ID,ROAD_PLAN_TOTAL,POI_PLAN_TOTAL,WORK_KIND"
 					+ "    FROM TASK"
 					+ "   WHERE TASK_ID = "+taskId;
 			String insertTaskGrid="INSERT INTO TASK_GRID_MAPPING"
@@ -2491,6 +2500,24 @@ public class TaskOperation {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new Exception("关闭失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	/**
+	 * task的workKind字段，特定值域改成1,例如：原work_Kind='1|0|0|0'，参数subtaskWorkKind=3，则修改后work_Kind='1|0|1|0'
+	 * @param conn
+	 * @param taskId
+	 * @param subtaskWorkKind:1外业采集，2众包，3情报矢量，4多源,将任务的对应修改为1
+	 * @throws Exception
+	 */
+	public static void updateWorkKind(Connection conn, int taskId, int subtaskWorkKind) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String updateSql="UPDATE TASK SET work_kind=substr(work_kind,1,"+(subtaskWorkKind-1)*2+")||1||substr(work_kind,"+subtaskWorkKind*2+",length(work_kind)) WHERE task_id="+taskId;
+			run.update(conn,updateSql);			
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("创建失败，原因为:"+e.getMessage(),e);
 		}
 	}
 }

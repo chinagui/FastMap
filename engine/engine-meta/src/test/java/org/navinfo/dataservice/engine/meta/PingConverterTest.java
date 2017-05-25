@@ -25,7 +25,7 @@ public class PingConverterTest {
 		new ApplicationContextUtil().setApplicationContext(context);
 	}
 
-	@Test
+//	@Test
 	public void testQueryPingYin() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -39,7 +39,7 @@ public class PingConverterTest {
 
 	}
 	
-	@Test
+//	@Test
 	public void testConvertPingYin() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -51,4 +51,66 @@ public class PingConverterTest {
 //		System.out.println(res);
 
 	}
+	
+//	@Test
+	public void testpyConvert() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+//		String res = py.pyConvert("上海弄堂", "310000", null);
+		String res = py.pyConvert("S271", null, null);
+		
+
+		System.out.println(res);
+		//Shang Hai Nong Tang
+		//带行政区划号后  Shang Hai Long Tang
+
+	}
+	
+//	@Test
+	public void testvoiceConvert() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String res = py.voiceConvert("上海弄堂", null, "310000", null);
+				//("上海弄堂", "310000", null);
+
+		System.out.println(res);
+		//Shang Hai Nong Tang
+		//带行政区划号后  Shang Hai Long Tang
+
+	}
+	
+//	@Test
+	public void testpyvConvert() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String[] res = py.pyVoiceConvert("上海弄堂", null, "310000", null);
+				//("上海弄堂", "310000", null);
+
+		System.out.println(res);
+		
+		System.out.println(res[0]);
+
+		System.out.println(res[1]);
+
+	}
+	
+	@Test
+	public void testEngConvert() throws Exception {
+		PinyinConverter py = new PinyinConverter();
+
+		String res = py.engConvert("上海弄堂", "310000");
+				//("上海弄堂", "310000", null);
+		System.out.println(res);
+	}
+	
+	public static void main(String[] args) {
+		String targets = "[IX_POI,500000008];[IX_POI,510000006];[IX_POI,509000015];[IX_POI,504000007]";
+		System.out.println(targets);
+		String b =targets.replaceAll("[\\[\\]]","").replaceAll("IX_POI,", "").replaceAll(";", ",");  
+		//.replaceAll("]", "");
+		System.out.println(targets);
+		System.out.println(b);
+//		String[] pidsArr = pids.split(",");
+	}
+	
 }

@@ -360,4 +360,80 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 根据link数组 维护RdRestriction
+	 * @param linkPids
+	 * @param result
+	 * @throws Exception
+	 */
+	public void deleteByLinks(List<Integer> linkPids,Result result) throws Exception {
+
+		RdRestrictionSelector selector = new RdRestrictionSelector(conn);
+
+		List<RdRestriction> storageTmp = selector.loadByLinks(linkPids, 1, true);
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 2, true));
+
+		storageTmp.addAll(selector.loadByLinks(linkPids, 3, true));
+
+		Map<Integer,RdRestriction> storage=new HashMap<>();
+
+		for (RdRestriction restriction: storageTmp)
+		{
+			storage.put(restriction.getPid(),restriction);
+		}
+
+		for (RdRestriction restriction: storage.values())
+		{
+			//被删link作为进入线，删除交限
+			if (linkPids.contains(restriction.getInLinkPid())) {
+
+				result.insertObject(restriction, ObjStatus.DELETE, restriction.getPid());
+
+				continue;
+			}
+
+			List<RdRestrictionDetail> delDetail = new ArrayList<>();
+
+			for (IRow rowDetail : restriction.getDetails()) {
+
+				RdRestrictionDetail detail = (RdRestrictionDetail) rowDetail;
+
+				//被删link作为退出线，删除该Link会对应删除此组关系
+				if (linkPids.contains(detail.getOutLinkPid())) {
+
+					delDetail.add(detail);
+
+					continue;
+				}
+
+				for (IRow rowVia : detail.getVias()) {
+
+					RdRestrictionVia via = (RdRestrictionVia) rowVia;
+
+					//被删link作为经过线，删除该link会对应删除次组关系
+					if (linkPids.contains(via.getLinkPid())) {
+
+						delDetail.add(detail);
+
+						break;
+					}
+				}
+			}
+
+			//退出线全被删除，删除交限
+			if (delDetail.size()==restriction.getDetails().size())
+			{
+				result.insertObject(restriction, ObjStatus.DELETE, restriction.getPid());
+
+				break;
+			}
+
+			for (RdRestrictionDetail detail:  delDetail) {
+
+				result.insertObject(detail, ObjStatus.DELETE, detail.getRestricPid());
+			}
+		}
+	}
 }

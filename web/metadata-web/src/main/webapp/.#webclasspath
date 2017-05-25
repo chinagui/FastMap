@@ -1,4 +1,6 @@
-E:\workspace\fm_road\DataService_yunfma\DataService\web\metadata-web\src\main\webapp\classes
+E:\workspace\fm_road\DataService_yunfma\DataService\web\metadata-web\target\classes
+D:\dev\apache-maven-3.3.9-bin\apache-maven-3.3.9\maven_repo\javax\servlet\servlet-api\2.4\servlet-api-2.4.jar
+D:\dev\apache-maven-3.3.9-bin\apache-maven-3.3.9\maven_repo\javax\servlet\javax.servlet-api\3.1.0\javax.servlet-api-3.1.0.jar
 D:\dev\apache-maven-3.3.9-bin\apache-maven-3.3.9\maven_repo\javax\mail\mail\1.4.1\mail-1.4.1.jar
 E:\workspace\fm_road\DataService_yunfma\DataService\api\api-fcc\target\classes
 E:\workspace\fm_road\DataService_yunfma\DataService\api\api-fcc\target\test-classes

@@ -5,14 +5,11 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -22,20 +19,16 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.model.Infor;
-import com.navinfo.dataservice.api.man.model.InforMan;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.vividsolutions.jts.geom.Geometry;
-
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /** 
@@ -68,13 +61,11 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			Infor infor = (Infor) JsonOperation.jsonToBean(dataJson,Infor.class);
 			infor.setInforId(inforId);
-//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");
-			SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			infor.setAdminName(infor.getAdminName().replace("|", ""));
 			
-			infor.setExpectDate(new Timestamp(df.parse(dataJson.getString("expectDate")).getTime()));
-			infor.setPublishDate(new Timestamp(df.parse(dataJson.getString("publishDate")).getTime()));
-			infor.setNewsDate(new Timestamp(df.parse(dataJson.getString("newsDate")).getTime()));
+			infor.setExpectDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("expectDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
+			infor.setPublishDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("publishDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
+			infor.setNewsDate(new Timestamp(DateUtils.stringToLong(dataJson.getString("newsDate"), DateUtils.DATE_WITH_SPLIT_YMD)));
 			
 			Calendar aCalendar = Calendar.getInstance();
 			aCalendar.setTime(infor.getExpectDate());
@@ -250,6 +241,13 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 				value.add(bean.getInfoTypeName());
 			};
 			
+			if (bean!=null&&bean.getAdminCode()!=null && StringUtils.isNotEmpty(bean.getAdminCode().toString())){
+				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
+				insertPart+=" ADMIN_CODE ";
+				values+=" ? ";
+				value.add(bean.getAdminCode());
+			};
+			
 			if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";values+=" , ";}
 			insertPart+=" PLAN_STATUS ";
 			values+=" ? ";
@@ -299,7 +297,7 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE");
+			sb.append(" SELECT I.INFOR_NAME,I.ADMIN_NAME,I.PUBLISH_DATE,i.admin_code,i.infor_code");
 			sb.append("   FROM PROGRAM P, INFOR I       ");
 			sb.append("  WHERE P.INFOR_ID = I.INFOR_ID  ");
 			sb.append("    AND P.PROGRAM_ID = " + programId);
@@ -313,7 +311,9 @@ private Logger log = LoggerRepos.getLogger(this.getClass());
 					Infor infor = new Infor();
 					if(rs.next()) {
 						infor.setAdminName(rs.getString("ADMIN_NAME"));
+						infor.setAdminCode(rs.getString("ADMIN_CODE"));
 						infor.setInforName(rs.getString("INFOR_NAME"));
+						infor.setInforCode(rs.getString("INFOR_CODE"));
 						infor.setPublishDate(rs.getTimestamp("PUBLISH_DATE"));
 						return infor;
 					}

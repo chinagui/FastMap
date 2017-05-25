@@ -1,20 +1,19 @@
 package com.navinfo.dataservice.engine.fcc.tips;
 
-import java.util.Map;
-import java.util.Set;
-
+import com.navinfo.dataservice.dao.fcc.HBaseConnector;
+import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
+import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
+import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
+import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;
 import org.apache.hadoop.hbase.client.Connection;
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-/*import com.navinfo.nirobot.common.storage.SolrBulkUpdater;
-import com.navinfo.nirobot.core.tipsinitialize.utils.TipsBuilderUtils;
-import com.navinfo.nirobot.core.tipsprocess.BaseTipsProcessor;
-import com.navinfo.nirobot.core.tipsprocess.TipsProcessorFactory;*/
+import java.util.Map;
+import java.util.Set;
 
 public class TipsDiffer {
-	
-	
+
+
 	private static final Logger logger = Logger.getLogger(TipsDiffer.class);
 	/**
 	 * @throws Exception
@@ -22,7 +21,7 @@ public class TipsDiffer {
 	 * @time:2017-2-13上午9:20:52
 	 */
 	public static void tipsDiff( Map<String, String> allNeedDiffRowkeysCodeMap) throws Exception {
-		/*String errRowkey = null; // 报错时用
+		String errRowkey = null; // 报错时用
 		Connection hbaseConn = null;
 		SolrBulkUpdater solrConn = null;
 
@@ -61,13 +60,13 @@ public class TipsDiffer {
 			System.out.println("-----------");
 			// 连接不能关
 
-			
-			 *  * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
-			 * 
-			 * if(solrConn!=null){ solrConn.close(); }
-			 
 
-		}*/
+	/*		 *  * if(hbaseConn!=null){ HbaseOperator.close(hbaseConn); }
+			 *
+			 * if(solrConn!=null){ solrConn.close(); }*/
+
+
+		}
 
 	}
 

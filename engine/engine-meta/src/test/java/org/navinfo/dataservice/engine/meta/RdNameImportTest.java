@@ -41,7 +41,7 @@ public class RdNameImportTest {
 	}
 	
 	
-	@Test
+//	@Test
 	public  void nameImportTest() {
 		/*ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(
 				new String[] { "dubbo-consumer.xml"});
@@ -134,7 +134,7 @@ public class RdNameImportTest {
 			
 			FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			
-			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+			JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 			
 			JSONObject data = selector.searchForWeb(jsonReq,tips);
 			
@@ -183,9 +183,9 @@ public class RdNameImportTest {
 		// 地铁亦庄线 
 //		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40588337,\"nameGroupid\":40588338,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
 		//火龙沟线
-//		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589341,\"nameGroupid\":40589342,\"langCode\":\"CHI\",\"roadType\":3}],\"flag\":1,\"subtaskId\":208}";
+		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":40589341,\"nameGroupid\":40589342,\"langCode\":\"CHI\",\"roadType\":3,'splitFlag':2}],\"flag\":1,\"subtaskId\":208}";
 	
-		String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":657226,\"nameGroupid\":329208,\"langCode\":\"CHI\",\"roadType\":4}],\"flag\":1,\"subtaskId\":76}";
+		//String parameter = "{\"dbId\":9,\"data\":[{\"nameId\":657226,\"nameGroupid\":329208,\"langCode\":\"CHI\",\"roadType\":4,'splitFlag':0}],\"flag\":1,\"subtaskId\":76}";
 		
 		Connection conn = null;
 		try {
@@ -215,7 +215,7 @@ public class RdNameImportTest {
 				
 				FccApi apiFcc=(FccApi) ApplicationContextUtil.getBean("fccApi");
 				
-				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),1901,new JSONArray());
+				JSONArray tips = apiFcc.searchDataBySpatial(subtask.getGeometry(),subtaskId,1901,new JSONArray());
 				
 				operation.teilenRdNameByTask(tips);
 			}
@@ -227,10 +227,10 @@ public class RdNameImportTest {
 	}
 	
 
-	//@Test
+//	@Test
 	public void saveRdName(){
 		RdNameImportor a = new RdNameImportor();
-		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'杨柳高速333','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'hwInfoFlag':1 ,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'哈哈哈','srcResume':'','paRegionId':null,'splitFlag':0,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
+		JSONObject jsonReq = JSONObject.fromObject("{'data':{'options':{},'geoLiveType':'ROADNAME','pid':null,'nameId':507000003,'nameGroupid':507000004,'langCode':'CHI','name':'测试自动拆分功能1','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':1,'adminId':110000,'codeType':0,'voiceFile':'','srcResume':'','paRegionId':null,'splitFlag':1,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'北京','rowId':null,'hwInfoFlag':1 ,'_originalJson':{'nameId':null,'nameGroupid':null,'langCode':'CHI','name':'','type':'','base':'','prefix':'','infix':'','suffix':'','namePhonetic':'','typePhonetic':'','basePhonetic':'','prefixPhonetic':'','infixPhonetic':'','suffixPhonetic':'','srcFlag':0,'roadType':0,'adminId':120000,'codeType':0,'voiceFile':'哈哈哈','srcResume':'','paRegionId':null,'splitFlag':1,'memo':'','routeId':0,'uRecord':null,'uFields':'','city':'','adminName':'','rowId':null},'_initHooksCalled':true},'dbId':243,'subtaskId':76}");
 		
 		JSONObject data = jsonReq.getJSONObject("data");
 		

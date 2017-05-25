@@ -90,4 +90,28 @@ public class Operation implements IOperation {
 
 		return alertList;
 	}
+
+	/**
+	 * 根据删除线的PID查询出与之相关的分叉口提示并且删除
+	 *
+	 * @param result
+	 *            存放待处理的结果集
+	 * @param linkPids
+	 *            将删除线的PID
+	 * @return
+	 * @throws Exception
+	 */
+	public String deleteByLinks(Result result, List<Integer> linkPids) throws Exception {
+
+		RdSeSelector selector = new RdSeSelector(this.conn);
+
+		List<RdSe> rdSes = selector.loadByLinks(linkPids, true);
+
+		for (RdSe rdSe : rdSes) {
+
+			result.insertObject(rdSe, ObjStatus.DELETE, rdSe.pid());
+		}
+
+		return null;
+	}
 }

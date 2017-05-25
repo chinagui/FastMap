@@ -7,10 +7,12 @@ import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -28,6 +30,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.api.man.model.Infor;
 import com.navinfo.dataservice.api.man.model.Message;
+import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.api.man.model.UserGroup;
@@ -42,7 +45,9 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.json.JsonOperation;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.token.AccessTokenFactory;
 import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.ServiceInvokeUtil;
 import com.navinfo.dataservice.dao.mq.email.EmailPublisher;
 import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.message.MessageService;
@@ -56,6 +61,7 @@ import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.sun.tools.javac.util.Convert;
 
 /**
  * @ClassName: SubtaskService
@@ -112,18 +118,40 @@ public class SubtaskService {
 				dataJson.put("geometry",wkt);
 			}
 			
-			//质检子任务信息
-			int qualityExeUserId = 0;
-			String qualityPlanStartDate = "";
-			String qualityPlanEndDate = "";
-			if(dataJson.containsKey("qualityExeUserId")){
-				qualityExeUserId = dataJson.getInt("qualityExeUserId");
-				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
+			//创建质检子任务
+			//这里变量的创建都放在判断里，减小不必要的内存占用
+			int qualitySubtaskId = 0;
+			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+			if(dataJson.containsKey("hasQuality") && dataJson.getInt("hasQuality") == 1){
+				int qualityExeUserId = 0;
+				int qualityExeGroupId = 0;
+				if(dataJson.containsKey("qualityExeUserId")){
+					qualityExeUserId=dataJson.getInt("qualityExeUserId");
+					dataJson.discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
+				}
+				if(dataJson.containsKey("qualityExeGroupId")){
+					qualityExeGroupId=dataJson.getInt("qualityExeGroupId");
+					dataJson.discard("qualityExeGroupId");
+				}
+				String qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+				String qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
 				//删除传入参数的对应键值对,因为bean中没有这些字段
-				dataJson.discard("qualityExeUserId");
 				dataJson.discard("qualityPlanStartDate");
-				dataJson.discard("qualityPlanEndDate");}
+				dataJson.discard("qualityPlanEndDate");
+				dataJson.discard("hasQuality");
+				
+				Subtask qualityBean = createSubtaskBean(userId,dataJson);
+				qualityBean.setName(qualityBean.getName()+"_质检");
+				qualityBean.setIsQuality(1);
+				qualityBean.setStatus(2);
+				qualityBean.setExeUserId(qualityExeUserId);
+				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
+				qualityBean.setExeGroupId(qualityExeGroupId);
+				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+				//创建质检子任务 subtask	
+				qualitySubtaskId = createSubtask(qualityBean);
+			}
 			
 //			//自采自录子任务
 //			int isSelfRecord = 0;//是否进行自采自录，0否1是
@@ -138,21 +166,26 @@ public class SubtaskService {
 //				dataJson.discard("selfRecordType");
 //				dataJson.discard("selfRecordName");}
 			
-			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-			
-			int qualitySubtaskId = 0;
-			if(qualityExeUserId != 0 ){//表示要创建质检子任务
-				//根据参数生成质检子任务 subtask qualityBean
-				Subtask qualityBean = createSubtaskBean(userId,dataJson);
-				qualityBean.setName(qualityBean.getName()+"_质检");
-				qualityBean.setIsQuality(1);
-				qualityBean.setStatus(2);
-				qualityBean.setExeUserId(qualityExeUserId);
-				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-				//创建质检子任务 subtask	
-				qualitySubtaskId = createSubtask(qualityBean);	
-			}
+//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
+//			
+//			int qualitySubtaskId = 0;
+//			//接口添加了isQuality字段方便判断是否创建月编质检子任务
+//			if(dataJson.containsKey("isQuailty") && isQuailty != 0){
+//				//根据参数生成质检子任务 subtask qualityBean
+//				dataJson.discard("isQuailty");
+//				dataJson.discard("qualityExeGroupId");
+//				Subtask qualityBean = createSubtaskBean(userId,dataJson);
+//				qualityBean.setName(qualityBean.getName()+"_质检");
+//				qualityBean.setIsQuality(1);
+//				qualityBean.setStatus(2);
+//				qualityBean.setExeUserId(qualityExeUserId);
+//				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
+//				qualityBean.setExeGroupId(qualityExeGroupId);
+//				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
+//				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+//				//创建质检子任务 subtask	
+//				qualitySubtaskId = createSubtask(qualityBean);	
+//			}
 //			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
 //				//根据参数生成日编子任务 subtask dailyBean
 //				Subtask dailyBean = createSubtaskBean(userId,dataJson);
@@ -184,6 +217,7 @@ public class SubtaskService {
 	}
 	
 	/**
+	 * 子任务创建的时候，若没有名称，会默认为情报子任务，并自动按照情报原则进行赋值
 	 * @Title: createSubtask
 	 * @Description: 创建一个子任务。
 	 * @param Subtask对象
@@ -204,18 +238,7 @@ public class SubtaskService {
 				bean.setStatus(2);
 			}
 			//情报项目为空时，需要后台自动创建名称
-			if(!StringUtils.isNotEmpty(bean.getName())){
-				Task task = TaskService.getInstance().queryByTaskId(conn, bean.getTaskId());
-				Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
-				if(infor!=null){
-					bean.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
-					if(bean.getExeUserId()!=0){
-						UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(bean.getExeUserId());
-						bean.setName(bean.getName()+"_"+userInfo.getUserRealName()+"_"+bean.getSubtaskId());
-					}
-					
-				}
-			}
+			bean=autoInforName(conn,bean);
 			
 			// 插入subtask
 			SubtaskOperation.insertSubtask(conn, bean);
@@ -257,82 +280,6 @@ public class SubtaskService {
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
 		}
 	}
-	/*
-	 * 根据几何范围,任务类型，作业阶段查询任务列表 参数1：几何范围，String wkt
-	 */
-	/*public List<Subtask> listByWkt(String wkt) throws ServiceException {
-		Connection conn = null;
-		try {
-			// 持久化
-			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();
-			String querySql = "select "
-					+ "s.subtask_id"
-					+ ",s.name"
-					+ ",s.type"
-					+ ",s.stage"
-					+ ",s.status"
-					+ ", s.geometry"
-					+ ", s.refer_geometry"
-					+ ",s.descp"
-					+ " from subtask s "
-					+ "where SDO_GEOM.RELATE(geometry, 'ANYINTERACT', "
-					+ "sdo_geometry("
-					+ "'"
-					+ wkt
-					+ "',8307)"
-					+ ", 0.000005) ='TRUE'";
-			ResultSetHandler<List<Map<String, Object>>> rsHandler = new ResultSetHandler<List<Map<String, Object>>>() {
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
-					List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
-					while (rs.next()) {
-						Map<String, Object> subtask = new HashMap<String, Object>();
-						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
-						
-						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
-						try {
-							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						STRUCT referStruct = (STRUCT) rs.getObject("REFER_GEOMETRY");
-						try {
-							subtask.setReferGeometry(GeoTranslator.struct2Wkt(referStruct));
-						} catch (Exception e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-						
-						subtask.setDescp(rs.getString("DESCP"));
-						subtask.setName(rs.getString("name"));
-						subtask.setType(rs.getInt("type"));
-						subtask.setStage(rs.getInt("stage"));
-						subtask.setStatus(rs.getInt("status"));
-						
-						try {
-							List<Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
-							subtask.setGridIds(gridIds);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						
-						list.add(subtask);
-					}
-					return list;
-				}
-			};
-			return run.query(conn, querySql, rsHandler);
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}*/
 	
 	/*
 	 * 修改子任务详细信息。 
@@ -359,47 +306,57 @@ public class SubtaskService {
 		int qualityExeUserId = 0;//是否新建质检子任务标识
 		String qualityPlanStartDate = "";
 		String qualityPlanEndDate ="";
+		int qualityExeGroupId = 0;
+		int hasQuality = 0;
 			
 		if(dataJson.containsKey("qualitySubtaskId")){
 			qualitySubtaskId = dataJson.getInt("qualitySubtaskId");
 			//删除 质检子任务id ,因为质检子任务Subtask实体类里不应该有这个字段
 			dataJson.discard("qualitySubtaskId");
 		}
-		if(dataJson.containsKey("qualityExeUserId")){
-			qualityExeUserId = dataJson.getInt("qualityExeUserId");
-			qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
-			qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");
-			dataJson.discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
-			dataJson.discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
-			dataJson.discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
-		}				
+		//是否创建质检子任务，这里更改了创建的标识字段为isQuailty
+		if(dataJson.containsKey("hasQuality")){
+			hasQuality = dataJson.getInt("hasQuality");	
+			dataJson.discard("hasQuality");
 			
+			if(dataJson.containsKey("qualityExeUserId")){
+				qualityExeUserId=dataJson.getInt("qualityExeUserId");
+				dataJson.discard("qualityExeUserId");//删除 是否新建质检子任务标识 ,因为Subtask实体类里灭幼这个字段
+			}
+			if(dataJson.containsKey("qualityExeGroupId")){
+				qualityExeGroupId=dataJson.getInt("qualityExeGroupId");
+				dataJson.discard("qualityExeGroupId");
+			}
+			if(dataJson.containsKey("qualityPlanStartDate")){
+				qualityPlanStartDate = dataJson.getString("qualityPlanStartDate");
+				qualityPlanEndDate = dataJson.getString("qualityPlanEndDate");								
+				dataJson.discard("qualityPlanStartDate");//删除 质检子任务计划开始时间 ,因为Subtask实体类里灭幼这个字段
+				dataJson.discard("qualityPlanEndDate");//删除 质检子任务计划结束时间 ,因为Subtask实体类里灭幼这个字段
+			}
+		}				
 		//正常修改子任务
 		Subtask subtask = createSubtaskBean(userId,dataJson);
 		//创建或者修改常规任务时，均要调用修改质检任务的代码
 		if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
-			Subtask qualitySubtask = createSubtaskBean(userId,dataJson);//生成质检子任务的bean
+			Subtask qualitySubtask = new Subtask();//生成质检子任务的bean
 			qualitySubtask.setSubtaskId(qualitySubtaskId);
 			qualitySubtask.setExeUserId(qualityExeUserId);
-			qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+			qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
+			//qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 			qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 			qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
+			qualitySubtask.setExeGroupId(qualityExeGroupId);
 			subtaskList.add(qualitySubtask);//将质检子任务也加入修改列表
 		}else{
-			if(qualityExeUserId != 0){//qualitySubtaskId=0，且qualityExeUserId非0的时候，表示要创建质检子任务
+			if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
 				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
 				qualitySubtask.setSubtaskId(null);
+				qualitySubtask.setExeGroupId(qualityExeGroupId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
 				qualitySubtask.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
 				qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
 				qualitySubtask.setExeUserId(qualityExeUserId);
-//				if(dataJson.containsKey("gridIds")){
-//					qualitySubtask.setGridIds(subtask.getGridIds());
-//					//根据gridIds获取wkt
-//					String wkt = GridUtils.grids2Wkt(dataJson.getJSONArray("gridIds"));
-//					qualitySubtask.setGeometry(wkt);
-//				}
 					
 				//创建质检子任务 subtask	
 				Integer newQualitySubtaskId = createSubtask(qualitySubtask);	
@@ -427,16 +384,7 @@ public class SubtaskService {
 			for (int i = 0; i < subtaskList.size(); i++) {
 				Subtask subtask = subtaskList.get(i);
 				//情报子任务修改时，若填入执行人，则需修改子任务名称
-				if(subtask.getExeUserId()!=0){
-					int programType=getTaskBySubtaskId(conn,subtask.getSubtaskId()).get("programType");
-					if(programType==4){
-						Subtask oldSubtask = queryBySubtaskIdS(conn,subtask.getSubtaskId());
-						if(oldSubtask.getExeUserId()==0){
-							UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(subtask.getExeUserId());
-							subtask.setName(subtask.getName()+"_"+userInfo.getUserRealName()+"_"+subtask.getSubtaskId());
-						}
-					}
-				}
+				subtask=autoInforName(conn,subtask);
 				SubtaskOperation.updateSubtask(conn, subtask);
 				updatedSubtaskIdList.add(subtask.getSubtaskId());
 				
@@ -475,6 +423,54 @@ public class SubtaskService {
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
+	}
+	/**
+	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
+	 * 1.质检子任务名称不维护
+	 * 1.判断是否情报子任务，不是则返回
+	 * 2.判断是否新建子任务，若是，名称若为空，自动赋值
+	 * 3.修改子任务，若作业员或组是修改时加的，则自动维护名称
+	 * 
+	 * @param conn
+	 * @param newSubtask
+	 * @return
+	 * @throws Exception
+	 */
+	private Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
+		if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
+		if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
+		
+		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());
+		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+		if(infor==null){return newSubtask;}
+		
+		Subtask oldSubtask=null;
+		if(newSubtask.getSubtaskId()!=0){
+			oldSubtask = queryBySubtaskIdS(conn,newSubtask.getSubtaskId());
+		}
+		
+		if(oldSubtask==null){//新建子任务
+			if(StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
+			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
+			if(newSubtask.getExeUserId()!=0){
+				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+			}
+			if(newSubtask.getExeGroupId()!=0){
+				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+			}	
+		}else{
+			if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+			}
+			if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+			}
+		}
+		return newSubtask;
 	}
 
 	/*
@@ -622,6 +618,7 @@ public class SubtaskService {
 			sb.append("        ST.GEOMETRY,                             ");
 			sb.append("        ST.REFER_ID,                             ");
 			sb.append("        ST.EXE_USER_ID,                          ");
+			sb.append("        ST.work_kind,                          ");
 			sb.append("        ST.EXE_GROUP_ID,                         ");
 			sb.append("        ST.QUALITY_SUBTASK_ID,                   ");
 			sb.append("        ST.IS_QUALITY,                           ");
@@ -656,6 +653,7 @@ public class SubtaskService {
 						subtask.put("stage",rs.getInt("STAGE"));
 						subtask.put("referId",rs.getInt("REFER_ID"));
 						subtask.put("taskId",rs.getInt("TASK_ID"));
+						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
 						
 						//作业员/作业组信息
@@ -685,16 +683,21 @@ public class SubtaskService {
 							}
 						}
 						subtask.put("qualitySubtaskId",rs.getInt("QUALITY_SUBTASK_ID"));
+						subtask.put("hasQuality",0);
 						//获取质检任务信息
 						if(!subtask.get("qualitySubtaskId").toString().equals("0")){
+							subtask.put("hasQuality",1);
 							try {
 								Subtask subtaskQuality = queryBySubtaskIdS((Integer)subtask.get("qualitySubtaskId"));
-								subtask.put("qualityExeUserId",subtaskQuality.getExecuterId());
+								subtask.put("qualityExeUserId",subtaskQuality.getExeUserId());
 								subtask.put("qualityPlanStartDate",subtaskQuality.getPlanStartDate());
 								subtask.put("qualityPlanEndDate",subtaskQuality.getPlanEndDate());
 								subtask.put("qualityTaskStatus",subtaskQuality.getStatus());
 								UserInfo userInfo = UserInfoService.getInstance().getUserInfoByUserId(exeUserId);
 								subtask.put("qualityExeUserName",userInfo.getUserRealName());
+								String groupName=UserGroupService.getInstance().getGroupNameByGroupId(subtaskQuality.getExeGroupId());
+								subtask.put("qualityExeGroupId",subtaskQuality.getExeGroupId());
+								subtask.put("qualityExeGroupName",groupName);
 							} catch (ServiceException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -1368,7 +1371,11 @@ public class SubtaskService {
 				if( (int)subtask.getStatus()== 2){
 					SubtaskOperation.updateStatus(conn,subtask.getSubtaskId());
 				}
-				
+				//采集子任务需要反向维护任务workKind
+				if(subtask.getStage()==0&&subtask.getWorkKind()!=0){
+					TaskOperation.updateWorkKind(conn, subtask.getTaskId(), subtask.getWorkKind());
+				}
+				pushMsg2Crowd(conn,userId,subtask);
 				//发送消息
 				SubtaskOperation.pushMessage(conn, subtask, userId);
 				success ++;
@@ -1380,6 +1387,47 @@ public class SubtaskService {
 			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	/**
+	 * 推送众包信息给mapspotter
+	 * 
+	 * @param conn
+	 * @param subtask
+	 * @throws Exception 
+	 */
+	public void pushMsg2Crowd(Connection conn,Long userId,Subtask subtask) throws Exception{
+		if(subtask.getWorkKind()!=2){return;}
+		log.info("众包子任务发布，调用mapspoter请求："+subtask.getSubtaskId());
+		Program program=ProgramService.getInstance().queryProgramByTaskId(conn, subtask.getTaskId());
+		if(program==null){throw new Exception("众包子任务发布，通知mapsppotor失败：数据错误，未找到子任务对应项目");}
+		JSONObject par=new JSONObject();
+		par.put("subTaskId", subtask.getSubtaskId());
+		if(program.getType()==1){
+			par.put("priority", 2);
+			par.put("geometryJSON", subtask.getGeometryJSON());			
+		}else{
+			Infor info = InforService.getInstance().getInforByProgramId(conn, program.getProgramId());
+			par.put("priority", 1);
+			par.put("infocode", info.getInforCode());
+		}
+		String mapspotterUrl = SystemConfigFactory.getSystemConfig().getValue(PropConstant.mapspotterCrowdUrl);		
+		
+		Map<String,String> parMap = new HashMap<String,String>();
+		parMap.put("parameter", par.toString());
+		parMap.put("access_token", AccessTokenFactory.generate(userId).getTokenString());
+		
+		log.info(parMap);
+		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter="+par.toString().replace("\\", "");
+		//mapspotterUrl=mapspotterUrl+"access_token="+AccessTokenFactory.generate(userId).getTokenString()+"&parameter={\"subTaskId\":66,\"priority\":2,\"geometryJSON\":{\"type\":\"Polygon\",\"coordinates\":[[[116.40625,39.9375],[116.40625,39.95833],[116.4375,39.95833],[116.46875,39.95833],[116.46875,39.9375],[116.4375,39.9375],[116.40625,39.9375]]]}}";
+		log.info(mapspotterUrl);
+		String result = ServiceInvokeUtil.invokeByGet(mapspotterUrl,parMap);
+		JSONObject res=new JSONObject();
+		res=JSONObject.fromObject(result);
+		log.info("众包子任务发布，调用mapspoter请求返回值："+subtask.getSubtaskId()+","+result);
+		String success=res.getString("errmsg");
+		if(!"sucess".equals(success)){
+			throw new Exception("众包子任务发布，通知mapsppotor失败："+result);
 		}
 	}
 	
@@ -1880,19 +1928,22 @@ public class SubtaskService {
 
 			sb.append("WITH QUALITY_TASK AS ");
 			sb.append(" (SELECT SS.SUBTASK_ID      QUALITY_SUBTASK_ID, ");
-			sb.append(" SS.EXE_USER_ID     QUALITY_EXE_USER_ID,");
+			sb.append(" SS.EXE_USER_ID     QUALITY_EXE_USER_ID,"
+					+ "SS.EXE_GROUP_ID     QUALITY_EXE_GROUP_ID,"
+					+ "G.GROUP_NAME QUALITY_EXE_GROUP_NAME, ");
 			sb.append(" SS.PLAN_START_DATE AS QUALITY_PLAN_START_DATE,");
 			sb.append(" SS.PLAN_END_DATE   AS QUALITY_PLAN_END_DATE,");
 			sb.append(" SS.STATUS          QUALITY_TASK_STATUS,");
 			sb.append(" UU.USER_REAL_NAME  AS QUALITY_EXE_USER_NAME");
-			sb.append(" FROM SUBTASK SS, USER_INFO UU");
+			sb.append(" FROM SUBTASK SS, USER_INFO UU,USER_GROUP G");
 			sb.append(" WHERE SS.IS_QUALITY = 1");
-			sb.append(" AND SS.EXE_USER_ID = UU.USER_ID),");
+			sb.append(" AND SS.EXE_USER_ID = UU.USER_ID(+) AND SS.EXE_GROUP_ID = G.GROUP_ID(+)),");
 			
 			sb.append(" SUBTASK_LIST AS");
 			sb.append(" (SELECT S.SUBTASK_ID,");
 			sb.append(" S.STAGE,");
 			sb.append(" S.NAME,");
+			sb.append(" S.work_kind,");
 			sb.append(" S.TYPE,");
 			sb.append(" S.STATUS,");
 			sb.append(" S.EXE_USER_ID,");
@@ -1907,7 +1958,9 @@ public class SubtaskService {
 			sb.append(" Q.QUALITY_PLAN_START_DATE,");
 			sb.append(" Q.QUALITY_PLAN_END_DATE,");
 			sb.append(" NVL(Q.QUALITY_TASK_STATUS, 0) QUALITY_TASK_STATUS,");
-			sb.append(" Q.QUALITY_EXE_USER_NAME,");
+			sb.append(" Q.QUALITY_EXE_USER_NAME,"
+			+ "Q.QUALITY_EXE_GROUP_ID,"
+			+ "Q.QUALITY_EXE_GROUP_NAME, ");
 			/*• 记录默认排序原则：
 			 * ①根据状态排序：开启>草稿>100%(已完成)>已关闭
 			 * 用order_status来表示这个排序的先后顺序。分别是开启0>草稿1>100%(已完成)2>已关闭3
@@ -1957,6 +2010,7 @@ public class SubtaskService {
 						subtask.put("subtaskName", rs.getString("NAME"));
 						subtask.put("status", rs.getInt("STATUS"));
 						subtask.put("stage", rs.getInt("STAGE"));
+						subtask.put("workKind", rs.getInt("WORK_KIND"));
 						subtask.put("type", rs.getInt("TYPE"));
 						int userid=rs.getInt("EXE_USER_ID");
 						String executer=rs.getString("EXECUTER");
@@ -1968,8 +2022,15 @@ public class SubtaskService {
 						subtask.put("percent", rs.getInt("percent"));
 						subtask.put("diffDate", rs.getInt("DIFF_DATE"));
 						
-						subtask.put("qualitySubtaskId", rs.getInt("quality_subtask_id"));
+						int qualityTaskId=rs.getInt("quality_subtask_id");
+						if(qualityTaskId!=0){subtask.put("hasQuality", 1);}
+						else{subtask.put("hasQuality", 0);}
+						
+						subtask.put("qualitySubtaskId", qualityTaskId);
 						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
+						subtask.put("qualityExeGroupId", rs.getInt("quality_Exe_group_Id"));
+						subtask.put("qualityExeGroupName", rs.getInt("quality_Exe_group_NAME"));
+						
 						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
 						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
 						if(qualityPlanStartDate != null){
@@ -2176,6 +2237,336 @@ public class SubtaskService {
 			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 根据grid查询substask
+	 * 1、优先找快线开启状态的众包子任务，其次是中线；
+	 * 如果快线(中线)存在多个开启的众包子任务，则选择子任务号值最大的众包子任务
+	 * 2、如果没有符合的众包子任务，则返回null
+	 * @param grid
+	 * @return subtask
+	 * @author songhe
+	 * 
+	 * */
+	public Subtask queryCrowdSubtaskByGrid(String grid){
+		Subtask substask = new Subtask();
+		Connection conn = null;
+		if(StringUtils.isBlank(grid)){
+			return null;
+		}
+		try{
+			conn = DBConnector.getInstance().getManConnection();
+			substask = SubtaskService.getInstance().queryOpenSubstaskFast(grid, conn);
+			if(substask == null){
+				substask = SubtaskService.getInstance().queryOpenSubstaskMid(grid, conn);
+				if(substask == null){
+					return null;
+				}
+			}
+		}catch(Exception e ){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
+		return substask;
+	}
+	
+	/**
+	 * 查找快线开启状态的众包子任务
+	 * @param grid
+	 * @return Map
+	 * @author songhe
+	 * @throws Exception 
+	 * 
+	 * */
+	public Subtask queryOpenSubstaskFast(String grid, Connection conn) throws Exception{
+		String sql = "select st.*, r.DAILY_DB_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm, REGION r "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
+				+ " and t.region_id = r.region_id and p.type = 4 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
+		
+		QueryRunner run = new QueryRunner();
+		try{
+			return run.query(conn, sql, new ResultSetHandler<Subtask>(){
+				@Override
+				public Subtask handle(ResultSet result) throws SQLException {
+					if(result.next()){
+						Subtask substask = new Subtask();
+						substask.setCreateDate(result.getTimestamp("CREATE_DATE"));
+						substask.setCreateUserId(result.getInt("CREATE_USER_ID"));
+						substask.setDescp(result.getString("DESCP"));
+						substask.setExeGroupId(result.getInt("EXE_GROUP_ID"));
+						substask.setExeUserId(result.getInt("EXE_USER_ID"));
+						substask.setGeometry(result.getString("GEOMETRY"));
+						substask.setIsQuality(result.getInt("IS_QUALITY"));
+						substask.setName(result.getString("NAME"));
+						substask.setPlanEndDate(result.getTimestamp("PLAN_END_DATE"));
+						substask.setPlanStartDate(result.getTimestamp("PLAN_START_DATE"));
+						substask.setQualitySubtaskId(result.getInt("QUALITY_SUBTASK_ID"));
+						substask.setReferId(result.getInt("REFER_ID"));
+						substask.setStage(result.getInt("STAGE"));
+						substask.setStatus(result.getInt("STATUS"));
+						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
+						substask.setTaskId(result.getInt("TASK_ID"));
+						substask.setType(result.getInt("TYPE"));
+						substask.setDbId(result.getInt("DAILY_DB_ID"));
+						substask.setSubType(4);
+						
+						return substask;
+					}
+					return null;
+				}});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("快线子任务查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	/**
+	 * 查找中线开启状态的众包子任务
+	 * @param grid
+	 * @return Map
+	 * @author songhe
+	 * @throws Exception 
+	 * 
+	 * */
+	public Subtask queryOpenSubstaskMid(String grid, Connection conn) throws Exception{
+		String sql = "select st.*, r.DAILY_DB_ID from TASK t, PROGRAM p, SUBTASK st, SUBTASK_GRID_MAPPING sgm, REGION r "
+				+ "where t.task_id = st.task_id and t.program_id = p.program_id and sgm.subtask_id = st.subtask_id"
+				+ " and t.region_id = r.region_id and p.type = 1 and st.status = 1 and st.work_kind = 2 and sgm.grid_id = " + grid + " order by st.subtask_id desc";
+		
+		QueryRunner run = new QueryRunner();
+		try{
+			return run.query(conn, sql, new ResultSetHandler<Subtask>(){
+				@Override
+				public Subtask handle(ResultSet result) throws SQLException {
+					if(result.next()){
+						Subtask substask = new Subtask();
+						substask.setCreateDate(result.getTimestamp("CREATE_DATE"));
+						substask.setCreateUserId(result.getInt("CREATE_USER_ID"));
+						substask.setDescp(result.getString("DESCP"));
+						substask.setExeGroupId(result.getInt("EXE_GROUP_ID"));
+						substask.setExeUserId(result.getInt("EXE_USER_ID"));
+						substask.setGeometry(result.getString("GEOMETRY"));
+						substask.setIsQuality(result.getInt("IS_QUALITY"));
+						substask.setName(result.getString("NAME"));
+						substask.setPlanEndDate(result.getTimestamp("PLAN_END_DATE"));
+						substask.setPlanStartDate(result.getTimestamp("PLAN_START_DATE"));
+						substask.setQualitySubtaskId(result.getInt("QUALITY_SUBTASK_ID"));
+						substask.setReferId(result.getInt("REFER_ID"));
+						substask.setStage(result.getInt("STAGE"));
+						substask.setStatus(result.getInt("STATUS"));
+						substask.setSubtaskId(result.getInt("SUBTASK_ID"));
+						substask.setTaskId(result.getInt("TASK_ID"));
+						substask.setType(result.getInt("TYPE"));
+						substask.setDbId(result.getInt("DAILY_DB_ID"));
+						substask.setSubType(1);
+						
+						return substask;
+					}
+					return null;
+				}});
+		}catch(Exception e){
+			log.error(e.getMessage(), e);
+			throw new Exception("中线子任务查询失败，原因为:"+e.getMessage(),e);
+		}
+	}
+	
+	//Object转String工具
+    public static String objetConvertString(Object a){
+    	String result = "";
+    	if(a == null){
+    		return result;
+    	}
+    	return a.toString();
+    }
+	
+
+	/**
+	 * @param dbId
+	 * @param type
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT S.SUBTASK_ID,SGM.GRID_ID FROM SUBTASK S, SUBTASK_GRID_MAPPING SGM,TASK T,PROGRAM P,REGION R    ");
+			sb.append(" WHERE P.TYPE = " + type);
+			sb.append(" AND P.PROGRAM_ID = T.PROGRAM_ID                                                                       ");
+			sb.append(" AND T.TASK_ID = S.TASK_ID                                                                             ");
+			sb.append(" AND S.SUBTASK_ID = SGM.SUBTASK_ID                                                                     ");
+			sb.append(" AND T.REGION_ID = R.REGION_ID                                                                         ");
+			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ") ");
+			sb.append(" ORDER BY S.SUBTASK_ID                                                                                 ");
+			
+			return run.query(conn, sb.toString(), new ResultSetHandler<Map<Integer, List<Integer>>>(){
+				@Override
+				public Map<Integer, List<Integer>> handle(ResultSet result) throws SQLException {
+					Map<Integer, List<Integer>> res = new HashMap<Integer, List<Integer>>();
+					int subtaskId = 0;
+					List<Integer> list = new ArrayList<Integer>();
+					while(result.next()){
+						if(subtaskId!=result.getInt("SUBTASK_ID")){
+							res.put(subtaskId, list);
+							subtaskId = result.getInt("SUBTASK_ID");
+							list = new ArrayList<Integer>();
+						}
+						list.add(result.getInt("GRID_ID"));
+					}
+					res.remove(0);
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param dbId
+	 * @param statusList
+	 * @param workKind
+	 * @return
+	 * @throws Exception 
+	 */
+	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
+		Connection conn = null;
+		try{
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getManConnection();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append(" SELECT S.SUBTASK_ID FROM SUBTASK S,TASK T,REGION R  ");
+			sb.append(" WHERE T.TASK_ID = S.TASK_ID                         ");
+			sb.append(" AND T.REGION_ID = R.REGION_ID                       ");
+			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ")");
+			sb.append(" AND S.STATUS IN (" + StringUtils.join(statusList,",") + ") ");
+			sb.append(" AND S.WORK_KIND = " + workKind);
+			
+			return run.query(conn, sb.toString(), new ResultSetHandler<List<Integer>>(){
+				@Override
+				public List<Integer> handle(ResultSet result) throws SQLException {
+					List<Integer> res = new ArrayList<Integer>();
+					while(result.next()){
+						res.add(result.getInt("SUBTASK_ID"));
+					}
+					return res;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new Exception("查询失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+		public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			return queryByQualitySubtaskId(conn,qualitySubtaskId,stage,isQuality);		
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	public Subtask queryByQualitySubtaskId(Connection conn, Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+		try {
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT ST.SUBTASK_ID,ST.NAME,ST.STATUS,ST.STAGE,ST.DESCP,ST.PLAN_START_DATE,ST.PLAN_END_DATE,ST.TYPE,ST.GEOMETRY,ST.REFER_ID");
+			sb.append(",ST.EXE_USER_ID,ST.EXE_GROUP_ID");
+			sb.append(",T.TASK_ID,T.TYPE TASK_TYPE,R.DAILY_DB_ID,R.MONTHLY_DB_ID");
+			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
+			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
+			sb.append(" AND T.REGION_ID = R.REGION_ID");
+			sb.append(" AND ST.QUALITY_SUBTASK_ID = " + qualitySubtaskId);
+			sb.append(" AND ST.STAGE = " + stage);
+			if(stage.equals("2")){
+				sb.append(" AND ST.TYPE = " + "7");
+			}
+			sb.append(" AND ST.IS_QUALITY = " + isQuality);
+	
+			String selectSql = sb.toString();
+			log.info("请求子任务详情SQL："+sb.toString());
+			
+
+			ResultSetHandler<Subtask> rsHandler = new ResultSetHandler<Subtask>() {
+				public Subtask handle(ResultSet rs) throws SQLException {
+					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+					if (rs.next()) {
+						Subtask subtask = new Subtask();						
+						subtask.setSubtaskId(rs.getInt("SUBTASK_ID"));
+						subtask.setName(rs.getString("NAME"));
+						subtask.setType(rs.getInt("TYPE"));
+						subtask.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
+						subtask.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						subtask.setDescp(rs.getString("DESCP"));
+						subtask.setStatus(rs.getInt("STATUS"));
+						subtask.setReferId(rs.getInt("REFER_ID"));
+						subtask.setStage(rs.getInt("STAGE"));
+						subtask.setExeUserId(rs.getInt("EXE_USER_ID"));
+						subtask.setExeGroupId(rs.getInt("EXE_GROUP_ID"));
+						
+						//GEOMETRY
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						try {
+							subtask.setGeometry(GeoTranslator.struct2Wkt(struct));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+						
+						try {
+							Map<Integer,Integer> gridIds = SubtaskOperation.getGridIdsBySubtaskId(rs.getInt("SUBTASK_ID"));
+							subtask.setGridIds(gridIds);
+//							Map<String,Integer> gridIdMap = new HashMap<String,Integer>();
+//							for(Map.Entry<Integer, Integer> entry:gridIds.entrySet()){
+//								gridIdMap.put(entry.getKey().toString(), entry.getValue());
+//							}
+//							subtask.setGridIds(gridIdMap);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+						subtask.setTaskId(rs.getInt("TASK_ID"));
+						if (2 == rs.getInt("STAGE")) {
+							//月编子任务
+							subtask.setDbId(rs.getInt("MONTHLY_DB_ID"));
+						} else {
+							subtask.setDbId(rs.getInt("DAILY_DB_ID"));
+						}				
+						
+						return subtask;
+					}
+					return null;
+				}	
+			};
+			log.info("queryByQualitySubtaskId sql:" + sb.toString());
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		}
 	}
 }

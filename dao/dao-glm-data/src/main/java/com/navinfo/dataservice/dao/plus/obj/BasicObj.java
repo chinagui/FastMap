@@ -68,6 +68,23 @@ public abstract class BasicObj {
 		return false;
 	}
 	
+	/**
+	 * 判断某个子表是否有更改
+	 * @param tableName
+	 * @return
+	 */
+	public boolean isSubrowChanged(String tableName){
+		List<BasicRow> subrowList = subrows.get(tableName);
+		if(subrowList!=null){
+			for(BasicRow basicRow:subrowList){
+				if(basicRow.isChanged()){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 	public BasicObjGrid getGrid() throws Exception {
 		if(this.grid==null){
 			//生成grid信息
@@ -175,7 +192,7 @@ public abstract class BasicObj {
 	 * 如果是新增状态，物理删除，其他状态打删除标识
 	 * @param subrow
 	 */
-	public void deleteSubrow(String tableName){
+	public void deleteSubrows(String tableName){
 		List<BasicRow> rows = subrows.get(tableName);
 		if(rows!=null){
 			for(Iterator<BasicRow> it= rows.iterator();it.hasNext();){
@@ -196,6 +213,11 @@ public abstract class BasicObj {
 		if(mainrow.getOpType().equals(OperationType.INSERT)){
 			mainrow.setOpType(OperationType.INSERT_DELETE);
 			subrows.clear();
+			return;
+		}
+		//如果是已删除，则忽略
+		if(mainrow.getOpType().equals(OperationType.PRE_DELETED)
+				||mainrow.getOpType().equals(OperationType.INSERT_DELETE)){
 			return;
 		}
 		this.mainrow.setOpType(OperationType.DELETE);

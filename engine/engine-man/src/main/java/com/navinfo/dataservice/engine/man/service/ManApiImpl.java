@@ -297,11 +297,10 @@ public class ManApiImpl implements ManApi {
 	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
 		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
 	}
-	
-		@Override
-	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
-		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().queryByQualitySubtaskId(qualitySubtaskId,stage,isQuality);
+
+	@Override
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId, String stage, Integer isQuality) throws Exception {
+		return SubtaskService.getInstance().queryBySubTaskIdAndIsQuality(taskId, stage, isQuality);
 	}
 	
 }

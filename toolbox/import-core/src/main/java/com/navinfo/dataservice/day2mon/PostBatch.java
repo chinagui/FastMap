@@ -44,12 +44,12 @@ public class PostBatch {
 	}
 	
 	public void execute() throws Exception{
+		// 20170525 根强与凤琴商讨,所有数据都需要执行115批处理
+		log.info("执行115批处理");
+		deteal201150();
 		// 200170特殊处理
 		log.info("执行200170特殊处理");
 		deteal200170();
-		// 200140与201150特殊处理
-		log.info("执行200140特殊处理");
-		deteal200140();
 		// 201250特殊处理
 		log.info("执行201250特殊处理");
 		deteal201250();
@@ -143,12 +143,12 @@ public class PostBatch {
 		operationResult.putAll(objList);
 		
 		// 执行批处理FM-BAT-20-115
-		BatchCommand batchCommand=new BatchCommand();
-		batchCommand.setRuleId("FM-BAT-20-115");
-		Batch batch=new Batch(conn,operationResult);
-		batch.operate(batchCommand);
-		batch.setPhysiDelete(true);
-		persistBatch(batch);
+		//BatchCommand batchCommand=new BatchCommand();
+		//batchCommand.setRuleId("FM-BAT-20-115");
+		//Batch batch=new Batch(conn,operationResult);
+		//batch.operate(batchCommand);
+		//batch.setPhysiDelete(true);
+		//persistBatch(batch);
 		// 执行检查项FM-YW-20-052
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> checkList=new ArrayList<String>();
@@ -167,34 +167,21 @@ public class PostBatch {
 			}
 		}
 		// 执行批处理FM-BAT-20-135,FM-BAT-20-163
-		batchCommand=new BatchCommand();
+		BatchCommand batchCommand=new BatchCommand();
 		batchCommand.setRuleId("FM-BAT-20-135");
 		batchCommand.setRuleId("FM-BAT-20-163");
-		batch=new Batch(conn,operationResult);
+		Batch batch=new Batch(conn,operationResult);
 		batch.operate(batchCommand);
 		batch.setPhysiDelete(true);
 		persistBatch(batch);
 	}
 	
-	// 200140与201150特殊处理
-	private void deteal200140() throws Exception {
-		int handler = 200140;
-		List<Long> pidList = getPidByHandler(handler);
-		handler = 201150;
-		pidList.addAll(getPidByHandler(handler));
-		log.info("特殊处理200140和200150:"+pidList.toString());
+	// 所有数据均需执行115批处理
+	private void deteal201150() throws Exception {
+
+		log.info("所有数据均需执行115批处理");
 		OperationResult operationResult=new OperationResult();
-		List<BasicObj> objList = new ArrayList<BasicObj>();
-		for (Long pid:pidList) {
-			List<BasicObj> allObj = opResult.getAllObjs();
-			for (BasicObj obj:allObj) {
-				IxPoi ixPoi = (IxPoi) obj.getMainrow();
-				if (ixPoi.getPid() == pid) {
-					objList.add(obj);
-				}
-			}
-		}
-		operationResult.putAll(objList);
+		operationResult.putAll(opResult.getAllObjs());
 		
 		// 执行批处理FM-BAT-20-115
 		BatchCommand batchCommand=new BatchCommand();

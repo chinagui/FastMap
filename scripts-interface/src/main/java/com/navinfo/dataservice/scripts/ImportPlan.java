@@ -609,6 +609,12 @@ public class ImportPlan {
 				if(StringUtils.isNotBlank(taskDataMap.get("LOT").toString())){
 					taskJson.put("lot", Integer.parseInt(taskDataMap.get("LOT").toString()));
 				}
+				if(StringUtils.isNotBlank(taskDataMap.get("PRODUCE_PLAN_START_DATE").toString())){
+					taskJson.put("producePlanStartDate", Integer.parseInt(taskDataMap.get("PRODUCE_PLAN_START_DATE").toString()));
+				}
+				if(StringUtils.isNotBlank(taskDataMap.get("PRODUCE_PLAN_END_DATE").toString())){
+					taskJson.put("producePlanEndDate", Integer.parseInt(taskDataMap.get("PRODUCE_PLAN_END_DATE").toString()));
+				}
 				
 				//拼装创建时候的数据格式....
 				list.add(taskJson);

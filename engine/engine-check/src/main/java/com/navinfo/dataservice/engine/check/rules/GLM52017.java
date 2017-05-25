@@ -47,7 +47,7 @@ public class GLM52017 extends baseRule {
             List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
             for (LuFace luFace : list) {
                 if (21 == luFace.getKind() && face.pid() != luFace.pid()) {
-                    setCheckResult("面有重叠", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()), 0);
+                    setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()), 0);
                 }
             }
         }

@@ -117,7 +117,7 @@ public class GLM50029 extends baseRule {
             }
 
             if (adminType == adAdmin.getAdminType()) {
-                setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
             }
         }
     }

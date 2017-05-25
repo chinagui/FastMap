@@ -44,7 +44,18 @@ public interface ManApi{
 	
 	public Subtask queryBySubtaskId(Integer subtaskId) throws Exception ;
 	
-	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId,String stage,String isQuality) throws Exception ;
+	/**
+	 * 根据质检任务号查询常规任务    或者     根据常规子任务号查询质检任务
+	 * TASKID 任务号
+	 * STAGE 作业阶段	 NUMBER(1) 0采集，1日编，2月编
+	 * ISQUALITY	NUMBER(1)	0非质检子任务 1质检子任务
+	 * @param qualitySubtaskId
+	 * @param stage
+	 * @param isQuality
+	 * @return
+	 * @throws Exception
+	 */
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId,String stage,Integer isQuality) throws Exception ;
 //	List<Grid> listGrids()throws Exception;
 	/**
 	
@@ -169,5 +180,12 @@ public interface ManApi{
 	 */
 	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception;
 	
+	/**
+	 * 更具grid获取众包子任务
+	 * @param grid
+	 * @return
+	 * @throws Exception
+	 */
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception;
 }
 

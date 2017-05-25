@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.api.man.model;
 
+import java.io.Serializable;
 
 /** 
 * @ClassName:  UserInfo 
@@ -7,7 +8,7 @@ package com.navinfo.dataservice.api.man.model;
 * @date 2016-06-14 03:05:15 
 * @Description: TODO
 */
-public class UserInfo  {
+public class UserInfo implements Serializable {
 	private Integer userId ;
 	private String userRealName ;
 	private String userNickName ;

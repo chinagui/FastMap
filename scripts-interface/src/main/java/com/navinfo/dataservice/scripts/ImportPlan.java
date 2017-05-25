@@ -547,6 +547,21 @@ public class ImportPlan {
 				if(i == 0){
 					taskJson.put("type", 0);
 					
+					if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){
+						//这个得特殊处理
+						List<Integer> kind = new ArrayList();
+						String result = taskDataMap.get("WORK_KIND").toString().replace("|", "");
+						for(int k = 0; k < result.length(); k++){
+							int digit = Integer.parseInt(String.valueOf(result.charAt(k)));
+							if(digit == 1){
+								//为了转换成task封装的对应的workkind数据
+								kind.add(k + 1);
+							}
+						}
+						
+						taskJson.put("workKind", kind);
+					}
+					
 					if(StringUtils.isNotBlank(taskDataMap.get("COLLECT_PLAN_START_DATE").toString())){
 						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("COLLECT_PLAN_START_DATE").toString())));
 					}
@@ -570,9 +585,9 @@ public class ImportPlan {
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
 						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
 					}
-					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
-						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
-					}
+//					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
+//						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
+//					}
 				}else{
 					taskJson.put("type", 3);
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
@@ -592,22 +607,15 @@ public class ImportPlan {
 				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_TOTAL").toString())){
 					taskJson.put("poiPlanTotal", Integer.parseInt(taskDataMap.get("POI_PLAN_TOTAL").toString()));
 				}
-				if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){
-					//这个得特殊处理
-					List<Integer> kind = new ArrayList();
-					String result = taskDataMap.get("WORK_KIND").toString().replace("|", "");
-					for(int k = 0; k < result.length(); k++){
-						int digit = Integer.parseInt(String.valueOf(result.charAt(k)));
-						if(digit == 1){
-							//为了转换成task封装的对应的workkind数据
-							kind.add(k + 1);
-						}
-					}
-					
-					taskJson.put("workKind", kind);
-				}
+
 				if(StringUtils.isNotBlank(taskDataMap.get("LOT").toString())){
 					taskJson.put("lot", Integer.parseInt(taskDataMap.get("LOT").toString()));
+				}
+				if(StringUtils.isNotBlank(taskDataMap.get("PRODUCE_PLAN_START_DATE").toString())){
+					taskJson.put("producePlanStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("PRODUCE_PLAN_START_DATE").toString())));
+				}
+				if(StringUtils.isNotBlank(taskDataMap.get("PRODUCE_PLAN_END_DATE").toString())){
+					taskJson.put("producePlanEndDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("PRODUCE_PLAN_END_DATE").toString())));
 				}
 				
 				//拼装创建时候的数据格式....

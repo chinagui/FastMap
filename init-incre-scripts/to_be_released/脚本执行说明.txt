@@ -1,5 +1,5 @@
-﻿1. fm_sys/xx.sql
-	功能：xxxx
+﻿1. fm_sys/glm_table_init.sql
+	功能：新增多源同步表MULTISRC_FM_SYNC/FM_MULTISRC_SYNC
 	目标库：fm_sys
-	author：xxx
+	author：宋冬燕
 

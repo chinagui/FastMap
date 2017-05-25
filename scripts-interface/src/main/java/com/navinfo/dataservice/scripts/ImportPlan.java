@@ -112,8 +112,8 @@ public class ImportPlan {
 					blockPlan.creatBlockPlan(map, conn);
 					
 					int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
-					//查询reginID
-					int regionId = getRegionIdByBlockID(conn , blockID);
+//					//查询reginID
+//					int regionId = getRegionIdByBlockID(conn , blockID);
 					//查询一个block对应city下的有效的program
 					int programID = getprogramIdByBlockID(conn , blockID);
 					map.put("programID", programID);
@@ -123,9 +123,9 @@ public class ImportPlan {
 						//这里每次一个新的blockPlan都需要重置groupID的查询次数
 						SELECT_TIMES = 0;
 						Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
-						taskDataMap.put("regionId", regionId);
+//						taskDataMap.put("regionId", regionId);
 						//创建三个不同类型的任务
-						blockPlan.creatTaskByBlockPlan(taskDataMap, conn, regionId);
+						blockPlan.creatTaskByBlockPlan(taskDataMap);
 					}
 				}
 			}catch(Exception e){
@@ -498,32 +498,32 @@ public class ImportPlan {
 		}
 	}
 	
-	/**
-	 * 
-	 * 对应cityID查询RegionId
-	 * @param blokID
-	 * @param conn
-	 * @throws Exception 
-	 * */
-	public static int getRegionIdByBlockID(Connection conn , int blockID) throws Exception{
-		try{
-			QueryRunner run = new QueryRunner();
-			String sql = "select t.region_id from CITY t,block b where t.city_id = b.city_id and b.block_id =" + blockID;
-
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					int regionId = 0;
-					if(rs.next()){
-						regionId  = rs.getInt("region_id");
-					}
-					return regionId;
-				}
-			};
-			return run.query(conn, sql, rsHandler);
-		}catch(Exception e){
-			throw e;
-		}
-	}
+//	/**
+//	 * 
+//	 * 对应cityID查询RegionId
+//	 * @param blokID
+//	 * @param conn
+//	 * @throws Exception 
+//	 * */
+//	public static int getRegionIdByBlockID(Connection conn , int blockID) throws Exception{
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			String sql = "select t.region_id from CITY t,block b where t.city_id = b.city_id and b.block_id =" + blockID;
+//
+//			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+//				public Integer handle(ResultSet rs) throws SQLException {
+//					int regionId = 0;
+//					if(rs.next()){
+//						regionId  = rs.getInt("region_id");
+//					}
+//					return regionId;
+//				}
+//			};
+//			return run.query(conn, sql, rsHandler);
+//		}catch(Exception e){
+//			throw e;
+//		}
+//	}
 
 	/**
 	 * 
@@ -531,8 +531,7 @@ public class ImportPlan {
 	 * @param taskDataMap
 	 * @param conn
 	 * */
-	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap, Connection conn, int regionID) throws Exception{
-		Task task = new Task();
+	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap) throws Exception{
 		JSONObject taskJson = new JSONObject();
 		JSONArray list = new JSONArray();
 		JSONObject json = new JSONObject();
@@ -541,7 +540,6 @@ public class ImportPlan {
 			for(int i = 0; i < 3; i++){
 				taskJson.put("name", taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
 				taskJson.put("blockId", Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
-				taskJson.put("regionId", regionID);
 				taskJson.put("programId", Integer.parseInt(taskDataMap.get("programID").toString()));
 				taskJson.put("lot", 0);
 				
@@ -616,7 +614,6 @@ public class ImportPlan {
 				list.add(taskJson);
 				}
 			json.put("tasks", list);
-//			TaskService.getInstance().createWithBean(conn, task);
 			TaskService.getInstance().create(2, json);
 			}catch(Exception e){
 				throw new Exception(e);

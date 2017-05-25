@@ -2,16 +2,13 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.navinfo.dataservice.engine.fcc.tips.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -34,10 +31,6 @@ import com.navinfo.dataservice.engine.audio.AudioImport;
 import com.navinfo.dataservice.engine.dropbox.manger.UploadService;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageExporter;
 import com.navinfo.dataservice.engine.fcc.patternImage.PatternImageImporter;
-import com.navinfo.dataservice.engine.fcc.tips.TipsExporter;
-import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
-import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
-import com.navinfo.dataservice.engine.fcc.tips.TipsUpload;
 import com.navinfo.dataservice.engine.photo.CollectorImport;
 
 @Controller
@@ -127,6 +120,9 @@ public class TipsController extends BaseController {
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
+
+            int editStatus = jsonReq.getInt("editStatus");
+            int editMeth = jsonReq.getInt("editMeth");
 			
 			 if (StringUtils.isEmpty(rowkey)) {
 	                throw new IllegalArgumentException("参数错误:rowkey不能为空");
@@ -150,7 +146,7 @@ public class TipsController extends BaseController {
 
 			TipsOperator op = new TipsOperator();
 
-			op.update(rowkey,  handler, pid,mdFlag);
+			op.update(rowkey, handler, pid, mdFlag, editStatus, editMeth);
 
 			return new ModelAndView("jsonView", success());
 
@@ -193,6 +189,7 @@ public class TipsController extends BaseController {
 			int handler = jsonReq.getInt("handler");
 			
 			String mdFlag= jsonReq.getString("mdFlag");
+
 			
 			 if (data==null||data.size()==0) {
 	                throw new IllegalArgumentException("参数错误:data不能为空");
@@ -209,7 +206,7 @@ public class TipsController extends BaseController {
 
 			TipsOperator op = new TipsOperator();
 
-			op.batchUpdateStatus(data,handler,mdFlag);
+			op.batchUpdateStatus(data, handler, mdFlag);
 
 			return new ModelAndView("jsonView", success());
 
@@ -540,43 +537,27 @@ public class TipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
-			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
 			String type = jsonReq.getString("type");
-
-			JSONArray stage = jsonReq.getJSONArray("stage");
+            if (StringUtils.isEmpty(type)) {
+                throw new IllegalArgumentException("参数错误:type不能为空。");
+            }
 
 			int dbId = jsonReq.getInt("dbId");
+            if (dbId == 0) {
+                throw new IllegalArgumentException("参数错误:dbId不能为空。");
+            }
 			
 			int subtaskId = jsonReq.getInt("subtaskId");
-			
-			String mdFlag = jsonReq.getString("mdFlag");
-			
-			if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
-            }
-            
-            if (stage==null||stage.size()==0) {
-                throw new IllegalArgumentException("参数错误:stage不能为空。");
-            }
-            
-            if (StringUtils.isEmpty(mdFlag)) {
-                throw new IllegalArgumentException("参数错误:mdFlag不能为空。");
-            }
-            
-            //值域验证
-            if(!"m".equals(mdFlag)&&!"d".equals(mdFlag)&&!"f".equals(mdFlag)){
-            	 throw new IllegalArgumentException("参数错误:mdflag值域错误。");
+            if (subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
             }
 
 			TipsSelector selector = new TipsSelector();
-			
-
-			JSONArray array = selector.getSnapshot(grids, stage, Integer.parseInt(type),
-					dbId,mdFlag,subtaskId);
+			JSONArray array = selector.getSnapshot(parameter);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));
@@ -600,22 +581,24 @@ public class TipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
-
-			JSONArray stages = jsonReq.getJSONArray("stage");
 			
 			int subtaskId = jsonReq.getInt("subtaskId");
 			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
-			
-			if (stages==null||stages.size()==0) {
-                throw new IllegalArgumentException("参数错误:stages不能为空。");
+
+            if(!jsonReq.containsKey("workStatus")) {
+                throw new IllegalArgumentException("参数错误:workStatus不能为空。");
+            }
+
+            if(subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
             }
 
 			TipsSelector selector = new TipsSelector();
 			
-			JSONObject data = selector.getStats(grids, stages,subtaskId);
+			JSONObject data = selector.getStats(parameter);
 
 			return new ModelAndView("jsonView", success(data));
 
@@ -627,36 +610,82 @@ public class TipsController extends BaseController {
 		}
 	}
 
-	@RequestMapping(value = "/tip/getByWkt")
-	public void getTipsByWkt(HttpServletRequest request,
-							  HttpServletResponse response) throws ServletException, IOException {
+// //     20170523 和于桐万冲确认该接口取消
+//	@RequestMapping(value = "/tip/getByWkt")
+//	public void getTipsByWkt(HttpServletRequest request,
+//							  HttpServletResponse response) throws ServletException, IOException {
+//
+//		String parameter = request.getParameter("parameter");
+//
+//		try {
+//			JSONObject jsonReq = JSONObject.fromObject(parameter);
+//
+//			String wkt = jsonReq.getString("wkt");
+//
+//			String flag = jsonReq.getString("flag");
+//
+//            if (StringUtils.isEmpty(wkt)) {
+//                throw new IllegalArgumentException("参数错误:wkt不能为空。");
+//            }
+//
+//            if (StringUtils.isNotEmpty(flag)) {
+//                throw new IllegalArgumentException("参数错误:flag不能为空。");
+//            }
+//
+//			TipsSelector selector = new TipsSelector();
+//
+//			JSONArray array = selector.searchDataByWkt(parameter, true);
+//
+//			response.getWriter().println(
+//					ResponseUtils.assembleRegularResult(array));
+//
+//		} catch (Exception e) {
+//
+//			logger.error(e.getMessage(), e);
+//
+//			response.getWriter().println(
+//					ResponseUtils.assembleFailResult(e.getMessage()));
+//		}
+//	}
 
-		String parameter = request.getParameter("parameter");
+	@RequestMapping(value = "/tip/checkByTask")
+	public void checkByTask(HttpServletRequest request,
+							 HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
 
-		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int subtaskId = jsonReq.getInt("subtaskId");
+            JSONArray grids = jsonReq.getJSONArray("grids");
+            int dbId = jsonReq.getInt("dbId");//大区库ID
 
-			String wkt = jsonReq.getString("wkt");
+            if(subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
+            }
 
-			String flag = jsonReq.getString("flag");
+            if (grids==null||grids.size()==0) {
+                throw new IllegalArgumentException("参数错误:grids不能为空。");
+            }
 
-			JSONArray types = new JSONArray();
+            if (dbId == 0) {
+                throw new IllegalArgumentException("参数错误:dbId不能为空。");
+            }
 
-			TipsSelector selector = new TipsSelector();
+            TipsSelector selector = new TipsSelector();
+            List<String> rowkeyList = selector.getCheckRowkeyList(parameter);
 
-			JSONArray array = selector.searchDataByWkt(wkt,
-					types, flag, "wkt");
+            Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(grids);
+//            TipsTaskCheckMR incrementalMRInit = new TipsTaskCheckMR();
+//            incrementalMRInit.run(rowkeyList, dbId, meshes, subtaskId);
 
-			response.getWriter().println(
-					ResponseUtils.assembleRegularResult(array));
+//            response.getWriter().println(
+//                    ResponseUtils.assembleRegularResult(array));
 
-		} catch (Exception e) {
-
-			logger.error(e.getMessage(), e);
-
-			response.getWriter().println(
-					ResponseUtils.assembleFailResult(e.getMessage()));
-		}
-	}
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
 
 }

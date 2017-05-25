@@ -274,7 +274,7 @@ public class TipsImportUtils {
 	 * @author: y
 	 * @time:2017-4-19 下午7:16:38
 	 */
-	public static Object generateSolrStatisticsWkt(String sourceType,
+	public static String generateSolrStatisticsWkt(String sourceType,
 			JSONObject deep, JSONObject g_location, JSONObject feedback) {
 		
 		  JSONObject geometry=g_location; //默认的是显示坐标

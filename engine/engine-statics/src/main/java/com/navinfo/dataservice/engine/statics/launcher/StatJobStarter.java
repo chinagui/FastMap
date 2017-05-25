@@ -48,7 +48,7 @@ public abstract class StatJobStarter {
 	 */
 	protected RunJobInfo startRun(){		
 		//默认启动参数timestamp，取当前时间的小时的整点
-		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHHss00");
+		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
 		JSONObject request=new JSONObject();
 		request.put("timestamp", timestamp);
 		RunJobInfo info = new RunJobInfo(jobType(),request);

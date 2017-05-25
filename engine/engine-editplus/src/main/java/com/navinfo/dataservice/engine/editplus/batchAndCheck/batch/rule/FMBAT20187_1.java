@@ -122,10 +122,13 @@ public class FMBAT20187_1 extends BasicBatchRule{
 		try{
 			List<Long> poiPids=new ArrayList<Long>();
 			poiPids.add(poiObj.getMainrow().getObjPid());
-			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByRowEditStatus(getBatchRuleCommand().getConn(), poiPids);
-			List<LogDetail> LogDetails=logs.get(poiObj.getMainrow().getObjPid());
-			for(LogDetail LogDetail:LogDetails){
-				if(LogDetail.getTbNm().equals("IX_POI_CHILDREN")){return true;}
+			Map<Long, List<LogDetail>> logs = PoiLogDetailStat.loadByTBRowIDEditStatus(getBatchRuleCommand().getConn(), poiPids);
+			for(List<LogDetail> value:logs.values()){
+				for(LogDetail LogDetail:value){
+					if(LogDetail.getTbNm().equals("IX_POI_CHILDREN")){
+						return true;
+					}
+				}
 			}
 		}catch (Exception e) {
 			throw e;

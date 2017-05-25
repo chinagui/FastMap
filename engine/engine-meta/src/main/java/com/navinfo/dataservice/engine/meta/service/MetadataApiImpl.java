@@ -51,6 +51,7 @@ import com.navinfo.dataservice.engine.meta.scSensitiveWords.ScSensitiveWords;
 import com.navinfo.dataservice.engine.meta.tmc.selector.TmcSelector;
 import com.navinfo.dataservice.engine.meta.translates.ConvertUtil;
 import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
+import com.navinfo.dataservice.engine.meta.truck.TruckSelector;
 import com.navinfo.dataservice.engine.meta.wordKind.WordKind;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -92,6 +93,27 @@ public class MetadataApiImpl implements MetadataApi {
             LevelSelector selector = new LevelSelector(conn);
 			String res = selector.getLevelForMulti(jsonObj);
             return res;
+        } catch (Exception e) {
+        	log.error(e.getMessage(), e);
+        	throw e;
+        } finally {
+            DbUtils.closeQuietly(conn);
+        }
+	}
+	/**
+	 * 获取众包truck
+	 * @param jsonObj
+	 * @return
+	 * @throws Exception
+	 */
+	@Override
+	public int getCrowdTruck(String kindCode) throws Exception{
+		Connection conn = null;
+        try {
+            conn = DBConnector.getInstance().getMetaConnection();
+            TruckSelector selector = new TruckSelector(conn);
+			int truck = selector.getCrowdTruck(kindCode);
+            return truck;
         } catch (Exception e) {
         	log.error(e.getMessage(), e);
         	throw e;

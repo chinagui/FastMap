@@ -38,6 +38,7 @@ public abstract class StatJobStarter {
 		if(status==3||status==4){
 			return false;
 		}
+		log.info("有正在执行的"+jobType()+"任务，本次统计不执行");
 		return true;
 	};
 	

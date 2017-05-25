@@ -48,9 +48,9 @@ public class GLM52018 extends baseRule {
                     Geometry tmpGeo = GeoTranslator.transform(luFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                     int luKind = luFace.getKind();
                     if (6 == luKind) {
-                        setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                        setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                     } else if (11 == luKind && !geometry.coveredBy(tmpGeo)) {
-                        setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                        setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                     }
                 }
 
@@ -73,14 +73,14 @@ public class GLM52018 extends baseRule {
                 if (kind == 6) {
                     for (LcFace lcFace : list) {
                         if (17 != lcFace.getKind()) {
-                            setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                            setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                         }
                     }
                 } else if (kind == 11) {
                     for (LcFace lcFace : list) {
                         Geometry tmpGeo = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                         if (17 != lcFace.getKind() && !geometry.covers(tmpGeo)) {
-                            setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                            setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                         }
                     }
                 }

@@ -321,7 +321,7 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	//根据网格获取tips统计
 	@Test
 	public void testGetStats() {
-		String parameter = "{}";
+		String parameter = "{\"grids\":[59567311,59567312],\"subtaskId\":188,\"workStatus\":9}";
 
 		try {
 			System.out.println(solrSelector.getStats(parameter));

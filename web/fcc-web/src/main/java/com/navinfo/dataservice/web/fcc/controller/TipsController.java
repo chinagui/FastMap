@@ -546,11 +546,6 @@ public class TipsController extends BaseController {
                 throw new IllegalArgumentException("参数错误:type不能为空。");
             }
 
-			JSONArray stage = jsonReq.getJSONArray("stage");
-            if (stage==null||stage.size()==0) {
-                throw new IllegalArgumentException("参数错误:stage不能为空。");
-            }
-
 			int dbId = jsonReq.getInt("dbId");
             if (dbId == 0) {
                 throw new IllegalArgumentException("参数错误:dbId不能为空。");
@@ -586,17 +581,15 @@ public class TipsController extends BaseController {
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
 			JSONArray grids = jsonReq.getJSONArray("grids");
-
-			JSONArray stages = jsonReq.getJSONArray("stage");
 			
 			int subtaskId = jsonReq.getInt("subtaskId");
 			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
-			
-			if (stages==null||stages.size()==0) {
-                throw new IllegalArgumentException("参数错误:stages不能为空。");
+
+            if(!jsonReq.containsKey("workStatus")) {
+                throw new IllegalArgumentException("参数错误:workStatus不能为空。");
             }
 
             if(subtaskId == 0) {

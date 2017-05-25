@@ -429,5 +429,6 @@ public interface MetadataApi {
 	public String[] pyVoiceConvert(String word,String phonetic,String adminId,String isRdName) throws Exception ;
 	
 	public String engConvert(String word,String adminId) throws Exception ;
+	public int getCrowdTruck(String kindCode) throws Exception;
 
 }

@@ -38,6 +38,7 @@ public abstract class StatJobStarter {
 		if(status==3||status==4){
 			return false;
 		}
+		log.info("有正在执行的"+jobType()+"任务，本次统计不执行");
 		return true;
 	};
 	
@@ -47,7 +48,7 @@ public abstract class StatJobStarter {
 	 */
 	protected RunJobInfo startRun(){		
 		//默认启动参数timestamp，取当前时间的小时的整点
-		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHH0000");
+		String timestamp=DateUtils.dateToString(DateUtils.getSysdate(), "yyyyMMddHHss00");
 		JSONObject request=new JSONObject();
 		request.put("timestamp", timestamp);
 		RunJobInfo info = new RunJobInfo(jobType(),request);

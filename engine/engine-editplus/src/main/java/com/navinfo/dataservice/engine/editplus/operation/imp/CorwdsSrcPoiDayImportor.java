@@ -290,7 +290,7 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					}
 					// IX_POI_CONTACT
 					String phoneAll = tPoi.getString("REAUDITPHONE");
-					String[] phones = phoneAll.split("|");
+					String[] phones = phoneAll.split("\\|");
 					for(int i=0;i<phones.length;i++){
 						int type = 1;
 						String tmpPhone = phones[i];
@@ -314,8 +314,8 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					if (!pidGuide.isEmpty()){
 						for(long linkPid: pidGuide.keySet()){
 							ixPoi.setLinkPid(linkPid);
-							double xGuide = pidGuide.get(linkPid).x;
-							double yGuide = pidGuide.get(linkPid).y;
+							double xGuide = DoubleUtil.keepSpecDecimal(pidGuide.get(linkPid).x);
+							double yGuide = DoubleUtil.keepSpecDecimal(pidGuide.get(linkPid).y);
 							ixPoi.setXGuide(xGuide);
 							ixPoi.setYGuide(yGuide);
 						}

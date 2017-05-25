@@ -54,6 +54,7 @@ import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
@@ -1773,6 +1774,9 @@ public class SubtaskService {
 				}					
 			}
 		}		
+		
+		//记录关闭时间
+		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
 		
 		//发送消息
 		try {

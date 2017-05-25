@@ -42,7 +42,7 @@ public class PoiDayStaticsGroupJob  extends AbstractStatJob{
 				.getValue(PropConstant.fmStat);
 		//String statTime = new SimpleDateFormat("yyyyMMddkkmmss").format(new Date());
 		
-		PoiDayStaticsJobRequest req=(PoiDayStaticsJobRequest) request;
+		PoiDayStaticsGroupJobRequest req=(PoiDayStaticsGroupJobRequest) request;
 		log.info("start stat "+req.getJobType());
 		// 获得 大区库的db_id
 		List<Integer> listDbId=null;

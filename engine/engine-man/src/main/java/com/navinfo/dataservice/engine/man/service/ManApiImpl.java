@@ -303,5 +303,9 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().queryBySubTaskIdAndIsQuality(taskId, stage, isQuality);
 	}
 	
+	@Override
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
+		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
+	}
 }
 

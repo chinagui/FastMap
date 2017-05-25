@@ -180,5 +180,12 @@ public interface ManApi{
 	 */
 	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception;
 	
+	/**
+	 * 更具grid获取众包子任务
+	 * @param grid
+	 * @return
+	 * @throws Exception
+	 */
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception;
 }
 

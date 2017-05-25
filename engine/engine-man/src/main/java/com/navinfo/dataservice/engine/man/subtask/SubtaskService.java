@@ -49,6 +49,7 @@ import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
@@ -1768,6 +1769,9 @@ public class SubtaskService {
 			}
 		}		
 		
+		//记录关闭时间
+		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
+		
 		//发送消息
 		try {
 			//查询分配的作业组组长
@@ -2244,7 +2248,7 @@ public class SubtaskService {
 	 * @author songhe
 	 * 
 	 * */
-	public Subtask queryCrowdSubtaskByGrid(String grid){
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
 		Subtask substask = new Subtask();
 		Connection conn = null;
 		if(StringUtils.isBlank(grid)){
@@ -2261,6 +2265,7 @@ public class SubtaskService {
 			}
 		}catch(Exception e ){
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}

@@ -78,8 +78,7 @@ public class PermitCheckLinkSnapSamelink extends baseRule {
                 }
             }
             if (!flag) {
-                setCheckResult("此link不是该组同一关系中的主要素，不能进行修形操作",
-                        String.format("[%s,%d]", row.tableName().toUpperCase(), row.parentPKValue()), 0);
+                setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), row.parentPKValue()), 0);
             }
         }
     }

@@ -48,7 +48,7 @@ public class GLM51029 extends baseRule {
                 } else if (17 != kind && 17 == lcFace.getKind() && geometry.coveredBy(tmpGeo)) {
                     continue;
                 }
-                setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
             }
         }
     }

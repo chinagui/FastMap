@@ -39,8 +39,7 @@ public class GLM51078 extends baseRule {
                 for (CmgBuildface cmgface : list) {
                     Geometry tmpGep = GeoTranslator.transform(cmgface.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                     if (!geometry.covers(tmpGep) && !geometry.coveredBy(tmpGep)) {
-                        setCheckResult("建筑物面与土地覆盖面相交",
-                                String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                        setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                     }
                 }
             } else if (row instanceof CmgBuildface && row.status() != ObjStatus.DELETE) {
@@ -56,8 +55,7 @@ public class GLM51078 extends baseRule {
                 for (LcFace lcFace : list) {
                     Geometry tmpGep = GeoTranslator.transform(lcFace.getGeometry(), GeoTranslator.dPrecisionMap, 5);
                     if (!geometry.covers(tmpGep) && !geometry.coveredBy(tmpGep)) {
-                        setCheckResult("建筑物面与土地覆盖面相交",
-                                String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
+                        setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()), 0);
                     }
                 }
             }

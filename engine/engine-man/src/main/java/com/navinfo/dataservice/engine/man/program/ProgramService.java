@@ -41,6 +41,7 @@ import com.navinfo.dataservice.engine.man.infor.InforService;
 import com.navinfo.dataservice.engine.man.inforMan.InforManOperation;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.navicommons.database.Page;
@@ -386,6 +387,9 @@ public class ProgramService {
 					+ "   SET PLAN_STATUS = 2"
 					+ " WHERE INFOR_ID IN (SELECT INFOR_ID FROM PROGRAM WHERE PROGRAM_ID = "+programId+")";
 			run.update(conn,updateSql);
+			
+			//记录关闭时间
+			TimelineService.recordTimeline(programId, "program", 0, conn);
 			
 			try {
 				//发送消息

@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -28,13 +27,17 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.navinfo.dataservice.api.man.model.Program;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.api.man.model.Task;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
-import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 /**
  * @author songhe
@@ -47,8 +50,12 @@ public class ImportPlan {
 	//默认最早和最晚时间
 	private static final String DEFAULT_DATE_BEGAIN = "9999-12-31 00:00:00";
 	private static final String DEFAULT_DATE_END = "1970-01-01 00:00:00";
+	//这里添加一个默认的日期格式，用于转换
+	private static final String DEFAULT_FORMATE = "yyyy-MM-dd HH:mm:ss";
 	//用于记录查询groupID的次数
 	private static int SELECT_TIMES = 0;
+	//这里没有tocken，没办法从tocken中获取userid，只能先写死一个数据库存在的值直接赋值
+	private static final long userID= 2;
 
 	private Workbook wb;
 	private Sheet sheet;
@@ -57,59 +64,97 @@ public class ImportPlan {
 	
 	public static void main(String[] args) throws SQLException {
 		Connection conn = null;
+		JSONArray programUpdateIDs = new JSONArray();
 		String filepath = String.valueOf(args[0]);
 		try {
 			JobScriptsInterface.initContext();
-//			String filepath = "E:/2.xls";
+//			String filepath = "E:/1.xls";
 			ImportPlan blockPlan = new ImportPlan(filepath);	
 			
 			// 读取Excel表格内容生成对应条数的blockPlan数据
 			List<Map<String, Object>> BlockPlanList = blockPlan.readExcelContent();
 			
-			conn = DBConnector.getInstance().getManConnection();
-			for(Map<String, Object> map : BlockPlanList){
-				//保存信息到blockPlan表中
-				blockPlan.creatBlockPlan(map, conn);
-				
-				int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
-				//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
-				int taskCountInBlock = blockPlan.taskCountInBlock(blockID, conn);
-				if(taskCountInBlock == 0){
-					//这里每次一个新的blockPlan都需要重置groupID的查询次数
-					SELECT_TIMES = 0;
-					Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
-					//创建三个不同类型的任务
-					blockPlan.creatTaskByBlockPlan(taskDataMap, conn);
+			//创建项目
+			try{
+				conn = DBConnector.getInstance().getManConnection();
+				List<Map<String,Object>> programList = new ArrayList<>();
+				for(Map<String, Object> programMap : BlockPlanList){
+					//根据block获取对应cityID
+					int blockID = Integer.parseInt(programMap.get("BLOCK_ID").toString());
+					int cityID = blockPlan.getCityId(blockID, conn);
+					//查询对应city下是否已经有项目存在,城市下无项目才创建，否则不创建项目
+					int programCountInCity = blockPlan.programCountInCity(cityID, conn);
+					if(programCountInCity == 0){
+						programMap.put("CITY_ID", cityID);
+						programList.add(programMap);
+					}
 				}
-			}
-			List<Map<String,Object>> programList = new ArrayList<>();
-			for(Map<String, Object> programMap : BlockPlanList){
-				//根据block获取对应cityID
-				int blockID = Integer.parseInt(programMap.get("BLOCK_ID").toString());
-				int cityID = blockPlan.getCityId(blockID, conn);
-				//查询对应city下是否已经有项目存在,城市下无项目才创建，否则不创建项目
-				int programCountInCity = blockPlan.programCountInCity(cityID, conn);
-				if(programCountInCity == 0){
-					programMap.put("CITY_ID", cityID);
-					programList.add(programMap);
+				//通过cityID对每一个block的数据进行分组
+				Map<String,List<Map<String,Object>>> blockListBycity = blockPlan.groupingBlockListBycity(programList);
+				//创建项目需要的数据处理，各种时间的取值
+				List<Map<String, Object>> programs = blockPlan.conductProgramData(blockListBycity);
+				for(Map<String, Object> programMap:programs){
+					//创建项目
+					int programId = blockPlan.creakProgramByBlockPlan(programMap, conn);
+					programUpdateIDs.add(programId);
 				}
+			}catch(Exception e){
+				e.printStackTrace();
+				DbUtils.rollbackAndCloseQuietly(conn);
+			}finally {
+				DbUtils.commitAndClose(conn);
 			}
-			//通过cityID对每一个block的数据进行分组
-			Map<String,List<Map<String,Object>>> blockListBycity = blockPlan.groupingBlockListBycity(programList);
-			//创建项目需要的数据处理，各种时间的取值
-			List<Map<String, Object>> programs = blockPlan.conductProgramData(blockListBycity);
-			for(Map<String, Object> programMap:programs){
-				//创建项目
-				blockPlan.creakProgramByBlockPlan(programMap, conn);
+			//创建任务
+			try{
+				conn = DBConnector.getInstance().getManConnection();
+				for(Map<String, Object> map : BlockPlanList){
+					//保存信息到blockPlan表中
+					blockPlan.creatBlockPlan(map, conn);
+					
+					int blockID = Integer.parseInt(map.get("BLOCK_ID").toString());
+//					//查询reginID
+//					int regionId = getRegionIdByBlockID(conn , blockID);
+					//查询一个block对应city下的有效的program
+					int programID = getprogramIdByBlockID(conn , blockID);
+					map.put("programID", programID);
+					//查询对应block下是否已经有任务存在，该block下没有数据的时候执行创建
+					int taskCountInBlock = blockPlan.taskCountInBlock(blockID, conn);
+					if(taskCountInBlock == 0){
+						//这里每次一个新的blockPlan都需要重置groupID的查询次数
+						SELECT_TIMES = 0;
+						Map<String, Object> taskDataMap = blockPlan.getGroupId(map, conn);
+//						taskDataMap.put("regionId", regionId);
+						//创建三个不同类型的任务
+						blockPlan.creatTaskByBlockPlan(taskDataMap);
+					}
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				DbUtils.rollbackAndCloseQuietly(conn);
+			}finally {
+				DbUtils.commitAndClose(conn);
 			}
-			
-		}catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}catch (Exception e) {
 			e.printStackTrace();
-			DbUtils.rollbackAndCloseQuietly(conn);
-		}finally{
-			DbUtils.commitAndClose(conn);
+		}
+		//发布项目
+		ImportPlan.pushProgram(programUpdateIDs);
+	}
+	
+	/**
+	 * 更新task状态为草稿
+	 * 更新block状态为已规划
+	 * 发布项目
+	 * 
+	 * */
+	public static void pushProgram(JSONArray programUpdateIDs){
+		//创建完成后发布项目,任务创建的时候状态已经ok，不用单独处理
+		try {
+			if(programUpdateIDs.size() > 0){
+				ProgramService.getInstance().pushMsg(userID, programUpdateIDs);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -425,6 +470,60 @@ public class ImportPlan {
 		}
 		return cellvalue;
 	}
+	
+	/**
+	 * 
+	 * 对应cityID查询RegionId
+	 * @param blokID
+	 * @param conn
+	 * @throws Exception 
+	 * */
+	public static int getprogramIdByBlockID(Connection conn , int blockID) throws Exception{
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql = "select t.program_id from PROGRAM t,block b where b.city_id = t.city_id and t.latest = 1 and b.block_id = " + blockID;
+
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					int programID = 0;
+					if(rs.next()){
+						programID  = rs.getInt("program_id");
+					}
+					return programID;
+				}
+			};
+			return run.query(conn, sql, rsHandler);
+		}catch(Exception e){
+			throw e;
+		}
+	}
+	
+//	/**
+//	 * 
+//	 * 对应cityID查询RegionId
+//	 * @param blokID
+//	 * @param conn
+//	 * @throws Exception 
+//	 * */
+//	public static int getRegionIdByBlockID(Connection conn , int blockID) throws Exception{
+//		try{
+//			QueryRunner run = new QueryRunner();
+//			String sql = "select t.region_id from CITY t,block b where t.city_id = b.city_id and b.block_id =" + blockID;
+//
+//			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+//				public Integer handle(ResultSet rs) throws SQLException {
+//					int regionId = 0;
+//					if(rs.next()){
+//						regionId  = rs.getInt("region_id");
+//					}
+//					return regionId;
+//				}
+//			};
+//			return run.query(conn, sql, rsHandler);
+//		}catch(Exception e){
+//			throw e;
+//		}
+//	}
 
 	/**
 	 * 
@@ -432,20 +531,27 @@ public class ImportPlan {
 	 * @param taskDataMap
 	 * @param conn
 	 * */
-	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap, Connection conn) throws Exception{
-		Task task = new Task();
+	public void creatTaskByBlockPlan(Map<String, Object> taskDataMap) throws Exception{
+		JSONObject taskJson = new JSONObject();
+		JSONArray list = new JSONArray();
+		JSONObject json = new JSONObject();
 		try{
 			//一个区县下创建三个任务
 			for(int i = 0; i < 3; i++){
-				task.setName(taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
+				taskJson.put("name", taskDataMap.get("BLOCK_NAME").toString()+ "_" + df.format(new Date()));
+				taskJson.put("blockId", Integer.parseInt(taskDataMap.get("BLOCK_ID").toString()));
+				taskJson.put("programId", Integer.parseInt(taskDataMap.get("programID").toString()));
+				taskJson.put("lot", 0);
+				
 				//三种type类型分别创建
 				if(i == 0){
-					task.setType(0);
+					taskJson.put("type", 0);
+					
 					if(StringUtils.isNotBlank(taskDataMap.get("COLLECT_PLAN_START_DATE").toString())){
-						task.setPlanStartDate(Timestamp.valueOf(taskDataMap.get("COLLECT_PLAN_START_DATE").toString()));
+						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("COLLECT_PLAN_START_DATE").toString())));
 					}
 					if(StringUtils.isNotBlank(taskDataMap.get("COLLECT_PLAN_END_DATE").toString())){
-						task.setPlanEndDate(Timestamp.valueOf(taskDataMap.get("COLLECT_PLAN_END_DATE").toString()));
+						taskJson.put("planEndDate",  df.format(DateUtils.parseDateTime2(taskDataMap.get("COLLECT_PLAN_END_DATE").toString())));
 					}
 					String workKind = taskDataMap.get("WORK_KIND").toString().substring(0, 3);
 					//这里workkind特定情况下才赋值组ID，其他情况不赋值
@@ -454,46 +560,61 @@ public class ImportPlan {
 						type = 1;
 					}
 					if(type == 1 && taskDataMap.containsKey("COLECTION_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("COLECTION_GROUP_ID").toString())){
-						task.setGroupId(Integer.parseInt(taskDataMap.get("COLECTION_GROUP_ID").toString()));
+						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("COLECTION_GROUP_ID").toString()));
 					}
 				}else if(i == 1){
-					task.setType(2);
+					taskJson.put("type", 2);
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
-						task.setPlanEndDate(Timestamp.valueOf(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString()));
+						taskJson.put("planEndDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())));
 					}
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
-						task.setPlanStartDate(Timestamp.valueOf(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString()));
+						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
 					}
 					if(taskDataMap.containsKey("MONTH_GROUP_ID") && StringUtils.isNotBlank(taskDataMap.get("MONTH_GROUP_ID").toString())){
-						task.setGroupId(Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
+						taskJson.put("groupId", Integer.parseInt(taskDataMap.get("MONTH_GROUP_ID").toString()));
 					}
 				}else{
-					task.setType(3);
+					taskJson.put("type", 3);
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
-						task.setPlanStartDate(Timestamp.valueOf(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString()));
+						taskJson.put("planEndDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_END_DATE").toString())));
 					}
 					if(StringUtils.isNotBlank(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
-						task.setPlanEndDate(Timestamp.valueOf(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString()));
+						taskJson.put("planStartDate", df.format(DateUtils.parseDateTime2(taskDataMap.get("MONTH_EDIT_PLAN_START_DATE").toString())));
 					}
 					//非采集以及月编任务的数据，先赋值为0
-					task.setGroupId(0);
+					taskJson.put("groupId", 0);;
 				}
-				task.setDescp(taskDataMap.get("DESCP").toString());
-				//任务状态赋值为草稿2
-				task.setStatus(2);
-				task.setCreateUserId(null);
+				taskJson.put("descp", taskDataMap.get("DESCP").toString());
+				taskJson.put("createUserId", 2);
 				if(StringUtils.isNotBlank(taskDataMap.get("ROAD_PLAN_TOTAL").toString())){
-					task.setRoadPlanTotal(Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
+					taskJson.put("roadPlanTotal", Integer.parseInt(taskDataMap.get("ROAD_PLAN_TOTAL").toString()));
 				}
 				if(StringUtils.isNotBlank(taskDataMap.get("POI_PLAN_TOTAL").toString())){
-					task.setPoiPlanTotal(Integer.parseInt(taskDataMap.get("POI_PLAN_TOTAL").toString()));
+					taskJson.put("poiPlanTotal", Integer.parseInt(taskDataMap.get("POI_PLAN_TOTAL").toString()));
 				}
 				if(StringUtils.isNotBlank(taskDataMap.get("WORK_KIND").toString())){
-					task.setWorkKind(taskDataMap.get("WORK_KIND").toString());
+					//这个得特殊处理
+					List<Integer> kind = new ArrayList();
+					String result = taskDataMap.get("WORK_KIND").toString().replace("|", "");
+					for(int k = 0; k < result.length(); k++){
+						int digit = Integer.parseInt(String.valueOf(result.charAt(k)));
+						if(digit == 1){
+							//为了转换成task封装的对应的workkind数据
+							kind.add(k + 1);
+						}
+					}
+					
+					taskJson.put("workKind", kind);
 				}
-
-				TaskService.getInstance().createWithBean(conn, task);
+				if(StringUtils.isNotBlank(taskDataMap.get("LOT").toString())){
+					taskJson.put("lot", Integer.parseInt(taskDataMap.get("LOT").toString()));
 				}
+				
+				//拼装创建时候的数据格式....
+				list.add(taskJson);
+				}
+			json.put("tasks", list);
+			TaskService.getInstance().create(2, json);
 			}catch(Exception e){
 				throw new Exception(e);
 			}
@@ -506,43 +627,43 @@ public class ImportPlan {
 	 * @throws Exception 
 	 * 
 	 * */
-	public void creakProgramByBlockPlan(Map<String, Object> programMap, Connection conn) throws Exception{
+	public int creakProgramByBlockPlan(Map<String, Object> programMap, Connection conn) throws Exception{
 		Program program = new Program();
 		try{
 			program.setName(programMap.get("NAME").toString() + "_" + df.format(new Date()));
 			program.setType(1);
 			program.setDescp("");
 			if(StringUtils.isNotBlank(programMap.get("PLAN_START_DATE").toString())){
-				program.setPlanStartDate(Timestamp.valueOf(programMap.get("PLAN_START_DATE").toString()));
+				program.setPlanStartDate(DateUtils.stringToTimestamp(programMap.get("PLAN_START_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("PLAN_END_DATE").toString())){
-				program.setPlanEndDate(Timestamp.valueOf(programMap.get("PLAN_END_DATE").toString()));
+				program.setPlanEndDate(DateUtils.stringToTimestamp(programMap.get("PLAN_END_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("COLLECT_PLAN_START_DATE").toString())){
-				program.setCollectPlanStartDate(Timestamp.valueOf(programMap.get("COLLECT_PLAN_START_DATE").toString()));
+				program.setCollectPlanStartDate(DateUtils.stringToTimestamp(programMap.get("COLLECT_PLAN_START_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("COLLECT_PLAN_END_DATE").toString())){
-				program.setCollectPlanEndDate(Timestamp.valueOf(programMap.get("COLLECT_PLAN_END_DATE").toString()));
+				program.setCollectPlanEndDate(DateUtils.stringToTimestamp(programMap.get("COLLECT_PLAN_END_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
-				program.setMonthEditPlanStartDate(Timestamp.valueOf(programMap.get("MONTH_EDIT_PLAN_START_DATE").toString()));
+				program.setMonthEditPlanStartDate(DateUtils.stringToTimestamp(programMap.get("MONTH_EDIT_PLAN_START_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
-				program.setMonthEditPlanEndDate(Timestamp.valueOf(programMap.get("MONTH_EDIT_PLAN_END_DATE").toString()));
+				program.setMonthEditPlanEndDate(DateUtils.stringToTimestamp(programMap.get("MONTH_EDIT_PLAN_END_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("PRODUCE_PLAN_START_DATE").toString())){
-				program.setProducePlanStartDate(Timestamp.valueOf(programMap.get("PRODUCE_PLAN_START_DATE").toString()));
+				program.setProducePlanStartDate(DateUtils.stringToTimestamp(programMap.get("PRODUCE_PLAN_START_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("PRODUCE_PLAN_END_DATE").toString())){
-				program.setProducePlanEndDate(Timestamp.valueOf(programMap.get("PRODUCE_PLAN_END_DATE").toString()));
+				program.setProducePlanEndDate(DateUtils.stringToTimestamp(programMap.get("PRODUCE_PLAN_END_DATE").toString(), DEFAULT_FORMATE));
 			}
 			if(StringUtils.isNotBlank(programMap.get("CITY_ID").toString())){
 				program.setCityId(Integer.parseInt(programMap.get("CITY_ID").toString()));
 			}
-			program.setStatus(1);
 			program.setCreateUserId(0);
+			
 			//创建项目
-			ProgramService.getInstance().create(conn, program);
+			return ProgramService.getInstance().create(conn, program);
 		}catch(Exception e){
 			throw new Exception(e);
 		}
@@ -686,41 +807,57 @@ public class ImportPlan {
 						if(plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
 							plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
 						}
+					}else{
+						plan_start_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
 						if(plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
 							plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
 						}
+					}else{
+						plan_end_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_START_DATE").toString())){
 						if(collection_plan_start_date.compareTo(blockMap.get("COLLECT_PLAN_START_DATE").toString()) > 0){
 							collection_plan_start_date = blockMap.get("COLLECT_PLAN_START_DATE").toString();
 						}
+					}else{
+						collection_plan_start_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("COLLECT_PLAN_END_DATE").toString())){
 						if(collection_plan_end_date.compareTo(blockMap.get("COLLECT_PLAN_END_DATE").toString()) < 0){
 							collection_plan_end_date = blockMap.get("COLLECT_PLAN_END_DATE").toString();
 						}
+					}else{
+						collection_plan_end_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString())){
 						if(month_edit_plan_start_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString()) > 0){
 							month_edit_plan_start_date = blockMap.get("MONTH_EDIT_PLAN_START_DATE").toString();
 						}
+					}else{
+						month_edit_plan_start_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString())){
 						if(month_edit_plan_end_date.compareTo(blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString()) < 0){
 							month_edit_plan_end_date = blockMap.get("MONTH_EDIT_PLAN_END_DATE").toString();
 						}
+					}else{
+						month_edit_plan_end_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_START_DATE").toString())){
 						if(produce_plan_start_date.compareTo(blockMap.get("PRODUCE_PLAN_START_DATE").toString()) > 0){
 							produce_plan_start_date = blockMap.get("PRODUCE_PLAN_START_DATE").toString();
 						}
+					}else{
+						produce_plan_start_date = "";
 					}
 					if(StringUtils.isNotBlank(blockMap.get("PRODUCE_PLAN_END_DATE").toString())){
 						if(produce_plan_end_date.compareTo(blockMap.get("PRODUCE_PLAN_END_DATE").toString()) < 0){
 							produce_plan_end_date = blockMap.get("PRODUCE_PLAN_END_DATE").toString();
 						}
+					}else{
+						produce_plan_end_date = "";
 					}
 				
 					city_name = blockMap.get("CITY_NAME").toString();

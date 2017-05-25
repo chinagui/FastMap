@@ -187,7 +187,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
+			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -205,6 +205,16 @@ public class SubtaskOperation {
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
+						try {
+							wkt=GeoTranslator.struct2Wkt(struct);
+							Geometry geometry=GeoTranslator.struct2Jts(struct);
+							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						list.add(subtask);
 					}
 					return list;

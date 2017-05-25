@@ -57,7 +57,8 @@ public class DefaultWriter {
 			initMongoDb(collectionName,timestamp);
 			//统计信息入库
 			Document resultDoc=new Document();
-			resultDoc.put(timestamp,messageJSON.getJSONArray(collectionName));
+			resultDoc.put("timestamp",timestamp);
+			resultDoc.put("content",messageJSON.getJSONArray(collectionName));
 	
 			MongoDao md = new MongoDao(dbName);
 			md.insertOne(collectionName, resultDoc);
@@ -71,7 +72,7 @@ public class DefaultWriter {
 	 * 2.删除时间点相同的重复统计数据
 	 * @param collectionName
 	 */
-	public void initMongoDb(String collectionName,String statDate) {
+	public void initMongoDb(String collectionName,String timestamp) {
 		log.info("init mongo "+collectionName);
 		MongoDao mdao = new MongoDao(dbName);
 		MongoDatabase md = mdao.getDatabase();
@@ -88,16 +89,16 @@ public class DefaultWriter {
 		if (flag_grid) {
 			md.createCollection(collectionName);
 			md.getCollection(collectionName).createIndex(
-					new BasicDBObject("statDate", 1));
+					new BasicDBObject("timestamp", 1));
 			createMongoSelfIndex(md, collectionName);
 			log.info("-- -- create mongo collection " + collectionName + " ok");
-			log.info("-- -- create mongo index on " + collectionName + "(statDate) ok");
+			log.info("-- -- create mongo index on " + collectionName + "(timestamp) ok");
 		}
 		
 		// 删除时间点相同的重复统计数据
-		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",statDate="+statDate);
+		log.info("删除时间点相同的重复统计数据 mongo "+collectionName+",timestamp="+timestamp);
 		BasicDBObject query = new BasicDBObject();
-		query.put("statDate", statDate);
+		query.put("timestamp", timestamp);
 		mdao.deleteMany(collectionName, query);
 	}
 	

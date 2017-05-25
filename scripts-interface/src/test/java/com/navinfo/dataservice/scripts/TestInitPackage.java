@@ -21,6 +21,10 @@ import com.navinfo.dataservice.expcore.snapshot.GdbDataExporter;
 import com.navinfo.dataservice.expcore.snapshot.GdbDataExporterSp9;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.database.sql.PackageExec;
+import com.navinfo.navicommons.geo.computation.CompGridUtil;
+import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
 
 /** 
 * @ClassName: Test 
@@ -77,7 +81,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		JobScriptsInterface.initContext();
 
 		String path="f:/gdb/";
-		String type="day";
+		String type="month";
 		
 		GdbExportScriptsInterface gdbInter = new GdbExportScriptsInterface();
 		
@@ -103,7 +107,12 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 			DataSource datasource = MultiDataSourceFactory.getInstance()
 					.getDataSource(connConfig);
 
-			Connection conn = datasource.getConnection();
+//			Connection conn = datasource.getConnection();
+			
+			Connection conn = MultiDataSourceFactory.getInstance().getDriverManagerDataSource(
+					"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.61:1521/orcl", "fm_regiondb_315_d_1", "fm_regiondb_315_d_1").getConnection();
+					//"ORACLE", "oracle.jdbc.driver.OracleDriver", "jdbc:oracle:thin:@192.168.4.131:1521/orcl", "TEMP_XXW_01", "TEMP_XXW_01").getConnection();
+
 
 			for (Map.Entry<Integer, Set<Integer>> en : data.entrySet()) {
 
@@ -194,5 +203,110 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 
 		System.out.println("Over.");
 		System.exit(0);
+	}
+	
+	
+	public static void main(String[] args) throws ParseException {
+		Set<String> grids = new HashSet<String>();
+		grids.add("48580601");
+		grids.add("48580620");
+		grids.add("48580602");
+		grids.add("47587523");
+		grids.add("48580621");
+		grids.add("48580612");
+		grids.add("48580622");
+		grids.add("48580611");
+		grids.add("47587631");
+		grids.add("47587630");
+		grids.add("47587621");
+		grids.add("47587632");
+		grids.add("47587620");
+	
+		Set<String> grids1 = new HashSet<String>();
+		grids1.add("47587520");
+		grids1.add("47586531");
+		grids1.add("47586530");
+		grids1.add("47586533");
+		grids1.add("47586532");
+		grids1.add("47585603");
+		grids1.add("47585602");
+		grids1.add("47585410");
+		grids1.add("47585411");
+		grids1.add("47586603");
+		grids1.add("47586602");
+		grids1.add("47586601");
+		grids1.add("47587413");
+		grids1.add("47586433");
+		grids1.add("47586431");
+		grids1.add("47586432");
+		grids1.add("47585730");
+		grids1.add("47586403");
+		grids1.add("47586402");
+		grids1.add("47586401");
+		grids1.add("47586400");
+		grids1.add("47584632");
+		grids1.add("47584633");
+		grids1.add("47584730");
+		grids1.add("47586700");
+		grids1.add("47585613");
+		grids1.add("47585612");
+		grids1.add("47586631");
+		grids1.add("47586632");
+		grids1.add("47586630");
+		grids1.add("47587402");
+		grids1.add("47587403");
+		grids1.add("47585720");
+		grids1.add("47585433");
+		grids1.add("47586410");
+		grids1.add("47585432");
+		grids1.add("47584720");
+		grids1.add("47585431");
+		grids1.add("47586412");
+		grids1.add("47585430");
+		grids1.add("47586411");
+		grids1.add("47586413");
+		grids1.add("47584623");
+		grids1.add("47587600");
+		grids1.add("47587602");
+		grids1.add("47587601");
+		grids1.add("47585632");
+		grids1.add("47585633");
+		grids1.add("47585710");
+		grids1.add("47585631");
+		grids1.add("47587501");
+		grids1.add("47587500");
+		grids1.add("47586622");
+		grids1.add("47587503");
+		grids1.add("47586621");
+		grids1.add("47587502");
+		grids1.add("47586620");
+		grids1.add("47585422");
+		grids1.add("47586421");
+		grids1.add("47585421");
+		grids1.add("47586420");
+		grids1.add("47585420");
+		grids1.add("47586423");
+		grids1.add("47586422");
+		grids1.add("47586523"); 
+		grids1.add("47586520");
+		grids1.add("47586613");
+		grids1.add("47587611");
+		grids1.add("47587610");
+		grids1.add("47585623");
+		grids1.add("47585700");
+		grids1.add("47587510");
+		grids1.add("47585621");
+		grids1.add("47585622");
+		grids1.add("47586610");
+		grids1.add("47587513");
+		grids1.add("47587512");
+		grids1.add("47586612"); 
+		grids1.add("47587511");
+		grids1.add("47586611");
+	
+		String geo = GridUtils.grids2Wkt(grids1);
+		
+		Geometry blockGeo = CompGridUtil.grids2Jts(grids1);
+		System.out.println(blockGeo);
 	}
 }

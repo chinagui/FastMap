@@ -9,7 +9,6 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
 

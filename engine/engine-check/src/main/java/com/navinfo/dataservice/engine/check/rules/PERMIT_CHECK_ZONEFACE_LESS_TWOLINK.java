@@ -34,7 +34,7 @@ public class PERMIT_CHECK_ZONEFACE_LESS_TWOLINK extends baseRule {
 			List<IRow> faceTopos = face.getFaceTopos();
 
 			if (faceTopos.size() < 2) {
-				this.setCheckResult(face.getGeometry(), "[LC_FACE," + face.getPid() + "]", face.getMeshId());
+				this.setCheckResult(face.getGeometry(), "[ZONE_FACE," + face.getPid() + "]", face.getMeshId());
 			}
 		}
 	}

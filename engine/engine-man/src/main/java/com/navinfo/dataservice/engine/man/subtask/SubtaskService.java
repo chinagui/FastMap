@@ -54,6 +54,7 @@ import com.navinfo.dataservice.engine.man.message.MessageService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.task.TaskOperation;
 import com.navinfo.dataservice.engine.man.task.TaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
@@ -1774,6 +1775,9 @@ public class SubtaskService {
 			}
 		}		
 		
+		//记录关闭时间
+		TimelineService.recordTimeline(subtask.getSubtaskId(), "subtask",0, conn);
+		
 		//发送消息
 		try {
 			//查询分配的作业组组长
@@ -2312,7 +2316,7 @@ public class SubtaskService {
 						substask.setTaskId(result.getInt("TASK_ID"));
 						substask.setType(result.getInt("TYPE"));
 						substask.setDbId(result.getInt("DAILY_DB_ID"));
-						substask.setSubType(0);
+						substask.setSubType(4);
 						
 						return substask;
 					}
@@ -2472,11 +2476,11 @@ public class SubtaskService {
 		}
 	}
 	
-		public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId, String stage, Integer isQuality) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
-			return queryByQualitySubtaskId(conn,qualitySubtaskId,stage,isQuality);		
+			return queryBySubTaskIdAndIsQuality(conn,taskId,stage,isQuality);		
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -2486,7 +2490,7 @@ public class SubtaskService {
 		}
 	}
 
-	public Subtask queryByQualitySubtaskId(Connection conn, Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
+	public Subtask queryBySubTaskIdAndIsQuality(Connection conn, Integer taskId, String stage, Integer isQuality) throws Exception {
 		try {
 			QueryRunner run = new QueryRunner();
 			
@@ -2498,12 +2502,15 @@ public class SubtaskService {
 			sb.append(" FROM SUBTASK ST,TASK T,REGION R");
 			sb.append(" WHERE ST.TASK_ID = T.TASK_ID");
 			sb.append(" AND T.REGION_ID = R.REGION_ID");
-			sb.append(" AND ST.QUALITY_SUBTASK_ID = " + qualitySubtaskId);
+			if(isQuality==1){
+				sb.append(" AND ST.quality_subtask_id = '"+taskId+"' AND ST.is_quality = '0'");
+			}else if(isQuality==0){
+				sb.append(" AND ST.SUBTASK_ID = (SELECT quality_subtask_id FROM SUBTASK WHERE subtask_id = '"+taskId+"' AND is_quality = '0')");
+			}
 			sb.append(" AND ST.STAGE = " + stage);
 			if(stage.equals("2")){
 				sb.append(" AND ST.TYPE = " + "7");
 			}
-			sb.append(" AND ST.IS_QUALITY = " + isQuality);
 	
 			String selectSql = sb.toString();
 			log.info("请求子任务详情SQL："+sb.toString());
@@ -2561,7 +2568,7 @@ public class SubtaskService {
 					return null;
 				}	
 			};
-			log.info("queryByQualitySubtaskId sql:" + sb.toString());
+			log.info("queryByTaskId sql:" + sb.toString());
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

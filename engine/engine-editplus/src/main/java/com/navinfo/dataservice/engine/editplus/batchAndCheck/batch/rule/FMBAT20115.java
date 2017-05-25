@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.batch.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -11,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 
 /**
  * 查询条件：满足以下任一条件均执行批处理：
@@ -25,10 +29,15 @@ import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
  *
  */
 public class FMBAT20115 extends BasicBatchRule {
+	private Map<Long,Long> pidAdminId;
 
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList) throws Exception {
-		// TODO Auto-generated method stub
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getBatchRuleCommand().getConn(), pidList);
 
 	}
 
@@ -37,6 +46,7 @@ public class FMBAT20115 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		List<IxPoiName> names=poiObj.getIxPoiNames();
+		String admin=pidAdminId.get(poi.getPid()).toString();
 		MetadataApi metadata = (MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 		boolean isChanged = false;
 		for (IxPoiName name:names) {
@@ -93,9 +103,9 @@ public class FMBAT20115 extends BasicBatchRule {
 					engOfficialName.setPoiPid(poi.getPid());
 					engOfficialName.setNameGroupid(standarName.getNameGroupid());
 					engOfficialName.setLangCode("ENG");
-					engOfficialName.setName(metadata.convertEng(standarName.getName()));
+					engOfficialName.setName(metadata.engConvert(standarName.getName(),pidAdminId.get(poi.getPid()).toString()));
 				} else {
-					engOfficialName.setName(metadata.convertEng(standarName.getName()));
+					engOfficialName.setName(metadata.engConvert(standarName.getName(),pidAdminId.get(poi.getPid()).toString()));
 					if (engStandarName != null) {
 						engStandarName.setName("");
 					}

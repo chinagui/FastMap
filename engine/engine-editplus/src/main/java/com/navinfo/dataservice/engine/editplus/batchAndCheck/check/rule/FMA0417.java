@@ -1,7 +1,10 @@
 package com.navinfo.dataservice.engine.editplus.batchAndCheck.check.rule;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.navinfo.dataservice.api.metadata.iface.MetadataApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
@@ -11,6 +14,7 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 /**
  * FM-A04-17	标准化中文名称与拼音匹配性检查	DHM
  * 检查条件：
@@ -25,19 +29,21 @@ import com.navinfo.dataservice.dao.plus.obj.ObjectName;
  *
  */
 public class FMA0417 extends BasicCheckRule {
+	private Map<Long,Long> pidAdminId;
 	MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 	@Override
 	public void runCheck(BasicObj obj) throws Exception {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
+			String adminId=pidAdminId.get(poi.getPid()).toString();
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isCH()&&nameTmp.getNameType()==1
 						&&(nameTmp.getNameClass()==1 ||nameTmp.getNameClass()==5)&&isCheck(nameTmp)){
 					String name=nameTmp.getName();
 					if(name==null){continue;}
-					String py=metadataApi.pyConvertHz(name);
+					String py=metadataApi.pyConvert(name,adminId,null);
 					boolean isRightPy=false;
 					if(py.equals(nameTmp.getNamePhonetic())){
 						isRightPy=true;
@@ -67,6 +73,11 @@ public class FMA0417 extends BasicCheckRule {
 	@Override
 	public void loadReferDatas(Collection<BasicObj> batchDataList)
 			throws Exception {
+		Set<Long> pidList=new HashSet<Long>();
+		for(BasicObj obj:batchDataList){
+			pidList.add(obj.objPid());
+		}
+		pidAdminId = IxPoiSelector.getAdminIdByPids(getCheckRuleCommand().getConn(), pidList);
 	}
 
 }

@@ -173,7 +173,7 @@ public class CmgBuildfaceSelector extends AbstractSelector {
      */
     public List<CmgBuildface> listCmgBuildface(String wkt, boolean isLock) throws ServiceException {
         List<CmgBuildface> list = new ArrayList<>();
-        String sql = "SELECT T.FACE_PID NUM FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
+        String sql = "SELECT T.FACE_PID, T.GEOMETRY FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
                 + "'TRUE' AND T.U_RECORD <> 2";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;

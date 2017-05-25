@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.cmg;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -22,12 +19,12 @@ import java.util.Map;
  * @Date: 2017/4/8
  * @Version: V1.0
  */
-public class CmgBuilding3dmodel implements IRow {
+public class CmgBuilding3dmodel implements IObj {
 
     /**
      * 模型号码
      */
-    private int modelId;
+    private int pid;
 
     /**
      * 建筑物号码
@@ -103,7 +100,6 @@ public class CmgBuilding3dmodel implements IRow {
     public void copy(IRow row) {
         CmgBuilding3dmodel cmgBuilding3dmodel = (CmgBuilding3dmodel) row;
 
-        this.modelId = cmgBuilding3dmodel.modelId;
         this.buildingPid = cmgBuilding3dmodel.buildingPid;
         this.resolution = cmgBuilding3dmodel.resolution;
         this.modelName = cmgBuilding3dmodel.modelName;
@@ -198,23 +194,26 @@ public class CmgBuilding3dmodel implements IRow {
         return true;
     }
 
+
     /**
-     * Getter method for property <tt>modelId</tt>.
+     * Getter method for property <tt>pid</tt>.
      *
-     * @return property value of modelId
+     * @return property value of pid
      */
-    public int getModelId() {
-        return modelId;
+    public int getPid() {
+        return pid;
     }
 
     /**
-     * Setter method for property <tt>modelId</tt>.
+     * Setter method for property <tt>pid</tt>.
      *
-     * @param modelId value to be assigned to property modelId
+     * @param pid value to be assigned to property pid
      */
-    public void setModelId(int modelId) {
-        this.modelId = modelId;
+    public void setPid(int pid) {
+        this.pid = pid;
     }
+
+
 
     /**
      * Getter method for property <tt>buildingPid</tt>.
@@ -317,8 +316,33 @@ public class CmgBuilding3dmodel implements IRow {
 
     @Override
     public String toString() {
-        return "CmgBuilding3dmodel{" + "modelId=" + modelId + ", buildingPid=" + buildingPid + ", resolution=" + resolution + ", " +
+        return "CmgBuilding3dmodel{" + "modelId=" + pid + ", buildingPid=" + buildingPid + ", resolution=" + resolution + ", " +
                 "modelName='" + modelName + '\'' + ", materialName='" + materialName + '\'' + ", textureName='" + textureName + '\'' +
                 ", rowId='" + rowId + '\'' + ", changedFields=" + changedFields + ", status=" + status + '}';
+    }
+
+    @Override
+    public List<IRow> relatedRows() {
+        return null;
+    }
+
+    @Override
+    public int pid() {
+        return this.pid;
+    }
+
+    @Override
+    public String primaryKey() {
+        return "MODEL_ID";
+    }
+
+    @Override
+    public Map<Class<? extends IRow>, List<IRow>> childList() {
+        return null;
+    }
+
+    @Override
+    public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+        return null;
     }
 }

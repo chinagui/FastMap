@@ -65,7 +65,7 @@ public class Subtask implements Serializable  {
 	private JSONArray referSubtasks;
 	private Integer referId;
 	private int workKind;//0无1外业采集，2众包，3情报矢量，4多源
-	//快线中线标识，0快线，1中线
+	//快线中线标识，4快线，1中线
 	private int subType;
 
 	public int getSubType() {

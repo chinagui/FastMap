@@ -2268,7 +2268,7 @@ public class SubtaskService {
 						substask.setTaskId(result.getInt("TASK_ID"));
 						substask.setType(result.getInt("TYPE"));
 						substask.setDbId(result.getInt("DAILY_DB_ID"));
-						substask.setSubType(0);
+						substask.setSubType(4);
 						
 						return substask;
 					}

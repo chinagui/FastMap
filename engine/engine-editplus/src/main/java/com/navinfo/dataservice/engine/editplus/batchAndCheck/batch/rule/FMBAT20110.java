@@ -7,7 +7,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,6 +28,7 @@ import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
 import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
+import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 
 import net.sf.json.JSONObject;
@@ -36,7 +40,6 @@ import net.sf.json.JSONObject;
  * @Desc: FMBAT20110.java poi地址拆分批处理
  */
 public class FMBAT20110 extends BasicBatchRule {
-
 	//private Connection conn;
 	
 	private String REGEXP_HOUSE_NUM = "([-~～/／－0-9０-９a-zA-Zａ-ｚＡ-Ｚ零一二三四五六七八九十])+";
@@ -676,58 +679,58 @@ public class FMBAT20110 extends BasicBatchRule {
 	            MetadataApi metadataApi=(MetadataApi) ApplicationContextUtil.getBean("metadataApi");
 	            // province
 	            addressWrap.setProvince(province);
-	            addressWrap.setProvPhonetic(metadataApi.pyConvertHz(province));
+	            addressWrap.setProvPhonetic(metadataApi.pyConvert(province,String.valueOf(adminCode),null));
 	            // city
 	            addressWrap.setCity(city);
-	            addressWrap.setCityPhonetic(metadataApi.pyConvertHz(city));
+	            addressWrap.setCityPhonetic(metadataApi.pyConvert(city,String.valueOf(adminCode),null));
 	            // county
 	            addressWrap.setCounty(county);
-	            addressWrap.setCountyPhonetic(metadataApi.pyConvertHz(county));
+	            addressWrap.setCountyPhonetic(metadataApi.pyConvert(county,String.valueOf(adminCode),null));
 	            // town
 	            addressWrap.setTown(town);
-	            addressWrap.setTownPhonetic(metadataApi.pyConvertHz(town));
+	            addressWrap.setTownPhonetic(metadataApi.pyConvert(town,String.valueOf(adminCode),null));
 	            // place
 	            addressWrap.setPlace(place);
-	            addressWrap.setPlacePhonetic(metadataApi.pyConvertHz(place));
+	            addressWrap.setPlacePhonetic(metadataApi.pyConvert(place,String.valueOf(adminCode),null));
 	            // street
 	            addressWrap.setStreet(street);
-	            addressWrap.setStreetPhonetic(metadataApi.pyConvertHz(street));
+	            addressWrap.setStreetPhonetic(metadataApi.pyConvert(street,String.valueOf(adminCode),null));
 	            // landMark
 	            addressWrap.setLandmark(landMark);
-	            addressWrap.setLandmarkPhonetic(metadataApi.pyConvertHz(landMark));
+	            addressWrap.setLandmarkPhonetic(metadataApi.pyConvert(landMark,String.valueOf(adminCode),null));
 	            // prefix
 	            addressWrap.setPrefix(prefix);
-	            addressWrap.setPrefixPhonetic(metadataApi.pyConvertHz(prefix));
+	            addressWrap.setPrefixPhonetic(metadataApi.pyConvert(prefix,String.valueOf(adminCode),null));
 	            // houseNum
 	            addressWrap.setHousenum(houseNum);
-	            addressWrap.setHousenumPhonetic(metadataApi.pyConvertHz(houseNum));
+	            addressWrap.setHousenumPhonetic(metadataApi.pyConvert(houseNum,String.valueOf(adminCode),null));
 	            // type
 	            addressWrap.setType(type);
-	            addressWrap.setTypePhonetic(metadataApi.pyConvertHz(type));
+	            addressWrap.setTypePhonetic(metadataApi.pyConvert(type,String.valueOf(adminCode),null));
 	            // subNum
 	            addressWrap.setSubnum(subNum);
-	            addressWrap.setSubnumPhonetic(metadataApi.pyConvertHz(subNum));
+	            addressWrap.setSubnumPhonetic(metadataApi.pyConvert(subNum,String.valueOf(adminCode),null));
 	            // surfix
 	            addressWrap.setSurfix(surfix);
-	            addressWrap.setSurfixPhonetic(metadataApi.pyConvertHz(surfix));
+	            addressWrap.setSurfixPhonetic(metadataApi.pyConvert(surfix,String.valueOf(adminCode),null));
 	            // estab
 	            addressWrap.setEstab(estab);
-	            addressWrap.setEstabPhonetic(metadataApi.pyConvertHz(estab));
+	            addressWrap.setEstabPhonetic(metadataApi.pyConvert(estab,String.valueOf(adminCode),null));
 	            // building
 	            addressWrap.setBuilding(building);
-	            addressWrap.setBuildingPhonetic(metadataApi.pyConvertHz(building));
+	            addressWrap.setBuildingPhonetic(metadataApi.pyConvert(building,String.valueOf(adminCode),null));
 	            // floor
 	            addressWrap.setFloor(floor);
-	            addressWrap.setFloorPhonetic(metadataApi.pyConvertHz(floor));
+	            addressWrap.setFloorPhonetic(metadataApi.pyConvert(floor,String.valueOf(adminCode),null));
 	            // unit
 	            addressWrap.setUnit(unit);
-	            addressWrap.setUnitPhonetic(metadataApi.pyConvertHz(unit));
+	            addressWrap.setUnitPhonetic(metadataApi.pyConvert(unit,String.valueOf(adminCode),null));
 	            // roomNum
 	            addressWrap.setRoom(roomNum);
-	            addressWrap.setRoomPhonetic(metadataApi.pyConvertHz(roomNum));
+	            addressWrap.setRoomPhonetic(metadataApi.pyConvert(roomNum,String.valueOf(adminCode),null));
 	            // addOns
 	            addressWrap.setAddons(addOns);
-	            addressWrap.setAddonsPhonetic(metadataApi.pyConvertHz(addOns));
+	            addressWrap.setAddonsPhonetic(metadataApi.pyConvert(addOns,String.valueOf(adminCode),null));
 	            
 			}
 		}

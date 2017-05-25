@@ -120,8 +120,7 @@ public class PermitCheckMoveLinkAsSamenode extends baseRule {
         }
 
         if (size >= 2) {
-            setCheckResult("如果被分离的NODE做了同一关系，并且此node挂接了至少两根link，则不允许分离节点",
-                    String.format("[%s,%d]", tableName.toUpperCase(), nodePid), 0);
+            setCheckResult("", String.format("[%s,%d]", tableName.toUpperCase(), nodePid), 0);
         }
     }
 

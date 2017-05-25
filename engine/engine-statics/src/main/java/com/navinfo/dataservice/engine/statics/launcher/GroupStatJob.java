@@ -6,6 +6,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
+
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+
 /** 
  * @ClassName: GroupStatJob
  * @author xiaoxiaowen4127
@@ -13,6 +17,7 @@ import java.util.Set;
  * @Description: GroupStatJob.java
  */
 public class GroupStatJob {
+	private Logger log = LoggerRepos.getLogger(this.getClass());
 	
 	private String groupJobType;
 	private String groupJobStarter;
@@ -50,8 +55,10 @@ public class GroupStatJob {
 		return false;
 	}
 	
-	public void trigger(String timestamp,String jobType){
+	public void trigger(String timestamp,String jobType)throws Exception{
+		//log.info("2");
 		if(!subJobs.contains(jobType)){
+			//log.info("3");
 			return;
 		}
 		synchronized(this){
@@ -64,8 +71,11 @@ public class GroupStatJob {
 			types.add(jobType);
 			//触发starter启动
 			if(types.size()==subJobs.size()&&types.containsAll(subJobs)){
-				//
-				
+				//log.info("4");
+				StatJobStarter starter =  (StatJobStarter)Class.forName(groupJobStarter).getConstructor().newInstance();
+				starter.start(timestamp);
+				//remove started timestamp
+				statFeedbacks.remove(timestamp);
 			}
 		}
 	}

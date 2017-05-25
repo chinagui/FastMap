@@ -22,8 +22,9 @@ public class TestAdAdmin extends InitApplication {
 
     @Test
     public void move() {
-        String requester = "{\"command\":\"MOVE\",\"dbId\":17,\"objId\":203846,\"data\":{\"longitude\":117.875," +
-                "\"latitude\":38.919244228244274},\"type\":\"ADNODE\"}";
+        String requester = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"ADADMIN\",\"objId\":401000005,\"data\":{\"adminType\":9," +
+                "\"rowId\":\"AADCB0B50BC140B0A94598547FE4AC2F\",\"pid\":401000005,\"linkPid\":408000220,\"objStatus\":\"UPDATE\"}," +
+                "\"subtaskId\":65}";
         TestUtil.run(requester);
     }
 }

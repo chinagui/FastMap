@@ -35,32 +35,49 @@ public class GLM50029 extends baseRule {
     @Override
     public void preCheck(CheckCommand checkCommand) throws Exception {
         for (IRow row : checkCommand.getGlmList()) {
-           if (!(row instanceof ZoneFace) || row.status() == ObjStatus.DELETE) {
-               continue;
+           if (row instanceof ZoneFace && row.status() != ObjStatus.DELETE) {
+
+               ZoneFace face = (ZoneFace) row;
+               int regionId = face.getRegionId();
+               if (face.changedFields().containsKey("regionId")) {
+                   regionId = Integer.parseInt(face.changedFields().get("regionId").toString());
+               }
+               if (regionId == 0) {
+                   continue;
+               }
+
+
+               AdAdminSelector adAdminSelector = new AdAdminSelector(getConn());
+               double adminType;
+               try {
+                   AdAdmin adAdmin = (AdAdmin) adAdminSelector.loadById(regionId, false);
+                   adminType = adAdmin.getAdminType();
+               } catch (Exception e) {
+                   logger.error(String.format("ZoneFace:%d, RegionId: %d, 查找对应行政区划代表点出错", face.pid(), face.getRegionId()));
+                   continue;
+               }
+
+               this.checkAdminType(adminType, face, adAdminSelector);
+           } else if (row instanceof AdAdmin && row.status() == ObjStatus.UPDATE) {
+               AdAdmin adAdmin = (AdAdmin) row;
+
+               double adminType = adAdmin.getAdminType();
+               if (adAdmin.changedFields().containsKey("adminType")) {
+                   adminType = Double.parseDouble(adAdmin.changedFields().get("adminType").toString());
+               }
+
+               if (8 != adminType && 9 != adminType) {
+                   continue;
+               }
+
+               ZoneFaceSelector zoneFaceSelector = new ZoneFaceSelector(getConn());
+               List<ZoneFace> list = zoneFaceSelector.loadZoneFaceByRegionId(adAdmin.getPid(), false);
+
+               AdAdminSelector adminSelector = new AdAdminSelector(getConn());
+               for (ZoneFace face : list) {
+                   checkAdminType(adminType, face, adminSelector);
+               }
            }
-
-            ZoneFace face = (ZoneFace) row;
-            int regionId = face.getRegionId();
-            if (face.changedFields().containsKey("regionId")) {
-                regionId = Integer.parseInt(face.changedFields().get("regionId").toString());
-            }
-            if (regionId == 0) {
-                continue;
-            }
-
-
-
-            AdAdminSelector adAdminSelector = new AdAdminSelector(getConn());
-            double adminType;
-            try {
-                AdAdmin adAdmin = (AdAdmin) adAdminSelector.loadById(regionId, false);
-                adminType = adAdmin.getAdminType();
-            } catch (Exception e) {
-                logger.error(String.format("ZoneFace:%d, RegionId: %d, 查找对应行政区划代表点出错", face.pid(), face.getRegionId()));
-                continue;
-            }
-
-            this.checkAdminType(adminType, face, adAdminSelector);
         }
     }
 
@@ -92,7 +109,7 @@ public class GLM50029 extends baseRule {
             }
             AdAdmin adAdmin = null;
             try {
-                adAdmin = (AdAdmin) adminSelector.loadById(face.getRegionId(), false);
+                adAdmin = (AdAdmin) adminSelector.loadById(zoneFace.getRegionId(), false);
             } catch (Exception e) {
                 logger.error(String.format("ZoneFace:%d, RegionId: %d, 查找对应行政区划代表点出错",
                         zoneFace.pid(), zoneFace.getRegionId()));

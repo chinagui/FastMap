@@ -56,6 +56,38 @@ public class CmgBuilding implements IObj {
      */
     private List<IRow> names = new ArrayList<>();
 
+    public List<IRow> getNames() {
+        return names;
+    }
+
+    public void setNames(List<IRow> names) {
+        this.names = names;
+    }
+
+    public List<IRow> getBuild3dmodels() {
+        return build3dmodels;
+    }
+
+    public void setBuild3dmodels(List<IRow> build3dmodels) {
+        this.build3dmodels = build3dmodels;
+    }
+
+    public List<IRow> getBuild3dicons() {
+        return build3dicons;
+    }
+
+    public void setBuild3dicons(List<IRow> build3dicons) {
+        this.build3dicons = build3dicons;
+    }
+
+    public List<IRow> getPois() {
+        return pois;
+    }
+
+    public void setPois(List<IRow> pois) {
+        this.pois = pois;
+    }
+
     /**
      * 建筑物名称表
      */
@@ -274,7 +306,13 @@ public class CmgBuilding implements IObj {
 
     @Override
     public JSONObject Serialize(ObjLevel objLevel) throws Exception {
-        return JSONObject.fromObject(this, JsonUtils.getStrConfig());
+
+        JSONObject json = JSONObject.fromObject(this,JsonUtils.getStrConfig());
+
+        if (objLevel == ObjLevel.HISTORY) {
+            json.remove("status");
+        }
+        return json;
     }
 
     @Override

@@ -51,7 +51,7 @@ public class InforManService {
 			conn = DBConnector.getInstance().getManConnection();
 			String selectSql = "select * from infor where INFOR_ID=" + inforId;
 			HashMap<String,Object> list = InforManOperation.selectTaskBySql2(conn, selectSql);
-			list.put("grids", getProgramGridsByInfor(conn,inforId));
+			list.put("gridIds", getProgramGridsByInfor(conn,inforId));
 			return list;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);

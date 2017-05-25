@@ -14,7 +14,7 @@
                 <!--ref bean="demonstrationJDBCSearch" /-->
                 
                 <!-- WorkTimePlan定时调度任务： 利用了复杂调度器，每天凌晨2：00启动-->
-                <ref bean="MONITOR_Trigger" />
+                <ref bean="poiDayStatics_Trigger" />
             </list>
         </property>
         <property name="quartzProperties">
@@ -83,21 +83,22 @@
         <property name="startDelay" value="10000" />
 		<property name="repeatInterval" value="60000" />
     </bean>-->
-    <!-- 每个整点执行 -->
-    <bean id="MONITOR_Trigger"
+    <!-- 每分钟执行一次，整点分钟执行 -->
+    <bean id="poiDayStatics_Trigger"
           class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="monitor_alert" />
-        <property name="cronExpression" value="0 0 * * * ?" />
+        <property name="jobDetail" ref="poiDayStatics_detail" />
+        <property name="cronExpression" value="0 * * * * ?" />
     </bean>
     
     <!--  外业生产时长监控 -->
-    <bean id="monitor_alert" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
-        <property name="targetObject" ref="monitorQuartz" />
-        <property name="targetMethod" value="doQuartz" />
+    <bean id="poiDayStatics_detail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject" ref="poiDayStatics" />
+        <property name="targetMethod" value="start" />
         <property name="concurrent" value="false" />
     </bean>
-	
+   
 	<!--  业务逻辑处理类 -->
-	<bean id="monitorQuartz" class="com.navinfo.dataservice.engine.statics.quartz.TestQuartz"/>
+	<bean id="poiDayStatics" class="com.navinfo.dataservice.engine.statics.launcher.starter.PoiDayStaticsStarter"/>
+	
 	
 </beans>

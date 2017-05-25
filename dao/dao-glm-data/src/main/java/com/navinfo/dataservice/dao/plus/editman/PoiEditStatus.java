@@ -20,7 +20,9 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
@@ -100,29 +102,29 @@ public class PoiEditStatus {
 		}
 	}
 	
-	public static void tagMultiSrcPoi(Connection conn,Map<Long,String> map) throws Exception{
-		try{
-			Set<Long> pids = map.keySet();
-			if(pids.isEmpty()){
-				return;
-			}
-			
-			//更新poi_edit_status表
-			int status = 1;//待作业
-			int isUpload = 1;
-			Date uploadDate = new Date();
-			int workType = 2;//多源
-			updatePoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
-			
-			//更新poi_edit_multisrc表
-			updatePoiEditMultiSrc(conn,map);
-				
-		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
-			logger.error(e.getMessage(),e);
-			throw new Exception("多源POI打标签失败");
-		}
-	}
+//	public static void tagMultiSrcPoi(Connection conn,Map<Long,String> map) throws Exception{
+//		try{
+//			Set<Long> pids = map.keySet();
+//			if(pids.isEmpty()){
+//				return;
+//			}
+//			
+//			//更新poi_edit_status表
+//			int status = 1;//待作业
+//			int isUpload = 1;
+//			Date uploadDate = new Date();
+//			int workType = 2;//多源
+//			updatePoiEditStatus(conn,pids,status,isUpload,uploadDate,workType);
+//			
+////			//更新poi_edit_multisrc表
+////			updatePoiEditMultiSrc(conn,map);
+//				
+//		}catch(Exception e){
+//			DbUtils.rollbackAndCloseQuietly(conn);
+//			logger.error(e.getMessage(),e);
+//			throw new Exception("多源POI打标签失败");
+//		}
+//	}
 	
 	private static void updatePoiEditMultiSrc(Connection conn,Map<Long, String> map) throws Exception {
 		try{
@@ -173,7 +175,7 @@ public class PoiEditStatus {
 	 * @param uploadDate
 	 * @throws Exception
 	 */
-	private static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status) throws Exception {
+	public static void insertPoiEditStatus(Connection conn, Set<Long> pids, int status) throws Exception {
 		try{
 			if(pids.isEmpty()){
 				return;
@@ -202,8 +204,8 @@ public class PoiEditStatus {
 	 * @param pidExistsInPoiEditStatus
 	 * @throws Exception 
 	 */
-	private static void updatePoiEditStatus(Connection conn, Set<Long> pids
-			,int status,int isUpload, Date uploadDate,int workType) throws Exception {
+	public static void updatePoiEditStatus(Connection conn, Set<Long> pids
+			,int status,int isUpload, Date uploadDate) throws Exception {
 		try{
 			if(pids.isEmpty()){
 				return;
@@ -213,7 +215,7 @@ public class PoiEditStatus {
 			sb.append("UPDATE POI_EDIT_STATUS T SET STATUS="+status);
 			sb.append(",IS_UPLOAD="+isUpload);
 			sb.append(",UPLOAD_DATE=TO_DATE('" + format.format(uploadDate) + "','yyyy-MM-dd HH24:MI:ss')");
-			sb.append(",WORK_TYPE="+workType);
+//			sb.append(",WORK_TYPE="+workType);
 			Clob clobPids=null;
 			if(pids.size()>1000){
 				clobPids = conn.createClob();
@@ -440,6 +442,141 @@ public class PoiEditStatus {
 
 		} finally {
 			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	/**
+	 * 常规数据或众包数据未作业完成，即处于"待作业"或"待提交"状态且存在常规子任务或众包子任务号
+	 * @param conn 
+	 * @param dbId 
+	 * @param fids
+	 * @param workKind //1常规，2众包
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, Integer> poiUnderSubtask(Connection conn, int dbId, List<String> fids, int workKind) throws Exception {
+		try{
+			Map<String, Integer> result = new HashMap<String, Integer>();
+			if(fids.isEmpty()){
+				return result;
+			}
+			
+			ManApi manApi = (ManApi)ApplicationContextUtil.getBean("manApi");
+			List<Integer> statusList = new ArrayList<Integer>();
+			statusList.add(1);
+			final List<Integer> normalSubtaskList = manApi.getSubtaskIdListByDbId(dbId,statusList,workKind);
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT P.POI_NUM,E.QUICK_SUBTASK_ID,E.MEDIUM_SUBTASK_ID ");
+			sb.append("   FROM POI_EDIT_STATUS E, IX_POI P     ");
+			sb.append("  WHERE E.STATUS IN (1, 2)              ");
+			sb.append("    AND P.PID = E.PID                   ");
+
+			Clob clobSubtaskIds = conn.createClob();
+			clobSubtaskIds.setString(1, StringUtils.join(normalSubtaskList, ","));
+			sb.append("    AND (E.QUICK_SUBTASK_ID IN (select to_number(column_value) from table(clob_to_table(?))) OR E.MEDIUM_SUBTASK_ID IN (select to_number(column_value) from table(clob_to_table(?)))) ");
+			
+			Clob clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(fids, ","));
+			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
+			
+			Object[] pra = new Object[3];
+			pra[0] = clobSubtaskIds;
+			pra[1] = clobSubtaskIds;
+			pra[2] = clobPids;
+
+			ResultSetHandler<Map<String,Integer>> rsHandler = new ResultSetHandler<Map<String,Integer>>() {
+				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
+					Map<String, Integer> result = new HashMap<String, Integer>();
+					if (rs.next()) {
+						String fid = rs.getString("POI_NUM");
+						int quickSubtaskId = rs.getInt("QUICK_SUBTASK_ID");
+						int mediumSubtaskId = rs.getInt("MEDIUM_SUBTASK_ID");
+						if(normalSubtaskList.contains(quickSubtaskId)){
+							result.put(fid, quickSubtaskId);
+						}else{
+							result.put(fid, mediumSubtaskId);
+						}
+					}
+					return result;
+				}	
+			};
+			
+			QueryRunner run = new QueryRunner();
+			return run.query(conn,sb.toString(),pra,rsHandler);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+
+	/**
+	 * @param conn
+	 * @param QuickSubtaskIdMap
+	 * @param MediumSubtaskIdMap 
+	 * @throws Exception 
+	 */
+	public static void tagMultiSrcPoi(Connection conn, Map<Long, Integer> quickSubtaskIdMap, Map<Long, Integer> mediumSubtaskIdMap,Date uploadDate) throws Exception {
+		try{
+			if(!quickSubtaskIdMap.isEmpty()){
+				updatePoiEditStatusMultiSrc(conn,uploadDate,quickSubtaskIdMap,1);
+			}
+			if(!mediumSubtaskIdMap.isEmpty()){
+				updatePoiEditStatusMultiSrc(conn,uploadDate,mediumSubtaskIdMap,2);
+			}
+			
+				
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
+		}
+		
+	}
+	
+	/**
+	 * @param conn
+	 * @param uploadDate2 
+	 * @param map<pid,subtaskId>
+	 * @param type:1快线；2中线
+	 * 入库时该POI数据为无任务数据，多源数据入日库并生成履历，但不标识多源子任务！
+	 * @throws Exception 
+	 */
+	private static void updatePoiEditStatusMultiSrc(Connection conn,Date uploadDate,Map<Long, Integer> map, int type) throws Exception {
+		try{
+			if(map.isEmpty()){
+				return;
+			}
+			//更新poi_edit_status表
+
+			
+			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE POI_EDIT_STATUS T SET ");
+			if(type==1){
+				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
+			}else if(type==2){
+				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? AND QUICK_SUBTASK_ID<>0 AND MEDIUM_SUBTASK_ID <> 0");
+			}
+			
+			Object[][] inParam = new Object[map.size()][];
+			int i = 0;
+			for(Map.Entry<Long, Integer> entry:map.entrySet()){
+				Object[] temp = new Object[2];
+				temp[0] = entry.getValue();
+				temp[1] = entry.getKey();
+				inParam[i] = temp;
+				i++;
+			}
+
+			new QueryRunner().batch(conn, sb.toString(),inParam);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("多源POI打标签失败");
 		}
 	}
 	

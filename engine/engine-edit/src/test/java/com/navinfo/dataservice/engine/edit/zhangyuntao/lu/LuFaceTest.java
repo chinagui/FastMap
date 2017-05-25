@@ -54,8 +54,8 @@ public class LuFaceTest extends InitApplication {
 
     @Test
     public void update() {
-        String requester = "{\"command\":\"UPDATE\",\"dbId\":17,\"type\":\"LUFACE\",\"objId\":202000007," +
-                "\"data\":{\"kind\":1,\"pid\":202000007,\"objStatus\":\"UPDATE\"}}";
+        String requester = "{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"LUFACE\",\"objId\":504000003," +
+                "\"data\":{\"kind\":11,\"pid\":504000003,\"objStatus\":\"UPDATE\"}}";
         TestUtil.run(requester);
     }
 

@@ -1,10 +1,7 @@
 package com.navinfo.dataservice.dao.glm.model.cmg;
 
 import com.navinfo.dataservice.commons.util.JsonUtils;
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.navinfo.dataservice.dao.glm.iface.*;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -22,12 +19,12 @@ import java.util.Map;
  * @Date: 2017/4/8
  * @Version: V1.0
  */
-public class CmgBuildingName implements IRow {
+public class CmgBuildingName implements IObj {
 
     /**
      * 名称号码
      */
-    private int nameId;
+    private int pid;
 
     /**
      * 建筑物号码
@@ -128,7 +125,6 @@ public class CmgBuildingName implements IRow {
     public void copy(IRow row) {
         CmgBuildingName cmgBuildingName = (CmgBuildingName) row;
 
-        this.nameId = cmgBuildingName.nameId;
         this.buildingPid = cmgBuildingName.buildingPid;
         this.nameGroupid = cmgBuildingName.nameGroupid;
         this.langCode = cmgBuildingName.langCode;
@@ -228,23 +224,25 @@ public class CmgBuildingName implements IRow {
         return true;
     }
 
+
     /**
-     * Getter method for property <tt>nameId</tt>.
+     * Getter method for property <tt>pid</tt>.
      *
-     * @return property value of nameId
+     * @return property value of pid
      */
-    public int getNameId() {
-        return nameId;
+    public int getPid() {
+        return pid;
     }
 
     /**
-     * Setter method for property <tt>nameId</tt>.
+     * Setter method for property <tt>pid</tt>.
      *
-     * @param nameId value to be assigned to property nameId
+     * @param pid value to be assigned to property pid
      */
-    public void setNameId(int nameId) {
-        this.nameId = nameId;
+    public void setPid(int pid) {
+        this.pid = pid;
     }
+
 
     /**
      * Getter method for property <tt>buildingPid</tt>.
@@ -437,10 +435,35 @@ public class CmgBuildingName implements IRow {
 
     @Override
     public String toString() {
-        return "CmgBuildingName{" + "nameId=" + nameId + ", buildingPid=" + buildingPid + ", nameGroupid=" + nameGroupid + ", " +
+        return "CmgBuildingName{" + "nameId=" + pid + ", buildingPid=" + buildingPid + ", nameGroupid=" + nameGroupid + ", " +
                 "langCode='" + langCode + '\'' + ", fullName='" + fullName + '\'' + ", baseName='" + baseName + '\'' + ", buildNumber='"
                 + buildNumber + '\'' + ", fullNamePhonetic='" + fullNamePhonetic + '\'' + ", baseNamePhonetic='" + baseNamePhonetic +
                 '\'' + ", buildNumPhonetic='" + buildNumPhonetic + '\'' + ", srcFlag=" + srcFlag + ", rowId='" + rowId + '\'' + ", " +
                 "changedFields=" + changedFields + ", status=" + status + '}';
+    }
+
+    @Override
+    public List<IRow> relatedRows() {
+        return null;
+    }
+
+    @Override
+    public int pid() {
+        return this.pid;
+    }
+
+    @Override
+    public String primaryKey() {
+         return "NAME_ID";
+    }
+
+    @Override
+    public Map<Class<? extends IRow>, List<IRow>> childList() {
+        return null;
+    }
+
+    @Override
+    public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+        return null;
     }
 }

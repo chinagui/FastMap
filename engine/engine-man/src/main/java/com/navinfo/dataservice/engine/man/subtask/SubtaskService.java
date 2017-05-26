@@ -656,6 +656,7 @@ public class SubtaskService {
 						subtask.put("taskId",rs.getInt("TASK_ID"));
 						subtask.put("workKind",rs.getInt("WORK_KIND"));
 						subtask.put("programType",rs.getString("PROGRAM_TYPE"));
+						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 						
 						//作业员/作业组信息
 						int exeUserId = rs.getInt("EXE_USER_ID");

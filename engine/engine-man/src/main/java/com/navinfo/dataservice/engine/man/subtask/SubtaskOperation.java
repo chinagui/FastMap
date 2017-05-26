@@ -1227,14 +1227,14 @@ public class SubtaskOperation {
 				@Override
 				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 					Map<String, Integer> stat = new HashMap<String, Integer>();
-					int unfinish = 0;
+					int finish = 0;
 					int total=0;
 					while(rs.next()){
 						int status=rs.getInt("status");
-						if(status==1){unfinish = rs.getInt("finishNum");}
+						if(status==3){finish = rs.getInt("finishNum");}
 						total+=rs.getInt("finishNum");
 					}
-					stat.put("poiFinish", total-unfinish);
+					stat.put("poiFinish", finish);
 					stat.put("poiTotal", total);
 					return stat;
 				}
@@ -1244,7 +1244,7 @@ public class SubtaskOperation {
 			log.debug("get tips stat");
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdByTaskId(subtask.getTaskId());
+				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));

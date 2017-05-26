@@ -2799,7 +2799,7 @@ public class StaticsService {
 	 */
 	public List<Map> getDayTaskTipsStatics(int taskId) throws Exception {
 		List<Map> result = new ArrayList<Map>();
-		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdByTaskId(taskId);
+		Set<Integer> collectTaskIdSet = TaskService.getInstance().getCollectTaskIdsByTaskId(taskId);
 		//调用fccApi
 		FccApi fccApi = (FccApi) ApplicationContextUtil
 				.getBean("fccApi");

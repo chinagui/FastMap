@@ -1614,21 +1614,22 @@ public class SubtaskService {
 						int stage=rs.getInt("STAGE");
 						int typeCount=rs.getInt("TYPE_COUNT");
 						String name="";
-						if(stage==1){name+="日编 - ";}
-						else if(stage==0){name+="采集 - ";}
-						else{name+="月编 - ";}
-						//0POI，1道路，2一体化，3一体化_grid粗编，4一体化_区域粗编，5多源POI，6
-						//代理店， 7POI专项,8道路_grid精编，9道路_grid粗编，10道路区域专项
-						if(type==0){name+="POI";}
-						else if(type==1){name+="道路";}
-						else if(type==2){name+="一体化";}
-						else if(type==3){name+="一体化grid粗编";}
-						else if(type==4){name+="一体化区域粗编";}
-						else if(type==5){name+="POI粗编";}
+//						if(stage==1){name+="日编 - ";}
+//						else if(stage==0){name+="采集 - ";}
+//						else{name+="月编 - ";}
+						//0POI_采集，1道路_采集，2一体化_采集，3一体化_Grid粗编_日编，4一体化_区域粗编_日编，5多源POI，6
+						//代理店， 7POI专项_月编,8道路_Grid精编，9道路_Grid粗编，10道路区域专项
+						//5POI粗编_日编
+						if(type==0){name+="POI_采集";}
+						else if(type==1){name+="道路_采集";}
+						else if(type==2){name+="一体化_采集";}
+						else if(type==3){name+="一体化_Grid粗编_日编";}
+						else if(type==4){name+="一体化_区域粗编_日编";}
+						else if(type==5){name+="POI粗编_日编";}
 						else if(type==6){name+="代理店";}
-						else if(type==7){name+="POI专项";}
-						else if(type==8){name+="道路grid精编";}
-						else if(type==9){name+="道路grid粗编";}
+						else if(type==7){name+="POI专项_月编";}
+						else if(type==8){name+="道路_Grid精编";}
+						else if(type==9){name+="道路_Grid粗编";}
 						else if(type==10){name+="道路区域专项";}
 						else if(type==11){name+="预处理";}
 						subResult.put("type", type);
@@ -2569,6 +2570,83 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append("SELECT T.GROUP_ID, G.GROUP_NAME          ");
+			sb.append("  FROM TASK T, SUBTASK S, USER_GROUP G   ");
+			sb.append(" WHERE S.TASK_ID = T.TASK_ID             ");
+			sb.append("   AND T.GROUP_ID = G.GROUP_ID           ");
+			sb.append("   AND S.SUBTASK_ID = " + subtaskId);
+	
+			String selectSql = sb.toString();
+			log.info("getGroupNameBySubtaskId SQL："+sb.toString());
+			
+
+			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
+				public String handle(ResultSet rs) throws SQLException {
+					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
+					if (rs.next()) {
+						String groupName = rs.getString("GROUP_NAME");						
+						return groupName;
+					}
+					return null;
+				}	
+			};
+			log.info("queryByTaskId sql:" + sb.toString());
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getGroupNameBySubtaskId，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param subtaskId
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
+		Connection conn = null;
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+	
+			String selectSql = "SELECT FSOS.FINISHED_ROAD FROM FM_STAT_OVERVIEW_SUBTASK FSOS WHERE FSOS.SUBTASK_ID = " + subtaskId;
+			log.info("getGroupNameBySubtaskId SQL："+selectSql);
+			
+			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
+				public Integer handle(ResultSet rs) throws SQLException {
+					if (rs.next()) {
+						int finishedRoadNum = rs.getInt("FINISHED_ROAD");						
+						return finishedRoadNum;
+					}
+					return 0;
+				}	
+			};
+			return run.query(conn, selectSql,rsHandler);			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getTotalWorkBySubtaskId，原因为:" + e.getMessage(), e);
+		}finally {
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

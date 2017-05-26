@@ -2140,16 +2140,13 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append(" SELECT TT.TASK_ID                   ");
-			sb.append("   FROM SUBTASK S, TASK T, TASK TT   ");
-			sb.append("  WHERE S.TASK_ID = T.TASK_ID        ");
-			sb.append("    AND TT.BLOCK_ID = T.BLOCK_ID     ");
-			sb.append("    AND TT.TYPE = 0                  ");
-			sb.append("    AND S.SUBTASK_ID = " + subtaskId);
-			
-			String sql = sb.toString();
+			String sql = "SELECT TT.TASK_ID"
+					+ "  FROM SUBTASK S, TASK T, TASK TT"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND TT.BLOCK_ID = T.BLOCK_ID"
+					+ "   AND T.PROGRAM_ID = TT.PROGRAM_ID"
+					+ "   AND TT.TYPE = 0"
+					+ "   AND S.SUBTASK_ID = " + subtaskId;
 			
 			log.info("getCollectTaskIdByDaySubtask sql :" + sql);
 			

@@ -2637,7 +2637,7 @@ public class SubtaskService {
 						int finishedRoadNum = rs.getInt("FINISHED_ROAD");						
 						return finishedRoadNum;
 					}
-					return null;
+					return 0;
 				}	
 			};
 			return run.query(conn, selectSql,rsHandler);			

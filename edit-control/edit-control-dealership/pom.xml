@@ -8,9 +8,9 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   <groupId>com.navinfo.dataservice</groupId>
-  <artifactId>edit-control-column</artifactId>
+  <artifactId>edit-control-dealership</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>edit-control-column</name>
+  <name>edit-control-dealership</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

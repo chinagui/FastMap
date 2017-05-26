@@ -307,5 +307,23 @@ public class ManApiImpl implements ManApi {
 	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
 		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
 	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getGroupNameBySubtaskId(int)
+	 */
+	@Override
+	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getGroupNameBySubtaskId(subtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getTotalWorkBySubtaskId(int)
+	 */
+	@Override
+	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getFinishedRoadNumBySubtaskId(subtaskId);
+	}
 }
 

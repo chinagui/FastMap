@@ -187,5 +187,7 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception;
+	public String getGroupNameBySubtaskId(int subtaskId) throws Exception;
+	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws Exception;
 }
 

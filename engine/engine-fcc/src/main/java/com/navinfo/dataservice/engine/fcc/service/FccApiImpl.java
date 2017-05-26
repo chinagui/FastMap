@@ -37,35 +37,35 @@ public class FccApiImpl implements FccApi{
 
     }
 
-    @Override
-    public JSONObject getSubTaskStats(JSONArray grids) throws Exception {
-        JSONObject result=new JSONObject();
-
-        if (grids==null||grids.isEmpty()) {
-
-            throw new IllegalArgumentException("参数错误:grids不能为空。");
-        }
-
-        TipsSelector selector = new TipsSelector();
-
-        //统计日编总量 stage=1
-        int total=selector.getTipsCountByStage(grids, 1);
-
-        //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
-
-        result.put("total", total);
-
-        result.put("finished", finished);
-
-        return result;
-    }
+//    @Override
+//    public JSONObject getSubTaskStats(JSONArray grids) throws Exception {
+//        JSONObject result=new JSONObject();
+//
+//        if (grids==null||grids.isEmpty()) {
+//
+//            throw new IllegalArgumentException("参数错误:grids不能为空。");
+//        }
+//
+//        TipsSelector selector = new TipsSelector();
+//
+//        //统计日编总量 stage=1
+//        int total=selector.getTipsCountByStage(grids, 1);
+//
+//        //统计日编已完成量stage=2 and t_dStatus=1
+//        int finished=selector.getTipsCountByStageAndTdStatus(grids,2,1);
+//
+//        result.put("total", total);
+//
+//        result.put("finished", finished);
+//
+//        return result;
+//    }
 
     @Override
     public JSONObject getSubTaskStatsByWkt(String wkt, Set<Integer> collectTaskIds) throws Exception {
-        JSONObject result=new JSONObject();
+        JSONObject result = new JSONObject();
 
-        if (wkt==null||wkt.isEmpty()) {
+        if (wkt == null || wkt.isEmpty()) {
 
             throw new IllegalArgumentException("参数错误:wkt不能为空。");
         }
@@ -73,10 +73,10 @@ public class FccApiImpl implements FccApi{
         TipsSelector selector = new TipsSelector();
 
         //统计日编总量 stage=1
-        int total=selector.getTipsCountByStageAndWkt(wkt, 1, collectTaskIds);
+        int total = selector.getTipsDayTotal(wkt, collectTaskIds, "total");
 
         //统计日编已完成量stage=2 and t_dStatus=1
-        int finished=selector.getTipsCountByStageAndTdStatusAndWkt(wkt, 2, 1, collectTaskIds);
+        int finished = selector.getTipsDayTotal(wkt, collectTaskIds, "dFinished");
 
         result.put("total", total);
 

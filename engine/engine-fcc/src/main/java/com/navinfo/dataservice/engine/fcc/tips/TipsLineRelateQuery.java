@@ -312,11 +312,11 @@ public class TipsLineRelateQuery {
 					if (StringUtils.isNotEmpty(f.getString("id"))) {
 						
 						// 3 道路NODE；
-						if (fInfo.getInt("type") == 3) {
+						if (f.getInt("type") == 3) {
 
-							nodeStr = fInfo.getString("id") + LINK_SEPARATOR;
+							nodeStr = f.getString("id") + LINK_SEPARATOR;
 						} else {
-							linkStr = fInfo.getString("id") + LINK_SEPARATOR;
+							linkStr = f.getString("id") + LINK_SEPARATOR;
 						}
 					}
 				}

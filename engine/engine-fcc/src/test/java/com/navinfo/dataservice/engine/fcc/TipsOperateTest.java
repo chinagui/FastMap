@@ -49,7 +49,7 @@ public class TipsOperateTest {
 
 		try {
 			operate.update("021901b0ad67e145be477bb1d2202181edfc84", 0, null,
-					"m");
+					"m", 0 ,0 );
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,23 +73,24 @@ public class TipsOperateTest {
 		
 		JSONObject b=new JSONObject();
 		
-		b.put("rowkey", "1115023838453");
+		b.put("rowkey", "0220019609FB3AFDD047EE9FE53BEF56496AAE");
 		
-		b.put("status", "2");
+		b.put("editStatus", 1);
+		b.put("editMeth", 1);
 		
 		data.add(b);
 		
-		JSONObject a=new JSONObject();
-		
-		a.put("rowkey", "1115024070073");
-		
-		a.put("status", "2");
-		
-		data.add(a);
+//		JSONObject a=new JSONObject();
+//
+//		a.put("rowkey", "1115024070073");
+//
+//		a.put("status", "2");
+//
+//		data.add(a);
 		
 		int handler=2922;
 		
-		String mdFlag="m";
+		String mdFlag="d";
 
 		try {
 			operate.batchUpdateStatus(data, handler, mdFlag);
@@ -148,48 +149,48 @@ public class TipsOperateTest {
 	
 	
 
-	// @Test
+	@Test
 	public void testUpdateAll() {
 
 		TipsOperator operate = new TipsOperator();
 
 		try {
 			String rowkey = "220215153123fa4d7d62479fa7d35ab9def60fa8";
-			// operate.update("220215153123fa4d7d62479fa7d35ab9def60fa8", 123,
-			// 0, "m");
+			 operate.update("0220019609FB3AFDD047EE9FE53BEF56496AAE", 123,
+			 "1", "d", 1 ,1);
 
-			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
-
-			Get get = new Get(rowkey.getBytes());
-
-			get.addColumn("data".getBytes(), "track".getBytes());
-
-			Result result = htab.get(get);
-
-			Put put = new Put(rowkey.getBytes());
-
-			JSONObject track = JSONObject.fromObject(new String(result
-					.getValue("data".getBytes(), "track".getBytes())));
-
-			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
-
-			track.put("t_mStatus", 0);
-
-			track.put("t_dStatus", 0);
-
-			String date = StringUtils.getCurrentTime();
-
-			track.put("t_trackInfo", trackInfo);
-
-			track.put("t_date", date);
-
-			put.addColumn("data".getBytes(), "track".getBytes(), track
-					.toString().getBytes());
-
-			htab.put(put);
+//			Connection hbaseConn = HBaseConnector.getInstance().getConnection();
+//
+//			Table htab = hbaseConn.getTable(TableName
+//					.valueOf(HBaseConstant.tipTab));
+//
+//			Get get = new Get(rowkey.getBytes());
+//
+//			get.addColumn("data".getBytes(), "track".getBytes());
+//
+//			Result result = htab.get(get);
+//
+//			Put put = new Put(rowkey.getBytes());
+//
+//			JSONObject track = JSONObject.fromObject(new String(result
+//					.getValue("data".getBytes(), "track".getBytes())));
+//
+//			JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+//
+//			track.put("t_mStatus", 0);
+//
+//			track.put("t_dStatus", 0);
+//
+//			String date = StringUtils.getCurrentTime();
+//
+//			track.put("t_trackInfo", trackInfo);
+//
+//			track.put("t_date", date);
+//
+//			put.addColumn("data".getBytes(), "track".getBytes(), track
+//					.toString().getBytes());
+//
+//			htab.put(put);
 
 		} catch (Exception e) {
 			e.printStackTrace();

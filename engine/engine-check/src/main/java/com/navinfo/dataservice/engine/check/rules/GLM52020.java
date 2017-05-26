@@ -9,7 +9,6 @@ import com.navinfo.dataservice.dao.glm.selector.lu.LuFaceSelector;
 import com.navinfo.dataservice.engine.check.core.baseRule;
 import com.vividsolutions.jts.geom.Geometry;
 import net.sf.json.JSONObject;
-import org.apache.commons.collections.CollectionUtils;
 
 import java.util.List;
 
@@ -46,7 +45,7 @@ public class GLM52020 extends baseRule {
             List<LuFace> list = new LuFaceSelector(getConn()).listLufaceRefWkt(wkt, false);
             for (LuFace luface : list) {
                 if (6 == luface.getKind() && face.pid() != luface.pid()) {
-                    setCheckResult("面有重叠", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()),0);
+                    setCheckResult("", String.format("[%s,%d]", face.tableName().toUpperCase(), face.pid()),0);
                 }
             }
         }

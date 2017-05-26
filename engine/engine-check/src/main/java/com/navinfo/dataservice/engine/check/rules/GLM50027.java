@@ -37,7 +37,7 @@ public class GLM50027 extends baseRule {
             List<AdFace> list = new AdFaceSelector(getConn()).listAdface(wkt, false);
             for (AdFace adFace : list) {
                 if (face.pid() != adFace.pid()) {
-                    setCheckResult("面有重叠", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()),0);
+                    setCheckResult("", String.format("[%s,%d]", row.tableName().toUpperCase(), face.pid()),0);
                 }
             }
         }

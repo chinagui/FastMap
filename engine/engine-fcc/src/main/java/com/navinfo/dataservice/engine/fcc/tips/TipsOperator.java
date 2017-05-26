@@ -52,7 +52,7 @@ public class TipsOperator {
 	 * @return
 	 * @throws Exception
 	 */
-	public boolean update(String rowkey, int handler, String pid, String mdFlag)
+	public boolean update(String rowkey, int handler, String pid, String mdFlag, int editStatus, int editMeth)
 			throws Exception {
 
 		Connection hbaseConn = HBaseConnector.getInstance().getConnection();
@@ -79,53 +79,53 @@ public class TipsOperator {
 		JSONObject track = JSONObject.fromObject(new String(result.getValue(
 				"data".getBytes(), "track".getBytes())));
 
-		/*int lifecycle = track.getInt("t_lifecycle");*/
+		JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
+//        int editStatus = json.getInt("editStatus");
+//        int editMeth = json.getInt("editMeth");
 
-	/*	if (0 == lifecycle) {
-			track.put("t_lifecycle", 2);
-		}*/
+        JSONObject jsonTrackInfo = new JSONObject();
+        if(mdFlag.equals("d")) {//日编
+            int oldEStatus = track.getInt("t_dEditStatus");
+            if (oldEStatus == 0 && editStatus != 0) {
+                jsonTrackInfo.put("stage", 2);
+            }
+            track.put("t_dEditStatus", editStatus);
+            track.put("t_dEditMeth", editMeth);
+        }else if(mdFlag.equals("m")) {//月编
+            int oldEStatus = track.getInt("t_mEditStatus");
+            if (oldEStatus == 0 && editStatus != 0) {
+                jsonTrackInfo.put("stage", 3);
+            }
+            track.put("t_mEditStatus", editStatus);
+            track.put("t_mEditMeth", editMeth);
+        }
 
-		JSONArray trackInfo = track.getJSONArray("t_trackInfo");
+        String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
+        if(jsonTrackInfo.containsKey("stage")) {
+            int curStage = jsonTrackInfo.getInt("stage");
+            if(trackInfoArr.size() == 0) {
+                // 更新hbase 增一个trackInfo
+                trackInfoArr.add(jsonTrackInfo);
+            }else {
+                int lastStage = lastTrack.getInt("stage");
+                if(lastStage == curStage) {//更新
+                    lastTrack.put("date", date);
+                    lastTrack.put("handler", handler);
+                    trackInfoArr.remove(trackInfoArr.size()-1);
+                    trackInfoArr.add(lastTrack);
+                }else{//新增
+                    trackInfoArr.add(jsonTrackInfo);
+                }
+            }
+        } else {
+            lastTrack.put("date", date);
+            lastTrack.put("handler", handler);
+            trackInfoArr.remove(trackInfoArr.size()-1);
+            trackInfoArr.add(lastTrack);
+        }
 
-		int stage = 1;
-
-		int tDStatus = track.getInt("t_dStatus");
-
-		int tMStatus = track.getInt("t_mStatus");
-
-		JSONObject jo = new JSONObject();
-
-		if ("d".equals(mdFlag)) {
-
-			stage = 2;
-
-			tDStatus = 1;
-
-		}
-
-		else if ("m".equals(mdFlag)) {
-
-			stage = 3;
-
-			tMStatus = 1;
-
-		}
-
-		jo.put("stage", stage);
-
-		track.put("t_mStatus", tMStatus);
-
-		track.put("t_dStatus", tDStatus);
-
-		String date = StringUtils.getCurrentTime();
-
-		jo.put("date", date);
-
-		jo.put("handler", handler);
-
-		trackInfo.add(jo);
-
-		track.put("t_trackInfo", trackInfo);
+		track.put("t_trackInfo", trackInfoArr);
 
 		track.put("t_date", date);
 
@@ -150,13 +150,22 @@ public class TipsOperator {
 
 		JSONObject solrIndex = solr.getById(rowkey);
 
-		solrIndex.put("stage", stage);
+        if(jsonTrackInfo.containsKey("stage")) {
+            solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+        }
+
 
 		solrIndex.put("t_date", date);
 
-		solrIndex.put("t_dStatus", tDStatus);
+        if(mdFlag.equals("d")) {//日编
+            solrIndex.put("t_dEditStatus", editStatus);
+            solrIndex.put("t_dEditMeth", editMeth);
+        }else if(mdFlag.equals("m")) {//月编
+            solrIndex.put("t_mEditStatus", editStatus);
+            solrIndex.put("t_mEditMeth", editMeth);
+        }
 
-		solrIndex.put("t_mStatus", tMStatus);
+
 
 	/*	if (0 == lifecycle) {
 			solrIndex.put("t_lifecycle", 2);
@@ -200,125 +209,75 @@ public class TipsOperator {
 	public void batchUpdateStatus(JSONArray data, int handler, String mdFlag)
 			throws Exception {
 
-		for (Object object : data) {
+        Connection hbaseConn = null;
+        Table htab = null;
+        try {
+            hbaseConn = HBaseConnector.getInstance().getConnection();
 
-			JSONObject json = JSONObject.fromObject(object);
+            htab = hbaseConn.getTable(TableName
+                    .valueOf(HBaseConstant.tipTab));
 
-			String rowkey = json.getString("rowkey");
+            for (Object object : data) {
 
-			int status = json.getInt("status");
+                JSONObject json = JSONObject.fromObject(object);
 
-			JSONObject updateKeyValues = new JSONObject(); // 被修改的tips字段的值
+                String rowkey = json.getString("rowkey");
 
-			// new 一个trackInfo
+                // 1.获取到改前的 feddback和track （还有deep）
+                JSONObject oldTip = getOldTips(rowkey, htab);
 
-			String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+                JSONObject track = oldTip.getJSONObject("track");
 
-			JSONObject jsonTrackInfo = new JSONObject();
+                JSONObject updateKeyValues = new JSONObject(); // 被修改的tips字段的值
 
-			JSONObject value = new JSONObject();
+                // new 一个trackInfo
 
-			// 日编
-			if ((status == 0 || status == 1) && "d".equals(mdFlag)) {
+                String date = DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
 
-				if (status == 0) {
+                JSONObject jsonTrackInfo = new JSONObject();
 
-					jsonTrackInfo.put("stage", 1);
+                JSONObject value = new JSONObject();
 
-					jsonTrackInfo.put("date", date);
+                int editStatus = json.getInt("editStatus");
+                int editMeth = json.getInt("editMeth");
+                if (mdFlag.equals("d")) {//日编
+                    value.put("t_dEditStatus", editStatus);
+                    value.put("t_dEditMeth", editMeth);
+                    int oldEStatus = track.getInt("t_dEditStatus");
+                    if (oldEStatus == 0 && editStatus != 0) {
+                        jsonTrackInfo.put("stage", 2);
+                    }
+                } else if (mdFlag.equals("m")) {//月编
+                    value.put("t_mEditStatus", editStatus);
+                    value.put("t_mEditMeth", editMeth);
+                    int oldEStatus = track.getInt("t_mEditStatus");
+                    if (oldEStatus == 0 && editStatus != 0) {
+                        jsonTrackInfo.put("stage", 3);
+                    }
+                }
+                jsonTrackInfo.put("date", date);
+                jsonTrackInfo.put("handler", handler);
 
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_dInProc", 0); 
-				}
-				if (status == 1) {
+                value.put("t_date", date);
 
-					jsonTrackInfo.put("stage", 2);
+                value.put("t_trackInfo", jsonTrackInfo);
 
-					jsonTrackInfo.put("date", date);
+                updateKeyValues.put("track", value);
 
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_dInProc", 0); 
+                Put put = updateTips(rowkey, oldTip, updateKeyValues);
 
-				}
-
-				value.put("t_dStatus", status);
-
-				value.put("t_date", date);
-
-			}
-			// 月编
-			else if ((status == 0 || status == 1) && "m".equals(mdFlag)) {
-
-				if (status == 0) {
-
-					jsonTrackInfo.put("stage", 2);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_mInProc", 0);
-
-				}
-				if (status == 1) {
-
-					jsonTrackInfo.put("stage", 3);
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-					
-					value.put("t_mInProc", 0);
-
-				}
-
-				value.put("t_mStatus", status);
-
-			}
-			// 有问题待确认
-			else if (status == 2) {
-
-				if ("d".equals(mdFlag)) {
-
-					jsonTrackInfo.put("stage", 1);// 有问题 则stage需要改为1 未作业(日编)
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-
-					value.put("t_dStatus", 0); // 未作业
-					
-					value.put("t_dInProc", 1); // 有问题待确认
-					
-				} else if ("m".equals(mdFlag)) {
-
-					jsonTrackInfo.put("stage", 2);// 有问题 则stage需要改为2未作业(月编)
-
-					jsonTrackInfo.put("date", date);
-
-					jsonTrackInfo.put("handler", handler);
-
-					value.put("t_mStatus", 0); // 未作业
-					
-					value.put("t_mInProc", 1); // 有问题待确认
-				}
-
-
-			}
-
-			//value.put("t_lifecycle", 2);  20170302和玉秀确认内业的需改不更新t_lifecycle
-
-			value.put("t_date", date);
-
-			value.put("t_trackInfo", jsonTrackInfo);
-
-			updateKeyValues.put("track", value);
-
-			updateTips(rowkey, updateKeyValues);
-
-		}
+                htab.put(put);
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(htab != null) {
+                htab.close();
+            }
+            if(hbaseConn != null) {
+                hbaseConn.close();
+            }
+        }
 
 	}
 
@@ -332,20 +291,20 @@ public class TipsOperator {
 	 * @throws Exception
 	 * @time:2017-2-8 下午3:44:46
 	 */
-	private void updateTips(String rowkey, JSONObject updateKeyValues)
+	private Put updateTips(String rowkey, JSONObject oldTip, JSONObject updateKeyValues)
 			throws Exception {
 
 		Set<String> updateAttKeys = updateKeyValues.keySet(); // 被修改的属性
 
-		Connection hbaseConn;
+//		Connection hbaseConn;
 		try {
-			hbaseConn = HBaseConnector.getInstance().getConnection();
-
-			Table htab = hbaseConn.getTable(TableName
-					.valueOf(HBaseConstant.tipTab));
+//			hbaseConn = HBaseConnector.getInstance().getConnection();
+//
+//			Table htab = hbaseConn.getTable(TableName
+//					.valueOf(HBaseConstant.tipTab));
 
 			// 1.获取到改前的 feddback和track （还有deep）
-			JSONObject oldTip = getOldTips(rowkey, htab);
+//			JSONObject oldTip = getOldTips(rowkey, htab);
 
 			JSONObject track = oldTip.getJSONObject("track");
 
@@ -363,31 +322,48 @@ public class TipsOperator {
 					Set<String> updateTrackFiledsName = trackValues.keySet(); // 被修改的属性
 
 					// 1.1trackInfo特殊处理
-					JSONObject jsonTrackInfo = trackValues
-							.getJSONObject("t_trackInfo");
+                    if(trackValues.containsKey("t_trackInfo")) {
+                        JSONObject jsonTrackInfo = trackValues
+                                .getJSONObject("t_trackInfo");
+                        JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");//tips中track
+                        JSONObject lastTrack = trackInfoArr.getJSONObject(trackInfoArr.size()-1);
+                        if(jsonTrackInfo.containsKey("stage")) {
+                            int curStage = jsonTrackInfo.getInt("stage");
+                            if(trackInfoArr.size() == 0) {
+                                // 更新hbase 增一个trackInfo
+                                trackInfoArr.add(jsonTrackInfo);
+                            }else {
+                                int lastStage = lastTrack.getInt("stage");
+                                if(lastStage == curStage) {//更新
+                                    lastTrack.put("date", jsonTrackInfo.getString("date"));
+                                    lastTrack.put("handler", jsonTrackInfo.getInt("handler"));
+                                    trackInfoArr.remove(trackInfoArr.size()-1);
+                                    trackInfoArr.add(lastTrack);
+                                }else{//新增
+                                    trackInfoArr.add(jsonTrackInfo);
+                                }
+                            }
+                        } else {
+                            lastTrack.put("date", jsonTrackInfo.getString("date"));
+                            lastTrack.put("handler", jsonTrackInfo.getInt("handler"));
+                            trackInfoArr.remove(trackInfoArr.size()-1);
+                            trackInfoArr.add(lastTrack);
+                        }
 
-					JSONArray trackInfoArr = track.getJSONArray("t_trackInfo");
-
-					// 更新hbase 增一个trackInfo
-					trackInfoArr.add(jsonTrackInfo);
-
-					track.put("t_trackInfo", trackInfoArr);
+                        track.put("t_trackInfo", trackInfoArr);
+                    }
 
 					// 1.2更新track的其他字段
 					for (String filedName : updateTrackFiledsName) {
-
 						if ("t_trackInfo".equals(filedName)) {
 							continue;
 						}
-
 						track.put(filedName, trackValues.get(filedName));
-
 					}
 
 					// 1.3hbase 更新track
 					put.addColumn("data".getBytes(), "track".getBytes(), track
 							.toString().getBytes());
-
 				}
 
 				// track和feedback外的其他字段直接更新（这个地方需要补充呢，如果是feebback？？）
@@ -403,9 +379,7 @@ public class TipsOperator {
 				// 根据修改的字段，更新solr
 				updateSorlIndex(rowkey, updateKeyValues);
 
-				htab.put(put);
-
-				htab.close();
+                return put;
 
 			}
 		} catch (Exception e) {
@@ -417,7 +391,7 @@ public class TipsOperator {
 			throw new Exception("根据rowkey修改tips信息出错:" + rowkey + "\n"
 					+ e.getMessage(), e);
 		}
-
+        return null;
 	}
 
 	/**
@@ -446,7 +420,9 @@ public class TipsOperator {
 				JSONObject jsonTrackInfo = trackValues
 						.getJSONObject("t_trackInfo");
 
-				solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+                if(jsonTrackInfo.containsKey("stage")) {
+                    solrIndex.put("stage", jsonTrackInfo.getInt("stage"));
+                }
 
 				solrIndex.put("handler", jsonTrackInfo.getInt("handler"));
 

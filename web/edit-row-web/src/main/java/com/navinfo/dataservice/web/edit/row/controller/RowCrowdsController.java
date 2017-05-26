@@ -97,8 +97,11 @@ public class RowCrowdsController extends BaseController {
 			RowCrowdsControl crowds = new RowCrowdsControl();
 			
 			String msg = crowds.release(reqJson);
+			if (StringUtils.isEmpty(msg)){
+				return new ModelAndView("jsonView", success(msg));
+			}
 			
-			return new ModelAndView("jsonView", success(msg));
+			return new ModelAndView("jsonView", fail(msg));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

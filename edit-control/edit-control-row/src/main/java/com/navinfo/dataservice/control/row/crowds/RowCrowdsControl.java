@@ -96,7 +96,7 @@ public class RowCrowdsControl {
 		try{
 			JSONObject tPoi = reqJson.getJSONObject("data");
 			if (tPoi == null || tPoi.isNullObject() || tPoi.isEmpty()){
-				throw new Exception("参数data数据错误！！");
+				return "参数data数据错误！！";
 			}
 			// 验证缺少那些字段
 			List<String> fields = Arrays.asList("FID", "RECLASSCODE", "PHOTO", "REAUDITNAME", "REAUDITADDRESS", "GEOX", "GEOY", "DESCP",
@@ -109,13 +109,13 @@ public class RowCrowdsControl {
 				}
 			}
 			if (StringUtils.isNotEmpty(keyNotExists)){
-				throw new Exception("当前字段在提交数据中不存在! key:"+ keyNotExists);
+				return "当前字段在提交数据中不存在! key:"+ keyNotExists;
 			}
 			String fid = tPoi.getString("FID");
 			
 			// 验证FID是否非法
 			if (StringUtils.isEmpty(fid)){
-				throw new Exception("当前数据FID为空！tPoi:"+ tPoi.toString());
+				return "当前数据FID为空！tPoi:"+ tPoi.toString();
 			}
 			logger.info("crowds user:" + tPoi.getInt("GATHERUSERID"));
 			
@@ -131,7 +131,7 @@ public class RowCrowdsControl {
 				if (state != 3){
 					//判断有无常规子任务(且状态为待作业或待提交)
 					if (HasComSubtask(dayConn, fid, apiService)){
-						throw new Exception("常规子任务FID:" + fid + " 正在作业！");
+						return "常规子任务FID:" + fid + " 正在作业！";
 					}
 				}
 				// 默认为无众包子任务，任务号赋0，状态为待作业
@@ -161,14 +161,14 @@ public class RowCrowdsControl {
 				// 判断在日库中存在否
 				if(pid == 0){
 					if(state != 3){
-						throw new Exception("非新增FID为"+ fid +"的POI数据在日库中不存在！");
+						return "非新增FID为"+ fid +"的POI数据在日库中不存在！";
 					}else{
 						// 生成新增数据
 						pid = imp.importAddPoi(tPoi);
 					}
 				}else{
 					if(state == 3){
-						throw new Exception("新增数据FID为"+ fid +"的POI数据在日库中存在！");
+						return "新增数据FID为"+ fid +"的POI数据在日库中存在！";
 					}else{
 						if (state == 2){
 							// 生成修改数据
@@ -185,12 +185,12 @@ public class RowCrowdsControl {
 				List<Long> pids = Arrays.asList(pid);
 				PoiEditStatus.normalPoi(dayConn, pids, subTaskId, taskId, subtaskType);
 			}else{
-				throw new Exception("FID:" + fid + "数据未获取到大区库信息，不入库！");
+				return "FID:" + fid + "数据未获取到大区库信息，不入库！";
 			}
 		}catch (Exception e){
 			DbUtils.rollback(dayConn);
 			logger.error(e.getMessage(), e);
-			throw e;
+			msg = e.getMessage();
 		}finally{
 			DbUtils.commitAndCloseQuietly(dayConn);
 		}

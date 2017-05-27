@@ -59,7 +59,10 @@ public class ColumnCoreControl {
 				comSubTaskId=taskId;
 			}
 			//获取查询条件信息
-			JSONObject conditions = jsonReq.getJSONObject("conditions");
+			JSONObject conditions=new JSONObject();
+			if(jsonReq.containsKey("conditions")){
+				conditions = jsonReq.getJSONObject("conditions");
+			}
 
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);

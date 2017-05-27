@@ -60,7 +60,10 @@ public class ColumnCoreControl {
 				comSubTaskId=taskId;
 			}
 			//获取查询条件信息
-			JSONObject conditions = jsonReq.getJSONObject("conditions");
+			JSONObject conditions=new JSONObject();
+			if(jsonReq.containsKey("conditions")){
+				conditions = jsonReq.getJSONObject("conditions");
+			}
 
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -254,7 +257,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
-			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,subtask.getSubtaskId(),isQuality);
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,subtask.getSubtaskId());
 			List<Integer> pidList =new ArrayList<Integer>();
 			if(data.get("pidList") instanceof List){ 
 				pidList = (List) data.get("pidList"); 
@@ -267,7 +270,7 @@ public class ColumnCoreControl {
 				return result;
 			}
 			//获取数据详细字段
-			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId,isQuality);
+			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules);
@@ -341,7 +344,7 @@ public class ColumnCoreControl {
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
-			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, subtask.getSubtaskId(),isQuality);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, subtask.getSubtaskId());
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -540,7 +543,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId,isQuality);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId);
 			
 			return result;
 		} catch (Exception e) {

@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -392,9 +393,9 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                            FROM IX_POI_NAME N, IX_POI_NAME_FLAG F");
 		sb.append("                           WHERE N.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
 		sb.append("                             AND N.NAME_ID = F.NAME_ID(+)");
-		sb.append("                             AND N.LANG_CODE IN "+langCode);
-		sb.append("                             AND N.NAME_TYPE IN "+nameType);
-		sb.append("                             AND N.NAME_CLASS IN "+nameClass);
+		sb.append("                             AND N.LANG_CODE IN ("+langCode+")");
+		sb.append("                             AND N.NAME_TYPE IN ("+nameType+")");
+		sb.append("                             AND N.NAME_CLASS IN ("+nameClass+")");
 		sb.append("                           GROUP BY N.POI_PID) NM,");
 		sb.append("                         (SELECT CASE");
 		sb.append("                                   WHEN 'addrSplit' = '"+secondWorkItem+"' THEN");
@@ -418,7 +419,7 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                                 A.POI_PID PID");
 		sb.append("                            FROM IX_POI_ADDRESS A");
 		sb.append("                           WHERE A.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
-		sb.append("                             AND A.LANG_CODE IN "+langCode+") ADR,");
+		sb.append("                             AND A.LANG_CODE IN ("+langCode+")) ADR,");
 		sb.append("                         (SELECT '[' || LISTAGG(PS.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY PS.PID) || ']' WORK_ITEM_ID,");
 		sb.append("                                 PS.PID");
 		sb.append("                            FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC");
@@ -436,16 +437,18 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                     AND CP.IS_VALID = 0) TP");
 		sb.append("                  ON (T.ID = TP.id)");
 		sb.append("                  WHEN MATCHED THEN");
-		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.new_value=TP.NAMENEWVLAUE,T.qc_time="+new Date()+",T.worker="+userId+",T.NEW_VALUE=''");
+		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.new_value=TP.NAMENEWVLAUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
 		sb.append("                  WHEN NOT MATCHED THEN ");
 		sb.append("                  INSERT ('SUBTASK_ID','PID','FIRST_WORK_ITEM','SECOND_WORK_ITEM','WORK_ITEM_ID','OLD_VALUE','WORK_TIME','IS_VALID','WORKER','ORIGINAL_INFO')"
-				+ " VALUES("+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.NAMENEWVLAUE,"+new Date()+",0,"+userId+",'')");
+				+ " VALUES("+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.NAMENEWVLAUE,:2,0,"+userId+",'')");
 		
 		
 		PreparedStatement pstmt = null;
 
 		try {
 			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setTimestamp(1, new Timestamp(new Date().getTime()));
+			pstmt.setTimestamp(2, new Timestamp(new Date().getTime()));
 			log.info(sb.toString());
 			pstmt.executeUpdate();
 			

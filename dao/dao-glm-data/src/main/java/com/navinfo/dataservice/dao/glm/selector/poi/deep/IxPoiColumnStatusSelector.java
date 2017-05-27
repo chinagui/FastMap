@@ -103,7 +103,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type) throws Exception {
+	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type,int qcFlag,JSONObject conditions,long userId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT s.pid");
 		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
@@ -140,6 +140,24 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			sb.append(" AND w.second_work_item='" + secondWorkItem + "'");
 			sb.append(" AND s.second_work_status != 3");
 		}
+		//质检标示
+		sb.append(" AND s.QC_FLAG =:3 ");
+		//如果是质检，需要扩充质检条件
+		if(qcFlag==1){
+			String commenUserId =conditions.getString("commenUserId");
+			String startTime =conditions.getString("startTime");
+			String endTime =conditions.getString("endTime");
+			if(!startTime.isEmpty()){
+				sb.append(" s.apply_date >= to_date('"+startTime+"', 'yyyymmddhh24miss') ");
+			}
+			if(!endTime.isEmpty()){
+				sb.append(" s.apply_date <= to_date('"+endTime+"', 'yyyymmddhh24miss') ");
+			}
+			sb.append(" s.COMMON_HANDLER<>"+userId+" ");
+			if(!commenUserId.isEmpty()){
+				sb.append(" s.COMMON_HANDLER in ("+commenUserId+") ");
+			}
+		}
 
 		PreparedStatement pstmt = null;
 
@@ -153,6 +171,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			Clob geom = ConnectionUtil.createClob(conn);
 			geom.setString(1, subtask.getGeometry());
 			pstmt.setClob(2,geom);
+			pstmt.setInt(3,qcFlag);
 
 			resultSet = pstmt.executeQuery();
 
@@ -194,9 +213,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param timeStamp
 	 * @throws Exception
 	 */
-	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId, Timestamp timeStamp) throws Exception {
+	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId, Timestamp timeStamp,int qcFlag) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		if(qcFlag==1){
+			sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		}else{
+			sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,COMMON_HANDLER="+userId+",task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		}
+		
 		String temp = "";
 		for (String workItemId : workItemIds) {
 			sb.append(temp);
@@ -244,7 +268,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId) throws Exception {
+	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId,int qcFlag) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
@@ -252,6 +276,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" AND s.handler = :1");
 		sb.append(" AND w.type = :2");
 		sb.append(" AND s.TASK_ID = :3 ");
+		sb.append(" AND s.QC_FLAG = :4 ");
 
 		if (StringUtils.isNotEmpty(firstWorkItem)) {
 			sb.append(" AND w.FIRST_WORK_ITEM='" + firstWorkItem + "'");
@@ -274,6 +299,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setInt(2, type);
 			
 			pstmt.setInt(3, subtaskId);
+			
+			pstmt.setInt(4, qcFlag);
 
 			resultSet = pstmt.executeQuery();
 
@@ -612,11 +639,15 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId,int userId) throws Exception {
+public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId,int userId,boolean flag) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT s.pid FROM poi_column_status s,poi_column_workitem_conf w WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.handler=" + userId + " AND s.task_id=" + taskId);
+		if(flag){
+			sb.append(" AND S.QC_FLAG=1");
+		}
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;

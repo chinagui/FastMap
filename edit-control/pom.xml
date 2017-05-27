@@ -14,7 +14,6 @@
     <module>edit-control-column</module>   
     <module>edit-control-app</module>
     <module>edit-control-dealership</module>
-    <module>edit-control-dealer</module>
     </modules>
     <packaging>pom</packaging>
     <name>edit-control</name>

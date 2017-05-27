@@ -2208,7 +2208,7 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
-					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
+					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND ST.STATUS IN (1,2) AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
 					+ "like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){

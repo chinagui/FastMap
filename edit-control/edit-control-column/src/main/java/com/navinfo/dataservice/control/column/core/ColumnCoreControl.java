@@ -246,7 +246,7 @@ public class ColumnCoreControl {
 //			int endRow = pageNo * pageSize;
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
@@ -332,7 +332,7 @@ public class ColumnCoreControl {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
@@ -527,7 +527,7 @@ public class ColumnCoreControl {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
 			}

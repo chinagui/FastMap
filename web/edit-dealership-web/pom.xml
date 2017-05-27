@@ -8,9 +8,9 @@
 		<artifactId>web</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-	<artifactId>edit-column-web</artifactId>
+	<artifactId>edit-dealership-web</artifactId>
 	<packaging>war</packaging>
-	<name>edit-column-web Maven Webapp</name>
+	<name>edit-dealership-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
 

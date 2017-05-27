@@ -6,7 +6,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.token.AccessToken;
-import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+//import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
 import net.sf.json.JSONObject;
 
@@ -25,7 +25,7 @@ public class androidtest {
 		
 
 		try {
-			DataPrepareService control = new DataPrepareService();
+//			DataPrepareService control = new DataPrepareService();
 
 			
 		} catch (Exception e) {

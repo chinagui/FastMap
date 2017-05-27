@@ -67,7 +67,7 @@ public class PingConverterTest {
 
 	}
 	
-//	@Test
+	@Test
 	public void testvoiceConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -104,7 +104,7 @@ public class PingConverterTest {
 		System.out.println(res);
 	}
 	
-	@Test
+//	@Test
 	public void testEngConvert2() throws Exception {
 		EnglishConvert py = new EnglishConvert();
 

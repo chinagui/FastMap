@@ -46,9 +46,21 @@ public class ColumnCoreControl {
 		try {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
-
 			int taskId = jsonReq.getInt("taskId");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
+			int qcFlag=0;
+			int comSubTaskId=0;
+			int isQuality =subtask.getIsQuality();
+			//获取对应的常规任务信息
+			if(isQuality==1){
+				qcFlag=1;
+				Subtask comSubtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", 1);
+				comSubTaskId=comSubtask.getSubtaskId();
+			}else{
+				comSubTaskId=taskId;
+			}
+			//获取查询条件信息
+			JSONObject conditions = jsonReq.getJSONObject("conditions");
 
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -77,7 +89,7 @@ public class ColumnCoreControl {
 
 				if (columnSecondWorkItems.contains(secondWorkItem)) {
 
-					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId);
+					hasApply = columnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, comSubTaskId,qcFlag);
 					// 可申请数据条数
 					int canApply = 100 - hasApply;
 					if (canApply == 0) {
@@ -85,7 +97,7 @@ public class ColumnCoreControl {
 					}
 
 					// 申请数据
-					List<Integer> pids = columnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
+					List<Integer> pids = columnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type,qcFlag,conditions,userId);
 					if (pids.size() == 0) {
 						// 库中未查到可以申请的数据，返回0
 						return 0;
@@ -99,12 +111,21 @@ public class ColumnCoreControl {
 						// 库里面查询出的数据量小于当前用户可申请的量，即锁定库中查询出的数据
 						applyDataPids = pids;
 					}
-
+					
 					// 数据加锁， 赋值handler，task_id,apply_date
 					Timestamp timeStamp = new Timestamp(new Date().getTime());
 					List<String> workItemIds = columnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
-					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
+					columnSelector.dataSetLock(applyDataPids, workItemIds, userId, comSubTaskId, timeStamp,qcFlag);
 					totalCount += applyDataPids.size();
+					
+					//常规申请需要打质检标记
+					if(isQuality==0){
+						double sampleLevel=0.2;
+						List<Integer> sampDataPids = new ArrayList<Integer>();
+						int ct=(int) Math.floor(applyDataPids.size()*sampleLevel);
+						sampDataPids = applyDataPids.subList(0, ct);
+						updateQCFlag(sampDataPids,conn,comSubTaskId,userId);
+					}
 				}
 			}
 
@@ -122,6 +143,35 @@ public class ColumnCoreControl {
 			throw e;
 		} finally {
 			DbUtils.commitAndClose(conn);
+		}
+	}
+	
+	/**
+	 * 质检提交时调用，更新质检问题表状态
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updateQCFlag(List<Integer> pidList,Connection conn,int comSubTaskId,long userId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE poi_column_status SET qc_flag=1 ");
+		sb.append(" WHERE TASK_ID ="+comSubTaskId);
+		sb.append(" AND PID IN ("+StringUtils.join(pidList, ",")+")");
+		sb.append(" AND handler="+userId);
+		sb.append(" AND first_work_status=1");
+		sb.append(" AND second_work_status=1");
+		
+		PreparedStatement pstmt = null;
+		try {
+			
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(pstmt);
 		}
 	}
 

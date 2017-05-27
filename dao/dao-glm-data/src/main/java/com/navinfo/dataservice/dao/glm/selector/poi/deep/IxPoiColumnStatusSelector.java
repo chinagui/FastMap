@@ -392,7 +392,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	AND S.HANDLER =:1");
 		sb.append("	AND W.SECOND_WORK_ITEM =:2");
 		sb.append("	AND S.SECOND_WORK_STATUS =:3");
-		sb.append("	AND S.TASK_ID = :4");
+		sb.append("	AND S.TASK_ID = :4)");
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
 		
 		PreparedStatement pstmt = null;

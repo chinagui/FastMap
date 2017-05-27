@@ -13,7 +13,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.engine.meta.rdname.RdNameImportor;
 import com.navinfo.dataservice.engine.meta.service.ScBcrossnodeMatchckService;
 import com.navinfo.dataservice.engine.meta.service.ScBranchCommcService;
 import com.navinfo.dataservice.engine.meta.service.ScBranchSpeccService;
@@ -23,7 +22,6 @@ import com.navinfo.dataservice.engine.meta.service.ScRoadnameHwInfoService;
 import com.navinfo.dataservice.engine.meta.service.ScVectorMatchService;
 import com.navinfo.navicommons.database.Page;
 import com.navinfo.navicommons.exception.ServiceException;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import oracle.sql.BLOB;
@@ -76,7 +74,7 @@ public class RdNameAndPatternImageTest {
 //				byte[] b = getContent("F:/123.png");
 //				InputStream in =getContents("F:/123.png");
 //				scModelMatchGService.saveUpdate2(dataJson,in);
-				scModelMatchGService.saveUpdate2(dataJson,null);
+				scModelMatchGService.save(dataJson,null);
 			}else if(tableName.equals("scModelRepdelG")){
 				ScModelRepdelGService scModelRepdelGService =new ScModelRepdelGService();
 				scModelRepdelGService.saveUpdate(dataJson);

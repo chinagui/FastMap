@@ -149,14 +149,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			String startTime =conditions.getString("startTime");
 			String endTime =conditions.getString("endTime");
 			if(!startTime.isEmpty()){
-				sb.append(" s.apply_date >= to_date('"+startTime+"', 'yyyymmddhh24miss') ");
+				sb.append(" and  s.apply_date >= to_date('"+startTime+"', 'yyyymmddhh24miss') ");
 			}
 			if(!endTime.isEmpty()){
-				sb.append(" s.apply_date <= to_date('"+endTime+"', 'yyyymmddhh24miss') ");
+				sb.append(" and s.apply_date <= to_date('"+endTime+"', 'yyyymmddhh24miss') ");
 			}
-			sb.append(" s.COMMON_HANDLER<>"+userId+" ");
+			sb.append(" and s.COMMON_HANDLER<>"+userId+" ");
 			if(!commenUserId.isEmpty()){
-				sb.append(" s.COMMON_HANDLER in ("+commenUserId+") ");
+				sb.append(" and s.COMMON_HANDLER in ("+commenUserId+") ");
 			}
 		}
 

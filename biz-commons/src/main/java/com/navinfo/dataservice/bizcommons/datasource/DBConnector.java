@@ -29,6 +29,7 @@ public class DBConnector {
 	private DataSource mkDataSource;
 	private DataSource pidDataSource;
 	private MongoClient statClient;
+	private DataSource checkDataSource;
 
 	// 大区库连接池
 	private Map<String, DataSource> dataSourceMap = new HashMap<String, DataSource>();
@@ -55,6 +56,38 @@ public class DBConnector {
 			}
 		}
 		return manDataSource.getConnection();
+	}
+	
+	
+	/**
+	 * @Description:获取质检库连接
+	 * @return
+	 * @throws SQLException
+	 * @author: y
+	 * @time:2017-5-24 下午8:52:29
+	 */
+	public Connection getCheckConnection() throws SQLException {
+		if (checkDataSource == null) {
+			synchronized (this) {
+				if (checkDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo checkDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						checkDb = datahub.getOnlyDbByType("fmCheck");
+						connConfig = DbConnectConfig
+								.createConnectConfig(checkDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取管理库信息失败："
+								+ e.getMessage(), e);
+					}
+					checkDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return checkDataSource.getConnection();
 	}
 
 	public Connection getMetaConnection() throws SQLException {

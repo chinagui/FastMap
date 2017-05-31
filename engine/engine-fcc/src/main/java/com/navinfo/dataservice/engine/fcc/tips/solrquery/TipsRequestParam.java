@@ -5,16 +5,19 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrQueryUtils;
+import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.util.Set;
 
+
 /**
  * Created by zhangjunfang on 2017/5/20.
  */
 public class TipsRequestParam {
+	
 
     //获取Tips个数列表 tip/getStats 接口参数
     public String getTipStat(String parameter) throws Exception{
@@ -37,17 +40,163 @@ public class TipsRequestParam {
         //315过滤
         this.getFilter315(builder);
 
-        if(workStatus == 0) {//待作业
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
             builder.append(" AND ((t_tipStatus:2");
             builder.append(" AND stage:(1 5 6)");
             builder.append(")");
             //接边Tips
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-        }else if(workStatus == 1) {//有问题待确认
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
         }else if(workStatus == 2) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
-        }else if(workStatus == 9) {//全部
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
+            StringBuilder allBuilder = new StringBuilder();
+            allBuilder.append(" AND ");
+            allBuilder.append("(");
+
+            allBuilder.append("((t_tipStatus:2");
+            allBuilder.append(" AND stage:(1 5 6)");
+            allBuilder.append(")");
+            allBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
+
+            allBuilder.append(" OR ");
+
+            allBuilder.append("(stage:2 AND t_dEditStatus:(1 2))");
+
+            allBuilder.append(")");
+
+            builder.append(allBuilder);
+        }//1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+        	
+          	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+          	 
+          }
+          //日编已质检tips：取stage=7，且t_dEditStatus=2
+          else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+          	
+       	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+          	 
+        	
+          }
+          //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+          else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+          	
+       	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+          	 
+          }
+
+        return builder.toString();
+    }
+    
+    
+    /**
+     * @Description:质检查询条件
+     * @param parameter
+     * @return
+     * @throws Exception
+     * @author: y
+     * @time:2017-5-26 下午5:14:05
+     */
+    public String assambleSqlForCheckQuery(int worker,int checker,int workStatus,JSONArray rowkeyList) throws Exception{
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+        
+        //1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
+        if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+        	
+        	 builder.append("  stage:2 AND t_dEditStatus:2 and handler:"+worker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+        	
+        	 builder.append("  stage:7 AND t_dEditStatus:2 and handler:"+checker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+      	
+        }
+        //③日编质检有问题待确认tips: 取stage=7，且t_dEditStatus=1，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+        	
+        	 builder.append("  stage:7 AND t_dEditStatus:1 and handler:"+checker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+        }
+
+
+        return builder.toString();
+    }
+    
+    
+    
+ /**
+  * @Description:过滤条件组装（质检）
+  * @param grids
+  * @param workStatus:作业状态
+  * @param subtaskId：作业子任务号
+  * @param woker：作业员id
+  * @param cheker：质检员id
+  * @param rowkeyList：已抽取的tipsrowkey
+  * @return
+  * @throws Exception
+  * @author: y
+  * @time:2017-5-26 上午11:49:09
+  */
+    public String getQueryFilterSqlForCheck(JSONArray grids,int workStatus,int subtaskId,int woker,int cheker,JSONArray rowkeyList) throws Exception{
+       
+    	//1.wkt过滤
+    	String wkt = GridUtils.grids2Wkt(grids);
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("wkt:\"intersects(" + wkt + ")\"");
+
+        //2.任务号过滤
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        if (taskSet != null && taskSet.size() > 0) {
+            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        }
+        //3.315过滤
+        this.getFilter315(builder);
+        
+        //4.状态过滤（状态显示隐藏）
+        this.getWokerStatusFilterQuery(woker, cheker, workStatus, builder,rowkeyList);
+        
+
+        return builder.toString();
+    }
+
+
+
+
+
+	/**
+	 * @Description:状态过滤（状态显示隐藏-通用）
+	 * @param woker
+	 * @param cheker
+	 * @param workStatus
+	 * @param builder
+	 * @author: y
+	 * @param rowkeyList 
+	 * @time:2017-5-26 上午11:44:16
+	 */
+	private void getWokerStatusFilterQuery(int woker, int cheker,
+			int workStatus, StringBuilder builder, JSONArray rowkeyList) {
+		if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
+            builder.append(" AND ((t_tipStatus:2");
+            builder.append(" AND stage:(1 5 6)");
+            builder.append(")");
+            //接边Tips
+            builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
+            builder.append(" AND stage:2 AND t_dEditStatus:1");
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
+            builder.append(" AND stage:2 AND t_dEditStatus:2");
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
             allBuilder.append(" AND ");
             allBuilder.append("(");
@@ -65,9 +214,31 @@ public class TipsRequestParam {
 
             builder.append(allBuilder);
         }
+        //质检相关
+        //1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+        	
+        	 builder.append(" AND stage:2 AND t_dEditStatus:2 and handler:"+woker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+        	
+        	 builder.append(" AND stage:7 AND t_dEditStatus:2 and handler:"+cheker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+      	
+        }
+        //③日编质检有问题待确认tips: 取stage=7，且t_dEditStatus=1，且handler=质检子任务对应的质检员ID；
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+        	
+        	 builder.append(" AND stage:7 AND t_dEditStatus:1 and handler:"+cheker+"");
+        	 
+        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
+        }
+	}
 
-        return builder.toString();
-    }
 
     public String getSnapShot(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
@@ -93,17 +264,17 @@ public class TipsRequestParam {
         builder.append(" AND s_sourceType:" + sourceType);
 
 
-        if(workStatus == 0) {//待作业
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
             builder.append(" AND ((t_tipStatus:2");
             builder.append(" AND stage:(1 5 6)");
             builder.append(")");
             //接边Tips
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-        }else if(workStatus == 1) {//有问题待确认
+        }else if(workStatus ==TipsWorkStatus.WORK_HAS_PROBLEM ) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
         }else if(workStatus == 2) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
-        }else if(workStatus == 9) {//全部
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
             allBuilder.append(" AND ");
             allBuilder.append("(");
@@ -120,7 +291,26 @@ public class TipsRequestParam {
             allBuilder.append(")");
 
             builder.append(allBuilder);
-        }
+        } 
+        //1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+        	
+       	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+       	 
+       }
+       //日编已质检tips：取stage=7，且t_dEditStatus=2
+       else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+       	
+    	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+       	 
+     	
+       }
+       //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+       else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+       	
+    	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+       	 
+       }
 
         return builder.toString();
     }
@@ -393,18 +583,23 @@ public class TipsRequestParam {
     }
 
     private StringBuilder getSolrStringArrayQuery(StringBuilder builder, JSONArray stringArray, String fieldName) {
-        if(builder.length() > 0) {
-            builder.append(" AND");
+        
+        if(stringArray!=null){
+        	
+        	 if(builder.length() > 0) {
+                 builder.append(" AND");
+             }
+        	 builder.append(" " + fieldName + ":(");
+             for (int i = 0; i < stringArray.size(); i++) {
+                 String fieldValue = stringArray.getString(i);
+                 if (i > 0) {
+                     builder.append(" ");
+                 }
+                 builder.append(fieldValue);
+             }
+             builder.append(")");
         }
-        builder.append(" " + fieldName + ":(");
-        for (int i = 0; i < stringArray.size(); i++) {
-            String fieldValue = stringArray.getString(i);
-            if (i > 0) {
-                builder.append(" ");
-            }
-            builder.append(fieldValue);
-        }
-        builder.append(")");
+       
         return builder;
     }
 

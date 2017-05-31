@@ -294,27 +294,50 @@ public class TipsRequestParam {
                     }
                 }
             }else {//web 刘哲
-                String workStatus = null;
+                StringBuilder webBuilder = new StringBuilder();
+                JSONArray workStatus = null;
                 if(jsonReq.containsKey("workStatus")) {
-                    workStatus = String.valueOf(jsonReq.getInt("workStatus"));
+                    workStatus = jsonReq.getJSONArray("workStatus");
                 }
 
-                if(StringUtils.isEmpty(workStatus) || workStatus.equals("9")) {
-                    if(builder.length() > 0) {
-                        builder.append(" AND t_tipStatus:2");
-                    }else{
-                        builder.append("t_tipStatus:2");
+                if(workStatus == null || workStatus.contains(9)
+                        || (workStatus.contains(0) && workStatus.contains(1) && workStatus.contains(2))) {
+                    if(webBuilder.length() > 0) {
+                        webBuilder.append(" OR ");
                     }
-                }else if(workStatus.equals("0")) {
-                    builder.append(" AND ((t_tipStatus:2");
-                    builder.append(" AND stage:(1 5 6)");
+                    webBuilder.append("(t_tipStatus:2)");
+                }else {
+                    if (workStatus.contains(0)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(((t_tipStatus:2");
+                        webBuilder.append(" AND stage:(1 5 6)");
+                        webBuilder.append(")");
+                        //接边Tips
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                    }
+                    if (workStatus.contains(1)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(stage:2 AND t_dEditStatus:1)");
+                    }
+                    if (workStatus.contains(2)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(stage:2 AND t_dEditStatus:2)");
+                    }
+                }
+
+                if(webBuilder.length() > 0) {
+                    if(builder.length() > 0) {
+                        builder.append(" AND ");
+                    }
+                    builder.append("(");
+                    builder.append(webBuilder);
                     builder.append(")");
-                    //接边Tips
-                    builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-                }else if(workStatus.equals("1")) {
-                    builder.append(" AND stage:2 AND t_dEditStatus:1");
-                }else if(workStatus.equals("2")) {
-                    builder.append(" AND stage:2 AND t_dEditStatus:2");
                 }
             }
         }

@@ -2576,79 +2576,73 @@ public class SubtaskService {
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
-	 * @param subtaskId
-	 * @return
-	 * @throws ServiceException 
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
 	 */
-	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT T.GROUP_ID, G.GROUP_NAME          ");
-			sb.append("  FROM TASK T, SUBTASK S, USER_GROUP G   ");
-			sb.append(" WHERE S.TASK_ID = T.TASK_ID             ");
-			sb.append("   AND T.GROUP_ID = G.GROUP_ID           ");
-			sb.append("   AND S.SUBTASK_ID = " + subtaskId);
 	
-			String selectSql = sb.toString();
-			log.info("getGroupNameBySubtaskId SQL："+sb.toString());
+			String selectSql = "SELECT S.SUBTASK_ID,"
+					+ "       S.EXE_USER_ID,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       T.GROUP_ID,"
+					+ "       G.GROUP_NAME,"
+					+ "       F.FINISHED_ROAD,"
+					+ "       S.NAME           SUBTASK_NAME,"
+					+ "       T.NAME           TASK_NAME"
+					+ "  FROM TASK                     T,"
+					+ "       SUBTASK                  S,"
+					+ "       USER_GROUP               G,"
+					+ "       SUBTASK                  SQ,"
+					+ "       USER_INFO                I,"
+					+ "       FM_STAT_OVERVIEW_SUBTASK F"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID"
+					+ "   AND S.EXE_USER_ID = I.USER_ID"
+					+ "   AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   AND S.QUALITY_SUBTASK_ID = SQ.SUBTASK_ID"
+					+ "   AND SQ.SUBTASK_ID = "+qualitySubtaskId;
+			log.info("getCommonSubtaskByQualitySubtask SQL："+selectSql);
 			
 
-			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
-				public String handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
+				public Map<String, String> handle(ResultSet rs) throws SQLException {
 					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 					if (rs.next()) {
-						String groupName = rs.getString("GROUP_NAME");						
-						return groupName;
+						Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+						return returnMap;
 					}
 					return null;
 				}	
 			};
-			log.info("queryByTaskId sql:" + sb.toString());
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getGroupNameBySubtaskId，原因为:" + e.getMessage(), e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-
-	/**
-	 * @param subtaskId
-	 * @return
-	 * @throws ServiceException 
-	 */
-	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-	
-			String selectSql = "SELECT FSOS.FINISHED_ROAD FROM FM_STAT_OVERVIEW_SUBTASK FSOS WHERE FSOS.SUBTASK_ID = " + subtaskId;
-			log.info("getGroupNameBySubtaskId SQL："+selectSql);
-			
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					if (rs.next()) {
-						int finishedRoadNum = rs.getInt("FINISHED_ROAD");						
-						return finishedRoadNum;
-					}
-					return 0;
-				}	
-			};
-			return run.query(conn, selectSql,rsHandler);			
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("getTotalWorkBySubtaskId，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

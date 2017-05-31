@@ -20,7 +20,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  * @version 1.0
  * 
  * */
-public class InitDealershipSourceData {
+public class InitDealershipChainTable {
 
 	public static void main(String[] args) throws Exception {
 
@@ -32,15 +32,15 @@ public class InitDealershipSourceData {
 			conn = DBConnector.getInstance().getMetaConnection();
 			
 			//查询元数据库中的数据
-			List<Map<String,Object>> initDataList = InitDealershipSourceData.getinitChainData(conn);
+			List<Map<String,Object>> initDataList = InitDealershipChainTable.getinitChainData(conn);
 			
 			if(initDataList.size() > 0){
 				//代理店数据库
 				DEconn = DBConnector.getInstance().getConnectionById(399);
 				//删除代理店source表中的数据
-				InitDealershipSourceData.deletChainDataBeforInit(DEconn);
+				InitDealershipChainTable.deletChainDataBeforInit(DEconn);
 				//初始化source表
-				InitDealershipSourceData.initChainTable(initDataList, DEconn);
+				InitDealershipChainTable.initChainTable(initDataList, DEconn);
 			}
 		} catch (SQLException e) {
 			DbUtils.rollbackAndClose(conn);

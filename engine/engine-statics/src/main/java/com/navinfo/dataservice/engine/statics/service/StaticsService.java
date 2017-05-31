@@ -489,7 +489,7 @@ public class StaticsService {
 			int taskId = subtask.getTaskId();
 			int cityId = 0;
 			try {
-				cityId = api.queryCityIdByTaskId(taskId);
+				//cityId = api.queryCityIdByTaskId(taskId);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

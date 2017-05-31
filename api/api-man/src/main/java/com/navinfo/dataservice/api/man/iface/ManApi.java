@@ -187,7 +187,21 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception;
-	public String getGroupNameBySubtaskId(int subtaskId) throws Exception;
-	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws Exception;
+	/**
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
+	 */
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId)
+			throws Exception;
 }
 

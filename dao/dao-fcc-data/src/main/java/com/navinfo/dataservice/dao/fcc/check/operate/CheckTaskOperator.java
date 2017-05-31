@@ -65,15 +65,15 @@ public class CheckTaskOperator {
 			conn = DBConnector.getInstance().getCheckConnection();
 
 			pst = conn.prepareStatement(INSERT_SQL);
-			pst.setInt(0, task.getTaskId());
-			pst.setString(1, task.getTaskName());
-			pst.setString(2, task.getSubTaskName());
-			pst.setString(3, task.getWokerInfo());
-			pst.setString(4, task.getWorkGroup());
-			pst.setString(5, task.getCheckInfo());
-			pst.setInt(6, task.getWorkTotalCount());
-			pst.setInt(7, task.getCheckTotalCount());
-			pst.setInt(8, task.getCheckStatus());
+			pst.setInt(1, task.getTaskId());
+			pst.setString(2, task.getTaskName());
+			pst.setString(3, task.getSubTaskName());
+			pst.setString(4, task.getWokerInfo());
+			pst.setString(5, task.getWorkGroup());
+			pst.setString(6, task.getCheckInfo());
+			pst.setInt(7, task.getWorkTotalCount());
+			pst.setInt(8, task.getCheckTotalCount());
+			pst.setInt(9, task.getCheckStatus());
 			pst.execute();
 
 			return task;
@@ -83,9 +83,39 @@ public class CheckTaskOperator {
 			throw new Exception( e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(pst);
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
+	}
+
+
+	/**
+	 * @Description:关闭质检任务，修改质检任务状态为：已完成
+	 * @param checkTaskId
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-5-31 下午3:59:08
+	 */
+	public void closeTask(int checkTaskId) throws Exception {
+		
+		String updateSql="UPDATE CHECK_TASK SET CHECK_STATUS=1 WHERE TASK_ID=?";
+		PreparedStatement pst = null;
+		Connection conn = null;
+
+		try {
+			conn = DBConnector.getInstance().getCheckConnection();
+			pst = conn.prepareStatement(updateSql);
+			pst.setInt(1, checkTaskId);
+			pst.execute();
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error( e.getMessage(), e);
+			throw new Exception( e.getMessage(), e);
+		} finally {
+			DbUtils.closeQuietly(pst);
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+		
 	}
 
 

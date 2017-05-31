@@ -3,6 +3,7 @@ package com.navinfo.dataservice.dao.fcc.check.model.rowmapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 
 /** 
@@ -34,9 +35,9 @@ public class CheckWrongRowMapper {
 		wrong.setReason(rs.getString("REASON"));
 		wrong.setErContent(rs.getString("ER_CONTENT"));
 		wrong.setQuRank(rs.getString("QU_RANK"));
-		wrong.setWorkTime(rs.getTimestamp("WORK_TIME"));
-		wrong.setCheckTime(rs.getTimestamp("CHECK_TIME"));
-		wrong.setIsPrefer(rs.getString("IS_PREFER"));
+		wrong.setWorkTime(DateUtils.format(rs.getTimestamp("WORK_TIME"), "yyyyMMddHHmmss") );
+		wrong.setCheckTime(DateUtils.format(rs.getTimestamp("CHECK_TIME"), "yyyyMMddHHmmss")  );
+		wrong.setIsPrefer(rs.getInt("IS_PREFER"));
 		
 		return wrong;
 	}

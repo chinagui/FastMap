@@ -73,7 +73,7 @@ public class CheckResultOperator {
 			throw new Exception("保存抽检结果出错，" + e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(pst);
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 		

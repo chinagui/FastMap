@@ -12,17 +12,17 @@ import java.util.Date;
 public class CheckWrong {
 	
 	
-	private String logId;
-	private int checkTaskId;
-	private String tipsCode;
-	private String tipsRowkey;
-	private String quDesc;
-	private String reason;
-	private String erContent;
-	private String quRank;
-	private Date workTime;
-	private Date checkTime;
-	private String isPrefer;
+	private String logId; //问题记录ID 后台生成
+	private int checkTaskId; //质检任务号
+	private String tipsCode; //tips类型
+	private String tipsRowkey; //tips rowkey
+	private String quDesc; //问题描述
+	private String reason; //问题原因
+	private String erContent;//错误内容
+	private String quRank; //错误等级
+	private String workTime; //作业时间 后台自动获取
+	private String checkTime; //质检时间  后台自动获取
+	private int isPrefer; //是否倾向性
 	
 	
 	
@@ -123,46 +123,45 @@ public class CheckWrong {
 	public void setQuRank(String quRank) {
 		this.quRank = quRank;
 	}
+	
+	
+	
 	/**
 	 * @return the workTime
 	 */
-	public Date getWorkTime() {
+	public String getWorkTime() {
 		return workTime;
 	}
 	/**
 	 * @param workTime the workTime to set
 	 */
-	public void setWorkTime(Date workTime) {
+	public void setWorkTime(String workTime) {
 		this.workTime = workTime;
 	}
-	
-	
-	
 	/**
 	 * @return the checkTime
 	 */
-	public Date getCheckTime() {
+	public String getCheckTime() {
 		return checkTime;
 	}
 	/**
 	 * @param checkTime the checkTime to set
 	 */
-	public void setCheckTime(Date checkTime) {
+	public void setCheckTime(String checkTime) {
 		this.checkTime = checkTime;
 	}
 	/**
 	 * @return the isPrefer
 	 */
-	public String getIsPrefer() {
+	public int getIsPrefer() {
 		return isPrefer;
 	}
 	/**
 	 * @param isPrefer the isPrefer to set
 	 */
-	public void setIsPrefer(String isPrefer) {
+	public void setIsPrefer(int isPrefer) {
 		this.isPrefer = isPrefer;
 	}
-	
 	
 	
 	

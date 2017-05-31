@@ -59,21 +59,11 @@ public class TipsCheckController extends BaseController {
             }
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			//输入：质检任务号、作业子任务号、作业任务范围（grids）、作业员id
-			int checkTaskId=jsonReq.getInt("checkTaskId"); //质检任务号
+			int checkTaskId=jsonReq.getInt("subTaskId"); //质检任务号
 			
-			int subTaskId=jsonReq.getInt("subTaskId");//作业任务号
+			int checkerId=jsonReq.getInt("checkerId");//质检编号
 			
-			int workerId=jsonReq.getInt("workerId");//作业员编号
-			
-			String workerName=jsonReq.getString("workerName");//作业员姓名
-			
-			int checkerId=jsonReq.getInt("workerId");//质检编号
-			
-			String checkerName=jsonReq.getString("checkerName");//作业员信命
-			
-			String taskName=jsonReq.getString("taskName");//任务名称
-			
-			String subTaskName=jsonReq.getString("subTaskName");//子任务名称
+			String checkerName=jsonReq.getString("checkerName");//作业员姓名
 
 			JSONArray grids = jsonReq.getJSONArray("grids"); //作业子任务范围
 			
@@ -81,29 +71,60 @@ public class TipsCheckController extends BaseController {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 			
-			if (StringUtils.isEmpty(workerName)) {
-                throw new IllegalArgumentException("参数错误:workerName不能为空。");
+			if (StringUtils.isEmpty(checkerName)) {
+                throw new IllegalArgumentException("参数错误:checkerName不能为空。");
             }
 			
 			if (StringUtils.isEmpty(checkerName)) {
                 throw new IllegalArgumentException("参数错误:checkerName不能为空。");
             }
 			
-			if (StringUtils.isEmpty(taskName)) {
-                throw new IllegalArgumentException("参数错误:taskName不能为空。");
-            }
-			if (StringUtils.isEmpty(subTaskName)) {
-                throw new IllegalArgumentException("参数错误:subTaskName不能为空。");
-            }
-			
 			TipsExtract extract = new TipsExtract();
 			
 			////返回抽取后，抽取总量和tips类型数
-			JSONObject result=extract.doExtract(jsonReq);
+			JSONObject result=extract.doExtract(checkTaskId,checkerId,checkerName,grids);
 			
 			logger.debug("result:"+result);
 			
 			return new ModelAndView("jsonView", success(result));
+
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+	}
+	
+	
+	/**
+	 * @Description:tip抽取
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 * @author: y
+	 * @time:2017-5-26 上午10:41:40
+	 */
+	@RequestMapping(value = "/tip/check/close")
+	public ModelAndView checkTaskClose(HttpServletRequest request
+			) throws ServletException, IOException {
+
+		String parameter = request.getParameter("parameter");
+
+		try {
+			logger.debug("/tip/check/close:");
+			
+			logger.debug("parameter:"+parameter);
+			
+		    if (StringUtils.isEmpty(parameter)) {
+                throw new IllegalArgumentException("parameter参数不能为空。");
+            }
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			int checkTaskId=jsonReq.getInt("taskId"); //质检任务号
+			TipsCheckOperator operate=new TipsCheckOperator();
+			operate.closeTask(checkTaskId);
+			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
 
@@ -242,7 +263,7 @@ public class TipsCheckController extends BaseController {
             }
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			int checkTaskId=jsonReq.getInt("checkTaskId"); //质检任务号
+			int checkTaskId=jsonReq.getInt("subTaskId"); //质检任务号
 			
 			String rowkey =jsonReq.getString("rowkey");//tips rowkey
 
@@ -324,7 +345,6 @@ public class TipsCheckController extends BaseController {
 	
 	
 	
-	
 	/**
 	 * @Description:质检问题记录查询(根据质检任务号，tipsRowkey查询质检问题记录)
 	 * @param request
@@ -394,7 +414,7 @@ public class TipsCheckController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-			logger.debug("/tip/check/updateWrong:");
+			logger.debug("/tip/check/deleteWrong:");
 			
 			logger.debug("parameter:"+parameter);
 			

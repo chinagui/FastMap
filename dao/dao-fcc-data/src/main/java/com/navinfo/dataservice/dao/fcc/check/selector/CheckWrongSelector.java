@@ -59,9 +59,9 @@ public class CheckWrongSelector {
 			
 			pst=conn.prepareStatement(sql);
 			
-			pst.setInt(0, checkTaskId);
+			pst.setInt(1, checkTaskId);
 			
-			pst.setString(1, rowkey);
+			pst.setString(2, rowkey);
 			
 			rs=pst.executeQuery();
 			
@@ -131,7 +131,7 @@ public class CheckWrongSelector {
 			
 			conn=DBConnector.getInstance().getCheckConnection();
 			QueryRunner run = new QueryRunner();
-			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.logId=?",logId);	
+			count = run.queryForInt(conn, "SELECT count(1) FROM check_wrong g WHERE g.log_Id=?",logId);	
 		}catch (Exception e) {
 			throw e;
 		}finally{

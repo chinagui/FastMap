@@ -48,15 +48,16 @@ public class TipsExtract {
 	/**
 	 * @Description:tips抽取：抽取当前质检任务所对应的作业任务的，已作业完成、handler=作业员、作业子任务范围内（grid+task过滤）
 	 * @param checkTaskId
-	 * @param subTaskId
-	 * @param workerId
+	 * @param checkerId
+	 * @param checkerName
 	 * @param grids
 	 * @return
 	 * @author: y
 	 * @throws Exception 
 	 * @time:2017-5-26 上午11:02:48
 	 */
-	public JSONObject doExtract(JSONObject jsonReq) throws Exception {
+	public JSONObject doExtract(int checkTaskId, int checkerId,
+			String checkerName, JSONArray grids) throws Exception {
 		
 		JSONObject result=new JSONObject();
 		
@@ -67,7 +68,10 @@ public class TipsExtract {
 		
 		try {
 			
-			int checkTaskId=jsonReq.getInt("checkTaskId"); //质检任务号
+			// 调用 manapi 获取 任务类型、及任务号
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			JSONObject  jsonReq=new JSONObject(); //?????
 			
 			int subTaskId=jsonReq.getInt("subTaskId");//作业任务号
 			
@@ -75,15 +79,10 @@ public class TipsExtract {
 			
 			String workerName=jsonReq.getString("workerName");//作业员姓名
 			
-			int checkerId=jsonReq.getInt("checkerId");//质检编号
-			
-			String checkerName=jsonReq.getString("checkerName");//作业员信命
-			
 			String taskName=jsonReq.getString("taskName");//任务名称
 			
 			String subTaskName=jsonReq.getString("subTaskName");//子任务名称
 
-			JSONArray grids = jsonReq.getJSONArray("grids"); //作业子任务范围
 			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
@@ -151,7 +150,6 @@ public class TipsExtract {
 			task.setCheckInfo(checkerName+checkerId);
 			
 			// 调用 manapi 获取 任务类型、及任务号
-			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			String workGroup=manApi.getGroupNameBySubtaskId(subTaskId);
 			
@@ -280,6 +278,8 @@ public class TipsExtract {
 		TipsRequestParam param = new TipsRequestParam();
 		
         String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,subTaskId,workerId,checkerId,rowkeyList);
+        
+        System.out.println(solrQuery);
         
 		List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
 

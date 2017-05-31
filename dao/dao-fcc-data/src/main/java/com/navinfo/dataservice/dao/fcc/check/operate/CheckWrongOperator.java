@@ -8,7 +8,9 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.log4j.Logger;
 
+import com.drew.lang.DateUtil;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.commons.util.UuidUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
@@ -46,8 +48,8 @@ public class CheckWrongOperator {
 			"   ?,                                          \n" + // reason
 			"   ?,                                      	 \n" + // content
 			"   ?,                                          \n" + // level
-			"   ?									         \n" + // workerDate
-			"   ?       								    \n" + // checkDate
+			"   ?,									         \n" + // workerDate
+			"   ?,       								    \n" + // checkDate
 			"   ?)                                         \n"; // isPrefer
 
 	public CheckWrongOperator() {
@@ -76,23 +78,23 @@ public class CheckWrongOperator {
 
 			wrong.setLogId(uuid);
 
-			wrong.setCheckTime(new Date());
+			wrong.setCheckTime(DateUtils.format(new Date(),"yyyyMMddHHmmss"));
+			
+			
 
 			pst = conn.prepareStatement(INSERT_SQL);
 
-			pst.setString(0, uuid);
-			pst.setInt(1, wrong.getCheckTaskId());
-			pst.setString(4, wrong.getTipsCode());
-			pst.setString(5, wrong.getTipsRowkey());
-			pst.setString(6, wrong.getQuDesc());
-			pst.setString(7, wrong.getReason());
-			pst.setString(8, wrong.getErContent());
-			pst.setString(9, wrong.getQuRank());
-			pst.setTimestamp(11, new java.sql.Timestamp(wrong.getWorkTime()
-					.getTime()));
-			pst.setTimestamp(11, new java.sql.Timestamp(wrong.getWorkTime()
-					.getTime()));
-			pst.setString(14, wrong.getIsPrefer());
+			pst.setString(1, uuid);
+			pst.setInt(2, wrong.getCheckTaskId());
+			pst.setString(3, wrong.getTipsCode());
+			pst.setString(4, wrong.getTipsRowkey());
+			pst.setString(5, wrong.getQuDesc());
+			pst.setString(6, wrong.getReason());
+			pst.setString(7, wrong.getErContent());
+			pst.setString(8, wrong.getQuRank());
+			pst.setTimestamp(9, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getWorkTime(), "yyyyMMddHHmmss") ));
+			pst.setTimestamp(10, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getCheckTime(), "yyyyMMddHHmmss")));
+			pst.setInt(11, wrong.getIsPrefer());
 
 			pst.execute();
 
@@ -103,7 +105,7 @@ public class CheckWrongOperator {
 			throw new Exception( e.getMessage(), e);
 		} finally {
 			DbUtils.closeQuietly(pst);
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 
 	}
@@ -151,12 +153,7 @@ public class CheckWrongOperator {
 				setSql.append(" QU_RANK = '" + wrong.getQuRank()+ "',");
 			}
 		
-			if (StringUtils.isNotEmpty(wrong.getQuDesc())) {
-		
-				setSql.append(" QU_DESC = '" + wrong.getQuDesc() + "',");
-			}
-		
-			if (StringUtils.isNotEmpty(wrong.getIsPrefer())) {
+			if (wrong.getIsPrefer()==0||wrong.getIsPrefer()==1) {
 		
 				setSql.append(" IS_PREFER = '" + wrong.getIsPrefer() + "'");
 			}
@@ -170,7 +167,7 @@ public class CheckWrongOperator {
 			log.error( e.getMessage(), e);
 			throw new Exception( e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -200,7 +197,7 @@ public class CheckWrongOperator {
 			log.error( e.getMessage(), e);
 			throw new Exception(e.getMessage(), e);
 		} finally {
-			DbUtils.closeQuietly(conn);
+			DbUtils.commitAndCloseQuietly(conn);
 		}
 		
 	}

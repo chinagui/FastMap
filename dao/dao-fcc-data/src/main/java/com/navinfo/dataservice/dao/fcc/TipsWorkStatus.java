@@ -17,11 +17,9 @@ public  class TipsWorkStatus {
 		
 		public static int PREPARED_CHECKING = 4;//待质检
 		
-		public static int CHECK_FINISHED = 5;//已质检
+		public static int CHECK_HAS_FINISHED = 5;//已质检
 		
-		public static int CHECK_HAS_FINISHED = 6;//已质检
-		
-		public static int CHECK_HAS_PROBLEM = 7;//日编质检有问题待确认
+		public static int CHECK_HAS_PROBLEM = 6;//日编质检有问题待确认
 
 		public static int ALL = 9;//全部
 }

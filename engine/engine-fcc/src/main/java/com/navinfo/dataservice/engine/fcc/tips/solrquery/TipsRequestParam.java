@@ -186,57 +186,10 @@ public class TipsRequestParam {
 	 */
 	private void getWokerStatusFilterQuery(int woker, int cheker,
 			int workStatus, StringBuilder builder, JSONArray rowkeyList) {
-		if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
-            builder.append(" AND ((t_tipStatus:2");
-            builder.append(" AND stage:(1 5 6)");
-            builder.append(")");
-            //接边Tips
-            builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-        }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
-            builder.append(" AND stage:2 AND t_dEditStatus:1");
-        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
-            builder.append(" AND stage:2 AND t_dEditStatus:2");
-        }else if(workStatus == TipsWorkStatus.ALL) {//全部
-            StringBuilder allBuilder = new StringBuilder();
-            allBuilder.append(" AND ");
-            allBuilder.append("(");
-
-            allBuilder.append("((t_tipStatus:2");
-            allBuilder.append(" AND stage:(1 5 6)");
-            allBuilder.append(")");
-            allBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-
-            allBuilder.append(" OR ");
-
-            allBuilder.append("(stage:2 AND t_dEditStatus:(1 2))");
-
-            allBuilder.append(")");
-
-            builder.append(allBuilder);
-        }
-        //质检相关
         //1.日编待质检tips：取stage=2，且t_dEditStatus=2，且handler=质检子任务对应的日编子任务所分配的作业员ID的tips；
-        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
         	
-        	 builder.append(" AND stage:2 AND t_dEditStatus:2 and handler:"+woker+"");
+        	 builder.append(" AND stage:2 AND t_dEditStatus:2 AND handler:"+woker+"");
         	 
-        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
-        }
-        //日编已质检tips：取stage=7，且t_dEditStatus=2，且handler=质检子任务对应的质检员ID；
-        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
-        	
-        	 builder.append(" AND stage:7 AND t_dEditStatus:2 and handler:"+cheker+"");
-        	 
-        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
-      	
-        }
-        //③日编质检有问题待确认tips: 取stage=7，且t_dEditStatus=1，且handler=质检子任务对应的质检员ID；
-        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
-        	
-        	 builder.append(" AND stage:7 AND t_dEditStatus:1 and handler:"+cheker+"");
-        	 
-        	 this.getSolrStringArrayQuery(builder,rowkeyList, "id");
-        }
 	}
 
 

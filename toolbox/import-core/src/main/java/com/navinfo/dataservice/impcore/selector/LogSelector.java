@@ -106,6 +106,18 @@ public abstract class LogSelector {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	public List<Integer> getGrids() {
+		return grids;
+	}
+	public void setGrids(List<Integer> grids) {
+		this.grids = grids;
+	}
+	public Date getStopTime() {
+		return stopTime;
+	}
+	public void setStopTime(Date stopTime) {
+		this.stopTime = stopTime;
+	}
 	public List<Integer> getFilterGrids() {
 		return filterGrids;
 	}

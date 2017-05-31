@@ -294,7 +294,7 @@ public class UploadService {
 	    connection.setDoOutput(true);
 	    connection.setRequestMethod("POST");
 	    connection.addRequestProperty("FileName", fileName);
-//	    connection.addRequestProperty("subtaskId","123");
+//	    connection.addRequestProperty("subTaskId","123");
 	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
 	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
 	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());

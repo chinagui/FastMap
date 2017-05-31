@@ -1,6 +1,7 @@
 package com.navinfo.dataservice.control.column.core;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -59,7 +60,10 @@ public class ColumnCoreControl {
 				comSubTaskId=taskId;
 			}
 			//获取查询条件信息
-			JSONObject conditions = jsonReq.getJSONObject("conditions");
+			JSONObject conditions=new JSONObject();
+			if(jsonReq.containsKey("conditions")){
+				conditions = jsonReq.getJSONObject("conditions");
+			}
 
 			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
@@ -245,7 +249,7 @@ public class ColumnCoreControl {
 //			int endRow = pageNo * pageSize;
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
@@ -253,7 +257,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
-			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,subtask.getSubtaskId(),isQuality);
+			JSONObject data= selector.columnQuery(status, secondWorkItem, userId,subtask.getSubtaskId());
 			List<Integer> pidList =new ArrayList<Integer>();
 			if(data.get("pidList") instanceof List){ 
 				pidList = (List) data.get("pidList"); 
@@ -266,7 +270,7 @@ public class ColumnCoreControl {
 				return result;
 			}
 			//获取数据详细字段
-			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId,isQuality);
+			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId);
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
 			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules);
@@ -331,7 +335,7 @@ public class ColumnCoreControl {
 
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
@@ -340,7 +344,7 @@ public class ColumnCoreControl {
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
 
-			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, subtask.getSubtaskId(),isQuality);
+			return ixPoiColumnStatusSelector.secondWorkStatistics(firstWorkItem, userId, type, subtask.getSubtaskId());
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -526,7 +530,7 @@ public class ColumnCoreControl {
 			ManApi apiService=(ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
-			Integer isQuality = subtask.getIsQuality();
+			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
 			}
@@ -647,7 +651,7 @@ public class ColumnCoreControl {
 			String firstWorkItem = jsonReq.containsKey("firstWorkItem")?jsonReq.getString("firstWorkItem"):null;
 			String secondWorkItem = jsonReq.containsKey("secondWorkItem")?jsonReq.getString("secondWorkItem"):null;
 			String errorType = jsonReq.getString("errorType");
-			int errorLevel = jsonReq.getInt("errorLevel");
+			String errorLevel = jsonReq.getString("errorLevel");
 			String problemDesc  = jsonReq.getString("problemDesc");
 			String techGuidance = jsonReq.getString("techGuidance");
 			String techScheme = jsonReq.getString("techScheme");

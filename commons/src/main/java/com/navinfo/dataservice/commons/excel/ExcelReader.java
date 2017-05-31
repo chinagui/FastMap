@@ -125,6 +125,55 @@ public class ExcelReader {
 	}
 	
 	/**
+	 * @Title: readExcelContent
+	 * @Description: 根据表头读取excel文件
+	 * @param excelHeader
+	 * @return
+	 * @throws Exception  List<Map<String,Object>>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年5月27日 下午3:47:32 
+	 */
+	public List<Map<String, Object>> readExcelContent(Map<String,String> excelHeader) throws Exception{
+		if(wb==null){
+			throw new Exception("Workbook对象为空！");
+		}
+		List<Map<String, Object>> list = new ArrayList<>();
+		
+		sheet = wb.getSheetAt(0);
+		//得到总行数
+		int rowNum = sheet.getLastRowNum();
+		row = sheet.getRow(0);
+		//获取总列数
+		int colNum = row.getPhysicalNumberOfCells();
+		
+		System.out.println(rowNum+"行; "+colNum+"列;");
+		
+		// 正文内容应该从第二行开始,第一行为表头的标题
+		for (int i = 1; i <= rowNum; i++) {
+			row = sheet.getRow(i);
+			
+//			int j = 0;
+			Map<String, Object> cellValue = new HashMap<String, Object>();
+			
+			//从第1列开始
+			for(int j = 0; j < colNum; j++ ){
+				//获取对应列的表头
+				String colum = sheet.getRow(0).getCell(j).getStringCellValue();
+				System.out.println("i:"+i+" j:"+j+" "+colum);
+				if(excelHeader.containsKey(colum)){
+					System.out.println("1i:"+i+" 1j:"+j+" "+colum);
+					//获取每列信息并赋值给表头(注:这里返回的数据都是字符串类型,在转实体类时需要将特殊字段转换具体类型)
+					cellValue.put(excelHeader.get(colum), getCellFormatValue(row.getCell(j)));
+				}
+			}
+			
+			list.add(cellValue);
+		}
+		return list;
+	}
+	
+	/**
 	 * 读取Excel表头作为map的key值
 	 * 
 	 * @param 

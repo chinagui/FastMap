@@ -294,10 +294,27 @@ public class TipsRequestParam {
                     }
                 }
             }else {//web 刘哲
-                if(builder.length() > 0) {
-                    builder.append(" AND t_tipStatus:2");
-                }else{
-                    builder.append("t_tipStatus:2");
+                String workStatus = null;
+                if(jsonReq.containsKey("workStatus")) {
+                    workStatus = String.valueOf(jsonReq.getInt("workStatus"));
+                }
+
+                if(StringUtils.isEmpty(workStatus) || workStatus.equals("9")) {
+                    if(builder.length() > 0) {
+                        builder.append(" AND t_tipStatus:2");
+                    }else{
+                        builder.append("t_tipStatus:2");
+                    }
+                }else if(workStatus.equals("0")) {
+                    builder.append(" AND ((t_tipStatus:2");
+                    builder.append(" AND stage:(1 5 6)");
+                    builder.append(")");
+                    //接边Tips
+                    builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
+                }else if(workStatus.equals("1")) {
+                    builder.append(" AND stage:2 AND t_dEditStatus:1");
+                }else if(workStatus.equals("2")) {
+                    builder.append(" AND stage:2 AND t_dEditStatus:2");
                 }
             }
         }
@@ -310,14 +327,35 @@ public class TipsRequestParam {
 
     public String getTipsCheck(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        JSONArray grids = jsonReq.getJSONArray("grids");
-        String wkt = GridUtils.grids2Wkt(grids);
+//        JSONArray grids = jsonReq.getJSONArray("grids");
+//        String wkt = GridUtils.grids2Wkt(grids);
         int subtaskId = jsonReq.getInt("subtaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        builder.append("wkt:\"intersects(" + wkt + ")\"");
+        if(jsonReq.containsKey("type")) {
+            builder.append("s_sourceType:" + jsonReq.getString("type"));
+        }
+
+//        builder.append("wkt:\"intersects(" + wkt + ")\"");
+
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        if (taskSet != null && taskSet.size() > 0) {
+            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        }
+
+        return builder.toString();
+    }
+
+    public String getTipsCheckUnCommit(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("-t_tipStatus:2");
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         if (taskSet != null && taskSet.size() > 0) {
@@ -361,9 +399,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrIntSetQuery(StringBuilder builder, Set<Integer> intSet, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND");
+            builder.append(" AND ");
         }
-        builder.append(" " + fieldName + ":(");
+        builder.append(fieldName + ":(");
         int i = 0;
         for (Integer filedValue : intSet) {
             if (i > 0) {
@@ -378,9 +416,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrIntArrayQuery(StringBuilder builder, JSONArray intArray, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND");
+            builder.append(" AND ");
         }
-        builder.append(" " + fieldName + ":(");
+        builder.append(fieldName + ":(");
         for (int i = 0; i < intArray.size(); i++) {
             int fieldValue = intArray.getInt(i);
             if (i > 0) {
@@ -394,9 +432,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrStringArrayQuery(StringBuilder builder, JSONArray stringArray, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND");
+            builder.append(" AND ");
         }
-        builder.append(" " + fieldName + ":(");
+        builder.append(fieldName + ":(");
         for (int i = 0; i < stringArray.size(); i++) {
             String fieldValue = stringArray.getString(i);
             if (i > 0) {

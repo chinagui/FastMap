@@ -136,7 +136,8 @@ public class SubtaskService {
 				dataJson.discard("hasQuality");
 				
 				Subtask qualityBean = createSubtaskBean(userId,dataJson);
-				qualityBean.setName(qualityBean.getName()+"_质检");
+				if(!StringUtils.isEmpty(qualityBean.getName())){
+					qualityBean.setName(qualityBean.getName()+"_质检");}
 				qualityBean.setIsQuality(1);
 				qualityBean.setStatus(2);
 				qualityBean.setExeUserId(qualityExeUserId);
@@ -345,7 +346,8 @@ public class SubtaskService {
 		}else{
 			if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
-				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+				if(!StringUtils.isEmpty(qualitySubtask.getName())){
+					qualitySubtask.setName(qualitySubtask.getName()+"_质检");}
 				qualitySubtask.setSubtaskId(null);
 				qualitySubtask.setExeGroupId(qualityExeGroupId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
@@ -445,7 +447,7 @@ public class SubtaskService {
 		}
 		
 		if(oldSubtask==null){//新建子任务
-			if(StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
+			if(!StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
 			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
 			if(newSubtask.getExeUserId()!=0){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());

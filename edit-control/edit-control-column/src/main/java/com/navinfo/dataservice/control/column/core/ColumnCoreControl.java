@@ -543,7 +543,7 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId);
+			JSONObject result = columnStatusSelector.getColumnCount(subtask, userId,isQuality);
 			
 			return result;
 		} catch (Exception e) {
@@ -651,7 +651,7 @@ public class ColumnCoreControl {
 			String firstWorkItem = jsonReq.containsKey("firstWorkItem")?jsonReq.getString("firstWorkItem"):null;
 			String secondWorkItem = jsonReq.containsKey("secondWorkItem")?jsonReq.getString("secondWorkItem"):null;
 			String errorType = jsonReq.getString("errorType");
-			int errorLevel = jsonReq.getInt("errorLevel");
+			String errorLevel = jsonReq.getString("errorLevel");
 			String problemDesc  = jsonReq.getString("problemDesc");
 			String techGuidance = jsonReq.getString("techGuidance");
 			String techScheme = jsonReq.getString("techScheme");

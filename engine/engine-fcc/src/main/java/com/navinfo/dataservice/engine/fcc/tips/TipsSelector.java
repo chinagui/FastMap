@@ -17,6 +17,7 @@ import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 import com.navinfo.navicommons.geo.computation.CompGridUtil;
 import com.navinfo.navicommons.geo.computation.GeometryUtils;
 import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.Point;
@@ -35,6 +36,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.hbase.async.KeyValue;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1941,9 +1943,40 @@ public class TipsSelector {
 
 	}
 
+    /**
+     * 矢量化检查Tips查询
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
     public List<String> getCheckRowkeyList(String parameter) throws Exception {
         TipsRequestParam param = new TipsRequestParam();
         String query = param.getTipsCheck(parameter);
+        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
+        List rowkeyList = new ArrayList();
+        long totalNum = sdList.getNumFound();
+        if (totalNum <= Integer.MAX_VALUE) {
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                String rowkey = snapshot.getString("id");
+                rowkeyList.add(rowkey);
+            }
+        } else {
+            // 暂先不处理
+        }
+        return rowkeyList;
+    }
+
+    /**
+     * 查询矢量化子任务未提交的数据
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public List<String> getUnCommitRowkeyList(String parameter) throws Exception {
+        TipsRequestParam param = new TipsRequestParam();
+        String query = param.getTipsCheckUnCommit(parameter);
         SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
         List rowkeyList = new ArrayList();
         long totalNum = sdList.getNumFound();
@@ -2045,7 +2078,53 @@ public class TipsSelector {
 		return list;
 	}
 
-	public static void main(String[] args) throws Exception {
+    /**
+     *
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public JSONObject statInfoTask(String parameter) throws Exception {
+        TipsRequestParam param = new TipsRequestParam();
+        String query = param.getTipsCheck(parameter);
+        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
+
+        JSONObject statObj = new JSONObject();
+        //矢量化任务Tips总数
+        long totalNum = sdList.getNumFound();
+        statObj.put("total", totalNum);
+        sdList.clear();
+        sdList = null;
+
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        jsonReq.put("type", "2001");//测线
+        query = param.getTipsCheck(jsonReq.toString());
+        sdList = conn.queryTipsSolrDoc(query, null);
+        totalNum = sdList.getNumFound();
+        statObj.put("total2001", totalNum);
+        double length = 0;
+        if (totalNum <= Integer.MAX_VALUE) {
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                JSONObject geojson = JSONObject.fromObject(snapshot
+                        .getString("g_location"));
+                length += GeometryUtils.getLinkLength(GeoTranslator
+                        .geojson2Jts(geojson));
+            }
+        } else {
+            // 暂先不处理
+        }
+        if(length != 0) {
+            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        }
+        statObj.put("length", length);
+        sdList.clear();
+        sdList = null;
+        return statObj;
+    }
+
+    public static void main(String[] args) throws Exception {
 //        String parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";
 //
 //            JSONObject jsonReq = JSONObject.fromObject(parameter);

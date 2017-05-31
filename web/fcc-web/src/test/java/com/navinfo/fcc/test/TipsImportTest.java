@@ -65,7 +65,7 @@ public class TipsImportTest{
 			AudioImport.importAudio(audioMap, filePath);
 
 			JSONArray patternImageResultImpResult=PatternImageImporter.importImage(filePath + "/"+ "JVImage.txt",filePath +"/JVImage"); //JVImage为模式图的文件夹
-			
+
 			JSONObject result = new JSONObject();
 
 			result.put("total", tipsUploader.getTotal());
@@ -73,7 +73,7 @@ public class TipsImportTest{
 			result.put("failed", tipsUploader.getFailed());
 
 			result.put("reasons", tipsUploader.getReasons());
-			
+
 			result.put("JVImageResult", patternImageResultImpResult);
 			
 

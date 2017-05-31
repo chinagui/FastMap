@@ -287,14 +287,14 @@ public class UploadService {
 	    return result;
 	}
 	
-	public String uploadInfoFile(String urlString, String fileName, String filePath) throws IOException{
+	public String uploadInfoFile(String urlString, String fileName, String filePath,String subtaskId) throws IOException{
 		URL url=new URL(urlString);
 	    HttpURLConnection connection=(HttpURLConnection)url.openConnection();
 	    connection.setDoInput(true);
 	    connection.setDoOutput(true);
 	    connection.setRequestMethod("POST");
 	    connection.addRequestProperty("FileName", fileName);
-//	    connection.addRequestProperty("subTaskId","123");
+	    connection.addRequestProperty("subtaskId",subtaskId);
 	    connection.setRequestProperty("content-type", "text/plain;charset=UTF-8");
 	    connection.setConnectTimeout(Integer.valueOf(SystemConfigFactory.getSystemConfig().getValue(PropConstant.inforTimeOut)));
 	    BufferedOutputStream  out=new BufferedOutputStream(connection.getOutputStream());

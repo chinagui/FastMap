@@ -52,7 +52,7 @@ public class EdgeMatchTipsController extends BaseController {
 			
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			String validataMsg=validatePars(jsonReq,"g_location","content","user");
+			String validataMsg  =validatePars(jsonReq,"g_location","content","user","qSubTaskId");
 			
 			if(validataMsg!=null){
 				
@@ -71,22 +71,17 @@ public class EdgeMatchTipsController extends BaseController {
 				
 				memo=jsonReq.getString("memo");
 			}
-			
-			
-			//String deep = jsonReq.getString("deep");
+
 			
 			if (content==null||content.isEmpty()) {
 				throw new IllegalArgumentException("参数错误：content不能为空。");
 			}
-			
-			
-		/*	if (StringUtils.isEmpty(sourceType)) {
-				throw new IllegalArgumentException("参数错误：sourceType不能为空。");
-			}*/
+
+            int qSubTaskId = jsonReq.getInt("qSubTaskId");
 			
 			EdgeMatchTipsOperator op = new EdgeMatchTipsOperator();
 
-			String rowkey= op.create(g_location, content.toString(), user,memo);
+			String rowkey = op.create(g_location, content.toString(), user, memo, qSubTaskId);
 			
 			JSONObject  data=new JSONObject();
 			

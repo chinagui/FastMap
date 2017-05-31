@@ -312,7 +312,7 @@ public class TaskOperation {
 				insertPart+=" TYPE ";
 				valuePart+=bean.getType();
 			};
-			if (bean!=null&&bean.getLot()!=null && bean.getLot()!=0 && StringUtils.isNotEmpty(bean.getLot().toString())){
+			if (bean!=null&&bean.getLot()!=null && StringUtils.isNotEmpty(bean.getLot().toString())){
 				if(StringUtils.isNotEmpty(insertPart)){insertPart+=" , ";valuePart+=" , ";}
 				insertPart+=" LOT";
 				valuePart+= bean.getLot();

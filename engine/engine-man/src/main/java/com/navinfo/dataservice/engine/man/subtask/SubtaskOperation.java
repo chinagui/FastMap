@@ -187,7 +187,7 @@ public class SubtaskOperation {
 			String subtaskIds = "(" + StringUtils.join(subtaskIdList.toArray(),",") + ")";
 			
 			
-			String selectSql = "SELECT S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
+			String selectSql = "SELECT s.geometry,S.SUBTASK_ID,S.NAME,S.STAGE,S.TYPE,S.EXE_USER_ID,S.EXE_GROUP_ID,s.work_kind,S.STATUS,S.TASK_ID"
 					+ " FROM SUBTASK S"
 					+ " WHERE S.SUBTASK_ID IN " + subtaskIds;
 			
@@ -205,6 +205,16 @@ public class SubtaskOperation {
 						subtask.setStatus(rs.getInt("STATUS"));
 						subtask.setTaskId(rs.getInt("TASK_ID"));
 						subtask.setWorkKind(rs.getInt("WORK_KIND"));
+						STRUCT struct = (STRUCT) rs.getObject("GEOMETRY");
+						String wkt="";
+						try {
+							wkt=GeoTranslator.struct2Wkt(struct);
+							Geometry geometry=GeoTranslator.struct2Jts(struct);
+							subtask.setGeometryJSON(GeoTranslator.jts2Geojson(geometry));
+						} catch (Exception e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						list.add(subtask);
 					}
 					return list;
@@ -1217,14 +1227,14 @@ public class SubtaskOperation {
 				@Override
 				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 					Map<String, Integer> stat = new HashMap<String, Integer>();
-					int unfinish = 0;
+					int finish = 0;
 					int total=0;
 					while(rs.next()){
 						int status=rs.getInt("status");
-						if(status==1){unfinish = rs.getInt("finishNum");}
+						if(status==3){finish = rs.getInt("finishNum");}
 						total+=rs.getInt("finishNum");
 					}
-					stat.put("poiFinish", total-unfinish);
+					stat.put("poiFinish", finish);
 					stat.put("poiTotal", total);
 					return stat;
 				}
@@ -1234,7 +1244,7 @@ public class SubtaskOperation {
 			log.debug("get tips stat");
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdByTaskId(subtask.getTaskId());
+				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));

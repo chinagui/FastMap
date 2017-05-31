@@ -18,6 +18,7 @@ public class StatJobEndHandler implements MsgHandler {
 	@Override
 	public void handle(String message) {
 		try{
+			log.info("stat_job_end:"+message);
 			JSONObject msgObj = JSONObject.fromObject(message);
 			
 			GroupStatJobLauncher.getInstance().exchange(msgObj.getString("timestamp"),msgObj.getString("jobType"));

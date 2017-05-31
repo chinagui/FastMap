@@ -1591,7 +1591,7 @@ public class BlockService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	public JSONObject queryWktByBlockId(int blockId) throws ServiceException {
+	public Map<String,Object> queryWktByBlockId(int blockId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
@@ -1615,8 +1615,15 @@ public class BlockService {
 					}
 					return json;
 				}
+
 			};
-			return run.query(conn, selectSql,rsHandler);
+			
+			Map<Integer,Integer> gridMap = getGridMapByBlockId(conn,blockId);
+			JSONObject geo = run.query(conn, selectSql,rsHandler); 
+			Map<String,Object> result = new HashMap<String,Object>();
+			result.put("geometry", geo);
+			result.put("gridIds", gridMap);
+			return result;
 			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -1624,6 +1631,33 @@ public class BlockService {
 			throw new ServiceException("查询wkt失败，原因为:" + e.getMessage(), e);
 		} finally {
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public Map<Integer, Integer> getGridMapByBlockId(Connection conn, int blockId) throws ServiceException {
+		try {
+			conn = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;
+			log.info("getGridMapByBlockId sql:" + selectSql);
+			
+			ResultSetHandler<Map<Integer, Integer>> rsHandler = new ResultSetHandler<Map<Integer, Integer>>() {
+				public Map<Integer, Integer> handle(ResultSet rs) throws SQLException {
+					Map<Integer, Integer> result = new HashMap<Integer, Integer>();
+					while (rs.next()) {
+						result.put(rs.getInt("GRID_ID"), 1);
+					}
+					return result;
+				}
+
+			};
+			return run.query(conn, selectSql,rsHandler);
+			
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("getGridMapByBlockId:" + e.getMessage(), e);
 		}
 	}
 

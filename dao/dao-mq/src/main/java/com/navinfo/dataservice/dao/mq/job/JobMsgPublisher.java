@@ -101,7 +101,7 @@ public class JobMsgPublisher {
 		JSONObject jobMsg = new JSONObject();
 		jobMsg.put("jobId", jobId);
 		jobMsg.put("statResult", statResult);
-		jobMsg.put("jobTyp", jobType);
+		jobMsg.put("jobType", jobType);
 		jobMsg.put("timestamp", timestamp);
 		MsgPublisher.publish2WorkQueue("stat_job_result", jobMsg.toString());
 	}

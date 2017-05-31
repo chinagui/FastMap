@@ -9,6 +9,7 @@ import com.navinfo.dataservice.dao.glm.selector.AbstractSelector;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.DAOException;
+import com.navinfo.navicommons.exception.ServiceException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
 
@@ -165,14 +166,14 @@ public class CmgBuildfaceSelector extends AbstractSelector {
     }
 
     /**
-     * 计算与指定几何相交的市街图面数量
+     * 计算与指定几何相交的市街图面
      * @param wkt 几何
      * @param isLock 是否加锁
-     * @return 相交面数量
+     * @return 相交面
      */
-    public int countCmgBuildface(String wkt, boolean isLock) throws SQLException {
-        int count = 0;
-        String sql = "SELECT COUNT(1) NUM FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
+    public List<CmgBuildface> listCmgBuildface(String wkt, boolean isLock) throws ServiceException {
+        List<CmgBuildface> list = new ArrayList<>();
+        String sql = "SELECT T.FACE_PID, T.GEOMETRY FROM CMG_BUILDFACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = "
                 + "'TRUE' AND T.U_RECORD <> 2";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;
@@ -181,15 +182,20 @@ public class CmgBuildfaceSelector extends AbstractSelector {
             pstmt.setString(1, wkt);
             resultSet = pstmt.executeQuery();
             while (resultSet.next()) {
-                count = resultSet.getInt("num");
+                CmgBuildface face = new CmgBuildface();
+                ReflectionAttrUtils.executeResultSet(face, resultSet);
+                list.add(face);
             }
         } catch (SQLException e){
             logger.error("计算与指定几何相交的市街图面数量出错", e);
             throw new DAOException(e.getMessage());
+        } catch (Exception e) {
+            logger.error("组转数据出错", e);
+            throw new ServiceException(e.getMessage());
         } finally {
             DBUtils.closeResultSet(resultSet);
             DBUtils.closeStatement(pstmt);
         }
-        return count;
+        return list;
     }
 }

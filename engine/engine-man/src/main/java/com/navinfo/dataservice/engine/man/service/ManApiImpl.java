@@ -1,9 +1,7 @@
 package com.navinfo.dataservice.engine.man.service;
 
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -280,37 +278,52 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getTaskBySubtaskId(subtaskId);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getCollectTaskIdByDaySubtask(int)
-	 */
+	
 	@Override
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws ServiceException {
 		Set<Integer> taskIdSet = SubtaskService.getInstance().getCollectTaskIdByDaySubtask(subtaskId);
 		return taskIdSet;
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getSubtaskGridMappingByDbId(int, int)
-	 */
+
 	@Override
 	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
 		// TODO Auto-generated method stub
 		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getSubtaskIdListByDbId(int, java.util.List, int)
-	 */
+
 	@Override
 	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
 		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
 	}
-	
-		@Override
-	public Subtask queryByQualitySubtaskId(Integer qualitySubtaskId, String stage, String isQuality) throws Exception {
-		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().queryByQualitySubtaskId(qualitySubtaskId,stage,isQuality);
+
+	@Override
+	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId, String stage, Integer isQuality) throws Exception {
+		return SubtaskService.getInstance().queryBySubTaskIdAndIsQuality(taskId, stage, isQuality);
 	}
 	
+	@Override
+	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
+		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getGroupNameBySubtaskId(int)
+	 */
+	@Override
+	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getGroupNameBySubtaskId(subtaskId);
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getTotalWorkBySubtaskId(int)
+	 */
+	@Override
+	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
+		// TODO Auto-generated method stub
+		return SubtaskService.getInstance().getFinishedRoadNumBySubtaskId(subtaskId);
+	}
 }
 

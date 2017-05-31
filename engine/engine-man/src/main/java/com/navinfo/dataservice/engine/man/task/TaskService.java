@@ -29,7 +29,9 @@ import com.navinfo.dataservice.engine.man.block.BlockService;
 import com.navinfo.dataservice.engine.man.grid.GridService;
 import com.navinfo.dataservice.engine.man.program.ProgramService;
 import com.navinfo.dataservice.engine.man.region.RegionService;
+import com.navinfo.dataservice.engine.man.statics.StaticsOperation;
 import com.navinfo.dataservice.engine.man.subtask.SubtaskService;
+import com.navinfo.dataservice.engine.man.timeline.TimelineService;
 import com.navinfo.dataservice.engine.man.userGroup.UserGroupService;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoOperation;
 import com.navinfo.dataservice.engine.man.userInfo.UserInfoService;
@@ -43,6 +45,7 @@ import com.navinfo.dataservice.api.datahub.iface.DatahubApi;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.fcc.iface.FccApi;
 import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Program;
 import com.navinfo.dataservice.api.man.model.Region;
 import com.navinfo.dataservice.api.man.model.Subtask;
@@ -450,11 +453,26 @@ public class TaskService {
 					for(Integer taskId:pushCmsTask){
 						List<Map<String, Integer>> phaseList = queryTaskCmsProgress(taskId);
 						if(phaseList!=null&&phaseList.size()>0){continue;}
-						createCmsProgress(conn,taskId,1);
-						createCmsProgress(conn,taskId,2);
-						createCmsProgress(conn,taskId,3);
-						createCmsProgress(conn,taskId,4);
+						
+						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
+						Set<Integer> meshIdSet = new HashSet<Integer>();
+//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+						
+						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
+						for(Integer gridId:gridIdList){
+							meshIdSet.add(gridId/100);
+						}
+						
+						JSONObject parameter = new JSONObject();
+						parameter.put("meshIds", meshIdSet);
+						
+						createCmsProgress(conn,taskId,1,parameter);
+						createCmsProgress(conn,taskId,2,parameter);
+						createCmsProgress(conn,taskId,3,parameter);
+						createCmsProgress(conn,taskId,4,parameter);
 						conn.commit();
+						
 						phaseList = queryTaskCmsProgress(taskId);
 						Map<Integer, Integer> phaseIdMap=new HashMap<Integer, Integer>();
 						for(Map<String, Integer> phaseTmp:phaseList){
@@ -517,7 +535,8 @@ public class TaskService {
 		try{
 			QueryRunner run=new QueryRunner();
 			StringBuilder sb = new StringBuilder();
-			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append("SELECT T.REGION_ID,T.TASK_ID,T.NAME,T.STATUS,T.TYPE,UG.GROUP_ID,UG.LEADER_ID,"
+					+ "UG.GROUP_NAME,T.BLOCK_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append(" FROM TASK T,USER_GROUP UG");
 			sb.append(" WHERE T.GROUP_ID = UG.GROUP_ID(+)");
 			sb.append(" AND T.TASK_ID IN (" + StringUtils.join(taskIds.toArray(),",") + ")");
@@ -540,6 +559,7 @@ public class TaskService {
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
 						task.setRegionId(rs.getInt("REGION_ID"));
+						task.setWorkKind(rs.getString("work_kind"));
 						taskList.add(task);
 					}
 					return taskList;
@@ -719,6 +739,7 @@ public class TaskService {
 		}
 		//情报子任务
 		if(num==3){
+			log.info("创建情报子任务");
 			Subtask subtask = new Subtask();
 			if(programType==1){
 				subtask.setName(task.getName());
@@ -739,6 +760,7 @@ public class TaskService {
 		}
 		//多源子任务
 		if(num==4){
+			log.info("创建多源子任务");
 			Subtask subtask = new Subtask();
 			String adminCode = selectAdminCode(task.getProgramId());
 			//* 快线：情报名称_发布时间_作业员_子任务ID
@@ -1189,6 +1211,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       B.BLOCK_ID,");
 			sb.append("	                      B.BLOCK_NAME,");
 			sb.append("                       B.PLAN_STATUS,");
@@ -1224,7 +1247,8 @@ public class TaskService {
 			sb.append("	                          0             PERCENT,");
 			sb.append("	                          0             DIFF_DATE,");
 			sb.append("                       0 NOTASKDATA_POI_NUM,");
-			sb.append("                       0 NOTASKDATA_TIPS_NUM,");
+			sb.append("                       0 NOTASKDATA_TIPS_NUM,"
+					+ "0 CONVERT_FLAG,");
 			sb.append("	                          B.BLOCK_ID,");
 			sb.append("	                          B.BLOCK_NAME,");
 			sb.append("	                          B.PLAN_STATUS,");
@@ -1255,6 +1279,7 @@ public class TaskService {
 			sb.append("                       NVL(FSOT.DIFF_DATE, 0) DIFF_DATE,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_POI_NUM, 0) NOTASKDATA_POI_NUM,");
 			sb.append("                       NVL(FSOT.NOTASKDATA_TIPS_NUM, 0) NOTASKDATA_TIPS_NUM,");
+			sb.append("                       NVL(FSOT.CONVERT_FLAG, 0) CONVERT_FLAG,");
 			sb.append("                       0 BLOCK_ID,");
 			sb.append("	                      '' BLOCK_NAME,");
 			sb.append("                       1 PLAN_STATUS,");
@@ -1311,11 +1336,15 @@ public class TaskService {
 						task.put("diffDate", rs.getInt("DIFF_DATE"));
 						task.put("progress", rs.getInt("PROGRESS"));
 						
-						//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
-						if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
-							task.put("hasNoTaskData", 0);
-						}else{
-							task.put("hasNoTaskData", 1);
+						int convertFlag=rs.getInt("CONVERT_FLAG");
+						if(convertFlag==1){task.put("hasNoTaskData", 0);}
+						else{						
+							//判断任务范围内是否有无任务采集成果，有则赋1；无则赋0
+							if(rs.getInt("NOTASKDATA_POI_NUM")==0&&rs.getInt("NOTASKDATA_TIPS_NUM")==0){
+								task.put("hasNoTaskData", 0);
+							}else{
+								task.put("hasNoTaskData", 1);
+							}
 						}
 						
 						task.put("groupId", rs.getInt("GROUP_ID"));
@@ -1600,6 +1629,9 @@ public class TaskService {
 					}
 				}
 			}
+			//记录关闭时间
+			TimelineService.recordTimeline(taskId, "task",0, conn);
+			
 			//发送消息
 			try {
 				List<Object[]> msgContentList=new ArrayList<Object[]>();
@@ -2611,21 +2643,18 @@ public class TaskService {
 	 * @return
 	 * @throws ServiceException 
 	 */
-	private Set<Integer> getCollectTaskIdsByTaskId(int taskId) throws ServiceException {
+	public Set<Integer> getCollectTaskIdsByTaskId(int taskId) throws ServiceException {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append(" SELECT TT.TASK_ID                 ");
-			sb.append("   FROM TASK T, TASK TT            ");
-			sb.append("  WHERE T.BLOCK_ID = TT.BLOCK_ID   ");
-			sb.append("    AND TT.TYPE = 0                ");
-			sb.append("    AND T.TASK_ID = " + taskId);
-			
-			String sql = sb.toString();
+			String sql = "SELECT TT.TASK_ID"
+					+ "  FROM TASK T, TASK TT"
+					+ " WHERE T.BLOCK_ID = TT.BLOCK_ID"
+					+ "   AND T.PROGRAM_ID = TT.PROGRAM_ID"
+					+ "   AND TT.TYPE = 0"
+					+ "   AND T.TASK_ID = " + taskId;
 			
 			log.info("getCollectTaskIdsByTaskId sql :" + sql);
 			
@@ -2856,18 +2885,29 @@ public class TaskService {
 	public TaskCmsProgress queryCmsProgreeByPhaseId(Connection conn,int phaseId) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
+//			String selectSql = "SELECT T.PHASE_ID,"
+//					+ "       T.TASK_ID,"
+//					+ "       M.GRID_ID,"
+//					+ "       T.PHASE,"
+//					+ "       TS.REGION_ID,"
+//					+ "       TS.CREATE_USER_ID,"
+//					+ "       U.USER_NICK_NAME"
+//					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+//					+ " WHERE T.PHASE_ID = "+phaseId
+//					+ "   AND T.TASK_ID = TS.TASK_ID"
+//					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
+//					+ "   AND T.TASK_ID = M.TASK_ID ";
 			String selectSql = "SELECT T.PHASE_ID,"
 					+ "       T.TASK_ID,"
-					+ "       M.GRID_ID,"
+					+ "       T.PARAMETER,"
 					+ "       T.PHASE,"
 					+ "       TS.REGION_ID,"
 					+ "       TS.CREATE_USER_ID,"
 					+ "       U.USER_NICK_NAME"
-					+ "  FROM TASK_CMS_PROGRESS T, TASK_GRID_MAPPING M, TASK TS, USER_INFO U"
+					+ "  FROM TASK_CMS_PROGRESS T, TASK TS, USER_INFO U"
 					+ " WHERE T.PHASE_ID = "+phaseId
 					+ "   AND T.TASK_ID = TS.TASK_ID"
-					+ "   AND TS.CREATE_USER_ID = U.USER_ID"
-					+ "   AND T.TASK_ID = M.TASK_ID ";
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
 					TaskCmsProgress progress=new TaskCmsProgress();
@@ -2879,17 +2919,25 @@ public class TaskService {
 						progress.setUserNickName(rs.getString("user_nick_name"));
 						progress.setRegionId(rs.getInt("region_id"));
 						
-						if(progress.getGridIds()==null){
-							progress.setGridIds(new HashSet<Integer>());
+						JSONObject parameter = JSONObject.fromObject(rs.getString("PARAMETER"));
+						if(parameter.containsKey("meshIds")){
+							List<Integer> meshIds = (List<Integer>) JSONArray.toCollection((JSONArray) parameter.get("meshIds"));
+							Set<Integer> meshIdSet = new HashSet<Integer>();
+							meshIdSet.addAll(meshIds);
+							progress.setMeshIds(meshIdSet);
 						}
-						int gridId=rs.getInt("GRID_ID");
-						progress.getGridIds().add(gridId);
-						if(progress.getMeshIds()==null){
-							progress.setMeshIds(new HashSet<Integer>());
-						}
-						String gridStr=String.valueOf(gridId);
-						String mesh=gridStr.substring(0,gridStr.length()-2);
-						progress.getMeshIds().add(Integer.valueOf(mesh));
+						
+//						if(progress.getGridIds()==null){
+//							progress.setGridIds(new HashSet<Integer>());
+//						}
+//						int gridId=rs.getInt("GRID_ID");
+//						progress.getGridIds().add(gridId);
+//						if(progress.getMeshIds()==null){
+//							progress.setMeshIds(new HashSet<Integer>());
+//						}
+//						String gridStr=String.valueOf(gridId);
+//						String mesh=gridStr.substring(0,gridStr.length()-2);
+//						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
 					return progress;
 				}
@@ -2935,18 +2983,23 @@ public class TaskService {
 	
 	/**
 	 * 创建cmsProgress
+	 * @param parameter 
 	 * @param phaseId
 	 * @return
 	 * @throws Exception 
 	 */
-	public void createCmsProgress(Connection conn,int taskId,int phase) throws Exception {
+	public void createCmsProgress(Connection conn,int taskId,int phase, JSONObject parameter) throws Exception {
 		try{
 			QueryRunner run = new QueryRunner();
 			String selectSql = "INSERT INTO TASK_CMS_PROGRESS P"
-					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID)"
+					+ "  (TASK_ID, PHASE, STATUS, CREATE_DATE, PHASE_ID,PARAMETER)"
 					+ "VALUES"
-					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL)" ;
-			run.update(conn, selectSql);
+					+ "  ("+taskId+","+phase+", 0, SYSDATE, PHASE_SEQ.NEXTVAL,?)" ;
+			Clob clob=null;
+			clob = conn.createClob();
+			clob.setString(1, parameter.toString());
+			
+			run.update(conn, selectSql,clob);
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -3111,51 +3164,6 @@ public class TaskService {
 			throw new Exception("失败，原因为:"+e.getMessage(),e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(meta);
-		}
-	}
-
-	/**
-	 * @param taskId
-	 * @return
-	 * @throws ServiceException 
-	 */
-	public Set<Integer> getCollectTaskIdByTaskId(int taskId) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append(" SELECT TT.TASK_ID                   ");
-			sb.append("   FROM TASK T, TASK TT   ");
-			sb.append("  WHERE TT.BLOCK_ID = T.BLOCK_ID     ");
-			sb.append("    AND TT.TYPE = 0                  ");
-			sb.append("    AND T.TASK_ID = " + taskId);
-			
-			String sql = sb.toString();
-			
-			log.info("getCollectTaskIdByTaskId sql :" + sql);
-			
-			
-			ResultSetHandler<Set<Integer>> rsHandler = new ResultSetHandler<Set<Integer>>() {
-				public Set<Integer> handle(ResultSet rs) throws SQLException {
-					Set<Integer> result = new HashSet<Integer>();
-					while(rs.next()) {
-						result.add(rs.getInt("TASK_ID"));
-					}
-					return result;
-				}
-			};
-			Set<Integer> result =  run.query(conn, sql,rsHandler);
-			return result;
-			
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("getCollectTaskIdByTaskId失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -3361,11 +3369,14 @@ public class TaskService {
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
 			//这里待联调，POI已经完成
-//			batchNoTaskDataByMidTask(wkt, task.getTaskId());
-			
+			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
+			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
+			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
+			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",taskId="+task.getTaskId()+",wkt="+wkt);
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
-			
+			//修改无任务转中操作状态为 1已转
+			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(dailyConn);

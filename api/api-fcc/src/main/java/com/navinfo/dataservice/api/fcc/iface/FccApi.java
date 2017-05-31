@@ -11,17 +11,17 @@ public interface FccApi {
 	
 	public JSONArray searchDataBySpatial(String wkt, int editTaskId, int type, JSONArray stages) throws Exception;
 	
+//	/**
+//	 * @Description:根据grid，查询子tips的数据总量和已完成量，
+//	 * @param grids
+//	 * @return
+//	 * @throws Exception
+//	 * @author: y
+//	 * @time:2016-10-25 上午10:57:37
+//	 */
+//	public JSONObject getSubTaskStats(JSONArray grids) throws Exception;
 	/**
-	 * @Description:根据grid，查询子tips的数据总量和已完成量，
-	 * @param grids
-	 * @return
-	 * @throws Exception
-	 * @author: y
-	 * @time:2016-10-25 上午10:57:37
-	 */
-	public JSONObject getSubTaskStats(JSONArray grids) throws Exception;
-	/**
-	 * @Description:根据wkt，查询子tips的数据总量和已完成量，
+	 * @Description:根据wkt，查询子tips的数据总量和已完成量，web编辑卡片统计
 	 * @param wkt
 	 * @return
 	 * @throws Exception
@@ -91,4 +91,5 @@ public interface FccApi {
      * @throws Exception
      */
     public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
+
 }

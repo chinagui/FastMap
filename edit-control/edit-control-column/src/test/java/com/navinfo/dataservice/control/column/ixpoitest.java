@@ -7,15 +7,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
+import com.google.gson.JsonObject;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.control.column.core.ColumnCoreControl;
@@ -23,6 +21,7 @@ import com.navinfo.dataservice.control.column.core.DeepCoreControl;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class ixpoitest {
 	
@@ -116,11 +115,11 @@ public class ixpoitest {
 	
 	@Test
 	public void testApplyData() throws Exception{
-		long userId = 4994;
-		int subtaskId = 84;
+		long userId = 1674;
+		int subtaskId = 23;
 		
-		String firstWorkItem = "poi_deep";
-		String secondWorkItem = "deepDetail";
+		String firstWorkItem = "poi_name";
+		String secondWorkItem = "";
 		try {
 			
 			DeepCoreControl deepCore = new DeepCoreControl();
@@ -163,11 +162,11 @@ public class ixpoitest {
 	}
 	@Test
 	public void testColumnQuery() throws Exception{
-		String parameter = "{\"taskId\":\"38\",\"firstWorkItem\":\"poi_englishname\",\"secondWorkItem\":\"officalStandardEngName\",\"status\":1}";
+		String parameter = "{\"taskId\":\"23\",\"firstWorkItem\":\"poi_name\",\"secondWorkItem\":\"shortName\",\"status\":2}";
 		try {
 			JSONObject param = JSONObject.fromObject(parameter);
 			//long userId =2;
-			long userId =205006;
+			long userId =1674;
 			ColumnCoreControl columnCore = new ColumnCoreControl();
 			JSONObject result = columnCore.columnQuery(userId,param);
 			System.out.println(result);
@@ -198,10 +197,10 @@ public class ixpoitest {
 	@Test
 	public void testSecondColumnStatics() throws Exception{
 		JSONObject jsonReq = new JSONObject();
-		jsonReq.put("taskId", 84);
-		jsonReq.put("firstWorkItem","poi_name");
+		jsonReq.put("taskId", 23);
+		jsonReq.put("firstWorkItem","poi_address");
 		 
-		long userId = 4994;
+		long userId = 1674;
 		
 		try {
 			ColumnCoreControl column = new ColumnCoreControl();
@@ -265,8 +264,8 @@ public class ixpoitest {
 	
 	@Test
 	public void testcolumnKc() throws Exception{
-		int taskId = 84;
-		long userId = 2;
+		int taskId = 53;
+		long userId = 1674;
 		try {
 			ColumnCoreControl column = new ColumnCoreControl();
 			JSONObject result = column.getLogCount(taskId, userId);
@@ -276,4 +275,63 @@ public class ixpoitest {
 			System.out.println(e.getMessage());
 		}
 	}
+	
+	@Test
+	public void testQueryWorkerList() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("subtaskId", 220);
+		try {
+			long userId = 1674;
+			
+			ColumnCoreControl column = new ColumnCoreControl();			
+			JSONArray result = column.getQueryWorkerList(userId, jsonReq);
+			System.out.println(result);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void queryQcProblem() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("subtaskId", 220);
+		jsonReq.put("pid", "182");
+		jsonReq.put("firstWorkItem", "poi_address");
+		jsonReq.put("secondWorkItem", "addrSplit");
+		try {
+			
+			ColumnCoreControl column = new ColumnCoreControl();			
+			JSONArray result = column.queryQcProblem(jsonReq);
+			System.out.println(result);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	@Test
+	public void saveQcProblem() throws Exception{
+		JSONObject jsonReq = new JSONObject();
+		jsonReq.put("subtaskId", 220);
+		jsonReq.put("pid", "188");
+		jsonReq.put("firstWorkItem", "poi_address");
+		jsonReq.put("secondWorkItem", "addrSplit");
+		jsonReq.put("errorType", "ooo");
+		jsonReq.put("errorLevel", 6);
+		jsonReq.put("problemDesc", "ttt");
+		jsonReq.put("techGuidance", "ooo");
+		jsonReq.put("techScheme", "kkk");
+		
+		try {
+			
+			ColumnCoreControl column = new ColumnCoreControl();			
+			JSONObject data = column.saveQcProblem(jsonReq);
+			System.out.println(data);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
 }

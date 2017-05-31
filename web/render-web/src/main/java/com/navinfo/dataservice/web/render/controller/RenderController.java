@@ -218,33 +218,31 @@ public class RenderController extends BaseController {
 		String parameter = request.getParameter("parameter");
 
 		try {
-			JSONObject jsonReq = JSONObject.fromObject(parameter);
+//			JSONObject jsonReq = JSONObject.fromObject(parameter);
 
-			int x = jsonReq.getInt("x");
+//			int x = jsonReq.getInt("x");
+//
+//			int y = jsonReq.getInt("y");
+//
+//			int z = jsonReq.getInt("z");
+//
+//			int gap = jsonReq.getInt("gap");
+//
+//			String mdFlag = jsonReq.getString("mdFlag");
 
-			int y = jsonReq.getInt("y");
-
-			int z = jsonReq.getInt("z");
-
-			int gap = jsonReq.getInt("gap");
-
-			String mdFlag = jsonReq.getString("mdFlag");
-
-			JSONArray types = new JSONArray();
-
-			if (jsonReq.containsKey("types")) {
-				types = jsonReq.getJSONArray("types");
-			}
-
-			JSONArray noQFilter = new JSONArray();
-			if (jsonReq.containsKey("noQFilter")) {
-				noQFilter = jsonReq.getJSONArray("noQFilter");
-			}
+//			JSONArray types = new JSONArray();
+//			if (jsonReq.containsKey("types")) {
+//				types = jsonReq.getJSONArray("types");
+//			}
+//
+//			JSONArray noQFilter = new JSONArray();
+//			if (jsonReq.containsKey("noQFilter")) {
+//				noQFilter = jsonReq.getJSONArray("noQFilter");
+//			}
 
 			TipsSelector selector = new TipsSelector();
 
-			JSONArray array = selector.searchDataByTileWithGap(x, y, z, gap,
-					types, mdFlag, "wktLocation", noQFilter);
+			JSONArray array = selector.searchDataByTileWithGap(parameter);
 
 			response.getWriter().println(
 					ResponseUtils.assembleRegularResult(array));

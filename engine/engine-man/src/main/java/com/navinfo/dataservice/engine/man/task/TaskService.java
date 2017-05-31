@@ -2909,11 +2909,12 @@ public class TaskService {
 					+ "  FROM TASK_CMS_PROGRESS T, TASK TS, USER_INFO U"
 					+ " WHERE T.PHASE_ID = "+phaseId
 					+ "   AND T.TASK_ID = TS.TASK_ID"
-					+ "   AND TS.CREATE_USER_ID = U.USER_ID";
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID(+)";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
-					TaskCmsProgress progress=new TaskCmsProgress();
+					
 					while(rs.next()) {
+						TaskCmsProgress progress=new TaskCmsProgress();
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
@@ -2928,6 +2929,7 @@ public class TaskService {
 							meshIdSet.addAll(meshIds);
 							progress.setMeshIds(meshIdSet);
 						}
+						return progress;
 						
 //						if(progress.getGridIds()==null){
 //							progress.setGridIds(new HashSet<Integer>());
@@ -2941,7 +2943,7 @@ public class TaskService {
 //						String mesh=gridStr.substring(0,gridStr.length()-2);
 //						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
-					return progress;
+					return null;
 				}
 			};
 			return run.query(conn, selectSql, rsHandler);

@@ -1,4 +1,4 @@
-package com.navinfo.dataservice.control.dealership.model;
+package com.navinfo.dataservice.api.edit.model;
 
 import java.util.ArrayList;
 import java.util.Date;

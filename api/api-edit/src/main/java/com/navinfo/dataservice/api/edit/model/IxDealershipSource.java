@@ -1,18 +1,19 @@
-package com.navinfo.dataservice.control.dealership.model;
+package com.navinfo.dataservice.api.edit.model;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import net.sf.json.JSONObject;
 
 /** 
-* @ClassName:  IxDealershipResult 
+* @ClassName:  IxDealershipSource 
 * @author code generator
-* @date 2017-05-27 03:27:47 
+* @date 2017-05-27 03:28:25 
 * @Description: TODO
 */
-public class IxDealershipResult  {
-	private int resultId ;
-	private int workflowStatus ;
-	private int dealStatus ;
-	private int userId ;
-	private String toInfoDate ;
-	private String toClientDate ;
+public class IxDealershipSource  {
+	private int sourceId ;
 	private String province ;
 	private String city ;
 	private String project ;
@@ -29,47 +30,31 @@ public class IxDealershipResult  {
 	private String addressEng ;
 	private String provideDate ;
 	private int isDeleted ;
-	private int matchMethod ;
-	private String poiNum1 ;
-	private String poiNum2 ;
-	private String poiNum3 ;
-	private String poiNum4 ;
-	private String poiNum5 ;
-	private String similarity ;
 	private int fbSource ;
 	private String fbContent ;
 	private String fbAuditRemark ;
 	private String fbDate ;
-	private int cfmStatus ;
 	private String cfmPoiNum ;
 	private String cfmMemo ;
-	private int sourceId ;
-	private int dealSrcDiff ;
 	private String dealCfmDate ;
 	private String poiKindCode ;
 	private String poiChain ;
 	private String poiName ;
 	private String poiNameShort ;
 	private String poiAddress ;
-	private String poiTel ;
 	private String poiPostCode ;
 	private int poiXDisplay ;
 	private int poiYDisplay ;
 	private int poiXGuide ;
 	private int poiYGuide ;
 	private Object geometry ;
-	private int regionId ;
+	private String poiTel ;
 	
-	public IxDealershipResult (){
+	public IxDealershipSource (){
 	}
 	
-	public IxDealershipResult (int resultId ,int workflowStatus,int dealStatus,int userId,String toInfoDate,String toClientDate,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int matchMethod,String poiNum1,String poiNum2,String poiNum3,String poiNum4,String poiNum5,String similarity,int fbSource,String fbContent,String fbAuditRemark,String fbDate,int cfmStatus,String cfmPoiNum,String cfmMemo,int sourceId,int dealSrcDiff,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiTel,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Object geometry,int regionId){
-		this.resultId=resultId ;
-		this.workflowStatus=workflowStatus ;
-		this.dealStatus=dealStatus ;
-		this.userId=userId ;
-		this.toInfoDate=toInfoDate ;
-		this.toClientDate=toClientDate ;
+	public IxDealershipSource (int sourceId ,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int fbSource,String fbContent,String fbAuditRemark,String fbDate,String cfmPoiNum,String cfmMemo,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Object geometry,String poiTel){
+		this.sourceId=sourceId ;
 		this.province=province ;
 		this.city=city ;
 		this.project=project ;
@@ -86,72 +71,31 @@ public class IxDealershipResult  {
 		this.addressEng=addressEng ;
 		this.provideDate=provideDate ;
 		this.isDeleted=isDeleted ;
-		this.matchMethod=matchMethod ;
-		this.poiNum1=poiNum1 ;
-		this.poiNum2=poiNum2 ;
-		this.poiNum3=poiNum3 ;
-		this.poiNum4=poiNum4 ;
-		this.poiNum5=poiNum5 ;
-		this.similarity=similarity ;
 		this.fbSource=fbSource ;
 		this.fbContent=fbContent ;
 		this.fbAuditRemark=fbAuditRemark ;
 		this.fbDate=fbDate ;
-		this.cfmStatus=cfmStatus ;
 		this.cfmPoiNum=cfmPoiNum ;
 		this.cfmMemo=cfmMemo ;
-		this.sourceId=sourceId ;
-		this.dealSrcDiff=dealSrcDiff ;
 		this.dealCfmDate=dealCfmDate ;
 		this.poiKindCode=poiKindCode ;
 		this.poiChain=poiChain ;
 		this.poiName=poiName ;
 		this.poiNameShort=poiNameShort ;
 		this.poiAddress=poiAddress ;
-		this.poiTel=poiTel ;
 		this.poiPostCode=poiPostCode ;
 		this.poiXDisplay=poiXDisplay ;
 		this.poiYDisplay=poiYDisplay ;
 		this.poiXGuide=poiXGuide ;
 		this.poiYGuide=poiYGuide ;
 		this.geometry=geometry ;
-		this.regionId=regionId ;
+		this.poiTel=poiTel ;
 	}
-	public int getResultId() {
-		return resultId;
+	public int getSourceId() {
+		return sourceId;
 	}
-	public void setResultId(int resultId) {
-		this.resultId = resultId;
-	}
-	public int getWorkflowStatus() {
-		return workflowStatus;
-	}
-	public void setWorkflowStatus(int workflowStatus) {
-		this.workflowStatus = workflowStatus;
-	}
-	public int getDealStatus() {
-		return dealStatus;
-	}
-	public void setDealStatus(int dealStatus) {
-		this.dealStatus = dealStatus;
-	}
-	public int getUserId() {
-		return userId;
-	}
-	public void setUserId(int userId) {
-		this.userId = userId;
-	}
-	public String getToInfoDate() {
-		return toInfoDate;
-	}
-	public void setToInfoDate(String toInfoDate) {
-		this.toInfoDate = toInfoDate;
-	}
-	public String getToClientDate() {
-		return toClientDate;
-	}
-	public void setToClientDate(String toClientDate) {
-		this.toClientDate = toClientDate;
+	public void setSourceId(int sourceId) {
+		this.sourceId = sourceId;
 	}
 	public String getProvince() {
 		return province;
@@ -249,48 +193,6 @@ public class IxDealershipResult  {
 	public void setIsDeleted(int isDeleted) {
 		this.isDeleted = isDeleted;
 	}
-	public int getMatchMethod() {
-		return matchMethod;
-	}
-	public void setMatchMethod(int matchMethod) {
-		this.matchMethod = matchMethod;
-	}
-	public String getPoiNum1() {
-		return poiNum1;
-	}
-	public void setPoiNum1(String poiNum1) {
-		this.poiNum1 = poiNum1;
-	}
-	public String getPoiNum2() {
-		return poiNum2;
-	}
-	public void setPoiNum2(String poiNum2) {
-		this.poiNum2 = poiNum2;
-	}
-	public String getPoiNum3() {
-		return poiNum3;
-	}
-	public void setPoiNum3(String poiNum3) {
-		this.poiNum3 = poiNum3;
-	}
-	public String getPoiNum4() {
-		return poiNum4;
-	}
-	public void setPoiNum4(String poiNum4) {
-		this.poiNum4 = poiNum4;
-	}
-	public String getPoiNum5() {
-		return poiNum5;
-	}
-	public void setPoiNum5(String poiNum5) {
-		this.poiNum5 = poiNum5;
-	}
-	public String getSimilarity() {
-		return similarity;
-	}
-	public void setSimilarity(String similarity) {
-		this.similarity = similarity;
-	}
 	public int getFbSource() {
 		return fbSource;
 	}
@@ -315,12 +217,6 @@ public class IxDealershipResult  {
 	public void setFbDate(String fbDate) {
 		this.fbDate = fbDate;
 	}
-	public int getCfmStatus() {
-		return cfmStatus;
-	}
-	public void setCfmStatus(int cfmStatus) {
-		this.cfmStatus = cfmStatus;
-	}
 	public String getCfmPoiNum() {
 		return cfmPoiNum;
 	}
@@ -332,18 +228,6 @@ public class IxDealershipResult  {
 	}
 	public void setCfmMemo(String cfmMemo) {
 		this.cfmMemo = cfmMemo;
-	}
-	public int getSourceId() {
-		return sourceId;
-	}
-	public void setSourceId(int sourceId) {
-		this.sourceId = sourceId;
-	}
-	public int getDealSrcDiff() {
-		return dealSrcDiff;
-	}
-	public void setDealSrcDiff(int dealSrcDiff) {
-		this.dealSrcDiff = dealSrcDiff;
 	}
 	public String getDealCfmDate() {
 		return dealCfmDate;
@@ -381,12 +265,6 @@ public class IxDealershipResult  {
 	public void setPoiAddress(String poiAddress) {
 		this.poiAddress = poiAddress;
 	}
-	public String getPoiTel() {
-		return poiTel;
-	}
-	public void setPoiTel(String poiTel) {
-		this.poiTel = poiTel;
-	}
 	public String getPoiPostCode() {
 		return poiPostCode;
 	}
@@ -423,20 +301,19 @@ public class IxDealershipResult  {
 	public void setGeometry(Object geometry) {
 		this.geometry = geometry;
 	}
-	public int getRegionId() {
-		return regionId;
+	public String getPoiTel() {
+		return poiTel;
 	}
-	public void setRegionId(int regionId) {
-		this.regionId = regionId;
+	public void setPoiTel(String poiTel) {
+		this.poiTel = poiTel;
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		return "IxDealershipResult [resultId=" + resultId +",workflowStatus="+workflowStatus+",dealStatus="+dealStatus+",userId="+userId+",toInfoDate="+toInfoDate+",toClientDate="+toClientDate+",province="+province+",city="+city+",project="+project+",kindCode="+kindCode+",chain="+chain+",name="+name+",nameShort="+nameShort+",address="+address+",telSale="+telSale+",telService="+telService+",telOther="+telOther+",postCode="+postCode+",nameEng="+nameEng+",addressEng="+addressEng+",provideDate="+provideDate+",isDeleted="+isDeleted+",matchMethod="+matchMethod+",poiNum1="+poiNum1+",poiNum2="+poiNum2+",poiNum3="+poiNum3+",poiNum4="+poiNum4+",poiNum5="+poiNum5+",similarity="+similarity+",fbSource="+fbSource+",fbContent="+fbContent+",fbAuditRemark="+fbAuditRemark+",fbDate="+fbDate+",cfmStatus="+cfmStatus+",cfmPoiNum="+cfmPoiNum+",cfmMemo="+cfmMemo+",sourceId="+sourceId+",dealSrcDiff="+dealSrcDiff+",dealCfmDate="+dealCfmDate+",poiKindCode="+poiKindCode+",poiChain="+poiChain+",poiName="+poiName+",poiNameShort="+poiNameShort+",poiAddress="+poiAddress+",poiTel="+poiTel+",poiPostCode="+poiPostCode+",poiXDisplay="+poiXDisplay+",poiYDisplay="+poiYDisplay+",poiXGuide="+poiXGuide+",poiYGuide="+poiYGuide+",geometry="+geometry+",regionId="+regionId+"]";
+		return "IxDealershipSource [sourceId=" + sourceId +",province="+province+",city="+city+",project="+project+",kindCode="+kindCode+",chain="+chain+",name="+name+",nameShort="+nameShort+",address="+address+",telSale="+telSale+",telService="+telService+",telOther="+telOther+",postCode="+postCode+",nameEng="+nameEng+",addressEng="+addressEng+",provideDate="+provideDate+",isDeleted="+isDeleted+",fbSource="+fbSource+",fbContent="+fbContent+",fbAuditRemark="+fbAuditRemark+",fbDate="+fbDate+",cfmPoiNum="+cfmPoiNum+",cfmMemo="+cfmMemo+",dealCfmDate="+dealCfmDate+",poiKindCode="+poiKindCode+",poiChain="+poiChain+",poiName="+poiName+",poiNameShort="+poiNameShort+",poiAddress="+poiAddress+",poiPostCode="+poiPostCode+",poiXDisplay="+poiXDisplay+",poiYDisplay="+poiYDisplay+",poiXGuide="+poiXGuide+",poiYGuide="+poiYGuide+",geometry="+geometry+",poiTel="+poiTel+"]";
 	}
 
 
-	
 }

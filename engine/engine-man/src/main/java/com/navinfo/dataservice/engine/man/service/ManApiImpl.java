@@ -292,7 +292,6 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
 	}
 
-
 	@Override
 	public List<Integer> getSubtaskIdListByDbId(int dbId, List<Integer> statusList, int workKind) throws Exception {
 		return SubtaskService.getInstance().getSubtaskIdListByDbId(dbId,statusList,workKind);
@@ -304,26 +303,34 @@ public class ManApiImpl implements ManApi {
 	}
 	
 	@Override
+	public int queryQualityLevel(Integer userId,String firstWorkItem) throws Exception {
+		return UserInfoService.getInstance().queryQualityLevel(userId,firstWorkItem);
+	}
+	
+	@Override
 	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
 		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
 	}
-
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getGroupNameBySubtaskId(int)
+	
+	/**
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
 	 */
 	@Override
-	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId) throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().getGroupNameBySubtaskId(subtaskId);
+		return SubtaskService.getInstance().getCommonSubtaskByQualitySubtask(qualitySubtaskId);
 	}
 
-	/* (non-Javadoc)
-	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getTotalWorkBySubtaskId(int)
-	 */
-	@Override
-	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
-		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().getFinishedRoadNumBySubtaskId(subtaskId);
-	}
 }
 

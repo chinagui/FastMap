@@ -520,7 +520,7 @@ public class DeepCoreControl {
 			
 			//查询当前作业员已占有数据量
 			IxPoiColumnStatusSelector poiColumnSelector = new IxPoiColumnStatusSelector(conn);
-			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId);
+			hasApply = poiColumnSelector.queryHandlerCount(firstWorkItem, secondWorkItem, userId, type, taskId,0);
 			
 			// 可申请数据的条数
 			int canApply = 100 - hasApply;
@@ -528,8 +528,10 @@ public class DeepCoreControl {
 				throw new Exception("该作业员名下已存在100条数据，不可继续申请");
 			}
 			
+			JSONObject conditions=new JSONObject();
+			
 			//获取从状态表查询到能够申请数据的pids
-			List<Integer> pids = poiColumnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type);
+			List<Integer> pids = poiColumnSelector.getApplyPids(subtask, firstWorkItem, secondWorkItem, type,0,conditions,userId);
 			if (pids.size() == 0){
 				//未查询到可以申请的数据
 				return 0;
@@ -549,7 +551,7 @@ public class DeepCoreControl {
 			//数据加锁， 赋值handler，维护update_date,task_id
 			applyCount += applyDataPids.size();
 			List<String> workItemIds = poiColumnSelector.getWorkItemIds(firstWorkItem, secondWorkItem);
-			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp);
+			poiColumnSelector.dataSetLock(applyDataPids, workItemIds, userId, taskId, timeStamp,0);
 			
 			OperationResult operationResult=new OperationResult();
 			List<BasicObj> objList = new ArrayList<BasicObj>();

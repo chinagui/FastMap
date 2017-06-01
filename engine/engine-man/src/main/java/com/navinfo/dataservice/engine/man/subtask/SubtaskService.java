@@ -136,7 +136,8 @@ public class SubtaskService {
 				dataJson.discard("hasQuality");
 				
 				Subtask qualityBean = createSubtaskBean(userId,dataJson);
-				qualityBean.setName(qualityBean.getName()+"_质检");
+				if(!StringUtils.isEmpty(qualityBean.getName())){
+					qualityBean.setName(qualityBean.getName()+"_质检");}
 				qualityBean.setIsQuality(1);
 				qualityBean.setStatus(2);
 				qualityBean.setExeUserId(qualityExeUserId);
@@ -345,7 +346,8 @@ public class SubtaskService {
 		}else{
 			if(hasQuality == 1){//qualitySubtaskId=0，且isQuailty为1的时候，表示要创建质检子任务
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
-				qualitySubtask.setName(qualitySubtask.getName()+"_质检");
+				if(!StringUtils.isEmpty(qualitySubtask.getName())){
+					qualitySubtask.setName(qualitySubtask.getName()+"_质检");}
 				qualitySubtask.setSubtaskId(null);
 				qualitySubtask.setExeGroupId(qualityExeGroupId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
@@ -421,7 +423,7 @@ public class SubtaskService {
 	}
 	/**
 	 * 情报子任务自动维护名称，命名原则：情报名称_发布时间_作业员/作业组_子任务ID
-	 * 1.质检子任务名称不维护
+	 * 1.质检子任务名称也同样维护
 	 * 1.判断是否情报子任务，不是则返回
 	 * 2.判断是否新建子任务，若是，名称若为空，自动赋值
 	 * 3.修改子任务，若作业员或组是修改时加的，则自动维护名称
@@ -431,9 +433,9 @@ public class SubtaskService {
 	 * @return
 	 * @throws Exception
 	 */
-	private Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
-		if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
-		if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
+	public Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
+		//if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
+		//if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
 		
 		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());
 		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
@@ -445,24 +447,28 @@ public class SubtaskService {
 		}
 		
 		if(oldSubtask==null){//新建子任务
-			if(StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
+			if(!StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
 			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
 			if(newSubtask.getExeUserId()!=0){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
 			if(newSubtask.getExeGroupId()!=0){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
 				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}	
 		}else{
 			if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
 				UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
 				newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName()+"_"+newSubtask.getSubtaskId());
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
 			if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
 				String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
 				newSubtask.setName(newSubtask.getName()+"_"+groupName+"_"+newSubtask.getSubtaskId());
+				if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
 			}
 		}
 		return newSubtask;
@@ -1968,7 +1974,7 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 WHEN 2 THEN 0 end when 2 then 1 when 0 then 3 end order_status");
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2030,7 +2036,7 @@ public class SubtaskService {
 						subtask.put("qualitySubtaskId", qualityTaskId);
 						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
 						subtask.put("qualityExeGroupId", rs.getInt("quality_Exe_group_Id"));
-						subtask.put("qualityExeGroupName", rs.getInt("quality_Exe_group_NAME"));
+						subtask.put("qualityExeGroupName", rs.getString("quality_Exe_group_NAME"));
 						
 						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
 						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
@@ -2208,7 +2214,7 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
-					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
+					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND ST.STATUS IN (1,2) AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
 					+ "like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){
@@ -2572,79 +2578,73 @@ public class SubtaskService {
 			throw new ServiceException("查询明细失败，原因为:" + e.getMessage(), e);
 		}
 	}
-
+	
 	/**
-	 * @param subtaskId
-	 * @return
-	 * @throws ServiceException 
+	 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+	 * @param qualitySubtaskId
+	 * @return Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+	 * @throws Exception 
 	 */
-	public String getGroupNameBySubtaskId(int subtaskId) throws ServiceException {
+	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId) throws Exception {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
-			
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append("SELECT T.GROUP_ID, G.GROUP_NAME          ");
-			sb.append("  FROM TASK T, SUBTASK S, USER_GROUP G   ");
-			sb.append(" WHERE S.TASK_ID = T.TASK_ID             ");
-			sb.append("   AND T.GROUP_ID = G.GROUP_ID           ");
-			sb.append("   AND S.SUBTASK_ID = " + subtaskId);
 	
-			String selectSql = sb.toString();
-			log.info("getGroupNameBySubtaskId SQL："+sb.toString());
+			String selectSql = "SELECT S.SUBTASK_ID,"
+					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
+					+ "       I.USER_REAL_NAME,"
+					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
+					+ "       G.GROUP_NAME,"
+					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
+					+ "       S.NAME           SUBTASK_NAME,"
+					+ "       T.NAME           TASK_NAME"
+					+ "  FROM TASK                     T,"
+					+ "       SUBTASK                  S,"
+					+ "       USER_GROUP               G,"
+					+ "       SUBTASK                  SQ,"
+					+ "       USER_INFO                I,"
+					+ "       FM_STAT_OVERVIEW_SUBTASK F"
+					+ " WHERE S.TASK_ID = T.TASK_ID"
+					+ "   AND T.GROUP_ID = G.GROUP_ID"
+					+ "   AND S.EXE_USER_ID = I.USER_ID"
+					+ "   AND S.SUBTASK_ID = F.SUBTASK_ID(+)"
+					+ "   AND S.QUALITY_SUBTASK_ID = SQ.SUBTASK_ID"
+					+ "   AND SQ.SUBTASK_ID = "+qualitySubtaskId;
+			log.info("getCommonSubtaskByQualitySubtask SQL："+selectSql);
 			
 
-			ResultSetHandler<String> rsHandler = new ResultSetHandler<String>() {
-				public String handle(ResultSet rs) throws SQLException {
+			ResultSetHandler<Map<String, String>> rsHandler = new ResultSetHandler<Map<String, String>>() {
+				public Map<String, String> handle(ResultSet rs) throws SQLException {
 					//StaticsApi staticApi=(StaticsApi) ApplicationContextUtil.getBean("staticsApi");
 					if (rs.next()) {
-						String groupName = rs.getString("GROUP_NAME");						
-						return groupName;
+						Map<String, String> returnMap=new HashMap<String, String>();
+						returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+						returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+						returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+						returnMap.put("groupId", rs.getString("GROUP_ID"));
+						returnMap.put("groupName", rs.getString("GROUP_NAME"));
+						returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+						returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+						returnMap.put("taskName", rs.getString("TASK_NAME"));
+						return returnMap;
 					}
 					return null;
 				}	
 			};
-			log.info("queryByTaskId sql:" + sb.toString());
 			return run.query(conn, selectSql,rsHandler);			
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("getGroupNameBySubtaskId，原因为:" + e.getMessage(), e);
-		}finally {
-			DbUtils.commitAndCloseQuietly(conn);
-		}
-	}
-
-	/**
-	 * @param subtaskId
-	 * @return
-	 * @throws ServiceException 
-	 */
-	public int getFinishedRoadNumBySubtaskId(int subtaskId) throws ServiceException {
-		Connection conn = null;
-		try {
-			conn = DBConnector.getInstance().getManConnection();
-			QueryRunner run = new QueryRunner();
-	
-			String selectSql = "SELECT FSOS.FINISHED_ROAD FROM FM_STAT_OVERVIEW_SUBTASK FSOS WHERE FSOS.SUBTASK_ID = " + subtaskId;
-			log.info("getGroupNameBySubtaskId SQL："+selectSql);
-			
-			ResultSetHandler<Integer> rsHandler = new ResultSetHandler<Integer>() {
-				public Integer handle(ResultSet rs) throws SQLException {
-					if (rs.next()) {
-						int finishedRoadNum = rs.getInt("FINISHED_ROAD");						
-						return finishedRoadNum;
-					}
-					return 0;
-				}	
-			};
-			return run.query(conn, selectSql,rsHandler);			
-		} catch (Exception e) {
-			DbUtils.rollbackAndCloseQuietly(conn);
-			log.error(e.getMessage(), e);
-			throw new ServiceException("getTotalWorkBySubtaskId，原因为:" + e.getMessage(), e);
 		}finally {
 			DbUtils.commitAndCloseQuietly(conn);
 		}

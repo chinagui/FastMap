@@ -422,9 +422,10 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 	 * @throws Exception
 	 * @time:2016-11-18 下午2:16:09
 	 */
-	public boolean breakLine(String rowkey, JSONObject tipGeometry, int user)
+	public JSONArray breakLine(String rowkey, JSONObject tipGeometry, int user)
 			throws Exception {
 		Connection hbaseConn;
+		JSONArray rowkeyArray = new JSONArray();
 		try {
 
 			JSONObject solrIndex = solr.getById(rowkey);
@@ -435,13 +436,16 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 			Result result = getResultByRowKey(htab, rowkey, null);
 			if (result.isEmpty()) {
-				return false;
+				return rowkeyArray;
 			}
 
 			// 0.copy一个新的tips,rowkey重新申请
 			String newRowkey = TipsUtils.getNewRowkey(s_sourceType);
 			Put newPut = copyNewATips(result, newRowkey);
 			Put put = new Put(rowkey.getBytes());
+
+            rowkeyArray.add(newRowkey);
+            rowkeyArray.add(rowkey);
 
 			JSONObject newSolrIndex = JSONObject.fromObject(solrIndex);
 			newSolrIndex.put("id", newRowkey);
@@ -535,7 +539,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 			htab.put(newPut);
 			htab.close();
 
-			return false;
+			return rowkeyArray;
 		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error("打断出错,rowkey:" + rowkey + "原因：" + e.getMessage());

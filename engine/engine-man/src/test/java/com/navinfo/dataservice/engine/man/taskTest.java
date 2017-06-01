@@ -125,6 +125,15 @@ public class taskTest extends InitApplication{
 	{
 		TaskService.getInstance().reOpen(Long.valueOf(0), 36);
 	}
+	
+	@Test
+	public void testPushMsg() throws Exception
+	{
+		JSONArray taskIds=new JSONArray();
+		taskIds.add(344);
+		String message = TaskService.getInstance().taskPushMsg(0, taskIds);
+		System.out.println(message);
+	}
 
 	@Override
 	@Before

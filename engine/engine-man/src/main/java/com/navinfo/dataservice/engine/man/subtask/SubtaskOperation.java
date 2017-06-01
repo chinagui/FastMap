@@ -885,7 +885,8 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
+			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality");
 			sb.append(" from subtask st,task t,region r");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -938,6 +939,7 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
@@ -990,6 +992,18 @@ public class SubtaskOperation {
 								e.printStackTrace();
 							}
 						}
+						//日编道路子任务的指尖任务需要获取质检量的统计
+						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
+							try {
+								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
+								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
+								subtask.put("checkCount",checkMap.get("checkCount"));
+								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						
 						list.add(subtask);
 						log.debug("end subtask");
@@ -1037,7 +1051,7 @@ public class SubtaskOperation {
 			sb.append(" ,ST.PLAN_END_DATE");
 			sb.append(" ,ST.STAGE");
 			sb.append(" ,ST.TYPE");
-			sb.append(" ,ST.task_id");
+			sb.append(" ,ST.task_id,st.is_quality");
 			sb.append(" ,ST.STATUS");
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
@@ -1091,6 +1105,7 @@ public class SubtaskOperation {
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));

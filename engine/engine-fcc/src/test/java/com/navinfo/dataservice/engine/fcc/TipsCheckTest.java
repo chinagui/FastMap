@@ -162,12 +162,11 @@ public class TipsCheckTest extends InitApplication {
 	public void testGetSnapot() {
 		
 		JSONObject obj=new JSONObject();
-		obj.put("grids", JSONArray.fromObject("59564432,59564433,59564410,59565402,59565401,59565400,59565313,59564423,59564332,59564422,59564333,59564421,59565410,59565411,59564420,59565420,59565421,59565303,59564323,59564431,59564430"));
-		obj.put("type", "");
-		obj.put("dbId", "");
-		obj.put("subtaskId", "4");
-		obj.put("workStatus", "4");
-		
+		obj.put("grids", JSONArray.fromObject("[59566311,59566322,59566321,59566332,59566333,59566331,59566312]"));
+		obj.put("type", "1301");
+		obj.put("dbId", 13);
+		obj.put("subtaskId", 283);
+		obj.put("workStatus", 2);
 		
 		String parameter = obj.toString();
 
@@ -232,9 +231,11 @@ public class TipsCheckTest extends InitApplication {
 		obj.put("reason", "错误原因1201 ");
 		obj.put("erContent", "错误内容1201");
 		obj.put("quRank", "A"); //错误等级
-		obj.put("isPrefer", "是"); //是否倾向性
+		obj.put("isPrefer", "1"); //是否倾向性
 		obj.put("checker", "质检员001"); //是否倾向性
 		
+		//obj=JSONObject.fromObject("{\"checkTaskId\":188,\"quDesc\":\"说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明说明\",\"reason\":\"录入遗漏\",\"erContent\":\"功能等级（FC）\",\"quRank\":\"B\",\"isPrefer\":1,\"tipsCode\":\"2001\",\"tipsRowkey\":\"0220019609FB3AFDD047EE9FE53BEF56496AAE\"}");
+	
 		JSONObject pa = new JSONObject();
 		
 		pa.put("data", obj);

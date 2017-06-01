@@ -48,7 +48,7 @@ public class TipsRequestParam {
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
         }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
-        }else if(workStatus == 2) {//已作业
+        }else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
         }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
@@ -225,7 +225,7 @@ public class TipsRequestParam {
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
         }else if(workStatus ==TipsWorkStatus.WORK_HAS_PROBLEM ) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
-        }else if(workStatus == 2) {//已作业
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_FINISHED) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
         }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();

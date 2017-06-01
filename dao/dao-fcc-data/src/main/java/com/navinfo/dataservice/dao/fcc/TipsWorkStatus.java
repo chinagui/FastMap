@@ -9,11 +9,11 @@ package com.navinfo.dataservice.dao.fcc;
  */
 public  class TipsWorkStatus {
 
-		public static int PREPARED_WORKING = 1;//待作业
+		public static int PREPARED_WORKING = 0;//待作业
 
-		public static int WORK_HAS_PROBLEM = 2; //有问题待确认
+		public static int WORK_HAS_PROBLEM = 1; //有问题待确认
 
-		public static int WORK_HAS_FINISHED = 3;//已作业
+		public static int WORK_HAS_FINISHED = 2;//已作业
 		
 		public static int PREPARED_CHECKING = 4;//待质检
 		

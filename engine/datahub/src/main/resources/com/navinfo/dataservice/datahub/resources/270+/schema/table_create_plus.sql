@@ -75,11 +75,11 @@ create table POI_COLUMN_STATUS
   WORK_ITEM_ID       VARCHAR2(50),
   FIRST_WORK_STATUS  NUMBER(1) default 1,
   SECOND_WORK_STATUS NUMBER(1) default 1,
-  HANDLER            NUMBER(10),
-  TASK_ID            NUMBER(10),
+  HANDLER            NUMBER(10) default 0,
+  TASK_ID            NUMBER(10) default 0,
   APPLY_DATE		 TIMESTAMP,
   QC_FLAG            NUMBER(1) default 0,
-  COMMON_HANDLER     NUMBER(10)
+  COMMON_HANDLER     NUMBER(10) default 0
 );
 -- Add comments to the table 
 comment on table POI_COLUMN_STATUS

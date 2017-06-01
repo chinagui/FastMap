@@ -10,6 +10,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsInfoCheckOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -281,10 +282,18 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	/**
 	 *
 	 */
-	//@Test
+	@Test
 	public void testOther() {
 
 		try {
+            System.out.println("**************************************************");
+            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
+//            System.out.println("**************************************************");
+//            System.out.println("**************************************************");
+//            System.out.println("**************************************************");
+//            System.out.println(operator.updateInfoCheckResult(8, 1, 1));
+//            System.out.println("**************************************************");
+            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());
 			//JSONObject obj=solrSelector.searchDataByRowkey("111503249654");
 			
 			/*JSONObject geojson = JSONObject.fromObject(obj
@@ -310,9 +319,9 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 			System.out.println(Geojson.geojson2Wkt(geo4)+",");
 			System.out.println(Geojson.geojson2Wkt(geo5));*/
 
-			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
-
-			System.out.println(o.getString("fc").equals("null"));
+//			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
+//
+//			System.out.println(o.getString("fc").equals("null"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

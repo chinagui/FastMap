@@ -37,17 +37,17 @@ public class TipsRequestParam {
         //315过滤
         this.getFilter315(builder);
 
-        if(workStatus == 0) {//待作业
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
             builder.append(" AND ((t_tipStatus:2");
             builder.append(" AND stage:(1 5 6)");
             builder.append(")");
             //接边Tips
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-        }else if(workStatus == 1) {//有问题待确认
+        }else if(workStatus == TipsWorkStatus.WORK_HAS_PROBLEM) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
         }else if(workStatus == 2) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
-        }else if(workStatus == 9) {//全部
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
             allBuilder.append(" AND ");
             allBuilder.append("(");
@@ -64,6 +64,24 @@ public class TipsRequestParam {
             allBuilder.append(")");
 
             builder.append(allBuilder);
+        }//1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+
+            builder.append("  stage:7 AND t_dEditStatus:0 ");
+
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+
+            builder.append("  stage:7 AND t_dEditStatus:2 ");
+
+
+        }
+        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+
+            builder.append("  stage:7 AND t_dEditStatus:1 ");
+
         }
 
         return builder.toString();
@@ -93,17 +111,17 @@ public class TipsRequestParam {
         builder.append(" AND s_sourceType:" + sourceType);
 
 
-        if(workStatus == 0) {//待作业
+        if(workStatus == TipsWorkStatus.PREPARED_WORKING) {//待作业
             builder.append(" AND ((t_tipStatus:2");
             builder.append(" AND stage:(1 5 6)");
             builder.append(")");
             //接边Tips
             builder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0))");
-        }else if(workStatus == 1) {//有问题待确认
+        }else if(workStatus ==TipsWorkStatus.WORK_HAS_PROBLEM ) {//有问题待确认
             builder.append(" AND stage:2 AND t_dEditStatus:1");
         }else if(workStatus == 2) {//已作业
             builder.append(" AND stage:2 AND t_dEditStatus:2");
-        }else if(workStatus == 9) {//全部
+        }else if(workStatus == TipsWorkStatus.ALL) {//全部
             StringBuilder allBuilder = new StringBuilder();
             allBuilder.append(" AND ");
             allBuilder.append("(");
@@ -120,6 +138,25 @@ public class TipsRequestParam {
             allBuilder.append(")");
 
             builder.append(allBuilder);
+        }
+        //1.日编待质检tips：取stage=7，且t_dEditStatus=0
+        else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
+
+            builder.append("  stage:7 AND t_dEditStatus:0 ");
+
+        }
+        //日编已质检tips：取stage=7，且t_dEditStatus=2
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
+
+            builder.append("  stage:7 AND t_dEditStatus:2 ");
+
+
+        }
+        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
+        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
+
+            builder.append("  stage:7 AND t_dEditStatus:1 ");
+
         }
 
         return builder.toString();
@@ -350,35 +387,14 @@ public class TipsRequestParam {
 
     public String getTipsCheck(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-//        JSONArray grids = jsonReq.getJSONArray("grids");
-//        String wkt = GridUtils.grids2Wkt(grids);
+        JSONArray grids = jsonReq.getJSONArray("grids");
+        String wkt = GridUtils.grids2Wkt(grids);
         int subtaskId = jsonReq.getInt("subtaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
-
-        if(jsonReq.containsKey("type")) {
-            builder.append("s_sourceType:" + jsonReq.getString("type"));
-        }
 
 //        builder.append("wkt:\"intersects(" + wkt + ")\"");
-
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        if (taskSet != null && taskSet.size() > 0) {
-            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
-        }
-
-        return builder.toString();
-    }
-
-    public String getTipsCheckUnCommit(String parameter) throws Exception{
-        JSONObject jsonReq = JSONObject.fromObject(parameter);
-        int subtaskId = jsonReq.getInt("subtaskId");
-
-        //solr查询语句
-        StringBuilder builder = new StringBuilder();
-
-        builder.append("-t_tipStatus:2");
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         if (taskSet != null && taskSet.size() > 0) {
@@ -422,9 +438,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrIntSetQuery(StringBuilder builder, Set<Integer> intSet, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND ");
+            builder.append(" AND");
         }
-        builder.append(fieldName + ":(");
+        builder.append(" " + fieldName + ":(");
         int i = 0;
         for (Integer filedValue : intSet) {
             if (i > 0) {
@@ -439,9 +455,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrIntArrayQuery(StringBuilder builder, JSONArray intArray, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND ");
+            builder.append(" AND");
         }
-        builder.append(fieldName + ":(");
+        builder.append(" " + fieldName + ":(");
         for (int i = 0; i < intArray.size(); i++) {
             int fieldValue = intArray.getInt(i);
             if (i > 0) {
@@ -455,9 +471,9 @@ public class TipsRequestParam {
 
     private StringBuilder getSolrStringArrayQuery(StringBuilder builder, JSONArray stringArray, String fieldName) {
         if(builder.length() > 0) {
-            builder.append(" AND ");
+            builder.append(" AND");
         }
-        builder.append(fieldName + ":(");
+        builder.append(" " + fieldName + ":(");
         for (int i = 0; i < stringArray.size(); i++) {
             String fieldValue = stringArray.getString(i);
             if (i > 0) {

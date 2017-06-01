@@ -1319,6 +1319,25 @@ public class TipsSelector {
         TipsRequestParam param = new TipsRequestParam();
         String query = param.getSnapShot(parameter);
         List<JSONObject> tips = conn.queryTips(query, null);
+        
+        jsonData=convert2Snapshot(tips,dbId,type);
+
+		return jsonData;
+	}
+
+	/**
+	 * @Description:按照快照接口的要求返回数据
+	 * @param tips
+	 * @param dbId
+	 * @param type
+	 * @return
+	 * @author: y
+	 * @throws Exception 
+	 * @time:2017-5-26 下午6:00:53
+	 */
+	public JSONArray convert2Snapshot(List<JSONObject> tips, int dbId, int type) throws Exception {
+		
+		JSONArray jsonData = new JSONArray();
 
 		Map<Integer, String> map = null;
 
@@ -1768,6 +1787,7 @@ public class TipsSelector {
 		}
 
 		return jsonData;
+	
 	}
 
 	/**

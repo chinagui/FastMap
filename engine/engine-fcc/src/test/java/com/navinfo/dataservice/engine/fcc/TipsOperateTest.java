@@ -73,10 +73,10 @@ public class TipsOperateTest {
 		
 		JSONObject b=new JSONObject();
 		
-		b.put("rowkey", "0220019609FB3AFDD047EE9FE53BEF56496AAE");
+		b.put("rowkey", "021509E86F79D4FB174B728B9E552434D7D324");
 		
-		b.put("editStatus", 1);
-		b.put("editMeth", 1);
+		b.put("editStatus", 2);
+		b.put("editMeth", 2);
 		
 		data.add(b);
 		

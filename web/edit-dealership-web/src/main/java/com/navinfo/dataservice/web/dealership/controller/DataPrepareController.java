@@ -73,4 +73,32 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	/**
+	 * 1.功能描述：表差分结果人工整理完毕后，上传入库
+	 * 2.实现逻辑：
+	 * 详见需求：一体化代理店业务需求-》表表差分结果导入
+	 * 3.使用场景：
+	 * 	1）代理店编辑平台-数据准备-表表差分
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/dealership/impTableDiff")
+	public ModelAndView impTableDiff(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			String upFile= dataJson.getString("upFile");
+			
+			dealerShipService.impTableDiff(chainCode,upFile);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

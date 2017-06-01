@@ -224,7 +224,7 @@ public class TipsCheckOperator {
         	
         	JSONArray trackInfoArr=track.getJSONArray("t_trackInfo");
         	
-        	JSONObject lastTrack=trackInfoArr.getJSONObject(trackInfoArr.size());//删除后的最后一条 一定是stage=7的
+        	JSONObject lastTrack=trackInfoArr.getJSONObject(trackInfoArr.size()-1);//删除后的最后一条 一定是stage=7的
         	
         	int t_dEditStatus=0;
         	
@@ -267,7 +267,7 @@ public class TipsCheckOperator {
         	
         	//更新hbase
         	lastTrack.put("date", date);
-            trackInfoArr.remove(trackInfoArr.size());//先删除最后一条stage是7
+            trackInfoArr.remove(trackInfoArr.size()-1);//先删除最后一条stage是7
         	trackInfoArr.add(lastTrack);//增加修改后的
         	
         	track.put("t_dEditStatus", t_dEditStatus);

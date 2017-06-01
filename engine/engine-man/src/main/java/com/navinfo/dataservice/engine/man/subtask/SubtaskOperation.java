@@ -992,6 +992,18 @@ public class SubtaskOperation {
 								e.printStackTrace();
 							}
 						}
+						//日编道路子任务的指尖任务需要获取质检量的统计
+						if(1==rs.getInt("IS_QUALITY")&&1==rs.getInt("STAGE")&&(3==rs.getInt("TYPE")||4==rs.getInt("TYPE"))){
+							try {
+								FccApi fccApi=(FccApi) ApplicationContextUtil.getBean("fccApi");
+								Map<String, Integer> checkMap = fccApi.getCheckTaskCount((int)subtask.get("subtaskId"));
+								subtask.put("checkCount",checkMap.get("checkCount"));
+								subtask.put("tipsTypeCount",checkMap.get("tipsTypeCount"));
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
 						
 						list.add(subtask);
 						log.debug("end subtask");

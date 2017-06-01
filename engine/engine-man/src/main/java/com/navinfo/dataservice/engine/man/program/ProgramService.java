@@ -1935,23 +1935,23 @@ public class ProgramService {
 				for(Task t:list){
 //					TaskService.getInstance().createWithBean(conn, t);
 					Infor infor = InforService.getInstance().getInforByProgramId(conn,t.getProgramId());
-					UserGroup group =null;
-					if(t.getType()==0){
-						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
-					}else if(t.getType()==1){
-						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
-					}
-					int taskId=TaskOperation.getNewTaskId(conn);
-					t.setTaskId(taskId);
-					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);
-					
 					if(t.getType()==0&&"矢量制作".equals(infor.getMethod())){//采集任务，且情报为矢量制作
 						t.setWorkKind("0|0|1|0");
 					}
-
+					UserGroup group =null;//采集任务不赋组
+//					if(t.getType()==0){
+//						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 1);
+//					}else 
+					if(t.getType()==1){
+						group=UserGroupService.getInstance().getGroupByAminCode(conn,infor.getAdminCode(), 2);
+					}
 					if(group!=null){
 						t.setGroupId(group.getGroupId());
 					}
+					
+					int taskId=TaskOperation.getNewTaskId(conn);
+					t.setTaskId(taskId);
+					t.setName(infor.getInforName()+"_"+df.format(infor.getPublishDate())+"_"+taskId);					
 					TaskService.getInstance().createWithBeanWithTaskId(conn, t);
 				}
 			}

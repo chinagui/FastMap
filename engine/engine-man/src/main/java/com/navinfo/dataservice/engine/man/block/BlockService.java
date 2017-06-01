@@ -1636,7 +1636,6 @@ public class BlockService {
 	
 	public Map<Integer, Integer> getGridMapByBlockId(Connection conn, int blockId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;

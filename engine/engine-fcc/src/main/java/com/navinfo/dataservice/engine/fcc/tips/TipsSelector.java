@@ -8,18 +8,15 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.HBaseController;
-import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
-import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.*;
+import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.navinfo.navicommons.geo.computation.*;
 import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -2166,6 +2163,67 @@ public class TipsSelector {
         sdList.clear();
         sdList = null;
         return statObj;
+    }
+
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+        org.apache.hadoop.hbase.client.Connection hbaseConn = null;
+        Table htab = null;
+        Set<Integer> meshSet = new HashSet<>();
+        try {
+            List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet);
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+            for (JSONObject snapshot : snapshots) {
+                String rowkey = snapshot.getString("id");
+                System.out.println("********************rowkey" + rowkey);
+                //当前geometery
+                JSONObject gLocation = JSONObject.fromObject(snapshot.getString("g_location"));
+                Geometry curGeo = GeoTranslator.geojson2Jts(gLocation);
+                Set<Integer> curMeshSet = this.calculateGeometeryMesh(curGeo);
+                if(curMeshSet != null && curMeshSet.size() > 0) {
+                    meshSet.addAll(curMeshSet);
+                }
+
+                Get get = new Get(rowkey.getBytes());
+                get.addColumn("data".getBytes(), "old".getBytes());
+                Result result = htab.get(get);
+                if(!result.isEmpty()) {
+                    JSONObject oldTip = JSONObject.fromObject(new String(result
+                            .getValue("data".getBytes(), "old".getBytes())));
+                    JSONObject oldGeoJson = JSONObject.fromObject(oldTip.getString("o_location"));
+                    Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+                    Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
+                    if(olcMeshSet != null && olcMeshSet.size() > 0) {
+                        meshSet.addAll(olcMeshSet);
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return meshSet;
+    }
+
+    private Set<Integer> calculateGeometeryMesh(Geometry geometry) {
+        Set<Integer> meshSet = new HashSet<>();
+        if (geometry.getGeometryType() == GeometryTypeName.MULTILINESTRING
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOLYGON
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOINT) {
+            for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                Geometry subGeo = geometry.getGeometryN(i);
+                String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(subGeo);
+                for(String mesh : meshes) {
+                    meshSet.add(Integer.valueOf(mesh));
+                }
+            }
+        }else {
+            String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(geometry);
+            for(String mesh : meshes) {
+                meshSet.add(Integer.valueOf(mesh));
+            }
+        }
+        return meshSet;
     }
 
     public static void main(String[] args) throws Exception {

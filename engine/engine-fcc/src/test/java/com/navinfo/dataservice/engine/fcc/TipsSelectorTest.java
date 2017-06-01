@@ -1,12 +1,6 @@
 package com.navinfo.dataservice.engine.fcc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -286,13 +280,20 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 
 		try {
             System.out.println("**************************************************");
-            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
-//            System.out.println("**************************************************");
-//            System.out.println("**************************************************");
-//            System.out.println("**************************************************");
+//            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            TipsSelector selector = new TipsSelector();
+            Set<Integer> subTaskIds = new HashSet<>();
+            subTaskIds.add(137);
+            Set<Integer> meshSet = selector.getTipsMeshIdSet(subTaskIds);
+            for(Integer mesh : meshSet) {
+                System.out.println(mesh);
+            }
 //            System.out.println(operator.updateInfoCheckResult(8, 1, 1));
 //            System.out.println("**************************************************");
-            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());
+//            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());
 			//JSONObject obj=solrSelector.searchDataByRowkey("111503249654");
 			
 			/*JSONObject geojson = JSONObject.fromObject(obj

@@ -55,7 +55,9 @@ public class TipsCheckTest extends InitApplication {
 		param.put("checkerName", "质检员1");
 		param.put("grids", gridsList);
 
-		String parameter = param.toString();
+		//String parameter = param.toString();
+		
+		String parameter="{\"subTaskId\":283,\"checkerId\":1672,\"checkerName\":\"范京伟\",\"grids\":[59567601]}";
 
 		try {
 
@@ -132,16 +134,6 @@ public class TipsCheckTest extends InitApplication {
 
 	}
 
-	/**
-	 * @Description:查询质检问题记录测试（按照rowkey）
-	 * @author: y
-	 * @time:2017-5-31 上午11:25:24
-	 */
-	@Test
-	public void testGetCheckWrongByRowkey() {
-		
-
-	}
 
 	/**
 	 * @Description:统计
@@ -375,9 +367,9 @@ public class TipsCheckTest extends InitApplication {
 		
 		JSONObject pa = new JSONObject();
 		
-		pa.put("rowkey", "0212014400ac0f42814585b15d2e1f3bdabafb");
+		pa.put("rowkey", "0220019609FB3AFDD047EE9FE53BEF56496AAE");
 		
-		pa.put("subTaskId", "456");
+		pa.put("subTaskId", "188");
 
 		String parameter = pa.toString();
 		
@@ -424,7 +416,7 @@ public class TipsCheckTest extends InitApplication {
 		
 		FccApiImpl imp=new FccApiImpl();
 		try {
-			Map<String,Integer> resultMap=imp.getCheckTaskCount(123);
+			Map<String,Integer> resultMap=imp.getCheckTaskCount(555);
 			Set<String> keys=resultMap.keySet();
 			for (String key : keys) {
 				System.out.println(key+":"+resultMap.get(key));

@@ -90,6 +90,30 @@ public class TipsSelector {
 
 		try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String pType = null;
+			if(jsonReq.containsKey("pType")){
+				pType = jsonReq.getString("pType");
+			}
+
+            if(StringUtils.isEmpty(pType) || pType.equals("web")) {
+                JSONArray workStatus = null;
+                if(jsonReq.containsKey("workStatus")) {
+                    workStatus = jsonReq.getJSONArray("workStatus");
+                }
+                if(workStatus == null || workStatus.size() == 0){
+                    return array;
+                }
+            }else if(pType.equals("ms")) {
+                JSONArray noQFilter = null;
+                if (jsonReq.containsKey("noQFilter")) {
+                    noQFilter = jsonReq.getJSONArray("noQFilter");
+                }
+                if(noQFilter == null || noQFilter.size() == 0){
+                    return array;
+                }
+            }
+
             int x = jsonReq.getInt("x");
             int y = jsonReq.getInt("y");
             int z = jsonReq.getInt("z");

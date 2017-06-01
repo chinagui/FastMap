@@ -32,7 +32,7 @@ public class TipsInfoCheckOperator {
                 " t.ck_confirm = ? WHERE t.id = ?";
 
         try {
-            checkConn = DBConnector.getInstance().getConnectionById(223);
+            checkConn = DBConnector.getInstance().getCheckConnection();
 //            QueryRunner run = new QueryRunner();
 //            return run.update(checkConn, updateSql, status, status, status == 1 ? 0 : 1, ckConfirm, resultId);
 //        DBConnector.getInstance().getCheckConnection();
@@ -63,7 +63,7 @@ public class TipsInfoCheckOperator {
         PreparedStatement pstmtQuery = null;
         JSONObject jsonObject = new JSONObject();
         try {
-            checkConn = DBConnector.getInstance().getConnectionById(223);
+            checkConn = DBConnector.getInstance().getCheckConnection();
 //        DBConnector.getInstance().getCheckConnection();
             pstmtCount = checkConn.prepareStatement(countSql);
             pstmtCount.setInt(1, subTaskId);

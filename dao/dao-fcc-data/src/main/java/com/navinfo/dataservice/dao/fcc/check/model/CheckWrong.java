@@ -20,6 +20,8 @@ public class CheckWrong {
 	private String reason; //问题原因
 	private String erContent;//错误内容
 	private String quRank; //错误等级
+	private String worker; //作业员(姓名+id) 后台自动获取
+	private String checker; //质检员  (姓名+id)
 	private String workTime; //作业时间 后台自动获取
 	private String checkTime; //质检时间  后台自动获取
 	private int isPrefer; //是否倾向性
@@ -161,6 +163,30 @@ public class CheckWrong {
 	 */
 	public void setIsPrefer(int isPrefer) {
 		this.isPrefer = isPrefer;
+	}
+	/**
+	 * @return the worker
+	 */
+	public String getWorker() {
+		return worker;
+	}
+	/**
+	 * @param worker the worker to set
+	 */
+	public void setWorker(String worker) {
+		this.worker = worker;
+	}
+	/**
+	 * @return the checker
+	 */
+	public String getChecker() {
+		return checker;
+	}
+	/**
+	 * @param checker the checker to set
+	 */
+	public void setChecker(String checker) {
+		this.checker = checker;
 	}
 	
 	

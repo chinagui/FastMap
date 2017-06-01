@@ -10,6 +10,8 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
@@ -137,6 +139,7 @@ public class TipsCheckTest extends InitApplication {
 	 */
 	@Test
 	public void testGetCheckWrongByRowkey() {
+		
 
 	}
 
@@ -222,15 +225,15 @@ public class TipsCheckTest extends InitApplication {
 
 		JSONObject obj = new JSONObject();
 		
-		obj.put("checkTaskId", 456);
-		obj.put("tipsCode", "1201");
-		obj.put("tipsRowkey", "0212014400ac0f42814585b15d2e1f3bdabafb");
+		obj.put("checkTaskId", 283);
+		obj.put("tipsCode", "8002");
+		obj.put("tipsRowkey", "0280020f4d849b6c614766afb99d0dd744bf6c");
 		obj.put("quDesc", "错误描述1201");
 		obj.put("reason", "错误原因1201 ");
 		obj.put("erContent", "错误内容1201");
 		obj.put("quRank", "A"); //错误等级
 		obj.put("isPrefer", "是"); //是否倾向性
-		
+		obj.put("checker", "质检员001"); //是否倾向性
 		
 		JSONObject pa = new JSONObject();
 		
@@ -342,6 +345,22 @@ public class TipsCheckTest extends InitApplication {
 
 		}
 
+	}
+	
+	@Test
+	public void getCollectIdsBySubTaskId(){
+        ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+        try {
+			Set<Integer> taskSet = manApi.getCollectTaskIdByDaySubtask(183);
+			for (Integer collectTaskId : taskSet) {
+				System.out.println(collectTaskId);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
+		
+		
 	}
 	
 	

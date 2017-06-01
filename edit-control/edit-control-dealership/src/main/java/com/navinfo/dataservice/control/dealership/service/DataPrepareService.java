@@ -12,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -150,7 +151,7 @@ public class DataPrepareService {
 	 * @author zl zhangli5174@navinfo.com
 	 * @date 2017年6月1日 下午2:21:32 
 	 */
-	public List<Map<String, Object>> searchTableDiff(String chainCode) throws SQLException{
+	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
 		
 		Connection con = null;
 		try{
@@ -167,44 +168,44 @@ public class DataPrepareService {
 					+ " where r.source_id = s.source_id "
 					+ " and r.chain = '"+chainCode+"'";
 			
-			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
 				@Override
-				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+				public List<ExpIxDealershipResult> handle(ResultSet rs) throws SQLException {
 					
-					List<Map<String, Object>> diffList = new ArrayList<Map<String, Object>>();
+					List<ExpIxDealershipResult> diffList = new ArrayList<ExpIxDealershipResult>();
 					while (rs.next()) {
-						Map<String, Object> result = new HashMap<String, Object>();
-							result.put("resultId", rs.getString("result_id"));
-							result.put("province", rs.getString("province"));
-							result.put("city", rs.getString("city"));
-							result.put("project", rs.getString("project"));
-							result.put("kindCode", rs.getString("kind_code"));
-							result.put("chain", rs.getString("chain"));
-							result.put("name", rs.getString("name"));
-							result.put("nameShort", rs.getString("name_short"));
-							result.put("address", rs.getString("address"));
-							result.put("telSale", rs.getString("tel_sale"));
-							result.put("telService", rs.getString("tel_service"));
-							result.put("telOther", rs.getString("tel_other"));
-							result.put("postCode", rs.getString("post_code"));
-							result.put("nameEng", rs.getString("name_eng"));
-							result.put("addressEng", rs.getString("address_eng"));
-							result.put("oldSourceId", rs.getString("old_source_id"));
-							result.put("oldProvince", rs.getString("old_province"));
-							result.put("oldCity", rs.getString("old_city"));
-							result.put("oldProject", rs.getString("old_project"));
-							result.put("oldKindCode", rs.getString("old_kind_code"));
-							result.put("oldChain", rs.getString("old_chain"));
-							result.put("oldName", rs.getString("old_name"));
-							result.put("oldNameShort", rs.getString("old_name_short"));
-							result.put("oldAddress", rs.getString("old_address"));
-							result.put("oldTelSale", rs.getString("old_tel_sale"));
-							result.put("oldTelService", rs.getString("old_tel_service"));
-							result.put("oldTelOther", rs.getString("old_tel_other"));
-							result.put("oldPostCode", rs.getString("old_post_code"));
-							result.put("oldNameEng", rs.getString("old_name_eng"));
-							result.put("oldAddressEng", rs.getString("old_address_eng"));
-							result.put("dealSrcDiff", rs.getString("deal_src_diff"));
+						ExpIxDealershipResult result = new ExpIxDealershipResult();
+							result.setResultId(rs.getString("result_id"));
+							result.setProvince( rs.getString("province"));
+							result.setCity( rs.getString("city"));
+							result.setProject( rs.getString("project"));
+							result.setKindCode( rs.getString("kind_code"));
+							result.setChain( rs.getString("chain"));
+							result.setName( rs.getString("name"));
+							result.setNameShort( rs.getString("name_short"));
+							result.setAddress( rs.getString("address"));
+							result.setTelSale( rs.getString("tel_sale"));
+							result.setTelService( rs.getString("tel_service"));
+							result.setTelOther( rs.getString("tel_other"));
+							result.setPostCode( rs.getString("post_code"));
+							result.setNameEng( rs.getString("name_eng"));
+							result.setAddressEng( rs.getString("address_eng"));
+							result.setOldSourceId( rs.getString("old_source_id"));
+							result.setOldProvince( rs.getString("old_province"));
+							result.setOldCity( rs.getString("old_city"));
+							result.setOldProject( rs.getString("old_project"));
+							result.setOldKindCode( rs.getString("old_kind_code"));
+							result.setOldChain( rs.getString("old_chain"));
+							result.setOldName( rs.getString("old_name"));
+							result.setOldNameShort( rs.getString("old_name_short"));
+							result.setOldAddress( rs.getString("old_address"));
+							result.setOldTelSale( rs.getString("old_tel_sale"));
+							result.setOldTelService( rs.getString("old_tel_service"));
+							result.setOldTelOther( rs.getString("old_tel_other"));
+							result.setOldPostCode( rs.getString("old_post_code"));
+							result.setOldNameEng( rs.getString("old_name_eng"));
+							result.setOldAddressEng( rs.getString("old_address_eng"));
+							result.setDealSrcDiff( rs.getString("deal_src_diff"));
 							/*result.put("", rs.getString(""));
 							result.put("", rs.getString(""));
 							result.put("", rs.getString(""));

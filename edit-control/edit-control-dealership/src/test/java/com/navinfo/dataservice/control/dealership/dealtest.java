@@ -32,7 +32,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	@Test
 	public void testImportSourceExcel() throws Exception{
 		DataPrepareService ds = DataPrepareService.getInstance();
-		ds.expTableDiff("4147");
+		 ds.expTableDiff("4147");
 		
 		
 		

@@ -17,6 +17,7 @@ public class CheckTask {
 	private String workGroup;
 	private int workTotalCount;
 	private int checkTotalCount;
+	private int tipTypeCount;
 	private int checkStatus;
 	/**
 	 * @return the taskId
@@ -125,6 +126,18 @@ public class CheckTask {
 	 */
 	public void setCheckStatus(int checkStatus) {
 		this.checkStatus = checkStatus;
+	}
+	/**
+	 * @return the tipTypeCount
+	 */
+	public int getTipTypeCount() {
+		return tipTypeCount;
+	}
+	/**
+	 * @param tipTypeCount the tipTypeCount to set
+	 */
+	public void setTipTypeCount(int tipTypeCount) {
+		this.tipTypeCount = tipTypeCount;
 	}
 	
 	

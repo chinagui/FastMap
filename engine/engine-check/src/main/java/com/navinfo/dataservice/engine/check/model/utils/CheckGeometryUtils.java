@@ -13,6 +13,8 @@ import com.navinfo.dataservice.dao.glm.model.lc.LcNode;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLink;
 import com.navinfo.dataservice.dao.glm.model.lu.LuLinkKind;
 import com.navinfo.dataservice.dao.glm.model.lu.LuNode;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.node.RdNode;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwLink;
 import com.navinfo.dataservice.dao.glm.model.rd.rw.RwNode;
 import com.navinfo.dataservice.dao.glm.model.rd.same.RdSameLinkPart;
@@ -22,6 +24,7 @@ import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 import com.vividsolutions.jts.geom.Geometry;
 
+import javax.naming.ldap.Rdn;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,10 @@ public class CheckGeometryUtils {
     public static Geometry getGeometry(IRow row) {
         Geometry geometry = null;
         switch (row.objType()) {
+            case RDNODE:
+                geometry = ((RdNode) row).getGeometry(); break;
+            case RDLINK:
+                geometry = ((RdLink) row).getGeometry(); break;
             case LUNODE:
                 geometry = ((LuNode) row).getGeometry(); break;
             case LULINK:

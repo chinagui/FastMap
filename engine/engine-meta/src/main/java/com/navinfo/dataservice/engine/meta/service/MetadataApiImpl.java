@@ -363,9 +363,10 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String[] pyConvert(String word) throws Exception {
 		PinyinConverter py = new PinyinConverter();
+		//String[] result = py.convert(word);
 
-		String[] result = py.convert(word);
-
+        String[] result = py.pyVoiceConvert(word, null, null, null);
+        CollectionUtils.reverseArray(result);
 		return result;
 	}
 	

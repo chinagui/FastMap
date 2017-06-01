@@ -36,7 +36,7 @@ public class InitDealershipChainTable {
 			
 			if(initDataList.size() > 0){
 				//代理店数据库
-				DEconn = DBConnector.getInstance().getConnectionById(399);
+				DEconn = DBConnector.getInstance().getDealershipConnection();
 				//删除代理店source表中的数据
 				InitDealershipChainTable.deletChainDataBeforInit(DEconn);
 				//初始化source表

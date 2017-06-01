@@ -38,7 +38,8 @@ public class CheckWrongRowMapper {
 		wrong.setWorkTime(DateUtils.format(rs.getTimestamp("WORK_TIME"), "yyyyMMddHHmmss") );
 		wrong.setCheckTime(DateUtils.format(rs.getTimestamp("CHECK_TIME"), "yyyyMMddHHmmss")  );
 		wrong.setIsPrefer(rs.getInt("IS_PREFER"));
-		
+		wrong.setChecker(rs.getString("CHECKER"));
+		wrong.setWorker(rs.getString("WORKER"));
 		return wrong;
 	}
 

@@ -119,9 +119,13 @@ public class TipsExtract {
 				
 				int typeAllCount=finishedMap.get(type);
 				
-				int exPercent=percentConfig.get(type);
+				int exPercent=0;
 				
-				Double exCout=Math.ceil(typeAllCount*exPercent/100);
+				if(percentConfig.get(type)!=null){
+					exPercent=percentConfig.get(type);
+				}
+				
+				Double exCout=Math.ceil((double)typeAllCount*exPercent/100);
 				
 				extactCountMap.put(type,exCout.intValue());
 				
@@ -339,7 +343,12 @@ public class TipsExtract {
 	}
 	
 	
-	
+	public static void main(String[] args) {
+		double  p=(double)(2*30)/100;
+		
+		System.out.println(p);
+		System.out.println(Math.ceil(p));
+	}
 	
 	
 	

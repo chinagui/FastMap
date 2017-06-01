@@ -466,4 +466,11 @@ public class FccApiImpl implements FccApi{
 		return result;
 	}
 
+    @Override
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+        TipsSelector selector = new TipsSelector();
+        Set<Integer> meshSet = selector.getTipsMeshIdSet(collectTaskSet);
+        return meshSet;
+    }
+
 }

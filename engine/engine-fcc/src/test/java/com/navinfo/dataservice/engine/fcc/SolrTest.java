@@ -89,8 +89,11 @@ public class SolrTest {
 	 */
 	@Test
 	public void testEditStatus() {
+	/*	JSONArray grids = JSONArray
+				.fromObject("[59566311,59566322,59566321,59566332,59566333,59566331,59566312]");*/
 		JSONArray grids = JSONArray
-				.fromObject("[59566311,59566322,59566321,59566332,59566333,59566331,59566312]");
+				.fromObject("[59567601]");
+		
 		try {
 			String wkt = GridUtils.grids2Wkt(grids);
 			List<JSONObject> tips = solr.queryTipsWeb(wkt);
@@ -101,12 +104,13 @@ public class SolrTest {
 			int count=0;
 			for (JSONObject jsonObject : tips) {
 
+				System.out.println("type:"+jsonObject.getString("s_sourceType")+"rowkey:"+jsonObject.getString("id"));
 				jsonObject.put("t_dEditStatus", t_dEditStatus);
 				jsonObject.put("t_dEditMeth", t_dEditMeth);
 				jsonObject.put("handler", handler);
 				jsonObject.put("stage", stage);
 				
-				jsonObject.put("s_qTaskId", 78);
+				jsonObject.put("s_qTaskId", 244);
 				
 				String rowkey = jsonObject.getString("id");
 

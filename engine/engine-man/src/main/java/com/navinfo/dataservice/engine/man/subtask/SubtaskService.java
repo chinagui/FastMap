@@ -2600,11 +2600,11 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 	
 			String selectSql = "SELECT S.SUBTASK_ID,"
-					+ "       S.EXE_USER_ID,"
+					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
 					+ "       I.USER_REAL_NAME,"
-					+ "       T.GROUP_ID,"
+					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
 					+ "       G.GROUP_NAME,"
-					+ "       F.FINISHED_ROAD,"
+					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
 					+ "       S.NAME           SUBTASK_NAME,"
 					+ "       T.NAME           TASK_NAME"
 					+ "  FROM TASK                     T,"

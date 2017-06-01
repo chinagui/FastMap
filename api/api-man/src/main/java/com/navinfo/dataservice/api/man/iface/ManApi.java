@@ -56,7 +56,18 @@ public interface ManApi{
 	 * @throws Exception
 	 */
 	public Subtask queryBySubTaskIdAndIsQuality(Integer taskId,String stage,Integer isQuality) throws Exception ;
-//	List<Grid> listGrids()throws Exception;
+	
+	/**
+	 * 根据用户一级项，userId,查询抽检系数
+	 * userId 
+	 * firstWorkItem 一级作业项
+	 * @param userId
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public int queryQualityLevel(Integer userId,String firstWorkItem) throws Exception ;
+
 	/**
 	
 	 * @param taskList subTaskId的列表

@@ -304,6 +304,11 @@ public class ManApiImpl implements ManApi {
 	}
 	
 	@Override
+	public int queryQualityLevel(Integer userId,String firstWorkItem) throws Exception {
+		return UserInfoService.getInstance().queryQualityLevel(userId,firstWorkItem);
+	}
+	
+	@Override
 	public Subtask queryCrowdSubtaskByGrid(String grid) throws Exception{
 		return SubtaskService.getInstance().queryCrowdSubtaskByGrid(grid);
 	}

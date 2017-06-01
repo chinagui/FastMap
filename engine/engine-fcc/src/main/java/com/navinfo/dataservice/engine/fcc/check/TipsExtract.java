@@ -26,7 +26,7 @@ import com.navinfo.dataservice.dao.fcc.check.model.CheckTask;
 import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskOperator;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckPercentConfig;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
-import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
+//import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 
 /** 
@@ -151,9 +151,9 @@ public class TipsExtract {
 			
 			// 调用 manapi 获取 任务类型、及任务号
 			
-			String workGroup=manApi.getGroupNameBySubtaskId(subTaskId);
+			String workGroup=null;//manApi.getGroupNameBySubtaskId(subTaskId);
 			
-			int workTotalCount=manApi.getFinishedRoadNumBySubtaskId(subTaskId) ;
+			int workTotalCount=0;//manApi.getFinishedRoadNumBySubtaskId(subTaskId) ;
 			
 			task.setWorkGroup(workGroup);
 			
@@ -229,7 +229,7 @@ public class TipsExtract {
 		        	
 	        	
 	        	//更新hbase
-		        JSONObject newTrackInfo=TipsUtils.newTrackInfo(stage, date, checkerId);
+		        JSONObject newTrackInfo=null;//TipsUtils.newTrackInfo(stage, date, checkerId);
 	        	trackInfoArr.add(newTrackInfo);
 	        	
 	        	track.put("t_dEditStatus", t_dEditStatus);

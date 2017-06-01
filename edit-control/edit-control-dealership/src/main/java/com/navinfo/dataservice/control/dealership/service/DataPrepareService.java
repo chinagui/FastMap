@@ -133,4 +133,97 @@ public class DataPrepareService {
 		return null;
 	}
 	
+	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
+		
+		searchTableDiff(chainCode);
+		
+		return null;
+	}
+	
+	/**
+	 * @Title: searchTableDiff
+	 * @Description: TODO
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException  List<Map<String,Object>>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月1日 下午2:21:32 
+	 */
+	public List<Map<String, Object>> searchTableDiff(String chainCode) throws SQLException{
+		
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getConnectionById(399);
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
+					+ " r.name_short, r.address,r.tel_sale ,"
+					+ " r.tel_service ,r.tel_other,r.post_code,r.name_eng,r.address_eng,s.source_id old_source_id,"
+					+ " s.province old_province,s.city old_city,s.project old_project,s.kind_code old_kind_code,s.chain old_chain, "
+					+ " s.name old_name,s.name_short old_name_short,s.address old_address,s.tel_sale old_tel_sale,"
+					+ " s.tel_service old_tel_service,s.tel_other old_tel_other,s.post_code old_post_code,"
+					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
+					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
+					+ " where r.source_id = s.source_id "
+					+ " and r.chain = '"+chainCode+"'";
+			
+			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
+				@Override
+				public List<Map<String, Object>> handle(ResultSet rs) throws SQLException {
+					
+					List<Map<String, Object>> diffList = new ArrayList<Map<String, Object>>();
+					while (rs.next()) {
+						Map<String, Object> result = new HashMap<String, Object>();
+							result.put("resultId", rs.getString("result_id"));
+							result.put("province", rs.getString("province"));
+							result.put("city", rs.getString("city"));
+							result.put("project", rs.getString("project"));
+							result.put("kindCode", rs.getString("kind_code"));
+							result.put("chain", rs.getString("chain"));
+							result.put("name", rs.getString("name"));
+							result.put("nameShort", rs.getString("name_short"));
+							result.put("address", rs.getString("address"));
+							result.put("telSale", rs.getString("tel_sale"));
+							result.put("telService", rs.getString("tel_service"));
+							result.put("telOther", rs.getString("tel_other"));
+							result.put("postCode", rs.getString("post_code"));
+							result.put("nameEng", rs.getString("name_eng"));
+							result.put("addressEng", rs.getString("address_eng"));
+							result.put("oldSourceId", rs.getString("old_source_id"));
+							result.put("oldProvince", rs.getString("old_province"));
+							result.put("oldCity", rs.getString("old_city"));
+							result.put("oldProject", rs.getString("old_project"));
+							result.put("oldKindCode", rs.getString("old_kind_code"));
+							result.put("oldChain", rs.getString("old_chain"));
+							result.put("oldName", rs.getString("old_name"));
+							result.put("oldNameShort", rs.getString("old_name_short"));
+							result.put("oldAddress", rs.getString("old_address"));
+							result.put("oldTelSale", rs.getString("old_tel_sale"));
+							result.put("oldTelService", rs.getString("old_tel_service"));
+							result.put("oldTelOther", rs.getString("old_tel_other"));
+							result.put("oldPostCode", rs.getString("old_post_code"));
+							result.put("oldNameEng", rs.getString("old_name_eng"));
+							result.put("oldAddressEng", rs.getString("old_address_eng"));
+							result.put("dealSrcDiff", rs.getString("deal_src_diff"));
+							/*result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));*/
+						
+						diffList.add(result);
+					}
+					return diffList;
+				}
+			};
+			
+			return run.query(con, selectSql, rs);
+		}catch(Exception e){
+			DbUtils.rollbackAndClose(con);
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+		return null;
+	}
+	
+	
 }

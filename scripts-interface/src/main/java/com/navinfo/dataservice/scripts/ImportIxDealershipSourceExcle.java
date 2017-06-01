@@ -59,7 +59,8 @@ public class ImportIxDealershipSourceExcle {
 	public static void imp(String filePath)throws Exception{
 
 			String ext = filePath.substring(filePath.lastIndexOf("."));
-			if(!".xls".equals(ext) || !".xlsx".equals(ext)){
+			if(!".xls".equals(ext) && !".xlsx".equals(ext)){
+				System.out.println("文件格式错误"+filePath);
 				throw new IllegalArgumentException("文件格式错误"+filePath);
 			}
 			ExcelReader excleReader = new ExcelReader(filePath);

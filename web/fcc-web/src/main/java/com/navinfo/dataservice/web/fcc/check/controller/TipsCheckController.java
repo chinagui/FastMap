@@ -17,7 +17,7 @@ import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.check.model.CheckWrong;
 import com.navinfo.dataservice.engine.fcc.check.TipsCheckOperator;
-import com.navinfo.dataservice.engine.fcc.check.TipsCheckSelector;
+//import com.navinfo.dataservice.engine.fcc.check.TipsCheckSelector;
 import com.navinfo.dataservice.engine.fcc.check.TipsExtract;
 
 /** 
@@ -164,13 +164,14 @@ public class TipsCheckController extends BaseController {
 			int checkerId = jsonReq.getInt("checkerId");
 
 			int  workerId = jsonReq.getInt("workerId");
-
+/*
 			TipsCheckSelector selector = new TipsCheckSelector();
 			
 			JSONObject data = selector.getStats(checkerId,workerId,checkTaskId,workStatus);
 			
 
-			return new ModelAndView("jsonView", success(data));
+			return new ModelAndView("jsonView", success(data));*/
+			return null;
 
 		} catch (Exception e) {
 
@@ -221,11 +222,13 @@ public class TipsCheckController extends BaseController {
                 throw new IllegalArgumentException("参数错误:dbId不能为空。");
             }
 
-			TipsCheckSelector selector = new TipsCheckSelector();
+			/*TipsCheckSelector selector = new TipsCheckSelector();
 			
 			JSONArray data = selector.getSnapot(checkerId,workerId,checkTaskId,workStatus,dbId,type);
 			
-			return new ModelAndView("jsonView", success(data));
+			return new ModelAndView("jsonView", success(data));*/
+            
+            return null;
 
 		} catch (Exception e) {
 
@@ -271,7 +274,7 @@ public class TipsCheckController extends BaseController {
 				
                 throw new IllegalArgumentException("参数错误:rowkey不能为空。");
             }
-			
+			/*
 			TipsCheckSelector selector=new TipsCheckSelector();
 			
 			////返回当前rowkey下的 错误问题记录（用于界面显示或者修改）
@@ -279,7 +282,8 @@ public class TipsCheckController extends BaseController {
 			
 			logger.debug("result:"+result);
 			
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(result));*/
+			return null;
 
 		} catch (Exception e) {
 

@@ -36,6 +36,8 @@ public class CheckWrongOperator {
 			+ "   REASON,                                     \n"
 			+ "   ER_CONTENT,                                 \n"
 			+ "   QU_RANK,                                    \n"
+			+ "   WORKER,                                     \n"
+			+ "   CHECKER,                                 \n"
 			+ "   WORK_TIME,                                  \n"
 			+ "   CHECK_TIME,                                 \n"
 			+ "   IS_PREFER)                                  \n"
@@ -48,6 +50,8 @@ public class CheckWrongOperator {
 			"   ?,                                          \n" + // reason
 			"   ?,                                      	 \n" + // content
 			"   ?,                                          \n" + // level
+			"   ?,                                          \n" + // WOKER
+			"   ?,                                          \n" + // CHECKER
 			"   ?,									         \n" + // workerDate
 			"   ?,       								    \n" + // checkDate
 			"   ?)                                         \n"; // isPrefer
@@ -92,9 +96,11 @@ public class CheckWrongOperator {
 			pst.setString(6, wrong.getReason());
 			pst.setString(7, wrong.getErContent());
 			pst.setString(8, wrong.getQuRank());
-			pst.setTimestamp(9, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getWorkTime(), "yyyyMMddHHmmss") ));
-			pst.setTimestamp(10, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getCheckTime(), "yyyyMMddHHmmss")));
-			pst.setInt(11, wrong.getIsPrefer());
+			pst.setString(9, wrong.getWorker());
+			pst.setString(10, wrong.getChecker());
+			pst.setTimestamp(11, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getWorkTime(), "yyyyMMddHHmmss") ));
+			pst.setTimestamp(12, new java.sql.Timestamp(DateUtils.stringToLong(wrong.getCheckTime(), "yyyyMMddHHmmss")));
+			pst.setInt(13, wrong.getIsPrefer());
 
 			pst.execute();
 

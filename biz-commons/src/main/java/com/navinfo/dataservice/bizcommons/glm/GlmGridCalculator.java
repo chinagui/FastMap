@@ -149,11 +149,11 @@ public class GlmGridCalculator {
 		String realName = this.caleTableName(dataConn, tableName, rowId);
 		if (StringUtils.isNotEmpty(realName)) {
 
-			if (tableName.equals("RD_SAMENODE")) {
+			if (tableName.equals("RD_SAMENODE")||tableName.equals("RD_SAMENODE_PART")) {
 				sql = sql.replaceAll("RD_NODE", realName)
 						+ " AND R2.TABLE_NAME = '" + realName + "' ";
 			}
-			if (tableName.equals("RD_SAMELINK")) {
+			if (tableName.equals("RD_SAMELINK")||tableName.equals("RD_SAMELINK_PART")) {
 				sql = sql.replaceAll("RD_LINK", realName)
 						+ " AND R2.TABLE_NAME = '" + realName + "' ";
 			}

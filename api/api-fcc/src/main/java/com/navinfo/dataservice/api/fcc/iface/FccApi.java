@@ -104,4 +104,11 @@ public interface FccApi {
      */
     public Map<String,Integer> getCheckTaskCount(int checkSubTaskId) throws Exception;
 
+    /**
+     * 获取该任务下tips前后图幅
+     * @param collectTaskSet
+     * @return
+     */
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception;
+
 }

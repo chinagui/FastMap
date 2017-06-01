@@ -24,6 +24,7 @@ public class DBConnector {
 		return SingletonHolder.INSTANCE;
 	}
 
+	private DataSource dealshipDataSource;
 	private DataSource manDataSource;
 	private DataSource metaDataSource;
 	private DataSource mkDataSource;
@@ -214,5 +215,29 @@ public class DBConnector {
 			}
 		}
 		return statClient;
+	}
+	
+	public Connection getDealershipConnection() throws SQLException {
+		if (dealshipDataSource == null) {
+			synchronized (this) {
+				if (dealshipDataSource == null) {
+					DatahubApi datahub = (DatahubApi) ApplicationContextUtil
+							.getBean("datahubApi");
+					DbInfo manDb = null;
+					DbConnectConfig connConfig = null;
+					try {
+						manDb = datahub.getOnlyDbByType("dealershipPoi");
+						connConfig = DbConnectConfig
+								.createConnectConfig(manDb.getConnectParam());
+					} catch (Exception e) {
+						throw new SQLException("从datahub获取代理店信息失败："
+								+ e.getMessage(), e);
+					}
+					dealshipDataSource = MultiDataSourceFactory.getInstance()
+							.getDataSource(connConfig);
+				}
+			}
+		}
+		return dealshipDataSource.getConnection();
 	}
 }

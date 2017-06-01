@@ -107,11 +107,10 @@ public class TipsSelectorUtils {
         return accessList;
     }
 
-    public static Set<String> getMeshesByGrids(JSONArray girds) {
+    public static Set<String> getMeshesByGrids(List<Integer> grids) {
         Set<String> meshes = new HashSet<>();
-        for(int i = 0; i < girds.size(); i++) {
-            String grid = girds.getString(i);
-            String mesh = grid.substring(0,6);
+        for(Integer grid : grids) {
+            String mesh = String.valueOf(grid).substring(0,6);
             if(!meshes.contains(mesh)) {
                 meshes.add(mesh);
             }

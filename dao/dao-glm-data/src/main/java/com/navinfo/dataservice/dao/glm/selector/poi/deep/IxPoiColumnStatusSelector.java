@@ -910,7 +910,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getColumnCount(Subtask subtask,long userId) throws Exception{
+	public JSONObject getColumnCount(Subtask subtask,long userId,int isQuality) throws Exception{
 		int taskId = subtask.getSubtaskId();
 		
 		PreparedStatement pstmt = null;
@@ -924,6 +924,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" where s.work_item_id = c.work_item_id");
 			sb.append("   and s.work_item_id != 'FM-YW-20-017'");
 			sb.append("   and s.pid = p.pid");
+			sb.append("   and s.qc_flag = "+isQuality);//0 常规 1质检
 			sb.append("   and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 			sb.append("   and ((c.first_work_item in ('poi_name', 'poi_address') and");
 			sb.append("       s.first_work_status = 1) or");
@@ -1239,7 +1240,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	
 	
 	public JSONObject saveQcProblem(Integer pid, String firstWorkItem, String secondWorkItem, String errorType,
-			Integer errorLevel, String problemDesc,String techGuidance,String techScheme,Integer subtaskId) throws Exception {
+			String errorLevel, String problemDesc,String techGuidance,String techScheme,Integer subtaskId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append(" UPDATE COLUMN_QC_PROBLEM c SET c.error_type = :1");
 		sb.append(" ,c.error_level = :2 , c.problem_desc= :3 , c.tech_guidance = :4");
@@ -1254,7 +1255,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			pstmt = conn.prepareStatement(sb.toString());
 
 			pstmt.setString(1, errorType);
-			pstmt.setInt(2, errorLevel);
+			pstmt.setString(2, errorLevel);
 			pstmt.setString(3, problemDesc);
 			pstmt.setString(4, techGuidance);
 			pstmt.setString(5, techScheme);

@@ -142,7 +142,7 @@ public class TipsExtract {
 				
 		        String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,workTaskId,workerId,0,null);
 		        
-		        solrQuery=solrQuery+" and s_sourceType:"+ type; //指定类型
+		        solrQuery=solrQuery+" AND s_sourceType:"+ type; //指定类型
 		        
 				List<JSONObject> tips = solrConn.queryTips(solrQuery, null,extactLimit);
 				
@@ -156,6 +156,8 @@ public class TipsExtract {
 		/*	CheckResultOperator operate=new CheckResultOperator();
 			
 			operate.save(checkTaskId, total, allExpTipsList);*/
+			
+			total=allExpTipsList.size();
 			
 			CheckTask task=new CheckTask();
 			
@@ -176,6 +178,8 @@ public class TipsExtract {
 			task.setCheckTotalCount(total);
 			
 			task.setCheckStatus(0); //待质检
+			
+			task.setTipTypeCount(allType.size());
 			
 			CheckTaskOperator taskOperate=new CheckTaskOperator();
 			

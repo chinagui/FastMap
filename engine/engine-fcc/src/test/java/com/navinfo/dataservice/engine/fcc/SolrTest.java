@@ -120,7 +120,7 @@ public class SolrTest {
 						t_dEditMeth);
 				count++;
 				
-				if(count>10){
+				if(count>100){
 					break;
 				}
 			}

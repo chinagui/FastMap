@@ -74,9 +74,9 @@ public class CheckTest {
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
-//		tabNames.add("IX_POI_CHARGINGSTATION");
+		tabNames.add("IX_POI_CHARGINGPLOT");
 //		tabNames.add("IX_POI_GASSTATION");
-		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 10301, false);
+		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
 		IxPoiObj poiObj=(IxPoiObj) obj;
 //		row.setKindCode("230126");
@@ -132,7 +132,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-14Sum-04-02");
+		ruleIdList.add("FM-YW-20-211");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

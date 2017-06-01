@@ -125,6 +125,14 @@ public class CheckUtil {
 			return false;
 		}
 	}
+	
+	public static boolean isNumber(String str){
+		String reg = "^\\d+(\\.\\d+)?";
+		Pattern p = Pattern.compile(reg);
+		Matcher m = p.matcher(str);
+		boolean flag = m.matches();
+		return flag;
+	}
 
     public static boolean isLetter(String str){
     	Pattern p1 = Pattern.compile("^[a-zA-Z]+$");

@@ -36,7 +36,7 @@ public class FMD0157 extends BasicCheckRule {
 					String nameStr=nameTmp.getName();
 					IxPoiName chName = poiObj.getOfficeStandardCHName();
 					String chNameStr = chName.getName();
-					Pattern p = Pattern.compile(".*[ａ-ｚＡ-Ｚ０-９＠＿－／；：～＾“‘’”，．？！＊＃（）＜＞￥＄％＆＋＇＂·　、。《》°]+.*");
+					Pattern p = Pattern.compile("^[ａ-ｚＡ-Ｚ０-９＠＿－／；：～＾“‘’”，．？！＊＃（）＜＞￥＄％＆＋＇＂·　、。《》°]+$");
 					Matcher m = p.matcher(chNameStr);
 					boolean flag = m.matches();
 					if(nameStr==null||nameStr.isEmpty()){continue;}
@@ -48,7 +48,8 @@ public class FMD0157 extends BasicCheckRule {
 					}
 					if ((nameStr.toUpperCase()).endsWith(" NO.")){
 						setCheckResult(poi.getGeometry(), poiObj, poi.getMeshId(),"英文名全称和简称都不能以No.结尾");
-                        return;}
+                        return;
+                    }
 					Pattern p1 = Pattern.compile(".*[nN]+[oO]+( )+[.]+.*");
 					Matcher m1 = p1.matcher(nameStr);
 					Pattern p2 = Pattern.compile(".*[nN]+[oO]+[.]+( )+.*");

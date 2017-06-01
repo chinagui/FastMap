@@ -208,7 +208,6 @@ public class TipsOperator {
 	 */
 	public void batchUpdateStatus(JSONArray data, int handler, String mdFlag)
 			throws Exception {
-
         Connection hbaseConn = null;
         Table htab = null;
         try {
@@ -218,7 +217,6 @@ public class TipsOperator {
                     .valueOf(HBaseConstant.tipTab));
 
             for (Object object : data) {
-
                 JSONObject json = JSONObject.fromObject(object);
 
                 String rowkey = json.getString("rowkey");
@@ -274,9 +272,9 @@ public class TipsOperator {
             if(htab != null) {
                 htab.close();
             }
-            if(hbaseConn != null) {
-                hbaseConn.close();
-            }
+//            if(hbaseConn != null) {
+//                hbaseConn.close();
+//            }
         }
 
 	}

@@ -29,10 +29,12 @@ public class CheckTaskOperator {
 			"  CHECKER ,                    \n"+
 			"  WORK_TOTAL_COUNT,            \n"+
 			"  CHECK_TOTAL_COUNT ,          \n"+
+			"  TIPS_TYPE_COUNT,             \n"+
 			"  CHECK_STATUS ,               \n"+
 			"  EXTRACT_TIME                 \n"+
 			")VALUES                        \n"+
 			"(                              \n"+
+			"?,                             \n"+
 			"?,                             \n"+
 			"?,                             \n"+
 			"?,                             \n"+
@@ -73,7 +75,8 @@ public class CheckTaskOperator {
 			pst.setString(6, task.getCheckInfo());
 			pst.setInt(7, task.getWorkTotalCount());
 			pst.setInt(8, task.getCheckTotalCount());
-			pst.setInt(9, task.getCheckStatus());
+			pst.setInt(9, task.getTipTypeCount());
+			pst.setInt(10, task.getCheckStatus());
 			pst.execute();
 
 			return task;

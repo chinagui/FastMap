@@ -26,7 +26,7 @@ import com.navinfo.dataservice.dao.fcc.check.model.CheckTask;
 import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskOperator;
 import com.navinfo.dataservice.dao.fcc.check.selector.CheckPercentConfig;
 import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
-//import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
+import com.navinfo.dataservice.engine.fcc.tips.TipsUtils;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
 
 /** 
@@ -71,24 +71,39 @@ public class TipsExtract {
 			// 调用 manapi 获取 任务类型、及任务号
 			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 			
-			JSONObject  jsonReq=new JSONObject(); //?????
+			Map<String,String> taskInfoMap=manApi.getCommonSubtaskByQualitySubtask(checkTaskId);
 			
-			int subTaskId=jsonReq.getInt("subTaskId");//作业任务号
+			/**
+			 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
+			 * @param qualitySubtaskId
+			 * @return Map<String, String> returnMap=new HashMap<String, String>();
+								returnMap.put("subtaskId", rs.getString("SUBTASK_ID"));
+								returnMap.put("exeUserId", rs.getString("EXE_USER_ID"));
+								returnMap.put("exeUserName", rs.getString("USER_REAL_NAME"));
+								returnMap.put("groupId", rs.getString("GROUP_ID"));
+								returnMap.put("groupName", rs.getString("GROUP_NAME"));
+								returnMap.put("finishedRoad", rs.getString("FINISHED_ROAD"));
+								returnMap.put("subtaskName", rs.getString("SUBTASK_NAME"));
+								returnMap.put("taskName", rs.getString("TASK_NAME"));
+			 * @throws Exception 
+			 */
 			
-			int workerId=jsonReq.getInt("workerId");//作业员编号
-			
-			String workerName=jsonReq.getString("workerName");//作业员姓名
-			
-			String taskName=jsonReq.getString("taskName");//任务名称
-			
-			String subTaskName=jsonReq.getString("subTaskName");//子任务名称
+			Integer workTaskId=Integer.valueOf(taskInfoMap.get("subtaskId"));//作业任务号
+			Integer workerId=Integer.valueOf(taskInfoMap.get("exeUserId"));//作业员编号
+			String workerName=taskInfoMap.get("exeUserName");//作业员姓名
+			String groupName=taskInfoMap.get("groupName");//组名
+			int workTotalCount=0;
+			if(taskInfoMap.get("finishedRoad")!=null){
+				workTotalCount=Integer.valueOf(taskInfoMap.get("finishedRoad"));//作业量
+			}
+			String subTaskName=taskInfoMap.get("subtaskName");//子任务名称
+			String taskName=taskInfoMap.get("taskName");//任务名称
 
-			
 			if (grids==null||grids.size()==0) {
                 throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
-			
-			Map<String,Integer> finishedMap=queryhasWorkTipsCount(grids, workStatus, checkTaskId, subTaskId, workerId, 0, null);
+			//没有数据，异常抛出
+			Map<String,Integer> finishedMap=queryhasWorkTipsCount(grids, workStatus, checkTaskId, workTaskId, workerId, 0, null);
 			
 			//2.查询抽取配置表.计算出每类tips需要抽取的数量.并进行tips抽取
 			Map<String,Integer> extactCountMap=new HashMap<String, Integer>();//每个tips抽取数量映射
@@ -98,6 +113,7 @@ public class TipsExtract {
 			Map<String,Integer> percentConfig=configClass.getConfig();
 			
 			Set<String> allType=finishedMap.keySet();
+		
 			
 			for (String type : allType) {
 				
@@ -120,7 +136,7 @@ public class TipsExtract {
 				
 				TipsRequestParam param = new TipsRequestParam();
 				
-		        String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,subTaskId,workerId,0,null);
+		        String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,workTaskId,workerId,0,null);
 		        
 		        solrQuery=solrQuery+" and s_sourceType:"+ type; //指定类型
 		        
@@ -149,13 +165,7 @@ public class TipsExtract {
 			
 			task.setCheckInfo(checkerName+checkerId);
 			
-			// 调用 manapi 获取 任务类型、及任务号
-			
-			String workGroup=null;//manApi.getGroupNameBySubtaskId(subTaskId);
-			
-			int workTotalCount=0;//manApi.getFinishedRoadNumBySubtaskId(subTaskId) ;
-			
-			task.setWorkGroup(workGroup);
+			task.setWorkGroup(groupName);
 			
 			task.setWorkTotalCount(workTotalCount);
 			
@@ -229,7 +239,7 @@ public class TipsExtract {
 		        	
 	        	
 	        	//更新hbase
-		        JSONObject newTrackInfo=null;//TipsUtils.newTrackInfo(stage, date, checkerId);
+		        JSONObject newTrackInfo=TipsUtils.newTrackInfo(stage, date, checkerId);
 	        	trackInfoArr.add(newTrackInfo);
 	        	
 	        	track.put("t_dEditStatus", t_dEditStatus);
@@ -279,7 +289,7 @@ public class TipsExtract {
 		
         String solrQuery = param.getQueryFilterSqlForCheck(grids,workStatus,subTaskId,workerId,checkerId,rowkeyList);
         
-        System.out.println(solrQuery);
+        logger.debug("tips extract query sql:"+solrQuery);
         
 		List<JSONObject> tips = solrConn.queryTips(solrQuery, null);
 
@@ -305,6 +315,12 @@ public class TipsExtract {
 	private Map<String,Integer> queryhasWorkTipsCount(JSONArray grids,int workStatus,int checkTaskId, int subTaskId, int workerId,int checkerId,JSONArray rowkeyList) throws Exception{
 		
 		List<JSONObject> tips = queryTipsByWorkState(grids, workStatus, checkTaskId, subTaskId, workerId, checkerId, rowkeyList);
+		
+		
+		if(tips==null||tips.size()==0){
+			
+			throw new Exception("没有可抽取的tips");
+		}
 		
 		  Map<String, Integer> map = new HashMap<String, Integer>();
 			for (JSONObject json : tips) {

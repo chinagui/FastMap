@@ -1,8 +1,12 @@
 package com.navinfo.dataservice.dao.fcc.tips.selector;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.json.JSONObject;
 
 import org.apache.hadoop.hbase.client.Get;
+import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
@@ -37,9 +41,13 @@ public class HbaseTipsQuery {
    					get.addColumn("data".getBytes(), colName.getBytes());
    				}
    			}
-
-   			result = htab.get(get);
    			
+   			result = htab.get(get);
+
+   			if (result.isEmpty()) {
+   				throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey："+rowkey);
+   			}
+
    			if(result!=null){
    				
    				// 没有给定字段，则全字段查

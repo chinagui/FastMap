@@ -123,11 +123,13 @@ public class ColumnCoreControl {
 					
 					//常规申请需要打质检标记
 					if(isQuality==0){
-						double sampleLevel=0.2;
+						double sampleLevel =((double )apiService.queryQualityLevel((int) userId, firstWorkItem))/100.0;
 						List<Integer> sampDataPids = new ArrayList<Integer>();
-						int ct=(int) Math.floor(applyDataPids.size()*sampleLevel);
-						sampDataPids = applyDataPids.subList(0, ct);
-						updateQCFlag(sampDataPids,conn,comSubTaskId,userId);
+						int ct=(int) Math.ceil(applyDataPids.size()*sampleLevel);
+						if(ct!=0){
+							sampDataPids = applyDataPids.subList(0, ct);
+							updateQCFlag(sampDataPids,conn,comSubTaskId,userId);
+						}
 					}
 				}
 			}

@@ -597,7 +597,7 @@ public class UserInfoService {
 	 */
 	public int queryQualityLevel(long userId,String firstWorkItem) throws ServiceException{
 		Connection conn=null;
-		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item="+firstWorkItem+" AND u.user_id="+userId+" AND pc.type=1 ";
+		String selectSql = "SELECT pc.QC_VALUE FROM USER_INFO u, POI_COLUMN_QC_CONF pc WHERE u.user_level=pc.user_level AND pc.first_work_item='"+firstWorkItem+"' AND u.user_id="+userId+" AND pc.type=1 ";
 		int qcLevel=0;
 		try {
 			conn = DBConnector.getInstance().getManConnection();

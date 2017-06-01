@@ -24,10 +24,9 @@ public class LcFaceTest extends InitApplication {
 
     @Test
     public void createTest() {
-        String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":17," +
-                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.99921250343323," +
-                "40.16725689444015],[117.00033903121948,40.16728968882625],[117.00029611587524,40.16619926699357]," +
-                "[116.99934124946593,40.16620746571932],[116.99921250343323,40.16725689444015]]}}}";
+        String requester = "{\"command\":\"CREATE\",\"type\":\"LCFACE\",\"dbId\":13,\"subtaskId\":65," +
+                "\"data\":{\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.8745943903923,39.998891320993714]," +
+                "[116.87534138560295,39.99893960700643],[116.87534138560295,39.998933442836474],[116.8745943903923,39.998891320993714]]}}}";
         TestUtil.run(requester);
     }
 

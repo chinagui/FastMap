@@ -75,7 +75,7 @@ public class GLM60437 extends BasicCheckRule {
 					String name=nameTmp.getName();
 					if(name==null||name.isEmpty()){continue;}
 					
-					Pattern p = Pattern.compile(".*[〇零一二三四五六七八九十]{3,}.*"); //三个及三个以上连续的中文数字零到九（包含中文数字〇）
+					Pattern p = Pattern.compile(".*[〇零一二三四五六七八九]{3,}.*"); //三个及三个以上连续的中文数字零到九（包含中文数字〇）
 					boolean flag = false;
 					if(p.matcher(name).matches()){
 						flag = true;

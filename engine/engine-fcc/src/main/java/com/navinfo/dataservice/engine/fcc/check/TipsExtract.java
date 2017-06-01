@@ -92,7 +92,10 @@ public class TipsExtract {
 			Integer workerId=Integer.valueOf(taskInfoMap.get("exeUserId"));//作业员编号
 			String workerName=taskInfoMap.get("exeUserName");//作业员姓名
 			String groupName=taskInfoMap.get("groupName");//组名
-			int workTotalCount=Integer.valueOf(taskInfoMap.get("finishedRoad"));//作业量
+			int workTotalCount=0;
+			if(taskInfoMap.get("finishedRoad")!=null){
+				workTotalCount=Integer.valueOf(taskInfoMap.get("finishedRoad"));//作业量
+			}
 			String subTaskName=taskInfoMap.get("subtaskName");//子任务名称
 			String taskName=taskInfoMap.get("taskName");//任务名称
 

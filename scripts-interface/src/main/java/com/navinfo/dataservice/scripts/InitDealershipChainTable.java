@@ -138,7 +138,7 @@ public class InitDealershipChainTable {
 			QueryRunner run = new QueryRunner();
 			
 			//初始化表数据之前先清空表内数据
-			String berforInitSql = "delete from IX_DEALERSHIP_CHAIN";
+			String berforInitSql = "TRUNCATE table IX_DEALERSHIP_CHAIN";
 			
 			run.execute(conn, berforInitSql);
 			

@@ -73,4 +73,22 @@ public class DataPrepareController extends BaseController {
 			return new ModelAndView("jsonView", exception(e));
 		}
 	}
+	
+	@RequestMapping(value = "/dealership/expTableDiff")
+	public ModelAndView expTableDiff(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			
+			List<Map<String, Object>> dealerBrandList = dealerShipService.expTableDiff(chainCode);
+			
+			return new ModelAndView("jsonView", success(dealerBrandList));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
 }

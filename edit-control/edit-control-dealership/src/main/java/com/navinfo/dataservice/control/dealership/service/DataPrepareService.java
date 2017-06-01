@@ -12,6 +12,7 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -132,5 +133,98 @@ public class DataPrepareService {
 		}
 		return null;
 	}
+	
+	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
+		
+		searchTableDiff(chainCode);
+		
+		return null;
+	}
+	
+	/**
+	 * @Title: searchTableDiff
+	 * @Description: TODO
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException  List<Map<String,Object>>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月1日 下午2:21:32 
+	 */
+	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
+		
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getConnectionById(399);
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
+					+ " r.name_short, r.address,r.tel_sale ,"
+					+ " r.tel_service ,r.tel_other,r.post_code,r.name_eng,r.address_eng,s.source_id old_source_id,"
+					+ " s.province old_province,s.city old_city,s.project old_project,s.kind_code old_kind_code,s.chain old_chain, "
+					+ " s.name old_name,s.name_short old_name_short,s.address old_address,s.tel_sale old_tel_sale,"
+					+ " s.tel_service old_tel_service,s.tel_other old_tel_other,s.post_code old_post_code,"
+					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
+					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
+					+ " where r.source_id = s.source_id "
+					+ " and r.chain = '"+chainCode+"'";
+			
+			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
+				@Override
+				public List<ExpIxDealershipResult> handle(ResultSet rs) throws SQLException {
+					
+					List<ExpIxDealershipResult> diffList = new ArrayList<ExpIxDealershipResult>();
+					while (rs.next()) {
+						ExpIxDealershipResult result = new ExpIxDealershipResult();
+							result.setResultId(rs.getString("result_id"));
+							result.setProvince( rs.getString("province"));
+							result.setCity( rs.getString("city"));
+							result.setProject( rs.getString("project"));
+							result.setKindCode( rs.getString("kind_code"));
+							result.setChain( rs.getString("chain"));
+							result.setName( rs.getString("name"));
+							result.setNameShort( rs.getString("name_short"));
+							result.setAddress( rs.getString("address"));
+							result.setTelSale( rs.getString("tel_sale"));
+							result.setTelService( rs.getString("tel_service"));
+							result.setTelOther( rs.getString("tel_other"));
+							result.setPostCode( rs.getString("post_code"));
+							result.setNameEng( rs.getString("name_eng"));
+							result.setAddressEng( rs.getString("address_eng"));
+							result.setOldSourceId( rs.getString("old_source_id"));
+							result.setOldProvince( rs.getString("old_province"));
+							result.setOldCity( rs.getString("old_city"));
+							result.setOldProject( rs.getString("old_project"));
+							result.setOldKindCode( rs.getString("old_kind_code"));
+							result.setOldChain( rs.getString("old_chain"));
+							result.setOldName( rs.getString("old_name"));
+							result.setOldNameShort( rs.getString("old_name_short"));
+							result.setOldAddress( rs.getString("old_address"));
+							result.setOldTelSale( rs.getString("old_tel_sale"));
+							result.setOldTelService( rs.getString("old_tel_service"));
+							result.setOldTelOther( rs.getString("old_tel_other"));
+							result.setOldPostCode( rs.getString("old_post_code"));
+							result.setOldNameEng( rs.getString("old_name_eng"));
+							result.setOldAddressEng( rs.getString("old_address_eng"));
+							result.setDealSrcDiff( rs.getString("deal_src_diff"));
+							/*result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));*/
+						
+						diffList.add(result);
+					}
+					return diffList;
+				}
+			};
+			
+			return run.query(con, selectSql, rs);
+		}catch(Exception e){
+			DbUtils.rollbackAndClose(con);
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+		return null;
+	}
+	
 	
 }

@@ -23,7 +23,8 @@ public class CompPointUtilTest {
 	}
 	@Test
 	public void testExcelImport() throws Exception{
-		String filePath ="F://source.xls";
+//		String filePath ="F://source.xls";
+		String filePath ="F://source.xlsx";
 		
 		ExcelReader excleReader = new ExcelReader(filePath);
 		Map<String,String> excelHeader = new HashMap<String,String>();
@@ -52,18 +53,19 @@ public class CompPointUtilTest {
 		excelHeader.put("一览表作业状态", "");
 		excelHeader.put("变更履历", "");*/
 		excelHeader.put("是否删除记录", "isDeleted");//数字类型
-		excelHeader.put("已采纳POI分类新值", "poiKindCode");
-		excelHeader.put("已采纳POI品牌新值", "poiChain");
-		excelHeader.put("已采纳POI名称新值", "poiName");
-		excelHeader.put("已采纳POI简称新值", "poiNameShort");
-		excelHeader.put("已采纳POI地址新值", "poiAddress");
-		excelHeader.put("已采纳POI电话新值", "poiTel");
-		excelHeader.put("已采纳POI邮编新值", "poiPostCode");
-		excelHeader.put("已采纳POI显示坐标X新值", "poiXDisplay");//double
-		excelHeader.put("已采纳POI显示坐标Y新值", "poiYDisplay");//double
-		excelHeader.put("已采纳POI引导坐标X新值", "poiXGuide");//double
-		excelHeader.put("已采纳POI引导坐标Y新值", "poiYGuide");//double
-		excelHeader.put("一览表X坐标|一览表Y坐标", "geometry");
+		excelHeader.put("一览表X坐标", "XGuide");
+		excelHeader.put("一览表Y坐标", "YGuide");//XGuide,YGuide
+		excelHeader.put("已采纳POI分类", "poiKindCode");
+		excelHeader.put("已采纳POI品牌", "poiChain");
+		excelHeader.put("已采纳POI名称", "poiName");
+		excelHeader.put("已采纳POI简称", "poiNameShort");
+		excelHeader.put("已采纳POI地址", "poiAddress");
+		excelHeader.put("已采纳POI电话", "poiTel");
+		excelHeader.put("已采纳POI邮编", "poiPostCode");
+		excelHeader.put("已采纳POI显示坐标X", "poiXDisplay");//double
+		excelHeader.put("已采纳POI显示坐标Y", "poiYDisplay");//double
+		excelHeader.put("已采纳POI引导坐标X", "poiXGuide");//double
+		excelHeader.put("已采纳POI引导坐标Y", "poiYGuide");//double
 		/*excelHeader.put("", "");
 		excelHeader.put("", "");*/
 		

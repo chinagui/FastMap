@@ -20,6 +20,7 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
+import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
 import net.sf.json.JSONObject;
 
@@ -32,7 +33,7 @@ import net.sf.json.JSONObject;
 @Controller
 public class DataEditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DataEditController.class);
-	private DataPrepareService dealerShipEditService = DataPrepareService.getInstance();
+	private DataEditService dealerShipEditService = new DataEditService();
 
 	@RequestMapping(value = "/dealership/applyData")
 	public ModelAndView applyData(HttpServletRequest request) throws Exception {

@@ -9,6 +9,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.meta.pinyin.PinyinConverter;
+import com.navinfo.dataservice.engine.meta.translates.EnglishConvert;
 
 /**
  * @ClassName: PingConverterTest
@@ -66,7 +67,7 @@ public class PingConverterTest {
 
 	}
 	
-//	@Test
+	@Test
 	public void testvoiceConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
@@ -98,13 +99,22 @@ public class PingConverterTest {
 	public void testEngConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 
-		String res = py.engConvert("上海弄堂", "310000");
+		String res = py.engConvert("停车场", null);
+				//("上海弄堂", "310000", null);
+		System.out.println(res);
+	}
+	
+//	@Test
+	public void testEngConvert2() throws Exception {
+		EnglishConvert py = new EnglishConvert();
+
+		String res = py.convert("停车场");
 				//("上海弄堂", "310000", null);
 		System.out.println(res);
 	}
 	
 	
-	@Test
+//	@Test
 	public void testpyPolyphoneConvert() throws Exception {
 		PinyinConverter py = new PinyinConverter();
 

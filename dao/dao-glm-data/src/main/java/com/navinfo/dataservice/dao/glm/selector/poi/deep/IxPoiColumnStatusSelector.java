@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -103,7 +104,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type) throws Exception {
+	public List<Integer> getApplyPids(Subtask subtask, String firstWorkItem, String secondWorkItem, int type,int qcFlag,JSONObject conditions,long userId) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT DISTINCT s.pid");
 		sb.append(" FROM POI_COLUMN_STATUS s, POI_COLUMN_WORKITEM_CONF w, IX_POI p");
@@ -140,6 +141,24 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			sb.append(" AND w.second_work_item='" + secondWorkItem + "'");
 			sb.append(" AND s.second_work_status != 3");
 		}
+		//质检标示
+		sb.append(" AND s.QC_FLAG =:3 ");
+		//如果是质检，需要扩充质检条件
+		if(qcFlag==1){
+			String commenUserId =conditions.getString("commenUserId");
+			String startTime =conditions.getString("startTime");
+			String endTime =conditions.getString("endTime");
+			if(!startTime.isEmpty()){
+				sb.append(" and  s.apply_date >= to_date('"+startTime+"', 'yyyymmddhh24miss') ");
+			}
+			if(!endTime.isEmpty()){
+				sb.append(" and s.apply_date <= to_date('"+endTime+"', 'yyyymmddhh24miss') ");
+			}
+			sb.append(" and s.COMMON_HANDLER<>"+userId+" ");
+			if(!commenUserId.isEmpty()){
+				sb.append(" and s.COMMON_HANDLER in ("+commenUserId+") ");
+			}
+		}
 
 		PreparedStatement pstmt = null;
 
@@ -153,6 +172,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			Clob geom = ConnectionUtil.createClob(conn);
 			geom.setString(1, subtask.getGeometry());
 			pstmt.setClob(2,geom);
+			pstmt.setInt(3,qcFlag);
 
 			resultSet = pstmt.executeQuery();
 
@@ -194,9 +214,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @param timeStamp
 	 * @throws Exception
 	 */
-	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId, Timestamp timeStamp) throws Exception {
+	public void dataSetLock(List<Integer> pids, List<String> workItemIds, long userId, int taskId, Timestamp timeStamp,int qcFlag) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		if(qcFlag==1){
+			sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		}else{
+			sb.append("UPDATE POI_COLUMN_STATUS SET handler=:1,COMMON_HANDLER="+userId+",task_id=:2,apply_date=:3 WHERE work_item_id in (");
+		}
+		
 		String temp = "";
 		for (String workItemId : workItemIds) {
 			sb.append(temp);
@@ -244,7 +269,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId) throws Exception {
+	public int queryHandlerCount(String firstWorkItem, String secondWorkItem, long userId, int type, int subtaskId,int qcFlag) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT count(distinct s.pid) num");
 		sb.append(" FROM POI_COLUMN_STATUS s,POI_COLUMN_WORKITEM_CONF w");
@@ -252,6 +277,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append(" AND s.handler = :1");
 		sb.append(" AND w.type = :2");
 		sb.append(" AND s.TASK_ID = :3 ");
+		sb.append(" AND s.QC_FLAG = :4 ");
 
 		if (StringUtils.isNotEmpty(firstWorkItem)) {
 			sb.append(" AND w.FIRST_WORK_ITEM='" + firstWorkItem + "'");
@@ -274,6 +300,8 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setInt(2, type);
 			
 			pstmt.setInt(3, subtaskId);
+			
+			pstmt.setInt(4, qcFlag);
 
 			resultSet = pstmt.executeQuery();
 
@@ -434,7 +462,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			pstmt.setString(1, secondWorkItem);
 			pstmt.setInt(2, status);
 			pstmt.setLong(3, userId);
-
+			
 			resultSet = pstmt.executeQuery();
 
 			while (resultSet.next()) {
@@ -612,11 +640,15 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId,int userId) throws Exception {
+public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,int taskId,int userId,boolean flag) throws Exception {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT s.pid FROM poi_column_status s,poi_column_workitem_conf w WHERE s.work_item_id=w.work_item_id");
 		sb.append(" AND s.handler=" + userId + " AND s.task_id=" + taskId);
+		if(flag){
+			sb.append(" AND S.QC_FLAG=1");
+		}
+		
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -878,7 +910,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject getColumnCount(Subtask subtask,long userId) throws Exception{
+	public JSONObject getColumnCount(Subtask subtask,long userId,int isQuality) throws Exception{
 		int taskId = subtask.getSubtaskId();
 		
 		PreparedStatement pstmt = null;
@@ -892,6 +924,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" where s.work_item_id = c.work_item_id");
 			sb.append("   and s.work_item_id != 'FM-YW-20-017'");
 			sb.append("   and s.pid = p.pid");
+			sb.append("   and s.qc_flag = "+isQuality);//0 常规 1质检
 			sb.append("   and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 			sb.append("   and ((c.first_work_item in ('poi_name', 'poi_address') and");
 			sb.append("       s.first_work_status = 1) or");
@@ -990,6 +1023,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  ('poi_name', 'poi_address', 'poi_englishname', 'poi_englishaddress')");
 			sb.append("  and s.task_id = :1");
 			sb.append("  and s.handler = :2");
+			sb.append("  and s.qc_flag = 0");//0 常规 		1 质检
 			sb.append(" GROUP BY c.first_work_item");
 			sb.append(" union all");
 			sb.append(" select count(1) as num, c1.second_work_item as type");
@@ -998,6 +1032,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append("  and c1.second_work_item in ('deepDetail', 'deepParking', 'deepCarrental')");
 			sb.append("  and s1.task_id = :3");
 			sb.append("  and s1.handler = :4");
+			sb.append("  and s1.qc_flag = 0");//0 常规 	1 质检
 			sb.append(" GROUP BY c1.second_work_item");
 
 			pstmt = conn.prepareStatement(sb.toString());
@@ -1088,6 +1123,156 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			throw e;
 		} finally {
 			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 根据传入质检子任务id，查询对应常规子任务下，已打质检标记qc_flag=1，且作业员非本人的作业员列表
+	 * @param subtask
+	 * @param status
+	 * @param userid
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Long> getQueryWorkerList(int subtaskId ,long userid) throws Exception {
+		List<Long> commonHandlerList = new ArrayList<Long>();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT DISTINCT PS.COMMON_HANDLER");
+		sb.append(" FROM POI_COLUMN_STATUS PS");
+		sb.append(" WHERE PS.TASK_ID =  ?");
+		sb.append(" AND PS.QC_FLAG = 1");
+		sb.append(" AND PS.COMMON_HANDLER NOT IN (?, 0)");
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1,subtaskId);
+			pstmt.setLong(2, userid);
+			
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				commonHandlerList.add(resultSet.getLong("COMMON_HANDLER"));
+			}
+			
+			return commonHandlerList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 根据传入质检子任务id，查询对应常规子任务下，已打质检标记qc_flag=1，且作业员非本人的作业员列表
+	 * @param subtask
+	 * @param status
+	 * @param userid
+	 * @param secondWorkItem
+	 * @return
+	 * @throws Exception
+	 */
+	public JSONArray queryQcProblem(int subtaskId ,Integer pid,String firstWorkItem,String secondWorkItem) throws Exception {
+		JSONArray jsonArray  = new JSONArray();
+		StringBuilder sb = new StringBuilder();
+		sb.append(" SELECT * FROM COLUMN_QC_PROBLEM");
+		sb.append(" WHERE SUBTASK_ID = ?");
+		sb.append(" AND IS_VALID = 0");
+		if(pid!=null){
+			sb.append(" AND PID = "+pid);
+		}
+		if(StringUtils.isNotEmpty(firstWorkItem)){
+			sb.append(" AND FIRST_WORK_ITEM ='"+firstWorkItem+"'");
+		}
+		if(StringUtils.isNotEmpty(secondWorkItem)){
+			sb.append(" AND SECOND_WORK_ITEM = '"+secondWorkItem+"'");
+		}
+		
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1,subtaskId);
+			
+			resultSet = pstmt.executeQuery();
+			
+			SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd");
+			
+			while (resultSet.next()) {
+				JSONObject jsonObject = new JSONObject();
+				jsonObject.put("pid", resultSet.getInt("PID"));
+				jsonObject.put("firstWorkItem", resultSet.getString("FIRST_WORK_ITEM"));
+				jsonObject.put("secondWorkItem", resultSet.getString("SECOND_WORK_ITEM"));
+				jsonObject.put("subtaskId", resultSet.getInt("SUBTASK_ID"));
+				jsonObject.put("workItemId", resultSet.getString("WORK_ITEM_ID"));
+				jsonObject.put("oldValue", StringUtils.isEmpty(resultSet.getString("OLD_VALUE"))?"":resultSet.getString("OLD_VALUE"));
+				jsonObject.put("newValue", StringUtils.isEmpty(resultSet.getString("NEW_VALUE"))?"":resultSet.getString("NEW_VALUE"));
+				jsonObject.put("errorType", StringUtils.isEmpty(resultSet.getString("ERROR_TYPE"))?"":resultSet.getString("ERROR_TYPE"));
+				jsonObject.put("errorLevel", StringUtils.isEmpty(resultSet.getString("ERROR_LEVEL"))?"":resultSet.getString("ERROR_LEVEL"));
+				jsonObject.put("problemDesc", StringUtils.isEmpty(resultSet.getString("PROBLEM_DESC"))?"":resultSet.getString("PROBLEM_DESC"));
+				jsonObject.put("techGuidance", StringUtils.isEmpty(resultSet.getString("TECH_GUIDANCE"))?"":resultSet.getString("TECH_GUIDANCE"));
+				jsonObject.put("techScheme", StringUtils.isEmpty(resultSet.getString("TECH_SCHEME"))?"":resultSet.getString("TECH_SCHEME"));
+				jsonObject.put("workTime",resultSet.getTimestamp("WORK_TIME")==null?"":
+								sdf.format(resultSet.getTimestamp("WORK_TIME")));
+				jsonObject.put("qcTime",resultSet.getTimestamp("QC_TIME")==null?"":
+								sdf.format(resultSet.getTimestamp("QC_TIME")));
+				jsonObject.put("isProblem", resultSet.getInt("IS_PROBLEM"));
+				jsonObject.put("isValid", resultSet.getInt("IS_VALID"));
+				jsonObject.put("worker", resultSet.getInt("WORKER"));
+				jsonObject.put("qcWorker", resultSet.getInt("QC_WORKER"));
+				jsonObject.put("originalInfo", StringUtils.isEmpty(resultSet.getString("ORIGINAL_INFO"))?"":resultSet.getString("ORIGINAL_INFO"));
+				jsonArray.add(jsonObject);
+			}
+			
+			return jsonArray;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
+	
+	public JSONObject saveQcProblem(Integer pid, String firstWorkItem, String secondWorkItem, String errorType,
+			String errorLevel, String problemDesc,String techGuidance,String techScheme,Integer subtaskId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE COLUMN_QC_PROBLEM c SET c.error_type = :1");
+		sb.append(" ,c.error_level = :2 , c.problem_desc= :3 , c.tech_guidance = :4");
+		sb.append(" , c.tech_scheme = :5 WHERE c.SUBTASK_ID = :6");
+		sb.append(" AND c.IS_VALID = 0 AND c.pid = :7");
+		sb.append(" AND c.first_work_item = :8  AND c.second_work_item = :9");
+		
+		PreparedStatement pstmt = null;
+
+		try {
+
+			pstmt = conn.prepareStatement(sb.toString());
+
+			pstmt.setString(1, errorType);
+			pstmt.setString(2, errorLevel);
+			pstmt.setString(3, problemDesc);
+			pstmt.setString(4, techGuidance);
+			pstmt.setString(5, techScheme);
+			pstmt.setInt(6, subtaskId);
+			pstmt.setInt(7, pid);
+			pstmt.setString(8, firstWorkItem);
+			pstmt.setString(9, secondWorkItem);
+			
+			int count =  pstmt.executeUpdate();
+
+			JSONObject jsonObject = new JSONObject();
+			jsonObject.put("count", count);
+			return jsonObject;
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
 			DbUtils.closeQuietly(pstmt);
 		}
 	}

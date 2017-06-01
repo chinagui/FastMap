@@ -49,7 +49,7 @@ public class Operation implements IOperation {
 
 		String objStatus = "";
 
-		if (!content.containsKey("objStatus")) {
+		if (content.containsKey("objStatus")) {
 
 			objStatus = content.getString("objStatus");
 		}

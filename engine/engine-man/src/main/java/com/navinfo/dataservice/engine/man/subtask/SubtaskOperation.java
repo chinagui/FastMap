@@ -885,7 +885,8 @@ public class SubtaskOperation {
 				groupSql=" OR st.EXE_GROUP_ID in "+dataJson.getJSONArray("exeGroupId").toString().replace("[", "(").replace("]", ")");
 			}
 						
-			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID");
+			sb.append("select st.SUBTASK_ID ,st.task_id,st.NAME,st.geometry,st.DESCP,st.PLAN_START_DATE,st.PLAN_END_DATE,st.STAGE,"
+					+ "st.TYPE,st.STATUS,r.DAILY_DB_ID,r.MONTHLY_DB_ID,st.is_quality");
 			sb.append(" from subtask st,task t,region r");
 			sb.append(" where st.task_id = t.task_id");
 			sb.append(" and t.region_id = r.region_id");
@@ -938,6 +939,7 @@ public class SubtaskOperation {
 						subtask.put("planStartDate", df.format(rs.getTimestamp("PLAN_START_DATE")));
 						subtask.put("planEndDate", df.format(rs.getTimestamp("PLAN_END_DATE")));
 						subtask.put("status", rs.getInt("STATUS"));
+						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 						//版本信息
 						subtask.put("version", SystemConfigFactory.getSystemConfig().getValue(PropConstant.seasonVersion));
 						
@@ -1037,7 +1039,7 @@ public class SubtaskOperation {
 			sb.append(" ,ST.PLAN_END_DATE");
 			sb.append(" ,ST.STAGE");
 			sb.append(" ,ST.TYPE");
-			sb.append(" ,ST.task_id");
+			sb.append(" ,ST.task_id,st.is_quality");
 			sb.append(" ,ST.STATUS");
 			sb.append(" ,ST.GEOMETRY");
 			sb.append(" ,ST.EXE_USER_ID");
@@ -1091,6 +1093,7 @@ public class SubtaskOperation {
 						subtask.put("subtaskId", rs.getInt("SUBTASK_ID"));
 						subtask.put("name", rs.getString("NAME"));
 						subtask.put("descp", rs.getString("DESCP"));
+						subtask.put("isQuality", rs.getInt("IS_QUALITY"));
 
 						subtask.put("stage", rs.getInt("STAGE"));
 						subtask.put("type", rs.getInt("TYPE"));
@@ -1227,14 +1230,14 @@ public class SubtaskOperation {
 				@Override
 				public Map<String, Integer> handle(ResultSet rs) throws SQLException {
 					Map<String, Integer> stat = new HashMap<String, Integer>();
-					int unfinish = 0;
+					int finish = 0;
 					int total=0;
 					while(rs.next()){
 						int status=rs.getInt("status");
-						if(status==1){unfinish = rs.getInt("finishNum");}
+						if(status==3){finish = rs.getInt("finishNum");}
 						total+=rs.getInt("finishNum");
 					}
-					stat.put("poiFinish", total-unfinish);
+					stat.put("poiFinish", finish);
 					stat.put("poiTotal", total);
 					return stat;
 				}
@@ -1244,7 +1247,7 @@ public class SubtaskOperation {
 			log.debug("get tips stat");
 			if(3 == subtask.getType()){
 				FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
-				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdByTaskId(subtask.getTaskId());
+				Set<Integer> collectTaskId = TaskService.getInstance().getCollectTaskIdsByTaskId(subtask.getTaskId());
 				JSONObject resultRoad = api.getSubTaskStatsByWkt(subtask.getGeometry(), collectTaskId);
 				int tips = resultRoad.getInt("total") + resultRoad.getInt("finished");
 				stat.put("tipsFinish", resultRoad.getInt("finished"));

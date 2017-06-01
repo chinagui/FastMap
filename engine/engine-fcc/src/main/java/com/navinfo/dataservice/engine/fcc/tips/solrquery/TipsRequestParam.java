@@ -437,10 +437,50 @@ public class TipsRequestParam {
                     }
                 }
             }else {//web 刘哲
-                if(builder.length() > 0) {
-                    builder.append(" AND t_tipStatus:2");
-                }else{
-                    builder.append("t_tipStatus:2");
+                StringBuilder webBuilder = new StringBuilder();
+                JSONArray workStatus = null;
+                if(jsonReq.containsKey("workStatus")) {
+                    workStatus = jsonReq.getJSONArray("workStatus");
+                }
+
+                if(workStatus == null || workStatus.contains(9)
+                        || (workStatus.contains(0) && workStatus.contains(1) && workStatus.contains(2))) {
+                    if(webBuilder.length() > 0) {
+                        webBuilder.append(" OR ");
+                    }
+                    webBuilder.append("(t_tipStatus:2)");
+                }else {
+                    if (workStatus.contains(0)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(((t_tipStatus:2");
+                        webBuilder.append(" AND stage:(1 5 6)");
+                        webBuilder.append(")");
+                        //接边Tips
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                    }
+                    if (workStatus.contains(1)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(stage:2 AND t_dEditStatus:1)");
+                    }
+                    if (workStatus.contains(2)) {
+                        if (webBuilder.length() > 0) {
+                            webBuilder.append(" OR ");
+                        }
+                        webBuilder.append("(stage:2 AND t_dEditStatus:2)");
+                    }
+                }
+
+                if(webBuilder.length() > 0) {
+                    if(builder.length() > 0) {
+                        builder.append(" AND ");
+                    }
+                    builder.append("(");
+                    builder.append(webBuilder);
+                    builder.append(")");
                 }
             }
         }
@@ -453,14 +493,14 @@ public class TipsRequestParam {
 
     public String getTipsCheck(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        JSONArray grids = jsonReq.getJSONArray("grids");
-        String wkt = GridUtils.grids2Wkt(grids);
+//        JSONArray grids = jsonReq.getJSONArray("grids");
+//        String wkt = GridUtils.grids2Wkt(grids);
         int subtaskId = jsonReq.getInt("subtaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
 
-        builder.append("wkt:\"intersects(" + wkt + ")\"");
+//        builder.append("wkt:\"intersects(" + wkt + ")\"");
 
         Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
         if (taskSet != null && taskSet.size() > 0) {
@@ -572,6 +612,23 @@ public class TipsRequestParam {
                     builder.append(" AND s_mTaskId:0");
             }
         }
+    }
+
+    public String getTipsCheckUnCommit(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("-t_tipStatus:2");
+
+        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
+        if (taskSet != null && taskSet.size() > 0) {
+            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        }
+
+        return builder.toString();
     }
 
     public static void main(String[] args) throws Exception {

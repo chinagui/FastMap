@@ -8,17 +8,15 @@ import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.dao.fcc.HBaseConnector;
-import com.navinfo.dataservice.dao.fcc.HBaseController;
-import com.navinfo.dataservice.dao.fcc.SearchSnapshot;
-import com.navinfo.dataservice.dao.fcc.SolrController;
+import com.navinfo.dataservice.dao.fcc.*;
+import com.navinfo.dataservice.dao.fcc.tips.selector.HbaseTipsQuery;
 import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
 import com.navinfo.dataservice.engine.fcc.tips.solrquery.TipsRequestParam;
-import com.navinfo.navicommons.geo.computation.CompGridUtil;
-import com.navinfo.navicommons.geo.computation.GeometryUtils;
-import com.navinfo.navicommons.geo.computation.GridUtils;
+import com.navinfo.navicommons.geo.computation.*;
+import com.navinfo.nirobot.common.utils.GeometryConvertor;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.LineString;
 import com.vividsolutions.jts.geom.Point;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONNull;
@@ -35,6 +33,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.hbase.async.KeyValue;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.*;
 import java.util.Map.Entry;
@@ -88,6 +87,30 @@ public class TipsSelector {
 
 		try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
+
+			String pType = null;
+			if(jsonReq.containsKey("pType")){
+				pType = jsonReq.getString("pType");
+			}
+
+            if(StringUtils.isEmpty(pType) || pType.equals("web")) {
+                JSONArray workStatus = null;
+                if(jsonReq.containsKey("workStatus")) {
+                    workStatus = jsonReq.getJSONArray("workStatus");
+                }
+                if(workStatus == null || workStatus.size() == 0){
+                    return array;
+                }
+            }else if(pType.equals("ms")) {
+                JSONArray noQFilter = null;
+                if (jsonReq.containsKey("noQFilter")) {
+                    noQFilter = jsonReq.getJSONArray("noQFilter");
+                }
+                if(noQFilter == null || noQFilter.size() == 0){
+                    return array;
+                }
+            }
+
             int x = jsonReq.getInt("x");
             int y = jsonReq.getInt("y");
             int z = jsonReq.getInt("z");
@@ -1961,9 +1984,40 @@ public class TipsSelector {
 
 	}
 
+    /**
+     * 矢量化检查Tips查询
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
     public List<String> getCheckRowkeyList(String parameter) throws Exception {
         TipsRequestParam param = new TipsRequestParam();
         String query = param.getTipsCheck(parameter);
+        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
+        List rowkeyList = new ArrayList();
+        long totalNum = sdList.getNumFound();
+        if (totalNum <= Integer.MAX_VALUE) {
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                String rowkey = snapshot.getString("id");
+                rowkeyList.add(rowkey);
+            }
+        } else {
+            // 暂先不处理
+        }
+        return rowkeyList;
+    }
+
+    /**
+     * 查询矢量化子任务未提交的数据
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public List<String> getUnCommitRowkeyList(String parameter) throws Exception {
+        TipsRequestParam param = new TipsRequestParam();
+        String query = param.getTipsCheckUnCommit(parameter);
         SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
         List rowkeyList = new ArrayList();
         long totalNum = sdList.getNumFound();
@@ -2065,7 +2119,114 @@ public class TipsSelector {
 		return list;
 	}
 
-	public static void main(String[] args) throws Exception {
+    /**
+     *
+     * @param parameter
+     * @return
+     * @throws Exception
+     */
+    public JSONObject statInfoTask(String parameter) throws Exception {
+        TipsRequestParam param = new TipsRequestParam();
+        String query = param.getTipsCheck(parameter);
+        SolrDocumentList sdList = conn.queryTipsSolrDoc(query, null);
+
+        JSONObject statObj = new JSONObject();
+        //矢量化任务Tips总数
+        long totalNum = sdList.getNumFound();
+        statObj.put("total", totalNum);
+        sdList.clear();
+        sdList = null;
+
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        jsonReq.put("type", "2001");//测线
+        query = param.getTipsCheck(jsonReq.toString());
+        sdList = conn.queryTipsSolrDoc(query, null);
+        totalNum = sdList.getNumFound();
+        statObj.put("total2001", totalNum);
+        double length = 0;
+        if (totalNum <= Integer.MAX_VALUE) {
+            for (int i = 0; i < totalNum; i++) {
+                SolrDocument doc = sdList.get(i);
+                JSONObject snapshot = JSONObject.fromObject(doc);
+                JSONObject geojson = JSONObject.fromObject(snapshot
+                        .getString("g_location"));
+                length += GeometryUtils.getLinkLength(GeoTranslator
+                        .geojson2Jts(geojson));
+            }
+        } else {
+            // 暂先不处理
+        }
+        if(length != 0) {
+            length = new BigDecimal(length).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+        }
+        statObj.put("length", length);
+        sdList.clear();
+        sdList = null;
+        return statObj;
+    }
+
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+        org.apache.hadoop.hbase.client.Connection hbaseConn = null;
+        Table htab = null;
+        Set<Integer> meshSet = new HashSet<>();
+        try {
+            List<JSONObject> snapshots = conn.queryCollectTaskTips(collectTaskSet);
+            hbaseConn = HBaseConnector.getInstance().getConnection();
+            htab = hbaseConn.getTable(TableName.valueOf(HBaseConstant.tipTab));
+
+            for (JSONObject snapshot : snapshots) {
+                String rowkey = snapshot.getString("id");
+                System.out.println("********************rowkey" + rowkey);
+                //当前geometery
+                JSONObject gLocation = JSONObject.fromObject(snapshot.getString("g_location"));
+                Geometry curGeo = GeoTranslator.geojson2Jts(gLocation);
+                Set<Integer> curMeshSet = this.calculateGeometeryMesh(curGeo);
+                if(curMeshSet != null && curMeshSet.size() > 0) {
+                    meshSet.addAll(curMeshSet);
+                }
+
+                Get get = new Get(rowkey.getBytes());
+                get.addColumn("data".getBytes(), "old".getBytes());
+                Result result = htab.get(get);
+                if(!result.isEmpty()) {
+                    JSONObject oldTip = JSONObject.fromObject(new String(result
+                            .getValue("data".getBytes(), "old".getBytes())));
+                    JSONObject oldGeoJson = JSONObject.fromObject(oldTip.getString("o_location"));
+                    Geometry oldGeo = GeoTranslator.geojson2Jts(oldGeoJson);
+                    Set<Integer> olcMeshSet = this.calculateGeometeryMesh(oldGeo);
+                    if(olcMeshSet != null && olcMeshSet.size() > 0) {
+                        meshSet.addAll(olcMeshSet);
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        return meshSet;
+    }
+
+    private Set<Integer> calculateGeometeryMesh(Geometry geometry) {
+        Set<Integer> meshSet = new HashSet<>();
+        if (geometry.getGeometryType() == GeometryTypeName.MULTILINESTRING
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOLYGON
+                || geometry.getGeometryType() == GeometryTypeName.MULTIPOINT) {
+            for (int i = 0; i < geometry.getNumGeometries(); i++) {
+                Geometry subGeo = geometry.getGeometryN(i);
+                String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(subGeo);
+                for(String mesh : meshes) {
+                    meshSet.add(Integer.valueOf(mesh));
+                }
+            }
+        }else {
+            String[] meshes = CompGeometryUtil.geo2MeshesWithoutBreak(geometry);
+            for(String mesh : meshes) {
+                meshSet.add(Integer.valueOf(mesh));
+            }
+        }
+        return meshSet;
+    }
+
+    public static void main(String[] args) throws Exception {
 //        String parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"types\":[\"1114\"],\"x\":1686,\"y\":775,\"z\":11}";
 //
 //            JSONObject jsonReq = JSONObject.fromObject(parameter);

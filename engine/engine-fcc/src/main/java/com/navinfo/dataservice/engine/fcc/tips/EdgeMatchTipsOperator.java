@@ -85,7 +85,7 @@ public class EdgeMatchTipsOperator extends BaseTipsOperate{
 			// 3.track
 			int stage = 2;
 			//20170509 状态流转变更
-			int t_tipStatus = 1;
+			int t_tipStatus = 2;
 			int t_lifecycle = 3;
 			//track
 			TipsTrack track = new TipsTrack();

@@ -219,7 +219,6 @@ public class CityService {
 	 */
 	public Map<Integer, Integer> getGridMapByCityId(Connection conn, int cityId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.CITY_ID = " + cityId;

@@ -1974,7 +1974,7 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 WHEN 2 THEN 0 end when 2 then 1 when 0 then 3 end order_status");
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2036,7 +2036,7 @@ public class SubtaskService {
 						subtask.put("qualitySubtaskId", qualityTaskId);
 						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
 						subtask.put("qualityExeGroupId", rs.getInt("quality_Exe_group_Id"));
-						subtask.put("qualityExeGroupName", rs.getInt("quality_Exe_group_NAME"));
+						subtask.put("qualityExeGroupName", rs.getString("quality_Exe_group_NAME"));
 						
 						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
 						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
@@ -2600,11 +2600,11 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 	
 			String selectSql = "SELECT S.SUBTASK_ID,"
-					+ "       S.EXE_USER_ID,"
+					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
 					+ "       I.USER_REAL_NAME,"
-					+ "       T.GROUP_ID,"
+					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
 					+ "       G.GROUP_NAME,"
-					+ "       F.FINISHED_ROAD,"
+					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
 					+ "       S.NAME           SUBTASK_NAME,"
 					+ "       T.NAME           TASK_NAME"
 					+ "  FROM TASK                     T,"

@@ -456,9 +456,10 @@ public class TaskService {
 						
 						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
 						Set<Integer> meshIdSet = new HashSet<Integer>();
-//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
-//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
 						
+						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+						log.info("获取tips全图幅"+meshIdSet.toString());
 						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
 						for(Integer gridId:gridIdList){
 							meshIdSet.add(gridId/100);

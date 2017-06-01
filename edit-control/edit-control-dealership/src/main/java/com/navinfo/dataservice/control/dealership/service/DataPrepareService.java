@@ -8,10 +8,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
+import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -22,6 +29,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  *
  */
 public class DataPrepareService {
+	private Logger log = LoggerRepos.getLogger(DataPrepareService.class);
 
 	private DataPrepareService() {
 	}
@@ -132,6 +140,85 @@ public class DataPrepareService {
 			DbUtils.commitAndClose(con);
 		}
 		return null;
+	}
+
+	/**
+	 * 1.功能描述：表差分结果人工整理完毕后，上传入库
+	 * 2.实现逻辑：
+	 * 详见需求：一体化代理店业务需求-》表表差分结果导入
+	 * 3.使用场景：
+	 * 	1）代理店编辑平台-数据准备-表表差分
+	 * @param chainCode
+	 * @param upFile
+	 * @throws Exception
+	 */
+	public void impTableDiff(String chainCode,
+			String upFile)throws Exception {
+		//导入表表差分结果excel
+		List<Map<String, Object>> sourceMaps=impDiffExcel(upFile);
+		//记录检查
+		//TODO
+		//导入到oracle库中
+		//excel的listmap转成list<bean>
+		for(Map<String,Object> source:sourceMaps){
+			JSONObject json = JSONObject.fromObject(source);
+			DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
+		}
+		//加载IX_DEALERSHIP_RESULT中的数据
+		
+	}
+	private void importDiff2Oracle(List<Map<String, Object>> sourceMaps){
+		
+	}
+	/**
+	 * 表表查分结果excel读取
+	 * @param upFile
+	 * @return List<Map<String, Object>> excel记录值
+	 * @throws Exception
+	 */
+	private List<Map<String, Object>> impDiffExcel(String upFile) throws Exception{
+		log.info("start 导入表表差分结果excel："+upFile);
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		
+		excelHeader.put("uuid", "resultId");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		/*		新旧一览表差分结果*/
+		excelHeader.put("旧一览表ID", "oldSourceId");
+		excelHeader.put("旧一览表省份", "oldProvince");
+		excelHeader.put("旧一览表城市", "oldCity");
+		excelHeader.put("旧一览表项目", "oldProject");
+		excelHeader.put("旧一览表分类", "oldKindCode");
+		excelHeader.put("旧一览表品牌", "oldChain");
+		excelHeader.put("旧一览表名称", "oldName");
+		excelHeader.put("旧一览表简称", "oldNameShort");
+		excelHeader.put("旧一览表地址", "oldAddress");
+		excelHeader.put("旧一览表电话（销售）", "oldTelSale");
+		excelHeader.put("旧一览表电话（服务）", "oldTelService");
+		excelHeader.put("旧一览表电话（其他）", "oldTelOther");		
+		excelHeader.put("旧一览表邮编", "oldPostCode");
+		excelHeader.put("旧一览表英文名称", "oldNameEng");
+		excelHeader.put("旧一览表英文地址", "oldAddressEng");
+		
+		excelHeader.put("新旧一览表差分结果", "dealSrcDiff");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入表表差分结果excel："+upFile);
+		return sources;
 	}
 	
 	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{

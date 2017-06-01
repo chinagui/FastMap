@@ -21,3 +21,5 @@ web/collector-web/target/classes/com/navinfo/dataservice/web/collector/controlle
 web/collector-web/target/collector.war
 log
 logs
+/engine/engine-fcc/target
+

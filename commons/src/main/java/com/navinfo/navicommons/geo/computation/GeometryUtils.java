@@ -523,8 +523,8 @@ public class GeometryUtils {
 
 	/**
 	 * @Description:TODO 两个面是否相交
-	 * @param String
-	 *            scrWkt,Geometry geom
+	 * @param scrWkt,Geometry geom
+     * @param clobStr
 	 * @return boolean
 	 * @throws ParseException
 	 */
@@ -617,7 +617,8 @@ public class GeometryUtils {
 				}
 			}
 		}
-		return targetPoint;
+		Geometry tmpPoint = new GeometryFactory().createPoint(targetPoint);
+		return GeoTranslator.transform(tmpPoint, 1, 5).getCoordinate();
 	}
 	
 	

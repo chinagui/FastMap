@@ -36,7 +36,7 @@ public class InitDealershipChainTable {
 			
 			if(initDataList.size() > 0){
 				//代理店数据库
-				DEconn = DBConnector.getInstance().getConnectionById(399);
+				DEconn = DBConnector.getInstance().getDealershipConnection();
 				//删除代理店source表中的数据
 				InitDealershipChainTable.deletChainDataBeforInit(DEconn);
 				//初始化source表
@@ -138,7 +138,7 @@ public class InitDealershipChainTable {
 			QueryRunner run = new QueryRunner();
 			
 			//初始化表数据之前先清空表内数据
-			String berforInitSql = "delete from IX_DEALERSHIP_CHAIN";
+			String berforInitSql = "TRUNCATE table IX_DEALERSHIP_CHAIN";
 			
 			run.execute(conn, berforInitSql);
 			

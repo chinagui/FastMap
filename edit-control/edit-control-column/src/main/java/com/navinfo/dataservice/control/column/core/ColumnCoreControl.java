@@ -123,9 +123,9 @@ public class ColumnCoreControl {
 					
 					//常规申请需要打质检标记
 					if(isQuality==0){
-						double sampleLevel=0.2;
+						double sampleLevel = apiService.queryQualityLevel((int) userId, firstWorkItem)/100;
 						List<Integer> sampDataPids = new ArrayList<Integer>();
-						int ct=(int) Math.floor(applyDataPids.size()*sampleLevel);
+						int ct=(int) Math.ceil(applyDataPids.size()*sampleLevel);
 						sampDataPids = applyDataPids.subList(0, ct);
 						updateQCFlag(sampDataPids,conn,comSubTaskId,userId);
 					}

@@ -48,7 +48,7 @@ public class TipsCheckTest extends InitApplication {
 				.fromObject("[59564432,59564433,59564410,59565402,59565401,59565400,59565313,59564423,59564332,59564422,59564333,59564421,59565410,59565411,59564420,59565420,59565421,59565303,59564323,59564431,59564430]");
 
 		JSONObject param = new JSONObject();
-		param.put("subTaskId", 26);
+		param.put("subTaskId", 283);
 		param.put("checkerId", 456);
 		param.put("checkerName", "质检员1");
 		param.put("grids", gridsList);
@@ -210,6 +210,8 @@ public class TipsCheckTest extends InitApplication {
 
 	}
 
+	
+	
 	/**
 	 * @Description:新增质检问题记录
 	 * @author: y
@@ -270,47 +272,30 @@ public class TipsCheckTest extends InitApplication {
 	 * @time:2017-5-31 上午11:25:24
 	 */
 	@Test
-	public void testUpdateWrong() {
+	public void testUpdateStatus() {
 
-		JSONObject obj = new JSONObject();
-		obj.put("quDesc", "错误描述(修改)");
-		obj.put("reason", "错误原因 (修改)");
-		obj.put("erContent", "错误内容(修改)");
-		obj.put("quRank", "A"); //错误等级
-		obj.put("isPrefer", 1); //是否倾向性
-		
 		
 		JSONObject pa = new JSONObject();
-		
-		pa.put("data", obj);
-		pa.put("logId", "41f602a115e94edcabd5443f578e6c11");
+		pa.put("checkStatus", 1);
+		pa.put("rowkey", "0280020f4d849b6c614766afb99d0dd744bf6c");
 
 		String parameter = pa.toString();
 
 		try {
-			logger.debug("/tip/check/updateWrong:");
+			logger.debug("/tip/check/updateStatus:");
 			
-			logger.debug("parameter:"+parameter);
+			System.out.println("parameter:"+parameter);
 			
-		    if (StringUtils.isEmpty(parameter)) {
-                throw new IllegalArgumentException("parameter参数不能为空。");
-            }
 			JSONObject jsonReq = JSONObject.fromObject(parameter);
 			
-			String logId = jsonReq.getString("logId");//主键
+			int  workStatus=jsonReq.getInt("checkStatus");
 			
-			if (StringUtils.isEmpty(logId)) {
-				throw new IllegalArgumentException("参数错误：logId不能为空");
-			}
-			
-			JSONObject jsonWrong =jsonReq.getJSONObject("data");
+			String rowkey = jsonReq.getString("rowkey");
 
-			if (jsonWrong==null) {
-				
-                throw new IllegalArgumentException("参数错误:data不能为空。");
-            }
+			TipsCheckOperator op = new TipsCheckOperator();
 			
-			new TipsCheckOperator().updateCheckWrong(logId,jsonWrong);
+			op.updateTipsCheckStatus(rowkey,workStatus);
+			
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -400,7 +385,7 @@ public class TipsCheckTest extends InitApplication {
 			////返回当前rowkey下的 错误问题记录（用于界面显示或者修改）
 			JSONObject result=selector.queryWrongByRowkey(checkTaskId,rowkey);
 			
-			logger.debug("result:"+result);
+			System.out.println("result:"+result);
 			
 
 		} catch (Exception e) {

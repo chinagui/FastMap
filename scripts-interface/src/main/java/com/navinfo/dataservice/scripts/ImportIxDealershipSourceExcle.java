@@ -163,7 +163,7 @@ public class ImportIxDealershipSourceExcle {
 				transMap2Bean(source, sourceObj);
 				int id =applyPid();
 				//id+=1;
-				System.out.println("fid: "+sourceObj.getCfmPoiNum());
+//				System.out.println("fid: "+sourceObj.getCfmPoiNum());
 				sourceObj.setSourceId(id);
 				sourceObj.setGeometry(pointWkt);
 				if(sourceObj.getProvince() != null && StringUtils.isNotEmpty(sourceObj.getProvince())){
@@ -217,7 +217,7 @@ public class ImportIxDealershipSourceExcle {
 	  
 	                if (map.containsKey(key)) {  
 	                    Object value = map.get(key);  
-	                    System.out.println(key+" : "+value);
+//	                    System.out.println(key+" : "+value);
 	                    // 得到property对应的setter方法  
 	                    Method setter = property.getWriteMethod();  
 	                    setter.invoke(obj, value);  
@@ -253,7 +253,7 @@ public class ImportIxDealershipSourceExcle {
 				String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
 //						+ "SDO_GEOMETRY(?,8307),?)";			
 						+ "?,?)";			
-				System.out.println("createSql: "+createSql);
+//				System.out.println("createSql: "+createSql);
 				fid=bean.getCfmPoiNum();
 				run.update(conn, 
 						   createSql, 

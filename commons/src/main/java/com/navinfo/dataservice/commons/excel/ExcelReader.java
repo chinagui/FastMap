@@ -163,9 +163,9 @@ public class ExcelReader {
 			for(int j = 0; j < colNum; j++ ){
 				//获取对应列的表头
 				String colum = sheet.getRow(0).getCell(j).getStringCellValue();
-				System.out.println("i:"+i+" j:"+j+" "+colum);
+//				System.out.println("i:"+i+" j:"+j+" "+colum);
 				if(excelHeader.containsKey(colum)){
-					System.out.println("1i:"+i+" 1j:"+j+" "+colum);
+//					System.out.println("1i:"+i+" 1j:"+j+" "+colum);
 					//获取每列信息并赋值给表头(注:这里返回的数据都是字符串类型,在转实体类时需要将特殊字段转换具体类型)
 					
 					cellValue.put(excelHeader.get(colum), getCellFormatValue(row.getCell(j)));

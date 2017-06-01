@@ -608,5 +608,12 @@ public class PidUtil {
     public int applyCmgBuildingNamePid() throws Exception {
         return applyPid("CMG_BUILDING_NAME");
     }
+    
+    /**
+     * 申請IX_DEALERSHIP_SOURCE sourceId
+     */
+    public int applyIxDealershipSourceId() throws Exception {
+        return applyPid("IX_DEALERSHIP_SOURCE");
+    }
 
 }

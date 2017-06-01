@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -34,10 +35,11 @@ public class ExcelReader {
 	
 	/**
 	 *判断excel表格 
+	 * @throws IOException 
 	 * 
 	 * 
 	 * */
-	public ExcelReader(String filepath) {
+	public ExcelReader(String filepath) throws IOException {
 		if(filepath==null){
 			return;
 		}
@@ -51,8 +53,8 @@ public class ExcelReader {
 			}else{
 				wb=null;
 			}
-		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
+			throw e;
 		}
 	}
 	
@@ -138,6 +140,7 @@ public class ExcelReader {
 		if(wb==null){
 			throw new Exception("Workbook对象为空！");
 		}
+		
 		List<Map<String, Object>> list = new ArrayList<>();
 		
 		sheet = wb.getSheetAt(0);
@@ -164,6 +167,7 @@ public class ExcelReader {
 				if(excelHeader.containsKey(colum)){
 					System.out.println("1i:"+i+" 1j:"+j+" "+colum);
 					//获取每列信息并赋值给表头(注:这里返回的数据都是字符串类型,在转实体类时需要将特殊字段转换具体类型)
+					
 					cellValue.put(excelHeader.get(colum), getCellFormatValue(row.getCell(j)));
 				}
 			}
@@ -212,9 +216,11 @@ public class ExcelReader {
 	private String getCellFormatValue(Cell cell) {
 		String cellvalue = "";
 		if (cell != null) {
+			cell.setCellType(Cell.CELL_TYPE_STRING);
 			// 判断当前Cell的Type
 			switch (cell.getCellType()) {
 			case Cell.CELL_TYPE_NUMERIC:// 如果当前Cell的Type为NUMERIC
+
 			case Cell.CELL_TYPE_FORMULA: {
 				// 判断当前的cell是否为Date
 				if (HSSFDateUtil.isCellDateFormatted(cell)) {

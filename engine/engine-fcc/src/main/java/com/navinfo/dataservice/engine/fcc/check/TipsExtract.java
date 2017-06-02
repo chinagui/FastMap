@@ -2,6 +2,7 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -114,6 +115,9 @@ public class TipsExtract {
 			
 			Set<String> allType=finishedMap.keySet();
 		
+			//抽检后tips类型数（应为存在抽检比例没有配置的，默认0）
+			
+			Set<String> extType=new HashSet<String>();
 			
 			for (String type : allType) {
 				
@@ -127,14 +131,23 @@ public class TipsExtract {
 				
 				Double exCout=Math.ceil((double)typeAllCount*exPercent/100);
 				
-				extactCountMap.put(type,exCout.intValue());
+				int  count=exCout.intValue();
+				
+				if(count>0){
+					
+					extactCountMap.put(type,exCout.intValue());
+					
+					//抽检条数不为0才进行统计
+					
+					extType.add(type);
+				}
 				
 			}
 			
 			//3.进行tips抽取
 			List<JSONObject> allExpTipsList=new ArrayList<JSONObject>();
 					
-			for (String type : allType) {
+			for (String type : extType) {
 				
 				int extactLimit=extactCountMap.get(type);
 				
@@ -179,7 +192,7 @@ public class TipsExtract {
 			
 			task.setCheckStatus(0); //待质检
 			
-			task.setTipTypeCount(allType.size());
+			task.setTipTypeCount(extType.size());
 			
 			CheckTaskOperator taskOperate=new CheckTaskOperator();
 			
@@ -187,7 +200,7 @@ public class TipsExtract {
 			
 			result.put("total", total);
 			
-			result.put("typeCount", allType.size());
+			result.put("typeCount", extType.size());
 			
 			return result;
 			

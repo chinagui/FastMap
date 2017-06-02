@@ -117,6 +117,64 @@ public class IxDealershipResult  {
 		this.geometry=geometry ;
 		this.regionId=regionId ;
 	}
+	/**
+	 * @param i
+	 */
+	public IxDealershipResult(IxDealershipResult ixDealershipResult) {
+		this.resultId=ixDealershipResult.getResultId() ;
+		this.workflowStatus=ixDealershipResult.getWorkflowStatus() ;
+		this.dealStatus=ixDealershipResult.getDealStatus() ;
+		this.userId=ixDealershipResult.getUserId() ;
+		this.toInfoDate=ixDealershipResult.getToInfoDate() ;
+		this.toClientDate=ixDealershipResult.getToClientDate() ;
+		this.province=ixDealershipResult.getProvince() ;
+		this.city=ixDealershipResult.getCity() ;
+		this.project=ixDealershipResult.getProject() ;
+		this.kindCode=ixDealershipResult.getKindCode() ;
+		this.chain=ixDealershipResult.getChain() ;
+		this.name=ixDealershipResult.getName() ;
+		this.nameShort=ixDealershipResult.getNameShort() ;
+		this.address=ixDealershipResult.getAddress() ;
+		this.telSale=ixDealershipResult.getTelSale() ;
+		this.telService=ixDealershipResult.getTelService() ;
+		this.telOther=ixDealershipResult.getTelOther() ;
+		this.postCode=ixDealershipResult.getPostCode() ;
+		this.nameEng=ixDealershipResult.getNameEng() ;
+		this.addressEng=ixDealershipResult.getAddressEng() ;
+		this.provideDate=ixDealershipResult.getProvideDate() ;
+		this.isDeleted=ixDealershipResult.getIsDeleted() ;
+		this.matchMethod=ixDealershipResult.getMatchMethod() ;
+		this.poiNum1=ixDealershipResult.getPoiNum1() ;
+		this.poiNum2=ixDealershipResult.getPoiNum2() ;
+		this.poiNum3=ixDealershipResult.getPoiNum3() ;
+		this.poiNum4=ixDealershipResult.getPoiNum4() ;
+		this.poiNum5=ixDealershipResult.getPoiNum5() ;
+		this.similarity=ixDealershipResult.getSimilarity() ;
+		this.fbSource=ixDealershipResult.getFbSource() ;
+		this.fbContent=ixDealershipResult.getFbContent() ;
+		this.fbAuditRemark=ixDealershipResult.getFbAuditRemark() ;
+		this.fbDate=ixDealershipResult.getFbDate() ;
+		this.cfmStatus=ixDealershipResult.getCfmStatus() ;
+		this.cfmPoiNum=ixDealershipResult.getCfmPoiNum() ;
+		this.cfmMemo=ixDealershipResult.getCfmMemo() ;
+		this.sourceId=ixDealershipResult.getSourceId() ;
+		this.dealSrcDiff=ixDealershipResult.getDealSrcDiff() ;
+		this.dealCfmDate=ixDealershipResult.getDealCfmDate() ;
+		this.poiKindCode=ixDealershipResult.getPoiKindCode() ;
+		this.poiChain=ixDealershipResult.getPoiChain() ;
+		this.poiName=ixDealershipResult.getPoiName() ;
+		this.poiNameShort=ixDealershipResult.getPoiNameShort() ;
+		this.poiAddress=ixDealershipResult.getPoiAddress() ;
+		this.poiTel=ixDealershipResult.getPoiTel() ;
+		this.poiPostCode=ixDealershipResult.getPoiPostCode() ;
+		this.poiXDisplay=ixDealershipResult.getPoiXDisplay() ;
+		this.poiYDisplay=ixDealershipResult.getPoiYDisplay() ;
+		this.poiXGuide=ixDealershipResult.getPoiXGuide() ;
+		this.poiYGuide=ixDealershipResult.getPoiYGuide() ;
+		this.geometry=ixDealershipResult.getGeometry() ;
+		this.regionId=ixDealershipResult.getRegionId() ;
+	}
+
 	public int getResultId() {
 		return resultId;
 	}
@@ -435,6 +493,14 @@ public class IxDealershipResult  {
 	@Override
 	public String toString() {
 		return "IxDealershipResult [resultId=" + resultId +",workflowStatus="+workflowStatus+",dealStatus="+dealStatus+",userId="+userId+",toInfoDate="+toInfoDate+",toClientDate="+toClientDate+",province="+province+",city="+city+",project="+project+",kindCode="+kindCode+",chain="+chain+",name="+name+",nameShort="+nameShort+",address="+address+",telSale="+telSale+",telService="+telService+",telOther="+telOther+",postCode="+postCode+",nameEng="+nameEng+",addressEng="+addressEng+",provideDate="+provideDate+",isDeleted="+isDeleted+",matchMethod="+matchMethod+",poiNum1="+poiNum1+",poiNum2="+poiNum2+",poiNum3="+poiNum3+",poiNum4="+poiNum4+",poiNum5="+poiNum5+",similarity="+similarity+",fbSource="+fbSource+",fbContent="+fbContent+",fbAuditRemark="+fbAuditRemark+",fbDate="+fbDate+",cfmStatus="+cfmStatus+",cfmPoiNum="+cfmPoiNum+",cfmMemo="+cfmMemo+",sourceId="+sourceId+",dealSrcDiff="+dealSrcDiff+",dealCfmDate="+dealCfmDate+",poiKindCode="+poiKindCode+",poiChain="+poiChain+",poiName="+poiName+",poiNameShort="+poiNameShort+",poiAddress="+poiAddress+",poiTel="+poiTel+",poiPostCode="+poiPostCode+",poiXDisplay="+poiXDisplay+",poiYDisplay="+poiYDisplay+",poiXGuide="+poiXGuide+",poiYGuide="+poiYGuide+",geometry="+geometry+",regionId="+regionId+"]";
+	}
+
+	/**
+	 * @return
+	 */
+	public String getTelephone() {
+		// TODO Auto-generated method stub
+		return "" + this.telSale + ";" + this.telService + ";" + this.telOther;
 	}
 
 

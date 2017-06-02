@@ -315,5 +315,13 @@ public class IxDealershipSource  {
 		return "IxDealershipSource [sourceId=" + sourceId +",province="+province+",city="+city+",project="+project+",kindCode="+kindCode+",chain="+chain+",name="+name+",nameShort="+nameShort+",address="+address+",telSale="+telSale+",telService="+telService+",telOther="+telOther+",postCode="+postCode+",nameEng="+nameEng+",addressEng="+addressEng+",provideDate="+provideDate+",isDeleted="+isDeleted+",fbSource="+fbSource+",fbContent="+fbContent+",fbAuditRemark="+fbAuditRemark+",fbDate="+fbDate+",cfmPoiNum="+cfmPoiNum+",cfmMemo="+cfmMemo+",dealCfmDate="+dealCfmDate+",poiKindCode="+poiKindCode+",poiChain="+poiChain+",poiName="+poiName+",poiNameShort="+poiNameShort+",poiAddress="+poiAddress+",poiPostCode="+poiPostCode+",poiXDisplay="+poiXDisplay+",poiYDisplay="+poiYDisplay+",poiXGuide="+poiXGuide+",poiYGuide="+poiYGuide+",geometry="+geometry+",poiTel="+poiTel+"]";
 	}
 
+	/**
+	 * @return
+	 */
+	public String getTelephone() {
+		// TODO Auto-generated method stub
+		return "" + this.telSale + ";" + this.telService + ";" + this.telOther;
+	}
+
 
 }

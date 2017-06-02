@@ -263,7 +263,7 @@ public class RowCrowdsControl {
 			dbId = qRunner.queryForString(manConn, manQuery, grid);
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
-			throw e;
+			throw new Exception("数据未获取到大区库信息，不入库");
 		}finally{
 			DbUtils.commitAndClose(manConn);
 		}
@@ -285,9 +285,7 @@ public class RowCrowdsControl {
 
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		String phone = "029-8888888";
-		String[] phones = phone.split("\\|");
-		System.out.println(phones[0]);
+		System.out.println(getGrid(116.36348, 39.97247));
 	}
 
 }

@@ -257,6 +257,7 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					jsonObj.put("chainCode","");
 					jsonObj.put("name",name);
 					jsonObj.put("level","");
+					// 星级酒店特殊处理？
 					jsonObj.put("rating",0);
 					MetadataApi metadataApi=(MetadataApi)ApplicationContextUtil.getBean("metadataApi");
 					String level = metadataApi.getLevelForMulti(jsonObj);
@@ -265,7 +266,7 @@ public class CorwdsSrcPoiDayImportor extends AbstractOperation{
 					int truck = metadataApi.getCrowdTruck(kindCode);
 					ixPoi.setTruckFlag(truck);
 					// POI_MEMO
-					if(StringUtils.isNotEmpty(tPoi.getString("DESCP"))){
+					if(StringUtils.isNotEmpty(tPoi.getString("DESCP")) && !"null".equals(tPoi.getString("DESCP"))){
 						ixPoi.setPoiMemo(tPoi.getString("DESCP"));
 					}
 					String langCode= "CHI";  // 众包大陆数据

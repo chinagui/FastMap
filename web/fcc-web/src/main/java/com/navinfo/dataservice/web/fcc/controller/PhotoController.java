@@ -15,12 +15,17 @@ import net.sf.json.JSONObject;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.MultipartResolver;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.FileUtils;
 import com.navinfo.dataservice.commons.util.ResponseUtils;
 import com.navinfo.dataservice.dao.photo.HBaseController;
+import com.navinfo.dataservice.engine.photo.CollectorImport;
 import com.navinfo.dataservice.engine.photo.PhotoGetter;
 import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
 
@@ -236,6 +241,43 @@ public class PhotoController extends BaseController {
 			logger.error(e.getMessage(), e);
 			
 			return new ModelAndView("jsonView",fail(e.getMessage()));
+		}
+	}
+	
+	/**
+	 * 众包存照片
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/import/crowdPhoto")
+	public ModelAndView importCrowdPhoto(HttpServletRequest request,
+			HttpServletResponse response) throws ServletException, IOException {
+		try{
+			MultipartResolver resolver = new CommonsMultipartResolver(request.getSession().getServletContext());
+			
+//			MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
+			
+			MultipartHttpServletRequest multipartRequest = resolver.resolveMultipart(request);
+			
+			String parameter = multipartRequest.getParameter("parameter");
+			
+			JSONObject jsonReq = JSONObject.fromObject(parameter);
+			
+			int angle = jsonReq.getInt("angle");
+			
+			String fileName = jsonReq.getString("fileName");
+			
+			MultipartFile file = multipartRequest.getFile(fileName);
+			
+			CollectorImport.importCrowdPhoto(file.getInputStream(), angle, fileName);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error(e.getMessage(),e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
 		}
 	}
 }

@@ -194,4 +194,19 @@ public class CollectorImport {
 		
 		return put;
 	}
+	
+	public static void importCrowdPhoto(InputStream inputStream, int angle, String fileName) throws Exception{
+		HBaseController controller = new HBaseController();
+		InputStream newIn = inputStream;
+    	if(angle > 0){
+			BufferedImage image= ImageIO.read(inputStream); 
+	    	Image newImage = RotateImageUtils.rotateImage(image, angle);
+	    	if(newImage !=null){
+	    		newIn = RotateImageUtils.getImageStream((BufferedImage) newImage);
+	    	}
+    	}
+    	String rowKey = fileName.replace(".jpg", "");
+		controller.putPhoto(rowKey, newIn);
+		newIn.close();
+	}
 }

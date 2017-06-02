@@ -210,7 +210,7 @@ public class UserGroupController extends BaseController {
 			if(snapshot==1){				
 				data = UserGroupService.getInstance().listByTypeWithUserInfo(groupType,conditionJson);
 
-			}else{				
+			}else{		
 				List<UserGroup> userGroupList = UserGroupService.getInstance().listByType(groupType,conditionJson);
 
 				for(int i = 0;i<userGroupList.size();i++){

@@ -62,8 +62,6 @@ import net.sf.json.JSONObject;
  */
 public class InfoChangeMsgHandler implements MsgHandler {
 	protected Logger log = LoggerRepos.getLogger(this.getClass());
-	String sql = "INSERT INTO INFOR(INFOR_ID,INFOR_NAME,GEOMETRY,INFOR_LEVEL,PLAN_STATUS,INFOR_CONTENT,feature_Kind) "
-			+ "VALUES (?,?,?,?,0,?,?)";
 
 	@Override
 	public void handle(String message) {
@@ -205,8 +203,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		programs.add(program);
 		JSONArray programIds = new JSONArray();
 		programIds.add(program.getProgramId());
-		ProgramService.getInstance().pushMsgWithConnection(conn,0, programs,programIds);
-		
+		ProgramService.getInstance().pushMsgWithConnection(conn,0, programs,programIds);		
 		
 		//任务发布
 		List<Task> taskList = TaskService.getInstance().getTaskByProgramId(conn,programId);	
@@ -238,7 +235,7 @@ public class InfoChangeMsgHandler implements MsgHandler {
 			subtask.setType(2);
 			subtask.setStage(0);
 			if(task.getSubWorkKind(3)==1){
-				subtask.setWorkKind(3);
+				subtask.setWorkKind(3);				
 			}
 			subtask.setTaskId(task.getTaskId());
 			subtask.setPlanStartDate(task.getPlanStartDate());
@@ -410,7 +407,8 @@ public class InfoChangeMsgHandler implements MsgHandler {
 //			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"i_level\":2,\"b_sourceCode\":1,\"b_sourceId\":\"sfoiuojkw89234jkjsfjksf\",\"b_reliability\":3,\"INFO_NAME\":\"道路通车\",\"INFO_CONTENT\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\"}";
 //			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"5f2086de-23a4-4c02-8c08-995bfe4c6f0b\",\"inforLevel\":2,\"feedbackType\":0,\"featureKind\":1,\"sourceCode\":1,\"roadLength\":19,\"adminName\":\"北京\",\"publishDate\":\"2017042015511230\",\"expectDate\":\"2017042015511230\",\"newsDate\":\"2017042015511230\",\"infoCode\":\"sfoiuojkw89234jkjsfjksf\",\"topicName\":\"道路通车\",\"inforName\":\"道路通车2\",\"infoContent\":\"广泽路通过广泽桥到来广营东路路段已经通车，需要更新道路要素\",\"infoTypeName\":\"INFO_TYPE_NAME\"}";
 			
-			String message = "{\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"e58b02ca56de4f9d92fdd22bdc45d995\",\"inforLevel\":1,\"feedbackType\":1,\"featureKind\":2,\"sourceCode\":\"1\",\"roadLength\":19,\"adminName\":\"云南省|西双版纳傣族自治州\",\"publishDate\":\"2017-05-06 20:20:55\",\"expectDate\":\"2017-05-06 20:20:55\",\"newsDate\":\"2017-05-06 20:20:55\",\"infoCode\":\"20160306QB00000341\",\"topicName\":\"\",\"inforName\":\"FastMap上报道路情报\",\"infoTypeName\":\"道路|普通道路\"}";			sub.save(message);
+			String message = "{\"adminCode\":320200,\"geometry\":\"POINT (120.712884 31.363296);POINT (123.712884 32.363296);\",\"rowkey\":\"e58b02ca56de4f9d92fdd22bdc45d995\",\"inforLevel\":1,\"feedbackType\":1,\"featureKind\":2,\"sourceCode\":\"1\",\"roadLength\":19,\"adminName\":\"云南省|西双版纳傣族自治州\",\"publishDate\":\"2017-05-06 20:20:55\",\"expectDate\":\"2017-05-06 20:20:55\",\"newsDate\":\"2017-05-06 20:20:55\",\"infoCode\":\"20160306QB00000341\",\"topicName\":\"\",\"inforName\":\"20170602test\",\"infoTypeName\":\"道路|普通道路\"}";			
+			sub.save(message);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

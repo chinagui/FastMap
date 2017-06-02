@@ -3184,7 +3184,7 @@ public class TaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append("   FROM TASK T ");
 			sb.append("  WHERE T.PROGRAM_ID = " + programId);
 			
@@ -3203,6 +3203,7 @@ public class TaskService {
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						task.setWorkKind(rs.getString("WORK_KIND"));
 						try {
 							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
 						} catch (Exception e) {

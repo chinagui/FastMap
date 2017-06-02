@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -164,17 +166,87 @@ public class DataPrepareService {
 			String upFile)throws Exception {
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(upFile);
-		//记录检查
-		//TODO
-		//导入到oracle库中
-		//excel的listmap转成list<bean>
-		for(Map<String,Object> source:sourceMaps){
-			JSONObject json = JSONObject.fromObject(source);
-			DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+			//记录检查
+			//TODO
+			//导入到oracle库中
+			//excel的listmap转成list<bean>
+			Set<Integer> resultIdSet=new HashSet<Integer>();
+			Set<Integer> sourceIdSet=new HashSet<Integer>();
+			List<DiffTableExcel> excelSet=new ArrayList<DiffTableExcel>();
+			for(Map<String,Object> source:sourceMaps){
+				JSONObject json = JSONObject.fromObject(source);
+				DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
+				excelSet.add(diffSub);
+				resultIdSet.add(diffSub.getResultId());
+				sourceIdSet.add(diffSub.getOldSourceId());
+			}
+			//加载IX_DEALERSHIP_RESULT中的数据
+			Map<Integer, IxDealershipResult> resultObjSet = IxDealershipResultSelector.getByResultIds(conn, resultIdSet);
+			//Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
+			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
+			//根据导入原则，获取需要修改的数据
+			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet);
+			//数据持久化到数据库
+			persistChange(conn,changeMap);
+			//修改IX_DEALERSHIP_CHAIN状态
+			changeChainStatus(conn,chainCode);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
 		}
-		//加载IX_DEALERSHIP_RESULT中的数据
+	}
+	private void changeChainStatus(Connection conn, String chainCode) {
+		// TODO Auto-generated method stub
 		
 	}
+
+	/**
+	 * 数据持久化到数据库
+	 * @param conn
+	 * @param changeMap
+	 */
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 根据导入原则，获取需要修改的数据
+	 * @param excelSet
+	 * @param resultObjSet
+	 * @param sourceObjSet 
+	 * @param sourceObjSet
+	 * @return
+	 */
+	private Map<String, Set<IxDealershipResult>> importMain(
+			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) {
+		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
+		for (DiffTableExcel diffSub:excelSet){
+			int resultId=diffSub.getResultId();
+			IxDealershipResult resultObj = null;
+			if(resultId!=0){resultObj = resultObjSet.get(resultId);}
+			else{resultObj = new IxDealershipResult();}
+			
+			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());
+			
+			int oldSourceId = diffSub.getOldSourceId();
+			if(oldSourceId!=resultObj.getSourceId()){
+				resultObj.setSourceId(diffSub.getOldSourceId());
+				IxDealershipSource sourceObj = sourceObjSet.get(diffSub.getOldSourceId());
+				
+			}
+			}
+		}
+		return null;
+	}
+	
+	private void changeResultObj(IxDealershipResult resultObj,IxDealershipSource sourceObj){
+		
+	}
+
 	private void importDiff2Oracle(List<Map<String, Object>> sourceMaps){
 		
 	}

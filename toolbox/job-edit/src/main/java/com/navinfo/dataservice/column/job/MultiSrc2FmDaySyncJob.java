@@ -95,29 +95,29 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 		try{
 			String uploadRoot = SystemConfigFactory.getSystemConfig().getValue(PropConstant.uploadPath);
 			//String uploadRoot = "D:\\temp\\";
-			return "E:\\data\\resources\\upload\\multisrc\\201706\\20170601154755_day";
-//			//每个月独立目录
-//			String curYm = DateUtils.getCurYyyymm();
-//			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
-//			File mdirFile = new File(monthDir);
-//			if(!mdirFile.exists()){
-//				mdirFile.mkdirs();
-//			}
-//			//获取zip包名
-//			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
-//			resJson.put("src", fileName);
-//			//下载
-//			String localZipFile = monthDir+fileName;
-//			DownloadUtils.download(remoteZipFile,localZipFile);
-//			log.debug("下载完成");
-//			//解压
-//			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
-//			ZipUtils.unzipFile(localZipFile,localUnzipDir);
-//			log.debug("解压完成");
-//			log.info("保存路径:"+localUnzipDir);
-//			//设置下载成功状态
-//			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
-//			return localUnzipDir;
+//			return "E:\\data\\resources\\upload\\multisrc\\201706\\20170602140909_day";
+			//每个月独立目录
+			String curYm = DateUtils.getCurYyyymm();
+			String monthDir = uploadRoot+File.separator+"multisrc"+File.separator+curYm+File.separator;
+			File mdirFile = new File(monthDir);
+			if(!mdirFile.exists()){
+				mdirFile.mkdirs();
+			}
+			//获取zip包名
+			String fileName = remoteZipFile.substring(remoteZipFile.lastIndexOf("/"));
+			resJson.put("src", fileName);
+			//下载
+			String localZipFile = monthDir+fileName;
+			DownloadUtils.download(remoteZipFile,localZipFile);
+			log.debug("下载完成");
+			//解压
+			String localUnzipDir = monthDir+fileName.substring(0,fileName.indexOf("."));
+			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			log.debug("解压完成");
+			log.info("保存路径:"+localUnzipDir);
+			//设置下载成功状态
+			syncApi.updateMultiSrcFmSyncStatus(MultiSrcFmSync.STATUS_DOWNLOAD_SUCCESS,jobInfo.getId());
+			return localUnzipDir;
 		}catch(Exception e){
 			log.error(e.getMessage(),e);
 			//设置下载失败状态

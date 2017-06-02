@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
@@ -20,10 +22,14 @@ import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
+import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -385,6 +391,28 @@ public class DataPrepareService {
 			DbUtils.commitAndClose(con);
 		}
 		return null;
+	}
+
+	/**
+	 * @param request
+	 * @throws Exception 
+	 */
+	public void uploadChainExcel(HttpServletRequest request) throws Exception {
+		
+		//保存文件
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+		String fileName = InputStreamUtils.request2File(request, filePath);
+
+		//解析excel,读取result
+		List<Map<String, Object>> sourceMaps = impDiffExcel(fileName);
+		List<IxDealershipSource> dealershipSources = new ArrayList<IxDealershipSource>();
+		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
+		String chain = null;
+		//执行差分
+		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
+		//写库
+		//todo
 	}
 	
 	

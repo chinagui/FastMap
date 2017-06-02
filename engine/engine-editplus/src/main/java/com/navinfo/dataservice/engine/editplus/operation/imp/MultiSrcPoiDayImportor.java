@@ -553,9 +553,9 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 				for(Map<String,Object> entry:scPointTruckList){
 					if(entry.get("kind")!=null&&entry.get("kind").equals(jo.getString("kind"))){
 						flg = true;
-						if(entry.get("type").equals("1")){
+						if(entry.get("type")!=null&&entry.get("type").equals("1")){
 							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
-						}else if(entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
+						}else if(entry.get("type")!=null&&entry.get("chain")!=null&&entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
 							ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 						}
 						break;
@@ -566,11 +566,11 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					for(Map<String,Object> entry:scPointTruckList){
 						if(entry.get("chain")!=null&&entry.get("chain").equals(jo.getString("chain"))){
 							if(entry.get("kind")!=null&&!entry.get("kind").equals(jo.getString("kind"))){
-								if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+								if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
 									ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 								}
 							}else if(entry.get("kind")==null){
-								if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+								if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
 									ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 								}
 							}
@@ -729,11 +729,11 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					
 					boolean flg = false;
 					for(Map<String,Object> entry:scPointTruckList){
-						if(entry.get("kind").equals(jo.getString("kind"))){
+						if(entry.get("kind")!=null&&entry.get("kind").equals(jo.getString("kind"))){
 							flg = true;
-							if(entry.get("type").equals("1")){
+							if(entry.get("type")!=null&&entry.get("type").equals("1")){
 								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
-							}else if(entry.get("type").equals("3")&&entry.get("chain").equals(entry.get("chain"))){
+							}else if(entry.get("type")!=null&&entry.get("type").equals("3")&&entry.get("chain")!=null&&entry.get("chain").equals(entry.get("chain"))){
 								ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 							}
 							break;
@@ -743,12 +743,12 @@ public class MultiSrcPoiDayImportor extends AbstractOperation {
 					if(!flg){
 						for(Map<String,Object> entry:scPointTruckList){
 							if(entry.get("chain")!=null&&entry.get("chain").equals(jo.getString("chain"))){
-								if(entry.get("kind")!=null&&!entry.get("kind").equals(jo.getString("kind"))){
-									if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+								if(entry.get("kind")!=null&&entry.get("chain")!=null&&!entry.get("kind").equals(jo.getString("kind"))){
+									if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain")!=null&&entry.get("chain").equals(entry.get("chain"))){
 										ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 									}
 								}else if(entry.get("kind")==null){
-									if(entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
+									if(entry.get("type")!=null&&entry.get("type").equals("2")&&entry.get("chain").equals(entry.get("chain"))){
 										ixPoi.setTruckFlag(Integer.parseInt(entry.get("truck").toString()));
 									}
 								}

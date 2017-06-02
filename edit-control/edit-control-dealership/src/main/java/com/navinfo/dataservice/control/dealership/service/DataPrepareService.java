@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
@@ -178,9 +179,10 @@ public class DataPrepareService {
 			}
 			//加载IX_DEALERSHIP_RESULT中的数据
 			Map<Integer, IxDealershipResult> resultObjSet = IxDealershipResultSelector.getByResultIds(conn, resultIdSet);
-			Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
+			//Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
+			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
 			//根据导入原则，获取需要修改的数据
-			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultIdSet,sourceIdSet);
+			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet);
 			//数据持久化到数据库
 			persistChange(conn,changeMap);
 			//修改IX_DEALERSHIP_CHAIN状态
@@ -208,15 +210,35 @@ public class DataPrepareService {
 	/**
 	 * 根据导入原则，获取需要修改的数据
 	 * @param excelSet
-	 * @param resultIdSet
-	 * @param sourceIdSet
+	 * @param resultObjSet
+	 * @param sourceObjSet 
+	 * @param sourceObjSet
 	 * @return
 	 */
 	private Map<String, Set<IxDealershipResult>> importMain(
-			List<DiffTableExcel> excelSet, Set<Integer> resultIdSet,
-			Set<Integer> sourceIdSet) {
-		// TODO Auto-generated method stub
+			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) {
+		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
+		for (DiffTableExcel diffSub:excelSet){
+			int resultId=diffSub.getResultId();
+			IxDealershipResult resultObj = null;
+			if(resultId!=0){resultObj = resultObjSet.get(resultId);}
+			else{resultObj = new IxDealershipResult();}
+			
+			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());
+			
+			int oldSourceId = diffSub.getOldSourceId();
+			if(oldSourceId!=resultObj.getSourceId()){
+				resultObj.setSourceId(diffSub.getOldSourceId());
+				IxDealershipSource sourceObj = sourceObjSet.get(diffSub.getOldSourceId());
+				
+			}
+			}
+		}
 		return null;
+	}
+	
+	private void changeResultObj(IxDealershipResult resultObj,IxDealershipSource sourceObj){
+		
 	}
 
 	private void importDiff2Oracle(List<Map<String, Object>> sourceMaps){

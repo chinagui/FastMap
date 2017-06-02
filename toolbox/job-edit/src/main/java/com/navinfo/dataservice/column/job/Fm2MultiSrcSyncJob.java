@@ -164,6 +164,7 @@ public class Fm2MultiSrcSyncJob extends AbstractJob {
 				jo.put(syncTime+"_day_"+entry.getKey(), entry.getValue());
 			}
 			pw.println(jo.toString());
+			pw.close();
 			//4.打包生成zip文件，放在月目录下
 			String zipFileName = monthDir + syncTime+"_day.zip";
 			ZipUtils.zipFile(mydir,zipFileName);

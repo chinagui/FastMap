@@ -52,7 +52,8 @@ public class AdLinkTest extends InitApplication{
 
 	@Test
 	public  void deleteAdLinkTest() {
-		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"projectId\":11,\"objId\":100031492}";
+		//parameter:{"command":"DELETE","dbId":13,"type":"ADLINK","objId":408000026,"subtaskId":1}
+		String parameter = "{\"command\":\"DELETE\",\"type\":\"ADLINK\",\"dbId\":13,\"objId\":507000008,\"infect\":1,\"subtaskId\":1}";
 		log.info(parameter);
 		System.out.println(parameter+"-------------------");
 		Transaction t = new Transaction(parameter);

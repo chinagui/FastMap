@@ -1,18 +1,27 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
+import java.io.File;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 
 import net.sf.json.JSONObject;
 
@@ -114,6 +123,19 @@ public class DataPrepareController extends BaseController {
 			List<Map<String, Object>> dealerBrandList = dealerShipService.expTableDiff(chainCode);
 			
 			return new ModelAndView("jsonView", success(dealerBrandList));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/dealership/uploadChainExcel")
+	public ModelAndView uploadChainExcel(HttpServletRequest request) {
+		try {
+
+			dealerShipService.uploadChainExcel(request);
+			
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

@@ -213,14 +213,14 @@ public class InfoChangeMsgHandler implements MsgHandler {
 		List<Task> collectTaskList = new ArrayList<Task>();	
 		List<Task> taskListToPublish = new ArrayList<Task>();
 		List<Integer> commontaskIds=new ArrayList<Integer>();
-		for(Task task:taskList){
-			if(task.getGroupId()!=0){
-				taskListToPublish.add(task);
-				commontaskIds.add(task.getTaskId());
-				if(task.getType()==0){
-					collectTaskList.add(task);
-				}
+		for(Task task:taskList){//配置表正确的情况下，所有非矢量制作任务均应该能找到对应的组id，此处不做二次判断
+			//if(task.getGroupId()!=0){
+			taskListToPublish.add(task);
+			commontaskIds.add(task.getTaskId());
+			if(task.getType()==0){
+				collectTaskList.add(task);
 			}
+			//}
 		}
 		//发布任务
 		if(taskListToPublish.size()>0){

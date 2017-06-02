@@ -246,8 +246,8 @@ public class BlockService {
 			String extendSql="";
 			if(json.containsKey("wkt")){
 				String wkt = json.getString("wkt");
-				extendSql=extendSql+ "   AND SDO_ANYINTERACT(T.GEOMETRY, SDO_GEOMETRY('" + wkt + "', 8307)) ="
-				+ "       'TRUE'";
+				extendSql=extendSql+ "sdo_relate(T.GEOMETRY,SDO_GEOMETRY('" + wkt + "',"
+						+ "8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";
 			}
 			if(json.containsKey("planningStatus")){
 				String planningStatus = ((json.getJSONArray("planningStatus").toString()).replace('[', '(')).replace(']',
@@ -1636,7 +1636,6 @@ public class BlockService {
 	
 	public Map<Integer, Integer> getGridMapByBlockId(Connection conn, int blockId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.BLOCK_ID = " + blockId;

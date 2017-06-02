@@ -314,8 +314,8 @@ public final class SpeedUtils {
          * HIGH_SPEED_ROAD      高速道路     KIND
          * CITY_HIGH_SPEED      城市高速     KIND
          */
-        NO_GUIDE_ROAD(9, 15), WALKING_ROAD(10, 10), PRIVATE_ROAD(18, 15), WALKINT_STREET(20, 10), PEOPLE_FERRY(11, 10),
-        FERRY(13, 15), REGIONAL_ROAD(52, 15), HIGH_SPEED_ROAD(1, 0), CITY_HIGH_SPEED(2, 0);
+        NO_GUIDE_ROAD(9, 150), WALKING_ROAD(10, 100), PRIVATE_ROAD(18, 150), WALKINT_STREET(20, 100), PEOPLE_FERRY(11, 100),
+        FERRY(13, 150), REGIONAL_ROAD(52, 150), HIGH_SPEED_ROAD(1, 0), CITY_HIGH_SPEED(2, 0);
 
         SpeedEnum(Integer kindOrForm, Integer speedValue) {
             this.kindOrForm = kindOrForm;

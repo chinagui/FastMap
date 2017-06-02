@@ -27,7 +27,7 @@ public class Process extends AbstractProcess<Command> {
         check.checkGLM04002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
         check.checkGLM13002(this.getConn(), this.getCommand().geteNodePid(), this.getCommand().getsNodePid());
         //分离节点检查节点是否在立交点处
-        check.permitCheckGscnodeNotMove(this.getCommand().getCatchLinks(), this.getConn());
+        //check.permitCheckGscnodeNotMove(this.getCommand().getCatchLinks(), this.getConn());
         return super.preCheck();
     }
 

@@ -5,6 +5,7 @@ import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.TaskType;
+import com.navinfo.dataservice.dao.fcc.check.operate.CheckTaskSelector;
 import com.navinfo.dataservice.engine.fcc.tips.TipsOperator;
 import com.navinfo.dataservice.engine.fcc.tips.TipsSelector;
 import com.navinfo.nirobot.business.Tips2AuMarkApi;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-/*import com.navinfo.nirobot.business.Tips2AuMarkApi;*/
 
 @Service("fccApi")
 public class FccApiImpl implements FccApi{
@@ -102,8 +102,6 @@ public class FccApiImpl implements FccApi{
             Thread newThread=new Thread(tips2AuMark);
 
             newThread.start();
-
-            //tips2AuMark.run();
 
             logger.debug("进入Api:tips2Aumark,调用run()");
         }catch (Exception e) {
@@ -456,6 +454,23 @@ public class FccApiImpl implements FccApi{
         }
         TipsOperator tipsOperator = new TipsOperator();
         tipsOperator.batchNoTaskDataByMidTask(wkt, midTaskId);
+    }
+
+	@Override
+	public Map<String, Integer> getCheckTaskCount(int checkSubTaskId)
+			throws Exception {
+		CheckTaskSelector selector=new CheckTaskSelector();
+		
+		Map<String, Integer> result=selector.queryTaskCountByTaskId(checkSubTaskId);
+		
+		return result;
+	}
+
+    @Override
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception {
+        TipsSelector selector = new TipsSelector();
+        Set<Integer> meshSet = selector.getTipsMeshIdSet(collectTaskSet);
+        return meshSet;
     }
 
 }

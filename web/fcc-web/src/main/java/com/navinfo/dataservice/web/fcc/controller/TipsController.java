@@ -2,13 +2,19 @@ package com.navinfo.dataservice.web.fcc.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Connection;
 import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.fcc.tips.*;
+import com.navinfo.navicommons.database.sql.StringUtil;
+import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -648,23 +654,18 @@ public class TipsController extends BaseController {
 //		}
 //	}
 
-	@RequestMapping(value = "/tip/checkByTask")
-	public void checkByTask(HttpServletRequest request,
+	@RequestMapping(value = "/tip/checkInfoTask")
+	public void checkInfoTask(HttpServletRequest request,
 							 HttpServletResponse response) throws ServletException, IOException {
         String parameter = request.getParameter("parameter");
 
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
             int subtaskId = jsonReq.getInt("subtaskId");
-            JSONArray grids = jsonReq.getJSONArray("grids");
             int dbId = jsonReq.getInt("dbId");//大区库ID
 
             if(subtaskId == 0) {
                 throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
-            }
-
-            if (grids==null||grids.size()==0) {
-                throw new IllegalArgumentException("参数错误:grids不能为空。");
             }
 
             if (dbId == 0) {
@@ -674,12 +675,16 @@ public class TipsController extends BaseController {
             TipsSelector selector = new TipsSelector();
             List<String> rowkeyList = selector.getCheckRowkeyList(parameter);
 
-            Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(grids);
-//            TipsTaskCheckMR incrementalMRInit = new TipsTaskCheckMR();
-//            incrementalMRInit.run(rowkeyList, dbId, meshes, subtaskId);
+            ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+            List<Integer> gridList = manApi.getGridIdsBySubtaskId(subtaskId);
+            Set<String> meshes = TipsSelectorUtils.getMeshesByGrids(gridList);
+            TipsTaskCheckMR checkMR = new TipsTaskCheckMR();
+            int total = checkMR.process(rowkeyList, dbId, meshes, subtaskId);
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("total", total);
 
-//            response.getWriter().println(
-//                    ResponseUtils.assembleRegularResult(array));
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(jsonObject));
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
@@ -688,4 +693,125 @@ public class TipsController extends BaseController {
         }
     }
 
+    @RequestMapping(value = "/tip/updateInfoCheck")
+    public void updateInfoCheck(HttpServletRequest request,
+                              HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int resultId = jsonReq.getInt("resultId");
+            int status = jsonReq.getInt("status");
+            int ckConfirm = jsonReq.getInt("ckConfirm");
+
+            if(!jsonReq.containsKey("resultId")) {
+                throw new IllegalArgumentException("参数错误:resultId不能为空。");
+            }
+
+            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
+            operator.updateInfoCheckResult(resultId, status, ckConfirm);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(null));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
+
+    @RequestMapping(value = "/tip/listInfoCheckResult")
+    public void listInfoCheckResult(HttpServletRequest request,
+                                HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int subTaskId = jsonReq.getInt("subTaskId");
+            int curPage = jsonReq.getInt("curPage");
+            int pageSize = jsonReq.getInt("pageSize");
+
+            if(!jsonReq.containsKey("subTaskId")) {
+                throw new IllegalArgumentException("参数错误:subTaskId不能为空。");
+            }
+
+            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
+            JSONObject jsonObject = operator.listInfoCheckResult(subTaskId, curPage, pageSize);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(jsonObject));
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
+
+    /**
+     * 矢量化任务关闭前检查是否有未提交的Tips，有则不能关闭
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/tip/closeInfoTask")
+    public void closeInfoTask(HttpServletRequest request,
+                            HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int subtaskId = jsonReq.getInt("subtaskId");
+
+            if(subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
+            }
+
+            TipsSelector selector = new TipsSelector();
+            List<String> rowkeyList = selector.getUnCommitRowkeyList(parameter);
+
+            JSONObject unCommitObj = new JSONObject();
+            unCommitObj.put("unCommit", rowkeyList.size());
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(unCommitObj));
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
+
+    /**
+     * 情报矢量化统计 Tips总数、测线总数、测线总里程
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @RequestMapping(value = "/tip/statInfoTask")
+    public void statInfoTask(HttpServletRequest request,
+                               HttpServletResponse response) throws ServletException, IOException {
+        String parameter = request.getParameter("parameter");
+
+        try {
+            JSONObject jsonReq = JSONObject.fromObject(parameter);
+            int subtaskId = jsonReq.getInt("subtaskId");
+
+            if(subtaskId == 0) {
+                throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
+            }
+
+            TipsSelector selector = new TipsSelector();
+            JSONObject statObj = selector.statInfoTask(parameter);
+
+            response.getWriter().println(
+                    ResponseUtils.assembleRegularResult(statObj));
+
+        } catch (Exception e) {
+            logger.error(e.getMessage(), e);
+            response.getWriter().println(
+                    ResponseUtils.assembleFailResult(e.getMessage()));
+        }
+    }
 }

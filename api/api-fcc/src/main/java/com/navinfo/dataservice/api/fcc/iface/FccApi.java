@@ -91,5 +91,24 @@ public interface FccApi {
      * @throws Exception
      */
     public void batchNoTaskDataByMidTask(String wkt,int midTaskId) throws Exception;
+    
+    
+    /**
+     * 根据质检任务号，获取质检作业量
+     * @param checkSubTaskId
+     * 返回：
+     * key1:	"checkCount" --之间数据量
+	 * key2:	"tipsTypeCount" --tips类型量
+	 * desc:未抽取返回value都为0
+     * @throws Exception
+     */
+    public Map<String,Integer> getCheckTaskCount(int checkSubTaskId) throws Exception;
+
+    /**
+     * 获取该任务下tips前后图幅
+     * @param collectTaskSet
+     * @return
+     */
+    public Set<Integer> getTipsMeshIdSet(Set<Integer> collectTaskSet) throws Exception;
 
 }

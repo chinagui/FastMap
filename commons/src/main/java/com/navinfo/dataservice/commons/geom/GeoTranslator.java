@@ -686,13 +686,10 @@ public class GeoTranslator {
 
 	/**
 	 * 线几何组成面的几何
-	 * 
-	 * @param List
-	 *            <Geometry> 线几何
+	 * @param gList<Geometry> 线几何
 	 * @return 面几何
 	 */
-	public static Geometry getCalLineToPython(List<Geometry> gList)
-			throws Exception {
+	public static Geometry getCalLineToPython(List<Geometry> gList) throws Exception {
 		//gList已经是按照线的联通关系添加后的，只需要根据划线方向组好点的几何
 		List<Coordinate> corList = new ArrayList<>();
 		for(Coordinate cor : gList.get(0).getCoordinates())
@@ -731,7 +728,15 @@ public class GeoTranslator {
 			
 		}
 
-		return geoFactory.createPolygon((Coordinate[])corList.toArray(new Coordinate[corList.size()]));
+		Geometry geometry = geoFactory.createPolygon((Coordinate[])corList.toArray(new Coordinate[corList.size()]));
+		Set<Coordinate> set = new HashSet<>();
+		for (Coordinate coordinate : geometry.getCoordinates()) {
+		    set.add(coordinate);
+        }
+        if (set.size() < geometry.getCoordinates().length - 1) {
+		    throw new Exception("如果创建的面跨图幅，并与图框线重叠的部分长度小于一个精度格，则不允许创建面");
+        }
+		return geometry;
 	}
 
 	/**

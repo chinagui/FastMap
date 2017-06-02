@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.avro.data.Json;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -310,9 +311,9 @@ public class PretreatmentTipsController extends BaseController {
 			
 			PretreatmentTipsOperator op = new PretreatmentTipsOperator();
 
-			op.breakLine(rowkey, pointGeo, user);
+			JSONArray rowkeyArray = op.breakLine(rowkey, pointGeo, user);
 
-			return new ModelAndView("jsonView", success());
+			return new ModelAndView("jsonView", success(rowkeyArray));
 
 		} catch (Exception e) {
 

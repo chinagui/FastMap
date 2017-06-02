@@ -219,7 +219,7 @@ public final class CmgLinkOperateUtils {
         Set<String> meshes = new HashSet<>();
         Coordinate[] cs = geometry.getCoordinates();
         for (int i = 1; i < cs.length; i++) {
-            CollectionUtils.addAll(meshes, MeshUtils.line2Meshes(cs[i - 1].x, cs[i - 1].y, cs[i].x, cs[i].y));
+            CollectionUtils.addAll(meshes, MeshUtils.rect2Meshes(cs[i - 1].x, cs[i - 1].y, cs[i].x, cs[i].y));
         }
         Iterator<String> iterator = meshes.iterator();
         if (meshes.size() > 1) {

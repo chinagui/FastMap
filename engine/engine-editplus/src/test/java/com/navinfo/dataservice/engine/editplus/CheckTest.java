@@ -68,13 +68,13 @@ public class CheckTest {
 		CheckTest test=new CheckTest();
 		test.init();
 //		Connection conn = DBConnector.getInstance().getConnectionById(17);
-		Connection conn = DBConnector.getInstance().getConnectionById(13);
-//		Connection conn = DBConnector.getInstance().getConnectionById(84);
+//		Connection conn = DBConnector.getInstance().getConnectionById(13);
+		Connection conn = DBConnector.getInstance().getConnectionById(84);
 		OperationResult operationResult=new OperationResult();
 		Set<String> tabNames = new HashSet<String>();
 		tabNames.add("IX_POI_NAME");
 		tabNames.add("IX_POI_ADDRESS");
-//		tabNames.add("IX_POI_CHARGINGSTATION");
+		tabNames.add("IX_POI_CHARGINGPLOT");
 //		tabNames.add("IX_POI_GASSTATION");
 		BasicObj obj=ObjSelector.selectByPid(conn, "IX_POI", tabNames,false, 767, false);
 		IxPoi row=(IxPoi) obj.getMainrow();
@@ -132,7 +132,7 @@ public class CheckTest {
 		
 		CheckCommand checkCommand=new CheckCommand();		
 		List<String> ruleIdList=new ArrayList<String>();
-		ruleIdList.add("FM-YW-20-284");
+		ruleIdList.add("FM-YW-20-211");
 		checkCommand.setRuleIdList(ruleIdList);
 		
 		Check check=new Check(conn,operationResult);

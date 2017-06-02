@@ -456,9 +456,10 @@ public class TaskService {
 						
 						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
 						Set<Integer> meshIdSet = new HashSet<Integer>();
-//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
-//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
 						
+						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+						log.info("获取tips全图幅"+meshIdSet.toString());
 						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
 						for(Integer gridId:gridIdList){
 							meshIdSet.add(gridId/100);
@@ -2909,11 +2910,12 @@ public class TaskService {
 					+ "  FROM TASK_CMS_PROGRESS T, TASK TS, USER_INFO U"
 					+ " WHERE T.PHASE_ID = "+phaseId
 					+ "   AND T.TASK_ID = TS.TASK_ID"
-					+ "   AND TS.CREATE_USER_ID = U.USER_ID";
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID(+)";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
-					TaskCmsProgress progress=new TaskCmsProgress();
+					
 					while(rs.next()) {
+						TaskCmsProgress progress=new TaskCmsProgress();
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
@@ -2928,6 +2930,7 @@ public class TaskService {
 							meshIdSet.addAll(meshIds);
 							progress.setMeshIds(meshIdSet);
 						}
+						return progress;
 						
 //						if(progress.getGridIds()==null){
 //							progress.setGridIds(new HashSet<Integer>());
@@ -2941,7 +2944,7 @@ public class TaskService {
 //						String mesh=gridStr.substring(0,gridStr.length()-2);
 //						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
-					return progress;
+					return null;
 				}
 			};
 			return run.query(conn, selectSql, rsHandler);
@@ -3181,7 +3184,7 @@ public class TaskService {
 			
 			StringBuilder sb = new StringBuilder();
 			
-			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE");
+			sb.append(" SELECT T.TASK_ID,T.TYPE,T.GROUP_ID,T.PLAN_START_DATE,T.PLAN_END_DATE,t.work_kind");
 			sb.append("   FROM TASK T ");
 			sb.append("  WHERE T.PROGRAM_ID = " + programId);
 			
@@ -3200,6 +3203,7 @@ public class TaskService {
 						task.setGroupId(rs.getInt("GROUP_ID"));
 						task.setPlanStartDate(rs.getTimestamp("PLAN_START_DATE"));
 						task.setPlanEndDate(rs.getTimestamp("PLAN_END_DATE"));
+						task.setWorkKind(rs.getString("WORK_KIND"));
 						try {
 							task.setGridIds(getGridMapByTaskId(conn,task.getTaskId()));
 						} catch (Exception e) {

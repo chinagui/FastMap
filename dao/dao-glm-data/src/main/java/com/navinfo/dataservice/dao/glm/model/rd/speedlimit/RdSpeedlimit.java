@@ -429,35 +429,28 @@ public class RdSpeedlimit implements IObj {
 
 					String newValue = json.getString(key);
 
-					if (!newValue.equals(oldValue)) {
-						if (key.equals("speedValue")) {
+                    if (key.equals("speedValue")) {
+                        newValue = String.valueOf(json.getInt(key) * 10);
 
-							newValue = String.valueOf(json.getInt(key) * 10);
+                        if (!newValue.equals(oldValue)) {
+                            changedFields.put(key, json.getInt(key) * 10);
+                        }
+                    } else if (key.equals("laneSpeedValue")) {
 
-							if (!newValue.equals(oldValue)) {
-								changedFields.put(key, json.getInt(key) * 10);
-							}
-						}else if(key.equals("laneSpeedValue")){
+                        newValue = StringUtils.laneSpeedValue2M(json.getString(key));
 							
-							newValue = StringUtils.laneSpeedValue2M(json.getString(key));
+                        if (!newValue.equals(oldValue)) {
+                            changedFields.put(key, newValue);
+                        }
+                    } else if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
 							
-							if (!newValue.equals(oldValue)) {
-								changedFields.put(key, newValue);
-							}
-						}
-						else {
-							Object value = json.get(key);
-							
-							if(value instanceof String){
-								changedFields.put(key, newValue.replace("'", "''"));
-							}
-							else{
-								changedFields.put(key, value);
-							}
-
-						}
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
+                        } else {
+                            changedFields.put(key, value);
+                        }
 					}
-
 				}
 			}
 		}
@@ -467,7 +460,6 @@ public class RdSpeedlimit implements IObj {
 		} else {
 			return false;
 		}
-
 	}
 
 	@Override

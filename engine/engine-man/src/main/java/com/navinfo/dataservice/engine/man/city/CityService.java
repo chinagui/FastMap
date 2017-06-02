@@ -66,7 +66,8 @@ public class CityService {
 					+ "           AND LATEST = 1) K"
 					+ " WHERE T.CITY_ID = K.CITY_ID(+)"
 					+ "   AND T.PLAN_STATUS IN "+planningStatus
-					+ "   AND SDO_ANYINTERACT(T.GEOMETRY,SDO_GEOMETRY(?,8307))='TRUE'";		
+					+ "   AND sdo_relate(T.GEOMETRY,SDO_GEOMETRY(?,"
+					+ "8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";		
 			ResultSetHandler<List<HashMap<String,Object>>> rsHandler = new ResultSetHandler<List<HashMap<String,Object>>>(){
 				public List<HashMap<String,Object>> handle(ResultSet rs) throws SQLException {
 					List<HashMap<String,Object>> list = new ArrayList<HashMap<String,Object>>();
@@ -219,7 +220,6 @@ public class CityService {
 	 */
 	public Map<Integer, Integer> getGridMapByCityId(Connection conn, int cityId) throws ServiceException {
 		try {
-			conn = DBConnector.getInstance().getManConnection();
 			QueryRunner run = new QueryRunner();
 			
 			String selectSql = "SELECT G.GRID_ID FROM GRID G WHERE G.CITY_ID = " + cityId;

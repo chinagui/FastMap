@@ -2,6 +2,8 @@ package com.navinfo.dataservice.engine.fcc.check;
 
 
 
+import java.util.Map;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -11,7 +13,9 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.HBaseConnector;
 import com.navinfo.dataservice.dao.fcc.SolrController;
@@ -36,7 +40,6 @@ public class TipsCheckOperator {
 	private static final Logger logger = Logger
 			.getLogger(TipsCheckOperator.class);
 	
-	
 	/**
 	 * @Description:新增质检问题记录（一个tips只能增加一条）
 	 * @param wrong
@@ -53,6 +56,15 @@ public class TipsCheckOperator {
 			CheckWrong wrong=(CheckWrong) JSONObject.toBean(jsonWrong,CheckWrong.class);
 			
 			wrong.setWorkTime(getTipsWorkTime(wrong.getTipsRowkey()));
+			
+			
+			// 调用 manapi 获取 任务类型、及任务号
+			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
+			
+			Map<String,String> taskInfoMap=manApi.getCommonSubtaskByQualitySubtask(wrong.getCheckTaskId());
+			Integer workerId=Integer.valueOf(taskInfoMap.get("exeUserId"));//作业员编号
+			String workerName=taskInfoMap.get("exeUserName");//作业员姓名
+			wrong.setWorker(workerName+workerId);
 			
 			//1.先判断，该rowkey是否已经存在质检问题记录
 			CheckWrongSelector se=new CheckWrongSelector();

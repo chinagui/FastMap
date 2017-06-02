@@ -76,7 +76,7 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
-	@Test
+//	@Test
 	public void testgdbDonwnload() throws Exception{
 		JobScriptsInterface.initContext();
 
@@ -205,6 +205,20 @@ public class TestInitPackage extends ClassPathXmlAppContextInit{
 		System.exit(0);
 	}
 	
+	@Test
+	public void testImportSourceExcel() throws Exception{
+		JobScriptsInterface.initContext();
+
+//		String filePath="f:/source3.xlsx";
+//		String filePath="f:/source4.xls";
+		String filePath="f:/source.xlsx";
+		ImportIxDealershipSourceExcle importSource = new ImportIxDealershipSourceExcle();
+		
+		importSource.imp(filePath);
+
+		System.out.println("Over.");
+		System.exit(0);
+	}
 	
 	public static void main(String[] args) throws ParseException {
 		Set<String> grids = new HashSet<String>();

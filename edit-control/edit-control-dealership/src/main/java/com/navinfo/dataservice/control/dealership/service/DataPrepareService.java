@@ -5,13 +5,24 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import net.sf.json.JSONObject;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.log4j.Logger;
 
+import com.alibaba.druid.support.logging.Log;
+import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
+import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.navicommons.database.QueryRunner;
 
 /**
@@ -21,6 +32,7 @@ import com.navinfo.navicommons.database.QueryRunner;
  *
  */
 public class DataPrepareService {
+	private Logger log = LoggerRepos.getLogger(DataPrepareService.class);
 
 	private DataPrepareService() {
 	}
@@ -132,5 +144,226 @@ public class DataPrepareService {
 		}
 		return null;
 	}
+
+	/**
+	 * 1.功能描述：表差分结果人工整理完毕后，上传入库
+	 * 2.实现逻辑：
+	 * 详见需求：一体化代理店业务需求-》表表差分结果导入
+	 * 3.使用场景：
+	 * 	1）代理店编辑平台-数据准备-表表差分
+	 * @param chainCode
+	 * @param upFile
+	 * @throws Exception
+	 */
+	public void impTableDiff(String chainCode,
+			String upFile)throws Exception {
+		//导入表表差分结果excel
+		List<Map<String, Object>> sourceMaps=impDiffExcel(upFile);
+		Connection conn=null;
+		try{
+			conn=DBConnector.getInstance().getDealershipConnection();
+			//记录检查
+			//TODO
+			//导入到oracle库中
+			//excel的listmap转成list<bean>
+			Set<Integer> resultIdSet=new HashSet<Integer>();
+			Set<Integer> sourceIdSet=new HashSet<Integer>();
+			List<DiffTableExcel> excelSet=new ArrayList<DiffTableExcel>();
+			for(Map<String,Object> source:sourceMaps){
+				JSONObject json = JSONObject.fromObject(source);
+				DiffTableExcel diffSub=(DiffTableExcel) JSONObject.toBean(json, DiffTableExcel.class);
+				excelSet.add(diffSub);
+				resultIdSet.add(diffSub.getResultId());
+				sourceIdSet.add(diffSub.getOldSourceId());
+			}
+			//加载IX_DEALERSHIP_RESULT中的数据
+			Map<Integer, IxDealershipResult> resultObjSet = IxDealershipResultSelector.getByResultIds(conn, resultIdSet);
+			Map<Integer, IxDealershipResult> sourceObjSet = IxDealershipResultSelector.getBySourceIds(conn, sourceIdSet);
+			//根据导入原则，获取需要修改的数据
+			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultIdSet,sourceIdSet);
+			//数据持久化到数据库
+			persistChange(conn,changeMap);
+			//修改IX_DEALERSHIP_CHAIN状态
+			changeChainStatus(conn,chainCode);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	private void changeChainStatus(Connection conn, String chainCode) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/**
+	 * 数据持久化到数据库
+	 * @param conn
+	 * @param changeMap
+	 */
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) {
+		// TODO Auto-generated method stub
+		
+	}
+	/**
+	 * 根据导入原则，获取需要修改的数据
+	 * @param excelSet
+	 * @param resultIdSet
+	 * @param sourceIdSet
+	 * @return
+	 */
+	private Map<String, Set<IxDealershipResult>> importMain(
+			List<DiffTableExcel> excelSet, Set<Integer> resultIdSet,
+			Set<Integer> sourceIdSet) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void importDiff2Oracle(List<Map<String, Object>> sourceMaps){
+		
+	}
+	/**
+	 * 表表查分结果excel读取
+	 * @param upFile
+	 * @return List<Map<String, Object>> excel记录值
+	 * @throws Exception
+	 */
+	private List<Map<String, Object>> impDiffExcel(String upFile) throws Exception{
+		log.info("start 导入表表差分结果excel："+upFile);
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		
+		excelHeader.put("uuid", "resultId");
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		/*		新旧一览表差分结果*/
+		excelHeader.put("旧一览表ID", "oldSourceId");
+		excelHeader.put("旧一览表省份", "oldProvince");
+		excelHeader.put("旧一览表城市", "oldCity");
+		excelHeader.put("旧一览表项目", "oldProject");
+		excelHeader.put("旧一览表分类", "oldKindCode");
+		excelHeader.put("旧一览表品牌", "oldChain");
+		excelHeader.put("旧一览表名称", "oldName");
+		excelHeader.put("旧一览表简称", "oldNameShort");
+		excelHeader.put("旧一览表地址", "oldAddress");
+		excelHeader.put("旧一览表电话（销售）", "oldTelSale");
+		excelHeader.put("旧一览表电话（服务）", "oldTelService");
+		excelHeader.put("旧一览表电话（其他）", "oldTelOther");		
+		excelHeader.put("旧一览表邮编", "oldPostCode");
+		excelHeader.put("旧一览表英文名称", "oldNameEng");
+		excelHeader.put("旧一览表英文地址", "oldAddressEng");
+		
+		excelHeader.put("新旧一览表差分结果", "dealSrcDiff");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入表表差分结果excel："+upFile);
+		return sources;
+	}
+	
+	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
+		
+		searchTableDiff(chainCode);
+		
+		return null;
+	}
+	
+	/**
+	 * @Title: searchTableDiff
+	 * @Description: TODO
+	 * @param chainCode
+	 * @return
+	 * @throws SQLException  List<Map<String,Object>>
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月1日 下午2:21:32 
+	 */
+	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
+		
+		Connection con = null;
+		try{
+			con = DBConnector.getInstance().getConnectionById(399);
+			QueryRunner run = new QueryRunner();
+			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
+					+ " r.name_short, r.address,r.tel_sale ,"
+					+ " r.tel_service ,r.tel_other,r.post_code,r.name_eng,r.address_eng,s.source_id old_source_id,"
+					+ " s.province old_province,s.city old_city,s.project old_project,s.kind_code old_kind_code,s.chain old_chain, "
+					+ " s.name old_name,s.name_short old_name_short,s.address old_address,s.tel_sale old_tel_sale,"
+					+ " s.tel_service old_tel_service,s.tel_other old_tel_other,s.post_code old_post_code,"
+					+ " s.name_eng old_name_eng,s.address_eng old_address_eng,r.deal_src_diff "
+					+ " from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s "
+					+ " where r.source_id = s.source_id "
+					+ " and r.chain = '"+chainCode+"'";
+			
+			ResultSetHandler<List<ExpIxDealershipResult>> rs = new ResultSetHandler<List<ExpIxDealershipResult>>() {
+				@Override
+				public List<ExpIxDealershipResult> handle(ResultSet rs) throws SQLException {
+					
+					List<ExpIxDealershipResult> diffList = new ArrayList<ExpIxDealershipResult>();
+					while (rs.next()) {
+						ExpIxDealershipResult result = new ExpIxDealershipResult();
+							result.setResultId(rs.getString("result_id"));
+							result.setProvince( rs.getString("province"));
+							result.setCity( rs.getString("city"));
+							result.setProject( rs.getString("project"));
+							result.setKindCode( rs.getString("kind_code"));
+							result.setChain( rs.getString("chain"));
+							result.setName( rs.getString("name"));
+							result.setNameShort( rs.getString("name_short"));
+							result.setAddress( rs.getString("address"));
+							result.setTelSale( rs.getString("tel_sale"));
+							result.setTelService( rs.getString("tel_service"));
+							result.setTelOther( rs.getString("tel_other"));
+							result.setPostCode( rs.getString("post_code"));
+							result.setNameEng( rs.getString("name_eng"));
+							result.setAddressEng( rs.getString("address_eng"));
+							result.setOldSourceId( rs.getString("old_source_id"));
+							result.setOldProvince( rs.getString("old_province"));
+							result.setOldCity( rs.getString("old_city"));
+							result.setOldProject( rs.getString("old_project"));
+							result.setOldKindCode( rs.getString("old_kind_code"));
+							result.setOldChain( rs.getString("old_chain"));
+							result.setOldName( rs.getString("old_name"));
+							result.setOldNameShort( rs.getString("old_name_short"));
+							result.setOldAddress( rs.getString("old_address"));
+							result.setOldTelSale( rs.getString("old_tel_sale"));
+							result.setOldTelService( rs.getString("old_tel_service"));
+							result.setOldTelOther( rs.getString("old_tel_other"));
+							result.setOldPostCode( rs.getString("old_post_code"));
+							result.setOldNameEng( rs.getString("old_name_eng"));
+							result.setOldAddressEng( rs.getString("old_address_eng"));
+							result.setDealSrcDiff( rs.getString("deal_src_diff"));
+							/*result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));
+							result.put("", rs.getString(""));*/
+						
+						diffList.add(result);
+					}
+					return diffList;
+				}
+			};
+			
+			return run.query(con, selectSql, rs);
+		}catch(Exception e){
+			DbUtils.rollbackAndClose(con);
+		}finally{
+			DbUtils.commitAndClose(con);
+		}
+		return null;
+	}
+	
 	
 }

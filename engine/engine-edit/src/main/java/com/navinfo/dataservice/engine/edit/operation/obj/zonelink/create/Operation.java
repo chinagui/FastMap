@@ -1,8 +1,10 @@
 package com.navinfo.dataservice.engine.edit.operation.obj.zonelink.create;
 
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,12 +18,15 @@ import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneNode;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneLinkSelector;
 import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneNodeSelector;
 import com.navinfo.dataservice.engine.edit.utils.BasicServiceUtils;
+import com.navinfo.dataservice.engine.edit.utils.Constant;
 import com.navinfo.dataservice.engine.edit.utils.ZoneLinkOperateUtils;
 import com.navinfo.navicommons.geo.computation.CompGeometryUtil;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 
+import com.vividsolutions.jts.geom.GeometryCollection;
+import com.vividsolutions.jts.geom.LineString;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -124,34 +129,45 @@ public class Operation implements IOperation {
 
 		for (Geometry g : map.keySet()) {
 			Set<String> meshes = CompGeometryUtil.geoToMeshesWithoutBreak(g);
-			// 不跨图幅
+
 			if (meshes.size() == 1) {
-				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"),
-						(int) map.get(g).get("e"), result);
-			}
-			// 跨图幅
-			else {
-				Map<Coordinate, Integer> maps = new HashMap<Coordinate, Integer>();
+                // 不跨图幅
+				this.createAdLinkWithNoMesh(g, (int) map.get(g).get("s"), (int) map.get(g).get("e"), result);
+			} else {
+                // 跨图幅
+				Map<Coordinate, Integer> maps = new HashMap<>();
 				maps.put(g.getCoordinates()[0], (int) map.get(g).get("s"));
 				maps.put(g.getCoordinates()[g.getCoordinates().length - 1],
 						(int) map.get(g).get("e"));
 				Iterator<String> it = meshes.iterator();
+                List<String> geoList = new ArrayList<>();
 				while (it.hasNext()) {
 					String meshIdStr = it.next();
-					Geometry geomInter = MeshUtils.linkInterMeshPolygon(
-							g,
-							GeoTranslator.transform(
-									MeshUtils.mesh2Jts(meshIdStr), 1, 5));
-					geomInter = GeoTranslator.geojson2Jts(
-							GeoTranslator.jts2Geojson(geomInter), 1, 5);
-					ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter,
-							maps, result);
+					Geometry geomInter = MeshUtils.linkInterMeshPolygon(g, GeoTranslator.transform(
+									MeshUtils.mesh2Jts(meshIdStr), 1, Constant.BASE_PRECISION));
 
+                    if(geomInter instanceof GeometryCollection) {
+                        int geoNum = geomInter.getNumGeometries();
+                        for (int i = 0; i < geoNum; i++) {
+                            Geometry subGeo = geomInter.getGeometryN(i);
+                            if (subGeo instanceof LineString) {
+                                subGeo = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(subGeo), 1, Constant.BASE_PRECISION);
+                                ZoneLinkOperateUtils.createZoneLinkWithMesh(subGeo, maps, result);
+                            }
+                        }
+                    } else {
+                        geomInter = GeoTranslator.geojson2Jts(GeoTranslator.jts2Geojson(geomInter), 1, Constant.BASE_PRECISION);
+                        // 创建图幅覆盖线时防止重复创建
+                        if (geoList.contains(geomInter.toString()) || geoList.contains(geomInter.reverse().toString())) {
+                            continue;
+                        } else {
+                            geoList.add(geomInter.toString());
+                        }
+                        ZoneLinkOperateUtils.createZoneLinkWithMesh(geomInter, maps, result);
+                    }
 				}
 			}
-
 		}
-
 	}
 
 	/*

@@ -157,6 +157,14 @@ public class GlmGridCalculator {
 				sql = sql.replaceAll("RD_LINK", realName)
 						+ " AND R2.TABLE_NAME = '" + realName + "' ";
 			}
+			if (tableName.equals("RD_SAMENODE_PART")) {
+				sql = sql.replaceAll("RD_NODE", realName)
+						+ " AND P.TABLE_NAME = '" + realName + "' ";
+			}
+			if (tableName.equals("RD_SAMELINK_PART")) {
+				sql = sql.replaceAll("RD_LINK", realName)
+						+ " AND P.TABLE_NAME = '" + realName + "' ";
+			}
 
 		}
 		LogGeoInfo geoInfo = run.query(dataConn, sql, new SingleRowGridHandler(

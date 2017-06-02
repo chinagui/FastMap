@@ -427,7 +427,7 @@ public class SubtaskService {
 	 * 1.判断是否情报子任务，不是则返回
 	 * 2.判断是否新建子任务，若是，名称若为空，自动赋值
 	 * 3.修改子任务，若作业员或组是修改时加的，则自动维护名称
-	 * 
+	 *  
 	 * @param conn
 	 * @param newSubtask
 	 * @return
@@ -436,15 +436,16 @@ public class SubtaskService {
 	public Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
 		//if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
 		//if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
-		
-		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());
-		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
-		if(infor==null){return newSubtask;}
-		
 		Subtask oldSubtask=null;
 		if(newSubtask.getSubtaskId()!=0){
 			oldSubtask = queryBySubtaskIdS(conn,newSubtask.getSubtaskId());
 		}
+		int taskId=newSubtask.getTaskId();
+		if(taskId==0&&oldSubtask!=null){taskId=oldSubtask.getTaskId();}
+		
+		Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
+		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+		if(infor==null){return newSubtask;}		
 		
 		if(oldSubtask==null){//新建子任务
 			if(!StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
@@ -1974,7 +1975,7 @@ public class SubtaskService {
 			 * ②相同状态中根据剩余工期排序，逾期>0天>剩余/提前
 			 * ③开启状态相同剩余工期，根据完成度排序，完成度高>完成度低；其它状态，根据名称
 			 */
-			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 WHEN 2 THEN 0 end when 2 then 1 when 0 then 3 end order_status");
+			sb.append(" CASE S.STATUS  WHEN 1 THEN CASE NVL(FSOS.PERCENT, 0) when 100 then 2 else 0 end when 2 then 1 when 0 then 3 end order_status");
 			sb.append(" FROM SUBTASK                  S,");
 			sb.append(" USER_INFO                U,");
 			sb.append(" USER_GROUP               UG,");
@@ -2036,7 +2037,7 @@ public class SubtaskService {
 						subtask.put("qualitySubtaskId", qualityTaskId);
 						subtask.put("qualityExeUserId", rs.getInt("quality_Exe_User_Id"));
 						subtask.put("qualityExeGroupId", rs.getInt("quality_Exe_group_Id"));
-						subtask.put("qualityExeGroupName", rs.getInt("quality_Exe_group_NAME"));
+						subtask.put("qualityExeGroupName", rs.getString("quality_Exe_group_NAME"));
 						
 						Timestamp qualityPlanStartDate = rs.getTimestamp("quality_Plan_Start_Date");
 						Timestamp qualityPlanEndDate = rs.getTimestamp("quality_Plan_End_Date");
@@ -2407,6 +2408,7 @@ public class SubtaskService {
 			sb.append(" AND P.PROGRAM_ID = T.PROGRAM_ID                                                                       ");
 			sb.append(" AND T.TASK_ID = S.TASK_ID                                                                             ");
 			sb.append(" AND S.SUBTASK_ID = SGM.SUBTASK_ID                                                                     ");
+			sb.append(" AND S.WORK_KIND = 4                                                                    ");
 			sb.append(" AND T.REGION_ID = R.REGION_ID                                                                         ");
 			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ") ");
 			sb.append(" ORDER BY S.SUBTASK_ID                                                                                 ");
@@ -2600,11 +2602,11 @@ public class SubtaskService {
 			QueryRunner run = new QueryRunner();
 	
 			String selectSql = "SELECT S.SUBTASK_ID,"
-					+ "       S.EXE_USER_ID,"
+					+ "       nvl(S.EXE_USER_ID,0) EXE_USER_ID,"
 					+ "       I.USER_REAL_NAME,"
-					+ "       T.GROUP_ID,"
+					+ "       nvl(T.GROUP_ID,0) GROUP_ID,"
 					+ "       G.GROUP_NAME,"
-					+ "       F.FINISHED_ROAD,"
+					+ "       nvl(F.FINISHED_ROAD,0) FINISHED_ROAD,"
 					+ "       S.NAME           SUBTASK_NAME,"
 					+ "       T.NAME           TASK_NAME"
 					+ "  FROM TASK                     T,"

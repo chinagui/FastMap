@@ -197,18 +197,21 @@ public class UserGroupController extends BaseController {
 			int snapshot = 0;
 			if(dataJson.containsKey("snapshot")){
 				snapshot = dataJson.getInt("snapshot");
-				dataJson.remove("snapshot");
+			}
+			int groupType=-1;
+			if(dataJson.containsKey("groupType")){
+				groupType=dataJson.getInt("groupType");
+			}
+			JSONObject conditionJson=null;
+			if(dataJson.containsKey("condition")){
+				conditionJson= dataJson.getJSONObject("condition");
 			}
 			//snapshot=1需要返回用户信息
-			if(snapshot==1){
-				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-				
-				data = UserGroupService.getInstance().listByTypeWithUserInfo(bean,snapshot);
+			if(snapshot==1){				
+				data = UserGroupService.getInstance().listByTypeWithUserInfo(groupType,conditionJson);
 
-			}else{
-				UserGroup  bean = (UserGroup)JSONObject.toBean(dataJson, UserGroup.class);
-				
-				List<UserGroup> userGroupList = UserGroupService.getInstance().listByType(bean);
+			}else{				
+				List<UserGroup> userGroupList = UserGroupService.getInstance().listByType(groupType,conditionJson);
 
 				for(int i = 0;i<userGroupList.size();i++){
 					HashMap<String, Comparable> userGroup = new HashMap<String, Comparable>();

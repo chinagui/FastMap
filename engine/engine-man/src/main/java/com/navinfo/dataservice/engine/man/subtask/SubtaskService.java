@@ -427,7 +427,7 @@ public class SubtaskService {
 	 * 1.判断是否情报子任务，不是则返回
 	 * 2.判断是否新建子任务，若是，名称若为空，自动赋值
 	 * 3.修改子任务，若作业员或组是修改时加的，则自动维护名称
-	 * 
+	 *  
 	 * @param conn
 	 * @param newSubtask
 	 * @return
@@ -436,15 +436,16 @@ public class SubtaskService {
 	public Subtask autoInforName(Connection conn,Subtask newSubtask) throws Exception{
 		//if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){return newSubtask;};//表示此bean是质检子任务,不做处理
 		//if(newSubtask.getExeUserId()==0||newSubtask.getExeGroupId()==0){return newSubtask;}
-		
-		Task task = TaskService.getInstance().queryByTaskId(conn, newSubtask.getTaskId());
-		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
-		if(infor==null){return newSubtask;}
-		
 		Subtask oldSubtask=null;
 		if(newSubtask.getSubtaskId()!=0){
 			oldSubtask = queryBySubtaskIdS(conn,newSubtask.getSubtaskId());
 		}
+		int taskId=newSubtask.getTaskId();
+		if(taskId==0&&oldSubtask!=null){taskId=oldSubtask.getTaskId();}
+		
+		Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
+		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
+		if(infor==null){return newSubtask;}		
 		
 		if(oldSubtask==null){//新建子任务
 			if(!StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}

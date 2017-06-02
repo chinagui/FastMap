@@ -363,9 +363,10 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public String[] pyConvert(String word) throws Exception {
 		PinyinConverter py = new PinyinConverter();
+		//String[] result = py.convert(word);
 
-		String[] result = py.convert(word);
-
+        String[] result = py.pyVoiceConvert(word, null, null, null);
+        CollectionUtils.reverseArray(result);
 		return result;
 	}
 	
@@ -834,6 +835,10 @@ public class MetadataApiImpl implements MetadataApi {
 	@Override
 	public Map<String, String> scPointCode2Level() throws Exception{
 		return ScPointCode2Level.getInstance().scPointCode2Level();
+	}
+	@Override
+	public Map<String, String> scPointCode2LevelOld() throws Exception{
+		return ScPointCode2Level.getInstance().scPointCode2LevelOld();
 	}
 	@Override
 	public JSONObject getAdminMap() throws Exception {

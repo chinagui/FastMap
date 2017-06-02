@@ -456,9 +456,10 @@ public class TaskService {
 						
 						Set<Integer> collectTaskSet = getCollectTaskIdsByTaskId(taskId);
 						Set<Integer> meshIdSet = new HashSet<Integer>();
-//						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
-//						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
 						
+						FccApi fccApi = (FccApi)ApplicationContextUtil.getBean("fccApi");
+						meshIdSet = fccApi.getTipsMeshIdSet(collectTaskSet);
+						log.info("获取tips全图幅"+meshIdSet.toString());
 						Set<Integer> gridIdList = getGridMapByTaskId(conn,taskId).keySet();
 						for(Integer gridId:gridIdList){
 							meshIdSet.add(gridId/100);
@@ -1839,22 +1840,24 @@ public class TaskService {
 							continue;
 						}
 						int cityStatus=rs.getInt("CITY_STATUS");
-						if(blockStatus==0||blockStatus==2){
+						if(blockStatus==0||blockStatus==2){							
 							int blockId=rs.getInt("BLOCK_ID");
 							if(blockMap.containsKey(blockId)){
 								gridMap.put(gridId, blockMap.get(blockId));
 								continue;
 							}
+							
+							JSONObject condition=new JSONObject();
+							JSONArray programIds=new JSONArray();
+							programIds.add(quickTask.getProgramId());
+							condition.put("programIds",programIds);
+							List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
+							Program quickProgram = programList.get(0);
+							
 							int programId=rs.getInt("PROGRAM_ID");
 							Program myProgram=null;
 							if(cityStatus==0||cityStatus==2){//需创建项目
-								log.info(gridId+"无对应中线项目，新建项目");
-								JSONObject condition=new JSONObject();
-								JSONArray programIds=new JSONArray();
-								programIds.add(quickTask.getProgramId());
-								condition.put("programIds",programIds);
-								List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
-								Program quickProgram = programList.get(0);
+								log.info(gridId+"无对应中线项目，新建项目");								
 								Program program=new Program();
 								program.setName(rs.getString("CITY_NAME")+"_"+time);
 								program.setCityId(rs.getInt("CITY_ID"));
@@ -1893,12 +1896,12 @@ public class TaskService {
 									//condition.put("programIds",openProgramIds);
 									ProgramService.getInstance().openStatus(conn, openProgramIds);
 								}
-								JSONObject condition=new JSONObject();
-								JSONArray programIds=new JSONArray();
-								programIds.add(programId);
-								condition.put("programIds",programIds);
-								List<Program> programList = ProgramService.getInstance().queryProgramTable(conn, condition);
-								myProgram=programList.get(0);
+								JSONObject condition1=new JSONObject();
+								JSONArray programIds1=new JSONArray();
+								programIds1.add(programId);
+								condition.put("programIds",programIds1);
+								List<Program> programList1 = ProgramService.getInstance().queryProgramTable(conn, condition1);
+								myProgram=programList1.get(0);
 							}
 							int regionId=rs.getInt("REGION_ID");
 							log.info(gridId+"无对应中线block任务，新建任务start");
@@ -1909,7 +1912,7 @@ public class TaskService {
 							collectTask.setBlockId(blockId);
 							collectTask.setGridIds(gridIds);
 							collectTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							collectTask.setDescp(myProgram.getDescp());
+							collectTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
 							collectTask.setCreateUserId(0);
 							collectTask.setType(0);
 							collectTask.setGroupId(quickTask.getGroupId());
@@ -1934,7 +1937,7 @@ public class TaskService {
 							monthTask.setBlockId(blockId);
 							monthTask.setGridIds(gridIds);
 							monthTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							monthTask.setDescp(myProgram.getDescp());
+							monthTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
 							monthTask.setCreateUserId(0);
 							monthTask.setType(2);
 							monthTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
@@ -1953,7 +1956,7 @@ public class TaskService {
 							cmsTask.setBlockId(blockId);
 							cmsTask.setGridIds(gridIds);
 							cmsTask.setName(rs.getString("BLOCK_NAME")+"_"+time);
-							cmsTask.setDescp(myProgram.getDescp());
+							cmsTask.setDescp("快线项目："+quickProgram.getName()+"转中线");
 							cmsTask.setCreateUserId(0);
 							cmsTask.setType(3);
 							cmsTask.setRoadPlanTotal(quickTask.getRoadPlanTotal());
@@ -2752,7 +2755,7 @@ public class TaskService {
 					+ "   AND CMST.PROGRAM_ID = T.PROGRAM_ID"
 					+ "   AND CMST.TASK_ID = P.TASK_ID"
 					+ "   AND CMST.BLOCK_ID=T.BLOCK_ID"
-					+ "   AND CMST.CREATE_USER_ID = u.user_ID"
+					+ "   AND CMST.CREATE_USER_ID = u.user_ID(+)"
 					+ "   AND T.TYPE = 0"
 					+ "   AND CMST.BLOCK_ID = B.BLOCK_ID"
 					+ "   AND B.CITY_ID = C.CITY_ID";
@@ -2907,11 +2910,12 @@ public class TaskService {
 					+ "  FROM TASK_CMS_PROGRESS T, TASK TS, USER_INFO U"
 					+ " WHERE T.PHASE_ID = "+phaseId
 					+ "   AND T.TASK_ID = TS.TASK_ID"
-					+ "   AND TS.CREATE_USER_ID = U.USER_ID";
+					+ "   AND TS.CREATE_USER_ID = U.USER_ID(+)";
 			ResultSetHandler<TaskCmsProgress> rsHandler = new ResultSetHandler<TaskCmsProgress>() {
 				public TaskCmsProgress handle(ResultSet rs) throws SQLException {
-					TaskCmsProgress progress=new TaskCmsProgress();
+					
 					while(rs.next()) {
+						TaskCmsProgress progress=new TaskCmsProgress();
 						progress.setTaskId(rs.getInt("task_id"));
 						progress.setPhaseId(rs.getInt("phase_id"));
 						progress.setPhase(rs.getInt("phase"));
@@ -2926,6 +2930,7 @@ public class TaskService {
 							meshIdSet.addAll(meshIds);
 							progress.setMeshIds(meshIdSet);
 						}
+						return progress;
 						
 //						if(progress.getGridIds()==null){
 //							progress.setGridIds(new HashSet<Integer>());
@@ -2939,7 +2944,7 @@ public class TaskService {
 //						String mesh=gridStr.substring(0,gridStr.length()-2);
 //						progress.getMeshIds().add(Integer.valueOf(mesh));
 					}
-					return progress;
+					return null;
 				}
 			};
 			return run.query(conn, selectSql, rsHandler);

@@ -172,20 +172,18 @@ public class RdElectroniceye implements IObj {
                         oldValue = String.valueOf(objValue);
                     }
                     String newValue = json.getString(key);
-                    if (!newValue.equals(oldValue)) {
-                        if (key.equals("speedLimit")) {
-                            int limit = json.getInt(key) * 10;
-                            newValue = String.valueOf(limit);
-                            if (!newValue.equals(oldValue)) {
-                                changedFields.put(key, limit);
-                            }
+                    if (key.equals("speedLimit")) {
+                        int limit = json.getInt(key) * 10;
+                        newValue = String.valueOf(limit);
+                        if (!newValue.equals(oldValue)) {
+                            changedFields.put(key, limit);
+                        }
+                    } else if (!newValue.equals(oldValue)) {
+                        Object value = json.get(key);
+                        if (value instanceof String) {
+                            changedFields.put(key, newValue.replace("'", "''"));
                         } else {
-                            Object value = json.get(key);
-                            if (value instanceof String) {
-                                changedFields.put(key, newValue.replace("'", "''"));
-                            } else {
-                                changedFields.put(key, value);
-                            }
+                            changedFields.put(key, value);
                         }
                     }
                 }

@@ -38,14 +38,12 @@ public class GLM01262 extends baseRule {
 		for (Integer linkPid : check1) {
 			StringBuilder sb = new StringBuilder();
 
-			sb.append(
-					"SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID FROM RD_LINK RL, RD_LINK_FORM RLF, RD_LINK_SPEEDLIMIT RLS WHERE RL.LINK_PID = RLS.LINK_PID AND RL.LINK_PID = RLF.LINK_PID AND RL.LINK_PID =");
-
-			sb.append(linkPid);
-
-			sb.append(
-					" AND RL.KIND = 10 AND RLF.U_RECORD <> 2 AND RLS.U_RECORD <> 2 AND ((RL.DIRECT = 1 AND (RLS.FROM_SPEED_LIMIT <> 100 OR RLS.TO_SPEED_LIMIT <> 100)) OR (RL.DIRECT = 2 AND (RLS.FROM_SPEED_LIMIT <> 100 OR RLS.TO_SPEED_LIMIT <> 0)) OR (RL.DIRECT = 3 AND (RLS.FROM_SPEED_LIMIT <> 0 OR RLS.TO_SPEED_LIMIT <> 100)))");
-					//" AND RLF.FORM_OF_WAY = 20 AND RLF.U_RECORD <> 2 AND RLS.U_RECORD <> 2 AND ((RL.DIRECT = 1 AND (RLS.FROM_SPEED_LIMIT <> 100 OR RLS.TO_SPEED_LIMIT <> 100)) OR (RL.DIRECT = 2 AND (RLS.FROM_SPEED_LIMIT <> 100 OR RLS.TO_SPEED_LIMIT <> 0)) OR (RL.DIRECT = 3 AND (RLS.FROM_SPEED_LIMIT <> 0 OR RLS.TO_SPEED_LIMIT <> 100)))");
+			sb.append("SELECT RL.GEOMETRY, '[RD_LINK,' || RL.LINK_PID || ']' TARGET, RL.MESH_ID ");
+			sb.append("FROM RD_LINK RL, RD_LINK_SPEEDLIMIT RLS WHERE RL.LINK_PID = RLS.LINK_PID ");
+			sb.append("AND RL.LINK_PID = ").append(linkPid).append(" ");
+            sb.append("AND RL.KIND = 10 ");
+            sb.append("AND RLS.U_RECORD <> 2 ");
+            sb.append("AND RLS.SPEED_CLASS <> 8");
 
 			logger.info("RdLink后检查GLM01262 check1-> SQL:" + sb.toString());
 

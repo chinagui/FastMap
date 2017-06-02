@@ -382,7 +382,13 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                  MERGE INTO");
 		sb.append("                  COLUMN_QC_PROBLEM");
 		sb.append("                  T");
-		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID, NM.NAMENEWVLAUE, ADR.ADDRNEWVLAUE,0 IS_PROBLEM");
+		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID, NM.NAMENEWVLAUE, ADR.ADDRNEWVLAUE,0 IS_PROBLEM,");
+		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN ORNM.name ");
+		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN ORNM.name ");
+		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ORADR.fullname ");
+		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ORADR.fullname ");
+		sb.append("                          ELSE '' ");
+		sb.append("                          END ORNAME ");
 		sb.append("                    FROM (SELECT CASE");
 		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
 		sb.append("                                    LISTAGG(N.POI_PID || ':' || N.NAME || ',' || F.FLAG_CODE,");
@@ -399,6 +405,8 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                             AND N.NAME_TYPE IN ("+nameType+")");
 		sb.append("                             AND N.NAME_CLASS IN ("+nameClass+")");
 		sb.append("                           GROUP BY N.POI_PID) NM,");
+		sb.append("                           (SELECT n.name,N.POI_PID FROM ix_poi_name n WHERE  n.LANG_CODE IN ('CHI','CHT') AND n.NAME_TYPE=2 AND n.NAME_CLASS=1 ");
+		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORNM,");
 		sb.append("                         (SELECT CASE");
 		sb.append("                                   WHEN 'addrSplit' = '"+secondWorkItem+"' THEN");
 		sb.append("                                    A.NAME_ID || ':' || A.PROVINCE || A.CITY || A.COUNTY ||");
@@ -422,6 +430,8 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                            FROM IX_POI_ADDRESS A");
 		sb.append("                           WHERE A.POI_PID IN ("+StringUtils.join(pidList, ",")+")");
 		sb.append("                             AND A.LANG_CODE IN ("+langCode+")) ADR,");
+		sb.append("                           (SELECT n.fullname,N.POI_PID FROM ix_poi_address n WHERE  n.LANG_CODE IN ('CHI','CHT') ");
+		sb.append("                           AND n.poi_pid IN ("+StringUtils.join(pidList, ",")+" )) ORADR,");
 		sb.append("                         (SELECT '[' || LISTAGG(PS.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY PS.PID) || ']' WORK_ITEM_ID,");
 		sb.append("                                 PS.PID");
 		sb.append("                            FROM POI_COLUMN_STATUS PS, POI_COLUMN_WORKITEM_CONF PC");
@@ -431,13 +441,15 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                             AND PS.PID IN ("+StringUtils.join(pidList, ",")+")");
 		sb.append("                           GROUP BY PS.PID) WK");
 		sb.append("                   WHERE WK.PID = NM.PID(+)");
-		sb.append("                     AND WK.PID = ADR.PID(+)) TP");
+		sb.append("                     AND WK.PID = ADR.PID(+)");
+		sb.append("                     AND WK.PID = ORNM.POI_PID(+)");
+		sb.append("                     AND WK.PID = ORADR.POI_PID(+)) TP");
 		sb.append("                  ON (T.PID=TP.pid AND T.SUBTASK_ID ="+comSubTaskId+" AND T.SECOND_WORK_ITEM = '"+secondWorkItem+"'  AND T.IS_VALID = 0  )");
 		sb.append("                  WHEN MATCHED THEN");
 		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.NAMENEWVLAUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
 		sb.append("                  WHEN NOT MATCHED THEN ");
 		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
-				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.NAMENEWVLAUE,:2,0,"+userId+",'')");
+				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.NAMENEWVLAUE,:2,0,"+userId+",TP.ORNAME)");
 		
 		
 		PreparedStatement pstmt = null;

@@ -21,8 +21,9 @@ public class TestAdFace extends InitApplication {
 
     @Test
     public void create() {
-        String paramter = "{\"command\":\"CREATE\",\"type\":\"ADADMIN\",\"dbId\":17," +
-                "\"data\":{\"longitude\":116.42069220542908,\"latitude\":40.04956256234405,\"linkPid\":54013167}}";
+        String paramter = "{\"command\":\"CREATE\",\"type\":\"ZONELINK\",\"dbId\":13,\"subtaskId\":65,\"data\":{\"sNodePid\":0," +
+                "\"eNodePid\":0,\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.82273790240286,39.91667242392563]," +
+                "[116.82295650243759,39.91667036672904]]},\"catchLinks\":[]}}";
         TestUtil.run(paramter);
     }
 

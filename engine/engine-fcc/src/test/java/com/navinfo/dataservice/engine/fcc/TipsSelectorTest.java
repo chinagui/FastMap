@@ -1,15 +1,10 @@
 package com.navinfo.dataservice.engine.fcc;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.navinfo.dataservice.engine.fcc.tips.TipsInfoCheckOperator;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -247,7 +242,7 @@ public class TipsSelectorTest extends InitApplication {
 //			access_token=0000042XJ2MYPIALCDCDC2D9968453C1965F44BB23CA455F
 			String parameter= "{\"pType\":\"fc\",\"gap\":10,\"types\":[\"1107\",\"1201\",\"1202\",\"1203\",\"1702\",\"2001\",\"1901\",\"2101\",\"1601\",\"1803\",\"1301\",\"1507\"],\"x\":215851,\"y\":99298,\"z\":18}";
 parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\"1201\",\"1102\",\"1202\",\"1101\",\"1205\",\"1206\",\"1207\",\"1203\",\"1702\",\"1501\",\"1508\",\"1514\",\"1901\",\"2001\",\"2101\",\"1601\",\"1803\",\"1301\",\"1604\"],\"x\":107901,\"y\":49676,\"z\":17}";
-			System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(parameter));
+            System.out.println("reusut:--------------\n"+solrSelector.searchDataByTileWithGap(parameter));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -280,10 +275,25 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 	/**
 	 *
 	 */
-	//@Test
+	@Test
 	public void testOther() {
 
 		try {
+            System.out.println("**************************************************");
+//            TipsInfoCheckOperator operator = new TipsInfoCheckOperator();
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            System.out.println("**************************************************");
+            TipsSelector selector = new TipsSelector();
+            Set<Integer> subTaskIds = new HashSet<>();
+            subTaskIds.add(137);
+            Set<Integer> meshSet = selector.getTipsMeshIdSet(subTaskIds);
+            for(Integer mesh : meshSet) {
+                System.out.println(mesh);
+            }
+//            System.out.println(operator.updateInfoCheckResult(8, 1, 1));
+//            System.out.println("**************************************************");
+//            System.out.println(operator.listInfoCheckResult(1, 2, 1).toString());
 			//JSONObject obj=solrSelector.searchDataByRowkey("111503249654");
 			
 			/*JSONObject geojson = JSONObject.fromObject(obj
@@ -309,9 +319,9 @@ parameter = "{\"mdFlag\":\"d\",\"gap\":10,\"pType\":\"sl\",\"types\":[\"1107\",\
 			System.out.println(Geojson.geojson2Wkt(geo4)+",");
 			System.out.println(Geojson.geojson2Wkt(geo5));*/
 
-			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
-
-			System.out.println(o.getString("fc").equals("null"));
+//			JSONObject o=JSONObject.fromObject("{\"fc\":null}");
+//
+//			System.out.println(o.getString("fc").equals("null"));
 
 		} catch (Exception e) {
 			e.printStackTrace();

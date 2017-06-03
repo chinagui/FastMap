@@ -68,6 +68,7 @@ public class DataEditController extends BaseController {
 		} // finally
 	}
 	
+	//代理店启动作业接口
 	@RequestMapping(value = "/dealership/startWork")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
@@ -88,6 +89,7 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
+	//代理店清除关联poi接口
 	@RequestMapping(value = "/dealership/clearRelatedPoi")
 	public ModelAndView clearRelatedPoi(HttpServletRequest request) {
 		try {

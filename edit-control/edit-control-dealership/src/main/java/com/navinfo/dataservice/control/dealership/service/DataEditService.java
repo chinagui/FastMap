@@ -94,7 +94,7 @@ public class DataEditService {
 	}
 	
 	/**
-	 * 启动录入
+	 * 启动录入作业
 	 * @param chainCode品牌号
 	 * @return 执行结果msg
 	 * @author songhe

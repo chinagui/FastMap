@@ -282,10 +282,22 @@ public class DataPrepareService {
 	 * 数据持久化到数据库
 	 * @param conn
 	 * @param changeMap
+	 * @throws ServiceException 
 	 */
-	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) {
-		// TODO Auto-generated method stub
-		
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) throws ServiceException {
+		DataEditService service=new DataEditService();
+		if(changeMap.containsKey("ADD")){
+			Set<IxDealershipResult> resultSet = changeMap.get("ADD");
+			for(IxDealershipResult tmp:resultSet){
+				service.createIxDealershipResult(conn,tmp);
+			}
+		}
+		if(changeMap.containsKey("UPDATE")){
+			Set<IxDealershipResult> resultSet = changeMap.get("UPDATE");
+			for(IxDealershipResult tmp:resultSet){
+				service.updateIxDealershipResult(conn,tmp);
+			}
+		}
 	}
 	/**
 	 * 根据导入原则，获取需要修改的数据
@@ -336,14 +348,14 @@ public class DataPrepareService {
 					if(!sourceObjSet.containsKey(oldSourceId)){
 						log.info("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
-			}
+					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
-		}
+				}
 				else{sourceObj=new IxDealershipSource();}
 				changeResultObj(resultObj,sourceObj);
 				if(cpRegionMap.containsKey(resultObj.getProvince())){
 					resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
-	}
+				}
 			}
 		}
 		log.info("end 表表差分修改result表记录");

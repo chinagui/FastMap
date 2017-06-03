@@ -194,12 +194,10 @@ public class DataEditService {
 	}
 	
 	
-	public void createIxDealershipResult(IxDealershipResult  bean)throws ServiceException{
-		Connection conn = null;
+	public void createIxDealershipResult(Connection conn,IxDealershipResult  bean)throws ServiceException{
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			String createSql = "insert into IX_DEALERSHIP_RESULT ";			
 			List<String> columns = new ArrayList<String>();
@@ -483,18 +481,14 @@ public class DataEditService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
 	
-	public void updateIxDealershipResult(IxDealershipResult bean)throws ServiceException{
-		Connection conn = null;
+	public void updateIxDealershipResult(Connection conn,IxDealershipResult bean)throws ServiceException{
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			String updateSql = "update IX_DEALERSHIP_RESULT set  where 1=1 ";
 			List<String> columns = new ArrayList<String>();
@@ -724,8 +718,6 @@ public class DataEditService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 }

@@ -285,17 +285,16 @@ public class DataPrepareService {
 	 * @throws ServiceException 
 	 */
 	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) throws ServiceException {
-		DataEditService service=new DataEditService();
 		if(changeMap.containsKey("ADD")){
 			Set<IxDealershipResult> resultSet = changeMap.get("ADD");
 			for(IxDealershipResult tmp:resultSet){
-				service.createIxDealershipResult(conn,tmp);
+				IxDealershipResultOperator.createIxDealershipResult(conn,tmp);
 			}
 		}
 		if(changeMap.containsKey("UPDATE")){
 			Set<IxDealershipResult> resultSet = changeMap.get("UPDATE");
 			for(IxDealershipResult tmp:resultSet){
-				service.updateIxDealershipResult(conn,tmp);
+				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp);
 			}
 		}
 	}

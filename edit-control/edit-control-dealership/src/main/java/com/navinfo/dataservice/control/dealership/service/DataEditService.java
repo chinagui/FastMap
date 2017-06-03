@@ -199,29 +199,29 @@ public class DataEditService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getMetaConnection();	
+			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			String createSql = "insert into IX_DEALERSHIP_RESULT ";			
 			List<String> columns = new ArrayList<String>();
 			List<String> placeHolder = new ArrayList<String>();
 			List<Object> values = new ArrayList<Object>();
 			
-			if (bean!=null&&bean.getResultId()!=null && StringUtils.isNotEmpty(bean.getResultId().toString())){
+			if (bean!=null){
 				columns.add(" RESULT_ID ");
 				placeHolder.add("?");
-				values.add(bean.getResultId());
+				values.add("RESULT_SEQ..NEXTVAL");
 			};
-			if (bean!=null&&bean.getWorkflowStatus()!=null && StringUtils.isNotEmpty(bean.getWorkflowStatus().toString())){
+			if (bean!=null&&bean.getWorkflowStatus()!=0){
 				columns.add(" WORKFLOW_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getWorkflowStatus());
 			};
-			if (bean!=null&&bean.getDealStatus()!=null && StringUtils.isNotEmpty(bean.getDealStatus().toString())){
+			if (bean!=null&&bean.getDealStatus()!=0){
 				columns.add(" DEAL_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getDealStatus());
 			};
-			if (bean!=null&&bean.getUserId()!=null && StringUtils.isNotEmpty(bean.getUserId().toString())){
+			if (bean!=null&&bean.getUserId()!=0){
 				columns.add(" USER_ID ");
 				placeHolder.add("?");
 				values.add(bean.getUserId());
@@ -311,12 +311,12 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getProvideDate());
 			};
-			if (bean!=null&&bean.getIsDeleted()!=null && StringUtils.isNotEmpty(bean.getIsDeleted().toString())){
+			if (bean!=null&&bean.getIsDeleted()!=0){
 				columns.add(" IS_DELETED ");
 				placeHolder.add("?");
 				values.add(bean.getIsDeleted());
 			};
-			if (bean!=null&&bean.getMatchMethod()!=null && StringUtils.isNotEmpty(bean.getMatchMethod().toString())){
+			if (bean!=null&&bean.getMatchMethod()!=0){
 				columns.add(" MATCH_METHOD ");
 				placeHolder.add("?");
 				values.add(bean.getMatchMethod());
@@ -351,7 +351,7 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getSimilarity());
 			};
-			if (bean!=null&&bean.getFbSource()!=null && StringUtils.isNotEmpty(bean.getFbSource().toString())){
+			if (bean!=null&&bean.getFbSource()!=0){
 				columns.add(" FB_SOURCE ");
 				placeHolder.add("?");
 				values.add(bean.getFbSource());
@@ -371,7 +371,7 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getFbDate());
 			};
-			if (bean!=null&&bean.getCfmStatus()!=null && StringUtils.isNotEmpty(bean.getCfmStatus().toString())){
+			if (bean!=null&&bean.getCfmStatus()!=0){
 				columns.add(" CFM_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getCfmStatus());
@@ -386,12 +386,12 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getCfmMemo());
 			};
-			if (bean!=null&&bean.getSourceId()!=null && StringUtils.isNotEmpty(bean.getSourceId().toString())){
+			if (bean!=null&&bean.getSourceId()!=0){
 				columns.add(" SOURCE_ID ");
 				placeHolder.add("?");
 				values.add(bean.getSourceId());
 			};
-			if (bean!=null&&bean.getDealSrcDiff()!=null && StringUtils.isNotEmpty(bean.getDealSrcDiff().toString())){
+			if (bean!=null&&bean.getDealSrcDiff()!=1){
 				columns.add(" DEAL_SRC_DIFF ");
 				placeHolder.add("?");
 				values.add(bean.getDealSrcDiff());
@@ -436,22 +436,22 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getPoiPostCode());
 			};
-			if (bean!=null&&bean.getPoiXDisplay()!=null && StringUtils.isNotEmpty(bean.getPoiXDisplay().toString())){
+			if (bean!=null&&bean.getPoiXDisplay()!=0){
 				columns.add(" POI_X_DISPLAY ");
 				placeHolder.add("?");
 				values.add(bean.getPoiXDisplay());
 			};
-			if (bean!=null&&bean.getPoiYDisplay()!=null && StringUtils.isNotEmpty(bean.getPoiYDisplay().toString())){
+			if (bean!=null&&bean.getPoiYDisplay()!=0){
 				columns.add(" POI_Y_DISPLAY ");
 				placeHolder.add("?");
 				values.add(bean.getPoiYDisplay());
 			};
-			if (bean!=null&&bean.getPoiXGuide()!=null && StringUtils.isNotEmpty(bean.getPoiXGuide().toString())){
+			if (bean!=null&&bean.getPoiXGuide()!=0){
 				columns.add(" POI_X_GUIDE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiXGuide());
 			};
-			if (bean!=null&&bean.getPoiYGuide()!=null && StringUtils.isNotEmpty(bean.getPoiYGuide().toString())){
+			if (bean!=null&&bean.getPoiYGuide()!=0){
 				columns.add(" POI_Y_GUIDE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiYGuide());
@@ -461,12 +461,12 @@ public class DataEditService {
 				placeHolder.add("?");
 				values.add(bean.getGeometry());
 			};
-			if (bean!=null&&bean.getRegionId()!=null && StringUtils.isNotEmpty(bean.getRegionId().toString())){
+			if (bean!=null&&bean.getRegionId()!=0){
 				columns.add(" REGION_ID ");
 				placeHolder.add("?");
 				values.add(bean.getRegionId());
 			};
-			if (bean!=null&&bean.getCfmIsAdopted()!=null && StringUtils.isNotEmpty(bean.getCfmIsAdopted().toString())){
+			if (bean!=null&&bean.getCfmIsAdopted()!=0){
 				columns.add(" CFM_IS_ADOPTED ");
 				placeHolder.add("?");
 				values.add(bean.getCfmIsAdopted());
@@ -478,7 +478,7 @@ public class DataEditService {
 			}
 			run.update(conn, 
 					   createSql, 
-					   values );
+					   values.toArray() );
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
@@ -494,7 +494,7 @@ public class DataEditService {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getMetaConnection();
+			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			String updateSql = "update IX_DEALERSHIP_RESULT set  where 1=1 ";
 			List<String> columns = new ArrayList<String>();

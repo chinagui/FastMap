@@ -577,9 +577,9 @@ public class PoiEditStatus {
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_STATUS T SET ");
 			if(type==1){
-				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0)");
+				sb.append("QUICK_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0 OR EXISTS (SELECT 1 FROM IX_POI I WHERE I.U_RECORD = 1 AND I.PID = T.PID))");
 			}else if(type==2){
-				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0)");
+				sb.append("MEDIUM_SUBTASK_ID=? WHERE PID = ? AND (QUICK_SUBTASK_ID<>0 OR MEDIUM_SUBTASK_ID <> 0 OR EXISTS (SELECT 1 FROM IX_POI I WHERE I.U_RECORD = 1 AND I.PID = T.PID))");
 			}
 			
 			Object[][] inParam = new Object[map.size()][];

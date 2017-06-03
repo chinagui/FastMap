@@ -20,8 +20,8 @@ import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
-import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -51,8 +51,43 @@ public class DataEditController extends BaseController {
 
 			conn = DBConnector.getInstance().getConnectionById(399);
 
-			int data = dealerShipEditService.applyDataService(chainCode,conn,userId);
+			int data = dealerShipEditService.applyDataService(chainCode, conn, userId);
 			Map<String, Integer> result = new HashMap<>();
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		} // finally
+	}
+
+	@RequestMapping(value = "/dealership/startWork")
+	public ModelAndView startWork(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			int dealStatus = dataJson.getInt("dealSatus");
+
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			conn = DBConnector.getInstance().getConnectionById(399);
+
+			// TODO具体逻辑
+			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
+			Map<String, JSONArray> result = new HashMap<>();
 			result.put("data", data);
 
 			return new ModelAndView("jsonView", success(result));

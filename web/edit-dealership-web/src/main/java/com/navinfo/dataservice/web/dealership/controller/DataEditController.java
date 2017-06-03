@@ -67,4 +67,34 @@ public class DataEditController extends BaseController {
 			}
 		} // finally
 	}
+	
+	@RequestMapping(value = "/dealership/saveData")
+	public ModelAndView saveData(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject parameter = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (parameter == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			String data = dealerShipEditService.saveDataService(parameter,userId);
+			Map<String, String> result = new HashMap<>();
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
 }

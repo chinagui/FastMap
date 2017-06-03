@@ -12,13 +12,10 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.sf.json.JSONObject;
-
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
-import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -26,11 +23,14 @@ import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+
+import net.sf.json.JSONObject;
 
 /**
  * 代理店数据准备类
@@ -238,7 +238,6 @@ public class DataPrepareService {
 				IxDealershipSource sourceObj = sourceObjSet.get(diffSub.getOldSourceId());
 				
 			}
-			}
 		}
 		return null;
 	}
@@ -402,9 +401,13 @@ public class DataPrepareService {
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
-		String fileName = InputStreamUtils.request2File(request, filePath);
+		String localZipFile = InputStreamUtils.request2File(request, filePath);
 
+		//解压
+		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
+		ZipUtils.unzipFile(localZipFile,localUnzipDir);
 		//解析excel,读取result
+		String fileName = null;
 		List<Map<String, Object>> sourceMaps = impDiffExcel(fileName);
 		List<IxDealershipSource> dealershipSources = new ArrayList<IxDealershipSource>();
 		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();

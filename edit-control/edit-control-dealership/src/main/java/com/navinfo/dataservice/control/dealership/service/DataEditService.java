@@ -664,7 +664,7 @@ public class DataEditService {
 	}
 	
 	/**
-	 * 清空关联poi
+	 * 清空关联poi Dao
 	 * @param con
 	 * @param 
 	 * @author songhe
@@ -680,7 +680,7 @@ public class DataEditService {
 	}
 	
 	/**
-	 * 清空关联POI
+	 * 清空关联POI接口
 	 * @param resultId
 	 * @return 执行结果msg
 	 * @author songhe

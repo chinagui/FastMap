@@ -81,32 +81,33 @@ public class ExportExcel<T>
         // 生成一个样式   
         HSSFCellStyle style = workbook.createCellStyle();  
         // 设置这些样式   
-        style.setFillForegroundColor(HSSFColor.SKY_BLUE.index);  
-        style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);  
-        style.setBorderBottom(HSSFCellStyle.BORDER_THIN);  
-        style.setBorderLeft(HSSFCellStyle.BORDER_THIN);  
-        style.setBorderRight(HSSFCellStyle.BORDER_THIN);  
-        style.setBorderTop(HSSFCellStyle.BORDER_THIN);  
+//        style.setFillForegroundColor(HSSFColor.SKY_BLUE.index);  
+//        style.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);  
+//        style.setBorderBottom(HSSFCellStyle.BORDER_THIN);  
+//        style.setBorderLeft(HSSFCellStyle.BORDER_THIN);  
+//        style.setBorderRight(HSSFCellStyle.BORDER_THIN);  
+//        style.setBorderTop(HSSFCellStyle.BORDER_THIN);  
         style.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
         // 生成一个字体   
         HSSFFont font = workbook.createFont();  
-        font.setColor(HSSFColor.VIOLET.index);  
+//        font.setColor(HSSFColor.VIOLET.index);  
         font.setFontHeightInPoints((short) 12);  
         font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);  
         // 把字体应用到当前的样式   
         style.setFont(font);  
         // 生成并设置另一个样式   
         HSSFCellStyle style2 = workbook.createCellStyle();  
-        style2.setFillForegroundColor(HSSFColor.LIGHT_YELLOW.index);  
-        style2.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);  
-        style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);  
-        style2.setBorderLeft(HSSFCellStyle.BORDER_THIN);  
-        style2.setBorderRight(HSSFCellStyle.BORDER_THIN);  
-        style2.setBorderTop(HSSFCellStyle.BORDER_THIN);  
+//        style2.setFillForegroundColor(HSSFColor.LIGHT_YELLOW.index);  
+//        style2.setFillPattern(HSSFCellStyle.SOLID_FOREGROUND);  
+//        style2.setBorderBottom(HSSFCellStyle.BORDER_THIN);  
+//        style2.setBorderLeft(HSSFCellStyle.BORDER_THIN);  
+//        style2.setBorderRight(HSSFCellStyle.BORDER_THIN);  
+//        style2.setBorderTop(HSSFCellStyle.BORDER_THIN);  
         style2.setAlignment(HSSFCellStyle.ALIGN_CENTER);  
         style2.setVerticalAlignment(HSSFCellStyle.VERTICAL_CENTER);  
         // 生成另一个字体   
         HSSFFont font2 = workbook.createFont();  
+        font2.setColor(HSSFColor.BLACK.index);
         font2.setBoldweight(HSSFFont.BOLDWEIGHT_NORMAL);  
         // 把字体应用到当前的样式   
         style2.setFont(font2);  
@@ -147,6 +148,7 @@ public class ExportExcel<T>
                 cell.setCellStyle(style2);  
                 Field field = fields[i];  
                 String fieldName = field.getName();  
+                System.out.println("fieldName:  "+fieldName);
                 String getMethodName = "get"  
                         + fieldName.substring(0, 1).toUpperCase()  
                         + fieldName.substring(1);  
@@ -160,6 +162,9 @@ public class ExportExcel<T>
                     {});  
                     // 判断值的类型后进行强制类型转换   
                     String textValue = null;  
+                    if(value != null){
+                    	
+                    
                      if (value instanceof Integer) {   
                      int intValue = (Integer) value;   
                      cell.setCellValue(intValue);   
@@ -209,7 +214,10 @@ public class ExportExcel<T>
                     {  
                         // 其它数据类型都当作字符串简单处理   
                         textValue = value.toString();  
-                    }  
+                    }
+                    }else{
+                    	textValue="";
+                    }
                     // 如果不是图片数据，就利用正则表达式判断textValue是否全部由数字组成   
                     if (textValue != null)  
                     {  
@@ -234,22 +242,27 @@ public class ExportExcel<T>
                 catch (SecurityException e)  
                 {  
                     e.printStackTrace();  
+                    System.out.println(e.getMessage());
                 }  
                 catch (NoSuchMethodException e)  
                 {  
                     e.printStackTrace();  
+                    System.out.println(e.getMessage());
                 }  
                 catch (IllegalArgumentException e)  
                 {  
                     e.printStackTrace();  
+                    System.out.println(e.getMessage());
                 }  
                 catch (IllegalAccessException e)  
                 {  
                     e.printStackTrace();  
+                    System.out.println(e.getMessage());
                 }  
                 catch (InvocationTargetException e)  
                 {  
                     e.printStackTrace();  
+                    System.out.println(e.getMessage());
                 }  
                 finally  
                 {  

@@ -87,7 +87,8 @@ public class columnSubmitTest {
 			
 			for (String second:secondWorkList) {
 				// 查询可提交数据
-				//pidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, taskId,userId);
+//				pidList = ixPoiDeepStatusSelector.getPIdForSubmit(firstWorkItem, second, taskId,userId);
+
 				// 清理检查结果
 				DeepCoreControl deepControl = new DeepCoreControl();
 				deepControl.cleanCheckResult(pidList, conn);

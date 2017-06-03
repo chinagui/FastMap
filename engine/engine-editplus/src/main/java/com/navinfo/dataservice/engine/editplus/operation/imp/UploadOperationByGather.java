@@ -138,7 +138,7 @@ public class UploadOperationByGather {
 					imp.setSubtaskId(subtaskId);
 					imp.operate(cmd);
 					//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
-					PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
+//					PoiEditStatus.forCollector(conn,imp.getResult(),subtaskId,taskId,taskType);
 					//持久化
 					imp.persistChangeLog(OperationSegment.SG_ROW, userId);//userid 未写
 					
@@ -149,7 +149,7 @@ public class UploadOperationByGather {
 					relImp.setSubtaskId(subtaskId);
 					relImp.operate(relCmd);
 					//持久化会重置对象的操作状态，所以在持久化之前做更新edit_status
-					PoiEditStatus.forCollector(conn,relImp.getResult(),subtaskId,taskId,taskType);
+//					PoiEditStatus.forCollector(conn,relImp.getResult(),subtaskId,taskId,taskType);
 					//持久化
 					relImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 					

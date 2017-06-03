@@ -11,9 +11,19 @@ _pasted_code_/
 
 *.xml
 *.iml
+
 *.jar
-web/collector-web/target
+
+web/collector-web/target/maven-archiver/pom.properties
+web/collector-web/target/collector/WEB-INF/classes/log4j.properties
+web/collector-web/target/collector/WEB-INF/classes/com/navinfo/dataservice/web/collector/controller/PoiController.class
+web/collector-web/target/collector/index.jsp
+web/collector-web/target/classes/log4j.properties
+web/collector-web/target/classes/com/navinfo/dataservice/web/collector/controller/PoiController.class
+web/collector-web/target/collector.war
+
 log
 logs
+
 /toolbox
 engine/engine-fcc/dubbo-cache

@@ -178,17 +178,25 @@ public class DataPrepareService {
 	 * @param upFile
 	 * @throws Exception
 	 */
-	public void impTableDiff(String chainCode,
+	public void impTableDiff(HttpServletRequest request,String chainCode,
 			String upFile)throws Exception {
+		log.info("start 文件"+upFile+"表表差分导入");
 		//excel文件上传到服务器
-		//TODO
+		log.info("文件"+upFile+"由本地上传到服务器指定位置");
+		//保存文件
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+		String localZipFile = InputStreamUtils.request2File(request, filePath);
+		//解压
+		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
+		ZipUtils.unzipFile(localZipFile,localUnzipDir);
+		String servicePathFile=localUnzipDir+upFile.split("\\|")[upFile.split("\\|").length-1];
+		log.info("文件"+upFile+"已上传至"+servicePathFile);
 		//导入表表差分结果excel
-		List<Map<String, Object>> sourceMaps=impDiffExcel(upFile);
+		List<Map<String, Object>> sourceMaps=impDiffExcel(servicePathFile);
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();
-			//记录检查
-			//TODO
 			//导入到oracle库中
 			//excel的listmap转成list<bean>
 			Set<Integer> resultIdSet=new HashSet<Integer>();
@@ -223,6 +231,7 @@ public class DataPrepareService {
 			persistChange(conn,changeMap);
 			//修改IX_DEALERSHIP_CHAIN状态
 			changeChainStatus(conn,chainCode);
+			log.info("end 文件"+upFile+"表表差分导入");
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -238,6 +247,7 @@ public class DataPrepareService {
 	 * @throws SQLException 
 	 */
 	private void deleteResult(Connection conn,String chainCode,Set<Integer> resultIdSet) throws SQLException {
+		log.info("start 表表差分物理删除无效记录");
 		String sql="DELETE FROM IX_DEALERSHIP_RESULT"
 				+ " WHERE CHAIN = '"+chainCode+"'"
 				+ "   AND RESULT_ID  IN ";
@@ -252,6 +262,7 @@ public class DataPrepareService {
 			run.update(conn, sql);
 	}
 
+		log.info("end 表表差分物理删除无效记录");		
 		
 	}
 	/**
@@ -261,6 +272,7 @@ public class DataPrepareService {
 	 * @throws SQLException
 	 */
 	private void changeChainStatus(Connection conn, String chainCode) throws SQLException {
+		log.info("start 表表差分修改chain表状态");
 		String sql="UPDATE IX_DEALERSHIP_CHAIN SET WORK_STATUS = 1 WHERE CHAIN_CODE = '"+chainCode+"'";
 		QueryRunner run=new QueryRunner();
 		run.update(conn, sql);
@@ -270,10 +282,21 @@ public class DataPrepareService {
 	 * 数据持久化到数据库
 	 * @param conn
 	 * @param changeMap
+	 * @throws ServiceException 
 	 */
-	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) {
-		// TODO Auto-generated method stub
-		
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) throws ServiceException {
+		if(changeMap.containsKey("ADD")){
+			Set<IxDealershipResult> resultSet = changeMap.get("ADD");
+			for(IxDealershipResult tmp:resultSet){
+				IxDealershipResultOperator.createIxDealershipResult(conn,tmp);
+			}
+		}
+		if(changeMap.containsKey("UPDATE")){
+			Set<IxDealershipResult> resultSet = changeMap.get("UPDATE");
+			for(IxDealershipResult tmp:resultSet){
+				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp);
+			}
+		}
 	}
 	/**
 	 * 根据导入原则，获取需要修改的数据
@@ -286,6 +309,7 @@ public class DataPrepareService {
 	 */
 	private Map<String, Set<IxDealershipResult>> importMain(
 			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) throws Exception {
+		log.info("start 表表差分修改result表记录");
 		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
 		resultMap.put("ADD", new HashSet<IxDealershipResult>());
 		resultMap.put("UPDATE", new HashSet<IxDealershipResult>());
@@ -323,16 +347,17 @@ public class DataPrepareService {
 					if(!sourceObjSet.containsKey(oldSourceId)){
 						log.info("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
-			}
+					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
-		}
+				}
 				else{sourceObj=new IxDealershipSource();}
 				changeResultObj(resultObj,sourceObj);
 				if(cpRegionMap.containsKey(resultObj.getProvince())){
 					resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
-	}
+				}
 			}
 		}
+		log.info("end 表表差分修改result表记录");
 		return resultMap;
 	}
 	/**

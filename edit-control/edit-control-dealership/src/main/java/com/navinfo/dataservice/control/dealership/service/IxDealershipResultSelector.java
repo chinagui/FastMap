@@ -6,8 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+
+import oracle.sql.STRUCT;
 
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,7 @@ import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -25,12 +27,12 @@ public class IxDealershipResultSelector {
 		if(resultIds==null|resultIds.size()==0)return new HashMap<Integer,IxDealershipResult>();
 
 		if(resultIds.size()>1000){
-			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?))) AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
 			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(resultIds, ","));
 			return new QueryRunner().query(conn, sql, getResultHander(),clob);
 		}else{
-			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID IN ('"+StringUtils.join(resultIds, "','")+"') AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID IN ('"+StringUtils.join(resultIds, "','")+"')";
 			return new QueryRunner().query(conn,sql,getResultHander());
 		}
 	}
@@ -58,12 +60,12 @@ public class IxDealershipResultSelector {
 		if(sourceIds==null|sourceIds.size()==0)return new HashMap<Integer,IxDealershipResult>();
 
 		if(sourceIds.size()>1000){
-			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE SOURCE_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?))) AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE SOURCE_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
 			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(sourceIds, ","));
 			return new QueryRunner().query(conn, sql, getSourceHander(),clob);
 		}else{
-			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE SOURCE_ID IN ('"+StringUtils.join(sourceIds, "','")+"') AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_RESULT WHERE SOURCE_ID IN ('"+StringUtils.join(sourceIds, "','")+"')";
 			return new QueryRunner().query(conn,sql,getSourceHander());
 		}
 	}
@@ -103,7 +105,13 @@ public class IxDealershipResultSelector {
 		result.setFbContent(rs.getString("FB_CONTENT"));
 		result.setFbDate(rs.getString("FB_DATE"));
 		result.setFbSource(rs.getInt("FB_SOURCE"));
-		result.setGeometry(rs.getString("GEOMETRY"));
+		STRUCT geoStruct=(STRUCT) rs.getObject("GEOMETRY");
+		try {
+			result.setGeometry(GeoTranslator.struct2Jts(geoStruct));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		result.setIsDeleted(rs.getInt("IS_DELETED"));
 		result.setKindCode(rs.getString("KIND_CODE"));
 		result.setMatchMethod(rs.getInt("MATCH_METHOD"));

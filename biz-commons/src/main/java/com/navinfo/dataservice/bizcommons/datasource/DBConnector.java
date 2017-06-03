@@ -226,7 +226,6 @@ public class DBConnector {
 					DbInfo manDb = null;
 					DbConnectConfig connConfig = null;
 					try {
-//						manDb = datahub.getOnlyDbByType("dealershipPoi");
 						manDb = datahub.getOnlyDbByType("dealership");
 						connConfig = DbConnectConfig
 								.createConnectConfig(manDb.getConnectParam());

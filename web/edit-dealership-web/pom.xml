@@ -36,7 +36,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>edit-control-dealership</artifactId>
+			<artifactId>edit-control-column</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
@@ -189,6 +189,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>dealership</finalName>
+		<finalName>column</finalName>
 	</build>
 </project>

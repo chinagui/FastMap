@@ -298,56 +298,7 @@ public class PoiEditStatus {
 		}
 	}
 	
-	/**
-	 * 所有上传的POI，包含鲜度验证的
-	 * @param conn
-	 * @param pids
-	 * @throws Exception
-	 */
-	public static void normalPoi(Connection conn,Collection<Long> pids,int subtaskId,int taskId,int taskType)throws Exception{
-		try{
-			if(pids==null||pids.size()==0){
-				return;
-			}
-			Clob pidsClob = ConnectionUtil.createClob(conn);
-			pidsClob.setString(1, StringUtils.join(pids,","));
-			//write upload part
-			QueryRunner run = new QueryRunner();
-			StringBuilder sb = new StringBuilder();
-			sb.append("MERGE INTO POI_EDIT_STATUS P \n");
-			sb.append("USING (SELECT TO_NUMBER(COLUMN_VALUE) PID \n");
-			sb.append("         FROM TABLE(CLOB_TO_TABLE(?))) T \n");
-			sb.append("ON (P.PID = T.PID) \n");
-			sb.append("WHEN MATCHED THEN \n");
-			sb.append("  UPDATE \n");
-			sb.append("     SET P.STATUS         = 1, \n");
-			sb.append("         P.IS_UPLOAD      = 1, \n");
-			sb.append("         P.UPLOAD_DATE    = SYSDATE, \n");
-			sb.append("         P.FRESH_VERIFIED = 0, \n");
-			sb.append("         P.RAW_FIELDS     = NULL, \n");
-			sb.append("         WORK_TYPE        = 1 \n");
-			sb.append("WHEN NOT MATCHED THEN \n");
-			sb.append("  INSERT(P.PID, P.STATUS, P.IS_UPLOAD, P.UPLOAD_DATE) VALUES (T.PID, 1, 1, SYSDATE)");
-			run.update(conn, sb.toString(), pidsClob);
-			
-			//write subtask part
-			if(subtaskId>0){
-				if(taskType==4){//快线任务
-					String sqlQ = "UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=?,QUICK_TASK_ID=?,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-					run.update(conn, sqlQ, subtaskId,taskId,pidsClob);
-				}else if(taskType==1){//中线任务
-					String sqlM = "UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-					run.update(conn, sqlM, subtaskId,taskId,pidsClob);
-				}
-			}else{
-				String sql4NoTask="UPDATE POI_EDIT_STATUS SET QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-				run.update(conn, sql4NoTask, pidsClob);
-			}
-		}catch(Exception e){
-			logger.error(e.getMessage(),e);
-			throw e;
-		}
-	}
+
 	/**
 	 * 
 	 * @param conn

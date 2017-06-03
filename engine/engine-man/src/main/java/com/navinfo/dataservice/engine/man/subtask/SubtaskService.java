@@ -2409,6 +2409,7 @@ public class SubtaskService {
 			sb.append(" AND T.TASK_ID = S.TASK_ID                                                                             ");
 			sb.append(" AND S.SUBTASK_ID = SGM.SUBTASK_ID                                                                     ");
 			sb.append(" AND S.WORK_KIND = 4                                                                    ");
+			sb.append(" AND S.STATUS = 1                                                                    ");
 			sb.append(" AND T.REGION_ID = R.REGION_ID                                                                         ");
 			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ") ");
 			sb.append(" ORDER BY S.SUBTASK_ID                                                                                 ");

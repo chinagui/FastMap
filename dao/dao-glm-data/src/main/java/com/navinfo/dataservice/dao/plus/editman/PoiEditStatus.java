@@ -298,6 +298,7 @@ public class PoiEditStatus {
 		}
 	}
 	
+
 	/**
 	 * 
 	 * @param conn

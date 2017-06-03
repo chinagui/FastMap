@@ -31,6 +31,7 @@ import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -407,13 +408,6 @@ public class DataPrepareService {
 		return sources;
 	}
 	
-	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
-		
-		searchTableDiff(chainCode);
-		
-		return null;
-	}
-	
 	/**
 	 * @Title: searchTableDiff
 	 * @Description: TODO
@@ -426,9 +420,11 @@ public class DataPrepareService {
 	 */
 	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
 		
-		Connection con = null;
+		Connection conn = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
 					+ " r.name_short, r.address,r.tel_sale ,"
@@ -490,14 +486,15 @@ public class DataPrepareService {
 				}
 			};
 			
-			return run.query(con, selectSql, rs);
+			return run.query(conn, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndClose(conn);
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(conn);
 		}
 		return null;
 	}
+
 
 	/**
 	 * @param request

@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -7,6 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.springframework.aop.ThrowsAdvice;
 
 import com.mongodb.client.result.DeleteResult;
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -28,9 +32,12 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -205,7 +212,7 @@ public class DataPrepareService {
 				if(!chainCode.equals(diffSub.getChain())){
 					log.info("导入文件中“代理店品牌”是否跟作业品牌不一致");
 					throw new Exception("导入文件中“代理店品牌”是否跟作业品牌不一致");
-				}
+			}
 				if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=2
 						&&diffSub.getDealSrcDiff()!=3&&diffSub.getDealSrcDiff()!=4){
 					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
@@ -233,7 +240,7 @@ public class DataPrepareService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	
+		
 	/**
 	 * IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
 	 * @param resultIdSet
@@ -253,8 +260,10 @@ public class DataPrepareService {
 		}else{
 			sql= sql+"('"+StringUtils.join(resultIdSet, "','")+"')";
 			run.update(conn, sql);
-		}
+	}
+
 		log.info("end 表表差分物理删除无效记录");		
+		
 	}
 	/**
 	 * 表表差分后，修改IX_DEALERSHIP_CHAIN表状态
@@ -318,7 +327,7 @@ public class DataPrepareService {
 				resultMap.get("ADD").add(resultObj);
 			}
 			
-			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());			
+			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());
 			
 			if(oldSourceId!=resultObj.getSourceId()){
 				resultObj.setSourceId(diffSub.getOldSourceId());
@@ -327,14 +336,14 @@ public class DataPrepareService {
 					if(!sourceObjSet.containsKey(oldSourceId)){
 						log.info("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
-					}
+			}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
-				}
+		}
 				else{sourceObj=new IxDealershipSource();}
 				changeResultObj(resultObj,sourceObj);
 				if(cpRegionMap.containsKey(resultObj.getProvince())){
 					resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
-				}
+	}
 			}
 		}
 		log.info("end 表表差分修改result表记录");
@@ -419,13 +428,6 @@ public class DataPrepareService {
 		return sources;
 	}
 	
-	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
-		
-		searchTableDiff(chainCode);
-		
-		return null;
-	}
-	
 	/**
 	 * @Title: searchTableDiff
 	 * @Description: TODO
@@ -438,9 +440,11 @@ public class DataPrepareService {
 	 */
 	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
 		
-		Connection con = null;
+		Connection conn = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
 					+ " r.name_short, r.address,r.tel_sale ,"
@@ -502,20 +506,24 @@ public class DataPrepareService {
 				}
 			};
 			
-			return run.query(con, selectSql, rs);
+			return run.query(conn, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndClose(conn);
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(conn);
 		}
 		return null;
 	}
+
 
 	/**
 	 * @param request
 	 * @throws Exception 
 	 */
 	public void uploadChainExcel(HttpServletRequest request) throws Exception {
+		
+		//获取代理店数据库连接
+		Connection conn=DBConnector.getInstance().getDealershipConnection();
 		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
@@ -525,16 +533,69 @@ public class DataPrepareService {
 		//解压
 		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
 		ZipUtils.unzipFile(localZipFile,localUnzipDir);
-		//解析excel,读取result
-		String fileName = null;
-		List<Map<String, Object>> sourceMaps = impDiffExcel(fileName);
-		List<IxDealershipSource> dealershipSources = new ArrayList<IxDealershipSource>();
-		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
-		String chain = null;
-		//执行差分
-		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
-		//写库
-		//todo
+		
+		File file = new File(localUnzipDir);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File file2 : files) {
+                if (file2.isDirectory()) {
+                    continue;
+                } else {
+                    System.out.println("文件:" + file2.getAbsolutePath());
+            		//解析excel,读取result
+                    String chain = null;
+            		String fileName = file2.getAbsolutePath();
+            		List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
+            		Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
+            		List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
+            		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
+            		for(Map<String, Object> map:sourceMaps){
+            			IxDealershipResult ixDealershipResult = new IxDealershipResult();
+            			InputStreamUtils.transMap2Bean(map, ixDealershipResult);
+            			dealershipResult.add(ixDealershipResult);
+            			chain = ixDealershipResult.getChain();
+            		}
+
+            		//执行差分
+            		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
+            		//写库
+            		//todo
+                }
+            }
+        }
+	}
+
+	/**
+	 * 一览表上传excel导入
+	 * @param upFile
+	 * @return List<Map<String, Object>>
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impIxDealershipResultExcel(String upFile) throws Exception {
+		log.info("start 导入一览表上传excel："+upFile);
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		excelHeader.put("一览表提供时间", "provideDate");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入一览表结果excel："+upFile);
+		return sources;
 	}
 	
 	

@@ -687,6 +687,10 @@ public class IxDealershipResult  {
 			this.regionId = regionId;
 		}
 	}
+	
+	public Map<String, Object> getOldValues() {
+		return oldValues;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -709,6 +713,7 @@ public class IxDealershipResult  {
 	public void setCfmIsAdopted(int cfmIsAdopted) {
 		this.cfmIsAdopted = cfmIsAdopted;
 	}
+
 
 
 

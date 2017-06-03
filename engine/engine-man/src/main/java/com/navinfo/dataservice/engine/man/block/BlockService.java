@@ -246,7 +246,7 @@ public class BlockService {
 			String extendSql="";
 			if(json.containsKey("wkt")){
 				String wkt = json.getString("wkt");
-				extendSql=extendSql+ "sdo_relate(T.GEOMETRY,SDO_GEOMETRY('" + wkt + "',"
+				extendSql=extendSql+ "   AND sdo_relate(T.GEOMETRY,SDO_GEOMETRY('" + wkt + "',"
 						+ "8307),'mask=anyinteract+contains+inside+touch+covers+overlapbdyintersect') = 'TRUE'";
 			}
 			if(json.containsKey("planningStatus")){

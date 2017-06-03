@@ -1,19 +1,38 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.drew.lang.DateUtil;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.util.DateUtils;
+import com.navinfo.dataservice.commons.util.DateUtilsEx;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
+import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
+import com.navinfo.dataservice.dao.photo.HBaseController;
 
 import net.sf.json.JSONObject;
 
@@ -105,11 +124,10 @@ public class DataPrepareController extends BaseController {
 	
 	@RequestMapping(value = "/dealership/expTableDiff")
 	public ModelAndView expTableDiff(HttpServletRequest request,HttpServletResponse response) {
-		response.setContentType("image/jpeg;charset=GBK");
-
-		response.setHeader("Access-Control-Allow-Origin", "*");
-		response.setHeader("Access-Control-Allow-Methods",
-				"POST, GET, OPTIONS, DELETE,PUT"); 
+		response.setContentType("octets/stream");
+//		response.setHeader("Access-Control-Allow-Origin", "*");
+//		response.setHeader("Access-Control-Allow-Methods",
+//				"POST, GET, OPTIONS, DELETE,PUT"); 
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
@@ -117,16 +135,53 @@ public class DataPrepareController extends BaseController {
 			}
 			String chainCode = dataJson.getString("chainCode");
 			
-			List<Map<String, Object>> dealerBrandList = dealerShipService.expTableDiff(chainCode);
+			List<ExpIxDealershipResult> dealerBrandList = dealerShipService.searchTableDiff(chainCode);
+
+			ExportExcel<ExpIxDealershipResult> ex = new ExportExcel<ExpIxDealershipResult>();  
 			
-			//处理返回的imageBlob 数据
-			InputStream in = imageBlob.getBinaryStream(); // 建立输出流
-            int len = (int) imageBlob.length();
-            byte[] data = new byte[len]; // 建立缓冲区
-            in.read(data);
-            in.close();
-			response.getOutputStream().write(data);
+			String excelName = "表表差分结果"+DateUtils.dateToString(new Date(), "yyyyMMddHHmmss");
+			//转码防止乱码  
+	        response.addHeader("Content-Disposition", "attachment;filename="+new String( excelName.getBytes("gb2312"), "ISO8859-1" )+".xls");  
+	        
+			String[] headers =  
+		        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+		        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+		        		"厂商提供英文地址", "旧一览表ID", "旧一览表省份" ,
+		        		"旧一览表城市", "旧一览表项目", "旧一览表分类", "旧一览表品牌" , "旧一览表名称", "旧一览表简称", "旧一览表地址",
+		        		"旧一览表电话（其他）" ,
+		        		"旧一览表电话（销售）", "旧一览表电话（服务）", "旧一览表邮编", "旧一览表英文名称" , "旧一览表英文地址", 
+		        		"新旧一览表差分结果"  };  
+			
+			try  
+	        {  
+	            OutputStream out = response.getOutputStream();  
+	            		//new FileOutputStream("f://a.xls");  
+	            ex.exportExcel("表表差分结果", headers, dealerBrandList, out, "yyyy-MM-dd");
+//	            exportExcel(headers, dealerBrandList, out);  
+	            out.close();  
+//	            JOptionPane.showMessageDialog(null, "导出成功!");  
+	            logger.error("excel导出成功！");  
+	        } catch (FileNotFoundException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            logger.error(e.getMessage());
+	        } 
 			return new ModelAndView("jsonView", success(dealerBrandList));
+		} catch (Exception e) {
+			logger.error("查询失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	@RequestMapping(value = "/dealership/uploadChainExcel")
+	public ModelAndView uploadChainExcel(HttpServletRequest request) {
+		try {
+
+			dealerShipService.uploadChainExcel(request);
+			
+			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));

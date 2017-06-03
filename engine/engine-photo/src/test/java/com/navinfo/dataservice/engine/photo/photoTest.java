@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.engine.photo;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -19,4 +21,16 @@ public class photoTest {
 		JSONObject tt = getter.getPhotoDetailByRowkey("87bda841aec4486fadfe9882cc25a3e0");
 		System.out.println("over");
 	} 
+	@Test
+	public void importCrowdPhoto() throws Exception{
+		try{
+			File file = new File("W:\\test\\1QAZ2WSX3EDC4RFV5TGB6YHN7UJM1QAZ.jpg");
+			int angle = 0;
+			String fileName = "1QAZ2WSX3EDC4RFV5TGB6YHN7UJM1QAZ.jpg";
+			System.out.println(fileName.length());
+			CollectorImport.importCrowdPhoto(new FileInputStream(file), angle, fileName);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }

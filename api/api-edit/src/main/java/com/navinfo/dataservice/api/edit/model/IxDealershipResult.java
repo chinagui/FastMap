@@ -1,5 +1,7 @@
 package com.navinfo.dataservice.api.edit.model;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 /** 
 * @ClassName:  IxDealershipResult 
 * @author code generator
@@ -41,6 +43,7 @@ public class IxDealershipResult  {
 	private String fbAuditRemark ;
 	private String fbDate ;
 	private int cfmStatus ;
+	private int cfmIsAdopted ;
 	private String cfmPoiNum ;
 	private String cfmMemo ;
 	private int sourceId ;
@@ -57,13 +60,13 @@ public class IxDealershipResult  {
 	private int poiYDisplay ;
 	private int poiXGuide ;
 	private int poiYGuide ;
-	private Object geometry ;
+	private Geometry geometry ;
 	private int regionId ;
 	
 	public IxDealershipResult (){
 	}
 	
-	public IxDealershipResult (int resultId ,int workflowStatus,int dealStatus,int userId,String toInfoDate,String toClientDate,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int matchMethod,String poiNum1,String poiNum2,String poiNum3,String poiNum4,String poiNum5,String similarity,int fbSource,String fbContent,String fbAuditRemark,String fbDate,int cfmStatus,String cfmPoiNum,String cfmMemo,int sourceId,int dealSrcDiff,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiTel,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Object geometry,int regionId){
+	public IxDealershipResult (int resultId ,int workflowStatus,int dealStatus,int userId,String toInfoDate,String toClientDate,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int matchMethod,String poiNum1,String poiNum2,String poiNum3,String poiNum4,String poiNum5,String similarity,int fbSource,String fbContent,String fbAuditRemark,String fbDate,int cfmStatus,String cfmPoiNum,String cfmMemo,int sourceId,int dealSrcDiff,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiTel,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Geometry geometry,int regionId){
 		this.resultId=resultId ;
 		this.workflowStatus=workflowStatus ;
 		this.dealStatus=dealStatus ;
@@ -417,10 +420,10 @@ public class IxDealershipResult  {
 	public void setPoiYGuide(int poiYGuide) {
 		this.poiYGuide = poiYGuide;
 	}
-	public Object getGeometry() {
+	public Geometry getGeometry() {
 		return geometry;
 	}
-	public void setGeometry(Object geometry) {
+	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
 	}
 	public int getRegionId() {
@@ -435,6 +438,14 @@ public class IxDealershipResult  {
 	@Override
 	public String toString() {
 		return "IxDealershipResult [resultId=" + resultId +",workflowStatus="+workflowStatus+",dealStatus="+dealStatus+",userId="+userId+",toInfoDate="+toInfoDate+",toClientDate="+toClientDate+",province="+province+",city="+city+",project="+project+",kindCode="+kindCode+",chain="+chain+",name="+name+",nameShort="+nameShort+",address="+address+",telSale="+telSale+",telService="+telService+",telOther="+telOther+",postCode="+postCode+",nameEng="+nameEng+",addressEng="+addressEng+",provideDate="+provideDate+",isDeleted="+isDeleted+",matchMethod="+matchMethod+",poiNum1="+poiNum1+",poiNum2="+poiNum2+",poiNum3="+poiNum3+",poiNum4="+poiNum4+",poiNum5="+poiNum5+",similarity="+similarity+",fbSource="+fbSource+",fbContent="+fbContent+",fbAuditRemark="+fbAuditRemark+",fbDate="+fbDate+",cfmStatus="+cfmStatus+",cfmPoiNum="+cfmPoiNum+",cfmMemo="+cfmMemo+",sourceId="+sourceId+",dealSrcDiff="+dealSrcDiff+",dealCfmDate="+dealCfmDate+",poiKindCode="+poiKindCode+",poiChain="+poiChain+",poiName="+poiName+",poiNameShort="+poiNameShort+",poiAddress="+poiAddress+",poiTel="+poiTel+",poiPostCode="+poiPostCode+",poiXDisplay="+poiXDisplay+",poiYDisplay="+poiYDisplay+",poiXGuide="+poiXGuide+",poiYGuide="+poiYGuide+",geometry="+geometry+",regionId="+regionId+"]";
+	}
+
+	public int getCfmIsAdopted() {
+		return cfmIsAdopted;
+	}
+
+	public void setCfmIsAdopted(int cfmIsAdopted) {
+		this.cfmIsAdopted = cfmIsAdopted;
 	}
 
 

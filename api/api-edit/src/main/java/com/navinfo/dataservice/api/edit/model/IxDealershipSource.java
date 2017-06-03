@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.vividsolutions.jts.geom.Geometry;
+
 import net.sf.json.JSONObject;
 
 /** 
@@ -47,13 +49,13 @@ public class IxDealershipSource  {
 	private int poiYDisplay ;
 	private int poiXGuide ;
 	private int poiYGuide ;
-	private Object geometry ;
+	private Geometry geometry ;
 	private String poiTel ;
 	
 	public IxDealershipSource (){
 	}
 	
-	public IxDealershipSource (int sourceId ,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int fbSource,String fbContent,String fbAuditRemark,String fbDate,String cfmPoiNum,String cfmMemo,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Object geometry,String poiTel){
+	public IxDealershipSource (int sourceId ,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int fbSource,String fbContent,String fbAuditRemark,String fbDate,String cfmPoiNum,String cfmMemo,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Geometry geometry,String poiTel){
 		this.sourceId=sourceId ;
 		this.province=province ;
 		this.city=city ;
@@ -295,10 +297,10 @@ public class IxDealershipSource  {
 	public void setPoiYGuide(int poiYGuide) {
 		this.poiYGuide = poiYGuide;
 	}
-	public Object getGeometry() {
+	public Geometry getGeometry() {
 		return geometry;
 	}
-	public void setGeometry(Object geometry) {
+	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
 	}
 	public String getPoiTel() {

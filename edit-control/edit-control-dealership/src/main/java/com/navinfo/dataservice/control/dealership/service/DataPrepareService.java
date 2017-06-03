@@ -2,6 +2,7 @@ package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,24 +18,33 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.aop.ThrowsAdvice;
 
+import com.mongodb.client.result.DeleteResult;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
+import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.dataservice.control.dealership.service.utils.InputStreamUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
 
@@ -170,6 +180,8 @@ public class DataPrepareService {
 	 */
 	public void impTableDiff(String chainCode,
 			String upFile)throws Exception {
+		//excel文件上传到服务器
+		//TODO
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(upFile);
 		Connection conn=null;
@@ -188,6 +200,16 @@ public class DataPrepareService {
 				excelSet.add(diffSub);
 				resultIdSet.add(diffSub.getResultId());
 				sourceIdSet.add(diffSub.getOldSourceId());
+				//导入时，判断导入文件中“代理店品牌”是否跟作业品牌一致，如果一致，则可以导入，否则不可以导入
+				if(!chainCode.equals(diffSub.getChain())){
+					log.info("导入文件中“代理店品牌”是否跟作业品牌不一致");
+					throw new Exception("导入文件中“代理店品牌”是否跟作业品牌不一致");
+			}
+				if(diffSub.getDealSrcDiff()!=1&&diffSub.getDealSrcDiff()!=2
+						&&diffSub.getDealSrcDiff()!=3&&diffSub.getDealSrcDiff()!=4){
+					log.info("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
+					throw new Exception("表表差分结果中“新旧一览表差分结果”，值域必须在｛1，2，3，4｝范围内");
+				}
 			}
 			//加载IX_DEALERSHIP_RESULT中的数据
 			Map<Integer, IxDealershipResult> resultObjSet = IxDealershipResultSelector.getByResultIds(conn, resultIdSet);
@@ -195,19 +217,53 @@ public class DataPrepareService {
 			Map<Integer, IxDealershipSource> sourceObjSet = IxDealershipSourceSelector.getBySourceIds(conn, sourceIdSet);
 			//根据导入原则，获取需要修改的数据
 			Map<String,Set<IxDealershipResult>> changeMap=importMain(excelSet,resultObjSet,sourceObjSet);
+			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
+			deleteResult(conn,chainCode,resultIdSet);
 			//数据持久化到数据库
 			persistChange(conn,changeMap);
 			//修改IX_DEALERSHIP_CHAIN状态
 			changeChainStatus(conn,chainCode);
 		}catch(Exception e){
+			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
+			throw new ServiceException(e.getMessage(), e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-	private void changeChainStatus(Connection conn, String chainCode) {
-		// TODO Auto-generated method stub
 		
+	/**
+	 * IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
+	 * @param resultIdSet
+	 * @throws SQLException 
+	 */
+	private void deleteResult(Connection conn,String chainCode,Set<Integer> resultIdSet) throws SQLException {
+		String sql="DELETE FROM IX_DEALERSHIP_RESULT"
+				+ " WHERE CHAIN = '"+chainCode+"'"
+				+ "   AND RESULT_ID  IN ";
+		QueryRunner run=new QueryRunner();
+		if(resultIdSet.size()>1000){
+			sql= sql+"(SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
+			Clob clob = ConnectionUtil.createClob(conn);
+			clob.setString(1, StringUtils.join(resultIdSet, ","));
+			run.update(conn, sql,clob);
+		}else{
+			sql= sql+"('"+StringUtils.join(resultIdSet, "','")+"')";
+			run.update(conn, sql);
+	}
+
+		
+	}
+	/**
+	 * 表表差分后，修改IX_DEALERSHIP_CHAIN表状态
+	 * @param conn
+	 * @param chainCode
+	 * @throws SQLException
+	 */
+	private void changeChainStatus(Connection conn, String chainCode) throws SQLException {
+		String sql="UPDATE IX_DEALERSHIP_CHAIN SET WORK_STATUS = 1 WHERE CHAIN_CODE = '"+chainCode+"'";
+		QueryRunner run=new QueryRunner();
+		run.update(conn, sql);
 	}
 
 	/**
@@ -226,29 +282,81 @@ public class DataPrepareService {
 	 * @param sourceObjSet 
 	 * @param sourceObjSet
 	 * @return
+	 * @throws Exception 
 	 */
 	private Map<String, Set<IxDealershipResult>> importMain(
-			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) {
+			List<DiffTableExcel> excelSet, Map<Integer, IxDealershipResult> resultObjSet, Map<Integer, IxDealershipSource> sourceObjSet) throws Exception {
 		Map<String, Set<IxDealershipResult>> resultMap=new HashMap<String, Set<IxDealershipResult>>();
+		resultMap.put("ADD", new HashSet<IxDealershipResult>());
+		resultMap.put("UPDATE", new HashSet<IxDealershipResult>());
+		
+		ManApi api=(ManApi) ApplicationContextUtil.getBean("manApi");
+		List<CpRegionProvince> cpRegionList = api.listCpRegionProvince();
+		Map<String, Integer> cpRegionMap=new HashMap<String, Integer>();
+		for(CpRegionProvince region:cpRegionList){
+			cpRegionMap.put(region.getProvince(), region.getRegionId());
+		}
+		
 		for (DiffTableExcel diffSub:excelSet){
 			int resultId=diffSub.getResultId();
 			IxDealershipResult resultObj = null;
-			if(resultId!=0){resultObj = resultObjSet.get(resultId);}
-			else{resultObj = new IxDealershipResult();}
+			int oldSourceId = diffSub.getOldSourceId();
+			if(resultId!=0){
+				if(!resultObjSet.containsKey(resultId)){
+					log.info("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
+					throw new Exception("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
+				}
+				resultObj = resultObjSet.get(resultId);
+				resultMap.get("UPDATE").add(resultObj);
+			}else{
+				resultObj = new IxDealershipResult();
+				//resultObj.setSourceId(oldSourceId);
+				resultMap.get("ADD").add(resultObj);
+			}
 			
 			resultObj.setDealSrcDiff(diffSub.getDealSrcDiff());
 			
-			int oldSourceId = diffSub.getOldSourceId();
 			if(oldSourceId!=resultObj.getSourceId()){
 				resultObj.setSourceId(diffSub.getOldSourceId());
-				IxDealershipSource sourceObj = sourceObjSet.get(diffSub.getOldSourceId());
-				
+				IxDealershipSource sourceObj = null;
+				if(oldSourceId!=0){
+					if(!sourceObjSet.containsKey(oldSourceId)){
+						log.info("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
+						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
+			}
+					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+		}
+				else{sourceObj=new IxDealershipSource();}
+				changeResultObj(resultObj,sourceObj);
+				if(cpRegionMap.containsKey(resultObj.getProvince())){
+					resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
+	}
 			}
 		}
-		return null;
+		return resultMap;
 	}
-	
+	/**
+	 * IX_DEALERSHIP_RESULT表记录，根据source获取的IX_DEALERSHIP_SOURCE，更新其相应字段。
+	 * @param resultObj
+	 * @param sourceObj
+	 */
 	private void changeResultObj(IxDealershipResult resultObj,IxDealershipSource sourceObj){
+		resultObj.setCfmPoiNum(sourceObj.getCfmPoiNum());
+		if(!StringUtils.isEmpty(resultObj.getCfmPoiNum())){
+			resultObj.setCfmIsAdopted(1);
+		}
+		resultObj.setPoiKindCode(sourceObj.getPoiKindCode());
+		resultObj.setPoiChain(sourceObj.getPoiChain());
+		resultObj.setPoiName(sourceObj.getPoiName());
+		resultObj.setPoiNameShort(sourceObj.getPoiNameShort());
+		resultObj.setPoiAddress(sourceObj.getPoiAddress());
+		resultObj.setPoiTel(sourceObj.getPoiTel());
+		resultObj.setPoiPostCode(sourceObj.getPoiPostCode());
+		resultObj.setPoiXDisplay(sourceObj.getPoiXDisplay());
+		resultObj.setPoiYDisplay(sourceObj.getPoiYDisplay());
+		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
+		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
+		resultObj.setGeometry(sourceObj.getGeometry());
 		
 	}
 
@@ -306,13 +414,6 @@ public class DataPrepareService {
 		return sources;
 	}
 	
-	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
-		
-		searchTableDiff(chainCode);
-		
-		return null;
-	}
-	
 	/**
 	 * @Title: searchTableDiff
 	 * @Description: TODO
@@ -325,9 +426,11 @@ public class DataPrepareService {
 	 */
 	public List<ExpIxDealershipResult> searchTableDiff(String chainCode) throws SQLException{
 		
-		Connection con = null;
+		Connection conn = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,r.province , r.city, r.project , r.kind_code, r.chain , r.name ,"
 					+ " r.name_short, r.address,r.tel_sale ,"
@@ -389,14 +492,15 @@ public class DataPrepareService {
 				}
 			};
 			
-			return run.query(con, selectSql, rs);
+			return run.query(conn, selectSql, rs);
 		}catch(Exception e){
-			DbUtils.rollbackAndClose(con);
+			DbUtils.rollbackAndClose(conn);
 		}finally{
-			DbUtils.commitAndClose(con);
+			DbUtils.commitAndClose(conn);
 		}
 		return null;
 	}
+
 
 	/**
 	 * @param request

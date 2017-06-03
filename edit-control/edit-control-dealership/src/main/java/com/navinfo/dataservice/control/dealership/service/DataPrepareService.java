@@ -279,7 +279,7 @@ public class DataPrepareService {
 	}
 
 	/**
-	 * 数据持久化到数据库
+	 * IxDealershipResult数据持久化到数据库
 	 * @param conn
 	 * @param changeMap
 	 * @throws ServiceException 

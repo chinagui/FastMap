@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
@@ -103,7 +104,12 @@ public class DataPrepareController extends BaseController {
 	}
 	
 	@RequestMapping(value = "/dealership/expTableDiff")
-	public ModelAndView expTableDiff(HttpServletRequest request) {
+	public ModelAndView expTableDiff(HttpServletRequest request,HttpServletResponse response) {
+		response.setContentType("image/jpeg;charset=GBK");
+
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Access-Control-Allow-Methods",
+				"POST, GET, OPTIONS, DELETE,PUT"); 
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
@@ -113,6 +119,13 @@ public class DataPrepareController extends BaseController {
 			
 			List<Map<String, Object>> dealerBrandList = dealerShipService.expTableDiff(chainCode);
 			
+			//处理返回的imageBlob 数据
+			InputStream in = imageBlob.getBinaryStream(); // 建立输出流
+            int len = (int) imageBlob.length();
+            byte[] data = new byte[len]; // 建立缓冲区
+            in.read(data);
+            in.close();
+			response.getOutputStream().write(data);
 			return new ModelAndView("jsonView", success(dealerBrandList));
 		} catch (Exception e) {
 			logger.error("查询失败，原因：" + e.getMessage(), e);

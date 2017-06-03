@@ -18,6 +18,7 @@ import com.alibaba.druid.support.logging.Log;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -223,8 +224,16 @@ public class DataPrepareService {
 	
 	public List<Map<String, Object>> expTableDiff(String chainCode) throws SQLException{
 		
-		searchTableDiff(chainCode);
-		
+		List<ExpIxDealershipResult> shipResults = searchTableDiff(chainCode);
+		ExportExcel<ExpIxDealershipResult> ex = new ExportExcel<ExpIxDealershipResult>();  
+		String[] headers =  
+	        { "UUID", "省份", "城市", "项目", "代理店分类", "代理店品牌", "厂商提供名称", "厂商提供简称", "厂商提供地址" ,
+	        		"厂商提供电话（销售）", "厂商提供电话（服务）", "厂商提供电话（其他）", "厂商提供邮编" , "厂商提供英文名称",
+	        		"厂商提供英文地址", "旧一览表ID", "旧一览表省份" ,
+	        		"旧一览表城市", "旧一览表项目", "旧一览表分类", "旧一览表品牌" , "旧一览表名称", "旧一览表简称", "旧一览表地址",
+	        		"旧一览表电话（其他）" ,
+	        		"旧一览表电话（销售）", "旧一览表电话（服务）", "旧一览表邮编", "旧一览表英文名称" , "旧一览表英文地址", 
+	        		"新旧一览表差分结果"  };  
 		return null;
 	}
 	

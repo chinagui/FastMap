@@ -41,6 +41,11 @@ public class IxDealershipSourceSelector {
 			return new QueryRunner().query(conn,sql,getSourcesMapHander());
 		}
 	}
+	
+	public static Map<Integer, IxDealershipSource> getAllIxDealershipSource(Connection conn)throws Exception{
+		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE U_RECORD <>2";
+		return new QueryRunner().query(conn,sql,getSourcesMapHander());
+	}
 	/**
 	 * key是IxDealershipResult对象的sourceId
 	 * @return

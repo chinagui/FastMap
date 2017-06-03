@@ -17,11 +17,14 @@ import java.util.Set;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
+import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
@@ -41,6 +44,8 @@ import net.sf.json.JSONObject;
 public class DataEditService {
 
 	private QueryRunner run = new QueryRunner();
+
+	private static Logger log = LoggerRepos.getLogger(DataEditService.class);
 
 	/**
 	 * 申请数据
@@ -186,5 +191,541 @@ public class DataEditService {
 			DBUtils.closeStatement(pstmt);
 		}
 		return resultID;
+	}
+	
+	
+	public void createIxDealershipResult(IxDealershipResult  bean)throws ServiceException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();	
+			
+			String createSql = "insert into IX_DEALERSHIP_RESULT ";			
+			List<String> columns = new ArrayList<String>();
+			List<String> placeHolder = new ArrayList<String>();
+			List<Object> values = new ArrayList<Object>();
+			
+			if (bean!=null&&bean.getResultId()!=null && StringUtils.isNotEmpty(bean.getResultId().toString())){
+				columns.add(" RESULT_ID ");
+				placeHolder.add("?");
+				values.add(bean.getResultId());
+			};
+			if (bean!=null&&bean.getWorkflowStatus()!=null && StringUtils.isNotEmpty(bean.getWorkflowStatus().toString())){
+				columns.add(" WORKFLOW_STATUS ");
+				placeHolder.add("?");
+				values.add(bean.getWorkflowStatus());
+			};
+			if (bean!=null&&bean.getDealStatus()!=null && StringUtils.isNotEmpty(bean.getDealStatus().toString())){
+				columns.add(" DEAL_STATUS ");
+				placeHolder.add("?");
+				values.add(bean.getDealStatus());
+			};
+			if (bean!=null&&bean.getUserId()!=null && StringUtils.isNotEmpty(bean.getUserId().toString())){
+				columns.add(" USER_ID ");
+				placeHolder.add("?");
+				values.add(bean.getUserId());
+			};
+			if (bean!=null&&bean.getToInfoDate()!=null && StringUtils.isNotEmpty(bean.getToInfoDate().toString())){
+				columns.add(" TO_INFO_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getToInfoDate());
+			};
+			if (bean!=null&&bean.getToClientDate()!=null && StringUtils.isNotEmpty(bean.getToClientDate().toString())){
+				columns.add(" TO_CLIENT_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getToClientDate());
+			};
+			if (bean!=null&&bean.getProvince()!=null && StringUtils.isNotEmpty(bean.getProvince().toString())){
+				columns.add(" PROVINCE ");
+				placeHolder.add("?");
+				values.add(bean.getProvince());
+			};
+			if (bean!=null&&bean.getCity()!=null && StringUtils.isNotEmpty(bean.getCity().toString())){
+				columns.add(" CITY ");
+				placeHolder.add("?");
+				values.add(bean.getCity());
+			};
+			if (bean!=null&&bean.getProject()!=null && StringUtils.isNotEmpty(bean.getProject().toString())){
+				columns.add(" PROJECT ");
+				placeHolder.add("?");
+				values.add(bean.getProject());
+			};
+			if (bean!=null&&bean.getKindCode()!=null && StringUtils.isNotEmpty(bean.getKindCode().toString())){
+				columns.add(" KIND_CODE ");
+				placeHolder.add("?");
+				values.add(bean.getKindCode());
+			};
+			if (bean!=null&&bean.getChain()!=null && StringUtils.isNotEmpty(bean.getChain().toString())){
+				columns.add(" CHAIN ");
+				placeHolder.add("?");
+				values.add(bean.getChain());
+			};
+			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+				columns.add(" NAME ");
+				placeHolder.add("?");
+				values.add(bean.getName());
+			};
+			if (bean!=null&&bean.getNameShort()!=null && StringUtils.isNotEmpty(bean.getNameShort().toString())){
+				columns.add(" NAME_SHORT ");
+				placeHolder.add("?");
+				values.add(bean.getNameShort());
+			};
+			if (bean!=null&&bean.getAddress()!=null && StringUtils.isNotEmpty(bean.getAddress().toString())){
+				columns.add(" ADDRESS ");
+				placeHolder.add("?");
+				values.add(bean.getAddress());
+			};
+			if (bean!=null&&bean.getTelSale()!=null && StringUtils.isNotEmpty(bean.getTelSale().toString())){
+				columns.add(" TEL_SALE ");
+				placeHolder.add("?");
+				values.add(bean.getTelSale());
+			};
+			if (bean!=null&&bean.getTelService()!=null && StringUtils.isNotEmpty(bean.getTelService().toString())){
+				columns.add(" TEL_SERVICE ");
+				placeHolder.add("?");
+				values.add(bean.getTelService());
+			};
+			if (bean!=null&&bean.getTelOther()!=null && StringUtils.isNotEmpty(bean.getTelOther().toString())){
+				columns.add(" TEL_OTHER ");
+				placeHolder.add("?");
+				values.add(bean.getTelOther());
+			};
+			if (bean!=null&&bean.getPostCode()!=null && StringUtils.isNotEmpty(bean.getPostCode().toString())){
+				columns.add(" POST_CODE ");
+				placeHolder.add("?");
+				values.add(bean.getPostCode());
+			};
+			if (bean!=null&&bean.getNameEng()!=null && StringUtils.isNotEmpty(bean.getNameEng().toString())){
+				columns.add(" NAME_ENG ");
+				placeHolder.add("?");
+				values.add(bean.getNameEng());
+			};
+			if (bean!=null&&bean.getAddressEng()!=null && StringUtils.isNotEmpty(bean.getAddressEng().toString())){
+				columns.add(" ADDRESS_ENG ");
+				placeHolder.add("?");
+				values.add(bean.getAddressEng());
+			};
+			if (bean!=null&&bean.getProvideDate()!=null && StringUtils.isNotEmpty(bean.getProvideDate().toString())){
+				columns.add(" PROVIDE_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getProvideDate());
+			};
+			if (bean!=null&&bean.getIsDeleted()!=null && StringUtils.isNotEmpty(bean.getIsDeleted().toString())){
+				columns.add(" IS_DELETED ");
+				placeHolder.add("?");
+				values.add(bean.getIsDeleted());
+			};
+			if (bean!=null&&bean.getMatchMethod()!=null && StringUtils.isNotEmpty(bean.getMatchMethod().toString())){
+				columns.add(" MATCH_METHOD ");
+				placeHolder.add("?");
+				values.add(bean.getMatchMethod());
+			};
+			if (bean!=null&&bean.getPoiNum1()!=null && StringUtils.isNotEmpty(bean.getPoiNum1().toString())){
+				columns.add(" POI_NUM_1 ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNum1());
+			};
+			if (bean!=null&&bean.getPoiNum2()!=null && StringUtils.isNotEmpty(bean.getPoiNum2().toString())){
+				columns.add(" POI_NUM_2 ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNum2());
+			};
+			if (bean!=null&&bean.getPoiNum3()!=null && StringUtils.isNotEmpty(bean.getPoiNum3().toString())){
+				columns.add(" POI_NUM_3 ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNum3());
+			};
+			if (bean!=null&&bean.getPoiNum4()!=null && StringUtils.isNotEmpty(bean.getPoiNum4().toString())){
+				columns.add(" POI_NUM_4 ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNum4());
+			};
+			if (bean!=null&&bean.getPoiNum5()!=null && StringUtils.isNotEmpty(bean.getPoiNum5().toString())){
+				columns.add(" POI_NUM_5 ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNum5());
+			};
+			if (bean!=null&&bean.getSimilarity()!=null && StringUtils.isNotEmpty(bean.getSimilarity().toString())){
+				columns.add(" SIMILARITY ");
+				placeHolder.add("?");
+				values.add(bean.getSimilarity());
+			};
+			if (bean!=null&&bean.getFbSource()!=null && StringUtils.isNotEmpty(bean.getFbSource().toString())){
+				columns.add(" FB_SOURCE ");
+				placeHolder.add("?");
+				values.add(bean.getFbSource());
+			};
+			if (bean!=null&&bean.getFbContent()!=null && StringUtils.isNotEmpty(bean.getFbContent().toString())){
+				columns.add(" FB_CONTENT ");
+				placeHolder.add("?");
+				values.add(bean.getFbContent());
+			};
+			if (bean!=null&&bean.getFbAuditRemark()!=null && StringUtils.isNotEmpty(bean.getFbAuditRemark().toString())){
+				columns.add(" FB_AUDIT_REMARK ");
+				placeHolder.add("?");
+				values.add(bean.getFbAuditRemark());
+			};
+			if (bean!=null&&bean.getFbDate()!=null && StringUtils.isNotEmpty(bean.getFbDate().toString())){
+				columns.add(" FB_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getFbDate());
+			};
+			if (bean!=null&&bean.getCfmStatus()!=null && StringUtils.isNotEmpty(bean.getCfmStatus().toString())){
+				columns.add(" CFM_STATUS ");
+				placeHolder.add("?");
+				values.add(bean.getCfmStatus());
+			};
+			if (bean!=null&&bean.getCfmPoiNum()!=null && StringUtils.isNotEmpty(bean.getCfmPoiNum().toString())){
+				columns.add(" CFM_POI_NUM ");
+				placeHolder.add("?");
+				values.add(bean.getCfmPoiNum());
+			};
+			if (bean!=null&&bean.getCfmMemo()!=null && StringUtils.isNotEmpty(bean.getCfmMemo().toString())){
+				columns.add(" CFM_MEMO ");
+				placeHolder.add("?");
+				values.add(bean.getCfmMemo());
+			};
+			if (bean!=null&&bean.getSourceId()!=null && StringUtils.isNotEmpty(bean.getSourceId().toString())){
+				columns.add(" SOURCE_ID ");
+				placeHolder.add("?");
+				values.add(bean.getSourceId());
+			};
+			if (bean!=null&&bean.getDealSrcDiff()!=null && StringUtils.isNotEmpty(bean.getDealSrcDiff().toString())){
+				columns.add(" DEAL_SRC_DIFF ");
+				placeHolder.add("?");
+				values.add(bean.getDealSrcDiff());
+			};
+			if (bean!=null&&bean.getDealCfmDate()!=null && StringUtils.isNotEmpty(bean.getDealCfmDate().toString())){
+				columns.add(" DEAL_CFM_DATE ");
+				placeHolder.add("?");
+				values.add(bean.getDealCfmDate());
+			};
+			if (bean!=null&&bean.getPoiKindCode()!=null && StringUtils.isNotEmpty(bean.getPoiKindCode().toString())){
+				columns.add(" POI_KIND_CODE ");
+				placeHolder.add("?");
+				values.add(bean.getPoiKindCode());
+			};
+			if (bean!=null&&bean.getPoiChain()!=null && StringUtils.isNotEmpty(bean.getPoiChain().toString())){
+				columns.add(" POI_CHAIN ");
+				placeHolder.add("?");
+				values.add(bean.getPoiChain());
+			};
+			if (bean!=null&&bean.getPoiName()!=null && StringUtils.isNotEmpty(bean.getPoiName().toString())){
+				columns.add(" POI_NAME ");
+				placeHolder.add("?");
+				values.add(bean.getPoiName());
+			};
+			if (bean!=null&&bean.getPoiNameShort()!=null && StringUtils.isNotEmpty(bean.getPoiNameShort().toString())){
+				columns.add(" POI_NAME_SHORT ");
+				placeHolder.add("?");
+				values.add(bean.getPoiNameShort());
+			};
+			if (bean!=null&&bean.getPoiAddress()!=null && StringUtils.isNotEmpty(bean.getPoiAddress().toString())){
+				columns.add(" POI_ADDRESS ");
+				placeHolder.add("?");
+				values.add(bean.getPoiAddress());
+			};
+			if (bean!=null&&bean.getPoiTel()!=null && StringUtils.isNotEmpty(bean.getPoiTel().toString())){
+				columns.add(" POI_TEL ");
+				placeHolder.add("?");
+				values.add(bean.getPoiTel());
+			};
+			if (bean!=null&&bean.getPoiPostCode()!=null && StringUtils.isNotEmpty(bean.getPoiPostCode().toString())){
+				columns.add(" POI_POST_CODE ");
+				placeHolder.add("?");
+				values.add(bean.getPoiPostCode());
+			};
+			if (bean!=null&&bean.getPoiXDisplay()!=null && StringUtils.isNotEmpty(bean.getPoiXDisplay().toString())){
+				columns.add(" POI_X_DISPLAY ");
+				placeHolder.add("?");
+				values.add(bean.getPoiXDisplay());
+			};
+			if (bean!=null&&bean.getPoiYDisplay()!=null && StringUtils.isNotEmpty(bean.getPoiYDisplay().toString())){
+				columns.add(" POI_Y_DISPLAY ");
+				placeHolder.add("?");
+				values.add(bean.getPoiYDisplay());
+			};
+			if (bean!=null&&bean.getPoiXGuide()!=null && StringUtils.isNotEmpty(bean.getPoiXGuide().toString())){
+				columns.add(" POI_X_GUIDE ");
+				placeHolder.add("?");
+				values.add(bean.getPoiXGuide());
+			};
+			if (bean!=null&&bean.getPoiYGuide()!=null && StringUtils.isNotEmpty(bean.getPoiYGuide().toString())){
+				columns.add(" POI_Y_GUIDE ");
+				placeHolder.add("?");
+				values.add(bean.getPoiYGuide());
+			};
+			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+				columns.add(" GEOMETRY ");
+				placeHolder.add("?");
+				values.add(bean.getGeometry());
+			};
+			if (bean!=null&&bean.getRegionId()!=null && StringUtils.isNotEmpty(bean.getRegionId().toString())){
+				columns.add(" REGION_ID ");
+				placeHolder.add("?");
+				values.add(bean.getRegionId());
+			};
+			if (bean!=null&&bean.getCfmIsAdopted()!=null && StringUtils.isNotEmpty(bean.getCfmIsAdopted().toString())){
+				columns.add(" CFM_IS_ADOPTED ");
+				placeHolder.add("?");
+				values.add(bean.getCfmIsAdopted());
+			};
+			if(!columns.isEmpty()){
+				String columsStr = "(" + StringUtils.join(columns.toArray(),",") + ")";
+				String placeHolderStr = "(" + StringUtils.join(placeHolder.toArray(),",") + ")";
+				createSql = createSql + columsStr + " values " + placeHolderStr;
+			}
+			run.update(conn, 
+					   createSql, 
+					   values );
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	
+	public void updateIxDealershipResult(IxDealershipResult bean)throws ServiceException{
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn = DBConnector.getInstance().getMetaConnection();
+			
+			String updateSql = "update IX_DEALERSHIP_RESULT set  where 1=1 ";
+			List<String> columns = new ArrayList<String>();
+			List<Object> values=new ArrayList<Object>();
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("RESULT_ID")){
+				columns.add(" RESULT_ID=? ");
+				values.add(bean.getResultId());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORKFLOW_STATUS")){
+				columns.add(" WORKFLOW_STATUS=? ");
+				values.add(bean.getWorkflowStatus());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_STATUS")){
+				columns.add(" DEAL_STATUS=? ");
+				values.add(bean.getDealStatus());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("USER_ID")){
+				columns.add(" USER_ID=? ");
+				values.add(bean.getUserId());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TO_INFO_DATE")){
+				columns.add(" TO_INFO_DATE=? ");
+				values.add(bean.getToInfoDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TO_CLIENT_DATE")){
+				columns.add(" TO_CLIENT_DATE=? ");
+				values.add(bean.getToClientDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROVINCE")){
+				columns.add(" PROVINCE=? ");
+				values.add(bean.getProvince());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CITY")){
+				columns.add(" CITY=? ");
+				values.add(bean.getCity());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROJECT")){
+				columns.add(" PROJECT=? ");
+				values.add(bean.getProject());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("KIND_CODE")){
+				columns.add(" KIND_CODE=? ");
+				values.add(bean.getKindCode());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CHAIN")){
+				columns.add(" CHAIN=? ");
+				values.add(bean.getChain());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
+				columns.add(" NAME=? ");
+				values.add(bean.getName());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME_SHORT")){
+				columns.add(" NAME_SHORT=? ");
+				values.add(bean.getNameShort());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("ADDRESS")){
+				columns.add(" ADDRESS=? ");
+				values.add(bean.getAddress());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_SALE")){
+				columns.add(" TEL_SALE=? ");
+				values.add(bean.getTelSale());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_SERVICE")){
+				columns.add(" TEL_SERVICE=? ");
+				values.add(bean.getTelService());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_OTHER")){
+				columns.add(" TEL_OTHER=? ");
+				values.add(bean.getTelOther());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POST_CODE")){
+				columns.add(" POST_CODE=? ");
+				values.add(bean.getPostCode());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME_ENG")){
+				columns.add(" NAME_ENG=? ");
+				values.add(bean.getNameEng());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("ADDRESS_ENG")){
+				columns.add(" ADDRESS_ENG=? ");
+				values.add(bean.getAddressEng());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROVIDE_DATE")){
+				columns.add(" PROVIDE_DATE=? ");
+				values.add(bean.getProvideDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_DELETED")){
+				columns.add(" IS_DELETED=? ");
+				values.add(bean.getIsDeleted());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("MATCH_METHOD")){
+				columns.add(" MATCH_METHOD=? ");
+				values.add(bean.getMatchMethod());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_1")){
+				columns.add(" POI_NUM_1=? ");
+				values.add(bean.getPoiNum1());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_2")){
+				columns.add(" POI_NUM_2=? ");
+				values.add(bean.getPoiNum2());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_3")){
+				columns.add(" POI_NUM_3=? ");
+				values.add(bean.getPoiNum3());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_4")){
+				columns.add(" POI_NUM_4=? ");
+				values.add(bean.getPoiNum4());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_5")){
+				columns.add(" POI_NUM_5=? ");
+				values.add(bean.getPoiNum5());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SIMILARITY")){
+				columns.add(" SIMILARITY=? ");
+				values.add(bean.getSimilarity());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_SOURCE")){
+				columns.add(" FB_SOURCE=? ");
+				values.add(bean.getFbSource());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_CONTENT")){
+				columns.add(" FB_CONTENT=? ");
+				values.add(bean.getFbContent());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_AUDIT_REMARK")){
+				columns.add(" FB_AUDIT_REMARK=? ");
+				values.add(bean.getFbAuditRemark());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_DATE")){
+				columns.add(" FB_DATE=? ");
+				values.add(bean.getFbDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_STATUS")){
+				columns.add(" CFM_STATUS=? ");
+				values.add(bean.getCfmStatus());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_POI_NUM")){
+				columns.add(" CFM_POI_NUM=? ");
+				values.add(bean.getCfmPoiNum());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_MEMO")){
+				columns.add(" CFM_MEMO=? ");
+				values.add(bean.getCfmMemo());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SOURCE_ID")){
+				columns.add(" SOURCE_ID=? ");
+				values.add(bean.getSourceId());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_SRC_DIFF")){
+				columns.add(" DEAL_SRC_DIFF=? ");
+				values.add(bean.getDealSrcDiff());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_CFM_DATE")){
+				columns.add(" DEAL_CFM_DATE=? ");
+				values.add(bean.getDealCfmDate());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_KIND_CODE")){
+				columns.add(" POI_KIND_CODE=? ");
+				values.add(bean.getPoiKindCode());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_CHAIN")){
+				columns.add(" POI_CHAIN=? ");
+				values.add(bean.getPoiChain());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NAME")){
+				columns.add(" POI_NAME=? ");
+				values.add(bean.getPoiName());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NAME_SHORT")){
+				columns.add(" POI_NAME_SHORT=? ");
+				values.add(bean.getPoiNameShort());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_ADDRESS")){
+				columns.add(" POI_ADDRESS=? ");
+				values.add(bean.getPoiAddress());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_TEL")){
+				columns.add(" POI_TEL=? ");
+				values.add(bean.getPoiTel());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_POST_CODE")){
+				columns.add(" POI_POST_CODE=? ");
+				values.add(bean.getPoiPostCode());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_X_DISPLAY")){
+				columns.add(" POI_X_DISPLAY=? ");
+				values.add(bean.getPoiXDisplay());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_Y_DISPLAY")){
+				columns.add(" POI_Y_DISPLAY=? ");
+				values.add(bean.getPoiYDisplay());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_X_GUIDE")){
+				columns.add(" POI_X_GUIDE=? ");
+				values.add(bean.getPoiXGuide());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_Y_GUIDE")){
+				columns.add(" POI_Y_GUIDE=? ");
+				values.add(bean.getPoiYGuide());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
+				columns.add(" GEOMETRY=? ");
+				values.add(bean.getGeometry());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REGION_ID")){
+				columns.add(" REGION_ID=? ");
+				values.add(bean.getRegionId());
+			};
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_IS_ADOPTED")){
+				columns.add(" CFM_IS_ADOPTED=? ");
+				values.add(bean.getCfmIsAdopted());
+			};
+
+			if(!columns.isEmpty()){
+				String columsStr = StringUtils.join(columns.toArray(),",");
+				updateSql = updateSql + columsStr + "  where 1=1 and RESULT_ID=" + bean.getResultId();
+			}
+			run.update(conn, 
+						updateSql, 
+					   values.toArray() );
+
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 }

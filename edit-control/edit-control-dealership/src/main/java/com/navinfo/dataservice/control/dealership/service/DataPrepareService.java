@@ -1,11 +1,14 @@
 package com.navinfo.dataservice.control.dealership.service;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,11 +19,14 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.log4j.Logger;
 
+import com.navinfo.dataservice.api.datahub.model.DbInfo;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
+import com.navinfo.dataservice.commons.database.DbConnectConfig;
+import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.util.ZipUtils;
@@ -398,6 +404,9 @@ public class DataPrepareService {
 	 */
 	public void uploadChainExcel(HttpServletRequest request) throws Exception {
 		
+		//获取代理店数据库连接
+		Connection conn=DBConnector.getInstance().getDealershipConnection();
+		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
@@ -406,16 +415,69 @@ public class DataPrepareService {
 		//解压
 		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
 		ZipUtils.unzipFile(localZipFile,localUnzipDir);
-		//解析excel,读取result
-		String fileName = null;
-		List<Map<String, Object>> sourceMaps = impDiffExcel(fileName);
-		List<IxDealershipSource> dealershipSources = new ArrayList<IxDealershipSource>();
-		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
-		String chain = null;
-		//执行差分
-		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
-		//写库
-		//todo
+		
+		File file = new File(localUnzipDir);
+        if (file.exists()) {
+            File[] files = file.listFiles();
+            for (File file2 : files) {
+                if (file2.isDirectory()) {
+                    continue;
+                } else {
+                    System.out.println("文件:" + file2.getAbsolutePath());
+            		//解析excel,读取result
+                    String chain = null;
+            		String fileName = file2.getAbsolutePath();
+            		List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
+            		Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
+            		List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
+            		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
+            		for(Map<String, Object> map:sourceMaps){
+            			IxDealershipResult ixDealershipResult = new IxDealershipResult();
+            			InputStreamUtils.transMap2Bean(map, ixDealershipResult);
+            			dealershipResult.add(ixDealershipResult);
+            			chain = ixDealershipResult.getChain();
+            		}
+
+            		//执行差分
+            		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
+            		//写库
+            		//todo
+                }
+            }
+        }
+	}
+
+	/**
+	 * 一览表上传excel导入
+	 * @param upFile
+	 * @return List<Map<String, Object>>
+	 * @throws Exception 
+	 */
+	private List<Map<String, Object>> impIxDealershipResultExcel(String upFile) throws Exception {
+		log.info("start 导入一览表上传excel："+upFile);
+		ExcelReader excleReader = new ExcelReader(upFile);
+		Map<String,String> excelHeader = new HashMap<String,String>();
+		
+		excelHeader.put("省份", "province");
+		excelHeader.put("城市", "city");
+		excelHeader.put("项目", "project");
+		excelHeader.put("代理店分类", "kindCode");
+		excelHeader.put("代理店品牌", "chain");
+		excelHeader.put("厂商提供名称", "name");
+		excelHeader.put("厂商提供简称", "nameShort");
+		excelHeader.put("厂商提供地址", "address");
+		excelHeader.put("厂商提供电话（销售）", "telSale");
+		excelHeader.put("厂商提供电话（服务）", "telService");
+		excelHeader.put("厂商提供电话（其他）", "telOther");		
+		excelHeader.put("厂商提供邮编", "postCode");
+		excelHeader.put("厂商提供英文名称", "nameEng");
+		excelHeader.put("厂商提供英文地址", "addressEng");
+		
+		excelHeader.put("一览表提供时间", "provideDate");
+		
+		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
+		log.info("end 导入一览表结果excel："+upFile);
+		return sources;
 	}
 	
 	

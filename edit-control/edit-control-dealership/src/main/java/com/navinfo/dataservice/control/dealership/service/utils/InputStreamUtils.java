@@ -1,11 +1,16 @@
 package com.navinfo.dataservice.control.dealership.service.utils;
 
+import java.beans.BeanInfo;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -51,6 +56,36 @@ public class InputStreamUtils {
 		uploadItem.write(file);
 		return file.getAbsolutePath();
 	}
+	
+	
+	 public static void transMap2Bean(Map<String, Object> map, Object obj) throws Exception {  
+		  
+	        try {  
+	            BeanInfo beanInfo = Introspector.getBeanInfo(obj.getClass());  
+	            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();  
+	  
+	            for (PropertyDescriptor property : propertyDescriptors) {  
+	                String key = property.getName();  
+	  
+	                if (map.containsKey(key)) {  
+	                    Object value = map.get(key);  
+//	                    System.out.println(key+" : "+value);
+	                    // 得到property对应的setter方法  
+	                    Method setter = property.getWriteMethod();  
+	                    setter.invoke(obj, value);  
+	                }  
+	  
+	            }  
+	  
+	        } catch (Exception e) {  
+	            System.out.println("transMap2Bean Error " + e);  
+	            throw e;
+	        }  
+	  
+	        return;  
+	  
+	    } 
+	
 	/**
 	 * @param args
 	 */

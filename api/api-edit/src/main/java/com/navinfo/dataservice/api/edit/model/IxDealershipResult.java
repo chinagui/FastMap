@@ -684,6 +684,10 @@ public class IxDealershipResult  {
 			this.regionId = regionId;
 		}
 	}
+	
+	public Map<String, Object> getOldValues() {
+		return oldValues;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -699,6 +703,7 @@ public class IxDealershipResult  {
 		// TODO Auto-generated method stub
 		return "" + this.telSale + ";" + this.telService + ";" + this.telOther;
 	}
+
 
 
 	

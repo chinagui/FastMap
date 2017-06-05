@@ -134,4 +134,68 @@ public class IxDealershipSourceSelector {
 		result.setPoiTel(rs.getString("POI_TEL"));
 		return result;
 	}
+	
+	
+	/**
+	 * 同步根据RESULT更新SOURCE表
+	 * @param sourceId
+	 * @param conn
+	 * @throws Exception 
+	 */
+	public static void saveOrUpdateSourceByResult(IxDealershipResult result, Connection conn) throws Exception {
+		if(result.getSourceId()!=0){//更新操作
+			StringBuilder sb = new StringBuilder();
+			sb.append("UPDATE IX_DEALERSHIP_SOURCE SET PROVINCE = ?,CITY = ?,PROJECT = ?,");
+			sb.append("KIND_CODE = ?,CHAIN = ?,NAME = ?,NAME_SHORT = ?,ADDRESS = ?,TEL_SALE = ?,");
+			sb.append("TEL_SERVICE = ?,TEL_OTHER = ?,POST_CODE = ?,NAME_ENG = ?,ADDRESS_ENG = ?,");
+			sb.append("PROVIDE_DATE = ?,IS_DELETED = ?,FB_SOURCE = ?,FB_CONTENT = ?,FB_AUDIT_REMARK = ?,");
+			sb.append("FB_DATE = ?,CFM_POI_NUM = ?,CFM_MEMO = ?,DEAL_CFM_DATE = ?,POI_KIND_CODE = ?,");
+			sb.append("POI_CHAIN = ?,POI_NAME = ?,POI_NAME_SHORT = ?,POI_ADDRESS = ?,POI_TEL = ?,POI_POST_CODE = ?,");
+			sb.append("POI_X_DISPLAY = ?,POI_Y_DISPLAY = ?,POI_X_GUIDE = ?,POI_Y_GUIDE = ?,GEOMETRY = ? WHERE SOURCE_ID = ?");
+			
+			//持久化
+			QueryRunner run = new QueryRunner();
+
+			try {
+				run.update(conn, 
+						   sb.toString(), 
+						   result.getProvince(), result.getCity(), result.getProject(), 
+						   result.getKindCode(), result.getChain(), result.getName(), result.getNameShort(), 
+						   result.getAddress(), result.getTelSale(), result.getTelService(), result.getTelOther(), 
+						   result.getPostCode(), result.getNameEng(), result.getAddressEng(), result.getProvideDate(), 
+						   result.getIsDeleted(), result.getFbSource(), result.getFbContent(), result.getFbAuditRemark(), 
+						   result.getFbDate(), result.getCfmPoiNum(), result.getCfmMemo(), result.getDealCfmDate(), 
+						   result.getPoiKindCode(), result.getPoiChain(), result.getPoiName(), result.getPoiNameShort(), 
+						   result.getPoiAddress(),result.getPoiTel(), result.getPoiPostCode(), result.getPoiXDisplay(),
+						   result.getPoiYDisplay(),result.getPoiXGuide(), result.getPoiYGuide(), 
+						   GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(result.getGeometry(),0.00001, 5)),result.getSourceId()
+						   );
+			} catch (Exception e) {
+				throw e;
+			}
+			
+		}else{//插入操作
+			QueryRunner run = new QueryRunner();
+			
+			String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(RESULT_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+					+ "?,?)";	
+			try {
+			run.update(conn, 
+						   createSql,result.getProvince(), result.getCity(), result.getProject(), 
+						   result.getKindCode(), result.getChain(), result.getName(), result.getNameShort(), 
+						   result.getAddress(), result.getTelSale(), result.getTelService(), result.getTelOther(), 
+						   result.getPostCode(), result.getNameEng(), result.getAddressEng(), result.getProvideDate(), 
+						   result.getIsDeleted(), result.getFbSource(), result.getFbContent(), result.getFbAuditRemark(), 
+						   result.getFbDate(), result.getCfmPoiNum(), result.getCfmMemo(), result.getDealCfmDate(), 
+						   result.getPoiKindCode(), result.getPoiChain(), result.getPoiName(), result.getPoiNameShort(), 
+						   result.getPoiAddress(), result.getPoiPostCode(), result.getPoiXDisplay(), result.getPoiYDisplay(), 
+						   result.getPoiXGuide(), result.getPoiYGuide(),GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(result.getGeometry(),0.00001, 5)),
+						   result.getPoiTel()
+					   );
+			} catch (Exception e) {
+				throw e;
+			}
+		}
+		
+	}
 }

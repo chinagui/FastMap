@@ -2,14 +2,18 @@ package com.navinfo.dataservice.control.dealership.service;
 
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import oracle.sql.STRUCT;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -18,6 +22,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.QueryRunner;
 
 public class IxDealershipResultSelector {
@@ -150,5 +155,106 @@ public class IxDealershipResultSelector {
 		result.setUserId(rs.getInt("USER_ID"));
 		result.setWorkflowStatus(rs.getInt("WORKFLOW_STATUS"));
 		return result;
+	}
+	
+	/**
+	 * 根据chain得到待提交差分结果列表
+	 * @param chainCode
+	 * @param conn
+	 * @param userId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static List<IxDealershipResult> getResultIdListByChain(String chainCode, Connection conn, long userId) throws Exception {
+		String sql = "SELECT RESULT_ID,CFM_POI_NUM,REGION_ID FROM IX_DEALERSHIP_RESULT t"
+				+ " WHERE t.CHAIN=:1 AND t.USER_ID=:2 AND t.DEAL_STATUS = 2";
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		 List<IxDealershipResult> resultIdList = new ArrayList<>();
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, chainCode);
+			pstmt.setLong(2, userId);
+			resultSet = pstmt.executeQuery();
+
+			
+			while (resultSet.next()) {
+				IxDealershipResult result = new IxDealershipResult();
+				result.setResultId(resultSet.getInt(1));
+				result.setCfmPoiNum(resultSet.getString(2));
+				result.setRegionId(resultSet.getInt(3));
+				resultIdList.add(result);
+			}
+
+			return resultIdList;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	
+	/**
+	 * 根据resultId主键查询IxDealershipResult
+	 * @param resultId
+	 * @return
+	 * @throws Exception 
+	 */
+	public static IxDealershipResult getIxDealershipResultById(Integer resultId, Connection conn) throws Exception {
+		String sql = "SELECT * FROM IX_DEALERSHIP_RESULT t WHERE t.RESULT_ID=:1";
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		
+		
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, resultId);
+			resultSet = pstmt.executeQuery();
+
+			IxDealershipResult result = new IxDealershipResult();
+			
+			if (resultSet.next()) {
+				ReflectionAttrUtils.executeResultSet(result, resultSet);
+			}
+
+			return result;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+	}
+	
+	/**
+	 * 提交时更新deal_status为3
+	 * @param resultId
+	 * @param conn
+	 * @throws Exception
+	 */
+	public static void updateResultDealStatus(Integer resultId,Connection conn) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET DEAL_STATUS = 3 WHERE RESULT_ID = :1");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+			pstmt.setInt(1, resultId);
+			pstmt.executeUpdate();
+			
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
 	}
 }

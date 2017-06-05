@@ -1,38 +1,26 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.drew.lang.DateUtil;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
-import com.navinfo.dataservice.dao.photo.HBaseController;
 
 import net.sf.json.JSONObject;
 
@@ -113,7 +101,7 @@ public class DataPrepareController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 			String upFile= dataJson.getString("upFile");
 			
-			dealerShipService.impTableDiff(chainCode,upFile);
+			dealerShipService.impTableDiff(request,chainCode,upFile);
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

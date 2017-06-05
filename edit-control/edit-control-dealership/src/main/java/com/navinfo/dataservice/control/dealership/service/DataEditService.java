@@ -154,6 +154,9 @@ public class DataEditService {
 		Map<Integer, IxDealershipResult> dealership = IxDealershipResultSelector.getByResultIds(conn, resultIds);
 		IxDealershipResult corresDealership = dealership.get(resultId);
 
+		if (corresDealership == null)
+			return null;
+
 		// dealership_result中最匹配的五个poi
 		List<String> matchPoiNums = getMatchPoiNum(corresDealership);
 		List<IxPoi> matchPois = new ArrayList<>();
@@ -165,16 +168,19 @@ public class DataEditService {
 		// dealership_source中是否已存在的cfm_poi_num
 		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOUORCE WHERE CFM_POI_NUM IN (%s)",
 				StringUtils.join(matchPoiNums, ','));
-		List<Object> adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
+		List<Object> adoptedPoiNum = new ArrayList<>();
+		if (matchPoiNums.size() != 0) {
+			adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
+		}
 
 		for (Object poiNum : matchPoiNums) {
-			String queryPoiPid=String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s", (String)poiNum);
-			int poiPid=run.queryForInt(connPoi, queryPoiPid);
+			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %d", (Integer) poiNum);
+			int poiPid = run.queryForInt(connPoi, queryPoiPid);
 			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
 			matchPois.add(poi);
 		}
-		
-		JSONObject result=componentJsonData(corresDealership,matchPois,adoptedPoiNum,connPoi,conn);
+
+		JSONObject result = componentJsonData(corresDealership, matchPois, adoptedPoiNum, connPoi, conn);
 		return result;
 	}
 
@@ -261,11 +267,21 @@ public class DataEditService {
 	private List<String> getMatchPoiNum(IxDealershipResult corresDealership) {
 		List<String> result = new ArrayList<>();
 
-		result.add(corresDealership.getPoiNum1());
-		result.add(corresDealership.getPoiNum2());
-		result.add(corresDealership.getPoiNum3());
-		result.add(corresDealership.getPoiNum4());
-		result.add(corresDealership.getPoiNum5());
+		if (!corresDealership.getPoiNum1().isEmpty()) {
+			result.add(corresDealership.getPoiNum1());
+		}
+		if (!corresDealership.getPoiNum2().isEmpty()) {
+			result.add(corresDealership.getPoiNum2());
+		}
+		if (!corresDealership.getPoiNum3().isEmpty()) {
+			result.add(corresDealership.getPoiNum3());
+		}
+		if (!corresDealership.getPoiNum4().isEmpty()) {
+			result.add(corresDealership.getPoiNum4());
+		}
+		if (!corresDealership.getPoiNum5().isEmpty()) {
+			result.add(corresDealership.getPoiNum5());
+		}
 
 		return result;
 	}

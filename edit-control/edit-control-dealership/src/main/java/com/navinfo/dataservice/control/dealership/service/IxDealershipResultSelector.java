@@ -24,6 +24,7 @@ import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
 import com.navinfo.navicommons.database.QueryRunner;
+import com.navinfo.navicommons.exception.ServiceException;
 
 public class IxDealershipResultSelector {
 	protected static Logger log = LoggerRepos.getLogger(IxDealershipResultSelector.class);
@@ -256,5 +257,17 @@ public class IxDealershipResultSelector {
 			DbUtils.closeQuietly(resultSet);
 			DbUtils.closeQuietly(pstmt);
 		}
+	}
+	/**
+	 * @param conn
+	 * @param chain
+	 * @return
+	 * @throws SQLException 
+	 */
+	public static Map<Integer, IxDealershipResult> getIxDealershipResultMapByChain(Connection conn, String chain) throws SQLException {
+		String sql= "SELECT * FROM IX_DEALERSHIP_RESULT R WHERE R.CHAIN = '" + chain + "'";
+		log.info("getIxDealershipResultMapByChain:" + sql);
+		return new QueryRunner().query(conn,sql,getSourceHander());		
+
 	}
 }

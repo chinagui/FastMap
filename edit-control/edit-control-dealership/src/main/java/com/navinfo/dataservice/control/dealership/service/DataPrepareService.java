@@ -5,6 +5,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,11 +24,18 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
+import com.navinfo.dataservice.commons.config.SystemConfigFactory;
+import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -37,6 +45,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 代理店数据准备类
@@ -531,6 +540,10 @@ public class DataPrepareService {
 	public void uploadChainExcel(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 		try{
+
+//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+//
+//			long userId = tokenObj.getUserId();
 			//获取代理店数据库连接
 			conn=DBConnector.getInstance().getDealershipConnection();
 			
@@ -539,10 +552,15 @@ public class DataPrepareService {
 //						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
 			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 			String localZipFile = InputStreamUtils.request2File(request, filePath);
+			log.info("load file");
 
 			//解压
 			String localUnzipDir = localZipFile.substring(0,localZipFile.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			log.info("unzip file");
+
+			//获取个品牌状态
+			Map<String,Integer> chainStatus = getChainStatus(conn);
 			
 			File file = new File(localUnzipDir);
 			if (file.exists()) {
@@ -554,20 +572,13 @@ public class DataPrepareService {
 					if (file2.isDirectory()) {
 						continue;
 					} else {
-						System.out.println("文件:" + file2.getAbsolutePath());
+						log.info("文件:" + file2.getAbsolutePath());
 						//解析excel,读取IxDealershipResult
 						String chain = null;
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
 						//获取IxDealershipSource
-						Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
-						List<IxDealershipSource> dealershipSources =  new ArrayList<IxDealershipSource>();
-
-						for(IxDealershipSource ixDealershipSource:dealershipSourceMap.values()){
-							dealershipSources.add(ixDealershipSource);
-						}
-//						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
-						Map<Integer, IxDealershipResult> dealershipResultsPreMap = new HashMap<Integer, IxDealershipResult>();
+						Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
 
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
@@ -576,26 +587,34 @@ public class DataPrepareService {
 							dealershipResult.add(ixDealershipResult);
 							chain = ixDealershipResult.getChain();
 						}
+						if(chainStatus.containsKey(chain)&&chainStatus.get(chain)==0){
+							List<IxDealershipSource> dealershipSources =  dealershipSourceMap.get(chain);
+							//加载已有的result
+							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
+							//执行差分
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
+							//写库
+							List<IxDealershipResult> insert = resultMap.get(1);
+							List<IxDealershipResult> update = resultMap.get(2);
+							List<IxDealershipResult> delete = resultMap.get(3);
+							for(IxDealershipResult bean:insert){
+								log.info(bean.getName()+bean.getAddress());
+								log.info(bean.getGeometry());
+								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							}
+							for(IxDealershipResult bean:update){
+								IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+							}
+							for(IxDealershipResult bean:delete){
+								IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+							}
+							
 
-						//执行差分
-						Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
-						//写库
-						List<IxDealershipResult> insert = resultMap.get(1);
-						List<IxDealershipResult> update = resultMap.get(2);
-						List<IxDealershipResult> delete = resultMap.get(3);
-						for(IxDealershipResult bean:insert){
-							IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							int workType = 2;
+							int workStatus = 0;
+							updateIxDealershipChain(conn,chain,workStatus,workType);
+							log.info("import chian:" + chain);
 						}
-						for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
-						}
-						for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
-						}
-						
-
-						updateIxDealershipChain(chain);
-
 					}
 				}
 
@@ -609,6 +628,33 @@ public class DataPrepareService {
 		}
 	}
 	
+	/**
+	 * @param conn
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Integer> getChainStatus(Connection conn) throws ServiceException {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql= "select * from IX_DEALERSHIP_CHAIN";
+
+			ResultSetHandler<Map<String,Integer>> rsHandler = new ResultSetHandler<Map<String,Integer>>() {
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> result = new HashMap<String,Integer>();
+					while (rs.next()) {
+						result.put(rs.getString("CHAIN_CODE"), rs.getInt("CHAIN_STATUS"));
+					}
+					return result;
+				}	
+			};
+			log.info("getChainStatus sql:" + sql);
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
 	public static void getDirectory(File file, List<String> list){
 		File flist[] = file.listFiles();
 		if (flist == null || flist.length == 0) {
@@ -629,27 +675,21 @@ public class DataPrepareService {
 	}
 
 	/**
+	 * @param conn 
 	 * @param ixDealershipChain
 	 * @throws ServiceException 
 	 */
-	private void updateIxDealershipChain(String chainName) throws ServiceException {
-		Connection conn = null;
+	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType) throws ServiceException {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn=DBConnector.getInstance().getDealershipConnection();
 			
-			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = ,C.WORK_TYPE = 2 WHERE C.CHAIN_NAME = " + chainName;			
-
-
-			run.update(conn, 
-					updateSql);
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			log.info("updateIxDealershipChain sql:" + updateSql);
+			run.update(conn, updateSql);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 

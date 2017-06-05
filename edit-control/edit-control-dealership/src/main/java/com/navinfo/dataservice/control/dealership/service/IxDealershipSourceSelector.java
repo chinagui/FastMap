@@ -4,6 +4,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -197,5 +198,41 @@ public class IxDealershipSourceSelector {
 			}
 		}
 		
+	}
+
+	/**
+	 * @param conn
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Map<String, List<IxDealershipSource>> getAllIxDealershipSourceByChain(Connection conn) throws Exception {
+		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE S ORDER BY S.CHAIN";
+
+		return new QueryRunner().query(conn,sql,getSourcesByChainHander());
+	}
+
+	/**
+	 * @return
+	 */
+	private static ResultSetHandler<Map<String, List<IxDealershipSource>>> getSourcesByChainHander() {
+		return new ResultSetHandler<Map<String,List<IxDealershipSource>>>() {
+
+			@Override
+			public Map<String, List<IxDealershipSource>> handle(ResultSet rs)
+					throws SQLException {
+				Map<String, List<IxDealershipSource>> sourceIdMap=new HashMap<String, List<IxDealershipSource>>();
+				while(rs.next()){
+					IxDealershipSource tmp=getBean(rs);
+					if(sourceIdMap.containsKey(tmp.getChain())){
+						sourceIdMap.get(tmp.getChain()).add(tmp);
+					}else{
+						List<IxDealershipSource> list = new ArrayList<IxDealershipSource>();
+						list.add(tmp);
+						sourceIdMap.put(tmp.getChain(), list);
+					}
+				}
+				return sourceIdMap;
+			}
+		};
 	}
 }

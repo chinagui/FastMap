@@ -25,23 +25,23 @@ public class DiffService {
 	
 	private static Log log = LogFactory.getLog(DiffService.class.getName());
 	
-	private Properties p = null;
-	
-	public void init(String propertiesName) {
-//		InputStream inputStream = this.getClass().getClassLoader()
-//				.getResourceAsStream(propertiesName);
-		File f = new File(propertiesName); 
-		p = new Properties();
-		try {
-			p.load(new FileInputStream(f));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-	}
-	
-	public DiffService(String propertiesName){
-		init(propertiesName);
-	}
+//	private Properties p = null;
+//	
+//	public void init(String propertiesName) {
+////		InputStream inputStream = this.getClass().getClassLoader()
+////				.getResourceAsStream(propertiesName);
+//		File f = new File(propertiesName); 
+//		p = new Properties();
+//		try {
+//			p.load(new FileInputStream(f));
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//	}
+//	
+//	public DiffService(String propertiesName){
+//		init(propertiesName);
+//	}
 	
 	
 	public static String hash(String password) throws Exception {
@@ -87,8 +87,9 @@ public class DiffService {
 			sourceKindMap.put(i.getKindCode(), 1);
 		}
 
+		//全国一览表中名称、地址、电话、邮编、分类、品牌hash:全国一览表中元素
 		Map<String, IxDealershipSource> mapMatchSame = new HashMap<String, IxDealershipSource>();
-		Map<String, String> dkeyMap = new HashMap<String, String>();
+//		Map<String, String> dkeyMap = new HashMap<String, String>();
 
 		Map<String, List<IxDealershipSource>> editPart1 = new HashMap<String, List<IxDealershipSource>>();
 		Map<String, List<IxDealershipSource>> editPart2 = new HashMap<String, List<IxDealershipSource>>();
@@ -102,8 +103,8 @@ public class DiffService {
 				dealershipNameMap.put(i.getName().trim(), 1);
 			if (i.getAddress() != null)
 				dealershipAddrMap.put(i.getAddress().trim(), 1);
-			if (i.getTelSale()+i.getTelService()+i.getTelOther() != null)
-				dealershipTelMap.put(i.getTelSale().trim()+i.getTelService().trim()+i.getTelOther(), 1);
+			if (i.getTelephone() != null)
+				dealershipTelMap.put(i.getTelephone(), 1);
 			if (i.getPostCode() != null)
 				dealershipPostCodeMap.put(i.getPostCode(), 1);
 			
@@ -174,19 +175,22 @@ public class DiffService {
 			if (editPart1.get(t) != null) {
 				for (IxDealershipSource j : editPart1.get(t)) {
 					boolean sameTel = i.getTelephone().equals(j.getTelephone());
-					boolean samePostCode = i.getPostCode().equals(j.getPostCode());					
+					boolean samePostCode = false;	
+					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+						samePostCode = i.getPostCode().equals(j.getPostCode());	
+					}
 					if(i.getPostCode() == null || "".equals(i.getPostCode()))
 						samePostCode = true;
 					if(j.getPostCode() == null || "".equals(j.getPostCode()))
 						samePostCode = true;
 					
-//					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
-//						resultDpAttrDiff.setDealSrcDiff(4);
+					if (checkAddrSim(i, j) && ((sameTel&&!samePostCode) || (!sameTel&&samePostCode))) {
+						resultDpAttrDiff.setDealSrcDiff(4);
 //						dkeyMap.put(j.getUuid(), "");
-//						resultList.add(resultDpAttrDiff);
-//						flag = true;
-//						break;
-//					}
+						resultList.add(resultDpAttrDiff);
+						flag = true;
+						break;
+					}
 				}
 				if (flag)
 					continue;
@@ -196,19 +200,22 @@ public class DiffService {
 			if (editPart2.get(t) != null) {
 				for (IxDealershipSource j : editPart3.get(t)) {
 					boolean sameAddr = i.getAddress().equals(j.getAddress());
-					boolean samePostCode = i.getPostCode().equals(j.getPostCode());					
+					boolean samePostCode = false;	
+					if(i.getPostCode()!=null&&j.getPoiKindCode()!=null){
+						samePostCode = i.getPostCode().equals(j.getPostCode());	
+					}				
 					if(i.getPostCode() == null || "".equals(i.getPostCode()))
 						samePostCode = true;
 					if(j.getPostCode() == null || "".equals(j.getPostCode()))
 						samePostCode = true;
 					
-//					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
-//						resultDpAttrDiff.setDealSrcDiff(4);
+					if ((!sameAddr&&samePostCode) || (sameAddr&&!samePostCode)) {
+						resultDpAttrDiff.setDealSrcDiff(4);
 //						dkeyMap.put(j.getUuid(), "");
-//						resultList.add(resultDpAttrDiff);
-//						flag = true;
-//						break;
-//					}
+						resultList.add(resultDpAttrDiff);
+						flag = true;
+						break;
+					}
 				}
 				if (flag)
 					continue;
@@ -225,13 +232,13 @@ public class DiffService {
 					if(j.getPostCode() == null || "".equals(j.getPostCode()))
 						samePostCode = true;
 					
-//					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
-//						resultDpAttrDiff.setDealSrcDiff(4);
+					if ((!sameName&&samePostCode) || (sameName&&!samePostCode)) {
+						resultDpAttrDiff.setDealSrcDiff(4);
 //						dkeyMap.put(j.getUuid(), "");
-//						resultList.add(resultDpAttrDiff);
-//						flag = true;
-//						break;
-//					}
+						resultList.add(resultDpAttrDiff);
+						flag = true;
+						break;
+					}
 				}
 				if (flag)
 					continue;
@@ -264,7 +271,7 @@ public class DiffService {
 
 			
 			/**************** 其他逻辑 *******************/
-			resultDpAttrDiff.setDealStatus(5);;
+			resultDpAttrDiff.setDealStatus(5);
 			resultList.add(resultDpAttrDiff);
 			/**************** 其他逻辑 *******************/
 			
@@ -278,35 +285,53 @@ public class DiffService {
 			IxDealershipResult resultDpAttrDiff = new IxDealershipResult();
 			resultDpAttrDiff.setChain(chain);
 //			if ((dkeyMap.get(i.getUuid()) == null)) {
-//				/***************** 删除逻辑 ****************/
-//				if (((sourceNameMap.get(i.getName()) == null)
-//						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
-//						&& (sourcePostCodeMap.get(i.getPostCode()) == null)
-//						&& (sourceTelMap.get(i.getTelephone().trim()) == null))
-//						&& (sourceKindMap.get(i.getKindCode().trim()) == null)) {
-//					resultDpAttrDiff.setD_relatedStatus(Constant.D_RELATEDSTATUS_DELETE);
-//					resultDpAttrDiff.setD_relatedUuid(i.getUuid());
-//					resultDpAttrDiff.setG_location(i.getG_location());
-//					resultDpAttrDiff.setFid(i.getFid());
-//					resultDpAttrDiff.setUuid("" + UUID.randomUUID());
-//					
-//				} else
-//				/***************** 其他逻辑 ****************/
-//				{
-//					resultDpAttrDiff.setD_relatedStatus(Constant.D_RELATEDSTATUS_OTHER);
-//					resultDpAttrDiff.setD_relatedUuid(i.getUuid());
-//					resultDpAttrDiff.setG_location(i.getG_location());
-//					resultDpAttrDiff.setFid(i.getFid());
-//					resultDpAttrDiff.setUuid("" + UUID.randomUUID());
-//				}
-//				resultList.add(resultDpAttrDiff);
-			}
-		return resultList;			
+				/***************** 删除逻辑 ****************/
+				if (((sourceNameMap.get(i.getName()) == null)
+						&& (sourceAddrMap.get(i.getAddress().trim()) == null)
+						&& (sourcePostCodeMap.get(i.getPostCode()) == null)
+						&& (sourceTelMap.get(i.getTelephone().trim()) == null))
+						&& (sourceKindMap.get(i.getKindCode().trim()) == null)) {
+					resultDpAttrDiff.setDealStatus(2);
+				} else
+				/***************** 其他逻辑 ****************/
+				{
+					resultDpAttrDiff.setDealStatus(5);
+				}
+				resultList.add(resultDpAttrDiff);
+//			}
 		}
-//		log.info("Table Diff End");
-//		return resultList;
-//
-//	}
+		log.info("Table Diff End");
+		return resultList;
+
+	}
+
+	/**
+	 * @param i
+	 * @param j
+	 * @return
+	 */
+	private static boolean checkAddrSim(IxDealershipResult s, IxDealershipSource d) {
+		try {
+			String s_address = s.getAddress();
+			String d_address = d.getAddress();
+			if(s_address.equals(d_address)){
+				return true;
+			}
+			
+			if(s_address.contains(d_address)){
+				return true;
+			}
+			if(d_address.contains(s_address)){
+				return true;
+			}
+			return false;
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	public boolean checkAddrSim(IxDealershipResult s, IxDealershipResult d) {
 		try {

@@ -1,12 +1,9 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -14,13 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
-import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -37,7 +31,7 @@ public class DataEditController extends BaseController {
 
 	private DataEditService dealerShipEditService = DataEditService.getInstance();
 
-	@RequestMapping(value = "/dealership/applyData")
+	@RequestMapping(value = "/applyData")
 	public ModelAndView applyData(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -71,11 +65,11 @@ public class DataEditController extends BaseController {
 	}
 	
 	//代理店启动作业接口
-	@RequestMapping(value = "/dealership/startWork")
+	@RequestMapping(value = "/startWork")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-      			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+      		JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
@@ -90,7 +84,7 @@ public class DataEditController extends BaseController {
 		}
 	}
   
-	@RequestMapping(value = "/dealership/loadWorkList")
+	@RequestMapping(value = "/loadWorkList")
 	public ModelAndView loadWorkList(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -109,6 +103,7 @@ public class DataEditController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(399);
 
 			// TODO具体逻辑
+			//这里引用的jar要是一个版本的，否则更细心代码下来都编译报错了 modify:songhe
 			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
 			Map<String, JSONArray> result = new HashMap<>();
 
@@ -129,7 +124,7 @@ public class DataEditController extends BaseController {
 
 	
 	//代理店清除关联poi接口
-	@RequestMapping(value = "/dealership/clearRelatedPoi")
+	@RequestMapping(value = "/clearRelatedPoi")
 	public ModelAndView clearRelatedPoi(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -146,7 +141,7 @@ public class DataEditController extends BaseController {
 		} 
 	}
   
-  @RequestMapping(value = "/dealership/saveData")
+  @RequestMapping(value = "/saveData")
 	public ModelAndView saveData(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -176,7 +171,7 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
-		@RequestMapping(value = "/dealership/commitDealership")
+		@RequestMapping(value = "/commitDealership")
 	public ModelAndView commitDealership(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -207,7 +202,7 @@ public class DataEditController extends BaseController {
 		} // finally
 	}
 	
-	@RequestMapping(value = "/dealership/diffDetail")
+	@RequestMapping(value = "/diffDetail")
 	public ModelAndView diffDetail(HttpServletRequest request) throws Exception{
 		Connection conn = null;
 		

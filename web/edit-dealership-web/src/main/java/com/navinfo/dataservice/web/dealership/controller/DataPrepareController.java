@@ -1,38 +1,27 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.drew.lang.DateUtil;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
-import com.navinfo.dataservice.commons.util.DateUtilsEx;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipResult;
-import com.navinfo.dataservice.dao.photo.HBaseController;
 
 import net.sf.json.JSONObject;
 
@@ -46,7 +35,7 @@ public class DataPrepareController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DataPrepareController.class);
 	private DataPrepareService dealerShipService = DataPrepareService.getInstance();
 	
-	@RequestMapping(value = "/dealership/loadChainList")
+	@RequestMapping(value = "/loadChainList")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -76,7 +65,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/loadDiffList")
+	@RequestMapping(value = "/loadDiffList")
 	public ModelAndView loadDiffList(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -103,7 +92,7 @@ public class DataPrepareController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/dealership/impTableDiff")
+	@RequestMapping(value = "/impTableDiff")
 	public ModelAndView impTableDiff(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -111,9 +100,8 @@ public class DataPrepareController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			String upFile= dataJson.getString("upFile");
-			
-			dealerShipService.impTableDiff(request,chainCode,upFile);
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			dealerShipService.impTableDiff(request,chainCode,tokenObj.getUserId());
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {
@@ -122,7 +110,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/expTableDiff")
+	@RequestMapping(value = "/expTableDiff")
 	public ModelAndView expTableDiff(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 //		response.setHeader("Access-Control-Allow-Origin", "*");
@@ -175,7 +163,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/uploadChainExcel")
+	@RequestMapping(value = "/uploadChainExcel")
 	public ModelAndView uploadChainExcel(HttpServletRequest request) {
 		try {
 

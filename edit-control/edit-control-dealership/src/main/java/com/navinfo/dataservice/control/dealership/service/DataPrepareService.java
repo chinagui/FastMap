@@ -105,7 +105,7 @@ public class DataPrepareService {
 						result.put("chainWeight", rs.getInt("CHAIN_WEIGHT"));
 						result.put("chainStatus", rs.getInt("CHAIN_STATUS"));
 						result.put("workType", rs.getInt("WORK_TYPE"));
-						result.put("chainStauts", rs.getInt("WORK_STATUS"));
+						result.put("workStauts", rs.getInt("WORK_STATUS"));
 						dealerShipList.add(result);
 					}
 					return dealerShipList;

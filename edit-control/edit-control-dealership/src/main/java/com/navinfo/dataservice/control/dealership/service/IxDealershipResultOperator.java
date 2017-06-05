@@ -308,7 +308,7 @@ public class IxDealershipResultOperator {
 	}
 	
 	
-	public static void updateIxDealershipResult(Connection conn,IxDealershipResult bean)throws ServiceException{
+	public static void updateIxDealershipResult(Connection conn,IxDealershipResult bean,Long userId)throws ServiceException{
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
@@ -323,6 +323,7 @@ public class IxDealershipResultOperator {
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORKFLOW_STATUS")){
 				columns.add(" WORKFLOW_STATUS=? ");
 				values.add(bean.getWorkflowStatus());
+				IxDealershipHistoryOperator.addWorkflowStatusHistory(conn, bean, userId);
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_STATUS")){
 				columns.add(" DEAL_STATUS=? ");

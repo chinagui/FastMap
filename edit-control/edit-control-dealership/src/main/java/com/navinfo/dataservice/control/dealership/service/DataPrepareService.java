@@ -100,12 +100,12 @@ public class DataPrepareService {
 					List<Map<String, Object>> dealerShipList = new ArrayList();
 					while (rs.next()) {
 						Map<String, Object> result = new HashMap<>();
-						result.put("CHAIN_CODE", rs.getString("CHAIN_CODE"));
-						result.put("CHAIN_NAME", rs.getString("CHAIN_NAME"));
-						result.put("CHAIN_WEIGHT", rs.getInt("CHAIN_WEIGHT"));
-						result.put("CHAIN_STATUS", rs.getInt("CHAIN_STATUS"));
-						result.put("WORK_TYPE", rs.getInt("WORK_TYPE"));
-						result.put("WORK_STATUS", rs.getInt("WORK_STATUS"));
+						result.put("chainCode", rs.getString("CHAIN_CODE"));
+						result.put("chainName", rs.getString("CHAIN_NAME"));
+						result.put("chainWeight", rs.getInt("CHAIN_WEIGHT"));
+						result.put("chainStatus", rs.getInt("CHAIN_STATUS"));
+						result.put("workType", rs.getInt("WORK_TYPE"));
+						result.put("chainStauts", rs.getInt("WORK_STATUS"));
 						dealerShipList.add(result);
 					}
 					return dealerShipList;

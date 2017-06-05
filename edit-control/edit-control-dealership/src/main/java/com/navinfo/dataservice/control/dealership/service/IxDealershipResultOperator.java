@@ -28,7 +28,7 @@ public class IxDealershipResultOperator {
 			if (bean!=null){
 				columns.add(" RESULT_ID ");
 				placeHolder.add("?");
-				values.add("RESULT_SEQ..NEXTVAL");
+				values.add("RESULT_SEQ.NEXTVAL");
 			};
 			if (bean!=null&&bean.getWorkflowStatus()!=0){
 				columns.add(" WORKFLOW_STATUS ");

@@ -332,5 +332,14 @@ public class ManApiImpl implements ManApi {
 		return SubtaskService.getInstance().getCommonSubtaskByQualitySubtask(qualitySubtaskId);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getProvinceRegionIdMap()
+	 */
+	@Override
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception {
+		// TODO Auto-generated method stub
+		return CpRegionProvinceService.getInstance().getProvinceRegionIdMap();
+	}
+
 }
 

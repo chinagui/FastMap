@@ -1010,7 +1010,7 @@ public class IxPoiObj extends AbstractIxObj {
 			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
 				return br;}
 			}
-		return br;
+		return null;
 	}
 	
 	public IxPoiName getStandardAliasENGName(long nameGroupId){

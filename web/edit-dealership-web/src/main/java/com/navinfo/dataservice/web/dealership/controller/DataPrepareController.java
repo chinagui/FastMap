@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import com.navinfo.dataservice.commons.springmvc.BaseController;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
 import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
@@ -99,9 +100,8 @@ public class DataPrepareController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			String upFile= dataJson.getString("upFile");
-			
-			dealerShipService.impTableDiff(request,chainCode,upFile);
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			dealerShipService.impTableDiff(request,chainCode,tokenObj.getUserId());
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

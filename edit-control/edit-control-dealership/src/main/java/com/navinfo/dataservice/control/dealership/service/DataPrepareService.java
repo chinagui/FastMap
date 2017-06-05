@@ -180,16 +180,16 @@ public class DataPrepareService {
 	 * @throws Exception
 	 */
 	public void impTableDiff(HttpServletRequest request,String chainCode,
-			String upFile)throws Exception {
-		log.info("start 文件"+upFile+"表表差分导入");
+			Long userId)throws Exception {
+		log.info("start 文件表表差分导入");
 		//excel文件上传到服务器		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
 		//String filePath ="D:/temp/dealership/fullChainExcel";
-		log.info("文件"+upFile+"由本地上传到服务器指定位置"+filePath);
+		log.info("文件由本地上传到服务器指定位置"+filePath);
 		String localFile = InputStreamUtils.request2File(request, filePath);
-		log.info("文件"+upFile+"已上传至"+localFile);
+		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
 		Connection conn=null;
@@ -226,10 +226,10 @@ public class DataPrepareService {
 			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
 			deleteResult(conn,chainCode,resultIdSet);
 			//数据持久化到数据库
-			persistChange(conn,changeMap);
+			persistChange(conn,changeMap,userId);
 			//修改IX_DEALERSHIP_CHAIN状态
-			changeChainStatus(conn,chainCode);
-			log.info("end 文件"+upFile+"表表差分导入");
+			IxDealershipChainOperator.changeChainStatus(conn,chainCode,1);
+			log.info("end 文件表表差分导入");
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -263,18 +263,6 @@ public class DataPrepareService {
 		log.info("end 表表差分物理删除无效记录");		
 		
 	}
-	/**
-	 * 表表差分后，修改IX_DEALERSHIP_CHAIN表状态
-	 * @param conn
-	 * @param chainCode
-	 * @throws SQLException
-	 */
-	private void changeChainStatus(Connection conn, String chainCode) throws SQLException {
-		log.info("start 表表差分修改chain表状态");
-		String sql="UPDATE IX_DEALERSHIP_CHAIN SET WORK_STATUS = 1 WHERE CHAIN_CODE = '"+chainCode+"'";
-		QueryRunner run=new QueryRunner();
-		run.update(conn, sql);
-	}
 
 	/**
 	 * IxDealershipResult数据持久化到数据库
@@ -282,7 +270,7 @@ public class DataPrepareService {
 	 * @param changeMap
 	 * @throws ServiceException 
 	 */
-	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) throws ServiceException {
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap,Long userId) throws ServiceException {
 		if(changeMap.containsKey("ADD")){
 			Set<IxDealershipResult> resultSet = changeMap.get("ADD");
 			for(IxDealershipResult tmp:resultSet){
@@ -292,7 +280,7 @@ public class DataPrepareService {
 		if(changeMap.containsKey("UPDATE")){
 			Set<IxDealershipResult> resultSet = changeMap.get("UPDATE");
 			for(IxDealershipResult tmp:resultSet){
-				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp);
+				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp,userId);
 			}
 		}
 	}
@@ -587,10 +575,10 @@ public class DataPrepareService {
 							IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 						}
 						for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
 						}
 						for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
 						}
 						
 

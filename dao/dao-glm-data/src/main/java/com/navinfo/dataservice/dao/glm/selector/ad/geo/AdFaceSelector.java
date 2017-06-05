@@ -275,7 +275,7 @@ public class AdFaceSelector extends AbstractSelector {
      */
     public List<AdFace> listAdface(String wkt, boolean isLock) throws ServiceException {
         List<AdFace> list = new ArrayList<>();
-        String sql = "SELECT T.FACE_PID NUM FROM AD_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
+        String sql = "SELECT T.FACE_PID, T.GEOMETRY FROM AD_FACE T WHERE SDO_WITHIN_DISTANCE(T.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0'"
                 + ") = 'TRUE' AND T.U_RECORD <> 2";
         PreparedStatement pstmt = null;
         ResultSet resultSet = null;

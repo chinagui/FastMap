@@ -33,6 +33,10 @@
 	<dependency>
 			<groupId>com.vividsolutions</groupId>
 			<artifactId>jts</artifactId>
-		</dependency>
+	</dependency>
+	<dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>dao-glm-data</artifactId>
+	</dependency>
   </dependencies>
 </project>

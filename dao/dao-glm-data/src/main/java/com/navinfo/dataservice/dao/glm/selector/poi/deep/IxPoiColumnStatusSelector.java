@@ -374,7 +374,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int taskId) throws Exception {
+	public JSONObject columnQuery(int status, String secondWorkItem, long userId,int taskId,Integer isQuality) throws Exception {
 		//按group_id排序
 		StringBuilder sb = new StringBuilder();
 		sb.append("	SELECT COUNT(1) OVER(PARTITION BY 1) TOTAL, PID");
@@ -392,7 +392,14 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("	AND S.HANDLER =:1");
 		sb.append("	AND W.SECOND_WORK_ITEM =:2");
 		sb.append("	AND S.SECOND_WORK_STATUS =:3");
-		sb.append("	AND S.TASK_ID = :4)");
+		sb.append("	AND S.TASK_ID = :4");
+		if(isQuality==0){//常规任务
+			sb.append("	AND S.COMMON_HANDLER = "+userId+")");
+		}else if(isQuality==1){//质检任务
+			sb.append("	AND S.COMMON_HANDLER <> "+userId);
+			sb.append("	AND S.QC_FLAG = 1)");
+		}
+		
 		sb.append("	ORDER BY P.GROUP_ID, C.GROUP_ID)");
 		
 		PreparedStatement pstmt = null;
@@ -432,7 +439,7 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONObject queryClassifyByPidSecondWorkItem(List<Integer> pids,String secondWorkItem,int status,long userId) throws Exception {
+	public JSONObject queryClassifyByPidSecondWorkItem(List<Integer> pids,String secondWorkItem,int status,long userId,Integer isQuality) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		sb.append("SELECT P.PID,LISTAGG(P.WORK_ITEM_ID, ',') WITHIN GROUP(ORDER BY P.WORK_ITEM_ID) C_POI_PID ");
 		sb.append("  FROM POI_COLUMN_STATUS P, POI_COLUMN_WORKITEM_CONF PC");
@@ -440,6 +447,13 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		sb.append("   AND PC.SECOND_WORK_ITEM = :1");
 		sb.append("   AND P.SECOND_WORK_STATUS = :2");
 		sb.append("   AND P.HANDLER = :3");
+		if(isQuality==0){//常规任务
+			sb.append("	AND S.COMMON_HANDLER = "+userId);
+		}else if(isQuality==1){//质检任务
+			sb.append("	AND S.COMMON_HANDLER <> "+userId);
+			sb.append("	AND S.QC_FLAG = 1");
+		}
+		
 		sb.append("   AND P.PID in (");
 		
 		String temp = "";
@@ -752,7 +766,7 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 	 *             "errmsg": "success"}
 	 */
 	@SuppressWarnings("rawtypes")
-	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type, int taskId) throws Exception {
+	public JSONObject secondWorkStatistics(String firstWorkItem, long userId, int type, int taskId,Integer isQuality) throws Exception {
 
 		JSONObject result = new JSONObject();
 
@@ -781,6 +795,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 		sql.append("           AND S.SECOND_WORK_STATUS IN (1, 2)");
 		sql.append("           AND S.HANDLER = " + userId);
 		sql.append("           AND S.TASK_ID = " + taskId);
+		if(isQuality==0){//常规任务
+			sql.append("	AND S.COMMON_HANDLER = "+userId);
+		}else if(isQuality==1){//质检任务
+			sql.append("	AND S.COMMON_HANDLER <> "+userId);
+			sql.append("	AND S.QC_FLAG = 1");
+		}
 		sql.append("         GROUP BY CC.SECOND_WORK_ITEM, S.SECOND_WORK_STATUS) TT,");
 		sql.append("       (SELECT DISTINCT CF.SECOND_WORK_ITEM");
 		sql.append("          FROM POI_COLUMN_WORKITEM_CONF CF");

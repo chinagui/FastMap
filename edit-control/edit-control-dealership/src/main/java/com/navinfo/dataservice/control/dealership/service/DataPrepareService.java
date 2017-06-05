@@ -181,19 +181,16 @@ public class DataPrepareService {
 	public void impTableDiff(HttpServletRequest request,String chainCode,
 			String upFile)throws Exception {
 		log.info("start 文件"+upFile+"表表差分导入");
-		//excel文件上传到服务器
-		log.info("文件"+upFile+"由本地上传到服务器指定位置");
+		//excel文件上传到服务器		
 		//保存文件
-		String filePath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
-		String localZipFile = InputStreamUtils.request2File(request, filePath);
-		//解压
-		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
-		ZipUtils.unzipFile(localZipFile,localUnzipDir);
-		String servicePathFile=localUnzipDir+upFile.split("\\|")[upFile.split("\\|").length-1];
-		log.info("文件"+upFile+"已上传至"+servicePathFile);
+//		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+//					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+		String filePath ="D:/temp/dealership/fullChainExcel";
+		log.info("文件"+upFile+"由本地上传到服务器指定位置"+filePath);
+		String localFile = InputStreamUtils.request2File(request, filePath);
+		log.info("文件"+upFile+"已上传至"+localFile);
 		//导入表表差分结果excel
-		List<Map<String, Object>> sourceMaps=impDiffExcel(servicePathFile);
+		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
 		Connection conn=null;
 		try{
 			conn=DBConnector.getInstance().getDealershipConnection();

@@ -24,6 +24,7 @@ import org.springframework.aop.ThrowsAdvice;
 
 import com.mongodb.client.result.DeleteResult;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
+import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -529,48 +530,97 @@ public class DataPrepareService {
 	 * @throws Exception 
 	 */
 	public void uploadChainExcel(HttpServletRequest request) throws Exception {
-		
-		//获取代理店数据库连接
-		Connection conn=DBConnector.getInstance().getDealershipConnection();
-		
-		//保存文件
-		String filePath = SystemConfigFactory.getSystemConfig().getValue(
-					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
-		String localZipFile = InputStreamUtils.request2File(request, filePath);
+		Connection conn = null;
+		try{
+			//获取代理店数据库连接
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
+			//保存文件
+			String filePath = SystemConfigFactory.getSystemConfig().getValue(
+						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
+			String localZipFile = InputStreamUtils.request2File(request, filePath);
 
-		//解压
-		String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
-		ZipUtils.unzipFile(localZipFile,localUnzipDir);
-		
-		File file = new File(localUnzipDir);
-        if (file.exists()) {
-            File[] files = file.listFiles();
-            for (File file2 : files) {
-                if (file2.isDirectory()) {
-                    continue;
-                } else {
-                    System.out.println("文件:" + file2.getAbsolutePath());
-            		//解析excel,读取result
-                    String chain = null;
-            		String fileName = file2.getAbsolutePath();
-            		List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
-            		Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
-            		List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
-            		List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
-            		for(Map<String, Object> map:sourceMaps){
-            			IxDealershipResult ixDealershipResult = new IxDealershipResult();
-            			InputStreamUtils.transMap2Bean(map, ixDealershipResult);
-            			dealershipResult.add(ixDealershipResult);
-            			chain = ixDealershipResult.getChain();
-            		}
+			//解压
+			String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
+			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			
+			File file = new File(localUnzipDir);
+			if (file.exists()) {
+				File[] files = file.listFiles();
+				for (File file2 : files) {
+					if (file2.isDirectory()) {
+						continue;
+					} else {
+						System.out.println("文件:" + file2.getAbsolutePath());
+						//解析excel,读取result
+						String chain = null;
+						String fileName = file2.getAbsolutePath();
+						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
+						Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
+						List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
+						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
+						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
+						for(Map<String, Object> map:sourceMaps){
+							IxDealershipResult ixDealershipResult = new IxDealershipResult();
+							InputStreamUtils.transMap2Bean(map, ixDealershipResult);
+							dealershipResult.add(ixDealershipResult);
+							chain = ixDealershipResult.getChain();
+						}
 
-            		//执行差分
-            		List<IxDealershipResult> resultList = DiffService.diff(dealershipSources, dealershipResult, chain);
-            		//写库
-            		//todo
-                }
-            }
-        }
+						//执行差分
+						Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
+						//写库
+						List<IxDealershipResult> insert = resultMap.get(1);
+						List<IxDealershipResult> update = resultMap.get(2);
+						List<IxDealershipResult> delete = resultMap.get(3);
+						for(IxDealershipResult bean:insert){
+							IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+						}
+						for(IxDealershipResult bean:update){
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+						}
+						for(IxDealershipResult bean:delete){
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
+						}
+						
+
+						updateIxDealershipChain(chain);
+
+					}
+				}
+			}
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+
+	/**
+	 * @param ixDealershipChain
+	 * @throws ServiceException 
+	 */
+	private void updateIxDealershipChain(String chainName) throws ServiceException {
+		Connection conn = null;
+		try{
+			//持久化
+			QueryRunner run = new QueryRunner();
+			conn=DBConnector.getInstance().getDealershipConnection();
+			
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = ,C.WORK_TYPE = 2 WHERE C.CHAIN_NAME = " + chainName;			
+
+
+			run.update(conn, 
+					updateSql);
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
+		}finally{
+			DbUtils.commitAndCloseQuietly(conn);
+		}
 	}
 
 	/**

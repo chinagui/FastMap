@@ -580,6 +580,12 @@ public class MetadataApiImpl implements MetadataApi {
 	}
 	
 	@Override
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception {
+		// TODO Auto-generated method stub
+		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType15();
+	}
+	
+	@Override
 	public Map<String, List<String>>  scPointSpecKindCodeType14() throws Exception {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType14();
@@ -691,6 +697,8 @@ public class MetadataApiImpl implements MetadataApi {
 		// TODO Auto-generated method stub
 		return ScPointSpecKindcode.getInstance().scPointSpecKindCodeType2();
 	}
+	
+	
 	/**
 	 * 返回SC_POINT_NAMECK中“TYPE”=9且HM_FLAG<>’HM’的PRE_KEY
 	 * @return List<String> pre_key列表

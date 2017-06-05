@@ -69,7 +69,7 @@ public class DataEditController extends BaseController {
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-      			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+      		JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}

@@ -720,7 +720,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 				gets.add(get);
 
-				solrIndex.put("t_tipStatus", 2); // 更新t_tipStatus
+				solrIndex.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 更新t_tipStatus
 
 				solrIndex.put("t_date", currentDate); // 更新t_date
 
@@ -761,7 +761,7 @@ public class PretreatmentTipsOperator extends BaseTipsOperate {
 
 //				track.put("t_lifecycle", 2);//不变
 
-				track.put("t_tipStatus", 2); // 已提交
+				track.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 已提交
 
 				track.put("t_date", currentDate);
 
@@ -1827,13 +1827,13 @@ System.out.println(sGeojson2);
 
 				String rowkey = json.getString("id");
 
-				json.put("t_tipStatus", 2); // 是否完成多源融合 0 否；1 是；
+				json.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT); // 是否完成多源融合 0 否；1 是；
 
 				JSONObject old = getOldTips(rowkey, htab);
 
 				JSONObject oldTrack = old.getJSONObject("track");
 
-				oldTrack.put("t_tipStatus", 2);
+				oldTrack.put("t_tipStatus", PretreatmentTipsOperator.TIP_STATUS_COMMIT);
 
 				// put
 				Put put = new Put(rowkey.getBytes());

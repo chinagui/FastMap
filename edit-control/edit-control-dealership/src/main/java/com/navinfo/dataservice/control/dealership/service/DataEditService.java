@@ -32,7 +32,6 @@ import org.apache.commons.lang.StringUtils;
 
 import org.apache.log4j.Logger;
 
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 

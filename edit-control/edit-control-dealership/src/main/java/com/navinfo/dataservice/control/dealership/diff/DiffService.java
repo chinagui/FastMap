@@ -91,7 +91,7 @@ public class DiffService {
 			sourceAddrMap.put(i.getAddress().trim(), 1);
 			sourceTelMap.put(i.getTelephone().trim(), 1);
 			sourcePostCodeMap.put(i.getPostCode().trim(), 1);
-			sourceChainMap.put(i.getPostCode().trim(), 1);
+			sourceChainMap.put(i.getChain().trim(), 1);
 			sourceKindMap.put(i.getKindCode(), 1);
 		}
 

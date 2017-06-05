@@ -1,7 +1,6 @@
 package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -9,7 +8,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,25 +18,16 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.aop.ThrowsAdvice;
 
-import com.mongodb.client.result.DeleteResult;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
-import com.navinfo.dataservice.commons.config.SystemConfigFactory;
-import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ExportExcel;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -536,18 +525,22 @@ public class DataPrepareService {
 			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			//保存文件
-			String filePath = SystemConfigFactory.getSystemConfig().getValue(
-						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
+//			String filePath = SystemConfigFactory.getSystemConfig().getValue(
+//						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
+			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 			String localZipFile = InputStreamUtils.request2File(request, filePath);
 
 			//解压
-			String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
+			String localUnzipDir = localZipFile.substring(0,localZipFile.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
 			
 			File file = new File(localUnzipDir);
 			if (file.exists()) {
-				File[] files = file.listFiles();
-				for (File file2 : files) {
+				List<String> pathList = new ArrayList<String>();
+				getDirectory(file,pathList);
+
+				for(String fileStr:pathList){
+					File file2 = new File(fileStr);
 					if (file2.isDirectory()) {
 						continue;
 					} else {
@@ -558,10 +551,14 @@ public class DataPrepareService {
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
 						//获取IxDealershipSource
 						Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
-						
-						List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
-						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
-						
+						List<IxDealershipSource> dealershipSources =  new ArrayList<IxDealershipSource>();
+
+						for(IxDealershipSource ixDealershipSource:dealershipSourceMap.values()){
+							dealershipSources.add(ixDealershipSource);
+						}
+//						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
+						Map<Integer, IxDealershipResult> dealershipResultsPreMap = new HashMap<Integer, IxDealershipResult>();
+
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
 							IxDealershipResult ixDealershipResult = new IxDealershipResult();
@@ -591,6 +588,7 @@ public class DataPrepareService {
 
 					}
 				}
+
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -598,6 +596,25 @@ public class DataPrepareService {
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	public static void getDirectory(File file, List<String> list){
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File f : flist) {
+		    if (f.isDirectory()) {
+		        for(File fileInner:f.listFiles()){
+		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")){
+		        		list.add(fileInner.getAbsolutePath());
+		        		break;
+		        	}
+		        }
+		        getDirectory(f,list);
+		    } else {
+		    }
 		}
 	}
 
@@ -657,6 +674,7 @@ public class DataPrepareService {
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
 		log.info("end 导入一览表结果excel："+upFile);
 		return sources;
+
 	}
 	
 	

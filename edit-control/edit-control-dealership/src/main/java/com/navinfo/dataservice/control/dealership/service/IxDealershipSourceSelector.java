@@ -46,7 +46,7 @@ public class IxDealershipSourceSelector {
 	}
 	
 	public static Map<Integer, IxDealershipSource> getAllIxDealershipSource(Connection conn)throws Exception{
-		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE U_RECORD <>2";
+		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE";
 		return new QueryRunner().query(conn,sql,getSourcesMapHander());
 	}
 	/**

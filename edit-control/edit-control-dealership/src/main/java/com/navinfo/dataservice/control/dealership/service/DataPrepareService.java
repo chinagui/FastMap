@@ -184,9 +184,9 @@ public class DataPrepareService {
 		log.info("start 文件"+upFile+"表表差分导入");
 		//excel文件上传到服务器		
 		//保存文件
-//		String filePath = SystemConfigFactory.getSystemConfig().getValue(
-//					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
-		String filePath ="D:/temp/dealership/fullChainExcel";
+		String filePath = SystemConfigFactory.getSystemConfig().getValue(
+					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
+		//String filePath ="D:/temp/dealership/fullChainExcel";
 		log.info("文件"+upFile+"由本地上传到服务器指定位置"+filePath);
 		String localFile = InputStreamUtils.request2File(request, filePath);
 		log.info("文件"+upFile+"已上传至"+localFile);
@@ -323,6 +323,10 @@ public class DataPrepareService {
 			int resultId=diffSub.getResultId();
 			IxDealershipResult resultObj = null;
 			int oldSourceId = diffSub.getOldSourceId();
+			if(resultId==0&&oldSourceId==0){
+				log.info("表表差分结果中存在“UUID”和“旧一览表ID”都为0或字符串，数据错误");
+				throw new Exception("表表差分结果中存在“UUID”和“旧一览表ID”都为0或字符串，数据错误");
+			}
 			if(resultId!=0){
 				if(!resultObjSet.containsKey(resultId)){
 					log.info("表表差分结果中“UUID”在IX_DEALERSHIP_RESULT.RESULT_ID中不存在:uuid="+resultId);
@@ -350,8 +354,14 @@ public class DataPrepareService {
 				}
 				else{sourceObj=new IxDealershipSource();}
 				changeResultObj(resultObj,sourceObj);
-				if(cpRegionMap.containsKey(resultObj.getProvince())){
-					resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
+				if(StringUtils.isEmpty(resultObj.getProvince())){
+					if(cpRegionMap.containsKey(resultObj.getProvince())){
+						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
+					}
+				}else{
+					if(cpRegionMap.containsKey(sourceObj.getProvince())){
+						resultObj.setRegionId(cpRegionMap.get(sourceObj.getProvince()));
+					}
 				}
 			}
 		}
@@ -397,7 +407,7 @@ public class DataPrepareService {
 		ExcelReader excleReader = new ExcelReader(upFile);
 		Map<String,String> excelHeader = new HashMap<String,String>();
 		
-		excelHeader.put("uuid", "resultId");
+		excelHeader.put("UUID", "resultId");
 		excelHeader.put("省份", "province");
 		excelHeader.put("城市", "city");
 		excelHeader.put("项目", "project");

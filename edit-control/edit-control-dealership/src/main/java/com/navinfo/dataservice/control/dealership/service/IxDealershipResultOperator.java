@@ -4,11 +4,14 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import oracle.sql.STRUCT;
+
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
@@ -25,267 +28,266 @@ public class IxDealershipResultOperator {
 			List<String> placeHolder = new ArrayList<String>();
 			List<Object> values = new ArrayList<Object>();
 			
-			if (bean!=null){
-				columns.add(" RESULT_ID ");
-				placeHolder.add("?");
-				values.add("RESULT_SEQ.NEXTVAL");
-			};
-			if (bean!=null&&bean.getWorkflowStatus()!=0){
+			columns.add(" RESULT_ID ");
+			placeHolder.add("RESULT_SEQ.NEXTVAL");
+				
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORKFLOW_STATUS")){
 				columns.add(" WORKFLOW_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getWorkflowStatus());
 			};
-			if (bean!=null&&bean.getDealStatus()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_STATUS")){
 				columns.add(" DEAL_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getDealStatus());
 			};
-			if (bean!=null&&bean.getUserId()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("USER_ID")){
 				columns.add(" USER_ID ");
 				placeHolder.add("?");
 				values.add(bean.getUserId());
 			};
-			if (bean!=null&&bean.getToInfoDate()!=null && StringUtils.isNotEmpty(bean.getToInfoDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TO_INFO_DATE")){
 				columns.add(" TO_INFO_DATE ");
 				placeHolder.add("?");
 				values.add(bean.getToInfoDate());
 			};
-			if (bean!=null&&bean.getToClientDate()!=null && StringUtils.isNotEmpty(bean.getToClientDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TO_CLIENT_DATE")){
 				columns.add(" TO_CLIENT_DATE ");
 				placeHolder.add("?");
 				values.add(bean.getToClientDate());
 			};
-			if (bean!=null&&bean.getProvince()!=null && StringUtils.isNotEmpty(bean.getProvince().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROVINCE")){
 				columns.add(" PROVINCE ");
 				placeHolder.add("?");
 				values.add(bean.getProvince());
 			};
-			if (bean!=null&&bean.getCity()!=null && StringUtils.isNotEmpty(bean.getCity().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CITY")){
 				columns.add(" CITY ");
 				placeHolder.add("?");
 				values.add(bean.getCity());
 			};
-			if (bean!=null&&bean.getProject()!=null && StringUtils.isNotEmpty(bean.getProject().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROJECT")){
 				columns.add(" PROJECT ");
 				placeHolder.add("?");
 				values.add(bean.getProject());
 			};
-			if (bean!=null&&bean.getKindCode()!=null && StringUtils.isNotEmpty(bean.getKindCode().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("KIND_CODE")){
 				columns.add(" KIND_CODE ");
 				placeHolder.add("?");
 				values.add(bean.getKindCode());
 			};
-			if (bean!=null&&bean.getChain()!=null && StringUtils.isNotEmpty(bean.getChain().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CHAIN")){
 				columns.add(" CHAIN ");
 				placeHolder.add("?");
 				values.add(bean.getChain());
 			};
-			if (bean!=null&&bean.getName()!=null && StringUtils.isNotEmpty(bean.getName().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME")){
 				columns.add(" NAME ");
 				placeHolder.add("?");
 				values.add(bean.getName());
 			};
-			if (bean!=null&&bean.getNameShort()!=null && StringUtils.isNotEmpty(bean.getNameShort().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME_SHORT")){
 				columns.add(" NAME_SHORT ");
 				placeHolder.add("?");
 				values.add(bean.getNameShort());
 			};
-			if (bean!=null&&bean.getAddress()!=null && StringUtils.isNotEmpty(bean.getAddress().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("ADDRESS")){
 				columns.add(" ADDRESS ");
 				placeHolder.add("?");
 				values.add(bean.getAddress());
 			};
-			if (bean!=null&&bean.getTelSale()!=null && StringUtils.isNotEmpty(bean.getTelSale().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_SALE")){
 				columns.add(" TEL_SALE ");
 				placeHolder.add("?");
 				values.add(bean.getTelSale());
 			};
-			if (bean!=null&&bean.getTelService()!=null && StringUtils.isNotEmpty(bean.getTelService().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_SERVICE")){
 				columns.add(" TEL_SERVICE ");
 				placeHolder.add("?");
 				values.add(bean.getTelService());
 			};
-			if (bean!=null&&bean.getTelOther()!=null && StringUtils.isNotEmpty(bean.getTelOther().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("TEL_OTHER")){
 				columns.add(" TEL_OTHER ");
 				placeHolder.add("?");
 				values.add(bean.getTelOther());
 			};
-			if (bean!=null&&bean.getPostCode()!=null && StringUtils.isNotEmpty(bean.getPostCode().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POST_CODE")){
 				columns.add(" POST_CODE ");
 				placeHolder.add("?");
 				values.add(bean.getPostCode());
 			};
-			if (bean!=null&&bean.getNameEng()!=null && StringUtils.isNotEmpty(bean.getNameEng().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("NAME_ENG")){
 				columns.add(" NAME_ENG ");
 				placeHolder.add("?");
 				values.add(bean.getNameEng());
 			};
-			if (bean!=null&&bean.getAddressEng()!=null && StringUtils.isNotEmpty(bean.getAddressEng().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("ADDRESS_ENG")){
 				columns.add(" ADDRESS_ENG ");
 				placeHolder.add("?");
 				values.add(bean.getAddressEng());
 			};
-			if (bean!=null&&bean.getProvideDate()!=null && StringUtils.isNotEmpty(bean.getProvideDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("PROVIDE_DATE")){
 				columns.add(" PROVIDE_DATE ");
 				placeHolder.add("?");
 				values.add(bean.getProvideDate());
 			};
-			if (bean!=null&&bean.getIsDeleted()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("IS_DELETED")){
 				columns.add(" IS_DELETED ");
 				placeHolder.add("?");
 				values.add(bean.getIsDeleted());
 			};
-			if (bean!=null&&bean.getMatchMethod()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("MATCH_METHOD")){
 				columns.add(" MATCH_METHOD ");
 				placeHolder.add("?");
 				values.add(bean.getMatchMethod());
 			};
-			if (bean!=null&&bean.getPoiNum1()!=null && StringUtils.isNotEmpty(bean.getPoiNum1().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_1")){
 				columns.add(" POI_NUM_1 ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNum1());
 			};
-			if (bean!=null&&bean.getPoiNum2()!=null && StringUtils.isNotEmpty(bean.getPoiNum2().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_2")){
 				columns.add(" POI_NUM_2 ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNum2());
 			};
-			if (bean!=null&&bean.getPoiNum3()!=null && StringUtils.isNotEmpty(bean.getPoiNum3().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_3")){
 				columns.add(" POI_NUM_3 ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNum3());
 			};
-			if (bean!=null&&bean.getPoiNum4()!=null && StringUtils.isNotEmpty(bean.getPoiNum4().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_4")){
 				columns.add(" POI_NUM_4 ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNum4());
 			};
-			if (bean!=null&&bean.getPoiNum5()!=null && StringUtils.isNotEmpty(bean.getPoiNum5().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NUM_5")){
 				columns.add(" POI_NUM_5 ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNum5());
 			};
-			if (bean!=null&&bean.getSimilarity()!=null && StringUtils.isNotEmpty(bean.getSimilarity().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SIMILARITY")){
 				columns.add(" SIMILARITY ");
 				placeHolder.add("?");
 				values.add(bean.getSimilarity());
 			};
-			if (bean!=null&&bean.getFbSource()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_SOURCE")){
 				columns.add(" FB_SOURCE ");
 				placeHolder.add("?");
 				values.add(bean.getFbSource());
 			};
-			if (bean!=null&&bean.getFbContent()!=null && StringUtils.isNotEmpty(bean.getFbContent().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_CONTENT")){
 				columns.add(" FB_CONTENT ");
 				placeHolder.add("?");
 				values.add(bean.getFbContent());
 			};
-			if (bean!=null&&bean.getFbAuditRemark()!=null && StringUtils.isNotEmpty(bean.getFbAuditRemark().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_AUDIT_REMARK")){
 				columns.add(" FB_AUDIT_REMARK ");
 				placeHolder.add("?");
 				values.add(bean.getFbAuditRemark());
 			};
-			if (bean!=null&&bean.getFbDate()!=null && StringUtils.isNotEmpty(bean.getFbDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("FB_DATE")){
 				columns.add(" FB_DATE ");
 				placeHolder.add("?");
 				values.add(bean.getFbDate());
 			};
-			if (bean!=null&&bean.getCfmStatus()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_STATUS")){
 				columns.add(" CFM_STATUS ");
 				placeHolder.add("?");
 				values.add(bean.getCfmStatus());
 			};
-			if (bean!=null&&bean.getCfmPoiNum()!=null && StringUtils.isNotEmpty(bean.getCfmPoiNum().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_POI_NUM")){
 				columns.add(" CFM_POI_NUM ");
 				placeHolder.add("?");
 				values.add(bean.getCfmPoiNum());
 			};
-			if (bean!=null&&bean.getCfmMemo()!=null && StringUtils.isNotEmpty(bean.getCfmMemo().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_MEMO")){
 				columns.add(" CFM_MEMO ");
 				placeHolder.add("?");
 				values.add(bean.getCfmMemo());
 			};
-			if (bean!=null&&bean.getSourceId()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("SOURCE_ID")){
 				columns.add(" SOURCE_ID ");
 				placeHolder.add("?");
 				values.add(bean.getSourceId());
 			};
-			if (bean!=null&&bean.getDealSrcDiff()!=1){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_SRC_DIFF")){
 				columns.add(" DEAL_SRC_DIFF ");
 				placeHolder.add("?");
 				values.add(bean.getDealSrcDiff());
 			};
-			if (bean!=null&&bean.getDealCfmDate()!=null && StringUtils.isNotEmpty(bean.getDealCfmDate().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("DEAL_CFM_DATE")){
 				columns.add(" DEAL_CFM_DATE ");
 				placeHolder.add("?");
 				values.add(bean.getDealCfmDate());
 			};
-			if (bean!=null&&bean.getPoiKindCode()!=null && StringUtils.isNotEmpty(bean.getPoiKindCode().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_KIND_CODE")){
 				columns.add(" POI_KIND_CODE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiKindCode());
 			};
-			if (bean!=null&&bean.getPoiChain()!=null && StringUtils.isNotEmpty(bean.getPoiChain().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_CHAIN")){
 				columns.add(" POI_CHAIN ");
 				placeHolder.add("?");
 				values.add(bean.getPoiChain());
 			};
-			if (bean!=null&&bean.getPoiName()!=null && StringUtils.isNotEmpty(bean.getPoiName().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NAME")){
 				columns.add(" POI_NAME ");
 				placeHolder.add("?");
 				values.add(bean.getPoiName());
 			};
-			if (bean!=null&&bean.getPoiNameShort()!=null && StringUtils.isNotEmpty(bean.getPoiNameShort().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_NAME_SHORT")){
 				columns.add(" POI_NAME_SHORT ");
 				placeHolder.add("?");
 				values.add(bean.getPoiNameShort());
 			};
-			if (bean!=null&&bean.getPoiAddress()!=null && StringUtils.isNotEmpty(bean.getPoiAddress().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_ADDRESS")){
 				columns.add(" POI_ADDRESS ");
 				placeHolder.add("?");
 				values.add(bean.getPoiAddress());
 			};
-			if (bean!=null&&bean.getPoiTel()!=null && StringUtils.isNotEmpty(bean.getPoiTel().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_TEL")){
 				columns.add(" POI_TEL ");
 				placeHolder.add("?");
 				values.add(bean.getPoiTel());
 			};
-			if (bean!=null&&bean.getPoiPostCode()!=null && StringUtils.isNotEmpty(bean.getPoiPostCode().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_POST_CODE")){
 				columns.add(" POI_POST_CODE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiPostCode());
 			};
-			if (bean!=null&&bean.getPoiXDisplay()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_X_DISPLAY")){
 				columns.add(" POI_X_DISPLAY ");
 				placeHolder.add("?");
 				values.add(bean.getPoiXDisplay());
 			};
-			if (bean!=null&&bean.getPoiYDisplay()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_Y_DISPLAY")){
 				columns.add(" POI_Y_DISPLAY ");
 				placeHolder.add("?");
 				values.add(bean.getPoiYDisplay());
 			};
-			if (bean!=null&&bean.getPoiXGuide()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("WORKFLOW_STATUS")){
 				columns.add(" POI_X_GUIDE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiXGuide());
 			};
-			if (bean!=null&&bean.getPoiYGuide()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("POI_Y_GUIDE")){
 				columns.add(" POI_Y_GUIDE ");
 				placeHolder.add("?");
 				values.add(bean.getPoiYGuide());
 			};
-			if (bean!=null&&bean.getGeometry()!=null && StringUtils.isNotEmpty(bean.getGeometry().toString())){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
 				columns.add(" GEOMETRY ");
 				placeHolder.add("?");
-				values.add(bean.getGeometry());
+				STRUCT struct = GeoTranslator.wkt2Struct(conn,  GeoTranslator.jts2Wkt(bean.getGeometry()));
+				values.add(struct);
 			};
-			if (bean!=null&&bean.getRegionId()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REGION_ID")){
 				columns.add(" REGION_ID ");
 				placeHolder.add("?");
 				values.add(bean.getRegionId());
 			};
-			if (bean!=null&&bean.getCfmIsAdopted()!=0){
+			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("CFM_IS_ADOPTED")){
 				columns.add(" CFM_IS_ADOPTED ");
 				placeHolder.add("?");
 				values.add(bean.getCfmIsAdopted());
@@ -311,7 +313,7 @@ public class IxDealershipResultOperator {
 			//持久化
 			QueryRunner run = new QueryRunner();
 			
-			String updateSql = "update IX_DEALERSHIP_RESULT set  where 1=1 ";
+			String updateSql = "update IX_DEALERSHIP_RESULT set ";
 			List<String> columns = new ArrayList<String>();
 			List<Object> values=new ArrayList<Object>();
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("RESULT_ID")){
@@ -516,7 +518,8 @@ public class IxDealershipResultOperator {
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("GEOMETRY")){
 				columns.add(" GEOMETRY=? ");
-				values.add(bean.getGeometry());
+				STRUCT struct = GeoTranslator.wkt2Struct(conn,  GeoTranslator.jts2Wkt(bean.getGeometry()));
+				values.add(struct);
 			};
 			if (bean!=null&&bean.getOldValues()!=null && bean.getOldValues().containsKey("REGION_ID")){
 				columns.add(" REGION_ID=? ");
@@ -529,7 +532,7 @@ public class IxDealershipResultOperator {
 
 			if(!columns.isEmpty()){
 				String columsStr = StringUtils.join(columns.toArray(),",");
-				updateSql = updateSql + columsStr + "  where 1=1 and RESULT_ID=" + bean.getResultId();
+				updateSql = updateSql + columsStr + "  where RESULT_ID=" + bean.getResultId();
 			}
 			run.update(conn, 
 						updateSql, 

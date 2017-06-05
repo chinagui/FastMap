@@ -8,46 +8,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.log4j.Logger;
 
-import com.alibaba.dubbo.common.json.JSONArray;
-
-import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
-
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.log.LogReader;
@@ -55,10 +28,8 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
-
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
-import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -122,7 +93,7 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
+	public net.sf.json.JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
 		// 待作业，待提交→内页录入作业3；已提交→出品9
 		int flowStatus = 3;
 		if (dealStatus == 3 || dealStatus == 2)

@@ -38,7 +38,7 @@ import com.navinfo.dataservice.control.dealership.service.model.ExpIxDealershipR
 public class dealtest extends ClassPathXmlAppContextInit{
 	@Before
 	public void before(){
-		initContext(new String[]{"dubbo-consumer-datahub-test.xml"});
+		initContext(new String[]{"dubbo-app-scripts.xml","dubbo-scripts.xml"});
 	}
 	
 	@Test
@@ -90,7 +90,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-}
+		}
 	}
 	
 }

@@ -4,26 +4,21 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.*;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.engine.fcc.tips.*;
 import com.navinfo.navicommons.database.sql.StringUtil;
-//import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import com.navinfo.nirobot.business.TipsTaskCheckMR;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.photo.Photo;

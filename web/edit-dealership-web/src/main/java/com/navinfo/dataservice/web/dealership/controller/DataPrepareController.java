@@ -35,7 +35,7 @@ public class DataPrepareController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DataPrepareController.class);
 	private DataPrepareService dealerShipService = DataPrepareService.getInstance();
 	
-	@RequestMapping(value = "/dealership/loadChainList")
+	@RequestMapping(value = "/loadChainList")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -65,7 +65,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/loadDiffList")
+	@RequestMapping(value = "/loadDiffList")
 	public ModelAndView loadDiffList(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -92,7 +92,7 @@ public class DataPrepareController extends BaseController {
 	 * @param request
 	 * @return
 	 */
-	@RequestMapping(value = "/dealership/impTableDiff")
+	@RequestMapping(value = "/impTableDiff")
 	public ModelAndView impTableDiff(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -110,7 +110,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/expTableDiff")
+	@RequestMapping(value = "/expTableDiff")
 	public ModelAndView expTableDiff(HttpServletRequest request,HttpServletResponse response) {
 		response.setContentType("octets/stream");
 //		response.setHeader("Access-Control-Allow-Origin", "*");
@@ -163,7 +163,7 @@ public class DataPrepareController extends BaseController {
 		}
 	}
 	
-	@RequestMapping(value = "/dealership/uploadChainExcel")
+	@RequestMapping(value = "/uploadChainExcel")
 	public ModelAndView uploadChainExcel(HttpServletRequest request) {
 		try {
 

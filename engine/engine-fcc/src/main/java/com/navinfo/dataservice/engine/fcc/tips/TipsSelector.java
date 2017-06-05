@@ -341,7 +341,11 @@ public class TipsSelector {
 					}else if(type == 1115) {//20170517 车道变化点Tips渲染接口新增参数
                         m.put("d", String.valueOf(deep.getInt("inNum")));
                         m.put("e", String.valueOf(deep.getInt("outNum")));
-                    }
+                    }else if(type == 1101) {//20170605 限速增加返回值 赵航用
+                        m.put("d", String.valueOf(deep.getInt("se")));
+                        m.put("e", String.valueOf(deep.getInt("value")));
+                        m.put("f", String.valueOf(deep.getInt("flag")));
+					}
 
 				} else if (type == 1106) {
 					m.put("c", String.valueOf(deep.getInt("tp")));

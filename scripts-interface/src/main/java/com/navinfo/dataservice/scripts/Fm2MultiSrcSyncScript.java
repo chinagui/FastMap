@@ -57,10 +57,10 @@ public class Fm2MultiSrcSyncScript {
 	}
 	
 	public static void main(String[] args) {
-		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
-                new String[] { "dubbo-app-scripts.xml","dubbo-scripts.xml" }); 
-		context.start();
-		new ApplicationContextUtil().setApplicationContext(context);
+//		ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext(  
+//                new String[] { "dubbo-app-scripts.xml","dubbo-scripts.xml" }); 
+//		context.start();
+//		new ApplicationContextUtil().setApplicationContext(context);
 		JSONObject request=null;
 		JSONObject response = null;
 		try {

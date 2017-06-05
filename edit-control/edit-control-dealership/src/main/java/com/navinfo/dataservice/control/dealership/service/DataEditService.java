@@ -194,7 +194,7 @@ public class DataEditService {
 	}
 	
 	
-	public void createIxDealershipResult(IxDealershipResult  bean)throws ServiceException{
+	public static void createIxDealershipResult(IxDealershipResult  bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化
@@ -489,7 +489,7 @@ public class DataEditService {
 	}
 	
 	
-	public void updateIxDealershipResult(IxDealershipResult bean)throws ServiceException{
+	public static void updateIxDealershipResult(IxDealershipResult bean)throws ServiceException{
 		Connection conn = null;
 		try{
 			//持久化

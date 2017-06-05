@@ -98,13 +98,15 @@ public class DataEditService {
 	 * @throws Exception
 	 */
 	public JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
+		DBConnector connector = DBConnector.getInstance();
 		// 待作业，待提交→内页录入作业3；已提交→出品9
 		int flowStatus = 3;
+		int checkErrorNum = 0;
 		if (dealStatus == 3 || dealStatus == 2)
 			flowStatus = 9;
 
 		String queryListSql = String.format(
-				"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF FROM IX_DEALERSHIP_RESULT WHERE USERID = %d AND WORKFLOW_STATUS = %d AND DEAL_STAUTS = %d AND CHAIN = %s FOR UPDATE NOWAIT;",
+				"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 				userId, flowStatus, dealStatus, chainCode);
 		List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
@@ -119,11 +121,15 @@ public class DataEditService {
 			obj.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
 
 			// TODO:checkErrorNum需要计算
-			String queryPoi = String.format(
-					"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_STATUS = %d",
-					item.get("RESULT_ID"), 2);
-			String poiPid = run.queryForString(conn, queryPoi);
-			obj.put("checkErrorNum", GetCheckResultCount(poiPid, conn));
+			if (dealStatus == 2) {
+				String queryPoi = String.format(
+						"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_IS_ADOPTED = %d",
+						item.get("RESULT_ID"), 2);
+				String poiPid = run.queryForString(conn, queryPoi);
+				Connection conPoi = connector.getConnectionById((Integer)item.get("REGION_ID"));
+				checkErrorNum = GetCheckResultCount(poiPid, conPoi);
+			}
+			obj.put("checkErrorNum", checkErrorNum);
 			result.add(obj);
 		}
 		return result;
@@ -289,6 +295,7 @@ public class DataEditService {
 				detail.put("KIND_CODE", resultSet.getString(3));
 				detail.put("WORKFLOW_STATUS", resultSet.getInt(4));
 				detail.put("DEAL_SRC_DIFF", resultSet.getInt(5));
+				detail.put("REGION_ID", resultSet.getInt(6));
 
 				result.add(detail);
 			}

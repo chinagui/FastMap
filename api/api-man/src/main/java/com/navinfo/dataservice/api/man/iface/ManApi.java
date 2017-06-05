@@ -214,5 +214,10 @@ public interface ManApi{
 	 */
 	public Map<String, String> getCommonSubtaskByQualitySubtask(int qualitySubtaskId)
 			throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<String, Integer> getProvinceRegionIdMap() throws Exception;
 }
 

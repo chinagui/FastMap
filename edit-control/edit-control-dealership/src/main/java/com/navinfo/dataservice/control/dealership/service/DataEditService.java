@@ -15,6 +15,8 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+
+import com.alibaba.dubbo.common.json.JSONArray;
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.api.man.iface.ManApi;
@@ -820,8 +822,6 @@ public class DataEditService {
 	 */
 	public String saveDataService(JSONObject parameter, long userId) throws Exception {
 	
-	public static void updateIxDealershipResult(IxDealershipResult bean)throws ServiceException{
-		Connection conn = null;
         Connection poiConn = null;
         Connection dealershipConn = null;
         JSONObject result = null;

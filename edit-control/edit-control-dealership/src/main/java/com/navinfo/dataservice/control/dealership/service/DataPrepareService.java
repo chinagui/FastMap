@@ -577,13 +577,13 @@ public class DataPrepareService {
 						List<IxDealershipResult> update = resultMap.get(2);
 						List<IxDealershipResult> delete = resultMap.get(3);
 						for(IxDealershipResult bean:insert){
-							DataEditService.createIxDealershipResult(bean);
+							IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 						}
 						for(IxDealershipResult bean:update){
-							DataEditService.updateIxDealershipResult(bean);
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
 						}
 						for(IxDealershipResult bean:delete){
-							DataEditService.updateIxDealershipResult(bean);
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
 						}
 						
 

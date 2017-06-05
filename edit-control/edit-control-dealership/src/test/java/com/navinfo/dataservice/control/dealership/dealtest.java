@@ -90,7 +90,7 @@ public class dealtest extends ClassPathXmlAppContextInit{
 			
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
-		}
+}
 	}
 	
 }

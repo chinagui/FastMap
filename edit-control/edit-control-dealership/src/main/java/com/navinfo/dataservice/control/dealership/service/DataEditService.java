@@ -30,6 +30,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.alibaba.dubbo.common.json.JSONArray;
+
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
@@ -238,7 +240,7 @@ public class DataEditService {
 			mancon = DBConnector.getInstance().getManConnection();
 			//代理店数据库
 			con = DBConnector.getInstance().getDealershipConnection();
-			
+	
 			//品牌表赋值为3
 			editChainStatus(chainCode, con);
 
@@ -306,7 +308,7 @@ public class DataEditService {
 			throw e;
 		}
 	}
-	
+			
 	/**
 	 * 获取dailyDbId
 	 * @throws Exception 
@@ -760,7 +762,7 @@ public class DataEditService {
 			return run.query(con, sql, rs);
 		}catch(Exception e){
 			throw e;
-		}
+			}
 	}
 	
 	/**
@@ -827,7 +829,7 @@ public class DataEditService {
 			DbUtils.commitAndClose(con);
 		}
 	}
-
+	
 	/**
 	 * 保存数据
 	 * 
@@ -835,7 +837,7 @@ public class DataEditService {
 	 * @param userId
 	 */
 	public String saveDataService(JSONObject parameter, long userId) throws Exception {
-		
+	
         Connection poiConn = null;
         Connection dealershipConn = null;
         JSONObject result = null;
@@ -843,21 +845,21 @@ public class DataEditService {
         
         List<Integer> pids = new ArrayList<Integer>();
         
-        try {
+		try{
             JSONObject dealershipInfo = JSONObject.fromObject(parameter.getString("dealershipInfo"));
             int wkfStatus= dealershipInfo.getInt("wkfStatus");
             int dealershipDbId= dealershipInfo.getInt("dbId");
             int resultId = dealershipInfo.getInt("resultId");
             String cfmMemo = dealershipInfo.getString("cfmMemo");
             dealershipConn = DBConnector.getInstance().getConnectionById(dealershipDbId);
-            
+			
           //审核意见为内业录入
             if(wkfStatus==3){
             	JSONObject poiData = JSONObject.fromObject(parameter.getString("poiData"));
             	int poiDbId = poiData.getInt("dbId");
                 int objId = poiData.getInt("objId");
                 String poiNum = poiData.getString("poiNum");
-                
+
                 poiConn = DBConnector.getInstance().getConnectionById(poiDbId);
                 
                 LogReader logRead = new LogReader(poiConn);
@@ -865,7 +867,7 @@ public class DataEditService {
                 //需判断采纳POI是否被外业删除,为删除不可保存
                 if(sate==2){
                 	throw new Exception("该poi已被外业删除，不可用");
-                }
+			}
                 //需判断采纳POI是否被占用
                 if(isOccupied(poiNum ,dealershipConn)){
                 	throw new Exception("该poi已被占用，不可用");
@@ -874,7 +876,7 @@ public class DataEditService {
                 if(haveUsed(poiNum ,dealershipConn)){
                 	throw new Exception("该poi已被使用，不可用");
                 }
-                
+
                 //更新POI并且写履历
                 DefaultObjImportor importor = new DefaultObjImportor(poiConn,null);
     			EditJson editJson = new EditJson();
@@ -919,14 +921,14 @@ public class DataEditService {
         	}
  
             return log;
-        } catch (Exception e) {
+		}catch(Exception e){
             DbUtils.rollback(dealershipConn);
             DbUtils.rollback(poiConn);
             throw e;
-        } finally {
+		}finally{
             DbUtils.commitAndClose(dealershipConn);
             DbUtils.commitAndClose(poiConn);
-        }
+		}
 	}
 	
 	public boolean isOccupied(String poiNum , Connection conn ) throws Exception {
@@ -939,7 +941,7 @@ public class DataEditService {
 		if (count > 0){return true;}
 		
 		return false;
-	}
+}
 	public boolean haveUsed(String poiNum , Connection conn ) throws Exception {
 		QueryRunner run = new QueryRunner();
 
@@ -963,7 +965,7 @@ public class DataEditService {
 		
 		run.execute(conn, sql);
 	}
-	
+
 	
 	
 	
@@ -989,7 +991,7 @@ public class DataEditService {
 							updatePoiStatus(poiNum,regionConn);//修改poi状态为3 已提交
 							updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
 							saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-						}
+}
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;

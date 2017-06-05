@@ -1,29 +1,24 @@
 package com.navinfo.dataservice.engine.edit.utils.batch;
 
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.Result;
+import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
+import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
+import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
+import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
+import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
+import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
+import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.geom.Point;
+import org.apache.commons.collections.CollectionUtils;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import com.navinfo.dataservice.commons.geom.GeoTranslator;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdAdmin;
-import com.navinfo.dataservice.dao.glm.model.ad.geo.AdFace;
-import com.navinfo.dataservice.dao.glm.selector.ad.geo.AdAdminSelector;
-import com.navinfo.dataservice.dao.glm.selector.rd.link.RdLinkSelector;
-import com.vividsolutions.jts.geom.Point;
-import org.apache.commons.collections.CollectionUtils;
-
-import com.navinfo.dataservice.dao.glm.iface.IRow;
-import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
-import com.navinfo.dataservice.dao.glm.iface.Result;
-import com.navinfo.dataservice.dao.glm.model.ad.zone.ZoneFace;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLink;
-import com.navinfo.dataservice.dao.glm.model.rd.link.RdLinkZone;
-import com.navinfo.dataservice.dao.glm.selector.ad.zone.ZoneFaceSelector;
-import com.navinfo.dataservice.engine.edit.utils.GeoRelationUtils;
-import com.vividsolutions.jts.geom.Geometry;
-
-import static org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.Scope.row;
 
 /**
  * @author zhangyt
@@ -144,7 +139,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         if (face.getGeometry().getCoordinates().length > 200)
             return;
         RdLinkSelector selector = new RdLinkSelector(conn);
-        Geometry faceGeometry = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
+        Geometry faceGeometry = shrink(face.getGeometry());
         // 删除时将面内link的zone清空
         if (null == geometry) {
             List<RdLink> links = selector.loadLinkByFaceGeo(faceGeometry, true);
@@ -159,12 +154,12 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
             return;
         List<Integer> deleteLinkPids = new ArrayList<>();
         // 修形时对面内新增link赋zone属性
-        geometry = GeoTranslator.transform(geometry, 0.00001, 5);
+        geometry = shrink(geometry);
         List<RdLink> links = selector.loadLinkByDiffGeo(geometry, faceGeometry, true);
         for (RdLink link : links) {
             if (deleteLinkPids.contains(link.pid()))
                 link.getZones().clear();
-            Geometry linkGeometry = GeoTranslator.transform(link.getGeometry(), 0.00001, 5);
+            Geometry linkGeometry = shrink(link.getGeometry());
             RdLinkZone linkZone = null;
             // 获取关联face的regionId
             int faceRegionId = 0;
@@ -368,8 +363,7 @@ public class ZoneIDBatchUtils extends BaseBatchUtils {
         if (faces.size() > 1) {
             Point point = linkGeometry.getCentroid();
             for (ZoneFace face : faces) {
-                Geometry geo = GeoTranslator.transform(face.getGeometry(), 0.00001, 5);
-                if (point.coveredBy(geo)) {
+                if (point.coveredBy(shrink(face.getGeometry()))) {
                     return face;
                 }
             }

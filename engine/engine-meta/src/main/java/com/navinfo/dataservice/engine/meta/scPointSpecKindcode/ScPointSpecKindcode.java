@@ -17,6 +17,7 @@ import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 public class ScPointSpecKindcode {
 	private Map<String,ScPointSpecKindcodeNewObj> typeMap2= new HashMap<String,ScPointSpecKindcodeNewObj>();
 	private Map<String, String> typeMap8= new HashMap<String, String>();
+	private Map<String, String> typeMap15= new HashMap<String, String>();
 	
 	private Map<String, List<String>> typeMap14= new HashMap<String, List<String>>();
 
@@ -145,6 +146,35 @@ public class ScPointSpecKindcode {
 				}
 			}
 			return typeMap2;
+	}
+	
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception{
+		if (typeMap15==null||typeMap15.isEmpty()) {
+				synchronized (this) {
+					if (typeMap15==null||typeMap15.isEmpty()) {
+						try {
+							String sql = "select POI_KIND,CHAIN from sc_point_spec_kindcode_new t WHERE TYPE=15";
+								
+							PreparedStatement pstmt = null;
+							ResultSet rs = null;
+							Connection conn = null;
+							try {
+								conn = DBConnector.getInstance().getMetaConnection();
+								pstmt = conn.prepareStatement(sql);
+								rs = pstmt.executeQuery();
+								while (rs.next()) {
+									typeMap15.put(rs.getString("POI_KIND"), rs.getString("CHAIN"));					
+								} 
+							} finally {
+								DbUtils.closeQuietly(conn, pstmt, rs);
+							}
+						} catch (Exception e) {
+							throw new SQLException("加载sc_point_spec_kindcode_new失败："+ e.getMessage(), e);
+						}
+					}
+				}
+			}
+			return typeMap15;
 	}
 
 }

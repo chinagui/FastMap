@@ -431,5 +431,6 @@ public interface MetadataApi {
 	
 	public String engConvert(String word,String adminId) throws Exception ;
 	public int getCrowdTruck(String kindCode) throws Exception;
+	public Map<String, String> scPointSpecKindCodeType15() throws Exception;
 
 }

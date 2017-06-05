@@ -814,11 +814,10 @@ public class DataEditService {
 	}
 
 	/**
-	 * 申请数据
+	 * 保存数据
 	 * 
-	 * @param chainCode
-	 * @param conn
-	 * @param useId
+	 * @param parameter
+	 * @param userId
 	 */
 	public String saveDataService(JSONObject parameter, long userId) throws Exception {
 		
@@ -919,7 +918,7 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num=%s AND CFM_IS_ADOPTED=2 ",poiNum);
+				"SELECT COUNT(1) FROM IX_DEALERSHIP_RESULT r WHERE r.deal_status=2 AND r.cfm_poi_num='%s' AND CFM_IS_ADOPTED=2 ",poiNum);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}
@@ -930,7 +929,7 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 
 		String sql = String.format(
-				"select * from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num=%s ",poiNum);
+				"select count(1) from IX_DEALERSHIP_SOURCE s,IX_DEALERSHIP_RESULT r where s.source_id=r.source_id and s.cfm_poi_num='%s' ",poiNum);
 		int count = run.queryForInt(conn, sql);
 
 		if (count > 0){return true;}
@@ -942,9 +941,9 @@ public class DataEditService {
 		QueryRunner run = new QueryRunner();
 		String sql="";
 		if(wkfStatus==4||wkfStatus==5){
-			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET R.cfmMemo=%s WHERE r.RESULT_ID==%d ",cfmMemo,resultId);
+			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET R.cfm_Memo='%s' WHERE r.RESULT_ID=%d ",cfmMemo,resultId);
 		}else{
-			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,R.cfmMemo=%s WHERE r.RESULT_ID==%d ",cfmMemo,resultId);
+			sql = String.format("UPDATE IX_DEALERSHIP_RESULT r SET r.deal_status＝2,R.cfm_Memo='%s' WHERE r.RESULT_ID=%d ",cfmMemo,resultId);
 		}
 		
 		run.execute(conn, sql);

@@ -73,11 +73,24 @@ public class dealtest extends ClassPathXmlAppContextInit{
 	}
   	@Test
 	public void testSaveData() throws Exception{
-//		DataEditService ds = new DataEditService();
-//		
-//		String json = "{\"poiData\":{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"IXPOI\",\"objId\":410000122,\"data\":{\"chain\":\"\",\"contacts\":[{\"rowId\":\"3F378EC170CD44C3A48F8F56BD86126D\",\"objStatus\":\"DELETE\"},{\"rowId\":\"10D4D158DC6F4C4694C31F1173AF60F8\",\"objStatus\":\"DELETE\"}],\"restaurants\":[{\"foodType\":\"3007\",\"rowId\":\"6115657421A2472F987CDAD1624E9A21\",\"pid\":506000040,\"objStatus\":\"UPDATE\"}],\"rowId\":\"B496AD007CB54A6CA8447D51EF73EB58\",\"pid\":410000122,\"objStatus\":\"UPDATE\"},\"subtaskId\":1},dealershipInfo:{\"wkfStatus\":3,\"dbId\":399,\"resultId\":101,\"cfmMemo\":\"宝马采集\"}}";
-//		JSONObject parameter = JSONObject.fromObject(json);
-//		ds.saveDataService(parameter,2);
+		DataEditService ds = DataEditService.getInstance();
+		
+		String json = "{\"poiData\":{\"command\":\"UPDATE\",\"dbId\":13,\"type\":\"IXPOI\",\"objId\":410000122,\"data\":{\"chain\":\"\",\"contacts\":[{\"rowId\":\"3F378EC170CD44C3A48F8F56BD86126D\",\"objStatus\":\"DELETE\"},{\"rowId\":\"10D4D158DC6F4C4694C31F1173AF60F8\",\"objStatus\":\"DELETE\"}],\"restaurants\":[{\"foodType\":\"3007\",\"rowId\":\"6115657421A2472F987CDAD1624E9A21\",\"pid\":506000040,\"objStatus\":\"UPDATE\"}],\"rowId\":\"B496AD007CB54A6CA8447D51EF73EB58\",\"pid\":410000122,\"objStatus\":\"UPDATE\"},\"subtaskId\":1},dealershipInfo:{\"wkfStatus\":3,\"dbId\":399,\"resultId\":101,\"cfmMemo\":\"宝马采集\"}}";
+		JSONObject parameter = JSONObject.fromObject(json);
+		ds.saveDataService(parameter,2);
+	}
+	
+		@Test
+	public void testGetResultIdListByChain() throws Exception{
+		DataEditService de = DataEditService.getInstance();
+		try {
+			Connection conn = null;
+			conn = DBConnector.getInstance().getDealershipConnection();
+			de.commitDealership("900D", conn, 130);
+			
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+}
 	}
 	
 }

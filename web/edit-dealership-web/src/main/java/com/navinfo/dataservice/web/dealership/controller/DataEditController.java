@@ -183,4 +183,35 @@ public class DataEditController extends BaseController {
 			}
 		}
 	}
+	
+		@RequestMapping(value = "/dealership/commitDealership")
+	public ModelAndView commitDealership(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+		
+			conn = DBConnector.getInstance().getDealershipConnection();
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			dealerShipEditService.commitDealership(chainCode,conn,userId);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		} // finally
+	}
 }

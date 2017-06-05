@@ -22,4 +22,6 @@ public  class TipsWorkStatus {
 		public static int CHECK_HAS_PROBLEM = 6;//日编质检有问题待确认
 
 		public static int ALL = 9;//全部
+		
+		public static int CHECK_ALL = 10;//质检全部
 }

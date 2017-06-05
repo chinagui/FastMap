@@ -22,6 +22,7 @@ import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
 import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**
@@ -33,7 +34,8 @@ import net.sf.json.JSONObject;
 @Controller
 public class DataEditController extends BaseController {
 	private static final Logger logger = Logger.getLogger(DataEditController.class);
-	private DataEditService dealerShipEditService = new DataEditService();
+
+	private DataEditService dealerShipEditService = DataEditService.getInstance();
 
 	@RequestMapping(value = "/dealership/applyData")
 	public ModelAndView applyData(HttpServletRequest request) throws Exception {
@@ -51,7 +53,7 @@ public class DataEditController extends BaseController {
 
 			conn = DBConnector.getInstance().getConnectionById(399);
 
-			int data = dealerShipEditService.applyDataService(chainCode,conn,userId);
+			int data = dealerShipEditService.applyDataService(chainCode, conn, userId);
 			Map<String, Integer> result = new HashMap<>();
 			result.put("data", data);
 
@@ -66,5 +68,171 @@ public class DataEditController extends BaseController {
 				conn.close();
 			}
 		} // finally
+	}
+	
+	//代理店启动作业接口
+	@RequestMapping(value = "/dealership/startWork")
+	public ModelAndView queryDealerBrand(HttpServletRequest request) {
+		try {
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+      			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			long userId = tokenObj.getUserId();
+			String chainCode = dataJson.getString("chainCode");
+			String msg = dealerShipEditService.startWork(chainCode, userId);
+			
+			return new ModelAndView("jsonView", success(msg));
+		} catch (Exception e) {
+			logger.error("启动录入作业失败，原因：" + e.getMessage(), e);
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+  
+	@RequestMapping(value = "/dealership/loadWorkList")
+	public ModelAndView loadWorkList(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+			int dealStatus = dataJson.getInt("dealSatus");
+
+
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			conn = DBConnector.getInstance().getConnectionById(399);
+
+			// TODO具体逻辑
+			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
+			Map<String, JSONArray> result = new HashMap<>();
+
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		} 
+	}
+      
+
+	
+	//代理店清除关联poi接口
+	@RequestMapping(value = "/dealership/clearRelatedPoi")
+	public ModelAndView clearRelatedPoi(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			int resultId = dataJson.getInt("resultId");
+			dealerShipEditService.clearRelatedPoi(resultId);
+			
+			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} 
+	}
+  
+  @RequestMapping(value = "/dealership/saveData")
+	public ModelAndView saveData(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject parameter = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (parameter == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			String data = dealerShipEditService.saveDataService(parameter,userId);
+			Map<String, String> result = new HashMap<>();
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		}
+	}
+	
+		@RequestMapping(value = "/dealership/commitDealership")
+	public ModelAndView commitDealership(HttpServletRequest request) throws Exception {
+		Connection conn = null;
+
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if (dataJson == null) {
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			String chainCode = dataJson.getString("chainCode");
+		
+			conn = DBConnector.getInstance().getDealershipConnection();
+			
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			long userId = tokenObj.getUserId();
+
+			dealerShipEditService.commitDealership(chainCode,conn,userId);
+
+			return new ModelAndView("jsonView", success());
+
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		} finally {
+			if (conn != null) {
+				conn.close();
+			}
+		} // finally
+	}
+	
+	@RequestMapping(value = "/dealership/diffDetail")
+	public ModelAndView diffDetail(HttpServletRequest request) throws Exception{
+		Connection conn = null;
+		
+		try{
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			
+			int resultId=jsonObj.getInt("resultId");
+			conn = DBConnector.getInstance().getConnectionById(399);
+			
+			JSONObject data = dealerShipEditService.diffDetailService(resultId, conn);
+			Map<String, Object> result = new HashMap<>();
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+		finally{
+			if (conn != null) {
+				conn.close();
+			}
+		}//
 	}
 }

@@ -23,7 +23,7 @@ public class TestCrowd {
 
 		try {
 			RowCrowdsControl control = new RowCrowdsControl();
-			String str = "{\"data\":{ \"REAUDITNAME\": \"开发自测\", \"REAUDITADDRESS\": \"锦业路\", \"REAUDITPHONE\": \"029-88888888\", \"RECLASSCODE\": \"110101\", \"GEOX\": 116.24567, \"GEOY\": 40.07274, \"FID\": \"20160511QB00000403\", \"EDITHISTORY\":  [    {   \"newValue\": {\"kindCode\": \"110101\"},   \"oldValue\": {\"kindCode\": \"0\"}  } ], \"PHOTO\":  {  \"p1\": \"0/00000000-0a7e-6bad-ffff-fffff1d9b39b1492249000479.jpg\",  \"p2\": \"0/00000000-0a7e-6bad-ffff-fffff1d9b39b1492249200137.jpg\",  \"p3\": \"0/00000000-0a7e-6bad-ffff-fffff1d9b39b1492249167358.jpg\" }, \"BATCHTASK_ID\": 235, \"GATHERUSERID\": 78, \"DESCP\": \"test\", \"STATE\": 3}}";
+			String str = "{\"data\":{ \"REAUDITNAME\": \"盈樾国际12\", \"REAUDITADDRESS\": \"锦业路12\", \"REAUDITPHONE\": \"010-88888888\", \"RECLASSCODE\": \"120101\", \"GEOX\": 1.00083, \"GEOY\": 1.00028, \"GEOX1\": 116.35959, \"GEOY1\": 39.91456, \"GEOX2\": 116.35959, \"GEOY2\": 39.91456, \"GEOX3\": 0, \"GEOY3\": 0, \"GEOX4\": 0, \"GEOY4\": 0, \"FID\": \"01020170526zgq03\", \"EDITHISTORY\": [], \"PHOTO\":  {  \"p1\": \"1/tooopen_23024520.jpg\",  \"p2\": \"1/tooopen_09132386.jpg\" }, \"BATCHTASK_ID\": 0, \"GATHERUSERID\": 78, \"DESCP\": null, \"STATE\": 3}}";
 			JSONObject reqJson = JSONObject.fromObject(str);
 			String msg = control.release(reqJson);
 			
@@ -32,5 +32,11 @@ public class TestCrowd {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	@Test
+	public void testUUid(){
+		String uuid = "996c-8bbc-45ba-13e25f979a971490665840966".replace("-", "");
+		System.out.println(uuid.length());
 	}
 }

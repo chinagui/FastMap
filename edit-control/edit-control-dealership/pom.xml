@@ -21,7 +21,19 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
     </dependency>
-    
+    <dependency>
+		<groupId>org.apache.commons</groupId>
+		<artifactId>commons-dbcp2</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>commons-fileupload</groupId>
+		<artifactId>commons-fileupload</artifactId>
+	</dependency>
+	<dependency>
+	    <groupId>javax.servlet</groupId>
+	    <artifactId>servlet-api</artifactId>
+	    <scope>provided</scope>
+	</dependency>
 	<dependency>
 		<groupId>com.navinfo.dataservice</groupId>
 		<artifactId>commons</artifactId>
@@ -70,6 +82,11 @@
         <groupId>com.navinfo.dataservice</groupId>
         <artifactId>engine-editplus</artifactId>
     </dependency>
+    
+    <dependency>
+		<groupId>com.navinfo.dataservice</groupId>
+		<artifactId>edit-control-column</artifactId>
+	</dependency>
 	
 	<dependency>
           <groupId>org.springframework</groupId>

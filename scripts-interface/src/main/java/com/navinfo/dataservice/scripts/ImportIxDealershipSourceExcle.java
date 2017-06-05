@@ -250,14 +250,15 @@ public class ImportIxDealershipSourceExcle {
 				//持久化
 				QueryRunner run = new QueryRunner();
 				
-				String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
+				String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(SOURCE_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
 //						+ "SDO_GEOMETRY(?,8307),?)";			
 						+ "?,?)";			
 //				System.out.println("createSql: "+createSql);
 				fid=bean.getCfmPoiNum();
 				run.update(conn, 
 						   createSql, 
-						   bean.getSourceId() , bean.getProvince(), bean.getCity(), bean.getProject(), 
+//						   bean.getSourceId() ,
+						   bean.getProvince(), bean.getCity(), bean.getProject(), 
 						   bean.getKindCode(), bean.getChain(), bean.getName(), bean.getNameShort(), 
 						   bean.getAddress(), bean.getTelSale(), bean.getTelService(), bean.getTelOther(), 
 						   bean.getPostCode(), bean.getNameEng(), bean.getAddressEng(), bean.getProvideDate(), 
@@ -286,7 +287,7 @@ public class ImportIxDealershipSourceExcle {
 				QueryRunner run = new QueryRunner();
 				
 				String sql = " INSERT INTO IX_DEALERSHIP_SOURCE ( sourceId , province, city, project, kindCode, chain, name, nameShort, address, telSale, telService, telOther, postCode, nameEng, addressEng, provideDate, isDeleted, fbSource, fbContent, fbAuditRemark, fbDate, cfmPoiNum, cfmMemo, dealCfmDate, poiKindCode, poiChain, poiName, poiNameShort, poiAddress, poiPostCode, poiXDisplay, poiYDisplay, poiXGuide, poiYGuide, geometry, poiTel ) "
-						+ " values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
+						+ " values(SOURCE_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ";
 				
 				 // 关闭事务自动提交
 				   conn.setAutoCommit(false);

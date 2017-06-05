@@ -1004,6 +1004,15 @@ public class IxPoiObj extends AbstractIxObj {
 		return aliasCHINameList;
 	}
 	
+	public IxPoiName getAliasCHITypeName(){
+		List<IxPoiName> subRows=getIxPoiNames();
+		for(IxPoiName br:subRows){
+			if(br.getNameClass()==3&&br.getNameType()==1&&br.getLangCode().equals("CHI")){
+				return br;}
+			}
+		return null;
+	}
+	
 	public IxPoiName getStandardAliasENGName(long nameGroupId){
 		List<IxPoiName> subRows=getIxPoiNames();
 		for(IxPoiName br:subRows){

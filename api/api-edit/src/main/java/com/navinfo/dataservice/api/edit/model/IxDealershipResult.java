@@ -3,7 +3,21 @@ package com.navinfo.dataservice.api.edit.model;
 import com.vividsolutions.jts.geom.Geometry;
 
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
+
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
+import com.navinfo.dataservice.dao.glm.iface.IObj;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.iface.ObjLevel;
+import com.navinfo.dataservice.dao.glm.iface.ObjStatus;
+import com.navinfo.dataservice.dao.glm.iface.ObjType;
+import com.vividsolutions.jts.geom.Geometry;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 
 /** 
@@ -12,7 +26,7 @@ import java.util.Map;
 * @date 2017-05-27 03:27:47 
 * @Description: TODO
 */
-public class IxDealershipResult  {
+public class IxDealershipResult implements IObj {
 	private int resultId ;
 	private int workflowStatus ;
 	private int dealStatus ;
@@ -60,14 +74,15 @@ public class IxDealershipResult  {
 	private String poiAddress ;
 	private String poiTel ;
 	private String poiPostCode ;
-	private int poiXDisplay ;
-	private int poiYDisplay ;
-	private int poiXGuide ;
-	private int poiYGuide ;
+	private double poiXDisplay ;
+	private double poiYDisplay ;
+	private double poiXGuide ;
+	private double poiYGuide ;
 	private Geometry geometry ;
 	private int regionId ;
 	
 	protected Map<String,Object> oldValues=null;//存储变化字段的旧值，key:col_name,value：旧值
+	private Map<String, Object> changedFields = new HashMap<String, Object>();
 	
 	public boolean checkValue(String colName,int oldValue,int newValue){
 		if(newValue==oldValue)return false;
@@ -157,60 +172,68 @@ public class IxDealershipResult  {
 	
 	public IxDealershipResult (){
 	}
-	
-	public IxDealershipResult (int resultId ,int workflowStatus,int dealStatus,int userId,String toInfoDate,String toClientDate,String province,String city,String project,String kindCode,String chain,String name,String nameShort,String address,String telSale,String telService,String telOther,String postCode,String nameEng,String addressEng,String provideDate,int isDeleted,int matchMethod,String poiNum1,String poiNum2,String poiNum3,String poiNum4,String poiNum5,String similarity,int fbSource,String fbContent,String fbAuditRemark,String fbDate,int cfmStatus,String cfmPoiNum,String cfmMemo,int sourceId,int dealSrcDiff,String dealCfmDate,String poiKindCode,String poiChain,String poiName,String poiNameShort,String poiAddress,String poiTel,String poiPostCode,int poiXDisplay,int poiYDisplay,int poiXGuide,int poiYGuide,Geometry geometry,int regionId){
-		this.resultId=resultId ;
-		this.workflowStatus=workflowStatus ;
-		this.dealStatus=dealStatus ;
-		this.userId=userId ;
-		this.toInfoDate=toInfoDate ;
-		this.toClientDate=toClientDate ;
-		this.province=province ;
-		this.city=city ;
-		this.project=project ;
-		this.kindCode=kindCode ;
-		this.chain=chain ;
-		this.name=name ;
-		this.nameShort=nameShort ;
-		this.address=address ;
-		this.telSale=telSale ;
-		this.telService=telService ;
-		this.telOther=telOther ;
-		this.postCode=postCode ;
-		this.nameEng=nameEng ;
-		this.addressEng=addressEng ;
-		this.provideDate=provideDate ;
-		this.isDeleted=isDeleted ;
-		this.matchMethod=matchMethod ;
-		this.poiNum1=poiNum1 ;
-		this.poiNum2=poiNum2 ;
-		this.poiNum3=poiNum3 ;
-		this.poiNum4=poiNum4 ;
-		this.poiNum5=poiNum5 ;
-		this.similarity=similarity ;
-		this.fbSource=fbSource ;
-		this.fbContent=fbContent ;
-		this.fbAuditRemark=fbAuditRemark ;
-		this.fbDate=fbDate ;
-		this.cfmStatus=cfmStatus ;
-		this.cfmPoiNum=cfmPoiNum ;
-		this.cfmMemo=cfmMemo ;
-		this.sourceId=sourceId ;
-		this.dealSrcDiff=dealSrcDiff ;
-		this.dealCfmDate=dealCfmDate ;
-		this.poiKindCode=poiKindCode ;
-		this.poiChain=poiChain ;
-		this.poiName=poiName ;
-		this.poiNameShort=poiNameShort ;
-		this.poiAddress=poiAddress ;
-		this.poiTel=poiTel ;
-		this.poiPostCode=poiPostCode ;
-		this.poiXDisplay=poiXDisplay ;
-		this.poiYDisplay=poiYDisplay ;
-		this.poiXGuide=poiXGuide ;
-		this.poiYGuide=poiYGuide ;
-		this.geometry=geometry ;
-		this.regionId=regionId ;
+	public IxDealershipResult(int resultId, int workflowStatus, int dealStatus, int userId, String toInfoDate,
+			String toClientDate, String province, String city, String project, String kindCode, String chain,
+			String name, String nameShort, String address, String telSale, String telService, String telOther,
+			String postCode, String nameEng, String addressEng, String provideDate, int isDeleted, int matchMethod,
+			String poiNum1, String poiNum2, String poiNum3, String poiNum4, String poiNum5, String similarity,
+			int fbSource, String fbContent, String fbAuditRemark, String fbDate, int cfmStatus, String cfmPoiNum,
+			String cfmMemo, int sourceId, int dealSrcDiff, String dealCfmDate, String poiKindCode, String poiChain,
+			String poiName, String poiNameShort, String poiAddress, String poiTel, String poiPostCode, double poiXDisplay,
+			double poiYDisplay, double poiXGuide, double poiYGuide, Geometry geometry, int regionId) {
+		super();
+		this.resultId = resultId;
+		this.workflowStatus = workflowStatus;
+		this.dealStatus = dealStatus;
+		this.userId = userId;
+		this.toInfoDate = toInfoDate;
+		this.toClientDate = toClientDate;
+		this.province = province;
+		this.city = city;
+		this.project = project;
+		this.kindCode = kindCode;
+		this.chain = chain;
+		this.name = name;
+		this.nameShort = nameShort;
+		this.address = address;
+		this.telSale = telSale;
+		this.telService = telService;
+		this.telOther = telOther;
+		this.postCode = postCode;
+		this.nameEng = nameEng;
+		this.addressEng = addressEng;
+		this.provideDate = provideDate;
+		this.isDeleted = isDeleted;
+		this.matchMethod = matchMethod;
+		this.poiNum1 = poiNum1;
+		this.poiNum2 = poiNum2;
+		this.poiNum3 = poiNum3;
+		this.poiNum4 = poiNum4;
+		this.poiNum5 = poiNum5;
+		this.similarity = similarity;
+		this.fbSource = fbSource;
+		this.fbContent = fbContent;
+		this.fbAuditRemark = fbAuditRemark;
+		this.fbDate = fbDate;
+		this.cfmStatus = cfmStatus;
+		this.cfmPoiNum = cfmPoiNum;
+		this.cfmMemo = cfmMemo;
+		this.sourceId = sourceId;
+		this.dealSrcDiff = dealSrcDiff;
+		this.dealCfmDate = dealCfmDate;
+		this.poiKindCode = poiKindCode;
+		this.poiChain = poiChain;
+		this.poiName = poiName;
+		this.poiNameShort = poiNameShort;
+		this.poiAddress = poiAddress;
+		this.poiTel = poiTel;
+		this.poiPostCode = poiPostCode;
+		this.poiXDisplay = poiXDisplay;
+		this.poiYDisplay = poiYDisplay;
+		this.poiXGuide = poiXGuide;
+		this.poiYGuide = poiYGuide;
+		this.geometry = geometry;
+		this.regionId = regionId;
 	}
 	/**
 	 * @param i
@@ -639,34 +662,34 @@ public class IxDealershipResult  {
 			this.poiPostCode = poiPostCode;
 		}
 	}
-	public int getPoiXDisplay() {
+	public double getPoiXDisplay() {
 		return poiXDisplay;
 	}
-	public void setPoiXDisplay(int poiXDisplay) {
+	public void setPoiXDisplay(double poiXDisplay) {
 		if(this.checkValue("POI_X_DISPLAY",this.poiXDisplay,poiXDisplay)){
 			this.poiXDisplay = poiXDisplay;
 		}
 	}
-	public int getPoiYDisplay() {
+	public double getPoiYDisplay() {
 		return poiYDisplay;
 	}
-	public void setPoiYDisplay(int poiYDisplay) {
+	public void setPoiYDisplay(double poiYDisplay) {
 		if(this.checkValue("POI_Y_DISPLAY",this.poiYDisplay,poiYDisplay)){
 			this.poiYDisplay = poiYDisplay;
 		}
 	}
-	public int getPoiXGuide() {
+	public double getPoiXGuide() {
 		return poiXGuide;
 	}
-	public void setPoiXGuide(int poiXGuide) {
+	public void setPoiXGuide(double poiXGuide) {
 		if(this.checkValue("POI_X_GUIDE",this.poiXGuide,poiXGuide)){
 			this.poiXGuide = poiXGuide;
 		}
 	}
-	public int getPoiYGuide() {
+	public double getPoiYGuide() {
 		return poiYGuide;
 	}
-	public void setPoiYGuide(int poiYGuide) {
+	public void setPoiYGuide(double poiYGuide) {
 		if(this.checkValue("POI_Y_GUIDE",this.poiYGuide,poiYGuide)){
 			this.poiYGuide = poiYGuide;
 		}
@@ -687,6 +710,10 @@ public class IxDealershipResult  {
 			this.regionId = regionId;
 		}
 	}
+	
+	public Map<String, Object> getOldValues() {
+		return oldValues;
+	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
@@ -698,6 +725,10 @@ public class IxDealershipResult  {
 	public int getCfmIsAdopted() {
 		return cfmIsAdopted;
 	}
+	
+	public void setCfmIsAdopted(int cfmIsAdopted) {
+		this.cfmIsAdopted = cfmIsAdopted;
+	}
 	/**
 	 * @return
 	 */
@@ -705,11 +736,140 @@ public class IxDealershipResult  {
 		// TODO Auto-generated method stub
 		return "" + this.telSale + ";" + this.telService + ";" + this.telOther;
 	}
-
-	public void setCfmIsAdopted(int cfmIsAdopted) {
-		this.cfmIsAdopted = cfmIsAdopted;
+	
+	@Override
+	public String rowId() {
+		// TODO Auto-generated method stub
+		return null;
 	}
+	@Override
+	public void setRowId(String rowId) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public String tableName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public ObjStatus status() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void setStatus(ObjStatus os) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public ObjType objType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public void copy(IRow row) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public Map<String, Object> changedFields() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public String parentPKName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public int parentPKValue() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public String parentTableName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public List<List<IRow>> children() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public boolean fillChangeFields(JSONObject json) throws Exception {
+		@SuppressWarnings("rawtypes")
+		Iterator keys = json.keys();
+		while (keys.hasNext()) {
+			String key = (String) keys.next();
 
+			if (json.get(key) instanceof JSONArray) {
+				continue;
+			} else if ("geometry".equals(key)) {
+
+				JSONObject geojson = json.getJSONObject(key);
+
+				String wkt = Geojson.geojson2Wkt(geojson.toString());
+
+				String oldwkt = GeoTranslator.jts2Wkt(geometry, 0.00001, 5);
+
+				if (!wkt.equals(oldwkt)) {
+					// double length =
+					// GeometryUtils.getLinkLength(GeoTranslator.geojson2Jts(geojson));
+					//
+					// changedFields.put("length", length);
+
+					changedFields.put(key, json.getJSONObject(key));
+				}
+			} 
+		}
+		return false;
+	}
+	@Override
+	public int mesh() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public void setMesh(int mesh) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public JSONObject Serialize(ObjLevel objLevel) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public boolean Unserialize(JSONObject json) throws Exception {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	@Override
+	public List<IRow> relatedRows() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public int pid() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+	@Override
+	public String primaryKey() {
+		return "resultId";
+	}
+	@Override
+	public Map<Class<? extends IRow>, List<IRow>> childList() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public Map<Class<? extends IRow>, Map<String, ?>> childMap() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 
 	

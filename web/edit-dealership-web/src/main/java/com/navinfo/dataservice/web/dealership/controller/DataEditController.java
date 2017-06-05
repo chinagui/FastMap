@@ -31,7 +31,7 @@ public class DataEditController extends BaseController {
 
 	private DataEditService dealerShipEditService = DataEditService.getInstance();
 
-	@RequestMapping(value = "/dealership/applyData")
+	@RequestMapping(value = "/applyData")
 	public ModelAndView applyData(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -65,7 +65,7 @@ public class DataEditController extends BaseController {
 	}
 	
 	//代理店启动作业接口
-	@RequestMapping(value = "/dealership/startWork")
+	@RequestMapping(value = "/startWork")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
@@ -84,7 +84,7 @@ public class DataEditController extends BaseController {
 		}
 	}
   
-	@RequestMapping(value = "/dealership/loadWorkList")
+	@RequestMapping(value = "/loadWorkList")
 	public ModelAndView loadWorkList(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -124,7 +124,7 @@ public class DataEditController extends BaseController {
 
 	
 	//代理店清除关联poi接口
-	@RequestMapping(value = "/dealership/clearRelatedPoi")
+	@RequestMapping(value = "/clearRelatedPoi")
 	public ModelAndView clearRelatedPoi(HttpServletRequest request) {
 		try {
 			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
@@ -141,7 +141,7 @@ public class DataEditController extends BaseController {
 		} 
 	}
   
-  @RequestMapping(value = "/dealership/saveData")
+  @RequestMapping(value = "/saveData")
 	public ModelAndView saveData(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -171,7 +171,7 @@ public class DataEditController extends BaseController {
 		}
 	}
 	
-		@RequestMapping(value = "/dealership/commitDealership")
+		@RequestMapping(value = "/commitDealership")
 	public ModelAndView commitDealership(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
@@ -202,7 +202,7 @@ public class DataEditController extends BaseController {
 		} // finally
 	}
 	
-	@RequestMapping(value = "/dealership/diffDetail")
+	@RequestMapping(value = "/diffDetail")
 	public ModelAndView diffDetail(HttpServletRequest request) throws Exception{
 		Connection conn = null;
 		

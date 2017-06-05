@@ -70,22 +70,27 @@ public class TipsRequestParam {
         }//1.日编待质检tips：取stage=7，且t_dEditStatus=0
         else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
         	
-          	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+          	 builder.append(" AND stage:7 AND t_dEditStatus:0 ");
           	 
           }
           //日编已质检tips：取stage=7，且t_dEditStatus=2
           else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
           	
-       	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+       	   builder.append(" AND stage:7 AND t_dEditStatus:2 ");
           	 
         	
           }
           //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
           else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
           	
-       	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+       	   builder.append(" AND stage:7 AND t_dEditStatus:1 ");
           	 
+          }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+        	 
+        	  builder.append(" AND stage:7  ");
           }
+        
+        
 
         return builder.toString();
     }
@@ -248,23 +253,26 @@ public class TipsRequestParam {
         //1.日编待质检tips：取stage=7，且t_dEditStatus=0
         else if(workStatus == TipsWorkStatus.PREPARED_CHECKING){
         	
-       	 builder.append("  stage:7 AND t_dEditStatus:0 ");
+       	 builder.append(" AND  stage:7 AND t_dEditStatus:0 ");
        	 
        }
        //日编已质检tips：取stage=7，且t_dEditStatus=2
        else if(workStatus == TipsWorkStatus.CHECK_HAS_FINISHED){
        	
-    	   builder.append("  stage:7 AND t_dEditStatus:2 ");
+    	   builder.append(" AND stage:7 AND t_dEditStatus:2 ");
        	 
      	
        }
        //③日编质检有问题待确认tips:取stage=7，且t_dEditStatus=1
        else if(workStatus == TipsWorkStatus.CHECK_HAS_PROBLEM){
        	
-    	   builder.append("  stage:7 AND t_dEditStatus:1 ");
+    	   builder.append(" AND  stage:7 AND t_dEditStatus:1 ");
        	 
+       }else if(workStatus == TipsWorkStatus.CHECK_ALL){
+      	 
+     	  builder.append(" AND stage:7  ");
        }
-
+        
         return builder.toString();
     }
 

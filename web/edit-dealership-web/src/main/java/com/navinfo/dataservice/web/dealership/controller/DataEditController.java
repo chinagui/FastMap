@@ -1,12 +1,9 @@
 package com.navinfo.dataservice.web.dealership.controller;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -14,13 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
-import com.navinfo.dataservice.api.job.iface.JobApi;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.control.dealership.service.DataEditService;
-import com.navinfo.dataservice.control.dealership.service.DataPrepareService;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -109,6 +103,7 @@ public class DataEditController extends BaseController {
 			conn = DBConnector.getInstance().getConnectionById(399);
 
 			// TODO具体逻辑
+			//这里引用的jar要是一个版本的，否则更细心代码下来都编译报错了 modify:songhe
 			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
 			Map<String, JSONArray> result = new HashMap<>();
 

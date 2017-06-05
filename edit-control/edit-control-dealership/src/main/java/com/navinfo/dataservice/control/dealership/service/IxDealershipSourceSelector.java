@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import oracle.sql.STRUCT;
+
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -17,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.navicommons.database.QueryRunner;
 
@@ -32,14 +35,19 @@ public class IxDealershipSourceSelector {
 		if(sourceIds==null|sourceIds.size()==0)return new HashMap<Integer,IxDealershipSource>();
 
 		if(sourceIds.size()>1000){
-			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?))) AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID IN (SELECT COLUMN_VALUE FROM TABLE(CLOB_TO_TABLE(?)))";
 			Clob clob = ConnectionUtil.createClob(conn);
 			clob.setString(1, StringUtils.join(sourceIds, ","));
 			return new QueryRunner().query(conn, sql, getSourcesMapHander(),clob);
 		}else{
-			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID IN ('"+StringUtils.join(sourceIds, "','")+"') AND U_RECORD <>2";
+			String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID IN ('"+StringUtils.join(sourceIds, "','")+"')";
 			return new QueryRunner().query(conn,sql,getSourcesMapHander());
 		}
+	}
+	
+	public static Map<Integer, IxDealershipSource> getAllIxDealershipSource(Connection conn)throws Exception{
+		String sql= "SELECT * FROM IX_DEALERSHIP_SOURCE WHERE U_RECORD <>2";
+		return new QueryRunner().query(conn,sql,getSourcesMapHander());
 	}
 	/**
 	 * key是IxDealershipResult对象的sourceId
@@ -116,7 +124,13 @@ public class IxDealershipSourceSelector {
 		result.setPoiYDisplay(rs.getInt("POI_Y_DISPLAY"));
 		result.setPoiXGuide(rs.getInt("POI_X_GUIDE"));
 		result.setPoiYGuide(rs.getInt("POI_Y_GUIDE"));
-		//result.set(rs.getInt("GEOMETRY"));
+		STRUCT geoStruct=(STRUCT) rs.getObject("GEOMETRY");
+		try {
+			result.setGeometry(GeoTranslator.struct2Jts(geoStruct));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		result.setPoiTel(rs.getString("POI_TEL"));
 		return result;
 	}

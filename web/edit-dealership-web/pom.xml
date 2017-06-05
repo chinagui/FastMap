@@ -13,13 +13,11 @@
 	<name>edit-dealership-web Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
-
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -33,11 +31,6 @@
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
 			<artifactId>dao-glm-data</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.navinfo.dataservice</groupId>
-			<artifactId>edit-control-dealership</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.navinfo.dataservice</groupId>
@@ -189,6 +182,6 @@
 		</dependency>
 	</dependencies>
 	<build>
-		<finalName>dealership</finalName>
+		<finalName>column</finalName>
 	</build>
 </project>

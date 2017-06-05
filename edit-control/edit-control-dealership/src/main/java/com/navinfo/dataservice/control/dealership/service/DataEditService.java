@@ -5,60 +5,37 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
-
 import org.apache.log4j.Logger;
+
 
 import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
-
-import com.navinfo.dataservice.api.man.iface.ManApi;
-import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
-import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.dao.glm.search.IxPoiSearch;
 import com.navinfo.dataservice.dao.glm.selector.ReflectionAttrUtils;
-import com.navinfo.dataservice.dao.glm.selector.poi.deep.IxPoiColumnStatusSelector;
-
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.log.LogReader;
+import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
-
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 import com.navinfo.navicommons.exception.ServiceException;
-
 import net.sf.json.JSONArray;
+
+
 import net.sf.json.JSONObject;
 
 /**
@@ -1111,7 +1088,7 @@ public class DataEditService {
 	 */
 	public void commitDealership(String chainCode, Connection conn,long userId) throws Exception {
 		try {
-			List<IxDealershipResult> resultList = getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
+			List<IxDealershipResult> resultList = IxDealershipResultSelector.getResultIdListByChain(chainCode,conn,userId);//根据chain得到待提交差分结果列表
 			if(resultList!=null&&!resultList.isEmpty()){
 				for (IxDealershipResult result : resultList) {
 					Connection regionConn = null;
@@ -1120,11 +1097,12 @@ public class DataEditService {
 						regionConn = DBConnector.getInstance().getConnectionById(result.getRegionId());
 						int count = queryCKLogByPoiNum(poiNum,"IX_POI",regionConn);//查询该pid下有无错误log
 						if(count==0){
-							IxDealershipResult noLogResult = getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
-							updatePoiStatus(poiNum,regionConn);//修改poi状态为3 已提交
-							updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
-							saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-}
+							IxDealershipResult noLogResult = IxDealershipResultSelector.
+									getIxDealershipResultById(result.getResultId(),conn);//根据resultId主键查询IxDealershipResult
+							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
+							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
+							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
+						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;
@@ -1144,94 +1122,9 @@ public class DataEditService {
 		
 	}
 	
-	/**
-	 * 同步根据RESULT更新SOURCE表
-	 * @param sourceId
-	 * @param conn
-	 * @throws Exception 
-	 */
-	private void saveOrUpdateSourceByResult(IxDealershipResult result, Connection conn) throws Exception {
-		if(result.getSourceId()!=0){//更新操作
-			StringBuilder sb = new StringBuilder();
-			sb.append("UPDATE IX_DEALERSHIP_SOURCE SET PROVINCE = ?,CITY = ?,PROJECT = ?,");
-			sb.append("KIND_CODE = ?,CHAIN = ?,NAME = ?,NAME_SHORT = ?,ADDRESS = ?,TEL_SALE = ?,");
-			sb.append("TEL_SERVICE = ?,TEL_OTHER = ?,POST_CODE = ?,NAME_ENG = ?,ADDRESS_ENG = ?,");
-			sb.append("PROVIDE_DATE = ?,IS_DELETED = ?,FB_SOURCE = ?,FB_CONTENT = ?,FB_AUDIT_REMARK = ?,");
-			sb.append("FB_DATE = ?,CFM_POI_NUM = ?,CFM_MEMO = ?,DEAL_CFM_DATE = ?,POI_KIND_CODE = ?,");
-			sb.append("POI_CHAIN = ?,POI_NAME = ?,POI_NAME_SHORT = ?,POI_ADDRESS = ?,POI_TEL = ?,POI_POST_CODE = ?,");
-			sb.append("POI_X_DISPLAY = ?,POI_Y_DISPLAY = ?,POI_X_GUIDE = ?,POI_Y_GUIDE = ?,GEOMETRY = ? WHERE SOURCE_ID = ?");
-			
-			//持久化
-			QueryRunner run = new QueryRunner();
+	
 
-			try {
-				run.update(conn, 
-						   sb.toString(), 
-						   result.getProvince(), result.getCity(), result.getProject(), 
-						   result.getKindCode(), result.getChain(), result.getName(), result.getNameShort(), 
-						   result.getAddress(), result.getTelSale(), result.getTelService(), result.getTelOther(), 
-						   result.getPostCode(), result.getNameEng(), result.getAddressEng(), result.getProvideDate(), 
-						   result.getIsDeleted(), result.getFbSource(), result.getFbContent(), result.getFbAuditRemark(), 
-						   result.getFbDate(), result.getCfmPoiNum(), result.getCfmMemo(), result.getDealCfmDate(), 
-						   result.getPoiKindCode(), result.getPoiChain(), result.getPoiName(), result.getPoiNameShort(), 
-						   result.getPoiAddress(),result.getPoiTel(), result.getPoiPostCode(), result.getPoiXDisplay(),
-						   result.getPoiYDisplay(),result.getPoiXGuide(), result.getPoiYGuide(), 
-						   GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(result.getGeometry(),0.00001, 5)),result.getSourceId()
-						   );
-			} catch (Exception e) {
-				throw e;
-			}
-			
-		}else{//插入操作
-			QueryRunner run = new QueryRunner();
-			
-			String createSql = "insert into IX_DEALERSHIP_SOURCE (SOURCE_ID, PROVINCE, CITY, PROJECT, KIND_CODE, CHAIN, NAME, NAME_SHORT, ADDRESS, TEL_SALE, TEL_SERVICE, TEL_OTHER, POST_CODE, NAME_ENG, ADDRESS_ENG, PROVIDE_DATE, IS_DELETED, FB_SOURCE, FB_CONTENT, FB_AUDIT_REMARK, FB_DATE, CFM_POI_NUM, CFM_MEMO, DEAL_CFM_DATE, POI_KIND_CODE, POI_CHAIN, POI_NAME, POI_NAME_SHORT, POI_ADDRESS, POI_POST_CODE, POI_X_DISPLAY, POI_Y_DISPLAY, POI_X_GUIDE, POI_Y_GUIDE, GEOMETRY, POI_TEL) values(RESULT_SEQ.NEXTVAL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
-					+ "?,?)";	
-			try {
-			run.update(conn, 
-						   createSql,result.getProvince(), result.getCity(), result.getProject(), 
-						   result.getKindCode(), result.getChain(), result.getName(), result.getNameShort(), 
-						   result.getAddress(), result.getTelSale(), result.getTelService(), result.getTelOther(), 
-						   result.getPostCode(), result.getNameEng(), result.getAddressEng(), result.getProvideDate(), 
-						   result.getIsDeleted(), result.getFbSource(), result.getFbContent(), result.getFbAuditRemark(), 
-						   result.getFbDate(), result.getCfmPoiNum(), result.getCfmMemo(), result.getDealCfmDate(), 
-						   result.getPoiKindCode(), result.getPoiChain(), result.getPoiName(), result.getPoiNameShort(), 
-						   result.getPoiAddress(), result.getPoiPostCode(), result.getPoiXDisplay(), result.getPoiYDisplay(), 
-						   result.getPoiXGuide(), result.getPoiYGuide(),GeoTranslator.wkt2Struct(conn, GeoTranslator.jts2Wkt(result.getGeometry(),0.00001, 5)),
-						   result.getPoiTel()
-					   );
-			} catch (Exception e) {
-				throw e;
-			}
-		}
-		
-	}
-
-	/**
-	 * 提交时更新deal_status为3
-	 * @param resultId
-	 * @param conn
-	 * @throws Exception
-	 */
-	private void updateResultDealStatus(Integer resultId,Connection conn) throws Exception {
-		StringBuilder sb = new StringBuilder();
-		sb.append(" UPDATE IX_DEALERSHIP_RESULT SET DEAL_STATUS = 3 WHERE RESULT_ID = :1");
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-
-		try {
-			pstmt = conn.prepareStatement(sb.toString());
-			pstmt.setInt(1, resultId);
-			pstmt.executeUpdate();
-			
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
+	
 
 	/**
 	 * 提交时更新poi状态从0改为为3
@@ -1300,79 +1193,9 @@ public class DataEditService {
 		return 0;
 	}
 
-	/**
-	 * 根据resultId主键查询IxDealershipResult
-	 * @param resultId
-	 * @return
-	 * @throws Exception 
-	 */
-	public IxDealershipResult getIxDealershipResultById(Integer resultId, Connection conn) throws Exception {
-		String sql = "SELECT * FROM IX_DEALERSHIP_RESULT t WHERE t.RESULT_ID=:1";
+	
 
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		
-		
-		try {
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setInt(1, resultId);
-			resultSet = pstmt.executeQuery();
-
-			IxDealershipResult result = new IxDealershipResult();
-			
-			if (resultSet.next()) {
-				ReflectionAttrUtils.executeResultSet(result, resultSet);
-			}
-
-			return result;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
-
-	/**
-	 * 根据chain得到待提交差分结果列表
-	 * @param chainCode
-	 * @param conn
-	 * @param userId
-	 * @return
-	 * @throws Exception 
-	 */
-	public List<IxDealershipResult> getResultIdListByChain(String chainCode, Connection conn, long userId) throws Exception {
-		String sql = "SELECT RESULT_ID,CFM_POI_NUM,REGION_ID FROM IX_DEALERSHIP_RESULT t"
-				+ " WHERE t.CHAIN=:1 AND t.USER_ID=:2 AND t.DEAL_STATUS = 2";
-
-		PreparedStatement pstmt = null;
-		ResultSet resultSet = null;
-		
-		 List<IxDealershipResult> resultIdList = new ArrayList<>();
-		
-		try {
-			pstmt = conn.prepareStatement(sql);
-			pstmt.setString(1, chainCode);
-			pstmt.setLong(2, userId);
-			resultSet = pstmt.executeQuery();
-
-			
-			while (resultSet.next()) {
-				IxDealershipResult result = new IxDealershipResult();
-				result.setResultId(resultSet.getInt(1));
-				result.setCfmPoiNum(resultSet.getString(2));
-				result.setRegionId(resultSet.getInt(3));
-				resultIdList.add(result);
-			}
-
-			return resultIdList;
-		} catch (Exception e) {
-			throw e;
-		} finally {
-			DbUtils.closeQuietly(resultSet);
-			DbUtils.closeQuietly(pstmt);
-		}
-	}
+	
 	
 
 

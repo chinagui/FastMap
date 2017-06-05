@@ -34,10 +34,9 @@ public class CmgBuildlinkTest extends InitApplication {
 
     @Test
     public void testRepairCmgBuildlink() {
-        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":520000022,\"dbId\":13,\"subtaskId\":65," +
-                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[116.89272,39.9997]," +
-                "[116.89391434192656,40.000325503753466]]},\"catchInfos\":[{\"nodePid\":504000029,\"longitude\":116.89272," +
-                "\"latitude\":39.9997},{\"nodePid\":501000038,\"longitude\":116.89391434192656,\"latitude\":40.000325503753466}]}}";
+        String requester = "{\"command\":\"REPAIR\",\"type\":\"CMGBUILDLINK\",\"objId\":502000032,\"dbId\":13,\"subtaskId\":58," +
+                "\"data\":{\"type\":\"CMGBUILDLINK\",\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[123.67841,32.41627]" +
+                "[123.67865,32.41596]]},\"catchInfos\":[]}}";
         TestUtil.run(requester);
     }
 }

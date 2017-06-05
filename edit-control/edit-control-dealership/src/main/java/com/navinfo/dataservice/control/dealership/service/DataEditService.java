@@ -92,7 +92,7 @@ public class DataEditService {
 	 * @return
 	 * @throws Exception
 	 */
-	public net.sf.json.JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
+	public JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
 		// 待作业，待提交→内页录入作业3；已提交→出品9
 		int flowStatus = 3;
 		if (dealStatus == 3 || dealStatus == 2)

@@ -79,7 +79,7 @@ public class DataEditController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-      long userId = tokenObj.getUserId();
+			long userId = tokenObj.getUserId();
 			String chainCode = dataJson.getString("chainCode");
 			String msg = dealerShipEditService.startWork(chainCode, userId);
 			
@@ -118,13 +118,12 @@ public class DataEditController extends BaseController {
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
 		} finally {
 			if (conn != null) {
 				conn.close();
 			}
-		} // finally
+		} 
 	}
       
 
@@ -141,17 +140,10 @@ public class DataEditController extends BaseController {
 			dealerShipEditService.clearRelatedPoi(resultId);
 			
 			return new ModelAndView("jsonView", success());
-
-
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-
 			return new ModelAndView("jsonView", fail(e.getMessage()));
-		} finally {
-			if (conn != null) {
-				conn.close();
-			}
-		} // finally
+		} 
 	}
   
   @RequestMapping(value = "/dealership/saveData")

@@ -36,6 +36,7 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorC
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.database.sql.DBUtils;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 /**

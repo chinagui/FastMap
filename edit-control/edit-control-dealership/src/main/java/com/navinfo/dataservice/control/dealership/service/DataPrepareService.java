@@ -555,13 +555,16 @@ public class DataPrepareService {
 						continue;
 					} else {
 						System.out.println("文件:" + file2.getAbsolutePath());
-						//解析excel,读取result
+						//解析excel,读取IxDealershipResult
 						String chain = null;
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
+						//获取IxDealershipSource
 						Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
+						
 						List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
 						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
+						
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
 							IxDealershipResult ixDealershipResult = new IxDealershipResult();

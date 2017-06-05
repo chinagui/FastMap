@@ -113,7 +113,7 @@ public class DataPrepareController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 			String upFile= dataJson.getString("upFile");
 			
-			dealerShipService.impTableDiff(chainCode,upFile);
+			dealerShipService.impTableDiff(request,chainCode,upFile);
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

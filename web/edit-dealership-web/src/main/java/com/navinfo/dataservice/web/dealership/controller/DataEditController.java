@@ -90,8 +90,8 @@ public class DataEditController extends BaseController {
 		}
 	}
   
-  @RequestMapping(value = "/dealership/startWork")
-	public ModelAndView startWork(HttpServletRequest request) throws Exception {
+	@RequestMapping(value = "/dealership/loadWorkList")
+	public ModelAndView loadWorkList(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 
 		try {
@@ -205,5 +205,34 @@ public class DataEditController extends BaseController {
 				conn.close();
 			}
 		} // finally
+	}
+	
+	@RequestMapping(value = "/dealership/diffDetail")
+	public ModelAndView diffDetail(HttpServletRequest request) throws Exception{
+		Connection conn = null;
+		
+		try{
+			JSONObject jsonObj=JSONObject.fromObject(request.getParameter("parameter"));
+			if(jsonObj==null){
+				throw new IllegalArgumentException("parameter参数不能为空。"); 
+			}
+			
+			int resultId=jsonObj.getInt("resultId");
+			conn = DBConnector.getInstance().getConnectionById(399);
+			
+			JSONObject data = dealerShipEditService.diffDetailService(resultId, conn);
+			Map<String, Object> result = new HashMap<>();
+			result.put("data", data);
+
+			return new ModelAndView("jsonView", success(result));
+		}catch(Exception e){
+			logger.error(e.getMessage(), e);
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+		finally{
+			if (conn != null) {
+				conn.close();
+			}
+		}//
 	}
 }

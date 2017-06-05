@@ -20,6 +20,8 @@ import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+
+import com.navinfo.dataservice.api.edit.iface.EditApi;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
@@ -69,7 +71,7 @@ public class DataEditService {
 	 */
 	public int applyDataService(String chainCode, Connection conn, long userId) throws Exception {
 		String haveDataSql = String.format(
-				"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE USERID = %d AND WORKFLOW_STATUS = %d AND DEAL_STAUTS = %d AND CHAIN = %s FOR UPDATE NOWAIT;",
+				"SELECT COUNT(*) FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 				userId, 3, 1, chainCode);
 		int count = run.queryForInt(conn, haveDataSql);
 
@@ -77,15 +79,18 @@ public class DataEditService {
 			return 0;
 
 		String queryListSql = String.format(
-				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USERID = %d AND WORKFLOW_STATUS = %d AND DEAL_STAUTS = %d AND CHAIN = %s AND ROWNUM <= %d FOR UPDATE NOWAIT;",
+				"SELECT RESULT_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s' AND ROWNUM <= %d",
 				0, 3, 1, chainCode, 50 - count);
 		List<Object> resultID = ExecuteQuery(queryListSql, conn);
 
+		if(resultID.size()==0)
+			return 0;
+		
 		String updateSql = "UPDATE IX_DEALERSHIP_RESULT SET USER_ID = " + userId + " ,DEAL_STATUS = " + 1
 				+ " WHERE RESULT_ID IN (" + StringUtils.join(resultID, ",") + ")";
 		run.execute(conn, updateSql);
 
-		return 50 - count;
+		return resultID.size();
 	}
 
 	/**

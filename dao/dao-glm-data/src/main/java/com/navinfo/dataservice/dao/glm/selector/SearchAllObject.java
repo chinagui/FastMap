@@ -82,7 +82,7 @@ public class SearchAllObject {
 
         } else if (searchType.equals("TABLE_LABLE")) {
 
-            searchResult.put("tableName",tableName);
+            searchResult.put("tableName", tableName);
 
             searchResult.put("label", geoliveHelper.getSubLabel(tableName));
 
@@ -119,14 +119,16 @@ public class SearchAllObject {
 
         searchResult.put("uuid", uuid);
 
-        searchResult.put("geoLiveType", mainTableName.toUpperCase().replace("_", ""));
-
         if (searchTableName.equals("RD_BRANCH_REALIMAGE")
                 || searchTableName.equals("RD_SERIESBRANCH")) {
 
             handNoPrimaryKeyBranch(mainPids, searchResult);
 
+            searchResult.put("geoLiveType", searchTableName.toUpperCase().replace("_", ""));
+
         } else {
+
+            searchResult.put("geoLiveType", mainTableName.toUpperCase().replace("_", ""));
 
             JSONArray pids = new JSONArray();
 
@@ -145,15 +147,18 @@ public class SearchAllObject {
 
         mainTableName = json.getString("mainTableName").toUpperCase();
 
-        initPrimaryKeyBranch();
-
         searchTableName = json.getString("searchTableName").toUpperCase();
+
+        initPrimaryKeyBranch();
 
         GeoliveHelper geoliveHelper = GeoliveHelper.getIstance();
 
         primaryKey = geoliveHelper.getPrimaryKey(mainTableName);
 
-        foreignKey = geoliveHelper.getForeignKey(searchTableName, mainTableName);
+        if (!mainTableName.equals(searchTableName)) {
+
+            foreignKey = geoliveHelper.getForeignKey(searchTableName, mainTableName);
+        }
 
         uuid = json.getString("uuid");
 
@@ -281,54 +286,97 @@ public class SearchAllObject {
      */
     private List<Integer> getPendingPids(JSONObject json) throws Exception {
 
-        //mesh、grid转换为wkt字符
-        List<String> wktStrs = new ArrayList<>();
+        Set<Integer> pendingPids = new HashSet<>();
+
+        List<Integer> meshIds = new ArrayList<>();
+
+        List<Integer> gridIds = new ArrayList<>();
 
         if (json.containsKey("meshIds")) {
 
-            List<Integer> meshIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("meshIds")));
-
-            for (int meshId : meshIds) {
-
-                String wktStr = MeshUtils.mesh2WKT(String.valueOf(meshId));
-
-                wktStrs.add(wktStr);
-            }
+            meshIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("meshIds")));
         }
+
         if (json.containsKey("gridIds")) {
-
-            List<Integer> gridIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("gridIds")));
-
-            for (int gridId : gridIds) {
-
-                String wktStr = GridUtils.grid2Wkt(String.valueOf(gridId));
-
-                wktStrs.add(wktStr);
-            }
+            gridIds = new ArrayList<>(JSONArray.toCollection(json.getJSONArray("gridIds")));
         }
 
         //无 meshId、gridId按范围查询条件
-        if (wktStrs.size() < 1) {
+        if (meshIds.size() < 1 && gridIds.size() < 1) {
 
             return new ArrayList<>();
         }
 
+        List<String> meshWktStr = new ArrayList<>();
+
+        for (int meshId : meshIds) {
+
+            String wktStr = MeshUtils.mesh2WKT(String.valueOf(meshId));
+
+            meshWktStr.add(wktStr);
+        }
+
+        List<String> gridWktStr = new ArrayList<>();
+
+        for (int gridId : gridIds) {
+
+            String wktStr = GridUtils.grid2Wkt(String.valueOf(gridId));
+
+            gridWktStr.add(wktStr);
+        }
+
+        //处理特殊要素
         List<String> strSqls = new ArrayList<>();
 
         strSqls.addAll(getSpatialQuerySqlForSpecialObj());
 
-        if (strSqls.size() < 1) {
+        if (strSqls.size() > 0) {
 
-            strSqls.add(getSpatialQuerySql());
+            List<String> wktStrs = new ArrayList<>();
+
+            wktStrs.addAll(meshWktStr);
+
+            wktStrs.addAll(gridWktStr);
+
+            for (String spatialQuerySql : strSqls) {
+
+                for (String wktStr : wktStrs) {
+
+                    pendingPids.addAll(selectPendingPids(spatialQuerySql, wktStr));
+                }
+            }
+
+            return new ArrayList<>(pendingPids);
         }
 
-        Set<Integer> pendingPids = new HashSet<>();
+        //按图幅处理
+        if (meshIds.size() > 0) {
 
-        for (String spatialQuerySql : strSqls) {
+            String strMeshSql = getMeshIdQuerySql(meshIds);
 
-            for (String wktStr : wktStrs) {
+            if (strMeshSql != null) {
 
-                pendingPids.addAll(SelectpendingPids(spatialQuerySql, wktStr));
+                pendingPids.addAll(selectPendingPids(strMeshSql, null));
+
+            } else {
+
+                String spatialQuerySql = getSpatialQuerySql(null);
+
+                for (String wktStr : meshWktStr) {
+
+                    pendingPids.addAll(selectPendingPids(spatialQuerySql, wktStr));
+                }
+            }
+        }
+
+        //按grid处理
+        if (gridIds.size() > 0) {
+
+            String spatialQuerySql = getSpatialQuerySql(gridIds);
+
+            for (String wktStr : gridWktStr) {
+
+                pendingPids.addAll(selectPendingPids(spatialQuerySql, wktStr));
             }
         }
 
@@ -350,7 +398,7 @@ public class SearchAllObject {
 
         } else if (mainTableName.equals("RD_SAMENODE")) {
 
-            String strSql = "WITH TMP1 AS (SELECT DISTINCT NODE_PID FROM replace_tableName WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2) SELECT DISTINCT PID PENDINGPID FROM RD_SAMENODE, RD_SAMENODE_PART, TMP1 WHERE RD_SAMENODE_PART.TABLE_NAME = 'replace_tableName' AND RD_SAMENODE.GROUP_ID == RD_SAMENODE_PART.GROUP_ID AND RD_SAMENODE_PART.NODE_PID = TMP1.NODE_PID AND RD_SAMENODE.U_RECORD <> 2 AND RD_SAMENODE_PART.U_RECORD <> 2";
+            String strSql = "WITH TMP1 AS (SELECT DISTINCT NODE_PID FROM replace_tableName WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2) SELECT DISTINCT RD_SAMENODE.GROUP_ID PENDINGPID FROM RD_SAMENODE, RD_SAMENODE_PART, TMP1 WHERE RD_SAMENODE_PART.TABLE_NAME = 'replace_tableName' AND RD_SAMENODE.GROUP_ID = RD_SAMENODE_PART.GROUP_ID AND RD_SAMENODE_PART.NODE_PID = TMP1.NODE_PID AND RD_SAMENODE.U_RECORD <> 2 AND RD_SAMENODE_PART.U_RECORD <> 2";
 
             strSqls.add(strSql.replace("replace_tableName", "RD_NODE"));
 
@@ -364,7 +412,7 @@ public class SearchAllObject {
 
         } else if (mainTableName.equals("RD_SAMELINK")) {
 
-            String strSql = "WITH TMP1 AS (SELECT DISTINCT LINK_PID FROM replace_tableName WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2) SELECT DISTINCT PID PENDINGPID FROM RD_SAMELINK, RD_SAMELINK_PART, TMP1 WHERE RD_SAMELINK_PART.TABLE_NAME = 'replace_tableName' AND RD_SAMELINK.GROUP_ID == RD_SAMELINK_PART.GROUP_ID AND RD_SAMELINK_PART.LINK_PID = TMP1.LINK_PID AND RD_SAMELINK.U_RECORD <> 2 AND RD_SAMELINK_PART.U_RECORD <> 2";
+            String strSql = "WITH TMP1 AS (SELECT DISTINCT LINK_PID FROM replace_tableName WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2) SELECT DISTINCT RD_SAMELINK.GROUP_ID PENDINGPID FROM RD_SAMELINK, RD_SAMELINK_PART, TMP1 WHERE RD_SAMELINK_PART.TABLE_NAME = 'replace_tableName' AND RD_SAMELINK.GROUP_ID = RD_SAMELINK_PART.GROUP_ID AND RD_SAMELINK_PART.LINK_PID = TMP1.LINK_PID AND RD_SAMELINK.U_RECORD <> 2 AND RD_SAMELINK_PART.U_RECORD <> 2";
 
             strSqls.add(strSql.replace("replace_tableName", "RD_LINK"));
 
@@ -397,25 +445,35 @@ public class SearchAllObject {
         return strSqls;
     }
 
+
     /**
      * 获取按空间查询sql语句
      *
      * @return
      */
-    private String getSpatialQuerySql() {
+    private String getMeshIdQuerySql(List<Integer> meshIds) {
 
-        String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+        if (meshIds.size() < 1) {
 
-        GlmGridCalculator gridCalculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
+            return null;
+        }
 
-        GlmGridRefInfo glmGridRefInfo = gridCalculator.getGlmGridRefInfo(mainTableName);
+        GlmGridRefInfo glmGridRefInfo = getGlmGridRefInfo();
 
         List<String[]> refInfos = glmGridRefInfo.getRefInfo();
+
 
         //refInfos为空的对象有GEOMETRY字段，返回查询sql语句
         if (CollectionUtils.isEmpty(refInfos)) {
 
-            return "SELECT DISTINCT " + primaryKey + " pendingPid  FROM " + mainTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2 ";
+            String strSubSql = getMeshIdSql(mainTableName, meshIds);
+
+            if (StringUtils.isEmpty(strSubSql)) {
+
+                return null;
+            }
+
+            return "SELECT DISTINCT " + primaryKey + " pendingPid  FROM " + mainTableName + " WHERE U_RECORD != 2 " + strSubSql;
         }
 
         //获取与主对象关联且包含GEOMETRY字段的对象信息
@@ -423,8 +481,15 @@ public class SearchAllObject {
 
         String geoKey = refInfos.get(refInfos.size() - 1)[1];
 
+        String strSubSql = getMeshIdSql(geoTableName, meshIds);
+
+        if (StringUtils.isEmpty(strSubSql)) {
+
+            return null;
+        }
+
         //关联几何要素查询sql
-        String strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2)  ";
+        String strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE U_RECORD != 2 " + strSubSql + " ) ";
 
         strQuerySql += " SELECT DISTINCT " + mainFlag + " pendingPid FROM " + mainTableName;
         //from 添加关联表TableName，包含GEOMETRY字段的表以TMP1替换
@@ -449,7 +514,101 @@ public class SearchAllObject {
         strQuerySql += " TMP1." + geoKey + " ";
 
         //排除各表U_RECORD=2的数据
-        strQuerySql += " " + mainTableName + ".U_RECORD<>2 ";
+        strQuerySql += " and " + mainTableName + ".U_RECORD<>2 ";
+
+        for (int i = 0; i < refInfos.size() - 1; i++) {
+
+            strQuerySql += " and  " + refInfos.get(i)[0] + ".U_RECORD<>2 ";
+        }
+
+        return strQuerySql;
+    }
+
+
+    /**
+     * 获取Grid映射关系信息
+     *
+     * @return
+     */
+    private GlmGridRefInfo getGlmGridRefInfo() {
+        String gdbVersion = SystemConfigFactory.getSystemConfig().getValue(PropConstant.gdbVersion);
+
+        GlmGridCalculator gridCalculator = GlmGridCalculatorFactory.getInstance().create(gdbVersion);
+
+        GlmGridRefInfo glmGridRefInfo = gridCalculator.getGlmGridRefInfo(mainTableName);
+
+        return glmGridRefInfo;
+    }
+
+    /**
+     * 获取按空间查询sql语句，grid列表有数据时，按照guid所在图幅筛选
+     *
+     * @param gridIds grid列表
+     * @return
+     */
+    private String getSpatialQuerySql(List<Integer> gridIds) {
+
+        List<Integer> meshIds = new ArrayList<>();
+
+        if (gridIds != null) {
+
+            for (int gridId : gridIds) {
+
+                int meshId = gridId / 100;
+
+                if (!meshIds.contains(meshId)) {
+
+                    meshIds.add(meshId);
+                }
+            }
+        }
+
+        GlmGridRefInfo glmGridRefInfo = getGlmGridRefInfo();
+
+        List<String[]> refInfos = glmGridRefInfo.getRefInfo();
+
+        String strSubSql = getMeshIdSql(mainTableName, meshIds);
+
+        //refInfos为空的对象有GEOMETRY字段，返回查询sql语句
+        if (CollectionUtils.isEmpty(refInfos)) {
+
+            return "SELECT DISTINCT " + primaryKey + " pendingPid  FROM " + mainTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2 " + strSubSql;
+        }
+
+        //获取与主对象关联且包含GEOMETRY字段的对象信息
+        String geoTableName = refInfos.get(refInfos.size() - 1)[0];
+
+        String geoKey = refInfos.get(refInfos.size() - 1)[1];
+
+        strSubSql = getMeshIdSql(geoTableName, meshIds);
+
+        //关联几何要素查询sql
+        String strQuerySql = "WITH TMP1 AS ( SELECT DISTINCT " + geoKey + " FROM " + geoTableName + " WHERE SDO_WITHIN_DISTANCE(GEOMETRY, SDO_GEOMETRY(:1, 8307), 'DISTANCE=0') = 'TRUE' AND U_RECORD != 2 " + strSubSql + " )  ";
+
+        strQuerySql += " SELECT DISTINCT " + mainFlag + " pendingPid FROM " + mainTableName;
+        //from 添加关联表TableName，包含GEOMETRY字段的表以TMP1替换
+        strQuerySql += " , TMP1  ";
+
+        for (int i = 0; i < refInfos.size() - 1; i++) {
+
+            strQuerySql += " , " + refInfos.get(i)[0];
+        }
+
+        String ferKey = glmGridRefInfo.getGridRefCol();
+
+        //根据refInfos添加各表之间的关联条件
+        strQuerySql += " where " + mainTableName + "." + ferKey + " = ";
+
+        //多表关联时，处理中间关联表
+        for (int i = 0; i < refInfos.size() - 1; i++) {
+
+            strQuerySql += " , " + refInfos.get(i)[0] + "." + refInfos.get(i)[1] + " " + refInfos.get(i)[0] + "." + refInfos.get(i)[2] + " = ";
+        }
+
+        strQuerySql += " TMP1." + geoKey + " ";
+
+        //排除各表U_RECORD=2的数据
+        strQuerySql += " and " + mainTableName + ".U_RECORD<>2 ";
 
         for (int i = 0; i < refInfos.size() - 1; i++) {
 
@@ -460,6 +619,57 @@ public class SearchAllObject {
     }
 
     /**
+     * 获取按MeshId查询的sql语句条件
+     *
+     * @param tableName 表名
+     * @param meshIds   图幅号列表
+     * @return
+     */
+    private String getMeshIdSql(String tableName, List<Integer> meshIds) {
+
+        String strSql = "";
+
+        if (meshIds.size() < 0) {
+
+            return strSql;
+        }
+
+        if (tableName.toUpperCase().equals("RD_LINK")
+                || tableName.toUpperCase().equals("RW_LINK")
+                || tableName.toUpperCase().equals("IX_POI")
+                || tableName.toUpperCase().equals("AD_FACE")
+                || tableName.toUpperCase().equals("ZONE_FACE")
+                || tableName.toUpperCase().equals("LC_FACE")
+                || tableName.toUpperCase().equals("LU_FACE")
+                || tableName.toUpperCase().equals("CMG_BUILDFACE")
+                ) {
+            strSql = " and " + tableName + ".MESH_ID IN ";
+        } else if (tableName.toUpperCase().equals("RW_NODE")
+                || tableName.toUpperCase().equals("AD_NODE")
+                || tableName.toUpperCase().equals("ZONE_NODE")
+                || tableName.toUpperCase().equals("LC_NODE")
+                || tableName.toUpperCase().equals("LU_NODE")
+                || tableName.toUpperCase().equals("CMG_BUILDNODE")
+                ) {
+            strSql = " and " + tableName + ".NODE_PID=" + tableName + "_MESH.NODE_PID " + tableName + "_MESH.MESH_ID IN ";
+        } else if (tableName.toUpperCase().equals("AD_LINK")
+                || tableName.toUpperCase().equals("ZONE_LINK")
+                || tableName.toUpperCase().equals("LC_LINK")
+                || tableName.toUpperCase().equals("LU_LINK")
+                || tableName.toUpperCase().equals("CMG_BUILDLINK")
+                ) {
+            strSql = " and " + tableName + ".LINK_PID=" + tableName + "_MESH.LINK_PID " + tableName + "_MESH.MESH_ID IN ";
+        }
+
+        if (StringUtils.isNotEmpty(strSql)) {
+
+            strSql += " ( " + StringUtils.getInteStr(meshIds) + " )";
+        }
+
+        return strSql;
+    }
+
+    /**
      * 查询待定主要素Pid
      *
      * @param spatialQuerySql 查询语句
@@ -467,7 +677,7 @@ public class SearchAllObject {
      * @return
      * @throws Exception
      */
-    private List<Integer> SelectpendingPids(String spatialQuerySql, String wktStr) throws Exception {
+    private List<Integer> selectPendingPids(String spatialQuerySql, String wktStr) throws Exception {
 
         PreparedStatement pstmt = null;
 
@@ -479,7 +689,10 @@ public class SearchAllObject {
 
             pstmt = this.conn.prepareStatement(spatialQuerySql);
 
-            pstmt.setString(1, wktStr);
+            if (wktStr != null) {
+
+                pstmt.setString(1, wktStr);
+            }
 
             resultSet = pstmt.executeQuery();
 

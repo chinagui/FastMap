@@ -1015,7 +1015,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" where s.work_item_id = c.work_item_id");
 			sb.append("   and s.work_item_id != 'FM-YW-20-017'");
 			sb.append("   and s.pid = p.pid");
-			sb.append("   and s.qc_flag = "+isQuality);//0 常规 1质检
+			if(isQuality==0){//常规任务
+				sb.append("	AND s.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s.QC_FLAG = 1");
+			}
 			sb.append("   and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 			sb.append("   and ((c.first_work_item in ('poi_name', 'poi_address') and");
 			sb.append("       s.first_work_status = 1) or");

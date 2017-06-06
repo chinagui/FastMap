@@ -149,54 +149,6 @@ public class SubtaskService {
 				qualitySubtaskId = createSubtask(qualityBean);
 			}
 			
-//			//自采自录子任务
-//			int isSelfRecord = 0;//是否进行自采自录，0否1是
-//			int selfRecordType = 0;//自采自录日编子任务作业类型
-//			String selfRecordName = "";//自采自录日编子任务名称
-//			if(dataJson.containsKey("isSelfRecord") && 1==dataJson.getInt("isSelfRecord")){
-//				isSelfRecord = dataJson.getInt("isSelfRecord");
-//				selfRecordType = dataJson.getInt("selfRecordType");
-//				selfRecordName = dataJson.getString("selfRecordName");
-//				//删除传入参数的对应键值对,因为bean中没有这些字段
-//				dataJson.discard("isSelfRecord");
-//				dataJson.discard("selfRecordType");
-//				dataJson.discard("selfRecordName");}
-			
-//			SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd");
-//			
-//			int qualitySubtaskId = 0;
-//			//接口添加了isQuality字段方便判断是否创建月编质检子任务
-//			if(dataJson.containsKey("isQuailty") && isQuailty != 0){
-//				//根据参数生成质检子任务 subtask qualityBean
-//				dataJson.discard("isQuailty");
-//				dataJson.discard("qualityExeGroupId");
-//				Subtask qualityBean = createSubtaskBean(userId,dataJson);
-//				qualityBean.setName(qualityBean.getName()+"_质检");
-//				qualityBean.setIsQuality(1);
-//				qualityBean.setStatus(2);
-//				qualityBean.setExeUserId(qualityExeUserId);
-//				//这里添加了操作组的赋值，创建月编质检子任务的时候，作业组ID前端单独传这个字段
-//				qualityBean.setExeGroupId(qualityExeGroupId);
-//				qualityBean.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
-//				qualityBean.setPlanEndDate(new Timestamp(df.parse(qualityPlanEndDate).getTime()));
-//				//创建质检子任务 subtask	
-//				qualitySubtaskId = createSubtask(qualityBean);	
-//			}
-//			if(isSelfRecord != 0 ){//表示要创建自采自录日编子任务
-//				//根据参数生成日编子任务 subtask dailyBean
-//				Subtask dailyBean = createSubtaskBean(userId,dataJson);
-//				int taskId = TaskService.getInstance().getTaskIdByTaskIdAndTaskType(dailyBean.getTaskId(),1);
-//				dailyBean.setTaskId(taskId);
-//				dailyBean.setStage(1);
-//				dailyBean.setName(selfRecordName);
-//				dailyBean.setIsQuality(0);
-//				dailyBean.setStatus(2);
-//				dailyBean.setType(selfRecordType);
-//				//创建质检子任务 subtask	
-//				createSubtask(dailyBean);	
-//			}
-
-			
 			//根据参数生成subtask bean
 			Subtask bean = createSubtaskBean(userId,dataJson);
 			bean.setIsQuality(0);
@@ -225,6 +177,23 @@ public class SubtaskService {
 		Connection conn = null;
 		try {
 			conn = DBConnector.getInstance().getManConnection();
+			return createSubtaskWithSubtaskId(conn, bean);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * @param conn
+	 * @param subtask
+	 * @throws ServiceException 
+	 */
+	public int createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
+		try {
 			// 获取subtaskId
 			int subtaskId = SubtaskOperation.getSubtaskId(conn, bean);
 
@@ -248,19 +217,12 @@ public class SubtaskService {
 					updateSubtaskGeo(conn,bean.getSubtaskId());
 				}
 			}
-			
-			//消息发布
-			/*if(bean.getStatus()==1){
-				SubtaskOperation.pushMessage(conn,bean);
-			}*/	
 			log.debug("子任务创建成功!");
 			return subtaskId;
 		} catch (Exception e) {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 	
@@ -335,6 +297,7 @@ public class SubtaskService {
 		//创建或者修改常规任务时，均要调用修改质检任务的代码
 		if(qualitySubtaskId != 0){//非0的时候，表示要修改质检子任务
 			Subtask qualitySubtask = new Subtask();//生成质检子任务的bean
+			qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
 			qualitySubtask.setSubtaskId(qualitySubtaskId);
 			qualitySubtask.setExeUserId(qualityExeUserId);
 			qualitySubtask.setIsQuality(1);//表示此bean是质检子任务
@@ -348,6 +311,7 @@ public class SubtaskService {
 				Subtask qualitySubtask = SubtaskService.getInstance().queryBySubtaskIdS(subtask.getSubtaskId());
 				if(!StringUtils.isEmpty(qualitySubtask.getName())){
 					qualitySubtask.setName(qualitySubtask.getName()+"_质检");}
+				qualitySubtask.setCreateUserId(Integer.valueOf(String.valueOf(userId)));
 				qualitySubtask.setSubtaskId(null);
 				qualitySubtask.setExeGroupId(qualityExeGroupId);
 				qualitySubtask.setPlanStartDate(new Timestamp(df.parse(qualityPlanStartDate).getTime()));
@@ -445,8 +409,23 @@ public class SubtaskService {
 		
 		Task task = TaskService.getInstance().queryByTaskId(conn, taskId);
 		Infor infor = InforService.getInstance().getInforByProgramId(conn, task.getProgramId());
-		if(infor==null){return newSubtask;}		
-		
+		if(infor==null){
+			//中线子任务，若作业员或组是修改时加的，则自动维护名称：任务名称_作业员
+			if(oldSubtask!=null){
+				if(newSubtask.getExeUserId()!=0&&oldSubtask.getExeUserId()==0){
+					UserInfo userInfo = UserInfoService.getInstance().queryUserInfoByUserId(newSubtask.getExeUserId());
+					newSubtask.setName(newSubtask.getName()+"_"+userInfo.getUserRealName());
+					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+				}
+				if(newSubtask.getExeGroupId()!=0&&oldSubtask.getExeGroupId()==0){
+					String groupName = UserGroupService.getInstance().getGroupNameByGroupId(newSubtask.getExeGroupId());
+					newSubtask.setName(newSubtask.getName()+"_"+groupName);
+					if(newSubtask.getIsQuality()!=null&&newSubtask.getIsQuality()==1){newSubtask.setName(newSubtask.getName()+"_质检");}
+				}
+			}
+			return newSubtask;
+		}		
+		//快线子任务名称自动赋值
 		if(oldSubtask==null){//新建子任务
 			if(!StringUtils.isEmpty(newSubtask.getName())){return newSubtask;}
 			newSubtask.setName(infor.getInforName()+"_"+DateUtils.dateToString(infor.getPublishDate(), "yyyyMMdd"));
@@ -1531,9 +1510,26 @@ public class SubtaskService {
 	public void delete(Integer subtaskId) throws ServiceException {
 		Connection conn = null;
 		try {
+			conn = DBConnector.getInstance().getManConnection();
+			delete(conn,subtaskId);
+		} catch (Exception e) {
+			DbUtils.rollbackAndCloseQuietly(conn);
+			log.error(e.getMessage(), e);
+			throw new ServiceException("删除失败，原因为:" + e.getMessage(), e);
+		} finally {
+			DbUtils.commitAndCloseQuietly(conn);
+		}
+	}
+	
+	/**
+	 * 删除子任务，前端只有草稿状态的子任务有删除按钮
+	 * @param subtaskId
+	 * @throws ServiceException
+	 */
+	public void delete(Connection conn,int subtaskId) throws ServiceException {
+		try {
 			// 持久化
 			QueryRunner run = new QueryRunner();
-			conn = DBConnector.getInstance().getManConnection();	
 			String updateSql = "delete from SUBTASK S where S.SUBTASK_ID =" + subtaskId;	
 			run.update(conn,updateSql);
 			updateSql = "delete from SUBTASK_grid_mapping S where S.SUBTASK_ID =" + subtaskId;
@@ -1542,8 +1538,6 @@ public class SubtaskService {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("删除失败，原因为:" + e.getMessage(), e);
-		} finally {
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -2174,36 +2168,10 @@ public class SubtaskService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
-
-	/**
-	 * @param conn
-	 * @param subtask
-	 * @throws ServiceException 
-	 */
-	public void createSubtaskWithSubtaskId(Connection conn, Subtask bean) throws ServiceException {
-		try {
-			//默认subtask状态为草稿2
-			if(bean.getStatus()== null){
-				bean.setStatus(2);
-			}
-			
-			// 插入subtask
-			SubtaskOperation.insertSubtask(conn, bean);
-			
-			// 插入SUBTASK_GRID_MAPPING
-			if(bean.getGridIds() != null){
-				SubtaskOperation.insertSubtaskGridMapping(conn, bean);
-				//web端对于通过不规则任务圈创建的常规子任务，可能会出现grid计算超出block范围的情况（web无法解决），在此处进行二次处理
-				SubtaskOperation.checkSubtaskGridMapping(conn, bean);
-			}
-			log.debug("子任务创建成功!");
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			throw new ServiceException("创建失败，原因为:" + e.getMessage(), e);
-		} 
-	}
 	
 	/**
+	 * 1.根据参数cityName与infor表中的admin_name模糊匹配，获取匹配成功的情报的所有采集子任务列表
+	 * 应用场景：独立工具：采集成果中/无转快时，获取快线子任务列表
 	 * @param 
 	 * @param listAllInforByCity
 	 * @throws Exception 
@@ -2215,8 +2183,11 @@ public class SubtaskService {
 			conn = DBConnector.getInstance().getManConnection();
 			
 			String selectSql = "select st.SUBTASK_ID, st.NAME, t.TASK_ID from TASK t, SUBTASK st, PROGRAM p, INFOR i "
-					+ "where i.INFOR_ID = p.INFOR_ID AND p.PROGRAM_ID = t.PROGRAM_ID AND ST.STATUS IN (1,2) AND t.TASK_ID = st.TASK_ID AND i.ADMIN_NAME "
-					+ "like " +  "\'"+ "%" + cityName + "%" +"\'";
+					+ "where i.INFOR_ID = p.INFOR_ID "
+					+ "AND p.PROGRAM_ID = t.PROGRAM_ID "
+					+ "AND ST.STATUS IN (1,2) "
+					+ "AND t.TASK_ID = st.TASK_ID AND ST.STAGE=0 "
+					+ "AND i.ADMIN_NAME like " +  "\'"+ "%" + cityName + "%" +"\'";
 			
 			if(jsonObject.containsKey("name") && jsonObject.getString("name").length() > 0){
 				String name = " AND st.NAME like " + "\'"+ "%" + jsonObject.getString("name") + "%" +"\'";

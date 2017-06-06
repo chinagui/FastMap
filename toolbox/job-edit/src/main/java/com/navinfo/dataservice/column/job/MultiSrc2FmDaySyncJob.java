@@ -341,7 +341,6 @@ public class MultiSrc2FmDaySyncJob extends AbstractJob {
 				imp.operate(cmd);
 				imp.persistChangeLog(OperationSegment.SG_ROW, jobInfo.getUserId());
 				//数据打多源标识
-//				PoiEditStatus.tagMultiSrcPoi(conn, imp.getSourceTypes());
 				Date uploadDate = new Date();
 				PoiEditStatus.insertPoiEditStatus(conn, imp.getInsertPids(),1);
 				PoiEditStatus.updatePoiEditStatus(conn, imp.getPids(), 1, 1, uploadDate);

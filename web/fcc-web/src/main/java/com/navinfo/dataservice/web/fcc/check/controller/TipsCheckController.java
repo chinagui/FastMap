@@ -472,7 +472,7 @@ public class TipsCheckController extends BaseController {
 			
 			op.updateTipsCheckStatus(rowkey,workStatus);
 			
-			return new ModelAndView("jsonView", success(op));
+			return new ModelAndView("jsonView", success());
 
 		} catch (Exception e) {
 

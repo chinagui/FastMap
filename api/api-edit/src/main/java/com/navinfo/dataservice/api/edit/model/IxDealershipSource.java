@@ -142,6 +142,9 @@ public class IxDealershipSource  {
 		this.nameShort = nameShort;
 	}
 	public String getAddress() {
+		if(address==null){
+			return "";
+		}
 		return address;
 	}
 	public void setAddress(String address) {
@@ -331,7 +334,17 @@ public class IxDealershipSource  {
 	 */
 	public String getTelephone() {
 		// TODO Auto-generated method stub
-		return "" + this.telSale + ";" + this.telService + ";" + this.telOther;
+		String telephone = "";
+		if(this.telSale!=null){
+			telephone += this.telSale;
+		}
+		if(this.telService!=null){
+			telephone += this.telService;
+		}
+		if(this.telOther!=null){
+			telephone += this.telOther;
+		}
+		return telephone;
 	}
 
 

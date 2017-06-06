@@ -8,8 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Collection;
+import java.util.Map.Entry;
+import java.util.Set;
 
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
@@ -1122,7 +1127,7 @@ public class DataEditService {
 							updatePoiStatusByPoiNum(poiNum,regionConn);//修改poi状态为3 已提交
 							IxDealershipResultSelector.updateResultDealStatus(result.getResultId(),conn);//更新RESULT.DEAL_STATUS＝3（已提交）
 							IxDealershipSourceSelector.saveOrUpdateSourceByResult(noLogResult,conn);//同步根据RESULT更新SOURCE表
-						}
+}
 					} catch (Exception e) {
 						e.printStackTrace();
 						throw e;
@@ -1142,10 +1147,10 @@ public class DataEditService {
 		
 	}
 	
-	
+			
 
-	
-
+			
+			
 	/**
 	 * 提交时更新poi状态从0改为为3
 	 * @param poiNum
@@ -1213,10 +1218,10 @@ public class DataEditService {
 		return 0;
 	}
 
-	
 
-	
-	
+		
+		
 
+			
 
-}
+		}

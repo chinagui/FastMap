@@ -18,5 +18,6 @@ public class TaskType {
 		
 		public static int Q_TASK_TYPE = 4; // 快线任务号
 
-
+    public static final int PROGRAM_TYPE_Q = 4;
+    public static final int PROGRAM_TYPE_M = 1;
 }

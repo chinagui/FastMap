@@ -42,7 +42,7 @@ public class DataPrepareController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//默认的页码和每页数据设置为1,20
+			//默认的页码和每页数据设置为1，20
 			int pageSize = 1;
 			if(dataJson.containsKey("pageSize")){
 				pageSize = dataJson.getInt("pageSize");
@@ -95,13 +95,8 @@ public class DataPrepareController extends BaseController {
 	@RequestMapping(value = "/impTableDiff")
 	public ModelAndView impTableDiff(HttpServletRequest request) {
 		try {
-			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
-			if (dataJson == null) {
-				throw new IllegalArgumentException("parameter参数不能为空。");
-			}
-			String chainCode = dataJson.getString("chainCode");
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-			dealerShipService.impTableDiff(request,chainCode,tokenObj.getUserId());
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token"); 
+			dealerShipService.impTableDiff(request,tokenObj.getUserId());
 			
 			return new ModelAndView("jsonView", success());
 		} catch (Exception e) {

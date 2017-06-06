@@ -67,27 +67,7 @@ public class InputStreamUtils {
 		uploadItem.write(file);
 		returnParam.put("filePath", file.getAbsolutePath());
 		return returnParam;
-	}
-	
-	public static JSONObject request2Parameter(HttpServletRequest request) throws Exception{
-		DiskFileItemFactory factory = new DiskFileItemFactory();
-		ServletFileUpload upload = new ServletFileUpload(factory);
-		List<FileItem> items = upload.parseRequest(request);
-		Iterator<FileItem> it = items.iterator();
-		
-		while(it.hasNext()){
-			FileItem item = it.next();
-			if (item.isFormField()){
-				if ("parameter".equals(item.getFieldName())) {
-					String param = item.getString("UTF-8");
-					JSONObject jsonParam = JSONObject.fromObject(param);
-					return jsonParam;
-				}
-			}
-		}
-		return null;
-	}
-	
+	}	
 	
 	 public static void transMap2Bean(Map<String, Object> map, Object obj) throws Exception {  
 		  

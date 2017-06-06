@@ -134,7 +134,7 @@ public class DataPrepareService {
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
-					+ "where r.source_id = s.source_id and c.chain_code = r.chain and c.chain_code =  '"+chainCode+"'";
+					+ "where r.source_id = s.source_id and c.chain_code = r.chain and s.chain =  '"+chainCode+"'";
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override

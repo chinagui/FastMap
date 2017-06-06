@@ -382,7 +382,13 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                  MERGE INTO");
 		sb.append("                  COLUMN_QC_PROBLEM");
 		sb.append("                  T");
-		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID, NM.NAMENEWVLAUE, ADR.ADDRNEWVLAUE,0 IS_PROBLEM,");
+		sb.append("                  USING (SELECT WK.PID, WK.WORK_ITEM_ID,0 IS_PROBLEM,");
+		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
+		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN NM.NAMENEWVLAUE ");
+		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
+		sb.append("                               WHEN 'poi_englishaddress' = '"+firstWorkItem+"' THEN ADR.ADDRNEWVLAUE ");
+		sb.append("                          ELSE '' ");
+		sb.append("                          END OLDVALUE, ");
 		sb.append("                          CASE WHEN 'poi_name' = '"+firstWorkItem+"' THEN ORNM.name ");
 		sb.append("                               WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN ORNM.name ");
 		sb.append("                               WHEN 'poi_address' = '"+firstWorkItem+"' THEN ORADR.fullname ");
@@ -391,10 +397,10 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                          END ORNAME ");
 		sb.append("                    FROM (SELECT CASE");
 		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
-		sb.append("                                    LISTAGG(N.POI_PID || ':' || N.NAME || ',' || F.FLAG_CODE,");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
 		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                   ELSE");
-		sb.append("                                    LISTAGG(N.POI_PID || ':' || N.NAME, '|') WITHIN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
 		sb.append("                                    GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                 END NAMENEWVLAUE,");
 		sb.append("                                 N.POI_PID PID");
@@ -449,7 +455,7 @@ public class ColumnSubmitJob extends AbstractJob {
 		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.OLD_value=TP.NAMENEWVLAUE,T.qc_time=:1,T.worker="+userId+",T.NEW_VALUE=''");
 		sb.append("                  WHEN NOT MATCHED THEN ");
 		sb.append("                  INSERT (ID,SUBTASK_ID,PID,FIRST_WORK_ITEM,SECOND_WORK_ITEM,WORK_ITEM_ID,OLD_VALUE,WORK_TIME,IS_VALID,WORKER,ORIGINAL_INFO)"
-				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.NAMENEWVLAUE,:2,0,"+userId+",TP.ORNAME)");
+				+ " VALUES(COLUMN_QC_PROBLEM_seq.nextval,"+comSubTaskId+",TP.PID,'"+firstWorkItem+"','"+secondWorkItem+"',TP.WORK_ITEM_ID,TP.OLDVALUE,:2,0,"+userId+",TP.ORNAME)");
 		
 		
 		PreparedStatement pstmt = null;

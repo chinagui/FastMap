@@ -8,8 +8,10 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -566,6 +568,75 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 			DbUtils.closeQuietly(pstmt);
 		}
 
+	}
+	/**
+	 * 查詢POI问题列表
+	 * 
+	 * @param pids
+	 * @param firstWorkItem
+	 * @param tbNm
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,JSONObject> queryIsProblemsByPids(List<Integer> pids,String secondWorkItem,int comSubTaskId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT P.PID,P.IS_PROBLEM");
+		sb.append(" FROM COLUMN_QC_PROBLEM P ");
+		sb.append(" WHERE P.SECOND_WORK_ITEM = '"+secondWorkItem+"' ");
+		sb.append(" AND P.PID IN (");
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+		sb.append(" AND P.SUBTASK_ID = "+comSubTaskId+" ");
+		sb.append(" AND P.IS_VALID=0 ");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		Map<Integer,JSONObject> isProblemData = new HashMap<Integer,JSONObject>();
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject value=new JSONObject();
+				
+				if(secondWorkItem.equals("namePinyin")){
+					value.put("py",string2json(resultSet.getString("IS_PROBLEM")));	
+				}else{
+					value.put("other",resultSet.getString("IS_PROBLEM"));	
+				}
+				
+				isProblemData.put(resultSet.getInt("PID"), value);
+			}
+
+			return isProblemData;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	private JSONObject string2json(String data){
+		JSONObject newdata = new JSONObject();
+		String[] strs=data.split("\\|");
+		for(String str:strs){
+			JSONObject js =JSONObject.fromObject("{\""+str.replace(":", "\":\"")+"\"}");
+			Iterator<String> keys = js.keys();  
+	        while (keys.hasNext()) {  
+				String key=(String) keys.next();
+				newdata.put(key, js.get(key));
+			}
+		}
+
+		return newdata;
 	}
 
 	/**

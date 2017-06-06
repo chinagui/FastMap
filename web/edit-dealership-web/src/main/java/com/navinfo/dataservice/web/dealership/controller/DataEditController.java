@@ -51,10 +51,8 @@ public class DataEditController extends BaseController {
 			conn = DBConnector.getInstance().getDealershipConnection();
 
 			int data = dealerShipEditService.applyDataService(chainCode, conn, userId);
-			Map<String, Integer> result = new HashMap<>();
-			result.put("data", data);
 
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -113,12 +111,9 @@ public class DataEditController extends BaseController {
 
 			// TODO具体逻辑
 			//这里引用的jar要是一个版本的，否则更细心代码下来都编译报错了 modify:songhe
-			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
-			Map<String, JSONArray> result = new HashMap<>();
+			JSONArray data = dealerShipEditService.loadWorkListService(chainCode, conn, userId, dealStatus);
 
-			result.put("data", data);
-
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -230,10 +225,8 @@ public class DataEditController extends BaseController {
 			int resultId=jsonObj.getInt("resultId");
 			conn = DBConnector.getInstance().getDealershipConnection();
 			JSONObject data = dealerShipEditService.diffDetailService(resultId, conn);
-			Map<String, Object> result = new HashMap<>();
-			result.put("data", data);
 
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

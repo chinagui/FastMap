@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import oracle.sql.STRUCT;
+
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.mercator.MercatorProjection;
@@ -24,25 +26,25 @@ public class RdSlopeSearch implements ISearch {
 	public RdSlopeSearch(Connection conn) {
 		this.conn = conn;
 	}
-	
+
 	@Override
 	public IObj searchDataByPid(int pid) throws Exception {
 		RdSlopeSelector selector = new RdSlopeSelector(conn);
-		
-		IObj obj = (IObj)selector.loadById(pid, false);
+
+		IObj obj = (IObj) selector.loadById(pid, false);
 		return obj;
 	}
-	
+
 	@Override
 	public List<IRow> searchDataByPids(List<Integer> pidList) throws Exception {
-		
-		RdSlopeSelector selector = new RdSlopeSelector(conn);		
+
+		RdSlopeSelector selector = new RdSlopeSelector(conn);
 
 		List<IRow> rows = selector.loadByIds(pidList, false, true);
 
 		return rows;
 	}
-	
+
 	@Override
 	public List<SearchSnapshot> searchDataBySpatial(String wkt)
 			throws Exception {
@@ -62,9 +64,8 @@ public class RdSlopeSearch implements ISearch {
 
 		List<SearchSnapshot> list = new ArrayList<SearchSnapshot>();
 
-		
-		String sql = "WITH TMP1 AS (SELECT SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY) as geometry, A.NODE_PID FROM RD_NODE A, RD_SLOPE B WHERE SDO_RELATE(A.GEOMETRY, SDO_GEOMETRY(:1, 8307), 'mask=anyinteract') = 'TRUE' AND A.NODE_PID = B.NODE_PID AND A.U_RECORD != 2 group by SDO_UTIL.TO_WKTGEOMETRY_VARCHAR(A.GEOMETRY),A.NODE_PID ) SELECT A.PID, A.TYPE, A.NODE_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_SLOPE A, TMP1 WHERE A.NODE_PID = TMP1.NODE_PID AND A.U_RECORD != 2 ";
-		
+		String sql = "WITH TMP1 AS (SELECT A.GEOMETRY, A.LINK_PID FROM RD_LINK A, RD_SLOPE B WHERE  sdo_within_distance (A.geometry,sdo_geometry ( :1, 8307),'DISTANCE=0') = 'TRUE' AND A.LINK_PID = B.LINK_PID AND A.U_RECORD != 2 ) SELECT A.PID, A.TYPE, A.LINK_PID, TMP1.GEOMETRY AS GEOMETRY FROM RD_SLOPE A, TMP1 WHERE A.LINK_PID = TMP1.LINK_PID AND A.U_RECORD != 2 ";
+
 		PreparedStatement pstmt = null;
 
 		ResultSet resultSet = null;
@@ -95,15 +96,16 @@ public class RdSlopeSearch implements ISearch {
 
 				snapshot.setI(resultSet.getInt("pid"));
 
-				String pointWkt = resultSet.getString("geometry");
+				STRUCT struct = (STRUCT) resultSet.getObject("geometry");
 
-				JSONObject geojson = Geojson.wkt2Geojson(pointWkt);
+				JSONObject geojson = Geojson.spatial2Geojson(struct);
 
-				Geojson.point2Pixel(geojson, z, px, py);
+				JSONObject jo = Geojson.link2Pixel(geojson, px, py, z);
 
-				snapshot.setG(geojson.getJSONArray("coordinates"));
+				snapshot.setG(jo.getJSONArray("coordinates"));
 
 				list.add(snapshot);
+
 			}
 		} catch (Exception e) {
 
@@ -131,13 +133,13 @@ public class RdSlopeSearch implements ISearch {
 	}
 
 	public static void main(String[] args) throws Exception {
-		
+
 		Connection conn = DBConnector.getInstance().getConnectionById(11);
-		
+
 		RdSlopeSearch s = new RdSlopeSearch(conn);
-		
+
 		IObj obj = s.searchDataByPid(132837);
-		
+
 		System.out.println(obj.Serialize(null));
 	}
 }

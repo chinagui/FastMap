@@ -220,5 +220,14 @@ public interface ManApi{
 	 * @throws Exception 
 	 */
 	public Map<String, Integer> getProvinceRegionIdMap() throws Exception;
+	/**
+	 * @return
+	 */
+	public List<Integer> listDayDbIds() throws Exception;
+	/**
+	 * @return
+	 * @throws Exception 
+	 */
+	public Map<Integer, String> getUsers() throws Exception;
 }
 

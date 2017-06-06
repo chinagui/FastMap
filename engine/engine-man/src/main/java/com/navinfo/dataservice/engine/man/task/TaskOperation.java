@@ -1590,6 +1590,14 @@ public class TaskOperation {
 				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
 				updateSql+=" work_kind='" + bean.getWorkKind() + "'";
 			};
+			if (bean!=null&&bean.getOverdueReason()!=null && StringUtils.isNotEmpty(bean.getOverdueReason())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" overdue_reason='" + bean.getOverdueReason() + "'";
+			};
+			if (bean!=null&&bean.getOverdueOtherReason()!=null && StringUtils.isNotEmpty(bean.getOverdueOtherReason())){
+				if(StringUtils.isNotEmpty(updateSql)){updateSql+=" , ";}
+				updateSql+=" overdue_other_reason='" + bean.getOverdueOtherReason() + "'";
+			};
 			if (bean!=null&&bean.getTaskId()!=null && StringUtils.isNotEmpty(bean.getTaskId().toString())){
 				updateSql+=" where TASK_ID=" + bean.getTaskId();
 			};

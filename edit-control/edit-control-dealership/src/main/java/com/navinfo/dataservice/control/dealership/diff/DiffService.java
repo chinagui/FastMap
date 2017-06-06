@@ -504,7 +504,7 @@ public class DiffService {
 		resultDpAttrDiff.setGeometry(i.getGeometry());
 		//REGION_ID	根据IX_DEALERSHIP_RESULT.PROVINCE关联cp_region_province.province,查找对应的region_id赋值；针对差分结果为删除的记录即deal_src_diff＝2，取source.province关联
 		log.info(resultDpAttrDiff.getProvince());
-		if(resultDpAttrDiff.getProvince()!=null){
+		if(resultDpAttrDiff.getProvince()!=null&&provinceRegionIdMap.get(resultDpAttrDiff.getProvince())!=null){
 			resultDpAttrDiff.setRegionId(provinceRegionIdMap.get(resultDpAttrDiff.getProvince()));
 		}
 

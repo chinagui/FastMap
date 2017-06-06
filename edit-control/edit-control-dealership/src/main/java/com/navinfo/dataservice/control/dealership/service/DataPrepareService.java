@@ -542,7 +542,7 @@ public class DataPrepareService {
 			//保存文件
 			String filePath = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
-			//String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+//			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
 			String localZipFile=returnParam.getString("filePath");
 			log.info("load file");
@@ -596,10 +596,10 @@ public class DataPrepareService {
 								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 							}
 							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 							}
 							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 							}
 							
 

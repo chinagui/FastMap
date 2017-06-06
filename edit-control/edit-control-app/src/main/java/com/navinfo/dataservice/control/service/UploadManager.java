@@ -109,7 +109,8 @@ public class UploadManager {
 						allPois.add(l);
 					}
 				}
-				Map<Long,String> freshVerPois = imp.getFreshVerPois();
+				Set<Long> freshVerPois = imp.getFreshVerPois();
+				Map<Long,String> normalPois = imp.getNormalPois();
 				//写入数据库
 				imp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addResults(imp.getSuccessNum(), imp.getErrLogs());
@@ -134,7 +135,8 @@ public class UploadManager {
 				spImp.persistChangeLog(OperationSegment.SG_ROW, userId);
 				result.addWarnSps(spImp.getErrLogs());
 				//维护编辑状态
-				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
+//				PoiEditStatus.forCollector(conn,allPois,freshVerPois,subtaskId,taskId,taskType);
+				PoiEditStatus.forCollector(conn,normalPois,freshVerPois,subtaskId,taskId,taskType);
 			}catch(Exception e){
 				log.error(e.getMessage(),e);
 				DbUtils.rollbackAndCloseQuietly(conn);

@@ -104,7 +104,7 @@ public class DataEditService {
 	 */
 	public JSONArray loadWorkListService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
 		DBConnector connector = DBConnector.getInstance();
-		// 待作业，待提交→内页录入作业3；已提交→出品9
+		// 待作业→内页录入作业3；已提交，待提交→出品9
 		int flowStatus = 3;
 		int checkErrorNum = 0;
 		if (dealStatus == 3 || dealStatus == 2)
@@ -116,6 +116,17 @@ public class DataEditService {
 		List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
 		JSONArray result = new JSONArray();
+
+		if (resultCol.size() == 0) {
+			JSONObject obj = new JSONObject();
+			obj.put("resultId", 0);
+			obj.put("name", "");
+			obj.put("kindCode", "");
+			obj.put("workflowStatus", 0);
+			obj.put("dealSrcDiff", 0);
+			obj.put("checkErrorNum", checkErrorNum);
+			result.add(obj);
+		}
 
 		for (Map<String, Object> item : resultCol) {
 			JSONObject obj = new JSONObject();
@@ -130,9 +141,15 @@ public class DataEditService {
 				String queryPoi = String.format(
 						"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_IS_ADOPTED = %d",
 						item.get("RESULT_ID"), 2);
-				String poiPid = run.queryForString(conn, queryPoi);
-				Connection conPoi = connector.getConnectionById((Integer)item.get("REGION_ID"));
-				checkErrorNum = GetCheckResultCount(poiPid, conPoi);
+				String poiNum = run.queryForString(conn, queryPoi);
+				if (poiNum.isEmpty()) {
+					checkErrorNum = 0;
+				} else {
+					Connection conPoi = connector.getConnectionById((Integer) item.get("REGION_ID"));
+					String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = '%s'", poiNum);
+					int poiPid = run.queryForInt(conPoi, queryPoiPid);
+					checkErrorNum = GetCheckResultCount(poiPid, conPoi);
+				}
 			}
 			obj.put("checkErrorNum", checkErrorNum);
 			result.add(obj);
@@ -140,13 +157,13 @@ public class DataEditService {
 		return result;
 	}
 
-	private Integer GetCheckResultCount(String poiPid, Connection conn) throws Exception {
-		if (poiPid.isEmpty())
+	private Integer GetCheckResultCount(Integer poiPid, Connection conn) throws Exception {
+		if (poiPid == 0)
 			return 0;
 
 		String checkSqlStr = String.format(
 				"SELECT COUNT(*) FROM NI_VAL_EXCEPTION NE,CK_RESULT_OBJECT CK WHERE NE.MD5_CODE = CK.MD5_CODE AND CK.PID = %d",
-				Integer.valueOf(poiPid));
+				poiPid);
 		int count = run.queryForInt(conn, checkSqlStr);
 
 		return count;

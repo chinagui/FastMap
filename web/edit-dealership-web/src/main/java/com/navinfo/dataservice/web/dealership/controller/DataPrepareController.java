@@ -100,7 +100,7 @@ public class DataPrepareController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}

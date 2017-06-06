@@ -461,10 +461,17 @@ public class TipsRequestParam {
                             webBuilder.append(" OR ");
                         }
                         webBuilder.append("(((t_tipStatus:2");
-                        webBuilder.append(" AND stage:(1 5 6 7)");
+                        webBuilder.append(" AND stage:(1 5 6)");
                         webBuilder.append(")");
                         //接边Tips
-                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
+                        
+                        //待质检的tips
+                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0)");
+                        
+                        webBuilder.append(	"))");
+                        
+                      
                     }
                     if (workStatus.contains(1)) {
                         if (webBuilder.length() > 0) {

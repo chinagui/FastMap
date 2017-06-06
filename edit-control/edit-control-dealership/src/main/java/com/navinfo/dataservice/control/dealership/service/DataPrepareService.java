@@ -177,16 +177,24 @@ public class DataPrepareService {
 	 * @param upFile
 	 * @throws Exception
 	 */
-	public void impTableDiff(HttpServletRequest request,String chainCode,
-			Long userId)throws Exception {
+	public void impTableDiff(HttpServletRequest request,Long userId)throws Exception {
 		log.info("start 文件表表差分导入");
+		
+//		JSONObject dataJson = InputStreamUtils.request2Parameter(request);
+//		if (dataJson == null) {
+//			throw new IllegalArgumentException("parameter参数不能为空。");
+//		}
+//		String chainCode = dataJson.getString("chainCode");
+		
 		//excel文件上传到服务器		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
 		//String filePath ="D:/temp/dealership/fullChainExcel";
 		log.info("文件由本地上传到服务器指定位置"+filePath);
-		String localFile = InputStreamUtils.request2File(request, filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile=returnParam.getString("filePath");
+		String chainCode = returnParam.getString("chainCode");
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
@@ -500,10 +508,6 @@ public class DataPrepareService {
 							result.setOldNameEng( rs.getString("old_name_eng"));
 							result.setOldAddressEng( rs.getString("old_address_eng"));
 							result.setDealSrcDiff( rs.getString("deal_src_diff"));
-							/*result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));*/
 						
 						diffList.add(result);
 					}
@@ -539,7 +543,8 @@ public class DataPrepareService {
 //			String filePath = SystemConfigFactory.getSystemConfig().getValue(
 //						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
 			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
-			String localZipFile = InputStreamUtils.request2File(request, filePath);
+			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
+			String localZipFile=returnParam.getString("filePath");
 			log.info("load file");
 
 			//解压

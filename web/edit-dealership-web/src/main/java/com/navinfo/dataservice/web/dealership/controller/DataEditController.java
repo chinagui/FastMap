@@ -43,6 +43,9 @@ public class DataEditController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			conn = DBConnector.getInstance().getConnectionById(399);
@@ -73,6 +76,9 @@ public class DataEditController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 			String chainCode = dataJson.getString("chainCode");
 			String msg = dealerShipEditService.startWork(chainCode, userId);
@@ -98,6 +104,9 @@ public class DataEditController extends BaseController {
 
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			conn = DBConnector.getInstance().getConnectionById(399);
@@ -152,6 +161,9 @@ public class DataEditController extends BaseController {
 			}
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			String data = dealerShipEditService.saveDataService(parameter,userId);
@@ -185,6 +197,9 @@ public class DataEditController extends BaseController {
 			conn = DBConnector.getInstance().getDealershipConnection();
 			
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			dealerShipEditService.commitDealership(chainCode,conn,userId);

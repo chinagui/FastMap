@@ -42,7 +42,7 @@ public class DataPrepareController extends BaseController {
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
-			//默认的页码和每页数据设置为1,20
+			//默认的页码和每页数据设置为1，20
 			int pageSize = 1;
 			if(dataJson.containsKey("pageSize")){
 				pageSize = dataJson.getInt("pageSize");

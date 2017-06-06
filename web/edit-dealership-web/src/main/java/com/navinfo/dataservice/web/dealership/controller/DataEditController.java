@@ -45,7 +45,7 @@ public class DataEditController extends BaseController {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
 
-			conn = DBConnector.getInstance().getConnectionById(399);
+			conn = DBConnector.getInstance().getDealershipConnection();
 
 			int data = dealerShipEditService.applyDataService(chainCode, conn, userId);
 			Map<String, Integer> result = new HashMap<>();
@@ -94,13 +94,13 @@ public class DataEditController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			int dealStatus = dataJson.getInt("dealSatus");
+			int dealStatus = dataJson.getInt("dealStatus");
 
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			long userId = tokenObj.getUserId();
 
-			conn = DBConnector.getInstance().getConnectionById(399);
+			conn = DBConnector.getInstance().getDealershipConnection();
 
 			// TODO具体逻辑
 			//这里引用的jar要是一个版本的，否则更细心代码下来都编译报错了 modify:songhe
@@ -213,8 +213,7 @@ public class DataEditController extends BaseController {
 			}
 			
 			int resultId=jsonObj.getInt("resultId");
-			conn = DBConnector.getInstance().getConnectionById(399);
-			
+			conn = DBConnector.getInstance().getDealershipConnection();
 			JSONObject data = dealerShipEditService.diffDetailService(resultId, conn);
 			Map<String, Object> result = new HashMap<>();
 			result.put("data", data);

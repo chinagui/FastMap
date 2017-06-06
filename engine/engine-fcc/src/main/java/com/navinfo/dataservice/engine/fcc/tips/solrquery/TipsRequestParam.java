@@ -5,6 +5,7 @@ import com.navinfo.dataservice.commons.mercator.MercatorProjection;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
 import com.navinfo.dataservice.dao.fcc.SolrQueryUtils;
+import com.navinfo.dataservice.dao.fcc.TaskType;
 import com.navinfo.dataservice.dao.fcc.TipsWorkStatus;
 import com.navinfo.navicommons.geo.computation.GridUtils;
 import net.sf.json.JSONArray;
@@ -17,7 +18,6 @@ import java.util.Set;
  * Created by zhangjunfang on 2017/5/20.
  */
 public class TipsRequestParam {
-	
 
     //获取Tips个数列表 tip/getStats 接口参数
     public String getTipStat(String parameter) throws Exception{
@@ -94,15 +94,16 @@ public class TipsRequestParam {
 
         return builder.toString();
     }
-    
-    
+
+
     /**
-     * @Description:质检查询条件
-     * @param parameter
+     * 质检查询条件
+     * @param worker
+     * @param checker
+     * @param workStatus
+     * @param rowkeyList
      * @return
      * @throws Exception
-     * @author: y
-     * @time:2017-5-26 下午5:14:05
      */
     public String assambleSqlForCheckQuery(int worker,int checker,int workStatus,JSONArray rowkeyList) throws Exception{
 
@@ -351,7 +352,7 @@ public class TipsRequestParam {
 //        return builder.toString();
 //    }
 
-    public String getByTileWithGap(String parameter, boolean filterDelete) {
+    public String getByTileWithGap(String parameter) {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
         int x = jsonReq.getInt("x");
         int y = jsonReq.getInt("y");
@@ -415,11 +416,6 @@ public class TipsRequestParam {
         StringBuilder builder = new StringBuilder();
         String wkt = MercatorProjection.getWktWithGap(x, y, z, gap);
         builder.append("wktLocation:\"intersects(" + wkt + ")\" ");
-
-        if (filterDelete) {
-            // 过滤删除的数据
-            builder.append(" AND -t_lifecycle:1 ");
-        }
 
         if (types.size() > 0) {
             this.getSolrStringArrayQuery(builder, types, "s_sourceType");
@@ -510,9 +506,14 @@ public class TipsRequestParam {
 
 //        builder.append("wkt:\"intersects(" + wkt + ")\"");
 
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        if (taskSet != null && taskSet.size() > 0) {
-            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
         }
 
         return builder.toString();
@@ -631,9 +632,69 @@ public class TipsRequestParam {
 
         builder.append("-t_tipStatus:2");
 
-        Set<Integer> taskSet = this.getCollectIdsBySubTaskId(subtaskId);
-        if (taskSet != null && taskSet.size() > 0) {
-            this.getSolrIntSetQuery(builder, taskSet, "s_qTaskId");
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
+        }
+
+        return builder.toString();
+    }
+
+    public String getTipsCheckTotal(String parameter) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        int tipsStatus = jsonReq.getInt("tipStatus");
+        builder.append("t_tipStatus:");
+        builder.append(tipsStatus);
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
+        }
+
+        return builder.toString();
+    }
+
+
+    public String getTipsCheckByPage(String parameter, int total) throws Exception{
+        JSONObject jsonReq = JSONObject.fromObject(parameter);
+        int subtaskId = jsonReq.getInt("subtaskId");
+
+        //solr查询语句
+        StringBuilder builder = new StringBuilder();
+
+        int tipsStatus = jsonReq.getInt("tipStatus");
+        builder.append("t_tipStatus:");
+        builder.append(tipsStatus);
+
+        int programType = jsonReq.getInt("programType");
+
+        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
+            builder.append(" AND ");
+            builder.append("s_qSubTaskId:");
+            builder.append(subtaskId);
+        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
+            builder.append(" AND ");
+            builder.append("s_mSubTaskId:");
+            builder.append(subtaskId);
         }
 
         return builder.toString();

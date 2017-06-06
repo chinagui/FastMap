@@ -43,15 +43,16 @@ public class DataEditController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
-			conn = DBConnector.getInstance().getConnectionById(399);
+			conn = DBConnector.getInstance().getDealershipConnection();
 
 			int data = dealerShipEditService.applyDataService(chainCode, conn, userId);
-			Map<String, Integer> result = new HashMap<>();
-			result.put("data", data);
 
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -69,9 +70,12 @@ public class DataEditController extends BaseController {
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
-      			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+      		JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
 			}
 			long userId = tokenObj.getUserId();
 			String chainCode = dataJson.getString("chainCode");
@@ -94,22 +98,21 @@ public class DataEditController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			int dealStatus = dataJson.getInt("dealSatus");
-
+			int dealStatus = dataJson.getInt("dealStatus");
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
-			conn = DBConnector.getInstance().getConnectionById(399);
+			conn = DBConnector.getInstance().getDealershipConnection();
 
 			// TODO具体逻辑
 			//这里引用的jar要是一个版本的，否则更细心代码下来都编译报错了 modify:songhe
-			JSONArray data = dealerShipEditService.startWorkService(chainCode, conn, userId, dealStatus);
-			Map<String, JSONArray> result = new HashMap<>();
+			JSONArray data = dealerShipEditService.loadWorkListService(chainCode, conn, userId, dealStatus);
 
-			result.put("data", data);
-
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
@@ -152,6 +155,9 @@ public class DataEditController extends BaseController {
 			}
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			String data = dealerShipEditService.saveDataService(parameter,userId);
@@ -185,6 +191,9 @@ public class DataEditController extends BaseController {
 			conn = DBConnector.getInstance().getDealershipConnection();
 			
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			long userId = tokenObj.getUserId();
 
 			dealerShipEditService.commitDealership(chainCode,conn,userId);
@@ -213,13 +222,10 @@ public class DataEditController extends BaseController {
 			}
 			
 			int resultId=jsonObj.getInt("resultId");
-			conn = DBConnector.getInstance().getConnectionById(399);
-			
+			conn = DBConnector.getInstance().getDealershipConnection();
 			JSONObject data = dealerShipEditService.diffDetailService(resultId, conn);
-			Map<String, Object> result = new HashMap<>();
-			result.put("data", data);
 
-			return new ModelAndView("jsonView", success(result));
+			return new ModelAndView("jsonView", success(data));
 		}catch(Exception e){
 			logger.error(e.getMessage(), e);
 			return new ModelAndView("jsonView", fail(e.getMessage()));

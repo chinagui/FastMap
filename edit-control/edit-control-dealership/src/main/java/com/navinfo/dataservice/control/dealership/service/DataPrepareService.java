@@ -1,15 +1,14 @@
 package com.navinfo.dataservice.control.dealership.service;
 
 import java.io.File;
-import java.io.IOException;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,25 +19,23 @@ import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.springframework.aop.ThrowsAdvice;
 
-import com.mongodb.client.result.DeleteResult;
-import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.api.edit.model.IxDealershipChain;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.api.man.model.CpRegionProvince;
+import com.navinfo.dataservice.api.man.model.Subtask;
+import com.navinfo.dataservice.api.man.model.UserInfo;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
-import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
-import com.navinfo.dataservice.commons.database.DbConnectConfig;
-import com.navinfo.dataservice.commons.database.OracleSchema;
+import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
+import com.navinfo.dataservice.commons.geom.GeoTranslator;
+import com.navinfo.dataservice.commons.geom.Geojson;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
-import com.navinfo.dataservice.commons.util.ExportExcel;
+import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.ZipUtils;
 import com.navinfo.dataservice.control.dealership.diff.DiffService;
 import com.navinfo.dataservice.control.dealership.service.excelModel.DiffTableExcel;
@@ -48,6 +45,7 @@ import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
 
 import net.sf.json.JSONObject;
+import oracle.sql.STRUCT;
 
 /**
  * 代理店数据准备类
@@ -100,12 +98,12 @@ public class DataPrepareService {
 					List<Map<String, Object>> dealerShipList = new ArrayList();
 					while (rs.next()) {
 						Map<String, Object> result = new HashMap<>();
-						result.put("CHAIN_CODE", rs.getString("CHAIN_CODE"));
-						result.put("CHAIN_NAME", rs.getString("CHAIN_NAME"));
-						result.put("CHAIN_WEIGHT", rs.getInt("CHAIN_WEIGHT"));
-						result.put("CHAIN_STATUS", rs.getInt("CHAIN_STATUS"));
-						result.put("WORK_TYPE", rs.getInt("WORK_TYPE"));
-						result.put("WORK_STATUS", rs.getInt("WORK_STATUS"));
+						result.put("chainCode", rs.getString("CHAIN_CODE"));
+						result.put("chainName", rs.getString("CHAIN_NAME"));
+						result.put("chainWeight", rs.getInt("CHAIN_WEIGHT"));
+						result.put("chainStatus", rs.getInt("CHAIN_STATUS"));
+						result.put("workType", rs.getInt("WORK_TYPE"));
+						result.put("workStauts", rs.getInt("WORK_STATUS"));
 						dealerShipList.add(result);
 					}
 					return dealerShipList;
@@ -179,17 +177,25 @@ public class DataPrepareService {
 	 * @param upFile
 	 * @throws Exception
 	 */
-	public void impTableDiff(HttpServletRequest request,String chainCode,
-			String upFile)throws Exception {
-		log.info("start 文件"+upFile+"表表差分导入");
+	public void impTableDiff(HttpServletRequest request,Long userId)throws Exception {
+		log.info("start 文件表表差分导入");
+		
+//		JSONObject dataJson = InputStreamUtils.request2Parameter(request);
+//		if (dataJson == null) {
+//			throw new IllegalArgumentException("parameter参数不能为空。");
+//		}
+//		String chainCode = dataJson.getString("chainCode");
+		
 		//excel文件上传到服务器		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
 		//String filePath ="D:/temp/dealership/fullChainExcel";
-		log.info("文件"+upFile+"由本地上传到服务器指定位置"+filePath);
-		String localFile = InputStreamUtils.request2File(request, filePath);
-		log.info("文件"+upFile+"已上传至"+localFile);
+		log.info("文件由本地上传到服务器指定位置"+filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile=returnParam.getString("filePath");
+		String chainCode = returnParam.getString("chainCode");
+		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
 		Connection conn=null;
@@ -226,10 +232,10 @@ public class DataPrepareService {
 			//IX_DEALERSHIP_RESULT.RESULT_ID在上传的表表差分结果中“UUID”中不存在，则将该IX_DEALERSHIP_RESULT记录物理删除；
 			deleteResult(conn,chainCode,resultIdSet);
 			//数据持久化到数据库
-			persistChange(conn,changeMap);
+			persistChange(conn,changeMap,userId);
 			//修改IX_DEALERSHIP_CHAIN状态
-			changeChainStatus(conn,chainCode);
-			log.info("end 文件"+upFile+"表表差分导入");
+			IxDealershipChainOperator.changeChainStatus(conn,chainCode,1);
+			log.info("end 文件表表差分导入");
 		}catch(Exception e){
 			log.error("", e);
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -263,18 +269,6 @@ public class DataPrepareService {
 		log.info("end 表表差分物理删除无效记录");		
 		
 	}
-	/**
-	 * 表表差分后，修改IX_DEALERSHIP_CHAIN表状态
-	 * @param conn
-	 * @param chainCode
-	 * @throws SQLException
-	 */
-	private void changeChainStatus(Connection conn, String chainCode) throws SQLException {
-		log.info("start 表表差分修改chain表状态");
-		String sql="UPDATE IX_DEALERSHIP_CHAIN SET WORK_STATUS = 1 WHERE CHAIN_CODE = '"+chainCode+"'";
-		QueryRunner run=new QueryRunner();
-		run.update(conn, sql);
-	}
 
 	/**
 	 * IxDealershipResult数据持久化到数据库
@@ -282,7 +276,7 @@ public class DataPrepareService {
 	 * @param changeMap
 	 * @throws ServiceException 
 	 */
-	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap) throws ServiceException {
+	private void persistChange(Connection conn, Map<String, Set<IxDealershipResult>> changeMap,Long userId) throws ServiceException {
 		if(changeMap.containsKey("ADD")){
 			Set<IxDealershipResult> resultSet = changeMap.get("ADD");
 			for(IxDealershipResult tmp:resultSet){
@@ -292,7 +286,7 @@ public class DataPrepareService {
 		if(changeMap.containsKey("UPDATE")){
 			Set<IxDealershipResult> resultSet = changeMap.get("UPDATE");
 			for(IxDealershipResult tmp:resultSet){
-				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp);
+				IxDealershipResultOperator.updateIxDealershipResult(conn,tmp,userId);
 			}
 		}
 	}
@@ -514,10 +508,6 @@ public class DataPrepareService {
 							result.setOldNameEng( rs.getString("old_name_eng"));
 							result.setOldAddressEng( rs.getString("old_address_eng"));
 							result.setDealSrcDiff( rs.getString("deal_src_diff"));
-							/*result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));*/
 						
 						diffList.add(result);
 					}
@@ -542,33 +532,47 @@ public class DataPrepareService {
 	public void uploadChainExcel(HttpServletRequest request) throws Exception {
 		Connection conn = null;
 		try{
+
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+
+			long userId = tokenObj.getUserId();
 			//获取代理店数据库连接
 			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			//保存文件
 			String filePath = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
-			String localZipFile = InputStreamUtils.request2File(request, filePath);
+//			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
+			String localZipFile=returnParam.getString("filePath");
+			log.info("load file");
 
 			//解压
-			String localUnzipDir = filePath+localZipFile.substring(0,localZipFile.indexOf("."));
+			String localUnzipDir = localZipFile.substring(0,localZipFile.indexOf("."));
 			ZipUtils.unzipFile(localZipFile,localUnzipDir);
+			log.info("unzip file");
+
+			//获取个品牌状态
+			Map<String,Integer> chainStatus = getChainStatus(conn);
 			
 			File file = new File(localUnzipDir);
 			if (file.exists()) {
-				File[] files = file.listFiles();
-				for (File file2 : files) {
+				List<String> pathList = new ArrayList<String>();
+				getDirectory(file,pathList);
+
+				for(String fileStr:pathList){
+					File file2 = new File(fileStr);
 					if (file2.isDirectory()) {
 						continue;
 					} else {
-						System.out.println("文件:" + file2.getAbsolutePath());
-						//解析excel,读取result
+						log.info("文件:" + file2.getAbsolutePath());
+						//解析excel,读取IxDealershipResult
 						String chain = null;
 						String fileName = file2.getAbsolutePath();
 						List<Map<String, Object>> sourceMaps = impIxDealershipResultExcel(fileName);
-						Map<Integer, IxDealershipSource> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSource(conn);
-						List<IxDealershipSource> dealershipSources = (List<IxDealershipSource>) dealershipSourceMap.values();
-						Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getBySourceIds(conn, dealershipSourceMap.keySet());
+						//获取IxDealershipSource
+						Map<String, List<IxDealershipSource>> dealershipSourceMap = IxDealershipSourceSelector.getAllIxDealershipSourceByChain(conn);
+
 						List<IxDealershipResult> dealershipResult = new ArrayList<IxDealershipResult>();
 						for(Map<String, Object> map:sourceMaps){
 							IxDealershipResult ixDealershipResult = new IxDealershipResult();
@@ -576,28 +580,37 @@ public class DataPrepareService {
 							dealershipResult.add(ixDealershipResult);
 							chain = ixDealershipResult.getChain();
 						}
+						if(chainStatus.containsKey(chain)&&chainStatus.get(chain)==0){
+							List<IxDealershipSource> dealershipSources =  dealershipSourceMap.get(chain);
+							//加载已有的result
+							Map<Integer, IxDealershipResult> dealershipResultsPreMap = IxDealershipResultSelector.getIxDealershipResultMapByChain(conn, chain);
+							//执行差分
+							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
+							//写库
+							List<IxDealershipResult> insert = resultMap.get(1);
+							List<IxDealershipResult> update = resultMap.get(2);
+							List<IxDealershipResult> delete = resultMap.get(3);
+							for(IxDealershipResult bean:insert){
+								log.info(bean.getName()+bean.getAddress());
+								log.info(bean.getGeometry());
+								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							}
+							for(IxDealershipResult bean:update){
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+							}
+							for(IxDealershipResult bean:delete){
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+							}
+							
 
-						//执行差分
-						Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
-						//写库
-						List<IxDealershipResult> insert = resultMap.get(1);
-						List<IxDealershipResult> update = resultMap.get(2);
-						List<IxDealershipResult> delete = resultMap.get(3);
-						for(IxDealershipResult bean:insert){
-							IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							int workType = 2;
+							int workStatus = 0;
+							updateIxDealershipChain(conn,chain,workStatus,workType);
+							log.info("import chian:" + chain);
 						}
-						for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
-						}
-						for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean);
-						}
-						
-
-						updateIxDealershipChain(chain);
-
 					}
 				}
+
 			}
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
@@ -607,29 +620,69 @@ public class DataPrepareService {
 			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
+	
+	/**
+	 * @param conn
+	 * @return
+	 * @throws ServiceException 
+	 */
+	public Map<String, Integer> getChainStatus(Connection conn) throws ServiceException {
+		try{
+			QueryRunner run = new QueryRunner();
+			String sql= "select * from IX_DEALERSHIP_CHAIN";
+
+			ResultSetHandler<Map<String,Integer>> rsHandler = new ResultSetHandler<Map<String,Integer>>() {
+				public Map<String,Integer> handle(ResultSet rs) throws SQLException {
+					Map<String,Integer> result = new HashMap<String,Integer>();
+					while (rs.next()) {
+						result.put(rs.getString("CHAIN_CODE"), rs.getInt("CHAIN_STATUS"));
+					}
+					return result;
+				}	
+			};
+			log.info("getChainStatus sql:" + sql);
+			return run.query(conn, sql,rsHandler);			
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			throw new ServiceException("查询失败，原因为:" + e.getMessage(), e);
+		}
+	}
+
+	public static void getDirectory(File file, List<String> list){
+		File flist[] = file.listFiles();
+		if (flist == null || flist.length == 0) {
+		    return;
+		}
+		for (File f : flist) {
+		    if (f.isDirectory()) {
+		        for(File fileInner:f.listFiles()){
+		        	if(fileInner.getAbsoluteFile().toString().contains(".xlsx")){
+		        		list.add(fileInner.getAbsolutePath());
+		        		break;
+		        	}
+		        }
+		        getDirectory(f,list);
+		    } else {
+		    }
+		}
+	}
 
 	/**
+	 * @param conn 
 	 * @param ixDealershipChain
 	 * @throws ServiceException 
 	 */
-	private void updateIxDealershipChain(String chainName) throws ServiceException {
-		Connection conn = null;
+	private void updateIxDealershipChain(Connection conn, String chainCode,Integer workStatus,Integer workType) throws ServiceException {
 		try{
 			//持久化
 			QueryRunner run = new QueryRunner();
-			conn=DBConnector.getInstance().getDealershipConnection();
 			
-			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = ,C.WORK_TYPE = 2 WHERE C.CHAIN_NAME = " + chainName;			
-
-
-			run.update(conn, 
-					updateSql);
+			String updateSql = "update IX_DEALERSHIP_CHAIN C SET C.WORK_STATUS = " + workStatus + ",C.WORK_TYPE = " + workType + " WHERE C.CHAIN_CODE = '" + chainCode + "'";			
+			log.info("updateIxDealershipChain sql:" + updateSql);
+			run.update(conn, updateSql);
 		}catch(Exception e){
-			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
 			throw new ServiceException("更新失败，原因为:"+e.getMessage(),e);
-		}finally{
-			DbUtils.commitAndCloseQuietly(conn);
 		}
 	}
 
@@ -664,6 +717,7 @@ public class DataPrepareService {
 		List<Map<String, Object>> sources = excleReader.readExcelContent(excelHeader);
 		log.info("end 导入一览表结果excel："+upFile);
 		return sources;
+
 	}
 	
 	

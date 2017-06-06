@@ -15,20 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -524,6 +520,7 @@ public class PoiEditStatus {
 			};
 			
 			QueryRunner run = new QueryRunner();
+			logger.info("poiUnderSubtask sql:" + sb.toString());
 			return run.query(conn,sb.toString(),pra,rsHandler);
 			
 		}catch(Exception e){
@@ -573,7 +570,6 @@ public class PoiEditStatus {
 			}
 			//更新poi_edit_status表
 
-			
 			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_STATUS T SET ");
@@ -600,7 +596,72 @@ public class PoiEditStatus {
 			throw new Exception("多源POI打标签失败");
 		}
 	}
+	
 
+	/**
+	 * @param conn
+	 * @param dbId
+	 * @param uOrDfids
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Set<Long> poiWithOutSubtask(Connection conn, int dbId, List<String> uOrDfids) throws Exception {
+		try{
+			Set<Long> result = new HashSet<Long>();
+			if(uOrDfids.isEmpty()){
+				return result;
+			}
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT E.PID");
+			sb.append("   FROM POI_EDIT_STATUS E, IX_POI P     ");
+			sb.append("  WHERE E.STATUS IN (1, 2)              ");
+			sb.append("    AND P.PID = E.PID                   ");
+			sb.append("    AND (E.QUICK_SUBTASK_ID=0 OR E.MEDIUM_SUBTASK_ID=0) ");
+			
+			Clob clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(uOrDfids, ","));
+			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
+			
+			Object[] pra = new Object[1];
+			pra[0] = clobPids;
+
+			ResultSetHandler<Set<Long>> rsHandler = new ResultSetHandler<Set<Long>>() {
+				public Set<Long> handle(ResultSet rs) throws SQLException {
+					Set<Long> result = new HashSet<Long>();
+					while (rs.next()) {
+						result.add(rs.getLong("PID"));
+
+					}
+					return result;
+				}	
+			};
+			
+			QueryRunner run = new QueryRunner();
+			logger.info("poiWithOutSubtask sql:" + sb.toString());
+			return run.query(conn,sb.toString(),pra,rsHandler);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("poiWithOutSubtask");
+		}
+	}
+
+	/**
+	 * @Title: forCollector
+	 * @Description: poi上传时维护poi_edit_status表
+	 * @param conn
+	 * @param normalPois 非鲜度验证poi
+	 * @param freshVerPois 鲜度验证poi
+	 * @param subtaskId 
+	 * @param taskId
+	 * @param taskType
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月6日 下午3:15:14 
+	 */
 	public static void forCollector(Connection conn, Map<Long, String> normalPois, Set<Long> freshVerPois,
 			int subtaskId, int taskId, int taskType) throws Exception {
 		PreparedStatement stmt = null;
@@ -675,7 +736,5 @@ public class PoiEditStatus {
 		}
 		
 	}
-	
-	
 	
 }

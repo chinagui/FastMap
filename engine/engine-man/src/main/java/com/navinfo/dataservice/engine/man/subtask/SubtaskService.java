@@ -2395,7 +2395,7 @@ public class SubtaskService {
 	 * @return
 	 * @throws Exception 
 	 */
-	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
 		Connection conn = null;
 		try{
 			QueryRunner run = new QueryRunner();
@@ -2414,6 +2414,7 @@ public class SubtaskService {
 			sb.append(" AND (R.DAILY_DB_ID = " + dbId + " OR R.MONTHLY_DB_ID = " + dbId + ") ");
 			sb.append(" ORDER BY S.SUBTASK_ID                                                                                 ");
 			
+			log.info("getOpendMultiSubtaskGridMappingByDbId sql:" + sb.toString());
 			return run.query(conn, sb.toString(), new ResultSetHandler<Map<Integer, List<Integer>>>(){
 				@Override
 				public Map<Integer, List<Integer>> handle(ResultSet result) throws SQLException {

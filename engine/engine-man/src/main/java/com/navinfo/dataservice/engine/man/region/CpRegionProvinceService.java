@@ -104,7 +104,7 @@ public class CpRegionProvinceService {
 		try {
 			QueryRunner run = new QueryRunner();
 			conn = DBConnector.getInstance().getManConnection();
-			String selectSql = "SELECT C.REGION_ID,R.PROVINCE FROM CP_REGION_PROVINCE C";
+			String selectSql = "SELECT C.REGION_ID,C.PROVINCE FROM CP_REGION_PROVINCE C";
 			return run.query(conn, selectSql, new ResultSetHandler<Map<String,Integer>>(){
 
 				@Override

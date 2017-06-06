@@ -533,16 +533,16 @@ public class DataPrepareService {
 		Connection conn = null;
 		try{
 
-//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-//
-//			long userId = tokenObj.getUserId();
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+
+			long userId = tokenObj.getUserId();
 			//获取代理店数据库连接
 			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			//保存文件
-//			String filePath = SystemConfigFactory.getSystemConfig().getValue(
-//						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
-			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+			String filePath = SystemConfigFactory.getSystemConfig().getValue(
+						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
+			//String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
 			String localZipFile=returnParam.getString("filePath");
 			log.info("load file");

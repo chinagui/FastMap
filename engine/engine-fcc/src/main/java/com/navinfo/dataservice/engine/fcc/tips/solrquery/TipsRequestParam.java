@@ -467,7 +467,7 @@ public class TipsRequestParam {
                         webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
                         
                         //待质检的tips
-                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0)");
+                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0 AND t_tipStatus:2)");
                         
                         webBuilder.append(	"))");
                         
@@ -498,8 +498,11 @@ public class TipsRequestParam {
             }
         }
 
+        System.out.println(builder.toString());
         // 过滤315 web不显示的tips 20170118
         this.getFilter315(builder);
+        
+        System.out.println(builder.toString());
 
         return builder.toString();
     }

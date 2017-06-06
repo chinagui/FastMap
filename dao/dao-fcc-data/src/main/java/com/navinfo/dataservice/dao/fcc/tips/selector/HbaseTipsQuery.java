@@ -45,7 +45,7 @@ public class HbaseTipsQuery {
    			result = htab.get(get);
 
    			if (result.isEmpty()) {
-   				throw new Exception("根据rowkey,没有找到需要删除的tips信息，rowkey："+rowkey);
+   				throw new Exception("根据rowkey,没有找到需要对应的tips信息，rowkey："+rowkey);
    			}
 
    			if(result!=null){

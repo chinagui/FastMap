@@ -95,7 +95,6 @@ public class DataPrepareController extends BaseController {
 	@RequestMapping(value = "/impTableDiff")
 	public ModelAndView impTableDiff(HttpServletRequest request) {
 		try {
-			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			dealerShipService.impTableDiff(request,tokenObj.getUserId());
 			
 			return new ModelAndView("jsonView", success());

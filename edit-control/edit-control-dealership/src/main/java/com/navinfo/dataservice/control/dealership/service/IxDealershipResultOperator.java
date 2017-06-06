@@ -13,8 +13,16 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class IxDealershipResultOperator {
 	private static Logger log = LoggerRepos.getLogger(DataEditService.class);
@@ -545,4 +553,93 @@ public class IxDealershipResultOperator {
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	
+	/**
+	 * 根据POI组成包含名称、地址、联系方式的json格式
+	 * @param pois
+	 * @return
+	 */
+	public static JSONArray componentPoiData(List<IxPoi> pois) {
+		JSONArray poiJson = new JSONArray();
+
+		for (IxPoi poi : pois) {
+			JSONObject obj = new JSONObject();
+			obj.put("poiNum", poi.getPoiNum());
+			obj.put("pid", poi.getPid());
+			obj.put("kindCode", poi.getKindCode());
+			obj.put("chain", poi.getChain());
+			obj.put("rowId", poi.getRowId());
+			obj.put("level", poi.getLevel());
+
+			// 名称
+			JSONArray names = new JSONArray();
+			for (IRow row : poi.getNames()) {
+				JSONObject nameobj = new JSONObject();
+				IxPoiName name = (IxPoiName) row;
+
+				if (!name.getLangCode().equals("CHI")&&!name.getLangCode().equals("CHT")) {
+					continue;
+				}
+
+				nameobj.put("rowId", name.getRowId());
+				nameobj.put("nameStrPinyin", name.getNamePhonetic());
+				nameobj.put("nameGrpId", name.getNameGroupid());
+				nameobj.put("nameId", name.getPid());
+				nameobj.put("langCode", name.getLangCode());
+				nameobj.put("nameClass", name.getNameClass());
+				nameobj.put("name", name.getName());
+				nameobj.put("nameType", name.getNameType());
+
+				names.add(nameobj);
+			}
+			obj.put("names", names);
+
+			// 地址
+			JSONArray addresses = new JSONArray();
+			for (IRow row : poi.getAddresses()) {
+				JSONObject addressobj = new JSONObject();
+				IxPoiAddress address = (IxPoiAddress) row;
+
+				if (!address.getLangCode().equals("CHI")&&!address.getLangCode().equals("CHT")) {
+					continue;
+				}
+
+				addressobj.put("rowId", address.getRowId());
+				addressobj.put("roadName", address.getRoadname());
+				addressobj.put("langCode", address.getLangCode());
+				addressobj.put("fullNamePinyin", address.getFullnamePhonetic());
+				addressobj.put("addrName", address.getAddrname());
+				addressobj.put("roadNamePinyin", address.getRoadnamePhonetic());
+				addressobj.put("addrNamePinyin", address.getAddrnamePhonetic());
+				addressobj.put("fullName", address.getFullname());
+
+				addresses.add(addressobj);
+			}
+			obj.put("addresses", addresses);
+
+			// 电话
+			JSONArray contacts = new JSONArray();
+			for (IRow row : poi.getContacts()) {
+				JSONObject contactobj = new JSONObject();
+				IxPoiContact contact = (IxPoiContact) row;
+
+				contactobj.put("contact", contact.getContact());
+				contactobj.put("contactDepart", contact.getContactDepart());
+				contactobj.put("contactType", contact.getContactType());
+				contactobj.put("poiPid", contact.getPoiPid());
+				contactobj.put("priority", contact.getPriority());
+				contactobj.put("rowId", contact.getRowId());
+				contactobj.put("uDate", contact.getuDate());
+				contactobj.put("uRecord", contact.getuRecord());
+
+				contacts.add(contactobj);
+			}
+			obj.put("contacts", contacts);
+			poiJson.add(obj);
+		}
+
+		return poiJson;
+	}
+	
 }

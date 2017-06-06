@@ -14,6 +14,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -27,20 +29,29 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
  */
 public class InputStreamUtils {
 
-	public static String request2File(HttpServletRequest request,String filePath) throws Exception{
+	public static JSONObject request2File(HttpServletRequest request,String filePath) throws Exception{
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		List<FileItem> items = upload.parseRequest(request);
 		Iterator<FileItem> it = items.iterator();
-		
+		JSONObject returnParam = new JSONObject();
 		FileItem uploadItem = null;
 		
 		while(it.hasNext()){
 			FileItem item = it.next();
-			if (item.getName()!= null && !item.getName().equals("")){
-				uploadItem = item;
+			if (item.isFormField()){
+				if ("parameter".equals(item.getFieldName())) {
+					String param = item.getString("UTF-8");
+					JSONObject jsonParam = JSONObject.fromObject(param);
+					returnParam.putAll(jsonParam);
+				}
+			}else{
+				if (item.getName()!= null && !item.getName().equals("")){
+					uploadItem = item;
+				}
 			}
 		}
+		if(uploadItem==null){return returnParam;}
 
 		InputStream fileStream = uploadItem.getInputStream();
 
@@ -54,9 +65,9 @@ public class InputStreamUtils {
 			file.createNewFile(); 
 		}
 		uploadItem.write(file);
-		return file.getAbsolutePath();
-	}
-	
+		returnParam.put("filePath", file.getAbsolutePath());
+		return returnParam;
+	}	
 	
 	 public static void transMap2Bean(Map<String, Object> map, Object obj) throws Exception {  
 		  

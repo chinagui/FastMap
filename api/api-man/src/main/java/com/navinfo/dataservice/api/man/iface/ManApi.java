@@ -178,11 +178,12 @@ public interface ManApi{
 	public List<Map<String, Object>> getProduceProgram() throws Exception;
 	public Set<Integer> getCollectTaskIdByDaySubtask(int subtaskId) throws Exception;
 	/**
-	 * @param dbId
-	 * @param i
+	 * 获取开启的多源子任务与grid的map
+	 * @param dbId 所在大区库
+	 * @param type 1常规4快速更新
 	 * @return
 	 */
-	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type)  throws Exception;
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type)  throws Exception;
 	/**
 	 * @param dbId
 	 * @param statusList

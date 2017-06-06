@@ -1,5 +1,6 @@
 package com.navinfo.dataservice.engine.man.task;
 
+import java.security.interfaces.RSAKey;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -386,10 +387,11 @@ public class TaskService {
 			List<Task> poiMonthlyTask = new ArrayList<Task>();
 			
 			for(Task task:taskList){
-				//采集任务处理无任务POI和TIPS的批中线任务号操作
-				if(task.getType() == 0){
-					batchNoTaskMidData(conn, task);
-				}
+//				//采集任务处理无任务POI和TIPS的批中线任务号操作
+//				20170606取消流程：采集任务发布时，批中线任务ID。所有无任务转中线的入口，均为人工触发按钮
+//				if(task.getType() == 0){
+//					batchNoTaskMidData(conn, task);
+//				}
 				
 				if(task.getType() == 3){
 					//二代任务发布特殊处理
@@ -716,11 +718,11 @@ public class TaskService {
 				log.error("task编辑消息发送失败,原因:"+e.getMessage(), e);
 			}
 
-			return "任务批量修改"+total+"个成功，0个失败";
+			return "任务批量保存"+total+"个成功，0个失败";
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(conn);
 			log.error(e.getMessage(), e);
-			throw new Exception("修改失败，原因为:"+e.getMessage(),e);
+			throw new Exception("保存失败，原因为:"+e.getMessage(),e);
 		}finally{
 			DbUtils.commitAndCloseQuietly(conn);
 		}
@@ -1561,39 +1563,6 @@ public class TaskService {
 			//更新block状态：如果所有task都已关闭，则block状态置3
 			log.info("更新"+taskId+"任务对应的block状态，如果所有task都已关闭，则block状态置3关闭");
 			TaskOperation.closeBlock(conn,task.getBlockId());
-			/*
-			 * byzhangxiaoyi 20170418 代码存在逻辑错误，另外，目前动态调整都通过子任务进行，所以将代码注销
-			//动态调整
-			//获取该任务新增的grid
-			log.info("更新"+taskId+"任务的grid范围");
-			Map<Integer, Integer> gridIdMap = TaskOperation.getAddedGridMap(conn,taskId);
-			//调整该任务范围
-			TaskOperation.insertTaskGridMapping(conn, taskId, gridIdMap);
-			
-			//如果任务类型为采集
-			if(task.getType() == 0){
-				log.info("任务类型为采集任务，更新"+taskId+"任务的对应的日编任务范围");
-				//调整日编任务范围
-				TaskOperation.updateTaskRegion(conn,taskId,1,gridIdMap);
-				log.info("任务类型为采集任务，更新"+taskId+"任务的对应的区域子任务范围");
-				//调整区域子任务范围
-				List<Subtask> subtaskList = TaskOperation.getSubTaskListByType(conn,taskId,4);
-				for(Subtask subtask:subtaskList){
-					SubtaskOperation.insertSubtaskGridMapping(conn, subtask.getSubtaskId(), gridIdMap);
-				}
-				if(task.getBlockId()==0){
-					//调整项目范围
-					ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
-				}else{
-					//调整二代任务范围
-					TaskOperation.updateTaskRegion(conn,taskId,4,gridIdMap);
-				}
-			}
-			//日编任务,快速更新项目
-			else if(task.getType()==1&&task.getBlockId()==0){
-				//调整项目范围
-				ProgramService.getInstance().updateProgramRegion(conn,task.getProgramId(),gridIdMap);
-			}*/
 			//快线采集任务关闭，需批中线采集任务id
 			if(task.getType()==0&&task.getBlockId()==0){
 				log.info(taskId+"任务为快线采集任务，关闭时需同步批poi，tips的对应的中线任务号");
@@ -1649,6 +1618,52 @@ public class TaskService {
 					msgTmp[3]=msgParam.toString();//消息对象
 					msgContentList.add(msgTmp);
 				}
+				//生管角色发消息
+				String userSql="SELECT DISTINCT M.USER_ID, I.USER_REAL_NAME,I.USER_EMAIL"
+						+ "  FROM ROLE_USER_MAPPING M, USER_INFO I"
+						+ " WHERE M.ROLE_ID = 3"
+						+ "   AND M.USER_ID = I.USER_ID";
+				Map<Long, UserInfo> userIdList=UserInfoOperation.getUserInfosBySql(conn, userSql);
+				for(Long userIdTmp:userIdList.keySet()){
+					//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
+					Object[] msgTmp=new Object[4];
+					msgTmp[0]=userIdTmp;//收信人
+					msgTmp[1]=msgTitle;//消息头
+					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "TASK");
+					msgParam.put("relateObjectId", task.getTaskId());
+					msgTmp[3]=msgParam.toString();//消息对象
+					msgContentList.add(msgTmp);
+				}
+				//若是采集任务，还需向其所在区域的日编组长，月编组长发消息
+				String userLeaderSql="SELECT DISTINCT I.USER_ID, I.USER_REAL_NAME, I.USER_EMAIL"
+						+ "  FROM USER_INFO I, TASK T, TASK CT, USER_GROUP G"
+						+ " WHERE CT.TASK_ID = "+task.getTaskId()
+						+ "   AND CT.TYPE = 0"
+						+ "   AND CT.PROGRAM_ID = T.PROGRAM_ID"
+						+ "   AND CT.BLOCK_ID = T.BLOCK_ID"
+						+ "   AND T.LATEST = 1"
+						+ "   AND T.TYPE IN (1, 2)"
+						+ "   AND T.GROUP_ID != 0"
+						+ "   AND T.GROUP_ID = G.GROUP_ID"
+						+ "   AND G.LEADER_ID = I.USER_ID";
+				Map<Long, UserInfo> userIdLeaderList=UserInfoOperation.getUserInfosBySql(conn, userLeaderSql);
+				for(Long userIdTmp:userIdLeaderList.keySet()){
+					//String pushUserName =userIdList.get(userIdTmp).getUserRealName();
+					Object[] msgTmp=new Object[4];
+					msgTmp[0]=userIdTmp;//收信人
+					msgTmp[1]=msgTitle;//消息头
+					msgTmp[2]="关闭task:"+task.getName()+",请关注";//消息内容
+					//关联要素
+					JSONObject msgParam = new JSONObject();
+					msgParam.put("relateObject", "TASK");
+					msgParam.put("relateObjectId", task.getTaskId());
+					msgTmp[3]=msgParam.toString();//消息对象
+					msgContentList.add(msgTmp);
+				}
+				
 				if(msgContentList.size()>0){
 					taskPushMsgByMsg(conn,msgContentList,userId);	
 				}
@@ -3374,11 +3389,24 @@ public class TaskService {
 			//无任务tips批中线任务号
 			JSONArray gridIds = TaskService.getInstance().getGridListByTaskId(task.getTaskId());
 			String wkt = GridUtils.grids2Wkt(gridIds);
-			//这里待联调，POI已经完成
 			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
 			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
 			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",taskId="+task.getTaskId()+",wkt="+wkt);
+			//自动创建采集子任务，范围=采集任务范围
+			Subtask subtask=new Subtask();
+			subtask.setName(task.getName());
+			subtask.setWorkKind(1);
+			subtask.setDescp("无任务转中自动创建");
+			subtask.setPlanStartDate(task.getPlanStartDate());
+			subtask.setPlanEndDate(task.getPlanEndDate());
+			subtask.setTaskId(task.getTaskId());
+			subtask.setType(0);
+			subtask.setStage(0);
+			subtask.setGridIds(task.getGridIds());
+			String subtaskwkt = GridUtils.grids2Wkt(JSONArray.fromObject(subtask.getGridIds()));
+			subtask.setGeometry(subtaskwkt);
+			SubtaskService.getInstance().createSubtaskWithSubtaskId(conn, subtask);
 			//无任务的poi批中线任务号	
 			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
 			//修改无任务转中操作状态为 1已转
@@ -3412,9 +3440,10 @@ public class TaskService {
 	
 	/**
 	 * 采集任务列表
+	 * @throws Exception 
 	 *   
 	 */
-	public List<Map<String, Object>> midCollectTaskList(){
+	public List<Map<String, Object>> midCollectTaskList() throws Exception{
 		Connection con = null;
 		try {
 			con = DBConnector.getInstance().getManConnection();
@@ -3468,10 +3497,63 @@ public class TaskService {
 		}catch(Exception e){
 			DbUtils.rollbackAndCloseQuietly(con);
 			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
+			throw e;
 		}finally{
 			DbUtils.commitAndCloseQuietly(con);
 		}
-		return null;
+	}
+	/**
+	 * 获取所有待发布的任务id的列表
+	 * 应用场景：任务发布-全选按钮
+	 * @param programId
+	 * @return
+	 */
+	public List<Integer> allDraftTask(int programId)  throws Exception{
+		Connection con = null;
+		try {
+			con = DBConnector.getInstance().getManConnection();
+			QueryRunner run = new QueryRunner();
+			
+			String selectSql = "SELECT TASK_ID"
+					+ "  FROM TASK"
+					+ " WHERE PROGRAM_ID = "+programId
+					+ "   AND TYPE IN (1, 2)"
+					+ "   AND STATUS = 2"
+					+ "   AND LATEST = 1"
+					+ "   AND GROUP_ID != 0"
+					+ " UNION ALL"
+					+ " SELECT TASK_ID"
+					+ "  FROM TASK"
+					+ " WHERE PROGRAM_ID = "+programId
+					+ "   AND TYPE = 0"
+					+ "   AND STATUS = 2"
+					+ "   AND LATEST = 1"
+					+ "   AND (WORK_KIND LIKE '|1|%' OR WORK_KIND LIKE '|0|1%')"
+					+ "   AND GROUP_ID != 0"
+					+ " UNION ALL"
+					+ " SELECT TASK_ID"
+					+ "  FROM TASK"
+					+ " WHERE PROGRAM_ID = "+programId
+					+ "   AND TYPE = 0"
+					+ "   AND STATUS = 2"
+					+ "   AND LATEST = 1"
+					+ "   AND WORK_KIND LIKE '|0|0%'"
+					+ "   AND GROUP_ID = 0";
+			
+			return run.query(con, selectSql, new ResultSetHandler<List<Integer>>(){
+				@Override
+				public List<Integer> handle(ResultSet rs) throws SQLException {
+					List<Integer> taskIds=new ArrayList<Integer>();
+					while(rs.next()){
+						taskIds.add(rs.getInt("TASK_ID"));
+					}
+					return taskIds;
+				}});
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(con);
+			log.error("获取采集任务列表失败，原因为：" + e.getMessage());
+			throw e;
+		}
 	}
 	
 }

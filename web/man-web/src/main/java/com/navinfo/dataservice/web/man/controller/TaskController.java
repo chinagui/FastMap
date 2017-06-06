@@ -453,7 +453,10 @@ public class TaskController extends BaseController {
 			return new ModelAndView("jsonView",exception(e));
 		}
 	}
-	
+	/**
+	 * @param request
+	 * @return
+	 */
 	@RequestMapping(value = "/task/wktByTaskId")
 	public ModelAndView queryWktByBlockId(HttpServletRequest request) {
 		try {
@@ -572,6 +575,28 @@ public class TaskController extends BaseController {
 			int taskId = dataJson.getInt("taskId");
 			TaskService.getInstance().batchMidTaskByTaskId(taskId);
 			return new ModelAndView("jsonView", success());
+		} catch (Exception e) {
+			return new ModelAndView("jsonView", exception(e));
+		}
+	}
+	
+	/**
+	 * 获取所有待发布的任务id的列表
+	 * 应用场景：任务发布-全选按钮
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/task/allDraftTask")
+	public ModelAndView allDraftTask(HttpServletRequest request) {
+		try {
+			JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
+			if(dataJson==null){
+				throw new IllegalArgumentException("parameter参数不能为空。");
+			}
+			
+			int programId = dataJson.getInt("programId");
+			List<Integer> taskIds=TaskService.getInstance().allDraftTask(programId);
+			return new ModelAndView("jsonView", success(taskIds));
 		} catch (Exception e) {
 			return new ModelAndView("jsonView", exception(e));
 		}

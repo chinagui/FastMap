@@ -287,9 +287,9 @@ public class ManApiImpl implements ManApi {
 
 
 	@Override
-	public Map<Integer, List<Integer>> getSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
+	public Map<Integer, List<Integer>> getOpendMultiSubtaskGridMappingByDbId(int dbId, int type) throws Exception {
 		// TODO Auto-generated method stub
-		return SubtaskService.getInstance().getSubtaskGridMappingByDbId(dbId,type);
+		return SubtaskService.getInstance().getOpendMultiSubtaskGridMappingByDbId(dbId,type);
 	}
 
 	@Override

@@ -130,11 +130,11 @@ public class DataPrepareService {
 		
 		Connection con = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
-					+ "where r.source_id = s.source_id and c.chain_code = s.source_id and r.result_id = '"+chainCode+"'";
+					+ "where r.source_id = s.source_id and c.chain_code = r.chain and s.chain =  '"+chainCode+"'";
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -177,16 +177,24 @@ public class DataPrepareService {
 	 * @param upFile
 	 * @throws Exception
 	 */
-	public void impTableDiff(HttpServletRequest request,String chainCode,
-			Long userId)throws Exception {
+	public void impTableDiff(HttpServletRequest request,Long userId)throws Exception {
 		log.info("start 文件表表差分导入");
+		
+//		JSONObject dataJson = InputStreamUtils.request2Parameter(request);
+//		if (dataJson == null) {
+//			throw new IllegalArgumentException("parameter参数不能为空。");
+//		}
+//		String chainCode = dataJson.getString("chainCode");
+		
 		//excel文件上传到服务器		
 		//保存文件
 		String filePath = SystemConfigFactory.getSystemConfig().getValue(
 					PropConstant.uploadPath)+"/dealership/fullChainExcel";  //服务器部署路径 /data/resources/upload
 		//String filePath ="D:/temp/dealership/fullChainExcel";
 		log.info("文件由本地上传到服务器指定位置"+filePath);
-		String localFile = InputStreamUtils.request2File(request, filePath);
+		JSONObject returnParam = InputStreamUtils.request2File(request, filePath);
+		String localFile=returnParam.getString("filePath");
+		String chainCode = returnParam.getString("chainCode");
 		log.info("文件已上传至"+localFile);
 		//导入表表差分结果excel
 		List<Map<String, Object>> sourceMaps=impDiffExcel(localFile);
@@ -500,10 +508,6 @@ public class DataPrepareService {
 							result.setOldNameEng( rs.getString("old_name_eng"));
 							result.setOldAddressEng( rs.getString("old_address_eng"));
 							result.setDealSrcDiff( rs.getString("deal_src_diff"));
-							/*result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));
-							result.put("", rs.getString(""));*/
 						
 						diffList.add(result);
 					}
@@ -529,17 +533,18 @@ public class DataPrepareService {
 		Connection conn = null;
 		try{
 
-//			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
-//
-//			long userId = tokenObj.getUserId();
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+
+			long userId = tokenObj.getUserId();
 			//获取代理店数据库连接
 			conn=DBConnector.getInstance().getDealershipConnection();
 			
 			//保存文件
-//			String filePath = SystemConfigFactory.getSystemConfig().getValue(
-//						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
-			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
-			String localZipFile = InputStreamUtils.request2File(request, filePath);
+			String filePath = SystemConfigFactory.getSystemConfig().getValue(
+						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
+//			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
+			String localZipFile=returnParam.getString("filePath");
 			log.info("load file");
 
 			//解压
@@ -591,10 +596,10 @@ public class DataPrepareService {
 								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
 							}
 							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 							}
 							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
+							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
 							}
 							
 

@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.lang.StringUtils;
-
 import com.navinfo.dataservice.commons.config.SystemConfigFactory;
 import com.navinfo.dataservice.commons.constant.PropConstant;
 import com.navinfo.dataservice.commons.util.DoubleUtil;
@@ -22,13 +20,10 @@ import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiAddress;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingplot;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChargingstation;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiChildren;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiContact;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiGasstation;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiHotel;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiName;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameFlag;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiNameTone;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiParking;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiPhoto;
 import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoiRestaurant;
@@ -42,7 +37,6 @@ import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.selector.custom.IxPoiSelector;
 import com.navinfo.navicommons.geo.computation.MeshUtils;
 import com.vividsolutions.jts.geom.Geometry;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.util.JSONUtils;
@@ -66,7 +60,15 @@ public class CollectorPoiImportor extends AbstractOperation {
 	protected List<ErrorLog> errLogs = new ArrayList<ErrorLog>();
 	protected CollectorUploadPoiSpRelation sps = new CollectorUploadPoiSpRelation();
 	protected CollectorUploadPoiPcRelation pcs = new CollectorUploadPoiPcRelation();
-	protected Map<Long,String> freshVerPois = new HashMap<Long,String>();
+	protected Set<Long> freshVerPois = new HashSet<Long>();
+	
+	//****zl 2017.06.06 ***
+	protected Map<Long,String> normalPois = new HashMap<Long,String>();
+	public Map<Long, String> getNormalPois() {
+		return normalPois;
+	}
+
+
 	protected Set<Long> noChangedPois = new HashSet<Long>();
 	//父子关系暂时不处理
 
@@ -95,7 +97,7 @@ public class CollectorPoiImportor extends AbstractOperation {
 		return pcs;
 	}
 	
-	public Map<Long,String> getFreshVerPois(){
+	public Set<Long> getFreshVerPois(){
 		return freshVerPois;
 	}
 	
@@ -173,12 +175,17 @@ public class CollectorPoiImportor extends AbstractOperation {
 					}
 					setPoiAttr(poiObj,entry.getValue());
 					//计算鲜度验证
-					if(poiObj.isFreshFlag()){
-						freshVerPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
-//						if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
-//							noChangedPois.add(poiObj.objPid());
-//						}
+					if(StringUtils.isEmpty(entry.getValue().getString("rawFields")) 
+							&& poiObj.isFreshFlag()){//鲜度验证
+						freshVerPois.add(poiObj.objPid());
+//							if((!poiObj.isSubrowChanged(IxPoiObj.IX_POI_PHOTO))&&(!poiObj.getMainrow().isChanged(IxPoi.POI_MEMO))){
+//								noChangedPois.add(poiObj.objPid());
+//							}
+					}else{//非鲜度验证
+						normalPois.put(poiObj.objPid(), entry.getValue().getString("rawFields"));
+						
 					}
+					
 					result.putObj(poiObj);
 					successNum++;
 					//同一关系处理

@@ -42,7 +42,7 @@ public class DataEditController extends BaseController {
 			}
 			String chainCode = dataJson.getString("chainCode");
 
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}
@@ -69,7 +69,7 @@ public class DataEditController extends BaseController {
 	@RequestMapping(value = "/startWork")
 	public ModelAndView queryDealerBrand(HttpServletRequest request) {
 		try {
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
       		JSONObject dataJson = JSONObject.fromObject(URLDecode(request.getParameter("parameter")));
 			if (dataJson == null) {
 				throw new IllegalArgumentException("parameter参数不能为空。");
@@ -100,8 +100,7 @@ public class DataEditController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 			int dealStatus = dataJson.getInt("dealStatus");
 
-
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}
@@ -155,7 +154,7 @@ public class DataEditController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}
@@ -191,7 +190,7 @@ public class DataEditController extends BaseController {
 		
 			conn = DBConnector.getInstance().getDealershipConnection();
 			
-			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));
 			}

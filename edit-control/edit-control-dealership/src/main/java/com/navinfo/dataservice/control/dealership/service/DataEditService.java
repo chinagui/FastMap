@@ -103,13 +103,15 @@ public class DataEditService {
 	 * @throws Exception
 	 */
 	public JSONArray startWorkService(String chainCode, Connection conn, long userId, int dealStatus) throws Exception {
+		DBConnector connector = DBConnector.getInstance();
 		// 待作业，待提交→内页录入作业3；已提交→出品9
 		int flowStatus = 3;
+		int checkErrorNum = 0;
 		if (dealStatus == 3 || dealStatus == 2)
 			flowStatus = 9;
 
 		String queryListSql = String.format(
-				"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF FROM IX_DEALERSHIP_RESULT WHERE USERID = %d AND WORKFLOW_STATUS = %d AND DEAL_STAUTS = %d AND CHAIN = %s FOR UPDATE NOWAIT;",
+				"SELECT RESULT_ID,NAME,KIND_CODE,WORKFLOW_STATUS,DEAL_SRC_DIFF,REGION_ID FROM IX_DEALERSHIP_RESULT WHERE USER_ID = %d AND WORKFLOW_STATUS = %d AND DEAL_STATUS = %d AND CHAIN = '%s'",
 				userId, flowStatus, dealStatus, chainCode);
 		List<Map<String, Object>> resultCol = ExecuteQueryForDetail(queryListSql, conn);
 
@@ -124,11 +126,15 @@ public class DataEditService {
 			obj.put("dealSrcDiff", item.get("DEAL_SRC_DIFF"));
 
 			// TODO:checkErrorNum需要计算
-			String queryPoi = String.format(
-					"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_STATUS = %d",
-					item.get("RESULT_ID"), 2);
-			String poiPid = run.queryForString(conn, queryPoi);
-			obj.put("checkErrorNum", GetCheckResultCount(poiPid, conn));
+			if (dealStatus == 2) {
+				String queryPoi = String.format(
+						"SELECT CFM_POI_NUM FROM IX_DEALERSHIP_RESULT WHERE RESULT_ID = %d AND CFM_IS_ADOPTED = %d",
+						item.get("RESULT_ID"), 2);
+				String poiPid = run.queryForString(conn, queryPoi);
+				Connection conPoi = connector.getConnectionById((Integer)item.get("REGION_ID"));
+				checkErrorNum = GetCheckResultCount(poiPid, conPoi);
+			}
+			obj.put("checkErrorNum", checkErrorNum);
 			result.add(obj);
 		}
 		return result;
@@ -153,6 +159,9 @@ public class DataEditService {
 		Map<Integer, IxDealershipResult> dealership = IxDealershipResultSelector.getByResultIds(conn, resultIds);
 		IxDealershipResult corresDealership = dealership.get(resultId);
 
+		if (corresDealership == null)
+			return null;
+
 		// dealership_result中最匹配的五个poi
 		List<String> matchPoiNums = getMatchPoiNum(corresDealership);
 		List<IxPoi> matchPois = new ArrayList<>();
@@ -164,16 +173,19 @@ public class DataEditService {
 		// dealership_source中是否已存在的cfm_poi_num
 		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOUORCE WHERE CFM_POI_NUM IN (%s)",
 				StringUtils.join(matchPoiNums, ','));
-		List<Object> adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
+		List<Object> adoptedPoiNum = new ArrayList<>();
+		if (matchPoiNums.size() != 0) {
+			adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
+		}
 
 		for (Object poiNum : matchPoiNums) {
-			String queryPoiPid=String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s", (String)poiNum);
-			int poiPid=run.queryForInt(connPoi, queryPoiPid);
+			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %d", (Integer) poiNum);
+			int poiPid = run.queryForInt(connPoi, queryPoiPid);
 			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
 			matchPois.add(poi);
 		}
-		
-		JSONObject result=componentJsonData(corresDealership,matchPois,adoptedPoiNum,connPoi,conn);
+
+		JSONObject result = componentJsonData(corresDealership, matchPois, adoptedPoiNum, connPoi, conn);
 		return result;
 	}
 
@@ -260,11 +272,21 @@ public class DataEditService {
 	private List<String> getMatchPoiNum(IxDealershipResult corresDealership) {
 		List<String> result = new ArrayList<>();
 
-		result.add(corresDealership.getPoiNum1());
-		result.add(corresDealership.getPoiNum2());
-		result.add(corresDealership.getPoiNum3());
-		result.add(corresDealership.getPoiNum4());
-		result.add(corresDealership.getPoiNum5());
+		if (!corresDealership.getPoiNum1().isEmpty()) {
+			result.add(corresDealership.getPoiNum1());
+		}
+		if (!corresDealership.getPoiNum2().isEmpty()) {
+			result.add(corresDealership.getPoiNum2());
+		}
+		if (!corresDealership.getPoiNum3().isEmpty()) {
+			result.add(corresDealership.getPoiNum3());
+		}
+		if (!corresDealership.getPoiNum4().isEmpty()) {
+			result.add(corresDealership.getPoiNum4());
+		}
+		if (!corresDealership.getPoiNum5().isEmpty()) {
+			result.add(corresDealership.getPoiNum5());
+		}
 
 		return result;
 	}
@@ -294,6 +316,7 @@ public class DataEditService {
 				detail.put("KIND_CODE", resultSet.getString(3));
 				detail.put("WORKFLOW_STATUS", resultSet.getInt(4));
 				detail.put("DEAL_SRC_DIFF", resultSet.getInt(5));
+				detail.put("REGION_ID", resultSet.getInt(6));
 
 				result.add(detail);
 			}

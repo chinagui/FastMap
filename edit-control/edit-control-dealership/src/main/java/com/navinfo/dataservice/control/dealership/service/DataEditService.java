@@ -26,9 +26,9 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.upload.EditJson;
 import com.navinfo.dataservice.bizcommons.datasource.DBConnector;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
 import com.navinfo.dataservice.dao.glm.selector.poi.index.IxPoiSelector;
 import com.navinfo.dataservice.dao.log.LogReader;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.dataservice.dao.plus.operation.OperationSegment;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
@@ -171,15 +171,15 @@ public class DataEditService {
 		IxPoiSelector poiSelector = new IxPoiSelector(connPoi);
 
 		// dealership_source中是否已存在的cfm_poi_num
-		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOUORCE WHERE CFM_POI_NUM IN (%s)",
+		String querySourceSql = String.format("SELECT CFM_POI_NUM FROM IX_DEALERSHIP_SOURCE WHERE CFM_POI_NUM IN (%s)",
 				StringUtils.join(matchPoiNums, ','));
 		List<Object> adoptedPoiNum = new ArrayList<>();
 		if (matchPoiNums.size() != 0) {
 			adoptedPoiNum = ExecuteQuery(querySourceSql, conn);
 		}
 
-		for (Object poiNum : matchPoiNums) {
-			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %d", (Integer) poiNum);
+		for (String poiNum : matchPoiNums) {
+			String queryPoiPid = String.format("SELECT PID FROM IX_POI WHERE POI_NUM = %s", poiNum);
 			int poiPid = run.queryForInt(connPoi, queryPoiPid);
 			IxPoi poi = (IxPoi) poiSelector.loadById(poiPid, false);
 			matchPois.add(poi);
@@ -210,7 +210,7 @@ public class DataEditService {
 		dealershipJson.put("resultId", dealership.getResultId());
 		dealershipJson.put("dbId", dealership.getRegionId());
 
-		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOUORCE WHERE SOURCE_ID = %d",
+		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
 		String sourceCfmMemo = run.queryForString(connDealership, sourcesql);
 		dealershipJson.put("sourceCfmMemo", sourceCfmMemo);
@@ -242,8 +242,7 @@ public class DataEditService {
 					poi.getPid());
 
 			JSONObject obj = new JSONObject();
-			int value = 0;
-			obj.put("poiNum", value);
+			obj.put("poiNum",poi.getPoiNum());
 			obj.put("pid", poi.getPid());
 			obj.put("name", run.queryForString(conn, poiName_1));
 			obj.put("nameAlias", run.queryForString(conn, poiName_2));
@@ -255,6 +254,7 @@ public class DataEditService {
 			obj.put("telOther", run.queryForString(conn, poiContact_other));
 			obj.put("telSpecial", run.queryForString(conn, poiContact_special));
 			obj.put("postCode", poi.getPostCode());
+			poiJson.add(obj);
 		}
 		result.put("pois", poiJson);
 
@@ -272,20 +272,20 @@ public class DataEditService {
 	private List<String> getMatchPoiNum(IxDealershipResult corresDealership) {
 		List<String> result = new ArrayList<>();
 
-		if (!corresDealership.getPoiNum1().isEmpty()) {
-			result.add(corresDealership.getPoiNum1());
+		if (corresDealership.getPoiNum1() != null) {
+			result.add("'" + corresDealership.getPoiNum1() + "'");
 		}
-		if (!corresDealership.getPoiNum2().isEmpty()) {
-			result.add(corresDealership.getPoiNum2());
+		if (corresDealership.getPoiNum2() != null) {
+			result.add("'" + corresDealership.getPoiNum2() + "'");
 		}
-		if (!corresDealership.getPoiNum3().isEmpty()) {
-			result.add(corresDealership.getPoiNum3());
+		if (corresDealership.getPoiNum3() != null) {
+			result.add("'" + corresDealership.getPoiNum3() + "'");
 		}
-		if (!corresDealership.getPoiNum4().isEmpty()) {
-			result.add(corresDealership.getPoiNum4());
+		if (corresDealership.getPoiNum4() != null) {
+			result.add("'" + corresDealership.getPoiNum4() + "'");
 		}
-		if (!corresDealership.getPoiNum5().isEmpty()) {
-			result.add(corresDealership.getPoiNum5());
+		if (corresDealership.getPoiNum5() != null) {
+			result.add("'" + corresDealership.getPoiNum5() + "'");
 		}
 
 		return result;

@@ -405,11 +405,13 @@ public class TipsRequestParam {
                 stages.add(2);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             } else if ("m".equals(mdFlag)) {//月编
                 stages.add(1);
                 stages.add(3);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             }
         }
 
@@ -462,19 +464,26 @@ public class TipsRequestParam {
                         webBuilder.append(" AND stage:(1 5 6)");
                         webBuilder.append(")");
                         //接边Tips
-                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
+                        
+                        //待质检的tips
+                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0)");
+                        
+                        webBuilder.append(	"))");
+                        
+                      
                     }
                     if (workStatus.contains(1)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:1)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:1)");
                     }
                     if (workStatus.contains(2)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:2)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:2)");
                     }
                 }
 

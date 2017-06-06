@@ -252,10 +252,10 @@ public class ColumnCoreControl {
 			
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
+			int dbId = subtask.getDbId();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
-			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			IxPoiColumnStatusSelector selector = new IxPoiColumnStatusSelector(conn);
 			// 获取未提交数据的pid以及总数
@@ -338,10 +338,10 @@ public class ColumnCoreControl {
 			ManApi apiService = (ManApi) ApplicationContextUtil.getBean("manApi");
 			Subtask subtask = apiService.queryBySubtaskId(taskId);
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
+			int dbId = subtask.getDbId();
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(taskId, "2", isQuality);
 			}
-			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 
 			IxPoiColumnStatusSelector ixPoiColumnStatusSelector = new IxPoiColumnStatusSelector(conn);
@@ -533,15 +533,15 @@ public class ColumnCoreControl {
 			
 			Subtask subtask = apiService.queryBySubtaskId(subtaskId);
 			Integer isQuality = subtask.getIsQuality()==null?0:subtask.getIsQuality();
+			if (subtask == null) {
+				throw new Exception("subtaskid未找到数据");
+			}
+			int dbId = subtask.getDbId();
+			
 			if(isQuality==1){
 				subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", isQuality);
 			}
 			
-			if (subtask == null) {
-				throw new Exception("subtaskid未找到数据");
-			}
-			
-			int dbId = subtask.getDbId();
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
@@ -615,6 +615,7 @@ public class ColumnCoreControl {
 			Integer pid = jsonReq.containsKey("pid")?jsonReq.getInt("pid"):null;
 			String firstWorkItem = jsonReq.containsKey("firstWorkItem")?jsonReq.getString("firstWorkItem"):null;
 			String secondWorkItem = jsonReq.containsKey("secondWorkItem")?jsonReq.getString("secondWorkItem"):null;
+			String nameId = jsonReq.containsKey("nameId")?jsonReq.getString("nameId"):null;
 			
 			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", 1);
 			
@@ -626,7 +627,8 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONArray datas = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem);
+			
+			JSONArray datas = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,nameId);
 			
 			return datas;
 		} catch (Exception e) {
@@ -657,8 +659,8 @@ public class ColumnCoreControl {
 			String problemDesc  = jsonReq.getString("problemDesc");
 			String techGuidance = jsonReq.getString("techGuidance");
 			String techScheme = jsonReq.getString("techScheme");
-			
-			
+			String nameId = jsonReq.containsKey("nameId")?jsonReq.getString("nameId"):null;
+			//获取查询条件信息
 			Subtask subtask = apiService.queryBySubTaskIdAndIsQuality(subtaskId, "2", 1);
 			
 			if (subtask == null) {
@@ -669,8 +671,17 @@ public class ColumnCoreControl {
 			conn = DBConnector.getInstance().getConnectionById(dbId);
 			
 			IxPoiColumnStatusSelector columnStatusSelector = new IxPoiColumnStatusSelector(conn);
-			JSONObject data = columnStatusSelector.saveQcProblem(pid, firstWorkItem, secondWorkItem, errorType, 
-					errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId());
+			JSONObject data = null;
+			
+			if(StringUtils.isBlank(nameId)){//非拼音类
+				data = columnStatusSelector.saveQcProblem(pid, firstWorkItem, secondWorkItem, errorType, 
+						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId());
+			}else{
+				JSONArray jsonArray = columnStatusSelector.queryQcProblem(subtask.getSubtaskId(), pid, firstWorkItem, secondWorkItem,null);
+				JSONObject jsonObject = (JSONObject) jsonArray.get(0);
+				data = columnStatusSelector.saveQcProblemWithPinYin(pid, firstWorkItem, secondWorkItem, errorType, 
+						errorLevel, problemDesc, techGuidance, techScheme, subtask.getSubtaskId(),jsonObject,nameId);
+			}
 			
 			return data;
 		} catch (Exception e) {

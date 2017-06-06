@@ -17,6 +17,7 @@ import org.apache.hadoop.hbase.client.Table;
 import org.apache.log4j.Logger;
 
 import com.navinfo.dataservice.api.man.iface.ManApi;
+import com.navinfo.dataservice.api.man.model.Subtask;
 import com.navinfo.dataservice.commons.constant.HBaseConstant;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.util.StringUtils;
@@ -73,6 +74,16 @@ public class TipsExtract {
 			ManApi manApi = (ManApi) ApplicationContextUtil.getBean("manApi");
 			
 			Map<String,String> taskInfoMap=manApi.getCommonSubtaskByQualitySubtask(checkTaskId);
+			Integer workTaskId=Integer.valueOf(taskInfoMap.get("subtaskId"));//作业任务号
+			//1.判断作业任务是否关闭
+			
+			Subtask  subTask=manApi.queryBySubtaskId(workTaskId);
+			int subTaskStatus=subTask.getStatus();//0:关闭  ；1开启
+			
+			if(subTaskStatus!=0){
+				throw new IllegalArgumentException("日编子任务未关闭，不能进行抽取质检。");
+			}
+			
 			
 			/**
 			 * 通过质检子任务id获取常规子任务相关信息。用于编辑过程中tips质检子任务
@@ -89,7 +100,7 @@ public class TipsExtract {
 			 * @throws Exception 
 			 */
 			
-			Integer workTaskId=Integer.valueOf(taskInfoMap.get("subtaskId"));//作业任务号
+			
 			Integer workerId=Integer.valueOf(taskInfoMap.get("exeUserId"));//作业员编号
 			String workerName=taskInfoMap.get("exeUserName");//作业员姓名
 			String groupName=taskInfoMap.get("groupName");//组名

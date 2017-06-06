@@ -100,8 +100,10 @@ public class FMBAT20188 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		if(isParent){
+			System.out.println("--------FMBAT20188父触发批处理开始-----------");
 			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230218")
 					||poi.getHisOpType().equals(OperationType.DELETE)) {
+				System.out.println("--------FMBAT20188父不符合触发条件-----------");
 				return;
 			}
 	
@@ -109,11 +111,13 @@ public class FMBAT20188 extends BasicBatchRule {
 			
 			List<IxPoiChargingstation> chargingStationList = poiObj.getIxPoiChargingstations();
 			if (chargingStationList==null||chargingStationList.isEmpty()) {
+				System.out.println("--------FMBAT20188父表为空-----------");
 				return;
 			}
 			IxPoiChargingstation chargingStation = chargingStationList.get(0);
 			String serviceProv = chargingStation.getServiceProv();
 			if (serviceProv == null || serviceList.contains(serviceProv) || serviceProv.length()!=4) {
+				System.out.println("--------FMBAT20188 serviceProv不符合触发条件-----------");
 				return;
 			}
 			
@@ -123,11 +127,14 @@ public class FMBAT20188 extends BasicBatchRule {
 				IxPoi childPoi = (IxPoi)  child.getMainrow();
 				batchChildOpenType(child, childPoi, serviceProv);
 			}
+			System.out.println("--------FMBAT20188父触发批处理完成-----------");
 		
 		}
 		if(isChild){
+			System.out.println("--------FMBAT20188子触发批处理开始-----------");
 			if (!childPidParentPid.containsKey(poi.getPid()) || !poi.getKindCode().equals("230227")
 					||poi.getHisOpType().equals(OperationType.DELETE)) {
+				System.out.println("--------FMBAT20188子不符合触发条件-----------");
 				return;
 			}
 
@@ -137,18 +144,22 @@ public class FMBAT20188 extends BasicBatchRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (!parentPoi.getKindCode().equals("230218") || parentPoi.getHisOpType().equals(OperationType.DELETE)) {
+				System.out.println("--------FMBAT20188 子对应的父不符合触发条件-----------");
 				return;
 			}
 			List<IxPoiChargingstation> chargingStationList = parentPoiObj.getIxPoiChargingstations();
 			if (chargingStationList==null||chargingStationList.isEmpty()) {
+				System.out.println("--------FMBAT20188父表为空-----------");
 				return;
 			}
 			IxPoiChargingstation chargingStation = chargingStationList.get(0);
 			String serviceProv = chargingStation.getServiceProv();
 			if (serviceProv == null || serviceList.contains(serviceProv)|| serviceProv.length()!=4) {
+				System.out.println("--------FMBAT20188 serviceProv不符合触发条件-----------");
 				return;
 			}
 			batchChildOpenType(poiObj, poi, serviceProv);
+			System.out.println("--------FMBAT20188子触发批处理完成-----------");
 		}
 		
 	}

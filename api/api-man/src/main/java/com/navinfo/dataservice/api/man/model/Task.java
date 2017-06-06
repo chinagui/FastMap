@@ -48,19 +48,8 @@ public class Task implements Serializable{
 	private String workProperty ;
 	
 	private String workKind;
-	
-	//private String workResult;
-	
-
-//	public String getWorkResult() {
-//		return workResult;
-//	}
-//
-//
-//	public void setWorkResult(String workResult) {
-//		this.workResult = workResult;
-//	}
-
+	private String overdueReason;
+	private String overdueOtherReason;
 
 	public String getWorkKind() {
 		return workKind;
@@ -609,6 +598,22 @@ public class Task implements Serializable{
 
 	public void setAdminName(String adminName) {
 		this.adminName = adminName;
+	}
+
+	public String getOverdueReason() {
+		return overdueReason;
+	}
+
+	public void setOverdueReason(String overdueReason) {
+		this.overdueReason = overdueReason;
+	}
+
+	public String getOverdueOtherReason() {
+		return overdueOtherReason;
+	}
+
+	public void setOverdueOtherReason(String overdueOtherReason) {
+		this.overdueOtherReason = overdueOtherReason;
 	}
 
 }

@@ -8,8 +8,10 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.log4j.Logger;
@@ -567,6 +569,75 @@ public class IxPoiColumnStatusSelector extends AbstractSelector {
 		}
 
 	}
+	/**
+	 * 查詢POI问题列表
+	 * 
+	 * @param pids
+	 * @param firstWorkItem
+	 * @param tbNm
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<Integer,JSONObject> queryIsProblemsByPids(List<Integer> pids,String secondWorkItem,int comSubTaskId) throws Exception {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("SELECT P.PID,P.IS_PROBLEM");
+		sb.append(" FROM COLUMN_QC_PROBLEM P ");
+		sb.append(" WHERE P.SECOND_WORK_ITEM = '"+secondWorkItem+"' ");
+		sb.append(" AND P.PID IN (");
+		String temp = "";
+		for (int pid:pids) {
+			sb.append(temp);
+			sb.append(pid);
+			temp = ",";
+		}
+		sb.append(")");
+		sb.append(" AND P.SUBTASK_ID = "+comSubTaskId+" ");
+		sb.append(" AND P.IS_VALID=0 ");
+
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+
+		Map<Integer,JSONObject> isProblemData = new HashMap<Integer,JSONObject>();
+		try {
+			pstmt = conn.prepareStatement(sb.toString());
+
+			resultSet = pstmt.executeQuery();
+			while (resultSet.next()) {
+				JSONObject value=new JSONObject();
+				
+				if(secondWorkItem.equals("namePinyin")){
+					value.put("py",string2json(resultSet.getString("IS_PROBLEM")));	
+				}else{
+					value.put("other",resultSet.getString("IS_PROBLEM"));	
+				}
+				
+				isProblemData.put(resultSet.getInt("PID"), value);
+			}
+
+			return isProblemData;
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DbUtils.closeQuietly(resultSet);
+			DbUtils.closeQuietly(pstmt);
+		}
+
+	}
+	private JSONObject string2json(String data){
+		JSONObject newdata = new JSONObject();
+		String[] strs=data.split("\\|");
+		for(String str:strs){
+			JSONObject js =JSONObject.fromObject("{\""+str.replace(":", "\":\"")+"\"}");
+			Iterator<String> keys = js.keys();  
+	        while (keys.hasNext()) {  
+				String key=(String) keys.next();
+				newdata.put(key, js.get(key));
+			}
+		}
+
+		return newdata;
+	}
 
 	/**
 	 * 通过rowId获取一级作业项状态和作业标记 用于精编查询
@@ -944,7 +1015,12 @@ public List<Integer> getPIdForSubmit(String firstWorkItem,String secondWorkItem,
 			sb.append(" where s.work_item_id = c.work_item_id");
 			sb.append("   and s.work_item_id != 'FM-YW-20-017'");
 			sb.append("   and s.pid = p.pid");
-			sb.append("   and s.qc_flag = "+isQuality);//0 常规 1质检
+			if(isQuality==0){//常规任务
+				sb.append("	AND s.COMMON_HANDLER = "+userId);
+			}else if(isQuality==1){//质检任务
+				sb.append("	AND s.COMMON_HANDLER <> "+userId);
+				sb.append("	AND s.QC_FLAG = 1");
+			}
 			sb.append("   and sdo_within_distance(p.geometry,sdo_geometry(:1,8307),'mask=anyinteract') = 'TRUE'");
 			sb.append("   and ((c.first_work_item in ('poi_name', 'poi_address') and");
 			sb.append("       s.first_work_status = 1) or");

@@ -3364,15 +3364,15 @@ public class TaskService {
 	 * @param 
 	 * @author songhe
 	 */
-	private void batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID, String wkt) throws SQLException {
+	private int batchNoTaskPoiMidTaskId(Connection dailyConn, int taskID,int subtaskId, String wkt) throws SQLException {
 		String selectPid = "select pes.pid"
 				 + " from ix_poi ip, poi_edit_status pes"
 				 + " where ip.pid = pes.pid"
 				 + " and pes.status ！= 0"
 				 + " AND sdo_within_distance(ip.geometry, sdo_geometry('"+ wkt + "', 8307), 'mask=anyinteract') = 'TRUE' and pes.medium_task_id=0";
-		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ " where pid in ("+selectPid+")";
+		String updateSql = "update poi_edit_status set medium_task_id= "+taskID+ ",medium_subtask_id="+subtaskId+ " where pid in ("+selectPid+")";
 		QueryRunner run=new QueryRunner();
-		run.execute(dailyConn, updateSql);
+		return run.update(dailyConn, updateSql);
 	}
 	
 	
@@ -3392,7 +3392,7 @@ public class TaskService {
 			log.info("无任务的tips批中线任务号:taskId="+task.getTaskId()+",wkt="+wkt);
 			FccApi api=(FccApi) ApplicationContextUtil.getBean("fccApi");
 			api.batchNoTaskDataByMidTask(wkt, task.getTaskId());
-			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",taskId="+task.getTaskId()+",wkt="+wkt);
+			
 			//自动创建采集子任务，范围=采集任务范围
 			Subtask subtask=new Subtask();
 			subtask.setName(task.getName());
@@ -3406,9 +3406,14 @@ public class TaskService {
 			subtask.setGridIds(task.getGridIds());
 			String subtaskwkt = GridUtils.grids2Wkt(JSONArray.fromObject(subtask.getGridIds()));
 			subtask.setGeometry(subtaskwkt);
-			SubtaskService.getInstance().createSubtaskWithSubtaskId(conn, subtask);
+			int subtaskId=SubtaskService.getInstance().createSubtaskWithSubtaskId(conn, subtask);
+			log.info("无任务的poi批中线任务号:dbid="+region.getDailyDbId()+",subtaskId="+subtaskId+",taskId="+task.getTaskId()+",wkt="+wkt);
 			//无任务的poi批中线任务号	
-			batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(), wkt);
+			int updateNum=batchNoTaskPoiMidTaskId(dailyConn, task.getTaskId(),subtaskId, wkt);
+			if(updateNum==0){
+				log.info("该中线任务范围内没有poi成果，所建采集子任务删除：subtaskId="+subtaskId+",task="+task.getTaskId());
+				SubtaskService.getInstance().delete(conn,subtaskId);
+			}
 			//修改无任务转中操作状态为 1已转
 			StaticsOperation.changeTaskConvertFlagToOK(conn, task.getTaskId());
 		}catch(Exception e){

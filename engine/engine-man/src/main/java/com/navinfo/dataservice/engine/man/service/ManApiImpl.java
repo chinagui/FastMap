@@ -341,5 +341,23 @@ public class ManApiImpl implements ManApi {
 		return CpRegionProvinceService.getInstance().getProvinceRegionIdMap();
 	}
 
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#listDayDbIds()
+	 */
+	@Override
+	public List<Integer> listDayDbIds() throws Exception {
+		// TODO Auto-generated method stub
+		return RegionService.getInstance().listDayDbIds();
+	}
+
+	/* (non-Javadoc)
+	 * @see com.navinfo.dataservice.api.man.iface.ManApi#getUsers()
+	 */
+	@Override
+	public Map<Integer, String> getUsers() throws Exception {
+		// TODO Auto-generated method stub
+		return UserInfoService.getInstance().getUsers();
+	}
+
 }
 

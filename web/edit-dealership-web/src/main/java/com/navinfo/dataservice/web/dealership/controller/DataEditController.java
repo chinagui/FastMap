@@ -100,7 +100,6 @@ public class DataEditController extends BaseController {
 			String chainCode = dataJson.getString("chainCode");
 			int dealStatus = dataJson.getInt("dealStatus");
 
-
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");
 			if(tokenObj == null){
 				return new ModelAndView("jsonView", exception("tocken无效"));

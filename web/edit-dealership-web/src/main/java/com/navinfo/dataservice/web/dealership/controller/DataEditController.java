@@ -94,7 +94,7 @@ public class DataEditController extends BaseController {
 				throw new IllegalArgumentException("parameter参数不能为空。");
 			}
 			String chainCode = dataJson.getString("chainCode");
-			int dealStatus = dataJson.getInt("dealSatus");
+			int dealStatus = dataJson.getInt("dealStatus");
 
 
 			AccessToken tokenObj = (AccessToken) request.getAttribute("token");

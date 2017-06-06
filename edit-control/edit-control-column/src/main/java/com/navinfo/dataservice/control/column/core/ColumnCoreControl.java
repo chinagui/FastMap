@@ -274,8 +274,10 @@ public class ColumnCoreControl {
 			//获取数据详细字段
 			JSONObject classifyRules= selector.queryClassifyByPidSecondWorkItem(pidList,secondWorkItem,status,userId,isQuality);
 			JSONObject ckRules= selector.queryCKLogByPidfirstWorkItem(pidList,firstWordItem,secondWorkItem,"IX_POI");
+			Map<Integer,JSONObject> isProblems=new HashMap<Integer,JSONObject>();
+			if(isQuality==1&&status==2){isProblems= selector.queryIsProblemsByPids(pidList,secondWorkItem,subtask.getSubtaskId());}
 			IxPoiSearch poiSearch = new IxPoiSearch(conn);
-			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules);
+			datas = poiSearch.searchColumnPoiByPid(firstWordItem, secondWorkItem, pidList,userId,status,classifyRules,ckRules,isProblems);
 
 			result.put("total", total);
 			result.put("rows", datas);

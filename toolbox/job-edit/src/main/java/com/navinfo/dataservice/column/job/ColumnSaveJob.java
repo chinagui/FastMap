@@ -6,8 +6,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.sql.Timestamp;
@@ -41,6 +43,7 @@ import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportor;
 import com.navinfo.dataservice.engine.editplus.operation.imp.DefaultObjImportorCommand;
 import com.navinfo.dataservice.jobframework.exception.JobException;
 import com.navinfo.dataservice.jobframework.runjob.AbstractJob;
+import com.navinfo.navicommons.database.sql.DBUtils;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -157,6 +160,9 @@ public class ColumnSaveJob extends AbstractJob {
 			//更新质检问题表
 			if(isQuality==1){
 				updateColumnQcProblems(pidList,conn,comSubTaskId,firstWorkItem,secondWorkItem,userId);
+				if(secondWorkItem.equals("namePinyin")){
+					updatePYIsProblem(pidList,conn,comSubTaskId);
+				}
 			}
 
 			// 检查
@@ -296,17 +302,26 @@ public class ColumnSaveJob extends AbstractJob {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append("                  MERGE INTO");
-		sb.append("                  COLUMN_QC_PROBLEM");
-		sb.append("                  T");
-		sb.append("                  USING (SELECT CASE WHEN CP.OLD_VALUE =tab.NAMENEWVLAUE   THEN 0 ELSE 1 END IS_PROBLEM,CP.ID,tab.WORK_ITEM_ID, tab.NAMENEWVLAUE, tab.ADDRNEWVLAUE,TAB.PID");
+		sb.append("                  COLUMN_QC_PROBLEM T");
+		sb.append("                  USING (SELECT CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN 0 ");	
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND 'namePinyin' = '"+secondWorkItem+"' THEN CP.IS_PROBLEM ");
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM IN (1,2) THEN CP.IS_PROBLEM ");
+		sb.append("                                     WHEN CP.OLD_VALUE <>tab.NEWVLAUE AND CP.IS_PROBLEM NOT IN (1,2) THEN 1 ELSE CP.IS_PROBLEM END IS_PROBLEM,");
+		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_type END errorType,");
+		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.error_level END errorLevel,");
+		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.problem_desc END problemDesc,");
+		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.tech_guidance END techDuidance,");
+		sb.append("                                CASE WHEN CP.OLD_VALUE =tab.NEWVLAUE THEN '' ELSE CP.tech_scheme END techScheme,");
+		sb.append("                                CP.ID,tab.WORK_ITEM_ID, tab.NEWVLAUE,TAB.PID");
 		sb.append("                    FROM COLUMN_QC_PROBLEM CP,");
-		sb.append("                    (SELECT WK.PID, WK.WORK_ITEM_ID, NM.NAMENEWVLAUE, ADR.ADDRNEWVLAUE");
+		sb.append("                    (SELECT  WK.PID, CASE WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN  NM.NAMENEWVLAUE ");
+		sb.append("                                          WHEN 'poi_name' = '"+firstWorkItem+"' THEN  NM.NAMENEWVLAUE ELSE ADR.ADDRNEWVLAUE END NEWVLAUE");
 		sb.append("                    FROM (SELECT CASE");
 		sb.append("                                   WHEN 'poi_englishname' = '"+firstWorkItem+"' THEN");
-		sb.append("                                    LISTAGG(N.POI_PID || ':' || N.NAME || ',' || F.FLAG_CODE,");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME || ',' || F.FLAG_CODE,");
 		sb.append("                                            '|') WITHIN GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                   ELSE");
-		sb.append("                                    LISTAGG(N.POI_PID || ':' || N.NAME, '|') WITHIN");
+		sb.append("                                    LISTAGG(N.NAME_ID || ':' || N.NAME, '|') WITHIN");
 		sb.append("                                    GROUP(ORDER BY N.NAME_ID)");
 		sb.append("                                 END NAMENEWVLAUE,");
 		sb.append("                                 N.POI_PID PID");
@@ -357,7 +372,8 @@ public class ColumnSaveJob extends AbstractJob {
 		sb.append("                     AND CP.IS_VALID = 0) TP");
 		sb.append("                  ON (T.ID = TP.id)");
 		sb.append("                  WHEN MATCHED THEN");
-		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.new_value=TP.NAMENEWVLAUE,T.qc_time=:1,T.qc_worker="+userId);
+		sb.append("                    UPDATE SET T.IS_PROBLEM =TP.IS_PROBLEM,T.new_value=TP.NEWVLAUE,T.qc_time=:1,T.qc_worker="+userId+",T.error_type=TP.errorType,");
+		sb.append("                               T.error_level =TP.errorLevel,T.problem_desc =TP.problemDesc,T.tech_guidance =TP.techDuidance,T.tech_scheme =TP.techScheme");
 
 		
 		PreparedStatement pstmt = null;
@@ -374,6 +390,160 @@ public class ColumnSaveJob extends AbstractJob {
 
 		}
 	}
+	/**
+	 * 更新质检问题表,拼音进行特殊处理；
+	 * @param rowIdList
+	 * @param conn
+	 * @throws Exception
+	 */
+	public void updatePYIsProblem(List<Integer> pidList,Connection conn,int comSubTaskId) throws Exception {
+
+		PreparedStatement pstmt = null;
+		try {
+			
+			Map<String,JSONObject> result =executeQuery(pidList,conn,comSubTaskId);
+			for(Integer pid:pidList){
+				JSONObject data = result.get(String.valueOf(pid));
+				JSONObject newData=dealFields(data);
+				executeUpdate(newData,pid,conn,comSubTaskId);
+			}
+	
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	private JSONObject string2json(String data){
+		JSONObject newdata = new JSONObject();
+		String[] strs=data.split("\\|");
+		for(String str:strs){
+			JSONObject js =JSONObject.fromObject("{\""+str.replace(":", "\":\"")+"\"}");
+			Iterator<String> keys = js.keys();  
+	        while (keys.hasNext()) {  
+				String key=(String) keys.next();
+				newdata.put(key, js.get(key));
+			}
+		}
+
+		return newdata;
+	}
+	private String json2string(JSONObject js){
+		String newdata = "";
+		Iterator<String> keys = js.keys();  
+		while(keys.hasNext()){
+			String key=(String) keys.next();
+			String str=key+":"+js.getString(key);
+			newdata=newdata+"|"+str;
+		}
+		return newdata;
+	}
+	
+	private JSONObject dealFields(JSONObject data){
+		JSONObject newdata = new JSONObject();
+		List<String> newValue=Arrays.asList(((String) data.get("newValue")).split("\\|"));
+		List<String> oldValue=Arrays.asList(((String) data.get("oldValue")).split("\\|"));
+		
+		JSONObject errorType=string2json((String) data.get("errorType"));
+		JSONObject errorLevel=string2json((String) data.get("errorLevel"));
+		JSONObject problemDesc=string2json((String) data.get("problemDesc"));
+		JSONObject techDuidance=string2json((String) data.get("techDuidance"));
+		JSONObject techScheme=string2json((String) data.get("techScheme"));
+		JSONObject isProblem=string2json((String) data.get("isProblem"));
+
+		//遍历newValue：
+		//1、如果在oldValue中存在，且isProblem中值不等于0，则改为0。且删除其它五个字段中该名称对应的值。
+		//2、如果在oldValue中不存在，且isProblem中值等于0，则改为1。
+		for(String nv:newValue){
+			String nameId=nv.substring(0,nv.indexOf(":"));
+			if(oldValue.contains(nv)){
+				if(isProblem.containsKey(nameId)){
+					if(!isProblem.get(nameId).equals("0")){
+						isProblem.put(nameId, "0");
+						errorType.remove(nameId);
+						errorLevel.remove(nameId);
+						problemDesc.remove(nameId);
+						techDuidance.remove(nameId);
+						techScheme.remove(nameId);
+					}
+				}else{isProblem.put(nameId, "0");}
+			}else{
+				if(isProblem.containsKey(nameId)){
+					if(isProblem.get(nameId).equals("0")){isProblem.put(nameId, "1");}
+				}else{isProblem.put(nameId, "1");}
+			}
+		}
+		//更新
+		newdata.put("errorType", json2string(errorType));
+		newdata.put("errorLevel", json2string(errorLevel));
+		newdata.put("problemDesc", json2string(problemDesc));
+		newdata.put("techDuidance", json2string(techDuidance));
+		newdata.put("techScheme", json2string(techScheme));
+		newdata.put("isProblem", json2string(isProblem));
+		return newdata;
+	}
+
+	private void executeUpdate(JSONObject newData,int pid,Connection conn,int comSubTaskId) throws Exception {
+		PreparedStatement pstmt = null;
+		String sql="update COLUMN_QC_PROBLEM P SET P.IS_PROBLEM=:1,P.ERROR_TYPE=:2,P.ERROR_LEVEL=:3,"
+				+ " P.PROBLEM_DESC=:4,P.TECH_GUIDANCE=:5,P.TECH_SCHEME=:6 where P.SECOND_WORK_ITEM = 'namePinyin' "
+				+ " AND P.SUBTASK_ID = :7 "
+				+ " AND P.PID = :8";
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, newData.getString("isProblem"));
+			pstmt.setString(2, newData.getString("errorType"));
+			pstmt.setString(3, newData.getString("errorLevel"));
+			pstmt.setString(4, newData.getString("problemDesc"));
+			pstmt.setString(5, newData.getString("techDuidance"));
+			pstmt.setString(6, newData.getString("techScheme"));
+			pstmt.setInt(7, comSubTaskId);
+			pstmt.setInt(8, pid);
+			log.info(sql);
+			pstmt.executeUpdate();
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeStatement(pstmt);
+		}
+	}
+	
+	private Map<String,JSONObject> executeQuery(List<Integer> pidList,Connection conn,int comSubTaskId) throws Exception {
+		Map<String,JSONObject> result = new HashMap<String,JSONObject>();
+		PreparedStatement pstmt = null;
+		ResultSet resultSet = null;
+		String sql="SELECT P.PID,P.OLD_VALUE,P.NEW_VALUE,P.IS_PROBLEM,P.ERROR_TYPE,P.ERROR_LEVEL,P.PROBLEM_DESC,P.TECH_GUIDANCE,P.TECH_SCHEME"
+				+ " FROM COLUMN_QC_PROBLEM P "
+				+ " WHERE P.SECOND_WORK_ITEM = 'namePinyin' "
+				+ " AND P.PID IN ("+StringUtils.join(pidList, ",")+")"
+				+ " AND P.SUBTASK_ID = "+comSubTaskId+" "
+				+ " AND P.NEW_VALUE <> P.OLD_VALUE"
+				+ " AND P.IS_VALID=0 ";
+		try {
+			pstmt = conn.prepareStatement(sql);
+			resultSet = pstmt.executeQuery();
+
+			while (resultSet.next()) {
+				JSONObject data = new JSONObject();
+				data.put("newValue",resultSet.getString("NEW_VALUE"));
+				data.put("oldValue",resultSet.getString("OLD_VALUE"));
+				data.put("errorType",resultSet.getString("ERROR_TYPE"));
+				data.put("errorLevel",resultSet.getString("ERROR_LEVEL"));
+				data.put("problemDesc",resultSet.getString("PROBLEM_DESC"));
+				data.put("techDuidance",resultSet.getString("TECH_GUIDANCE"));
+				data.put("techScheme",resultSet.getString("TECH_SCHEME"));
+				data.put("isProblem",resultSet.getString("IS_PROBLEM"));
+				result.put(String.valueOf(resultSet.getInt("pid")),data);
+			} 
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			DBUtils.closeResultSet(resultSet);
+			DBUtils.closeStatement(pstmt);
+		}
+		return result;
+	}
+	
+	
 	/**
 	 * 更新质检问题表
 	 * @param rowIdList

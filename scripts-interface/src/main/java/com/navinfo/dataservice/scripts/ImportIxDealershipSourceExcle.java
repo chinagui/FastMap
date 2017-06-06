@@ -7,13 +7,11 @@ import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.dbutils.DbUtils;
 import com.navinfo.dataservice.api.datahub.model.DbInfo;
-import com.navinfo.dataservice.bizcommons.service.PidUtil;
 import com.navinfo.dataservice.commons.database.DbConnectConfig;
 import com.navinfo.dataservice.commons.database.OracleSchema;
 import com.navinfo.dataservice.commons.excel.ExcelReader;
@@ -38,7 +36,7 @@ public class ImportIxDealershipSourceExcle {
 	public static void main(String[] args) {
 
 		try {
-			if(args==null||args.length!=2){
+			if(args==null||args.length!=1){
 				System.out.println("ERROR:need args:filePath");
 				return;
 			}
@@ -161,10 +159,10 @@ public class ImportIxDealershipSourceExcle {
 				
 				
 				transMap2Bean(source, sourceObj);
-				int id =applyPid();
+//				int id =applyPid();
 				//id+=1;
 //				System.out.println("fid: "+sourceObj.getCfmPoiNum());
-				sourceObj.setSourceId(id);
+//				sourceObj.setSourceId(id);
 				sourceObj.setGeometry(pointWkt);
 				if(sourceObj.getProvince() != null && StringUtils.isNotEmpty(sourceObj.getProvince())){
 					sourceObj.setProvince(h2f(sourceObj.getProvince()));
@@ -321,9 +319,9 @@ public class ImportIxDealershipSourceExcle {
 //				DbUtils.commitAndCloseQuietly(conn);
 			}
 		}
-	 private static int applyPid() throws Exception {
-			return PidUtil.getInstance().applyIxDealershipSourceId();
-		}
+//	 private static int applyPid() throws Exception {
+//			return PidUtil.getInstance().applyIxDealershipSourceId();
+//		}
 	 private static String h2f(String input) {
 	        char c[] = input.toCharArray();
 	        for (int i = 0; i < c.length; i++) {

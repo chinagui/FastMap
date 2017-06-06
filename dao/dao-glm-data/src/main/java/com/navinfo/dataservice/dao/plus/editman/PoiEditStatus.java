@@ -524,6 +524,7 @@ public class PoiEditStatus {
 			};
 			
 			QueryRunner run = new QueryRunner();
+			logger.info("poiUnderSubtask sql:" + sb.toString());
 			return run.query(conn,sb.toString(),pra,rsHandler);
 			
 		}catch(Exception e){
@@ -573,7 +574,6 @@ public class PoiEditStatus {
 			}
 			//更新poi_edit_status表
 
-			
 			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_STATUS T SET ");
@@ -598,6 +598,56 @@ public class PoiEditStatus {
 			DbUtils.rollbackAndCloseQuietly(conn);
 			logger.error(e.getMessage(),e);
 			throw new Exception("多源POI打标签失败");
+		}
+	}
+
+	/**
+	 * @param conn
+	 * @param dbId
+	 * @param uOrDfids
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Set<Long> poiWithOutSubtask(Connection conn, int dbId, List<String> uOrDfids) throws Exception {
+		try{
+			Set<Long> result = new HashSet<Long>();
+			if(uOrDfids.isEmpty()){
+				return result;
+			}
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT E.PID");
+			sb.append("   FROM POI_EDIT_STATUS E, IX_POI P     ");
+			sb.append("  WHERE E.STATUS IN (1, 2)              ");
+			sb.append("    AND P.PID = E.PID                   ");
+			sb.append("    AND (E.QUICK_SUBTASK_ID=0 OR E.MEDIUM_SUBTASK_ID=0) ");
+			
+			Clob clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(uOrDfids, ","));
+			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
+			
+			Object[] pra = new Object[1];
+			pra[0] = clobPids;
+
+			ResultSetHandler<Set<Long>> rsHandler = new ResultSetHandler<Set<Long>>() {
+				public Set<Long> handle(ResultSet rs) throws SQLException {
+					Set<Long> result = new HashSet<Long>();
+					while (rs.next()) {
+						result.add(rs.getLong("PID"));
+
+					}
+					return result;
+				}	
+			};
+			
+			QueryRunner run = new QueryRunner();
+			logger.info("poiWithOutSubtask sql:" + sb.toString());
+			return run.query(conn,sb.toString(),pra,rsHandler);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("poiWithOutSubtask");
 		}
 	}
 	

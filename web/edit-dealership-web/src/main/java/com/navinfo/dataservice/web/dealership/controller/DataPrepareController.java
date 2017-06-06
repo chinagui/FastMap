@@ -101,6 +101,9 @@ public class DataPrepareController extends BaseController {
 			}
 			String chainCode = dataJson.getString("chainCode");
 			AccessToken tokenObj = (AccessToken) request.getAttribute("access_token");
+			if(tokenObj == null){
+				return new ModelAndView("jsonView", exception("tocken无效"));
+			}
 			dealerShipService.impTableDiff(request,chainCode,tokenObj.getUserId());
 			
 			return new ModelAndView("jsonView", success());

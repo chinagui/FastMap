@@ -592,21 +592,22 @@ public class DataPrepareService {
 							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
-							List<IxDealershipResult> update = resultMap.get(2);
-							List<IxDealershipResult> delete = resultMap.get(3);
-							for(IxDealershipResult bean:insert){
-								log.info(bean.getName()+bean.getAddress());
-								log.info(bean.getGeometry());
-								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							List<IxDealershipResult> update = resultMap.get(3);
+							log.info("insert object");
+							if(insert!=null&&insert.size()>0){
+								for(IxDealershipResult bean:insert){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+								}
 							}
-							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
-							}
-							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+							log.info("update object");
+							if(update!=null&&update.size()>0){
+								for(IxDealershipResult bean:update){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+								}
 							}
 							
-
 							int workType = 2;
 							int workStatus = 0;
 							updateIxDealershipChain(conn,chain,workStatus,workType);

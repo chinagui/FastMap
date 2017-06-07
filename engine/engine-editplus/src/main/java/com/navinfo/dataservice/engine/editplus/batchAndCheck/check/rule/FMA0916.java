@@ -30,7 +30,10 @@ public class FMA0916 extends BasicCheckRule {
 	public void runCheck(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) poiObj.getMainrow();
-		String adminId=pidAdminId.get(poi.getPid()).toString();
+		String adminId=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+			adminId=pidAdminId.get(poi.getPid()).toString();
+		}
 		IxPoiAddress address = poiObj.getCHAddress();
 		if (address == null) {
 			return;

@@ -86,11 +86,14 @@ public class FMBAT20194 extends BasicBatchRule {
 		IxPoiObj poiObj = (IxPoiObj) obj;
 		IxPoi poi = (IxPoi) obj.getMainrow();
 		if(isParent){
+			System.out.println("--------FMBAT20194 父触发批处理开始-----------");
 			if (poiObj.getIxPoiParents()==null||poiObj.getIxPoiParents().isEmpty()) {
+				System.out.println("--------FMBAT20194 父表为空-----------");
 				return;
 			}
 			
 			if (!childrenMap.containsKey(poi.getPid()) || !poi.getKindCode().equals("230215")) {
+				System.out.println("--------FMBAT20194 父不符合触发条件-----------");
 				return;
 			}
 			
@@ -108,7 +111,7 @@ public class FMBAT20194 extends BasicBatchRule {
 				}
 			}
 			
-			if(!flag){return;}//判断子分类是否正确
+			if(!flag){System.out.println("--------FMBAT20194 子分类不正确-----------");return;}//判断子分类是否正确
 			
 			if(poi.getHisOpType().equals(OperationType.INSERT)){//父新增
 				flag = true;
@@ -162,12 +165,15 @@ public class FMBAT20194 extends BasicBatchRule {
 				}
 				gasstation.setService(service);
 			}
+			System.out.println("--------FMBAT20194 父触发批处理结束-----------");
 		}
 		if(isChild){
+			System.out.println("--------FMBAT20194 子触发批处理开始-----------");
 			if (!childPidParentPid.containsKey(poi.getPid())) {
 				return;
 			}
 			if(!judgeChildKindCode(poi.getKindCode())){
+				System.out.println("--------FMBAT20194 子分类不正确-----------");
 				return;
 			}
 			Long parentPid = childPidParentPid.get(poi.getPid());
@@ -176,6 +182,7 @@ public class FMBAT20194 extends BasicBatchRule {
 			IxPoiObj parentPoiObj = (IxPoiObj) parentObj;
 			IxPoi parentPoi = (IxPoi) parentPoiObj.getMainrow();
 			if (!parentPoi.getKindCode().equals("230215")) {
+				System.out.println("--------FMBAT20194 子对应的父分类不正确-----------");
 				return;
 			}
 			
@@ -225,7 +232,7 @@ public class FMBAT20194 extends BasicBatchRule {
 				service = getService(poi,service,type);
 				gasstation.setService(service);
 			}
-			
+			System.out.println("--------FMBAT20194 子触发批处理完成-----------");
 		}
 		
 		

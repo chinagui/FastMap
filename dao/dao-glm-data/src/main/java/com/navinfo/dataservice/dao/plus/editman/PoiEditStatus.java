@@ -15,20 +15,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.database.ConnectionUtil;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.dao.plus.model.basic.OperationType;
-import com.navinfo.dataservice.dao.plus.model.ixpoi.IxPoi;
 import com.navinfo.dataservice.dao.plus.obj.BasicObj;
-import com.navinfo.dataservice.dao.plus.obj.IxPoiObj;
 import com.navinfo.dataservice.dao.plus.obj.ObjectName;
 import com.navinfo.dataservice.dao.plus.operation.OperationResult;
 import com.navinfo.navicommons.database.QueryRunner;
@@ -300,85 +296,6 @@ public class PoiEditStatus {
 	
 
 	/**
-	 * 
-	 * @param conn
-	 * @param pids:全部上传的pids
-	 * @param freshPids:本次上传属于鲜度验证的pids
-	 * @param subtaskId
-	 * @param taskId
-	 * @param taskType
-	 * @throws Exception
-	 */
-	public static void forCollector(Connection conn,Collection<Long> pids,Map<Long,String> freshPids,int subtaskId,int taskId,int taskType)throws Exception{
-		PreparedStatement stmt = null;
-		try{
-			//全部pids为空则无上传数据
-			if(pids==null||pids.size()==0){
-				return;
-			}
-			QueryRunner run = new QueryRunner();
-			//normalPois
-			Collection<Long> normalPois = null;
-			//freshPois
-			if(freshPids!=null&&freshPids.size()>0){
-				String freshSql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=? WHERE PID = ? AND STATUS IN (0,3)";
-				stmt = conn.prepareStatement(freshSql);
-				for(Entry<Long,String> entry:freshPids.entrySet()){
-					stmt.setString(1, entry.getValue());
-					stmt.setLong(2, entry.getKey());
-					stmt.addBatch();
-				}
-				stmt.executeBatch();
-				stmt.clearBatch();
-				//计算normal poi
-				normalPois = CollectionUtils.subtract(pids, freshPids.keySet());
-			}else{
-				normalPois = pids;
-			}
-			//normalPois
-			if(normalPois!=null&&normalPois.size()>0){
-				Clob nPidsClob = ConnectionUtil.createClob(conn);
-				nPidsClob.setString(1, StringUtils.join(normalPois,","));
-				//write upload part
-				StringBuilder sb = new StringBuilder();
-				sb.append("MERGE INTO POI_EDIT_STATUS P \n");
-				sb.append("USING (SELECT TO_NUMBER(COLUMN_VALUE) PID \n");
-				sb.append("         FROM TABLE(CLOB_TO_TABLE(?))) T \n");
-				sb.append("ON (P.PID = T.PID) \n");
-				sb.append("WHEN MATCHED THEN \n");
-				sb.append("  UPDATE \n");
-				sb.append("     SET P.STATUS         = 1, \n");
-				sb.append("         P.FRESH_VERIFIED = 0, \n");
-				sb.append("         P.RAW_FIELDS     = NULL, \n");
-				sb.append("         WORK_TYPE        = 1 \n");
-				sb.append("WHEN NOT MATCHED THEN \n");
-				sb.append("  INSERT(P.PID, P.STATUS) VALUES (T.PID, 1)");
-				run.update(conn, sb.toString(), nPidsClob);
-			}
-			//write subtask part
-			Clob pidsClob = ConnectionUtil.createClob(conn);
-			pidsClob.setString(1, StringUtils.join(pids,","));
-			if(subtaskId>0){
-				if(taskType==4){//快线任务
-					String sqlQ = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=?,QUICK_TASK_ID=?,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-					run.update(conn, sqlQ, subtaskId,taskId,pidsClob);
-				}else if(taskType==1){//中线任务
-					String sqlM = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-					run.update(conn, sqlM, subtaskId,taskId,pidsClob);
-				}
-			}else{
-				String sql4NoTask="UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
-				run.update(conn, sql4NoTask, pidsClob);
-			}
-		}catch(Exception e){
-			logger.error(e.getMessage(),e);
-			throw e;
-		}finally{
-			DbUtils.closeQuietly(stmt);
-		}
-	}
-
-	/**
 	 * 鲜度验证数据直接进入已作业
 	 * @param conn
 	 * @param pids：只包含鲜度验证的POI
@@ -524,6 +441,7 @@ public class PoiEditStatus {
 			};
 			
 			QueryRunner run = new QueryRunner();
+			logger.info("poiUnderSubtask sql:" + sb.toString());
 			return run.query(conn,sb.toString(),pra,rsHandler);
 			
 		}catch(Exception e){
@@ -573,7 +491,6 @@ public class PoiEditStatus {
 			}
 			//更新poi_edit_status表
 
-			
 			DateFormat format = new java.text.SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 			StringBuilder sb = new StringBuilder();
 			sb.append("UPDATE POI_EDIT_STATUS T SET ");
@@ -601,6 +518,144 @@ public class PoiEditStatus {
 		}
 	}
 	
-	
+
+	/**
+	 * @param conn
+	 * @param dbId
+	 * @param uOrDfids
+	 * @return
+	 * @throws Exception 
+	 */
+	public static Set<Long> poiWithOutSubtask(Connection conn, int dbId, List<String> uOrDfids) throws Exception {
+		try{
+			Set<Long> result = new HashSet<Long>();
+			if(uOrDfids.isEmpty()){
+				return result;
+			}
+
+			StringBuilder sb = new StringBuilder();
+			sb.append(" SELECT E.PID");
+			sb.append("   FROM POI_EDIT_STATUS E, IX_POI P     ");
+			sb.append("  WHERE E.STATUS IN (1, 2)              ");
+			sb.append("    AND P.PID = E.PID                   ");
+			sb.append("    AND (E.QUICK_SUBTASK_ID=0 OR E.MEDIUM_SUBTASK_ID=0) ");
+			
+			Clob clobPids = conn.createClob();
+			clobPids.setString(1, StringUtils.join(uOrDfids, ","));
+			sb.append(" AND P.POI_NUM IN (select (column_value) from table(clob_to_table(?)))");
+			
+			Object[] pra = new Object[1];
+			pra[0] = clobPids;
+
+			ResultSetHandler<Set<Long>> rsHandler = new ResultSetHandler<Set<Long>>() {
+				public Set<Long> handle(ResultSet rs) throws SQLException {
+					Set<Long> result = new HashSet<Long>();
+					while (rs.next()) {
+						result.add(rs.getLong("PID"));
+
+					}
+					return result;
+				}	
+			};
+			
+			QueryRunner run = new QueryRunner();
+			logger.info("poiWithOutSubtask sql:" + sb.toString());
+			return run.query(conn,sb.toString(),pra,rsHandler);
+			
+		}catch(Exception e){
+			DbUtils.rollbackAndCloseQuietly(conn);
+			logger.error(e.getMessage(),e);
+			throw new Exception("poiWithOutSubtask");
+		}
+	}
+
+	/**
+	 * @Title: forCollector
+	 * @Description: poi上传时维护poi_edit_status表
+	 * @param conn
+	 * @param normalPois 非鲜度验证poi
+	 * @param freshVerPois 鲜度验证poi
+	 * @param subtaskId 
+	 * @param taskId
+	 * @param taskType
+	 * @throws Exception  void
+	 * @throws 
+	 * @author zl zhangli5174@navinfo.com
+	 * @date 2017年6月6日 下午3:15:14 
+	 */
+	public static void forCollector(Connection conn, Map<Long, String> normalPois, Set<Long> freshVerPois,
+			int subtaskId, int taskId, int taskType) throws Exception {
+		PreparedStatement stmt = null;
+		try{
+			
+			//全部pids为空则无上传数据
+			if((normalPois==null || normalPois.size()==0) 
+					&& (freshVerPois==null || freshVerPois.size()==0)){
+				return;
+			}
+			QueryRunner run = new QueryRunner();
+			Set<Long> pids = new HashSet<Long>();
+			if(freshVerPois!=null && freshVerPois.size()>0){
+				pids.addAll(freshVerPois);
+				Clob fPidsClob = ConnectionUtil.createClob(conn);
+				fPidsClob.setString(1, StringUtils.join(freshVerPois,","));
+				String freshSql = "UPDATE POI_EDIT_STATUS SET STATUS=2,FRESH_VERIFIED=1,RAW_FIELDS=NULL WHERE PID in (SELECT TO_NUMBER(COLUMN_VALUE) PID  FROM TABLE(CLOB_TO_TABLE(?))) AND STATUS IN (0,3)";
+				run.update(conn, freshSql, fPidsClob);
+				
+			}
+			
+			if(normalPois!=null && normalPois.size()>0){
+				pids.addAll(normalPois.keySet());
+				StringBuilder sb = new StringBuilder();
+				sb.append("MERGE INTO POI_EDIT_STATUS P \n");
+				sb.append("USING (SELECT TO_NUMBER(?) PID,? as rawFields \n");
+				sb.append("         FROM dual ) T \n");
+				sb.append("ON (P.PID = T.PID) \n");
+				sb.append("WHEN MATCHED THEN \n");
+				sb.append("  UPDATE \n");
+				sb.append("     SET P.STATUS         = 1, \n");
+				sb.append("         P.FRESH_VERIFIED = 0, \n");
+				sb.append("         P.RAW_FIELDS     = T.rawFields, \n");
+				sb.append("         WORK_TYPE        = 1 \n");
+				sb.append("WHEN NOT MATCHED THEN \n");
+				sb.append("  INSERT(P.PID, P.STATUS,P.RAW_FIELDS) VALUES (T.PID, 1,T.rawFields)");
+				stmt = conn.prepareStatement(sb.toString());
+				for(Entry<Long,String> entry:normalPois.entrySet()){
+					String rawFields = "";
+					if(entry.getValue() != null){
+						rawFields = entry.getValue();
+					}
+					stmt.setLong(1, entry.getKey());
+					stmt.setString(2, rawFields);
+					stmt.addBatch();
+				}
+				
+				stmt.executeBatch();
+				stmt.clearBatch();
+			}
+			//write subtask part
+			Clob pidsClob = ConnectionUtil.createClob(conn);
+			logger.info("pids.size() :"+pids.size());
+			pidsClob.setString(1, StringUtils.join(pids,","));
+			if(subtaskId>0){
+				if(taskType==4){//快线任务
+					String sqlQ = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=?,QUICK_TASK_ID=?,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					run.update(conn, sqlQ, subtaskId,taskId,pidsClob);
+				}else if(taskType==1){//中线任务
+					String sqlM = "UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=?,MEDIUM_TASK_ID=? WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+					run.update(conn, sqlM, subtaskId,taskId,pidsClob);
+				}
+			}else{
+				String sql4NoTask="UPDATE POI_EDIT_STATUS SET IS_UPLOAD=1,UPLOAD_DATE=SYSDATE,QUICK_SUBTASK_ID=0,QUICK_TASK_ID=0,MEDIUM_SUBTASK_ID=0,MEDIUM_TASK_ID=0 WHERE PID IN (SELECT TO_NUMBER(COLUMN_VALUE) FROM TABLE(CLOB_TO_TABLE(?)))";
+				run.update(conn, sql4NoTask, pidsClob);
+			}
+		}catch(Exception e){
+			logger.error(e.getMessage(),e);
+			throw e;
+		}finally{
+			DbUtils.closeQuietly(stmt);
+		}
+		
+	}
 	
 }

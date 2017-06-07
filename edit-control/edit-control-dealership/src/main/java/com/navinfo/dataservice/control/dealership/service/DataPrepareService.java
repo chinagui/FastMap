@@ -84,7 +84,7 @@ public class DataPrepareService {
 		
 		Connection con = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = "SELECT * FROM "
 					+ "(SELECT A.*, ROWNUM RN FROM "
@@ -130,11 +130,11 @@ public class DataPrepareService {
 		
 		Connection con = null;
 		try{
-			con = DBConnector.getInstance().getConnectionById(399);
+			con = DBConnector.getInstance().getDealershipConnection();
 			QueryRunner run = new QueryRunner();
 			String selectSql = "select r.result_id,s.source_id,r.city,r.kind_code,r.name as result_name, s.name as source_name,c.work_type,c.work_status,r.workflow_status "
 					+ "from IX_DEALERSHIP_RESULT r, IX_DEALERSHIP_SOURCE s, IX_DEALERSHIP_CHAIN c "
-					+ "where r.source_id = s.source_id and c.chain_code = s.source_id and r.result_id = '"+chainCode+"'";
+					+ "where r.source_id = s.source_id and c.chain_code = r.chain and s.chain =  '"+chainCode+"'";
 			
 			ResultSetHandler<List<Map<String, Object>>> rs = new ResultSetHandler<List<Map<String, Object>>>() {
 				@Override
@@ -345,9 +345,10 @@ public class DataPrepareService {
 						throw new Exception("表表差分结果中“旧一览表ID”在IX_DEALERSHIP_RESULT.SOURCE_ID中不存在:SOURCE_ID="+oldSourceId);
 					}
 					sourceObj=sourceObjSet.get(diffSub.getOldSourceId());
+					changeResultObj(resultObj,sourceObj);
 				}
 				else{sourceObj=new IxDealershipSource();}
-				changeResultObj(resultObj,sourceObj);
+				
 				if(StringUtils.isEmpty(resultObj.getProvince())){
 					if(cpRegionMap.containsKey(resultObj.getProvince())){
 						resultObj.setRegionId(cpRegionMap.get(resultObj.getProvince()));
@@ -384,6 +385,9 @@ public class DataPrepareService {
 		resultObj.setPoiXGuide(sourceObj.getPoiXGuide());
 		resultObj.setPoiYGuide(sourceObj.getPoiYGuide());
 		resultObj.setGeometry(sourceObj.getGeometry());
+		if(StringUtils.isEmpty(resultObj.getChain())){
+			resultObj.setChain(sourceObj.getChain());
+		}
 		
 	}
 
@@ -542,7 +546,7 @@ public class DataPrepareService {
 			//保存文件
 			String filePath = SystemConfigFactory.getSystemConfig().getValue(
 						PropConstant.uploadPath)+"/dealership/fullChainExcel"; 
-			//String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
+//			String filePath = "D:\\data\\resources\\upload\\dealership\\fullChainExcel";
 			JSONObject  returnParam= InputStreamUtils.request2File(request, filePath);
 			String localZipFile=returnParam.getString("filePath");
 			log.info("load file");
@@ -588,21 +592,22 @@ public class DataPrepareService {
 							Map<Integer,List<IxDealershipResult>> resultMap = DiffService.diff(dealershipSources, dealershipResult, chain,dealershipResultsPreMap);
 							//写库
 							List<IxDealershipResult> insert = resultMap.get(1);
-							List<IxDealershipResult> update = resultMap.get(2);
-							List<IxDealershipResult> delete = resultMap.get(3);
-							for(IxDealershipResult bean:insert){
-								log.info(bean.getName()+bean.getAddress());
-								log.info(bean.getGeometry());
-								IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+							List<IxDealershipResult> update = resultMap.get(3);
+							log.info("insert object");
+							if(insert!=null&&insert.size()>0){
+								for(IxDealershipResult bean:insert){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.createIxDealershipResult(conn,bean);
+								}
 							}
-							for(IxDealershipResult bean:update){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
-							}
-							for(IxDealershipResult bean:delete){
-							IxDealershipResultOperator.updateIxDealershipResult(conn,bean,Long.valueOf(0));
+							log.info("update object");
+							if(update!=null&&update.size()>0){
+								for(IxDealershipResult bean:update){
+									log.info(bean.getChain());
+									IxDealershipResultOperator.updateIxDealershipResult(conn,bean,userId);
+								}
 							}
 							
-
 							int workType = 2;
 							int workStatus = 0;
 							updateIxDealershipChain(conn,chain,workStatus,workType);

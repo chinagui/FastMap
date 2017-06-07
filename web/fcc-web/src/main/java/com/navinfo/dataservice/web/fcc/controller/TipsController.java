@@ -653,7 +653,7 @@ public class TipsController extends BaseController {
 
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
-            int subtaskId = jsonReq.getInt("subtaskId");
+            int subtaskId = jsonReq.getInt("subTaskId");
             int dbId = jsonReq.getInt("dbId");//大区库ID
 
             if(subtaskId == 0) {
@@ -761,7 +761,7 @@ public class TipsController extends BaseController {
 
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
-            int subtaskId = jsonReq.getInt("subtaskId");
+            int subtaskId = jsonReq.getInt("subTaskId");
 
             if(subtaskId == 0) {
                 throw new IllegalArgumentException("参数错误:subtaskId不能为空。");
@@ -804,7 +804,7 @@ public class TipsController extends BaseController {
 
         try {
             JSONObject jsonReq = JSONObject.fromObject(parameter);
-            int subtaskId = jsonReq.getInt("subtaskId");
+            int subtaskId = jsonReq.getInt("subTaskId");
 
             if(subtaskId == 0) {
                 throw new IllegalArgumentException("参数错误:subtaskId不能为空。");

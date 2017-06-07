@@ -63,7 +63,11 @@ public class CheckPercentConfig {
 				
 				PERCENT_CONFIG_MAP.put(tipsCode, precent);
 				
+				log.debug("初始化结果："+tipsCode+":"+precent);
+				
 			}
+			
+			log.debug("质检比例初始化完成！");
 		}catch (Exception e) {
 			PERCENT_CONFIG_MAP.clear(); //清理一下，如果中途异常，保证下次能重新加载
 			log.error("初始化抽检配置表出错，"+e.getMessage(), e);
@@ -79,6 +83,8 @@ public class CheckPercentConfig {
 	public synchronized  Map<String,Integer>  getConfig() throws Exception{
 		
 		if(PERCENT_CONFIG_MAP.size()==0){
+			
+		log.debug("开始重新初始化配置表：");
 			
 			initConfig();
 		}

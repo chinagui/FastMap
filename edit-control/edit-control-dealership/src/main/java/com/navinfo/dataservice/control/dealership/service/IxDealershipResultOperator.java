@@ -2,7 +2,9 @@ package com.navinfo.dataservice.control.dealership.service;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import oracle.sql.STRUCT;
 
@@ -13,8 +15,16 @@ import org.apache.log4j.Logger;
 import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.commons.geom.GeoTranslator;
 import com.navinfo.dataservice.commons.log.LoggerRepos;
+import com.navinfo.dataservice.dao.glm.iface.IRow;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoi;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiAddress;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiContact;
+import com.navinfo.dataservice.dao.glm.model.poi.index.IxPoiName;
 import com.navinfo.navicommons.database.QueryRunner;
 import com.navinfo.navicommons.exception.ServiceException;
+
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 
 public class IxDealershipResultOperator {
 	private static Logger log = LoggerRepos.getLogger(DataEditService.class);
@@ -545,4 +555,101 @@ public class IxDealershipResultOperator {
 			throw new ServiceException("修改失败，原因为:"+e.getMessage(),e);
 		}
 	}
+	
+	
+	/**
+	 * 根据POI组成包含名称、地址、联系方式的json格式
+	 * @param pois
+	 * @return
+	 */
+	public static JSONArray componentPoiData(List<IxPoi> pois) throws Exception{
+		JSONArray poiJson = new JSONArray();
+
+		for (IxPoi poi : pois) {
+			Map<String, Object> poiObj = new HashMap<>();
+			poiObj.put("poiNum", poi.getPoiNum());
+			poiObj.put("pid", poi.getPid());
+			poiObj.put("kindCode", poi.getKindCode());
+			poiObj.put("chain", poi.getChain());
+			poiObj.put("rowId", poi.getRowId());
+			poiObj.put("level", poi.getLevel());
+			poiObj.put("geometry", GeoTranslator.jts2Geojson(poi.getGeometry(),0.00001,5));
+			poiObj.put("xGuide", poi.getxGuide());
+			poiObj.put("yGuide", poi.getyGuide());
+
+			// 名称
+			JSONArray names = new JSONArray();
+			for (IRow row : poi.getNames()) {
+				Map<String, Object> nameMap = new HashMap<>();
+				IxPoiName name = (IxPoiName) row;
+
+				if (!name.getLangCode().equals("CHI") && !name.getLangCode().equals("CHT")) {
+					continue;
+				}
+
+				nameMap.put("rowId", name.getRowId());
+				nameMap.put("nameStrPinyin", name.getNamePhonetic());
+				nameMap.put("nameGrpId", name.getNameGroupid());
+				nameMap.put("nameId", name.getPid());
+				nameMap.put("langCode", name.getLangCode());
+				nameMap.put("nameClass", name.getNameClass());
+				nameMap.put("name", name.getName());
+				nameMap.put("nameType", name.getNameType());
+
+				JSONObject nameobj = JSONObject.fromObject(nameMap);
+				names.add(nameobj);
+			}
+			poiObj.put("names", names);
+
+			// 地址
+			JSONArray addresses = new JSONArray();
+			for (IRow row : poi.getAddresses()) {
+				Map<String, Object> addressMap = new HashMap<>();
+				IxPoiAddress address = (IxPoiAddress) row;
+
+				if (!address.getLangCode().equals("CHI") && !address.getLangCode().equals("CHT")) {
+					continue;
+				}
+
+				addressMap.put("rowId", address.getRowId());
+				addressMap.put("roadName", address.getRoadname());
+				addressMap.put("langCode", address.getLangCode());
+				addressMap.put("fullNamePinyin", address.getFullnamePhonetic());
+				addressMap.put("addrName", address.getAddrname());
+				addressMap.put("roadNamePinyin", address.getRoadnamePhonetic());
+				addressMap.put("addrNamePinyin", address.getAddrnamePhonetic());
+				addressMap.put("fullName", address.getFullname());
+
+				JSONObject addressobj = JSONObject.fromObject(addressMap);
+				addresses.add(addressobj);
+			}
+			poiObj.put("addresses", addresses);
+
+			// 电话
+			JSONArray contacts = new JSONArray();
+			for (IRow row : poi.getContacts()) {
+				Map<String, Object> contactMap = new HashMap<>();
+				IxPoiContact contact = (IxPoiContact) row;
+
+				contactMap.put("contact", contact.getContact());
+				contactMap.put("contactDepart", contact.getContactDepart());
+				contactMap.put("contactType", contact.getContactType());
+				contactMap.put("poiPid", contact.getPoiPid());
+				contactMap.put("priority", contact.getPriority());
+				contactMap.put("rowId", contact.getRowId());
+				contactMap.put("uDate", contact.getuDate());
+				contactMap.put("uRecord", contact.getuRecord());
+
+				JSONObject contactobj = JSONObject.fromObject(contactMap);
+				contacts.add(contactobj);
+			}
+			poiObj.put("contacts", contacts);
+
+			JSONObject obj = JSONObject.fromObject(poiObj);
+			poiJson.add(obj);
+		}
+
+		return poiJson;
+	}
+	
 }

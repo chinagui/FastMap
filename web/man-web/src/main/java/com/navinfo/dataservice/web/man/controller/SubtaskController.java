@@ -568,7 +568,8 @@ public class SubtaskController extends BaseController {
 	}
 	
 	/**
-	 * 子任务查询列表
+	 * 1.根据参数cityName与infor表中的admin_name模糊匹配，获取匹配成功的情报的所有采集子任务列表
+	 * 应用场景：独立工具：采集成果中/无转快时，获取快线子任务列表
 	 * @author songhe
 	 * @param  cityName
 	 * @return List

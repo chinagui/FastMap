@@ -405,11 +405,13 @@ public class TipsRequestParam {
                 stages.add(2);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             } else if ("m".equals(mdFlag)) {//月编
                 stages.add(1);
                 stages.add(3);
                 stages.add(5);
                 stages.add(6);
+                stages.add(7);
             }
         }
 
@@ -462,19 +464,26 @@ public class TipsRequestParam {
                         webBuilder.append(" AND stage:(1 5 6)");
                         webBuilder.append(")");
                         //接边Tips
-                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)))");
+                        webBuilder.append(" OR (s_sourceType:8002 AND stage:2 AND t_tipStatus:2 AND t_dEditStatus:0)") ;
+                        
+                        //待质检的tips
+                        webBuilder.append(" OR (stage:7 AND t_dEditStatus:0 AND t_tipStatus:2)");
+                        
+                        webBuilder.append(	"))");
+                        
+                      
                     }
                     if (workStatus.contains(1)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:1)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:1)");
                     }
                     if (workStatus.contains(2)) {
                         if (webBuilder.length() > 0) {
                             webBuilder.append(" OR ");
                         }
-                        webBuilder.append("(stage:2 AND t_dEditStatus:2)");
+                        webBuilder.append("(stage:(2 7) AND t_dEditStatus:2)");
                     }
                 }
 
@@ -489,8 +498,11 @@ public class TipsRequestParam {
             }
         }
 
+        System.out.println(builder.toString());
         // 过滤315 web不显示的tips 20170118
         this.getFilter315(builder);
+        
+        System.out.println(builder.toString());
 
         return builder.toString();
     }
@@ -499,7 +511,7 @@ public class TipsRequestParam {
         JSONObject jsonReq = JSONObject.fromObject(parameter);
 //        JSONArray grids = jsonReq.getJSONArray("grids");
 //        String wkt = GridUtils.grids2Wkt(grids);
-        int subtaskId = jsonReq.getInt("subtaskId");
+        int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
@@ -625,7 +637,7 @@ public class TipsRequestParam {
 
     public String getTipsCheckUnCommit(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        int subtaskId = jsonReq.getInt("subtaskId");
+        int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();
@@ -649,34 +661,7 @@ public class TipsRequestParam {
 
     public String getTipsCheckTotal(String parameter) throws Exception{
         JSONObject jsonReq = JSONObject.fromObject(parameter);
-        int subtaskId = jsonReq.getInt("subtaskId");
-
-        //solr查询语句
-        StringBuilder builder = new StringBuilder();
-
-        int tipsStatus = jsonReq.getInt("tipStatus");
-        builder.append("t_tipStatus:");
-        builder.append(tipsStatus);
-
-        int programType = jsonReq.getInt("programType");
-
-        if(programType == TaskType.PROGRAM_TYPE_Q) {//快线
-            builder.append(" AND ");
-            builder.append("s_qSubTaskId:");
-            builder.append(subtaskId);
-        }else if(programType == TaskType.PROGRAM_TYPE_M) {//中线
-            builder.append(" AND ");
-            builder.append("s_mSubTaskId:");
-            builder.append(subtaskId);
-        }
-
-        return builder.toString();
-    }
-
-
-    public String getTipsCheckByPage(String parameter, int total) throws Exception{
-        JSONObject jsonReq = JSONObject.fromObject(parameter);
-        int subtaskId = jsonReq.getInt("subtaskId");
+        int subtaskId = jsonReq.getInt("subTaskId");
 
         //solr查询语句
         StringBuilder builder = new StringBuilder();

@@ -2598,7 +2598,7 @@ public class StaticsService {
 						if(actualEndDate != null){
 							overView.put("actualEndDate", df.format(actualEndDate));
 						}else{
-							overView.put("actualEndDate", df.format(planEndDate));
+							overView.put("actualEndDate", null);
 						}
 						
 						int planDate = rs.getInt("PLAN_DATE");

@@ -13,6 +13,7 @@ import com.navinfo.dataservice.api.edit.model.IxDealershipResult;
 import com.navinfo.dataservice.api.edit.model.IxDealershipSource;
 import com.navinfo.dataservice.api.man.iface.ManApi;
 import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
+import com.navinfo.dataservice.engine.editplus.diff.BaiduGeocoding;
 
 
 
@@ -159,7 +160,7 @@ public class DiffService {
 				IxDealershipSource j = mapMatchSame.get(t);
 				if(dealershipResultsPreMap.containsKey(j.getSourceId())){
 					resultDpAttrDiff = dealershipResultsPreMap.get(j.getSourceId());
-					resultDpAttrDiff.setChain(j.getChain());
+//					resultDpAttrDiff.setChain(j.getChain());
 					log.info("update :" + i.getName() + "--" + i.getAddress());
 					updateList.add(resultDpAttrDiff);
 				}else{
@@ -319,13 +320,11 @@ public class DiffService {
 							log.info("insert :" + i.getName() + "--" + i.getAddress());
 							insertList.add(resultDpAttrDiff);
 						}
-						
-//						resultDpAttrDiff = new IxDealershipResult(i);
-//						resultDpAttrDiff.setChain(j.getChain());
 						resultDpAttrDiff.setDealSrcDiff(4);
-//						log.info("insert :" + i.getName() + "--" + i.getAddress());
-//
-//						insertList.add(resultDpAttrDiff);
+
+						if(resultDpAttrDiff.getGeometry()==null&&resultDpAttrDiff.getAddress()!=null){
+							resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+						}
 						flag = true;
 						break;
 					}
@@ -345,6 +344,9 @@ public class DiffService {
 			}
 			log.info("insert :" + i.getName() + "--" + i.getAddress());
 			insertList.add(resultDpAttrDiff);
+			if(resultDpAttrDiff.getGeometry()==null&&resultDpAttrDiff.getAddress()!=null){
+				resultDpAttrDiff.setGeometry(BaiduGeocoding.geocoder(resultDpAttrDiff.getAddress()));
+			}
 			/**************** 其他逻辑 *******************/
 			
 			

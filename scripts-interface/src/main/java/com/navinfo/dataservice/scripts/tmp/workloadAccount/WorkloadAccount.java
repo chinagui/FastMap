@@ -343,7 +343,7 @@ public class WorkloadAccount {
 	
 	
 	public static void main(String[] args) throws Exception{
-//		JobScriptsInterface.initContext();
+		JobScriptsInterface.initContext();
 		WorkloadAccount WorkloadAccount = new WorkloadAccount();
 		WorkloadAccount.account();
 	}

@@ -36,7 +36,10 @@ public class FMBAT20142 extends BasicBatchRule {
 	@Override
 	public void runBatch(BasicObj obj) throws Exception {
 		IxPoiObj poiObj = (IxPoiObj) obj;
-		String adminId=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+		String adminCode=null;
+		if(pidAdminId!=null&&pidAdminId.containsKey(poiObj.getMainrow().getObjPid())){
+			adminCode=pidAdminId.get(poiObj.getMainrow().getObjPid()).toString();
+		}
 		IxPoiAddress chiAddress = poiObj.getChiAddress();
 		if(chiAddress==null){return;} 
 		if(!chiAddress.getHisOpType().equals(OperationType.UPDATE) && !chiAddress.getHisOpType().equals(OperationType.INSERT)){return;}
@@ -49,7 +52,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getProvince();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setProvPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setProvPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//CITY
@@ -58,7 +61,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getCity();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setCityPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setCityPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//COUNTY
@@ -67,7 +70,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getCounty();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setCountyPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setCountyPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//TOWN
@@ -76,7 +79,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getTown();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setTownPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setTownPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//PLACE
@@ -85,7 +88,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getPlace();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setPlacePhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setPlacePhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//STREET
@@ -94,7 +97,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getStreet();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setStreetPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setStreetPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//LANDMARK
@@ -103,7 +106,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getLandmark();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setLandmarkPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setLandmarkPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//PREFIX
@@ -112,7 +115,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getPrefix();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setPrefixPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setPrefixPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//HOUSENUM
@@ -121,7 +124,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getHousenum();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setHousenumPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setHousenumPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//TYPE
@@ -130,7 +133,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getType();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setTypePhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setTypePhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//SUBNUM
@@ -139,7 +142,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getSubnum();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setSubnumPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setSubnumPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//SURFIX
@@ -148,7 +151,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getSurfix();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setSurfixPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setSurfixPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//ESTAB
@@ -157,7 +160,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getEstab();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setEstabPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setEstabPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//BUILDING
@@ -166,7 +169,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getBuilding();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setBuildingPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setBuildingPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//UNIT
@@ -175,7 +178,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getUnit();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setUnitPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setUnitPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//FLOOR
@@ -184,7 +187,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getFloor();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setFloorPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setFloorPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//ROOM
@@ -193,7 +196,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getRoom();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setRoomPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setRoomPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 		//ADDONS
@@ -202,7 +205,7 @@ public class FMBAT20142 extends BasicBatchRule {
 			String newValue=chiAddress.getAddons();
 			if(!newValue.equals(oldValue)){
 				//批拼音
-				chiAddress.setAddonsPhonetic(metadataApi.pyConvert(newValue,adminId,null));
+				chiAddress.setAddonsPhonetic(metadataApi.pyConvert(newValue,adminCode,null));
 			}
 		}
 	}

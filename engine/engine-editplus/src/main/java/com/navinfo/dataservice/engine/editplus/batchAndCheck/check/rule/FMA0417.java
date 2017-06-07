@@ -36,14 +36,18 @@ public class FMA0417 extends BasicCheckRule {
 		if(obj.objName().equals(ObjectName.IX_POI)){
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String adminId=pidAdminId.get(poi.getPid()).toString();
+			String adminCode=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+				adminCode=pidAdminId.get(poi.getPid()).toString();
+			}
+			
 			List<IxPoiName> names = poiObj.getIxPoiNames();
 			for(IxPoiName nameTmp:names){
 				if(nameTmp.isCH()&&nameTmp.getNameType()==1
 						&&(nameTmp.getNameClass()==1 ||nameTmp.getNameClass()==5)&&isCheck(nameTmp)){
 					String name=nameTmp.getName();
 					if(name==null){continue;}
-					String py=metadataApi.pyConvert(name,adminId,null);
+					String py=metadataApi.pyConvert(name,adminCode,null);
 					boolean isRightPy=false;
 					if(py.equals(nameTmp.getNamePhonetic())){
 						isRightPy=true;

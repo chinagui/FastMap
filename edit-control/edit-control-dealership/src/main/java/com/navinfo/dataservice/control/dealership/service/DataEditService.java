@@ -247,6 +247,8 @@ public class DataEditService {
 		dealershipJson.put("matchMethod", dealership.getMatchMethod());
 		dealershipJson.put("resultId", dealership.getResultId());
 		dealershipJson.put("dbId", dealership.getRegionId());
+		dealershipJson.put("cfmPoiNum", dealership.getCfmPoiNum() == null ? "" : dealership.getCfmPoiNum());
+		dealershipJson.put("cfmIsAdopted", dealership.getCfmIsAdopted());
 
 		String sourcesql = String.format("SELECT CFM_MEMO FROM IX_DEALERSHIP_SOURCE WHERE SOURCE_ID = %d",
 				dealership.getSourceId());
@@ -1002,7 +1004,7 @@ public class DataEditService {
                 //需判断采纳POI是否被外业删除,为删除不可保存
                 if(sate==2){
                 	throw new Exception("该poi已被外业删除，不可用");
-			}
+                }
                 //需判断采纳POI是否被占用
                 if(isOccupied(poiNum ,dealershipConn)){
                 	throw new Exception("该poi已被占用，不可用");

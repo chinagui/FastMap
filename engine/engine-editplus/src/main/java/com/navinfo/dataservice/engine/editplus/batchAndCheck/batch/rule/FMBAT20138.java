@@ -48,7 +48,10 @@ public class FMBAT20138 extends BasicBatchRule {
 			IxPoiObj poiObj=(IxPoiObj) obj;
 			if(!isBatch(poiObj)){return;}
 			IxPoi poi=(IxPoi) poiObj.getMainrow();
-			String adminId=pidAdminId.get(poi.getPid()).toString();
+			String adminCode=null;
+			if(pidAdminId!=null&&pidAdminId.containsKey(poi.getPid())){
+				adminCode=pidAdminId.get(poi.getPid()).toString();
+			}
 			String newKindCode=poi.getKindCode();
 			String newChain=poi.getChain();
 			IxPoiName br=poiObj.getOfficeStandardCHName();
@@ -81,7 +84,7 @@ public class FMBAT20138 extends BasicBatchRule {
 						newShortSubrow.setName(newShortName);
 						newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 						//批拼音
-						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminId,null));	
+						newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminCode,null));	
 						return;
 					}
 					//如果数据中存在简称，当“RESULT_KEY”字段内容+官方标准化中文名称中未被替换的其余部分在简称名称能找到时，则不处理；
@@ -100,7 +103,7 @@ public class FMBAT20138 extends BasicBatchRule {
 					newShortSubrow.setName(newShortName);
 					newShortSubrow.setNameGroupid(poiObj.getMaxGroupIdFromNames()+1);
 					//批拼音
-					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminId,null));
+					newShortSubrow.setNamePhonetic(metadataApi.pyConvert(newShortName,adminCode,null));
 				}
 			}	
 		}		

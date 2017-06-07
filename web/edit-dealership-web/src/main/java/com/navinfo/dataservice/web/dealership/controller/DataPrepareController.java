@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.navinfo.dataservice.api.job.iface.JobApi;
+import com.navinfo.dataservice.commons.springmvc.ApplicationContextUtil;
 import com.navinfo.dataservice.commons.springmvc.BaseController;
 import com.navinfo.dataservice.commons.token.AccessToken;
 import com.navinfo.dataservice.commons.util.DateUtils;
@@ -169,5 +172,38 @@ public class DataPrepareController extends BaseController {
 			logger.error("查询失败，原因：" + e.getMessage(), e);
 			return new ModelAndView("jsonView", exception(e));
 		}
+	}
+	
+	/**
+	 * 精编保存接口
+	 * @param request
+	 * @return
+	 * @throws ServletException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/dbDiff")
+	public ModelAndView tableDbDiff(HttpServletRequest request)
+			throws ServletException, IOException {
+		
+		try {
+			String parameter = request.getParameter("parameter");
+			JSONObject dataJson = JSONObject.fromObject(parameter);
+			AccessToken tokenObj=(AccessToken) request.getAttribute("token");
+			long userId=tokenObj.getUserId();
+			
+			JobApi jobApi=(JobApi) ApplicationContextUtil.getBean("jobApi");
+			
+			
+			long jobId=jobApi.createJob("DealershipTableAndDbDiffJob", dataJson, userId,0, "代理店库差分");
+			
+			
+			return new ModelAndView("jsonView", success(jobId));
+		} catch (Exception e) {
+
+			logger.error(e.getMessage(), e);
+
+			return new ModelAndView("jsonView", fail(e.getMessage()));
+		}
+		
 	}
 }

@@ -380,16 +380,20 @@ public class DataEditService {
 
 			List<Integer> resultIdList = getResultId(chainCode, con);
 			for(int resultId : resultIdList){
-
 				int workflow_status = getWorkflowStatus(resultId, con);
 				
 				if(1 == workflow_status){
-					//调用差分一致业务逻辑
-					log.info(resultId+"开始执行差分一致业务逻辑");
-					editResultCaseStatusSame(resultId, con);
-					//根据RESULT表维护SOURCE表
-					log.info(resultId+"开始根据RESULT表维护SOURCE表");
-					resultMaintainSource(resultId, con);
+					try{
+						//调用差分一致业务逻辑
+						log.info(resultId+"开始执行差分一致业务逻辑");
+						editResultCaseStatusSame(resultId, con);
+						//根据RESULT表维护SOURCE表
+						log.info(resultId+"开始根据RESULT表维护SOURCE表");
+						resultMaintainSource(resultId, con);
+					}catch(Exception e){
+						log.error(e.getMessage());
+						continue;
+					}
 				}else if(2 == workflow_status){
 					int regionId = 0;
 					int dailyDbId = 0;
@@ -399,22 +403,21 @@ public class DataEditService {
 						regionId = getRegionId(resultId, con);
 						dailyDbId = getDailyDbId(regionId, mancon);
 						dailycon = DBConnector.getInstance().getConnectionById(dailyDbId);
+						//表内批表外
+						log.info(resultId+"开始根表内批表外操作");
+						insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
+						//清空关联POI
+						log.info(resultId+"开始清空关联POI");
+						clearRelevancePoi(resultId, con);
+						//根据RESULT表维护SOURCE表
+						log.info(resultId+"开始根据RESULT表维护SOURCE表");
+						resultMaintainSource(resultId, con);
 					}catch(Exception e){
-						log.error("resultId对应的dailyCon为"+dailyDbId+"连接日库异常");
+						log.error(e.getMessage());
 						continue;
 					}
-					//表内批表外
-					log.info(resultId+"开始根表内批表外操作");
-					insideEditOutside(resultId, chainCode, con, dailycon, userId, dailyDbId);
-					//清空关联POI
-					log.info(resultId+"开始清空关联POI");
-					clearRelevancePoi(resultId, con);
-					//根据RESULT表维护SOURCE表
-					log.info(resultId+"开始根据RESULT表维护SOURCE表");
-					resultMaintainSource(resultId, con);
 				}
 			}
-			
 			return "success ";
 		}catch(Exception e){
 			e.printStackTrace();
